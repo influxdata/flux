@@ -5,12 +5,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/influxdata/flux"
+	_ "github.com/influxdata/flux/builtin"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/mock"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/platform"
-	"github.com/influxdata/platform/query"
-	_ "github.com/influxdata/platform/query/builtin"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/mock"
-	"github.com/influxdata/platform/query/plan"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
@@ -20,20 +20,20 @@ var mockCompiler *mock.Compiler
 
 func init() {
 	mockCompiler = new(mock.Compiler)
-	mockCompiler.CompileFn = func(ctx context.Context) (*query.Spec, error) {
-		return query.Compile(ctx, `from(bucket: "telegraf") |> range(start: -5m) |> mean()`, time.Now())
+	mockCompiler.CompileFn = func(ctx context.Context) (*flux.Spec, error) {
+		return flux.Compile(ctx, `from(bucket: "telegraf") |> range(start: -5m) |> mean()`, time.Now())
 	}
 }
 
 func TestController_CompileQuery_Failure(t *testing.T) {
 	compiler := &mock.Compiler{
-		CompileFn: func(ctx context.Context) (*query.Spec, error) {
+		CompileFn: func(ctx context.Context) (*flux.Spec, error) {
 			return nil, errors.New("expected")
 		},
 	}
 
 	ctrl := New(Config{})
-	req := &query.Request{
+	req := &flux.Request{
 		OrganizationID: platform.ID("a"),
 		Compiler:       compiler,
 	}
@@ -61,17 +61,17 @@ func TestController_CompileQuery_Failure(t *testing.T) {
 
 func TestController_EnqueueQuery_Failure(t *testing.T) {
 	compiler := &mock.Compiler{
-		CompileFn: func(ctx context.Context) (*query.Spec, error) {
+		CompileFn: func(ctx context.Context) (*flux.Spec, error) {
 			// This returns an invalid spec so that enqueueing the query fails.
 			// TODO(jsternberg): We should probably move the validation step to compilation
 			// instead as it makes more sense. In that case, we would still need to verify
 			// that enqueueing the query was successful in some way.
-			return &query.Spec{}, nil
+			return &flux.Spec{}, nil
 		},
 	}
 
 	ctrl := New(Config{})
-	req := &query.Request{
+	req := &flux.Request{
 		OrganizationID: platform.ID("a"),
 		Compiler:       compiler,
 	}
@@ -104,13 +104,13 @@ func TestController_EnqueueQuery_Failure(t *testing.T) {
 
 func TestController_ExecuteQuery_Failure(t *testing.T) {
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(context.Context, platform.ID, *plan.PlanSpec, *execute.Allocator) (map[string]query.Result, error) {
+	executor.ExecuteFn = func(context.Context, platform.ID, *plan.PlanSpec, *execute.Allocator) (map[string]flux.Result, error) {
 		return nil, errors.New("expected")
 	}
 
 	ctrl := New(Config{})
 	ctrl.executor = executor
-	req := &query.Request{
+	req := &flux.Request{
 		OrganizationID: platform.ID("a"),
 		Compiler:       mockCompiler,
 	}
@@ -151,14 +151,14 @@ func TestController_ExecuteQuery_Failure(t *testing.T) {
 
 func TestController_CancelQuery(t *testing.T) {
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(context.Context, platform.ID, *plan.PlanSpec, *execute.Allocator) (map[string]query.Result, error) {
+	executor.ExecuteFn = func(context.Context, platform.ID, *plan.PlanSpec, *execute.Allocator) (map[string]flux.Result, error) {
 		// Return an empty result.
-		return map[string]query.Result{}, nil
+		return map[string]flux.Result{}, nil
 	}
 
 	ctrl := New(Config{})
 	ctrl.executor = executor
-	req := &query.Request{
+	req := &flux.Request{
 		OrganizationID: platform.ID("a"),
 		Compiler:       mockCompiler,
 	}
@@ -198,14 +198,14 @@ func TestController_BlockedExecutor(t *testing.T) {
 	done := make(chan struct{})
 
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(context.Context, platform.ID, *plan.PlanSpec, *execute.Allocator) (map[string]query.Result, error) {
+	executor.ExecuteFn = func(context.Context, platform.ID, *plan.PlanSpec, *execute.Allocator) (map[string]flux.Result, error) {
 		<-done
 		return nil, nil
 	}
 
 	ctrl := New(Config{})
 	ctrl.executor = executor
-	req := &query.Request{
+	req := &flux.Request{
 		OrganizationID: platform.ID("a"),
 		Compiler:       mockCompiler,
 	}

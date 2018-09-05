@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/platform/query/ast"
-	"github.com/influxdata/platform/query/ast/asttest"
+	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/ast/asttest"
 )
 
 func TestJSONMarshal(t *testing.T) {

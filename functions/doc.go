@@ -18,13 +18,13 @@ The plan phase is for creating a final execution plan, and the execution phase i
 and computing a final result.
 
 The query phase takes each function call in a query and performs a match against the registry to see if
-there are type definitions for a built-in operation.  If matched, it will instantiate the correct query.OperationSpec
+there are type definitions for a built-in operation.  If matched, it will instantiate the correct flux.OperationSpec
 type for that function, given the runtime parameters.
 If a builtin OperationSpec is not found, then it will check for functions defined at runtime, and otherwise return an error.
 The following registrations are typically executed in the function's init() for the query phase to execute properly:
 
-	query.RegisterFunction(name string, c query.CreateOperationSpec, sig semantic.FunctionSignature)
-	query.RegisterOpSpec(k query.OperationKind, c query.NewOperationSpec)
+	flux.RegisterFunction(name string, c flux.CreateOperationSpec, sig semantic.FunctionSignature)
+	flux.RegisterOpSpec(k flux.OperationKind, c flux.NewOperationSpec)
 
 In the plan phase, an operation spec must be converted to a plan.ProcedureSpec.  A query plan must know what operations to
 carry out, including the function names and parameters.    In the trivial case, the OperationSpec
@@ -39,12 +39,12 @@ of the object.  Refer to the following interfaces for more information about des
 	plan.ParentAwareProcedureSpec
 
 Once you have determined the interface(s) that must be implemented for your function, you register them with
-	plan.RegisterProcedureSpec(k ProcedureKind, c CreateProcedureSpec, qks ...query.OperationKind)
+	plan.RegisterProcedureSpec(k ProcedureKind, c CreateProcedureSpec, qks ...flux.OperationKind)
 
 The registration in this phase creates two lookups.  First, it creates a named lookup in a similar fashion as for OperationSpecs
 in the query phase.  Second, it creates a mapping from OperationSpec types to ProcedureSpec types so that the collection of
 OperationSpecs for the query can be quickly converted to corresponding Procedure specs.  One feature to note is that the
-registration takes a list of query.OperationSpec values. This is because several user-facing query functions may map
+registration takes a list of flux.OperationSpec values. This is because several user-facing query functions may map
 to the same internal procedure.
 
 The primary function of the plan phase is to re-order, re-write and possibly combine the operations
@@ -79,17 +79,17 @@ the transformation process:
 	execute.TableBuilder
 	execute.NewAggregateTransformationAndDataset
 	execute.NewRowSelectorTransformationAndDataset
-	query.Table
-	query.GroupKey
-	query.ColMeta
-	query.ColReader
+	flux.Table
+	flux.GroupKey
+	flux.ColMeta
+	flux.ColReader
 
-The most important part of a function implementation is for the interface method execute.Transformation.Process(id execute.DatasetID, tbl query.Table).
+The most important part of a function implementation is for the interface method execute.Transformation.Process(id execute.DatasetID, tbl flux.Table).
 While the full details of how to implement this function are out of the scope of this document, a typical implementation
 will do the following:
 1.  Validate the incoming table schema if needed
 2.  Construct the column and group key schema for the output table via the table builder.
-3.  Process the incoming table via query.Table.Do, and use the input data to determine the output rows for the table builder.
+3.  Process the incoming table via flux.Table.Do, and use the input data to determine the output rows for the table builder.
 4.  Add rows to the output table.
 
 Finally, there is a special class of functions do not receive an input table from another function's output.
@@ -99,6 +99,6 @@ They are registered using:
 	execute.RegisterSource(k plan.ProcedureKind, c execute.CreateSource)
 
 The substantial part of a source implementation is its Run method, which should connect to the data source,
-collect its data into query.Table structures, and apply any transformations associated with the source.
+collect its data into flux.Table structures, and apply any transformations associated with the source.
 */
 package functions

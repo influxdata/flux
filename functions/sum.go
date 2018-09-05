@@ -3,9 +3,9 @@ package functions
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
 )
 
 const SumKind = "sum"
@@ -17,13 +17,13 @@ type SumOpSpec struct {
 var sumSignature = execute.DefaultAggregateSignature()
 
 func init() {
-	query.RegisterFunction(SumKind, createSumOpSpec, sumSignature)
-	query.RegisterOpSpec(SumKind, newSumOp)
+	flux.RegisterFunction(SumKind, createSumOpSpec, sumSignature)
+	flux.RegisterOpSpec(SumKind, newSumOp)
 	plan.RegisterProcedureSpec(SumKind, newSumProcedure, SumKind)
 	execute.RegisterTransformation(SumKind, createSumTransformation)
 }
 
-func createSumOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createSumOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -34,11 +34,11 @@ func createSumOpSpec(args query.Arguments, a *query.Administration) (query.Opera
 	return s, nil
 }
 
-func newSumOp() query.OperationSpec {
+func newSumOp() flux.OperationSpec {
 	return new(SumOpSpec)
 }
 
-func (s *SumOpSpec) Kind() query.OperationKind {
+func (s *SumOpSpec) Kind() flux.OperationKind {
 	return SumKind
 }
 
@@ -46,7 +46,7 @@ type SumProcedureSpec struct {
 	execute.AggregateConfig
 }
 
-func newSumProcedure(qs query.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
+func newSumProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*SumOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -133,8 +133,8 @@ func (a *SumIntAgg) DoInt(vs []int64) {
 		a.sum += v
 	}
 }
-func (a *SumIntAgg) Type() query.DataType {
-	return query.TInt
+func (a *SumIntAgg) Type() flux.DataType {
+	return flux.TInt
 }
 func (a *SumIntAgg) ValueInt() int64 {
 	return a.sum
@@ -149,8 +149,8 @@ func (a *SumUIntAgg) DoUInt(vs []uint64) {
 		a.sum += v
 	}
 }
-func (a *SumUIntAgg) Type() query.DataType {
-	return query.TUInt
+func (a *SumUIntAgg) Type() flux.DataType {
+	return flux.TUInt
 }
 func (a *SumUIntAgg) ValueUInt() uint64 {
 	return a.sum
@@ -165,8 +165,8 @@ func (a *SumFloatAgg) DoFloat(vs []float64) {
 		a.sum += v
 	}
 }
-func (a *SumFloatAgg) Type() query.DataType {
-	return query.TFloat
+func (a *SumFloatAgg) Type() flux.DataType {
+	return flux.TFloat
 }
 func (a *SumFloatAgg) ValueFloat() float64 {
 	return a.sum

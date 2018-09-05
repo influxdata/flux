@@ -3,10 +3,10 @@ package functions
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 	"github.com/pkg/errors"
 )
 
@@ -19,20 +19,20 @@ type LimitOpSpec struct {
 	Offset int64 `json:"offset"`
 }
 
-var limitSignature = query.DefaultFunctionSignature()
+var limitSignature = flux.DefaultFunctionSignature()
 
 func init() {
 	limitSignature.Params["n"] = semantic.Int
 	limitSignature.Params["offset"] = semantic.Int
 
-	query.RegisterFunction(LimitKind, createLimitOpSpec, limitSignature)
-	query.RegisterOpSpec(LimitKind, newLimitOp)
+	flux.RegisterFunction(LimitKind, createLimitOpSpec, limitSignature)
+	flux.RegisterOpSpec(LimitKind, newLimitOp)
 	plan.RegisterProcedureSpec(LimitKind, newLimitProcedure, LimitKind)
 	// TODO register a range transformation. Currently range is only supported if it is pushed down into a select procedure.
 	execute.RegisterTransformation(LimitKind, createLimitTransformation)
 }
 
-func createLimitOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createLimitOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -54,11 +54,11 @@ func createLimitOpSpec(args query.Arguments, a *query.Administration) (query.Ope
 	return spec, nil
 }
 
-func newLimitOp() query.OperationSpec {
+func newLimitOp() flux.OperationSpec {
 	return new(LimitOpSpec)
 }
 
-func (s *LimitOpSpec) Kind() query.OperationKind {
+func (s *LimitOpSpec) Kind() flux.OperationKind {
 	return LimitKind
 }
 
@@ -67,7 +67,7 @@ type LimitProcedureSpec struct {
 	Offset int64 `json:"offset"`
 }
 
-func newLimitProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newLimitProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*LimitOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -139,11 +139,11 @@ func NewLimitTransformation(d execute.Dataset, cache execute.TableBuilderCache, 
 	}
 }
 
-func (t *limitTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *limitTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *limitTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *limitTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
 		return fmt.Errorf("limit found duplicate table with key: %v", tbl.Key())
@@ -153,7 +153,7 @@ func (t *limitTransformation) Process(id execute.DatasetID, tbl query.Table) err
 	// AppendTable with limit
 	n := t.n
 	offset := t.offset
-	tbl.Do(func(cr query.ColReader) error {
+	tbl.Do(func(cr flux.ColReader) error {
 		if n <= 0 {
 			// Returning an error terminates iteration
 			return errors.New("finished")
@@ -184,7 +184,7 @@ func (t *limitTransformation) Process(id execute.DatasetID, tbl query.Table) err
 }
 
 type sliceColReader struct {
-	query.ColReader
+	flux.ColReader
 	start, stop int
 }
 

@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
 )
 
 // AggFuncTestHelper splits the data in half, runs Do over each split and compares
@@ -24,15 +24,15 @@ func AggFuncTestHelper(t *testing.T, agg execute.Aggregate, data []float64, want
 
 	var got interface{}
 	switch vf.Type() {
-	case query.TBool:
+	case flux.TBool:
 		got = vf.(execute.BoolValueFunc).ValueBool()
-	case query.TInt:
+	case flux.TInt:
 		got = vf.(execute.IntValueFunc).ValueInt()
-	case query.TUInt:
+	case flux.TUInt:
 		got = vf.(execute.UIntValueFunc).ValueUInt()
-	case query.TFloat:
+	case flux.TFloat:
 		got = vf.(execute.FloatValueFunc).ValueFloat()
-	case query.TString:
+	case flux.TString:
 		got = vf.(execute.StringValueFunc).ValueString()
 	}
 
@@ -50,15 +50,15 @@ func AggFuncBenchmarkHelper(b *testing.B, agg execute.Aggregate, data []float64,
 		vf.DoFloat(data)
 		var got interface{}
 		switch vf.Type() {
-		case query.TBool:
+		case flux.TBool:
 			got = vf.(execute.BoolValueFunc).ValueBool()
-		case query.TInt:
+		case flux.TInt:
 			got = vf.(execute.IntValueFunc).ValueInt()
-		case query.TUInt:
+		case flux.TUInt:
 			got = vf.(execute.UIntValueFunc).ValueUInt()
-		case query.TFloat:
+		case flux.TFloat:
 			got = vf.(execute.FloatValueFunc).ValueFloat()
-		case query.TString:
+		case flux.TString:
 			got = vf.(execute.StringValueFunc).ValueString()
 		}
 		if !cmp.Equal(want, got) {

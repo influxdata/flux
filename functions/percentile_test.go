@@ -4,23 +4,23 @@ import (
 	"math"
 	"testing"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
 )
 
 func TestPercentileOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"percentile","kind":"percentile","spec":{"percentile":0.9}}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID: "percentile",
 		Spec: &functions.PercentileOpSpec{
 			Percentile: 0.9,
 		},
 	}
 
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestPercentile_Process(t *testing.T) {
@@ -141,20 +141,20 @@ func TestPercentileSelector_Process(t *testing.T) {
 	testCases := []struct {
 		name     string
 		quantile float64
-		data     []query.Table
+		data     []flux.Table
 		want     []*executetest.Table
 	}{
 		{
 			name:     "select_10",
 			quantile: 0.1,
-			data: []query.Table{
+			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"t1"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(0), 1.0, "a", "y"},
@@ -167,11 +167,11 @@ func TestPercentileSelector_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: []string{"t1"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(0), 1.0, "a", "y"},
@@ -182,13 +182,13 @@ func TestPercentileSelector_Process(t *testing.T) {
 		{
 			name:     "select_20",
 			quantile: 0.2,
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 1.0, "a", "y"},
@@ -201,11 +201,11 @@ func TestPercentileSelector_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: []string{"t1"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(0), 1.0, "a", "y"},
@@ -215,13 +215,13 @@ func TestPercentileSelector_Process(t *testing.T) {
 		{
 			name:     "select_40",
 			quantile: 0.4,
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 1.0, "a", "y"},
@@ -233,11 +233,11 @@ func TestPercentileSelector_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(10), 2.0, "a", "x"},
@@ -247,13 +247,13 @@ func TestPercentileSelector_Process(t *testing.T) {
 		{
 			name:     "select_50",
 			quantile: 0.5,
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 1.0, "a", "y"},
@@ -265,11 +265,11 @@ func TestPercentileSelector_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(20), 3.0, "a", "y"},
@@ -279,13 +279,13 @@ func TestPercentileSelector_Process(t *testing.T) {
 		{
 			name:     "select_80",
 			quantile: 0.8,
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 1.0, "a", "y"},
@@ -297,11 +297,11 @@ func TestPercentileSelector_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(30), 4.0, "a", "x"},
@@ -311,13 +311,13 @@ func TestPercentileSelector_Process(t *testing.T) {
 		{
 			name:     "select_90",
 			quantile: 0.9,
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 1.0, "a", "y"},
@@ -329,11 +329,11 @@ func TestPercentileSelector_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(40), 5.0, "a", "y"},
@@ -343,13 +343,13 @@ func TestPercentileSelector_Process(t *testing.T) {
 		{
 			name:     "select_100",
 			quantile: 1.0,
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 1.0, "a", "y"},
@@ -361,11 +361,11 @@ func TestPercentileSelector_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(40), 5.0, "a", "y"},

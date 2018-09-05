@@ -5,11 +5,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 	"github.com/pkg/errors"
 )
 
@@ -19,11 +19,11 @@ type StateTrackingOpSpec struct {
 	Fn            *semantic.FunctionExpression `json:"fn"`
 	CountLabel    string                       `json:"countLabel"`
 	DurationLabel string                       `json:"durationLabel"`
-	DurationUnit  query.Duration               `json:"durationUnit"`
+	DurationUnit  flux.Duration                `json:"durationUnit"`
 	TimeCol       string                       `json:"timeCol"`
 }
 
-var stateTrackingSignature = query.DefaultFunctionSignature()
+var stateTrackingSignature = flux.DefaultFunctionSignature()
 
 func init() {
 	stateTrackingSignature.Params["fn"] = semantic.Function
@@ -32,9 +32,9 @@ func init() {
 	stateTrackingSignature.Params["durationUnit"] = semantic.Duration
 	stateTrackingSignature.Params["timeCol"] = semantic.String
 
-	query.RegisterFunction(StateTrackingKind, createStateTrackingOpSpec, stateTrackingSignature)
-	query.RegisterBuiltIn("state-tracking", stateTrackingBuiltin)
-	query.RegisterOpSpec(StateTrackingKind, newStateTrackingOp)
+	flux.RegisterFunction(StateTrackingKind, createStateTrackingOpSpec, stateTrackingSignature)
+	flux.RegisterBuiltIn("state-tracking", stateTrackingBuiltin)
+	flux.RegisterOpSpec(StateTrackingKind, newStateTrackingOp)
 	plan.RegisterProcedureSpec(StateTrackingKind, newStateTrackingProcedure, StateTrackingKind)
 	execute.RegisterTransformation(StateTrackingKind, createStateTrackingTransformation)
 }
@@ -71,7 +71,7 @@ stateDuration = (fn, label="stateDuration", unit=1s, table=<-) =>
 	stateTracking(table:table, durationLabel:label, fn:fn, durationUnit:unit)
 `
 
-func createStateTrackingOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createStateTrackingOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func createStateTrackingOpSpec(args query.Arguments, a *query.Administration) (q
 
 	spec := &StateTrackingOpSpec{
 		Fn:           fn,
-		DurationUnit: query.Duration(time.Second),
+		DurationUnit: flux.Duration(time.Second),
 	}
 
 	if label, ok, err := args.GetString("countLabel"); err != nil {
@@ -120,11 +120,11 @@ func createStateTrackingOpSpec(args query.Arguments, a *query.Administration) (q
 	return spec, nil
 }
 
-func newStateTrackingOp() query.OperationSpec {
+func newStateTrackingOp() flux.OperationSpec {
 	return new(StateTrackingOpSpec)
 }
 
-func (s *StateTrackingOpSpec) Kind() query.OperationKind {
+func (s *StateTrackingOpSpec) Kind() flux.OperationKind {
 	return StateTrackingKind
 }
 
@@ -132,11 +132,11 @@ type StateTrackingProcedureSpec struct {
 	Fn *semantic.FunctionExpression
 	CountLabel,
 	DurationLabel string
-	DurationUnit query.Duration
+	DurationUnit flux.Duration
 	TimeCol      string
 }
 
-func newStateTrackingProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newStateTrackingProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*StateTrackingOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -206,11 +206,11 @@ func NewStateTrackingTransformation(d execute.Dataset, cache execute.TableBuilde
 	}, nil
 }
 
-func (t *stateTrackingTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *stateTrackingTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
 		return fmt.Errorf("found duplicate table with key: %v", tbl.Key())
@@ -229,15 +229,15 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl query.Ta
 
 	// Add new value columns
 	if t.countLabel != "" {
-		countCol = builder.AddCol(query.ColMeta{
+		countCol = builder.AddCol(flux.ColMeta{
 			Label: t.countLabel,
-			Type:  query.TInt,
+			Type:  flux.TInt,
 		})
 	}
 	if t.durationLabel != "" {
-		durationCol = builder.AddCol(query.ColMeta{
+		durationCol = builder.AddCol(flux.ColMeta{
 			Label: t.durationLabel,
-			Type:  query.TInt,
+			Type:  flux.TInt,
 		})
 	}
 
@@ -253,7 +253,7 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl query.Ta
 		return fmt.Errorf("no column %q exists", t.timeCol)
 	}
 	// Append modified rows
-	return tbl.Do(func(cr query.ColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			tm := cr.Times(timeIdx)[i]

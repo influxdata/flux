@@ -3,21 +3,21 @@ package functions
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/compiler"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/compiler"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 )
 
 type BuilderContext struct {
-	TableColumns []query.ColMeta
-	TableKey     query.GroupKey
+	TableColumns []flux.ColMeta
+	TableKey     flux.GroupKey
 	ColIdxMap    []int
 }
 
-func NewBuilderContext(tbl query.Table) *BuilderContext {
+func NewBuilderContext(tbl flux.Table) *BuilderContext {
 	colMap := make([]int, len(tbl.Cols()))
 	for i := range tbl.Cols() {
 		colMap[i] = i
@@ -30,11 +30,11 @@ func NewBuilderContext(tbl query.Table) *BuilderContext {
 	}
 }
 
-func (b *BuilderContext) Cols() []query.ColMeta {
+func (b *BuilderContext) Cols() []flux.ColMeta {
 	return b.TableColumns
 }
 
-func (b *BuilderContext) Key() query.GroupKey {
+func (b *BuilderContext) Key() flux.GroupKey {
 	return b.TableKey
 }
 
@@ -55,7 +55,7 @@ type SchemaMutation interface {
 // to the function expression, it takes two types to verify the result against:
 // a single argument type, and a single return type.
 func compileFnParam(fn *semantic.FunctionExpression, paramType, returnType semantic.Type) (compiler.Func, string, error) {
-	scope, decls := query.BuiltIns()
+	scope, decls := flux.BuiltIns()
 	compileCache := compiler.NewCompilationCache(fn, scope, decls)
 	if len(fn.Params) != 1 {
 		return nil, "", fmt.Errorf("function should only have a single parameter, got %d", len(fn.Params))
@@ -88,7 +88,7 @@ func toStringSet(arr []string) map[string]bool {
 	return set
 }
 
-func checkCol(label string, cols []query.ColMeta) error {
+func checkCol(label string, cols []flux.ColMeta) error {
 	if execute.ColIdx(label, cols) < 0 {
 		return fmt.Errorf(`column "%s" doesn't exist`, label)
 	}
@@ -102,7 +102,7 @@ type RenameMutator struct {
 	ParamName string
 }
 
-func NewRenameMutator(qs query.OperationSpec) (*RenameMutator, error) {
+func NewRenameMutator(qs flux.OperationSpec) (*RenameMutator, error) {
 	s, ok := qs.(*RenameOpSpec)
 
 	m := &RenameMutator{}
@@ -127,7 +127,7 @@ func NewRenameMutator(qs query.OperationSpec) (*RenameMutator, error) {
 	return m, nil
 }
 
-func (m *RenameMutator) renameCol(col *query.ColMeta) error {
+func (m *RenameMutator) renameCol(col *flux.ColMeta) error {
 	if col == nil {
 		return errors.New("rename error: cannot rename nil column")
 	}
@@ -146,7 +146,7 @@ func (m *RenameMutator) renameCol(col *query.ColMeta) error {
 	return nil
 }
 
-func (m *RenameMutator) checkColumns(tableCols []query.ColMeta) error {
+func (m *RenameMutator) checkColumns(tableCols []flux.ColMeta) error {
 	for c := range m.Cols {
 		if err := checkCol(c, tableCols); err != nil {
 			return errors.Wrap(err, "rename error")
@@ -160,7 +160,7 @@ func (m *RenameMutator) Mutate(ctx *BuilderContext) error {
 		return err
 	}
 
-	keyCols := make([]query.ColMeta, 0, len(ctx.Cols()))
+	keyCols := make([]flux.ColMeta, 0, len(ctx.Cols()))
 	keyValues := make([]values.Value, 0, len(ctx.Cols()))
 
 	for i := range ctx.Cols() {
@@ -191,7 +191,7 @@ type DropKeepMutator struct {
 	Scope         map[string]values.Value
 }
 
-func NewDropKeepMutator(qs query.OperationSpec) (*DropKeepMutator, error) {
+func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
 	m := &DropKeepMutator{}
 
 	switch s := qs.(type) {
@@ -230,7 +230,7 @@ func NewDropKeepMutator(qs query.OperationSpec) (*DropKeepMutator, error) {
 	return m, nil
 }
 
-func (m *DropKeepMutator) checkColumns(tableCols []query.ColMeta) error {
+func (m *DropKeepMutator) checkColumns(tableCols []flux.ColMeta) error {
 	if m.DropCols != nil {
 		for c := range m.DropCols {
 			if err := checkCol(c, tableCols); err != nil {
@@ -272,7 +272,7 @@ func (m *DropKeepMutator) shouldDropCol(col string) (bool, error) {
 	return false, nil
 }
 
-func (m *DropKeepMutator) keepToDropCols(cols []query.ColMeta) {
+func (m *DropKeepMutator) keepToDropCols(cols []flux.ColMeta) {
 	// If we have columns we want to keep, we can accomplish this by inverting the Cols map,
 	// and storing it in Cols.
 	//  With a keep operation, Cols may be changed with each call to `Mutate`, but
@@ -295,9 +295,9 @@ func (m *DropKeepMutator) Mutate(ctx *BuilderContext) error {
 
 	m.keepToDropCols(ctx.Cols())
 
-	keyCols := make([]query.ColMeta, 0, len(ctx.Cols()))
+	keyCols := make([]flux.ColMeta, 0, len(ctx.Cols()))
 	keyValues := make([]values.Value, 0, len(ctx.Cols()))
-	newCols := make([]query.ColMeta, 0, len(ctx.Cols()))
+	newCols := make([]flux.ColMeta, 0, len(ctx.Cols()))
 
 	oldColMap := ctx.ColMap()
 	newColMap := make([]int, 0, len(ctx.Cols()))
@@ -330,7 +330,7 @@ type DuplicateMutator struct {
 	As  string
 }
 
-func NewDuplicateMutator(qs query.OperationSpec) (*DuplicateMutator, error) {
+func NewDuplicateMutator(qs flux.OperationSpec) (*DuplicateMutator, error) {
 	s, ok := qs.(*DuplicateOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -347,7 +347,7 @@ func (m *DuplicateMutator) Mutate(ctx *BuilderContext) error {
 		return errors.Wrap(err, "duplicate error")
 	}
 
-	newCols := make([]query.ColMeta, 0, len(ctx.Cols())+1)
+	newCols := make([]flux.ColMeta, 0, len(ctx.Cols())+1)
 	newColMap := make([]int, 0, len(ctx.Cols())+1)
 	oldColMap := ctx.ColMap()
 
@@ -367,8 +367,8 @@ func (m *DuplicateMutator) Mutate(ctx *BuilderContext) error {
 	return nil
 }
 
-func duplicate(col query.ColMeta, dupName string) query.ColMeta {
-	return query.ColMeta{
+func duplicate(col flux.ColMeta, dupName string) flux.ColMeta {
+	return flux.ColMeta{
 		Type:  col.Type,
 		Label: dupName,
 	}

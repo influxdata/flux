@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/semantic"
 )
 
 type functionType interface {
@@ -98,7 +98,7 @@ func (c Completer) FunctionSuggestion(name string) (FunctionSuggestion, error) {
 
 // DefaultCompleter creates a completer with builtin scope and declarations.
 func DefaultCompleter() Completer {
-	scope, declarations := query.BuiltIns()
+	scope, declarations := flux.BuiltIns()
 	interpScope := interpreter.NewScopeWithValues(scope)
 	return NewCompleter(interpScope, declarations)
 }

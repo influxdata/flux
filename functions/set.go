@@ -3,11 +3,11 @@ package functions
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 const SetKind = "set"
@@ -17,19 +17,19 @@ type SetOpSpec struct {
 	Value string `json:"value"`
 }
 
-var setSignature = query.DefaultFunctionSignature()
+var setSignature = flux.DefaultFunctionSignature()
 
 func init() {
 	setSignature.Params["key"] = semantic.String
 	setSignature.Params["value"] = semantic.String
 
-	query.RegisterFunction(SetKind, createSetOpSpec, setSignature)
-	query.RegisterOpSpec(SetKind, newSetOp)
+	flux.RegisterFunction(SetKind, createSetOpSpec, setSignature)
+	flux.RegisterOpSpec(SetKind, newSetOp)
 	plan.RegisterProcedureSpec(SetKind, newSetProcedure, SetKind)
 	execute.RegisterTransformation(SetKind, createSetTransformation)
 }
 
-func createSetOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createSetOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -50,11 +50,11 @@ func createSetOpSpec(args query.Arguments, a *query.Administration) (query.Opera
 	return spec, nil
 }
 
-func newSetOp() query.OperationSpec {
+func newSetOp() flux.OperationSpec {
 	return new(SetOpSpec)
 }
 
-func (s *SetOpSpec) Kind() query.OperationKind {
+func (s *SetOpSpec) Kind() flux.OperationKind {
 	return SetKind
 }
 
@@ -62,7 +62,7 @@ type SetProcedureSpec struct {
 	Key, Value string
 }
 
-func newSetProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newSetProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	s, ok := qs.(*SetOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -115,16 +115,16 @@ func NewSetTransformation(
 	}
 }
 
-func (t *setTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *setTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	// TODO
 	return nil
 }
 
-func (t *setTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *setTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	key := tbl.Key()
 	if idx := execute.ColIdx(t.key, key.Cols()); idx >= 0 {
 		// Update key
-		cols := make([]query.ColMeta, len(key.Cols()))
+		cols := make([]flux.ColMeta, len(key.Cols()))
 		vs := make([]values.Value, len(key.Cols()))
 		for j, c := range key.Cols() {
 			cols[j] = c
@@ -140,14 +140,14 @@ func (t *setTransformation) Process(id execute.DatasetID, tbl query.Table) error
 	if created {
 		execute.AddTableCols(tbl, builder)
 		if !execute.HasCol(t.key, builder.Cols()) {
-			builder.AddCol(query.ColMeta{
+			builder.AddCol(flux.ColMeta{
 				Label: t.key,
-				Type:  query.TString,
+				Type:  flux.TString,
 			})
 		}
 	}
 	idx := execute.ColIdx(t.key, builder.Cols())
-	return tbl.Do(func(cr query.ColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		for j := range cr.Cols() {
 			if j == idx {
 				continue

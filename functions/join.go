@@ -6,12 +6,12 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 )
 
@@ -30,16 +30,16 @@ type JoinOpSpec struct {
 	// The first parent is referenced by the first name and so forth.
 	// TODO(nathanielc): Change this to a map of parent operation IDs to names.
 	// Then make it possible for the transformation to map operation IDs to parent IDs.
-	TableNames map[query.OperationID]string `json:"tableNames"`
+	TableNames map[flux.OperationID]string `json:"tableNames"`
 	// Method is a the type of join to perform
 	Method string `json:"method"`
 	// tableNames maps each TableObject being joined to the parameter that holds it.
-	tableNames map[*query.TableObject]string
+	tableNames map[*flux.TableObject]string
 }
 
 type params struct {
 	vars []string
-	vals []*query.TableObject
+	vals []*flux.TableObject
 }
 
 type joinParams params
@@ -47,12 +47,12 @@ type joinParams params
 func newJoinParams(capacity int) *joinParams {
 	params := &joinParams{
 		vars: make([]string, 0, capacity),
-		vals: make([]*query.TableObject, 0, capacity),
+		vals: make([]*flux.TableObject, 0, capacity),
 	}
 	return params
 }
 
-func (params *joinParams) add(newVar string, newVal *query.TableObject) {
+func (params *joinParams) add(newVar string, newVal *flux.TableObject) {
 	params.vars = append(params.vars, newVar)
 	params.vals = append(params.vals, newVal)
 }
@@ -76,22 +76,22 @@ var joinSignature = semantic.FunctionSignature{
 		"on":     semantic.NewArrayType(semantic.String),
 		"method": semantic.String,
 	},
-	ReturnType:   query.TableObjectType,
+	ReturnType:   flux.TableObjectType,
 	PipeArgument: "tables",
 }
 
 func init() {
-	query.RegisterFunction(JoinKind, createJoinOpSpec, joinSignature)
-	query.RegisterOpSpec(JoinKind, newJoinOp)
+	flux.RegisterFunction(JoinKind, createJoinOpSpec, joinSignature)
+	flux.RegisterOpSpec(JoinKind, newJoinOp)
 	//TODO(nathanielc): Allow for other types of join implementations
 	plan.RegisterProcedureSpec(MergeJoinKind, newMergeJoinProcedure, JoinKind)
 	execute.RegisterTransformation(MergeJoinKind, createMergeJoinTransformation)
 }
 
-func createJoinOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	spec := &JoinOpSpec{
-		TableNames: make(map[query.OperationID]string),
-		tableNames: make(map[*query.TableObject]string),
+		TableNames: make(map[flux.OperationID]string),
+		tableNames: make(map[*flux.TableObject]string),
 	}
 
 	// On specifies the columns to join on. If 'on' is not present in the arguments
@@ -137,11 +137,11 @@ func createJoinOpSpec(args query.Arguments, a *query.Administration) (query.Oper
 			err = fmt.Errorf("value for key %q in tables must be an object: got %v", k, t.Type().Kind())
 			return
 		}
-		if t.Type() != query.TableObjectType {
+		if t.Type() != flux.TableObjectType {
 			err = fmt.Errorf("value for key %q in tables must be an table object: got %v", k, t.Type())
 			return
 		}
-		p := t.(*query.TableObject)
+		p := t.(*flux.TableObject)
 		joinParams.add(k, p)
 		spec.tableNames[p] = k
 	})
@@ -159,17 +159,17 @@ func createJoinOpSpec(args query.Arguments, a *query.Administration) (query.Oper
 	return spec, nil
 }
 
-func (t *JoinOpSpec) IDer(ider query.IDer) {
+func (t *JoinOpSpec) IDer(ider flux.IDer) {
 	for p, k := range t.tableNames {
 		t.TableNames[ider.ID(p)] = k
 	}
 }
 
-func newJoinOp() query.OperationSpec {
+func newJoinOp() flux.OperationSpec {
 	return new(JoinOpSpec)
 }
 
-func (s *JoinOpSpec) Kind() query.OperationKind {
+func (s *JoinOpSpec) Kind() flux.OperationKind {
 	return JoinKind
 }
 
@@ -178,7 +178,7 @@ type MergeJoinProcedureSpec struct {
 	TableNames map[plan.ProcedureID]string `json:"table_names"`
 }
 
-func newMergeJoinProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newMergeJoinProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*JoinOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -279,14 +279,14 @@ type mergeJoinParentState struct {
 	finished   bool
 }
 
-func (t *mergeJoinTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *mergeJoinTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	panic("not implemented")
 }
 
 // Process processes a table from an incoming data stream.
 // It adds the table to an internal buffer and stores any output
 // group keys that can be constructed as a result of the new addition.
-func (t *mergeJoinTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *mergeJoinTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -379,41 +379,41 @@ type MergeJoinCache struct {
 	intersection map[string]bool
 
 	schema    schema
-	colIndex  map[query.ColMeta]int
-	schemaMap map[tableCol]query.ColMeta
+	colIndex  map[flux.ColMeta]int
+	schemaMap map[tableCol]flux.ColMeta
 
 	postJoinKeys  *execute.GroupLookup
-	reverseLookup map[query.GroupKey]preJoinGroupKeys
+	reverseLookup map[flux.GroupKey]preJoinGroupKeys
 
-	tables      map[query.GroupKey]query.Table
+	tables      map[flux.GroupKey]flux.Table
 	alloc       *execute.Allocator
-	triggerSpec query.TriggerSpec
+	triggerSpec flux.TriggerSpec
 }
 
 type streamBuffer struct {
-	data     map[query.GroupKey]*execute.ColListTableBuilder
+	data     map[flux.GroupKey]*execute.ColListTableBuilder
 	consumed map[values.Value]int
 	ready    map[values.Value]bool
-	stale    map[query.GroupKey]bool
+	stale    map[flux.GroupKey]bool
 	last     values.Value
 	alloc    *execute.Allocator
 }
 
 func newStreamBuffer(alloc *execute.Allocator) *streamBuffer {
 	return &streamBuffer{
-		data:     make(map[query.GroupKey]*execute.ColListTableBuilder),
+		data:     make(map[flux.GroupKey]*execute.ColListTableBuilder),
 		consumed: make(map[values.Value]int),
 		ready:    make(map[values.Value]bool),
-		stale:    make(map[query.GroupKey]bool),
+		stale:    make(map[flux.GroupKey]bool),
 		alloc:    alloc,
 	}
 }
 
-func (buf *streamBuffer) table(key query.GroupKey) *execute.ColListTableBuilder {
+func (buf *streamBuffer) table(key flux.GroupKey) *execute.ColListTableBuilder {
 	return buf.data[key]
 }
 
-func (buf *streamBuffer) insert(table query.Table) {
+func (buf *streamBuffer) insert(table flux.Table) {
 	// Construct a new table builder with same schema as input table
 	builder := execute.NewColListTableBuilder(table.Key(), buf.alloc)
 	execute.AddTableCols(table, builder)
@@ -441,7 +441,7 @@ func (buf *streamBuffer) insert(table query.Table) {
 	}
 }
 
-func (buf *streamBuffer) expire(key query.GroupKey) {
+func (buf *streamBuffer) expire(key flux.GroupKey) {
 	if !buf.stale[key] && len(key.Cols()) > 0 {
 		leftKeyValue := key.Value(0)
 		consumedTables := buf.consumed[leftKeyValue]
@@ -450,14 +450,14 @@ func (buf *streamBuffer) expire(key query.GroupKey) {
 	}
 }
 
-func (buf *streamBuffer) evict(key query.GroupKey) {
+func (buf *streamBuffer) evict(key flux.GroupKey) {
 	if builder, ok := buf.data[key]; ok {
 		builder.ClearData()
 		delete(buf.data, key)
 	}
 }
 
-func (buf *streamBuffer) clear(f func(query.GroupKey) bool) {
+func (buf *streamBuffer) clear(f func(flux.GroupKey) bool) {
 	for key := range buf.stale {
 		if f(key) {
 			buf.evict(key)
@@ -466,7 +466,7 @@ func (buf *streamBuffer) clear(f func(query.GroupKey) bool) {
 	}
 }
 
-func (buf *streamBuffer) iterate(f func(query.GroupKey)) {
+func (buf *streamBuffer) iterate(f func(flux.GroupKey)) {
 	for key := range buf.data {
 		f(key)
 	}
@@ -477,12 +477,12 @@ type tableCol struct {
 }
 
 type preJoinGroupKeys struct {
-	left, right query.GroupKey
+	left, right flux.GroupKey
 }
 
 type schema struct {
-	key     []query.ColMeta
-	columns []query.ColMeta
+	key     []flux.ColMeta
+	columns []flux.ColMeta
 }
 
 func (s schema) Len() int {
@@ -529,15 +529,15 @@ func NewMergeJoinCache(alloc *execute.Allocator, datasetIDs []execute.DatasetID,
 		names:         names,
 		schemas:       schemas,
 		buffers:       buffers,
-		reverseLookup: make(map[query.GroupKey]preJoinGroupKeys),
+		reverseLookup: make(map[flux.GroupKey]preJoinGroupKeys),
 		postJoinKeys:  execute.NewGroupLookup(),
-		tables:        make(map[query.GroupKey]query.Table),
+		tables:        make(map[flux.GroupKey]flux.Table),
 		alloc:         alloc,
 	}
 }
 
 // Table joins the two tables associated with a single output group key and returns the resulting table
-func (c *MergeJoinCache) Table(key query.GroupKey) (query.Table, error) {
+func (c *MergeJoinCache) Table(key flux.GroupKey) (flux.Table, error) {
 	preJoinGroupKeys, ok := c.reverseLookup[key]
 
 	if !ok {
@@ -567,8 +567,8 @@ func (c *MergeJoinCache) Table(key query.GroupKey) (query.Table, error) {
 }
 
 // ForEach iterates over each table in the output stream
-func (c *MergeJoinCache) ForEach(f func(query.GroupKey)) {
-	c.postJoinKeys.Range(func(key query.GroupKey, value interface{}) {
+func (c *MergeJoinCache) ForEach(f func(flux.GroupKey)) {
+	c.postJoinKeys.Range(func(key flux.GroupKey, value interface{}) {
 
 		if _, ok := c.tables[key]; !ok {
 
@@ -593,10 +593,10 @@ func (c *MergeJoinCache) ForEach(f func(query.GroupKey)) {
 }
 
 // ForEachWithContext iterates over each table in the output stream
-func (c *MergeJoinCache) ForEachWithContext(f func(query.GroupKey, execute.Trigger, execute.TableContext)) {
+func (c *MergeJoinCache) ForEachWithContext(f func(flux.GroupKey, execute.Trigger, execute.TableContext)) {
 	trigger := execute.NewTriggerFromSpec(c.triggerSpec)
 
-	c.postJoinKeys.Range(func(key query.GroupKey, value interface{}) {
+	c.postJoinKeys.Range(func(key flux.GroupKey, value interface{}) {
 
 		preJoinGroupKeys := c.reverseLookup[key]
 
@@ -631,7 +631,7 @@ func (c *MergeJoinCache) ForEachWithContext(f func(query.GroupKey, execute.Trigg
 }
 
 // DiscardTable removes a table from the output buffer
-func (c *MergeJoinCache) DiscardTable(key query.GroupKey) {
+func (c *MergeJoinCache) DiscardTable(key flux.GroupKey) {
 	delete(c.tables, key)
 }
 
@@ -639,7 +639,7 @@ func (c *MergeJoinCache) DiscardTable(key query.GroupKey) {
 // ExpireTable will be called after the table associated with key has already
 // been materialized. As a result, it cannot not be materialized again. Each
 // buffer is cleared of any stale data that arises as a result of this process.
-func (c *MergeJoinCache) ExpireTable(key query.GroupKey) {
+func (c *MergeJoinCache) ExpireTable(key flux.GroupKey) {
 	// Remove this group key from the cache
 	c.postJoinKeys.Delete(key)
 	delete(c.tables, key)
@@ -655,12 +655,12 @@ func (c *MergeJoinCache) ExpireTable(key query.GroupKey) {
 
 	if c.canEvictTables() {
 
-		leftBuffer.clear(func(key query.GroupKey) bool {
+		leftBuffer.clear(func(key flux.GroupKey) bool {
 			return rightBuffer.ready[key.Value(0)] &&
 				rightBuffer.consumed[key.Value(0)] == 0
 		})
 
-		rightBuffer.clear(func(key query.GroupKey) bool {
+		rightBuffer.clear(func(key flux.GroupKey) bool {
 			return leftBuffer.ready[key.Value(0)] &&
 				leftBuffer.consumed[key.Value(0)] == 0
 		})
@@ -668,7 +668,7 @@ func (c *MergeJoinCache) ExpireTable(key query.GroupKey) {
 }
 
 // SetTriggerSpec sets the trigger rule for this cache
-func (c *MergeJoinCache) SetTriggerSpec(spec query.TriggerSpec) {
+func (c *MergeJoinCache) SetTriggerSpec(spec flux.TriggerSpec) {
 	c.triggerSpec = spec
 }
 
@@ -682,13 +682,13 @@ func (c *MergeJoinCache) canEvictTables() bool {
 }
 
 // insertIntoBuffer adds the rows of an incoming table to one of the Join's internal buffers
-func (c *MergeJoinCache) insertIntoBuffer(id execute.DatasetID, tbl query.Table) {
+func (c *MergeJoinCache) insertIntoBuffer(id execute.DatasetID, tbl flux.Table) {
 	// Initialize schema if tbl is first from its stream
 	if _, ok := c.schemas[id]; !ok {
 
 		c.schemas[id] = schema{
-			key:     make([]query.ColMeta, len(tbl.Key().Cols())),
-			columns: make([]query.ColMeta, len(tbl.Cols())),
+			key:     make([]flux.ColMeta, len(tbl.Key().Cols())),
+			columns: make([]flux.ColMeta, len(tbl.Cols())),
 		}
 
 		for j, column := range tbl.Cols() {
@@ -714,15 +714,15 @@ func (c *MergeJoinCache) insertIntoBuffer(id execute.DatasetID, tbl query.Table)
 // it with all other group keys from the opposing input stream. If it is determined
 // that two group keys will not join (due to having different values on a join column)
 // they are skipped.
-func (c *MergeJoinCache) registerKey(id execute.DatasetID, key query.GroupKey) {
+func (c *MergeJoinCache) registerKey(id execute.DatasetID, key flux.GroupKey) {
 	var empty struct{}
 	switch id {
 
 	case c.leftID:
 
-		c.buffers[c.rightID].iterate(func(groupKey query.GroupKey) {
+		c.buffers[c.rightID].iterate(func(groupKey flux.GroupKey) {
 
-			keys := map[execute.DatasetID]query.GroupKey{
+			keys := map[execute.DatasetID]flux.GroupKey{
 				c.leftID:  key,
 				c.rightID: groupKey,
 			}
@@ -744,9 +744,9 @@ func (c *MergeJoinCache) registerKey(id execute.DatasetID, key query.GroupKey) {
 
 	case c.rightID:
 
-		c.buffers[c.leftID].iterate(func(groupKey query.GroupKey) {
+		c.buffers[c.leftID].iterate(func(groupKey flux.GroupKey) {
 
-			keys := map[execute.DatasetID]query.GroupKey{
+			keys := map[execute.DatasetID]flux.GroupKey{
 				c.leftID:  groupKey,
 				c.rightID: key,
 			}
@@ -799,12 +799,12 @@ func (c *MergeJoinCache) buildPostJoinSchema() {
 	ncols := len(left) + len(right)
 
 	c.schema = schema{
-		columns: make([]query.ColMeta, 0, ncols-len(c.on)),
-		key:     make([]query.ColMeta, 0, ncols-len(c.on)),
+		columns: make([]flux.ColMeta, 0, ncols-len(c.on)),
+		key:     make([]flux.ColMeta, 0, ncols-len(c.on)),
 	}
 
-	c.colIndex = make(map[query.ColMeta]int, ncols-len(c.on))
-	c.schemaMap = make(map[tableCol]query.ColMeta, ncols)
+	c.colIndex = make(map[flux.ColMeta]int, ncols-len(c.on))
+	c.schemaMap = make(map[tableCol]flux.ColMeta, ncols)
 	added := make(map[string]bool, ncols-len(c.on))
 
 	// Build schema for output table
@@ -818,7 +818,7 @@ func (c *MergeJoinCache) buildPostJoinSchema() {
 	}
 }
 
-func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (query.Table, error) {
+func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Table, error) {
 	// Determine sort order for the joining tables
 	on := make([]string, len(c.on))
 
@@ -831,13 +831,13 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (query.T
 	right.Sort(on, false)
 
 	var leftSet, rightSet subset
-	var leftKey, rightKey query.GroupKey
+	var leftKey, rightKey flux.GroupKey
 
 	leftTable, rightTable := left.RawTable(), right.RawTable()
 	leftSet, leftKey = c.advance(leftSet.Stop, leftTable)
 	rightSet, rightKey = c.advance(rightSet.Stop, rightTable)
 
-	keys := map[execute.DatasetID]query.GroupKey{
+	keys := map[execute.DatasetID]flux.GroupKey{
 		c.leftID:  left.Key(),
 		c.rightID: right.Key(),
 	}
@@ -899,9 +899,9 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (query.T
 }
 
 // postJoinGroupKey produces a new group key value from a left and a right group key value
-func (c *MergeJoinCache) postJoinGroupKey(keys map[execute.DatasetID]query.GroupKey) query.GroupKey {
+func (c *MergeJoinCache) postJoinGroupKey(keys map[execute.DatasetID]flux.GroupKey) flux.GroupKey {
 	key := groupKey{
-		cols: make([]query.ColMeta, 0, len(keys)*5),
+		cols: make([]flux.ColMeta, 0, len(keys)*5),
 		vals: make([]values.Value, 0, len(keys)*5),
 	}
 
@@ -933,7 +933,7 @@ func (c *MergeJoinCache) postJoinGroupKey(keys map[execute.DatasetID]query.Group
 }
 
 // advance advances the row pointer of a sorted table that is being joined
-func (c *MergeJoinCache) advance(offset int, table query.ColReader) (subset, query.GroupKey) {
+func (c *MergeJoinCache) advance(offset int, table flux.ColReader) (subset, flux.GroupKey) {
 	if n := table.Len(); n == offset {
 		return subset{Start: n, Stop: n}, nil
 	}
@@ -958,33 +958,33 @@ func (s subset) Empty() bool {
 }
 
 // equalRowKeys determines whether two rows of a table are equal on the set of columns defined by on
-func equalRowKeys(x, y int, table query.ColReader, on map[string]bool) bool {
+func equalRowKeys(x, y int, table flux.ColReader, on map[string]bool) bool {
 	for j, c := range table.Cols() {
 		if !on[c.Label] {
 			continue
 		}
 		switch c.Type {
-		case query.TBool:
+		case flux.TBool:
 			if xv, yv := table.Bools(j)[x], table.Bools(j)[y]; xv != yv {
 				return false
 			}
-		case query.TInt:
+		case flux.TInt:
 			if xv, yv := table.Ints(j)[x], table.Ints(j)[y]; xv != yv {
 				return false
 			}
-		case query.TUInt:
+		case flux.TUInt:
 			if xv, yv := table.UInts(j)[x], table.UInts(j)[y]; xv != yv {
 				return false
 			}
-		case query.TFloat:
+		case flux.TFloat:
 			if xv, yv := table.Floats(j)[x], table.Floats(j)[y]; xv != yv {
 				return false
 			}
-		case query.TString:
+		case flux.TString:
 			if xv, yv := table.Strings(j)[x], table.Strings(j)[y]; xv != yv {
 				return false
 			}
-		case query.TTime:
+		case flux.TTime:
 			if xv, yv := table.Times(j)[x], table.Times(j)[y]; xv != yv {
 				return false
 			}
@@ -995,7 +995,7 @@ func equalRowKeys(x, y int, table query.ColReader, on map[string]bool) bool {
 	return true
 }
 
-func addColumnsToSchema(name string, columns []query.ColMeta, added, shared, on map[string]bool, schema *schema, schemaMap map[tableCol]query.ColMeta) {
+func addColumnsToSchema(name string, columns []flux.ColMeta, added, shared, on map[string]bool, schema *schema, schemaMap map[tableCol]flux.ColMeta) {
 	for _, column := range columns {
 
 		tableAndColumn := tableCol{
@@ -1004,7 +1004,7 @@ func addColumnsToSchema(name string, columns []query.ColMeta, added, shared, on 
 		}
 
 		newLabel := renameColumn(tableAndColumn, shared, on)
-		newColumn := query.ColMeta{
+		newColumn := flux.ColMeta{
 			Label: newLabel,
 			Type:  column.Type,
 		}
@@ -1029,7 +1029,7 @@ func renameColumn(col tableCol, share, on map[string]bool) string {
 }
 
 type groupKey struct {
-	cols []query.ColMeta
+	cols []flux.ColMeta
 	vals []values.Value
 }
 

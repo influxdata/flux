@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 const PivotKind = "pivot"
@@ -20,7 +20,7 @@ type PivotOpSpec struct {
 	ValueCol string   `json:"valueCol"`
 }
 
-var pivotSignature = query.DefaultFunctionSignature()
+var pivotSignature = flux.DefaultFunctionSignature()
 
 var fromRowsBuiltin = `
 // fromRows will access a database and retrieve data aligned into time-aligned tuples, grouped by measurement.  
@@ -32,15 +32,15 @@ func init() {
 	pivotSignature.Params["colKey"] = semantic.Array
 	pivotSignature.Params["valueCol"] = semantic.String
 
-	query.RegisterFunction(PivotKind, createPivotOpSpec, pivotSignature)
-	query.RegisterBuiltIn("fromRows", fromRowsBuiltin)
-	query.RegisterOpSpec(PivotKind, newPivotOp)
+	flux.RegisterFunction(PivotKind, createPivotOpSpec, pivotSignature)
+	flux.RegisterBuiltIn("fromRows", fromRowsBuiltin)
+	flux.RegisterOpSpec(PivotKind, newPivotOp)
 
 	plan.RegisterProcedureSpec(PivotKind, newPivotProcedure, PivotKind)
 	execute.RegisterTransformation(PivotKind, createPivotTransformation)
 }
 
-func createPivotOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createPivotOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -87,11 +87,11 @@ func createPivotOpSpec(args query.Arguments, a *query.Administration) (query.Ope
 	return spec, nil
 }
 
-func newPivotOp() query.OperationSpec {
+func newPivotOp() flux.OperationSpec {
 	return new(PivotOpSpec)
 }
 
-func (s *PivotOpSpec) Kind() query.OperationKind {
+func (s *PivotOpSpec) Kind() flux.OperationKind {
 	return PivotKind
 }
 
@@ -101,7 +101,7 @@ type PivotProcedureSpec struct {
 	ValueCol string
 }
 
-func newPivotProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newPivotProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*PivotOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -163,11 +163,11 @@ func NewPivotTransformation(d execute.Dataset, cache execute.TableBuilderCache, 
 	return t
 }
 
-func (t *pivotTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *pivotTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *pivotTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 
 	rowKeyIndex := make(map[string]int)
 	for _, v := range t.spec.RowKey {
@@ -182,13 +182,13 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl query.Table) err
 	// determine the initial column schema
 	colKeyIndex := make(map[string]int)
 	valueColIndex := -1
-	var valueColType query.DataType
+	var valueColType flux.DataType
 	for _, v := range t.spec.ColKey {
 		colKeyIndex[v] = -1
 	}
 
-	cols := make([]query.ColMeta, 0, len(tbl.Cols()))
-	keyCols := make([]query.ColMeta, 0, len(tbl.Key().Cols()))
+	cols := make([]flux.ColMeta, 0, len(tbl.Cols()))
+	keyCols := make([]flux.ColMeta, 0, len(tbl.Key().Cols()))
 	keyValues := make([]values.Value, 0, len(tbl.Key().Cols()))
 	newIDX := 0
 	colMap := make([]int, len(tbl.Cols()))
@@ -235,7 +235,7 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl query.Table) err
 		t.nextRow = 0
 	}
 
-	tbl.Do(func(cr query.ColReader) error {
+	tbl.Do(func(cr flux.ColReader) error {
 		for row := 0; row < cr.Len(); row++ {
 			rowKey := ""
 			colKey := ""
@@ -256,7 +256,7 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl query.Table) err
 			// we know the col key;
 			//  0.  If we've not seen the colKey before, then we need to add a new column and backfill it.
 			if _, ok := t.colKeyMaps[groupKeyString][colKey]; !ok {
-				newCol := query.ColMeta{
+				newCol := flux.ColMeta{
 					Label: colKey,
 					Type:  valueColType,
 				}
@@ -296,76 +296,76 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl query.Table) err
 	return nil
 }
 
-func growColumn(builder execute.TableBuilder, colType query.DataType, colIdx, nRows int) {
+func growColumn(builder execute.TableBuilder, colType flux.DataType, colIdx, nRows int) {
 	switch colType {
-	case query.TBool:
+	case flux.TBool:
 		builder.GrowBools(colIdx, nRows)
-	case query.TInt:
+	case flux.TInt:
 		builder.GrowInts(colIdx, nRows)
-	case query.TUInt:
+	case flux.TUInt:
 		builder.GrowUInts(colIdx, nRows)
-	case query.TFloat:
+	case flux.TFloat:
 		builder.GrowFloats(colIdx, nRows)
-	case query.TString:
+	case flux.TString:
 		builder.GrowStrings(colIdx, nRows)
-	case query.TTime:
+	case flux.TTime:
 		builder.GrowTimes(colIdx, nRows)
 	default:
 		execute.PanicUnknownType(colType)
 	}
 }
 
-func setBuilderValue(cr query.ColReader, builder execute.TableBuilder, readerColType query.DataType, readerRowIndex, readerColIndex, builderRow, builderCol int) {
+func setBuilderValue(cr flux.ColReader, builder execute.TableBuilder, readerColType flux.DataType, readerRowIndex, readerColIndex, builderRow, builderCol int) {
 	switch readerColType {
-	case query.TBool:
+	case flux.TBool:
 		builder.SetBool(builderRow, builderCol, cr.Bools(readerColIndex)[readerRowIndex])
-	case query.TInt:
+	case flux.TInt:
 		builder.SetInt(builderRow, builderCol, cr.Ints(readerColIndex)[readerRowIndex])
-	case query.TUInt:
+	case flux.TUInt:
 		builder.SetUInt(builderRow, builderCol, cr.UInts(readerColIndex)[readerRowIndex])
-	case query.TFloat:
+	case flux.TFloat:
 		builder.SetFloat(builderRow, builderCol, cr.Floats(readerColIndex)[readerRowIndex])
-	case query.TString:
+	case flux.TString:
 		builder.SetString(builderRow, builderCol, cr.Strings(readerColIndex)[readerRowIndex])
-	case query.TTime:
+	case flux.TTime:
 		builder.SetTime(builderRow, builderCol, cr.Times(readerColIndex)[readerRowIndex])
 	default:
 		execute.PanicUnknownType(readerColType)
 	}
 }
 
-func appendBuilderValue(cr query.ColReader, builder execute.TableBuilder, readerColType query.DataType, readerRowIndex, readerColIndex, builderColIndex int) {
+func appendBuilderValue(cr flux.ColReader, builder execute.TableBuilder, readerColType flux.DataType, readerRowIndex, readerColIndex, builderColIndex int) {
 	switch readerColType {
-	case query.TBool:
+	case flux.TBool:
 		builder.AppendBool(builderColIndex, cr.Bools(readerColIndex)[readerRowIndex])
-	case query.TInt:
+	case flux.TInt:
 		builder.AppendInt(builderColIndex, cr.Ints(readerColIndex)[readerRowIndex])
-	case query.TUInt:
+	case flux.TUInt:
 		builder.AppendUInt(builderColIndex, cr.UInts(readerColIndex)[readerRowIndex])
-	case query.TFloat:
+	case flux.TFloat:
 		builder.AppendFloat(builderColIndex, cr.Floats(readerColIndex)[readerRowIndex])
-	case query.TString:
+	case flux.TString:
 		builder.AppendString(builderColIndex, cr.Strings(readerColIndex)[readerRowIndex])
-	case query.TTime:
+	case flux.TTime:
 		builder.AppendTime(builderColIndex, cr.Times(readerColIndex)[readerRowIndex])
 	default:
 		execute.PanicUnknownType(readerColType)
 	}
 }
 
-func valueToStr(cr query.ColReader, c query.ColMeta, row, col int) string {
+func valueToStr(cr flux.ColReader, c flux.ColMeta, row, col int) string {
 	switch c.Type {
-	case query.TBool:
+	case flux.TBool:
 		return strconv.FormatBool(cr.Bools(col)[row])
-	case query.TInt:
+	case flux.TInt:
 		return strconv.FormatInt(cr.Ints(col)[row], 10)
-	case query.TUInt:
+	case flux.TUInt:
 		return strconv.FormatUint(cr.UInts(col)[row], 10)
-	case query.TFloat:
+	case flux.TFloat:
 		return strconv.FormatFloat(cr.Floats(col)[row], 'E', -1, 64)
-	case query.TString:
+	case flux.TString:
 		return cr.Strings(col)[row]
-	case query.TTime:
+	case flux.TTime:
 		return cr.Times(col)[row].String()
 	default:
 		execute.PanicUnknownType(c.Type)

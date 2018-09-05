@@ -5,9 +5,9 @@ import (
 	"math"
 	"time"
 
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux/values"
 
-	"github.com/influxdata/platform/query"
+	"github.com/influxdata/flux"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 )
@@ -16,8 +16,8 @@ import (
 const DefaultYieldName = "_result"
 
 var (
-	MinTime = values.ConvertTime(query.MinTime.Absolute)
-	MaxTime = values.ConvertTime(query.MaxTime.Absolute)
+	MinTime = values.ConvertTime(flux.MinTime.Absolute)
+	MaxTime = values.ConvertTime(flux.MaxTime.Absolute)
 )
 
 type PlanSpec struct {
@@ -29,7 +29,7 @@ type PlanSpec struct {
 
 	// Results is a list of datasets that are the result of the plan
 	Results   map[string]YieldSpec
-	Resources query.ResourceManagement
+	Resources flux.ResourceManagement
 }
 
 // YieldSpec defines how data should be yielded.
@@ -75,11 +75,11 @@ func NewPlanner(opts ...Option) Planner {
 	return p
 }
 
-func resolveTime(qt query.Time, now time.Time) values.Time {
+func resolveTime(qt flux.Time, now time.Time) values.Time {
 	return values.ConvertTime(qt.Time(now))
 }
 
-func ToBoundsSpec(bounds query.Bounds, now time.Time) (*BoundsSpec, error) {
+func ToBoundsSpec(bounds flux.Bounds, now time.Time) (*BoundsSpec, error) {
 	if bounds.HasZero() {
 		return nil, errors.New("bounds contain zero time")
 	}

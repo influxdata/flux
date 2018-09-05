@@ -3,20 +3,20 @@ package functions_test
 import (
 	"testing"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
 )
 
 func TestCumulativeSumOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"cumulativeSum","kind":"cumulativeSum","spec":{}}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID:   "cumulativeSum",
 		Spec: &functions.CumulativeSumOpSpec{},
 	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestCumulativeSum_PassThrough(t *testing.T) {
@@ -34,7 +34,7 @@ func TestCumulativeSum_Process(t *testing.T) {
 	testCases := []struct {
 		name string
 		spec *functions.CumulativeSumProcedureSpec
-		data []query.Table
+		data []flux.Table
 		want []*executetest.Table
 	}{
 		{
@@ -42,10 +42,10 @@ func TestCumulativeSum_Process(t *testing.T) {
 			spec: &functions.CumulativeSumProcedureSpec{
 				Columns: []string{execute.DefaultValueColLabel},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 2.0},
@@ -61,9 +61,9 @@ func TestCumulativeSum_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 2.0},
@@ -84,12 +84,12 @@ func TestCumulativeSum_Process(t *testing.T) {
 			spec: &functions.CumulativeSumProcedureSpec{
 				Columns: []string{"int", "uint", "float"},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "int", Type: query.TInt},
-					{Label: "uint", Type: query.TUInt},
-					{Label: "float", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "int", Type: flux.TInt},
+					{Label: "uint", Type: flux.TUInt},
+					{Label: "float", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), int64(2), uint64(1), 1.0},
@@ -105,11 +105,11 @@ func TestCumulativeSum_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "int", Type: query.TInt},
-					{Label: "uint", Type: query.TUInt},
-					{Label: "float", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "int", Type: flux.TInt},
+					{Label: "uint", Type: flux.TUInt},
+					{Label: "float", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), int64(2), uint64(1), 1.0},
@@ -130,12 +130,12 @@ func TestCumulativeSum_Process(t *testing.T) {
 			spec: &functions.CumulativeSumProcedureSpec{
 				Columns: []string{"int", "float"},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "time2", Type: query.TTime},
-					{Label: "int", Type: query.TInt},
-					{Label: "float", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "time2", Type: flux.TTime},
+					{Label: "int", Type: flux.TInt},
+					{Label: "float", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(0), int64(2), 1.0},
@@ -151,11 +151,11 @@ func TestCumulativeSum_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "time2", Type: query.TTime},
-					{Label: "int", Type: query.TInt},
-					{Label: "float", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "time2", Type: flux.TTime},
+					{Label: "int", Type: flux.TInt},
+					{Label: "float", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(0), int64(2), 1.0},
@@ -176,11 +176,11 @@ func TestCumulativeSum_Process(t *testing.T) {
 			spec: &functions.CumulativeSumProcedureSpec{
 				Columns: []string{"int"},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "int", Type: query.TInt},
-					{Label: "t", Type: query.TString},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "int", Type: flux.TInt},
+					{Label: "t", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), int64(2), "tag0"},
@@ -196,10 +196,10 @@ func TestCumulativeSum_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "int", Type: query.TInt},
-					{Label: "t", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "int", Type: flux.TInt},
+					{Label: "t", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), int64(2), "tag0"},

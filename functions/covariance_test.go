@@ -3,20 +3,20 @@ package functions_test
 import (
 	"testing"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
 )
 
 func TestCovariance_NewQuery(t *testing.T) {
-	tests := []querytest.NewQueryTestCase{
+	tests := []fluxtest.NewQueryTestCase{
 		{
 			Name: "simple covariance",
 			Raw:  `from(bucket:"mybucket") |> covariance(columns:["a","b"],)`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -35,7 +35,7 @@ func TestCovariance_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "covariance1"},
 				},
 			},
@@ -43,8 +43,8 @@ func TestCovariance_NewQuery(t *testing.T) {
 		{
 			Name: "pearsonr",
 			Raw:  `from(bucket:"mybucket")|>covariance(columns:["a","b"],pearsonr:true)`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -64,7 +64,7 @@ func TestCovariance_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "covariance1"},
 				},
 			},
@@ -72,8 +72,8 @@ func TestCovariance_NewQuery(t *testing.T) {
 		{
 			Name: "global covariance",
 			Raw:  `cov(x: from(bucket:"mybucket"), y:from(bucket:"mybucket"), on:["host"], pearsonr:true)`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -90,7 +90,7 @@ func TestCovariance_NewQuery(t *testing.T) {
 						ID: "join2",
 						Spec: &functions.JoinOpSpec{
 							On: []string{"host"},
-							TableNames: map[query.OperationID]string{
+							TableNames: map[flux.OperationID]string{
 								"from0": "x",
 								"from1": "y",
 							},
@@ -110,7 +110,7 @@ func TestCovariance_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "join2"},
 					{Parent: "from1", Child: "join2"},
 					{Parent: "join2", Child: "covariance3"},
@@ -122,7 +122,7 @@ func TestCovariance_NewQuery(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			querytest.NewQueryTestHelper(t, tc)
+			fluxtest.NewQueryTestHelper(t, tc)
 		})
 	}
 }
@@ -135,20 +135,20 @@ func TestCovarianceOperation_Marshaling(t *testing.T) {
 			"pearsonr":true
 		}
 	}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID: "covariance",
 		Spec: &functions.CovarianceOpSpec{
 			PearsonCorrelation: true,
 		},
 	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestCovariance_Process(t *testing.T) {
 	testCases := []struct {
 		name string
 		spec *functions.CovarianceProcedureSpec
-		data []query.Table
+		data []flux.Table
 		want []*executetest.Table
 	}{
 		{
@@ -161,14 +161,14 @@ func TestCovariance_Process(t *testing.T) {
 					Columns: []string{"x", "y"},
 				},
 			},
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "x", Type: query.TFloat},
-					{Label: "y", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(5), execute.Time(0), 1.0, 1.0},
@@ -180,11 +180,11 @@ func TestCovariance_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(5), execute.Time(5), 2.5},
@@ -201,14 +201,14 @@ func TestCovariance_Process(t *testing.T) {
 					Columns: []string{"x", "y"},
 				},
 			},
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "x", Type: query.TFloat},
-					{Label: "y", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(5), execute.Time(0), 1.0, 5.0},
@@ -220,11 +220,11 @@ func TestCovariance_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(5), execute.Time(5), -2.5},
@@ -241,14 +241,14 @@ func TestCovariance_Process(t *testing.T) {
 					Columns: []string{"x", "y"},
 				},
 			},
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "x", Type: query.TFloat},
-					{Label: "y", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(5), execute.Time(0), 1.0, 1.0},
@@ -260,11 +260,11 @@ func TestCovariance_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(5), execute.Time(5), 0.5},
@@ -282,14 +282,14 @@ func TestCovariance_Process(t *testing.T) {
 					Columns: []string{"x", "y"},
 				},
 			},
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "x", Type: query.TFloat},
-					{Label: "y", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(5), execute.Time(0), 1.0, 1.0},
@@ -301,11 +301,11 @@ func TestCovariance_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(5), execute.Time(5), 1.0},
@@ -323,14 +323,14 @@ func TestCovariance_Process(t *testing.T) {
 					Columns: []string{"x", "y"},
 				},
 			},
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "x", Type: query.TFloat},
-					{Label: "y", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(5), execute.Time(0), 1.0, 5.0},
@@ -342,11 +342,11 @@ func TestCovariance_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(5), execute.Time(5), -1.0},

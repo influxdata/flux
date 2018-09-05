@@ -4,7 +4,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/influxdata/platform/query"
+	"github.com/influxdata/flux"
 )
 
 type Transport interface {
@@ -54,7 +54,7 @@ func (t *consecutiveTransport) Finished() <-chan struct{} {
 	return t.finished
 }
 
-func (t *consecutiveTransport) RetractTable(id DatasetID, key query.GroupKey) error {
+func (t *consecutiveTransport) RetractTable(id DatasetID, key flux.GroupKey) error {
 	select {
 	case <-t.finished:
 		return t.err()
@@ -67,7 +67,7 @@ func (t *consecutiveTransport) RetractTable(id DatasetID, key query.GroupKey) er
 	return nil
 }
 
-func (t *consecutiveTransport) Process(id DatasetID, tbl query.Table) error {
+func (t *consecutiveTransport) Process(id DatasetID, tbl flux.Table) error {
 	select {
 	case <-t.finished:
 		return t.err()
@@ -232,35 +232,35 @@ func (m srcMessage) SrcDatasetID() DatasetID {
 
 type RetractTableMsg interface {
 	Message
-	Key() query.GroupKey
+	Key() flux.GroupKey
 }
 
 type retractTableMsg struct {
 	srcMessage
-	key query.GroupKey
+	key flux.GroupKey
 }
 
 func (m *retractTableMsg) Type() MessageType {
 	return RetractTableType
 }
-func (m *retractTableMsg) Key() query.GroupKey {
+func (m *retractTableMsg) Key() flux.GroupKey {
 	return m.key
 }
 
 type ProcessMsg interface {
 	Message
-	Table() query.Table
+	Table() flux.Table
 }
 
 type processMsg struct {
 	srcMessage
-	table query.Table
+	table flux.Table
 }
 
 func (m *processMsg) Type() MessageType {
 	return ProcessType
 }
-func (m *processMsg) Table() query.Table {
+func (m *processMsg) Table() flux.Table {
 	return m.table
 }
 

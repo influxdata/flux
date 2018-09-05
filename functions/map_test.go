@@ -3,22 +3,22 @@ package functions_test
 import (
 	"testing"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/ast"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/semantic"
 )
 
 func TestMap_NewQuery(t *testing.T) {
-	tests := []querytest.NewQueryTestCase{
+	tests := []fluxtest.NewQueryTestCase{
 		{
 			Name: "simple static map",
 			Raw:  `from(bucket:"mybucket") |> map(fn: (r) => r._value + 1)`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -45,7 +45,7 @@ func TestMap_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "map1"},
 				},
 			},
@@ -53,8 +53,8 @@ func TestMap_NewQuery(t *testing.T) {
 		{
 			Name: "resolve map",
 			Raw:  `x = 2 from(bucket:"mybucket") |> map(fn: (r) => r._value + x)`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -81,7 +81,7 @@ func TestMap_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "map1"},
 				},
 			},
@@ -91,7 +91,7 @@ func TestMap_NewQuery(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			querytest.NewQueryTestHelper(t, tc)
+			fluxtest.NewQueryTestHelper(t, tc)
 		})
 	}
 }
@@ -123,7 +123,7 @@ func TestMapOperation_Marshaling(t *testing.T) {
 			}
 		}
 	}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID: "map",
 		Spec: &functions.MapOpSpec{
 			Fn: &semantic.FunctionExpression{
@@ -141,13 +141,13 @@ func TestMapOperation_Marshaling(t *testing.T) {
 			},
 		},
 	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 func TestMap_Process(t *testing.T) {
 	testCases := []struct {
 		name string
 		spec *functions.MapProcedureSpec
-		data []query.Table
+		data []flux.Table
 		want []*executetest.Table
 	}{
 		{
@@ -186,10 +186,10 @@ func TestMap_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 1.0},
@@ -197,9 +197,9 @@ func TestMap_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 6.0},
@@ -243,13 +243,13 @@ func TestMap_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_measurement", "host"},
-				ColMeta: []query.ColMeta{
-					{Label: "_measurement", Type: query.TString},
-					{Label: "host", Type: query.TString},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "host", Type: flux.TString},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{"m", "A", execute.Time(1), 1.0},
@@ -258,11 +258,11 @@ func TestMap_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"_measurement", "host"},
-				ColMeta: []query.ColMeta{
-					{Label: "_measurement", Type: query.TString},
-					{Label: "host", Type: query.TString},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "host", Type: flux.TString},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{"m", "A", execute.Time(1), 6.0},
@@ -306,13 +306,13 @@ func TestMap_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_measurement", "host"},
-				ColMeta: []query.ColMeta{
-					{Label: "_measurement", Type: query.TString},
-					{Label: "host", Type: query.TString},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "host", Type: flux.TString},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{"m", "A", execute.Time(1), 1.0},
@@ -320,9 +320,9 @@ func TestMap_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 6.0},
@@ -379,13 +379,13 @@ func TestMap_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_measurement", "host"},
-				ColMeta: []query.ColMeta{
-					{Label: "_measurement", Type: query.TString},
-					{Label: "host", Type: query.TString},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "host", Type: flux.TString},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{"m", "A", execute.Time(1), 1.0},
@@ -394,11 +394,11 @@ func TestMap_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"_measurement", "host"},
-				ColMeta: []query.ColMeta{
-					{Label: "_measurement", Type: query.TString},
-					{Label: "host", Type: query.TString},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "host", Type: flux.TString},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{"m", "A.local", execute.Time(1), 6.0},
@@ -464,14 +464,14 @@ func TestMap_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_measurement", "host"},
-				ColMeta: []query.ColMeta{
-					{Label: "_measurement", Type: query.TString},
-					{Label: "host", Type: query.TString},
-					{Label: "domain", Type: query.TString},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "host", Type: flux.TString},
+					{Label: "domain", Type: flux.TString},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{"m", "A", "example.com", execute.Time(1), 1.0},
@@ -481,11 +481,11 @@ func TestMap_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: []string{"_measurement", "host"},
-					ColMeta: []query.ColMeta{
-						{Label: "_measurement", Type: query.TString},
-						{Label: "host", Type: query.TString},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{"m", "A.example.com", execute.Time(1), 6.0},
@@ -493,11 +493,11 @@ func TestMap_Process(t *testing.T) {
 				},
 				{
 					KeyCols: []string{"_measurement", "host"},
-					ColMeta: []query.ColMeta{
-						{Label: "_measurement", Type: query.TString},
-						{Label: "host", Type: query.TString},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{"m", "A.www.example.com", execute.Time(2), 11.0},
@@ -544,10 +544,10 @@ func TestMap_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 1.0},
@@ -555,9 +555,9 @@ func TestMap_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 1.0},
@@ -603,10 +603,10 @@ func TestMap_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TInt},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), int64(1)},
@@ -614,9 +614,9 @@ func TestMap_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 1.0},
@@ -662,10 +662,10 @@ func TestMap_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TUInt},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TUInt},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), uint64(1)},
@@ -673,9 +673,9 @@ func TestMap_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 1.0},

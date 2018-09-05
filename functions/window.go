@@ -4,31 +4,31 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 )
 
 const WindowKind = "window"
 
 type WindowOpSpec struct {
-	Every         query.Duration    `json:"every"`
-	Period        query.Duration    `json:"period"`
-	Start         query.Time        `json:"start"`
-	Round         query.Duration    `json:"round"`
-	Triggering    query.TriggerSpec `json:"triggering"`
-	TimeCol       string            `json:"time_col"`
-	StopColLabel  string            `json:"stop_col_label"`
-	StartColLabel string            `json:"start_col_label"`
-	CreateEmpty   bool              `json:"createEmpty"`
+	Every         flux.Duration    `json:"every"`
+	Period        flux.Duration    `json:"period"`
+	Start         flux.Time        `json:"start"`
+	Round         flux.Duration    `json:"round"`
+	Triggering    flux.TriggerSpec `json:"triggering"`
+	TimeCol       string           `json:"time_col"`
+	StopColLabel  string           `json:"stop_col_label"`
+	StartColLabel string           `json:"start_col_label"`
+	CreateEmpty   bool             `json:"createEmpty"`
 }
 
 var infinityVar = values.NewDurationValue(math.MaxInt64)
 
-var windowSignature = query.DefaultFunctionSignature()
+var windowSignature = flux.DefaultFunctionSignature()
 
 func init() {
 	windowSignature.Params["every"] = semantic.Duration
@@ -40,14 +40,14 @@ func init() {
 	windowSignature.Params["stopColLabel"] = semantic.String
 	windowSignature.Params["createEmpty"] = semantic.Bool
 
-	query.RegisterFunction(WindowKind, createWindowOpSpec, windowSignature)
-	query.RegisterOpSpec(WindowKind, newWindowOp)
-	query.RegisterBuiltInValue("inf", infinityVar)
+	flux.RegisterFunction(WindowKind, createWindowOpSpec, windowSignature)
+	flux.RegisterOpSpec(WindowKind, newWindowOp)
+	flux.RegisterBuiltInValue("inf", infinityVar)
 	plan.RegisterProcedureSpec(WindowKind, newWindowProcedure, WindowKind)
 	execute.RegisterTransformation(WindowKind, createWindowTransformation)
 }
 
-func createWindowOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createWindowOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func createWindowOpSpec(args query.Arguments, a *query.Administration) (query.Op
 		return nil, err
 	}
 	if everySet {
-		spec.Every = query.Duration(every)
+		spec.Every = flux.Duration(every)
 	}
 	period, periodSet, err := args.GetDuration("period")
 	if err != nil {
@@ -121,24 +121,24 @@ func createWindowOpSpec(args query.Arguments, a *query.Administration) (query.Op
 	return spec, nil
 }
 
-func newWindowOp() query.OperationSpec {
+func newWindowOp() flux.OperationSpec {
 	return new(WindowOpSpec)
 }
 
-func (s *WindowOpSpec) Kind() query.OperationKind {
+func (s *WindowOpSpec) Kind() flux.OperationKind {
 	return WindowKind
 }
 
 type WindowProcedureSpec struct {
 	Window     plan.WindowSpec
-	Triggering query.TriggerSpec
+	Triggering flux.TriggerSpec
 	TimeCol,
 	StartColLabel,
 	StopColLabel string
 	CreateEmpty bool
 }
 
-func newWindowProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newWindowProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	s, ok := qs.(*WindowOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -157,7 +157,7 @@ func newWindowProcedure(qs query.OperationSpec, pa plan.Administration) (plan.Pr
 		CreateEmpty:   s.CreateEmpty,
 	}
 	if p.Triggering == nil {
-		p.Triggering = query.DefaultTrigger
+		p.Triggering = flux.DefaultTrigger
 	}
 	return p, nil
 }
@@ -172,7 +172,7 @@ func (s *WindowProcedureSpec) Copy() plan.ProcedureSpec {
 	return ns
 }
 
-func (s *WindowProcedureSpec) TriggerSpec() query.TriggerSpec {
+func (s *WindowProcedureSpec) TriggerSpec() flux.TriggerSpec {
 	return s.Triggering
 }
 
@@ -185,7 +185,7 @@ func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationM
 	d := execute.NewDataset(id, mode, cache)
 	var start execute.Time
 	if s.Window.Start.IsZero() {
-		start = a.ResolveTime(query.Now).Truncate(execute.Duration(s.Window.Every))
+		start = a.ResolveTime(flux.Now).Truncate(execute.Duration(s.Window.Every))
 	} else {
 		start = a.ResolveTime(s.Window.Start)
 	}
@@ -258,15 +258,15 @@ func NewFixedWindowTransformation(
 	return t
 }
 
-func (t *fixedWindowTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) (err error) {
+func (t *fixedWindowTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) (err error) {
 	panic("not implemented")
 }
 
-func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	timeIdx := execute.ColIdx(t.timeCol, tbl.Cols())
 
-	newCols := make([]query.ColMeta, 0, len(tbl.Cols())+2)
-	keyCols := make([]query.ColMeta, 0, len(tbl.Cols())+2)
+	newCols := make([]flux.ColMeta, 0, len(tbl.Cols())+2)
+	keyCols := make([]flux.ColMeta, 0, len(tbl.Cols())+2)
 	keyColMap := make([]int, 0, len(tbl.Cols())+2)
 	startColIdx := -1
 	stopColIdx := -1
@@ -289,9 +289,9 @@ func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl query.Tabl
 	}
 	if startColIdx == -1 {
 		startColIdx = len(newCols)
-		c := query.ColMeta{
+		c := flux.ColMeta{
 			Label: t.startColLabel,
-			Type:  query.TTime,
+			Type:  flux.TTime,
 		}
 		newCols = append(newCols, c)
 		keyCols = append(keyCols, c)
@@ -299,9 +299,9 @@ func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl query.Tabl
 	}
 	if stopColIdx == -1 {
 		stopColIdx = len(newCols)
-		c := query.ColMeta{
+		c := flux.ColMeta{
 			Label: t.stopColLabel,
-			Type:  query.TTime,
+			Type:  flux.TTime,
 		}
 		newCols = append(newCols, c)
 		keyCols = append(keyCols, c)
@@ -323,7 +323,7 @@ func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl query.Tabl
 		}
 	}
 
-	return tbl.Do(func(cr query.ColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			tm := cr.Times(timeIdx)[i]
@@ -346,17 +346,17 @@ func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl query.Tabl
 						builder.AppendTime(stopColIdx, bnds.Stop)
 					default:
 						switch c.Type {
-						case query.TBool:
+						case flux.TBool:
 							builder.AppendBool(j, cr.Bools(j)[i])
-						case query.TInt:
+						case flux.TInt:
 							builder.AppendInt(j, cr.Ints(j)[i])
-						case query.TUInt:
+						case flux.TUInt:
 							builder.AppendUInt(j, cr.UInts(j)[i])
-						case query.TFloat:
+						case flux.TFloat:
 							builder.AppendFloat(j, cr.Floats(j)[i])
-						case query.TString:
+						case flux.TString:
 							builder.AppendString(j, cr.Strings(j)[i])
-						case query.TTime:
+						case flux.TTime:
 							builder.AppendTime(j, cr.Times(j)[i])
 						default:
 							execute.PanicUnknownType(c.Type)
@@ -369,8 +369,8 @@ func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl query.Tabl
 	})
 }
 
-func (t *fixedWindowTransformation) newWindowGroupKey(tbl query.Table, keyCols []query.ColMeta, bnds execute.Bounds, keyColMap []int) query.GroupKey {
-	cols := make([]query.ColMeta, len(keyCols))
+func (t *fixedWindowTransformation) newWindowGroupKey(tbl flux.Table, keyCols []flux.ColMeta, bnds execute.Bounds, keyColMap []int) flux.GroupKey {
+	cols := make([]flux.ColMeta, len(keyCols))
 	vs := make([]values.Value, len(keyCols))
 	for j, c := range keyCols {
 		cols[j] = c

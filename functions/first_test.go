@@ -3,18 +3,18 @@ package functions_test
 import (
 	"testing"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/plan/plantest"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
 )
 
 func TestFirstOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"first","kind":"first","spec":{"column":"foo"}}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID: "first",
 		Spec: &functions.FirstOpSpec{
 			SelectorConfig: execute.SelectorConfig{
@@ -23,7 +23,7 @@ func TestFirstOperation_Marshaling(t *testing.T) {
 		},
 	}
 
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestFirst_Process(t *testing.T) {
@@ -35,11 +35,11 @@ func TestFirst_Process(t *testing.T) {
 		{
 			name: "first",
 			data: &executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 0.0, "a", "y"},
@@ -95,9 +95,9 @@ func TestFirst_PushDown(t *testing.T) {
 	want := &plan.Procedure{
 		Spec: &functions.FromProcedureSpec{
 			BoundsSet: true,
-			Bounds: query.Bounds{
-				Start: query.MinTime,
-				Stop:  query.Now,
+			Bounds: flux.Bounds{
+				Start: flux.MinTime,
+				Stop:  flux.Now,
 			},
 			LimitSet:      true,
 			PointsLimit:   1,
@@ -113,9 +113,9 @@ func TestFirst_PushDown_Duplicate(t *testing.T) {
 	root := &plan.Procedure{
 		Spec: &functions.FromProcedureSpec{
 			BoundsSet: true,
-			Bounds: query.Bounds{
-				Start: query.MinTime,
-				Stop:  query.Now,
+			Bounds: flux.Bounds{
+				Start: flux.MinTime,
+				Stop:  flux.Now,
 			},
 			LimitSet:      true,
 			PointsLimit:   1,

@@ -3,12 +3,12 @@ package functions
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 const SortKind = "sort"
@@ -18,19 +18,19 @@ type SortOpSpec struct {
 	Desc bool     `json:"desc"`
 }
 
-var sortSignature = query.DefaultFunctionSignature()
+var sortSignature = flux.DefaultFunctionSignature()
 
 func init() {
 	sortSignature.Params["cols"] = semantic.NewArrayType(semantic.String)
 	sortSignature.Params["desc"] = semantic.Bool
 
-	query.RegisterFunction(SortKind, createSortOpSpec, sortSignature)
-	query.RegisterOpSpec(SortKind, newSortOp)
+	flux.RegisterFunction(SortKind, createSortOpSpec, sortSignature)
+	flux.RegisterOpSpec(SortKind, newSortOp)
 	plan.RegisterProcedureSpec(SortKind, newSortProcedure, SortKind)
 	execute.RegisterTransformation(SortKind, createSortTransformation)
 }
 
-func createSortOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createSortOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -58,11 +58,11 @@ func createSortOpSpec(args query.Arguments, a *query.Administration) (query.Oper
 	return spec, nil
 }
 
-func newSortOp() query.OperationSpec {
+func newSortOp() flux.OperationSpec {
 	return new(SortOpSpec)
 }
 
-func (s *SortOpSpec) Kind() query.OperationKind {
+func (s *SortOpSpec) Kind() flux.OperationKind {
 	return SortKind
 }
 
@@ -71,7 +71,7 @@ type SortProcedureSpec struct {
 	Desc bool
 }
 
-func newSortProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newSortProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*SortOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -124,11 +124,11 @@ func NewSortTransformation(d execute.Dataset, cache execute.TableBuilderCache, s
 	}
 }
 
-func (t *sortTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *sortTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *sortTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *sortTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	key := tbl.Key()
 	for _, label := range t.cols {
 		if key.HasCol(label) {
@@ -158,8 +158,8 @@ func (t *sortTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
 }
 
-func (t *sortTransformation) sortedKey(key query.GroupKey) query.GroupKey {
-	cols := make([]query.ColMeta, len(key.Cols()))
+func (t *sortTransformation) sortedKey(key flux.GroupKey) flux.GroupKey {
+	cols := make([]flux.ColMeta, len(key.Cols()))
 	vs := make([]values.Value, len(key.Cols()))
 	j := 0
 	for _, label := range t.cols {

@@ -4,35 +4,35 @@ import (
 	"context"
 	"io"
 
-	"github.com/influxdata/platform/query"
+	"github.com/influxdata/flux"
 )
 
 // ProxyQueryService mocks the idep QueryService for testing.
 type ProxyQueryService struct {
-	QueryF func(ctx context.Context, w io.Writer, req *query.ProxyRequest) (int64, error)
+	QueryF func(ctx context.Context, w io.Writer, req *flux.ProxyRequest) (int64, error)
 }
 
 // Query writes the results of the query request.
-func (s *ProxyQueryService) Query(ctx context.Context, w io.Writer, req *query.ProxyRequest) (int64, error) {
+func (s *ProxyQueryService) Query(ctx context.Context, w io.Writer, req *flux.ProxyRequest) (int64, error) {
 	return s.QueryF(ctx, w, req)
 }
 
 // QueryService mocks the idep QueryService for testing.
 type QueryService struct {
-	QueryF func(ctx context.Context, req *query.Request) (query.ResultIterator, error)
+	QueryF func(ctx context.Context, req *flux.Request) (flux.ResultIterator, error)
 }
 
 // Query writes the results of the query request.
-func (s *QueryService) Query(ctx context.Context, req *query.Request) (query.ResultIterator, error) {
+func (s *QueryService) Query(ctx context.Context, req *flux.Request) (flux.ResultIterator, error) {
 	return s.QueryF(ctx, req)
 }
 
 // AsyncQueryService mocks the idep QueryService for testing.
 type AsyncQueryService struct {
-	QueryF func(ctx context.Context, req *query.Request) (query.Query, error)
+	QueryF func(ctx context.Context, req *flux.Request) (flux.Query, error)
 }
 
 // Query writes the results of the query request.
-func (s *AsyncQueryService) Query(ctx context.Context, req *query.Request) (query.Query, error) {
+func (s *AsyncQueryService) Query(ctx context.Context, req *flux.Request) (flux.Query, error) {
 	return s.QueryF(ctx, req)
 }

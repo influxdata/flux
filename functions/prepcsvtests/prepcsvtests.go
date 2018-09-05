@@ -11,11 +11,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/influxdata/platform/query"
-	_ "github.com/influxdata/platform/query/builtin"
-	"github.com/influxdata/platform/query/csv"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux/fluxtest"
 
+	"github.com/influxdata/flux"
+	_ "github.com/influxdata/flux/builtin"
+	"github.com/influxdata/flux/csv"
 	"golang.org/x/text/unicode/norm"
 )
 
@@ -69,11 +69,11 @@ func main() {
 			return
 		}
 
-		pqs := querytest.GetProxyQueryServiceBridge()
-		req := &query.ProxyRequest{
-			Request: query.Request{
-				Compiler: querytest.FromCSVCompiler{
-					Compiler: query.FluxCompiler{
+		pqs := fluxtest.GetProxyQueryServiceBridge()
+		req := &flux.ProxyRequest{
+			Request: flux.Request{
+				Compiler: fluxtest.FromCSVCompiler{
+					Compiler: flux.FluxCompiler{
 						Query: string(querytext),
 					},
 					InputFile: incsv,

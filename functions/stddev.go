@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
 )
 
 const StddevKind = "stddev"
@@ -18,12 +18,12 @@ type StddevOpSpec struct {
 var stddevSignature = execute.DefaultAggregateSignature()
 
 func init() {
-	query.RegisterFunction(StddevKind, createStddevOpSpec, stddevSignature)
-	query.RegisterOpSpec(StddevKind, newStddevOp)
+	flux.RegisterFunction(StddevKind, createStddevOpSpec, stddevSignature)
+	flux.RegisterOpSpec(StddevKind, newStddevOp)
 	plan.RegisterProcedureSpec(StddevKind, newStddevProcedure, StddevKind)
 	execute.RegisterTransformation(StddevKind, createStddevTransformation)
 }
-func createStddevOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createStddevOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -34,11 +34,11 @@ func createStddevOpSpec(args query.Arguments, a *query.Administration) (query.Op
 	return s, nil
 }
 
-func newStddevOp() query.OperationSpec {
+func newStddevOp() flux.OperationSpec {
 	return new(StddevOpSpec)
 }
 
-func (s *StddevOpSpec) Kind() query.OperationKind {
+func (s *StddevOpSpec) Kind() flux.OperationKind {
 	return StddevKind
 }
 
@@ -46,7 +46,7 @@ type StddevProcedureSpec struct {
 	execute.AggregateConfig
 }
 
-func newStddevProcedure(qs query.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
+func newStddevProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*StddevOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -129,8 +129,8 @@ func (a *StddevAgg) DoFloat(vs []float64) {
 		a.m2 += delta * delta2
 	}
 }
-func (a *StddevAgg) Type() query.DataType {
-	return query.TFloat
+func (a *StddevAgg) Type() flux.DataType {
+	return flux.TFloat
 }
 func (a *StddevAgg) ValueFloat() float64 {
 	if a.n < 2 {

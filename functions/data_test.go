@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/gonum/stat/distuv"
-	"github.com/influxdata/platform/query"
-	_ "github.com/influxdata/platform/query/builtin"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	_ "github.com/influxdata/flux/builtin"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/values"
 )
 
 const (
@@ -24,7 +24,7 @@ const (
 var NormalData []float64
 
 // NormalTable is a table of data whose value col is NormalData.
-var NormalTable query.Table
+var NormalTable flux.Table
 
 func init() {
 	dist := distuv.Normal{
@@ -40,10 +40,10 @@ func init() {
 	stop := execute.Time(time.Date(2017, 10, 10, 0, 0, 0, 0, time.UTC).UnixNano())
 	t1Value := "a"
 	key := execute.NewGroupKey(
-		[]query.ColMeta{
-			{Label: execute.DefaultStartColLabel, Type: query.TTime},
-			{Label: execute.DefaultStopColLabel, Type: query.TTime},
-			{Label: "t1", Type: query.TString},
+		[]flux.ColMeta{
+			{Label: execute.DefaultStartColLabel, Type: flux.TTime},
+			{Label: execute.DefaultStopColLabel, Type: flux.TTime},
+			{Label: "t1", Type: flux.TString},
 		},
 		[]values.Value{
 			values.NewTimeValue(start),
@@ -53,12 +53,12 @@ func init() {
 	)
 	normalTableBuilder := execute.NewColListTableBuilder(key, executetest.UnlimitedAllocator)
 
-	normalTableBuilder.AddCol(query.ColMeta{Label: execute.DefaultTimeColLabel, Type: query.TTime})
-	normalTableBuilder.AddCol(query.ColMeta{Label: execute.DefaultStartColLabel, Type: query.TTime})
-	normalTableBuilder.AddCol(query.ColMeta{Label: execute.DefaultStopColLabel, Type: query.TTime})
-	normalTableBuilder.AddCol(query.ColMeta{Label: execute.DefaultValueColLabel, Type: query.TFloat})
-	normalTableBuilder.AddCol(query.ColMeta{Label: "t1", Type: query.TString})
-	normalTableBuilder.AddCol(query.ColMeta{Label: "t2", Type: query.TString})
+	normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultTimeColLabel, Type: flux.TTime})
+	normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultStartColLabel, Type: flux.TTime})
+	normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultStopColLabel, Type: flux.TTime})
+	normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultValueColLabel, Type: flux.TFloat})
+	normalTableBuilder.AddCol(flux.ColMeta{Label: "t1", Type: flux.TString})
+	normalTableBuilder.AddCol(flux.ColMeta{Label: "t2", Type: flux.TString})
 
 	times := make([]execute.Time, N)
 	startTimes := make([]execute.Time, N)

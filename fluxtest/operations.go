@@ -1,4 +1,4 @@
-package querytest
+package fluxtest
 
 import (
 	"encoding/json"
@@ -6,12 +6,12 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/semantic/semantictest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/semantic/semantictest"
 )
 
-func OperationMarshalingTestHelper(t *testing.T, data []byte, expOp *query.Operation) {
+func OperationMarshalingTestHelper(t *testing.T, data []byte, expOp *flux.Operation) {
 	t.Helper()
 
 	opts := append(
@@ -21,7 +21,7 @@ func OperationMarshalingTestHelper(t *testing.T, data []byte, expOp *query.Opera
 	)
 
 	// Ensure we can properly unmarshal a spec
-	gotOp := new(query.Operation)
+	gotOp := new(flux.Operation)
 	if err := json.Unmarshal(data, gotOp); err != nil {
 		t.Fatal(err)
 	}
@@ -34,7 +34,7 @@ func OperationMarshalingTestHelper(t *testing.T, data []byte, expOp *query.Opera
 	if err != nil {
 		t.Fatal(err)
 	}
-	gotOp = new(query.Operation)
+	gotOp = new(flux.Operation)
 	if err := json.Unmarshal(data, gotOp); err != nil {
 		t.Fatal(err)
 	}

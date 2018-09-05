@@ -3,25 +3,25 @@ package functions
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 )
 
 const RangeKind = "range"
 
 type RangeOpSpec struct {
-	Start    query.Time `json:"start"`
-	Stop     query.Time `json:"stop"`
-	TimeCol  string     `json:"timeCol"`
-	StartCol string     `json:"startCol"`
-	StopCol  string     `json:"stopCol"`
+	Start    flux.Time `json:"start"`
+	Stop     flux.Time `json:"stop"`
+	TimeCol  string    `json:"timeCol"`
+	StartCol string    `json:"startCol"`
+	StopCol  string    `json:"stopCol"`
 }
 
-var rangeSignature = query.DefaultFunctionSignature()
+var rangeSignature = flux.DefaultFunctionSignature()
 
 func init() {
 	rangeSignature.Params["start"] = semantic.Time
@@ -30,14 +30,14 @@ func init() {
 	rangeSignature.Params["startCol"] = semantic.String
 	rangeSignature.Params["stopCol"] = semantic.String
 
-	query.RegisterFunction(RangeKind, createRangeOpSpec, rangeSignature)
-	query.RegisterOpSpec(RangeKind, newRangeOp)
+	flux.RegisterFunction(RangeKind, createRangeOpSpec, rangeSignature)
+	flux.RegisterOpSpec(RangeKind, newRangeOp)
 	plan.RegisterProcedureSpec(RangeKind, newRangeProcedure, RangeKind)
 	// TODO register a range transformation. Currently range is only supported if it is pushed down into a select procedure.
 	execute.RegisterTransformation(RangeKind, createRangeTransformation)
 }
 
-func createRangeOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createRangeOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func createRangeOpSpec(args query.Arguments, a *query.Administration) (query.Ope
 		spec.Stop = stop
 	} else {
 		// Make stop time implicit "now"
-		spec.Stop = query.Now
+		spec.Stop = flux.Now
 	}
 
 	if col, ok, err := args.GetString("timeCol"); err != nil {
@@ -85,22 +85,22 @@ func createRangeOpSpec(args query.Arguments, a *query.Administration) (query.Ope
 	return spec, nil
 }
 
-func newRangeOp() query.OperationSpec {
+func newRangeOp() flux.OperationSpec {
 	return new(RangeOpSpec)
 }
 
-func (s *RangeOpSpec) Kind() query.OperationKind {
+func (s *RangeOpSpec) Kind() flux.OperationKind {
 	return RangeKind
 }
 
 type RangeProcedureSpec struct {
-	Bounds   query.Bounds
+	Bounds   flux.Bounds
 	TimeCol  string
 	StartCol string
 	StopCol  string
 }
 
-func newRangeProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newRangeProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*RangeOpSpec)
 
 	if !ok {
@@ -112,7 +112,7 @@ func newRangeProcedure(qs query.OperationSpec, pa plan.Administration) (plan.Pro
 	}
 
 	return &RangeProcedureSpec{
-		Bounds: query.Bounds{
+		Bounds: flux.Bounds{
 			Start: spec.Start,
 			Stop:  spec.Stop,
 		},
@@ -151,14 +151,14 @@ func (s *RangeProcedureSpec) PushDown(root *plan.Procedure, dup func() *plan.Pro
 		root = dup()
 		selectSpec = root.Spec.(*FromProcedureSpec)
 		selectSpec.BoundsSet = false
-		selectSpec.Bounds = query.Bounds{}
+		selectSpec.Bounds = flux.Bounds{}
 		return
 	}
 	selectSpec.BoundsSet = true
 	selectSpec.Bounds = s.Bounds
 }
 
-func (s *RangeProcedureSpec) TimeBounds() query.Bounds {
+func (s *RangeProcedureSpec) TimeBounds() flux.Bounds {
 	return s.Bounds
 }
 
@@ -202,11 +202,11 @@ func NewRangeTransformation(d execute.Dataset, cache execute.TableBuilderCache, 
 	}, nil
 }
 
-func (t *rangeTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *rangeTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *rangeTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	// Determine index of start and stop columns in group key
 	startColIdx := execute.ColIdx(t.startCol, tbl.Cols())
 	stopColIdx := execute.ColIdx(t.stopCol, tbl.Cols())
@@ -227,7 +227,7 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl query.Table) err
 		return fmt.Errorf("range error: supplied time column %s doesn't exist", t.timeCol)
 	}
 
-	if builder.Cols()[timeIdx].Type != query.TTime {
+	if builder.Cols()[timeIdx].Type != flux.TTime {
 		return fmt.Errorf("range error: provided column %s is not of type time", t.timeCol)
 	}
 
@@ -264,9 +264,9 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl query.Table) err
 	if startColIdx < 0 {
 		startColIdx = builder.NCols()
 
-		c := query.ColMeta{
+		c := flux.ColMeta{
 			Label: t.startCol,
-			Type:  query.TTime,
+			Type:  flux.TTime,
 		}
 		builder.AddCol(c)
 		startAdded = true
@@ -274,15 +274,15 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl query.Table) err
 
 	if stopColIdx < 0 {
 		stopColIdx = builder.NCols()
-		c := query.ColMeta{
+		c := flux.ColMeta{
 			Label: t.stopCol,
-			Type:  query.TTime,
+			Type:  flux.TTime,
 		}
 		builder.AddCol(c)
 		stopAdded = true
 	}
 
-	err := tbl.Do(func(cr query.ColReader) error {
+	err := tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			tVal := cr.Times(timeIdx)[i]
@@ -319,17 +319,17 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl query.Table) err
 					builder.AppendTime(j, stop)
 				default:
 					switch c.Type {
-					case query.TBool:
+					case flux.TBool:
 						builder.AppendBool(j, cr.Bools(j)[i])
-					case query.TInt:
+					case flux.TInt:
 						builder.AppendInt(j, cr.Ints(j)[i])
-					case query.TUInt:
+					case flux.TUInt:
 						builder.AppendUInt(j, cr.UInts(j)[i])
-					case query.TFloat:
+					case flux.TFloat:
 						builder.AppendFloat(j, cr.Floats(j)[i])
-					case query.TString:
+					case flux.TString:
 						builder.AppendString(j, cr.Strings(j)[i])
-					case query.TTime:
+					case flux.TTime:
 						builder.AppendTime(j, cr.Times(j)[i])
 					default:
 						execute.PanicUnknownType(c.Type)

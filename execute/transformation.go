@@ -3,14 +3,14 @@ package execute
 import (
 	"fmt"
 
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/platform"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/plan"
 )
 
 type Transformation interface {
-	RetractTable(id DatasetID, key query.GroupKey) error
-	Process(id DatasetID, tbl query.Table) error
+	RetractTable(id DatasetID, key flux.GroupKey) error
+	Process(id DatasetID, tbl flux.Table) error
 	UpdateWatermark(id DatasetID, t Time) error
 	UpdateProcessingTime(id DatasetID, t Time) error
 	Finish(id DatasetID, err error)
@@ -25,7 +25,7 @@ type StreamContext interface {
 type Administration interface {
 	OrganizationID() platform.ID
 
-	ResolveTime(qt query.Time) Time
+	ResolveTime(qt flux.Time) Time
 	StreamContext() StreamContext
 	Allocator() *Allocator
 	Parents() []DatasetID

@@ -3,7 +3,7 @@ package values
 import (
 	"regexp"
 
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux/semantic"
 )
 
 // Function represents a callable type

@@ -8,10 +8,10 @@ import (
 
 	"github.com/andreyvit/diff"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/csv"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/csv"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 )
 
@@ -39,13 +39,13 @@ var symetricalTestCases = []TestCase{
 			Nm: "_result",
 			Tbls: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop", "_measurement", "host"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_measurement", Type: query.TString},
-					{Label: "host", Type: query.TString},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "host", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{
@@ -86,13 +86,13 @@ var symetricalTestCases = []TestCase{
 					"cpu",
 					"A",
 				},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_measurement", Type: query.TString},
-					{Label: "host", Type: query.TString},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "host", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
 				},
 			}},
 		},
@@ -114,13 +114,13 @@ var symetricalTestCases = []TestCase{
 			Tbls: []*executetest.Table{
 				{
 					KeyCols: []string{"_start", "_stop", "_measurement", "host"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "host", Type: query.TString},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{
@@ -143,13 +143,13 @@ var symetricalTestCases = []TestCase{
 				},
 				{
 					KeyCols: []string{"_start", "_stop", "_measurement", "host"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "host", Type: query.TString},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{
@@ -199,13 +199,13 @@ var symetricalTestCases = []TestCase{
 			Tbls: []*executetest.Table{
 				{
 					KeyCols: []string{"_start", "_stop", "_measurement", "host"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "host", Type: query.TString},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{
@@ -228,13 +228,13 @@ var symetricalTestCases = []TestCase{
 				},
 				{
 					KeyCols: []string{"_start", "_stop", "_measurement", "host"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "host", Type: query.TString},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{
@@ -257,14 +257,14 @@ var symetricalTestCases = []TestCase{
 				},
 				{
 					KeyCols: []string{"_start", "_stop", "location"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "location", Type: query.TString},
-						{Label: "device", Type: query.TString},
-						{Label: "min", Type: query.TFloat},
-						{Label: "max", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "location", Type: flux.TString},
+						{Label: "device", Type: flux.TString},
+						{Label: "min", Type: flux.TFloat},
+						{Label: "max", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{
@@ -289,14 +289,14 @@ var symetricalTestCases = []TestCase{
 				},
 				{
 					KeyCols: []string{"_start", "_stop", "location"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "location", Type: query.TString},
-						{Label: "device", Type: query.TString},
-						{Label: "min", Type: query.TFloat},
-						{Label: "max", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "location", Type: flux.TString},
+						{Label: "device", Type: flux.TString},
+						{Label: "min", Type: flux.TFloat},
+						{Label: "max", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{
@@ -344,13 +344,13 @@ var symetricalTestCases = []TestCase{
 			Tbls: []*executetest.Table{
 				{
 					KeyCols: []string{"_start", "_stop", "_measurement", "host"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "host", Type: query.TString},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{
@@ -373,13 +373,13 @@ var symetricalTestCases = []TestCase{
 				},
 				{
 					KeyCols: []string{"_start", "_stop", "_measurement", "host"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "host", Type: query.TString},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{
@@ -408,13 +408,13 @@ var symetricalTestCases = []TestCase{
 						"cpu",
 						"A",
 					},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "host", Type: query.TString},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
 					},
 				},
 			},
@@ -438,13 +438,13 @@ func TestResultDecoder(t *testing.T) {
 				Nm: "_result",
 				Tbls: []*executetest.Table{{
 					KeyCols: []string{"_start", "_stop", "_measurement", "host"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "host", Type: query.TString},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{
@@ -483,7 +483,7 @@ func TestResultDecoder(t *testing.T) {
 			got := &executetest.Result{
 				Nm: result.Name(),
 			}
-			if err := result.Tables().Do(func(tbl query.Table) error {
+			if err := result.Tables().Do(func(tbl flux.Table) error {
 				cb, err := executetest.ConvertTable(tbl)
 				if err != nil {
 					return err
@@ -534,7 +534,7 @@ func TestResultEncoder(t *testing.T) {
 func TestMultiResultEncoder(t *testing.T) {
 	testCases := []struct {
 		name    string
-		results query.ResultIterator
+		results flux.ResultIterator
 		encoded []byte
 		err     error
 		config  csv.ResultEncoderConfig
@@ -542,17 +542,17 @@ func TestMultiResultEncoder(t *testing.T) {
 		{
 			name:   "single result",
 			config: csv.DefaultEncoderConfig(),
-			results: query.NewSliceResultIterator([]query.Result{&executetest.Result{
+			results: flux.NewSliceResultIterator([]flux.Result{&executetest.Result{
 				Nm: "_result",
 				Tbls: []*executetest.Table{{
 					KeyCols: []string{"_start", "_stop", "_measurement", "host"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "host", Type: query.TString},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{
@@ -586,18 +586,18 @@ func TestMultiResultEncoder(t *testing.T) {
 		{
 			name:   "two results",
 			config: csv.DefaultEncoderConfig(),
-			results: query.NewSliceResultIterator([]query.Result{
+			results: flux.NewSliceResultIterator([]flux.Result{
 				&executetest.Result{
 					Nm: "_result",
 					Tbls: []*executetest.Table{{
 						KeyCols: []string{"_start", "_stop", "_measurement", "host"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_measurement", Type: query.TString},
-							{Label: "host", Type: query.TString},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_measurement", Type: flux.TString},
+							{Label: "host", Type: flux.TString},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{
@@ -623,13 +623,13 @@ func TestMultiResultEncoder(t *testing.T) {
 					Nm: "mean",
 					Tbls: []*executetest.Table{{
 						KeyCols: []string{"_start", "_stop", "_measurement", "host"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_measurement", Type: query.TString},
-							{Label: "host", Type: query.TString},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_measurement", Type: flux.TString},
+							{Label: "host", Type: flux.TString},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{
@@ -681,7 +681,7 @@ test error,
 		{
 			name:   "returns query errors",
 			config: csv.DefaultEncoderConfig(),
-			results: query.NewSliceResultIterator([]query.Result{
+			results: flux.NewSliceResultIterator([]flux.Result{
 				&executetest.Result{
 					Err: errors.New("execution error"),
 				},
@@ -693,18 +693,18 @@ execution error,
 		{
 			name:   "returns encoding errors",
 			config: csv.DefaultEncoderConfig(),
-			results: query.NewSliceResultIterator([]query.Result{&executetest.Result{
+			results: flux.NewSliceResultIterator([]flux.Result{&executetest.Result{
 				Nm: "mean",
 				Tbls: []*executetest.Table{{
 					KeyCols: []string{"_start", "_stop", "_measurement", "host"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "host", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
 						// Deliberately use invalid column type
-						{Label: "_value", Type: query.TInvalid},
+						{Label: "_value", Type: flux.TInvalid},
 					},
 					Data: [][]interface{}{
 						{
@@ -762,7 +762,7 @@ func (r errorResultIterator) More() bool {
 	return false
 }
 
-func (r errorResultIterator) Next() query.Result {
+func (r errorResultIterator) Next() flux.Result {
 	panic("no results")
 }
 

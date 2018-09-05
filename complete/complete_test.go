@@ -4,10 +4,10 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/platform/query/complete"
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux/complete"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 func TestNames(t *testing.T) {

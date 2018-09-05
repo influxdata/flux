@@ -4,14 +4,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
 )
 
 func TestFromCSV_NewQuery(t *testing.T) {
-	tests := []querytest.NewQueryTestCase{
+	tests := []fluxtest.NewQueryTestCase{
 		{
 			Name:    "from no args",
 			Raw:     `fromCSV()`,
@@ -35,8 +35,8 @@ func TestFromCSV_NewQuery(t *testing.T) {
 		{
 			Name: "fromCSV text",
 			Raw:  `fromCSV(csv: "1,2") |> range(start:-4h, stop:-2h) |> sum()`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "fromCSV0",
 						Spec: &functions.FromCSVOpSpec{
@@ -46,11 +46,11 @@ func TestFromCSV_NewQuery(t *testing.T) {
 					{
 						ID: "range1",
 						Spec: &functions.RangeOpSpec{
-							Start: query.Time{
+							Start: flux.Time{
 								Relative:   -4 * time.Hour,
 								IsRelative: true,
 							},
-							Stop: query.Time{
+							Stop: flux.Time{
 								Relative:   -2 * time.Hour,
 								IsRelative: true,
 							},
@@ -66,7 +66,7 @@ func TestFromCSV_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "fromCSV0", Child: "range1"},
 					{Parent: "range1", Child: "sum2"},
 				},
@@ -82,18 +82,18 @@ func TestFromCSV_NewQuery(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			querytest.NewQueryTestHelper(t, tc)
+			fluxtest.NewQueryTestHelper(t, tc)
 		})
 	}
 }
 
 func TestFromCSVOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"fromCSV","kind":"fromCSV","spec":{"csv":"1,2"}}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID: "fromCSV",
 		Spec: &functions.FromCSVOpSpec{
 			CSV: "1,2",
 		},
 	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }

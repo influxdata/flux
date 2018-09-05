@@ -3,8 +3,8 @@ package execute
 import (
 	"sync"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/plan"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/plan"
 )
 
 // result implements both the Transformation and Result interfaces,
@@ -20,7 +20,7 @@ type result struct {
 }
 
 type resultMessage struct {
-	table query.Table
+	table flux.Table
 	err   error
 }
 
@@ -37,12 +37,12 @@ func newResult(name string, spec plan.YieldSpec) *result {
 func (s *result) Name() string {
 	return s.name
 }
-func (s *result) RetractTable(DatasetID, query.GroupKey) error {
+func (s *result) RetractTable(DatasetID, flux.GroupKey) error {
 	//TODO implement
 	return nil
 }
 
-func (s *result) Process(id DatasetID, tbl query.Table) error {
+func (s *result) Process(id DatasetID, tbl flux.Table) error {
 	select {
 	case s.tables <- resultMessage{
 		table: tbl,
@@ -52,11 +52,11 @@ func (s *result) Process(id DatasetID, tbl query.Table) error {
 	return nil
 }
 
-func (s *result) Tables() query.TableIterator {
+func (s *result) Tables() flux.TableIterator {
 	return s
 }
 
-func (s *result) Do(f func(query.Table) error) error {
+func (s *result) Do(f func(flux.Table) error) error {
 	for {
 		select {
 		case err := <-s.abortErr:

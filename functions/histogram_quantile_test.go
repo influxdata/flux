@@ -4,20 +4,20 @@ import (
 	"math"
 	"testing"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/functions"
 )
 
-var linearHist = []query.Table{&executetest.Table{
+var linearHist = []flux.Table{&executetest.Table{
 	KeyCols: []string{"_start", "_stop"},
-	ColMeta: []query.ColMeta{
-		{Label: "_start", Type: query.TTime},
-		{Label: "_stop", Type: query.TTime},
-		{Label: "_time", Type: query.TTime},
-		{Label: "le", Type: query.TFloat},
-		{Label: "_value", Type: query.TFloat},
+	ColMeta: []flux.ColMeta{
+		{Label: "_start", Type: flux.TTime},
+		{Label: "_stop", Type: flux.TTime},
+		{Label: "_time", Type: flux.TTime},
+		{Label: "le", Type: flux.TFloat},
+		{Label: "_value", Type: flux.TFloat},
 	},
 	Data: [][]interface{}{
 		{execute.Time(1), execute.Time(3), execute.Time(1), 0.1, 1.0},
@@ -33,14 +33,14 @@ var linearHist = []query.Table{&executetest.Table{
 		{execute.Time(1), execute.Time(3), execute.Time(1), math.Inf(1), 10.0},
 	},
 }}
-var linearHistNoMax = []query.Table{&executetest.Table{
+var linearHistNoMax = []flux.Table{&executetest.Table{
 	KeyCols: []string{"_start", "_stop"},
-	ColMeta: []query.ColMeta{
-		{Label: "_start", Type: query.TTime},
-		{Label: "_stop", Type: query.TTime},
-		{Label: "_time", Type: query.TTime},
-		{Label: "le", Type: query.TFloat},
-		{Label: "_value", Type: query.TFloat},
+	ColMeta: []flux.ColMeta{
+		{Label: "_start", Type: flux.TTime},
+		{Label: "_stop", Type: flux.TTime},
+		{Label: "_time", Type: flux.TTime},
+		{Label: "le", Type: flux.TFloat},
+		{Label: "_value", Type: flux.TFloat},
 	},
 	Data: [][]interface{}{
 		{execute.Time(1), execute.Time(3), execute.Time(1), 0.2, 2.0},
@@ -50,14 +50,14 @@ var linearHistNoMax = []query.Table{&executetest.Table{
 		{execute.Time(1), execute.Time(3), execute.Time(1), 1.0, 10.0},
 	},
 }}
-var unsortedOddHist = []query.Table{&executetest.Table{
+var unsortedOddHist = []flux.Table{&executetest.Table{
 	KeyCols: []string{"_start", "_stop"},
-	ColMeta: []query.ColMeta{
-		{Label: "_start", Type: query.TTime},
-		{Label: "_stop", Type: query.TTime},
-		{Label: "_time", Type: query.TTime},
-		{Label: "le", Type: query.TFloat},
-		{Label: "_value", Type: query.TFloat},
+	ColMeta: []flux.ColMeta{
+		{Label: "_start", Type: flux.TTime},
+		{Label: "_stop", Type: flux.TTime},
+		{Label: "_time", Type: flux.TTime},
+		{Label: "le", Type: flux.TFloat},
+		{Label: "_value", Type: flux.TFloat},
 	},
 	Data: [][]interface{}{
 		{execute.Time(1), execute.Time(3), execute.Time(1), 0.4, 4.0},
@@ -67,14 +67,14 @@ var unsortedOddHist = []query.Table{&executetest.Table{
 		{execute.Time(1), execute.Time(3), execute.Time(1), 0.8, 10.0},
 	},
 }}
-var nonLinearHist = []query.Table{&executetest.Table{
+var nonLinearHist = []flux.Table{&executetest.Table{
 	KeyCols: []string{"_start", "_stop"},
-	ColMeta: []query.ColMeta{
-		{Label: "_start", Type: query.TTime},
-		{Label: "_stop", Type: query.TTime},
-		{Label: "_time", Type: query.TTime},
-		{Label: "le", Type: query.TFloat},
-		{Label: "_value", Type: query.TFloat},
+	ColMeta: []flux.ColMeta{
+		{Label: "_start", Type: flux.TTime},
+		{Label: "_stop", Type: flux.TTime},
+		{Label: "_time", Type: flux.TTime},
+		{Label: "le", Type: flux.TFloat},
+		{Label: "_value", Type: flux.TFloat},
 	},
 	Data: [][]interface{}{
 		{execute.Time(1), execute.Time(3), execute.Time(1), 0.1, 1.0},
@@ -88,7 +88,7 @@ func TestHistogramQuantile_Process(t *testing.T) {
 	testCases := []struct {
 		name string
 		spec *functions.HistogramQuantileProcedureSpec
-		data []query.Table
+		data []flux.Table
 		want []*executetest.Table
 	}{
 		{
@@ -102,10 +102,10 @@ func TestHistogramQuantile_Process(t *testing.T) {
 			data: linearHist,
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 0.9},
@@ -123,10 +123,10 @@ func TestHistogramQuantile_Process(t *testing.T) {
 			data: linearHist,
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 0.0},
@@ -144,10 +144,10 @@ func TestHistogramQuantile_Process(t *testing.T) {
 			data: linearHist,
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 0.05},
@@ -166,10 +166,10 @@ func TestHistogramQuantile_Process(t *testing.T) {
 			data: linearHist,
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 0.0},
@@ -188,10 +188,10 @@ func TestHistogramQuantile_Process(t *testing.T) {
 			data: linearHist,
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 0.1},
@@ -209,10 +209,10 @@ func TestHistogramQuantile_Process(t *testing.T) {
 			data: linearHist,
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 0.1},
@@ -230,10 +230,10 @@ func TestHistogramQuantile_Process(t *testing.T) {
 			data: linearHist,
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 0.95},
@@ -251,10 +251,10 @@ func TestHistogramQuantile_Process(t *testing.T) {
 			data: linearHist,
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 0.99999},
@@ -272,10 +272,10 @@ func TestHistogramQuantile_Process(t *testing.T) {
 			data: linearHist,
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), math.Inf(1)},
@@ -293,10 +293,10 @@ func TestHistogramQuantile_Process(t *testing.T) {
 			data: linearHistNoMax,
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 1.0},
@@ -314,10 +314,10 @@ func TestHistogramQuantile_Process(t *testing.T) {
 			data: unsortedOddHist,
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 0.75},
@@ -335,10 +335,10 @@ func TestHistogramQuantile_Process(t *testing.T) {
 			data: unsortedOddHist,
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 1.0},
@@ -356,10 +356,10 @@ func TestHistogramQuantile_Process(t *testing.T) {
 			data: nonLinearHist,
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 0.99},
@@ -377,10 +377,10 @@ func TestHistogramQuantile_Process(t *testing.T) {
 			data: nonLinearHist,
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 1.0},

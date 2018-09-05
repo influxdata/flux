@@ -5,20 +5,20 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 func init() {
-	query.RegisterBuiltInValue("string", &stringConv{})
-	query.RegisterBuiltInValue("int", &intConv{})
-	query.RegisterBuiltInValue("uint", &uintConv{})
-	query.RegisterBuiltInValue("float", &floatConv{})
-	query.RegisterBuiltInValue("bool", &boolConv{})
-	query.RegisterBuiltInValue("time", &timeConv{})
-	query.RegisterBuiltInValue("duration", &durationConv{})
-	query.RegisterBuiltIn("typeconv", `
+	flux.RegisterBuiltInValue("string", &stringConv{})
+	flux.RegisterBuiltInValue("int", &intConv{})
+	flux.RegisterBuiltInValue("uint", &uintConv{})
+	flux.RegisterBuiltInValue("float", &floatConv{})
+	flux.RegisterBuiltInValue("bool", &boolConv{})
+	flux.RegisterBuiltInValue("time", &timeConv{})
+	flux.RegisterBuiltInValue("duration", &durationConv{})
+	flux.RegisterBuiltIn("typeconv", `
 	toString = (table=<-) => table |> map(fn:(r) => string(v:r._value))
 	toInt = (table=<-) => table |> map(fn:(r) => int(v:r._value))
 	toUInt = (table=<-) => table |> map(fn:(r) => uint(v:r._value))

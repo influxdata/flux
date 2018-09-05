@@ -4,20 +4,20 @@ import (
 	"math"
 	"testing"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
 )
 
 func TestMeanOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"mean","kind":"mean"}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID:   "mean",
 		Spec: &functions.MeanOpSpec{},
 	}
 
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestMean_Process(t *testing.T) {

@@ -3,12 +3,12 @@ package functions
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 )
 
@@ -42,7 +42,7 @@ const SchemaMutationKind = "SchemaMutation"
 
 // A list of all operations which should map to the SchemaMutationProcedure
 // Added to dynamically upon calls to `Register()`
-var SchemaMutationOps = []query.OperationKind{}
+var SchemaMutationOps = []flux.OperationKind{}
 
 // A MutationRegistrar contains information needed
 // to register a type of Operation Spec
@@ -51,20 +51,20 @@ var SchemaMutationOps = []query.OperationKind{}
 // Operations with a corresponding MutationRegistrar
 // should not have their own ProcedureSpec.
 type MutationRegistrar struct {
-	Kind   query.OperationKind
+	Kind   flux.OperationKind
 	Args   map[string]semantic.Type
-	Create query.CreateOperationSpec
-	New    query.NewOperationSpec
+	Create flux.CreateOperationSpec
+	New    flux.NewOperationSpec
 }
 
 func (m MutationRegistrar) Register() {
-	signature := query.DefaultFunctionSignature()
+	signature := flux.DefaultFunctionSignature()
 	for name, typ := range m.Args {
 		signature.Params[name] = typ
 	}
 
-	query.RegisterFunction(string(m.Kind), m.Create, signature)
-	query.RegisterOpSpec(m.Kind, m.New)
+	flux.RegisterFunction(string(m.Kind), m.Create, signature)
+	flux.RegisterOpSpec(m.Kind, m.New)
 
 	// Add to list of SchemaMutations which should map to a
 	// SchemaMutationProcedureSpec
@@ -121,7 +121,7 @@ func init() {
 	execute.RegisterTransformation(SchemaMutationKind, createSchemaMutationTransformation)
 }
 
-func createRenameOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createRenameOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -178,7 +178,7 @@ func createRenameOpSpec(args query.Arguments, a *query.Administration) (query.Op
 	return spec, nil
 }
 
-func createDropOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createDropOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -225,7 +225,7 @@ func createDropOpSpec(args query.Arguments, a *query.Administration) (query.Oper
 	}, nil
 }
 
-func createKeepOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createKeepOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -272,7 +272,7 @@ func createKeepOpSpec(args query.Arguments, a *query.Administration) (query.Oper
 	}, nil
 }
 
-func createDuplicateOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createDuplicateOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -293,35 +293,35 @@ func createDuplicateOpSpec(args query.Arguments, a *query.Administration) (query
 	}, nil
 }
 
-func newRenameOp() query.OperationSpec {
+func newRenameOp() flux.OperationSpec {
 	return new(RenameOpSpec)
 }
 
-func (s *RenameOpSpec) Kind() query.OperationKind {
+func (s *RenameOpSpec) Kind() flux.OperationKind {
 	return RenameKind
 }
 
-func newDropOp() query.OperationSpec {
+func newDropOp() flux.OperationSpec {
 	return new(DropOpSpec)
 }
 
-func (s *DropOpSpec) Kind() query.OperationKind {
+func (s *DropOpSpec) Kind() flux.OperationKind {
 	return DropKind
 }
 
-func newKeepOp() query.OperationSpec {
+func newKeepOp() flux.OperationSpec {
 	return new(KeepOpSpec)
 }
 
-func (s *KeepOpSpec) Kind() query.OperationKind {
+func (s *KeepOpSpec) Kind() flux.OperationKind {
 	return KeepKind
 }
 
-func newDuplicateOp() query.OperationSpec {
+func newDuplicateOp() flux.OperationSpec {
 	return new(DuplicateOpSpec)
 }
 
-func (s *DuplicateOpSpec) Kind() query.OperationKind {
+func (s *DuplicateOpSpec) Kind() flux.OperationKind {
 	return DuplicateKind
 }
 
@@ -419,7 +419,7 @@ func (s *SchemaMutationProcedureSpec) Copy() plan.ProcedureSpec {
 	}
 }
 
-func newSchemaMutationProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newSchemaMutationProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	s, ok := qs.(SchemaMutation)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T doesn't implement SchemaMutation", qs)
@@ -469,7 +469,7 @@ func NewSchemaMutationTransformation(d execute.Dataset, cache execute.TableBuild
 	}, nil
 }
 
-func (t *schemaMutationTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *schemaMutationTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	ctx := NewBuilderContext(tbl)
 	for _, m := range t.mutators {
 		err := m.Mutate(ctx)
@@ -485,7 +485,7 @@ func (t *schemaMutationTransformation) Process(id execute.DatasetID, tbl query.T
 		}
 	}
 
-	return tbl.Do(func(cr query.ColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		for i := 0; i < cr.Len(); i++ {
 			execute.AppendMappedRecord(i, cr, builder, ctx.ColMap())
 		}
@@ -493,7 +493,7 @@ func (t *schemaMutationTransformation) Process(id execute.DatasetID, tbl query.T
 	})
 }
 
-func (t *schemaMutationTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *schemaMutationTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 

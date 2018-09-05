@@ -3,16 +3,16 @@ package functions_test
 import (
 	"testing"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
 )
 
 func TestMaxOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"max","kind":"max","spec":{"column":"baz"}}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID: "max",
 		Spec: &functions.MaxOpSpec{
 			SelectorConfig: execute.SelectorConfig{
@@ -21,7 +21,7 @@ func TestMaxOperation_Marshaling(t *testing.T) {
 		},
 	}
 
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestMax_Process(t *testing.T) {
@@ -34,11 +34,11 @@ func TestMax_Process(t *testing.T) {
 			name: "first",
 			data: &executetest.Table{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 10.0, "a", "y"},
@@ -61,11 +61,11 @@ func TestMax_Process(t *testing.T) {
 			name: "last",
 			data: &executetest.Table{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 7.0, "a", "y"},
@@ -88,11 +88,11 @@ func TestMax_Process(t *testing.T) {
 			name: "middle",
 			data: &executetest.Table{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 7.0, "a", "y"},

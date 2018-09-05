@@ -4,23 +4,23 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
 )
 
 func TestDerivativeOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"derivative","kind":"derivative","spec":{"unit":"1m","nonNegative":true}}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID: "derivative",
 		Spec: &functions.DerivativeOpSpec{
-			Unit:        query.Duration(time.Minute),
+			Unit:        flux.Duration(time.Minute),
 			NonNegative: true,
 		},
 	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestDerivative_PassThrough(t *testing.T) {
@@ -38,7 +38,7 @@ func TestDerivative_Process(t *testing.T) {
 	testCases := []struct {
 		name string
 		spec *functions.DerivativeProcedureSpec
-		data []query.Table
+		data []flux.Table
 		want []*executetest.Table
 	}{
 		{
@@ -48,10 +48,10 @@ func TestDerivative_Process(t *testing.T) {
 				TimeCol: execute.DefaultTimeColLabel,
 				Unit:    1,
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 2.0},
@@ -59,9 +59,9 @@ func TestDerivative_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(2), -1.0},
@@ -73,12 +73,12 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &functions.DerivativeProcedureSpec{
 				Columns: []string{execute.DefaultValueColLabel},
 				TimeCol: execute.DefaultTimeColLabel,
-				Unit:    query.Duration(time.Second),
+				Unit:    flux.Duration(time.Second),
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1 * time.Second), 2.0},
@@ -86,9 +86,9 @@ func TestDerivative_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(3 * time.Second), -0.5},
@@ -102,10 +102,10 @@ func TestDerivative_Process(t *testing.T) {
 				TimeCol: execute.DefaultTimeColLabel,
 				Unit:    1,
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TInt},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), int64(20)},
@@ -113,9 +113,9 @@ func TestDerivative_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(2), -10.0},
@@ -127,12 +127,12 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &functions.DerivativeProcedureSpec{
 				Columns: []string{execute.DefaultValueColLabel},
 				TimeCol: execute.DefaultTimeColLabel,
-				Unit:    query.Duration(time.Second),
+				Unit:    flux.Duration(time.Second),
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TInt},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1 * time.Second), int64(20)},
@@ -140,9 +140,9 @@ func TestDerivative_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(3 * time.Second), -5.0},
@@ -157,10 +157,10 @@ func TestDerivative_Process(t *testing.T) {
 				Unit:        1,
 				NonNegative: true,
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TInt},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), int64(20)},
@@ -169,9 +169,9 @@ func TestDerivative_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(2), 10.0},
@@ -186,10 +186,10 @@ func TestDerivative_Process(t *testing.T) {
 				TimeCol: execute.DefaultTimeColLabel,
 				Unit:    1,
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TUInt},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TUInt},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), uint64(10)},
@@ -197,9 +197,9 @@ func TestDerivative_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(2), 10.0},
@@ -213,10 +213,10 @@ func TestDerivative_Process(t *testing.T) {
 				TimeCol: execute.DefaultTimeColLabel,
 				Unit:    1,
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TUInt},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TUInt},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), uint64(20)},
@@ -224,9 +224,9 @@ func TestDerivative_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(2), -10.0},
@@ -241,10 +241,10 @@ func TestDerivative_Process(t *testing.T) {
 				Unit:        1,
 				NonNegative: true,
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TUInt},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TUInt},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), uint64(20)},
@@ -253,9 +253,9 @@ func TestDerivative_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(2), 10.0},
@@ -268,12 +268,12 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &functions.DerivativeProcedureSpec{
 				Columns: []string{execute.DefaultValueColLabel},
 				TimeCol: execute.DefaultTimeColLabel,
-				Unit:    query.Duration(time.Second),
+				Unit:    flux.Duration(time.Second),
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TUInt},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TUInt},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1 * time.Second), uint64(20)},
@@ -281,9 +281,9 @@ func TestDerivative_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(3 * time.Second), -5.0},
@@ -298,10 +298,10 @@ func TestDerivative_Process(t *testing.T) {
 				Unit:        1,
 				NonNegative: true,
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 2.0},
@@ -310,9 +310,9 @@ func TestDerivative_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(2), 1.0},
@@ -327,11 +327,11 @@ func TestDerivative_Process(t *testing.T) {
 				TimeCol: execute.DefaultTimeColLabel,
 				Unit:    1,
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t", Type: query.TString},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 2.0, "a"},
@@ -339,10 +339,10 @@ func TestDerivative_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(2), -1.0, "b"},
@@ -356,11 +356,11 @@ func TestDerivative_Process(t *testing.T) {
 				TimeCol: execute.DefaultTimeColLabel,
 				Unit:    1,
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "x", Type: query.TFloat},
-					{Label: "y", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 2.0, 20.0},
@@ -368,10 +368,10 @@ func TestDerivative_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "x", Type: query.TFloat},
-					{Label: "y", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(2), -1.0, -10.0},
@@ -386,11 +386,11 @@ func TestDerivative_Process(t *testing.T) {
 				Unit:        1,
 				NonNegative: true,
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "x", Type: query.TFloat},
-					{Label: "y", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 2.0, 20.0},
@@ -399,10 +399,10 @@ func TestDerivative_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "x", Type: query.TFloat},
-					{Label: "y", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(2), 1.0, 10.0},

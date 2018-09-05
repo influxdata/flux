@@ -4,26 +4,26 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/ast"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/semantic"
 )
 
 func TestStateTrackingOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"id","kind":"stateTracking","spec":{"countLabel":"c","durationLabel":"d","durationUnit":"1m"}}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID: "id",
 		Spec: &functions.StateTrackingOpSpec{
 			CountLabel:    "c",
 			DurationLabel: "d",
-			DurationUnit:  query.Duration(time.Minute),
+			DurationUnit:  flux.Duration(time.Minute),
 		},
 	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestStateTracking_Process(t *testing.T) {
@@ -41,7 +41,7 @@ func TestStateTracking_Process(t *testing.T) {
 	testCases := []struct {
 		name string
 		spec *functions.StateTrackingProcedureSpec
-		data []query.Table
+		data []flux.Table
 		want []*executetest.Table
 	}{
 		{
@@ -53,10 +53,10 @@ func TestStateTracking_Process(t *testing.T) {
 				Fn:            gt5,
 				TimeCol:       "_time",
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 2.0},
@@ -68,11 +68,11 @@ func TestStateTracking_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "count", Type: query.TInt},
-					{Label: "duration", Type: query.TInt},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "count", Type: flux.TInt},
+					{Label: "duration", Type: flux.TInt},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 2.0, int64(-1), int64(-1)},
@@ -92,10 +92,10 @@ func TestStateTracking_Process(t *testing.T) {
 				Fn:            gt5,
 				TimeCol:       "_time",
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 2.0},
@@ -107,10 +107,10 @@ func TestStateTracking_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "duration", Type: query.TInt},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "duration", Type: flux.TInt},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 2.0, int64(-1)},
@@ -129,10 +129,10 @@ func TestStateTracking_Process(t *testing.T) {
 				Fn:         gt5,
 				TimeCol:    "_time",
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 2.0},
@@ -144,10 +144,10 @@ func TestStateTracking_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "count", Type: query.TInt},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "count", Type: flux.TInt},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 2.0, int64(-1)},

@@ -1,4 +1,4 @@
-package query
+package flux
 
 type TriggerSpec interface {
 	Kind() TriggerKind

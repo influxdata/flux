@@ -1,4 +1,4 @@
-package query_test
+package flux_test
 
 import (
 	"context"
@@ -7,57 +7,57 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/influxdata/flux"
 	"github.com/influxdata/platform"
-	"github.com/influxdata/platform/query"
 )
 
 var CmpOpts = []cmp.Option{
-	cmpopts.IgnoreUnexported(query.ProxyRequest{}),
-	cmpopts.IgnoreUnexported(query.Request{}),
+	cmpopts.IgnoreUnexported(flux.ProxyRequest{}),
+	cmpopts.IgnoreUnexported(flux.Request{}),
 }
 
 type compilerA struct {
 	A string `json:"a"`
 }
 
-func (c compilerA) Compile(ctx context.Context) (*query.Spec, error) {
+func (c compilerA) Compile(ctx context.Context) (*flux.Spec, error) {
 	panic("not implemented")
 }
 
-func (c compilerA) CompilerType() query.CompilerType {
+func (c compilerA) CompilerType() flux.CompilerType {
 	return "compilerA"
 }
 
-var compilerMappings = query.CompilerMappings{
-	"compilerA": func() query.Compiler { return new(compilerA) },
+var compilerMappings = flux.CompilerMappings{
+	"compilerA": func() flux.Compiler { return new(compilerA) },
 }
 
 type dialectB struct {
 	B int `json:"b"`
 }
 
-func (d dialectB) Encoder() query.MultiResultEncoder {
+func (d dialectB) Encoder() flux.MultiResultEncoder {
 	panic("not implemented")
 }
 
-func (d dialectB) DialectType() query.DialectType {
+func (d dialectB) DialectType() flux.DialectType {
 	return "dialectB"
 }
 
-var dialectMappings = query.DialectMappings{
-	"dialectB": func() query.Dialect { return new(dialectB) },
+var dialectMappings = flux.DialectMappings{
+	"dialectB": func() flux.Dialect { return new(dialectB) },
 }
 
 func TestRequest_JSON(t *testing.T) {
 	testCases := []struct {
 		name string
 		data string
-		want query.Request
+		want flux.Request
 	}{
 		{
 			name: "simple",
 			data: `{"organization_id":"aaaaaaaaaaaaaaaa","compiler":{"a":"my custom compiler"},"compiler_type":"compilerA"}`,
-			want: query.Request{
+			want: flux.Request{
 				OrganizationID: platform.ID{0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA},
 				Compiler: &compilerA{
 					A: "my custom compiler",
@@ -66,7 +66,7 @@ func TestRequest_JSON(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		var r query.Request
+		var r flux.Request
 		r.WithCompilerMappings(compilerMappings)
 
 		if err := json.Unmarshal([]byte(tc.data), &r); err != nil {
@@ -89,13 +89,13 @@ func TestProxyRequest_JSON(t *testing.T) {
 	testCases := []struct {
 		name string
 		data string
-		want query.ProxyRequest
+		want flux.ProxyRequest
 	}{
 		{
 			name: "simple",
 			data: `{"request":{"organization_id":"aaaaaaaaaaaaaaaa","compiler":{"a":"my custom compiler"},"compiler_type":"compilerA"},"dialect":{"b":42},"dialect_type":"dialectB"}`,
-			want: query.ProxyRequest{
-				Request: query.Request{
+			want: flux.ProxyRequest{
+				Request: flux.Request{
 					OrganizationID: platform.ID{0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA},
 					Compiler: &compilerA{
 						A: "my custom compiler",
@@ -108,7 +108,7 @@ func TestProxyRequest_JSON(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		var pr query.ProxyRequest
+		var pr flux.ProxyRequest
 		pr.WithCompilerMappings(compilerMappings)
 		pr.WithDialectMappings(dialectMappings)
 

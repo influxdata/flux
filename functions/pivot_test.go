@@ -5,20 +5,20 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
 )
 
 func TestPivot_NewQuery(t *testing.T) {
-	tests := []querytest.NewQueryTestCase{
+	tests := []fluxtest.NewQueryTestCase{
 		{
 			Name: "pivot [_measurement, _field] around _time",
 			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> pivot(rowKey: ["_time"], colKey: ["_measurement", "_field"], valueCol: "_value")`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -28,11 +28,11 @@ func TestPivot_NewQuery(t *testing.T) {
 					{
 						ID: "range1",
 						Spec: &functions.RangeOpSpec{
-							Start: query.Time{
+							Start: flux.Time{
 								Relative:   -1 * time.Hour,
 								IsRelative: true,
 							},
-							Stop: query.Time{
+							Stop: flux.Time{
 								IsRelative: true,
 							},
 							TimeCol:  "_time",
@@ -49,7 +49,7 @@ func TestPivot_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "pivot2"},
 				},
@@ -60,7 +60,7 @@ func TestPivot_NewQuery(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			querytest.NewQueryTestHelper(t, tc)
+			fluxtest.NewQueryTestHelper(t, tc)
 		})
 	}
 }
@@ -75,7 +75,7 @@ func TestPivotOperation_Marshaling(t *testing.T) {
 			"valueCol":"_value"
 		}
 	}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID: "pivot",
 		Spec: &functions.PivotOpSpec{
 			RowKey:   []string{"_time"},
@@ -83,14 +83,14 @@ func TestPivotOperation_Marshaling(t *testing.T) {
 			ValueCol: "_value",
 		},
 	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestPivot_Process(t *testing.T) {
 	testCases := []struct {
 		name    string
 		spec    *functions.PivotProcedureSpec
-		data    []query.Table
+		data    []flux.Table
 		want    []*executetest.Table
 		wantErr error
 	}{
@@ -111,14 +111,14 @@ func TestPivot_Process(t *testing.T) {
 				ColKey:   []string{"_field"},
 				ValueCol: "_value",
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"_measurement"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "_field", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 1.0, "m1", "f1"},
@@ -131,11 +131,11 @@ func TestPivot_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: []string{"_measurement"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "f1", Type: query.TFloat},
-						{Label: "f2", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "f1", Type: flux.TFloat},
+						{Label: "f2", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), "m1", 1.0, 2.0},
@@ -151,14 +151,14 @@ func TestPivot_Process(t *testing.T) {
 				ColKey:   []string{"_field"},
 				ValueCol: "_value",
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"_measurement"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "_field", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 1.0, "m1", "f1"},
@@ -169,11 +169,11 @@ func TestPivot_Process(t *testing.T) {
 				},
 				&executetest.Table{
 					KeyCols: []string{"_measurement"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "_field", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 1.0, "m2", "f3"},
@@ -186,11 +186,11 @@ func TestPivot_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: []string{"_measurement"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "f1", Type: query.TFloat},
-						{Label: "f2", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "f1", Type: flux.TFloat},
+						{Label: "f2", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), "m1", 1.0, 2.0},
@@ -199,11 +199,11 @@ func TestPivot_Process(t *testing.T) {
 				},
 				{
 					KeyCols: []string{"_measurement"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "f3", Type: query.TFloat},
-						{Label: "f4", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "f3", Type: flux.TFloat},
+						{Label: "f4", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), "m2", 1.0, 2.0},
@@ -219,14 +219,14 @@ func TestPivot_Process(t *testing.T) {
 				ColKey:   []string{"_measurement", "_field"},
 				ValueCol: "_value",
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"_measurement"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "_field", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 1.0, "m1", "f1"},
@@ -240,10 +240,10 @@ func TestPivot_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: nil,
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "m1_f1", Type: query.TFloat},
-						{Label: "m1_f2", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "m1_f1", Type: flux.TFloat},
+						{Label: "m1_f2", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 5.0, 2.0},
@@ -259,15 +259,15 @@ func TestPivot_Process(t *testing.T) {
 				ColKey:   []string{"_measurement", "_field"},
 				ValueCol: "_value",
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"_measurement"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "_field", Type: query.TString},
-						{Label: "droppedcol", Type: query.TInt},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+						{Label: "droppedcol", Type: flux.TInt},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 1.0, "m1", "f1", 1},
@@ -281,10 +281,10 @@ func TestPivot_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: nil,
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "m1_f1", Type: query.TFloat},
-						{Label: "m1_f2", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "m1_f1", Type: flux.TFloat},
+						{Label: "m1_f2", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 5.0, 2.0},
@@ -300,15 +300,15 @@ func TestPivot_Process(t *testing.T) {
 				ColKey:   []string{"_measurement", "_field"},
 				ValueCol: "_value",
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"grouper"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "_field", Type: query.TString},
-						{Label: "grouper", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+						{Label: "grouper", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 1.0, "m1", "f1", "A"},
@@ -322,11 +322,11 @@ func TestPivot_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: []string{"grouper"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "grouper", Type: query.TString},
-						{Label: "m1_f1", Type: query.TFloat},
-						{Label: "m1_f2", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "grouper", Type: flux.TString},
+						{Label: "m1_f1", Type: flux.TFloat},
+						{Label: "m1_f2", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), "A", 5.0, 2.0},
@@ -342,15 +342,15 @@ func TestPivot_Process(t *testing.T) {
 				ColKey:   []string{"_measurement", "_field"},
 				ValueCol: "_value",
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"grouper", "_field"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "_field", Type: query.TString},
-						{Label: "grouper", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+						{Label: "grouper", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 1.0, "m1", "f1", "A"},
@@ -359,12 +359,12 @@ func TestPivot_Process(t *testing.T) {
 				},
 				&executetest.Table{
 					KeyCols: []string{"grouper", "_field"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "_field", Type: query.TString},
-						{Label: "grouper", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+						{Label: "grouper", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 2.0, "m1", "f2", "B"},
@@ -372,12 +372,12 @@ func TestPivot_Process(t *testing.T) {
 				},
 				&executetest.Table{
 					KeyCols: []string{"grouper", "_field"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "_field", Type: query.TString},
-						{Label: "grouper", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+						{Label: "grouper", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(2), 4.0, "m1", "f2", "A"},
@@ -387,11 +387,11 @@ func TestPivot_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: []string{"grouper"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "grouper", Type: query.TString},
-						{Label: "m1_f1", Type: query.TFloat},
-						{Label: "m1_f2", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "grouper", Type: flux.TString},
+						{Label: "m1_f1", Type: flux.TFloat},
+						{Label: "m1_f2", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), "A", 1.0, 0.0},
@@ -400,10 +400,10 @@ func TestPivot_Process(t *testing.T) {
 				},
 				{
 					KeyCols: []string{"grouper"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "grouper", Type: query.TString},
-						{Label: "m1_f2", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "grouper", Type: flux.TString},
+						{Label: "m1_f2", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), "B", 2.0},
@@ -418,15 +418,15 @@ func TestPivot_Process(t *testing.T) {
 				ColKey:   []string{"_measurement", "_field"},
 				ValueCol: "grouper",
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"grouper", "_field"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "_field", Type: query.TString},
-						{Label: "grouper", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+						{Label: "grouper", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 1.0, "m1", "f1", "A"},
@@ -435,12 +435,12 @@ func TestPivot_Process(t *testing.T) {
 				},
 				&executetest.Table{
 					KeyCols: []string{"grouper", "_field"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "_field", Type: query.TString},
-						{Label: "grouper", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+						{Label: "grouper", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 2.0, "m1", "f2", "B"},
@@ -448,12 +448,12 @@ func TestPivot_Process(t *testing.T) {
 				},
 				&executetest.Table{
 					KeyCols: []string{"grouper", "_field"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "_measurement", Type: query.TString},
-						{Label: "_field", Type: query.TString},
-						{Label: "grouper", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+						{Label: "grouper", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(2), 4.0, "m1", "f2", "A"},
@@ -463,10 +463,10 @@ func TestPivot_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: nil,
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "m1_f1", Type: query.TString},
-						{Label: "m1_f2", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "m1_f1", Type: flux.TString},
+						{Label: "m1_f2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), "A", "B"},

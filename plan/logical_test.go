@@ -6,20 +6,20 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/plan/plantest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
 )
 
 func TestLogicalPlanner_Plan(t *testing.T) {
 	testCases := []struct {
-		q  *query.Spec
+		q  *flux.Spec
 		ap *plan.LogicalPlanSpec
 	}{
 		{
-			q: &query.Spec{
-				Operations: []*query.Operation{
+			q: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "0",
 						Spec: &functions.FromOpSpec{
@@ -29,8 +29,8 @@ func TestLogicalPlanner_Plan(t *testing.T) {
 					{
 						ID: "1",
 						Spec: &functions.RangeOpSpec{
-							Start: query.Time{Relative: -1 * time.Hour},
-							Stop:  query.Time{},
+							Start: flux.Time{Relative: -1 * time.Hour},
+							Stop:  flux.Time{},
 						},
 					},
 					{
@@ -38,7 +38,7 @@ func TestLogicalPlanner_Plan(t *testing.T) {
 						Spec: &functions.CountOpSpec{},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "0", Child: "1"},
 					{Parent: "1", Child: "2"},
 				},
@@ -56,8 +56,8 @@ func TestLogicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("1"): {
 						ID: plan.ProcedureIDFromOperationID("1"),
 						Spec: &functions.RangeProcedureSpec{
-							Bounds: query.Bounds{
-								Start: query.Time{Relative: -1 * time.Hour},
+							Bounds: flux.Bounds{
+								Start: flux.Time{Relative: -1 * time.Hour},
 							},
 							TimeCol: "_time",
 						},
@@ -97,8 +97,8 @@ func TestLogicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("range0"): {
 						ID: plan.ProcedureIDFromOperationID("range0"),
 						Spec: &functions.RangeProcedureSpec{
-							Bounds: query.Bounds{
-								Start: query.Time{Relative: -1 * time.Hour},
+							Bounds: flux.Bounds{
+								Start: flux.Time{Relative: -1 * time.Hour},
 							},
 							TimeCol: "_time",
 						},
@@ -126,8 +126,8 @@ func TestLogicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("range1"): {
 						ID: plan.ProcedureIDFromOperationID("range1"),
 						Spec: &functions.RangeProcedureSpec{
-							Bounds: query.Bounds{
-								Start: query.Time{Relative: -1 * time.Hour},
+							Bounds: flux.Bounds{
+								Start: flux.Time{Relative: -1 * time.Hour},
 							},
 							TimeCol: "_time",
 						},
@@ -190,8 +190,8 @@ func TestLogicalPlanner_Plan(t *testing.T) {
 	}
 }
 
-var benchmarkQuery = &query.Spec{
-	Operations: []*query.Operation{
+var benchmarkQuery = &flux.Spec{
+	Operations: []*flux.Operation{
 		{
 			ID: "select0",
 			Spec: &functions.FromOpSpec{
@@ -201,8 +201,8 @@ var benchmarkQuery = &query.Spec{
 		{
 			ID: "range0",
 			Spec: &functions.RangeOpSpec{
-				Start: query.Time{Relative: -1 * time.Hour},
-				Stop:  query.Time{},
+				Start: flux.Time{Relative: -1 * time.Hour},
+				Stop:  flux.Time{},
 			},
 		},
 		{
@@ -218,8 +218,8 @@ var benchmarkQuery = &query.Spec{
 		{
 			ID: "range1",
 			Spec: &functions.RangeOpSpec{
-				Start: query.Time{Relative: -1 * time.Hour},
-				Stop:  query.Time{},
+				Start: flux.Time{Relative: -1 * time.Hour},
+				Stop:  flux.Time{},
 			},
 		},
 		{
@@ -229,14 +229,14 @@ var benchmarkQuery = &query.Spec{
 		{
 			ID: "join",
 			Spec: &functions.JoinOpSpec{
-				TableNames: map[query.OperationID]string{
+				TableNames: map[flux.OperationID]string{
 					"count0": "count",
 					"sum1":   "sum",
 				},
 			},
 		},
 	},
-	Edges: []query.Edge{
+	Edges: []flux.Edge{
 		{Parent: "select0", Child: "range0"},
 		{Parent: "range0", Child: "count0"},
 		{Parent: "select1", Child: "range1"},

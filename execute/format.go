@@ -6,14 +6,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/influxdata/platform/query"
+	"github.com/influxdata/flux"
 )
 
 const fixedWidthTimeFmt = "2006-01-02T15:04:05.000000000Z"
 
 // Formatter writes a table to a Writer.
 type Formatter struct {
-	tbl       query.Table
+	tbl       flux.Table
 	widths    []int
 	maxWidth  int
 	newWidths []int
@@ -40,7 +40,7 @@ var eol = []byte{'\n'}
 
 // NewFormatter creates a Formatter for a given table.
 // If opts is nil, the DefaultFormatOptions are used.
-func NewFormatter(tbl query.Table, opts *FormatOptions) *Formatter {
+func NewFormatter(tbl flux.Table, opts *FormatOptions) *Formatter {
 	if opts == nil {
 		opts = DefaultFormatOptions()
 	}
@@ -65,14 +65,14 @@ func (w *writeToHelper) write(data []byte) {
 	w.err = err
 }
 
-var minWidthsByType = map[query.DataType]int{
-	query.TBool:    12,
-	query.TInt:     26,
-	query.TUInt:    27,
-	query.TFloat:   28,
-	query.TString:  22,
-	query.TTime:    len(fixedWidthTimeFmt),
-	query.TInvalid: 10,
+var minWidthsByType = map[flux.DataType]int{
+	flux.TBool:    12,
+	flux.TInt:     26,
+	flux.TUInt:    27,
+	flux.TFloat:   28,
+	flux.TString:  22,
+	flux.TTime:    len(fixedWidthTimeFmt),
+	flux.TInvalid: 10,
 }
 
 // WriteTo writes the formatted table data to w.
@@ -118,7 +118,7 @@ func (f *Formatter) WriteTo(out io.Writer) (int64, error) {
 
 	// Write rows
 	r := 0
-	w.err = f.tbl.Do(func(cr query.ColReader) error {
+	w.err = f.tbl.Do(func(cr flux.ColReader) error {
 		if r == 0 {
 			l := cr.Len()
 			for i := 0; i < l; i++ {
@@ -213,20 +213,20 @@ func (f *Formatter) writeHeaderSeparator(w *writeToHelper) {
 	w.write(eol)
 }
 
-func (f *Formatter) valueBuf(i, j int, typ query.DataType, cr query.ColReader) (buf []byte) {
+func (f *Formatter) valueBuf(i, j int, typ flux.DataType, cr flux.ColReader) (buf []byte) {
 	switch typ {
-	case query.TBool:
+	case flux.TBool:
 		buf = strconv.AppendBool(f.fmtBuf[0:0], cr.Bools(j)[i])
-	case query.TInt:
+	case flux.TInt:
 		buf = strconv.AppendInt(f.fmtBuf[0:0], cr.Ints(j)[i], 10)
-	case query.TUInt:
+	case flux.TUInt:
 		buf = strconv.AppendUint(f.fmtBuf[0:0], cr.UInts(j)[i], 10)
-	case query.TFloat:
+	case flux.TFloat:
 		// TODO allow specifying format and precision
 		buf = strconv.AppendFloat(f.fmtBuf[0:0], cr.Floats(j)[i], 'f', -1, 64)
-	case query.TString:
+	case flux.TString:
 		buf = []byte(cr.Strings(j)[i])
-	case query.TTime:
+	case flux.TTime:
 		buf = []byte(cr.Times(j)[i].String())
 	}
 	return
@@ -241,16 +241,16 @@ func (f *Formatter) valueBuf(i, j int, typ query.DataType, cr query.ColReader) (
 //
 type orderedCols struct {
 	indexMap []int
-	cols     []query.ColMeta
-	key      query.GroupKey
+	cols     []flux.ColMeta
+	key      flux.GroupKey
 }
 
-func newOrderedCols(cols []query.ColMeta, key query.GroupKey) orderedCols {
+func newOrderedCols(cols []flux.ColMeta, key flux.GroupKey) orderedCols {
 	indexMap := make([]int, len(cols))
 	for i := range indexMap {
 		indexMap[i] = i
 	}
-	cpy := make([]query.ColMeta, len(cols))
+	cpy := make([]flux.ColMeta, len(cols))
 	copy(cpy, cols)
 	return orderedCols{
 		indexMap: indexMap,

@@ -3,12 +3,12 @@ package functions
 import (
 	"fmt"
 
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/functions/storage"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/platform"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/functions/storage"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
 	"github.com/pkg/errors"
 )
 
@@ -24,17 +24,17 @@ var fromSignature = semantic.FunctionSignature{
 		"bucket":   semantic.String,
 		"bucketID": semantic.String,
 	},
-	ReturnType: query.TableObjectType,
+	ReturnType: flux.TableObjectType,
 }
 
 func init() {
-	query.RegisterFunction(FromKind, createFromOpSpec, fromSignature)
-	query.RegisterOpSpec(FromKind, newFromOp)
+	flux.RegisterFunction(FromKind, createFromOpSpec, fromSignature)
+	flux.RegisterOpSpec(FromKind, newFromOp)
 	plan.RegisterProcedureSpec(FromKind, newFromProcedure, FromKind)
 	execute.RegisterSource(FromKind, createFromSource)
 }
 
-func createFromOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	spec := new(FromOpSpec)
 
 	if bucket, ok, err := args.GetString("bucket"); err != nil {
@@ -61,11 +61,11 @@ func createFromOpSpec(args query.Arguments, a *query.Administration) (query.Oper
 	return spec, nil
 }
 
-func newFromOp() query.OperationSpec {
+func newFromOp() flux.OperationSpec {
 	return new(FromOpSpec)
 }
 
-func (s *FromOpSpec) Kind() query.OperationKind {
+func (s *FromOpSpec) Kind() flux.OperationKind {
 	return FromKind
 }
 
@@ -90,7 +90,7 @@ type FromProcedureSpec struct {
 	BucketID platform.ID
 
 	BoundsSet bool
-	Bounds    query.Bounds
+	Bounds    flux.Bounds
 
 	FilterSet bool
 	Filter    *semantic.FunctionExpression
@@ -115,7 +115,7 @@ type FromProcedureSpec struct {
 	AggregateMethod string
 }
 
-func newFromProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*FromOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -130,7 +130,7 @@ func newFromProcedure(qs query.OperationSpec, pa plan.Administration) (plan.Proc
 func (s *FromProcedureSpec) Kind() plan.ProcedureKind {
 	return FromKind
 }
-func (s *FromProcedureSpec) TimeBounds() query.Bounds {
+func (s *FromProcedureSpec) TimeBounds() flux.Bounds {
 	return s.Bounds
 }
 func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {

@@ -3,31 +3,31 @@ package functions_test
 import (
 	"testing"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/plan/plantest"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
 )
 
 func TestGroupOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"group","kind":"group","spec":{"by":["t1","t2"]}}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID: "group",
 		Spec: &functions.GroupOpSpec{
 			By: []string{"t1", "t2"},
 		},
 	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestGroup_Process(t *testing.T) {
 	testCases := []struct {
 		name string
 		spec *functions.GroupProcedureSpec
-		data []query.Table
+		data []flux.Table
 		want []*executetest.Table
 	}{
 		{
@@ -36,14 +36,14 @@ func TestGroup_Process(t *testing.T) {
 				GroupMode: functions.GroupModeBy,
 				GroupKeys: []string{"t1"},
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"t1", "t2"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 2.0, "a", "x"},
@@ -51,11 +51,11 @@ func TestGroup_Process(t *testing.T) {
 				},
 				&executetest.Table{
 					KeyCols: []string{"t1", "t2"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(2), 1.0, "a", "y"},
@@ -63,11 +63,11 @@ func TestGroup_Process(t *testing.T) {
 				},
 				&executetest.Table{
 					KeyCols: []string{"t1", "t2"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 4.0, "b", "x"},
@@ -75,11 +75,11 @@ func TestGroup_Process(t *testing.T) {
 				},
 				&executetest.Table{
 					KeyCols: []string{"t1", "t2"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(2), 7.0, "b", "y"},
@@ -89,11 +89,11 @@ func TestGroup_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: []string{"t1"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 2.0, "a", "x"},
@@ -102,11 +102,11 @@ func TestGroup_Process(t *testing.T) {
 				},
 				{
 					KeyCols: []string{"t1"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 4.0, "b", "x"},
@@ -121,15 +121,15 @@ func TestGroup_Process(t *testing.T) {
 				GroupMode: functions.GroupModeExcept,
 				GroupKeys: []string{"_time", "_value", "t2"},
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"t1", "t2", "t3"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
-						{Label: "t3", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
+						{Label: "t3", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 2.0, "a", "m", "x"},
@@ -137,12 +137,12 @@ func TestGroup_Process(t *testing.T) {
 				},
 				&executetest.Table{
 					KeyCols: []string{"t1", "t2", "t3"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
-						{Label: "t3", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
+						{Label: "t3", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(2), 1.0, "a", "n", "x"},
@@ -150,12 +150,12 @@ func TestGroup_Process(t *testing.T) {
 				},
 				&executetest.Table{
 					KeyCols: []string{"t1", "t2", "t3"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
-						{Label: "t3", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
+						{Label: "t3", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 4.0, "b", "m", "x"},
@@ -163,12 +163,12 @@ func TestGroup_Process(t *testing.T) {
 				},
 				&executetest.Table{
 					KeyCols: []string{"t1", "t2", "t3"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
-						{Label: "t3", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
+						{Label: "t3", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(2), 7.0, "b", "n", "x"},
@@ -178,12 +178,12 @@ func TestGroup_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: []string{"t1", "t3"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
-						{Label: "t3", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
+						{Label: "t3", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 2.0, "a", "m", "x"},
@@ -192,12 +192,12 @@ func TestGroup_Process(t *testing.T) {
 				},
 				{
 					KeyCols: []string{"t1", "t3"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
-						{Label: "t3", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
+						{Label: "t3", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 4.0, "b", "m", "x"},
@@ -215,14 +215,14 @@ func TestGroup_Process(t *testing.T) {
 				GroupMode: functions.GroupModeBy,
 				GroupKeys: []string{"t1"},
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"t1", "t2"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(2), 1.0, "a", "y"},
@@ -230,12 +230,12 @@ func TestGroup_Process(t *testing.T) {
 				},
 				&executetest.Table{
 					KeyCols: []string{"t1", "t3", "t2"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t3", Type: query.TInt},
-						{Label: "t2", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t3", Type: flux.TInt},
+						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 2.0, "a", int64(5), "x"},
@@ -243,11 +243,11 @@ func TestGroup_Process(t *testing.T) {
 				},
 				&executetest.Table{
 					KeyCols: []string{"t1", "t2"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(2), 7.0, "b", "y"},
@@ -255,12 +255,12 @@ func TestGroup_Process(t *testing.T) {
 				},
 				&executetest.Table{
 					KeyCols: []string{"t1", "t3", "t2"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t3", Type: query.TInt},
-						{Label: "t2", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t3", Type: flux.TInt},
+						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 4.0, "b", int64(7), "x"},
@@ -270,11 +270,11 @@ func TestGroup_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: []string{"t1"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(2), 1.0, "a", "y"},
@@ -283,11 +283,11 @@ func TestGroup_Process(t *testing.T) {
 				},
 				{
 					KeyCols: []string{"t1"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(2), 7.0, "b", "y"},
@@ -302,11 +302,11 @@ func TestGroup_Process(t *testing.T) {
 				GroupMode: functions.GroupModeBy,
 				GroupKeys: []string{"t1"},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 2.0, "a"},
@@ -316,10 +316,10 @@ func TestGroup_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: []string{"t1"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 2.0, "a"},
@@ -327,10 +327,10 @@ func TestGroup_Process(t *testing.T) {
 				},
 				{
 					KeyCols: []string{"t1"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(2), 1.0, "b"},
@@ -344,13 +344,13 @@ func TestGroup_Process(t *testing.T) {
 				GroupMode: functions.GroupModeExcept,
 				GroupKeys: []string{"_time", "_value", "t2"},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
-					{Label: "t3", Type: query.TString},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
+					{Label: "t3", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 2.0, "a", "m", "x"},
@@ -360,12 +360,12 @@ func TestGroup_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: []string{"t1", "t3"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
-						{Label: "t3", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
+						{Label: "t3", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 2.0, "a", "m", "x"},
@@ -373,12 +373,12 @@ func TestGroup_Process(t *testing.T) {
 				},
 				{
 					KeyCols: []string{"t1", "t3"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "t1", Type: query.TString},
-						{Label: "t2", Type: query.TString},
-						{Label: "t3", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
+						{Label: "t3", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(2), 1.0, "a", "n", "y"},

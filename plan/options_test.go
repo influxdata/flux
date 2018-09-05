@@ -4,16 +4,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/plan"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/plan"
 )
 
 func TestPhysicalPlanner_DefaultMemoryLimit(t *testing.T) {
 	// Simple logical plan taken from the planner tests.
 	lp := &plan.LogicalPlanSpec{
 		Now: time.Now(),
-		Resources: query.ResourceManagement{
+		Resources: flux.ResourceManagement{
 			ConcurrencyQuota: 1,
 		},
 		Procedures: map[plan.ProcedureID]*plan.Procedure{
@@ -28,12 +28,12 @@ func TestPhysicalPlanner_DefaultMemoryLimit(t *testing.T) {
 			plan.ProcedureIDFromOperationID("range"): {
 				ID: plan.ProcedureIDFromOperationID("range"),
 				Spec: &functions.RangeProcedureSpec{
-					Bounds: query.Bounds{
-						Start: query.Time{
+					Bounds: flux.Bounds{
+						Start: flux.Time{
 							IsRelative: true,
 							Relative:   -1 * time.Hour,
 						},
-						Stop: query.Now,
+						Stop: flux.Now,
 					},
 					TimeCol: "_time",
 				},

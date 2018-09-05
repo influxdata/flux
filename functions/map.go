@@ -5,12 +5,12 @@ import (
 	"log"
 	"sort"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 const MapKind = "map"
@@ -20,19 +20,19 @@ type MapOpSpec struct {
 	MergeKey bool                         `json:"mergeKey"`
 }
 
-var mapSignature = query.DefaultFunctionSignature()
+var mapSignature = flux.DefaultFunctionSignature()
 
 func init() {
 	mapSignature.Params["fn"] = semantic.Function
 	mapSignature.Params["mergeKey"] = semantic.Bool
 
-	query.RegisterFunction(MapKind, createMapOpSpec, mapSignature)
-	query.RegisterOpSpec(MapKind, newMapOp)
+	flux.RegisterFunction(MapKind, createMapOpSpec, mapSignature)
+	flux.RegisterOpSpec(MapKind, newMapOp)
 	plan.RegisterProcedureSpec(MapKind, newMapProcedure, MapKind)
 	execute.RegisterTransformation(MapKind, createMapTransformation)
 }
 
-func createMapOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createMapOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -59,11 +59,11 @@ func createMapOpSpec(args query.Arguments, a *query.Administration) (query.Opera
 	return spec, nil
 }
 
-func newMapOp() query.OperationSpec {
+func newMapOp() flux.OperationSpec {
 	return new(MapOpSpec)
 }
 
-func (s *MapOpSpec) Kind() query.OperationKind {
+func (s *MapOpSpec) Kind() flux.OperationKind {
 	return MapKind
 }
 
@@ -72,7 +72,7 @@ type MapProcedureSpec struct {
 	MergeKey bool
 }
 
-func newMapProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newMapProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*MapOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -129,11 +129,11 @@ func NewMapTransformation(d execute.Dataset, cache execute.TableBuilderCache, sp
 	}, nil
 }
 
-func (t *mapTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *mapTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *mapTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	// Prepare the functions for the column types.
 	cols := tbl.Cols()
 	err := t.fn.Prepare(cols)
@@ -155,7 +155,7 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl query.Table) error
 		on[c.Label] = t.mergeKey || execute.ContainsStr(keys, c.Label)
 	}
 
-	return tbl.Do(func(cr query.ColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			m, err := t.fn.Eval(i, cr)
@@ -174,7 +174,7 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl query.Table) error
 					if t.mergeKey && tbl.Key().HasCol(k) {
 						continue
 					}
-					builder.AddCol(query.ColMeta{
+					builder.AddCol(flux.ColMeta{
 						Label: k,
 						Type:  execute.ConvertFromKind(properties[k].Kind()),
 					})
@@ -197,8 +197,8 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl query.Table) error
 	})
 }
 
-func groupKeyForObject(i int, cr query.ColReader, obj values.Object, on map[string]bool) query.GroupKey {
-	cols := make([]query.ColMeta, 0, len(on))
+func groupKeyForObject(i int, cr flux.ColReader, obj values.Object, on map[string]bool) flux.GroupKey {
+	cols := make([]flux.ColMeta, 0, len(on))
 	vs := make([]values.Value, 0, len(on))
 	for j, c := range cr.Cols() {
 		if !on[c.Label] {
@@ -210,17 +210,17 @@ func groupKeyForObject(i int, cr query.ColReader, obj values.Object, on map[stri
 			vs = append(vs, v)
 		} else {
 			switch c.Type {
-			case query.TBool:
+			case flux.TBool:
 				vs = append(vs, values.NewBoolValue(cr.Bools(j)[i]))
-			case query.TInt:
+			case flux.TInt:
 				vs = append(vs, values.NewIntValue(cr.Ints(j)[i]))
-			case query.TUInt:
+			case flux.TUInt:
 				vs = append(vs, values.NewUIntValue(cr.UInts(j)[i]))
-			case query.TFloat:
+			case flux.TFloat:
 				vs = append(vs, values.NewFloatValue(cr.Floats(j)[i]))
-			case query.TString:
+			case flux.TString:
 				vs = append(vs, values.NewStringValue(cr.Strings(j)[i]))
-			case query.TTime:
+			case flux.TTime:
 				vs = append(vs, values.NewTimeValue(cr.Times(j)[i]))
 			}
 		}

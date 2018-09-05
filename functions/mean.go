@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
 )
 
 const MeanKind = "mean"
@@ -18,12 +18,12 @@ type MeanOpSpec struct {
 var meanSignature = execute.DefaultAggregateSignature()
 
 func init() {
-	query.RegisterFunction(MeanKind, createMeanOpSpec, meanSignature)
-	query.RegisterOpSpec(MeanKind, newMeanOp)
+	flux.RegisterFunction(MeanKind, createMeanOpSpec, meanSignature)
+	flux.RegisterOpSpec(MeanKind, newMeanOp)
 	plan.RegisterProcedureSpec(MeanKind, newMeanProcedure, MeanKind)
 	execute.RegisterTransformation(MeanKind, createMeanTransformation)
 }
-func createMeanOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createMeanOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -35,11 +35,11 @@ func createMeanOpSpec(args query.Arguments, a *query.Administration) (query.Oper
 	return spec, nil
 }
 
-func newMeanOp() query.OperationSpec {
+func newMeanOp() flux.OperationSpec {
 	return new(MeanOpSpec)
 }
 
-func (s *MeanOpSpec) Kind() query.OperationKind {
+func (s *MeanOpSpec) Kind() flux.OperationKind {
 	return MeanKind
 }
 
@@ -47,7 +47,7 @@ type MeanProcedureSpec struct {
 	execute.AggregateConfig
 }
 
-func newMeanProcedure(qs query.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
+func newMeanProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*MeanOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -120,8 +120,8 @@ func (a *MeanAgg) DoFloat(vs []float64) {
 		a.sum += v
 	}
 }
-func (a *MeanAgg) Type() query.DataType {
-	return query.TFloat
+func (a *MeanAgg) Type() flux.DataType {
+	return flux.TFloat
 }
 func (a *MeanAgg) ValueFloat() float64 {
 	if a.count < 1 {

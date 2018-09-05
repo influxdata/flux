@@ -28,10 +28,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/platform"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
@@ -99,7 +99,7 @@ func New(c Config) *Controller {
 
 // Query submits a query for execution returning immediately.
 // Done must be called on any returned Query objects.
-func (c *Controller) Query(ctx context.Context, req *query.Request) (query.Query, error) {
+func (c *Controller) Query(ctx context.Context, req *flux.Request) (flux.Query, error) {
 	q := c.createQuery(ctx, req.OrganizationID)
 	if err := c.compileQuery(q, req.Compiler); err != nil {
 		q.parentSpan.Finish()
@@ -124,7 +124,7 @@ func (c *Controller) createQuery(ctx context.Context, orgID platform.ID) *Query 
 		c.metrics.allDur.WithLabelValues(labelValues...),
 		c.metrics.all.WithLabelValues(labelValues...),
 	)
-	ready := make(chan map[string]query.Result, 1)
+	ready := make(chan map[string]flux.Result, 1)
 	return &Query{
 		id:          id,
 		orgID:       orgID,
@@ -139,7 +139,7 @@ func (c *Controller) createQuery(ctx context.Context, orgID platform.ID) *Query 
 	}
 }
 
-func (c *Controller) compileQuery(q *Query, compiler query.Compiler) error {
+func (c *Controller) compileQuery(q *Query, compiler flux.Compiler) error {
 	if !q.tryCompile() {
 		return errors.New("failed to transition query to compiling state")
 	}
@@ -160,7 +160,7 @@ func (c *Controller) compileQuery(q *Query, compiler query.Compiler) error {
 
 func (c *Controller) enqueueQuery(q *Query) error {
 	if c.verbose {
-		log.Println("query", query.Formatted(&q.spec, query.FmtJSON))
+		log.Println("query", flux.Formatted(&q.spec, flux.FmtJSON))
 	}
 	if !q.tryQueue() {
 		return errors.New("failed to transition query to queueing state")
@@ -344,12 +344,12 @@ type Query struct {
 
 	c *Controller
 
-	spec query.Spec
+	spec flux.Spec
 	now  time.Time
 
 	err error
 
-	ready chan map[string]query.Result
+	ready chan map[string]flux.Result
 
 	mu       sync.Mutex
 	state    State
@@ -387,7 +387,7 @@ func (q *Query) OrganizationID() platform.ID {
 	return q.orgID
 }
 
-func (q *Query) Spec() *query.Spec {
+func (q *Query) Spec() *flux.Spec {
 	return &q.spec
 }
 
@@ -422,7 +422,7 @@ func (q *Query) Cancel() {
 // Ready returns a channel that will deliver the query results.
 // Its possible that the channel is closed before any results arrive, in which case the query should be
 // inspected for an error using Err().
-func (q *Query) Ready() <-chan map[string]query.Result {
+func (q *Query) Ready() <-chan map[string]flux.Result {
 	return q.ready
 }
 
@@ -469,11 +469,11 @@ func (q *Query) Done() {
 
 // Statistics reports the statisitcs for the query.
 // The statisitcs are not complete until the query is finished.
-func (q *Query) Statistics() query.Statistics {
+func (q *Query) Statistics() flux.Statistics {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
-	stats := query.Statistics{}
+	stats := flux.Statistics{}
 	stats.TotalDuration = q.parentSpan.Duration
 	if q.compileSpan != nil {
 		stats.CompileDuration = q.compileSpan.Duration
@@ -532,7 +532,7 @@ func (q *Query) setErr(err error) {
 	q.state = Errored
 }
 
-func (q *Query) setResults(r map[string]query.Result) {
+func (q *Query) setResults(r map[string]flux.Result) {
 	q.mu.Lock()
 	if q.state == Executing {
 		q.ready <- r

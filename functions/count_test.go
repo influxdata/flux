@@ -4,22 +4,22 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/plan/plantest"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
 )
 
 func TestCount_NewQuery(t *testing.T) {
-	tests := []querytest.NewQueryTestCase{
+	tests := []fluxtest.NewQueryTestCase{
 		{
 			Name: "from with range and count",
 			Raw:  `from(bucket:"mydb") |> range(start:-4h, stop:-2h) |> count()`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -29,11 +29,11 @@ func TestCount_NewQuery(t *testing.T) {
 					{
 						ID: "range1",
 						Spec: &functions.RangeOpSpec{
-							Start: query.Time{
+							Start: flux.Time{
 								Relative:   -4 * time.Hour,
 								IsRelative: true,
 							},
-							Stop: query.Time{
+							Stop: flux.Time{
 								Relative:   -2 * time.Hour,
 								IsRelative: true,
 							},
@@ -49,7 +49,7 @@ func TestCount_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "count2"},
 				},
@@ -60,19 +60,19 @@ func TestCount_NewQuery(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			querytest.NewQueryTestHelper(t, tc)
+			fluxtest.NewQueryTestHelper(t, tc)
 		})
 	}
 }
 
 func TestCountOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"count","kind":"count"}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID:   "count",
 		Spec: &functions.CountOpSpec{},
 	}
 
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestCount_Process(t *testing.T) {

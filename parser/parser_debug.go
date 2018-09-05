@@ -5,7 +5,7 @@ package parser
 //go:generate pigeon -optimize-grammar -o flux.go flux.peg
 
 import (
-	"github.com/influxdata/platform/query/ast"
+	"github.com/influxdata/flux/ast"
 )
 
 // NewAST parses Flux query and produces an ast.Program

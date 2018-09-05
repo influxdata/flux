@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/influxdata/platform/query"
+	"github.com/influxdata/flux"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -14,7 +14,7 @@ var RootUUID = NilUUID
 type LogicalPlanSpec struct {
 	Procedures map[ProcedureID]*Procedure
 	Order      []ProcedureID
-	Resources  query.ResourceManagement
+	Resources  flux.ResourceManagement
 	Now        time.Time
 }
 
@@ -29,19 +29,19 @@ func (lp *LogicalPlanSpec) lookup(id ProcedureID) *Procedure {
 }
 
 type LogicalPlanner interface {
-	Plan(*query.Spec) (*LogicalPlanSpec, error)
+	Plan(*flux.Spec) (*LogicalPlanSpec, error)
 }
 
 type logicalPlanner struct {
 	plan *LogicalPlanSpec
-	q    *query.Spec
+	q    *flux.Spec
 }
 
 func NewLogicalPlanner() LogicalPlanner {
 	return new(logicalPlanner)
 }
 
-func (p *logicalPlanner) Plan(q *query.Spec) (*LogicalPlanSpec, error) {
+func (p *logicalPlanner) Plan(q *flux.Spec) (*LogicalPlanSpec, error) {
 	p.q = q
 	p.plan = &LogicalPlanSpec{
 		Procedures: make(map[ProcedureID]*Procedure),
@@ -55,14 +55,14 @@ func (p *logicalPlanner) Plan(q *query.Spec) (*LogicalPlanSpec, error) {
 	return p.plan, nil
 }
 
-func ProcedureIDFromOperationID(id query.OperationID) ProcedureID {
+func ProcedureIDFromOperationID(id flux.OperationID) ProcedureID {
 	return ProcedureID(uuid.NewV5(RootUUID, string(id)))
 }
 func ProcedureIDFromParentID(id ProcedureID) ProcedureID {
 	return ProcedureID(uuid.NewV5(RootUUID, id.String()))
 }
 
-func (p *logicalPlanner) walkQuery(o *query.Operation) error {
+func (p *logicalPlanner) walkQuery(o *flux.Operation) error {
 	spec, err := p.createSpec(o.Spec.Kind(), o.Spec)
 	if err != nil {
 		return err
@@ -87,7 +87,7 @@ func (p *logicalPlanner) walkQuery(o *query.Operation) error {
 	return nil
 }
 
-func (p *logicalPlanner) createSpec(qk query.OperationKind, spec query.OperationSpec) (ProcedureSpec, error) {
+func (p *logicalPlanner) createSpec(qk flux.OperationKind, spec flux.OperationSpec) (ProcedureSpec, error) {
 	createPs, ok := queryOpToProcedure[qk]
 	if !ok {
 		return nil, fmt.Errorf("unknown query operation %v", qk)
@@ -96,6 +96,6 @@ func (p *logicalPlanner) createSpec(qk query.OperationKind, spec query.Operation
 	return createPs[0](spec, p)
 }
 
-func (p *logicalPlanner) ConvertID(qid query.OperationID) ProcedureID {
+func (p *logicalPlanner) ConvertID(qid flux.OperationID) ProcedureID {
 	return ProcedureIDFromOperationID(qid)
 }

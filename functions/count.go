@@ -3,9 +3,9 @@ package functions
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
 )
 
 const CountKind = "count"
@@ -17,13 +17,13 @@ type CountOpSpec struct {
 var countSignature = execute.DefaultAggregateSignature()
 
 func init() {
-	query.RegisterFunction(CountKind, createCountOpSpec, countSignature)
-	query.RegisterOpSpec(CountKind, newCountOp)
+	flux.RegisterFunction(CountKind, createCountOpSpec, countSignature)
+	flux.RegisterOpSpec(CountKind, newCountOp)
 	plan.RegisterProcedureSpec(CountKind, newCountProcedure, CountKind)
 	execute.RegisterTransformation(CountKind, createCountTransformation)
 }
 
-func createCountOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createCountOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -34,11 +34,11 @@ func createCountOpSpec(args query.Arguments, a *query.Administration) (query.Ope
 	return s, nil
 }
 
-func newCountOp() query.OperationSpec {
+func newCountOp() flux.OperationSpec {
 	return new(CountOpSpec)
 }
 
-func (s *CountOpSpec) Kind() query.OperationKind {
+func (s *CountOpSpec) Kind() flux.OperationKind {
 	return CountKind
 }
 
@@ -46,7 +46,7 @@ type CountProcedureSpec struct {
 	execute.AggregateConfig
 }
 
-func newCountProcedure(qs query.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
+func newCountProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*CountOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -143,8 +143,8 @@ func (a *CountAgg) DoString(vs []string) {
 	a.count += int64(len(vs))
 }
 
-func (a *CountAgg) Type() query.DataType {
-	return query.TInt
+func (a *CountAgg) Type() flux.DataType {
+	return flux.TInt
 }
 func (a *CountAgg) ValueInt() int64 {
 	return a.count

@@ -6,16 +6,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux/values"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/influxdata/flux"
+	_ "github.com/influxdata/flux/builtin"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/platform"
-	"github.com/influxdata/platform/query"
-	_ "github.com/influxdata/platform/query/builtin"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/plan"
 	uuid "github.com/satori/go.uuid"
 	"go.uber.org/zap/zaptest"
 )
@@ -37,7 +37,7 @@ func TestExecutor_Execute(t *testing.T) {
 			name: "simple aggregate",
 			plan: &plan.PlanSpec{
 				Now: epoch.Add(5),
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 1,
 					MemoryBytesQuota: math.MaxInt64,
 				},
@@ -47,11 +47,11 @@ func TestExecutor_Execute(t *testing.T) {
 						Spec: newTestFromProcedureSource(
 							[]*executetest.Table{&executetest.Table{
 								KeyCols: []string{"_start", "_stop"},
-								ColMeta: []query.ColMeta{
-									{Label: "_start", Type: query.TTime},
-									{Label: "_stop", Type: query.TTime},
-									{Label: "_time", Type: query.TTime},
-									{Label: "_value", Type: query.TFloat},
+								ColMeta: []flux.ColMeta{
+									{Label: "_start", Type: flux.TTime},
+									{Label: "_stop", Type: flux.TTime},
+									{Label: "_time", Type: flux.TTime},
+									{Label: "_value", Type: flux.TFloat},
 								},
 								Data: [][]interface{}{
 									{execute.Time(0), execute.Time(5), execute.Time(0), 1.0},
@@ -91,11 +91,11 @@ func TestExecutor_Execute(t *testing.T) {
 			want: map[string][]*executetest.Table{
 				plan.DefaultYieldName: []*executetest.Table{{
 					KeyCols: []string{"_start", "_stop"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(0), execute.Time(5), execute.Time(5), 15.0},
@@ -107,7 +107,7 @@ func TestExecutor_Execute(t *testing.T) {
 			name: "simple join",
 			plan: &plan.PlanSpec{
 				Now: epoch.Add(5),
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 1,
 					MemoryBytesQuota: math.MaxInt64,
 				},
@@ -117,11 +117,11 @@ func TestExecutor_Execute(t *testing.T) {
 						Spec: newTestFromProcedureSource(
 							[]*executetest.Table{&executetest.Table{
 								KeyCols: []string{"_start", "_stop"},
-								ColMeta: []query.ColMeta{
-									{Label: "_start", Type: query.TTime},
-									{Label: "_stop", Type: query.TTime},
-									{Label: "_time", Type: query.TTime},
-									{Label: "_value", Type: query.TInt},
+								ColMeta: []flux.ColMeta{
+									{Label: "_start", Type: flux.TTime},
+									{Label: "_stop", Type: flux.TTime},
+									{Label: "_time", Type: flux.TTime},
+									{Label: "_value", Type: flux.TInt},
 								},
 								Data: [][]interface{}{
 									{execute.Time(0), execute.Time(5), execute.Time(0), int64(1)},
@@ -194,12 +194,12 @@ func TestExecutor_Execute(t *testing.T) {
 			want: map[string][]*executetest.Table{
 				plan.DefaultYieldName: []*executetest.Table{{
 					KeyCols: []string{"_start", "_stop"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "count__value", Type: query.TInt},
-						{Label: "sum__value", Type: query.TInt},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "count__value", Type: flux.TInt},
+						{Label: "sum__value", Type: flux.TInt},
 					},
 					Data: [][]interface{}{
 						{execute.Time(0), execute.Time(5), execute.Time(5), int64(5), int64(15)},
@@ -211,7 +211,7 @@ func TestExecutor_Execute(t *testing.T) {
 			name: "join with multiple tables",
 			plan: &plan.PlanSpec{
 				Now: epoch.Add(5),
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 1,
 					MemoryBytesQuota: math.MaxInt64,
 				},
@@ -222,12 +222,12 @@ func TestExecutor_Execute(t *testing.T) {
 							[]*executetest.Table{
 								&executetest.Table{
 									KeyCols: []string{"_start", "_stop", "_key"},
-									ColMeta: []query.ColMeta{
-										{Label: "_start", Type: query.TTime},
-										{Label: "_stop", Type: query.TTime},
-										{Label: "_time", Type: query.TTime},
-										{Label: "_key", Type: query.TString},
-										{Label: "_value", Type: query.TInt},
+									ColMeta: []flux.ColMeta{
+										{Label: "_start", Type: flux.TTime},
+										{Label: "_stop", Type: flux.TTime},
+										{Label: "_time", Type: flux.TTime},
+										{Label: "_key", Type: flux.TString},
+										{Label: "_value", Type: flux.TInt},
 									},
 									Data: [][]interface{}{
 										{execute.Time(0), execute.Time(5), execute.Time(0), "a", int64(1)},
@@ -235,12 +235,12 @@ func TestExecutor_Execute(t *testing.T) {
 								},
 								&executetest.Table{
 									KeyCols: []string{"_start", "_stop", "_key"},
-									ColMeta: []query.ColMeta{
-										{Label: "_start", Type: query.TTime},
-										{Label: "_stop", Type: query.TTime},
-										{Label: "_time", Type: query.TTime},
-										{Label: "_key", Type: query.TString},
-										{Label: "_value", Type: query.TInt},
+									ColMeta: []flux.ColMeta{
+										{Label: "_start", Type: flux.TTime},
+										{Label: "_stop", Type: flux.TTime},
+										{Label: "_time", Type: flux.TTime},
+										{Label: "_key", Type: flux.TString},
+										{Label: "_value", Type: flux.TInt},
 									},
 									Data: [][]interface{}{
 										{execute.Time(0), execute.Time(5), execute.Time(1), "b", int64(2)},
@@ -248,12 +248,12 @@ func TestExecutor_Execute(t *testing.T) {
 								},
 								&executetest.Table{
 									KeyCols: []string{"_start", "_stop", "_key"},
-									ColMeta: []query.ColMeta{
-										{Label: "_start", Type: query.TTime},
-										{Label: "_stop", Type: query.TTime},
-										{Label: "_time", Type: query.TTime},
-										{Label: "_key", Type: query.TString},
-										{Label: "_value", Type: query.TInt},
+									ColMeta: []flux.ColMeta{
+										{Label: "_start", Type: flux.TTime},
+										{Label: "_stop", Type: flux.TTime},
+										{Label: "_time", Type: flux.TTime},
+										{Label: "_key", Type: flux.TString},
+										{Label: "_value", Type: flux.TInt},
 									},
 									Data: [][]interface{}{
 										{execute.Time(0), execute.Time(5), execute.Time(2), "c", int64(3)},
@@ -261,12 +261,12 @@ func TestExecutor_Execute(t *testing.T) {
 								},
 								&executetest.Table{
 									KeyCols: []string{"_start", "_stop", "_key"},
-									ColMeta: []query.ColMeta{
-										{Label: "_start", Type: query.TTime},
-										{Label: "_stop", Type: query.TTime},
-										{Label: "_time", Type: query.TTime},
-										{Label: "_key", Type: query.TString},
-										{Label: "_value", Type: query.TInt},
+									ColMeta: []flux.ColMeta{
+										{Label: "_start", Type: flux.TTime},
+										{Label: "_stop", Type: flux.TTime},
+										{Label: "_time", Type: flux.TTime},
+										{Label: "_key", Type: flux.TString},
+										{Label: "_value", Type: flux.TInt},
 									},
 									Data: [][]interface{}{
 										{execute.Time(0), execute.Time(5), execute.Time(3), "d", int64(4)},
@@ -274,12 +274,12 @@ func TestExecutor_Execute(t *testing.T) {
 								},
 								&executetest.Table{
 									KeyCols: []string{"_start", "_stop", "_key"},
-									ColMeta: []query.ColMeta{
-										{Label: "_start", Type: query.TTime},
-										{Label: "_stop", Type: query.TTime},
-										{Label: "_time", Type: query.TTime},
-										{Label: "_key", Type: query.TString},
-										{Label: "_value", Type: query.TInt},
+									ColMeta: []flux.ColMeta{
+										{Label: "_start", Type: flux.TTime},
+										{Label: "_stop", Type: flux.TTime},
+										{Label: "_time", Type: flux.TTime},
+										{Label: "_key", Type: flux.TString},
+										{Label: "_value", Type: flux.TInt},
 									},
 									Data: [][]interface{}{
 										{execute.Time(0), execute.Time(5), execute.Time(4), "e", int64(5)},
@@ -350,14 +350,14 @@ func TestExecutor_Execute(t *testing.T) {
 				plan.DefaultYieldName: []*executetest.Table{
 					{
 						KeyCols: []string{"_key", "_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_key", Type: query.TString},
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "count__time", Type: query.TTime},
-							{Label: "count__value", Type: query.TInt},
-							{Label: "sum__time", Type: query.TTime},
-							{Label: "sum__value", Type: query.TInt},
+						ColMeta: []flux.ColMeta{
+							{Label: "_key", Type: flux.TString},
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "count__time", Type: flux.TTime},
+							{Label: "count__value", Type: flux.TInt},
+							{Label: "sum__time", Type: flux.TTime},
+							{Label: "sum__value", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
 							{"a", execute.Time(0), execute.Time(5), execute.Time(5), int64(1), execute.Time(5), int64(1)},
@@ -365,14 +365,14 @@ func TestExecutor_Execute(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_key", "_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_key", Type: query.TString},
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "count__time", Type: query.TTime},
-							{Label: "count__value", Type: query.TInt},
-							{Label: "sum__time", Type: query.TTime},
-							{Label: "sum__value", Type: query.TInt},
+						ColMeta: []flux.ColMeta{
+							{Label: "_key", Type: flux.TString},
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "count__time", Type: flux.TTime},
+							{Label: "count__value", Type: flux.TInt},
+							{Label: "sum__time", Type: flux.TTime},
+							{Label: "sum__value", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
 							{"b", execute.Time(0), execute.Time(5), execute.Time(5), int64(1), execute.Time(5), int64(2)},
@@ -380,14 +380,14 @@ func TestExecutor_Execute(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_key", "_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_key", Type: query.TString},
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "count__time", Type: query.TTime},
-							{Label: "count__value", Type: query.TInt},
-							{Label: "sum__time", Type: query.TTime},
-							{Label: "sum__value", Type: query.TInt},
+						ColMeta: []flux.ColMeta{
+							{Label: "_key", Type: flux.TString},
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "count__time", Type: flux.TTime},
+							{Label: "count__value", Type: flux.TInt},
+							{Label: "sum__time", Type: flux.TTime},
+							{Label: "sum__value", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
 							{"c", execute.Time(0), execute.Time(5), execute.Time(5), int64(1), execute.Time(5), int64(3)},
@@ -395,14 +395,14 @@ func TestExecutor_Execute(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_key", "_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_key", Type: query.TString},
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "count__time", Type: query.TTime},
-							{Label: "count__value", Type: query.TInt},
-							{Label: "sum__time", Type: query.TTime},
-							{Label: "sum__value", Type: query.TInt},
+						ColMeta: []flux.ColMeta{
+							{Label: "_key", Type: flux.TString},
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "count__time", Type: flux.TTime},
+							{Label: "count__value", Type: flux.TInt},
+							{Label: "sum__time", Type: flux.TTime},
+							{Label: "sum__value", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
 							{"d", execute.Time(0), execute.Time(5), execute.Time(5), int64(1), execute.Time(5), int64(4)},
@@ -410,14 +410,14 @@ func TestExecutor_Execute(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_key", "_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_key", Type: query.TString},
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "count__time", Type: query.TTime},
-							{Label: "count__value", Type: query.TInt},
-							{Label: "sum__time", Type: query.TTime},
-							{Label: "sum__value", Type: query.TInt},
+						ColMeta: []flux.ColMeta{
+							{Label: "_key", Type: flux.TString},
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "count__time", Type: flux.TTime},
+							{Label: "count__value", Type: flux.TInt},
+							{Label: "sum__time", Type: flux.TTime},
+							{Label: "sum__value", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
 							{"e", execute.Time(0), execute.Time(5), execute.Time(5), int64(1), execute.Time(5), int64(5)},
@@ -430,7 +430,7 @@ func TestExecutor_Execute(t *testing.T) {
 			name: "multiple aggregates",
 			plan: &plan.PlanSpec{
 				Now: epoch.Add(5),
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 1,
 					MemoryBytesQuota: math.MaxInt64,
 				},
@@ -440,11 +440,11 @@ func TestExecutor_Execute(t *testing.T) {
 						Spec: newTestFromProcedureSource(
 							[]*executetest.Table{&executetest.Table{
 								KeyCols: []string{"_start", "_stop"},
-								ColMeta: []query.ColMeta{
-									{Label: "_start", Type: query.TTime},
-									{Label: "_stop", Type: query.TTime},
-									{Label: "_time", Type: query.TTime},
-									{Label: "_value", Type: query.TFloat},
+								ColMeta: []flux.ColMeta{
+									{Label: "_start", Type: flux.TTime},
+									{Label: "_stop", Type: flux.TTime},
+									{Label: "_time", Type: flux.TTime},
+									{Label: "_value", Type: flux.TFloat},
 								},
 								Data: [][]interface{}{
 									{execute.Time(0), execute.Time(5), execute.Time(0), 1.0},
@@ -502,11 +502,11 @@ func TestExecutor_Execute(t *testing.T) {
 			want: map[string][]*executetest.Table{
 				"sum": []*executetest.Table{{
 					KeyCols: []string{"_start", "_stop"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(0), execute.Time(5), execute.Time(5), 15.0},
@@ -514,11 +514,11 @@ func TestExecutor_Execute(t *testing.T) {
 				}},
 				"mean": []*executetest.Table{{
 					KeyCols: []string{"_start", "_stop"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(0), execute.Time(5), execute.Time(5), 3.0},
@@ -538,7 +538,7 @@ func TestExecutor_Execute(t *testing.T) {
 			}
 			got := make(map[string][]*executetest.Table, len(results))
 			for name, r := range results {
-				if err := r.Tables().Do(func(tbl query.Table) error {
+				if err := r.Tables().Do(func(tbl flux.Table) error {
 					cb, err := executetest.ConvertTable(tbl)
 					if err != nil {
 						return err

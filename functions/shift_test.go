@@ -4,44 +4,44 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
 )
 
 func TestShiftOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"shift","kind":"shift","spec":{"shift":"1h"}}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID: "shift",
 		Spec: &functions.ShiftOpSpec{
-			Shift: query.Duration(1 * time.Hour),
+			Shift: flux.Duration(1 * time.Hour),
 		},
 	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestShift_Process(t *testing.T) {
-	cols := []query.ColMeta{
-		{Label: "t1", Type: query.TString},
-		{Label: execute.DefaultTimeColLabel, Type: query.TTime},
-		{Label: execute.DefaultValueColLabel, Type: query.TFloat},
+	cols := []flux.ColMeta{
+		{Label: "t1", Type: flux.TString},
+		{Label: execute.DefaultTimeColLabel, Type: flux.TTime},
+		{Label: execute.DefaultValueColLabel, Type: flux.TFloat},
 	}
 
 	testCases := []struct {
 		name string
 		spec *functions.ShiftProcedureSpec
-		data []query.Table
+		data []flux.Table
 		want []*executetest.Table
 	}{
 		{
 			name: "one table",
 			spec: &functions.ShiftProcedureSpec{
 				Columns: []string{execute.DefaultTimeColLabel},
-				Shift:   query.Duration(1),
+				Shift:   flux.Duration(1),
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"t1"},
 					ColMeta: cols,
@@ -66,9 +66,9 @@ func TestShift_Process(t *testing.T) {
 			name: "multiple tables",
 			spec: &functions.ShiftProcedureSpec{
 				Columns: []string{execute.DefaultTimeColLabel},
-				Shift:   query.Duration(2),
+				Shift:   flux.Duration(2),
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"t1"},
 					ColMeta: cols,

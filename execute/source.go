@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/influxdata/platform/query/plan"
+	"github.com/influxdata/flux/plan"
 )
 
 type Node interface {

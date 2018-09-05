@@ -6,10 +6,10 @@ import (
 	"log"
 	"math"
 
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/platform"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/semantic"
 	"github.com/pkg/errors"
 )
 
@@ -102,7 +102,7 @@ func (s *source) Run(ctx context.Context) {
 func (s *source) run(ctx context.Context) error {
 	//TODO(nathanielc): Pass through context to actual network I/O.
 	for tables, mark, ok := s.next(ctx); ok; tables, mark, ok = s.next(ctx) {
-		err := tables.Do(func(tbl query.Table) error {
+		err := tables.Do(func(tbl flux.Table) error {
 			for _, t := range s.ts {
 				if err := t.Process(s.id, tbl); err != nil {
 					return err
@@ -127,7 +127,7 @@ func (s *source) run(ctx context.Context) error {
 	return nil
 }
 
-func (s *source) next(ctx context.Context) (query.TableIterator, execute.Time, bool) {
+func (s *source) next(ctx context.Context) (flux.TableIterator, execute.Time, bool) {
 	if s.overflow {
 		return nil, 0, false
 	}
@@ -204,6 +204,6 @@ type ReadSpec struct {
 }
 
 type Reader interface {
-	Read(ctx context.Context, rs ReadSpec, start, stop execute.Time) (query.TableIterator, error)
+	Read(ctx context.Context, rs ReadSpec, start, stop execute.Time) (flux.TableIterator, error)
 	Close()
 }

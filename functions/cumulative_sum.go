@@ -3,11 +3,11 @@ package functions
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 const CumulativeSumKind = "cumulativeSum"
@@ -16,18 +16,18 @@ type CumulativeSumOpSpec struct {
 	Columns []string `json:"columns"`
 }
 
-var cumulativeSumSignature = query.DefaultFunctionSignature()
+var cumulativeSumSignature = flux.DefaultFunctionSignature()
 
 func init() {
 	cumulativeSumSignature.Params["columns"] = semantic.NewArrayType(semantic.String)
 
-	query.RegisterFunction(CumulativeSumKind, createCumulativeSumOpSpec, cumulativeSumSignature)
-	query.RegisterOpSpec(CumulativeSumKind, newCumulativeSumOp)
+	flux.RegisterFunction(CumulativeSumKind, createCumulativeSumOpSpec, cumulativeSumSignature)
+	flux.RegisterOpSpec(CumulativeSumKind, newCumulativeSumOp)
 	plan.RegisterProcedureSpec(CumulativeSumKind, newCumulativeSumProcedure, CumulativeSumKind)
 	execute.RegisterTransformation(CumulativeSumKind, createCumulativeSumTransformation)
 }
 
-func createCumulativeSumOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createCumulativeSumOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -47,11 +47,11 @@ func createCumulativeSumOpSpec(args query.Arguments, a *query.Administration) (q
 	return spec, nil
 }
 
-func newCumulativeSumOp() query.OperationSpec {
+func newCumulativeSumOp() flux.OperationSpec {
 	return new(CumulativeSumOpSpec)
 }
 
-func (s *CumulativeSumOpSpec) Kind() query.OperationKind {
+func (s *CumulativeSumOpSpec) Kind() flux.OperationKind {
 	return CumulativeSumKind
 }
 
@@ -59,7 +59,7 @@ type CumulativeSumProcedureSpec struct {
 	Columns []string
 }
 
-func newCumulativeSumProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newCumulativeSumProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*CumulativeSumOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -108,11 +108,11 @@ func NewCumulativeSumTransformation(d execute.Dataset, cache execute.TableBuilde
 	}
 }
 
-func (t *cumulativeSumTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *cumulativeSumTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *cumulativeSumTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *cumulativeSumTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
 		return fmt.Errorf("cumulative sum found duplicate table with key: %v", tbl.Key())
@@ -129,13 +129,13 @@ func (t *cumulativeSumTransformation) Process(id execute.DatasetID, tbl query.Ta
 			}
 		}
 	}
-	return tbl.Do(func(cr query.ColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for j, c := range cols {
 			switch c.Type {
-			case query.TBool:
+			case flux.TBool:
 				builder.AppendBools(j, cr.Bools(j))
-			case query.TInt:
+			case flux.TInt:
 				if sumers[j] != nil {
 					for i := 0; i < l; i++ {
 						builder.AppendInt(j, sumers[j].sumInt(cr.Ints(j)[i]))
@@ -143,7 +143,7 @@ func (t *cumulativeSumTransformation) Process(id execute.DatasetID, tbl query.Ta
 				} else {
 					builder.AppendInts(j, cr.Ints(j))
 				}
-			case query.TUInt:
+			case flux.TUInt:
 				if sumers[j] != nil {
 					for i := 0; i < l; i++ {
 						builder.AppendUInt(j, sumers[j].sumUInt(cr.UInts(j)[i]))
@@ -151,7 +151,7 @@ func (t *cumulativeSumTransformation) Process(id execute.DatasetID, tbl query.Ta
 				} else {
 					builder.AppendUInts(j, cr.UInts(j))
 				}
-			case query.TFloat:
+			case flux.TFloat:
 				if sumers[j] != nil {
 					for i := 0; i < l; i++ {
 						builder.AppendFloat(j, sumers[j].sumFloat(cr.Floats(j)[i]))
@@ -159,9 +159,9 @@ func (t *cumulativeSumTransformation) Process(id execute.DatasetID, tbl query.Ta
 				} else {
 					builder.AppendFloats(j, cr.Floats(j))
 				}
-			case query.TString:
+			case flux.TString:
 				builder.AppendStrings(j, cr.Strings(j))
-			case query.TTime:
+			case flux.TTime:
 				builder.AppendTimes(j, cr.Times(j))
 			}
 		}

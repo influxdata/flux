@@ -3,9 +3,9 @@ package executetest
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/values"
 )
 
 // Table is an implementation of execute.Table
@@ -14,7 +14,7 @@ import (
 // Use Normalize to ensure that all fields are set before equality comparisons.
 type Table struct {
 	// GroupKey of the table. Does not need to be set explicitly.
-	GroupKey query.GroupKey
+	GroupKey flux.GroupKey
 	// KeyCols is a list of column that are part of the group key.
 	// The column type is deduced from the ColMeta slice.
 	KeyCols []string
@@ -22,7 +22,7 @@ type Table struct {
 	// Only needs to be set when no data is present on the table.
 	KeyValues []interface{}
 	// ColMeta is a list of columns of the table.
-	ColMeta []query.ColMeta
+	ColMeta []flux.ColMeta
 	// Data is a list of rows, i.e. Data[row][col]
 	// Each row must be a list with length equal to len(ColMeta)
 	Data [][]interface{}
@@ -31,7 +31,7 @@ type Table struct {
 // Normalize ensures all fields of the table are set correctly.
 func (t *Table) Normalize() {
 	if t.GroupKey == nil {
-		cols := make([]query.ColMeta, len(t.KeyCols))
+		cols := make([]flux.ColMeta, len(t.KeyCols))
 		vs := make([]values.Value, len(t.KeyCols))
 		if len(t.KeyValues) != len(t.KeyCols) {
 			t.KeyValues = make([]interface{}, len(t.KeyCols))
@@ -61,16 +61,16 @@ func (t *Table) Empty() bool {
 
 func (t *Table) RefCount(n int) {}
 
-func (t *Table) Cols() []query.ColMeta {
+func (t *Table) Cols() []flux.ColMeta {
 	return t.ColMeta
 }
 
-func (t *Table) Key() query.GroupKey {
+func (t *Table) Key() flux.GroupKey {
 	t.Normalize()
 	return t.GroupKey
 }
 
-func (t *Table) Do(f func(query.ColReader) error) error {
+func (t *Table) Do(f func(flux.ColReader) error) error {
 	for _, r := range t.Data {
 		if err := f(ColReader{
 			key:  t.Key(),
@@ -84,16 +84,16 @@ func (t *Table) Do(f func(query.ColReader) error) error {
 }
 
 type ColReader struct {
-	key  query.GroupKey
-	cols []query.ColMeta
+	key  flux.GroupKey
+	cols []flux.ColMeta
 	row  []interface{}
 }
 
-func (cr ColReader) Cols() []query.ColMeta {
+func (cr ColReader) Cols() []flux.ColMeta {
 	return cr.cols
 }
 
-func (cr ColReader) Key() query.GroupKey {
+func (cr ColReader) Key() flux.GroupKey {
 	return cr.key
 }
 func (cr ColReader) Len() int {
@@ -125,11 +125,11 @@ func (cr ColReader) Times(j int) []execute.Time {
 }
 
 func TablesFromCache(c execute.DataCache) (tables []*Table, err error) {
-	c.ForEach(func(key query.GroupKey) {
+	c.ForEach(func(key flux.GroupKey) {
 		if err != nil {
 			return
 		}
-		var tbl query.Table
+		var tbl flux.Table
 		tbl, err = c.Table(key)
 		if err != nil {
 			return
@@ -145,7 +145,7 @@ func TablesFromCache(c execute.DataCache) (tables []*Table, err error) {
 	return tables, nil
 }
 
-func ConvertTable(tbl query.Table) (*Table, error) {
+func ConvertTable(tbl flux.Table) (*Table, error) {
 	key := tbl.Key()
 	blk := &Table{
 		GroupKey: key,
@@ -160,17 +160,17 @@ func ConvertTable(tbl query.Table) (*Table, error) {
 			blk.KeyCols[j] = c.Label
 			var v interface{}
 			switch c.Type {
-			case query.TBool:
+			case flux.TBool:
 				v = key.ValueBool(j)
-			case query.TUInt:
+			case flux.TUInt:
 				v = key.ValueUInt(j)
-			case query.TInt:
+			case flux.TInt:
 				v = key.ValueInt(j)
-			case query.TFloat:
+			case flux.TFloat:
 				v = key.ValueFloat(j)
-			case query.TString:
+			case flux.TString:
 				v = key.ValueString(j)
-			case query.TTime:
+			case flux.TTime:
 				v = key.ValueTime(j)
 			default:
 				return nil, fmt.Errorf("unsupported column type %v", c.Type)
@@ -179,24 +179,24 @@ func ConvertTable(tbl query.Table) (*Table, error) {
 		}
 	}
 
-	err := tbl.Do(func(cr query.ColReader) error {
+	err := tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			row := make([]interface{}, len(blk.ColMeta))
 			for j, c := range blk.ColMeta {
 				var v interface{}
 				switch c.Type {
-				case query.TBool:
+				case flux.TBool:
 					v = cr.Bools(j)[i]
-				case query.TInt:
+				case flux.TInt:
 					v = cr.Ints(j)[i]
-				case query.TUInt:
+				case flux.TUInt:
 					v = cr.UInts(j)[i]
-				case query.TFloat:
+				case flux.TFloat:
 					v = cr.Floats(j)[i]
-				case query.TString:
+				case flux.TString:
 					v = cr.Strings(j)[i]
-				case query.TTime:
+				case flux.TTime:
 					v = cr.Times(j)[i]
 				default:
 					panic(fmt.Errorf("unknown column type %s", c.Type))

@@ -3,7 +3,7 @@ package execute
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
+	"github.com/influxdata/flux"
 )
 
 type Trigger interface {
@@ -19,29 +19,29 @@ type TriggerContext struct {
 }
 
 type TableContext struct {
-	Key   query.GroupKey
+	Key   flux.GroupKey
 	Count int
 }
 
-func NewTriggerFromSpec(spec query.TriggerSpec) Trigger {
+func NewTriggerFromSpec(spec flux.TriggerSpec) Trigger {
 	switch s := spec.(type) {
-	case query.AfterWatermarkTriggerSpec:
+	case flux.AfterWatermarkTriggerSpec:
 		return &afterWatermarkTrigger{
 			allowedLateness: Duration(s.AllowedLateness),
 		}
-	case query.RepeatedTriggerSpec:
+	case flux.RepeatedTriggerSpec:
 		return &repeatedlyForever{
 			t: NewTriggerFromSpec(s.Trigger),
 		}
-	case query.AfterProcessingTimeTriggerSpec:
+	case flux.AfterProcessingTimeTriggerSpec:
 		return &afterProcessingTimeTrigger{
 			duration: Duration(s.Duration),
 		}
-	case query.AfterAtLeastCountTriggerSpec:
+	case flux.AfterAtLeastCountTriggerSpec:
 		return &afterAtLeastCount{
 			atLeast: s.Count,
 		}
-	case query.OrFinallyTriggerSpec:
+	case flux.OrFinallyTriggerSpec:
 		return &orFinally{
 			main:    NewTriggerFromSpec(s.Main),
 			finally: NewTriggerFromSpec(s.Finally),

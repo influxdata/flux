@@ -3,10 +3,10 @@ package functions
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 const DistinctKind = "distinct"
@@ -15,19 +15,19 @@ type DistinctOpSpec struct {
 	Column string `json:"column"`
 }
 
-var distinctSignature = query.DefaultFunctionSignature()
+var distinctSignature = flux.DefaultFunctionSignature()
 
 func init() {
 	distinctSignature.Params["column"] = semantic.String
 
-	query.RegisterFunction(DistinctKind, createDistinctOpSpec, distinctSignature)
-	query.RegisterOpSpec(DistinctKind, newDistinctOp)
+	flux.RegisterFunction(DistinctKind, createDistinctOpSpec, distinctSignature)
+	flux.RegisterOpSpec(DistinctKind, newDistinctOp)
 	plan.RegisterProcedureSpec(DistinctKind, newDistinctProcedure, DistinctKind)
 	plan.RegisterRewriteRule(DistinctPointLimitRewriteRule{})
 	execute.RegisterTransformation(DistinctKind, createDistinctTransformation)
 }
 
-func createDistinctOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createDistinctOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -45,11 +45,11 @@ func createDistinctOpSpec(args query.Arguments, a *query.Administration) (query.
 	return spec, nil
 }
 
-func newDistinctOp() query.OperationSpec {
+func newDistinctOp() flux.OperationSpec {
 	return new(DistinctOpSpec)
 }
 
-func (s *DistinctOpSpec) Kind() query.OperationKind {
+func (s *DistinctOpSpec) Kind() flux.OperationKind {
 	return DistinctKind
 }
 
@@ -57,7 +57,7 @@ type DistinctProcedureSpec struct {
 	Column string
 }
 
-func newDistinctProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newDistinctProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*DistinctOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -140,11 +140,11 @@ func NewDistinctTransformation(d execute.Dataset, cache execute.TableBuilderCach
 	}
 }
 
-func (t *distinctTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *distinctTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *distinctTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
 		return fmt.Errorf("distinct found duplicate table with key: %v", tbl.Key())
@@ -154,14 +154,14 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl query.Table) 
 	if colIdx < 0 {
 		// doesn't exist in this table, so add an empty value
 		execute.AddTableKeyCols(tbl.Key(), builder)
-		colIdx = builder.AddCol(query.ColMeta{
+		colIdx = builder.AddCol(flux.ColMeta{
 			Label: execute.DefaultValueColLabel,
-			Type:  query.TString,
+			Type:  flux.TString,
 		})
 		builder.AppendString(colIdx, "")
 		execute.AppendKeyValues(tbl.Key(), builder)
 		// TODO: hack required to ensure data flows downstream
-		return tbl.Do(func(query.ColReader) error {
+		return tbl.Do(func(flux.ColReader) error {
 			return nil
 		})
 	}
@@ -169,7 +169,7 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl query.Table) 
 	col := tbl.Cols()[colIdx]
 
 	execute.AddTableKeyCols(tbl.Key(), builder)
-	colIdx = builder.AddCol(query.ColMeta{
+	colIdx = builder.AddCol(flux.ColMeta{
 		Label: execute.DefaultValueColLabel,
 		Type:  col.Type,
 	})
@@ -177,23 +177,23 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl query.Table) 
 	if tbl.Key().HasCol(t.column) {
 		j := execute.ColIdx(t.column, tbl.Key().Cols())
 		switch col.Type {
-		case query.TBool:
+		case flux.TBool:
 			builder.AppendBool(colIdx, tbl.Key().ValueBool(j))
-		case query.TInt:
+		case flux.TInt:
 			builder.AppendInt(colIdx, tbl.Key().ValueInt(j))
-		case query.TUInt:
+		case flux.TUInt:
 			builder.AppendUInt(colIdx, tbl.Key().ValueUInt(j))
-		case query.TFloat:
+		case flux.TFloat:
 			builder.AppendFloat(colIdx, tbl.Key().ValueFloat(j))
-		case query.TString:
+		case flux.TString:
 			builder.AppendString(colIdx, tbl.Key().ValueString(j))
-		case query.TTime:
+		case flux.TTime:
 			builder.AppendTime(colIdx, tbl.Key().ValueTime(j))
 		}
 
 		execute.AppendKeyValues(tbl.Key(), builder)
 		// TODO: hack required to ensure data flows downstream
-		return tbl.Do(func(query.ColReader) error {
+		return tbl.Do(func(flux.ColReader) error {
 			return nil
 		})
 	}
@@ -207,61 +207,61 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl query.Table) 
 		timeDistinct   map[execute.Time]bool
 	)
 	switch col.Type {
-	case query.TBool:
+	case flux.TBool:
 		boolDistinct = make(map[bool]bool)
-	case query.TInt:
+	case flux.TInt:
 		intDistinct = make(map[int64]bool)
-	case query.TUInt:
+	case flux.TUInt:
 		uintDistinct = make(map[uint64]bool)
-	case query.TFloat:
+	case flux.TFloat:
 		floatDistinct = make(map[float64]bool)
-	case query.TString:
+	case flux.TString:
 		stringDistinct = make(map[string]bool)
-	case query.TTime:
+	case flux.TTime:
 		timeDistinct = make(map[execute.Time]bool)
 	}
 
-	return tbl.Do(func(cr query.ColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			// Check distinct
 			switch col.Type {
-			case query.TBool:
+			case flux.TBool:
 				v := cr.Bools(colIdx)[i]
 				if boolDistinct[v] {
 					continue
 				}
 				boolDistinct[v] = true
 				builder.AppendBool(colIdx, v)
-			case query.TInt:
+			case flux.TInt:
 				v := cr.Ints(colIdx)[i]
 				if intDistinct[v] {
 					continue
 				}
 				intDistinct[v] = true
 				builder.AppendInt(colIdx, v)
-			case query.TUInt:
+			case flux.TUInt:
 				v := cr.UInts(colIdx)[i]
 				if uintDistinct[v] {
 					continue
 				}
 				uintDistinct[v] = true
 				builder.AppendUInt(colIdx, v)
-			case query.TFloat:
+			case flux.TFloat:
 				v := cr.Floats(colIdx)[i]
 				if floatDistinct[v] {
 					continue
 				}
 				floatDistinct[v] = true
 				builder.AppendFloat(colIdx, v)
-			case query.TString:
+			case flux.TString:
 				v := cr.Strings(colIdx)[i]
 				if stringDistinct[v] {
 					continue
 				}
 				stringDistinct[v] = true
 				builder.AppendString(colIdx, v)
-			case query.TTime:
+			case flux.TTime:
 				v := cr.Times(colIdx)[i]
 				if timeDistinct[v] {
 					continue

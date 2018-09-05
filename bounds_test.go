@@ -1,54 +1,54 @@
-package query_test
+package flux_test
 
 import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/platform/query"
+	"github.com/influxdata/flux"
 )
 
-var EmptyBounds = query.Bounds{
-	Start: query.Now,
-	Stop:  query.Now,
+var EmptyBounds = flux.Bounds{
+	Start: flux.Now,
+	Stop:  flux.Now,
 }
 
 func TestBounds_HasZero(t *testing.T) {
 	tests := []struct {
 		name   string
 		now    time.Time
-		bounds query.Bounds
+		bounds flux.Bounds
 		want   bool
 	}{
 		{
 			name: "single zero",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			bounds: query.Bounds{
-				Start: query.Time{
+			bounds: flux.Bounds{
+				Start: flux.Time{
 					IsRelative: true,
 					Relative:   -1 * time.Hour,
 				},
-				Stop: query.Time{},
+				Stop: flux.Time{},
 			},
 			want: true,
 		},
 		{
 			name: "both zero",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			bounds: query.Bounds{
-				Start: query.Time{},
-				Stop:  query.Time{},
+			bounds: flux.Bounds{
+				Start: flux.Time{},
+				Stop:  flux.Time{},
 			},
 			want: true,
 		},
 		{
 			name: "both non-zero",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			bounds: query.Bounds{
-				Start: query.Time{
+			bounds: flux.Bounds{
+				Start: flux.Time{
 					IsRelative: true,
 					Relative:   -1 * time.Hour,
 				},
-				Stop: query.Now,
+				Stop: flux.Now,
 			},
 			want: false,
 		},
@@ -68,24 +68,24 @@ func TestBounds_IsEmpty(t *testing.T) {
 	tests := []struct {
 		name   string
 		now    time.Time
-		bounds query.Bounds
+		bounds flux.Bounds
 		want   bool
 	}{
 		{
 			name: "empty bounds / start == stop",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			bounds: query.Bounds{
-				Start: query.Now,
-				Stop:  query.Now,
+			bounds: flux.Bounds{
+				Start: flux.Now,
+				Stop:  flux.Now,
 			},
 			want: true,
 		},
 		{
 			name: "empty bounds / absolute now == relative now",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			bounds: query.Bounds{
-				Start: query.Now,
-				Stop: query.Time{
+			bounds: flux.Bounds{
+				Start: flux.Now,
+				Stop: flux.Time{
 					Absolute: time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
 				},
 			},
@@ -94,24 +94,24 @@ func TestBounds_IsEmpty(t *testing.T) {
 		{
 			name: "start > stop",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			bounds: query.Bounds{
-				Start: query.Time{
+			bounds: flux.Bounds{
+				Start: flux.Time{
 					IsRelative: true,
 					Relative:   time.Hour,
 				},
-				Stop: query.Now,
+				Stop: flux.Now,
 			},
 			want: true,
 		},
 		{
 			name: "start < stop",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			bounds: query.Bounds{
-				Start: query.Time{
+			bounds: flux.Bounds{
+				Start: flux.Time{
 					IsRelative: true,
 					Relative:   -1 * time.Hour,
 				},
-				Stop: query.Now,
+				Stop: flux.Now,
 			},
 			want: false,
 		},

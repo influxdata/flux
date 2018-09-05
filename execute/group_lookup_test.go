@@ -4,16 +4,16 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/values"
 )
 
 var (
-	cols = []query.ColMeta{
-		{Label: "a", Type: query.TString},
-		{Label: "b", Type: query.TString},
-		{Label: "c", Type: query.TString},
+	cols = []flux.ColMeta{
+		{Label: "a", Type: flux.TString},
+		{Label: "b", Type: flux.TString},
+		{Label: "c", Type: flux.TString},
 	}
 	key0 = execute.NewGroupKey(
 		cols,
@@ -63,7 +63,7 @@ func TestGroupLookup(t *testing.T) {
 	}
 
 	var got []entry
-	l.Range(func(k query.GroupKey, v interface{}) {
+	l.Range(func(k flux.GroupKey, v interface{}) {
 		got = append(got, entry{
 			Key:   k,
 			Value: v.(int),
@@ -114,7 +114,7 @@ func TestGroupLookup_RangeWithDelete(t *testing.T) {
 		{Key: key1, Value: 1},
 	}
 	var got []entry
-	l.Range(func(k query.GroupKey, v interface{}) {
+	l.Range(func(k flux.GroupKey, v interface{}) {
 		// Delete the current key
 		l.Delete(key0)
 		// Delete a future key
@@ -131,6 +131,6 @@ func TestGroupLookup_RangeWithDelete(t *testing.T) {
 }
 
 type entry struct {
-	Key   query.GroupKey
+	Key   flux.GroupKey
 	Value int
 }

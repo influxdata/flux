@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 const IntegralKind = "integral"
 
 type IntegralOpSpec struct {
-	Unit query.Duration `json:"unit"`
+	Unit flux.Duration `json:"unit"`
 	execute.AggregateConfig
 }
 
@@ -22,13 +22,13 @@ var integralSignature = execute.DefaultAggregateSignature()
 func init() {
 	integralSignature.Params["unit"] = semantic.Duration
 
-	query.RegisterFunction(IntegralKind, createIntegralOpSpec, integralSignature)
-	query.RegisterOpSpec(IntegralKind, newIntegralOp)
+	flux.RegisterFunction(IntegralKind, createIntegralOpSpec, integralSignature)
+	flux.RegisterOpSpec(IntegralKind, newIntegralOp)
 	plan.RegisterProcedureSpec(IntegralKind, newIntegralProcedure, IntegralKind)
 	execute.RegisterTransformation(IntegralKind, createIntegralTransformation)
 }
 
-func createIntegralOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createIntegralOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func createIntegralOpSpec(args query.Arguments, a *query.Administration) (query.
 		spec.Unit = unit
 	} else {
 		//Default is 1s
-		spec.Unit = query.Duration(time.Second)
+		spec.Unit = flux.Duration(time.Second)
 	}
 
 	if err := spec.AggregateConfig.ReadArgs(args); err != nil {
@@ -50,20 +50,20 @@ func createIntegralOpSpec(args query.Arguments, a *query.Administration) (query.
 	return spec, nil
 }
 
-func newIntegralOp() query.OperationSpec {
+func newIntegralOp() flux.OperationSpec {
 	return new(IntegralOpSpec)
 }
 
-func (s *IntegralOpSpec) Kind() query.OperationKind {
+func (s *IntegralOpSpec) Kind() flux.OperationKind {
 	return IntegralKind
 }
 
 type IntegralProcedureSpec struct {
-	Unit query.Duration `json:"unit"`
+	Unit flux.Duration `json:"unit"`
 	execute.AggregateConfig
 }
 
-func newIntegralProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newIntegralProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*IntegralOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -113,20 +113,20 @@ func NewIntegralTransformation(d execute.Dataset, cache execute.TableBuilderCach
 	}
 }
 
-func (t *integralTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *integralTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *integralTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
 		return fmt.Errorf("integral found duplicate table with key: %v", tbl.Key())
 	}
 
 	execute.AddTableKeyCols(tbl.Key(), builder)
-	builder.AddCol(query.ColMeta{
+	builder.AddCol(flux.ColMeta{
 		Label: t.spec.TimeDst,
-		Type:  query.TTime,
+		Type:  flux.TTime,
 	})
 	cols := tbl.Cols()
 	integrals := make([]*integral, len(cols))
@@ -134,9 +134,9 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl query.Table) 
 	for j, c := range cols {
 		if execute.ContainsStr(t.spec.Columns, c.Label) {
 			integrals[j] = newIntegral(time.Duration(t.spec.Unit))
-			colMap[j] = builder.AddCol(query.ColMeta{
+			colMap[j] = builder.AddCol(flux.ColMeta{
 				Label: c.Label,
-				Type:  query.TFloat,
+				Type:  flux.TFloat,
 			})
 		}
 	}
@@ -149,7 +149,7 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl query.Table) 
 	if timeIdx < 0 {
 		return fmt.Errorf("no column %q exists", t.spec.TimeSrc)
 	}
-	err := tbl.Do(func(cr query.ColReader) error {
+	err := tbl.Do(func(cr flux.ColReader) error {
 		for j, in := range integrals {
 			if in == nil {
 				continue

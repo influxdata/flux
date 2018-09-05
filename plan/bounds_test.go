@@ -6,9 +6,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/plan/plantest"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/values"
 )
 
 func TestBoundsIntersect(t *testing.T) {
@@ -254,14 +254,14 @@ func TestPlanner_ResolveBounds(t *testing.T) {
 	tests := []struct {
 		name   string
 		now time.Time
-		bounds query.Bounds
+		bounds flux.Bounds
 		want   plan.BoundsSpec
 	}{
 		{
 			name: "relative bounds",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			bounds: query.Bounds{
-				Start: query.Time{
+			bounds: flux.Bounds{
+				Start: flux.Time{
 					Relative: true,
 					Start: -1 * time.Hour,
 				},

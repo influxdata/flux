@@ -3,9 +3,9 @@ package plan
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux/values"
 
-	"github.com/influxdata/platform/query"
+	"github.com/influxdata/flux"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -63,10 +63,10 @@ func (p *Procedure) Child(i int) *Procedure {
 }
 
 type Administration interface {
-	ConvertID(query.OperationID) ProcedureID
+	ConvertID(flux.OperationID) ProcedureID
 }
 
-type CreateProcedureSpec func(query.OperationSpec, Administration) (ProcedureSpec, error)
+type CreateProcedureSpec func(flux.OperationSpec, Administration) (ProcedureSpec, error)
 
 // ProcedureSpec specifies an operation as part of a query.
 type ProcedureSpec interface {
@@ -81,7 +81,7 @@ type PushDownProcedureSpec interface {
 }
 
 type BoundedProcedureSpec interface {
-	TimeBounds() query.Bounds
+	TimeBounds() flux.Bounds
 }
 
 type YieldProcedureSpec interface {
@@ -183,18 +183,18 @@ func (b *BoundsSpec) Intersect(o *BoundsSpec) *BoundsSpec {
 }
 
 type WindowSpec struct {
-	Every  query.Duration
-	Period query.Duration
-	Round  query.Duration
-	Start  query.Time
+	Every  flux.Duration
+	Period flux.Duration
+	Round  flux.Duration
+	Start  flux.Time
 }
 
 var kindToProcedure = make(map[ProcedureKind]CreateProcedureSpec)
-var queryOpToProcedure = make(map[query.OperationKind][]CreateProcedureSpec)
+var queryOpToProcedure = make(map[flux.OperationKind][]CreateProcedureSpec)
 
 // RegisterProcedureSpec registers a new procedure with the specified kind.
 // The call panics if the kind is not unique.
-func RegisterProcedureSpec(k ProcedureKind, c CreateProcedureSpec, qks ...query.OperationKind) {
+func RegisterProcedureSpec(k ProcedureKind, c CreateProcedureSpec, qks ...flux.OperationKind) {
 	if kindToProcedure[k] != nil {
 		panic(fmt.Errorf("duplicate registration for procedure kind %v", k))
 	}

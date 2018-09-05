@@ -7,16 +7,16 @@ import (
 	"runtime/debug"
 	"time"
 
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/platform"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/plan"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 type Executor interface {
-	Execute(ctx context.Context, orgID platform.ID, p *plan.PlanSpec, a *Allocator) (map[string]query.Result, error)
+	Execute(ctx context.Context, orgID platform.ID, p *plan.PlanSpec, a *Allocator) (map[string]flux.Result, error)
 }
 
 type executor struct {
@@ -57,9 +57,9 @@ type executionState struct {
 
 	alloc *Allocator
 
-	resources query.ResourceManagement
+	resources flux.ResourceManagement
 
-	results map[string]query.Result
+	results map[string]flux.Result
 	sources []Source
 
 	transports []Transport
@@ -68,7 +68,7 @@ type executionState struct {
 	logger     *zap.Logger
 }
 
-func (e *executor) Execute(ctx context.Context, orgID platform.ID, p *plan.PlanSpec, a *Allocator) (map[string]query.Result, error) {
+func (e *executor) Execute(ctx context.Context, orgID platform.ID, p *plan.PlanSpec, a *Allocator) (map[string]flux.Result, error) {
 	es, err := e.createExecutionState(ctx, orgID, p, a)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to initialize execute state")
@@ -97,7 +97,7 @@ func (e *executor) createExecutionState(ctx context.Context, orgID platform.ID, 
 		deps:      e.deps,
 		alloc:     a,
 		resources: p.Resources,
-		results:   make(map[string]query.Result, len(p.Results)),
+		results:   make(map[string]flux.Result, len(p.Results)),
 		// TODO(nathanielc): Have the planner specify the dispatcher throughput
 		dispatcher: newPoolDispatcher(10, e.logger),
 	}
@@ -116,10 +116,10 @@ func (e *executor) createExecutionState(ctx context.Context, orgID platform.ID, 
 
 // DefaultTriggerSpec defines the triggering that should be used for datasets
 // whose parent transformation is not a windowing transformation.
-var DefaultTriggerSpec = query.AfterWatermarkTriggerSpec{}
+var DefaultTriggerSpec = flux.AfterWatermarkTriggerSpec{}
 
 type triggeringSpec interface {
-	TriggerSpec() query.TriggerSpec
+	TriggerSpec() flux.TriggerSpec
 }
 
 func (es *executionState) createNode(ctx context.Context, pr *plan.Procedure, nodes map[plan.ProcedureID]Node) (Node, error) {
@@ -174,7 +174,7 @@ func (es *executionState) createNode(ctx context.Context, pr *plan.Procedure, no
 	nodes[pr.ID] = ds
 
 	// Setup triggering
-	var ts query.TriggerSpec = DefaultTriggerSpec
+	var ts flux.TriggerSpec = DefaultTriggerSpec
 	if t, ok := pr.Spec.(triggeringSpec); ok {
 		ts = t.TriggerSpec()
 	}
@@ -258,11 +258,11 @@ func (ec executionContext) OrganizationID() platform.ID {
 	return ec.es.orgID
 }
 
-func resolveTime(qt query.Time, now time.Time) Time {
+func resolveTime(qt flux.Time, now time.Time) Time {
 	return Time(qt.Time(now).UnixNano())
 }
 
-func (ec executionContext) ResolveTime(qt query.Time) Time {
+func (ec executionContext) ResolveTime(qt flux.Time) Time {
 	return resolveTime(qt, ec.es.p.Now)
 }
 

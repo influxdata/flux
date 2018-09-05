@@ -4,22 +4,22 @@ import (
 	"math"
 	"testing"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
 )
 
 func TestHistogramOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"histogram","kind":"histogram","spec":{"column":"_value"}}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID: "histogram",
 		Spec: &functions.HistogramOpSpec{
 			Column: "_value",
 		},
 	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestHistogram_PassThrough(t *testing.T) {
@@ -37,7 +37,7 @@ func TestHistogram_Process(t *testing.T) {
 	testCases := []struct {
 		name string
 		spec *functions.HistogramProcedureSpec
-		data []query.Table
+		data []flux.Table
 		want []*executetest.Table
 	}{
 		{
@@ -48,13 +48,13 @@ func TestHistogram_Process(t *testing.T) {
 				CountColumn:      "_value",
 				Buckets:          []float64{0, 10, 20, 30, 40},
 			}},
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), execute.Time(1), 02.0},
@@ -71,11 +71,11 @@ func TestHistogram_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "le", Type: query.TFloat},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "le", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 0.0, 0.0},
@@ -94,13 +94,13 @@ func TestHistogram_Process(t *testing.T) {
 				CountColumn:      "_value",
 				Buckets:          []float64{0, 10, 20, 30, 40, math.Inf(1)},
 			}},
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), execute.Time(1), 02.0},
@@ -118,11 +118,11 @@ func TestHistogram_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "le", Type: query.TFloat},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "le", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 0.0, 0.0},
@@ -143,13 +143,13 @@ func TestHistogram_Process(t *testing.T) {
 				Buckets:          []float64{0, 10, 20, 30, 40},
 				Normalize:        true,
 			}},
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), execute.Time(1), 02.0},
@@ -166,11 +166,11 @@ func TestHistogram_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "le", Type: query.TFloat},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "le", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 0.0, 0.0},
@@ -189,13 +189,13 @@ func TestHistogram_Process(t *testing.T) {
 				CountColumn:      "_value",
 				Buckets:          []float64{1, 2, 4, 8, 16, 32, 64},
 			}},
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), execute.Time(1), 02.0},
@@ -212,11 +212,11 @@ func TestHistogram_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "le", Type: query.TFloat},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "le", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 1.0, 0.0},
@@ -237,13 +237,13 @@ func TestHistogram_Process(t *testing.T) {
 				CountColumn:      "_value",
 				Buckets:          []float64{1, 64, 2, 4, 16, 8, 32},
 			}},
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), execute.Time(1), 02.0},
@@ -260,11 +260,11 @@ func TestHistogram_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "le", Type: query.TFloat},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "le", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 1.0, 0.0},
@@ -285,13 +285,13 @@ func TestHistogram_Process(t *testing.T) {
 				CountColumn:      "_value",
 				Buckets:          []float64{1, 2, 3, 5, 8, 13, 21, 34, 55},
 			}},
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), execute.Time(1), 02.0},
@@ -308,11 +308,11 @@ func TestHistogram_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "le", Type: query.TFloat},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "le", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), 1.0, 0.0},

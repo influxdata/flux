@@ -1,10 +1,10 @@
 package options
 
 import (
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/functions"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/functions"
 )
 
 func init() {
-	query.RegisterBuiltInOption("now", functions.SystemTime())
+	flux.RegisterBuiltInOption("now", functions.SystemTime())
 }

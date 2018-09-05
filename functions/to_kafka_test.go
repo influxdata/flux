@@ -7,23 +7,23 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
 	kafka "github.com/segmentio/kafka-go"
 )
 
 // type kafkaClientMock = func
 
 func TestToKafka_NewQuery(t *testing.T) {
-	tests := []querytest.NewQueryTestCase{
+	tests := []fluxtest.NewQueryTestCase{
 		{
 			Name: "from with database",
 			Raw:  `from(bucket:"mybucket") |> toKafka(brokers:["brokerurl:8989"], name:"series1", topic:"totallynotfaketopic")`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -41,7 +41,7 @@ func TestToKafka_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "toKafka1"},
 				},
 			},
@@ -51,7 +51,7 @@ func TestToKafka_NewQuery(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			querytest.NewQueryTestHelper(t, tc)
+			fluxtest.NewQueryTestHelper(t, tc)
 		})
 	}
 }
@@ -90,7 +90,7 @@ func TestToKafka_Process(t *testing.T) {
 	testCases := []struct {
 		name string
 		spec *functions.ToKafkaProcedureSpec
-		data []query.Table
+		data []flux.Table
 		want wanted
 	}{
 		{
@@ -104,12 +104,12 @@ func TestToKafka_Process(t *testing.T) {
 					NameColumn:   "_measurement",
 				},
 			},
-			data: []query.Table{execute.CopyTable(&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_measurement", Type: query.TString},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "fred", Type: query.TString},
+			data: []flux.Table{execute.CopyTable(&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(11), "a", 2.0, "one"},
@@ -141,12 +141,12 @@ func TestToKafka_Process(t *testing.T) {
 					NameColumn:   "_measurement",
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_measurement", Type: query.TString},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "fred", Type: query.TString},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(11), "a", 2.0, "one"},
@@ -179,12 +179,12 @@ func TestToKafka_Process(t *testing.T) {
 					NameColumn:   "_measurement",
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_measurement", Type: query.TString},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "fred", Type: query.TString},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(11), "a", 2.0, "one"},
@@ -216,10 +216,10 @@ func TestToKafka_Process(t *testing.T) {
 					Name:         "one_block",
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(11), 2.0},
@@ -249,11 +249,11 @@ func TestToKafka_Process(t *testing.T) {
 					Name:         "one_block_w_unused_tag",
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "fred", Type: query.TString},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(11), 2.0, "one"},
@@ -284,11 +284,11 @@ func TestToKafka_Process(t *testing.T) {
 					Name:         "one_block_w_tag",
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "fred", Type: query.TString},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(11), 2.0, "one"},
@@ -319,12 +319,12 @@ func TestToKafka_Process(t *testing.T) {
 					Name:         "multi_block",
 				},
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				&executetest.Table{
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "fred", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "fred", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(11), 2.0, "one"},
@@ -333,10 +333,10 @@ func TestToKafka_Process(t *testing.T) {
 					},
 				},
 				&executetest.Table{
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "fred", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "fred", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(51), 2.0, "one"},
@@ -370,13 +370,13 @@ func TestToKafka_Process(t *testing.T) {
 					Name:         "multi_collist_blocks",
 				},
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				execute.CopyTable(
 					&executetest.Table{
-						ColMeta: []query.ColMeta{
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
-							{Label: "fred", Type: query.TString},
+						ColMeta: []flux.ColMeta{
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
+							{Label: "fred", Type: flux.TString},
 						},
 						Data: [][]interface{}{
 							{execute.Time(11), 2.0, "one"},
@@ -385,10 +385,10 @@ func TestToKafka_Process(t *testing.T) {
 						},
 					}, executetest.UnlimitedAllocator),
 				&executetest.Table{
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "fred", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "fred", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(51), 2.0, "one"},

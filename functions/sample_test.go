@@ -3,16 +3,16 @@ package functions_test
 import (
 	"testing"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
 )
 
 func TestSampleOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"sample","kind":"sample","spec":{"n":5, "pos":0}}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID: "sample",
 		Spec: &functions.SampleOpSpec{
 			N:   5,
@@ -20,13 +20,13 @@ func TestSampleOperation_Marshaling(t *testing.T) {
 		},
 	}
 
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestSample_Process(t *testing.T) {
 	testCases := []struct {
 		name   string
-		data   query.Table
+		data   flux.Table
 		want   [][]int
 		fromor *functions.SampleSelector
 	}{
@@ -38,11 +38,11 @@ func TestSample_Process(t *testing.T) {
 			name: "everything in separate Do calls",
 			data: &executetest.Table{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 7.0, "a", "y"},
@@ -78,11 +78,11 @@ func TestSample_Process(t *testing.T) {
 			name: "everything in single Do call",
 			data: execute.CopyTable(&executetest.Table{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 7.0, "a", "y"},
@@ -118,11 +118,11 @@ func TestSample_Process(t *testing.T) {
 			name: "every-other-even",
 			data: execute.CopyTable(&executetest.Table{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 7.0, "a", "y"},
@@ -153,11 +153,11 @@ func TestSample_Process(t *testing.T) {
 			name: "every-other-odd",
 			data: execute.CopyTable(&executetest.Table{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 7.0, "a", "y"},
@@ -188,11 +188,11 @@ func TestSample_Process(t *testing.T) {
 			name: "every-third-0",
 			data: execute.CopyTable(&executetest.Table{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 7.0, "a", "y"},
@@ -222,11 +222,11 @@ func TestSample_Process(t *testing.T) {
 			name: "every-third-1",
 			data: execute.CopyTable(&executetest.Table{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 7.0, "a", "y"},
@@ -255,11 +255,11 @@ func TestSample_Process(t *testing.T) {
 			name: "every-third-2",
 			data: execute.CopyTable(&executetest.Table{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 7.0, "a", "y"},
@@ -288,11 +288,11 @@ func TestSample_Process(t *testing.T) {
 			name: "every-third-2 in separate Do calls",
 			data: &executetest.Table{
 				KeyCols: []string{"t1"},
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), 7.0, "a", "y"},

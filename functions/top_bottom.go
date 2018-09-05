@@ -1,11 +1,11 @@
 package functions
 
 import (
-	"github.com/influxdata/platform/query"
+	"github.com/influxdata/flux"
 )
 
 func init() {
-	query.RegisterBuiltIn("top-bottom", topBottomBuiltIn)
+	flux.RegisterBuiltIn("top-bottom", topBottomBuiltIn)
 	// TODO(nathanielc): Provide an implementation of top/bottom transformation that can use a more efficient sort based on the limit.
 	// This transformation should be used when ever the planner sees a sort |> limit pair of procedures.
 }

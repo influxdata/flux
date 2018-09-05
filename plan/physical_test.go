@@ -5,13 +5,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux/values"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/plan/plantest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
 )
 
 func TestPhysicalPlanner_Plan(t *testing.T) {
@@ -25,7 +25,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 			name: "single push down",
 			lp: &plan.LogicalPlanSpec{
 				Now: now,
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 1,
 					MemoryBytesQuota: 10000,
 				},
@@ -41,12 +41,12 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("range"): {
 						ID: plan.ProcedureIDFromOperationID("range"),
 						Spec: &functions.RangeProcedureSpec{
-							Bounds: query.Bounds{
-								Start: query.Time{
+							Bounds: flux.Bounds{
+								Start: flux.Time{
 									IsRelative: true,
 									Relative:   -1 * time.Hour,
 								},
-								Stop: query.Now,
+								Stop: flux.Now,
 							},
 							TimeCol: "_time",
 						},
@@ -72,7 +72,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 			},
 			pp: &plan.PlanSpec{
 				Now: time.Date(2017, 8, 8, 0, 0, 0, 0, time.UTC),
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 1,
 					MemoryBytesQuota: 10000,
 				},
@@ -82,12 +82,12 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 						Spec: &functions.FromProcedureSpec{
 							Bucket:    "mybucket",
 							BoundsSet: true,
-							Bounds: query.Bounds{
-								Start: query.Time{
+							Bounds: flux.Bounds{
+								Start: flux.Time{
 									IsRelative: true,
 									Relative:   -1 * time.Hour,
 								},
-								Stop: query.Now,
+								Stop: flux.Now,
 							},
 							AggregateSet:    true,
 							AggregateMethod: "count",
@@ -136,7 +136,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				},
 			},
 			pp: &plan.PlanSpec{
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 1,
 					MemoryBytesQuota: math.MaxInt64,
 				},
@@ -147,9 +147,9 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 						Spec: &functions.FromProcedureSpec{
 							Bucket:    "mybucket",
 							BoundsSet: true,
-							Bounds: query.Bounds{
-								Start: query.MinTime,
-								Stop:  query.Now,
+							Bounds: flux.Bounds{
+								Start: flux.MinTime,
+								Stop:  flux.Now,
 							},
 							LimitSet:      true,
 							PointsLimit:   1,
@@ -188,12 +188,12 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("range"): {
 						ID: plan.ProcedureIDFromOperationID("range"),
 						Spec: &functions.RangeProcedureSpec{
-							Bounds: query.Bounds{
-								Start: query.Time{
+							Bounds: flux.Bounds{
+								Start: flux.Time{
 									IsRelative: true,
 									Relative:   -1 * time.Hour,
 								},
-								Stop: query.Now,
+								Stop: flux.Now,
 							},
 							TimeCol: "_time",
 						},
@@ -230,7 +230,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 			},
 			pp: &plan.PlanSpec{
 				Now: time.Date(2017, 8, 8, 0, 0, 0, 0, time.UTC),
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 2,
 					MemoryBytesQuota: math.MaxInt64,
 				},
@@ -240,12 +240,12 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 						Spec: &functions.FromProcedureSpec{
 							Bucket:    "mybucket",
 							BoundsSet: true,
-							Bounds: query.Bounds{
-								Start: query.Time{
+							Bounds: flux.Bounds{
+								Start: flux.Time{
 									IsRelative: true,
 									Relative:   -1 * time.Hour,
 								},
-								Stop: query.Now,
+								Stop: flux.Now,
 							},
 							LimitSet:    true,
 							PointsLimit: 10,
@@ -283,7 +283,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 			name: "multiple yield",
 			lp: &plan.LogicalPlanSpec{
 				Now: now,
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 1,
 					MemoryBytesQuota: 10000,
 				},
@@ -299,12 +299,12 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("range"): {
 						ID: plan.ProcedureIDFromOperationID("range"),
 						Spec: &functions.RangeProcedureSpec{
-							Bounds: query.Bounds{
-								Start: query.Time{
+							Bounds: flux.Bounds{
+								Start: flux.Time{
 									IsRelative: true,
 									Relative:   -1 * time.Hour,
 								},
-								Stop: query.Now,
+								Stop: flux.Now,
 							},
 							TimeCol: "_time",
 						},
@@ -350,7 +350,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 			},
 			pp: &plan.PlanSpec{
 				Now: time.Date(2017, 8, 8, 0, 0, 0, 0, time.UTC),
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 1,
 					MemoryBytesQuota: 10000,
 				},
@@ -360,12 +360,12 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 						Spec: &functions.FromProcedureSpec{
 							Bucket:    "mybucket",
 							BoundsSet: true,
-							Bounds: query.Bounds{
-								Start: query.Time{
+							Bounds: flux.Bounds{
+								Start: flux.Time{
 									IsRelative: true,
 									Relative:   -1 * time.Hour,
 								},
-								Stop: query.Now,
+								Stop: flux.Now,
 							},
 						},
 						Bounds: &plan.BoundsSpec{
@@ -414,7 +414,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 			name: "group with aggregate",
 			lp: &plan.LogicalPlanSpec{
 				Now: now,
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 1,
 					MemoryBytesQuota: 10000,
 				},
@@ -430,12 +430,12 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("range"): {
 						ID: plan.ProcedureIDFromOperationID("range"),
 						Spec: &functions.RangeProcedureSpec{
-							Bounds: query.Bounds{
-								Start: query.Time{
+							Bounds: flux.Bounds{
+								Start: flux.Time{
 									IsRelative: true,
 									Relative:   -1 * time.Hour,
 								},
-								Stop: query.Now,
+								Stop: flux.Now,
 							},
 							TimeCol: "_time",
 						},
@@ -468,7 +468,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 			},
 			pp: &plan.PlanSpec{
 				Now: time.Date(2017, 8, 8, 0, 0, 0, 0, time.UTC),
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 1,
 					MemoryBytesQuota: 10000,
 				},
@@ -478,12 +478,12 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 						Spec: &functions.FromProcedureSpec{
 							Bucket:    "mybucket",
 							BoundsSet: true,
-							Bounds: query.Bounds{
-								Start: query.Time{
+							Bounds: flux.Bounds{
+								Start: flux.Time{
 									IsRelative: true,
 									Relative:   -1 * time.Hour,
 								},
-								Stop: query.Now,
+								Stop: flux.Now,
 							},
 							GroupingSet:     true,
 							GroupMode:       functions.GroupModeBy,
@@ -523,7 +523,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 			name: "group with distinct on tag",
 			lp: &plan.LogicalPlanSpec{
 				Now: now,
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 1,
 					MemoryBytesQuota: 10000,
 				},
@@ -539,12 +539,12 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("range"): {
 						ID: plan.ProcedureIDFromOperationID("range"),
 						Spec: &functions.RangeProcedureSpec{
-							Bounds: query.Bounds{
-								Start: query.Time{
+							Bounds: flux.Bounds{
+								Start: flux.Time{
 									IsRelative: true,
 									Relative:   -1 * time.Hour,
 								},
-								Stop: query.Now,
+								Stop: flux.Now,
 							},
 							TimeCol: "_time",
 						},
@@ -579,7 +579,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 			},
 			pp: &plan.PlanSpec{
 				Now: time.Date(2017, 8, 8, 0, 0, 0, 0, time.UTC),
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 1,
 					MemoryBytesQuota: 10000,
 				},
@@ -589,12 +589,12 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 						Spec: &functions.FromProcedureSpec{
 							Bucket:    "mybucket",
 							BoundsSet: true,
-							Bounds: query.Bounds{
-								Start: query.Time{
+							Bounds: flux.Bounds{
+								Start: flux.Time{
 									IsRelative: true,
 									Relative:   -1 * time.Hour,
 								},
-								Stop: query.Now,
+								Stop: flux.Now,
 							},
 							GroupingSet: true,
 							GroupMode:   functions.GroupModeBy,
@@ -634,7 +634,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 			name: "group with distinct on _value does not optimize",
 			lp: &plan.LogicalPlanSpec{
 				Now: now,
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 1,
 					MemoryBytesQuota: 10000,
 				},
@@ -650,12 +650,12 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("range"): {
 						ID: plan.ProcedureIDFromOperationID("range"),
 						Spec: &functions.RangeProcedureSpec{
-							Bounds: query.Bounds{
-								Start: query.Time{
+							Bounds: flux.Bounds{
+								Start: flux.Time{
 									IsRelative: true,
 									Relative:   -1 * time.Hour,
 								},
-								Stop: query.Now,
+								Stop: flux.Now,
 							},
 							TimeCol: "_time",
 						},
@@ -690,7 +690,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 			},
 			pp: &plan.PlanSpec{
 				Now: time.Date(2017, 8, 8, 0, 0, 0, 0, time.UTC),
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 1,
 					MemoryBytesQuota: 10000,
 				},
@@ -700,12 +700,12 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 						Spec: &functions.FromProcedureSpec{
 							Bucket:    "mybucket",
 							BoundsSet: true,
-							Bounds: query.Bounds{
-								Start: query.Time{
+							Bounds: flux.Bounds{
+								Start: flux.Time{
 									IsRelative: true,
 									Relative:   -1 * time.Hour,
 								},
-								Stop: query.Now,
+								Stop: flux.Now,
 							},
 							GroupingSet: true,
 							GroupMode:   functions.GroupModeBy,
@@ -743,7 +743,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 			name: "group with distinct on non-grouped does not optimize",
 			lp: &plan.LogicalPlanSpec{
 				Now: now,
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 1,
 					MemoryBytesQuota: 10000,
 				},
@@ -759,12 +759,12 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("range"): {
 						ID: plan.ProcedureIDFromOperationID("range"),
 						Spec: &functions.RangeProcedureSpec{
-							Bounds: query.Bounds{
-								Start: query.Time{
+							Bounds: flux.Bounds{
+								Start: flux.Time{
 									IsRelative: true,
 									Relative:   -1 * time.Hour,
 								},
-								Stop: query.Now,
+								Stop: flux.Now,
 							},
 							TimeCol: "_time",
 						},
@@ -799,7 +799,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 			},
 			pp: &plan.PlanSpec{
 				Now: time.Date(2017, 8, 8, 0, 0, 0, 0, time.UTC),
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 1,
 					MemoryBytesQuota: 10000,
 				},
@@ -809,12 +809,12 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 						Spec: &functions.FromProcedureSpec{
 							Bucket:    "mybucket",
 							BoundsSet: true,
-							Bounds: query.Bounds{
-								Start: query.Time{
+							Bounds: flux.Bounds{
+								Start: flux.Time{
 									IsRelative: true,
 									Relative:   -1 * time.Hour,
 								},
-								Stop: query.Now,
+								Stop: flux.Now,
 							},
 							GroupingSet: true,
 							GroupMode:   functions.GroupModeBy,
@@ -864,12 +864,12 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("range1"): {
 						ID: plan.ProcedureIDFromOperationID("range1"),
 						Spec: &functions.RangeProcedureSpec{
-							Bounds: query.Bounds{
-								Start: query.Time{
+							Bounds: flux.Bounds{
+								Start: flux.Time{
 									IsRelative: true,
 									Relative:   -1 * time.Hour,
 								},
-								Stop: query.Now,
+								Stop: flux.Now,
 							},
 							TimeCol: "_time",
 						},
@@ -881,12 +881,12 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("range2"): {
 						ID: plan.ProcedureIDFromOperationID("range2"),
 						Spec: &functions.RangeProcedureSpec{
-							Bounds: query.Bounds{
-								Start: query.Time{
+							Bounds: flux.Bounds{
+								Start: flux.Time{
 									IsRelative: true,
 									Relative:   -30 * time.Minute,
 								},
-								Stop: query.Now,
+								Stop: flux.Now,
 							},
 						},
 						Parents: []plan.ProcedureID{
@@ -923,7 +923,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 			},
 			pp: &plan.PlanSpec{
 				Now: now,
-				Resources: query.ResourceManagement{
+				Resources: flux.ResourceManagement{
 					ConcurrencyQuota: 5,
 					MemoryBytesQuota: math.MaxInt64,
 				},
@@ -939,12 +939,12 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("range1"): {
 						ID: plan.ProcedureIDFromOperationID("range1"),
 						Spec: &functions.RangeProcedureSpec{
-							Bounds: query.Bounds{
-								Start: query.Time{
+							Bounds: flux.Bounds{
+								Start: flux.Time{
 									IsRelative: true,
 									Relative:   -1 * time.Hour,
 								},
-								Stop: query.Now,
+								Stop: flux.Now,
 							},
 							TimeCol: "_time",
 						},
@@ -960,12 +960,12 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("range2"): {
 						ID: plan.ProcedureIDFromOperationID("range2"),
 						Spec: &functions.RangeProcedureSpec{
-							Bounds: query.Bounds{
-								Start: query.Time{
+							Bounds: flux.Bounds{
+								Start: flux.Time{
 									IsRelative: true,
 									Relative:   -30 * time.Minute,
 								},
-								Stop: query.Now,
+								Stop: flux.Now,
 							},
 						},
 						Bounds: &plan.BoundsSpec{
@@ -1079,7 +1079,7 @@ func TestPhysicalPlanner_Plan_PushDown_Branch(t *testing.T) {
 	fromIDDup := plan.ProcedureIDForDuplicate(fromID)
 	want := &plan.PlanSpec{
 		Now: now,
-		Resources: query.ResourceManagement{
+		Resources: flux.ResourceManagement{
 			ConcurrencyQuota: 2,
 			MemoryBytesQuota: math.MaxInt64,
 		},
@@ -1089,9 +1089,9 @@ func TestPhysicalPlanner_Plan_PushDown_Branch(t *testing.T) {
 				Spec: &functions.FromProcedureSpec{
 					Bucket:    "mybucket",
 					BoundsSet: true,
-					Bounds: query.Bounds{
-						Start: query.MinTime,
-						Stop:  query.Now,
+					Bounds: flux.Bounds{
+						Start: flux.MinTime,
+						Stop:  flux.Now,
 					},
 					LimitSet:      true,
 					PointsLimit:   1,
@@ -1109,9 +1109,9 @@ func TestPhysicalPlanner_Plan_PushDown_Branch(t *testing.T) {
 				Spec: &functions.FromProcedureSpec{
 					Bucket:    "mybucket",
 					BoundsSet: true,
-					Bounds: query.Bounds{
-						Start: query.MinTime,
-						Stop:  query.Now,
+					Bounds: flux.Bounds{
+						Start: flux.MinTime,
+						Stop:  flux.Now,
 					},
 					LimitSet:      true,
 					PointsLimit:   1,
@@ -1155,12 +1155,12 @@ func TestPhysicalPlanner_Plan_PushDown_Mixed(t *testing.T) {
 			plan.ProcedureIDFromOperationID("range"): {
 				ID: plan.ProcedureIDFromOperationID("range"),
 				Spec: &functions.RangeProcedureSpec{
-					Bounds: query.Bounds{
-						Start: query.Time{
+					Bounds: flux.Bounds{
+						Start: flux.Time{
 							IsRelative: true,
 							Relative:   -1 * time.Hour,
 						},
-						Stop: query.Now,
+						Stop: flux.Now,
 					},
 					TimeCol: "_time",
 				},
@@ -1211,7 +1211,7 @@ func TestPhysicalPlanner_Plan_PushDown_Mixed(t *testing.T) {
 	fromIDDup := plan.ProcedureIDForDuplicate(fromID)
 	want := &plan.PlanSpec{
 		Now: now,
-		Resources: query.ResourceManagement{
+		Resources: flux.ResourceManagement{
 			ConcurrencyQuota: 3,
 			MemoryBytesQuota: math.MaxInt64,
 		},
@@ -1221,12 +1221,12 @@ func TestPhysicalPlanner_Plan_PushDown_Mixed(t *testing.T) {
 				Spec: &functions.FromProcedureSpec{
 					Bucket:    "mybucket",
 					BoundsSet: true,
-					Bounds: query.Bounds{
-						Start: query.Time{
+					Bounds: flux.Bounds{
+						Start: flux.Time{
 							IsRelative: true,
 							Relative:   -1 * time.Hour,
 						},
-						Stop: query.Now,
+						Stop: flux.Now,
 					},
 					AggregateSet:    true,
 					AggregateMethod: "sum",
@@ -1243,12 +1243,12 @@ func TestPhysicalPlanner_Plan_PushDown_Mixed(t *testing.T) {
 				Spec: &functions.FromProcedureSpec{
 					Bucket:    "mybucket",
 					BoundsSet: true,
-					Bounds: query.Bounds{
-						Start: query.Time{
+					Bounds: flux.Bounds{
+						Start: flux.Time{
 							IsRelative: true,
 							Relative:   -1 * time.Hour,
 						},
-						Stop: query.Now,
+						Stop: flux.Now,
 					},
 				},
 				Bounds: &plan.BoundsSpec{

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/influxdata/platform/query/ast"
+	"github.com/influxdata/flux/ast"
 )
 
 func toIfaceSlice(v interface{}) []interface{} {
@@ -344,7 +344,7 @@ func durationLiteral(durations interface{}, text []byte, pos position) (*ast.Dur
 	literals := durations.([]*singleDurationLiteral)
 	// The slice built by the parser goes from smallest units to largest (opposite of syntax),
 	// reverse it for the AST produced.
-	for i := 0; i < len(literals) / 2; i++ {
+	for i := 0; i < len(literals)/2; i++ {
 		j := len(literals) - i - 1
 		literals[i], literals[j] = literals[j], literals[i]
 	}
@@ -363,7 +363,7 @@ type singleDurationLiteral struct {
 func appendSingleDurations(mag, unit, otherParts interface{}, text []byte, pos position) ([]*singleDurationLiteral, error) {
 	sdl := &singleDurationLiteral{
 		magnitude: mag.(*ast.IntegerLiteral),
-		unit: string(unit.([]byte)),
+		unit:      string(unit.([]byte)),
 	}
 
 	if otherParts == nil {

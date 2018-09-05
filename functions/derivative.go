@@ -5,23 +5,23 @@ import (
 	"math"
 	"time"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 const DerivativeKind = "derivative"
 
 type DerivativeOpSpec struct {
-	Unit        query.Duration `json:"unit"`
-	NonNegative bool           `json:"nonNegative"`
-	Columns     []string       `json:"columns"`
-	TimeSrc     string         `json:"timeSrc"`
+	Unit        flux.Duration `json:"unit"`
+	NonNegative bool          `json:"nonNegative"`
+	Columns     []string      `json:"columns"`
+	TimeSrc     string        `json:"timeSrc"`
 }
 
-var derivativeSignature = query.DefaultFunctionSignature()
+var derivativeSignature = flux.DefaultFunctionSignature()
 
 func init() {
 	derivativeSignature.Params["unit"] = semantic.Duration
@@ -29,13 +29,13 @@ func init() {
 	derivativeSignature.Params["columns"] = semantic.NewArrayType(semantic.String)
 	derivativeSignature.Params["timeSrc"] = semantic.String
 
-	query.RegisterFunction(DerivativeKind, createDerivativeOpSpec, derivativeSignature)
-	query.RegisterOpSpec(DerivativeKind, newDerivativeOp)
+	flux.RegisterFunction(DerivativeKind, createDerivativeOpSpec, derivativeSignature)
+	flux.RegisterOpSpec(DerivativeKind, newDerivativeOp)
 	plan.RegisterProcedureSpec(DerivativeKind, newDerivativeProcedure, DerivativeKind)
 	execute.RegisterTransformation(DerivativeKind, createDerivativeTransformation)
 }
 
-func createDerivativeOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createDerivativeOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -48,7 +48,7 @@ func createDerivativeOpSpec(args query.Arguments, a *query.Administration) (quer
 		spec.Unit = unit
 	} else {
 		//Default is 1s
-		spec.Unit = query.Duration(time.Second)
+		spec.Unit = flux.Duration(time.Second)
 	}
 
 	if nn, ok, err := args.GetBool("nonNegative"); err != nil {
@@ -78,22 +78,22 @@ func createDerivativeOpSpec(args query.Arguments, a *query.Administration) (quer
 	return spec, nil
 }
 
-func newDerivativeOp() query.OperationSpec {
+func newDerivativeOp() flux.OperationSpec {
 	return new(DerivativeOpSpec)
 }
 
-func (s *DerivativeOpSpec) Kind() query.OperationKind {
+func (s *DerivativeOpSpec) Kind() flux.OperationKind {
 	return DerivativeKind
 }
 
 type DerivativeProcedureSpec struct {
-	Unit        query.Duration `json:"unit"`
-	NonNegative bool           `json:"non_negative"`
-	Columns     []string       `json:"columns"`
-	TimeCol     string         `json:"time_col"`
+	Unit        flux.Duration `json:"unit"`
+	NonNegative bool          `json:"non_negative"`
+	Columns     []string      `json:"columns"`
+	TimeCol     string        `json:"time_col"`
 }
 
-func newDerivativeProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newDerivativeProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*DerivativeOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -152,11 +152,11 @@ func NewDerivativeTransformation(d execute.Dataset, cache execute.TableBuilderCa
 	}
 }
 
-func (t *derivativeTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *derivativeTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *derivativeTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
 		return fmt.Errorf("derivative found duplicate table with key: %v", tbl.Key())
@@ -179,7 +179,7 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl query.Table
 		if found {
 			dc := c
 			// Derivative always results in a float
-			dc.Type = query.TFloat
+			dc.Type = flux.TFloat
 			builder.AddCol(dc)
 			derivatives[j] = newDerivative(j, t.unit, t.nonNegative)
 		} else {
@@ -192,14 +192,14 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl query.Table
 
 	// We need to drop the first row since its derivative is undefined
 	firstIdx := 1
-	return tbl.Do(func(cr query.ColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for j, c := range cols {
 			d := derivatives[j]
 			switch c.Type {
-			case query.TBool:
+			case flux.TBool:
 				builder.AppendBools(j, cr.Bools(j)[firstIdx:])
-			case query.TInt:
+			case flux.TInt:
 				if d != nil {
 					for i := 0; i < l; i++ {
 						time := cr.Times(timeIdx)[i]
@@ -211,7 +211,7 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl query.Table
 				} else {
 					builder.AppendInts(j, cr.Ints(j)[firstIdx:])
 				}
-			case query.TUInt:
+			case flux.TUInt:
 				if d != nil {
 					for i := 0; i < l; i++ {
 						time := cr.Times(timeIdx)[i]
@@ -223,7 +223,7 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl query.Table
 				} else {
 					builder.AppendUInts(j, cr.UInts(j)[firstIdx:])
 				}
-			case query.TFloat:
+			case flux.TFloat:
 				if d != nil {
 					for i := 0; i < l; i++ {
 						time := cr.Times(timeIdx)[i]
@@ -235,9 +235,9 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl query.Table
 				} else {
 					builder.AppendFloats(j, cr.Floats(j)[firstIdx:])
 				}
-			case query.TString:
+			case flux.TString:
 				builder.AppendStrings(j, cr.Strings(j)[firstIdx:])
-			case query.TTime:
+			case flux.TTime:
 				builder.AppendTimes(j, cr.Times(j)[firstIdx:])
 			}
 		}

@@ -5,10 +5,10 @@ import (
 
 	"math/rand"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 const SampleKind = "sample"
@@ -25,13 +25,13 @@ func init() {
 	sampleSignature.Params["n"] = semantic.Int
 	sampleSignature.Params["pos"] = semantic.Int
 
-	query.RegisterFunction(SampleKind, createSampleOpSpec, sampleSignature)
-	query.RegisterOpSpec(SampleKind, newSampleOp)
+	flux.RegisterFunction(SampleKind, createSampleOpSpec, sampleSignature)
+	flux.RegisterOpSpec(SampleKind, newSampleOp)
 	plan.RegisterProcedureSpec(SampleKind, newSampleProcedure, SampleKind)
 	execute.RegisterTransformation(SampleKind, createSampleTransformation)
 }
 
-func createSampleOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createSampleOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -59,11 +59,11 @@ func createSampleOpSpec(args query.Arguments, a *query.Administration) (query.Op
 	return spec, nil
 }
 
-func newSampleOp() query.OperationSpec {
+func newSampleOp() flux.OperationSpec {
 	return new(SampleOpSpec)
 }
 
-func (s *SampleOpSpec) Kind() query.OperationKind {
+func (s *SampleOpSpec) Kind() flux.OperationKind {
 	return SampleKind
 }
 
@@ -73,7 +73,7 @@ type SampleProcedureSpec struct {
 	execute.SelectorConfig
 }
 
-func newSampleProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newSampleProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*SampleOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)

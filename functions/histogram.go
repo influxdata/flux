@@ -6,12 +6,12 @@ import (
 	"regexp"
 	"sort"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 )
 
@@ -33,15 +33,15 @@ func init() {
 	histogramSignature.Params["buckets"] = semantic.NewArrayType(semantic.Float)
 	histogramSignature.Params["normalize"] = semantic.Bool
 
-	query.RegisterFunction(HistogramKind, createHistogramOpSpec, histogramSignature)
-	query.RegisterBuiltInValue("linearBuckets", linearBuckets{})
-	query.RegisterBuiltInValue("logarithmicBuckets", logarithmicBuckets{})
-	query.RegisterOpSpec(HistogramKind, newHistogramOp)
+	flux.RegisterFunction(HistogramKind, createHistogramOpSpec, histogramSignature)
+	flux.RegisterBuiltInValue("linearBuckets", linearBuckets{})
+	flux.RegisterBuiltInValue("logarithmicBuckets", logarithmicBuckets{})
+	flux.RegisterOpSpec(HistogramKind, newHistogramOp)
 	plan.RegisterProcedureSpec(HistogramKind, newHistogramProcedure, HistogramKind)
 	execute.RegisterTransformation(HistogramKind, createHistogramTransformation)
 }
 
-func createHistogramOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createHistogramOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -86,11 +86,11 @@ func createHistogramOpSpec(args query.Arguments, a *query.Administration) (query
 	return spec, nil
 }
 
-func newHistogramOp() query.OperationSpec {
+func newHistogramOp() flux.OperationSpec {
 	return new(HistogramOpSpec)
 }
 
-func (s *HistogramOpSpec) Kind() query.OperationKind {
+func (s *HistogramOpSpec) Kind() flux.OperationKind {
 	return HistogramKind
 }
 
@@ -98,7 +98,7 @@ type HistogramProcedureSpec struct {
 	HistogramOpSpec
 }
 
-func newHistogramProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newHistogramProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*HistogramOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -149,11 +149,11 @@ func NewHistogramTransformation(d execute.Dataset, cache execute.TableBuilderCac
 	}
 }
 
-func (t *histogramTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *histogramTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *histogramTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *histogramTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
 		return fmt.Errorf("histogram found duplicate table with key: %v", tbl.Key())
@@ -162,22 +162,22 @@ func (t *histogramTransformation) Process(id execute.DatasetID, tbl query.Table)
 	if valueIdx < 0 {
 		return fmt.Errorf("column %q is missing", t.spec.Column)
 	}
-	if col := tbl.Cols()[valueIdx]; col.Type != query.TFloat {
+	if col := tbl.Cols()[valueIdx]; col.Type != flux.TFloat {
 		return fmt.Errorf("column %q must be a float got %v", t.spec.Column, col.Type)
 	}
 
 	execute.AddTableKeyCols(tbl.Key(), builder)
-	boundIdx := builder.AddCol(query.ColMeta{
+	boundIdx := builder.AddCol(flux.ColMeta{
 		Label: t.spec.UpperBoundColumn,
-		Type:  query.TFloat,
+		Type:  flux.TFloat,
 	})
-	countIdx := builder.AddCol(query.ColMeta{
+	countIdx := builder.AddCol(flux.ColMeta{
 		Label: t.spec.CountColumn,
-		Type:  query.TFloat,
+		Type:  flux.TFloat,
 	})
 	totalRows := 0.0
 	counts := make([]float64, len(t.spec.Buckets))
-	err := tbl.Do(func(cr query.ColReader) error {
+	err := tbl.Do(func(cr flux.ColReader) error {
 		totalRows += float64(cr.Len())
 		for _, v := range cr.Floats(valueIdx) {
 			idx := sort.Search(len(t.spec.Buckets), func(i int) bool {

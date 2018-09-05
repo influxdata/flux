@@ -1,11 +1,11 @@
-package query
+package flux
 
 import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/influxdata/platform"
+	"github.com/pkg/errors"
 )
 
 // Operation denotes a single operation in a query.

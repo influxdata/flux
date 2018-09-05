@@ -5,10 +5,10 @@ import (
 	"math"
 	"sort"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/tdigest"
 	"github.com/pkg/errors"
 )
@@ -40,10 +40,10 @@ func init() {
 	percentileSignature.Params["compression"] = semantic.Float
 	percentileSignature.Params["method"] = semantic.String
 
-	query.RegisterFunction(PercentileKind, createPercentileOpSpec, percentileSignature)
-	query.RegisterBuiltIn("median", medianBuiltin)
+	flux.RegisterFunction(PercentileKind, createPercentileOpSpec, percentileSignature)
+	flux.RegisterBuiltIn("median", medianBuiltin)
 
-	query.RegisterOpSpec(PercentileKind, newPercentileOp)
+	flux.RegisterOpSpec(PercentileKind, newPercentileOp)
 	plan.RegisterProcedureSpec(PercentileKind, newPercentileProcedure, PercentileKind)
 	execute.RegisterTransformation(PercentileKind, createPercentileTransformation)
 	execute.RegisterTransformation(ExactPercentileAggKind, createExactPercentileAggTransformation)
@@ -57,7 +57,7 @@ var medianBuiltin = `
 median = (method="estimate_tdigest", compression=0.0, table=<-) => percentile(table:table, percentile:0.5, method:method, compression:compression)
 `
 
-func createPercentileOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createPercentileOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -105,11 +105,11 @@ func createPercentileOpSpec(args query.Arguments, a *query.Administration) (quer
 	return spec, nil
 }
 
-func newPercentileOp() query.OperationSpec {
+func newPercentileOp() flux.OperationSpec {
 	return new(PercentileOpSpec)
 }
 
-func (s *PercentileOpSpec) Kind() query.OperationKind {
+func (s *PercentileOpSpec) Kind() flux.OperationKind {
 	return PercentileKind
 }
 
@@ -154,7 +154,7 @@ func (s *ExactPercentileSelectProcedureSpec) Copy() plan.ProcedureSpec {
 	return &ExactPercentileSelectProcedureSpec{Percentile: s.Percentile}
 }
 
-func newPercentileProcedure(qs query.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
+func newPercentileProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*PercentileOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -234,8 +234,8 @@ func (a *PercentileAgg) DoFloat(vs []float64) {
 	}
 }
 
-func (a *PercentileAgg) Type() query.DataType {
-	return query.TFloat
+func (a *PercentileAgg) Type() flux.DataType {
+	return flux.TFloat
 }
 func (a *PercentileAgg) ValueFloat() float64 {
 	return a.digest.Quantile(a.Quantile)
@@ -288,8 +288,8 @@ func (a *ExactPercentileAgg) DoFloat(vs []float64) {
 	a.data = append(a.data, vs...)
 }
 
-func (a *ExactPercentileAgg) Type() query.DataType {
-	return query.TFloat
+func (a *ExactPercentileAgg) Type() flux.DataType {
+	return flux.TFloat
 }
 
 func (a *ExactPercentileAgg) ValueFloat() float64 {
@@ -345,7 +345,7 @@ func NewExactPercentileSelectorTransformation(d execute.Dataset, cache execute.T
 	return sel
 }
 
-func (t *ExactPercentileSelectorTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *ExactPercentileSelectorTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	valueIdx := execute.ColIdx(t.spec.Column, tbl.Cols())
 	if valueIdx < 0 {
 		return fmt.Errorf("no column %q exists", t.spec.Column)
@@ -386,7 +386,7 @@ func getQuantileIndex(quantile float64, len int) int {
 	return index
 }
 
-func (t *ExactPercentileSelectorTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *ExactPercentileSelectorTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 

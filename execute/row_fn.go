@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/compiler"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/compiler"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 )
 
@@ -29,7 +29,7 @@ func newRowFn(fn *semantic.FunctionExpression) (rowFn, error) {
 	if len(fn.Params) != 1 {
 		return rowFn{}, fmt.Errorf("function should only have a single parameter, got %d", len(fn.Params))
 	}
-	scope, decls := query.BuiltIns()
+	scope, decls := flux.BuiltIns()
 	return rowFn{
 		compilationCache: compiler.NewCompilationCache(fn, scope, decls),
 		scope:            make(compiler.Scope, 1),
@@ -39,7 +39,7 @@ func newRowFn(fn *semantic.FunctionExpression) (rowFn, error) {
 	}, nil
 }
 
-func (f *rowFn) prepare(cols []query.ColMeta) error {
+func (f *rowFn) prepare(cols []flux.ColMeta) error {
 	// Prepare types and recordCols
 	propertyTypes := make(map[string]semantic.Type, len(f.references))
 	for _, r := range f.references {
@@ -68,51 +68,51 @@ func (f *rowFn) prepare(cols []query.ColMeta) error {
 	return nil
 }
 
-func ConvertToKind(t query.DataType) semantic.Kind {
+func ConvertToKind(t flux.DataType) semantic.Kind {
 	// TODO make this an array lookup.
 	switch t {
-	case query.TInvalid:
+	case flux.TInvalid:
 		return semantic.Invalid
-	case query.TBool:
+	case flux.TBool:
 		return semantic.Bool
-	case query.TInt:
+	case flux.TInt:
 		return semantic.Int
-	case query.TUInt:
+	case flux.TUInt:
 		return semantic.UInt
-	case query.TFloat:
+	case flux.TFloat:
 		return semantic.Float
-	case query.TString:
+	case flux.TString:
 		return semantic.String
-	case query.TTime:
+	case flux.TTime:
 		return semantic.Time
 	default:
 		return semantic.Invalid
 	}
 }
 
-func ConvertFromKind(k semantic.Kind) query.DataType {
+func ConvertFromKind(k semantic.Kind) flux.DataType {
 	// TODO make this an array lookup.
 	switch k {
 	case semantic.Invalid:
-		return query.TInvalid
+		return flux.TInvalid
 	case semantic.Bool:
-		return query.TBool
+		return flux.TBool
 	case semantic.Int:
-		return query.TInt
+		return flux.TInt
 	case semantic.UInt:
-		return query.TUInt
+		return flux.TUInt
 	case semantic.Float:
-		return query.TFloat
+		return flux.TFloat
 	case semantic.String:
-		return query.TString
+		return flux.TString
 	case semantic.Time:
-		return query.TTime
+		return flux.TTime
 	default:
-		return query.TInvalid
+		return flux.TInvalid
 	}
 }
 
-func (f *rowFn) eval(row int, cr query.ColReader) (values.Value, error) {
+func (f *rowFn) eval(row int, cr flux.ColReader) (values.Value, error) {
 	for _, r := range f.references {
 		f.record.Set(r, ValueForRow(row, f.recordCols[r], cr))
 	}
@@ -134,7 +134,7 @@ func NewRowPredicateFn(fn *semantic.FunctionExpression) (*RowPredicateFn, error)
 	}, nil
 }
 
-func (f *RowPredicateFn) Prepare(cols []query.ColMeta) error {
+func (f *RowPredicateFn) Prepare(cols []flux.ColMeta) error {
 	err := f.rowFn.prepare(cols)
 	if err != nil {
 		return err
@@ -145,7 +145,7 @@ func (f *RowPredicateFn) Prepare(cols []query.ColMeta) error {
 	return nil
 }
 
-func (f *RowPredicateFn) Eval(row int, cr query.ColReader) (bool, error) {
+func (f *RowPredicateFn) Eval(row int, cr flux.ColReader) (bool, error) {
 	v, err := f.rowFn.eval(row, cr)
 	if err != nil {
 		return false, err
@@ -170,7 +170,7 @@ func NewRowMapFn(fn *semantic.FunctionExpression) (*RowMapFn, error) {
 	}, nil
 }
 
-func (f *RowMapFn) Prepare(cols []query.ColMeta) error {
+func (f *RowMapFn) Prepare(cols []flux.ColMeta) error {
 	err := f.rowFn.prepare(cols)
 	if err != nil {
 		return err
@@ -192,7 +192,7 @@ func (f *RowMapFn) Type() semantic.Type {
 	return f.preparedFn.Type()
 }
 
-func (f *RowMapFn) Eval(row int, cr query.ColReader) (values.Object, error) {
+func (f *RowMapFn) Eval(row int, cr flux.ColReader) (values.Object, error) {
 	v, err := f.rowFn.eval(row, cr)
 	if err != nil {
 		return nil, err
@@ -204,20 +204,20 @@ func (f *RowMapFn) Eval(row int, cr query.ColReader) (values.Object, error) {
 	return v.Object(), nil
 }
 
-func ValueForRow(i, j int, cr query.ColReader) values.Value {
+func ValueForRow(i, j int, cr flux.ColReader) values.Value {
 	t := cr.Cols()[j].Type
 	switch t {
-	case query.TString:
+	case flux.TString:
 		return values.NewStringValue(cr.Strings(j)[i])
-	case query.TInt:
+	case flux.TInt:
 		return values.NewIntValue(cr.Ints(j)[i])
-	case query.TUInt:
+	case flux.TUInt:
 		return values.NewUIntValue(cr.UInts(j)[i])
-	case query.TFloat:
+	case flux.TFloat:
 		return values.NewFloatValue(cr.Floats(j)[i])
-	case query.TBool:
+	case flux.TBool:
 		return values.NewBoolValue(cr.Bools(j)[i])
-	case query.TTime:
+	case flux.TTime:
 		return values.NewTimeValue(cr.Times(j)[i])
 	default:
 		PanicUnknownType(t)

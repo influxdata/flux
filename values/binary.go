@@ -3,8 +3,8 @@ package values
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query/ast"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/semantic"
 )
 
 type BinaryFunction func(l, r Value) Value

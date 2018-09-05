@@ -3,18 +3,18 @@ package mock
 import (
 	"context"
 
-	"github.com/influxdata/platform/query"
+	"github.com/influxdata/flux"
 )
 
 type Compiler struct {
-	CompileFn func(ctx context.Context) (*query.Spec, error)
-	Type      query.CompilerType
+	CompileFn func(ctx context.Context) (*flux.Spec, error)
+	Type      flux.CompilerType
 }
 
-func (c Compiler) Compile(ctx context.Context) (*query.Spec, error) {
+func (c Compiler) Compile(ctx context.Context) (*flux.Spec, error) {
 	return c.CompileFn(ctx)
 }
-func (c Compiler) CompilerType() query.CompilerType {
+func (c Compiler) CompilerType() flux.CompilerType {
 	if c.Type == "" {
 		return "mockCompiler"
 	}

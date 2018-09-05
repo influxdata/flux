@@ -1,4 +1,4 @@
-package query
+package flux
 
 import (
 	"context"
@@ -7,10 +7,10 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/parser"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/parser"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 )

@@ -3,16 +3,16 @@ package functions
 import (
 	"time"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 var systemTimeFuncName = "systemTime"
 
 func init() {
 	nowFunc := SystemTime()
-	query.RegisterBuiltInValue(systemTimeFuncName, nowFunc)
+	flux.RegisterBuiltInValue(systemTimeFuncName, nowFunc)
 }
 
 // SystemTime return a function value that when called will give the current system time

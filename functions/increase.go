@@ -1,9 +1,9 @@
 package functions
 
-import "github.com/influxdata/platform/query"
+import "github.com/influxdata/flux"
 
 func init() {
-	query.RegisterBuiltIn("increase", increaseBuiltIn)
+	flux.RegisterBuiltIn("increase", increaseBuiltIn)
 }
 
 var increaseBuiltIn = `

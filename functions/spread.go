@@ -3,9 +3,9 @@ package functions
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
 )
 
 // SpreadKind is the registration name for Flux, query, plan, and execution.
@@ -14,13 +14,13 @@ const SpreadKind = "spread"
 var spreadSignature = execute.DefaultAggregateSignature()
 
 func init() {
-	query.RegisterFunction(SpreadKind, createSpreadOpSpec, spreadSignature)
-	query.RegisterOpSpec(SpreadKind, newSpreadOp)
+	flux.RegisterFunction(SpreadKind, createSpreadOpSpec, spreadSignature)
+	flux.RegisterOpSpec(SpreadKind, newSpreadOp)
 	plan.RegisterProcedureSpec(SpreadKind, newSpreadProcedure, SpreadKind)
 	execute.RegisterTransformation(SpreadKind, createSpreadTransformation)
 }
 
-func createSpreadOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createSpreadOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func createSpreadOpSpec(args query.Arguments, a *query.Administration) (query.Op
 	return s, nil
 }
 
-func newSpreadOp() query.OperationSpec {
+func newSpreadOp() flux.OperationSpec {
 	return new(SpreadOpSpec)
 }
 
@@ -43,11 +43,11 @@ type SpreadOpSpec struct {
 }
 
 // Kind is used to lookup createSpreadOpSpec producing SpreadOpSpec
-func (s *SpreadOpSpec) Kind() query.OperationKind {
+func (s *SpreadOpSpec) Kind() flux.OperationKind {
 	return SpreadKind
 }
 
-func newSpreadProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newSpreadProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*SpreadOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -138,8 +138,8 @@ func (a *SpreadIntAgg) DoInt(vs []int64) {
 	}
 }
 
-func (a *SpreadIntAgg) Type() query.DataType {
-	return query.TInt
+func (a *SpreadIntAgg) Type() flux.DataType {
+	return flux.TInt
 }
 
 // Value returns the difference between max and min
@@ -161,8 +161,8 @@ func (a *SpreadUIntAgg) DoUInt(vs []uint64) {
 	}
 }
 
-func (a *SpreadUIntAgg) Type() query.DataType {
-	return query.TUInt
+func (a *SpreadUIntAgg) Type() flux.DataType {
+	return flux.TUInt
 }
 
 // Value returns the difference between max and min
@@ -184,8 +184,8 @@ func (a *SpreadFloatAgg) DoFloat(vs []float64) {
 	}
 }
 
-func (a *SpreadFloatAgg) Type() query.DataType {
-	return query.TFloat
+func (a *SpreadFloatAgg) Type() flux.DataType {
+	return flux.TFloat
 }
 
 // Value returns the difference between max and min

@@ -6,13 +6,13 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
 )
 
 func ProcessTestHelper(
 	t *testing.T,
-	data []query.Table,
+	data []flux.Table,
 	want []*Table,
 	wantErr error,
 	create func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation,

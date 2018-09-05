@@ -1,12 +1,12 @@
-package querytest
+package fluxtest
 
 import (
 	"math"
 
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/control"
+	"github.com/influxdata/flux/functions"
 	"github.com/influxdata/platform"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/control"
-	"github.com/influxdata/platform/query/functions"
 )
 
 var (
@@ -17,7 +17,7 @@ func init() {
 	staticResultID.DecodeFromString("1")
 }
 
-func GetProxyQueryServiceBridge() query.ProxyQueryServiceBridge {
+func GetProxyQueryServiceBridge() flux.ProxyQueryServiceBridge {
 	config := control.Config{
 		ConcurrencyQuota: 1,
 		MemoryBytesQuota: math.MaxInt64,
@@ -25,14 +25,14 @@ func GetProxyQueryServiceBridge() query.ProxyQueryServiceBridge {
 
 	c := control.New(config)
 
-	return query.ProxyQueryServiceBridge{
-		QueryService: query.QueryServiceBridge{
+	return flux.ProxyQueryServiceBridge{
+		QueryService: flux.QueryServiceBridge{
 			AsyncQueryService: c,
 		},
 	}
 }
 
-func ReplaceFromSpec(q *query.Spec, csvSrc string) {
+func ReplaceFromSpec(q *flux.Spec, csvSrc string) {
 	for _, op := range q.Operations {
 		if op.Spec.Kind() == functions.FromKind {
 			op.Spec = &functions.FromCSVOpSpec{

@@ -3,9 +3,9 @@ package functions
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 const YieldKind = "yield"
@@ -16,20 +16,20 @@ type YieldOpSpec struct {
 
 var yieldSignature = semantic.FunctionSignature{
 	Params: map[string]semantic.Type{
-		query.TableParameter: query.TableObjectType,
-		"name":               semantic.String,
+		flux.TableParameter: flux.TableObjectType,
+		"name":              semantic.String,
 	},
-	ReturnType:   query.TableObjectType,
-	PipeArgument: query.TableParameter,
+	ReturnType:   flux.TableObjectType,
+	PipeArgument: flux.TableParameter,
 }
 
 func init() {
-	query.RegisterFunctionWithSideEffect(YieldKind, createYieldOpSpec, yieldSignature)
-	query.RegisterOpSpec(YieldKind, newYieldOp)
+	flux.RegisterFunctionWithSideEffect(YieldKind, createYieldOpSpec, yieldSignature)
+	flux.RegisterOpSpec(YieldKind, newYieldOp)
 	plan.RegisterProcedureSpec(YieldKind, newYieldProcedure, YieldKind)
 }
 
-func createYieldOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createYieldOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -48,11 +48,11 @@ func createYieldOpSpec(args query.Arguments, a *query.Administration) (query.Ope
 	return spec, nil
 }
 
-func newYieldOp() query.OperationSpec {
+func newYieldOp() flux.OperationSpec {
 	return new(YieldOpSpec)
 }
 
-func (s *YieldOpSpec) Kind() query.OperationKind {
+func (s *YieldOpSpec) Kind() flux.OperationKind {
 	return YieldKind
 }
 
@@ -60,7 +60,7 @@ type YieldProcedureSpec struct {
 	Name string `json:"name"`
 }
 
-func newYieldProcedure(qs query.OperationSpec, _ plan.Administration) (plan.ProcedureSpec, error) {
+func newYieldProcedure(qs flux.OperationSpec, _ plan.Administration) (plan.ProcedureSpec, error) {
 	if spec, ok := qs.(*YieldOpSpec); ok {
 		return &YieldProcedureSpec{Name: spec.Name}, nil
 	}

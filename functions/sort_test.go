@@ -3,23 +3,23 @@ package functions_test
 import (
 	"testing"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
 )
 
 func TestSortOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"sort","kind":"sort","spec":{"cols":["t1","t2"],"desc":true}}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID: "sort",
 		Spec: &functions.SortOpSpec{
 			Cols: []string{"t1", "t2"},
 			Desc: true,
 		},
 	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestSort_PassThrough(t *testing.T) {
@@ -40,7 +40,7 @@ func TestSort_Process(t *testing.T) {
 	testCases := []struct {
 		name string
 		spec *functions.SortProcedureSpec
-		data []query.Table
+		data []flux.Table
 		want []*executetest.Table
 	}{
 		{
@@ -49,10 +49,10 @@ func TestSort_Process(t *testing.T) {
 				Cols: []string{"_value"},
 				Desc: false,
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 2.0},
@@ -60,9 +60,9 @@ func TestSort_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(2), 1.0},
@@ -76,10 +76,10 @@ func TestSort_Process(t *testing.T) {
 				Cols: []string{"_value"},
 				Desc: true,
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 1.0},
@@ -87,9 +87,9 @@ func TestSort_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(2), 2.0},
@@ -103,10 +103,10 @@ func TestSort_Process(t *testing.T) {
 				Cols: []string{"_value", "time"},
 				Desc: false,
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(2), 2.0},
@@ -115,9 +115,9 @@ func TestSort_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 1.0},
@@ -132,10 +132,10 @@ func TestSort_Process(t *testing.T) {
 				Cols: []string{"_value", "time"},
 				Desc: true,
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 1.0},
@@ -144,9 +144,9 @@ func TestSort_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(2), 2.0},
@@ -161,13 +161,13 @@ func TestSort_Process(t *testing.T) {
 				Cols: []string{"_time", "_stop"},
 				Desc: true,
 			},
-			data: []query.Table{&executetest.Table{
+			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), execute.Time(1), 1.0},
@@ -177,11 +177,11 @@ func TestSort_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"_stop", "_start"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), execute.Time(3), 2.0},
@@ -196,13 +196,13 @@ func TestSort_Process(t *testing.T) {
 				Cols: []string{"_value"},
 				Desc: false,
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"t1"},
-					ColMeta: []query.ColMeta{
-						{Label: "t1", Type: query.TString},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "t1", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{"a", execute.Time(1), 3.0},
@@ -212,10 +212,10 @@ func TestSort_Process(t *testing.T) {
 				},
 				&executetest.Table{
 					KeyCols: []string{"t1"},
-					ColMeta: []query.ColMeta{
-						{Label: "t1", Type: query.TString},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "t1", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{"b", execute.Time(3), 3.0},
@@ -227,10 +227,10 @@ func TestSort_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: []string{"t1"},
-					ColMeta: []query.ColMeta{
-						{Label: "t1", Type: query.TString},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "t1", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{"a", execute.Time(2), 1.0},
@@ -240,10 +240,10 @@ func TestSort_Process(t *testing.T) {
 				},
 				{
 					KeyCols: []string{"t1"},
-					ColMeta: []query.ColMeta{
-						{Label: "t1", Type: query.TString},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "t1", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{"b", execute.Time(4), 1.0},
@@ -259,14 +259,14 @@ func TestSort_Process(t *testing.T) {
 				Cols: []string{"_field", "_value"},
 				Desc: false,
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"host"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "host", Type: query.TString},
-						{Label: "_field", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "host", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 1.0, "hostA", "F1"},
@@ -279,11 +279,11 @@ func TestSort_Process(t *testing.T) {
 				},
 				&executetest.Table{
 					KeyCols: []string{"host"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "host", Type: query.TString},
-						{Label: "_field", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "host", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 1.0, "hostB", "F1"},
@@ -298,11 +298,11 @@ func TestSort_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: []string{"host"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "host", Type: query.TString},
-						{Label: "_field", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "host", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 1.0, "hostA", "F1"},
@@ -315,11 +315,11 @@ func TestSort_Process(t *testing.T) {
 				},
 				{
 					KeyCols: []string{"host"},
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "host", Type: query.TString},
-						{Label: "_field", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "host", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 1.0, "hostB", "F1"},

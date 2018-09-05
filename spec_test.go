@@ -1,4 +1,4 @@
-package query_test
+package flux_test
 
 import (
 	"encoding/json"
@@ -11,19 +11,19 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/functions"
-	_ "github.com/influxdata/platform/query/options"
-	"github.com/influxdata/platform/query/parser"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/functions"
+	_ "github.com/influxdata/flux/options"
+	"github.com/influxdata/flux/parser"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 func init() {
-	query.FinalizeBuiltIns()
+	flux.FinalizeBuiltIns()
 }
 
-var ignoreUnexportedQuerySpec = cmpopts.IgnoreUnexported(query.Spec{})
+var ignoreUnexportedQuerySpec = cmpopts.IgnoreUnexported(flux.Spec{})
 
 func TestSpec_JSON(t *testing.T) {
 	srcData := []byte(`
@@ -57,12 +57,12 @@ func TestSpec_JSON(t *testing.T) {
 	`)
 
 	// Ensure we can properly unmarshal a query
-	gotQ := query.Spec{}
+	gotQ := flux.Spec{}
 	if err := json.Unmarshal(srcData, &gotQ); err != nil {
 		t.Fatal(err)
 	}
-	expQ := query.Spec{
-		Operations: []*query.Operation{
+	expQ := flux.Spec{
+		Operations: []*flux.Operation{
 			{
 				ID: "from",
 				Spec: &functions.FromOpSpec{
@@ -72,11 +72,11 @@ func TestSpec_JSON(t *testing.T) {
 			{
 				ID: "range",
 				Spec: &functions.RangeOpSpec{
-					Start: query.Time{
+					Start: flux.Time{
 						Relative:   -4 * time.Hour,
 						IsRelative: true,
 					},
-					Stop: query.Time{
+					Stop: flux.Time{
 						IsRelative: true,
 					},
 				},
@@ -86,7 +86,7 @@ func TestSpec_JSON(t *testing.T) {
 				Spec: &functions.SumOpSpec{},
 			},
 		},
-		Edges: []query.Edge{
+		Edges: []flux.Edge{
 			{Parent: "from", Child: "range"},
 			{Parent: "range", Child: "sum"},
 		},
@@ -110,21 +110,21 @@ func TestSpec_JSON(t *testing.T) {
 
 func TestSpec_Walk(t *testing.T) {
 	testCases := []struct {
-		query     *query.Spec
-		walkOrder []query.OperationID
+		query     *flux.Spec
+		walkOrder []flux.OperationID
 		err       error
 	}{
 		{
-			query: &query.Spec{},
+			query: &flux.Spec{},
 			err:   errors.New("query has no root nodes"),
 		},
 		{
-			query: &query.Spec{
-				Operations: []*query.Operation{
+			query: &flux.Spec{
+				Operations: []*flux.Operation{
 					{ID: "a"},
 					{ID: "b"},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "a", Child: "b"},
 					{Parent: "a", Child: "c"},
 				},
@@ -132,13 +132,13 @@ func TestSpec_Walk(t *testing.T) {
 			err: errors.New("edge references unknown child operation \"c\""),
 		},
 		{
-			query: &query.Spec{
-				Operations: []*query.Operation{
+			query: &flux.Spec{
+				Operations: []*flux.Operation{
 					{ID: "a"},
 					{ID: "b"},
 					{ID: "b"},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "a", Child: "b"},
 					{Parent: "a", Child: "b"},
 				},
@@ -146,13 +146,13 @@ func TestSpec_Walk(t *testing.T) {
 			err: errors.New("found duplicate operation ID \"b\""),
 		},
 		{
-			query: &query.Spec{
-				Operations: []*query.Operation{
+			query: &flux.Spec{
+				Operations: []*flux.Operation{
 					{ID: "a"},
 					{ID: "b"},
 					{ID: "c"},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "a", Child: "b"},
 					{Parent: "b", Child: "c"},
 					{Parent: "c", Child: "b"},
@@ -161,14 +161,14 @@ func TestSpec_Walk(t *testing.T) {
 			err: errors.New("found cycle in query"),
 		},
 		{
-			query: &query.Spec{
-				Operations: []*query.Operation{
+			query: &flux.Spec{
+				Operations: []*flux.Operation{
 					{ID: "a"},
 					{ID: "b"},
 					{ID: "c"},
 					{ID: "d"},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "a", Child: "b"},
 					{Parent: "b", Child: "c"},
 					{Parent: "c", Child: "d"},
@@ -178,74 +178,74 @@ func TestSpec_Walk(t *testing.T) {
 			err: errors.New("found cycle in query"),
 		},
 		{
-			query: &query.Spec{
-				Operations: []*query.Operation{
+			query: &flux.Spec{
+				Operations: []*flux.Operation{
 					{ID: "a"},
 					{ID: "b"},
 					{ID: "c"},
 					{ID: "d"},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "a", Child: "b"},
 					{Parent: "b", Child: "c"},
 					{Parent: "c", Child: "d"},
 				},
 			},
-			walkOrder: []query.OperationID{
+			walkOrder: []flux.OperationID{
 				"a", "b", "c", "d",
 			},
 		},
 		{
-			query: &query.Spec{
-				Operations: []*query.Operation{
+			query: &flux.Spec{
+				Operations: []*flux.Operation{
 					{ID: "a"},
 					{ID: "b"},
 					{ID: "c"},
 					{ID: "d"},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "a", Child: "b"},
 					{Parent: "a", Child: "c"},
 					{Parent: "b", Child: "d"},
 					{Parent: "c", Child: "d"},
 				},
 			},
-			walkOrder: []query.OperationID{
+			walkOrder: []flux.OperationID{
 				"a", "c", "b", "d",
 			},
 		},
 		{
-			query: &query.Spec{
-				Operations: []*query.Operation{
+			query: &flux.Spec{
+				Operations: []*flux.Operation{
 					{ID: "a"},
 					{ID: "b"},
 					{ID: "c"},
 					{ID: "d"},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "a", Child: "c"},
 					{Parent: "b", Child: "c"},
 					{Parent: "c", Child: "d"},
 				},
 			},
-			walkOrder: []query.OperationID{
+			walkOrder: []flux.OperationID{
 				"b", "a", "c", "d",
 			},
 		},
 		{
-			query: &query.Spec{
-				Operations: []*query.Operation{
+			query: &flux.Spec{
+				Operations: []*flux.Operation{
 					{ID: "a"},
 					{ID: "b"},
 					{ID: "c"},
 					{ID: "d"},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "a", Child: "c"},
 					{Parent: "b", Child: "d"},
 				},
 			},
-			walkOrder: []query.OperationID{
+			walkOrder: []flux.OperationID{
 				"b", "d", "a", "c",
 			},
 		},
@@ -253,8 +253,8 @@ func TestSpec_Walk(t *testing.T) {
 	for i, tc := range testCases {
 		tc := tc
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			var gotOrder []query.OperationID
-			err := tc.query.Walk(func(o *query.Operation) error {
+			var gotOrder []flux.OperationID
+			err := tc.query.Walk(func(o *flux.Operation) error {
 				gotOrder = append(gotOrder, o.ID)
 				return nil
 			})
@@ -280,7 +280,7 @@ func TestSpec_Walk(t *testing.T) {
 // Example_option demonstrates retrieving an option from the Flux interpreter
 func Example_option() {
 	// Instantiate a new Flux interpreter with pre-populated option and global scopes
-	itrp := query.NewInterpreter()
+	itrp := flux.NewInterpreter()
 
 	// Retrieve the default value for an option
 	nowFunc := itrp.Option("now")
@@ -296,7 +296,7 @@ func Example_option() {
 // Example_setOption demonstrates setting an option from the Flux interpreter
 func Example_setOption() {
 	// Instantiate a new Flux interpreter with pre-populated option and global scopes
-	itrp := query.NewInterpreter()
+	itrp := flux.NewInterpreter()
 
 	// Set a new option from the interpreter
 	itrp.SetOption("dummy_option", values.NewIntValue(3))
@@ -312,8 +312,8 @@ func Example_overrideDefaultOptionExternally() {
 		now = () => 2018-07-13T00:00:00Z
 		what_time_is_it = now()`
 
-	itrp := query.NewInterpreter()
-	_, declarations := query.BuiltIns()
+	itrp := flux.NewInterpreter()
+	_, declarations := flux.BuiltIns()
 
 	ast, _ := parser.NewAST(queryString)
 	semanticProgram, _ := semantic.New(ast, declarations)
@@ -334,8 +334,8 @@ func Example_overrideDefaultOptionExternally() {
 func Example_overrideDefaultOptionInternally() {
 	queryString := `what_time_is_it = now()`
 
-	itrp := query.NewInterpreter()
-	_, declarations := query.BuiltIns()
+	itrp := flux.NewInterpreter()
+	_, declarations := flux.BuiltIns()
 
 	ast, _ := parser.NewAST(queryString)
 	semanticProgram, _ := semantic.New(ast, declarations)

@@ -14,15 +14,15 @@ import (
 	"syscall"
 
 	prompt "github.com/c-bata/go-prompt"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/control"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/parser"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	"github.com/influxdata/platform"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/control"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/parser"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
 	"github.com/pkg/errors"
 )
 
@@ -54,8 +54,8 @@ func addBuiltIn(script string, itrp *interpreter.Interpreter, declarations seman
 }
 
 func New(c *control.Controller, orgID platform.ID) *REPL {
-	itrp := query.NewInterpreter()
-	_, decls := query.BuiltIns()
+	itrp := flux.NewInterpreter()
+	_, decls := flux.BuiltIns()
 	addBuiltIn("run = () => yield(table:_)", itrp, decls)
 
 	return &REPL{
@@ -177,10 +177,10 @@ func (r *REPL) executeLine(t string, expectYield bool) (values.Value, error) {
 	v := r.interpreter.Return()
 
 	// Check for yield and execute query
-	if v.Type() == query.TableObjectType {
-		t := v.(*query.TableObject)
+	if v.Type() == flux.TableObjectType {
+		t := v.(*flux.TableObject)
 		if !expectYield || (expectYield && t.Kind == functions.YieldKind) {
-			spec := query.ToSpec(r.interpreter, t)
+			spec := flux.ToSpec(r.interpreter, t)
 			return nil, r.doQuery(spec)
 		}
 	}
@@ -194,16 +194,16 @@ func (r *REPL) executeLine(t string, expectYield bool) (values.Value, error) {
 	return nil, nil
 }
 
-func (r *REPL) doQuery(spec *query.Spec) error {
+func (r *REPL) doQuery(spec *flux.Spec) error {
 	// Setup cancel context
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	r.setCancel(cancelFunc)
 	defer cancelFunc()
 	defer r.clearCancel()
 
-	req := &query.Request{
+	req := &flux.Request{
 		OrganizationID: r.orgID,
-		Compiler: query.SpecCompiler{
+		Compiler: flux.SpecCompiler{
 			Spec: spec,
 		},
 	}
@@ -230,7 +230,7 @@ func (r *REPL) doQuery(spec *query.Spec) error {
 		r := results[name]
 		tables := r.Tables()
 		fmt.Println("Result:", name)
-		err := tables.Do(func(tbl query.Table) error {
+		err := tables.Do(func(tbl flux.Table) error {
 			_, err := execute.NewFormatter(tbl, nil).WriteTo(os.Stdout)
 			return err
 		})

@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 const DifferenceKind = "difference"
@@ -18,19 +18,19 @@ type DifferenceOpSpec struct {
 	Columns     []string `json:"columns"`
 }
 
-var differenceSignature = query.DefaultFunctionSignature()
+var differenceSignature = flux.DefaultFunctionSignature()
 
 func init() {
 	differenceSignature.Params["nonNegative"] = semantic.Bool
 	derivativeSignature.Params["columns"] = semantic.NewArrayType(semantic.String)
 
-	query.RegisterFunction(DifferenceKind, createDifferenceOpSpec, differenceSignature)
-	query.RegisterOpSpec(DifferenceKind, newDifferenceOp)
+	flux.RegisterFunction(DifferenceKind, createDifferenceOpSpec, differenceSignature)
+	flux.RegisterOpSpec(DifferenceKind, newDifferenceOp)
 	plan.RegisterProcedureSpec(DifferenceKind, newDifferenceProcedure, DifferenceKind)
 	execute.RegisterTransformation(DifferenceKind, createDifferenceTransformation)
 }
 
-func createDifferenceOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createDifferenceOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -63,11 +63,11 @@ func createDifferenceOpSpec(args query.Arguments, a *query.Administration) (quer
 	return spec, nil
 }
 
-func newDifferenceOp() query.OperationSpec {
+func newDifferenceOp() flux.OperationSpec {
 	return new(DifferenceOpSpec)
 }
 
-func (s *DifferenceOpSpec) Kind() query.OperationKind {
+func (s *DifferenceOpSpec) Kind() flux.OperationKind {
 	return DifferenceKind
 }
 
@@ -76,7 +76,7 @@ type DifferenceProcedureSpec struct {
 	Columns     []string `json:"columns"`
 }
 
-func newDifferenceProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newDifferenceProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*DifferenceOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -129,11 +129,11 @@ func NewDifferenceTransformation(d execute.Dataset, cache execute.TableBuilderCa
 	}
 }
 
-func (t *differenceTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *differenceTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *differenceTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
 		return fmt.Errorf("difference found duplicate table with key: %v", tbl.Key())
@@ -150,14 +150,14 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl query.Table
 		}
 
 		if found {
-			var typ query.DataType
+			var typ flux.DataType
 			switch c.Type {
-			case query.TInt, query.TUInt:
-				typ = query.TInt
-			case query.TFloat:
-				typ = query.TFloat
+			case flux.TInt, flux.TUInt:
+				typ = flux.TInt
+			case flux.TFloat:
+				typ = flux.TFloat
 			}
-			builder.AddCol(query.ColMeta{
+			builder.AddCol(flux.ColMeta{
 				Label: c.Label,
 				Type:  typ,
 			})
@@ -169,16 +169,16 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl query.Table
 
 	// We need to drop the first row since its derivative is undefined
 	firstIdx := 1
-	return tbl.Do(func(cr query.ColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 
 		if l != 0 {
 			for j, c := range cols {
 				d := differences[j]
 				switch c.Type {
-				case query.TBool:
+				case flux.TBool:
 					builder.AppendBools(j, cr.Bools(j)[firstIdx:])
-				case query.TInt:
+				case flux.TInt:
 					if d != nil {
 						for i := 0; i < l; i++ {
 							v := d.updateInt(cr.Ints(j)[i])
@@ -189,7 +189,7 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl query.Table
 					} else {
 						builder.AppendInts(j, cr.Ints(j)[firstIdx:])
 					}
-				case query.TUInt:
+				case flux.TUInt:
 					if d != nil {
 						for i := 0; i < l; i++ {
 							v := d.updateUInt(cr.UInts(j)[i])
@@ -200,7 +200,7 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl query.Table
 					} else {
 						builder.AppendUInts(j, cr.UInts(j)[firstIdx:])
 					}
-				case query.TFloat:
+				case flux.TFloat:
 					if d != nil {
 						for i := 0; i < l; i++ {
 							v := d.updateFloat(cr.Floats(j)[i])
@@ -211,9 +211,9 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl query.Table
 					} else {
 						builder.AppendFloats(j, cr.Floats(j)[firstIdx:])
 					}
-				case query.TString:
+				case flux.TString:
 					builder.AppendStrings(j, cr.Strings(j)[firstIdx:])
-				case query.TTime:
+				case flux.TTime:
 					builder.AppendTimes(j, cr.Times(j)[firstIdx:])
 				}
 			}
@@ -266,7 +266,7 @@ func (d *difference) updateInt(v int64) int64 {
 
 	if d.nonNegative && diff < 0 {
 		//TODO(nathanielc): Return null when we have null support
-		// Also see https://github.com/influxdata/platform/query/issues/217
+		// Also see https://github.com/influxdata/flux/issues/217
 		return v
 	}
 
@@ -291,7 +291,7 @@ func (d *difference) updateUInt(v uint64) int64 {
 
 	if d.nonNegative && diff < 0 {
 		//TODO(nathanielc): Return null when we have null support
-		// Also see https://github.com/influxdata/platform/query/issues/217
+		// Also see https://github.com/influxdata/flux/issues/217
 		return int64(v)
 	}
 
@@ -309,7 +309,7 @@ func (d *difference) updateFloat(v float64) float64 {
 
 	if d.nonNegative && diff < 0 {
 		//TODO(nathanielc): Return null when we have null support
-		// Also see https://github.com/influxdata/platform/query/issues/217
+		// Also see https://github.com/influxdata/flux/issues/217
 		return v
 	}
 

@@ -5,10 +5,10 @@ import (
 	"math"
 	"sort"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 	"github.com/pkg/errors"
 )
 
@@ -24,7 +24,7 @@ type HistogramQuantileOpSpec struct {
 	MinValue         float64 `json:"minValue"`
 }
 
-var histogramQuantileSignature = query.DefaultFunctionSignature()
+var histogramQuantileSignature = flux.DefaultFunctionSignature()
 
 func init() {
 	histogramQuantileSignature.Params["quantile"] = semantic.Float
@@ -33,12 +33,12 @@ func init() {
 	histogramQuantileSignature.Params["valueColumn"] = semantic.String
 	histogramQuantileSignature.Params["minValue"] = semantic.Float
 
-	query.RegisterFunction(HistogramQuantileKind, createHistogramQuantileOpSpec, histogramQuantileSignature)
-	query.RegisterOpSpec(HistogramQuantileKind, newHistogramQuantileOp)
+	flux.RegisterFunction(HistogramQuantileKind, createHistogramQuantileOpSpec, histogramQuantileSignature)
+	flux.RegisterOpSpec(HistogramQuantileKind, newHistogramQuantileOp)
 	plan.RegisterProcedureSpec(HistogramQuantileKind, newHistogramQuantileProcedure, HistogramQuantileKind)
 	execute.RegisterTransformation(HistogramQuantileKind, createHistogramQuantileTransformation)
 }
-func createHistogramQuantileOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createHistogramQuantileOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -83,11 +83,11 @@ func createHistogramQuantileOpSpec(args query.Arguments, a *query.Administration
 	return s, nil
 }
 
-func newHistogramQuantileOp() query.OperationSpec {
+func newHistogramQuantileOp() flux.OperationSpec {
 	return new(HistogramQuantileOpSpec)
 }
 
-func (s *HistogramQuantileOpSpec) Kind() query.OperationKind {
+func (s *HistogramQuantileOpSpec) Kind() flux.OperationKind {
 	return HistogramQuantileKind
 }
 
@@ -99,7 +99,7 @@ type HistogramQuantileProcedureSpec struct {
 	MinValue         float64 `json:"minValue"`
 }
 
-func newHistogramQuantileProcedure(qs query.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
+func newHistogramQuantileProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*HistogramQuantileOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -157,41 +157,41 @@ func NewHistorgramQuantileTransformation(
 	}
 }
 
-func (t histogramQuantileTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t histogramQuantileTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	// TODO
 	return nil
 }
 
-func (t histogramQuantileTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t histogramQuantileTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
 		return fmt.Errorf("histogramQuantile found duplicate table with key: %v", tbl.Key())
 	}
 
 	execute.AddTableKeyCols(tbl.Key(), builder)
-	valueIdx := builder.AddCol(query.ColMeta{
+	valueIdx := builder.AddCol(flux.ColMeta{
 		Label: t.spec.ValueColumn,
-		Type:  query.TFloat,
+		Type:  flux.TFloat,
 	})
 
 	countIdx := execute.ColIdx(t.spec.CountColumn, tbl.Cols())
 	if countIdx < 0 {
 		return fmt.Errorf("table is missing count column %q", t.spec.CountColumn)
 	}
-	if tbl.Cols()[countIdx].Type != query.TFloat {
+	if tbl.Cols()[countIdx].Type != flux.TFloat {
 		return fmt.Errorf("count column %q must be of type float", t.spec.CountColumn)
 	}
 	upperBoundIdx := execute.ColIdx(t.spec.UpperBoundColumn, tbl.Cols())
 	if upperBoundIdx < 0 {
 		return fmt.Errorf("table is missing upper bound column %q", t.spec.UpperBoundColumn)
 	}
-	if tbl.Cols()[upperBoundIdx].Type != query.TFloat {
+	if tbl.Cols()[upperBoundIdx].Type != flux.TFloat {
 		return fmt.Errorf("upper bound column %q must be of type float", t.spec.UpperBoundColumn)
 	}
 	// Read buckets
 	var cdf []bucket
 	sorted := true //track if the cdf was naturally sorted
-	err := tbl.Do(func(cr query.ColReader) error {
+	err := tbl.Do(func(cr flux.ColReader) error {
 		offset := len(cdf)
 		// Grow cdf by number of rows
 		l := offset + cr.Len()

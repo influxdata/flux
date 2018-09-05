@@ -1,18 +1,18 @@
-package querytest
+package fluxtest
 
 import (
 	"context"
 
-	"github.com/influxdata/platform/query"
+	"github.com/influxdata/flux"
 )
 
 // FromCSVCompiler wraps a compiler and replaces all From operations with FromCSV
 type FromCSVCompiler struct {
-	query.Compiler
+	flux.Compiler
 	InputFile string
 }
 
-func (c FromCSVCompiler) Compile(ctx context.Context) (*query.Spec, error) {
+func (c FromCSVCompiler) Compile(ctx context.Context) (*flux.Spec, error) {
 	spec, err := c.Compiler.Compile(ctx)
 	if err != nil {
 		return nil, err

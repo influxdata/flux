@@ -3,9 +3,9 @@ package functions
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
 )
 
 const MaxKind = "max"
@@ -17,13 +17,13 @@ type MaxOpSpec struct {
 var maxSignature = execute.DefaultSelectorSignature()
 
 func init() {
-	query.RegisterFunction(MaxKind, createMaxOpSpec, maxSignature)
-	query.RegisterOpSpec(MaxKind, newMaxOp)
+	flux.RegisterFunction(MaxKind, createMaxOpSpec, maxSignature)
+	flux.RegisterOpSpec(MaxKind, newMaxOp)
 	plan.RegisterProcedureSpec(MaxKind, newMaxProcedure, MaxKind)
 	execute.RegisterTransformation(MaxKind, createMaxTransformation)
 }
 
-func createMaxOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createMaxOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -36,11 +36,11 @@ func createMaxOpSpec(args query.Arguments, a *query.Administration) (query.Opera
 	return spec, nil
 }
 
-func newMaxOp() query.OperationSpec {
+func newMaxOp() flux.OperationSpec {
 	return new(MaxOpSpec)
 }
 
-func (s *MaxOpSpec) Kind() query.OperationKind {
+func (s *MaxOpSpec) Kind() flux.OperationKind {
 	return MaxKind
 }
 
@@ -48,7 +48,7 @@ type MaxProcedureSpec struct {
 	execute.SelectorConfig
 }
 
-func newMaxProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newMaxProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*MaxOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -121,14 +121,14 @@ func (s *MaxSelector) Rows() []execute.Row {
 	return s.rows
 }
 
-func (s *MaxSelector) selectRow(idx int, cr query.ColReader) {
+func (s *MaxSelector) selectRow(idx int, cr flux.ColReader) {
 	// Capture row
 	if idx >= 0 {
 		s.rows = []execute.Row{execute.ReadRow(idx, cr)}
 	}
 }
 
-func (s *MaxIntSelector) DoInt(vs []int64, cr query.ColReader) {
+func (s *MaxIntSelector) DoInt(vs []int64, cr flux.ColReader) {
 	maxIdx := -1
 	for i, v := range vs {
 		if !s.set || v > s.max {
@@ -139,7 +139,7 @@ func (s *MaxIntSelector) DoInt(vs []int64, cr query.ColReader) {
 	}
 	s.selectRow(maxIdx, cr)
 }
-func (s *MaxUIntSelector) DoUInt(vs []uint64, cr query.ColReader) {
+func (s *MaxUIntSelector) DoUInt(vs []uint64, cr flux.ColReader) {
 	maxIdx := -1
 	for i, v := range vs {
 		if !s.set || v > s.max {
@@ -150,7 +150,7 @@ func (s *MaxUIntSelector) DoUInt(vs []uint64, cr query.ColReader) {
 	}
 	s.selectRow(maxIdx, cr)
 }
-func (s *MaxFloatSelector) DoFloat(vs []float64, cr query.ColReader) {
+func (s *MaxFloatSelector) DoFloat(vs []float64, cr flux.ColReader) {
 	maxIdx := -1
 	for i, v := range vs {
 		if !s.set || v > s.max {

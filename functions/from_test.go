@@ -4,15 +4,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
 	"github.com/influxdata/platform"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
 )
 
 func TestFrom_NewQuery(t *testing.T) {
-	tests := []querytest.NewQueryTestCase{
+	tests := []fluxtest.NewQueryTestCase{
 		{
 			Name:    "from no args",
 			Raw:     `from()`,
@@ -41,8 +41,8 @@ func TestFrom_NewQuery(t *testing.T) {
 		{
 			Name: "from bucket ID",
 			Raw:  `from(bucketID:"aaaaaaaa")`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -55,8 +55,8 @@ func TestFrom_NewQuery(t *testing.T) {
 		{
 			Name: "from with database",
 			Raw:  `from(bucket:"mybucket") |> range(start:-4h, stop:-2h) |> sum()`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -66,11 +66,11 @@ func TestFrom_NewQuery(t *testing.T) {
 					{
 						ID: "range1",
 						Spec: &functions.RangeOpSpec{
-							Start: query.Time{
+							Start: flux.Time{
 								Relative:   -4 * time.Hour,
 								IsRelative: true,
 							},
-							Stop: query.Time{
+							Stop: flux.Time{
 								Relative:   -2 * time.Hour,
 								IsRelative: true,
 							},
@@ -86,7 +86,7 @@ func TestFrom_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "sum2"},
 				},
@@ -97,26 +97,26 @@ func TestFrom_NewQuery(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			querytest.NewQueryTestHelper(t, tc)
+			fluxtest.NewQueryTestHelper(t, tc)
 		})
 	}
 }
 
 func TestFromOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"from","kind":"from","spec":{"bucket":"mybucket"}}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID: "from",
 		Spec: &functions.FromOpSpec{
 			Bucket: "mybucket",
 		},
 	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestFromOpSpec_BucketsAccessed(t *testing.T) {
 	bucketName := "my_bucket"
 	bucketID, _ := platform.IDFromString("deadbeef")
-	tests := []querytest.NewQueryTestCase{
+	tests := []fluxtest.NewQueryTestCase{
 		{
 			Name:             "From with bucket",
 			Raw:              `from(bucket:"my_bucket")`,
@@ -134,7 +134,7 @@ func TestFromOpSpec_BucketsAccessed(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			querytest.NewQueryTestHelper(t, tc)
+			fluxtest.NewQueryTestHelper(t, tc)
 		})
 	}
 }

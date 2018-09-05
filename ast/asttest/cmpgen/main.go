@@ -21,7 +21,7 @@ func main() {
 	}
 	defer f.Close()
 
-	pkg, err := importer.For("source", nil).Import("github.com/influxdata/platform/query/ast")
+	pkg, err := importer.For("source", nil).Import("github.com/influxdata/flux/ast")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -35,7 +35,7 @@ func main() {
 	fmt.Fprintln(f, `import (`)
 	fmt.Fprintln(f, `	"github.com/google/go-cmp/cmp"`)
 	fmt.Fprintln(f, `	"github.com/google/go-cmp/cmp/cmpopts"`)
-	fmt.Fprintln(f, `	"github.com/influxdata/platform/query/ast"`)
+	fmt.Fprintln(f, `	"github.com/influxdata/flux/ast"`)
 	fmt.Fprintln(f, `)`)
 	fmt.Fprintln(f)
 	fmt.Fprintln(f, `var IgnoreBaseNodeOptions = []cmp.Option{`)

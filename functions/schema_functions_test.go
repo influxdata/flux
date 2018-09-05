@@ -4,26 +4,26 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/influxdata/platform/query/ast"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
 )
 
 func TestSchemaMutions_NewQueries(t *testing.T) {
-	tests := []querytest.NewQueryTestCase{
+	tests := []fluxtest.NewQueryTestCase{
 		{
 			Name: "test rename query",
 			Raw:  `from(bucket:"mybucket") |> rename(columns:{old:"new"}) |> sum()`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -45,7 +45,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "rename1"},
 					{Parent: "rename1", Child: "sum2"},
 				},
@@ -54,8 +54,8 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		{
 			Name: "test drop query",
 			Raw:  `from(bucket:"mybucket") |> drop(columns:["col1", "col2", "col3"]) |> sum()`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -75,7 +75,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "drop1"},
 					{Parent: "drop1", Child: "sum2"},
 				},
@@ -84,8 +84,8 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		{
 			Name: "test keep query",
 			Raw:  `from(bucket:"mybucket") |> keep(columns:["col1", "col2", "col3"]) |> sum()`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -105,7 +105,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "keep1"},
 					{Parent: "keep1", Child: "sum2"},
 				},
@@ -114,8 +114,8 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		{
 			Name: "test duplicate query",
 			Raw:  `from(bucket:"mybucket") |> duplicate(column: "col1", as: "col1_new") |> sum()`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -136,7 +136,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "duplicate1"},
 					{Parent: "duplicate1", Child: "sum2"},
 				},
@@ -145,8 +145,8 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		{
 			Name: "test drop query fn param",
 			Raw:  `from(bucket:"mybucket") |> drop(fn: (col) => col =~ /reg*/) |> sum()`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -177,7 +177,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "drop1"},
 					{Parent: "drop1", Child: "sum2"},
 				},
@@ -186,8 +186,8 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		{
 			Name: "test keep query fn param",
 			Raw:  `from(bucket:"mybucket") |> keep(fn: (col) => col =~ /reg*/) |> sum()`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -218,7 +218,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "keep1"},
 					{Parent: "keep1", Child: "sum2"},
 				},
@@ -227,8 +227,8 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		{
 			Name: "test rename query fn param",
 			Raw:  `from(bucket:"mybucket") |> rename(fn: (col) => "new_name") |> sum()`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -253,7 +253,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "rename1"},
 					{Parent: "rename1", Child: "sum2"},
 				},
@@ -289,7 +289,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			querytest.NewQueryTestHelper(t, tc)
+			fluxtest.NewQueryTestHelper(t, tc)
 		})
 	}
 }
@@ -298,7 +298,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 	testCases := []struct {
 		name    string
 		spec    plan.ProcedureSpec
-		data    []query.Table
+		data    []flux.Table
 		want    []*executetest.Table
 		wantErr error
 	}{
@@ -315,11 +315,11 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "1a", Type: query.TFloat},
-					{Label: "2a", Type: query.TFloat},
-					{Label: "3a", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "1a", Type: flux.TFloat},
+					{Label: "2a", Type: flux.TFloat},
+					{Label: "3a", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 2.0, 3.0},
@@ -328,10 +328,10 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "1b", Type: query.TFloat},
-					{Label: "2b", Type: query.TFloat},
-					{Label: "3b", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "1b", Type: flux.TFloat},
+					{Label: "2b", Type: flux.TFloat},
+					{Label: "3b", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 2.0, 3.0},
@@ -350,11 +350,11 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "a", Type: query.TFloat},
-					{Label: "b", Type: query.TFloat},
-					{Label: "c", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "a", Type: flux.TFloat},
+					{Label: "b", Type: flux.TFloat},
+					{Label: "c", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 2.0, 3.0},
@@ -363,8 +363,8 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "c", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "c", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{3.0},
@@ -382,11 +382,11 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "a", Type: query.TFloat},
-					{Label: "b", Type: query.TFloat},
-					{Label: "c", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "a", Type: flux.TFloat},
+					{Label: "b", Type: flux.TFloat},
+					{Label: "c", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 2.0, 3.0},
@@ -395,8 +395,8 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "a", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "a", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0},
@@ -415,11 +415,11 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "a", Type: query.TFloat},
-					{Label: "b", Type: query.TFloat},
-					{Label: "c", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "a", Type: flux.TFloat},
+					{Label: "b", Type: flux.TFloat},
+					{Label: "c", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 2.0, 3.0},
@@ -428,11 +428,11 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "a", Type: query.TFloat},
-					{Label: "a_1", Type: query.TFloat},
-					{Label: "b", Type: query.TFloat},
-					{Label: "c", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "a", Type: flux.TFloat},
+					{Label: "a_1", Type: flux.TFloat},
+					{Label: "b", Type: flux.TFloat},
+					{Label: "c", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 1.0, 2.0, 3.0},
@@ -455,11 +455,11 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "1a", Type: query.TFloat},
-					{Label: "2a", Type: query.TFloat},
-					{Label: "3a", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "1a", Type: flux.TFloat},
+					{Label: "2a", Type: flux.TFloat},
+					{Label: "3a", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 2.0, 3.0},
@@ -468,10 +468,10 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "new_name", Type: query.TFloat},
-					{Label: "new_name", Type: query.TFloat},
-					{Label: "new_name", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "new_name", Type: flux.TFloat},
+					{Label: "new_name", Type: flux.TFloat},
+					{Label: "new_name", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 2.0, 3.0},
@@ -500,11 +500,11 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "server1", Type: query.TFloat},
-					{Label: "local", Type: query.TFloat},
-					{Label: "server2", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "server1", Type: flux.TFloat},
+					{Label: "local", Type: flux.TFloat},
+					{Label: "server2", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 2.0, 3.0},
@@ -513,8 +513,8 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "local", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "local", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{2.0},
@@ -543,11 +543,11 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "server1", Type: query.TFloat},
-					{Label: "local", Type: query.TFloat},
-					{Label: "server2", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "server1", Type: flux.TFloat},
+					{Label: "local", Type: flux.TFloat},
+					{Label: "server2", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 2.0, 3.0},
@@ -556,9 +556,9 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "server1", Type: query.TFloat},
-					{Label: "server2", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "server1", Type: flux.TFloat},
+					{Label: "server2", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 3.0},
@@ -581,11 +581,11 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "server1", Type: query.TFloat},
-					{Label: "local", Type: query.TFloat},
-					{Label: "server2", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "server1", Type: flux.TFloat},
+					{Label: "local", Type: flux.TFloat},
+					{Label: "server2", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 2.0, 3.0},
@@ -594,8 +594,8 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "localhost", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "localhost", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{2.0},
@@ -613,11 +613,11 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "server1", Type: query.TFloat},
-					{Label: "local", Type: query.TFloat},
-					{Label: "server2", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "server1", Type: flux.TFloat},
+					{Label: "local", Type: flux.TFloat},
+					{Label: "server2", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 2.0, 3.0},
@@ -639,11 +639,11 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "server1", Type: query.TFloat},
-					{Label: "local", Type: query.TFloat},
-					{Label: "server2", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "server1", Type: flux.TFloat},
+					{Label: "local", Type: flux.TFloat},
+					{Label: "server2", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 2.0, 3.0},
@@ -663,11 +663,11 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "server1", Type: query.TFloat},
-					{Label: "local", Type: query.TFloat},
-					{Label: "server2", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "server1", Type: flux.TFloat},
+					{Label: "local", Type: flux.TFloat},
+					{Label: "server2", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 2.0, 3.0},
@@ -688,11 +688,11 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "server1", Type: query.TFloat},
-					{Label: "local", Type: query.TFloat},
-					{Label: "server2", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "server1", Type: flux.TFloat},
+					{Label: "local", Type: flux.TFloat},
+					{Label: "server2", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 2.0, 3.0},
@@ -716,11 +716,11 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "1a", Type: query.TFloat},
-					{Label: "2a", Type: query.TFloat},
-					{Label: "3a", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "1a", Type: flux.TFloat},
+					{Label: "2a", Type: flux.TFloat},
+					{Label: "3a", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 2.0, 3.0},
@@ -730,18 +730,18 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				KeyCols:   []string{"1a"},
 				KeyValues: []interface{}{1.0},
 				GroupKey: execute.NewGroupKey(
-					[]query.ColMeta{{
+					[]flux.ColMeta{{
 						Label: "1a",
-						Type:  query.TFloat,
+						Type:  flux.TFloat,
 					}},
 					[]values.Value{values.NewFloatValue(1.0)},
 				),
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "1b", Type: query.TFloat},
-					{Label: "2b", Type: query.TFloat},
-					{Label: "3b", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "1b", Type: flux.TFloat},
+					{Label: "2b", Type: flux.TFloat},
+					{Label: "3b", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 2.0, 3.0},
@@ -751,9 +751,9 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				KeyCols:   []string{"1b"},
 				KeyValues: []interface{}{1.0},
 				GroupKey: execute.NewGroupKey(
-					[]query.ColMeta{{
+					[]flux.ColMeta{{
 						Label: "1b",
-						Type:  query.TFloat,
+						Type:  flux.TFloat,
 					}},
 					[]values.Value{values.NewFloatValue(1.0)},
 				),
@@ -768,11 +768,11 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "1a", Type: query.TFloat},
-					{Label: "2a", Type: query.TFloat},
-					{Label: "3a", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "1a", Type: flux.TFloat},
+					{Label: "2a", Type: flux.TFloat},
+					{Label: "3a", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 2.0, 3.0},
@@ -782,17 +782,17 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				KeyCols:   []string{"2a"},
 				KeyValues: []interface{}{2.0},
 				GroupKey: execute.NewGroupKey(
-					[]query.ColMeta{{
+					[]flux.ColMeta{{
 						Label: "2a",
-						Type:  query.TFloat,
+						Type:  flux.TFloat,
 					}},
 					[]values.Value{values.NewFloatValue(2.0)},
 				),
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "1a", Type: query.TFloat},
-					{Label: "3a", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "1a", Type: flux.TFloat},
+					{Label: "3a", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 3.0},
@@ -801,7 +801,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				},
 				KeyCols:   []string(nil),
 				KeyValues: []interface{}(nil),
-				GroupKey:  execute.NewGroupKey([]query.ColMeta{}, []values.Value{}),
+				GroupKey:  execute.NewGroupKey([]flux.ColMeta{}, []values.Value{}),
 			}},
 		},
 		{
@@ -813,11 +813,11 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "1a", Type: query.TFloat},
-					{Label: "2a", Type: query.TFloat},
-					{Label: "3a", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "1a", Type: flux.TFloat},
+					{Label: "2a", Type: flux.TFloat},
+					{Label: "3a", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0, 2.0, 3.0},
@@ -827,16 +827,16 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				KeyCols:   []string{"1a", "3a"},
 				KeyValues: []interface{}{1.0, 3.0},
 				GroupKey: execute.NewGroupKey(
-					[]query.ColMeta{
-						{Label: "1a", Type: query.TFloat},
-						{Label: "3a", Type: query.TFloat},
+					[]flux.ColMeta{
+						{Label: "1a", Type: flux.TFloat},
+						{Label: "3a", Type: flux.TFloat},
 					},
 					[]values.Value{values.NewFloatValue(1.0), values.NewFloatValue(3.0)},
 				),
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "1a", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "1a", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{1.0},
@@ -846,8 +846,8 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				KeyCols:   []string{"1a"},
 				KeyValues: []interface{}{1.0},
 				GroupKey: execute.NewGroupKey(
-					[]query.ColMeta{
-						{Label: "1a", Type: query.TFloat},
+					[]flux.ColMeta{
+						{Label: "1a", Type: flux.TFloat},
 					},
 					[]values.Value{values.NewFloatValue(1.0)},
 				),

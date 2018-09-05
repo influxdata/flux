@@ -1,10 +1,10 @@
-package query
+package flux
 
 import (
 	"io"
 
-	"github.com/influxdata/platform/query/iocounter"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux/iocounter"
+	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 )
 

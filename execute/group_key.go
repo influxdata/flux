@@ -4,23 +4,23 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/values"
 )
 
 type groupKey struct {
-	cols   []query.ColMeta
+	cols   []flux.ColMeta
 	values []values.Value
 }
 
-func NewGroupKey(cols []query.ColMeta, values []values.Value) query.GroupKey {
+func NewGroupKey(cols []flux.ColMeta, values []values.Value) flux.GroupKey {
 	return &groupKey{
 		cols:   cols,
 		values: values,
 	}
 }
 
-func (k *groupKey) Cols() []query.ColMeta {
+func (k *groupKey) Cols() []flux.ColMeta {
 	return k.cols
 }
 func (k *groupKey) HasCol(label string) bool {
@@ -57,11 +57,11 @@ func (k *groupKey) ValueTime(j int) Time {
 	return k.values[j].Time()
 }
 
-func (k *groupKey) Equal(o query.GroupKey) bool {
+func (k *groupKey) Equal(o flux.GroupKey) bool {
 	return groupKeyEqual(k, o)
 }
 
-func (k *groupKey) Less(o query.GroupKey) bool {
+func (k *groupKey) Less(o flux.GroupKey) bool {
 	return groupKeyLess(k, o)
 }
 
@@ -78,7 +78,7 @@ func (k *groupKey) String() string {
 	return b.String()
 }
 
-func groupKeyEqual(a, b query.GroupKey) bool {
+func groupKeyEqual(a, b flux.GroupKey) bool {
 	aCols := a.Cols()
 	bCols := b.Cols()
 	if len(aCols) != len(bCols) {
@@ -89,27 +89,27 @@ func groupKeyEqual(a, b query.GroupKey) bool {
 			return false
 		}
 		switch c.Type {
-		case query.TBool:
+		case flux.TBool:
 			if a.ValueBool(j) != b.ValueBool(j) {
 				return false
 			}
-		case query.TInt:
+		case flux.TInt:
 			if a.ValueInt(j) != b.ValueInt(j) {
 				return false
 			}
-		case query.TUInt:
+		case flux.TUInt:
 			if a.ValueUInt(j) != b.ValueUInt(j) {
 				return false
 			}
-		case query.TFloat:
+		case flux.TFloat:
 			if a.ValueFloat(j) != b.ValueFloat(j) {
 				return false
 			}
-		case query.TString:
+		case flux.TString:
 			if a.ValueString(j) != b.ValueString(j) {
 				return false
 			}
-		case query.TTime:
+		case flux.TTime:
 			if a.ValueTime(j) != b.ValueTime(j) {
 				return false
 			}
@@ -118,7 +118,7 @@ func groupKeyEqual(a, b query.GroupKey) bool {
 	return true
 }
 
-func groupKeyLess(a, b query.GroupKey) bool {
+func groupKeyLess(a, b flux.GroupKey) bool {
 	aCols := a.Cols()
 	bCols := b.Cols()
 	if av, bv := len(aCols), len(bCols); av != bv {
@@ -132,27 +132,27 @@ func groupKeyLess(a, b query.GroupKey) bool {
 			return av < bv
 		}
 		switch c.Type {
-		case query.TBool:
+		case flux.TBool:
 			if av, bv := a.ValueBool(j), b.ValueBool(j); av != bv {
 				return av
 			}
-		case query.TInt:
+		case flux.TInt:
 			if av, bv := a.ValueInt(j), b.ValueInt(j); av != bv {
 				return av < bv
 			}
-		case query.TUInt:
+		case flux.TUInt:
 			if av, bv := a.ValueUInt(j), b.ValueUInt(j); av != bv {
 				return av < bv
 			}
-		case query.TFloat:
+		case flux.TFloat:
 			if av, bv := a.ValueFloat(j), b.ValueFloat(j); av != bv {
 				return av < bv
 			}
-		case query.TString:
+		case flux.TString:
 			if av, bv := a.ValueString(j), b.ValueString(j); av != bv {
 				return av < bv
 			}
-		case query.TTime:
+		case flux.TTime:
 			if av, bv := a.ValueTime(j), b.ValueTime(j); av != bv {
 				return av < bv
 			}

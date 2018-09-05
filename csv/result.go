@@ -12,10 +12,10 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/iocounter"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/iocounter"
+	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 )
 
@@ -71,7 +71,7 @@ type ResultDecoderConfig struct {
 	MaxBufferCount int
 }
 
-func (d *ResultDecoder) Decode(r io.Reader) (query.Result, error) {
+func (d *ResultDecoder) Decode(r io.Reader) (flux.Result, error) {
 	return newResultDecoder(r, d.c, nil)
 }
 
@@ -92,7 +92,7 @@ func NewMultiResultDecoder(c ResultDecoderConfig) *MultiResultDecoder {
 	}
 }
 
-func (d *MultiResultDecoder) Decode(r io.ReadCloser) (query.ResultIterator, error) {
+func (d *MultiResultDecoder) Decode(r io.ReadCloser) (flux.ResultIterator, error) {
 	return &resultIterator{
 		c: d.c,
 		r: r,
@@ -130,7 +130,7 @@ func (r *resultIterator) More() bool {
 	return false
 }
 
-func (r *resultIterator) Next() query.Result {
+func (r *resultIterator) Next() flux.Result {
 	return r.next
 }
 
@@ -195,7 +195,7 @@ func (r *resultDecoder) Name() string {
 	return r.id
 }
 
-func (r *resultDecoder) Tables() query.TableIterator {
+func (r *resultDecoder) Tables() flux.TableIterator {
 	return r
 }
 
@@ -203,7 +203,7 @@ func (r *resultDecoder) Abort(error) {
 	panic("not implemented")
 }
 
-func (r *resultDecoder) Do(f func(query.Table) error) error {
+func (r *resultDecoder) Do(f func(flux.Table) error) error {
 	var extraLine []string
 	var meta tableMetadata
 	newMeta := true
@@ -353,7 +353,7 @@ func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tab
 		}
 		cols[j].ColMeta.Label = label
 		cols[j].ColMeta.Type = t
-		if t == query.TTime {
+		if t == flux.TTime {
 			switch desc {
 			case "RFC3339":
 				cols[j].fmt = time.RFC3339
@@ -393,7 +393,7 @@ type tableDecoder struct {
 
 	initialized bool
 	id          string
-	key         query.GroupKey
+	key         flux.GroupKey
 	cols        []colMeta
 
 	builder *execute.ColListTableBuilder
@@ -430,7 +430,7 @@ func newTable(
 	return b, nil
 }
 
-func (d *tableDecoder) Do(f func(query.ColReader) error) (err error) {
+func (d *tableDecoder) Do(f func(flux.ColReader) error) (err error) {
 	// Send off first batch from first advance call.
 	err = f(d.builder.RawTable())
 	if err != nil {
@@ -525,7 +525,7 @@ func (d *tableDecoder) init(line []string) error {
 	if len(line) != 0 {
 		record = line[recordStartIdx:]
 	}
-	keyCols := make([]query.ColMeta, 0, len(d.meta.Cols))
+	keyCols := make([]flux.ColMeta, 0, len(d.meta.Cols))
 	keyValues := make([]values.Value, 0, len(d.meta.Cols))
 	for j, c := range d.meta.Cols {
 		if d.meta.Groups[j] {
@@ -560,22 +560,22 @@ func (d *tableDecoder) appendRecord(record []string) error {
 	for j, c := range d.meta.Cols {
 		if record[j] == "" && d.meta.Defaults[j] != nil {
 			switch c.Type {
-			case query.TBool:
+			case flux.TBool:
 				v := d.meta.Defaults[j].Bool()
 				d.builder.AppendBool(j, v)
-			case query.TInt:
+			case flux.TInt:
 				v := d.meta.Defaults[j].Int()
 				d.builder.AppendInt(j, v)
-			case query.TUInt:
+			case flux.TUInt:
 				v := d.meta.Defaults[j].UInt()
 				d.builder.AppendUInt(j, v)
-			case query.TFloat:
+			case flux.TFloat:
 				v := d.meta.Defaults[j].Float()
 				d.builder.AppendFloat(j, v)
-			case query.TString:
+			case flux.TString:
 				v := d.meta.Defaults[j].Str()
 				d.builder.AppendString(j, v)
-			case query.TTime:
+			case flux.TTime:
 				v := d.meta.Defaults[j].Time()
 				d.builder.AppendTime(j, v)
 			default:
@@ -596,16 +596,16 @@ func (d *tableDecoder) Empty() bool {
 
 func (d *tableDecoder) RefCount(n int) {}
 
-func (d *tableDecoder) Key() query.GroupKey {
+func (d *tableDecoder) Key() flux.GroupKey {
 	return d.builder.Key()
 }
 
-func (d *tableDecoder) Cols() []query.ColMeta {
+func (d *tableDecoder) Cols() []flux.ColMeta {
 	return d.builder.Cols()
 }
 
 type colMeta struct {
-	query.ColMeta
+	flux.ColMeta
 	fmt string
 }
 
@@ -715,13 +715,13 @@ func wrapEncodingError(err error) error {
 	return errors.Wrap(newCSVEncoderError(err.Error()), "csv encoder error")
 }
 
-func (e *ResultEncoder) Encode(w io.Writer, result query.Result) (int64, error) {
+func (e *ResultEncoder) Encode(w io.Writer, result flux.Result) (int64, error) {
 	tableID := 0
 	tableIDStr := "0"
 	metaCols := []colMeta{
-		{ColMeta: query.ColMeta{Label: "", Type: query.TInvalid}},
-		{ColMeta: query.ColMeta{Label: resultLabel, Type: query.TString}},
-		{ColMeta: query.ColMeta{Label: tableLabel, Type: query.TInt}},
+		{ColMeta: flux.ColMeta{Label: "", Type: flux.TInvalid}},
+		{ColMeta: flux.ColMeta{Label: resultLabel, Type: flux.TString}},
+		{ColMeta: flux.ColMeta{Label: tableLabel, Type: flux.TInt}},
 	}
 	writeCounter := &iocounter.Writer{Writer: w}
 	writer := e.csvWriter(writeCounter)
@@ -729,13 +729,13 @@ func (e *ResultEncoder) Encode(w io.Writer, result query.Result) (int64, error) 
 	var lastCols []colMeta
 	var lastEmpty bool
 
-	err := result.Tables().Do(func(tbl query.Table) error {
+	err := result.Tables().Do(func(tbl flux.Table) error {
 		e.written = true
 		// Update cols with table cols
 		cols := metaCols
 		for _, c := range tbl.Cols() {
 			cm := colMeta{ColMeta: c}
-			if c.Type == query.TTime {
+			if c.Type == flux.TTime {
 				cm.fmt = time.RFC3339Nano
 			}
 			cols = append(cols, cm)
@@ -771,7 +771,7 @@ func (e *ResultEncoder) Encode(w io.Writer, result query.Result) (int64, error) 
 			}
 		}
 
-		err := tbl.Do(func(cr query.ColReader) error {
+		err := tbl.Do(func(cr flux.ColReader) error {
 			record := row[recordStartIdx:]
 			l := cr.Len()
 			for i := 0; i < l; i++ {
@@ -819,7 +819,7 @@ func (e *ResultEncoder) EncodeError(w io.Writer, err error) error {
 	return writer.Error()
 }
 
-func writeSchema(writer *csv.Writer, c *ResultEncoderConfig, row []string, cols []colMeta, useKeyDefaults bool, key query.GroupKey, resultName, tableID string) error {
+func writeSchema(writer *csv.Writer, c *ResultEncoderConfig, row []string, cols []colMeta, useKeyDefaults bool, key flux.GroupKey, resultName, tableID string) error {
 	defaults := make([]string, len(row))
 	for j, c := range cols {
 		switch j {
@@ -864,7 +864,7 @@ func writeSchema(writer *csv.Writer, c *ResultEncoderConfig, row []string, cols 
 	return writer.Error()
 }
 
-func writeAnnotations(writer *csv.Writer, annotations []string, row, defaults []string, cols []colMeta, key query.GroupKey) error {
+func writeAnnotations(writer *csv.Writer, annotations []string, row, defaults []string, cols []colMeta, key flux.GroupKey) error {
 	for _, annotation := range annotations {
 		switch annotation {
 		case datatypeAnnotation:
@@ -893,17 +893,17 @@ func writeDatatypes(writer *csv.Writer, row []string, cols []colMeta) error {
 			continue
 		}
 		switch c.Type {
-		case query.TBool:
+		case flux.TBool:
 			row[j] = boolDatatype
-		case query.TInt:
+		case flux.TInt:
 			row[j] = intDatatype
-		case query.TUInt:
+		case flux.TUInt:
 			row[j] = uintDatatype
-		case query.TFloat:
+		case flux.TFloat:
 			row[j] = floatDatatype
-		case query.TString:
+		case flux.TString:
 			row[j] = stringDatatype
-		case query.TTime:
+		case flux.TTime:
 			row[j] = timeDataTypeWithFmt
 		default:
 			return fmt.Errorf("unknown column type %v", c.Type)
@@ -912,7 +912,7 @@ func writeDatatypes(writer *csv.Writer, row []string, cols []colMeta) error {
 	return writer.Write(row)
 }
 
-func writeGroups(writer *csv.Writer, row []string, cols []colMeta, key query.GroupKey) error {
+func writeGroups(writer *csv.Writer, row []string, cols []colMeta, key flux.GroupKey) error {
 	for j, c := range cols {
 		if j == annotationIdx {
 			row[j] = commentPrefix + groupAnnotation
@@ -938,33 +938,33 @@ func writeDefaults(writer *csv.Writer, row, defaults []string) error {
 func decodeValue(value string, c colMeta) (values.Value, error) {
 	var val values.Value
 	switch c.Type {
-	case query.TBool:
+	case flux.TBool:
 		v, err := strconv.ParseBool(value)
 		if err != nil {
 			return nil, err
 		}
 		val = values.NewBoolValue(v)
-	case query.TInt:
+	case flux.TInt:
 		v, err := strconv.ParseInt(value, 10, 64)
 		if err != nil {
 			return nil, err
 		}
 		val = values.NewIntValue(v)
-	case query.TUInt:
+	case flux.TUInt:
 		v, err := strconv.ParseUint(value, 10, 64)
 		if err != nil {
 			return nil, err
 		}
 		val = values.NewUIntValue(v)
-	case query.TFloat:
+	case flux.TFloat:
 		v, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			return nil, err
 		}
 		val = values.NewFloatValue(v)
-	case query.TString:
+	case flux.TString:
 		val = values.NewStringValue(value)
-	case query.TTime:
+	case flux.TTime:
 		v, err := decodeTime(value, c.fmt)
 		if err != nil {
 			return nil, err
@@ -978,33 +978,33 @@ func decodeValue(value string, c colMeta) (values.Value, error) {
 
 func decodeValueInto(j int, c colMeta, value string, builder execute.TableBuilder) error {
 	switch c.Type {
-	case query.TBool:
+	case flux.TBool:
 		v, err := strconv.ParseBool(value)
 		if err != nil {
 			return err
 		}
 		builder.AppendBool(j, v)
-	case query.TInt:
+	case flux.TInt:
 		v, err := strconv.ParseInt(value, 10, 64)
 		if err != nil {
 			return err
 		}
 		builder.AppendInt(j, v)
-	case query.TUInt:
+	case flux.TUInt:
 		v, err := strconv.ParseUint(value, 10, 64)
 		if err != nil {
 			return err
 		}
 		builder.AppendUInt(j, v)
-	case query.TFloat:
+	case flux.TFloat:
 		v, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			return err
 		}
 		builder.AppendFloat(j, v)
-	case query.TString:
+	case flux.TString:
 		builder.AppendString(j, value)
-	case query.TTime:
+	case flux.TTime:
 		t, err := decodeTime(value, c.fmt)
 		if err != nil {
 			return err
@@ -1018,36 +1018,36 @@ func decodeValueInto(j int, c colMeta, value string, builder execute.TableBuilde
 
 func encodeValue(value values.Value, c colMeta) (string, error) {
 	switch c.Type {
-	case query.TBool:
+	case flux.TBool:
 		return strconv.FormatBool(value.Bool()), nil
-	case query.TInt:
+	case flux.TInt:
 		return strconv.FormatInt(value.Int(), 10), nil
-	case query.TUInt:
+	case flux.TUInt:
 		return strconv.FormatUint(value.UInt(), 10), nil
-	case query.TFloat:
+	case flux.TFloat:
 		return strconv.FormatFloat(value.Float(), 'f', -1, 64), nil
-	case query.TString:
+	case flux.TString:
 		return value.Str(), nil
-	case query.TTime:
+	case flux.TTime:
 		return encodeTime(value.Time(), c.fmt), nil
 	default:
 		return "", fmt.Errorf("unknown type %v", c.Type)
 	}
 }
 
-func encodeValueFrom(i, j int, c colMeta, cr query.ColReader) (string, error) {
+func encodeValueFrom(i, j int, c colMeta, cr flux.ColReader) (string, error) {
 	switch c.Type {
-	case query.TBool:
+	case flux.TBool:
 		return strconv.FormatBool(cr.Bools(j)[i]), nil
-	case query.TInt:
+	case flux.TInt:
 		return strconv.FormatInt(cr.Ints(j)[i], 10), nil
-	case query.TUInt:
+	case flux.TUInt:
 		return strconv.FormatUint(cr.UInts(j)[i], 10), nil
-	case query.TFloat:
+	case flux.TFloat:
 		return strconv.FormatFloat(cr.Floats(j)[i], 'f', -1, 64), nil
-	case query.TString:
+	case flux.TString:
 		return cr.Strings(j)[i], nil
-	case query.TTime:
+	case flux.TTime:
 		return encodeTime(cr.Times(j)[i], c.fmt), nil
 	default:
 		return "", fmt.Errorf("unknown type %v", c.Type)
@@ -1073,7 +1073,7 @@ func copyLine(line []string) []string {
 }
 
 // decodeType returns the execute.DataType and any additional format description.
-func decodeType(datatype string) (t query.DataType, desc string, err error) {
+func decodeType(datatype string) (t flux.DataType, desc string, err error) {
 	split := strings.SplitN(datatype, ":", 2)
 	if len(split) > 1 {
 		desc = split[1]
@@ -1081,17 +1081,17 @@ func decodeType(datatype string) (t query.DataType, desc string, err error) {
 	typ := split[0]
 	switch typ {
 	case boolDatatype:
-		t = query.TBool
+		t = flux.TBool
 	case intDatatype:
-		t = query.TInt
+		t = flux.TInt
 	case uintDatatype:
-		t = query.TUInt
+		t = flux.TUInt
 	case floatDatatype:
-		t = query.TFloat
+		t = flux.TFloat
 	case stringDatatype:
-		t = query.TString
+		t = flux.TString
 	case timeDatatype:
-		t = query.TTime
+		t = flux.TTime
 	default:
 		err = fmt.Errorf("unsupported data type %q", typ)
 	}
@@ -1110,8 +1110,8 @@ func equalCols(a, b []colMeta) bool {
 	return true
 }
 
-func NewMultiResultEncoder(c ResultEncoderConfig) query.MultiResultEncoder {
-	return &query.DelimitedMultiResultEncoder{
+func NewMultiResultEncoder(c ResultEncoderConfig) flux.MultiResultEncoder {
+	return &flux.DelimitedMultiResultEncoder{
 		Delimiter: []byte("\r\n"),
 		Encoder:   NewResultEncoder(c),
 	}

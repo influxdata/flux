@@ -4,26 +4,26 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/plan/plantest"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
 )
 
 func TestRange_NewQuery(t *testing.T) {
-	tests := []querytest.NewQueryTestCase{
+	tests := []fluxtest.NewQueryTestCase{
 		{
 			Name: "from with database with range",
 			Raw:  `from(bucket:"mybucket") |> range(start:-4h, stop:-2h) |> sum()`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -33,11 +33,11 @@ func TestRange_NewQuery(t *testing.T) {
 					{
 						ID: "range1",
 						Spec: &functions.RangeOpSpec{
-							Start: query.Time{
+							Start: flux.Time{
 								Relative:   -4 * time.Hour,
 								IsRelative: true,
 							},
-							Stop: query.Time{
+							Stop: flux.Time{
 								Relative:   -2 * time.Hour,
 								IsRelative: true,
 							},
@@ -53,7 +53,7 @@ func TestRange_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "sum2"},
 				},
@@ -62,8 +62,8 @@ func TestRange_NewQuery(t *testing.T) {
 		{
 			Name: "from csv with range",
 			Raw:  `fromCSV(csv: "1,2") |> range(start:-4h, stop:-2h, timeCol: "_start") |> sum()`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "fromCSV0",
 						Spec: &functions.FromCSVOpSpec{
@@ -73,11 +73,11 @@ func TestRange_NewQuery(t *testing.T) {
 					{
 						ID: "range1",
 						Spec: &functions.RangeOpSpec{
-							Start: query.Time{
+							Start: flux.Time{
 								Relative:   -4 * time.Hour,
 								IsRelative: true,
 							},
-							Stop: query.Time{
+							Stop: flux.Time{
 								Relative:   -2 * time.Hour,
 								IsRelative: true,
 							},
@@ -93,7 +93,7 @@ func TestRange_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "fromCSV0", Child: "range1"},
 					{Parent: "range1", Child: "sum2"},
 				},
@@ -104,33 +104,33 @@ func TestRange_NewQuery(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			querytest.NewQueryTestHelper(t, tc)
+			fluxtest.NewQueryTestHelper(t, tc)
 		})
 	}
 }
 
 func TestRangeOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"range","kind":"range","spec":{"start":"-1h","stop":"2017-10-10T00:00:00Z"}}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID: "range",
 		Spec: &functions.RangeOpSpec{
-			Start: query.Time{
+			Start: flux.Time{
 				Relative:   -1 * time.Hour,
 				IsRelative: true,
 			},
-			Stop: query.Time{
+			Stop: flux.Time{
 				Absolute: time.Date(2017, 10, 10, 0, 0, 0, 0, time.UTC),
 			},
 		},
 	}
 
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestRange_PushDown(t *testing.T) {
 	spec := &functions.RangeProcedureSpec{
-		Bounds: query.Bounds{
-			Stop: query.Now,
+		Bounds: flux.Bounds{
+			Stop: flux.Now,
 		},
 	}
 	root := &plan.Procedure{
@@ -139,8 +139,8 @@ func TestRange_PushDown(t *testing.T) {
 	want := &plan.Procedure{
 		Spec: &functions.FromProcedureSpec{
 			BoundsSet: true,
-			Bounds: query.Bounds{
-				Stop: query.Now,
+			Bounds: flux.Bounds{
+				Stop: flux.Now,
 			},
 		},
 	}
@@ -152,21 +152,21 @@ func TestRange_Process(t *testing.T) {
 	testCases := []struct {
 		name     string
 		spec     *functions.RangeProcedureSpec
-		data     []query.Table
+		data     []flux.Table
 		want     []*executetest.Table
-		groupKey func() query.GroupKey
+		groupKey func() flux.GroupKey
 		now      values.Time
 		wantErr  error
 	}{
 		{
 			name: "from csv",
 			spec: &functions.RangeProcedureSpec{
-				Bounds: query.Bounds{
-					Start: query.Time{
+				Bounds: flux.Bounds{
+					Start: flux.Time{
 						IsRelative: true,
 						Relative:   -5 * time.Minute,
 					},
-					Stop: query.Time{
+					Stop: flux.Time{
 						IsRelative: true,
 						Relative:   -2 * time.Minute,
 					},
@@ -175,10 +175,10 @@ func TestRange_Process(t *testing.T) {
 				StartCol: "_start",
 				StopCol:  "_stop",
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(time.Minute.Nanoseconds()), 10.0},
@@ -191,11 +191,11 @@ func TestRange_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
 				},
 				Data: [][]interface{}{
 					{execute.Time(2 * time.Minute.Nanoseconds()), 5.0, execute.Time(2 * time.Minute.Nanoseconds()), execute.Time(5 * time.Minute.Nanoseconds())},
@@ -208,12 +208,12 @@ func TestRange_Process(t *testing.T) {
 		{
 			name: "invalid column",
 			spec: &functions.RangeProcedureSpec{
-				Bounds: query.Bounds{
-					Start: query.Time{
+				Bounds: flux.Bounds{
+					Start: flux.Time{
 						IsRelative: true,
 						Relative:   -5 * time.Minute,
 					},
-					Stop: query.Time{
+					Stop: flux.Time{
 						IsRelative: true,
 						Relative:   -2 * time.Minute,
 					},
@@ -222,10 +222,10 @@ func TestRange_Process(t *testing.T) {
 				StartCol: "_start",
 				StopCol:  "_stop",
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(time.Minute.Nanoseconds()), 10.0},
@@ -238,9 +238,9 @@ func TestRange_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}(nil),
 			}},
@@ -250,12 +250,12 @@ func TestRange_Process(t *testing.T) {
 		{
 			name: "specified column",
 			spec: &functions.RangeProcedureSpec{
-				Bounds: query.Bounds{
-					Start: query.Time{
+				Bounds: flux.Bounds{
+					Start: flux.Time{
 						IsRelative: true,
 						Relative:   -2 * time.Minute,
 					},
-					Stop: query.Time{
+					Stop: flux.Time{
 						IsRelative: true,
 					},
 				},
@@ -263,11 +263,11 @@ func TestRange_Process(t *testing.T) {
 				StartCol: "_start",
 				StopCol:  "_stop",
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(time.Minute.Nanoseconds()), 10.0},
@@ -277,11 +277,11 @@ func TestRange_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "_stop", Type: query.TTime},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "_stop", Type: flux.TTime},
 				},
 				Data: [][]interface{}{
 					{execute.Time(time.Minute.Nanoseconds()), execute.Time(3 * time.Minute.Nanoseconds()), 9.0, execute.Time(3 * time.Minute.Nanoseconds())},
@@ -293,12 +293,12 @@ func TestRange_Process(t *testing.T) {
 		{
 			name: "group key no overlap",
 			spec: &functions.RangeProcedureSpec{
-				Bounds: query.Bounds{
-					Start: query.Time{
+				Bounds: flux.Bounds{
+					Start: flux.Time{
 						IsRelative: true,
 						Relative:   -2 * time.Minute,
 					},
-					Stop: query.Time{
+					Stop: flux.Time{
 						IsRelative: true,
 					},
 				},
@@ -306,12 +306,12 @@ func TestRange_Process(t *testing.T) {
 				StartCol: "_start",
 				StopCol:  "_stop",
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				KeyCols:   []string{"_start", "_stop"},
 				KeyValues: []interface{}{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds())},
@@ -323,11 +323,11 @@ func TestRange_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				KeyCols:   []string{"_start", "_stop"},
 				KeyValues: []interface{}{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds())},
@@ -338,11 +338,11 @@ func TestRange_Process(t *testing.T) {
 		{
 			name: "group key overlap",
 			spec: &functions.RangeProcedureSpec{
-				Bounds: query.Bounds{
-					Start: query.Time{
+				Bounds: flux.Bounds{
+					Start: flux.Time{
 						Absolute: time.Unix(12*time.Minute.Nanoseconds(), 0),
 					},
-					Stop: query.Time{
+					Stop: flux.Time{
 						Absolute: time.Unix(14*time.Minute.Nanoseconds(), 0),
 					},
 				},
@@ -350,12 +350,12 @@ func TestRange_Process(t *testing.T) {
 				StartCol: "_start",
 				StopCol:  "_stop",
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				KeyCols:   []string{"_start", "_stop"},
 				KeyValues: []interface{}{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds())},
@@ -367,11 +367,11 @@ func TestRange_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				KeyCols:   []string{"_start", "_stop"},
 				KeyValues: []interface{}{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds())},
@@ -380,7 +380,7 @@ func TestRange_Process(t *testing.T) {
 					{execute.Time(12 * time.Minute.Nanoseconds()), execute.Time(14 * time.Minute.Nanoseconds()), execute.Time(13 * time.Minute.Nanoseconds()), 1.0},
 				},
 			}},
-			groupKey: func() query.GroupKey {
+			groupKey: func() flux.GroupKey {
 				t1, err := values.NewValue(values.Time(10*time.Minute.Nanoseconds()), semantic.Time)
 				if err != nil {
 					t.Fatal(err)
@@ -392,9 +392,9 @@ func TestRange_Process(t *testing.T) {
 
 				vs := []values.Value{t1, t2}
 				return execute.NewGroupKey(
-					[]query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
+					[]flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
 					},
 					vs,
 				)
@@ -403,11 +403,11 @@ func TestRange_Process(t *testing.T) {
 		{
 			name: "empty bounds start == stop",
 			spec: &functions.RangeProcedureSpec{
-				Bounds: query.Bounds{
-					Start: query.Time{
+				Bounds: flux.Bounds{
+					Start: flux.Time{
 						Absolute: time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC),
 					},
-					Stop: query.Time{
+					Stop: flux.Time{
 						Absolute: time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC),
 					},
 				},
@@ -416,10 +416,10 @@ func TestRange_Process(t *testing.T) {
 				StartCol: "_start",
 				StopCol:  "_stop",
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(time.Minute.Nanoseconds()), 10.0},
@@ -432,11 +432,11 @@ func TestRange_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
 				},
 				Data: [][]interface{}(nil),
 			}},
@@ -445,12 +445,12 @@ func TestRange_Process(t *testing.T) {
 		{
 			name: "empty bounds start > stop",
 			spec: &functions.RangeProcedureSpec{
-				Bounds: query.Bounds{
-					Start: query.Time{
+				Bounds: flux.Bounds{
+					Start: flux.Time{
 						IsRelative: true,
 						Relative:   -2 * time.Minute,
 					},
-					Stop: query.Time{
+					Stop: flux.Time{
 						IsRelative: true,
 						Relative:   -5 * time.Minute,
 					},
@@ -459,10 +459,10 @@ func TestRange_Process(t *testing.T) {
 				StartCol: "_start",
 				StopCol:  "_stop",
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(time.Minute.Nanoseconds()), 10.0},
@@ -475,11 +475,11 @@ func TestRange_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
 				},
 				Data: [][]interface{}(nil),
 			}},
@@ -535,16 +535,16 @@ func TestRange_Process(t *testing.T) {
 }
 func TestRange_PushDown_Duplicate(t *testing.T) {
 	spec := &functions.RangeProcedureSpec{
-		Bounds: query.Bounds{
-			Stop: query.Now,
+		Bounds: flux.Bounds{
+			Stop: flux.Now,
 		},
 	}
 	root := &plan.Procedure{
 		Spec: &functions.FromProcedureSpec{
 			BoundsSet: true,
-			Bounds: query.Bounds{
-				Start: query.MinTime,
-				Stop:  query.Now,
+			Bounds: flux.Bounds{
+				Start: flux.MinTime,
+				Stop:  flux.Now,
 			},
 		},
 	}
@@ -558,8 +558,8 @@ func TestRange_PushDown_Duplicate(t *testing.T) {
 
 func TestRange_PushDown_Match(t *testing.T) {
 	spec := &functions.RangeProcedureSpec{
-		Bounds: query.Bounds{
-			Stop: query.Now,
+		Bounds: flux.Bounds{
+			Stop: flux.Now,
 		},
 		TimeCol: "_time",
 	}

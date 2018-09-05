@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -15,7 +15,7 @@ func RandomDatasetID() execute.DatasetID {
 
 type Dataset struct {
 	ID                    execute.DatasetID
-	Retractions           []query.GroupKey
+	Retractions           []flux.GroupKey
 	ProcessingTimeUpdates []execute.Time
 	WatermarkUpdates      []execute.Time
 	Finished              bool
@@ -32,7 +32,7 @@ func (d *Dataset) AddTransformation(t execute.Transformation) {
 	panic("not implemented")
 }
 
-func (d *Dataset) RetractTable(key query.GroupKey) error {
+func (d *Dataset) RetractTable(key flux.GroupKey) error {
 	d.Retractions = append(d.Retractions, key)
 	return nil
 }
@@ -55,7 +55,7 @@ func (d *Dataset) Finish(err error) {
 	d.FinishedErr = err
 }
 
-func (d *Dataset) SetTriggerSpec(t query.TriggerSpec) {
+func (d *Dataset) SetTriggerSpec(t flux.TriggerSpec) {
 	panic("not implemented")
 }
 
@@ -80,7 +80,7 @@ func TransformationPassThroughTestHelper(t *testing.T, newTr NewTransformation) 
 	tr.Finish(parentID, nil)
 
 	exp := &Dataset{
-		ID: d.ID,
+		ID:                    d.ID,
 		ProcessingTimeUpdates: []execute.Time{now},
 		WatermarkUpdates:      []execute.Time{now},
 		Finished:              true,

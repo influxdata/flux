@@ -3,9 +3,9 @@ package functions
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
 )
 
 const LastKind = "last"
@@ -17,13 +17,13 @@ type LastOpSpec struct {
 var lastSignature = execute.DefaultSelectorSignature()
 
 func init() {
-	query.RegisterFunction(LastKind, createLastOpSpec, lastSignature)
-	query.RegisterOpSpec(LastKind, newLastOp)
+	flux.RegisterFunction(LastKind, createLastOpSpec, lastSignature)
+	flux.RegisterOpSpec(LastKind, newLastOp)
 	plan.RegisterProcedureSpec(LastKind, newLastProcedure, LastKind)
 	execute.RegisterTransformation(LastKind, createLastTransformation)
 }
 
-func createLastOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createLastOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -35,11 +35,11 @@ func createLastOpSpec(args query.Arguments, a *query.Administration) (query.Oper
 	return spec, nil
 }
 
-func newLastOp() query.OperationSpec {
+func newLastOp() flux.OperationSpec {
 	return new(LastOpSpec)
 }
 
-func (s *LastOpSpec) Kind() query.OperationKind {
+func (s *LastOpSpec) Kind() flux.OperationKind {
 	return LastKind
 }
 
@@ -47,7 +47,7 @@ type LastProcedureSpec struct {
 	execute.SelectorConfig
 }
 
-func newLastProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newLastProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*LastOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -78,7 +78,7 @@ func (s *LastProcedureSpec) PushDown(root *plan.Procedure, dup func() *plan.Proc
 		root = dup()
 		selectSpec = root.Spec.(*FromProcedureSpec)
 		selectSpec.BoundsSet = false
-		selectSpec.Bounds = query.Bounds{}
+		selectSpec.Bounds = flux.Bounds{}
 		selectSpec.LimitSet = false
 		selectSpec.PointsLimit = 0
 		selectSpec.SeriesLimit = 0
@@ -88,9 +88,9 @@ func (s *LastProcedureSpec) PushDown(root *plan.Procedure, dup func() *plan.Proc
 		return
 	}
 	selectSpec.BoundsSet = true
-	selectSpec.Bounds = query.Bounds{
-		Start: query.MinTime,
-		Stop:  query.Now,
+	selectSpec.Bounds = flux.Bounds{
+		Start: flux.MinTime,
+		Stop:  flux.Now,
 	}
 	selectSpec.LimitSet = true
 	selectSpec.PointsLimit = 1
@@ -149,24 +149,24 @@ func (s *LastSelector) Rows() []execute.Row {
 	return s.rows
 }
 
-func (s *LastSelector) selectLast(l int, cr query.ColReader) {
+func (s *LastSelector) selectLast(l int, cr flux.ColReader) {
 	if l > 0 {
 		s.rows = []execute.Row{execute.ReadRow(l-1, cr)}
 	}
 }
 
-func (s *LastSelector) DoBool(vs []bool, cr query.ColReader) {
+func (s *LastSelector) DoBool(vs []bool, cr flux.ColReader) {
 	s.selectLast(len(vs), cr)
 }
-func (s *LastSelector) DoInt(vs []int64, cr query.ColReader) {
+func (s *LastSelector) DoInt(vs []int64, cr flux.ColReader) {
 	s.selectLast(len(vs), cr)
 }
-func (s *LastSelector) DoUInt(vs []uint64, cr query.ColReader) {
+func (s *LastSelector) DoUInt(vs []uint64, cr flux.ColReader) {
 	s.selectLast(len(vs), cr)
 }
-func (s *LastSelector) DoFloat(vs []float64, cr query.ColReader) {
+func (s *LastSelector) DoFloat(vs []float64, cr flux.ColReader) {
 	s.selectLast(len(vs), cr)
 }
-func (s *LastSelector) DoString(vs []string, cr query.ColReader) {
+func (s *LastSelector) DoString(vs []string, cr flux.ColReader) {
 	s.selectLast(len(vs), cr)
 }

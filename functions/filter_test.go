@@ -5,24 +5,24 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/ast"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/plan/plantest"
-	"github.com/influxdata/platform/query/querytest"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/semantic"
 )
 
 func TestFilter_NewQuery(t *testing.T) {
-	tests := []querytest.NewQueryTestCase{
+	tests := []fluxtest.NewQueryTestCase{
 		{
 			Name: "from with database filter and range",
 			Raw:  `from(bucket:"mybucket") |> filter(fn: (r) => r["t1"]=="val1" and r["t2"]=="val2") |> range(start:-4h, stop:-2h) |> count()`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -59,11 +59,11 @@ func TestFilter_NewQuery(t *testing.T) {
 					{
 						ID: "range2",
 						Spec: &functions.RangeOpSpec{
-							Start: query.Time{
+							Start: flux.Time{
 								Relative:   -4 * time.Hour,
 								IsRelative: true,
 							},
-							Stop: query.Time{
+							Stop: flux.Time{
 								Relative:   -2 * time.Hour,
 								IsRelative: true,
 							},
@@ -79,7 +79,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "filter1"},
 					{Parent: "filter1", Child: "range2"},
 					{Parent: "range2", Child: "count3"},
@@ -100,8 +100,8 @@ func TestFilter_NewQuery(t *testing.T) {
 							)
 						|> range(start:-4h, stop:-2h)
 						|> count()`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -149,11 +149,11 @@ func TestFilter_NewQuery(t *testing.T) {
 					{
 						ID: "range2",
 						Spec: &functions.RangeOpSpec{
-							Start: query.Time{
+							Start: flux.Time{
 								Relative:   -4 * time.Hour,
 								IsRelative: true,
 							},
-							Stop: query.Time{
+							Stop: flux.Time{
 								Relative:   -2 * time.Hour,
 								IsRelative: true,
 							},
@@ -169,7 +169,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "filter1"},
 					{Parent: "filter1", Child: "range2"},
 					{Parent: "range2", Child: "count3"},
@@ -186,8 +186,8 @@ func TestFilter_NewQuery(t *testing.T) {
 						)
 						|> range(start:-4h, stop:-2h)
 						|> count()`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -224,11 +224,11 @@ func TestFilter_NewQuery(t *testing.T) {
 					{
 						ID: "range2",
 						Spec: &functions.RangeOpSpec{
-							Start: query.Time{
+							Start: flux.Time{
 								Relative:   -4 * time.Hour,
 								IsRelative: true,
 							},
-							Stop: query.Time{
+							Stop: flux.Time{
 								Relative:   -2 * time.Hour,
 								IsRelative: true,
 							},
@@ -244,7 +244,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "filter1"},
 					{Parent: "filter1", Child: "range2"},
 					{Parent: "range2", Child: "count3"},
@@ -261,8 +261,8 @@ func TestFilter_NewQuery(t *testing.T) {
 						)
 						|> range(start:-4h, stop:-2h)
 						|> count()`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -299,11 +299,11 @@ func TestFilter_NewQuery(t *testing.T) {
 					{
 						ID: "range2",
 						Spec: &functions.RangeOpSpec{
-							Start: query.Time{
+							Start: flux.Time{
 								Relative:   -4 * time.Hour,
 								IsRelative: true,
 							},
-							Stop: query.Time{
+							Stop: flux.Time{
 								Relative:   -2 * time.Hour,
 								IsRelative: true,
 							},
@@ -319,7 +319,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "filter1"},
 					{Parent: "filter1", Child: "range2"},
 					{Parent: "range2", Child: "count3"},
@@ -336,8 +336,8 @@ func TestFilter_NewQuery(t *testing.T) {
 						)
 						|> range(start:-4h, stop:-2h)
 						|> count()`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -374,11 +374,11 @@ func TestFilter_NewQuery(t *testing.T) {
 					{
 						ID: "range2",
 						Spec: &functions.RangeOpSpec{
-							Start: query.Time{
+							Start: flux.Time{
 								Relative:   -4 * time.Hour,
 								IsRelative: true,
 							},
-							Stop: query.Time{
+							Stop: flux.Time{
 								Relative:   -2 * time.Hour,
 								IsRelative: true,
 							},
@@ -394,7 +394,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "filter1"},
 					{Parent: "filter1", Child: "range2"},
 					{Parent: "range2", Child: "count3"},
@@ -407,8 +407,8 @@ func TestFilter_NewQuery(t *testing.T) {
 						|> filter(fn: (r) =>
 							r["t1"]==/va\/l1/
 						)`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -432,7 +432,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "filter1"},
 				},
 			},
@@ -445,8 +445,8 @@ func TestFilter_NewQuery(t *testing.T) {
 							and
 							r["t2"] != /val2/
 						)`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -481,7 +481,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "filter1"},
 				},
 			},
@@ -491,7 +491,7 @@ func TestFilter_NewQuery(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			querytest.NewQueryTestHelper(t, tc)
+			fluxtest.NewQueryTestHelper(t, tc)
 		})
 	}
 }
@@ -522,7 +522,7 @@ func TestFilterOperation_Marshaling(t *testing.T) {
 			}
 		}
 	}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID: "filter",
 		Spec: &functions.FilterOpSpec{
 			Fn: &semantic.FunctionExpression{
@@ -538,14 +538,14 @@ func TestFilterOperation_Marshaling(t *testing.T) {
 			},
 		},
 	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestFilter_Process(t *testing.T) {
 	testCases := []struct {
 		name string
 		spec *functions.FilterProcedureSpec
-		data []query.Table
+		data []flux.Table
 		want []*executetest.Table
 	}{
 		{
@@ -563,10 +563,10 @@ func TestFilter_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 1.0},
@@ -574,9 +574,9 @@ func TestFilter_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(2), 6.0},
@@ -600,13 +600,13 @@ func TestFilter_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"t1"},
-					ColMeta: []query.ColMeta{
-						{Label: "t1", Type: query.TString},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "t1", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{"a", execute.Time(1), 3.0},
@@ -616,10 +616,10 @@ func TestFilter_Process(t *testing.T) {
 				},
 				&executetest.Table{
 					KeyCols: []string{"t1"},
-					ColMeta: []query.ColMeta{
-						{Label: "t1", Type: query.TString},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "t1", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{"b", execute.Time(3), 3.0},
@@ -631,10 +631,10 @@ func TestFilter_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: []string{"t1"},
-					ColMeta: []query.ColMeta{
-						{Label: "t1", Type: query.TString},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "t1", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{"a", execute.Time(2), 6.0},
@@ -642,10 +642,10 @@ func TestFilter_Process(t *testing.T) {
 				},
 				{
 					KeyCols: []string{"t1"},
-					ColMeta: []query.ColMeta{
-						{Label: "t1", Type: query.TString},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "t1", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{"b", execute.Time(4), 8.0},
@@ -696,12 +696,12 @@ func TestFilter_Process(t *testing.T) {
 					},
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 1.0, "a", "x"},
@@ -710,11 +710,11 @@ func TestFilter_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "t1", Type: query.TString},
-					{Label: "t2", Type: query.TString},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(3), 8.0, "a", "y"},

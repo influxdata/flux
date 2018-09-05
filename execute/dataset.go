@@ -1,7 +1,7 @@
 package execute
 
 import (
-	"github.com/influxdata/platform/query"
+	"github.com/influxdata/flux"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -9,25 +9,25 @@ import (
 type Dataset interface {
 	Node
 
-	RetractTable(key query.GroupKey) error
+	RetractTable(key flux.GroupKey) error
 	UpdateProcessingTime(t Time) error
 	UpdateWatermark(mark Time) error
 	Finish(error)
 
-	SetTriggerSpec(t query.TriggerSpec)
+	SetTriggerSpec(t flux.TriggerSpec)
 }
 
 // DataCache holds all working data for a transformation.
 type DataCache interface {
-	Table(query.GroupKey) (query.Table, error)
+	Table(flux.GroupKey) (flux.Table, error)
 
-	ForEach(func(query.GroupKey))
-	ForEachWithContext(func(query.GroupKey, Trigger, TableContext))
+	ForEach(func(flux.GroupKey))
+	ForEachWithContext(func(flux.GroupKey, Trigger, TableContext))
 
-	DiscardTable(query.GroupKey)
-	ExpireTable(query.GroupKey)
+	DiscardTable(flux.GroupKey)
+	ExpireTable(flux.GroupKey)
 
-	SetTriggerSpec(t query.TriggerSpec)
+	SetTriggerSpec(t flux.TriggerSpec)
 }
 
 type AccumulationMode int
@@ -74,7 +74,7 @@ func (d *dataset) AddTransformation(t Transformation) {
 	d.ts = append(d.ts, t)
 }
 
-func (d *dataset) SetTriggerSpec(spec query.TriggerSpec) {
+func (d *dataset) SetTriggerSpec(spec flux.TriggerSpec) {
 	d.cache.SetTriggerSpec(spec)
 }
 
@@ -105,7 +105,7 @@ func (d *dataset) UpdateProcessingTime(time Time) error {
 }
 
 func (d *dataset) evalTriggers() (err error) {
-	d.cache.ForEachWithContext(func(key query.GroupKey, trigger Trigger, bc TableContext) {
+	d.cache.ForEachWithContext(func(key flux.GroupKey, trigger Trigger, bc TableContext) {
 		if err != nil {
 			// Skip the rest once we have encountered an error
 			return
@@ -126,7 +126,7 @@ func (d *dataset) evalTriggers() (err error) {
 	return err
 }
 
-func (d *dataset) triggerTable(key query.GroupKey) error {
+func (d *dataset) triggerTable(key flux.GroupKey) error {
 	b, err := d.cache.Table(key)
 	if err != nil {
 		return err
@@ -157,11 +157,11 @@ func (d *dataset) triggerTable(key query.GroupKey) error {
 	return nil
 }
 
-func (d *dataset) expireTable(key query.GroupKey) {
+func (d *dataset) expireTable(key flux.GroupKey) {
 	d.cache.ExpireTable(key)
 }
 
-func (d *dataset) RetractTable(key query.GroupKey) error {
+func (d *dataset) RetractTable(key flux.GroupKey) error {
 	d.cache.DiscardTable(key)
 	for _, t := range d.ts {
 		if err := t.RetractTable(d.id, key); err != nil {
@@ -174,7 +174,7 @@ func (d *dataset) RetractTable(key query.GroupKey) error {
 func (d *dataset) Finish(err error) {
 	if err == nil {
 		// Only trigger tables we if we not finishing because of an error.
-		d.cache.ForEach(func(bk query.GroupKey) {
+		d.cache.ForEach(func(bk flux.GroupKey) {
 			if err != nil {
 				return
 			}

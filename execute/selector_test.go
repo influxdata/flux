@@ -6,10 +6,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/functions"
 )
 
 func TestRowSelector_Process(t *testing.T) {
@@ -27,11 +27,11 @@ func TestRowSelector_Process(t *testing.T) {
 			},
 			data: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(100), execute.Time(1), 0.0},
@@ -48,11 +48,11 @@ func TestRowSelector_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(100), execute.Time(1), 0.0},
@@ -66,11 +66,11 @@ func TestRowSelector_Process(t *testing.T) {
 			},
 			data: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "x", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(100), execute.Time(1), 0.0},
@@ -87,11 +87,11 @@ func TestRowSelector_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "x", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(100), execute.Time(1), 0.0},
@@ -106,11 +106,11 @@ func TestRowSelector_Process(t *testing.T) {
 			data: []*executetest.Table{
 				{
 					KeyCols: []string{"_start", "_stop"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(0), execute.Time(100), execute.Time(1), 0.0},
@@ -127,11 +127,11 @@ func TestRowSelector_Process(t *testing.T) {
 				},
 				{
 					KeyCols: []string{"_start", "_stop"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(100), execute.Time(200), execute.Time(101), 10.0},
@@ -150,11 +150,11 @@ func TestRowSelector_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: []string{"_start", "_stop"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(0), execute.Time(100), execute.Time(1), 0.0},
@@ -162,11 +162,11 @@ func TestRowSelector_Process(t *testing.T) {
 				},
 				{
 					KeyCols: []string{"_start", "_stop"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(100), execute.Time(200), execute.Time(101), 10.0},
@@ -224,11 +224,11 @@ func TestIndexSelector_Process(t *testing.T) {
 			},
 			data: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(100), execute.Time(1), 0.0},
@@ -245,11 +245,11 @@ func TestIndexSelector_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(0), execute.Time(100), execute.Time(1), 0.0},
@@ -264,11 +264,11 @@ func TestIndexSelector_Process(t *testing.T) {
 			data: []*executetest.Table{
 				{
 					KeyCols: []string{"_start", "_stop"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(0), execute.Time(100), execute.Time(1), 0.0},
@@ -285,11 +285,11 @@ func TestIndexSelector_Process(t *testing.T) {
 				},
 				{
 					KeyCols: []string{"_start", "_stop"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(100), execute.Time(200), execute.Time(101), 10.0},
@@ -308,11 +308,11 @@ func TestIndexSelector_Process(t *testing.T) {
 			want: []*executetest.Table{
 				{
 					KeyCols: []string{"_start", "_stop"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(0), execute.Time(100), execute.Time(1), 0.0},
@@ -320,11 +320,11 @@ func TestIndexSelector_Process(t *testing.T) {
 				},
 				{
 					KeyCols: []string{"_start", "_stop"},
-					ColMeta: []query.ColMeta{
-						{Label: "_start", Type: query.TTime},
-						{Label: "_stop", Type: query.TTime},
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(100), execute.Time(200), execute.Time(101), 10.0},

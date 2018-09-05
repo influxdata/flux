@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/ast"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 const FilterKind = "filter"
@@ -18,19 +18,19 @@ type FilterOpSpec struct {
 	Fn *semantic.FunctionExpression `json:"fn"`
 }
 
-var filterSignature = query.DefaultFunctionSignature()
+var filterSignature = flux.DefaultFunctionSignature()
 
 func init() {
 	//TODO(nathanielc): Use complete function signature here, or formalize soft kind validation instead of complete function validation.
 	filterSignature.Params["fn"] = semantic.Function
 
-	query.RegisterFunction(FilterKind, createFilterOpSpec, filterSignature)
-	query.RegisterOpSpec(FilterKind, newFilterOp)
+	flux.RegisterFunction(FilterKind, createFilterOpSpec, filterSignature)
+	flux.RegisterOpSpec(FilterKind, newFilterOp)
 	plan.RegisterProcedureSpec(FilterKind, newFilterProcedure, FilterKind)
 	execute.RegisterTransformation(FilterKind, createFilterTransformation)
 }
 
-func createFilterOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createFilterOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -48,11 +48,11 @@ func createFilterOpSpec(args query.Arguments, a *query.Administration) (query.Op
 		Fn: fn,
 	}, nil
 }
-func newFilterOp() query.OperationSpec {
+func newFilterOp() flux.OperationSpec {
 	return new(FilterOpSpec)
 }
 
-func (s *FilterOpSpec) Kind() query.OperationKind {
+func (s *FilterOpSpec) Kind() flux.OperationKind {
 	return FilterKind
 }
 
@@ -60,7 +60,7 @@ type FilterProcedureSpec struct {
 	Fn *semantic.FunctionExpression
 }
 
-func newFilterProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newFilterProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*FilterOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -217,11 +217,11 @@ func NewFilterTransformation(d execute.Dataset, cache execute.TableBuilderCache,
 	}, nil
 }
 
-func (t *filterTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *filterTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *filterTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
 		return fmt.Errorf("filter found duplicate table with key: %v", tbl.Key())
@@ -236,7 +236,7 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl query.Table) er
 	}
 
 	// Append only matching rows to table
-	return tbl.Do(func(cr query.ColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			if pass, err := t.fn.Eval(i, cr); err != nil {

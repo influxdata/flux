@@ -3,9 +3,9 @@ package functions
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
 )
 
 const MinKind = "min"
@@ -17,13 +17,13 @@ type MinOpSpec struct {
 var minSignature = execute.DefaultSelectorSignature()
 
 func init() {
-	query.RegisterFunction(MinKind, createMinOpSpec, minSignature)
-	query.RegisterOpSpec(MinKind, newMinOp)
+	flux.RegisterFunction(MinKind, createMinOpSpec, minSignature)
+	flux.RegisterOpSpec(MinKind, newMinOp)
 	plan.RegisterProcedureSpec(MinKind, newMinProcedure, MinKind)
 	execute.RegisterTransformation(MinKind, createMinTransformation)
 }
 
-func createMinOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createMinOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -36,11 +36,11 @@ func createMinOpSpec(args query.Arguments, a *query.Administration) (query.Opera
 	return spec, nil
 }
 
-func newMinOp() query.OperationSpec {
+func newMinOp() flux.OperationSpec {
 	return new(MinOpSpec)
 }
 
-func (s *MinOpSpec) Kind() query.OperationKind {
+func (s *MinOpSpec) Kind() flux.OperationKind {
 	return MinKind
 }
 
@@ -48,7 +48,7 @@ type MinProcedureSpec struct {
 	execute.SelectorConfig
 }
 
-func newMinProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newMinProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*MinOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -121,14 +121,14 @@ func (s *MinSelector) Rows() []execute.Row {
 	return s.rows
 }
 
-func (s *MinSelector) selectRow(idx int, cr query.ColReader) {
+func (s *MinSelector) selectRow(idx int, cr flux.ColReader) {
 	// Capture row
 	if idx >= 0 {
 		s.rows = []execute.Row{execute.ReadRow(idx, cr)}
 	}
 }
 
-func (s *MinIntSelector) DoInt(vs []int64, cr query.ColReader) {
+func (s *MinIntSelector) DoInt(vs []int64, cr flux.ColReader) {
 	minIdx := -1
 	for i, v := range vs {
 		if !s.set || v < s.min {
@@ -139,7 +139,7 @@ func (s *MinIntSelector) DoInt(vs []int64, cr query.ColReader) {
 	}
 	s.selectRow(minIdx, cr)
 }
-func (s *MinUIntSelector) DoUInt(vs []uint64, cr query.ColReader) {
+func (s *MinUIntSelector) DoUInt(vs []uint64, cr flux.ColReader) {
 	minIdx := -1
 	for i, v := range vs {
 		if !s.set || v < s.min {
@@ -150,7 +150,7 @@ func (s *MinUIntSelector) DoUInt(vs []uint64, cr query.ColReader) {
 	}
 	s.selectRow(minIdx, cr)
 }
-func (s *MinFloatSelector) DoFloat(vs []float64, cr query.ColReader) {
+func (s *MinFloatSelector) DoFloat(vs []float64, cr flux.ColReader) {
 	minIdx := -1
 	for i, v := range vs {
 		if !s.set || v < s.min {

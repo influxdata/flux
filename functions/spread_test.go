@@ -3,20 +3,20 @@ package functions_test
 import (
 	"testing"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
 )
 
 func TestSpreadOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"spread","kind":"spread"}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID:   "spread",
 		Spec: &functions.SpreadOpSpec{},
 	}
 
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestSpread_Process(t *testing.T) {

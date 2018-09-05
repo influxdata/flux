@@ -1,23 +1,24 @@
-package querytest
+package fluxtest
 
 import (
 	"context"
 	"testing"
 	"time"
 
+	"fmt"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/semantic/semantictest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/semantic/semantictest"
 	"github.com/influxdata/platform"
-	"fmt"
 )
 
 type NewQueryTestCase struct {
 	Name             string
 	Raw              string
-	Want             *query.Spec
+	Want             *flux.Spec
 	WantErr          bool
 	WantReadBuckets  *[]platform.BucketFilter
 	WantWriteBuckets *[]platform.BucketFilter
@@ -25,9 +26,9 @@ type NewQueryTestCase struct {
 
 var opts = append(
 	semantictest.CmpOptions,
-	cmp.AllowUnexported(query.Spec{}),
+	cmp.AllowUnexported(flux.Spec{}),
 	cmp.AllowUnexported(functions.JoinOpSpec{}),
-	cmpopts.IgnoreUnexported(query.Spec{}),
+	cmpopts.IgnoreUnexported(flux.Spec{}),
 	cmpopts.IgnoreUnexported(functions.JoinOpSpec{}),
 )
 
@@ -35,7 +36,7 @@ func NewQueryTestHelper(t *testing.T, tc NewQueryTestCase) {
 	t.Helper()
 
 	now := time.Now().UTC()
-	got, err := query.Compile(context.Background(), tc.Raw, now)
+	got, err := flux.Compile(context.Background(), tc.Raw, now)
 	if (err != nil) != tc.WantErr {
 		t.Errorf("query.NewQuery() error = %v, wantErr %v", err, tc.WantErr)
 		return

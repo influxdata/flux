@@ -8,20 +8,20 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
 )
 
 func TestToHTTP_NewQuery(t *testing.T) {
-	tests := []querytest.NewQueryTestCase{
+	tests := []fluxtest.NewQueryTestCase{
 		{
 			Name: "from with database with range",
 			Raw:  `from(bucket:"mybucket") |> toHTTP(url: "https://localhost:8081", name:"series1", method:"POST",  timeout: 50s)`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -44,7 +44,7 @@ func TestToHTTP_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "toHTTP1"},
 				},
 			},
@@ -54,7 +54,7 @@ func TestToHTTP_NewQuery(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			querytest.NewQueryTestHelper(t, tc)
+			fluxtest.NewQueryTestHelper(t, tc)
 		})
 	}
 }
@@ -116,12 +116,12 @@ func TestToHTTPOpSpec_UnmarshalJSON(t *testing.T) {
 				Timeout:     tt.fields.Timeout,
 				NoKeepAlive: tt.fields.NoKeepAlive,
 			}
-			op := &query.Operation{
+			op := &flux.Operation{
 				ID:   "toHTTP",
 				Spec: o,
 			}
 			if !tt.wantErr {
-				querytest.OperationMarshalingTestHelper(t, tt.bytes, op)
+				fluxtest.OperationMarshalingTestHelper(t, tt.bytes, op)
 			} else if err := o.UnmarshalJSON(tt.bytes); err == nil {
 				t.Errorf("ToHTTPOpSpec.UnmarshalJSON() error = %v, wantErr %v for test %s", err, tt.wantErr, tt.name)
 			}
@@ -148,7 +148,7 @@ func TestToHTTP_Process(t *testing.T) {
 	testCases := []struct {
 		name string
 		spec *functions.ToHTTPProcedureSpec
-		data []query.Table
+		data []flux.Table
 		want wanted
 	}{
 		{
@@ -163,12 +163,12 @@ func TestToHTTP_Process(t *testing.T) {
 					NameColumn:   "_measurement",
 				},
 			},
-			data: []query.Table{execute.CopyTable(&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_measurement", Type: query.TString},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "fred", Type: query.TString},
+			data: []flux.Table{execute.CopyTable(&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(11), "a", 2.0, "one"},
@@ -194,12 +194,12 @@ func TestToHTTP_Process(t *testing.T) {
 					NameColumn:   "_measurement",
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_measurement", Type: query.TString},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "fred", Type: query.TString},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(11), "a", 2.0, "one"},
@@ -226,12 +226,12 @@ func TestToHTTP_Process(t *testing.T) {
 					NameColumn:   "_measurement",
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_measurement", Type: query.TString},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "fred", Type: query.TString},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(11), "a", 2.0, "one"},
@@ -257,10 +257,10 @@ func TestToHTTP_Process(t *testing.T) {
 					Name:         "one_table",
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
 					{execute.Time(11), 2.0},
@@ -286,11 +286,11 @@ func TestToHTTP_Process(t *testing.T) {
 					Name:         "one_table_w_unused_tag",
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "fred", Type: query.TString},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(11), 2.0, "one"},
@@ -321,11 +321,11 @@ one_table_w_unused_tag _value=4 41
 					Name:         "one_table_w_tag",
 				},
 			},
-			data: []query.Table{&executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_time", Type: query.TTime},
-					{Label: "_value", Type: query.TFloat},
-					{Label: "fred", Type: query.TString},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
 				},
 				Data: [][]interface{}{
 					{execute.Time(11), 2.0, "one"},
@@ -356,12 +356,12 @@ one_table_w_tag,fred=elevendyone _value=4 41
 					Name:         "multi_table",
 				},
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				&executetest.Table{
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "fred", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "fred", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(11), 2.0, "one"},
@@ -370,10 +370,10 @@ one_table_w_tag,fred=elevendyone _value=4 41
 					},
 				},
 				&executetest.Table{
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "fred", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "fred", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(51), 2.0, "one"},
@@ -401,13 +401,13 @@ one_table_w_tag,fred=elevendyone _value=4 41
 					Name:         "multi_collist_tables",
 				},
 			},
-			data: []query.Table{
+			data: []flux.Table{
 				execute.CopyTable(
 					&executetest.Table{
-						ColMeta: []query.ColMeta{
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
-							{Label: "fred", Type: query.TString},
+						ColMeta: []flux.ColMeta{
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
+							{Label: "fred", Type: flux.TString},
 						},
 						Data: [][]interface{}{
 							{execute.Time(11), 2.0, "one"},
@@ -416,10 +416,10 @@ one_table_w_tag,fred=elevendyone _value=4 41
 						},
 					}, executetest.UnlimitedAllocator),
 				&executetest.Table{
-					ColMeta: []query.ColMeta{
-						{Label: "_time", Type: query.TTime},
-						{Label: "_value", Type: query.TFloat},
-						{Label: "fred", Type: query.TString},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "fred", Type: flux.TString},
 					},
 					Data: [][]interface{}{
 						{execute.Time(51), 2.0, "one"},

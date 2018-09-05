@@ -3,14 +3,14 @@ package csv
 import (
 	"net/http"
 
-	"github.com/influxdata/platform/query"
+	"github.com/influxdata/flux"
 )
 
 const DialectType = "csv"
 
 // AddDialectMappings adds the influxql specific dialect mappings.
-func AddDialectMappings(mappings query.DialectMappings) error {
-	return mappings.Add(DialectType, func() query.Dialect {
+func AddDialectMappings(mappings flux.DialectMappings) error {
+	return mappings.Add(DialectType, func() flux.Dialect {
 		return &Dialect{
 			ResultEncoderConfig: DefaultEncoderConfig(),
 		}
@@ -27,10 +27,10 @@ func (d Dialect) SetHeaders(w http.ResponseWriter) {
 	w.Header().Set("Transfer-Encoding", "chunked")
 }
 
-func (d Dialect) Encoder() query.MultiResultEncoder {
+func (d Dialect) Encoder() flux.MultiResultEncoder {
 	return NewMultiResultEncoder(d.ResultEncoderConfig)
 }
-func (d Dialect) DialectType() query.DialectType {
+func (d Dialect) DialectType() flux.DialectType {
 	return DialectType
 }
 

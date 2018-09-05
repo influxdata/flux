@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"sort"
 
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux/semantic"
 )
 
 // Array represents an sequence of elements
@@ -113,7 +113,7 @@ func (a *array) Equal(rhs Value) bool {
 		return false
 	}
 	r := rhs.Array()
-	if (a.Len() != r.Len()) {
+	if a.Len() != r.Len() {
 		return false
 	}
 	length := a.Len()

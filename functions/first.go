@@ -3,9 +3,9 @@ package functions
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
 )
 
 const FirstKind = "first"
@@ -17,13 +17,13 @@ type FirstOpSpec struct {
 var firstSignature = execute.DefaultSelectorSignature()
 
 func init() {
-	query.RegisterFunction(FirstKind, createFirstOpSpec, firstSignature)
-	query.RegisterOpSpec(FirstKind, newFirstOp)
+	flux.RegisterFunction(FirstKind, createFirstOpSpec, firstSignature)
+	flux.RegisterOpSpec(FirstKind, newFirstOp)
 	plan.RegisterProcedureSpec(FirstKind, newFirstProcedure, FirstKind)
 	execute.RegisterTransformation(FirstKind, createFirstTransformation)
 }
 
-func createFirstOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createFirstOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -36,11 +36,11 @@ func createFirstOpSpec(args query.Arguments, a *query.Administration) (query.Ope
 	return spec, nil
 }
 
-func newFirstOp() query.OperationSpec {
+func newFirstOp() flux.OperationSpec {
 	return new(FirstOpSpec)
 }
 
-func (s *FirstOpSpec) Kind() query.OperationKind {
+func (s *FirstOpSpec) Kind() flux.OperationKind {
 	return FirstKind
 }
 
@@ -48,7 +48,7 @@ type FirstProcedureSpec struct {
 	execute.SelectorConfig
 }
 
-func newFirstProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newFirstProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*FirstOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -78,7 +78,7 @@ func (s *FirstProcedureSpec) PushDown(root *plan.Procedure, dup func() *plan.Pro
 		root = dup()
 		selectSpec = root.Spec.(*FromProcedureSpec)
 		selectSpec.BoundsSet = false
-		selectSpec.Bounds = query.Bounds{}
+		selectSpec.Bounds = flux.Bounds{}
 		selectSpec.LimitSet = false
 		selectSpec.PointsLimit = 0
 		selectSpec.SeriesLimit = 0
@@ -88,9 +88,9 @@ func (s *FirstProcedureSpec) PushDown(root *plan.Procedure, dup func() *plan.Pro
 		return
 	}
 	selectSpec.BoundsSet = true
-	selectSpec.Bounds = query.Bounds{
-		Start: query.MinTime,
-		Stop:  query.Now,
+	selectSpec.Bounds = flux.Bounds{
+		Start: flux.MinTime,
+		Stop:  flux.Now,
 	}
 	selectSpec.LimitSet = true
 	selectSpec.PointsLimit = 1

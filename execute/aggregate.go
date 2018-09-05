@@ -3,9 +3,9 @@ package execute
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/semantic"
 	"github.com/pkg/errors"
 )
 
@@ -32,13 +32,13 @@ var DefaultAggregateConfig = AggregateConfig{
 func DefaultAggregateSignature() semantic.FunctionSignature {
 	return semantic.FunctionSignature{
 		Params: map[string]semantic.Type{
-			query.TableParameter: query.TableObjectType,
-			"columns":            semantic.NewArrayType(semantic.String),
-			"timeSrc":            semantic.String,
-			"timeDst":            semantic.String,
+			flux.TableParameter: flux.TableObjectType,
+			"columns":           semantic.NewArrayType(semantic.String),
+			"timeSrc":           semantic.String,
+			"timeDst":           semantic.String,
 		},
-		ReturnType:   query.TableObjectType,
-		PipeArgument: query.TableParameter,
+		ReturnType:   flux.TableObjectType,
+		PipeArgument: flux.TableParameter,
 	}
 }
 
@@ -51,7 +51,7 @@ func (c AggregateConfig) Copy() AggregateConfig {
 	return nc
 }
 
-func (c *AggregateConfig) ReadArgs(args query.Arguments) error {
+func (c *AggregateConfig) ReadArgs(args flux.Arguments) error {
 	if label, ok, err := args.GetString("timeDst"); err != nil {
 		return err
 	} else if ok {
@@ -97,21 +97,21 @@ func NewAggregateTransformationAndDataset(id DatasetID, mode AccumulationMode, a
 	return NewAggregateTransformation(d, cache, agg, config), d
 }
 
-func (t *aggregateTransformation) RetractTable(id DatasetID, key query.GroupKey) error {
+func (t *aggregateTransformation) RetractTable(id DatasetID, key flux.GroupKey) error {
 	//TODO(nathanielc): Store intermediate state for retractions
 	return t.d.RetractTable(key)
 }
 
-func (t *aggregateTransformation) Process(id DatasetID, tbl query.Table) error {
+func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 	builder, new := t.cache.TableBuilder(tbl.Key())
 	if !new {
 		return fmt.Errorf("aggregate found duplicate table with key: %v", tbl.Key())
 	}
 
 	AddTableKeyCols(tbl.Key(), builder)
-	builder.AddCol(query.ColMeta{
+	builder.AddCol(flux.ColMeta{
 		Label: t.config.TimeDst,
-		Type:  query.TTime,
+		Type:  flux.TTime,
 	})
 
 	builderColMap := make([]int, len(t.config.Columns))
@@ -136,22 +136,22 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl query.Table) error {
 		}
 		var vf ValueFunc
 		switch c.Type {
-		case query.TBool:
+		case flux.TBool:
 			vf = t.agg.NewBoolAgg()
-		case query.TInt:
+		case flux.TInt:
 			vf = t.agg.NewIntAgg()
-		case query.TUInt:
+		case flux.TUInt:
 			vf = t.agg.NewUIntAgg()
-		case query.TFloat:
+		case flux.TFloat:
 			vf = t.agg.NewFloatAgg()
-		case query.TString:
+		case flux.TString:
 			vf = t.agg.NewStringAgg()
 		}
 		if vf == nil {
 			return fmt.Errorf("unsupported aggregate column type %v", c.Type)
 		}
 		aggregates[j] = vf
-		builderColMap[j] = builder.AddCol(query.ColMeta{
+		builderColMap[j] = builder.AddCol(flux.ColMeta{
 			Label: c.Label,
 			Type:  vf.Type(),
 		})
@@ -161,7 +161,7 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl query.Table) error {
 		return err
 	}
 
-	tbl.Do(func(cr query.ColReader) error {
+	tbl.Do(func(cr flux.ColReader) error {
 		for j := range t.config.Columns {
 			vf := aggregates[j]
 
@@ -169,15 +169,15 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl query.Table) error {
 			c := tbl.Cols()[tj]
 
 			switch c.Type {
-			case query.TBool:
+			case flux.TBool:
 				vf.(DoBoolAgg).DoBool(cr.Bools(tj))
-			case query.TInt:
+			case flux.TInt:
 				vf.(DoIntAgg).DoInt(cr.Ints(tj))
-			case query.TUInt:
+			case flux.TUInt:
 				vf.(DoUIntAgg).DoUInt(cr.UInts(tj))
-			case query.TFloat:
+			case flux.TFloat:
 				vf.(DoFloatAgg).DoFloat(cr.Floats(tj))
-			case query.TString:
+			case flux.TString:
 				vf.(DoStringAgg).DoString(cr.Strings(tj))
 			default:
 				return fmt.Errorf("unsupport aggregate type %v", c.Type)
@@ -189,15 +189,15 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl query.Table) error {
 		bj := builderColMap[j]
 		// Append aggregated value
 		switch vf.Type() {
-		case query.TBool:
+		case flux.TBool:
 			builder.AppendBool(bj, vf.(BoolValueFunc).ValueBool())
-		case query.TInt:
+		case flux.TInt:
 			builder.AppendInt(bj, vf.(IntValueFunc).ValueInt())
-		case query.TUInt:
+		case flux.TUInt:
 			builder.AppendUInt(bj, vf.(UIntValueFunc).ValueUInt())
-		case query.TFloat:
+		case flux.TFloat:
 			builder.AppendFloat(bj, vf.(FloatValueFunc).ValueFloat())
-		case query.TString:
+		case flux.TString:
 			builder.AppendString(bj, vf.(StringValueFunc).ValueString())
 		}
 	}
@@ -217,13 +217,13 @@ func (t *aggregateTransformation) Finish(id DatasetID, err error) {
 	t.d.Finish(err)
 }
 
-func AppendAggregateTime(srcTime, dstTime string, key query.GroupKey, builder TableBuilder) error {
+func AppendAggregateTime(srcTime, dstTime string, key flux.GroupKey, builder TableBuilder) error {
 	srcTimeIdx := ColIdx(srcTime, key.Cols())
 	if srcTimeIdx < 0 {
 		return fmt.Errorf("timeSrc column %q does not exist", srcTime)
 	}
 	srcTimeCol := key.Cols()[srcTimeIdx]
-	if srcTimeCol.Type != query.TTime {
+	if srcTimeCol.Type != flux.TTime {
 		return fmt.Errorf("timeSrc column %q does not have type time", srcTime)
 	}
 
@@ -232,7 +232,7 @@ func AppendAggregateTime(srcTime, dstTime string, key query.GroupKey, builder Ta
 		return fmt.Errorf("timeDst column %q does not exist", dstTime)
 	}
 	dstTimeCol := builder.Cols()[dstTimeIdx]
-	if dstTimeCol.Type != query.TTime {
+	if dstTimeCol.Type != flux.TTime {
 		return fmt.Errorf("timeDst column %q does not have type time", dstTime)
 	}
 
@@ -249,7 +249,7 @@ type Aggregate interface {
 }
 
 type ValueFunc interface {
-	Type() query.DataType
+	Type() flux.DataType
 }
 type DoBoolAgg interface {
 	ValueFunc

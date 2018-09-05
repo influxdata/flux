@@ -6,23 +6,23 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux/values"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/execute/executetest"
-	"github.com/influxdata/platform/query/functions"
-	"github.com/influxdata/platform/query/querytest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/functions"
 )
 
 func TestWindow_NewQuery(t *testing.T) {
-	tests := []querytest.NewQueryTestCase{
+	tests := []fluxtest.NewQueryTestCase{
 		{
 			Name: "from with window",
 			Raw:  `from(bucket:"mybucket") |> window(start:-4h, every:1h)`,
-			Want: &query.Spec{
-				Operations: []*query.Operation{
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &functions.FromOpSpec{
@@ -32,19 +32,19 @@ func TestWindow_NewQuery(t *testing.T) {
 					{
 						ID: "window1",
 						Spec: &functions.WindowOpSpec{
-							Start: query.Time{
+							Start: flux.Time{
 								Relative:   -4 * time.Hour,
 								IsRelative: true,
 							},
-							Every:         query.Duration(time.Hour),
-							Period:        query.Duration(time.Hour),
+							Every:         flux.Duration(time.Hour),
+							Period:        flux.Duration(time.Hour),
 							TimeCol:       execute.DefaultTimeColLabel,
 							StartColLabel: execute.DefaultStartColLabel,
 							StopColLabel:  execute.DefaultStopColLabel,
 						},
 					},
 				},
-				Edges: []query.Edge{
+				Edges: []flux.Edge{
 					{Parent: "from0", Child: "window1"},
 				},
 			},
@@ -54,7 +54,7 @@ func TestWindow_NewQuery(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			querytest.NewQueryTestHelper(t, tc)
+			fluxtest.NewQueryTestHelper(t, tc)
 		})
 	}
 }
@@ -62,20 +62,20 @@ func TestWindow_NewQuery(t *testing.T) {
 func TestWindowOperation_Marshaling(t *testing.T) {
 	//TODO: Test marshalling of triggerspec
 	data := []byte(`{"id":"window","kind":"window","spec":{"every":"1m","period":"1h","start":"-4h","round":"1s"}}`)
-	op := &query.Operation{
+	op := &flux.Operation{
 		ID: "window",
 		Spec: &functions.WindowOpSpec{
-			Every:  query.Duration(time.Minute),
-			Period: query.Duration(time.Hour),
-			Start: query.Time{
+			Every:  flux.Duration(time.Minute),
+			Period: flux.Duration(time.Hour),
+			Start: flux.Time{
 				Relative:   -4 * time.Hour,
 				IsRelative: true,
 			},
-			Round: query.Duration(time.Second),
+			Round: flux.Duration(time.Second),
 		},
 	}
 
-	querytest.OperationMarshalingTestHelper(t, data, op)
+	fluxtest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestFixedWindow_PassThrough(t *testing.T) {
@@ -102,16 +102,16 @@ var EmptyBounds = &execute.Bounds{
 	Stop:  execute.Time(0),
 }
 
-func newEmptyWindowTable(start execute.Time, stop execute.Time, cols []query.ColMeta) *executetest.Table {
+func newEmptyWindowTable(start execute.Time, stop execute.Time, cols []flux.ColMeta) *executetest.Table {
 	return &executetest.Table{
 		KeyCols:   []string{"_start", "_stop"},
 		KeyValues: []interface{}{start, stop},
 		ColMeta:   cols,
 		Data:      [][]interface{}(nil),
 		GroupKey: execute.NewGroupKey(
-			[]query.ColMeta{
-				{Label: "_start", Type: query.TTime},
-				{Label: "_stop", Type: query.TTime},
+			[]flux.ColMeta{
+				{Label: "_start", Type: flux.TTime},
+				{Label: "_stop", Type: flux.TTime},
 			},
 			[]values.Value{
 				values.NewTimeValue(start),
@@ -123,15 +123,15 @@ func newEmptyWindowTable(start execute.Time, stop execute.Time, cols []query.Col
 
 func TestFixedWindow_Process(t *testing.T) {
 	// test columns which all expected data will use
-	testCols := []query.ColMeta{
-		{Label: "_start", Type: query.TTime},
-		{Label: "_stop", Type: query.TTime},
-		{Label: "_time", Type: query.TTime},
-		{Label: "_value", Type: query.TFloat},
+	testCols := []flux.ColMeta{
+		{Label: "_start", Type: flux.TTime},
+		{Label: "_stop", Type: flux.TTime},
+		{Label: "_time", Type: flux.TTime},
+		{Label: "_value", Type: flux.TFloat},
 	}
 	testCases := []struct {
 		name          string
-		valueCol      query.ColMeta
+		valueCol      flux.ColMeta
 		start         execute.Time
 		every, period execute.Duration
 		createEmpty   bool
@@ -141,7 +141,7 @@ func TestFixedWindow_Process(t *testing.T) {
 	}{
 		{
 			name:     "nonoverlapping_nonaligned",
-			valueCol: query.ColMeta{Label: "_value", Type: query.TFloat},
+			valueCol: flux.ColMeta{Label: "_value", Type: flux.TFloat},
 			// Use a time that is *not* aligned with the every/period durations of the window
 			start:       execute.Time(time.Date(2017, 10, 10, 10, 10, 10, 10, time.UTC).UnixNano()),
 			every:       execute.Duration(time.Minute),
@@ -152,11 +152,11 @@ func TestFixedWindow_Process(t *testing.T) {
 				return []*executetest.Table{
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{start, start + execute.Time(time.Minute), start, 0.0},
@@ -169,11 +169,11 @@ func TestFixedWindow_Process(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(60*time.Second), 6.0},
@@ -186,11 +186,11 @@ func TestFixedWindow_Process(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{start + execute.Time(2*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(120*time.Second), 12.0},
@@ -211,7 +211,7 @@ func TestFixedWindow_Process(t *testing.T) {
 
 		{
 			name:     "nonoverlapping_aligned",
-			valueCol: query.ColMeta{Label: "_value", Type: query.TFloat},
+			valueCol: flux.ColMeta{Label: "_value", Type: flux.TFloat},
 			// Use a time that is aligned with the every/period durations of the window
 			start:       execute.Time(time.Date(2017, 10, 10, 10, 0, 0, 0, time.UTC).UnixNano()),
 			every:       execute.Duration(time.Minute),
@@ -222,11 +222,11 @@ func TestFixedWindow_Process(t *testing.T) {
 				return []*executetest.Table{
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{start, start + execute.Time(time.Minute), start, 0.0},
@@ -239,11 +239,11 @@ func TestFixedWindow_Process(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(60*time.Second), 6.0},
@@ -256,11 +256,11 @@ func TestFixedWindow_Process(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{start + execute.Time(2*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(120*time.Second), 12.0},
@@ -271,16 +271,16 @@ func TestFixedWindow_Process(t *testing.T) {
 					{
 						KeyCols:   []string{"_start", "_stop"},
 						KeyValues: []interface{}{start + execute.Time(3*time.Minute), start + execute.Time(4*time.Minute)},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						GroupKey: execute.NewGroupKey(
-							[]query.ColMeta{
-								{Label: "_start", Type: query.TTime},
-								{Label: "_stop", Type: query.TTime},
+							[]flux.ColMeta{
+								{Label: "_start", Type: flux.TTime},
+								{Label: "_stop", Type: flux.TTime},
 							},
 							[]values.Value{
 								values.NewTimeValue(start + execute.Time(3*time.Minute)),
@@ -299,7 +299,7 @@ func TestFixedWindow_Process(t *testing.T) {
 		},
 		{
 			name:     "overlapping_nonaligned",
-			valueCol: query.ColMeta{Label: "_value", Type: query.TFloat},
+			valueCol: flux.ColMeta{Label: "_value", Type: flux.TFloat},
 			// Use a time that is *not* aligned with the every/period durations of the window
 			start:       execute.Time(time.Date(2017, 10, 10, 10, 10, 10, 10, time.UTC).UnixNano()),
 			every:       execute.Duration(time.Minute),
@@ -310,11 +310,11 @@ func TestFixedWindow_Process(t *testing.T) {
 				return []*executetest.Table{
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{start, start + execute.Time(time.Minute), start, 0.0},
@@ -327,11 +327,11 @@ func TestFixedWindow_Process(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{start, start + execute.Time(2*time.Minute), start, 0.0},
@@ -350,11 +350,11 @@ func TestFixedWindow_Process(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(60*time.Second), 6.0},
@@ -370,11 +370,11 @@ func TestFixedWindow_Process(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{start + execute.Time(2*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(120*time.Second), 12.0},
@@ -394,7 +394,7 @@ func TestFixedWindow_Process(t *testing.T) {
 		},
 		{
 			name:     "overlapping_aligned",
-			valueCol: query.ColMeta{Label: "_value", Type: query.TFloat},
+			valueCol: flux.ColMeta{Label: "_value", Type: flux.TFloat},
 			// Use a time that is aligned with the every/period durations of the window
 			start:       execute.Time(time.Date(2017, 10, 10, 10, 0, 0, 0, time.UTC).UnixNano()),
 			every:       execute.Duration(time.Minute),
@@ -405,11 +405,11 @@ func TestFixedWindow_Process(t *testing.T) {
 				return []*executetest.Table{
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{start, start + execute.Time(time.Minute), start, 0.0},
@@ -422,11 +422,11 @@ func TestFixedWindow_Process(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{start, start + execute.Time(2*time.Minute), start, 0.0},
@@ -445,11 +445,11 @@ func TestFixedWindow_Process(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(60*time.Second), 6.0},
@@ -465,11 +465,11 @@ func TestFixedWindow_Process(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{start + execute.Time(2*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(120*time.Second), 12.0},
@@ -489,7 +489,7 @@ func TestFixedWindow_Process(t *testing.T) {
 		},
 		{
 			name:     "underlapping_nonaligned",
-			valueCol: query.ColMeta{Label: "_value", Type: query.TFloat},
+			valueCol: flux.ColMeta{Label: "_value", Type: flux.TFloat},
 			// Use a time that is *not* aligned with the every/period durations of the window
 			start:       execute.Time(time.Date(2017, 10, 10, 10, 10, 10, 10, time.UTC).UnixNano()),
 			every:       execute.Duration(2 * time.Minute),
@@ -500,11 +500,11 @@ func TestFixedWindow_Process(t *testing.T) {
 				return []*executetest.Table{
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{start + 1*execute.Time(time.Minute), start + 2*execute.Time(time.Minute), start + execute.Time(60*time.Second), 6.0},
@@ -517,11 +517,11 @@ func TestFixedWindow_Process(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{start + execute.Time(3*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(180*time.Second), 18.0},
@@ -540,7 +540,7 @@ func TestFixedWindow_Process(t *testing.T) {
 		},
 		{
 			name:     "underlapping_aligned",
-			valueCol: query.ColMeta{Label: "_value", Type: query.TFloat},
+			valueCol: flux.ColMeta{Label: "_value", Type: flux.TFloat},
 			// Use a time that is  aligned with the every/period durations of the window
 			start:       execute.Time(time.Date(2017, 10, 10, 10, 0, 0, 0, time.UTC).UnixNano()),
 			every:       execute.Duration(2 * time.Minute),
@@ -551,11 +551,11 @@ func TestFixedWindow_Process(t *testing.T) {
 				return []*executetest.Table{
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{start + 1*execute.Time(time.Minute), start + 2*execute.Time(time.Minute), start + execute.Time(60*time.Second), 6.0},
@@ -568,11 +568,11 @@ func TestFixedWindow_Process(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TFloat},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
 							{start + execute.Time(3*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(180*time.Second), 18.0},
@@ -591,7 +591,7 @@ func TestFixedWindow_Process(t *testing.T) {
 		},
 		{
 			name:     "nonoverlapping_aligned_int",
-			valueCol: query.ColMeta{Label: "_value", Type: query.TInt},
+			valueCol: flux.ColMeta{Label: "_value", Type: flux.TInt},
 			// Use a time that is aligned with the every/period durations of the window
 			start:       execute.Time(time.Date(2017, 10, 10, 10, 0, 0, 0, time.UTC).UnixNano()),
 			every:       execute.Duration(time.Minute),
@@ -600,15 +600,15 @@ func TestFixedWindow_Process(t *testing.T) {
 			num:         15,
 			want: func(start execute.Time) []*executetest.Table {
 				testCols := testCols
-				testCols[3].Type = query.TInt
+				testCols[3].Type = flux.TInt
 				return []*executetest.Table{
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TInt},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
 							{start, start + execute.Time(time.Minute), start, int64(0.0)},
@@ -621,11 +621,11 @@ func TestFixedWindow_Process(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TInt},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
 							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(60*time.Second), int64(6)},
@@ -638,11 +638,11 @@ func TestFixedWindow_Process(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TInt},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
 							{start + execute.Time(2*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(120*time.Second), int64(12)},
@@ -662,7 +662,7 @@ func TestFixedWindow_Process(t *testing.T) {
 		},
 		{
 			name:     "don't create empty",
-			valueCol: query.ColMeta{Label: "_value", Type: query.TInt},
+			valueCol: flux.ColMeta{Label: "_value", Type: flux.TInt},
 			// Use a time that is aligned with the every/period durations of the window
 			start:       execute.Time(time.Date(2017, 10, 10, 10, 0, 0, 0, time.UTC).UnixNano()),
 			every:       execute.Duration(time.Minute),
@@ -671,15 +671,15 @@ func TestFixedWindow_Process(t *testing.T) {
 			num:         15,
 			want: func(start execute.Time) []*executetest.Table {
 				testCols := testCols
-				testCols[3].Type = query.TInt
+				testCols[3].Type = flux.TInt
 				return []*executetest.Table{
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TInt},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
 							{start, start + execute.Time(time.Minute), start, int64(0.0)},
@@ -692,11 +692,11 @@ func TestFixedWindow_Process(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TInt},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
 							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(60*time.Second), int64(6)},
@@ -709,11 +709,11 @@ func TestFixedWindow_Process(t *testing.T) {
 					},
 					{
 						KeyCols: []string{"_start", "_stop"},
-						ColMeta: []query.ColMeta{
-							{Label: "_start", Type: query.TTime},
-							{Label: "_stop", Type: query.TTime},
-							{Label: "_time", Type: query.TTime},
-							{Label: "_value", Type: query.TInt},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
 							{start + execute.Time(2*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(120*time.Second), int64(12)},
@@ -726,7 +726,7 @@ func TestFixedWindow_Process(t *testing.T) {
 		},
 		{
 			name:     "empty bounds start == stop",
-			valueCol: query.ColMeta{Label: "_value", Type: query.TInt},
+			valueCol: flux.ColMeta{Label: "_value", Type: flux.TInt},
 			start:    execute.Time(time.Date(2017, 10, 10, 10, 0, 0, 0, time.UTC).UnixNano()),
 			every:    execute.Duration(time.Minute),
 			period:   execute.Duration(time.Minute),
@@ -738,7 +738,7 @@ func TestFixedWindow_Process(t *testing.T) {
 		},
 		{
 			name:     "empty bounds start > stop",
-			valueCol: query.ColMeta{Label: "_value", Type: query.TInt},
+			valueCol: flux.ColMeta{Label: "_value", Type: flux.TInt},
 			start:    execute.Time(time.Date(2017, 10, 10, 10, 0, 0, 0, time.UTC).UnixNano()),
 			every:    execute.Duration(time.Minute),
 			period:   execute.Duration(time.Minute),
@@ -788,10 +788,10 @@ func TestFixedWindow_Process(t *testing.T) {
 			)
 
 			table0 := &executetest.Table{
-				ColMeta: []query.ColMeta{
-					{Label: "_start", Type: query.TTime},
-					{Label: "_stop", Type: query.TTime},
-					{Label: "_time", Type: query.TTime},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
 					tc.valueCol,
 				},
 			}
@@ -799,15 +799,15 @@ func TestFixedWindow_Process(t *testing.T) {
 			for i := 0; i < tc.num; i++ {
 				var v interface{}
 				switch tc.valueCol.Type {
-				case query.TBool:
+				case flux.TBool:
 					v = bool(i%2 == 0)
-				case query.TInt:
+				case flux.TInt:
 					v = int64(i)
-				case query.TUInt:
+				case flux.TUInt:
 					v = uint64(i)
-				case query.TFloat:
+				case flux.TFloat:
 					v = float64(i)
-				case query.TString:
+				case flux.TString:
 					v = strconv.Itoa(i)
 				}
 				table0.Data = append(table0.Data, []interface{}{

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
 )
 
 const SkewKind = "skew"
@@ -18,12 +18,12 @@ type SkewOpSpec struct {
 var skewSignature = execute.DefaultAggregateSignature()
 
 func init() {
-	query.RegisterFunction(SkewKind, createSkewOpSpec, skewSignature)
-	query.RegisterOpSpec(SkewKind, newSkewOp)
+	flux.RegisterFunction(SkewKind, createSkewOpSpec, skewSignature)
+	flux.RegisterOpSpec(SkewKind, newSkewOp)
 	plan.RegisterProcedureSpec(SkewKind, newSkewProcedure, SkewKind)
 	execute.RegisterTransformation(SkewKind, createSkewTransformation)
 }
-func createSkewOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createSkewOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -36,11 +36,11 @@ func createSkewOpSpec(args query.Arguments, a *query.Administration) (query.Oper
 	return s, nil
 }
 
-func newSkewOp() query.OperationSpec {
+func newSkewOp() flux.OperationSpec {
 	return new(SkewOpSpec)
 }
 
-func (s *SkewOpSpec) Kind() query.OperationKind {
+func (s *SkewOpSpec) Kind() flux.OperationKind {
 	return SkewKind
 }
 
@@ -48,7 +48,7 @@ type SkewProcedureSpec struct {
 	execute.AggregateConfig
 }
 
-func newSkewProcedure(qs query.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
+func newSkewProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*SkewOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -147,8 +147,8 @@ func (a *SkewAgg) DoFloat(vs []float64) {
 		a.m1 += deltaN
 	}
 }
-func (a *SkewAgg) Type() query.DataType {
-	return query.TFloat
+func (a *SkewAgg) Type() flux.DataType {
+	return flux.TFloat
 }
 func (a *SkewAgg) ValueFloat() float64 {
 	if a.n < 2 {

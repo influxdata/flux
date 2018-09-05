@@ -3,34 +3,34 @@ package functions
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
-	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 const ShiftKind = "shift"
 
 type ShiftOpSpec struct {
-	Shift   query.Duration `json:"shift"`
-	Columns []string       `json:"columns"`
+	Shift   flux.Duration `json:"shift"`
+	Columns []string      `json:"columns"`
 }
 
-var shiftSignature = query.DefaultFunctionSignature()
+var shiftSignature = flux.DefaultFunctionSignature()
 
 func init() {
 	shiftSignature.Params["shift"] = semantic.Duration
 	shiftSignature.Params["columns"] = semantic.NewArrayType(semantic.String)
 
-	query.RegisterFunction(ShiftKind, createShiftOpSpec, shiftSignature)
-	query.RegisterOpSpec(ShiftKind, newShiftOp)
+	flux.RegisterFunction(ShiftKind, createShiftOpSpec, shiftSignature)
+	flux.RegisterOpSpec(ShiftKind, newShiftOp)
 	plan.RegisterProcedureSpec(ShiftKind, newShiftProcedure, ShiftKind)
 	execute.RegisterTransformation(ShiftKind, createShiftTransformation)
 }
 
-func createShiftOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createShiftOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -61,20 +61,20 @@ func createShiftOpSpec(args query.Arguments, a *query.Administration) (query.Ope
 	return spec, nil
 }
 
-func newShiftOp() query.OperationSpec {
+func newShiftOp() flux.OperationSpec {
 	return new(ShiftOpSpec)
 }
 
-func (s *ShiftOpSpec) Kind() query.OperationKind {
+func (s *ShiftOpSpec) Kind() flux.OperationKind {
 	return ShiftKind
 }
 
 type ShiftProcedureSpec struct {
-	Shift   query.Duration
+	Shift   flux.Duration
 	Columns []string
 }
 
-func newShiftProcedure(qs query.OperationSpec, _ plan.Administration) (plan.ProcedureSpec, error) {
+func newShiftProcedure(qs flux.OperationSpec, _ plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*ShiftOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -128,18 +128,18 @@ func NewShiftTransformation(d execute.Dataset, cache execute.TableBuilderCache, 
 	}
 }
 
-func (t *shiftTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *shiftTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *shiftTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *shiftTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	key := tbl.Key()
 	// Update key
-	cols := make([]query.ColMeta, len(key.Cols()))
+	cols := make([]flux.ColMeta, len(key.Cols()))
 	vs := make([]values.Value, len(key.Cols()))
 	for j, c := range key.Cols() {
 		if execute.ContainsStr(t.columns, c.Label) {
-			if c.Type != query.TTime {
+			if c.Type != flux.TTime {
 				return fmt.Errorf("column %q is not of type time", c.Label)
 			}
 			cols[j] = c
@@ -157,7 +157,7 @@ func (t *shiftTransformation) Process(id execute.DatasetID, tbl query.Table) err
 	}
 	execute.AddTableCols(tbl, builder)
 
-	return tbl.Do(func(cr query.ColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		for j, c := range cr.Cols() {
 			if execute.ContainsStr(t.columns, c.Label) {
 				l := cr.Len()

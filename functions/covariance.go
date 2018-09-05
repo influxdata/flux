@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 	"github.com/pkg/errors"
 )
 
@@ -25,9 +25,9 @@ func init() {
 	covarianceSignature.Params["pearsonr"] = semantic.Bool
 	covarianceSignature.Params["valueDst"] = semantic.String
 
-	query.RegisterBuiltIn("covariance", covarianceBuiltIn)
-	query.RegisterFunction(CovarianceKind, createCovarianceOpSpec, covarianceSignature)
-	query.RegisterOpSpec(CovarianceKind, newCovarianceOp)
+	flux.RegisterBuiltIn("covariance", covarianceBuiltIn)
+	flux.RegisterFunction(CovarianceKind, createCovarianceOpSpec, covarianceSignature)
+	flux.RegisterOpSpec(CovarianceKind, newCovarianceOp)
 	plan.RegisterProcedureSpec(CovarianceKind, newCovarianceProcedure, CovarianceKind)
 	execute.RegisterTransformation(CovarianceKind, createCovarianceTransformation)
 }
@@ -44,7 +44,7 @@ cov = (x,y,on,pearsonr=false) =>
 pearsonr = (x,y,on) => cov(x:x, y:y, on:on, pearsonr:true)
 `
 
-func createCovarianceOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createCovarianceOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -75,11 +75,11 @@ func createCovarianceOpSpec(args query.Arguments, a *query.Administration) (quer
 	return spec, nil
 }
 
-func newCovarianceOp() query.OperationSpec {
+func newCovarianceOp() flux.OperationSpec {
 	return new(CovarianceOpSpec)
 }
 
-func (s *CovarianceOpSpec) Kind() query.OperationKind {
+func (s *CovarianceOpSpec) Kind() flux.OperationKind {
 	return CovarianceKind
 }
 
@@ -89,7 +89,7 @@ type CovarianceProcedureSpec struct {
 	execute.AggregateConfig
 }
 
-func newCovarianceProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newCovarianceProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*CovarianceOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -150,24 +150,24 @@ func NewCovarianceTransformation(d execute.Dataset, cache execute.TableBuilderCa
 	}
 }
 
-func (t *CovarianceTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *CovarianceTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *CovarianceTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *CovarianceTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	cols := tbl.Cols()
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
 		return fmt.Errorf("covariance found duplicate table with key: %v", tbl.Key())
 	}
 	execute.AddTableKeyCols(tbl.Key(), builder)
-	builder.AddCol(query.ColMeta{
+	builder.AddCol(flux.ColMeta{
 		Label: t.spec.TimeDst,
-		Type:  query.TTime,
+		Type:  flux.TTime,
 	})
-	valueIdx := builder.AddCol(query.ColMeta{
+	valueIdx := builder.AddCol(flux.ColMeta{
 		Label: t.spec.ValueLabel,
-		Type:  query.TFloat,
+		Type:  flux.TFloat,
 	})
 	xIdx := execute.ColIdx(t.spec.Columns[0], cols)
 	yIdx := execute.ColIdx(t.spec.Columns[1], cols)
@@ -180,9 +180,9 @@ func (t *CovarianceTransformation) Process(id execute.DatasetID, tbl query.Table
 	}
 
 	t.reset()
-	tbl.Do(func(cr query.ColReader) error {
+	tbl.Do(func(cr flux.ColReader) error {
 		switch typ := cols[xIdx].Type; typ {
-		case query.TFloat:
+		case flux.TFloat:
 			t.DoFloat(cr.Floats(xIdx), cr.Floats(yIdx))
 		default:
 			return fmt.Errorf("covariance does not support %v", typ)

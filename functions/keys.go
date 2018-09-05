@@ -5,11 +5,11 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 const KeysKind = "keys"
@@ -22,19 +22,19 @@ type KeysOpSpec struct {
 	Except []string `json:"except"`
 }
 
-var keysSignature = query.DefaultFunctionSignature()
+var keysSignature = flux.DefaultFunctionSignature()
 
 func init() {
 	keysSignature.Params["except"] = semantic.NewArrayType(semantic.String)
 
-	query.RegisterFunction(KeysKind, createKeysOpSpec, keysSignature)
-	query.RegisterOpSpec(KeysKind, newKeysOp)
+	flux.RegisterFunction(KeysKind, createKeysOpSpec, keysSignature)
+	flux.RegisterOpSpec(KeysKind, newKeysOp)
 	plan.RegisterProcedureSpec(KeysKind, newKeysProcedure, KeysKind)
 	plan.RegisterRewriteRule(KeysPointLimitRewriteRule{})
 	execute.RegisterTransformation(KeysKind, createKeysTransformation)
 }
 
-func createKeysOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createKeysOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -54,11 +54,11 @@ func createKeysOpSpec(args query.Arguments, a *query.Administration) (query.Oper
 	return spec, nil
 }
 
-func newKeysOp() query.OperationSpec {
+func newKeysOp() flux.OperationSpec {
 	return new(KeysOpSpec)
 }
 
-func (s *KeysOpSpec) Kind() query.OperationKind {
+func (s *KeysOpSpec) Kind() flux.OperationKind {
 	return KeysKind
 }
 
@@ -66,7 +66,7 @@ type KeysProcedureSpec struct {
 	Except []string
 }
 
-func newKeysProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newKeysProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*KeysOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -151,18 +151,18 @@ func NewKeysTransformation(d execute.Dataset, cache execute.TableBuilderCache, s
 	}
 }
 
-func (t *keysTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *keysTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *keysTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *keysTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
 		return fmt.Errorf("keys found duplicate table with key: %v", tbl.Key())
 	}
 
 	execute.AddTableKeyCols(tbl.Key(), builder)
-	colIdx := builder.AddCol(query.ColMeta{Label: execute.DefaultValueColLabel, Type: query.TString})
+	colIdx := builder.AddCol(flux.ColMeta{Label: execute.DefaultValueColLabel, Type: flux.TString})
 
 	cols := tbl.Cols()
 	sort.Slice(cols, func(i, j int) bool {
@@ -194,7 +194,7 @@ func (t *keysTransformation) Process(id execute.DatasetID, tbl query.Table) erro
 	}
 
 	// TODO: this is a hack
-	return tbl.Do(func(query.ColReader) error {
+	return tbl.Do(func(flux.ColReader) error {
 		return nil
 	})
 }

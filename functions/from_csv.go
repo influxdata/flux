@@ -8,11 +8,11 @@ import (
 	"context"
 	"strings"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/csv"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/csv"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 	"github.com/pkg/errors"
 )
 
@@ -28,17 +28,17 @@ var fromCSVSignature = semantic.FunctionSignature{
 		"csv":  semantic.String,
 		"file": semantic.String,
 	},
-	ReturnType: query.TableObjectType,
+	ReturnType: flux.TableObjectType,
 }
 
 func init() {
-	query.RegisterFunction(FromCSVKind, createFromCSVOpSpec, fromCSVSignature)
-	query.RegisterOpSpec(FromCSVKind, newFromCSVOp)
+	flux.RegisterFunction(FromCSVKind, createFromCSVOpSpec, fromCSVSignature)
+	flux.RegisterOpSpec(FromCSVKind, newFromCSVOp)
 	plan.RegisterProcedureSpec(FromCSVKind, newFromCSVProcedure, FromCSVKind)
 	execute.RegisterSource(FromCSVKind, createFromCSVSource)
 }
 
-func createFromCSVOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createFromCSVOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	spec := new(FromCSVOpSpec)
 
 	if csv, ok, err := args.GetString("csv"); err != nil {
@@ -70,11 +70,11 @@ func createFromCSVOpSpec(args query.Arguments, a *query.Administration) (query.O
 	return spec, nil
 }
 
-func newFromCSVOp() query.OperationSpec {
+func newFromCSVOp() flux.OperationSpec {
 	return new(FromCSVOpSpec)
 }
 
-func (s *FromCSVOpSpec) Kind() query.OperationKind {
+func (s *FromCSVOpSpec) Kind() flux.OperationKind {
 	return FromCSVKind
 }
 
@@ -83,7 +83,7 @@ type FromCSVProcedureSpec struct {
 	File string
 }
 
-func newFromCSVProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newFromCSVProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*FromCSVOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -134,7 +134,7 @@ func createFromCSVSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 
 type CSVSource struct {
 	id   execute.DatasetID
-	data query.Result
+	data flux.Result
 	ts   []execute.Transformation
 }
 
@@ -146,7 +146,7 @@ func (c *CSVSource) Run(ctx context.Context) {
 	var err error
 	var max execute.Time
 	maxSet := false
-	err = c.data.Tables().Do(func(tbl query.Table) error {
+	err = c.data.Tables().Do(func(tbl flux.Table) error {
 		for _, t := range c.ts {
 			err := t.Process(c.id, tbl)
 			if err != nil {

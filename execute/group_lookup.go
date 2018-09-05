@@ -3,7 +3,7 @@ package execute
 import (
 	"sort"
 
-	"github.com/influxdata/platform/query"
+	"github.com/influxdata/flux"
 )
 
 type GroupLookup struct {
@@ -14,7 +14,7 @@ type GroupLookup struct {
 }
 
 type groupEntry struct {
-	key   query.GroupKey
+	key   flux.GroupKey
 	value interface{}
 }
 
@@ -24,7 +24,7 @@ func NewGroupLookup() *GroupLookup {
 	}
 }
 
-func (l *GroupLookup) findIdx(key query.GroupKey) int {
+func (l *GroupLookup) findIdx(key flux.GroupKey) int {
 	i := sort.Search(len(l.groups), func(i int) bool {
 		return !l.groups[i].key.Less(key)
 	})
@@ -34,7 +34,7 @@ func (l *GroupLookup) findIdx(key query.GroupKey) int {
 	return -1
 }
 
-func (l *GroupLookup) Lookup(key query.GroupKey) (interface{}, bool) {
+func (l *GroupLookup) Lookup(key flux.GroupKey) (interface{}, bool) {
 	if key == nil {
 		return nil, false
 	}
@@ -45,7 +45,7 @@ func (l *GroupLookup) Lookup(key query.GroupKey) (interface{}, bool) {
 	return nil, false
 }
 
-func (l *GroupLookup) Set(key query.GroupKey, value interface{}) {
+func (l *GroupLookup) Set(key flux.GroupKey, value interface{}) {
 	i := l.findIdx(key)
 	if i >= 0 {
 		l.groups[i].value = value
@@ -58,7 +58,7 @@ func (l *GroupLookup) Set(key query.GroupKey, value interface{}) {
 	}
 }
 
-func (l *GroupLookup) Delete(key query.GroupKey) (v interface{}, found bool) {
+func (l *GroupLookup) Delete(key flux.GroupKey) (v interface{}, found bool) {
 	if key == nil {
 		return
 	}
@@ -77,7 +77,7 @@ func (l *GroupLookup) Delete(key query.GroupKey) (v interface{}, found bool) {
 // Range will iterate over all groups keys in sorted order.
 // Range must not be called within another call to Range.
 // It is safe to call Set/Delete while ranging.
-func (l *GroupLookup) Range(f func(key query.GroupKey, value interface{})) {
+func (l *GroupLookup) Range(f func(key flux.GroupKey, value interface{})) {
 	for l.rangeIdx = 0; l.rangeIdx < len(l.groups); l.rangeIdx++ {
 		entry := l.groups[l.rangeIdx]
 		f(entry.key, entry.value)

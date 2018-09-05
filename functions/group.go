@@ -7,11 +7,11 @@ import (
 
 	"math/bits"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/interpreter"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 const GroupKind = "group"
@@ -23,7 +23,7 @@ type GroupOpSpec struct {
 	None   bool     `json:"none"`
 }
 
-var groupSignature = query.DefaultFunctionSignature()
+var groupSignature = flux.DefaultFunctionSignature()
 
 func init() {
 	groupSignature.Params["by"] = semantic.NewArrayType(semantic.String)
@@ -31,14 +31,14 @@ func init() {
 	groupSignature.Params["none"] = semantic.Bool
 	groupSignature.Params["all"] = semantic.Bool
 
-	query.RegisterFunction(GroupKind, createGroupOpSpec, groupSignature)
-	query.RegisterOpSpec(GroupKind, newGroupOp)
+	flux.RegisterFunction(GroupKind, createGroupOpSpec, groupSignature)
+	flux.RegisterOpSpec(GroupKind, newGroupOp)
 	plan.RegisterProcedureSpec(GroupKind, newGroupProcedure, GroupKind)
 	plan.RegisterRewriteRule(AggregateGroupRewriteRule{})
 	execute.RegisterTransformation(GroupKind, createGroupTransformation)
 }
 
-func createGroupOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createGroupOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -86,11 +86,11 @@ func createGroupOpSpec(args query.Arguments, a *query.Administration) (query.Ope
 	return spec, nil
 }
 
-func newGroupOp() query.OperationSpec {
+func newGroupOp() flux.OperationSpec {
 	return new(GroupOpSpec)
 }
 
-func (s *GroupOpSpec) Kind() query.OperationKind {
+func (s *GroupOpSpec) Kind() flux.OperationKind {
 	return GroupKind
 }
 
@@ -135,7 +135,7 @@ type GroupProcedureSpec struct {
 	GroupKeys []string
 }
 
-func newGroupProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newGroupProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*GroupOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -281,11 +281,11 @@ func NewGroupTransformation(d execute.Dataset, cache execute.TableBuilderCache, 
 	return t
 }
 
-func (t *groupTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) (err error) {
+func (t *groupTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) (err error) {
 	panic("not implemented")
 }
 
-func (t *groupTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *groupTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	cols := tbl.Cols()
 	on := make(map[string]bool, len(cols))
 	if t.mode == GroupModeBy && len(t.keys) > 0 {
@@ -304,7 +304,7 @@ func (t *groupTransformation) Process(id execute.DatasetID, tbl query.Table) err
 		}
 	}
 	colMap := make([]int, 0, len(tbl.Cols()))
-	return tbl.Do(func(cr query.ColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			key := execute.GroupKeyForRowOn(i, cr, on)

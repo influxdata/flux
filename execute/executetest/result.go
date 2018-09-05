@@ -1,7 +1,7 @@
 package executetest
 
 import (
-	"github.com/influxdata/platform/query"
+	"github.com/influxdata/flux"
 )
 
 type Result struct {
@@ -18,7 +18,7 @@ func (r *Result) Name() string {
 	return r.Nm
 }
 
-func (r *Result) Tables() query.TableIterator {
+func (r *Result) Tables() flux.TableIterator {
 	return &TableIterator{
 		r.Tbls,
 		r.Err,
@@ -34,7 +34,7 @@ type TableIterator struct {
 	err    error
 }
 
-func (ti *TableIterator) Do(f func(query.Table) error) error {
+func (ti *TableIterator) Do(f func(flux.Table) error) error {
 	if ti.err != nil {
 		return ti.err
 	}

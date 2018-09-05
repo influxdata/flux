@@ -3,10 +3,10 @@ package functions
 import (
 	"fmt"
 
-	"github.com/influxdata/platform/query"
-	"github.com/influxdata/platform/query/execute"
-	"github.com/influxdata/platform/query/plan"
-	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 const UniqueKind = "unique"
@@ -15,18 +15,18 @@ type UniqueOpSpec struct {
 	Column string `json:"column"`
 }
 
-var uniqueSignature = query.DefaultFunctionSignature()
+var uniqueSignature = flux.DefaultFunctionSignature()
 
 func init() {
 	uniqueSignature.Params["column"] = semantic.String
 
-	query.RegisterFunction(UniqueKind, createUniqueOpSpec, uniqueSignature)
-	query.RegisterOpSpec(UniqueKind, newUniqueOp)
+	flux.RegisterFunction(UniqueKind, createUniqueOpSpec, uniqueSignature)
+	flux.RegisterOpSpec(UniqueKind, newUniqueOp)
 	plan.RegisterProcedureSpec(UniqueKind, newUniqueProcedure, UniqueKind)
 	execute.RegisterTransformation(UniqueKind, createUniqueTransformation)
 }
 
-func createUniqueOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
+func createUniqueOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
@@ -44,11 +44,11 @@ func createUniqueOpSpec(args query.Arguments, a *query.Administration) (query.Op
 	return spec, nil
 }
 
-func newUniqueOp() query.OperationSpec {
+func newUniqueOp() flux.OperationSpec {
 	return new(UniqueOpSpec)
 }
 
-func (s *UniqueOpSpec) Kind() query.OperationKind {
+func (s *UniqueOpSpec) Kind() flux.OperationKind {
 	return UniqueKind
 }
 
@@ -56,7 +56,7 @@ type UniqueProcedureSpec struct {
 	Column string
 }
 
-func newUniqueProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+func newUniqueProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*UniqueOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -104,11 +104,11 @@ func NewUniqueTransformation(d execute.Dataset, cache execute.TableBuilderCache,
 	}
 }
 
-func (t *uniqueTransformation) RetractTable(id execute.DatasetID, key query.GroupKey) error {
+func (t *uniqueTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *uniqueTransformation) Process(id execute.DatasetID, tbl query.Table) error {
+func (t *uniqueTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
 		return fmt.Errorf("unique found duplicate table with key: %v", tbl.Key())
@@ -130,56 +130,56 @@ func (t *uniqueTransformation) Process(id execute.DatasetID, tbl query.Table) er
 		timeUnique   map[execute.Time]bool
 	)
 	switch col.Type {
-	case query.TBool:
+	case flux.TBool:
 		boolUnique = make(map[bool]bool)
-	case query.TInt:
+	case flux.TInt:
 		intUnique = make(map[int64]bool)
-	case query.TUInt:
+	case flux.TUInt:
 		uintUnique = make(map[uint64]bool)
-	case query.TFloat:
+	case flux.TFloat:
 		floatUnique = make(map[float64]bool)
-	case query.TString:
+	case flux.TString:
 		stringUnique = make(map[string]bool)
-	case query.TTime:
+	case flux.TTime:
 		timeUnique = make(map[execute.Time]bool)
 	}
 
-	return tbl.Do(func(cr query.ColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			// Check unique
 			switch col.Type {
-			case query.TBool:
+			case flux.TBool:
 				v := cr.Bools(colIdx)[i]
 				if boolUnique[v] {
 					continue
 				}
 				boolUnique[v] = true
-			case query.TInt:
+			case flux.TInt:
 				v := cr.Ints(colIdx)[i]
 				if intUnique[v] {
 					continue
 				}
 				intUnique[v] = true
-			case query.TUInt:
+			case flux.TUInt:
 				v := cr.UInts(colIdx)[i]
 				if uintUnique[v] {
 					continue
 				}
 				uintUnique[v] = true
-			case query.TFloat:
+			case flux.TFloat:
 				v := cr.Floats(colIdx)[i]
 				if floatUnique[v] {
 					continue
 				}
 				floatUnique[v] = true
-			case query.TString:
+			case flux.TString:
 				v := cr.Strings(colIdx)[i]
 				if stringUnique[v] {
 					continue
 				}
 				stringUnique[v] = true
-			case query.TTime:
+			case flux.TTime:
 				v := cr.Times(colIdx)[i]
 				if timeUnique[v] {
 					continue
