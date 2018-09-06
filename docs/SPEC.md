@@ -200,29 +200,34 @@ Examples:
     1mo5d // 1 month and 5 days
 
 Durations can be added to date times to produce a new date time.
-Adding and subtracting durations to date times normalizes the dates.
-For example July 32 converts to August 1.
 
 Addition and subtraction of durations to date times do not commute and are left associative.
-Addition and subtraction of durations to date times applies months, days and seconds in that order and then normalizes.
+Addition and subtraction of durations to date times applies months, days and seconds in that order.
+When months are added to a date times and the resulting date is past the end of the month, the day is rolled back to the last day of the month.
+
 
 Examples:
 
     2018-01-01T00:00:00Z + 1d       // 2018-01-02T00:00:00Z
     2018-01-01T00:00:00Z + 1mo      // 2018-02-01T00:00:00Z
-    2018-01-01T00:00:00Z + 2mo30d   // 2018-03-30T00:00:00Z
-    2018-01-01T00:00:00Z + 1mo30d   // 2018-03-02T00:00:00Z, February 30th is normalized to March 2 in 2018 since it is not a leap year.
+    2018-01-01T00:00:00Z + 2mo      // 2018-03-01T00:00:00Z
+    2018-01-31T00:00:00Z + 2mo      // 2018-03-31T00:00:00Z
+    2018-02-28T00:00:00Z + 2mo      // 2018-04-28T00:00:00Z
+    2018-01-31T00:00:00Z + 1mo      // 2018-02-28T00:00:00Z, February 31th is rolled back to the last day of the month, February 28th in 2018.
 
     // Addition and subtraction of durations to date times does not commute
     2018-02-28T00:00:00Z + 1mo + 1d // 2018-03-29T00:00:00Z
     2018-02-28T00:00:00Z + 1d + 1mo // 2018-04-01T00:00:00Z
-    2018-01-01T00:00:00Z + 3mo - 1d // 2018-02-28T00:00:00Z
-    2018-01-01T00:00:00Z - 1d + 3mo // 2018-03-03T00:00:00Z, December 31st + 3m0 is February 31st which is normalized to March 3 in 2018.
+    2018-01-01T00:00:00Z + 2mo - 1d // 2018-02-28T00:00:00Z
+    2018-01-01T00:00:00Z - 1d + 3mo // 2018-03-31T00:00:00Z
 
     // Addition and subtraction of durations to date times applies months, days and seconds in that order.
-    2018-02-28T00:00:00Z + 1mo + 1d // 2018-03-29T00:00:00Z
-    2018-02-28T00:00:00Z + 1mo1d    // 2018-03-29T00:00:00Z
-    2018-02-28T00:00:00Z + 1d + 1mo // 2018-04-01T00:00:00Z, explicit left associative add of 1d first changes the result
+    2018-01-28T00:00:00Z + 1mo + 2d // 2018-03-02T00:00:00Z
+    2018-01-28T00:00:00Z + 1mo2d    // 2018-03-02T00:00:00Z
+    2018-01-28T00:00:00Z + 2d + 1mo // 2018-02-28T00:00:00Z, explicit left associative add of 2d first changes the result
+    2018-02-01T00:00:00Z + 2mo2d    // 2018-04-03T00:00:00Z
+    2018-01-01T00:00:00Z + 1mo30d   // 2018-03-02T00:00:00Z, Months are applied first to get February 1st, then days are added resulting in March 2 in 2018.
+    2018-01-31T00:00:00Z + 1mo1d    // 2018-03-01T00:00:00Z, Months are applied first to get February 28th, then days are added resulting in March 1 in 2018.
 
 [IMPL#253](https://github.com/influxdata/platform/issues/253) Parse duration literals
 
@@ -871,18 +876,23 @@ All calls to `systemTime` within a single evaluation of a Flux script return the
 
 #### Intervals
 
-Intervals is a function that produces a set of time intervals over an interval.
+Intervals is a function that produces a set of time intervals over a range of time.
 An interval is an object with `start` and `stop` properties that correspond to the inclusive start and exclusive stop times of the time interval.
 The return value of `intervals` is another function that accepts `start` and `stop` time parameters and returns an interval generator.
 The generator is then used to produce the set of intervals.
+The set of intervals will include all intervals that intersect with the initial range of time.
 The `intervals` function is designed to be used with the `intervals` parameter of the `window` function.
+
 
 Intervals has the following parameters:
 
 * `every` duration
     Every is the duration between starts of each of the intervals
+    The Nth interval start date is the initial start date plus the offset plus an Nth multiple of the every parameter.
+    Defaults to the value of the `period` duration.
 * `period` duration
     Period is the length of each interval.
+    Each interval stop date is equal to the interval start date plus the period duration.
     It can be negative, indicating the start and stop boundaries are reversed.
     Defaults to the value of the `every` duration.
 * `offset` duration
@@ -918,6 +928,50 @@ Examples using a predicate:
         filter:(interval) => !(weekday(time: interval.start) in [Sunday, Saturday]),
     )
 
+Examples using known start and stop dates:
+
+    // Every hour for six hours on Sep 5th.
+    intervals(every:1h)(start:2018-09-05T00:00:00-07:00, stop: 2018-09-05T06:00:00-07:00)
+    // [2018-09-05T00:00:00-07:00, 2018-09-05T01:00:00-07:00)
+    // [2018-09-05T01:00:00-07:00, 2018-09-05T02:00:00-07:00)
+    // [2018-09-05T02:00:00-07:00, 2018-09-05T03:00:00-07:00)
+    // [2018-09-05T03:00:00-07:00, 2018-09-05T04:00:00-07:00)
+    // [2018-09-05T04:00:00-07:00, 2018-09-05T05:00:00-07:00)
+    // [2018-09-05T05:00:00-07:00, 2018-09-05T06:00:00-07:00)
+
+    // Every hour for six hours with 1h30m periods on Sep 5th
+    intervals(every:1h, period:1h30m)(start:2018-09-05T00:00:00-07:00, stop: 2018-09-05T06:00:00-07:00)
+    // [2018-09-05T00:00:00-07:00, 2018-09-05T01:30:00-07:00)
+    // [2018-09-05T01:00:00-07:00, 2018-09-05T02:30:00-07:00)
+    // [2018-09-05T02:00:00-07:00, 2018-09-05T03:30:00-07:00)
+    // [2018-09-05T03:00:00-07:00, 2018-09-05T04:30:00-07:00)
+    // [2018-09-05T04:00:00-07:00, 2018-09-05T05:30:00-07:00)
+    // [2018-09-05T05:00:00-07:00, 2018-09-05T06:30:00-07:00)
+
+    // Every hour for six hours using the previous hour on Sep 5th
+    intervals(every:1h, period:-1h)(start:2018-09-05T12:00:00-07:00, stop: 2018-09-05T18:00:00-07:00)
+    // [2018-09-05T11:00:00-07:00, 2018-09-05T12:00:00-07:00)
+    // [2018-09-05T12:00:00-07:00, 2018-09-05T13:00:00-07:00)
+    // [2018-09-05T13:00:00-07:00, 2018-09-05T14:00:00-07:00)
+    // [2018-09-05T14:00:00-07:00, 2018-09-05T15:00:00-07:00)
+    // [2018-09-05T15:00:00-07:00, 2018-09-05T16:00:00-07:00)
+    // [2018-09-05T16:00:00-07:00, 2018-09-05T17:00:00-07:00)
+    // [2018-09-05T17:00:00-07:00, 2018-09-05T18:00:00-07:00)
+
+    // Every month for 4 months starting on Jan 1st
+    intervals(every:1mo)(start:2018-01-01, stop: 2018-05-01)
+    // [2018-01-01, 2018-02-01)
+    // [2018-02-01, 2018-03-01)
+    // [2018-03-01, 2018-04-01)
+    // [2018-04-01, 2018-05-01)
+
+    // Every month for 4 months starting on Jan 15th
+    intervals(every:1mo)(start:2018-01-15, stop: 2018-05-15)
+    // [2018-01-15, 2018-02-15)
+    // [2018-02-15, 2018-03-15)
+    // [2018-03-15, 2018-04-15)
+    // [2018-04-15, 2018-05-15)
+
 
 [IMPL#XXX](https://github.com/influxdata/platform/query/issues/XXX) Implement intervals function
 
@@ -926,27 +980,26 @@ Examples using a predicate:
 
 The following builtin intervals exist:
 
-    // 1 second intervals starting at the 0th millisecond
+    // 1 second intervals
     seconds = intervals(every:1s)
-    // 1 minute intervals starting at the 0th second
+    // 1 minute intervals
     minutes = intervals(every:1m)
-    // 1 hour intervals starting at the 0th minute
+    // 1 hour intervals
     hours = intervals(every:1h)
-    // 1 day intervals starting at midnight
+    // 1 day intervals
     days = intervals(every:1d)
     // 1 day intervals excluding Sundays and Saturdays
     weekdays = intervals(every:1d, filter: (interval) => weekday(time:interval.start) not in [Sunday, Saturday])
     // 1 day intervals including only Sundays and Saturdays
     weekdends = intervals(every:1d, filter: (interval) => weekday(time:interval.start) in [Sunday, Saturday])
-    // 1 week intervals starting on Sunday
+    // 1 week intervals
     weeks = intervals(every:1w)
-    // 1 month interval starting on the 1st of each month
+    // 1 month interval
     months = intervals(every:1mo)
-    // 3 month intervals starting in January on the 1st of each month.
+    // 3 month intervals
     quarters = intervals(every:3mo)
-    // 1 year intervals starting on the 1st of January
+    // 1 year intervals
     years = intervals(every:1y)
-
 
 
 #### FixedZone
