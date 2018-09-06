@@ -223,46 +223,47 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
+		j := execute.ColIdx(t.column, cr.Cols())
 		for i := 0; i < l; i++ {
 			// Check distinct
 			switch col.Type {
 			case flux.TBool:
-				v := cr.Bools(colIdx)[i]
+				v := cr.Bools(j)[i]
 				if boolDistinct[v] {
 					continue
 				}
 				boolDistinct[v] = true
 				builder.AppendBool(colIdx, v)
 			case flux.TInt:
-				v := cr.Ints(colIdx)[i]
+				v := cr.Ints(j)[i]
 				if intDistinct[v] {
 					continue
 				}
 				intDistinct[v] = true
 				builder.AppendInt(colIdx, v)
 			case flux.TUInt:
-				v := cr.UInts(colIdx)[i]
+				v := cr.UInts(j)[i]
 				if uintDistinct[v] {
 					continue
 				}
 				uintDistinct[v] = true
 				builder.AppendUInt(colIdx, v)
 			case flux.TFloat:
-				v := cr.Floats(colIdx)[i]
+				v := cr.Floats(j)[i]
 				if floatDistinct[v] {
 					continue
 				}
 				floatDistinct[v] = true
 				builder.AppendFloat(colIdx, v)
 			case flux.TString:
-				v := cr.Strings(colIdx)[i]
+				v := cr.Strings(j)[i]
 				if stringDistinct[v] {
 					continue
 				}
 				stringDistinct[v] = true
 				builder.AppendString(colIdx, v)
 			case flux.TTime:
-				v := cr.Times(colIdx)[i]
+				v := cr.Times(j)[i]
 				if timeDistinct[v] {
 					continue
 				}
