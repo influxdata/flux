@@ -6,12 +6,12 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/fluxtest"
 	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/querytest"
 )
 
 func TestFromCSV_NewQuery(t *testing.T) {
-	tests := []fluxtest.NewQueryTestCase{
+	tests := []querytest.NewQueryTestCase{
 		{
 			Name:    "from no args",
 			Raw:     `fromCSV()`,
@@ -82,7 +82,7 @@ func TestFromCSV_NewQuery(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			fluxtest.NewQueryTestHelper(t, tc)
+			querytest.NewQueryTestHelper(t, tc)
 		})
 	}
 }
@@ -95,5 +95,5 @@ func TestFromCSVOperation_Marshaling(t *testing.T) {
 			CSV: "1,2",
 		},
 	}
-	fluxtest.OperationMarshalingTestHelper(t, data, op)
+	querytest.OperationMarshalingTestHelper(t, data, op)
 }

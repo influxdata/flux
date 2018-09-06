@@ -5,10 +5,10 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/fluxtest"
 	"github.com/influxdata/flux/functions"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/querytest"
 )
 
 func TestSumOperation_Marshaling(t *testing.T) {
@@ -18,7 +18,7 @@ func TestSumOperation_Marshaling(t *testing.T) {
 		Spec: &functions.SumOpSpec{},
 	}
 
-	fluxtest.OperationMarshalingTestHelper(t, data, op)
+	querytest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestSum_Process(t *testing.T) {

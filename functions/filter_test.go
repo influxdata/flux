@@ -9,15 +9,15 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/fluxtest"
 	"github.com/influxdata/flux/functions"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/semantic"
 )
 
 func TestFilter_NewQuery(t *testing.T) {
-	tests := []fluxtest.NewQueryTestCase{
+	tests := []querytest.NewQueryTestCase{
 		{
 			Name: "from with database filter and range",
 			Raw:  `from(bucket:"mybucket") |> filter(fn: (r) => r["t1"]=="val1" and r["t2"]=="val2") |> range(start:-4h, stop:-2h) |> count()`,
@@ -491,7 +491,7 @@ func TestFilter_NewQuery(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			fluxtest.NewQueryTestHelper(t, tc)
+			querytest.NewQueryTestHelper(t, tc)
 		})
 	}
 }
@@ -538,7 +538,7 @@ func TestFilterOperation_Marshaling(t *testing.T) {
 			},
 		},
 	}
-	fluxtest.OperationMarshalingTestHelper(t, data, op)
+	querytest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestFilter_Process(t *testing.T) {

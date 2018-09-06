@@ -13,7 +13,7 @@ import (
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/csv"
-	"github.com/influxdata/flux/fluxtest"
+	"github.com/influxdata/flux/querytest"
 )
 
 var skipTests = map[string]string{
@@ -26,7 +26,7 @@ var skipTests = map[string]string{
 	"string_interp":             "string interpolation not working as expected in flux (https://github.com/influxdata/platform/issues/404)",
 }
 
-var pqs = fluxtest.GetProxyQueryServiceBridge()
+var pqs = querytest.GetProxyQueryServiceBridge()
 
 func withEachFluxFile(t testing.TB, fn func(prefix, caseName string)) {
 	dir, err := os.Getwd()
@@ -100,7 +100,7 @@ func testFlux(t testing.TB, pqs flux.ProxyQueryService, prefix, queryExt string)
 	}
 	req := &flux.ProxyRequest{
 		Request: flux.Request{
-			Compiler: fluxtest.FromCSVCompiler{
+			Compiler: querytest.FromCSVCompiler{
 				Compiler:  compiler,
 				InputFile: csvInFilename,
 			},

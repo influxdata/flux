@@ -6,13 +6,13 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/fluxtest"
 	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/platform"
 )
 
 func TestFrom_NewQuery(t *testing.T) {
-	tests := []fluxtest.NewQueryTestCase{
+	tests := []querytest.NewQueryTestCase{
 		{
 			Name:    "from no args",
 			Raw:     `from()`,
@@ -97,7 +97,7 @@ func TestFrom_NewQuery(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			fluxtest.NewQueryTestHelper(t, tc)
+			querytest.NewQueryTestHelper(t, tc)
 		})
 	}
 }
@@ -110,13 +110,13 @@ func TestFromOperation_Marshaling(t *testing.T) {
 			Bucket: "mybucket",
 		},
 	}
-	fluxtest.OperationMarshalingTestHelper(t, data, op)
+	querytest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestFromOpSpec_BucketsAccessed(t *testing.T) {
 	bucketName := "my_bucket"
 	bucketID, _ := platform.IDFromString("deadbeef")
-	tests := []fluxtest.NewQueryTestCase{
+	tests := []querytest.NewQueryTestCase{
 		{
 			Name:             "From with bucket",
 			Raw:              `from(bucket:"my_bucket")`,
@@ -134,7 +134,7 @@ func TestFromOpSpec_BucketsAccessed(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			fluxtest.NewQueryTestHelper(t, tc)
+			querytest.NewQueryTestHelper(t, tc)
 		})
 	}
 }

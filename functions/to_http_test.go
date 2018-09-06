@@ -11,12 +11,12 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/fluxtest"
 	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/querytest"
 )
 
 func TestToHTTP_NewQuery(t *testing.T) {
-	tests := []fluxtest.NewQueryTestCase{
+	tests := []querytest.NewQueryTestCase{
 		{
 			Name: "from with database with range",
 			Raw:  `from(bucket:"mybucket") |> toHTTP(url: "https://localhost:8081", name:"series1", method:"POST",  timeout: 50s)`,
@@ -54,7 +54,7 @@ func TestToHTTP_NewQuery(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			fluxtest.NewQueryTestHelper(t, tc)
+			querytest.NewQueryTestHelper(t, tc)
 		})
 	}
 }
@@ -121,7 +121,7 @@ func TestToHTTPOpSpec_UnmarshalJSON(t *testing.T) {
 				Spec: o,
 			}
 			if !tt.wantErr {
-				fluxtest.OperationMarshalingTestHelper(t, tt.bytes, op)
+				querytest.OperationMarshalingTestHelper(t, tt.bytes, op)
 			} else if err := o.UnmarshalJSON(tt.bytes); err == nil {
 				t.Errorf("ToHTTPOpSpec.UnmarshalJSON() error = %v, wantErr %v for test %s", err, tt.wantErr, tt.name)
 			}

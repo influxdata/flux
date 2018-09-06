@@ -11,11 +11,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/influxdata/flux/fluxtest"
-
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/csv"
+	"github.com/influxdata/flux/querytest"
 	"golang.org/x/text/unicode/norm"
 )
 
@@ -69,10 +68,10 @@ func main() {
 			return
 		}
 
-		pqs := fluxtest.GetProxyQueryServiceBridge()
+		pqs := querytest.GetProxyQueryServiceBridge()
 		req := &flux.ProxyRequest{
 			Request: flux.Request{
-				Compiler: fluxtest.FromCSVCompiler{
+				Compiler: querytest.FromCSVCompiler{
 					Compiler: flux.FluxCompiler{
 						Query: string(querytext),
 					},

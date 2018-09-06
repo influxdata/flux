@@ -7,13 +7,13 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/fluxtest"
 	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/semantic"
 )
 
 func TestMap_NewQuery(t *testing.T) {
-	tests := []fluxtest.NewQueryTestCase{
+	tests := []querytest.NewQueryTestCase{
 		{
 			Name: "simple static map",
 			Raw:  `from(bucket:"mybucket") |> map(fn: (r) => r._value + 1)`,
@@ -91,7 +91,7 @@ func TestMap_NewQuery(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			fluxtest.NewQueryTestHelper(t, tc)
+			querytest.NewQueryTestHelper(t, tc)
 		})
 	}
 }
@@ -141,7 +141,7 @@ func TestMapOperation_Marshaling(t *testing.T) {
 			},
 		},
 	}
-	fluxtest.OperationMarshalingTestHelper(t, data, op)
+	querytest.OperationMarshalingTestHelper(t, data, op)
 }
 func TestMap_Process(t *testing.T) {
 	testCases := []struct {

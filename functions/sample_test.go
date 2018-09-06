@@ -6,8 +6,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/fluxtest"
 	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/querytest"
 )
 
 func TestSampleOperation_Marshaling(t *testing.T) {
@@ -20,7 +20,7 @@ func TestSampleOperation_Marshaling(t *testing.T) {
 		},
 	}
 
-	fluxtest.OperationMarshalingTestHelper(t, data, op)
+	querytest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestSample_Process(t *testing.T) {

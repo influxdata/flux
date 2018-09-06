@@ -7,8 +7,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/fluxtest"
 	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/querytest"
 )
 
 func TestIntegralOperation_Marshaling(t *testing.T) {
@@ -19,7 +19,7 @@ func TestIntegralOperation_Marshaling(t *testing.T) {
 			Unit: flux.Duration(time.Minute),
 		},
 	}
-	fluxtest.OperationMarshalingTestHelper(t, data, op)
+	querytest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestIntegral_PassThrough(t *testing.T) {

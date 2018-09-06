@@ -6,10 +6,10 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/fluxtest"
 	"github.com/influxdata/flux/functions"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/querytest"
 )
 
 func TestGroupOperation_Marshaling(t *testing.T) {
@@ -20,7 +20,7 @@ func TestGroupOperation_Marshaling(t *testing.T) {
 			By: []string{"t1", "t2"},
 		},
 	}
-	fluxtest.OperationMarshalingTestHelper(t, data, op)
+	querytest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestGroup_Process(t *testing.T) {

@@ -8,8 +8,8 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/fluxtest"
 	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -23,7 +23,7 @@ func TestStateTrackingOperation_Marshaling(t *testing.T) {
 			DurationUnit:  flux.Duration(time.Minute),
 		},
 	}
-	fluxtest.OperationMarshalingTestHelper(t, data, op)
+	querytest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestStateTracking_Process(t *testing.T) {

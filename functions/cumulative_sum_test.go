@@ -6,8 +6,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/fluxtest"
 	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/querytest"
 )
 
 func TestCumulativeSumOperation_Marshaling(t *testing.T) {
@@ -16,7 +16,7 @@ func TestCumulativeSumOperation_Marshaling(t *testing.T) {
 		ID:   "cumulativeSum",
 		Spec: &functions.CumulativeSumOpSpec{},
 	}
-	fluxtest.OperationMarshalingTestHelper(t, data, op)
+	querytest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestCumulativeSum_PassThrough(t *testing.T) {

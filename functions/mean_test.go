@@ -6,8 +6,8 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/fluxtest"
 	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/querytest"
 )
 
 func TestMeanOperation_Marshaling(t *testing.T) {
@@ -17,7 +17,7 @@ func TestMeanOperation_Marshaling(t *testing.T) {
 		Spec: &functions.MeanOpSpec{},
 	}
 
-	fluxtest.OperationMarshalingTestHelper(t, data, op)
+	querytest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestMean_Process(t *testing.T) {

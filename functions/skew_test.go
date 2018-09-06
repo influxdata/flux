@@ -6,8 +6,8 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/fluxtest"
 	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/querytest"
 )
 
 func TestSkewOperation_Marshaling(t *testing.T) {
@@ -17,7 +17,7 @@ func TestSkewOperation_Marshaling(t *testing.T) {
 		Spec: &functions.SkewOpSpec{},
 	}
 
-	fluxtest.OperationMarshalingTestHelper(t, data, op)
+	querytest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestSkew_Process(t *testing.T) {

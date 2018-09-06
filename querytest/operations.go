@@ -1,4 +1,4 @@
-package fluxtest
+package querytest
 
 import (
 	"encoding/json"
