@@ -221,9 +221,11 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 		timeDistinct = make(map[execute.Time]bool)
 	}
 
+
+	j := execute.ColIdx(t.column, tbl.Cols())
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
-		j := execute.ColIdx(t.column, cr.Cols())
+
 		for i := 0; i < l; i++ {
 			// Check distinct
 			switch col.Type {
