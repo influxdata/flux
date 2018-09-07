@@ -805,6 +805,7 @@ func (e *ResultEncoder) Encode(w io.Writer, result flux.Result) (int64, error) {
 	return writeCounter.Count(), err
 }
 
+// EncodeError encodes the error body into a csv.
 func (e *ResultEncoder) EncodeError(w io.Writer, err error) error {
 	writer := e.csvWriter(w)
 	if e.written {
@@ -812,9 +813,29 @@ func (e *ResultEncoder) EncodeError(w io.Writer, err error) error {
 		writer.Write(nil)
 	}
 
-	writer.Write([]string{"error", "reference"})
+	for _, a := range e.c.Annotations {
+		switch a {
+		case datatypeAnnotation:
+			anno := commentPrefix + datatypeAnnotation
+			writer.Write([]string{anno, "string", "string"})
+		case groupAnnotation:
+			groups := commentPrefix + groupAnnotation
+			writer.Write([]string{groups, "true", "true"})
+		case defaultAnnotation:
+			defaults := commentPrefix + defaultAnnotation
+			writer.Write([]string{defaults, "", ""})
+		}
+	}
+	header := []string{"error", "reference"}
 	// TODO: Add referenced code
-	writer.Write([]string{err.Error(), ""})
+	body := []string{err.Error(), ""}
+	if len(e.c.Annotations) > 0 {
+		header = append([]string{""}, header...)
+		body = append([]string{""}, body...)
+	}
+
+	writer.Write(header)
+	writer.Write(body)
 	writer.Flush()
 	return writer.Error()
 }

@@ -2632,7 +2632,7 @@ Example encoding with two tables with differing schemas in the same result with 
 Example error encoding with the datatype annotation:
 
 ```
-#datatype,string,long
+#datatype,string,string
 ,error,reference
 ,Failed to parse query,897
 ```
@@ -2646,7 +2646,7 @@ Example error encoding with after a valid table has already been encoded.
 ,mean,1,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:20Z,west,B,12.83
 ,mean,1,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:40Z,west,C,51.62
 
-#datatype,string,long
+#datatype,string,string
 ,error,reference
 ,query terminated: reached maximum allowed memory limits,576
 ```
