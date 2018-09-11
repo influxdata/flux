@@ -414,6 +414,7 @@ func (e *BinaryExpression) Copy() Node {
 type CallExpression struct {
 	Callee    Expression        `json:"callee"`
 	Arguments *ObjectExpression `json:"arguments"`
+	pipe      Expression
 }
 
 func (*CallExpression) NodeType() string { return "CallExpression" }
@@ -762,76 +763,17 @@ func (l *UnsignedIntegerLiteral) Copy() Node {
 	return nl
 }
 
-// New creates a semantic graph from the provided AST and builtin declarations
-// The declarations will be modified for any variable declaration found in the program.
-func New(prog *ast.Program, declarations map[string]VariableDeclaration) (*Program, error) {
-	if declarations == nil {
-		// NOTE: Calls to New may expect modifications to declarations to persist outside the function.
-		// The check is against nil instead of len(declarations) == 0 for this reason.
-		declarations = make(map[string]VariableDeclaration)
-	}
-	return analyzeProgram(prog, DeclarationScope(declarations))
+// New creates a semantic graph from the provided AST
+func New(prog *ast.Program) (*Program, error) {
+	return analyzeProgram(prog)
 }
 
-// SolveTypes inspects the expression and ensures that all sub expressions konw their type
-func SolveTypes(n Node, declarations DeclarationScope) {
-	if declarations == nil {
-		declarations = make(DeclarationScope)
-	}
-	// TODO(nathanielc): Use a formal type inference system like Hindley-Milner
-	// TODO(nathanielc): The current implementation only implements the code paths that the current tests and common use cases need.
-	// The implementation is by no means complete for all possible expressions.
-	v := solverVisitor{
-		declarations: declarations,
-	}
-	Walk(v, n)
-}
-
-type solverVisitor struct {
-	declarations DeclarationScope
-}
-
-func (v solverVisitor) Done() {}
-func (v solverVisitor) Visit(n Node) Visitor {
-	switch n := n.(type) {
-	case *NativeVariableDeclaration:
-		v.declarations[n.Identifier.Name] = n
-	case *FunctionExpression:
-		funcDeclarations := v.declarations.Copy()
-		nv := solverVisitor{
-			declarations: funcDeclarations,
-		}
-		return nv
-	case *FunctionParam:
-		n.Type()
-		if n.declaration != nil {
-			v.declarations[n.Key.Name] = n.declaration
-		}
-	case *IdentifierExpression:
-		declaration, ok := v.declarations[n.Name]
-		if ok {
-			n.declaration = declaration
-		}
-	}
-	return v
-}
-
-type DeclarationScope map[string]VariableDeclaration
-
-func (s DeclarationScope) Copy() DeclarationScope {
-	cpy := make(DeclarationScope, len(s))
-	for k, v := range s {
-		cpy[k] = v
-	}
-	return cpy
-}
-
-func analyzeProgram(prog *ast.Program, declarations DeclarationScope) (*Program, error) {
+func analyzeProgram(prog *ast.Program) (*Program, error) {
 	p := &Program{
 		Body: make([]Statement, len(prog.Body)),
 	}
 	for i, s := range prog.Body {
-		n, err := analyzeStatment(s, declarations)
+		n, err := analyzeStatment(s)
 		if err != nil {
 			return nil, err
 		}
@@ -840,45 +782,44 @@ func analyzeProgram(prog *ast.Program, declarations DeclarationScope) (*Program,
 	return p, nil
 }
 
-func analyzeNode(n ast.Node, declarations DeclarationScope) (Node, error) {
+func analyzeNode(n ast.Node) (Node, error) {
 	switch n := n.(type) {
 	case ast.Statement:
-		return analyzeStatment(n, declarations)
+		return analyzeStatment(n)
 	case ast.Expression:
-		return analyzeExpression(n, declarations)
+		return analyzeExpression(n)
 	default:
 		return nil, fmt.Errorf("unsupported node %T", n)
 	}
 }
 
-func analyzeStatment(s ast.Statement, declarations DeclarationScope) (Statement, error) {
+func analyzeStatment(s ast.Statement) (Statement, error) {
 	switch s := s.(type) {
 	case *ast.BlockStatement:
-		return analyzeBlockStatement(s, declarations)
+		return analyzeBlockStatement(s)
 	case *ast.OptionStatement:
-		return analyzeOptionStatement(s, declarations)
+		return analyzeOptionStatement(s)
 	case *ast.ExpressionStatement:
-		return analyzeExpressionStatement(s, declarations)
+		return analyzeExpressionStatement(s)
 	case *ast.ReturnStatement:
-		return analyzeReturnStatement(s, declarations)
+		return analyzeReturnStatement(s)
 	case *ast.VariableDeclaration:
 		// Expect a single declaration
 		if len(s.Declarations) != 1 {
 			return nil, fmt.Errorf("only single variable declarations are supported, found %d declarations", len(s.Declarations))
 		}
-		return analyzeVariableDeclaration(s.Declarations[0], declarations)
+		return analyzeVariableDeclaration(s.Declarations[0])
 	default:
 		return nil, fmt.Errorf("unsupported statement %T", s)
 	}
 }
 
-func analyzeBlockStatement(block *ast.BlockStatement, declarations DeclarationScope) (*BlockStatement, error) {
-	declarations = declarations.Copy()
+func analyzeBlockStatement(block *ast.BlockStatement) (*BlockStatement, error) {
 	b := &BlockStatement{
 		Body: make([]Statement, len(block.Body)),
 	}
 	for i, s := range block.Body {
-		n, err := analyzeStatment(s, declarations)
+		n, err := analyzeStatment(s)
 		if err != nil {
 			return nil, err
 		}
@@ -891,8 +832,8 @@ func analyzeBlockStatement(block *ast.BlockStatement, declarations DeclarationSc
 	return b, nil
 }
 
-func analyzeOptionStatement(option *ast.OptionStatement, declarations DeclarationScope) (*OptionStatement, error) {
-	declaration, err := analyzeVariableDeclaration(option.Declaration, declarations)
+func analyzeOptionStatement(option *ast.OptionStatement) (*OptionStatement, error) {
+	declaration, err := analyzeVariableDeclaration(option.Declaration)
 	if err != nil {
 		return nil, err
 	}
@@ -901,8 +842,8 @@ func analyzeOptionStatement(option *ast.OptionStatement, declarations Declaratio
 	}, nil
 }
 
-func analyzeExpressionStatement(expr *ast.ExpressionStatement, declarations DeclarationScope) (*ExpressionStatement, error) {
-	e, err := analyzeExpression(expr.Expression, declarations)
+func analyzeExpressionStatement(expr *ast.ExpressionStatement) (*ExpressionStatement, error) {
+	e, err := analyzeExpression(expr.Expression)
 	if err != nil {
 		return nil, err
 	}
@@ -911,8 +852,8 @@ func analyzeExpressionStatement(expr *ast.ExpressionStatement, declarations Decl
 	}, nil
 }
 
-func analyzeReturnStatement(ret *ast.ReturnStatement, declarations DeclarationScope) (*ReturnStatement, error) {
-	arg, err := analyzeExpression(ret.Argument, declarations)
+func analyzeReturnStatement(ret *ast.ReturnStatement) (*ReturnStatement, error) {
+	arg, err := analyzeExpression(ret.Argument)
 	if err != nil {
 		return nil, err
 	}
@@ -921,12 +862,12 @@ func analyzeReturnStatement(ret *ast.ReturnStatement, declarations DeclarationSc
 	}, nil
 }
 
-func analyzeVariableDeclaration(decl *ast.VariableDeclarator, declarations DeclarationScope) (*NativeVariableDeclaration, error) {
-	id, err := analyzeIdentifier(decl.ID, declarations)
+func analyzeVariableDeclaration(decl *ast.VariableDeclarator) (*NativeVariableDeclaration, error) {
+	id, err := analyzeIdentifier(decl.ID)
 	if err != nil {
 		return nil, err
 	}
-	init, err := analyzeExpression(decl.Init, declarations)
+	init, err := analyzeExpression(decl.Init)
 	if err != nil {
 		return nil, err
 	}
@@ -934,57 +875,56 @@ func analyzeVariableDeclaration(decl *ast.VariableDeclarator, declarations Decla
 		Identifier: id,
 		Init:       init,
 	}
-	declarations[vd.Identifier.Name] = vd
 	return vd, nil
 }
 
-func analyzeExpression(expr ast.Expression, declarations DeclarationScope) (Expression, error) {
+func analyzeExpression(expr ast.Expression) (Expression, error) {
 	switch expr := expr.(type) {
 	case *ast.ArrowFunctionExpression:
-		return analyzeArrowFunctionExpression(expr, declarations)
+		return analyzeArrowFunctionExpression(expr)
 	case *ast.CallExpression:
-		return analyzeCallExpression(expr, declarations)
+		return analyzeCallExpression(expr)
 	case *ast.MemberExpression:
-		return analyzeMemberExpression(expr, declarations)
+		return analyzeMemberExpression(expr)
 	case *ast.PipeExpression:
-		return analyzePipeExpression(expr, declarations)
+		return analyzePipeExpression(expr)
 	case *ast.BinaryExpression:
-		return analyzeBinaryExpression(expr, declarations)
+		return analyzeBinaryExpression(expr)
 	case *ast.UnaryExpression:
-		return analyzeUnaryExpression(expr, declarations)
+		return analyzeUnaryExpression(expr)
 	case *ast.LogicalExpression:
-		return analyzeLogicalExpression(expr, declarations)
+		return analyzeLogicalExpression(expr)
 	case *ast.ObjectExpression:
-		return analyzeObjectExpression(expr, declarations)
+		return analyzeObjectExpression(expr)
 	case *ast.ArrayExpression:
-		return analyzeArrayExpression(expr, declarations)
+		return analyzeArrayExpression(expr)
 	case *ast.Identifier:
-		return analyzeIdentifierExpression(expr, declarations)
+		return analyzeIdentifierExpression(expr)
 	case ast.Literal:
-		return analyzeLiteral(expr, declarations)
+		return analyzeLiteral(expr)
 	default:
 		return nil, fmt.Errorf("unsupported expression %T", expr)
 	}
 }
 
-func analyzeLiteral(lit ast.Literal, declarations DeclarationScope) (Literal, error) {
+func analyzeLiteral(lit ast.Literal) (Literal, error) {
 	switch lit := lit.(type) {
 	case *ast.StringLiteral:
-		return analyzeStringLiteral(lit, declarations)
+		return analyzeStringLiteral(lit)
 	case *ast.BooleanLiteral:
-		return analyzeBooleanLiteral(lit, declarations)
+		return analyzeBooleanLiteral(lit)
 	case *ast.FloatLiteral:
-		return analyzeFloatLiteral(lit, declarations)
+		return analyzeFloatLiteral(lit)
 	case *ast.IntegerLiteral:
-		return analyzeIntegerLiteral(lit, declarations)
+		return analyzeIntegerLiteral(lit)
 	case *ast.UnsignedIntegerLiteral:
-		return analyzeUnsignedIntegerLiteral(lit, declarations)
+		return analyzeUnsignedIntegerLiteral(lit)
 	case *ast.RegexpLiteral:
-		return analyzeRegexpLiteral(lit, declarations)
+		return analyzeRegexpLiteral(lit)
 	case *ast.DurationLiteral:
-		return analyzeDurationLiteral(lit, declarations)
+		return analyzeDurationLiteral(lit)
 	case *ast.DateTimeLiteral:
-		return analyzeDateTimeLiteral(lit, declarations)
+		return analyzeDateTimeLiteral(lit)
 	case *ast.PipeLiteral:
 		return nil, errors.New("a pipe literal may only be used as a default value for an argument in a function definition")
 	default:
@@ -992,23 +932,19 @@ func analyzeLiteral(lit ast.Literal, declarations DeclarationScope) (Literal, er
 	}
 }
 
-func analyzeArrowFunctionExpression(arrow *ast.ArrowFunctionExpression, declarations DeclarationScope) (*FunctionExpression, error) {
-	declarations = declarations.Copy()
+func analyzeArrowFunctionExpression(arrow *ast.ArrowFunctionExpression) (*FunctionExpression, error) {
 	f := &FunctionExpression{
 		Params: make([]*FunctionParam, len(arrow.Params)),
 	}
 	pipedCount := 0
 	for i, p := range arrow.Params {
-		key, err := analyzeIdentifier(p.Key, declarations)
+		key, err := analyzeIdentifier(p.Key)
 		if err != nil {
 			return nil, err
 		}
 
-		var (
-			def         Expression
-			declaration VariableDeclaration
-			piped       bool
-		)
+		var def Expression
+		var piped bool
 		if p.Value != nil {
 			if _, ok := p.Value.(*ast.PipeLiteral); ok {
 				// Special case the PipeLiteral
@@ -1018,17 +954,17 @@ func analyzeArrowFunctionExpression(arrow *ast.ArrowFunctionExpression, declarat
 					return nil, errors.New("only a single argument may be piped")
 				}
 			} else {
-				d, err := analyzeExpression(p.Value, declarations)
+				d, err := analyzeExpression(p.Value)
 				if err != nil {
 					return nil, err
 				}
 				def = d
-				declaration = &NativeVariableDeclaration{
-					Identifier: key,
-					Init:       def,
-				}
-				declarations[key.Name] = declaration
 			}
+		}
+
+		declaration := &NativeVariableDeclaration{
+			Identifier: key,
+			Init:       def,
 		}
 
 		f.Params[i] = &FunctionParam{
@@ -1040,7 +976,7 @@ func analyzeArrowFunctionExpression(arrow *ast.ArrowFunctionExpression, declarat
 
 	}
 
-	b, err := analyzeNode(arrow.Body, declarations)
+	b, err := analyzeNode(arrow.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -1049,8 +985,8 @@ func analyzeArrowFunctionExpression(arrow *ast.ArrowFunctionExpression, declarat
 	return f, nil
 }
 
-func analyzeCallExpression(call *ast.CallExpression, declarations DeclarationScope) (*CallExpression, error) {
-	callee, err := analyzeExpression(call.Callee, declarations)
+func analyzeCallExpression(call *ast.CallExpression) (*CallExpression, error) {
+	callee, err := analyzeExpression(call.Callee)
 	if err != nil {
 		return nil, err
 	}
@@ -1063,7 +999,7 @@ func analyzeCallExpression(call *ast.CallExpression, declarations DeclarationSco
 			return nil, fmt.Errorf("arguments not an object expression")
 		}
 		var err error
-		args, err = analyzeObjectExpression(obj, declarations)
+		args, err = analyzeObjectExpression(obj)
 		if err != nil {
 			return nil, err
 		}
@@ -1071,59 +1007,14 @@ func analyzeCallExpression(call *ast.CallExpression, declarations DeclarationSco
 		args = new(ObjectExpression)
 	}
 
-	expr := &CallExpression{
+	return &CallExpression{
 		Callee:    callee,
 		Arguments: args,
-	}
-
-	declarations = declarations.Copy()
-	for _, arg := range args.Properties {
-		declarations[arg.Key.Name] = &NativeVariableDeclaration{
-			Identifier: arg.Key,
-			Init:       arg.Value,
-		}
-	}
-
-	ApplyNewDeclarations(expr.Callee, declarations)
-	return expr, nil
+	}, nil
 }
 
-func ApplyNewDeclarations(n Node, declarations map[string]VariableDeclaration) {
-	v := &applyDeclarationsVisitor{
-		declarations: declarations,
-	}
-	Walk(v, n)
-}
-
-type applyDeclarationsVisitor struct {
-	declarations DeclarationScope
-}
-
-func (v *applyDeclarationsVisitor) Visit(n Node) Visitor {
-	switch n := n.(type) {
-	case *IdentifierExpression:
-		if n.declaration == nil {
-			n.declaration = v.declarations[n.Name]
-		}
-		// No need to walk further down this branch
-		return nil
-	// TODO(nathanielc): Support polymorphic function arguments
-	//case *FunctionExpression:
-	//	// Remove type information since we may have changed it.
-	//	n.typ.Store((Type)(Invalid))
-	case *FunctionParam:
-		if n.declaration == nil {
-			n.declaration = v.declarations[n.Key.Name]
-		}
-		// No need to walk further down this branch
-		return nil
-	}
-	return v
-}
-func (v *applyDeclarationsVisitor) Done() {}
-
-func analyzeMemberExpression(member *ast.MemberExpression, declarations DeclarationScope) (*MemberExpression, error) {
-	obj, err := analyzeExpression(member.Object, declarations)
+func analyzeMemberExpression(member *ast.MemberExpression) (*MemberExpression, error) {
+	obj, err := analyzeExpression(member.Object)
 	if err != nil {
 		return nil, err
 	}
@@ -1146,76 +1037,27 @@ func analyzeMemberExpression(member *ast.MemberExpression, declarations Declarat
 	}, nil
 }
 
-func analyzePipeExpression(pipe *ast.PipeExpression, declarations DeclarationScope) (*CallExpression, error) {
-	call, err := analyzeCallExpression(pipe.Call, declarations)
+func analyzePipeExpression(pipe *ast.PipeExpression) (*CallExpression, error) {
+	call, err := analyzeCallExpression(pipe.Call)
 	if err != nil {
 		return nil, err
 	}
 
-	decl, err := resolveDeclaration(call.Callee)
+	value, err := analyzeExpression(pipe.Argument)
 	if err != nil {
 		return nil, err
 	}
-	fnTyp := decl.InitType()
-	if fnTyp.Kind() != Function {
-		return nil, fmt.Errorf("cannot pipe into non function %q", fnTyp.Kind())
-	}
-	key := fnTyp.PipeArgument()
-	if key == "" {
-		return nil, fmt.Errorf("function %q does not have a pipe argument", decl.ID().Name)
-	}
 
-	value, err := analyzeExpression(pipe.Argument, declarations)
-	if err != nil {
-		return nil, err
-	}
-	property := &Property{
-		Key:   &Identifier{Name: key},
-		Value: value,
-	}
-
-	found := false
-	for i, p := range call.Arguments.Properties {
-		if key == p.Key.Name {
-			found = true
-			call.Arguments.Properties[i] = property
-			break
-		}
-	}
-	if !found {
-		call.Arguments.Properties = append(call.Arguments.Properties, property)
-	}
+	call.pipe = value
 	return call, nil
 }
 
-// resolveDeclaration traverse the expression until a variable declaration is found for the expression.
-func resolveDeclaration(n Node) (VariableDeclaration, error) {
-	switch n := n.(type) {
-	case *IdentifierExpression:
-		if n.declaration == nil {
-			return nil, fmt.Errorf("identifier expression %q has no declaration", n.Name)
-		}
-		return resolveDeclaration(n.declaration)
-	case *ExternalVariableDeclaration:
-		return n, nil
-	case *NativeVariableDeclaration:
-		if n.Init == nil {
-			return nil, fmt.Errorf("variable declaration %v has no init", n.Identifier)
-		}
-		if i, ok := n.Init.(*IdentifierExpression); ok {
-			return resolveDeclaration(i)
-		}
-		return n, nil
-	}
-	return nil, errors.New("no declaration found")
-}
-
-func analyzeBinaryExpression(binary *ast.BinaryExpression, declarations DeclarationScope) (*BinaryExpression, error) {
-	left, err := analyzeExpression(binary.Left, declarations)
+func analyzeBinaryExpression(binary *ast.BinaryExpression) (*BinaryExpression, error) {
+	left, err := analyzeExpression(binary.Left)
 	if err != nil {
 		return nil, err
 	}
-	right, err := analyzeExpression(binary.Right, declarations)
+	right, err := analyzeExpression(binary.Right)
 	if err != nil {
 		return nil, err
 	}
@@ -1226,49 +1068,37 @@ func analyzeBinaryExpression(binary *ast.BinaryExpression, declarations Declarat
 	}, nil
 }
 
-func analyzeUnaryExpression(unary *ast.UnaryExpression, declarations DeclarationScope) (*UnaryExpression, error) {
-	arg, err := analyzeExpression(unary.Argument, declarations)
+func analyzeUnaryExpression(unary *ast.UnaryExpression) (*UnaryExpression, error) {
+	arg, err := analyzeExpression(unary.Argument)
 	if err != nil {
 		return nil, err
 	}
-	// TODO(nathanielc): validate operand type once we have type inference working with functions.
-	//k := arg.Type().Kind()
-	//if k != Bool && k != Int && k != Float && k != Duration {
-	//	return nil, fmt.Errorf("invalid unary operator %v on type %v", unary.Operator, k)
-	//}
 	return &UnaryExpression{
 		Operator: unary.Operator,
 		Argument: arg,
 	}, nil
 }
-func analyzeLogicalExpression(logical *ast.LogicalExpression, declarations DeclarationScope) (*LogicalExpression, error) {
-	left, err := analyzeExpression(logical.Left, declarations)
+func analyzeLogicalExpression(logical *ast.LogicalExpression) (*LogicalExpression, error) {
+	left, err := analyzeExpression(logical.Left)
 	if err != nil {
 		return nil, err
 	}
-	// TODO(nathanielc): Validate operand types once we have type inference working with functions.
-	//if k := left.Type().Kind(); k != Bool {
-	//	return nil, fmt.Errorf("left operand to logical expression is not a boolean, got kind %v", k)
-	//}
-	right, err := analyzeExpression(logical.Right, declarations)
+	right, err := analyzeExpression(logical.Right)
 	if err != nil {
 		return nil, err
 	}
-	//if k := right.Type().Kind(); k != Bool {
-	//	return nil, fmt.Errorf("right operand to logical expression is not a boolean, got kind %v", k)
-	//}
 	return &LogicalExpression{
 		Operator: logical.Operator,
 		Left:     left,
 		Right:    right,
 	}, nil
 }
-func analyzeObjectExpression(obj *ast.ObjectExpression, declarations DeclarationScope) (*ObjectExpression, error) {
+func analyzeObjectExpression(obj *ast.ObjectExpression) (*ObjectExpression, error) {
 	o := &ObjectExpression{
 		Properties: make([]*Property, len(obj.Properties)),
 	}
 	for i, p := range obj.Properties {
-		n, err := analyzeProperty(p, declarations)
+		n, err := analyzeProperty(p)
 		if err != nil {
 			return nil, err
 		}
@@ -1276,12 +1106,12 @@ func analyzeObjectExpression(obj *ast.ObjectExpression, declarations Declaration
 	}
 	return o, nil
 }
-func analyzeArrayExpression(array *ast.ArrayExpression, declarations DeclarationScope) (*ArrayExpression, error) {
+func analyzeArrayExpression(array *ast.ArrayExpression) (*ArrayExpression, error) {
 	a := &ArrayExpression{
 		Elements: make([]Expression, len(array.Elements)),
 	}
 	for i, e := range array.Elements {
-		n, err := analyzeExpression(e, declarations)
+		n, err := analyzeExpression(e)
 		if err != nil {
 			return nil, err
 		}
@@ -1290,25 +1120,24 @@ func analyzeArrayExpression(array *ast.ArrayExpression, declarations Declaration
 	return a, nil
 }
 
-func analyzeIdentifier(ident *ast.Identifier, declarations DeclarationScope) (*Identifier, error) {
+func analyzeIdentifier(ident *ast.Identifier) (*Identifier, error) {
 	return &Identifier{
 		Name: ident.Name,
 	}, nil
 }
 
-func analyzeIdentifierExpression(ident *ast.Identifier, declarations DeclarationScope) (*IdentifierExpression, error) {
+func analyzeIdentifierExpression(ident *ast.Identifier) (*IdentifierExpression, error) {
 	return &IdentifierExpression{
-		Name:        ident.Name,
-		declaration: declarations[ident.Name],
+		Name: ident.Name,
 	}, nil
 }
 
-func analyzeProperty(property *ast.Property, declarations DeclarationScope) (*Property, error) {
-	key, err := analyzeIdentifier(property.Key, declarations)
+func analyzeProperty(property *ast.Property) (*Property, error) {
+	key, err := analyzeIdentifier(property.Key)
 	if err != nil {
 		return nil, err
 	}
-	value, err := analyzeExpression(property.Value, declarations)
+	value, err := analyzeExpression(property.Value)
 	if err != nil {
 		return nil, err
 	}
@@ -1318,12 +1147,12 @@ func analyzeProperty(property *ast.Property, declarations DeclarationScope) (*Pr
 	}, nil
 }
 
-func analyzeDateTimeLiteral(lit *ast.DateTimeLiteral, declarations DeclarationScope) (*DateTimeLiteral, error) {
+func analyzeDateTimeLiteral(lit *ast.DateTimeLiteral) (*DateTimeLiteral, error) {
 	return &DateTimeLiteral{
 		Value: lit.Value,
 	}, nil
 }
-func analyzeDurationLiteral(lit *ast.DurationLiteral, declarations DeclarationScope) (*DurationLiteral, error) {
+func analyzeDurationLiteral(lit *ast.DurationLiteral) (*DurationLiteral, error) {
 	var duration time.Duration
 	for _, d := range lit.Values {
 		dur, err := toDuration(d)
@@ -1336,32 +1165,32 @@ func analyzeDurationLiteral(lit *ast.DurationLiteral, declarations DeclarationSc
 		Value: duration,
 	}, nil
 }
-func analyzeFloatLiteral(lit *ast.FloatLiteral, declarations DeclarationScope) (*FloatLiteral, error) {
+func analyzeFloatLiteral(lit *ast.FloatLiteral) (*FloatLiteral, error) {
 	return &FloatLiteral{
 		Value: lit.Value,
 	}, nil
 }
-func analyzeIntegerLiteral(lit *ast.IntegerLiteral, declarations DeclarationScope) (*IntegerLiteral, error) {
+func analyzeIntegerLiteral(lit *ast.IntegerLiteral) (*IntegerLiteral, error) {
 	return &IntegerLiteral{
 		Value: lit.Value,
 	}, nil
 }
-func analyzeUnsignedIntegerLiteral(lit *ast.UnsignedIntegerLiteral, declarations DeclarationScope) (*UnsignedIntegerLiteral, error) {
+func analyzeUnsignedIntegerLiteral(lit *ast.UnsignedIntegerLiteral) (*UnsignedIntegerLiteral, error) {
 	return &UnsignedIntegerLiteral{
 		Value: lit.Value,
 	}, nil
 }
-func analyzeStringLiteral(lit *ast.StringLiteral, declarations DeclarationScope) (*StringLiteral, error) {
+func analyzeStringLiteral(lit *ast.StringLiteral) (*StringLiteral, error) {
 	return &StringLiteral{
 		Value: lit.Value,
 	}, nil
 }
-func analyzeBooleanLiteral(lit *ast.BooleanLiteral, declarations DeclarationScope) (*BooleanLiteral, error) {
+func analyzeBooleanLiteral(lit *ast.BooleanLiteral) (*BooleanLiteral, error) {
 	return &BooleanLiteral{
 		Value: lit.Value,
 	}, nil
 }
-func analyzeRegexpLiteral(lit *ast.RegexpLiteral, declarations DeclarationScope) (*RegexpLiteral, error) {
+func analyzeRegexpLiteral(lit *ast.RegexpLiteral) (*RegexpLiteral, error) {
 	return &RegexpLiteral{
 		Value: lit.Value,
 	}, nil

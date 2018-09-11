@@ -82,6 +82,9 @@ func walk(v Visitor, n Node) {
 		if w != nil {
 			walk(w, n.Callee)
 			walk(w, n.Arguments)
+			if n.pipe != nil {
+				walk(w, n.pipe)
+			}
 		}
 	case *ConditionalExpression:
 		w := v.Visit(n)
