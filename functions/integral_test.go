@@ -44,6 +44,8 @@ func TestIntegral_Process(t *testing.T) {
 			name: "float",
 			spec: &functions.IntegralProcedureSpec{
 				Unit:            1,
+				TimeSrc:         execute.DefaultStopColLabel,
+				TimeDst:         execute.DefaultTimeColLabel,
 				AggregateConfig: execute.DefaultAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
@@ -76,6 +78,8 @@ func TestIntegral_Process(t *testing.T) {
 			name: "float with units",
 			spec: &functions.IntegralProcedureSpec{
 				Unit:            flux.Duration(time.Second),
+				TimeSrc:         execute.DefaultStopColLabel,
+				TimeDst:         execute.DefaultTimeColLabel,
 				AggregateConfig: execute.DefaultAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
@@ -108,6 +112,8 @@ func TestIntegral_Process(t *testing.T) {
 			name: "float with tags",
 			spec: &functions.IntegralProcedureSpec{
 				Unit:            1,
+				TimeSrc:         execute.DefaultStopColLabel,
+				TimeDst:         execute.DefaultTimeColLabel,
 				AggregateConfig: execute.DefaultAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
@@ -141,9 +147,9 @@ func TestIntegral_Process(t *testing.T) {
 			name: "float with multiple values",
 			spec: &functions.IntegralProcedureSpec{
 				Unit: 1,
+				TimeDst: execute.DefaultTimeColLabel,
+				TimeSrc: execute.DefaultStopColLabel,
 				AggregateConfig: execute.AggregateConfig{
-					TimeDst: execute.DefaultTimeColLabel,
-					TimeSrc: execute.DefaultStopColLabel,
 					Columns: []string{"x", "y"},
 				},
 			},

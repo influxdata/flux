@@ -14,6 +14,8 @@ const IntegralKind = "integral"
 
 type IntegralOpSpec struct {
 	Unit flux.Duration `json:"unit"`
+	TimeSrc string   `json:"timeSrc"`
+	TimeDst string   `json:"timeDst"`
 	execute.AggregateConfig
 }
 
@@ -44,6 +46,22 @@ func createIntegralOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 		spec.Unit = flux.Duration(time.Second)
 	}
 
+	if label, ok, err := args.GetString("timeDst"); err != nil {
+		return nil, err
+	} else if ok {
+		spec.TimeDst = label
+	} else {
+		spec.TimeDst = execute.DefaultTimeColLabel
+	}
+
+	if timeValue, ok, err := args.GetString("timeSrc"); err != nil {
+		return nil, err
+	} else if ok {
+		spec.TimeSrc = timeValue
+	} else {
+		spec.TimeSrc = execute.DefaultStopColLabel
+	}
+
 	if err := spec.AggregateConfig.ReadArgs(args); err != nil {
 		return nil, err
 	}
@@ -60,6 +78,8 @@ func (s *IntegralOpSpec) Kind() flux.OperationKind {
 
 type IntegralProcedureSpec struct {
 	Unit flux.Duration `json:"unit"`
+	TimeSrc string   `json:"timeSrc"`
+	TimeDst string   `json:"timeDst"`
 	execute.AggregateConfig
 }
 
@@ -71,6 +91,8 @@ func newIntegralProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.P
 
 	return &IntegralProcedureSpec{
 		Unit:            spec.Unit,
+		TimeSrc:         spec.TimeSrc,
+		TimeDst:         spec.TimeDst,
 		AggregateConfig: spec.AggregateConfig,
 	}, nil
 }
