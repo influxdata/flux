@@ -1,11 +1,11 @@
 package execute
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/platform"
 )
 
 type Transformation interface {
@@ -23,7 +23,7 @@ type StreamContext interface {
 }
 
 type Administration interface {
-	OrganizationID() platform.ID
+	Context() context.Context
 
 	ResolveTime(qt flux.Time) Time
 	StreamContext() StreamContext

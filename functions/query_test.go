@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/csv"
+	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/querytest"
 )
 
@@ -26,7 +27,7 @@ var skipTests = map[string]string{
 	"string_interp":             "string interpolation not working as expected in flux (https://github.com/influxdata/platform/issues/404)",
 }
 
-var pqs = querytest.GetProxyQueryServiceBridge()
+var querier = querytest.NewQuerier()
 
 func withEachFluxFile(t testing.TB, fn func(prefix, caseName string)) {
 	dir, err := os.Getwd()
@@ -57,7 +58,7 @@ func Test_QueryEndToEnd(t *testing.T) {
 			if skip {
 				t.Skip(reason)
 			}
-			testFlux(t, pqs, prefix, ".flux")
+			testFlux(t, querier, prefix, ".flux")
 		})
 	})
 }
@@ -77,13 +78,13 @@ func Benchmark_QueryEndToEnd(b *testing.B) {
 			b.ResetTimer()
 			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
-				testFlux(b, pqs, prefix, ".flux")
+				testFlux(b, querier, prefix, ".flux")
 			}
 		})
 	})
 }
 
-func testFlux(t testing.TB, pqs flux.ProxyQueryService, prefix, queryExt string) {
+func testFlux(t testing.TB, querier *querytest.Querier, prefix, queryExt string) {
 	q, err := ioutil.ReadFile(prefix + queryExt)
 	if err != nil {
 		t.Fatal(err)
@@ -95,27 +96,22 @@ func testFlux(t testing.TB, pqs flux.ProxyQueryService, prefix, queryExt string)
 		t.Fatal(err)
 	}
 
-	compiler := flux.FluxCompiler{
-		Query: string(q),
-	}
-	req := &flux.ProxyRequest{
-		Request: flux.Request{
-			Compiler: querytest.FromCSVCompiler{
-				Compiler:  compiler,
-				InputFile: csvInFilename,
-			},
+	c := querytest.FromCSVCompiler{
+		Compiler: lang.FluxCompiler{
+			Query: string(q),
 		},
-		Dialect: csv.DefaultDialect(),
+		InputFile: csvInFilename,
 	}
+	d := csv.DefaultDialect()
 
-	QueryTestCheckSpec(t, pqs, req, string(csvOut))
+	QueryTestCheckSpec(t, querier, c, d, string(csvOut))
 }
 
-func QueryTestCheckSpec(t testing.TB, pqs flux.ProxyQueryService, req *flux.ProxyRequest, want string) {
+func QueryTestCheckSpec(t testing.TB, querier *querytest.Querier, c flux.Compiler, d flux.Dialect, want string) {
 	t.Helper()
 
 	var buf bytes.Buffer
-	_, err := pqs.Query(context.Background(), &buf, req)
+	_, err := querier.Query(context.Background(), &buf, c, d)
 	if err != nil {
 		t.Errorf("failed to run query: %v", err)
 		return

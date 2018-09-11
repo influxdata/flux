@@ -15,26 +15,27 @@ import (
 
 	prompt "github.com/c-bata/go-prompt"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/control"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/functions"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/influxdata/platform"
 	"github.com/pkg/errors"
 )
 
 type REPL struct {
-	orgID platform.ID
-
 	interpreter  *interpreter.Interpreter
 	declarations semantic.DeclarationScope
-	c            *control.Controller
+	querier      Querier
 
 	cancelMu   sync.Mutex
 	cancelFunc context.CancelFunc
+}
+
+type Querier interface {
+	Query(ctx context.Context, compiler flux.Compiler) (flux.Query, error)
 }
 
 func addBuiltIn(script string, itrp *interpreter.Interpreter, declarations semantic.DeclarationScope) error {
@@ -53,16 +54,15 @@ func addBuiltIn(script string, itrp *interpreter.Interpreter, declarations seman
 	return nil
 }
 
-func New(c *control.Controller, orgID platform.ID) *REPL {
+func New(q Querier) *REPL {
 	itrp := flux.NewInterpreter()
 	_, decls := flux.BuiltIns()
 	addBuiltIn("run = () => yield(table:_)", itrp, decls)
 
 	return &REPL{
-		orgID:        orgID,
 		interpreter:  itrp,
 		declarations: decls,
-		c:            c,
+		querier:      q,
 	}
 }
 
@@ -201,14 +201,11 @@ func (r *REPL) doQuery(spec *flux.Spec) error {
 	defer cancelFunc()
 	defer r.clearCancel()
 
-	req := &flux.Request{
-		OrganizationID: r.orgID,
-		Compiler: flux.SpecCompiler{
-			Spec: spec,
-		},
+	compiler := lang.SpecCompiler{
+		Spec: spec,
 	}
 
-	q, err := r.c.Query(ctx, req)
+	q, err := r.querier.Query(ctx, compiler)
 	if err != nil {
 		return err
 	}

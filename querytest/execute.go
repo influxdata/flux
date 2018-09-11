@@ -1,23 +1,32 @@
 package querytest
 
 import (
+	"context"
+	"io"
 	"math"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/control"
 	"github.com/influxdata/flux/functions"
-	"github.com/influxdata/platform"
 )
 
-var (
-	staticResultID platform.ID
-)
-
-func init() {
-	staticResultID.DecodeFromString("1")
+type Querier struct {
+	c *control.Controller
 }
 
-func GetProxyQueryServiceBridge() flux.ProxyQueryServiceBridge {
+func (q *Querier) Query(ctx context.Context, w io.Writer, c flux.Compiler, d flux.Dialect) (int64, error) {
+	query, err := q.c.Query(ctx, c)
+	if err != nil {
+		return 0, err
+	}
+	results := flux.NewResultIteratorFromQuery(query)
+	defer results.Cancel()
+
+	encoder := d.Encoder()
+	return encoder.Encode(w, results)
+}
+
+func NewQuerier() *Querier {
 	config := control.Config{
 		ConcurrencyQuota: 1,
 		MemoryBytesQuota: math.MaxInt64,
@@ -25,10 +34,8 @@ func GetProxyQueryServiceBridge() flux.ProxyQueryServiceBridge {
 
 	c := control.New(config)
 
-	return flux.ProxyQueryServiceBridge{
-		QueryService: flux.QueryServiceBridge{
-			AsyncQueryService: c,
-		},
+	return &Querier{
+		c: c,
 	}
 }
 

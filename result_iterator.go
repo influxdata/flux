@@ -1,40 +1,45 @@
 package flux
 
-import (
-	"context"
-	"io"
-	"sort"
-)
+import "sort"
 
-// QueryServiceBridge implements the QueryService interface while consuming the AsyncQueryService interface.
-type QueryServiceBridge struct {
-	AsyncQueryService AsyncQueryService
+// ResultIterator allows iterating through all results
+// Cancel must be called to free resources.
+// ResultIterators may implement Statisticser.
+type ResultIterator interface {
+	// More indicates if there are more results.
+	More() bool
+
+	// Next returns the next result.
+	// If More is false, Next panics.
+	Next() Result
+
+	// Cancel discards the remaining results.
+	// Cancel must always be called to free resources.
+	// It is safe to call Cancel multiple times.
+	Cancel()
+
+	// Err reports the first error encountered.
+	// Err will not report anything unless More has returned false,
+	// or the query has been cancelled.
+	Err() error
 }
 
-func (b QueryServiceBridge) Query(ctx context.Context, req *Request) (ResultIterator, error) {
-	query, err := b.AsyncQueryService.Query(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-	return newResultIterator(query), nil
-}
-
-// resultIterator implements a ResultIterator while consuming a Query
-type resultIterator struct {
+// QueryResultIterator implements a ResultIterator while consuming a Query
+type QueryResultIterator struct {
 	query   Query
 	cancel  chan struct{}
 	ready   bool
 	results *MapResultIterator
 }
 
-func newResultIterator(q Query) *resultIterator {
-	return &resultIterator{
+func NewResultIteratorFromQuery(q Query) *QueryResultIterator {
+	return &QueryResultIterator{
 		query:  q,
 		cancel: make(chan struct{}),
 	}
 }
 
-func (r *resultIterator) More() bool {
+func (r *QueryResultIterator) More() bool {
 	if !r.ready {
 		select {
 		case <-r.cancel:
@@ -56,11 +61,11 @@ DONE:
 	return false
 }
 
-func (r *resultIterator) Next() Result {
+func (r *QueryResultIterator) Next() Result {
 	return r.results.Next()
 }
 
-func (r *resultIterator) Cancel() {
+func (r *QueryResultIterator) Cancel() {
 	select {
 	case <-r.cancel:
 	default:
@@ -69,11 +74,11 @@ func (r *resultIterator) Cancel() {
 	r.query.Cancel()
 }
 
-func (r *resultIterator) Err() error {
+func (r *QueryResultIterator) Err() error {
 	return r.query.Err()
 }
 
-func (r *resultIterator) Statistics() Statistics {
+func (r *QueryResultIterator) Statistics() Statistics {
 	return r.query.Statistics()
 }
 
@@ -138,24 +143,4 @@ func (r *SliceResultIterator) Cancel() {
 
 func (r *SliceResultIterator) Err() error {
 	return nil
-}
-
-// ProxyQueryServiceBridge implements ProxyQueryService while consuming a QueryService interface.
-type ProxyQueryServiceBridge struct {
-	QueryService QueryService
-}
-
-func (b ProxyQueryServiceBridge) Query(ctx context.Context, w io.Writer, req *ProxyRequest) (n int64, err error) {
-	results, err := b.QueryService.Query(ctx, &req.Request)
-	if err != nil {
-		return 0, err
-	}
-	defer results.Cancel()
-	encoder := req.Dialect.Encoder()
-	n, err = encoder.Encode(w, results)
-	if err != nil {
-		return n, err
-	}
-
-	return n, nil
 }
