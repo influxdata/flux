@@ -73,30 +73,6 @@ func (s *CountProcedureSpec) ReAggregateSpec() plan.ProcedureSpec {
 	return new(SumProcedureSpec)
 }
 
-func (s *CountProcedureSpec) PushDownRules() []plan.PushDownRule {
-	return []plan.PushDownRule{{
-		Root:    FromKind,
-		Through: nil,
-		Match: func(spec plan.ProcedureSpec) bool {
-			selectSpec := spec.(*FromProcedureSpec)
-			return !selectSpec.GroupingSet
-		},
-	}}
-}
-
-func (s *CountProcedureSpec) PushDown(root *plan.Procedure, dup func() *plan.Procedure) {
-	selectSpec := root.Spec.(*FromProcedureSpec)
-	if selectSpec.AggregateSet {
-		root = dup()
-		selectSpec = root.Spec.(*FromProcedureSpec)
-		selectSpec.AggregateSet = false
-		selectSpec.AggregateMethod = ""
-		return
-	}
-	selectSpec.AggregateSet = true
-	selectSpec.AggregateMethod = s.AggregateMethod()
-}
-
 type CountAgg struct {
 	count int64
 }

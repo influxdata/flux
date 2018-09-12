@@ -89,22 +89,33 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 								},
 								Stop: flux.Now,
 							},
-							AggregateSet:    true,
-							AggregateMethod: "count",
 						},
 						Bounds: &plan.BoundsSpec{
 							Start: values.ConvertTime(now.Add(-1 * time.Hour)),
 							Stop:  values.ConvertTime(now),
 						},
 						Parents:  nil,
-						Children: []plan.ProcedureID{},
+						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("count")},
+					},
+					plan.ProcedureIDFromOperationID("count"): {
+						ID:   plan.ProcedureIDFromOperationID("count"),
+						Spec: &functions.CountProcedureSpec{},
+						Parents: []plan.ProcedureID{
+							(plan.ProcedureIDFromOperationID("from")),
+						},
+						Bounds: &plan.BoundsSpec{
+							Start: values.ConvertTime(now.Add(-1 * time.Hour)),
+							Stop:  values.ConvertTime(now),
+						},
+						Children: nil,
 					},
 				},
 				Results: map[string]plan.YieldSpec{
-					plan.DefaultYieldName: {ID: plan.ProcedureIDFromOperationID("from")},
+					plan.DefaultYieldName: {ID: plan.ProcedureIDFromOperationID("count")},
 				},
 				Order: []plan.ProcedureID{
 					plan.ProcedureIDFromOperationID("from"),
+					plan.ProcedureIDFromOperationID("count"),
 				},
 			},
 		},
@@ -488,8 +499,6 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 							GroupingSet:     true,
 							GroupMode:       functions.GroupModeBy,
 							GroupKeys:       []string{"host", "region"},
-							AggregateSet:    true,
-							AggregateMethod: "sum",
 						},
 						Bounds: &plan.BoundsSpec{
 							Start: values.ConvertTime(now.Add(-1 * time.Hour)),
@@ -497,11 +506,11 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 						},
 						Parents: nil,
 						Children: []plan.ProcedureID{
-							plan.ProcedureIDFromParentID(plan.ProcedureIDFromOperationID("from")),
+							plan.ProcedureIDFromOperationID("sum"),
 						},
 					},
-					plan.ProcedureIDFromParentID(plan.ProcedureIDFromOperationID("from")): {
-						ID:   plan.ProcedureIDFromParentID(plan.ProcedureIDFromOperationID("from")),
+					plan.ProcedureIDFromOperationID("sum"): {
+						ID:   plan.ProcedureIDFromOperationID("sum"),
 						Spec: &functions.SumProcedureSpec{},
 						Bounds: &plan.BoundsSpec{
 							Start: values.ConvertTime(now.Add(-1 * time.Hour)),
@@ -511,11 +520,11 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 				},
 				Results: map[string]plan.YieldSpec{
-					"_result": {ID: plan.ProcedureIDFromParentID(plan.ProcedureIDFromOperationID("from"))},
+					"_result": {ID: plan.ProcedureIDFromOperationID("sum")},
 				},
 				Order: []plan.ProcedureID{
 					plan.ProcedureIDFromOperationID("from"),
-					plan.ProcedureIDFromParentID(plan.ProcedureIDFromOperationID("from")),
+					plan.ProcedureIDFromOperationID("sum"),
 				},
 			},
 		},
@@ -1133,149 +1142,6 @@ func TestPhysicalPlanner_Plan_PushDown_Branch(t *testing.T) {
 		Order: []plan.ProcedureID{
 			fromID,
 			fromIDDup,
-		},
-	}
-
-	PhysicalPlanTestHelper(t, lp, want)
-}
-
-func TestPhysicalPlanner_Plan_PushDown_Mixed(t *testing.T) {
-	now := time.Date(2017, 8, 8, 0, 0, 0, 0, time.UTC)
-	lp := &plan.LogicalPlanSpec{
-		Now: now,
-		Procedures: map[plan.ProcedureID]*plan.Procedure{
-			plan.ProcedureIDFromOperationID("from"): {
-				ID: plan.ProcedureIDFromOperationID("from"),
-				Spec: &functions.FromProcedureSpec{
-					Bucket: "mybucket",
-				},
-				Parents:  nil,
-				Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("range")},
-			},
-			plan.ProcedureIDFromOperationID("range"): {
-				ID: plan.ProcedureIDFromOperationID("range"),
-				Spec: &functions.RangeProcedureSpec{
-					Bounds: flux.Bounds{
-						Start: flux.Time{
-							IsRelative: true,
-							Relative:   -1 * time.Hour,
-						},
-						Stop: flux.Now,
-					},
-					TimeCol: "_time",
-				},
-				Parents: []plan.ProcedureID{
-					(plan.ProcedureIDFromOperationID("from")),
-				},
-				Children: []plan.ProcedureID{
-					plan.ProcedureIDFromOperationID("sum"),
-					plan.ProcedureIDFromOperationID("mean"),
-				},
-			},
-			plan.ProcedureIDFromOperationID("sum"): {
-				ID:       plan.ProcedureIDFromOperationID("sum"),
-				Spec:     &functions.SumProcedureSpec{},
-				Parents:  []plan.ProcedureID{plan.ProcedureIDFromOperationID("range")},
-				Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("yieldSum")},
-			},
-			plan.ProcedureIDFromOperationID("yieldSum"): {
-				ID:       plan.ProcedureIDFromOperationID("yieldSum"),
-				Spec:     &functions.YieldProcedureSpec{Name: "sum"},
-				Parents:  []plan.ProcedureID{plan.ProcedureIDFromOperationID("sum")},
-				Children: nil,
-			},
-			plan.ProcedureIDFromOperationID("mean"): {
-				ID:       plan.ProcedureIDFromOperationID("mean"),
-				Spec:     &functions.MeanProcedureSpec{},
-				Parents:  []plan.ProcedureID{plan.ProcedureIDFromOperationID("range")},
-				Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("yieldMean")},
-			},
-			plan.ProcedureIDFromOperationID("yieldMean"): {
-				ID:       plan.ProcedureIDFromOperationID("yieldMean"),
-				Spec:     &functions.YieldProcedureSpec{Name: "mean"},
-				Parents:  []plan.ProcedureID{plan.ProcedureIDFromOperationID("mean")},
-				Children: nil,
-			},
-		},
-		Order: []plan.ProcedureID{
-			plan.ProcedureIDFromOperationID("from"),
-			plan.ProcedureIDFromOperationID("range"),
-			plan.ProcedureIDFromOperationID("sum"),
-			plan.ProcedureIDFromOperationID("yieldSum"),
-			plan.ProcedureIDFromOperationID("mean"), // Mean can't be pushed down, but sum can
-			plan.ProcedureIDFromOperationID("yieldMean"),
-		},
-	}
-
-	fromID := plan.ProcedureIDFromOperationID("from")
-	fromIDDup := plan.ProcedureIDForDuplicate(fromID)
-	want := &plan.PlanSpec{
-		Now: now,
-		Resources: flux.ResourceManagement{
-			ConcurrencyQuota: 3,
-			MemoryBytesQuota: math.MaxInt64,
-		},
-		Procedures: map[plan.ProcedureID]*plan.Procedure{
-			fromIDDup: {
-				ID: fromIDDup,
-				Spec: &functions.FromProcedureSpec{
-					Bucket:    "mybucket",
-					BoundsSet: true,
-					Bounds: flux.Bounds{
-						Start: flux.Time{
-							IsRelative: true,
-							Relative:   -1 * time.Hour,
-						},
-						Stop: flux.Now,
-					},
-					AggregateSet:    true,
-					AggregateMethod: "sum",
-				},
-				Bounds: &plan.BoundsSpec{
-					Start: values.ConvertTime(now.Add(-1 * time.Hour)),
-					Stop:  values.ConvertTime(now),
-				},
-				Parents:  []plan.ProcedureID{},
-				Children: []plan.ProcedureID{},
-			},
-			plan.ProcedureIDFromOperationID("from"): {
-				ID: plan.ProcedureIDFromOperationID("from"),
-				Spec: &functions.FromProcedureSpec{
-					Bucket:    "mybucket",
-					BoundsSet: true,
-					Bounds: flux.Bounds{
-						Start: flux.Time{
-							IsRelative: true,
-							Relative:   -1 * time.Hour,
-						},
-						Stop: flux.Now,
-					},
-				},
-				Bounds: &plan.BoundsSpec{
-					Start: values.ConvertTime(now.Add(-1 * time.Hour)),
-					Stop:  values.ConvertTime(now),
-				},
-				Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("mean")},
-			},
-			plan.ProcedureIDFromOperationID("mean"): {
-				ID:   plan.ProcedureIDFromOperationID("mean"),
-				Spec: &functions.MeanProcedureSpec{},
-				Bounds: &plan.BoundsSpec{
-					Start: values.ConvertTime(now.Add(-1 * time.Hour)),
-					Stop:  values.ConvertTime(now),
-				},
-				Parents:  []plan.ProcedureID{plan.ProcedureIDFromOperationID("from")},
-				Children: []plan.ProcedureID{},
-			},
-		},
-		Results: map[string]plan.YieldSpec{
-			"sum":  {ID: fromIDDup},
-			"mean": {ID: plan.ProcedureIDFromOperationID("mean")},
-		},
-		Order: []plan.ProcedureID{
-			fromID,
-			fromIDDup,
-			plan.ProcedureIDFromOperationID("mean"),
 		},
 	}
 

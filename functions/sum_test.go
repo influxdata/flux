@@ -6,8 +6,6 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/querytest"
 )
 
@@ -38,45 +36,3 @@ func BenchmarkSum(b *testing.B) {
 	)
 }
 
-func TestSum_PushDown_Match(t *testing.T) {
-	spec := new(functions.SumProcedureSpec)
-	from := new(functions.FromProcedureSpec)
-
-	// Should not match when an aggregate is set
-	from.GroupingSet = true
-	plantest.PhysicalPlan_PushDown_Match_TestHelper(t, spec, from, []bool{false})
-
-	// Should match when no aggregate is set
-	from.GroupingSet = false
-	plantest.PhysicalPlan_PushDown_Match_TestHelper(t, spec, from, []bool{true})
-}
-
-func TestSum_PushDown(t *testing.T) {
-	spec := new(functions.SumProcedureSpec)
-	root := &plan.Procedure{
-		Spec: new(functions.FromProcedureSpec),
-	}
-	want := &plan.Procedure{
-		Spec: &functions.FromProcedureSpec{
-			AggregateSet:    true,
-			AggregateMethod: functions.SumKind,
-		},
-	}
-
-	plantest.PhysicalPlan_PushDown_TestHelper(t, spec, root, false, want)
-}
-func TestSum_PushDown_Duplicate(t *testing.T) {
-	spec := new(functions.SumProcedureSpec)
-	root := &plan.Procedure{
-		Spec: &functions.FromProcedureSpec{
-			AggregateSet:    true,
-			AggregateMethod: functions.SumKind,
-		},
-	}
-	want := &plan.Procedure{
-		// Expect the duplicate has been reset to zero values
-		Spec: new(functions.FromProcedureSpec),
-	}
-
-	plantest.PhysicalPlan_PushDown_TestHelper(t, spec, root, true, want)
-}

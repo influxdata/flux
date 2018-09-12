@@ -34,7 +34,6 @@ func init() {
 	flux.RegisterFunction(GroupKind, createGroupOpSpec, groupSignature)
 	flux.RegisterOpSpec(GroupKind, newGroupOp)
 	plan.RegisterProcedureSpec(GroupKind, newGroupProcedure, GroupKind)
-	plan.RegisterRewriteRule(AggregateGroupRewriteRule{})
 	execute.RegisterTransformation(GroupKind, createGroupTransformation)
 }
 
@@ -205,51 +204,6 @@ func (s *GroupProcedureSpec) PushDown(root *plan.Procedure, dup func() *plan.Pro
 	selectSpec.GroupKeys = s.GroupKeys
 }
 
-type AggregateGroupRewriteRule struct {
-}
-
-func (r AggregateGroupRewriteRule) Root() plan.ProcedureKind {
-	return FromKind
-}
-
-func (r AggregateGroupRewriteRule) Rewrite(pr *plan.Procedure, planner plan.PlanRewriter) error {
-	var agg *plan.Procedure
-	pr.DoChildren(func(child *plan.Procedure) {
-		if _, ok := child.Spec.(plan.AggregateProcedureSpec); ok {
-			agg = child
-		}
-	})
-	if agg == nil {
-		return nil
-	}
-	fromSpec := pr.Spec.(*FromProcedureSpec)
-	if fromSpec.AggregateSet {
-		return nil
-	}
-
-	// Rewrite
-	isoFrom, err := planner.IsolatePath(pr, agg)
-	if err != nil {
-		return err
-	}
-	return r.rewrite(isoFrom, planner)
-}
-
-func (r AggregateGroupRewriteRule) rewrite(fromPr *plan.Procedure, planner plan.PlanRewriter) error {
-	fromSpec := fromPr.Spec.(*FromProcedureSpec)
-	aggPr := fromPr.Child(0)
-	aggSpec := aggPr.Spec.(plan.AggregateProcedureSpec)
-
-	fromSpec.AggregateSet = true
-	fromSpec.AggregateMethod = aggSpec.AggregateMethod()
-
-	if err := planner.RemoveBranch(aggPr); err != nil {
-		return err
-	}
-
-	planner.AddChild(fromPr, aggSpec.ReAggregateSpec())
-	return nil
-}
 
 func createGroupTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*GroupProcedureSpec)
