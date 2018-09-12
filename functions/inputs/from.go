@@ -71,10 +71,10 @@ func createFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		}
 	}
 
-	if spec.Bucket == "" && len(spec.BucketID) == 0 {
+	if spec.Bucket == "" && !spec.BucketID.Valid() {
 		return nil, errors.New("must specify one of bucket or bucketID")
 	}
-	if spec.Bucket != "" && len(spec.BucketID) != 0 {
+	if spec.Bucket != "" && spec.BucketID.Valid() {
 		return nil, errors.New("must specify only one of bucket or bucketID")
 	}
 	return spec, nil
@@ -94,7 +94,7 @@ func (s *FromOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.Buc
 		bf.Name = &s.Bucket
 	}
 
-	if len(s.BucketID) > 0 {
+	if s.BucketID.Valid() {
 		bf.ID = &s.BucketID
 	}
 
@@ -156,9 +156,8 @@ func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(FromProcedureSpec)
 
 	ns.Bucket = s.Bucket
-	if len(s.BucketID) > 0 {
-		ns.BucketID = make(platform.ID, len(s.BucketID))
-		copy(ns.BucketID, s.BucketID)
+	if s.BucketID.Valid() {
+		ns.BucketID = s.BucketID
 	}
 
 	ns.BoundsSet = s.BoundsSet
@@ -225,7 +224,7 @@ func createFromSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a execu
 			return nil, fmt.Errorf("could not find bucket %q", spec.Bucket)
 		}
 		bucketID = b
-	case len(spec.BucketID) != 0:
+	case spec.BucketID.Valid():
 		bucketID = spec.BucketID
 	}
 
