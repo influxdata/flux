@@ -19,14 +19,10 @@ type aggregateTransformation struct {
 
 type AggregateConfig struct {
 	Columns []string `json:"columns"`
-	TimeSrc string   `json:"timeSrc"`
-	TimeDst string   `json:"timeDst"`
 }
 
 var DefaultAggregateConfig = AggregateConfig{
 	Columns: []string{DefaultValueColLabel},
-	TimeSrc: DefaultStopColLabel,
-	TimeDst: DefaultTimeColLabel,
 }
 
 func DefaultAggregateSignature() semantic.FunctionSignature {
@@ -34,8 +30,6 @@ func DefaultAggregateSignature() semantic.FunctionSignature {
 		Params: map[string]semantic.Type{
 			flux.TableParameter: flux.TableObjectType,
 			"columns":           semantic.NewArrayType(semantic.String),
-			"timeSrc":           semantic.String,
-			"timeDst":           semantic.String,
 		},
 		ReturnType:   flux.TableObjectType,
 		PipeArgument: flux.TableParameter,
@@ -52,22 +46,6 @@ func (c AggregateConfig) Copy() AggregateConfig {
 }
 
 func (c *AggregateConfig) ReadArgs(args flux.Arguments) error {
-	if label, ok, err := args.GetString("timeDst"); err != nil {
-		return err
-	} else if ok {
-		c.TimeDst = label
-	} else {
-		c.TimeDst = DefaultAggregateConfig.TimeDst
-	}
-
-	if timeValue, ok, err := args.GetString("timeSrc"); err != nil {
-		return err
-	} else if ok {
-		c.TimeSrc = timeValue
-	} else {
-		c.TimeSrc = DefaultAggregateConfig.TimeSrc
-	}
-
 	if cols, ok, err := args.GetArray("columns", semantic.String); err != nil {
 		return err
 	} else if ok {
@@ -109,10 +87,6 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 	}
 
 	AddTableKeyCols(tbl.Key(), builder)
-	builder.AddCol(flux.ColMeta{
-		Label: t.config.TimeDst,
-		Type:  flux.TTime,
-	})
 
 	builderColMap := make([]int, len(t.config.Columns))
 	tableColMap := make([]int, len(t.config.Columns))
@@ -157,9 +131,7 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 		})
 		tableColMap[j] = idx
 	}
-	if err := AppendAggregateTime(t.config.TimeSrc, t.config.TimeDst, tbl.Key(), builder); err != nil {
-		return err
-	}
+
 
 	tbl.Do(func(cr flux.ColReader) error {
 		for j := range t.config.Columns {
@@ -215,29 +187,6 @@ func (t *aggregateTransformation) UpdateProcessingTime(id DatasetID, pt Time) er
 }
 func (t *aggregateTransformation) Finish(id DatasetID, err error) {
 	t.d.Finish(err)
-}
-
-func AppendAggregateTime(srcTime, dstTime string, key flux.GroupKey, builder TableBuilder) error {
-	srcTimeIdx := ColIdx(srcTime, key.Cols())
-	if srcTimeIdx < 0 {
-		return fmt.Errorf("timeSrc column %q does not exist", srcTime)
-	}
-	srcTimeCol := key.Cols()[srcTimeIdx]
-	if srcTimeCol.Type != flux.TTime {
-		return fmt.Errorf("timeSrc column %q does not have type time", srcTime)
-	}
-
-	dstTimeIdx := ColIdx(dstTime, builder.Cols())
-	if dstTimeIdx < 0 {
-		return fmt.Errorf("timeDst column %q does not exist", dstTime)
-	}
-	dstTimeCol := builder.Cols()[dstTimeIdx]
-	if dstTimeCol.Type != flux.TTime {
-		return fmt.Errorf("timeDst column %q does not have type time", dstTime)
-	}
-
-	builder.AppendTime(dstTimeIdx, key.ValueTime(srcTimeIdx))
-	return nil
 }
 
 type Aggregate interface {

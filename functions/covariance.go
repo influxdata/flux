@@ -161,10 +161,7 @@ func (t *CovarianceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 		return fmt.Errorf("covariance found duplicate table with key: %v", tbl.Key())
 	}
 	execute.AddTableKeyCols(tbl.Key(), builder)
-	builder.AddCol(flux.ColMeta{
-		Label: t.spec.TimeDst,
-		Type:  flux.TTime,
-	})
+
 	valueIdx := builder.AddCol(flux.ColMeta{
 		Label: t.spec.ValueLabel,
 		Type:  flux.TFloat,
@@ -175,9 +172,7 @@ func (t *CovarianceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 	if cols[xIdx].Type != cols[yIdx].Type {
 		return errors.New("cannot compute the covariance between different types")
 	}
-	if err := execute.AppendAggregateTime(t.spec.TimeSrc, t.spec.TimeDst, tbl.Key(), builder); err != nil {
-		return err
-	}
+
 
 	t.reset()
 	tbl.Do(func(cr flux.ColReader) error {

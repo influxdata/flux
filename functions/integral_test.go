@@ -44,6 +44,7 @@ func TestIntegral_Process(t *testing.T) {
 			name: "float",
 			spec: &functions.IntegralProcedureSpec{
 				Unit:            1,
+				TimeCol:         execute.DefaultTimeColLabel,
 				AggregateConfig: execute.DefaultAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
@@ -64,11 +65,10 @@ func TestIntegral_Process(t *testing.T) {
 				ColMeta: []flux.ColMeta{
 					{Label: "_start", Type: flux.TTime},
 					{Label: "_stop", Type: flux.TTime},
-					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(1), execute.Time(3), execute.Time(3), 1.5},
+					{execute.Time(1), execute.Time(3), 1.5},
 				},
 			}},
 		},
@@ -76,6 +76,7 @@ func TestIntegral_Process(t *testing.T) {
 			name: "float with units",
 			spec: &functions.IntegralProcedureSpec{
 				Unit:            flux.Duration(time.Second),
+				TimeCol:         execute.DefaultTimeColLabel,
 				AggregateConfig: execute.DefaultAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
@@ -96,11 +97,10 @@ func TestIntegral_Process(t *testing.T) {
 				ColMeta: []flux.ColMeta{
 					{Label: "_start", Type: flux.TTime},
 					{Label: "_stop", Type: flux.TTime},
-					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(1 * time.Second), execute.Time(4 * time.Second), execute.Time(4 * time.Second), 3.0},
+					{execute.Time(1 * time.Second), execute.Time(4 * time.Second), 3.0},
 				},
 			}},
 		},
@@ -108,6 +108,7 @@ func TestIntegral_Process(t *testing.T) {
 			name: "float with tags",
 			spec: &functions.IntegralProcedureSpec{
 				Unit:            1,
+				TimeCol:         execute.DefaultTimeColLabel,
 				AggregateConfig: execute.DefaultAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
@@ -129,11 +130,10 @@ func TestIntegral_Process(t *testing.T) {
 				ColMeta: []flux.ColMeta{
 					{Label: "_start", Type: flux.TTime},
 					{Label: "_stop", Type: flux.TTime},
-					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(1), execute.Time(3), execute.Time(3), 1.5},
+					{execute.Time(1), execute.Time(3), 1.5},
 				},
 			}},
 		},
@@ -141,9 +141,8 @@ func TestIntegral_Process(t *testing.T) {
 			name: "float with multiple values",
 			spec: &functions.IntegralProcedureSpec{
 				Unit: 1,
+				TimeCol:         execute.DefaultTimeColLabel,
 				AggregateConfig: execute.AggregateConfig{
-					TimeDst: execute.DefaultTimeColLabel,
-					TimeSrc: execute.DefaultStopColLabel,
 					Columns: []string{"x", "y"},
 				},
 			},
@@ -168,12 +167,11 @@ func TestIntegral_Process(t *testing.T) {
 				ColMeta: []flux.ColMeta{
 					{Label: "_start", Type: flux.TTime},
 					{Label: "_stop", Type: flux.TTime},
-					{Label: "_time", Type: flux.TTime},
 					{Label: "x", Type: flux.TFloat},
 					{Label: "y", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(1), execute.Time(5), execute.Time(5), 4.5, 45.0},
+					{execute.Time(1), execute.Time(5), 4.5, 45.0},
 				},
 			}},
 		},

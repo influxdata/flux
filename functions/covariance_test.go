@@ -28,8 +28,6 @@ func TestCovariance_NewQuery(t *testing.T) {
 						Spec: &functions.CovarianceOpSpec{
 							ValueDst: execute.DefaultValueColLabel,
 							AggregateConfig: execute.AggregateConfig{
-								TimeSrc: execute.DefaultStopColLabel,
-								TimeDst: execute.DefaultTimeColLabel,
 								Columns: []string{"a", "b"},
 							},
 						},
@@ -57,8 +55,6 @@ func TestCovariance_NewQuery(t *testing.T) {
 							ValueDst:           execute.DefaultValueColLabel,
 							PearsonCorrelation: true,
 							AggregateConfig: execute.AggregateConfig{
-								TimeSrc: execute.DefaultStopColLabel,
-								TimeDst: execute.DefaultTimeColLabel,
 								Columns: []string{"a", "b"},
 							},
 						},
@@ -103,8 +99,6 @@ func TestCovariance_NewQuery(t *testing.T) {
 							ValueDst:           execute.DefaultValueColLabel,
 							PearsonCorrelation: true,
 							AggregateConfig: execute.AggregateConfig{
-								TimeSrc: execute.DefaultStopColLabel,
-								TimeDst: execute.DefaultTimeColLabel,
 								Columns: []string{"x__value", "y__value"},
 							},
 						},
@@ -156,8 +150,6 @@ func TestCovariance_Process(t *testing.T) {
 			spec: &functions.CovarianceProcedureSpec{
 				ValueLabel: execute.DefaultValueColLabel,
 				AggregateConfig: execute.AggregateConfig{
-					TimeSrc: execute.DefaultStopColLabel,
-					TimeDst: execute.DefaultTimeColLabel,
 					Columns: []string{"x", "y"},
 				},
 			},
@@ -183,11 +175,10 @@ func TestCovariance_Process(t *testing.T) {
 				ColMeta: []flux.ColMeta{
 					{Label: "_start", Type: flux.TTime},
 					{Label: "_stop", Type: flux.TTime},
-					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(0), execute.Time(5), execute.Time(5), 2.5},
+					{execute.Time(0), execute.Time(5), 2.5},
 				},
 			}},
 		},
@@ -196,8 +187,6 @@ func TestCovariance_Process(t *testing.T) {
 			spec: &functions.CovarianceProcedureSpec{
 				ValueLabel: execute.DefaultValueColLabel,
 				AggregateConfig: execute.AggregateConfig{
-					TimeSrc: execute.DefaultStopColLabel,
-					TimeDst: execute.DefaultTimeColLabel,
 					Columns: []string{"x", "y"},
 				},
 			},
@@ -223,11 +212,10 @@ func TestCovariance_Process(t *testing.T) {
 				ColMeta: []flux.ColMeta{
 					{Label: "_start", Type: flux.TTime},
 					{Label: "_stop", Type: flux.TTime},
-					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(0), execute.Time(5), execute.Time(5), -2.5},
+					{execute.Time(0), execute.Time(5), -2.5},
 				},
 			}},
 		},
@@ -236,8 +224,6 @@ func TestCovariance_Process(t *testing.T) {
 			spec: &functions.CovarianceProcedureSpec{
 				ValueLabel: execute.DefaultValueColLabel,
 				AggregateConfig: execute.AggregateConfig{
-					TimeSrc: execute.DefaultStopColLabel,
-					TimeDst: execute.DefaultTimeColLabel,
 					Columns: []string{"x", "y"},
 				},
 			},
@@ -263,11 +249,10 @@ func TestCovariance_Process(t *testing.T) {
 				ColMeta: []flux.ColMeta{
 					{Label: "_start", Type: flux.TTime},
 					{Label: "_stop", Type: flux.TTime},
-					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(0), execute.Time(5), execute.Time(5), 0.5},
+					{execute.Time(0), execute.Time(5), 0.5},
 				},
 			}},
 		},
@@ -277,8 +262,6 @@ func TestCovariance_Process(t *testing.T) {
 				ValueLabel:         execute.DefaultValueColLabel,
 				PearsonCorrelation: true,
 				AggregateConfig: execute.AggregateConfig{
-					TimeSrc: execute.DefaultStopColLabel,
-					TimeDst: execute.DefaultTimeColLabel,
 					Columns: []string{"x", "y"},
 				},
 			},
@@ -304,11 +287,10 @@ func TestCovariance_Process(t *testing.T) {
 				ColMeta: []flux.ColMeta{
 					{Label: "_start", Type: flux.TTime},
 					{Label: "_stop", Type: flux.TTime},
-					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(0), execute.Time(5), execute.Time(5), 1.0},
+					{execute.Time(0), execute.Time(5), 1.0},
 				},
 			}},
 		},
@@ -318,8 +300,6 @@ func TestCovariance_Process(t *testing.T) {
 				ValueLabel:         execute.DefaultValueColLabel,
 				PearsonCorrelation: true,
 				AggregateConfig: execute.AggregateConfig{
-					TimeSrc: execute.DefaultStopColLabel,
-					TimeDst: execute.DefaultTimeColLabel,
 					Columns: []string{"x", "y"},
 				},
 			},
@@ -345,11 +325,10 @@ func TestCovariance_Process(t *testing.T) {
 				ColMeta: []flux.ColMeta{
 					{Label: "_start", Type: flux.TTime},
 					{Label: "_stop", Type: flux.TTime},
-					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(0), execute.Time(5), execute.Time(5), -1.0},
+					{execute.Time(0), execute.Time(5), -1.0},
 				},
 			}},
 		},
