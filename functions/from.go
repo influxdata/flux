@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/platform"
+	"github.com/influxdata/platform/query"
 	"github.com/pkg/errors"
 )
 
@@ -191,7 +192,11 @@ func createFromSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a execu
 	currentTime := w.Start + execute.Time(w.Period)
 
 	deps := a.Dependencies()[FromKind].(storage.Dependencies)
-	orgID := a.OrganizationID()
+	req := query.RequestFromContext(a.Context())
+	if req == nil {
+		return nil, errors.New("missing request on context")
+	}
+	orgID := req.OrganizationID
 
 	var bucketID platform.ID
 	// Determine bucketID

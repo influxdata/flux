@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/functions"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/platform"
+	pquerytest "github.com/influxdata/platform/query/querytest"
 )
 
 func TestFrom_NewQuery(t *testing.T) {
@@ -116,7 +117,7 @@ func TestFromOperation_Marshaling(t *testing.T) {
 func TestFromOpSpec_BucketsAccessed(t *testing.T) {
 	bucketName := "my_bucket"
 	bucketID, _ := platform.IDFromString("deadbeef")
-	tests := []querytest.NewQueryTestCase{
+	tests := []pquerytest.BucketAwareQueryTestCase{
 		{
 			Name:             "From with bucket",
 			Raw:              `from(bucket:"my_bucket")`,
@@ -134,7 +135,7 @@ func TestFromOpSpec_BucketsAccessed(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			querytest.NewQueryTestHelper(t, tc)
+			pquerytest.BucketAwareQueryTestHelper(t, tc)
 		})
 	}
 }

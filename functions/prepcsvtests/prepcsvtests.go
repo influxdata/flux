@@ -11,9 +11,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/csv"
+	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/querytest"
 	"golang.org/x/text/unicode/norm"
 )
@@ -68,20 +68,17 @@ func main() {
 			return
 		}
 
-		pqs := querytest.GetProxyQueryServiceBridge()
-		req := &flux.ProxyRequest{
-			Request: flux.Request{
-				Compiler: querytest.FromCSVCompiler{
-					Compiler: flux.FluxCompiler{
-						Query: string(querytext),
-					},
-					InputFile: incsv,
-				},
+		pqs := querytest.NewQuerier()
+		c := querytest.FromCSVCompiler{
+			Compiler: lang.FluxCompiler{
+				Query: string(querytext),
 			},
-			Dialect: csv.DefaultDialect(),
+			InputFile: incsv,
 		}
+		d := csv.DefaultDialect()
+
 		var buf bytes.Buffer
-		_, err = pqs.Query(context.Background(), &buf, req)
+		_, err = pqs.Query(context.Background(), &buf, c, d)
 		if err != nil {
 			fmt.Printf("error: %s", err)
 			return

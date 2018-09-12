@@ -9,14 +9,13 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/platform"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 type Executor interface {
-	Execute(ctx context.Context, orgID platform.ID, p *plan.PlanSpec, a *Allocator) (map[string]flux.Result, error)
+	Execute(ctx context.Context, p *plan.PlanSpec, a *Allocator) (map[string]flux.Result, error)
 }
 
 type executor struct {
@@ -53,8 +52,6 @@ type executionState struct {
 	p    *plan.PlanSpec
 	deps Dependencies
 
-	orgID platform.ID
-
 	alloc *Allocator
 
 	resources flux.ResourceManagement
@@ -68,8 +65,8 @@ type executionState struct {
 	logger     *zap.Logger
 }
 
-func (e *executor) Execute(ctx context.Context, orgID platform.ID, p *plan.PlanSpec, a *Allocator) (map[string]flux.Result, error) {
-	es, err := e.createExecutionState(ctx, orgID, p, a)
+func (e *executor) Execute(ctx context.Context, p *plan.PlanSpec, a *Allocator) (map[string]flux.Result, error) {
+	es, err := e.createExecutionState(ctx, p, a)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to initialize execute state")
 	}
@@ -85,14 +82,13 @@ func validatePlan(p *plan.PlanSpec) error {
 	return nil
 }
 
-func (e *executor) createExecutionState(ctx context.Context, orgID platform.ID, p *plan.PlanSpec, a *Allocator) (*executionState, error) {
+func (e *executor) createExecutionState(ctx context.Context, p *plan.PlanSpec, a *Allocator) (*executionState, error) {
 	if err := validatePlan(p); err != nil {
 		return nil, errors.Wrap(err, "invalid plan")
 	}
 	// Set allocation limit
 	a.Limit = p.Resources.MemoryBytesQuota
 	es := &executionState{
-		orgID:     orgID,
 		p:         p,
 		deps:      e.deps,
 		alloc:     a,
@@ -139,6 +135,7 @@ func (es *executionState) createNode(ctx context.Context, pr *plan.Procedure, no
 
 	// Build execution context
 	ec := executionContext{
+		ctx:           ctx,
 		es:            es,
 		streamContext: streamContext,
 	}
@@ -248,18 +245,18 @@ func (es *executionState) do(ctx context.Context) {
 
 // Need a unique stream context per execution context
 type executionContext struct {
+	ctx           context.Context
 	es            *executionState
 	parents       []DatasetID
 	streamContext streamContext
 }
 
-// Satisfy the ExecutionContext interface
-func (ec executionContext) OrganizationID() platform.ID {
-	return ec.es.orgID
-}
-
 func resolveTime(qt flux.Time, now time.Time) Time {
 	return Time(qt.Time(now).UnixNano())
+}
+
+func (ec executionContext) Context() context.Context {
+	return ec.ctx
 }
 
 func (ec executionContext) ResolveTime(qt flux.Time) Time {
