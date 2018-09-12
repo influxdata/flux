@@ -228,12 +228,21 @@ func createFromSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a execu
 		bucketID = spec.BucketID
 	}
 
+	encOrgID, err := orgID.Encode()
+	if err != nil {
+		return nil, err
+	}
+	encBucketID, err := bucketID.Encode()
+	if err != nil {
+		return nil, err
+	}
+
 	return storage.NewSource(
 		dsid,
 		deps.Reader,
 		storage.ReadSpec{
-			OrganizationID:  orgID,
-			BucketID:        bucketID,
+			OrganizationID:  encOrgID,
+			BucketID:        encBucketID,
 			Predicate:       spec.Filter,
 			PointsLimit:     spec.PointsLimit,
 			SeriesLimit:     spec.SeriesLimit,
