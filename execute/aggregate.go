@@ -189,29 +189,6 @@ func (t *aggregateTransformation) Finish(id DatasetID, err error) {
 	t.d.Finish(err)
 }
 
-func AppendAggregateTime(srcTime, dstTime string, key flux.GroupKey, builder TableBuilder) error {
-	srcTimeIdx := ColIdx(srcTime, key.Cols())
-	if srcTimeIdx < 0 {
-		return fmt.Errorf("timeSrc column %q does not exist", srcTime)
-	}
-	srcTimeCol := key.Cols()[srcTimeIdx]
-	if srcTimeCol.Type != flux.TTime {
-		return fmt.Errorf("timeSrc column %q does not have type time", srcTime)
-	}
-
-	dstTimeIdx := ColIdx(dstTime, builder.Cols())
-	if dstTimeIdx < 0 {
-		return fmt.Errorf("timeDst column %q does not exist", dstTime)
-	}
-	dstTimeCol := builder.Cols()[dstTimeIdx]
-	if dstTimeCol.Type != flux.TTime {
-		return fmt.Errorf("timeDst column %q does not have type time", dstTime)
-	}
-
-	builder.AppendTime(dstTimeIdx, key.ValueTime(srcTimeIdx))
-	return nil
-}
-
 type Aggregate interface {
 	NewBoolAgg() DoBoolAgg
 	NewIntAgg() DoIntAgg
