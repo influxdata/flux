@@ -23,11 +23,6 @@ export GO_TEST=env GO111MODULE=on go test $(GO_ARGS)
 export GO_GENERATE=go generate $(GO_ARGS)
 export GO_VET=env GO111MODULE=on go vet $(GO_ARGS)
 
-subdirs: $(SUBDIRS)
-
-$(SUBDIRS):
-	$(MAKE) -C $@ $(MAKECMDGOALS)
-
 # List of utilities to build as part of the build process
 UTILS := \
 	bin/$(GOOS)/pigeon \
@@ -35,13 +30,33 @@ UTILS := \
 
 all: $(UTILS) $(SUBDIRS)
 
+$(SUBDIRS): $(UTILS)
+	$(MAKE) -C $@ $(MAKECMDGOALS)
+
 clean: $(SUBDIRS)
+	rm -rf bin
 
 bin/$(GOOS)/pigeon: go.mod go.sum
 	$(GO_BUILD) -o $@ github.com/mna/pigeon
 
 bin/$(GOOS)/cmpgen: ./ast/asttest/cmpgen/main.go
-	go build -i -o $@ ./ast/asttest/cmpgen
+	$(GO_BUILD) -o $@ ./ast/asttest/cmpgen
 
-.PHONY: all clean subdirs $(SUBDIRS)
+fmt: $(SOURCES_NO_VENDOR)
+	goimports -w $^
+
+test:
+	$(GO_TEST) ./...
+
+test-race:
+	$(GO_TEST) -race -count=1 ./...
+
+vet:
+	$(GO_VET) -v ./...
+
+bench:
+	$(GO_TEST) -bench=. -run=^$$ ./...
+
+
+.PHONY: all clean fmt test test-race vet bench $(SUBDIRS)
 

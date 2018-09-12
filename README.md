@@ -1,5 +1,7 @@
 # Flux - Influx data language
 
+[![CircleCI](https://circleci.com/gh/influxdata/flux/tree/master.svg?style=svg)](https://circleci.com/gh/influxdata/flux/tree/master)
+
 `fluxd` is an HTTP server for running **Flux** queries to one or more InfluxDB
 servers.
 
