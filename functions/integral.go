@@ -14,8 +14,7 @@ const IntegralKind = "integral"
 
 type IntegralOpSpec struct {
 	Unit flux.Duration `json:"unit"`
-	TimeSrc string   `json:"timeSrc"`
-	TimeDst string   `json:"timeDst"`
+	TimeCol string   `json:"timeCol"`
 	execute.AggregateConfig
 }
 
@@ -23,6 +22,7 @@ var integralSignature = execute.DefaultAggregateSignature()
 
 func init() {
 	integralSignature.Params["unit"] = semantic.Duration
+	integralSignature.Params["timeCol"] = semantic.String
 
 	flux.RegisterFunction(IntegralKind, createIntegralOpSpec, integralSignature)
 	flux.RegisterOpSpec(IntegralKind, newIntegralOp)
@@ -46,20 +46,13 @@ func createIntegralOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 		spec.Unit = flux.Duration(time.Second)
 	}
 
-	if label, ok, err := args.GetString("timeDst"); err != nil {
-		return nil, err
-	} else if ok {
-		spec.TimeDst = label
-	} else {
-		spec.TimeDst = execute.DefaultTimeColLabel
-	}
 
-	if timeValue, ok, err := args.GetString("timeSrc"); err != nil {
+	if timeValue, ok, err := args.GetString("timeCol"); err != nil {
 		return nil, err
 	} else if ok {
-		spec.TimeSrc = timeValue
+		spec.TimeCol = timeValue
 	} else {
-		spec.TimeSrc = execute.DefaultStopColLabel
+		spec.TimeCol = execute.DefaultTimeColLabel
 	}
 
 	if err := spec.AggregateConfig.ReadArgs(args); err != nil {
@@ -78,8 +71,7 @@ func (s *IntegralOpSpec) Kind() flux.OperationKind {
 
 type IntegralProcedureSpec struct {
 	Unit flux.Duration `json:"unit"`
-	TimeSrc string   `json:"timeSrc"`
-	TimeDst string   `json:"timeDst"`
+	TimeCol string   `json:"timeCol"`
 	execute.AggregateConfig
 }
 
@@ -91,8 +83,7 @@ func newIntegralProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.P
 
 	return &IntegralProcedureSpec{
 		Unit:            spec.Unit,
-		TimeSrc:         spec.TimeSrc,
-		TimeDst:         spec.TimeDst,
+		TimeCol:         spec.TimeCol,
 		AggregateConfig: spec.AggregateConfig,
 	}, nil
 }
@@ -146,10 +137,7 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 	}
 
 	execute.AddTableKeyCols(tbl.Key(), builder)
-	builder.AddCol(flux.ColMeta{
-		Label: t.spec.TimeDst,
-		Type:  flux.TTime,
-	})
+
 	cols := tbl.Cols()
 	integrals := make([]*integral, len(cols))
 	colMap := make([]int, len(cols))
@@ -163,13 +151,9 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 		}
 	}
 
-	if err := execute.AppendAggregateTime(t.spec.TimeSrc, t.spec.TimeDst, tbl.Key(), builder); err != nil {
-		return err
-	}
-
-	timeIdx := execute.ColIdx(t.spec.TimeDst, cols)
+	timeIdx := execute.ColIdx(t.spec.TimeCol, cols)
 	if timeIdx < 0 {
-		return fmt.Errorf("no column %q exists", t.spec.TimeSrc)
+		return fmt.Errorf("no column %q exists", t.spec.TimeCol)
 	}
 	err := tbl.Do(func(cr flux.ColReader) error {
 		for j, in := range integrals {
