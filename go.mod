@@ -21,7 +21,7 @@ require (
 	github.com/google/go-cmp v0.2.0
 	github.com/influxdata/influxql v0.0.0-20180823200743-a7267bff5327 // indirect
 	github.com/influxdata/line-protocol v0.0.0-20180522152040-32c6aa80de5e // indirect
-	github.com/influxdata/platform v0.0.0-20180911232614-de9ab156a890
+	github.com/influxdata/platform v0.0.0-20180912163125-1786402d48c7
 	github.com/influxdata/tdigest v0.0.0-20180711151920-a7d76c6f093a
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mattn/go-colorable v0.0.9 // indirect
