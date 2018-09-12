@@ -5,7 +5,6 @@ import (
 
 	"github.com/influxdata/flux"
 
-
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/pkg/errors"
@@ -13,9 +12,8 @@ import (
 
 const FromKind = "from"
 
-
 type FromOpSpec struct {
-	Bucket   string      `json:"bucket,omitempty"`
+	Bucket   string `json:"bucket,omitempty"`
 	BucketID string `json:"bucketID,omitempty"`
 }
 
@@ -48,10 +46,10 @@ func createFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		spec.BucketID = bucketID
 	}
 
-	if spec.Bucket == "" && spec.BucketID == "" {
+	if spec.Bucket == "" && !spec.BucketID.Valid() {
 		return nil, errors.New("must specify one of bucket or bucketID")
 	}
-	if spec.Bucket != "" && spec.BucketID != "" {
+	if spec.Bucket != "" && spec.BucketID.Valid() {
 		return nil, errors.New("must specify only one of bucket or bucketID")
 	}
 	return spec, nil
@@ -117,7 +115,9 @@ func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(FromProcedureSpec)
 
 	ns.Bucket = s.Bucket
-	ns.BucketID = s.BucketID
+	if s.BucketID.Valid() {
+		ns.BucketID = s.BucketID
+	}
 
 	ns.BoundsSet = s.BoundsSet
 	ns.Bounds = s.Bounds
