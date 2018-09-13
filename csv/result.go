@@ -34,6 +34,7 @@ const (
 
 	resultLabel = "result"
 	tableLabel  = "table"
+	errorLabel  = "error"
 
 	commentPrefix = "#"
 
@@ -72,7 +73,7 @@ type ResultDecoderConfig struct {
 }
 
 func (d *ResultDecoder) Decode(r io.Reader) (flux.Result, error) {
-	return newResultDecoder(r, d.c, nil)
+	return newResultDecoder(newCSVReader(r), d.c, nil)
 }
 
 // MultiResultDecoder reads multiple results from a single csv file.
@@ -94,8 +95,9 @@ func NewMultiResultDecoder(c ResultDecoderConfig) *MultiResultDecoder {
 
 func (d *MultiResultDecoder) Decode(r io.ReadCloser) (flux.ResultIterator, error) {
 	return &resultIterator{
-		c: d.c,
-		r: r,
+		c:  d.c,
+		r:  r,
+		cr: newCSVReader(r),
 	}, nil
 }
 
@@ -103,6 +105,7 @@ func (d *MultiResultDecoder) Decode(r io.ReadCloser) (flux.ResultIterator, error
 type resultIterator struct {
 	c    ResultDecoderConfig
 	r    io.ReadCloser
+	cr   *csv.Reader
 	next *resultDecoder
 	err  error
 
@@ -115,7 +118,7 @@ func (r *resultIterator) More() bool {
 		if r.next != nil {
 			extraMeta = r.next.extraMeta
 		}
-		r.next, r.err = newResultDecoder(r.r, r.c, extraMeta)
+		r.next, r.err = newResultDecoder(r.cr, r.c, extraMeta)
 		if r.err == nil {
 			return true
 		}
@@ -151,7 +154,6 @@ func (r *resultIterator) Err() error {
 
 type resultDecoder struct {
 	id string
-	r  io.Reader
 	c  ResultDecoderConfig
 
 	cr *csv.Reader
@@ -161,11 +163,10 @@ type resultDecoder struct {
 	eof bool
 }
 
-func newResultDecoder(r io.Reader, c ResultDecoderConfig, extraMeta *tableMetadata) (*resultDecoder, error) {
+func newResultDecoder(cr *csv.Reader, c ResultDecoderConfig, extraMeta *tableMetadata) (*resultDecoder, error) {
 	d := &resultDecoder{
-		r:         r,
 		c:         c,
-		cr:        newCSVReader(r),
+		cr:        cr,
 		extraMeta: extraMeta,
 	}
 	// We need to know the result ID before we return
@@ -339,6 +340,21 @@ func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tab
 		if n != len(line) {
 			return tableMetadata{}, errors.Wrap(csv.ErrFieldCount, "failed to read header row")
 		}
+
+		if len(line) > 1 && line[1] == "error" {
+			// Read the first row and return the error.
+			line, err := r.Read()
+			if err != nil || n != len(line) {
+				if err == io.EOF {
+					err = io.ErrUnexpectedEOF
+				} else if err == nil && n != len(line) {
+					err = csv.ErrFieldCount
+				}
+				return tableMetadata{}, errors.Wrap(err, "failed to read error value")
+			}
+			return tableMetadata{}, errors.New(line[1])
+		}
+
 		labels = line[recordStartIdx:]
 	}
 
@@ -812,9 +828,19 @@ func (e *ResultEncoder) EncodeError(w io.Writer, err error) error {
 		writer.Write(nil)
 	}
 
-	writer.Write([]string{"error", "reference"})
+	for _, anno := range e.c.Annotations {
+		switch anno {
+		case datatypeAnnotation:
+			writer.Write([]string{commentPrefix + datatypeAnnotation, "string", "string"})
+		case groupAnnotation:
+			writer.Write([]string{commentPrefix + groupAnnotation, "true", "true"})
+		case defaultAnnotation:
+			writer.Write([]string{commentPrefix + defaultAnnotation, "", ""})
+		}
+	}
+	writer.Write([]string{"", "error", "reference"})
 	// TODO: Add referenced code
-	writer.Write([]string{err.Error(), ""})
+	writer.Write([]string{"", err.Error(), ""})
 	writer.Flush()
 	return writer.Error()
 }
