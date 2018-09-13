@@ -1908,7 +1908,9 @@ KeyValues has the following properties:
    A list of columns from which values are extracted
 *  `fn` a predicate function that may by used instead of `keyCols` to identify the set of columns.  
 
-Only one of `keyCols` or `fn` may be used in a single call.  
+Additional requirements: 
+*  Only one of `keyCols` or `fn` may be used in a single call.  
+*  All columns indicated must be of the same type. 
 
 ```
 from(bucket: "telegraf/autogen")

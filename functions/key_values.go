@@ -137,7 +137,142 @@ func (t *keyValuesTransformation) RetractTable(id execute.DatasetID, key flux.Gr
 }
 
 func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	return nil
+	builder, created := t.cache.TableBuilder(tbl.Key())
+	if !created {
+		return fmt.Errorf("distinct found duplicate table with key: %v", tbl.Key())
+	}
+
+	// TODO: use predicate to populate t.spec.keyCols
+
+
+	// we'll ignore keyCol values that just don't exist in the table.
+	cols := tbl.Cols()
+	i := 0
+	keyColIndex := -1
+	for keyColIndex < 0 {
+		keyColIndex = execute.ColIdx(t.spec.KeyCols[i], cols)
+		i++
+	}
+	if keyColIndex < 1 {
+		return errors.New("no columns matched by function parameter")
+	}
+
+
+	keyColIndices :=  make([]int, len(t.spec.KeyCols))
+	keyColIndices[i-1] = keyColIndex
+	keyColType := cols[keyColIndex].Type
+	for j, v := range t.spec.KeyCols[i:] {
+		keyColIndex = execute.ColIdx(v, cols)
+		keyColIndices[i+j] = keyColIndex
+		if keyColIndex < 0 {
+			continue
+		}
+		if cols[keyColIndex].Type != keyColType {
+			return errors.New("keyCols must all be the same type")
+		}
+	}
+
+
+
+	execute.AddTableKeyCols(tbl.Key(), builder)
+	keyColIdx := builder.AddCol(flux.ColMeta{
+		Label: "_key",
+		Type: flux.TString,
+	})
+	valueColIdx := builder.AddCol(flux.ColMeta{
+		Label: execute.DefaultValueColLabel,
+		Type:  keyColType,
+	})
+
+
+	var (
+		boolDistinct   map[bool]bool
+		intDistinct    map[int64]bool
+		uintDistinct   map[uint64]bool
+		floatDistinct  map[float64]bool
+		stringDistinct map[string]bool
+		timeDistinct   map[execute.Time]bool
+	)
+	switch keyColType {
+	case flux.TBool:
+		boolDistinct = make(map[bool]bool)
+	case flux.TInt:
+		intDistinct = make(map[int64]bool)
+	case flux.TUInt:
+		uintDistinct = make(map[uint64]bool)
+	case flux.TFloat:
+		floatDistinct = make(map[float64]bool)
+	case flux.TString:
+		stringDistinct = make(map[string]bool)
+	case flux.TTime:
+		timeDistinct = make(map[execute.Time]bool)
+	}
+
+
+
+	return tbl.Do(func(cr flux.ColReader) error {
+		l := cr.Len()
+		for i := 0; i < l; i++ {
+			// Check distinct
+			for j, rowIdx := range keyColIndices {
+				if rowIdx < 0 {
+					continue
+				}
+				switch keyColType {
+				case flux.TBool:
+					v := cr.Bools(rowIdx)[i]
+					if boolDistinct[v] {
+						continue
+					}
+					boolDistinct[v] = true
+					builder.AppendString(keyColIdx, t.spec.KeyCols[j])
+					builder.AppendBool(valueColIdx, v)
+				case flux.TInt:
+					v := cr.Ints(rowIdx)[i]
+					if intDistinct[v] {
+						continue
+					}
+					intDistinct[v] = true
+					builder.AppendString(keyColIdx, t.spec.KeyCols[j])
+					builder.AppendInt(valueColIdx, v)
+				case flux.TUInt:
+					v := cr.UInts(rowIdx)[i]
+					if uintDistinct[v] {
+						continue
+					}
+					uintDistinct[v] = true
+					builder.AppendString(keyColIdx, t.spec.KeyCols[j])
+					builder.AppendUInt(valueColIdx, v)
+				case flux.TFloat:
+					v := cr.Floats(rowIdx)[i]
+					if floatDistinct[v] {
+						continue
+					}
+					floatDistinct[v] = true
+					builder.AppendString(keyColIdx, t.spec.KeyCols[j])
+					builder.AppendFloat(valueColIdx, v)
+				case flux.TString:
+					v := cr.Strings(rowIdx)[i]
+					if stringDistinct[v] {
+						continue
+					}
+					stringDistinct[v] = true
+					builder.AppendString(keyColIdx, t.spec.KeyCols[j])
+					builder.AppendString(valueColIdx, v)
+				case flux.TTime:
+					v := cr.Times(rowIdx)[i]
+					if timeDistinct[v] {
+						continue
+					}
+					timeDistinct[v] = true
+					builder.AppendString(keyColIdx, t.spec.KeyCols[j])
+					builder.AppendTime(valueColIdx, v)
+				}
+				execute.AppendKeyValues(tbl.Key(), builder)
+			}
+		}
+		return nil
+	})
 }
 
 func (t *keyValuesTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
