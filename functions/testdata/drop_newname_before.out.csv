@@ -1,2 +1,5 @@
-error,reference
-"drop error: column ""new"" doesn't exist",
+#datatype,string,string
+#group,true,true
+#default,,
+,error,reference
+,"drop error: column ""new"" doesn't exist",
