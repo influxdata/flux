@@ -1884,6 +1884,45 @@ from(bucket: "telegraf/autogen")
 ```
 All records are grouped by the set of all columns in the table, excluding "_time". For example, if the table has columns ["_time", "host", "_measurement", "_field", "_value"] then the group key would be ["host", "_measurement", "_field", "_value"]
 
+#### Keys
+
+Keys outputs a table with the input table's group key columns, plus a `_value` column containing the names of the input table's columns.  
+
+Keys has the following property: 
+*  `except` list of strings
+   Do not include the given names in the output.  Defaults to `["_time", "_value"]`
+   
+```
+from(bucket: "telegraf/autogen")
+    |> range(start: -30m)
+    |> keys(except: ["_time", "_start", "_stop", "_field", "_measurement", "_value"])
+```
+
+#### KeyValues
+
+KeyValues outputs a table with the input table's group key, plus two columns  `_key` and `_value` that correspond to unique
+(column, value) pairs from the input table.  
+
+KeyValues has the following properties: 
+*  `keyCols` list of strings
+   A list of columns from which values are extracted
+*  `fn` a predicate function that may by used instead of `keyCols` to identify the set of columns.  
+
+Only one of `keyCols` or `fn` may be used in a single call.  
+
+```
+from(bucket: "telegraf/autogen")
+    |> range(start: -30m)
+    |> filter(fn: (r) => r._measurement == "cpu")
+    |> keyValues(keyCols: ["usage_idle", "usage_user"])
+```
+
+```
+from(bucket: "telegraf/autogen")
+    |> range(start: -30m)
+    |> filter(fn: (r) => r._measurement == "cpu")
+    |> keyValues(fn: (col) => col =~ /usage_.*/)
+```
 
 #### Window
 
