@@ -674,8 +674,11 @@ func TestMultiResultEncoder(t *testing.T) {
 			results: errorResultIterator{
 				Error: errors.New("test error"),
 			},
-			encoded: toCRLF(`error,reference
-test error,
+			encoded: toCRLF(`#datatype,string,string
+#group,true,true
+#default,,
+,error,reference
+,test error,
 `),
 		},
 		{
@@ -686,8 +689,11 @@ test error,
 					Err: errors.New("execution error"),
 				},
 			}),
-			encoded: toCRLF(`error,reference
-execution error,
+			encoded: toCRLF(`#datatype,string,string
+#group,true,true
+#default,,
+,error,reference
+,execution error,
 `),
 		},
 		{
