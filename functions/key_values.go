@@ -142,19 +142,19 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 		return fmt.Errorf("distinct found duplicate table with key: %v", tbl.Key())
 	}
 
-	// TODO: use predicate to populate t.spec.keyCols
+	// TODO: use fn to populate t.spec.keyCols
 
 
 	// we'll ignore keyCol values that just don't exist in the table.
 	cols := tbl.Cols()
 	i := 0
 	keyColIndex := -1
-	for keyColIndex < 0 {
+	for keyColIndex < 0 && i < len(cols) {
 		keyColIndex = execute.ColIdx(t.spec.KeyCols[i], cols)
 		i++
 	}
 	if keyColIndex < 1 {
-		return errors.New("no columns matched by function parameter")
+		return errors.New("no columns matched by keyCols parameter")
 	}
 
 
