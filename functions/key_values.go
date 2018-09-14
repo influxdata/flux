@@ -12,10 +12,6 @@ import (
 
 const KeyValuesKind = "keyValues"
 
-var (
-	keyValuesExceptDefaultValue = []string{"_time", "_value"}
-)
-
 type KeyValuesOpSpec struct {
 	KeyCols     []string                     `json:"keyCols"`
 	PredicateFn *semantic.FunctionExpression `json:"fn"`
@@ -101,9 +97,9 @@ func (s *KeyValuesProcedureSpec) Kind() plan.ProcedureKind {
 
 func (s *KeyValuesProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(KeyValuesProcedureSpec)
-
-	*ns = *s
-
+	ns.KeyCols = make([]string, len(s.KeyCols))
+	copy(ns.KeyCols, s.KeyCols)
+	ns.Predicate = s.Predicate.Copy().(*semantic.FunctionExpression)
 	return ns
 }
 
@@ -149,7 +145,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 	cols := tbl.Cols()
 	i := 0
 	keyColIndex := -1
-	for keyColIndex < 0 && i < len(cols) {
+	for keyColIndex < 0 && i < len(t.spec.KeyCols) {
 		keyColIndex = execute.ColIdx(t.spec.KeyCols[i], cols)
 		i++
 	}

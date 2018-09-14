@@ -1,6 +1,7 @@
 package functions_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/influxdata/flux"
@@ -15,6 +16,7 @@ func TestKeyValues_Process(t *testing.T) {
 		spec *functions.KeyValuesProcedureSpec
 		data []flux.Table
 		want []*executetest.Table
+		wantErr error
 	}{
 		{
 			name: "no group key",
@@ -242,6 +244,29 @@ func TestKeyValues_Process(t *testing.T) {
 				},
 			}},
 		},
+		{
+			name: "no matching columns",
+			spec: &functions.KeyValuesProcedureSpec{KeyCols: []string{"tagX", "tagY"}},
+			data: []flux.Table{
+				&executetest.Table{
+					KeyCols: []string{"tag0"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0, "a", "b"},
+						{execute.Time(2), 2.0, "a", "c"},
+						{execute.Time(3), 2.0, "a", "b"},
+						{execute.Time(4), 2.0, "a", "d"},
+					},
+				},
+			},
+
+			wantErr: errors.New("no columns matched by keyCols parameter"),
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
@@ -250,7 +275,7 @@ func TestKeyValues_Process(t *testing.T) {
 				t,
 				tc.data,
 				tc.want,
-				nil,
+				tc.wantErr,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
 					return functions.NewKeyValuesTransformation(d, c, tc.spec)
 				},
