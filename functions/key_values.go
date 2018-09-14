@@ -106,8 +106,8 @@ func (s *KeyValuesProcedureSpec) Copy() plan.ProcedureSpec {
 type keyValuesTransformation struct {
 	d     execute.Dataset
 	cache execute.TableBuilderCache
-
 	spec *KeyValuesProcedureSpec
+	distinct bool
 }
 func createKeyValuesTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*KeyValuesProcedureSpec)
@@ -125,6 +125,7 @@ func NewKeyValuesTransformation(d execute.Dataset, cache execute.TableBuilderCac
 		d:      d,
 		cache:  cache,
 		spec: spec,
+		distinct: false,
 	}
 }
 
@@ -189,22 +190,23 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 		stringDistinct map[string]bool
 		timeDistinct   map[execute.Time]bool
 	)
-	switch keyColType {
-	case flux.TBool:
-		boolDistinct = make(map[bool]bool)
-	case flux.TInt:
-		intDistinct = make(map[int64]bool)
-	case flux.TUInt:
-		uintDistinct = make(map[uint64]bool)
-	case flux.TFloat:
-		floatDistinct = make(map[float64]bool)
-	case flux.TString:
-		stringDistinct = make(map[string]bool)
-	case flux.TTime:
-		timeDistinct = make(map[execute.Time]bool)
+
+	if t.distinct{
+		switch keyColType {
+		case flux.TBool:
+			boolDistinct = make(map[bool]bool)
+		case flux.TInt:
+			intDistinct = make(map[int64]bool)
+		case flux.TUInt:
+			uintDistinct = make(map[uint64]bool)
+		case flux.TFloat:
+			floatDistinct = make(map[float64]bool)
+		case flux.TString:
+			stringDistinct = make(map[string]bool)
+		case flux.TTime:
+			timeDistinct = make(map[execute.Time]bool)
+		}
 	}
-
-
 
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
@@ -217,50 +219,62 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 				switch keyColType {
 				case flux.TBool:
 					v := cr.Bools(rowIdx)[i]
-					if boolDistinct[v] {
-						continue
+					if t.distinct {
+						if boolDistinct[v] {
+							continue
+						}
+						boolDistinct[v] = true
 					}
-					boolDistinct[v] = true
 					builder.AppendString(keyColIdx, t.spec.KeyCols[j])
 					builder.AppendBool(valueColIdx, v)
 				case flux.TInt:
 					v := cr.Ints(rowIdx)[i]
-					if intDistinct[v] {
-						continue
+					if t.distinct {
+						if intDistinct[v] {
+							continue
+						}
+						intDistinct[v] = true
 					}
-					intDistinct[v] = true
 					builder.AppendString(keyColIdx, t.spec.KeyCols[j])
 					builder.AppendInt(valueColIdx, v)
 				case flux.TUInt:
 					v := cr.UInts(rowIdx)[i]
-					if uintDistinct[v] {
-						continue
+					if t.distinct {
+						if uintDistinct[v] {
+							continue
+						}
+						uintDistinct[v] = true
 					}
-					uintDistinct[v] = true
 					builder.AppendString(keyColIdx, t.spec.KeyCols[j])
 					builder.AppendUInt(valueColIdx, v)
 				case flux.TFloat:
 					v := cr.Floats(rowIdx)[i]
-					if floatDistinct[v] {
-						continue
+					if t.distinct {
+						if floatDistinct[v] {
+							continue
+						}
+						floatDistinct[v] = true
 					}
-					floatDistinct[v] = true
 					builder.AppendString(keyColIdx, t.spec.KeyCols[j])
 					builder.AppendFloat(valueColIdx, v)
 				case flux.TString:
 					v := cr.Strings(rowIdx)[i]
-					if stringDistinct[v] {
-						continue
+					if t.distinct {
+						if stringDistinct[v] {
+							continue
+						}
+						stringDistinct[v] = true
 					}
-					stringDistinct[v] = true
 					builder.AppendString(keyColIdx, t.spec.KeyCols[j])
 					builder.AppendString(valueColIdx, v)
 				case flux.TTime:
 					v := cr.Times(rowIdx)[i]
-					if timeDistinct[v] {
-						continue
+					if t.distinct {
+						if timeDistinct[v] {
+							continue
+						}
+						timeDistinct[v] = true
 					}
-					timeDistinct[v] = true
 					builder.AppendString(keyColIdx, t.spec.KeyCols[j])
 					builder.AppendTime(valueColIdx, v)
 				}
