@@ -264,7 +264,6 @@ func TestKeyValues_Process(t *testing.T) {
 					},
 				},
 			},
-
 			wantErr: errors.New("no columns matched by keyCols parameter"),
 		},
 	}

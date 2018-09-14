@@ -125,7 +125,7 @@ func NewKeyValuesTransformation(d execute.Dataset, cache execute.TableBuilderCac
 		d:      d,
 		cache:  cache,
 		spec: spec,
-		distinct: false,
+		distinct: true,
 	}
 }
 
