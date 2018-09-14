@@ -1906,7 +1906,7 @@ KeyValues outputs a table with the input table's group key, plus two columns  `_
 KeyValues has the following properties: 
 *  `keyCols` list of strings
    A list of columns from which values are extracted
-*  `fn` a predicate function that may by used instead of `keyCols` to identify the set of columns.  
+*  `fn` schema function that may by used instead of `keyCols` to identify the set of columns.  
 
 Additional requirements: 
 *  Only one of `keyCols` or `fn` may be used in a single call.  
@@ -1923,8 +1923,18 @@ from(bucket: "telegraf/autogen")
 from(bucket: "telegraf/autogen")
     |> range(start: -30m)
     |> filter(fn: (r) => r._measurement == "cpu")
-    |> keyValues(fn: (col) => col =~ /usage_.*/)
+    |> keyValues(fn: (schema) => schema.columns |> filter(fn:(v) =>  v.label =~ /usage_.*/))
 ```
+
+```
+filterCols = (fn) => (schema) => schema.columns |> filter(fn:(v) => fn(col:v))
+
+from(bucket: "telegraf/autogen")
+    |> range(start: -30m)
+    |> filter(fn: (r) => r._measurement == "cpu")
+    |> keyValues(fn: filterCols(fn: (col) => col.label =~ /usage_.*/))
+```
+
 
 #### Window
 
