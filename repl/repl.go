@@ -35,7 +35,7 @@ type REPL struct {
 }
 
 type Querier interface {
-	Query(ctx context.Context, compiler flux.Compiler) (flux.Query, error)
+	Query(ctx context.Context, compiler flux.Compiler) (flux.ResultIterator, error)
 }
 
 func addBuiltIn(script string, itrp *interpreter.Interpreter, declarations semantic.DeclarationScope) error {
@@ -205,28 +205,16 @@ func (r *REPL) doQuery(spec *flux.Spec) error {
 		Spec: spec,
 	}
 
-	q, err := r.querier.Query(ctx, compiler)
+	results, err := r.querier.Query(ctx, compiler)
 	if err != nil {
 		return err
 	}
-	defer q.Done()
+	defer results.Cancel()
 
-	results, ok := <-q.Ready()
-	if !ok {
-		err := q.Err()
-		return err
-	}
-
-	names := make([]string, 0, len(results))
-	for name := range results {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-
-	for _, name := range names {
-		r := results[name]
-		tables := r.Tables()
-		fmt.Println("Result:", name)
+	for results.More() {
+		result := results.Next()
+		tables := result.Tables()
+		fmt.Println("Result:", result.Name())
 		err := tables.Do(func(tbl flux.Table) error {
 			_, err := execute.NewFormatter(tbl, nil).WriteTo(os.Stdout)
 			return err
@@ -235,7 +223,7 @@ func (r *REPL) doQuery(spec *flux.Spec) error {
 			return err
 		}
 	}
-	return nil
+	return results.Err()
 }
 
 func getFluxFiles(path string) ([]string, error) {
