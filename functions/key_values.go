@@ -191,6 +191,8 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 		timeDistinct   map[execute.Time]bool
 	)
 
+
+	// TODO(adam): implement planner logic that will push down a matching call to distinct() into this call, setting t.distinct to true
 	if t.distinct{
 		switch keyColType {
 		case flux.TBool:
