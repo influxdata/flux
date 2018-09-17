@@ -11,7 +11,3 @@ right = from(bucket: "test")
     |> group(by: ["_measurement"])
 
 join(tables: {left:left, right:right}, on: ["_time", "_measurement"])
-    |> rename(columns: {
-        left__value: "left_value",
-        right__value: "right_value"
-        })

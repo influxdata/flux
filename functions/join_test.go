@@ -232,8 +232,8 @@ func TestMergeJoin_Process(t *testing.T) {
 				{
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "b__value", Type: flux.TFloat},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 1.0, 10.0},
@@ -279,8 +279,8 @@ func TestMergeJoin_Process(t *testing.T) {
 				{
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TInt},
-						{Label: "b__value", Type: flux.TInt},
+						{Label: "_value_a", Type: flux.TInt},
+						{Label: "_value_b", Type: flux.TInt},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), int64(1), int64(10)},
@@ -326,8 +326,8 @@ func TestMergeJoin_Process(t *testing.T) {
 				{
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "b__value", Type: flux.TFloat},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 2.0, 20.0},
@@ -372,8 +372,8 @@ func TestMergeJoin_Process(t *testing.T) {
 				{
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "b__value", Type: flux.TFloat},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 1.0, 10.0},
@@ -420,8 +420,8 @@ func TestMergeJoin_Process(t *testing.T) {
 				{
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "b__value", Type: flux.TFloat},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 1.0, 10.0},
@@ -474,8 +474,8 @@ func TestMergeJoin_Process(t *testing.T) {
 					KeyCols: []string{"t1"},
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "b__value", Type: flux.TFloat},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
 						{Label: "t1", Type: flux.TString},
 					},
 					Data: [][]interface{}{
@@ -530,8 +530,8 @@ func TestMergeJoin_Process(t *testing.T) {
 				{
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "b__value", Type: flux.TFloat},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
 						{Label: "t1", Type: flux.TString},
 					},
 					Data: [][]interface{}{
@@ -594,8 +594,8 @@ func TestMergeJoin_Process(t *testing.T) {
 					KeyCols: []string{"t1"},
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "b__value", Type: flux.TFloat},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
 						{Label: "t1", Type: flux.TString},
 						{Label: "t2", Type: flux.TString},
 					},
@@ -657,8 +657,8 @@ func TestMergeJoin_Process(t *testing.T) {
 					KeyCols: []string{"t1"},
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "b__value", Type: flux.TFloat},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
 						{Label: "t1", Type: flux.TString},
 						{Label: "t2", Type: flux.TString},
 					},
@@ -745,33 +745,33 @@ func TestMergeJoin_Process(t *testing.T) {
 			},
 			want: []*executetest.Table{
 				{
-					KeyCols: []string{"a__value", "b__value"},
+					KeyCols: []string{"_value_a", "_value_b"},
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "b__value", Type: flux.TFloat},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(1), 1.0, 1.0},
 					},
 				},
 				{
-					KeyCols: []string{"a__value", "b__value"},
+					KeyCols: []string{"_value_a", "_value_b"},
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "b__value", Type: flux.TFloat},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(2), 2.0, 2.0},
 					},
 				},
 				{
-					KeyCols: []string{"a__value", "b__value"},
+					KeyCols: []string{"_value_a", "_value_b"},
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "b__value", Type: flux.TFloat},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
 						{execute.Time(3), 3.0, 3.0},
@@ -856,25 +856,25 @@ func TestMergeJoin_Process(t *testing.T) {
 			},
 			want: []*executetest.Table{
 				{
-					KeyCols: []string{"a__key", "b__key"},
+					KeyCols: []string{"_key_a", "_key_b"},
 					ColMeta: []flux.ColMeta{
+						{Label: "_key_a", Type: flux.TString},
+						{Label: "_key_b", Type: flux.TString},
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__key", Type: flux.TString},
-						{Label: "b__key", Type: flux.TString},
 					},
 					Data: [][]interface{}{
-						{execute.Time(1), "a", "c"},
+						{"a", "c", execute.Time(1)},
 					},
 				},
 				{
-					KeyCols: []string{"a__key", "b__key"},
+					KeyCols: []string{"_key_a", "_key_b"},
 					ColMeta: []flux.ColMeta{
+						{Label: "_key_a", Type: flux.TString},
+						{Label: "_key_b", Type: flux.TString},
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__key", Type: flux.TString},
-						{Label: "b__key", Type: flux.TString},
 					},
 					Data: [][]interface{}{
-						{execute.Time(5), "c", "b"},
+						{"c", "b", execute.Time(5)},
 					},
 				},
 			},
@@ -936,35 +936,35 @@ func TestMergeJoin_Process(t *testing.T) {
 			},
 			want: []*executetest.Table{
 				{
-					KeyCols: []string{"a_t1", "b_t1", "t2"},
+					KeyCols: []string{"t1_a", "t1_b", "t2"},
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "a_t1", Type: flux.TString},
-						{Label: "b__value", Type: flux.TFloat},
-						{Label: "b_t1", Type: flux.TString},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
+						{Label: "t1_a", Type: flux.TString},
+						{Label: "t1_b", Type: flux.TString},
 						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
-						{execute.Time(1), 1.0, "a", 10.0, "a", "x"},
-						{execute.Time(2), 2.0, "a", 20.0, "a", "x"},
-						{execute.Time(3), 3.0, "a", 30.0, "a", "x"},
+						{execute.Time(1), 1.0, 10.0, "a", "a", "x"},
+						{execute.Time(2), 2.0, 20.0, "a", "a", "x"},
+						{execute.Time(3), 3.0, 30.0, "a", "a", "x"},
 					},
 				},
 				{
-					KeyCols: []string{"a_t1", "b_t1", "t2"},
+					KeyCols: []string{"t1_a", "t1_b", "t2"},
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "a_t1", Type: flux.TString},
-						{Label: "b__value", Type: flux.TFloat},
-						{Label: "b_t1", Type: flux.TString},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
+						{Label: "t1_a", Type: flux.TString},
+						{Label: "t1_b", Type: flux.TString},
 						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
-						{execute.Time(1), 1.5, "a", 10.1, "a", "y"},
-						{execute.Time(2), 2.5, "a", 20.1, "a", "y"},
-						{execute.Time(3), 3.5, "a", 30.1, "a", "y"},
+						{execute.Time(1), 1.5, 10.1, "a", "a", "y"},
+						{execute.Time(2), 2.5, 20.1, "a", "a", "y"},
+						{execute.Time(3), 3.5, 30.1, "a", "a", "y"},
 					},
 				},
 			},
@@ -1026,35 +1026,35 @@ func TestMergeJoin_Process(t *testing.T) {
 			},
 			want: []*executetest.Table{
 				{
-					KeyCols: []string{"a_t1", "t2"},
+					KeyCols: []string{"t1_a", "t2"},
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "a_t1", Type: flux.TString},
-						{Label: "b__value", Type: flux.TFloat},
-						{Label: "b_t1", Type: flux.TString},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
+						{Label: "t1_a", Type: flux.TString},
+						{Label: "t1_b", Type: flux.TString},
 						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
-						{execute.Time(1), 1.0, "a", 10.0, "a", "x"},
-						{execute.Time(2), 2.0, "a", 20.0, "a", "x"},
-						{execute.Time(3), 3.0, "a", 30.0, "a", "x"},
+						{execute.Time(1), 1.0, 10.0, "a", "a", "x"},
+						{execute.Time(2), 2.0, 20.0, "a", "a", "x"},
+						{execute.Time(3), 3.0, 30.0, "a", "a", "x"},
 					},
 				},
 				{
-					KeyCols: []string{"a_t1", "t2"},
+					KeyCols: []string{"t1_a", "t2"},
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "a_t1", Type: flux.TString},
-						{Label: "b__value", Type: flux.TFloat},
-						{Label: "b_t1", Type: flux.TString},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
+						{Label: "t1_a", Type: flux.TString},
+						{Label: "t1_b", Type: flux.TString},
 						{Label: "t2", Type: flux.TString},
 					},
 					Data: [][]interface{}{
-						{execute.Time(1), 1.5, "a", 10.1, "a", "y"},
-						{execute.Time(2), 2.5, "a", 20.1, "a", "y"},
-						{execute.Time(3), 3.5, "a", 30.1, "a", "y"},
+						{execute.Time(1), 1.5, 10.1, "a", "a", "y"},
+						{execute.Time(2), 2.5, 20.1, "a", "a", "y"},
+						{execute.Time(3), 3.5, 30.1, "a", "a", "y"},
 					},
 				},
 			},
@@ -1102,23 +1102,23 @@ func TestMergeJoin_Process(t *testing.T) {
 			},
 			want: []*executetest.Table{
 				{
-					KeyCols: []string{"a_t1", "b_t1"},
+					KeyCols: []string{"t1_a", "t1_b"},
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "a_t1", Type: flux.TString},
-						{Label: "a_t2", Type: flux.TString},
-						{Label: "b__value", Type: flux.TFloat},
-						{Label: "b_t1", Type: flux.TString},
-						{Label: "b_t2", Type: flux.TString},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
+						{Label: "t1_a", Type: flux.TString},
+						{Label: "t1_b", Type: flux.TString},
+						{Label: "t2_a", Type: flux.TString},
+						{Label: "t2_b", Type: flux.TString},
 					},
 					Data: [][]interface{}{
-						{execute.Time(1), 1.0, "a", "x", 10.0, "a", "x"},
-						{execute.Time(1), 1.0, "a", "x", 10.1, "a", "y"},
-						{execute.Time(2), 2.0, "a", "x", 20.0, "a", "x"},
-						{execute.Time(2), 2.0, "a", "x", 20.1, "a", "y"},
-						{execute.Time(3), 3.0, "a", "x", 30.0, "a", "x"},
-						{execute.Time(3), 3.0, "a", "x", 30.1, "a", "y"},
+						{execute.Time(1), 1.0, 10.0, "a", "a", "x", "x"},
+						{execute.Time(1), 1.0, 10.1, "a", "a", "x", "y"},
+						{execute.Time(2), 2.0, 20.0, "a", "a", "x", "x"},
+						{execute.Time(2), 2.0, 20.1, "a", "a", "x", "y"},
+						{execute.Time(3), 3.0, 30.0, "a", "a", "x", "x"},
+						{execute.Time(3), 3.0, 30.1, "a", "a", "x", "y"},
 					},
 				},
 			},
@@ -1253,8 +1253,8 @@ func TestMergeJoin_Process(t *testing.T) {
 					KeyCols: []string{"tag"},
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "b__value", Type: flux.TFloat},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
 						{Label: "tag", Type: flux.TString},
 					},
 					Data: [][]interface{}{
@@ -1265,8 +1265,8 @@ func TestMergeJoin_Process(t *testing.T) {
 					KeyCols: []string{"tag"},
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "b__value", Type: flux.TFloat},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
 						{Label: "tag", Type: flux.TString},
 					},
 					Data: [][]interface{}{
@@ -1277,8 +1277,8 @@ func TestMergeJoin_Process(t *testing.T) {
 					KeyCols: []string{"tag"},
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "a__value", Type: flux.TFloat},
-						{Label: "b__value", Type: flux.TFloat},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
 						{Label: "tag", Type: flux.TString},
 					},
 					Data: [][]interface{}{
