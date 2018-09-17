@@ -1,6 +1,7 @@
 package values
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/influxdata/flux/semantic"
@@ -29,6 +30,10 @@ type function struct {
 	t             semantic.Type
 	call          func(args Object) (Value, error)
 	hasSideEffect bool
+}
+
+func (f *function) String() string {
+	return fmt.Sprintf("%s()", f.name)
 }
 
 func (f *function) Type() semantic.Type {

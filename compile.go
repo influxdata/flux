@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/influxdata/flux/interpreter"
@@ -281,6 +282,31 @@ func (t *TableObject) Operation(ider IDer) *Operation {
 	return &Operation{
 		ID:   ider.ID(t),
 		Spec: t.Spec,
+	}
+}
+func (t *TableObject) String() string {
+	str := new(strings.Builder)
+	t.str(str, false)
+	return str.String()
+}
+func (t *TableObject) str(b *strings.Builder, arrow bool) {
+	multiParent := t.Parents.Len() > 1
+	if multiParent {
+		b.WriteString("( ")
+	}
+	t.Parents.Range(func(i int, p values.Value) {
+		parent := p.Object().(*TableObject)
+		parent.str(b, !multiParent)
+		if multiParent {
+			b.WriteString("; ")
+		}
+	})
+	if multiParent {
+		b.WriteString(" ) -> ")
+	}
+	b.WriteString(string(t.Kind))
+	if arrow {
+		b.WriteString(" -> ")
 	}
 }
 

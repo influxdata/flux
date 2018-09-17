@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strings"
 
 	"github.com/influxdata/flux/semantic"
 )
@@ -35,6 +36,19 @@ func NewArrayWithBacking(elementType semantic.Type, elements []Value) Array {
 		t:        semantic.NewArrayType(elementType),
 		elements: elements,
 	}
+}
+
+func (a *array) String() string {
+	b := new(strings.Builder)
+	b.WriteString("[")
+	a.Range(func(i int, v Value) {
+		if i != 0 {
+			b.WriteString(", ")
+		}
+		fmt.Fprint(b, v)
+	})
+	b.WriteString("]")
+	return b.String()
 }
 
 func (a *array) Type() semantic.Type {
