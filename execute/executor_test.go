@@ -190,8 +190,8 @@ func TestExecutor_Execute(t *testing.T) {
 					ColMeta: []flux.ColMeta{
 						{Label: "_start", Type: flux.TTime},
 						{Label: "_stop", Type: flux.TTime},
-						{Label: "count__value", Type: flux.TInt},
-						{Label: "sum__value", Type: flux.TInt},
+						{Label: "_value_count", Type: flux.TInt},
+						{Label: "_value_sum", Type: flux.TInt},
 					},
 					Data: [][]interface{}{
 						{execute.Time(0), execute.Time(5), int64(5), int64(15)},
@@ -346,8 +346,8 @@ func TestExecutor_Execute(t *testing.T) {
 							{Label: "_key", Type: flux.TString},
 							{Label: "_start", Type: flux.TTime},
 							{Label: "_stop", Type: flux.TTime},
-							{Label: "count__value", Type: flux.TInt},
-							{Label: "sum__value", Type: flux.TInt},
+							{Label: "_value_count", Type: flux.TInt},
+							{Label: "_value_sum", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
 							{"a", execute.Time(0), execute.Time(5), int64(1), int64(1)},
@@ -359,8 +359,8 @@ func TestExecutor_Execute(t *testing.T) {
 							{Label: "_key", Type: flux.TString},
 							{Label: "_start", Type: flux.TTime},
 							{Label: "_stop", Type: flux.TTime},
-							{Label: "count__value", Type: flux.TInt},
-							{Label: "sum__value", Type: flux.TInt},
+							{Label: "_value_count", Type: flux.TInt},
+							{Label: "_value_sum", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
 							{"b", execute.Time(0), execute.Time(5), int64(1), int64(2)},
@@ -372,8 +372,8 @@ func TestExecutor_Execute(t *testing.T) {
 							{Label: "_key", Type: flux.TString},
 							{Label: "_start", Type: flux.TTime},
 							{Label: "_stop", Type: flux.TTime},
-							{Label: "count__value", Type: flux.TInt},
-							{Label: "sum__value", Type: flux.TInt},
+							{Label: "_value_count", Type: flux.TInt},
+							{Label: "_value_sum", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
 							{"c", execute.Time(0), execute.Time(5), int64(1), int64(3)},
@@ -385,8 +385,8 @@ func TestExecutor_Execute(t *testing.T) {
 							{Label: "_key", Type: flux.TString},
 							{Label: "_start", Type: flux.TTime},
 							{Label: "_stop", Type: flux.TTime},
-							{Label: "count__value", Type: flux.TInt},
-							{Label: "sum__value", Type: flux.TInt},
+							{Label: "_value_count", Type: flux.TInt},
+							{Label: "_value_sum", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
 							{"d", execute.Time(0), execute.Time(5), int64(1), int64(4)},
@@ -398,8 +398,8 @@ func TestExecutor_Execute(t *testing.T) {
 							{Label: "_key", Type: flux.TString},
 							{Label: "_start", Type: flux.TTime},
 							{Label: "_stop", Type: flux.TTime},
-							{Label: "count__value", Type: flux.TInt},
-							{Label: "sum__value", Type: flux.TInt},
+							{Label: "_value_count", Type: flux.TInt},
+							{Label: "_value_sum", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
 							{"e", execute.Time(0), execute.Time(5), int64(1), int64(5)},

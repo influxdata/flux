@@ -1023,7 +1023,7 @@ func renameColumn(col tableCol, share, on map[string]bool) string {
 	columnName := col.col
 
 	if share[columnName] && !on[columnName] {
-		return fmt.Sprintf("%s_%s", col.table, columnName)
+		return fmt.Sprintf("%s_%s", columnName, col.table)
 	}
 	return columnName
 }
