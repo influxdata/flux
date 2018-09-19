@@ -177,6 +177,9 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (v
 		if err != nil {
 			return nil, err
 		}
+		if typ := obj.Type().Kind(); typ != semantic.Object {
+			return nil, fmt.Errorf("cannot access property %q on value of type %s", e.Property, typ)
+		}
 		v, ok := obj.Object().Get(e.Property)
 		if !ok {
 			return nil, fmt.Errorf("object has no property %q", e.Property)
