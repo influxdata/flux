@@ -17,6 +17,8 @@ func TestCompile(t *testing.T) {
 		ok bool
 	}{
 		{q: "0/0", ok: true},
+		{q: `t=""t.t`},
+		{q: `t=0t.s`},
 	} {
 		_, err := flux.Compile(ctx, tc.q, now)
 		if tc.ok && err != nil {
