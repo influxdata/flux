@@ -2,6 +2,7 @@ package values
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/semantic"
@@ -74,16 +75,28 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	{Operator: ast.DivisionOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.Int()
+		if r == 0 {
+			// TODO(#38): reject divisions with a constant 0 divisor.
+			return NewIntValue(0)
+		}
 		return NewIntValue(l / r)
 	},
 	{Operator: ast.DivisionOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.UInt()
+		if r == 0 {
+			// TODO(#38): reject divisions with a constant 0 divisor.
+			return NewUIntValue(0)
+		}
 		return NewUIntValue(l / r)
 	},
 	{Operator: ast.DivisionOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.Float()
+		if r == 0 {
+			// TODO(#38): reject divisions with a constant 0 divisor.
+			return NewFloatValue(math.NaN())
+		}
 		return NewFloatValue(l / r)
 	},
 
