@@ -239,7 +239,7 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (v
 			return nil, err
 		}
 		if l.Type() != semantic.Bool {
-			return nil, fmt.Errorf("left operand to logcial expression is not a boolean value, got %v", l.Type())
+			return nil, fmt.Errorf("left operand to logical expression is not a boolean value, got %v", l.Type())
 		}
 		left := l.Bool()
 
@@ -256,7 +256,7 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (v
 			return nil, err
 		}
 		if r.Type() != semantic.Bool {
-			return nil, errors.New("right operand to logcial expression is not a boolean value")
+			return nil, errors.New("right operand to logical expression is not a boolean value")
 		}
 		right := r.Bool()
 
@@ -269,10 +269,15 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (v
 			return nil, fmt.Errorf("invalid logical operator %v", e.Operator)
 		}
 	case *semantic.FunctionExpression:
-		return &function{
+		f := &function{
 			e:     e,
 			scope: scope.Nest(),
-		}, nil
+		}
+		// Validate the function before we return it, to avoid a possible later panic.
+		if err := f.validate(); err != nil {
+			return nil, err
+		}
+		return f, nil
 	default:
 		return nil, fmt.Errorf("unsupported expression %T", expr)
 	}
@@ -655,6 +660,31 @@ func (f *function) doCall(args Arguments) (values.Value, error) {
 	default:
 		return nil, fmt.Errorf("unsupported function body type %T", f.e.Body)
 	}
+}
+
+// validate returns an error that would otherwise occur as a panic.
+// The problem is
+func (f *function) validate() (err error) {
+	switch n := f.e.Body.(type) {
+	case *semantic.CallExpression:
+		// Evaluating the CallExpression's Type() may panic, particularly in the case of
+		// `() => foo()` where foo is undefined.
+		// Unfortunately, the call stack in getting the Type does not involve functions that return errors,
+		// so there is no apparently appropriate place to check an error.
+		defer func() {
+			if err != nil {
+				return
+			}
+
+			if r := recover(); r != nil {
+				err = fmt.Errorf("illegal function: invalid call expression: %v", r)
+			}
+		}()
+		_ = n.Type()
+	default:
+		return nil
+	}
+	return nil
 }
 
 // Resolver represents a value that can resolve itself
