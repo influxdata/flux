@@ -185,7 +185,7 @@ It is also possible to perform math and rename the columns by using the `map` fu
 ```
 from(bucket: "telegraf/autogen") |> range(start: -5m)
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_user")
-    |> map(fn: (r) => {_value: r._value / 100})
+    |> map(fn: (r) => ({_value: r._value / 100}))
 ```
 
 The function passed into map must return an object. An object is a key/value structure. By default, the `map` function will merge any columns within the grouping key into the new row so you do not have to specify all of the existing columns that you do not want to modify. If you do not want to automtaically merge those columns, you can use `mergeKey: false` as a parameter to `map`.
@@ -197,7 +197,7 @@ The function passed into map must return an object. An object is a key/value str
 A user can define their own function which can then be reused. To do this, we use the function syntax and assign it to a variable.
 
 ```
-add = (table=<-, n) => map(table: table, fn: (r) => {_value: r._value + n})
+add = (table=<-, n) => map(table: table, fn: (r) => ({_value: r._value + n}))
 from(bucket: "telegraf/autogen") |> range(start: -5m)
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_user")
     |> add(n: 5)
@@ -206,7 +206,7 @@ from(bucket: "telegraf/autogen") |> range(start: -5m)
 When defining a function, default arguments can be specified by using an equals sign. In addition, a table processing function can be specified by including one parameter that takes `<-` as an input. The typical parameter name for these is `table`, but it can be any name since the pipe operator does not use a specific name. In the above example, we build a new function around the existing `map` function by passing the table to the `map` function as a parameter instead of with the pipe. If you wanted to use the pipe operator instead, the following is also valid:
 
 ```
-add = (table=<-, n) => table |> map(fn: (r) => {_value: r._value + n})
+add = (table=<-, n) => table |> map(fn: (r) => ({_value: r._value + n}))
 from(bucket: "telegraf/autogen") |> range(start: -5m)
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_user")
     |> add(n: 5)
