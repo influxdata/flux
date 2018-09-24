@@ -1685,7 +1685,7 @@ from(bucket:"telegraf/autogen")
                 r.service == "app-server")
     |> range(start:-12h)
     // create a new table by copying each row into a new format
-    |> map(fn: (r) => {_time: r._time, app_server: r._service})
+    |> map(fn: (r) => ({_time: r._time, app_server: r._service}))
 ```
 
 #### Range
