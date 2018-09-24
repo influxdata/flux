@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 
+	"reflect"
+	"time"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
@@ -11,9 +14,6 @@ import (
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	_ "github.com/lib/pq"
-	"github.com/pkg/errors"
-	"reflect"
-	"time"
 )
 
 const FromSQLKind = "fromSQL"
@@ -43,27 +43,24 @@ func init() {
 func createFromSQLOpSpec(args flux.Arguments, administration *flux.Administration) (flux.OperationSpec, error) {
 	spec := new(FromSQLOpSpec)
 
-	if driverName, ok, err := args.GetString("driverName"); err != nil {
+	if driverName, ok, err := args.GetRequiredString("driverName"); err != nil {
 		return nil, err
 	} else if ok {
 		spec.DriverName = driverName
 	}
 
-	if dataSourceName, ok, err := args.GetString("dataSourceName"); err != nil {
+	if dataSourceName, ok, err := args.GetRequiredString("dataSourceName"); err != nil {
 		return nil, err
 	} else if ok {
 		spec.DataSourceName = dataSourceName
 	}
 
-	if query, ok, err := args.GetString("query"); err != nil {
+	if query, ok, err := args.GetRequiredString("query"); err != nil {
 		return nil, err
 	} else if ok {
 		spec.Query = query
 	}
 
-	if spec.DriverName == "" && spec.DataSourceName == "" && spec.Query == "" {
-		return nil, errors.New("must specify driverName, dataSourceName, and query")
-	}
 	return spec, nil
 }
 
@@ -228,4 +225,3 @@ func (c *SQLIterator) Decode() (flux.Table, error) {
 
 	return builder.Table()
 }
-
