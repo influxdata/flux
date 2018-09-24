@@ -141,7 +141,6 @@ func (c *SQLIterator) Connect() error {
 	return nil
 }
 
-// if fetch gets table, return true; if only fetching one time, then return false
 func (c *SQLIterator) Fetch() (bool, error) {
 	rows, err := c.db.Query(c.spec.Query)
 	if err != nil {
