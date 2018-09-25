@@ -14,7 +14,9 @@ import (
 // Fetch implements a single fetch of data from the source (may be called multiple times).  Should return false when
 // there is no more data to retrieve.
 //
-// Decode implements the process of marshaling the data returned by the source into a flux.Table type.
+// Decode implements the process of marshaling the data returned by the source into a flux.Table type.  Buffer size
+// may be controlled by ensuring that the rows are sorted by column _time,  and adding columns _start and _stop to
+// each row that indicate time boundaries for when the buffer should be flushed.
 //
 // In executing the retrieval process, Connect is called once at the onset, and subsequent calls of Fetch() and Decode()
 // are called iteratively until the data source is fully consumed.
@@ -24,14 +26,13 @@ type SourceDecoder interface {
 	Decode() (flux.Table, error)
 }
 
-// CreateFromSourceIterator takes an implementation of a SourceDecoder, as well as a dataset ID and Administration type
-// and creates a custom sourceIterator type that is a valid execute.Source type.
-func CreateFromSourceIterator(decoder SourceDecoder, dsid execute.DatasetID, a execute.Administration) (execute.Source, error) {
+// CreateSourceFromDecoder takes an implementation of a SourceDecoder, as well as a dataset ID and Administration type
+// and creates an execute.Source.
+func CreateSourceFromDecoder(decoder SourceDecoder, dsid execute.DatasetID, a execute.Administration) (execute.Source, error) {
 	return &sourceIterator{decoder: decoder, id: dsid}, nil
 }
 
 type sourceIterator struct {
-	// TODO: add fields you need to connect, fetch, etc.
 	decoder SourceDecoder
 	id   execute.DatasetID
 	ts   []execute.Transformation
