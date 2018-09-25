@@ -14,9 +14,7 @@ import (
 // Fetch implements a single fetch of data from the source (may be called multiple times).  Should return false when
 // there is no more data to retrieve.
 //
-// Decode implements the process of marshaling the data returned by the source into a flux.Table type.  Buffer size
-// may be controlled by ensuring that the rows are sorted by column _time,  and adding columns _start and _stop to
-// each row that indicate time boundaries for when the buffer should be flushed.
+// Decode implements the process of marshaling the data returned by the source into a flux.Table type.
 //
 // In executing the retrieval process, Connect is called once at the onset, and subsequent calls of Fetch() and Decode()
 // are called iteratively until the data source is fully consumed.
@@ -70,34 +68,17 @@ func (c *sourceIterator) AddTransformation(t execute.Transformation) {
 
 func (c *sourceIterator) Run(ctx context.Context) {
 	var err error
-	var max execute.Time
-	maxSet := false
+
 	err = c.Do(func(tbl flux.Table) error {
 		for _, t := range c.ts {
 			err := t.Process(c.id, tbl)
 			if err != nil {
 				return err
 			}
-			if idx := execute.ColIdx(execute.DefaultStopColLabel, tbl.Key().Cols()); idx >= 0 {
-				if stop := tbl.Key().ValueTime(idx); !maxSet || stop > max {
-					max = stop
-					maxSet = true
-				}
-			}
 		}
 		return nil
 	})
-	if err != nil {
-		goto FINISH
-	}
 
-	if maxSet {
-		for _, t := range c.ts {
-			t.UpdateWatermark(c.id, max)
-		}
-	}
-
-FINISH:
 	for _, t := range c.ts {
 		t.Finish(c.id, err)
 	}
