@@ -314,6 +314,8 @@ type FunctionExpression struct {
 	Params []*FunctionParam `json:"params"`
 	Body   Node             `json:"body"`
 	typ    atomic.Value     //Type
+
+	returnTypeVar TypeVar
 }
 
 func (*FunctionExpression) NodeType() string { return "ArrowFunctionExpression" }
