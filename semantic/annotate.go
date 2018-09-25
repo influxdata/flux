@@ -1,12 +1,16 @@
 package semantic
 
-import (
-	"strconv"
-)
+import "strconv"
 
 // TypeVar is a type variable
 type TypeVar struct {
 	name string
+}
+
+// FreeTypeVar returns all the free (not bound) type variables of an expression.
+// In the case of a type variable, it just returns the same type variable.
+func (tv TypeVar) FreeTypeVar() []TypeVar {
+	return []TypeVar{tv}
 }
 
 // TypeVarGenerator generates type variables
@@ -37,14 +41,8 @@ type TypeAnnotationVisitor struct {
 func (v *TypeAnnotationVisitor) Visit(node Node) Visitor {
 	if n, ok := node.(Expression); ok {
 		v.tenv[n] = v.next.NewTypeVar()
-		return v
 	}
-	switch n := node.(type) {
-	case *Identifier:
-		v.tenv[n] = v.next.NewTypeVar()
-	case *Property:
-		v.tenv[n] = v.next.NewTypeVar()
-	case *FunctionParam:
+	if n, ok := node.(*Identifier); ok {
 		v.tenv[n] = v.next.NewTypeVar()
 	}
 	return v

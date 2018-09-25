@@ -113,6 +113,12 @@ func (k Kind) ReturnType() Type {
 }
 func (k Kind) typ() {}
 
+// FreeTypeVar implements Substitutable.
+// Kinds do not have any free type variables.
+func (k Kind) FreeTypeVar() []TypeVar {
+	return nil
+}
+
 type arrayType struct {
 	elementType Type
 }
