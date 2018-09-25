@@ -1,63 +1,56 @@
 # Planner Design
 
 This document lays out the design of the planner.
-
-## Interface
-
-The Planner inter is defined as:
-
-```go
-type Planner interface {
-    Plan(Query, []Storage) Plan
-}
-```
-
-The planner is responsible for taking a query DAG and a set of available storage interfaces and produce a plan DAG.
-
-## Plans
-
-Plans are created via a two step process:
-
-1. Create a general plan from the query.
-2. Create a specific plan from the general plan and available storage interface.
-
-The general plan specifies all the needed data frames and their lineage needed to produce the final query result.
-The specific plan specifies how the general plan will be executed, which storage interfaces will be consumed and how.
-
-The general plan does not leave the scope of the Planner and is not part of the API of the planner.
-Hence the Plan type above it the specific plan.
-
-## Plan DAG
-
-Both the general and specific plans are represented as DAGs.
-The nodes of the DAG represent data frames to be produced, while the edges of the DAG represent the operations need to construct the data frames.
-This is inverted from the Query DAG where the nodes are operations and edges represents data sets.
-
-The leaves of the plan DAG represent sources of data and the data flows from bottom up through the tree.
-Again this is inverted from the Query DAG where data flows top down.
-
-## Data Frames
-
-Data frames are a set of data and their lineage is known.
-Meaning it is known what parent data frames and operations are needed to construct the data frame.
-Using this concept of lineage allows a data frame to be reconstructed if it is loss due to node failure or if its parent data frames are modified.
-
-### Windowing
-
-Data frames will specify their windowing properties. ????
+The planner is responsible for searching the space of equivalent execution plans for a low cost plan.
+Plans have a cost which is a set of metrics which approximates the physical cost of executing the plan.
 
 ## Operations
 
-Operations are a definition of a transformation to be applied on one data frame resulting in another.
+The planner manipulates operations. An operation represents a transformation on the data in some form.
+
+### Logical vs Physical
+
+Operations can be either "logical" or "physical".
+A logical operation is one that represents what operation to perform but does not specify how to execute that operation.
+A physical operation is one that represents the specific execution of a specific operation.
+For example join is a logical operation while merge-sort and hash-join are two different physical operations of the logical join operation.
+
+## Requirements
+
+The planner needs to be capable of the following:
+
+* Search the space of logical and physcial plans
+* Compute a cost for a given plan
+* Pick a plan for execution
+* Be agnostic to the set of logical and physical operations.
+* Both logical and physical operations can be rewritten into new sets of physical and logical operations.
+    For example a physical operation that represents a read from storage needs to be able to rewrite filter operations
+    into a new physical filter+read operation so as to optimize the filter by pushing it down into the storage layer.
+    This must be possible without the planner understanding the semantic meaning of the operations.
+* Limit its execution time by some factor so as to avoid the planning step adding significant latency.
+
+
+## Operation Behavior
+
+The planner will not know the semantic meaning of each of the operations, but it can know about specific behavior of the operations.
+As discussed above each operation is either a logical or a physical operation.
+Operations can have many more properties.
+
+### Commutative Property
+
+An operation can commute with other operations.
+The planner can leverage this behavior to explore other possible execution plans.
 
 ### Narrow vs Wide
 
-Operations are classified as either narrow or wide:
+Operations can be classified as either narrow or wide:
 
-* Narrow operations map each parent data frame to exactly one child data frame.
-    Specifically a narrow operation is a one-to-one mapping of parent to child data frames.
-* Wide operations map multiple parent data frames to multiple child data frames.
-    Specifically a wide operation is a many-to-many mapping of parent to child data frames.
+* Narrow operations map each parent table to exactly one child table.
+    Specifically a narrow operation is a one-to-one mapping of parent to child tables.
+* Wide operations map multiple parent tables to multiple child tables.
+    Specifically a wide operation is a many-to-many mapping of parent to child tables.
 
-This distinction is necessary to precisely define the lineage of a data frame.
 
+### And more
+
+There will be many more behaviors/properties that operations can expose to the planner.
