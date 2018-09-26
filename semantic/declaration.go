@@ -33,7 +33,6 @@ func (v *VariableDeclarationVisitor) Visit(node Node) Visitor {
 		v.scope = v.scope.Parent()
 		n.declaration = &NativeVariableDeclaration{
 			Identifier: n.Key,
-			Init:       n.Default,
 		}
 		// Parameter names must be visible in the context of the function body
 		v.next.Set(n.Key.Name, n.declaration)
