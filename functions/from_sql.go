@@ -43,21 +43,21 @@ func init() {
 func createFromSQLOpSpec(args flux.Arguments, administration *flux.Administration) (flux.OperationSpec, error) {
 	spec := new(FromSQLOpSpec)
 
-	if driverName, ok, err := args.GetRequiredString("driverName"); err != nil {
+	if driverName, err := args.GetRequiredString("driverName"); err != nil {
 		return nil, err
-	} else if ok {
+	} else  {
 		spec.DriverName = driverName
 	}
 
-	if dataSourceName, ok, err := args.GetRequiredString("dataSourceName"); err != nil {
+	if dataSourceName, err := args.GetRequiredString("dataSourceName"); err != nil {
 		return nil, err
-	} else if ok {
+	} else {
 		spec.DataSourceName = dataSourceName
 	}
 
-	if query, ok, err := args.GetRequiredString("query"); err != nil {
+	if query, err := args.GetRequiredString("query"); err != nil {
 		return nil, err
-	} else if ok {
+	} else {
 		spec.Query = query
 	}
 
@@ -115,7 +115,7 @@ func createFromSQLSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 
 	SQLIterator := SQLIterator{id: dsid, spec: spec, administration: a}
 
-	return CreateFromSourceIterator(&SQLIterator, dsid, a)
+	return CreateSourceFromDecoder(&SQLIterator, dsid, a)
 }
 
 type SQLIterator struct {
