@@ -13,6 +13,17 @@ func (tv TypeVar) FreeTypeVar() []TypeVar {
 	return []TypeVar{tv}
 }
 
+func (tv TypeVar) String() string {
+	return tv.name
+}
+
+func (tv TypeVar) Equal(sub Substitutable) bool {
+	if tvar, ok := sub.(TypeVar); ok {
+		return tv.name == tvar.name
+	}
+	return false
+}
+
 // TypeVarGenerator generates type variables
 type TypeVarGenerator struct {
 	prefix string

@@ -134,9 +134,6 @@ func walk(v Visitor, n Node) {
 		if w != nil {
 			walk(w, n.Key)
 			walk(w, n.Default)
-			if n.declaration != nil {
-				walk(w, n.declaration)
-			}
 		}
 	case *BooleanLiteral:
 		v.Visit(n)

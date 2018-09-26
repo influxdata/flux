@@ -119,6 +119,14 @@ func (k Kind) FreeTypeVar() []TypeVar {
 	return nil
 }
 
+// Equal implements Substitutable
+func (k Kind) Equal(sub Substitutable) bool {
+	if kind, ok := sub.(Kind); ok {
+		return k == kind
+	}
+	return false
+}
+
 type arrayType struct {
 	elementType Type
 }
