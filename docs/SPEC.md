@@ -1198,6 +1198,22 @@ Example:
     from(bucket:"telegraf/autogen")
     from(bucketID:"0261d8287f4d6000")
 
+#### Buckets
+
+Buckets is a type of data source that retrieves a list of buckets that the caller is authorized to access.  
+It takes no input parameters and produces an output table with the following columns: 
+
+* name: the name of the bucket
+* id: the internal ID of the bucket
+* organization: the organization this bucket belongs to
+* organizationID: the internal ID of the organization
+* Retention Policy: the name of the retention policy, if present
+* RetentionPeriod: the duration of time for which data is held in this bucket
+
+Example: 
+
+    buckets() |> filter(fn: (r) => r["organization"] == "my-org") 
+
 #### Yield
 
 Yield indicates that the stream received by the yield operation should be delivered as a result of the query.
