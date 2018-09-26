@@ -195,11 +195,6 @@ func (s *GeneratorSource) Decode() (flux.Table, error) {
 
 	cols = b.Cols()
 
-	colIndex := map[string]int{}
-	for i, col := range cols {
-		colIndex[col.Label] = i
-	}
-
 	deltaT := s.Stop.Sub(s.Start) / time.Duration(s.Count)
 	timeIdx := execute.ColIdx("_time", cols)
 	valueIdx := execute.ColIdx("_value", cols)
