@@ -132,7 +132,7 @@ func createFromGeneratorSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID
 	s.Param = spec.Param
 	s.Fn = spec.Fn
 
-	return CreateFromSourceIterator(s, dsid, a)
+	return CreateSourceFromDecoder(s, dsid, a)
 }
 
 type GeneratorSource struct {
