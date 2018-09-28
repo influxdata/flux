@@ -1,12 +1,17 @@
 package planner
 
+type Statistics struct {
+	Cardinality      int64
+	GroupCardinality int64
+}
+
 // Cost stores various dimensions of the cost of a query plan
 type Cost struct {
-	Disk int
-	CPU  int
-	GPU  int
-	MEM  int
-	NET  int
+	Disk int64
+	CPU  int64
+	GPU  int64
+	MEM  int64
+	NET  int64
 }
 
 // Add two cost structures together
@@ -18,14 +23,4 @@ func Add(a Cost, b Cost) Cost {
 		MEM:  a.MEM + b.MEM,
 		NET:  a.NET + b.NET,
 	}
-}
-
-// PhysicalCost computes the total cost of a physical query plan
-func PhysicalCost(node PhysicalPlan) Cost {
-	var cumulative Cost
-	for _, pred := range node.Predecessors() {
-		cost := PhysicalCost(pred)
-		cumulative = Add(cumulative, cost)
-	}
-	return Add(node.Cost(), cumulative)
 }
