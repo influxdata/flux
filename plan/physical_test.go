@@ -1,6 +1,7 @@
 package plan_test
 
 import (
+	"github.com/influxdata/flux/functions/inputs"
 	"math"
 	"testing"
 	"time"
@@ -9,7 +10,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 )
@@ -32,7 +33,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket: "mybucket",
 						},
 						Parents:  nil,
@@ -40,7 +41,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("range"): {
 						ID: plan.ProcedureIDFromOperationID("range"),
-						Spec: &functions.RangeProcedureSpec{
+						Spec: &transformations.RangeProcedureSpec{
 							Bounds: flux.Bounds{
 								Start: flux.Time{
 									IsRelative: true,
@@ -57,7 +58,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("count"): {
 						ID:   plan.ProcedureIDFromOperationID("count"),
-						Spec: &functions.CountProcedureSpec{},
+						Spec: &transformations.CountProcedureSpec{},
 						Parents: []plan.ProcedureID{
 							(plan.ProcedureIDFromOperationID("range")),
 						},
@@ -79,7 +80,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket:    "mybucket",
 							BoundsSet: true,
 							Bounds: flux.Bounds{
@@ -99,7 +100,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("count"): {
 						ID:   plan.ProcedureIDFromOperationID("count"),
-						Spec: &functions.CountProcedureSpec{},
+						Spec: &transformations.CountProcedureSpec{},
 						Parents: []plan.ProcedureID{
 							(plan.ProcedureIDFromOperationID("from")),
 						},
@@ -126,7 +127,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket: "mybucket",
 						},
 						Parents:  nil,
@@ -134,7 +135,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("last"): {
 						ID:   plan.ProcedureIDFromOperationID("last"),
-						Spec: &functions.LastProcedureSpec{},
+						Spec: &transformations.LastProcedureSpec{},
 						Parents: []plan.ProcedureID{
 							(plan.ProcedureIDFromOperationID("from")),
 						},
@@ -155,7 +156,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket:    "mybucket",
 							BoundsSet: true,
 							Bounds: flux.Bounds{
@@ -190,7 +191,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket: "mybucket",
 						},
 						Parents:  nil,
@@ -198,7 +199,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("range"): {
 						ID: plan.ProcedureIDFromOperationID("range"),
-						Spec: &functions.RangeProcedureSpec{
+						Spec: &transformations.RangeProcedureSpec{
 							Bounds: flux.Bounds{
 								Start: flux.Time{
 									IsRelative: true,
@@ -215,7 +216,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("limit"): {
 						ID: plan.ProcedureIDFromOperationID("limit"),
-						Spec: &functions.LimitProcedureSpec{
+						Spec: &transformations.LimitProcedureSpec{
 							N: 10,
 						},
 						Parents: []plan.ProcedureID{
@@ -225,7 +226,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("mean"): {
 						ID:   plan.ProcedureIDFromOperationID("mean"),
-						Spec: &functions.MeanProcedureSpec{},
+						Spec: &transformations.MeanProcedureSpec{},
 						Parents: []plan.ProcedureID{
 							(plan.ProcedureIDFromOperationID("limit")),
 						},
@@ -248,7 +249,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket:    "mybucket",
 							BoundsSet: true,
 							Bounds: flux.Bounds{
@@ -270,7 +271,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("mean"): {
 						ID:   plan.ProcedureIDFromOperationID("mean"),
-						Spec: &functions.MeanProcedureSpec{},
+						Spec: &transformations.MeanProcedureSpec{},
 						Parents: []plan.ProcedureID{
 							(plan.ProcedureIDFromOperationID("from")),
 						},
@@ -301,7 +302,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket: "mybucket",
 						},
 						Parents:  nil,
@@ -309,7 +310,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("range"): {
 						ID: plan.ProcedureIDFromOperationID("range"),
-						Spec: &functions.RangeProcedureSpec{
+						Spec: &transformations.RangeProcedureSpec{
 							Bounds: flux.Bounds{
 								Start: flux.Time{
 									IsRelative: true,
@@ -327,25 +328,25 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("stddev"): {
 						ID:       plan.ProcedureIDFromOperationID("stddev"),
-						Spec:     &functions.StddevProcedureSpec{},
+						Spec:     &transformations.StddevProcedureSpec{},
 						Parents:  []plan.ProcedureID{plan.ProcedureIDFromOperationID("range")},
 						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("yieldStddev")},
 					},
 					plan.ProcedureIDFromOperationID("yieldStddev"): {
 						ID:       plan.ProcedureIDFromOperationID("yieldStddev"),
-						Spec:     &functions.YieldProcedureSpec{Name: "stddev"},
+						Spec:     &transformations.YieldProcedureSpec{Name: "stddev"},
 						Parents:  []plan.ProcedureID{plan.ProcedureIDFromOperationID("stddev")},
 						Children: nil,
 					},
 					plan.ProcedureIDFromOperationID("skew"): {
 						ID:       plan.ProcedureIDFromOperationID("skew"),
-						Spec:     &functions.SkewProcedureSpec{},
+						Spec:     &transformations.SkewProcedureSpec{},
 						Parents:  []plan.ProcedureID{plan.ProcedureIDFromOperationID("range")},
 						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("yieldSkew")},
 					},
 					plan.ProcedureIDFromOperationID("yieldSkew"): {
 						ID:       plan.ProcedureIDFromOperationID("yieldSkew"),
-						Spec:     &functions.YieldProcedureSpec{Name: "skew"},
+						Spec:     &transformations.YieldProcedureSpec{Name: "skew"},
 						Parents:  []plan.ProcedureID{plan.ProcedureIDFromOperationID("skew")},
 						Children: nil,
 					},
@@ -368,7 +369,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket:    "mybucket",
 							BoundsSet: true,
 							Bounds: flux.Bounds{
@@ -391,7 +392,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("stddev"): {
 						ID:   plan.ProcedureIDFromOperationID("stddev"),
-						Spec: &functions.StddevProcedureSpec{},
+						Spec: &transformations.StddevProcedureSpec{},
 						Bounds: &plan.BoundsSpec{
 							Start: values.ConvertTime(now.Add(-1 * time.Hour)),
 							Stop:  values.ConvertTime(now),
@@ -401,7 +402,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("skew"): {
 						ID:   plan.ProcedureIDFromOperationID("skew"),
-						Spec: &functions.SkewProcedureSpec{},
+						Spec: &transformations.SkewProcedureSpec{},
 						Bounds: &plan.BoundsSpec{
 							Start: values.ConvertTime(now.Add(-1 * time.Hour)),
 							Stop:  values.ConvertTime(now),
@@ -432,7 +433,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket: "mybucket",
 						},
 						Parents:  nil,
@@ -440,7 +441,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("range"): {
 						ID: plan.ProcedureIDFromOperationID("range"),
-						Spec: &functions.RangeProcedureSpec{
+						Spec: &transformations.RangeProcedureSpec{
 							Bounds: flux.Bounds{
 								Start: flux.Time{
 									IsRelative: true,
@@ -457,8 +458,8 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("group"): {
 						ID: plan.ProcedureIDFromOperationID("group"),
-						Spec: &functions.GroupProcedureSpec{
-							GroupMode: functions.GroupModeBy,
+						Spec: &transformations.GroupProcedureSpec{
+							GroupMode: inputs.GroupModeBy,
 							GroupKeys: []string{"host", "region"},
 						},
 						Parents:  []plan.ProcedureID{plan.ProcedureIDFromOperationID("range")},
@@ -466,7 +467,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("sum"): {
 						ID:      plan.ProcedureIDFromOperationID("sum"),
-						Spec:    &functions.SumProcedureSpec{},
+						Spec:    &transformations.SumProcedureSpec{},
 						Parents: []plan.ProcedureID{plan.ProcedureIDFromOperationID("group")},
 					},
 				},
@@ -486,7 +487,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket:    "mybucket",
 							BoundsSet: true,
 							Bounds: flux.Bounds{
@@ -496,9 +497,9 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 								},
 								Stop: flux.Now,
 							},
-							GroupingSet:     true,
-							GroupMode:       functions.GroupModeBy,
-							GroupKeys:       []string{"host", "region"},
+							GroupingSet: true,
+							GroupMode:   inputs.GroupModeBy,
+							GroupKeys:   []string{"host", "region"},
 						},
 						Bounds: &plan.BoundsSpec{
 							Start: values.ConvertTime(now.Add(-1 * time.Hour)),
@@ -511,7 +512,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("sum"): {
 						ID:   plan.ProcedureIDFromOperationID("sum"),
-						Spec: &functions.SumProcedureSpec{},
+						Spec: &transformations.SumProcedureSpec{},
 						Bounds: &plan.BoundsSpec{
 							Start: values.ConvertTime(now.Add(-1 * time.Hour)),
 							Stop:  values.ConvertTime(now),
@@ -539,7 +540,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket: "mybucket",
 						},
 						Parents:  nil,
@@ -547,7 +548,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("range"): {
 						ID: plan.ProcedureIDFromOperationID("range"),
-						Spec: &functions.RangeProcedureSpec{
+						Spec: &transformations.RangeProcedureSpec{
 							Bounds: flux.Bounds{
 								Start: flux.Time{
 									IsRelative: true,
@@ -564,8 +565,8 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("group"): {
 						ID: plan.ProcedureIDFromOperationID("group"),
-						Spec: &functions.GroupProcedureSpec{
-							GroupMode: functions.GroupModeBy,
+						Spec: &transformations.GroupProcedureSpec{
+							GroupMode: inputs.GroupModeBy,
 							GroupKeys: []string{"host"},
 						},
 						Parents:  []plan.ProcedureID{plan.ProcedureIDFromOperationID("range")},
@@ -573,7 +574,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("distinct"): {
 						ID: plan.ProcedureIDFromOperationID("distinct"),
-						Spec: &functions.DistinctProcedureSpec{
+						Spec: &transformations.DistinctProcedureSpec{
 							Column: "host",
 						},
 						Parents: []plan.ProcedureID{plan.ProcedureIDFromOperationID("group")},
@@ -595,7 +596,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket:    "mybucket",
 							BoundsSet: true,
 							Bounds: flux.Bounds{
@@ -606,7 +607,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 								Stop: flux.Now,
 							},
 							GroupingSet: true,
-							GroupMode:   functions.GroupModeBy,
+							GroupMode:   inputs.GroupModeBy,
 							GroupKeys:   []string{"host"},
 							LimitSet:    true,
 							PointsLimit: -1,
@@ -622,7 +623,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("distinct"): {
 						ID:   plan.ProcedureIDFromOperationID("distinct"),
-						Spec: &functions.DistinctProcedureSpec{Column: "host"},
+						Spec: &transformations.DistinctProcedureSpec{Column: "host"},
 						Bounds: &plan.BoundsSpec{
 							Start: values.ConvertTime(now.Add(-1 * time.Hour)),
 							Stop:  values.ConvertTime(now),
@@ -650,7 +651,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket: "mybucket",
 						},
 						Parents:  nil,
@@ -658,7 +659,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("range"): {
 						ID: plan.ProcedureIDFromOperationID("range"),
-						Spec: &functions.RangeProcedureSpec{
+						Spec: &transformations.RangeProcedureSpec{
 							Bounds: flux.Bounds{
 								Start: flux.Time{
 									IsRelative: true,
@@ -675,8 +676,8 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("group"): {
 						ID: plan.ProcedureIDFromOperationID("group"),
-						Spec: &functions.GroupProcedureSpec{
-							GroupMode: functions.GroupModeBy,
+						Spec: &transformations.GroupProcedureSpec{
+							GroupMode: inputs.GroupModeBy,
 							GroupKeys: []string{"host"},
 						},
 						Parents:  []plan.ProcedureID{plan.ProcedureIDFromOperationID("range")},
@@ -684,7 +685,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("distinct"): {
 						ID: plan.ProcedureIDFromOperationID("distinct"),
-						Spec: &functions.DistinctProcedureSpec{
+						Spec: &transformations.DistinctProcedureSpec{
 							Column: "_value",
 						},
 						Parents: []plan.ProcedureID{plan.ProcedureIDFromOperationID("group")},
@@ -706,7 +707,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket:    "mybucket",
 							BoundsSet: true,
 							Bounds: flux.Bounds{
@@ -717,7 +718,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 								Stop: flux.Now,
 							},
 							GroupingSet: true,
-							GroupMode:   functions.GroupModeBy,
+							GroupMode:   inputs.GroupModeBy,
 							GroupKeys:   []string{"host"},
 						},
 						Bounds: &plan.BoundsSpec{
@@ -731,7 +732,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("distinct"): {
 						ID:   plan.ProcedureIDFromOperationID("distinct"),
-						Spec: &functions.DistinctProcedureSpec{Column: "_value"},
+						Spec: &transformations.DistinctProcedureSpec{Column: "_value"},
 						Bounds: &plan.BoundsSpec{
 							Start: values.ConvertTime(now.Add(-1 * time.Hour)),
 							Stop:  values.ConvertTime(now),
@@ -759,7 +760,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket: "mybucket",
 						},
 						Parents:  nil,
@@ -767,7 +768,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("range"): {
 						ID: plan.ProcedureIDFromOperationID("range"),
-						Spec: &functions.RangeProcedureSpec{
+						Spec: &transformations.RangeProcedureSpec{
 							Bounds: flux.Bounds{
 								Start: flux.Time{
 									IsRelative: true,
@@ -784,8 +785,8 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("group"): {
 						ID: plan.ProcedureIDFromOperationID("group"),
-						Spec: &functions.GroupProcedureSpec{
-							GroupMode: functions.GroupModeBy,
+						Spec: &transformations.GroupProcedureSpec{
+							GroupMode: inputs.GroupModeBy,
 							GroupKeys: []string{"host"},
 						},
 						Parents:  []plan.ProcedureID{plan.ProcedureIDFromOperationID("range")},
@@ -793,7 +794,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("distinct"): {
 						ID: plan.ProcedureIDFromOperationID("distinct"),
-						Spec: &functions.DistinctProcedureSpec{
+						Spec: &transformations.DistinctProcedureSpec{
 							Column: "region",
 						},
 						Parents: []plan.ProcedureID{plan.ProcedureIDFromOperationID("group")},
@@ -815,7 +816,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket:    "mybucket",
 							BoundsSet: true,
 							Bounds: flux.Bounds{
@@ -826,7 +827,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 								Stop: flux.Now,
 							},
 							GroupingSet: true,
-							GroupMode:   functions.GroupModeBy,
+							GroupMode:   inputs.GroupModeBy,
 							GroupKeys:   []string{"host"},
 						},
 						Bounds: &plan.BoundsSpec{
@@ -840,7 +841,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("distinct"): {
 						ID:   plan.ProcedureIDFromOperationID("distinct"),
-						Spec: &functions.DistinctProcedureSpec{Column: "region"},
+						Spec: &transformations.DistinctProcedureSpec{Column: "region"},
 						Bounds: &plan.BoundsSpec{
 							Start: values.ConvertTime(now.Add(-1 * time.Hour)),
 							Stop:  values.ConvertTime(now),
@@ -864,7 +865,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("fromCSV"): {
 						ID: plan.ProcedureIDFromOperationID("fromCSV"),
-						Spec: &functions.FromCSVProcedureSpec{
+						Spec: &inputs.FromCSVProcedureSpec{
 							File: "file",
 						},
 						Parents:  nil,
@@ -872,7 +873,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("range1"): {
 						ID: plan.ProcedureIDFromOperationID("range1"),
-						Spec: &functions.RangeProcedureSpec{
+						Spec: &transformations.RangeProcedureSpec{
 							Bounds: flux.Bounds{
 								Start: flux.Time{
 									IsRelative: true,
@@ -889,7 +890,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("range2"): {
 						ID: plan.ProcedureIDFromOperationID("range2"),
-						Spec: &functions.RangeProcedureSpec{
+						Spec: &transformations.RangeProcedureSpec{
 							Bounds: flux.Bounds{
 								Start: flux.Time{
 									IsRelative: true,
@@ -905,7 +906,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("limit"): {
 						ID: plan.ProcedureIDFromOperationID("limit"),
-						Spec: &functions.LimitProcedureSpec{
+						Spec: &transformations.LimitProcedureSpec{
 							N: 10,
 						},
 						Parents: []plan.ProcedureID{
@@ -915,7 +916,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("mean"): {
 						ID:   plan.ProcedureIDFromOperationID("mean"),
-						Spec: &functions.MeanProcedureSpec{},
+						Spec: &transformations.MeanProcedureSpec{},
 						Parents: []plan.ProcedureID{
 							(plan.ProcedureIDFromOperationID("limit")),
 						},
@@ -939,7 +940,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("fromCSV"): {
 						ID: plan.ProcedureIDFromOperationID("fromCSV"),
-						Spec: &functions.FromCSVProcedureSpec{
+						Spec: &inputs.FromCSVProcedureSpec{
 							File: "file",
 						},
 						Parents:  nil,
@@ -947,7 +948,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("range1"): {
 						ID: plan.ProcedureIDFromOperationID("range1"),
-						Spec: &functions.RangeProcedureSpec{
+						Spec: &transformations.RangeProcedureSpec{
 							Bounds: flux.Bounds{
 								Start: flux.Time{
 									IsRelative: true,
@@ -968,7 +969,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("range2"): {
 						ID: plan.ProcedureIDFromOperationID("range2"),
-						Spec: &functions.RangeProcedureSpec{
+						Spec: &transformations.RangeProcedureSpec{
 							Bounds: flux.Bounds{
 								Start: flux.Time{
 									IsRelative: true,
@@ -988,7 +989,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("limit"): {
 						ID: plan.ProcedureIDFromOperationID("limit"),
-						Spec: &functions.LimitProcedureSpec{
+						Spec: &transformations.LimitProcedureSpec{
 							N: 10,
 						},
 						Bounds: &plan.BoundsSpec{
@@ -1002,7 +1003,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("mean"): {
 						ID:   plan.ProcedureIDFromOperationID("mean"),
-						Spec: &functions.MeanProcedureSpec{},
+						Spec: &transformations.MeanProcedureSpec{},
 						Bounds: &plan.BoundsSpec{
 							Start: values.ConvertTime(now.Add(-30 * time.Minute)),
 							Stop:  values.ConvertTime(now),
@@ -1041,7 +1042,7 @@ func TestPhysicalPlanner_Plan_PushDown_Branch(t *testing.T) {
 		Procedures: map[plan.ProcedureID]*plan.Procedure{
 			plan.ProcedureIDFromOperationID("from"): {
 				ID: plan.ProcedureIDFromOperationID("from"),
-				Spec: &functions.FromProcedureSpec{
+				Spec: &inputs.FromProcedureSpec{
 					Bucket: "mybucket",
 				},
 				Parents: nil,
@@ -1052,25 +1053,25 @@ func TestPhysicalPlanner_Plan_PushDown_Branch(t *testing.T) {
 			},
 			plan.ProcedureIDFromOperationID("first"): {
 				ID:       plan.ProcedureIDFromOperationID("first"),
-				Spec:     &functions.FirstProcedureSpec{},
+				Spec:     &transformations.FirstProcedureSpec{},
 				Parents:  []plan.ProcedureID{plan.ProcedureIDFromOperationID("from")},
 				Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("yieldFirst")},
 			},
 			plan.ProcedureIDFromOperationID("yieldFirst"): {
 				ID:       plan.ProcedureIDFromOperationID("yieldFirst"),
-				Spec:     &functions.YieldProcedureSpec{Name: "first"},
+				Spec:     &transformations.YieldProcedureSpec{Name: "first"},
 				Parents:  []plan.ProcedureID{plan.ProcedureIDFromOperationID("first")},
 				Children: nil,
 			},
 			plan.ProcedureIDFromOperationID("last"): {
 				ID:       plan.ProcedureIDFromOperationID("last"),
-				Spec:     &functions.LastProcedureSpec{},
+				Spec:     &transformations.LastProcedureSpec{},
 				Parents:  []plan.ProcedureID{plan.ProcedureIDFromOperationID("from")},
 				Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("yieldLast")},
 			},
 			plan.ProcedureIDFromOperationID("yieldLast"): {
 				ID:       plan.ProcedureIDFromOperationID("yieldLast"),
-				Spec:     &functions.YieldProcedureSpec{Name: "last"},
+				Spec:     &transformations.YieldProcedureSpec{Name: "last"},
 				Parents:  []plan.ProcedureID{plan.ProcedureIDFromOperationID("last")},
 				Children: nil,
 			},
@@ -1095,7 +1096,7 @@ func TestPhysicalPlanner_Plan_PushDown_Branch(t *testing.T) {
 		Procedures: map[plan.ProcedureID]*plan.Procedure{
 			fromID: {
 				ID: fromID,
-				Spec: &functions.FromProcedureSpec{
+				Spec: &inputs.FromProcedureSpec{
 					Bucket:    "mybucket",
 					BoundsSet: true,
 					Bounds: flux.Bounds{
@@ -1115,7 +1116,7 @@ func TestPhysicalPlanner_Plan_PushDown_Branch(t *testing.T) {
 			},
 			fromIDDup: {
 				ID: fromIDDup,
-				Spec: &functions.FromProcedureSpec{
+				Spec: &inputs.FromProcedureSpec{
 					Bucket:    "mybucket",
 					BoundsSet: true,
 					Bounds: flux.Bounds{

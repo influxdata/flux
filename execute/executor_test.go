@@ -13,7 +13,7 @@ import (
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
 	uuid "github.com/satori/go.uuid"
 	"go.uber.org/zap/zaptest"
@@ -65,7 +65,7 @@ func TestExecutor_Execute(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("sum"): {
 						ID: plan.ProcedureIDFromOperationID("sum"),
-						Spec: &functions.SumProcedureSpec{
+						Spec: &transformations.SumProcedureSpec{
 							AggregateConfig: execute.DefaultAggregateConfig,
 						},
 						Parents: []plan.ProcedureID{
@@ -134,7 +134,7 @@ func TestExecutor_Execute(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("sum"): {
 						ID: plan.ProcedureIDFromOperationID("sum"),
-						Spec: &functions.SumProcedureSpec{
+						Spec: &transformations.SumProcedureSpec{
 							AggregateConfig: execute.DefaultAggregateConfig,
 						},
 						Parents: []plan.ProcedureID{
@@ -148,7 +148,7 @@ func TestExecutor_Execute(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("count"): {
 						ID: plan.ProcedureIDFromOperationID("count"),
-						Spec: &functions.CountProcedureSpec{
+						Spec: &transformations.CountProcedureSpec{
 							AggregateConfig: execute.DefaultAggregateConfig,
 						},
 						Parents: []plan.ProcedureID{
@@ -162,7 +162,7 @@ func TestExecutor_Execute(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("join"): {
 						ID: plan.ProcedureIDFromOperationID("join"),
-						Spec: &functions.MergeJoinProcedureSpec{
+						Spec: &transformations.MergeJoinProcedureSpec{
 							TableNames: map[plan.ProcedureID]string{
 								plan.ProcedureIDFromOperationID("sum"):   "sum",
 								plan.ProcedureIDFromOperationID("count"): "count",
@@ -288,7 +288,7 @@ func TestExecutor_Execute(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("sum"): {
 						ID: plan.ProcedureIDFromOperationID("sum"),
-						Spec: &functions.SumProcedureSpec{
+						Spec: &transformations.SumProcedureSpec{
 							AggregateConfig: execute.DefaultAggregateConfig,
 						},
 						Parents: []plan.ProcedureID{
@@ -302,7 +302,7 @@ func TestExecutor_Execute(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("count"): {
 						ID: plan.ProcedureIDFromOperationID("count"),
-						Spec: &functions.CountProcedureSpec{
+						Spec: &transformations.CountProcedureSpec{
 							AggregateConfig: execute.DefaultAggregateConfig,
 						},
 						Parents: []plan.ProcedureID{
@@ -316,7 +316,7 @@ func TestExecutor_Execute(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("join"): {
 						ID: plan.ProcedureIDFromOperationID("join"),
-						Spec: &functions.MergeJoinProcedureSpec{
+						Spec: &transformations.MergeJoinProcedureSpec{
 							TableNames: map[plan.ProcedureID]string{
 								plan.ProcedureIDFromOperationID("sum"):   "sum",
 								plan.ProcedureIDFromOperationID("count"): "count",
@@ -449,7 +449,7 @@ func TestExecutor_Execute(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("sum"): {
 						ID: plan.ProcedureIDFromOperationID("sum"),
-						Spec: &functions.SumProcedureSpec{
+						Spec: &transformations.SumProcedureSpec{
 							AggregateConfig: execute.DefaultAggregateConfig,
 						},
 						Parents: []plan.ProcedureID{
@@ -463,7 +463,7 @@ func TestExecutor_Execute(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("mean"): {
 						ID: plan.ProcedureIDFromOperationID("mean"),
-						Spec: &functions.MeanProcedureSpec{
+						Spec: &transformations.MeanProcedureSpec{
 							AggregateConfig: execute.DefaultAggregateConfig,
 						},
 						Parents: []plan.ProcedureID{
