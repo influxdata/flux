@@ -3,9 +3,8 @@ package semantic
 // FunctionReturnVisitor visits an annotated semantic graph
 // and records every function's return type variable.
 type FunctionReturnVisitor struct {
-	tenv       map[Node]TypeVar
-	current    Node
-	returnType TypeVar
+	tenv        map[Node]TypeVar
+	currentFunc *FunctionExpression
 }
 
 // NewFunctionReturnVisitor instantiates a new FunctionReturnVisitor from a type environment
@@ -16,17 +15,15 @@ func NewFunctionReturnVisitor(tenv map[Node]TypeVar) *FunctionReturnVisitor {
 // Visit records the type variable associated with a return statement or an expression statement
 func (v *FunctionReturnVisitor) Visit(node Node) Visitor {
 	switch n := node.(type) {
+	case *FunctionExpression:
+		v.currentFunc = n
 	case *ReturnStatement:
-		v.returnType = v.tenv[n.Argument]
+		v.currentFunc.returnTypeVar = v.tenv[n.Argument]
 	case *ExpressionStatement:
-		v.returnType = v.tenv[n.Expression]
+		v.currentFunc.returnTypeVar = v.tenv[n.Expression]
 	}
 	return v
 }
 
-// Done assigns the most recent return type to a Function Expression
-func (v *FunctionReturnVisitor) Done() {
-	if n, ok := v.current.(*FunctionExpression); ok {
-		n.returnTypeVar = v.returnType
-	}
-}
+// Done implements Visitor interface
+func (v *FunctionReturnVisitor) Done() {}

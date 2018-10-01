@@ -5,7 +5,7 @@ package semantic
 type VariableDeclarationVisitor struct {
 	current Node
 	scope   *VariableScope
-	next    *VariableScope
+	outer   *VariableScope
 }
 
 // NewVariableDeclarationVisitor instantiates a new VariableDeclarationVisitor
@@ -20,23 +20,22 @@ func (v *VariableDeclarationVisitor) Visit(node Node) Visitor {
 	case *BlockStatement:
 		v.scope = v.scope.Nest()
 	case *NativeVariableDeclaration:
-		v.scope.Set(n.Identifier.Name, n)
+		v.scope.Set(n.Identifier.Name, n.Identifier)
 	case *IdentifierExpression:
-		n.declaration, _ = v.scope.Lookup(n.Name)
+		n.identifier, _ = v.scope.Lookup(n.Name)
 	case *FunctionExpression:
-		// Create a new variable context
+		// Nest scope and keep referene to outer scope
+		v.outer = v.scope
 		v.scope = v.scope.Nest()
-	case *FunctionParam:
-		v.next = v.scope
-		// Default parameter values must be evaluated in
-		// the context outside of the function definition.
-		v.scope = v.scope.Parent()
-		n.declaration = &NativeVariableDeclaration{
-			Identifier: n.Key,
+	case *ParamKeys:
+		for _, k := range n.Identifiers {
+			v.scope.Set(k.Name, k)
 		}
-		// Parameter names must be visible in the context of the function body
-		v.next.Set(n.Key.Name, n.declaration)
-	}
+		return nil
+	case *ParamValues:
+		// outer is no longer the outer scope
+		v.outer = v.scope
+		v.scope = v.scope.Parent()
 	return v
 }
 
@@ -44,42 +43,38 @@ func (v *VariableDeclarationVisitor) Visit(node Node) Visitor {
 func (v *VariableDeclarationVisitor) Done() {
 	switch v.current.(type) {
 	case *BlockStatement:
-		// Reset variable context after visiting BlockStatement
 		v.scope = v.scope.Parent()
-	case *FunctionParam:
-		// Set variable context to that of the function body after
-		// visiting parameter. This is necessary in order for the
-		// parameter names to be visible to the function body.
-		v.scope = v.next
 	case *FunctionExpression:
-		// Reset variable context after visiting FunctionExpression
 		v.scope = v.scope.Parent()
+	case *FunctionDefaults:
+		v.scope = v.outer
 	}
 }
 
 // VariableScope of the program
 type VariableScope struct {
 	parent *VariableScope
-	vardec map[string]VariableDeclaration
+	// Identifiers in the current scope
+	vars map[string]*Identifier
 }
 
 // NewVariableScope returns a new variable scope
 func NewVariableScope() *VariableScope {
 	return &VariableScope{
-		vardec: make(map[string]VariableDeclaration, 8)}
+		vars: make(map[string]*Identifier, 8)}
 }
 
 // Set adds a new binding to the current scope
-func (s *VariableScope) Set(name string, dec VariableDeclaration) {
-	s.vardec[name] = dec
+func (s *VariableScope) Set(name string, ident *Identifier) {
+	s.vars[name] = ident
 }
 
 // Lookup returns the variable declaration associated with name in the current scope
-func (s *VariableScope) Lookup(name string) (VariableDeclaration, bool) {
+func (s *VariableScope) Lookup(name string) (*Identifier, bool) {
 	if s == nil {
 		return nil, false
 	}
-	dec, ok := s.vardec[name]
+	dec, ok := s.vars[name]
 	if !ok {
 		return s.parent.Lookup(name)
 	}
@@ -90,7 +85,7 @@ func (s *VariableScope) Lookup(name string) (VariableDeclaration, bool) {
 func (s *VariableScope) Nest() *VariableScope {
 	return &VariableScope{
 		parent: s,
-		vardec: make(map[string]VariableDeclaration, 8),
+		vars: make(map[string]*Identifier, 8),
 	}
 }
 

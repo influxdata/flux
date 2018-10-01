@@ -29,7 +29,7 @@ func (a arraySignature) FreeTypeVar() []TypeVar {
 	return a.elementType.FreeTypeVar()
 }
 func (a arraySignature) String() string {
-	return "[ " + a.elementType.String() + " ]"
+	return "[" + a.elementType.String() + "]"
 }
 func (a arraySignature) Equal(sub Substitutable) bool {
 	if arr, ok := sub.(arraySignature); ok {
@@ -54,10 +54,10 @@ func (o objectSignature) String() string {
 	builder := strings.Builder{}
 	builder.WriteString("{ ")
 	for k, v := range o.properties {
-		param := fmt.Sprintf("%s: %s,", k, v.String())
+		param := fmt.Sprintf("%s:%s, ", k, v.String())
 		builder.WriteString(param)
 	}
-	builder.WriteString(" }")
+	builder.WriteString("}")
 	return builder.String()
 }
 func (o objectSignature) Equal(sub Substitutable) bool {
@@ -91,10 +91,10 @@ func (f funcSignature) String() string {
 	builder := strings.Builder{}
 	builder.WriteString("( ")
 	for k, v := range f.params {
-		param := fmt.Sprintf("%s: %s,", k, v.String())
+		param := fmt.Sprintf("%s:%s, ", k, v.String())
 		builder.WriteString(param)
 	}
-	builder.WriteString(" )")
+	builder.WriteString(")")
 	builder.WriteString(" => ")
 	builder.WriteString(f.returnType.String())
 	return builder.String()
@@ -119,6 +119,18 @@ type DeclarationConstraintVisitor struct {
 	tenv    map[Node]TypeVar
 	cons    []Constraint
 	decs    *VariableScope
+}
+
+func NewDeclarationConstraintVisitor(tenv map[Node]TypeVar) *DeclarationConstraintVisitor {
+	return &DeclarationConstraintVisitor{
+		tenv: tenv,
+		cons: make([]Constraint, 0, 10),
+		decs: NewVariableScope(),
+	}
+}
+
+func (v *DeclarationConstraintVisitor) Constraints() []Constraint {
+	return v.cons
 }
 
 // Visit adds variable re-declaration constraints
@@ -163,6 +175,13 @@ type ConstraintGenerationVisitor struct {
 	cons []Constraint
 }
 
+func NewConstraintGenerationVisitor(tenv map[Node]TypeVar, cons []Constraint) *ConstraintGenerationVisitor {
+	return &ConstraintGenerationVisitor{
+		tenv: tenv,
+		cons: cons,
+	}
+}
+
 // Format pretty prints the set of constraints generated from the visitor
 func (v *ConstraintGenerationVisitor) Format() {
 	for _, constraint := range v.cons {
@@ -170,15 +189,17 @@ func (v *ConstraintGenerationVisitor) Format() {
 	}
 }
 
+func (v *ConstraintGenerationVisitor) Constraints() []Constraint {
+	return v.cons
+}
+
+func (v *ConstraintGenerationVisitor) TypeEnvironment() map[Node]TypeVar {
+	return v.tenv
+}
+
 // Visit a semantic node and generate a type constraint
 func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
-	var tv TypeVar
-	var ok bool
-
-	if tv, ok = v.tenv[node]; !ok {
-		return v
-	}
-
+	tv := v.tenv[node]
 	switch n := node.(type) {
 	case *NativeVariableDeclaration:
 		// Inference Rule: Variable Declaration
@@ -205,6 +226,9 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 		funcType := funcSignature{
 			params:     make(map[string]Substitutable, len(n.Params)),
 			returnType: n.returnTypeVar,
+		}
+		for _, param := range n.Params {
+			funcType.params[param.Key.Name] = v.tenv[param.Key]
 		}
 		v.cons = append(v.cons, Constraint{
 			left:  tv,

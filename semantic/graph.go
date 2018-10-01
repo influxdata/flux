@@ -311,11 +311,21 @@ func (e *ArrayExpression) Copy() Node {
 }
 
 type FunctionExpression struct {
-	Params []*FunctionParam `json:"params"`
-	Body   Node             `json:"body"`
-	typ    atomic.Value     //Type
+	Params   []*FunctionParam `json:"params"`
+	Keys     *ParamKeys
+	Defaults *ParamValues
+	Body     Node         `json:"body"`
+	typ      atomic.Value //Type
 
 	returnTypeVar TypeVar
+}
+
+// Perhaps these should be semantic nodes
+type ParamKeys struct {
+	Identifiers []*Identifier
+}
+type ParamValues struct {
+	Expressions []Expression
 }
 
 func (*FunctionExpression) NodeType() string { return "ArrowFunctionExpression" }
@@ -352,6 +362,14 @@ type FunctionParam struct {
 	Default     Expression  `json:"default"`
 	Piped       bool        `json:"piped,omitempty"`
 	declaration VariableDeclaration
+}
+
+func (f *FunctionParam) ID() *Identifier {
+	return f.Key
+}
+
+func (f *FunctionParam) InitType() Type {
+	return f.Type()
 }
 
 func (*FunctionParam) NodeType() string { return "FunctionParam" }
@@ -583,9 +601,10 @@ func (p *Property) Copy() Node {
 }
 
 type IdentifierExpression struct {
-	Name string `json:"name"`
-	// declaration is the node that declares this identifier
+	Name        string `json:"name"`
 	declaration VariableDeclaration
+	// Identifier to which this expression refers
+	identifier *Identifier
 }
 
 func (*IdentifierExpression) NodeType() string { return "IdentifierExpression" }
