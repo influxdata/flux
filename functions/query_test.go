@@ -25,6 +25,7 @@ var skipTests = map[string]string{
 	"null_as_value":             "null not supported as value in influxql (https://github.com/influxdata/platform/issues/353)",
 	"difference_panic":          "difference() panics when no table is supplied",
 	"string_interp":             "string interpolation not working as expected in flux (https://github.com/influxdata/platform/issues/404)",
+	"to":                        "to functions are not supported in the testing framework (https://github.com/influxdata/flux/issues/77)",
 }
 
 var querier = querytest.NewQuerier()
