@@ -2146,6 +2146,69 @@ Examples:
     | 0002  | "temp" | 75 | "temp" | 56 |
     | 0003  | "temp" | 72 | "temp: | 55 |
 
+#### Union
+
+Union concatenates two input streams into a single output stream.  In tables that have identical
+schema and group keys, contents of the tables will be concatenated in the output stream.
+
+Example:
+
+* SF_Weather
+* Group Key for both tables {"_field"}
+
+    | _time | _field | _value |
+    | ----- | ------ | ------ |
+    | 0001  | "temp" | 70 |
+    | 0002  | "temp" | 75 |
+
+    | _time | _field | _value |
+    | ----- | ------ | ------ |
+    | 0001  | "humidity" | 81 |
+    | 0002  | "humidity" | 82 |
+
+* NY_Temperature
+* Group Key for both tables {"_field"}
+
+    | _time | _field | _value |
+    | ----- | ------ | ------ |
+    | 0001  | "temp" | 55 |
+    | 0002  | "temp" | 56 |
+
+    | _time | _field | _value |
+    | ----- | ------ | ------ |
+    | 0001  | "pressure" | 29.82 |
+    | 0002  | "pressure" | 30.01 |
+
+`union(tables: {sf: SF_Temperature, ny: NY_Temperature})` produces:
+
+* Group Key for all tables {"_field"}
+
+    | _time | _field | _value |
+    | ----- | ------ | ------ |
+    | 0001  | "temp" | 70 |
+    | 0002  | "temp" | 75 |
+    | 0001  | "temp" | 55 |
+    | 0002  | "temp" | 56 |
+
+    | _time | _field | _value |
+    | ----- | ------ | ------ |
+    | 0001  | "humidity" | 81 |
+    | 0002  | "humidity" | 82 |
+
+    | _time | _field | _value |
+    | ----- | ------ | ------ |
+    | 0001  | "pressure" | 29.82 |
+    | 0002  | "pressure" | 30.01 |
+
+##### Options
+
+| Name   | Type | Required | Default Value | Possible Values |
+| ------ | ---- | -------- | ------------- | --------------- |
+| tables | map  | yes      |  none         |  N/A            |
+
+##### Output Schema
+
+The output schema of union shall be identical to the input schema.
 
 #### Cumulative sum
 
