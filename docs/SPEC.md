@@ -2153,8 +2153,8 @@ schema and group keys, contents of the tables will be concatenated in the output
 the Union operation shall be the union of all input schemas.
 
 Union has the following properties:
-* `streams` a list of steams
-    streams specifies the streams to union together.  There must be at least two streams.
+* `tables` a list of streams
+    tables specifies the streams to union together.  There must be at least two streams.
 
 For example, given this stream, `SF_Weather` with group key `"_field"` on both tables:
 
