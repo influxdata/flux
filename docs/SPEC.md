@@ -2098,109 +2098,104 @@ fromRows(bucket:"telegraf/autogen")
 
 Join merges two or more input streams, whose values are equal on a set of common columns, into a single output stream.
 The resulting schema is the union of the input schemas, and the resulting group key is the union of the input group keys.
+**Join** has the following properties:
 
-For example, given the following two streams of data:
+* `tables` object  
+    The map of streams to be joined.  
+* `on` list of strings  
+    The list of columns on which to join.  
+* `method` string  
+    The method of join.  
+    **Default:** `"inner"`  
+    **Possible Values:** `"inner", "cross", "left", "right", "full"`  
+
+Both `tables` and `on` are required parameters.
+The `on` parameter and the `cross` method are mutually exclusive.
+Join currently only supports two input streams.
+
+[IMPL#83](https://github.com/influxdata/flux/issues/83) Add support for joining more than 2 streams  
+[IMPL#84](https://github.com/influxdata/flux/issues/84) Add support for different join types  
+
+Example:
+
+Given the following two streams of data:
 
 * SF_Temperature
 
     | _time | _field | _value |
     | ----- | ------ | ------ |
-    | 0001  | "temp" | 70 |
-    | 0002  | "temp" | 75 |
-    | 0003  | "temp" | 72 |
+    | 0001  | "temp" | 70     |
+    | 0002  | "temp" | 75     |
+    | 0003  | "temp" | 72     |
 
 * NY_Temperature
 
     | _time | _field | _value |
     | ----- | ------ | ------ |
-    | 0001  | "temp" | 55 |
-    | 0002  | "temp" | 56 |
-    | 0003  | "temp" | 55 |
+    | 0001  | "temp" | 55     |
+    | 0002  | "temp" | 56     |
+    | 0003  | "temp" | 55     |
 
-And the following join query: `join(tables: {sf: SF_Temperature, ny: NY_Temperature}, on: ["_time", "_field"])`
+And the following join query:
+
+    join(tables: {sf: SF_Temperature, ny: NY_Temperature}, on: ["_time", "_field"])
 
 The output will be:
 
-| _time | _field | ny__value | sf__value |
+| _time | _field | _value_ny | _value_sf |
 | ----- | ------ |---------- | --------- |
-| 0001  | "temp" | 55 | 70 |
-| 0002  | "temp" | 56 | 75 |
-| 0003  | "temp" | 55 | 72 |
-
-
-##### options
-
-The join operator accepts the following named parameters:
-
-| Name | Type | Required | Default Value | Possible Values |
-| ---- | ---- | -------- | ------- | ------ |
-| tables    | map           | yes   | no default value - must be specified with every call | N/A |
-| on        | string array  | no    | list of columns to join on | N/A |
-| method    | string        | no    | inner | inner, cross, left, right, or outer |
-
-* tables
-
-    Map of tables (or streams) to join together. It is the one required parameter of the join.
-
-* on
-
-    An optional parameter for specifying a list of columns to join on.
-    Defaults to the set of columns that are common to all of the input streams.
-
-* method
-
-    An optional parameter that specifies the type of join to be performed.
-    When not specified, an inner join is performed.
-    The **method** parameter may take on any one of the following values:
-
-    * inner - inner join
-
-    * cross - cross product
-
-    * left - left outer join
-
-    * right - right outer join
-
-    * outer - full outer join
-
-The **on** parameter and the **cross** method are mutually exclusive.
+| 0001  | "temp" | 55        | 70        |
+| 0002  | "temp" | 56        | 75        |
+| 0003  | "temp" | 55        | 72        |
 
 
 ##### output schema
 
 The column schema of the output stream is the union of the input schemas, and the same goes for the output group key.
 Columns that must be renamed due to ambiguity (i.e. columns that occur in more than one input stream) are renamed
-according to the template `<table>_<column>`.
+according to the template `<column>_<table>`.
 
-Examples:
+Example:
 
 * SF_Temperature
-* Group Key {"_field"}
+* Group Key for table `{ _field }`
 
     | _time | _field | _value |
     | ----- | ------ | ------ |
-    | 0001  | "temp" | 70 |
-    | 0002  | "temp" | 75 |
-    | 0003  | "temp" | 72 |
+    | 0001  | "temp" | 70     |
+    | 0002  | "temp" | 75     |
+    | 0003  | "temp" | 72     |
 
 * NY_Temperature
-* Group Key {"_time", "_field"}
+* Group Key for all tables `{ _time, _field }`
 
     | _time | _field | _value |
     | ----- | ------ | ------ |
-    | 0001  | "temp" | 55 |
-    | 0002  | "temp" | 56 |
-    | 0003  | "temp" | 55 |
+    | 0001  | "temp" | 55     |
+
+    | _time | _field | _value |
+    | ----- | ------ | ------ |
+    | 0002  | "temp" | 56     |
+
+    | _time | _field | _value |
+    | ----- | ------ | ------ |
+    | 0003  | "temp" | 55     |
 
 `join(tables: {sf: SF_Temperature, ny: NY_Temperature}, on: ["_time"])` produces:
 
-* Group Key {"_time", "sf__field", "ny__field"}
+* Group Key for all tables `{ _time, _field_ny, _field_sf }`
 
-    | _time | sf__field | sf__value | ny__field | ny__value |
-    | ----- | ------ | ---------- | -------- |--------- |
-    | 0001  | "temp" | 70 | "temp" | 55 |
-    | 0002  | "temp" | 75 | "temp" | 56 |
-    | 0003  | "temp" | 72 | "temp: | 55 |
+    | _time | _field_ny | _field_sf | _value_ny | _value_sf |
+    | ----- | --------- | --------- |---------- | --------- |
+    | 0001  | "temp"    | "temp"    | 55        | 70        |
+
+    | _time | _field_ny | _field_sf | _value_ny | _value_sf |
+    | ----- | --------- | --------- |---------- | --------- |
+    | 0002  | "temp"    | "temp"    | 56        | 75        |
+
+    | _time | _field_ny | _field_sf | _value_ny | _value_sf |
+    | ----- | --------- | --------- |---------- | --------- |
+    | 0003  | "temp"    | "temp"    | 55        | 72        |
 
 
 #### Cumulative sum
