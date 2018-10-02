@@ -176,13 +176,15 @@ func TestNew(t *testing.T) {
 								{Key: &semantic.Identifier{Name: "a"}},
 								{Key: &semantic.Identifier{Name: "b"}},
 							},
-							Body: &semantic.BinaryExpression{
-								Operator: ast.AdditionOperator,
-								Left: &semantic.IdentifierExpression{
-									Name: "a",
-								},
-								Right: &semantic.IdentifierExpression{
-									Name: "b",
+							Body: &semantic.FunctionBody{
+								Argument: &semantic.BinaryExpression{
+									Operator: ast.AdditionOperator,
+									Left: &semantic.IdentifierExpression{
+										Name: "a",
+									},
+									Right: &semantic.IdentifierExpression{
+										Name: "b",
+									},
 								},
 							},
 						},
@@ -207,7 +209,7 @@ func TestNew(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := semantic.New(tc.program, nil)
+			got, err := semantic.New(tc.program)
 			if !tc.wantErr && err != nil {
 				t.Fatal(err)
 			} else if tc.wantErr && err == nil {

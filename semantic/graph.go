@@ -43,6 +43,7 @@ func (*UnaryExpression) node()       {}
 func (*Identifier) node()    {}
 func (*Property) node()      {}
 func (*FunctionParam) node() {}
+func (*FunctionBody) node()  {}
 
 func (*BooleanLiteral) node()         {}
 func (*DateTimeLiteral) node()        {}
@@ -311,21 +312,11 @@ func (e *ArrayExpression) Copy() Node {
 }
 
 type FunctionExpression struct {
-	Params   []*FunctionParam `json:"params"`
-	Keys     *ParamKeys
-	Defaults *ParamValues
-	Body     Node         `json:"body"`
-	typ      atomic.Value //Type
+	Params []*FunctionParam `json:"params"`
+	Body   *FunctionBody    `json:"body"`
+	typ    atomic.Value     //Type
 
 	returnTypeVar TypeVar
-}
-
-// Perhaps these should be semantic nodes
-type ParamKeys struct {
-	Identifiers []*Identifier
-}
-type ParamValues struct {
-	Expressions []Expression
 }
 
 func (*FunctionExpression) NodeType() string { return "ArrowFunctionExpression" }
@@ -352,7 +343,7 @@ func (e *FunctionExpression) Copy() Node {
 			ne.Params[i] = p.Copy().(*FunctionParam)
 		}
 	}
-	ne.Body = e.Body.Copy()
+	ne.Body = e.Body.Copy().(*FunctionBody)
 
 	return ne
 }
@@ -401,6 +392,23 @@ func (p *FunctionParam) Copy() Node {
 	}
 
 	return np
+}
+
+type FunctionBody struct {
+	Argument Node
+}
+
+func (*FunctionBody) NodeType() string { return "FunctionBody" }
+func (b *FunctionBody) Copy() Node {
+	if b == nil {
+		return b
+	}
+	nb := new(FunctionBody)
+	*nb = *b
+
+	nb.Argument = b.Argument.Copy()
+
+	return nb
 }
 
 type BinaryExpression struct {
@@ -602,18 +610,17 @@ func (p *Property) Copy() Node {
 
 type IdentifierExpression struct {
 	Name        string `json:"name"`
-	declaration VariableDeclaration
-	// Identifier to which this expression refers
-	identifier *Identifier
+	declaration Node
 }
 
 func (*IdentifierExpression) NodeType() string { return "IdentifierExpression" }
 
 func (e *IdentifierExpression) Type() Type {
-	if e.declaration == nil {
-		return Invalid
-	}
-	return e.declaration.InitType()
+	return Invalid
+	//if e.declaration == nil {
+	//	return Invalid
+	//}
+	//return e.declaration.InitType()
 }
 
 func (e *IdentifierExpression) Copy() Node {
@@ -1001,7 +1008,9 @@ func analyzeArrowFunctionExpression(arrow *ast.ArrowFunctionExpression) (*Functi
 	if err != nil {
 		return nil, err
 	}
-	f.Body = b
+	f.Body = &FunctionBody{
+		Argument: b,
+	}
 
 	return f, nil
 }

@@ -66,9 +66,15 @@ func walk(v Visitor, n Node) {
 	case *FunctionExpression:
 		w := v.Visit(n)
 		if w != nil {
-			walk(w, n.Keys)
-			walk(w, n.Defaults)
+			for _, p := range n.Params {
+				walk(w, p)
+			}
 			walk(w, n.Body)
+		}
+	case *FunctionBody:
+		w := v.Visit(n)
+		if w != nil {
+			walk(w, n.Argument)
 		}
 	case *BinaryExpression:
 		w := v.Visit(n)
@@ -133,20 +139,6 @@ func walk(v Visitor, n Node) {
 		if w != nil {
 			walk(w, n.Key)
 			walk(w, n.Default)
-		}
-	case *ParamKeys:
-		w := v.Visit(n)
-		if w != nil {
-			for _, id := range n.Identifiers {
-				walk(w, id)
-			}
-		}
-	case *ParamValues:
-		w := v.Visit(n)
-		if w != nil {
-			for _, expr := range n.Expressions {
-				walk(w, expr)
-			}
 		}
 	case *BooleanLiteral:
 		v.Visit(n)

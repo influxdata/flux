@@ -2,8 +2,6 @@ package semantic
 
 import (
 	"fmt"
-	"log"
-	"strings"
 
 	"github.com/influxdata/flux/ast"
 )
@@ -14,64 +12,45 @@ type Constraint struct {
 	right Substitutable
 }
 
+func (c Constraint) String() string {
+	return fmt.Sprintf("%v ↦ %v", c.left, c.right)
+}
+
+//func (c Constraint) Equal(o Constraint) bool {
+//	return c.left == o.left && c.right.Equal(o.left)
+//}
+
 // Substitutable represents any type expression containing type variables
 type Substitutable interface {
-	FreeTypeVar() []TypeVar
-	String() string
-	Equal(Substitutable) bool
+	MonoType() (Type, bool)
 }
 
 type arraySignature struct {
 	elementType Substitutable
 }
 
-func (a arraySignature) FreeTypeVar() []TypeVar {
-	return a.elementType.FreeTypeVar()
-}
-func (a arraySignature) String() string {
-	return "[" + a.elementType.String() + "]"
-}
-func (a arraySignature) Equal(sub Substitutable) bool {
-	if arr, ok := sub.(arraySignature); ok {
-		return a.elementType.Equal(arr.elementType)
+func (a arraySignature) MonoType() (Type, bool) {
+	elementType, mono := a.elementType.MonoType()
+	if !mono {
+		return nil, false
 	}
-	return false
+	return NewArrayType(elementType), true
 }
 
 type objectSignature struct {
 	properties map[string]Substitutable
 }
 
-func (o objectSignature) FreeTypeVar() []TypeVar {
-	// TODO: Handle duplicates
-	freeTypeVars := make([]TypeVar, 0, 8)
-	for _, v := range o.properties {
-		freeTypeVars = append(freeTypeVars, v.FreeTypeVar()...)
-	}
-	return freeTypeVars
-}
-func (o objectSignature) String() string {
-	builder := strings.Builder{}
-	builder.WriteString("{ ")
-	for k, v := range o.properties {
-		param := fmt.Sprintf("%s:%s, ", k, v.String())
-		builder.WriteString(param)
-	}
-	builder.WriteString("}")
-	return builder.String()
-}
-func (o objectSignature) Equal(sub Substitutable) bool {
-	obj, ok := sub.(objectSignature)
-	if !ok {
-		return false
-	}
-	for k, v := range o.properties {
-		typ, ok := obj.properties[k]
-		if !ok || !typ.Equal(v) {
-			return false
+func (o objectSignature) MonoType() (Type, bool) {
+	types := make(map[string]Type, len(o.properties))
+	for k, p := range o.properties {
+		t, m := p.MonoType()
+		if !m {
+			return nil, false
 		}
+		types[k] = t
 	}
-	return true
+	return NewObjectType(types), true
 }
 
 type funcSignature struct {
@@ -79,93 +58,23 @@ type funcSignature struct {
 	returnType Substitutable
 }
 
-func (f funcSignature) FreeTypeVar() []TypeVar {
-	// TODO: Handle duplicates
-	freeTypeVars := make([]TypeVar, 0, 8)
-	for _, v := range f.params {
-		freeTypeVars = append(freeTypeVars, v.FreeTypeVar()...)
+func (f funcSignature) MonoType() (Type, bool) {
+	rt, mono := f.returnType.MonoType()
+	if !mono {
+		return nil, false
 	}
-	return append(freeTypeVars, f.returnType.FreeTypeVar()...)
-}
-func (f funcSignature) String() string {
-	builder := strings.Builder{}
-	builder.WriteString("( ")
-	for k, v := range f.params {
-		param := fmt.Sprintf("%s:%s, ", k, v.String())
-		builder.WriteString(param)
-	}
-	builder.WriteString(")")
-	builder.WriteString(" => ")
-	builder.WriteString(f.returnType.String())
-	return builder.String()
-}
-func (f funcSignature) Equal(sub Substitutable) bool {
-	fun, ok := sub.(funcSignature)
-	if !ok {
-		return false
-	}
-	for k, v := range f.params {
-		typ, ok := fun.params[k]
-		if !ok || !v.Equal(typ) {
-			return false
+	types := make(map[string]Type, len(f.params))
+	for k, p := range f.params {
+		t, m := p.MonoType()
+		if !m {
+			return nil, false
 		}
+		types[k] = t
 	}
-	return f.returnType.Equal(fun.returnType)
-}
-
-// DeclarationConstraintVisitor generates type constraints for variable declarations
-type DeclarationConstraintVisitor struct {
-	current Node
-	tenv    map[Node]TypeVar
-	cons    []Constraint
-	decs    *VariableScope
-}
-
-func NewDeclarationConstraintVisitor(tenv map[Node]TypeVar) *DeclarationConstraintVisitor {
-	return &DeclarationConstraintVisitor{
-		tenv: tenv,
-		cons: make([]Constraint, 0, 10),
-		decs: NewVariableScope(),
-	}
-}
-
-func (v *DeclarationConstraintVisitor) Constraints() []Constraint {
-	return v.cons
-}
-
-// Visit adds variable re-declaration constraints
-func (v *DeclarationConstraintVisitor) Visit(node Node) Visitor {
-	v.current = node
-	switch n := node.(type) {
-	case *BlockStatement:
-		v.decs = v.decs.Nest()
-	case *NativeVariableDeclaration:
-		name := n.Identifier.Name
-		dec, ok := v.decs.Lookup(name)
-		if !ok {
-			v.decs.Set(name, n)
-			return v
-		}
-		// Variables can change value but not type during
-		// the course of a program. This defines a constraint.
-		v.cons = append(v.cons, Constraint{
-			left:  v.tenv[n.Identifier],
-			right: v.tenv[dec.ID()],
-		})
-	case *FunctionExpression:
-		v.decs = v.decs.Nest()
-	case *FunctionParam:
-		v.decs.Set(n.Key.Name, n.declaration)
-	}
-	return v
-}
-
-// Done implements the Visitor interface
-func (v *DeclarationConstraintVisitor) Done() {
-	switch v.current.(type) {
-	case *BlockStatement, *FunctionExpression:
-		v.decs = v.decs.Parent()
-	}
+	return NewFunctionType(FunctionSignature{
+		Params:     types,
+		ReturnType: rt,
+	}), true
 }
 
 // ConstraintGenerationVisitor visits a semantic graph and generates
@@ -175,17 +84,9 @@ type ConstraintGenerationVisitor struct {
 	cons []Constraint
 }
 
-func NewConstraintGenerationVisitor(tenv map[Node]TypeVar, cons []Constraint) *ConstraintGenerationVisitor {
+func NewConstraintGenerationVisitor(tenv map[Node]TypeVar) *ConstraintGenerationVisitor {
 	return &ConstraintGenerationVisitor{
 		tenv: tenv,
-		cons: cons,
-	}
-}
-
-// Format pretty prints the set of constraints generated from the visitor
-func (v *ConstraintGenerationVisitor) Format() {
-	for _, constraint := range v.cons {
-		log.Println(constraint.left.name + " = " + constraint.right.String())
 	}
 }
 
@@ -234,6 +135,15 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 			left:  tv,
 			right: funcType,
 		})
+	case *FunctionParam:
+		key := v.tenv[n.Key]
+		def, ok := v.tenv[n.Default]
+		if ok {
+			v.cons = append(v.cons, Constraint{
+				left:  key,
+				right: def,
+			})
+		}
 	case *CallExpression:
 		// Inference Rule: Call Expression
 		// ------------------------------------------------------------
@@ -428,10 +338,10 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 		// TODO: This is probably the most difficult type
 		// inference rule. How to constrain this type?
 	case *IdentifierExpression:
-		tvar := v.tenv[n.declaration.ID()]
+		tvar := v.tenv[n.declaration]
 		v.cons = append(v.cons, Constraint{
-			left:  tv,
-			right: tvar,
+			left:  tvar,
+			right: tv,
 		})
 	case *BooleanLiteral:
 		v.cons = append(v.cons, Constraint{
@@ -479,3 +389,27 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 
 // Done is used to satisfy the Visitor interface
 func (v *ConstraintGenerationVisitor) Done() {}
+
+func GenerateConstraints(program *Program, tenv map[Node]TypeVar) []Constraint {
+	dv := NewVariableDeclarationVisitor()
+	Walk(dv, program)
+
+	// Generate the rest of the constraints
+	constraintVisitor := NewConstraintGenerationVisitor(tenv)
+	Walk(constraintVisitor, program)
+
+	return constraintVisitor.Constraints()
+}
+
+//type ConstraintSet struct {
+//	set []Constraint
+//}
+//
+//func (s *ConstraintSet) Add(c Constraint) {
+//	for _, oc := range s.set {
+//		if oc.Equal(c) {
+//			return
+//		}
+//	}
+//	s.set = append(s.set, c)
+//}

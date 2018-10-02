@@ -296,7 +296,7 @@ func (e *FunctionExpression) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
-	e.Body = body
+	e.Body = body.(*FunctionBody)
 	return nil
 }
 func (e *FunctionParam) MarshalJSON() ([]byte, error) {
@@ -329,6 +329,17 @@ func (e *FunctionParam) UnmarshalJSON(data []byte) error {
 	}
 	e.Default = def
 	return nil
+}
+func (e *FunctionBody) MarshalJSON() ([]byte, error) {
+	type Alias FunctionBody
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  e.NodeType(),
+		Alias: (*Alias)(e),
+	}
+	return json.Marshal(raw)
 }
 func (e *BinaryExpression) MarshalJSON() ([]byte, error) {
 	type Alias BinaryExpression

@@ -89,6 +89,22 @@ func (k Kind) String() string {
 	}
 	return "kind" + strconv.Itoa(int(k))
 }
+func (k Kind) MonoType() (Type, bool) {
+	switch k {
+	case
+		String,
+		Int,
+		UInt,
+		Float,
+		Bool,
+		Time,
+		Duration,
+		Regexp:
+		return k, true
+	default:
+		return nil, false
+	}
+}
 
 func (k Kind) Kind() Kind {
 	return k
@@ -438,7 +454,7 @@ func functionTypeOf(e *FunctionExpression) Type {
 		sig.Params[p.Key.Name] = p.Type()
 	}
 	// Determine returnType
-	switch b := e.Body.(type) {
+	switch b := e.Body.Argument.(type) {
 	case Expression:
 		sig.ReturnType = b.Type()
 	case *BlockStatement:
