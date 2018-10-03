@@ -44,7 +44,7 @@ func TestInferTypes(t *testing.T) {
 			program: &semantic.Program{
 				Body: []semantic.Statement{
 					&semantic.NativeVariableDeclaration{
-						Identifier: &semantic.Identifier{Name: "a"},
+						Identifier: &semantic.Identifier{Name: "f"},
 						Init: &semantic.FunctionExpression{
 							Params: []*semantic.FunctionParam{{
 								Key: &semantic.Identifier{Name: "a"},
@@ -55,6 +55,36 @@ func TestInferTypes(t *testing.T) {
 									Left:     &semantic.IntegerLiteral{Value: 1},
 									Right:    &semantic.IdentifierExpression{Name: "a"},
 								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "call function",
+			program: &semantic.Program{
+				Body: []semantic.Statement{
+					&semantic.NativeVariableDeclaration{
+						Identifier: &semantic.Identifier{Name: "two"},
+						Init: &semantic.CallExpression{
+							Callee: &semantic.FunctionExpression{
+								Params: []*semantic.FunctionParam{{
+									Key: &semantic.Identifier{Name: "a"},
+								}},
+								Body: &semantic.FunctionBody{
+									Argument: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left:     &semantic.IntegerLiteral{Value: 1},
+										Right:    &semantic.IdentifierExpression{Name: "a"},
+									},
+								},
+							},
+							Arguments: &semantic.ObjectExpression{
+								Properties: []*semantic.Property{{
+									Key:   &semantic.Identifier{Name: "a"},
+									Value: &semantic.IntegerLiteral{Value: 1},
+								}},
 							},
 						},
 					},

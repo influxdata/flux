@@ -9,42 +9,42 @@ import (
 
 type SolutionMap map[Node]Type
 
-func SolveTypes(program *Program, tenv map[Node]TypeVar, constraints []Constraint) (SolutionMap, error) {
+func SolveTypes(program *Program, tenv map[Node]TypeVar, constraints []Substitutable) (SolutionMap, error) {
 	solution := make(SolutionMap)
-	log.Println(constraints)
-	changed := true
-	for changed {
-		changed = false
+	log.Println("constraints", constraints)
+	countFreeVars := 2
+	for countFreeVars > 0 {
+		countFreeVars--
 		for i, a := range constraints {
+			c, ok := a.(Constraint)
+			if !ok {
+				continue
+			}
 			for j, b := range constraints {
 				if i == j {
 					continue
 				}
-				c, chg := substitute(b, a)
-				constraints[j] = c
-				changed = changed || chg
+				constraints[j] = b.Substitute(c)
 			}
 		}
 	}
-	changed = true
-	for changed {
-		changed = false
-		for _, c := range constraints {
-			typ, mono := c.right.MonoType()
+	for _, c := range constraints {
+		c, ok := c.(Constraint)
+		if !ok {
+			continue
+		}
+		for n, tv := range tenv {
+			s := tv.Substitute(c)
+			typ, mono := s.MonoType()
 			if mono {
-				for n, tv := range tenv {
-					if tv == c.left {
-						if _, ok := solution[n]; !ok {
-							solution[n] = typ
-							changed = true
-						}
-					}
-				}
+				solution[n] = typ
 			}
 		}
-		log.Println(constraints, tenv, solution)
 	}
+	log.Println(constraints, tenv, solution)
+	// Validate we got a complete solution
 	if len(solution) != len(tenv) {
+		// Populate the missing solutions with Invalid
 		for n := range tenv {
 			if _, ok := solution[n]; !ok {
 				solution[n] = Invalid
@@ -55,23 +55,23 @@ func SolveTypes(program *Program, tenv map[Node]TypeVar, constraints []Constrain
 	return solution, nil
 }
 
-func substitute(a, b Constraint) (Constraint, bool) {
-	if r, ok := a.right.(TypeVar); ok && r == b.left {
-		c := a
-		c.right = b.right
-		log.Println(a, " <-> ", b, " >> ", c)
-		return c, true
-	}
-	return a, false
-}
+//func substitute(a, b Constraint) Constraint {
+//	if r, ok := a.right.(TypeVar); ok && r == b.left {
+//		c := a
+//		c.right = b.right
+//		log.Println(a, " <-> ", b, " >> ", c)
+//		return c
+//	}
+//	return a
+//}
 
 func (s SolutionMap) String() string {
 	var builder strings.Builder
 	builder.WriteString("{")
 	for k, v := range s {
-		builder.WriteString(fmt.Sprintf("%T", k))
+		fmt.Fprintf(&builder, "%#v", k)
 		builder.WriteString(" = ")
-		builder.WriteString(fmt.Sprintf("%v", v))
+		fmt.Fprintf(&builder, "%v", v)
 		builder.WriteString(", ")
 	}
 	builder.WriteString("}")

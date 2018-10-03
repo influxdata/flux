@@ -17,6 +17,7 @@ import (
 //
 // DO NOT embed this type into other interfaces or structs as that will invalidate the comparison properties of the interface.
 type Type interface {
+	Substitutable
 	// Kind returns the specific kind of this type.
 	Kind() Kind
 
@@ -105,6 +106,9 @@ func (k Kind) MonoType() (Type, bool) {
 		return nil, false
 	}
 }
+func (k Kind) Substitute(c Constraint) Substitutable {
+	return k
+}
 
 func (k Kind) Kind() Kind {
 	return k
@@ -129,26 +133,19 @@ func (k Kind) ReturnType() Type {
 }
 func (k Kind) typ() {}
 
-// FreeTypeVar implements Substitutable.
-// Kinds do not have any free type variables.
-func (k Kind) FreeTypeVar() []TypeVar {
-	return nil
-}
-
-// Equal implements Substitutable
-func (k Kind) Equal(sub Substitutable) bool {
-	if kind, ok := sub.(Kind); ok {
-		return k == kind
-	}
-	return false
-}
-
 type arrayType struct {
 	elementType Type
 }
 
 func (t *arrayType) String() string {
 	return fmt.Sprintf("[%v]", t.elementType)
+}
+
+func (t *arrayType) Substitute(c Constraint) Substitutable {
+	return t
+}
+func (t *arrayType) MonoType() (Type, bool) {
+	return t, true
 }
 
 func (t *arrayType) Kind() Kind {
@@ -235,6 +232,13 @@ func (t *objectType) String() string {
 	buf.WriteRune('}')
 
 	return buf.String()
+}
+
+func (t *objectType) Substitute(c Constraint) Substitutable {
+	return t
+}
+func (t *objectType) MonoType() (Type, bool) {
+	return t, true
 }
 
 func (t *objectType) Kind() Kind {
@@ -383,6 +387,13 @@ func (t *functionType) String() string {
 	fmt.Fprintf(&buf, ") %v", t.returnType)
 
 	return buf.String()
+}
+
+func (t *functionType) Substitute(c Constraint) Substitutable {
+	return t
+}
+func (t *functionType) MonoType() (Type, bool) {
+	return t, true
 }
 
 func (t *functionType) Kind() Kind {

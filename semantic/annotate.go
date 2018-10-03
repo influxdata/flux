@@ -13,6 +13,13 @@ func (tv TypeVar) MonoType() (Type, bool) {
 	return nil, false
 }
 
+func (tv TypeVar) Substitute(c Constraint) Substitutable {
+	if tv == c.left {
+		return c.right
+	}
+	return tv
+}
+
 func (tv TypeVar) String() string {
 	return tv.name
 }
@@ -44,6 +51,9 @@ type TypeAnnotationVisitor struct {
 // Visit assigns a new type variable to a semantic node
 func (v *TypeAnnotationVisitor) Visit(node Node) Visitor {
 	if n, ok := node.(Expression); ok {
+		v.tenv[n] = v.next.NewTypeVar()
+	}
+	if n, ok := node.(*FunctionBody); ok {
 		v.tenv[n] = v.next.NewTypeVar()
 	}
 	if n, ok := node.(*Identifier); ok {

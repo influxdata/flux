@@ -315,8 +315,6 @@ type FunctionExpression struct {
 	Params []*FunctionParam `json:"params"`
 	Body   *FunctionBody    `json:"body"`
 	typ    atomic.Value     //Type
-
-	returnTypeVar TypeVar
 }
 
 func (*FunctionExpression) NodeType() string { return "ArrowFunctionExpression" }
@@ -349,10 +347,9 @@ func (e *FunctionExpression) Copy() Node {
 }
 
 type FunctionParam struct {
-	Key         *Identifier `json:"key"`
-	Default     Expression  `json:"default"`
-	Piped       bool        `json:"piped,omitempty"`
-	declaration VariableDeclaration
+	Key     *Identifier `json:"key"`
+	Default Expression  `json:"default"`
+	Piped   bool        `json:"piped,omitempty"`
 }
 
 func (f *FunctionParam) ID() *Identifier {
@@ -366,17 +363,7 @@ func (f *FunctionParam) InitType() Type {
 func (*FunctionParam) NodeType() string { return "FunctionParam" }
 
 func (f *FunctionParam) Type() Type {
-	if f.declaration == nil {
-		if f.Default != nil {
-			f.declaration = &NativeVariableDeclaration{
-				Identifier: f.Key,
-				Init:       f.Default,
-			}
-		} else {
-			return Invalid
-		}
-	}
-	return f.declaration.InitType()
+	return Invalid
 }
 
 func (p *FunctionParam) Copy() Node {
@@ -609,18 +596,13 @@ func (p *Property) Copy() Node {
 }
 
 type IdentifierExpression struct {
-	Name        string `json:"name"`
-	declaration Node
+	Name string `json:"name"`
 }
 
 func (*IdentifierExpression) NodeType() string { return "IdentifierExpression" }
 
 func (e *IdentifierExpression) Type() Type {
 	return Invalid
-	//if e.declaration == nil {
-	//	return Invalid
-	//}
-	//return e.declaration.InitType()
 }
 
 func (e *IdentifierExpression) Copy() Node {
@@ -629,10 +611,6 @@ func (e *IdentifierExpression) Copy() Node {
 	}
 	ne := new(IdentifierExpression)
 	*ne = *e
-
-	if ne.declaration != nil {
-		ne.declaration = e.declaration.Copy().(VariableDeclaration)
-	}
 
 	return ne
 }
@@ -990,16 +968,10 @@ func analyzeArrowFunctionExpression(arrow *ast.ArrowFunctionExpression) (*Functi
 			}
 		}
 
-		declaration := &NativeVariableDeclaration{
-			Identifier: key,
-			Init:       def,
-		}
-
 		f.Params[i] = &FunctionParam{
-			Key:         key,
-			Default:     def,
-			Piped:       piped,
-			declaration: declaration,
+			Key:     key,
+			Default: def,
+			Piped:   piped,
 		}
 
 	}

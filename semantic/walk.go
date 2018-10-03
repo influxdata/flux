@@ -99,10 +99,7 @@ func walk(v Visitor, n Node) {
 			walk(w, n.Consequent)
 		}
 	case *IdentifierExpression:
-		w := v.Visit(n)
-		if w != nil {
-			walk(w, n.declaration)
-		}
+		v.Visit(n)
 	case *LogicalExpression:
 		w := v.Visit(n)
 		if w != nil {
