@@ -17,8 +17,8 @@ func TestAny(t *testing.T) {
 }
 
 func addEdge(pred PlanNode, succ PlanNode) {
-	pred.AddSuccessor(succ)
-	succ.AddPredecessor(pred)
+	pred.AddSuccessors(succ)
+	succ.AddPredecessors(pred)
 }
 
 func TestPat(t *testing.T) {
