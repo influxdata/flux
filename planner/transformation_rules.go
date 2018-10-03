@@ -22,6 +22,7 @@ func (rule FromRangeTransformationRule) Pattern() Pattern {
 func (rule FromRangeTransformationRule) Rewrite(node PlanNode) (PlanNode, bool) {
 	rangeNode := node.ProcedureSpec().(*RangeProcedureSpec)
 	fromNode := node.Predecessors()[0].ProcedureSpec().(*FromProcedureSpec)
+
 	return &PhysicalPlanNode{
 		Spec: &FromRangeProcedureSpec{
 			Bucket:   fromNode.Bucket,
@@ -73,7 +74,7 @@ func (rule FromTagFilterTransformationRule) Pattern() Pattern {
 
 // Rewrite performs the logical-to-physical transformation:
 //                 filter
-// ( tag0 == "something" AND <conjunctive predicate> )    ->    FromRangeTagFilter()
+// ( tag0 == "something" AND <conjunctive predicate> )    ->    FromTagFilter()
 //                   |
 //                 from
 func (rule FromTagFilterTransformationRule) Rewrite(node PlanNode) (PlanNode, bool) {

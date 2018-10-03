@@ -99,8 +99,8 @@ func (p LogicalToPhysicalPlanner) Plan(root PlanNode) (PlanNode, error) {
 //  D   E             D'  E'
 func replacePlanNode(node, newNode PlanNode) {
 	for _, n := range node.Successors() {
-		newNode.AddSuccessor(n)
+		newNode.AddSuccessors(n)
 		n.RemovePredecessor(node)
-		n.AddPredecessor(newNode)
+		n.AddPredecessors(newNode)
 	}
 }
