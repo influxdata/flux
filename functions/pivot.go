@@ -141,6 +141,11 @@ func createPivotTransformation(id execute.DatasetID, mode execute.AccumulationMo
 	return t, d, nil
 }
 
+type rowCol struct {
+	nextCol int
+	nextRow int
+}
+
 type pivotTransformation struct {
 	d     execute.Dataset
 	cache execute.TableBuilderCache
@@ -148,8 +153,7 @@ type pivotTransformation struct {
 	// for each table, we need to store a map to keep track of which rows/columns have already been created.
 	colKeyMaps map[string]map[string]int
 	rowKeyMaps map[string]map[string]int
-	nextCol    int
-	nextRow    int
+	nextRowCol map[string]rowCol
 }
 
 func NewPivotTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *PivotProcedureSpec) *pivotTransformation {
@@ -159,6 +163,7 @@ func NewPivotTransformation(d execute.Dataset, cache execute.TableBuilderCache, 
 		spec:       *spec,
 		colKeyMaps: make(map[string]map[string]int),
 		rowKeyMaps: make(map[string]map[string]int),
+		nextRowCol: make(map[string]rowCol),
 	}
 	return t
 }
@@ -231,11 +236,10 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		}
 		t.colKeyMaps[groupKeyString] = make(map[string]int)
 		t.rowKeyMaps[groupKeyString] = make(map[string]int)
-		t.nextCol = len(cols)
-		t.nextRow = 0
+		t.nextRowCol[groupKeyString] = rowCol{nextCol: len(cols), nextRow: 0}
 	}
 
-	tbl.Do(func(cr flux.ColReader) error {
+	err := tbl.Do(func(cr flux.ColReader) error {
 		for row := 0; row < cr.Len(); row++ {
 			rowKey := ""
 			colKey := ""
@@ -261,9 +265,11 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 					Type:  valueColType,
 				}
 				builder.AddCol(newCol)
-				growColumn(builder, newCol.Type, t.nextCol, builder.NRows())
-				t.colKeyMaps[groupKeyString][colKey] = t.nextCol
-				t.nextCol++
+				nextRowCol := t.nextRowCol[groupKeyString]
+				growColumn(builder, newCol.Type, nextRowCol.nextCol, builder.NRows())
+				t.colKeyMaps[groupKeyString][colKey] = nextRowCol.nextCol
+				nextRowCol.nextCol++
+				t.nextRowCol[groupKeyString] = nextRowCol
 			}
 			//  1.  if we've not seen rowKey before, then we need to append a new row, with copied values for the
 			//  existing columns, as well as zero values for the pivoted columns.
@@ -277,9 +283,10 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 				for _, v := range t.colKeyMaps[groupKeyString] {
 					growColumn(builder, valueColType, v, 1)
 				}
-
-				t.rowKeyMaps[groupKeyString][rowKey] = t.nextRow
-				t.nextRow++
+				nextRowCol := t.nextRowCol[groupKeyString]
+				t.rowKeyMaps[groupKeyString][rowKey] = nextRowCol.nextRow
+				nextRowCol.nextRow++
+				t.nextRowCol[groupKeyString] = nextRowCol
 			}
 
 			// at this point, we've created, added and back-filled all the columns we know about
@@ -293,7 +300,7 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		return nil
 	})
 
-	return nil
+	return err
 }
 
 func growColumn(builder execute.TableBuilder, colType flux.DataType, colIdx, nRows int) {
