@@ -27,33 +27,6 @@ func (c Constraint) Substitute(o Constraint) Substitutable {
 	return c
 }
 
-// CallConstraint represents an equality constraint between a type expression and the return type of an callee expression
-type CallConstraint struct {
-	left   TypeVar
-	callee Substitutable
-}
-
-func (c CallConstraint) String() string {
-	typ, mono := c.MonoType()
-	if mono {
-		return fmt.Sprintf("%v ↦ %v", c.left, typ)
-	}
-	return fmt.Sprintf("%v ↦ =>(%v)", c.left, c.callee)
-}
-
-func (c CallConstraint) MonoType() (Type, bool) {
-	return c.callee.MonoType()
-}
-
-func (c CallConstraint) Substitute(o Constraint) Substitutable {
-	c.callee = c.callee.Substitute(o)
-	ft, mono := c.callee.MonoType()
-	if mono && ft.Kind() == Function {
-		c.callee = ft.ReturnType()
-	}
-	return c
-}
-
 // Substitutable represents any type expression containing type variables
 type Substitutable interface {
 	// Substitute returns a new substitutable with the constraint applied
@@ -175,13 +148,14 @@ func (f functionTypeScheme) String() string {
 // constraints between type variables and type expressions.
 type ConstraintGenerationVisitor struct {
 	tenv  map[Node]TypeVar
-	cons  []Constraint
+	cons  *[]Constraint
 	scope *IdentifierScope
 }
 
 func NewConstraintGenerationVisitor(tenv map[Node]TypeVar) *ConstraintGenerationVisitor {
 	return &ConstraintGenerationVisitor{
 		tenv:  tenv,
+		cons:  new([]Constraint),
 		scope: NewIdentifierScope(),
 	}
 }
@@ -194,8 +168,12 @@ func (v *ConstraintGenerationVisitor) nest() *ConstraintGenerationVisitor {
 	}
 }
 
+func (v *ConstraintGenerationVisitor) addConstraints(cs ...Constraint) {
+	*v.cons = append(*v.cons, cs...)
+}
+
 func (v *ConstraintGenerationVisitor) Constraints() []Constraint {
-	return v.cons
+	return *v.cons
 }
 
 func (v *ConstraintGenerationVisitor) TypeEnvironment() map[Node]TypeVar {
@@ -211,12 +189,13 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 	case *FunctionBody:
 		// TODO(nathanielc): Handle case were Argument is not annotated because it is a node
 		argumentVar := v.tenv[n.Argument]
-		v.cons = append(v.cons, Constraint{
+		v.addConstraints(Constraint{
 			left:  tv,
 			right: argumentVar,
 		})
 		return v.nest()
 	case *NativeVariableDeclaration:
+		// maintain scope
 		v.scope.Set(n.Identifier.Name, n)
 		// Inference Rule: Variable Declaration
 		// ------------------------------------
@@ -224,8 +203,8 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 		//
 		// -> typeof(x) = typeof(expression)
 		// ------------------------------------
-		v.cons = append(v.cons, Constraint{
-			left:  v.tenv[n.Identifier],
+		v.addConstraints(Constraint{
+			left:  v.tenv[n],
 			right: v.tenv[n.Init],
 		})
 	case *FunctionExpression:
@@ -245,20 +224,20 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 			returnType: returnTypeVar,
 		}
 		for _, param := range n.Params {
-			funcType.params[param.Key.Name] = v.tenv[param.Key]
+			funcType.params[param.Key.Name] = v.tenv[param]
 		}
-		v.cons = append(v.cons, Constraint{
+		v.addConstraints(Constraint{
 			left:  tv,
 			right: funcType,
 		})
 	case *FunctionParam:
 		// maintain scope
-		v.scope.Set(n.Key.Name, n.Key)
+		v.scope.Set(n.Key.Name, n)
 
-		key := v.tenv[n.Key]
+		key := v.tenv[n]
 		def, ok := v.tenv[n.Default]
 		if ok {
-			v.cons = append(v.cons, Constraint{
+			v.addConstraints(Constraint{
 				left:  key,
 				right: def,
 			})
@@ -271,7 +250,7 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 			return nil
 		}
 		funcBodyTypeVar := v.tenv[fe.Body]
-		v.cons = append(v.cons, Constraint{
+		v.addConstraints(Constraint{
 			left:  tv,
 			right: funcBodyTypeVar,
 		})
@@ -283,7 +262,7 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 		// --------------------------------
 		switch n.Operator {
 		case ast.NotOperator:
-			v.cons = append(v.cons,
+			v.addConstraints(
 				Constraint{
 					left:  tv,
 					right: Bool,
@@ -295,7 +274,7 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 			)
 		case ast.SubtractionOperator:
 			// TODO: Negation well defined for floats?
-			v.cons = append(v.cons,
+			v.addConstraints(
 				Constraint{
 					left:  tv,
 					right: Int,
@@ -318,7 +297,7 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 		// -> typeof(left) = bool
 		// -> typeof(right) = bool
 		// ---------------------------------------
-		v.cons = append(v.cons,
+		v.addConstraints(
 			Constraint{
 				left:  tv,
 				right: Bool,
@@ -347,7 +326,7 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 			ast.SubtractionOperator,
 			ast.MultiplicationOperator,
 			ast.DivisionOperator:
-			v.cons = append(v.cons,
+			v.addConstraints(
 				Constraint{
 					left:  tv,
 					right: v.tenv[n.Left],
@@ -376,7 +355,7 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 			ast.LessThanOperator,
 			ast.NotEqualOperator,
 			ast.EqualOperator:
-			v.cons = append(v.cons, Constraint{
+			v.addConstraints(Constraint{
 				left:  tv,
 				right: Bool,
 			})
@@ -395,7 +374,7 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 		case
 			ast.RegexpMatchOperator,
 			ast.NotRegexpMatchOperator:
-			v.cons = append(v.cons,
+			v.addConstraints(
 				Constraint{
 					left:  tv,
 					right: Bool,
@@ -419,21 +398,21 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 		//
 		// -> typeof(a) = typeof(b) = typeof(c)
 		// -------------------------------------------------
-		v.cons = append(v.cons, Constraint{
+		v.addConstraints(Constraint{
 			left: v.tenv[n],
 			right: arrayTypeScheme{
 				elementType: v.tenv[n.Elements[0]],
 			},
 		})
 		for _, e := range n.Elements {
-			v.cons = append(v.cons, Constraint{
+			v.addConstraints(Constraint{
 				left:  v.tenv[n.Elements[0]],
 				right: v.tenv[e],
 			})
 		}
 	case *ObjectExpression:
 		// Object expressions generate trivial constraints
-		v.cons = append(v.cons, Constraint{
+		v.addConstraints(Constraint{
 			left: tv,
 			right: objectTypeScheme{
 				properties: func() map[string]Substitutable {
@@ -449,53 +428,68 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 		// TODO: This is probably the most difficult type
 		// inference rule. How to constrain this type?
 	case *IdentifierExpression:
-		declNode, found := v.scope.Lookup(n.Name)
+		node, found := v.scope.Lookup(n.Name)
 		if !found {
 			log.Printf("missing identifier %q", n.Name)
 			return nil
 		}
-		tvar := v.tenv[declNode]
-		v.cons = append(v.cons, Constraint{
+		tvar := v.tenv[node]
+		v.addConstraints(Constraint{
 			left:  tvar,
 			right: tv,
 		})
+		//TODO(nathanielc): We need to handle this better.
+		// This issue reversing this solves is when we have two constraints:
+		// t0 ↦ monotype
+		// t0 ↦ t1
+		// We should be able to infer that:
+		// t1 ↦ monotype
+		//
+		// This reversing just hacks the solution by adding:
+		// t1 ↦ t0
+		// My guess is this is not stable as it could create a, t0 ↦ t0, which could cause an issue.
+		// Maybe we can fix this when we do not mutate the list of constraints but instead branch them?
+		v.addConstraints(Constraint{
+			left:  tv,
+			right: tvar,
+		})
 	case *BooleanLiteral:
-		v.cons = append(v.cons, Constraint{
+		v.addConstraints(Constraint{
 			left:  tv,
 			right: Bool,
 		})
 	case *DateTimeLiteral:
-		v.cons = append(v.cons, Constraint{
+		v.addConstraints(Constraint{
 			left:  tv,
 			right: Time,
 		})
 	case *DurationLiteral:
-		v.cons = append(v.cons, Constraint{
+		v.addConstraints(Constraint{
 			left:  tv,
 			right: Duration,
 		})
 	case *FloatLiteral:
-		v.cons = append(v.cons, Constraint{
+		v.addConstraints(Constraint{
 			left:  tv,
 			right: Float,
 		})
 	case *IntegerLiteral:
-		v.cons = append(v.cons, Constraint{
+		v.addConstraints(Constraint{
 			left:  tv,
 			right: Int,
 		})
 	case *RegexpLiteral:
-		v.cons = append(v.cons, Constraint{
+		v.addConstraints(Constraint{
 			left:  tv,
 			right: Regexp,
 		})
 	case *StringLiteral:
-		v.cons = append(v.cons, Constraint{
+		v.addConstraints(Constraint{
 			left:  tv,
 			right: String,
 		})
 	case *UnsignedIntegerLiteral:
-		v.cons = append(v.cons, Constraint{
+		v.addConstraints(Constraint{
 			left:  tv,
 			right: UInt,
 		})
@@ -511,13 +505,17 @@ func (v *ConstraintGenerationVisitor) lookupFunctionExpression(callee Expression
 	case *FunctionExpression:
 		return n, nil
 	case *IdentifierExpression:
-		declNode, found := v.scope.Lookup(n.Name)
+		node, found := v.scope.Lookup(n.Name)
 		if !found {
 			return nil, fmt.Errorf("unknown identifier %q", n.Name)
 		}
-		fe, ok := declNode.(*FunctionExpression)
+		decl, ok := node.(*NativeVariableDeclaration)
 		if !ok {
-			return nil, fmt.Errorf("cannot call non-function %q", n.Name)
+			return nil, fmt.Errorf("impossible, identifier does not resolve to a native declaration %T", node)
+		}
+		fe, ok := decl.Init.(*FunctionExpression)
+		if !ok {
+			return nil, fmt.Errorf("cannot call non-function %q, got type %T", n.Name, decl.Init)
 		}
 		return fe, nil
 	default:
@@ -564,12 +562,7 @@ func (s *IdentifierScope) Nest() *IdentifierScope {
 	}
 }
 
-// Parent returns the parent scope of the current scope
-func (s *IdentifierScope) Parent() *IdentifierScope {
-	return s.parent
-}
-
-func GenerateConstraints(program *Program, tenv map[Node]TypeVar) []Substitutable {
+func GenerateConstraints(program *Program, tenv map[Node]TypeVar) []Constraint {
 	// Generate the rest of the constraints
 	constraintVisitor := NewConstraintGenerationVisitor(tenv)
 	Walk(constraintVisitor, program)

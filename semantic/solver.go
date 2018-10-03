@@ -9,30 +9,19 @@ import (
 
 type SolutionMap map[Node]Type
 
-func SolveTypes(program *Program, tenv map[Node]TypeVar, constraints []Substitutable) (SolutionMap, error) {
+func SolveTypes(program *Program, tenv TypeEnvironment, constraints []Constraint) (SolutionMap, error) {
 	solution := make(SolutionMap)
+	log.Println("tenv", tenv)
 	log.Println("constraints", constraints)
-	countFreeVars := 2
-	for countFreeVars > 0 {
-		countFreeVars--
-		for i, a := range constraints {
-			c, ok := a.(Constraint)
-			if !ok {
+	for i, a := range constraints {
+		for j, b := range constraints {
+			if i == j {
 				continue
 			}
-			for j, b := range constraints {
-				if i == j {
-					continue
-				}
-				constraints[j] = b.Substitute(c)
-			}
+			constraints[j] = b.Substitute(a).(Constraint)
 		}
 	}
 	for _, c := range constraints {
-		c, ok := c.(Constraint)
-		if !ok {
-			continue
-		}
 		for n, tv := range tenv {
 			s := tv.Substitute(c)
 			typ, mono := s.MonoType()
@@ -41,7 +30,7 @@ func SolveTypes(program *Program, tenv map[Node]TypeVar, constraints []Substitut
 			}
 		}
 	}
-	log.Println(constraints, tenv, solution)
+	log.Println("substituted", constraints)
 	// Validate we got a complete solution
 	if len(solution) != len(tenv) {
 		// Populate the missing solutions with Invalid
@@ -55,24 +44,11 @@ func SolveTypes(program *Program, tenv map[Node]TypeVar, constraints []Substitut
 	return solution, nil
 }
 
-//func substitute(a, b Constraint) Constraint {
-//	if r, ok := a.right.(TypeVar); ok && r == b.left {
-//		c := a
-//		c.right = b.right
-//		log.Println(a, " <-> ", b, " >> ", c)
-//		return c
-//	}
-//	return a
-//}
-
 func (s SolutionMap) String() string {
 	var builder strings.Builder
 	builder.WriteString("{")
 	for k, v := range s {
-		fmt.Fprintf(&builder, "%#v", k)
-		builder.WriteString(" = ")
-		fmt.Fprintf(&builder, "%v", v)
-		builder.WriteString(", ")
+		fmt.Fprintf(&builder, "%#v = %v, ", k, v)
 	}
 	builder.WriteString("}")
 	return builder.String()

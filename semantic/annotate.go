@@ -1,7 +1,9 @@
 package semantic
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
 )
 
 // TypeVar is a type variable
@@ -24,6 +26,64 @@ func (tv TypeVar) String() string {
 	return tv.name
 }
 
+type TypeEnvironment map[Node]TypeVar
+
+func (e TypeEnvironment) String() string {
+	var builder strings.Builder
+	builder.WriteString("{\n")
+	for n, tv := range e {
+		fmt.Fprintf(&builder, "%#v=%v,\n", n, tv)
+	}
+	builder.WriteString("}")
+	return builder.String()
+}
+
+// TypeAnnotationVisitor visits the nodes in a semantic
+// graph and assigns all sub-expressions type variables.
+type TypeAnnotationVisitor struct {
+	// tenv represents the type environment of a program.
+	// It maps a semantic node to a unique type variable.
+	tenv TypeEnvironment
+	// the next type variable to be assigned. The first
+	// type variable is t0. Then t1, t2, t3 and so on.
+	next *TypeVarGenerator
+}
+
+// Visit assigns a new type variable to a semantic node
+func (v *TypeAnnotationVisitor) Visit(node Node) Visitor {
+	switch n := node.(type) {
+	case Expression:
+		v.tenv[n] = v.next.NewTypeVar()
+	case *NativeVariableDeclaration:
+		v.tenv[n] = v.next.NewTypeVar()
+	case *FunctionBody:
+		// The function body type annotation corresponds to the return type of the function
+		v.tenv[n] = v.next.NewTypeVar()
+	case *FunctionParam:
+		v.tenv[n] = v.next.NewTypeVar()
+	}
+	return v
+}
+
+// Done is required to implement the Visitor Interface
+func (v *TypeAnnotationVisitor) Done() {}
+
+// NewTypeAnnotationVisitor returns a new TypeAnnotationVisitor
+func NewTypeAnnotationVisitor() *TypeAnnotationVisitor {
+	return &TypeAnnotationVisitor{
+		tenv: make(TypeEnvironment, 64),
+		next: &TypeVarGenerator{
+			prefix: "t",
+			suffix: 0,
+		},
+	}
+}
+
+// TypeEnvironment returns the mapping between nodes and type variables
+func (v *TypeAnnotationVisitor) TypeEnvironment() TypeEnvironment {
+	return v.tenv
+}
+
 // TypeVarGenerator generates type variables
 type TypeVarGenerator struct {
 	prefix string
@@ -37,51 +97,7 @@ func (v *TypeVarGenerator) NewTypeVar() TypeVar {
 	return TypeVar{name: name}
 }
 
-// TypeAnnotationVisitor visits the nodes in a semantic
-// graph and assigns all sub-expressions type variables.
-type TypeAnnotationVisitor struct {
-	// tenv represents the type environment of a program.
-	// It maps a semantic node to a unique type variable.
-	tenv map[Node]TypeVar
-	// the next type variable to be assigned. The first
-	// type variable is t0. Then t1, t2, t3 and so on.
-	next *TypeVarGenerator
-}
-
-// Visit assigns a new type variable to a semantic node
-func (v *TypeAnnotationVisitor) Visit(node Node) Visitor {
-	if n, ok := node.(Expression); ok {
-		v.tenv[n] = v.next.NewTypeVar()
-	}
-	if n, ok := node.(*FunctionBody); ok {
-		v.tenv[n] = v.next.NewTypeVar()
-	}
-	if n, ok := node.(*Identifier); ok {
-		v.tenv[n] = v.next.NewTypeVar()
-	}
-	return v
-}
-
-// Done is required to implement the Visitor Interface
-func (v *TypeAnnotationVisitor) Done() {}
-
-// NewTypeAnnotationVisitor returns a new TypeAnnotationVisitor
-func NewTypeAnnotationVisitor() *TypeAnnotationVisitor {
-	return &TypeAnnotationVisitor{
-		tenv: make(map[Node]TypeVar, 64),
-		next: &TypeVarGenerator{
-			prefix: "t",
-			suffix: 0,
-		},
-	}
-}
-
-// TypeEnvironment returns the mapping between nodes and type variables
-func (v *TypeAnnotationVisitor) TypeEnvironment() map[Node]TypeVar {
-	return v.tenv
-}
-
-func Annotate(program *Program) map[Node]TypeVar {
+func Annotate(program *Program) TypeEnvironment {
 	visitor := NewTypeAnnotationVisitor()
 	Walk(visitor, program)
 	return visitor.TypeEnvironment()
