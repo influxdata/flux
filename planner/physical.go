@@ -1,17 +1,15 @@
 package planner
 
-import "github.com/influxdata/flux/plan"
-
 // PhysicalProcedureSpec is similar to its logical counterpart but must provide a method to determine cost
 type PhysicalProcedureSpec interface {
-	Kind() plan.ProcedureKind
-	Copy() plan.ProcedureSpec
+	Kind() ProcedureKind
+	Copy() ProcedureSpec
 	Cost(inStats []Statistics) (cost Cost, outStats Statistics)
 }
 
 type PhysicalPlanNode struct {
 	Edges
-	procedureSpec PhysicalProcedureSpec
+	Spec PhysicalProcedureSpec
 
 	// The attributes required from inputs to this node
 	RequiredAttrs []PhysicalAttributes
@@ -20,12 +18,12 @@ type PhysicalPlanNode struct {
 	OutputAttrs PhysicalAttributes
 }
 
-func (ppn *PhysicalPlanNode) ProcedureSpec() plan.ProcedureSpec {
-	return ppn.procedureSpec
+func (ppn *PhysicalPlanNode) ProcedureSpec() ProcedureSpec {
+	return ppn.Spec
 }
 
 func (ppn *PhysicalPlanNode) Cost(inStats []Statistics) (cost Cost, outStats Statistics) {
-	return ppn.procedureSpec.Cost(inStats)
+	return ppn.Spec.Cost(inStats)
 }
 
 type PhysicalAttributes struct {
