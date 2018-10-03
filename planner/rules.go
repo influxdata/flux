@@ -8,4 +8,3 @@ type Rule interface {
 	// Rewrite an operation into an equivalent one
 	Rewrite(PlanNode) (PlanNode, bool)
 }
-
