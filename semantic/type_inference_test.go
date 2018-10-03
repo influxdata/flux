@@ -287,38 +287,9 @@ func TestInferTypes(t *testing.T) {
 			},
 			solution: &visitor{
 				f: func(node semantic.Node) semantic.Type {
-					ft := semantic.NewFunctionType(semantic.FunctionSignature{
-						Params: map[string]semantic.Type{
-							"a": semantic.Int,
-						},
-						ReturnType: semantic.Int,
-					})
-					switch n := node.(type) {
-					case *semantic.CallExpression,
-						*semantic.BinaryExpression,
-						*semantic.FunctionBody,
-						*semantic.FunctionParam:
-						return semantic.Int
-					case *semantic.IdentifierExpression:
-						switch n.Name {
-						case "add":
-							return ft
-						case "a":
-							return semantic.Int
-						}
+					switch node.(type) {
 					case *semantic.NativeVariableDeclaration:
-						switch n.Identifier.Name {
-						case "add":
-							return ft
-						case "two":
-							return semantic.Int
-						}
-					case *semantic.FunctionExpression:
-						return ft
-					case *semantic.ObjectExpression:
-						return semantic.NewObjectType(map[string]semantic.Type{
-							"a": semantic.Int,
-						})
+						return semantic.Bool
 					}
 					return nil
 				},
