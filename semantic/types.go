@@ -17,7 +17,9 @@ import (
 //
 // DO NOT embed this type into other interfaces or structs as that will invalidate the comparison properties of the interface.
 type Type interface {
+	// Types are Substitutable in that they represent a monotype expression.
 	Substitutable
+
 	// Kind returns the specific kind of this type.
 	Kind() Kind
 
@@ -109,6 +111,9 @@ func (k Kind) MonoType() (Type, bool) {
 func (k Kind) Substitute(c Constraint) Substitutable {
 	return k
 }
+func (k Kind) HasFreeVars() bool {
+	return false
+}
 
 func (k Kind) Kind() Kind {
 	return k
@@ -146,6 +151,9 @@ func (t *arrayType) Substitute(c Constraint) Substitutable {
 }
 func (t *arrayType) MonoType() (Type, bool) {
 	return t, true
+}
+func (t *arrayType) HasFreeVars() bool {
+	return false
 }
 
 func (t *arrayType) Kind() Kind {
@@ -239,6 +247,9 @@ func (t *objectType) Substitute(c Constraint) Substitutable {
 }
 func (t *objectType) MonoType() (Type, bool) {
 	return t, true
+}
+func (t *objectType) HasFreeVars() bool {
+	return false
 }
 
 func (t *objectType) Kind() Kind {
@@ -395,6 +406,9 @@ func (t *functionType) Substitute(c Constraint) Substitutable {
 func (t *functionType) MonoType() (Type, bool) {
 	return t, true
 }
+func (t *functionType) HasFreeVars() bool {
+	return false
+}
 
 func (t *functionType) Kind() Kind {
 	return Function
@@ -460,8 +474,8 @@ var functionTypeCache struct {
 // functionTypeOf returns the Type for the given ObjectExpression.
 func functionTypeOf(e *FunctionExpression) Type {
 	sig := FunctionSignature{}
-	sig.Params = make(map[string]Type, len(e.Params))
-	for _, p := range e.Params {
+	sig.Params = make(map[string]Type, len(e.Params.Parameters))
+	for _, p := range e.Params.Parameters {
 		sig.Params[p.Key.Name] = p.Type()
 	}
 	// Determine returnType
@@ -472,8 +486,8 @@ func functionTypeOf(e *FunctionExpression) Type {
 		rs := b.ReturnStatement()
 		sig.ReturnType = rs.Argument.Type()
 	}
-	for _, p := range e.Params {
-		if p.Piped {
+	for _, p := range e.Params.Parameters {
+		if e.Piped.Name == p.Key.Name {
 			sig.PipeArgument = p.Key.Name
 			break
 		}

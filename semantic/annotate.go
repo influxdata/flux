@@ -7,9 +7,7 @@ import (
 )
 
 // TypeVar is a type variable
-type TypeVar struct {
-	name string
-}
+type TypeVar struct{ name string }
 
 func (tv TypeVar) MonoType() (Type, bool) {
 	return nil, false
@@ -20,6 +18,10 @@ func (tv TypeVar) Substitute(c Constraint) Substitutable {
 		return c.right
 	}
 	return tv
+}
+
+func (tv TypeVar) HasFreeVars() bool {
+	return true
 }
 
 func (tv TypeVar) String() string {
@@ -60,6 +62,10 @@ func (v *TypeAnnotationVisitor) Visit(node Node) Visitor {
 		// The function body type annotation corresponds to the return type of the function
 		v.tenv[n] = v.next.NewTypeVar()
 	case *FunctionParam:
+		v.tenv[n] = v.next.NewTypeVar()
+	case *DefaultParameter:
+		v.tenv[n] = v.next.NewTypeVar()
+	case *Property:
 		v.tenv[n] = v.next.NewTypeVar()
 	}
 	return v

@@ -27,8 +27,14 @@ func (c Constraint) Substitute(o Constraint) Substitutable {
 	return c
 }
 
+func (c Constraint) HasFreeVars() bool {
+	return c.right.HasFreeVars()
+}
+
 // Substitutable represents any type expression containing type variables
 type Substitutable interface {
+	// HasFreeVars reports if the substitutable expression has free type variables.
+	HasFreeVars() bool
 	// Substitute returns a new substitutable with the constraint applied
 	Substitute(Constraint) Substitutable
 	// MonoType returns the concrete type of the substitutable expression if it exists
@@ -50,6 +56,10 @@ func (a arrayTypeScheme) MonoType() (Type, bool) {
 func (a arrayTypeScheme) Substitute(c Constraint) Substitutable {
 	a.elementType = a.elementType.Substitute(c)
 	return a
+}
+
+func (a arrayTypeScheme) HasFreeVars() bool {
+	return a.elementType.HasFreeVars()
 }
 
 func (a arrayTypeScheme) String() string {
@@ -80,6 +90,15 @@ func (o objectTypeScheme) Substitute(c Constraint) Substitutable {
 		no.properties[k] = p.Substitute(c)
 	}
 	return no
+}
+func (o objectTypeScheme) HasFreeVars() bool {
+	for _, p := range o.properties {
+		free := p.HasFreeVars()
+		if free {
+			return true
+		}
+	}
+	return false
 }
 
 func (o objectTypeScheme) String() string {
@@ -130,6 +149,20 @@ func (f functionTypeScheme) Substitute(c Constraint) Substitutable {
 	return nf
 }
 
+func (f functionTypeScheme) HasFreeVars() bool {
+	free := f.returnType.HasFreeVars()
+	if free {
+		return true
+	}
+	for _, p := range f.params {
+		free := p.HasFreeVars()
+		if free {
+			return true
+		}
+	}
+	return false
+}
+
 func (f functionTypeScheme) String() string {
 	var builder strings.Builder
 	builder.WriteString("(")
@@ -150,6 +183,8 @@ type ConstraintGenerationVisitor struct {
 	tenv  map[Node]TypeVar
 	cons  *[]Constraint
 	scope *IdentifierScope
+
+	functionExpr *FunctionExpression
 }
 
 func NewConstraintGenerationVisitor(tenv map[Node]TypeVar) *ConstraintGenerationVisitor {
@@ -160,11 +195,21 @@ func NewConstraintGenerationVisitor(tenv map[Node]TypeVar) *ConstraintGeneration
 	}
 }
 
+func (v *ConstraintGenerationVisitor) nestScope() *ConstraintGenerationVisitor {
+	return &ConstraintGenerationVisitor{
+		tenv:         v.tenv,
+		cons:         v.cons,
+		scope:        v.scope.Nest(),
+		functionExpr: v.functionExpr,
+	}
+}
+
 func (v *ConstraintGenerationVisitor) nest() *ConstraintGenerationVisitor {
 	return &ConstraintGenerationVisitor{
-		tenv:  v.tenv,
-		cons:  v.cons,
-		scope: v.scope.Nest(),
+		tenv:         v.tenv,
+		cons:         v.cons,
+		scope:        v.scope,
+		functionExpr: v.functionExpr,
 	}
 }
 
@@ -172,7 +217,7 @@ func (v *ConstraintGenerationVisitor) addConstraints(cs ...Constraint) {
 	*v.cons = append(*v.cons, cs...)
 }
 
-func (v *ConstraintGenerationVisitor) Constraints() []Constraint {
+func (v *ConstraintGenerationVisitor) Constraints() ConstraintSet {
 	return *v.cons
 }
 
@@ -185,15 +230,7 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 	tv := v.tenv[node]
 	switch n := node.(type) {
 	case *BlockStatement:
-		return v.nest()
-	case *FunctionBody:
-		// TODO(nathanielc): Handle case were Argument is not annotated because it is a node
-		argumentVar := v.tenv[n.Argument]
-		v.addConstraints(Constraint{
-			left:  tv,
-			right: argumentVar,
-		})
-		return v.nest()
+		return v.nestScope()
 	case *NativeVariableDeclaration:
 		// maintain scope
 		v.scope.Set(n.Identifier.Name, n)
@@ -218,30 +255,46 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 		//
 		// -> typeof(f) = (typeof(a), typeof(b)) => typeof(Return Statement)
 		// -----------------------------------------------------------------
+
 		returnTypeVar := v.tenv[n.Body]
 		funcType := functionTypeScheme{
-			params:     make(map[string]Substitutable, len(n.Params)),
+			params:     make(map[string]Substitutable, len(n.Params.Parameters)),
 			returnType: returnTypeVar,
 		}
-		for _, param := range n.Params {
+		for _, param := range n.Params.Parameters {
 			funcType.params[param.Key.Name] = v.tenv[param]
 		}
 		v.addConstraints(Constraint{
 			left:  tv,
 			right: funcType,
 		})
+		// Remember the context of the function defaults
+		nv := v.nest()
+		nv.functionExpr = n
+		log.Printf("FunctionExpression %p %p", nv, nv.functionExpr)
+		return nv
+	case *FunctionParams:
+		// parameters marks a new function scope
+		return v.nestScope()
 	case *FunctionParam:
 		// maintain scope
 		v.scope.Set(n.Key.Name, n)
 
-		key := v.tenv[n]
-		def, ok := v.tenv[n.Default]
+		// Find default parameter
+		def, ok := v.lookupDefaultParameter(n)
 		if ok {
 			v.addConstraints(Constraint{
-				left:  key,
-				right: def,
+				left:  v.tenv[n],
+				right: v.tenv[def],
 			})
 		}
+	case *FunctionBody:
+		// TODO(nathanielc): Handle case were Argument is not annotated because it is a node
+		argumentVar := v.tenv[n.Argument]
+		v.addConstraints(Constraint{
+			left:  tv,
+			right: argumentVar,
+		})
 	case *CallExpression:
 		// Find FunctionBody and add constraint that typeof(body) == tv
 		fe, err := v.lookupFunctionExpression(n.Callee)
@@ -254,6 +307,10 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 			left:  tv,
 			right: funcBodyTypeVar,
 		})
+		//		v.addConstraints(Constraint{
+		//			left:  v.tenv[n.Arguments],
+		//			right: v.tenv[fe.Params],
+		//		})
 	case *UnaryExpression:
 		// Inference Rule: Unary Expression
 		// --------------------------------
@@ -449,10 +506,10 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 		// t1 ↦ t0
 		// My guess is this is not stable as it could create a, t0 ↦ t0, which could cause an issue.
 		// Maybe we can fix this when we do not mutate the list of constraints but instead branch them?
-		v.addConstraints(Constraint{
-			left:  tv,
-			right: tvar,
-		})
+		//v.addConstraints(Constraint{
+		//	left:  tv,
+		//	right: tvar,
+		//})
 	case *BooleanLiteral:
 		v.addConstraints(Constraint{
 			left:  tv,
@@ -523,6 +580,16 @@ func (v *ConstraintGenerationVisitor) lookupFunctionExpression(callee Expression
 	}
 }
 
+func (v *ConstraintGenerationVisitor) lookupDefaultParameter(p *FunctionParam) (*DefaultParameter, bool) {
+	log.Printf("lookupDefaultParameter %p %p", v, v.functionExpr)
+	for _, dp := range v.functionExpr.Defaults.Defaults {
+		if dp.Key.Name == p.Key.Name {
+			return dp, true
+		}
+	}
+	return nil, false
+}
+
 // IdentifierScope of the program
 type IdentifierScope struct {
 	parent *IdentifierScope
@@ -562,7 +629,25 @@ func (s *IdentifierScope) Nest() *IdentifierScope {
 	}
 }
 
-func GenerateConstraints(program *Program, tenv map[Node]TypeVar) []Constraint {
+type ConstraintSet []Constraint
+
+func (cs ConstraintSet) String() string {
+	var builder strings.Builder
+	builder.WriteString("[")
+	if len(cs) > 1 {
+		builder.WriteString("\n")
+	}
+	for i, c := range cs {
+		if i != 0 {
+			builder.WriteString(",\n")
+		}
+		fmt.Fprintf(&builder, "%v", c)
+	}
+	builder.WriteString("]")
+	return builder.String()
+}
+
+func GenerateConstraints(program *Program, tenv map[Node]TypeVar) ConstraintSet {
 	// Generate the rest of the constraints
 	constraintVisitor := NewConstraintGenerationVisitor(tenv)
 	Walk(constraintVisitor, program)

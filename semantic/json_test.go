@@ -115,7 +115,7 @@ func TestJSONMarshal(t *testing.T) {
 		{
 			name: "arrow function expression",
 			node: &semantic.FunctionExpression{
-				Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "a"}}},
+				Params: &semantic.FunctionParams{Parameters: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "a"}}}},
 				Body:   &semantic.FunctionBody{Argument: &semantic.StringLiteral{Value: "hello"}},
 			},
 			want: `{"type":"ArrowFunctionExpression","params":[{"type":"FunctionParam","key":{"type":"Identifier","name":"a"},"default":null}],"body":{"type":"StringLiteral","value":"hello"}}`,

@@ -9,7 +9,7 @@ import (
 
 type SolutionMap map[Node]Type
 
-func SolveTypes(program *Program, tenv TypeEnvironment, constraints []Constraint) (SolutionMap, error) {
+func SolveTypes(program *Program, tenv TypeEnvironment, constraints ConstraintSet) (SolutionMap, error) {
 	solution := make(SolutionMap)
 	log.Println("tenv", tenv)
 	log.Println("constraints", constraints)

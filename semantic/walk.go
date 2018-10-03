@@ -56,25 +56,51 @@ func walk(v Visitor, n Node) {
 				walk(w, n.Identifier)
 			}
 		}
-	case *ArrayExpression:
-		w := v.Visit(n)
-		if w != nil {
-			for _, e := range n.Elements {
-				walk(w, e)
-			}
-		}
 	case *FunctionExpression:
 		w := v.Visit(n)
 		if w != nil {
-			for _, p := range n.Params {
-				walk(w, p)
-			}
+			// Walk defaults first as they are evaluated in
+			// the enclosing scope, not the function scope.
+			walk(w, n.Defaults)
+			walk(w, n.Params)
 			walk(w, n.Body)
 		}
 	case *FunctionBody:
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Argument)
+		}
+	case *FunctionParams:
+		w := v.Visit(n)
+		if w != nil {
+			for _, p := range n.Parameters {
+				walk(w, p)
+			}
+		}
+	case *FunctionParam:
+		w := v.Visit(n)
+		if w != nil {
+			walk(w, n.Key)
+		}
+	case *FunctionDefaults:
+		w := v.Visit(n)
+		if w != nil {
+			for _, d := range n.Defaults {
+				walk(w, d)
+			}
+		}
+	case *DefaultParameter:
+		w := v.Visit(n)
+		if w != nil {
+			walk(w, n.Key)
+			walk(w, n.Value)
+		}
+	case *ArrayExpression:
+		w := v.Visit(n)
+		if w != nil {
+			for _, e := range n.Elements {
+				walk(w, e)
+			}
 		}
 	case *BinaryExpression:
 		w := v.Visit(n)
@@ -130,12 +156,6 @@ func walk(v Visitor, n Node) {
 		if w != nil {
 			walk(w, n.Key)
 			walk(w, n.Value)
-		}
-	case *FunctionParam:
-		w := v.Visit(n)
-		if w != nil {
-			walk(w, n.Key)
-			walk(w, n.Default)
 		}
 	case *BooleanLiteral:
 		v.Visit(n)

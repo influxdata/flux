@@ -40,10 +40,13 @@ func (*MemberExpression) node()      {}
 func (*ObjectExpression) node()      {}
 func (*UnaryExpression) node()       {}
 
-func (*Identifier) node()    {}
-func (*Property) node()      {}
-func (*FunctionParam) node() {}
-func (*FunctionBody) node()  {}
+func (*Identifier) node()       {}
+func (*Property) node()         {}
+func (*FunctionDefaults) node() {}
+func (*DefaultParameter) node() {}
+func (*FunctionParams) node()   {}
+func (*FunctionParam) node()    {}
+func (*FunctionBody) node()     {}
 
 func (*BooleanLiteral) node()         {}
 func (*DateTimeLiteral) node()        {}
@@ -312,12 +315,14 @@ func (e *ArrayExpression) Copy() Node {
 }
 
 type FunctionExpression struct {
-	Params []*FunctionParam `json:"params"`
-	Body   *FunctionBody    `json:"body"`
-	typ    atomic.Value     //Type
+	Params   *FunctionParams   `json:"params"`
+	Defaults *FunctionDefaults `json:"defaults"`
+	Piped    *Identifier       `json:"piped"`
+	Body     *FunctionBody     `json:"body"`
+	typ      atomic.Value      //Type
 }
 
-func (*FunctionExpression) NodeType() string { return "ArrowFunctionExpression" }
+func (*FunctionExpression) NodeType() string { return "FunctionExpression" }
 func (e *FunctionExpression) Type() Type {
 	t := e.typ.Load()
 	if t != nil {
@@ -335,34 +340,42 @@ func (e *FunctionExpression) Copy() Node {
 	ne := new(FunctionExpression)
 	*ne = *e
 
-	if len(e.Params) > 0 {
-		ne.Params = make([]*FunctionParam, len(e.Params))
-		for i, p := range e.Params {
-			ne.Params[i] = p.Copy().(*FunctionParam)
-		}
-	}
+	ne.Params = e.Params.Copy().(*FunctionParams)
+	ne.Defaults = e.Defaults.Copy().(*FunctionDefaults)
 	ne.Body = e.Body.Copy().(*FunctionBody)
 
 	return ne
 }
 
+type FunctionParams struct {
+	Parameters []*FunctionParam `json:"parameters"`
+}
+
+func (*FunctionParams) NodeType() string { return "FunctionParams" }
+
+func (p *FunctionParams) Copy() Node {
+	if p == nil {
+		return p
+	}
+	np := new(FunctionParams)
+	*np = *p
+
+	if len(p.Parameters) > 0 {
+		np.Parameters = make([]*FunctionParam, len(p.Parameters))
+		for i, k := range p.Parameters {
+			np.Parameters[i] = k.Copy().(*FunctionParam)
+		}
+	}
+
+	return np
+}
+
 type FunctionParam struct {
-	Key     *Identifier `json:"key"`
-	Default Expression  `json:"default"`
-	Piped   bool        `json:"piped,omitempty"`
-}
-
-func (f *FunctionParam) ID() *Identifier {
-	return f.Key
-}
-
-func (f *FunctionParam) InitType() Type {
-	return f.Type()
+	Key *Identifier
 }
 
 func (*FunctionParam) NodeType() string { return "FunctionParam" }
-
-func (f *FunctionParam) Type() Type {
+func (*FunctionParam) Type() Type {
 	return Invalid
 }
 
@@ -374,11 +387,51 @@ func (p *FunctionParam) Copy() Node {
 	*np = *p
 
 	np.Key = p.Key.Copy().(*Identifier)
-	if np.Default != nil {
-		np.Default = p.Default.Copy().(Expression)
-	}
 
 	return np
+}
+
+type FunctionDefaults struct {
+	Defaults []*DefaultParameter `json:"parameters"`
+}
+
+func (*FunctionDefaults) NodeType() string { return "FunctionDefaults" }
+
+func (d *FunctionDefaults) Copy() Node {
+	if d == nil {
+		return d
+	}
+	nd := new(FunctionDefaults)
+	*nd = *d
+
+	if len(d.Defaults) > 0 {
+		nd.Defaults = make([]*DefaultParameter, len(d.Defaults))
+		for i, dp := range d.Defaults {
+			nd.Defaults[i] = dp.Copy().(*DefaultParameter)
+		}
+	}
+
+	return nd
+}
+
+type DefaultParameter struct {
+	Key   *Identifier
+	Value Expression
+}
+
+func (*DefaultParameter) NodeType() string { return "DefaultParameter" }
+
+func (d *DefaultParameter) Copy() Node {
+	if d == nil {
+		return d
+	}
+	nd := new(DefaultParameter)
+	*nd = *d
+
+	nd.Key = d.Key.Copy().(*Identifier)
+	nd.Value = d.Value.Copy().(Expression)
+
+	return nd
 }
 
 type FunctionBody struct {
@@ -940,7 +993,12 @@ func analyzeLiteral(lit ast.Literal) (Literal, error) {
 
 func analyzeArrowFunctionExpression(arrow *ast.ArrowFunctionExpression) (*FunctionExpression, error) {
 	f := &FunctionExpression{
-		Params: make([]*FunctionParam, len(arrow.Params)),
+		Params: &FunctionParams{
+			Parameters: make([]*FunctionParam, len(arrow.Params)),
+		},
+		Defaults: &FunctionDefaults{
+			Defaults: make([]*DefaultParameter, 0, len(arrow.Params)),
+		},
 	}
 	pipedCount := 0
 	for i, p := range arrow.Params {
@@ -968,12 +1026,18 @@ func analyzeArrowFunctionExpression(arrow *ast.ArrowFunctionExpression) (*Functi
 			}
 		}
 
-		f.Params[i] = &FunctionParam{
-			Key:     key,
-			Default: def,
-			Piped:   piped,
+		f.Params.Parameters[i] = &FunctionParam{
+			Key: key,
 		}
-
+		if def != nil {
+			f.Defaults.Defaults = append(f.Defaults.Defaults, &DefaultParameter{
+				Key:   key,
+				Value: def,
+			})
+		}
+		if piped {
+			f.Piped = key
+		}
 	}
 
 	b, err := analyzeNode(arrow.Body)
