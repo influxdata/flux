@@ -78,13 +78,8 @@ func (rule FromTagFilterTransformationRule) Pattern() Pattern {
 	return &TreePattern{
 		RootType: ProcedureKind("FilterKind"),
 		Predecessors: []Pattern{
-			&TreePattern{
-				RootType: ProcedureKind("RangeKind"),
-				Predecessors: []Pattern{
-					&LeafPattern{
-						RootType: ProcedureKind("FromKind"),
-					},
-				},
+			&LeafPattern{
+				RootType: ProcedureKind("FromKind"),
 			},
 		},
 	}
