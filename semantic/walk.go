@@ -62,38 +62,42 @@ func walk(v Visitor, n Node) {
 			// Walk defaults first as they are evaluated in
 			// the enclosing scope, not the function scope.
 			walk(w, n.Defaults)
-			walk(w, n.Params)
-			walk(w, n.Body)
-		}
-	case *FunctionBody:
-		w := v.Visit(n)
-		if w != nil {
-			walk(w, n.Argument)
-		}
-	case *FunctionParams:
-		w := v.Visit(n)
-		if w != nil {
-			for _, p := range n.Parameters {
-				walk(w, p)
-			}
-		}
-	case *FunctionParam:
-		w := v.Visit(n)
-		if w != nil {
-			walk(w, n.Key)
+			walk(w, n.Block)
 		}
 	case *FunctionDefaults:
-		w := v.Visit(n)
-		if w != nil {
-			for _, d := range n.Defaults {
-				walk(w, d)
+		if n != nil {
+			w := v.Visit(n)
+			if w != nil {
+				for _, d := range n.List {
+					walk(w, d)
+				}
 			}
 		}
-	case *DefaultParameter:
+	case *FunctionParameterDefault:
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Key)
 			walk(w, n.Value)
+		}
+	case *FunctionBlock:
+		w := v.Visit(n)
+		if w != nil {
+			walk(w, n.Parameters)
+			walk(w, n.Body)
+		}
+	case *FunctionParameters:
+		if n != nil {
+			w := v.Visit(n)
+			if w != nil {
+				for _, p := range n.List {
+					walk(w, p)
+				}
+			}
+		}
+	case *FunctionParameter:
+		w := v.Visit(n)
+		if w != nil {
+			walk(w, n.Key)
 		}
 	case *ArrayExpression:
 		w := v.Visit(n)

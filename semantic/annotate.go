@@ -2,12 +2,11 @@ package semantic
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 )
 
 // TypeVar is a type variable
-type TypeVar struct{ name string }
+type TypeVar int
 
 func (tv TypeVar) MonoType() (Type, bool) {
 	return nil, false
@@ -20,12 +19,12 @@ func (tv TypeVar) Substitute(c Constraint) Substitutable {
 	return tv
 }
 
-func (tv TypeVar) HasFreeVars() bool {
-	return true
+func (tv TypeVar) Vars() []TypeVar {
+	return []TypeVar{tv}
 }
 
 func (tv TypeVar) String() string {
-	return tv.name
+	return fmt.Sprintf("t%d", tv)
 }
 
 type TypeEnvironment map[Node]TypeVar
@@ -48,25 +47,23 @@ type TypeAnnotationVisitor struct {
 	tenv TypeEnvironment
 	// the next type variable to be assigned. The first
 	// type variable is t0. Then t1, t2, t3 and so on.
-	next *TypeVarGenerator
+	gen *TypeVarGenerator
 }
 
 // Visit assigns a new type variable to a semantic node
 func (v *TypeAnnotationVisitor) Visit(node Node) Visitor {
 	switch n := node.(type) {
 	case Expression:
-		v.tenv[n] = v.next.NewTypeVar()
+		v.tenv[n] = v.gen.NewTypeVar()
 	case *NativeVariableDeclaration:
-		v.tenv[n] = v.next.NewTypeVar()
-	case *FunctionBody:
+		v.tenv[n] = v.gen.NewTypeVar()
+	case *FunctionBlock:
 		// The function body type annotation corresponds to the return type of the function
-		v.tenv[n] = v.next.NewTypeVar()
-	case *FunctionParam:
-		v.tenv[n] = v.next.NewTypeVar()
-	case *DefaultParameter:
-		v.tenv[n] = v.next.NewTypeVar()
-	case *Property:
-		v.tenv[n] = v.next.NewTypeVar()
+		v.tenv[n] = v.gen.NewTypeVar()
+	case *FunctionParameter:
+		v.tenv[n] = v.gen.NewTypeVar()
+	case *FunctionParameterDefault:
+		v.tenv[n] = v.gen.NewTypeVar()
 	}
 	return v
 }
@@ -78,10 +75,7 @@ func (v *TypeAnnotationVisitor) Done() {}
 func NewTypeAnnotationVisitor() *TypeAnnotationVisitor {
 	return &TypeAnnotationVisitor{
 		tenv: make(TypeEnvironment, 64),
-		next: &TypeVarGenerator{
-			prefix: "t",
-			suffix: 0,
-		},
+		gen:  new(TypeVarGenerator),
 	}
 }
 
@@ -92,15 +86,15 @@ func (v *TypeAnnotationVisitor) TypeEnvironment() TypeEnvironment {
 
 // TypeVarGenerator generates type variables
 type TypeVarGenerator struct {
-	prefix string
-	suffix int
+	next TypeVar
 }
 
 // NewTypeVar returns the a new type variable from a generator
 func (v *TypeVarGenerator) NewTypeVar() TypeVar {
-	name := v.prefix + strconv.Itoa(v.suffix)
-	v.suffix++
-	return TypeVar{name: name}
+	// Use zero based type vars for indexing into the Substitution list
+	n := v.next
+	v.next++
+	return n
 }
 
 func Annotate(program *Program) TypeEnvironment {

@@ -40,13 +40,14 @@ func (*MemberExpression) node()      {}
 func (*ObjectExpression) node()      {}
 func (*UnaryExpression) node()       {}
 
-func (*Identifier) node()       {}
-func (*Property) node()         {}
-func (*FunctionDefaults) node() {}
-func (*DefaultParameter) node() {}
-func (*FunctionParams) node()   {}
-func (*FunctionParam) node()    {}
-func (*FunctionBody) node()     {}
+func (*Identifier) node() {}
+func (*Property) node()   {}
+
+func (*FunctionDefaults) node()         {}
+func (*FunctionParameterDefault) node() {}
+func (*FunctionParameters) node()       {}
+func (*FunctionParameter) node()        {}
+func (*FunctionBlock) node()            {}
 
 func (*BooleanLiteral) node()         {}
 func (*DateTimeLiteral) node()        {}
@@ -314,11 +315,10 @@ func (e *ArrayExpression) Copy() Node {
 	return ne
 }
 
+// FunctionExpression represents the definition of a function
 type FunctionExpression struct {
-	Params   *FunctionParams   `json:"params"`
 	Defaults *FunctionDefaults `json:"defaults"`
-	Piped    *Identifier       `json:"piped"`
-	Body     *FunctionBody     `json:"body"`
+	Block    *FunctionBlock    `json:"block"`
 	typ      atomic.Value      //Type
 }
 
@@ -340,59 +340,17 @@ func (e *FunctionExpression) Copy() Node {
 	ne := new(FunctionExpression)
 	*ne = *e
 
-	ne.Params = e.Params.Copy().(*FunctionParams)
-	ne.Defaults = e.Defaults.Copy().(*FunctionDefaults)
-	ne.Body = e.Body.Copy().(*FunctionBody)
+	if e.Defaults != nil {
+		ne.Defaults = e.Defaults.Copy().(*FunctionDefaults)
+	}
+	ne.Block = e.Block.Copy().(*FunctionBlock)
 
 	return ne
 }
 
-type FunctionParams struct {
-	Parameters []*FunctionParam `json:"parameters"`
-}
-
-func (*FunctionParams) NodeType() string { return "FunctionParams" }
-
-func (p *FunctionParams) Copy() Node {
-	if p == nil {
-		return p
-	}
-	np := new(FunctionParams)
-	*np = *p
-
-	if len(p.Parameters) > 0 {
-		np.Parameters = make([]*FunctionParam, len(p.Parameters))
-		for i, k := range p.Parameters {
-			np.Parameters[i] = k.Copy().(*FunctionParam)
-		}
-	}
-
-	return np
-}
-
-type FunctionParam struct {
-	Key *Identifier
-}
-
-func (*FunctionParam) NodeType() string { return "FunctionParam" }
-func (*FunctionParam) Type() Type {
-	return Invalid
-}
-
-func (p *FunctionParam) Copy() Node {
-	if p == nil {
-		return p
-	}
-	np := new(FunctionParam)
-	*np = *p
-
-	np.Key = p.Key.Copy().(*Identifier)
-
-	return np
-}
-
+// FunctionDefaults is a list of default values for function parameters
 type FunctionDefaults struct {
-	Defaults []*DefaultParameter `json:"parameters"`
+	List []*FunctionParameterDefault `json:"list"`
 }
 
 func (*FunctionDefaults) NodeType() string { return "FunctionDefaults" }
@@ -404,28 +362,29 @@ func (d *FunctionDefaults) Copy() Node {
 	nd := new(FunctionDefaults)
 	*nd = *d
 
-	if len(d.Defaults) > 0 {
-		nd.Defaults = make([]*DefaultParameter, len(d.Defaults))
-		for i, dp := range d.Defaults {
-			nd.Defaults[i] = dp.Copy().(*DefaultParameter)
+	if len(d.List) > 0 {
+		nd.List = make([]*FunctionParameterDefault, len(d.List))
+		for i, dp := range d.List {
+			nd.List[i] = dp.Copy().(*FunctionParameterDefault)
 		}
 	}
 
 	return nd
 }
 
-type DefaultParameter struct {
-	Key   *Identifier
-	Value Expression
+// FunctionParameterDefault represents the default value of a function parameter.
+type FunctionParameterDefault struct {
+	Key   *Identifier `json:"key"`
+	Value Expression  `json:"value"`
 }
 
-func (*DefaultParameter) NodeType() string { return "DefaultParameter" }
+func (*FunctionParameterDefault) NodeType() string { return "FunctionParameterDefault" }
 
-func (d *DefaultParameter) Copy() Node {
+func (d *FunctionParameterDefault) Copy() Node {
 	if d == nil {
 		return d
 	}
-	nd := new(DefaultParameter)
+	nd := new(FunctionParameterDefault)
 	*nd = *d
 
 	nd.Key = d.Key.Copy().(*Identifier)
@@ -434,21 +393,70 @@ func (d *DefaultParameter) Copy() Node {
 	return nd
 }
 
-type FunctionBody struct {
-	Argument Node
+// FunctionBlock represents the function parameters and the function body.
+type FunctionBlock struct {
+	Parameters *FunctionParameters `json:"params"`
+	Body       Node
 }
 
-func (*FunctionBody) NodeType() string { return "FunctionBody" }
-func (b *FunctionBody) Copy() Node {
+func (*FunctionBlock) NodeType() string { return "FunctionBlock" }
+func (b *FunctionBlock) Copy() Node {
 	if b == nil {
 		return b
 	}
-	nb := new(FunctionBody)
+	nb := new(FunctionBlock)
 	*nb = *b
 
-	nb.Argument = b.Argument.Copy()
+	nb.Body = b.Body.Copy()
 
 	return nb
+}
+
+// FunctionParameters represents the list of function parameters and which if any parameter is the pipe parameter.
+type FunctionParameters struct {
+	List []*FunctionParameter `json:"list"`
+	Pipe *Identifier          `json:"piped"`
+}
+
+func (*FunctionParameters) NodeType() string { return "FunctionParameters" }
+
+func (p *FunctionParameters) Copy() Node {
+	if p == nil {
+		return p
+	}
+	np := new(FunctionParameters)
+	*np = *p
+
+	if len(p.List) > 0 {
+		np.List = make([]*FunctionParameter, len(p.List))
+		for i, k := range p.List {
+			np.List[i] = k.Copy().(*FunctionParameter)
+		}
+	}
+	if p.Pipe != nil {
+		np.Pipe = p.Pipe.Copy().(*Identifier)
+	}
+
+	return np
+}
+
+// FunctionParameter represents a function parameter.
+type FunctionParameter struct {
+	Key *Identifier `json:"key"`
+}
+
+func (*FunctionParameter) NodeType() string { return "FunctionParameter" }
+
+func (p *FunctionParameter) Copy() Node {
+	if p == nil {
+		return p
+	}
+	np := new(FunctionParameter)
+	*np = *p
+
+	np.Key = p.Key.Copy().(*Identifier)
+
+	return np
 }
 
 type BinaryExpression struct {
@@ -992,51 +1000,51 @@ func analyzeLiteral(lit ast.Literal) (Literal, error) {
 }
 
 func analyzeArrowFunctionExpression(arrow *ast.ArrowFunctionExpression) (*FunctionExpression, error) {
-	f := &FunctionExpression{
-		Params: &FunctionParams{
-			Parameters: make([]*FunctionParam, len(arrow.Params)),
-		},
-		Defaults: &FunctionDefaults{
-			Defaults: make([]*DefaultParameter, 0, len(arrow.Params)),
-		},
-	}
-	pipedCount := 0
-	for i, p := range arrow.Params {
-		key, err := analyzeIdentifier(p.Key)
-		if err != nil {
-			return nil, err
-		}
-
-		var def Expression
-		var piped bool
-		if p.Value != nil {
-			if _, ok := p.Value.(*ast.PipeLiteral); ok {
-				// Special case the PipeLiteral
-				piped = true
-				pipedCount++
-				if pipedCount > 1 {
-					return nil, errors.New("only a single argument may be piped")
-				}
-			} else {
-				d, err := analyzeExpression(p.Value)
-				if err != nil {
-					return nil, err
-				}
-				def = d
+	var parameters *FunctionParameters
+	var defaults *FunctionDefaults
+	if len(arrow.Params) > 0 {
+		pipedCount := 0
+		parameters = new(FunctionParameters)
+		parameters.List = make([]*FunctionParameter, len(arrow.Params))
+		for i, p := range arrow.Params {
+			key, err := analyzeIdentifier(p.Key)
+			if err != nil {
+				return nil, err
 			}
-		}
 
-		f.Params.Parameters[i] = &FunctionParam{
-			Key: key,
-		}
-		if def != nil {
-			f.Defaults.Defaults = append(f.Defaults.Defaults, &DefaultParameter{
-				Key:   key,
-				Value: def,
-			})
-		}
-		if piped {
-			f.Piped = key
+			var def Expression
+			var piped bool
+			if p.Value != nil {
+				if _, ok := p.Value.(*ast.PipeLiteral); ok {
+					// Special case the PipeLiteral
+					piped = true
+					pipedCount++
+					if pipedCount > 1 {
+						return nil, errors.New("only a single argument may be piped")
+					}
+				} else {
+					d, err := analyzeExpression(p.Value)
+					if err != nil {
+						return nil, err
+					}
+					def = d
+				}
+			}
+
+			parameters.List[i] = &FunctionParameter{Key: key}
+			if def != nil {
+				if defaults == nil {
+					defaults = new(FunctionDefaults)
+					defaults.List = make([]*FunctionParameterDefault, 0, len(arrow.Params))
+				}
+				defaults.List = append(defaults.List, &FunctionParameterDefault{
+					Key:   key,
+					Value: def,
+				})
+			}
+			if piped {
+				parameters.Pipe = key
+			}
 		}
 	}
 
@@ -1044,8 +1052,13 @@ func analyzeArrowFunctionExpression(arrow *ast.ArrowFunctionExpression) (*Functi
 	if err != nil {
 		return nil, err
 	}
-	f.Body = &FunctionBody{
-		Argument: b,
+
+	f := &FunctionExpression{
+		Defaults: defaults,
+		Block: &FunctionBlock{
+			Parameters: parameters,
+			Body:       b,
+		},
 	}
 
 	return f, nil

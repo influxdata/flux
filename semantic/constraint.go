@@ -27,14 +27,14 @@ func (c Constraint) Substitute(o Constraint) Substitutable {
 	return c
 }
 
-func (c Constraint) HasFreeVars() bool {
-	return c.right.HasFreeVars()
+func (c Constraint) Vars() []TypeVar {
+	return c.right.Vars()
 }
 
 // Substitutable represents any type expression containing type variables
 type Substitutable interface {
-	// HasFreeVars reports if the substitutable expression has free type variables.
-	HasFreeVars() bool
+	// Var returns a list of all vars in the substitutable expression
+	Vars() []TypeVar
 	// Substitute returns a new substitutable with the constraint applied
 	Substitute(Constraint) Substitutable
 	// MonoType returns the concrete type of the substitutable expression if it exists
@@ -58,8 +58,8 @@ func (a arrayTypeScheme) Substitute(c Constraint) Substitutable {
 	return a
 }
 
-func (a arrayTypeScheme) HasFreeVars() bool {
-	return a.elementType.HasFreeVars()
+func (a arrayTypeScheme) Vars() []TypeVar {
+	return a.elementType.Vars()
 }
 
 func (a arrayTypeScheme) String() string {
@@ -91,14 +91,13 @@ func (o objectTypeScheme) Substitute(c Constraint) Substitutable {
 	}
 	return no
 }
-func (o objectTypeScheme) HasFreeVars() bool {
+
+func (o objectTypeScheme) Vars() []TypeVar {
+	var vars []TypeVar
 	for _, p := range o.properties {
-		free := p.HasFreeVars()
-		if free {
-			return true
-		}
+		vars = append(vars, p.Vars()...)
 	}
-	return false
+	return vars
 }
 
 func (o objectTypeScheme) String() string {
@@ -149,18 +148,12 @@ func (f functionTypeScheme) Substitute(c Constraint) Substitutable {
 	return nf
 }
 
-func (f functionTypeScheme) HasFreeVars() bool {
-	free := f.returnType.HasFreeVars()
-	if free {
-		return true
-	}
+func (f functionTypeScheme) Vars() []TypeVar {
+	vars := f.returnType.Vars()
 	for _, p := range f.params {
-		free := p.HasFreeVars()
-		if free {
-			return true
-		}
+		vars = append(vars, p.Vars()...)
 	}
-	return false
+	return vars
 }
 
 func (f functionTypeScheme) String() string {
@@ -232,8 +225,17 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 	case *BlockStatement:
 		return v.nestScope()
 	case *NativeVariableDeclaration:
-		// maintain scope
+		// Check scope for previously declared type in local scope
+		prev, ok := v.scope.LocalLookup(n.Identifier.Name)
+		if ok {
+			v.addConstraints(Constraint{
+				left:  v.tenv[prev],
+				right: v.tenv[n],
+			})
+		}
+		// Update scope with the declaration
 		v.scope.Set(n.Identifier.Name, n)
+
 		// Inference Rule: Variable Declaration
 		// ------------------------------------
 		// x = expression
@@ -256,29 +258,36 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 		// -> typeof(f) = (typeof(a), typeof(b)) => typeof(Return Statement)
 		// -----------------------------------------------------------------
 
-		returnTypeVar := v.tenv[n.Body]
+		returnTypeVar := v.tenv[n.Block]
 		funcType := functionTypeScheme{
-			params:     make(map[string]Substitutable, len(n.Params.Parameters)),
+			params:     make(map[string]Substitutable, len(n.Block.Parameters.List)),
 			returnType: returnTypeVar,
 		}
-		for _, param := range n.Params.Parameters {
+		for _, param := range n.Block.Parameters.List {
 			funcType.params[param.Key.Name] = v.tenv[param]
 		}
 		v.addConstraints(Constraint{
 			left:  tv,
 			right: funcType,
 		})
+
 		// Remember the context of the function defaults
 		nv := v.nest()
 		nv.functionExpr = n
-		log.Printf("FunctionExpression %p %p", nv, nv.functionExpr)
 		return nv
-	case *FunctionParams:
-		// parameters marks a new function scope
+	case *FunctionBlock:
+		// TODO(nathanielc): Handle case were Argument is not annotated because it is a node
+		argumentVar := v.tenv[n.Body]
+		v.addConstraints(Constraint{
+			left:  tv,
+			right: argumentVar,
+		})
+		// new function scope
 		return v.nestScope()
-	case *FunctionParam:
+	case *FunctionParameter:
 		// maintain scope
 		v.scope.Set(n.Key.Name, n)
+		log.Printf("FunctionParam %p %q", v.scope, n.Key.Name)
 
 		// Find default parameter
 		def, ok := v.lookupDefaultParameter(n)
@@ -288,29 +297,29 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 				right: v.tenv[def],
 			})
 		}
-	case *FunctionBody:
-		// TODO(nathanielc): Handle case were Argument is not annotated because it is a node
-		argumentVar := v.tenv[n.Argument]
-		v.addConstraints(Constraint{
-			left:  tv,
-			right: argumentVar,
-		})
 	case *CallExpression:
 		// Find FunctionBody and add constraint that typeof(body) == tv
 		fe, err := v.lookupFunctionExpression(n.Callee)
 		if err != nil {
-			log.Println(err)
-			return nil
+			panic(err)
 		}
-		funcBodyTypeVar := v.tenv[fe.Body]
+		funcBodyTypeVar := v.tenv[fe.Block]
 		v.addConstraints(Constraint{
 			left:  tv,
 			right: funcBodyTypeVar,
 		})
-		//		v.addConstraints(Constraint{
-		//			left:  v.tenv[n.Arguments],
-		//			right: v.tenv[fe.Params],
-		//		})
+		// Add constraints for call arguments
+		for _, a := range n.Arguments.Properties {
+			for _, p := range fe.Block.Parameters.List {
+				if p.Key.Name == a.Key.Name {
+					v.addConstraints(Constraint{
+						left:  v.tenv[a.Value],
+						right: v.tenv[p],
+					})
+					break
+				}
+			}
+		}
 	case *UnaryExpression:
 		// Inference Rule: Unary Expression
 		// --------------------------------
@@ -487,29 +496,14 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 	case *IdentifierExpression:
 		node, found := v.scope.Lookup(n.Name)
 		if !found {
-			log.Printf("missing identifier %q", n.Name)
-			return nil
+			log.Println(v.scope)
+			panic(fmt.Sprintf("missing identifier %q", n.Name))
 		}
 		tvar := v.tenv[node]
 		v.addConstraints(Constraint{
 			left:  tvar,
 			right: tv,
 		})
-		//TODO(nathanielc): We need to handle this better.
-		// This issue reversing this solves is when we have two constraints:
-		// t0 ↦ monotype
-		// t0 ↦ t1
-		// We should be able to infer that:
-		// t1 ↦ monotype
-		//
-		// This reversing just hacks the solution by adding:
-		// t1 ↦ t0
-		// My guess is this is not stable as it could create a, t0 ↦ t0, which could cause an issue.
-		// Maybe we can fix this when we do not mutate the list of constraints but instead branch them?
-		//v.addConstraints(Constraint{
-		//	left:  tv,
-		//	right: tvar,
-		//})
 	case *BooleanLiteral:
 		v.addConstraints(Constraint{
 			left:  tv,
@@ -580,11 +574,12 @@ func (v *ConstraintGenerationVisitor) lookupFunctionExpression(callee Expression
 	}
 }
 
-func (v *ConstraintGenerationVisitor) lookupDefaultParameter(p *FunctionParam) (*DefaultParameter, bool) {
-	log.Printf("lookupDefaultParameter %p %p", v, v.functionExpr)
-	for _, dp := range v.functionExpr.Defaults.Defaults {
-		if dp.Key.Name == p.Key.Name {
-			return dp, true
+func (v *ConstraintGenerationVisitor) lookupDefaultParameter(p *FunctionParameter) (*FunctionParameterDefault, bool) {
+	if v.functionExpr != nil && v.functionExpr.Defaults != nil {
+		for _, dp := range v.functionExpr.Defaults.List {
+			if dp.Key.Name == p.Key.Name {
+				return dp, true
+			}
 		}
 	}
 	return nil, false
@@ -609,7 +604,7 @@ func (s *IdentifierScope) Set(name string, node Node) {
 	s.vars[name] = node
 }
 
-// Lookup returns the variable declaration associated with name in the current scope
+// Lookup returns the node associated with name in the scope.
 func (s *IdentifierScope) Lookup(name string) (Node, bool) {
 	if s == nil {
 		return nil, false
@@ -618,6 +613,15 @@ func (s *IdentifierScope) Lookup(name string) (Node, bool) {
 	if !ok {
 		return s.parent.Lookup(name)
 	}
+	return dec, ok
+}
+
+//LocalLookup returns the node associated with the name in the local scope and does not inspect parent scopes.
+func (s *IdentifierScope) LocalLookup(name string) (Node, bool) {
+	if s == nil {
+		return nil, false
+	}
+	dec, ok := s.vars[name]
 	return dec, ok
 }
 

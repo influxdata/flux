@@ -172,14 +172,14 @@ func TestNew(t *testing.T) {
 					&semantic.NativeVariableDeclaration{
 						Identifier: &semantic.Identifier{Name: "f"},
 						Init: &semantic.FunctionExpression{
-							Params: &semantic.FunctionParams{
-								Parameters: []*semantic.FunctionParam{
-									{Key: &semantic.Identifier{Name: "a"}},
-									{Key: &semantic.Identifier{Name: "b"}},
+							Block: &semantic.FunctionBlock{
+								Parameters: &semantic.FunctionParameters{
+									List: []*semantic.FunctionParameter{
+										{Key: &semantic.Identifier{Name: "a"}},
+										{Key: &semantic.Identifier{Name: "b"}},
+									},
 								},
-							},
-							Body: &semantic.FunctionBody{
-								Argument: &semantic.BinaryExpression{
+								Body: &semantic.BinaryExpression{
 									Operator: ast.AdditionOperator,
 									Left: &semantic.IdentifierExpression{
 										Name: "a",

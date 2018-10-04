@@ -111,8 +111,8 @@ func (k Kind) MonoType() (Type, bool) {
 func (k Kind) Substitute(c Constraint) Substitutable {
 	return k
 }
-func (k Kind) HasFreeVars() bool {
-	return false
+func (k Kind) Vars() []TypeVar {
+	return nil
 }
 
 func (k Kind) Kind() Kind {
@@ -152,8 +152,8 @@ func (t *arrayType) Substitute(c Constraint) Substitutable {
 func (t *arrayType) MonoType() (Type, bool) {
 	return t, true
 }
-func (t *arrayType) HasFreeVars() bool {
-	return false
+func (t *arrayType) Vars() []TypeVar {
+	return nil
 }
 
 func (t *arrayType) Kind() Kind {
@@ -248,8 +248,8 @@ func (t *objectType) Substitute(c Constraint) Substitutable {
 func (t *objectType) MonoType() (Type, bool) {
 	return t, true
 }
-func (t *objectType) HasFreeVars() bool {
-	return false
+func (t *objectType) Vars() []TypeVar {
+	return nil
 }
 
 func (t *objectType) Kind() Kind {
@@ -406,8 +406,8 @@ func (t *functionType) Substitute(c Constraint) Substitutable {
 func (t *functionType) MonoType() (Type, bool) {
 	return t, true
 }
-func (t *functionType) HasFreeVars() bool {
-	return false
+func (t *functionType) Vars() []TypeVar {
+	return nil
 }
 
 func (t *functionType) Kind() Kind {
@@ -474,20 +474,20 @@ var functionTypeCache struct {
 // functionTypeOf returns the Type for the given ObjectExpression.
 func functionTypeOf(e *FunctionExpression) Type {
 	sig := FunctionSignature{}
-	sig.Params = make(map[string]Type, len(e.Params.Parameters))
-	for _, p := range e.Params.Parameters {
-		sig.Params[p.Key.Name] = p.Type()
-	}
+	sig.Params = make(map[string]Type, len(e.Block.Parameters.List))
+	//for _, p := range e.Block.Parameters.Keys {
+	//	//sig.Params[p.Key.Name] = p.Type()
+	//}
 	// Determine returnType
-	switch b := e.Body.Argument.(type) {
+	switch b := e.Block.Body.(type) {
 	case Expression:
 		sig.ReturnType = b.Type()
 	case *BlockStatement:
 		rs := b.ReturnStatement()
 		sig.ReturnType = rs.Argument.Type()
 	}
-	for _, p := range e.Params.Parameters {
-		if e.Piped.Name == p.Key.Name {
+	for _, p := range e.Block.Parameters.List {
+		if e.Block.Parameters.Pipe.Name == p.Key.Name {
 			sig.PipeArgument = p.Key.Name
 			break
 		}
