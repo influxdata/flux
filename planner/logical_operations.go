@@ -6,6 +6,8 @@ import (
 	"github.com/influxdata/platform"
 )
 
+const FromKind = "from"
+
 // FromProcedureSpec <=> from()
 type FromProcedureSpec struct {
 	Bucket   string
@@ -19,8 +21,10 @@ func (spec *FromProcedureSpec) Copy() ProcedureSpec {
 	}
 }
 func (spec *FromProcedureSpec) Kind() ProcedureKind {
-	return "FromKind"
+	return FromKind
 }
+
+const RangeKind = "range"
 
 // RangeProcedureSpec <=> range()
 type RangeProcedureSpec struct {
@@ -39,8 +43,10 @@ func (spec *RangeProcedureSpec) Copy() ProcedureSpec {
 	}
 }
 func (spec *RangeProcedureSpec) Kind() ProcedureKind {
-	return "RangeKind"
+	return RangeKind
 }
+
+const FilterKind = "filter"
 
 // FilterProcedureSpec <=> filter()
 type FilterProcedureSpec struct {
@@ -53,5 +59,5 @@ func (spec *FilterProcedureSpec) Copy() ProcedureSpec {
 	}
 }
 func (spec *FilterProcedureSpec) Kind() ProcedureKind {
-	return "FilterKind"
+	return FilterKind
 }

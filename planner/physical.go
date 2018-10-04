@@ -22,6 +22,10 @@ func (ppn *PhysicalPlanNode) ProcedureSpec() ProcedureSpec {
 	return ppn.Spec
 }
 
+func (ppn *PhysicalPlanNode) Kind() ProcedureKind {
+	return ppn.Spec.Kind()
+}
+
 func (ppn *PhysicalPlanNode) Cost(inStats []Statistics) (cost Cost, outStats Statistics) {
 	return ppn.Spec.Cost(inStats)
 }
