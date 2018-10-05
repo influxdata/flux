@@ -10,6 +10,7 @@ type PlanNode interface {
 	Successors() []PlanNode
 
 	ProcedureSpec() ProcedureSpec
+	Kind() ProcedureKind
 
 	// The types of the tables produced by this node
 	// Is it possible to know this at plan time?
