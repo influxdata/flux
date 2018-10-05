@@ -12,14 +12,7 @@ type FromRangeTransformationRule struct{}
 //       |
 //     from
 func (rule FromRangeTransformationRule) Pattern() Pattern {
-	return &TreePattern{
-		RootType: ProcedureKind("RangeKind"),
-		Predecessors: []Pattern{
-			&LeafPattern{
-				RootType: ProcedureKind("FromKind"),
-			},
-		},
-	}
+	return Pat(RangeKind, Pat(FromKind))
 }
 
 // Rewrite performs the logical-to-physical transformation:
@@ -75,14 +68,7 @@ func (v *PredicateVisitor) Done() {}
 //       |
 //     from
 func (rule FromTagFilterTransformationRule) Pattern() Pattern {
-	return &TreePattern{
-		RootType: ProcedureKind("FilterKind"),
-		Predecessors: []Pattern{
-			&LeafPattern{
-				RootType: ProcedureKind("FromKind"),
-			},
-		},
-	}
+	return Pat(FilterKind, Pat(FromKind))
 }
 
 // Rewrite performs the logical-to-physical transformation:
