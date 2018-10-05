@@ -10,7 +10,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/platform"
-	//pquerytest "github.com/influxdata/platform/query/querytest"
+	pquerytest "github.com/influxdata/platform/query/querytest"
 )
 
 func TestFrom_NewQuery(t *testing.T) {
@@ -117,29 +117,28 @@ func TestFromOperation_Marshaling(t *testing.T) {
 	querytest.OperationMarshalingTestHelper(t, data, op)
 }
 
-//func TestFromOpSpec_BucketsAccessed(t *testing.T) {
-//	t.Skip()
-//	bucketName := "my_bucket"
-//	bucketID, _ := platform.IDFromString("deadbeef")
-//	tests := []pquerytest.BucketAwareQueryTestCase{
-//		{
-//			Name:             "From with bucket",
-//			Raw:              `from(bucket:"my_bucket")`,
-//			WantReadBuckets:  &[]platform.BucketFilter{{Name: &bucketName}},
-//			WantWriteBuckets: &[]platform.BucketFilter{},
-//		},
-//		{
-//			Name:             "From with bucketID",
-//			Raw:              `from(bucketID:"deadbeef")`,
-//			WantReadBuckets:  &[]platform.BucketFilter{{ID: bucketID}},
-//			WantWriteBuckets: &[]platform.BucketFilter{},
-//		},
-//	}
-//	for _, tc := range tests {
-//		tc := tc
-//		t.Run(tc.Name, func(t *testing.T) {
-//			t.Parallel()
-//			pquerytest.BucketAwareQueryTestHelper(t, tc)
-//		})
-//	}
-//}
+func TestFromOpSpec_BucketsAccessed(t *testing.T) {
+	bucketName := "my_bucket"
+	bucketID, _ := platform.IDFromString("deadbeef")
+	tests := []pquerytest.BucketAwareQueryTestCase{
+		{
+			Name:             "From with bucket",
+			Raw:              `from(bucket:"my_bucket")`,
+			WantReadBuckets:  &[]platform.BucketFilter{{Name: &bucketName}},
+			WantWriteBuckets: &[]platform.BucketFilter{},
+		},
+		{
+			Name:             "From with bucketID",
+			Raw:              `from(bucketID:"deadbeef")`,
+			WantReadBuckets:  &[]platform.BucketFilter{{ID: bucketID}},
+			WantWriteBuckets: &[]platform.BucketFilter{},
+		},
+	}
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			pquerytest.BucketAwareQueryTestHelper(t, tc)
+		})
+	}
+}
