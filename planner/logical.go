@@ -16,7 +16,7 @@ type LogicalProcedureSpec interface {
 // that describes what the node does.
 type LogicalPlanNode struct {
 	Edges
-	id NodeID
+	id   NodeID
 	Spec LogicalProcedureSpec
 }
 
@@ -78,10 +78,7 @@ func (v *fluxSpecVisitor) VisitOperation(o *flux.Operation) error {
 	}
 
 	// Create a LogicalPlanNode using the LogicalProcedureSpec
-	logicalNode := &LogicalPlanNode{
-		id: NodeID(o.ID),
-		Spec: spec,
-	}
+	logicalNode := CreateLogicalNode(NodeID(o.ID), spec)
 
 	v.nodes[o.ID] = logicalNode
 
@@ -98,4 +95,13 @@ func (v *fluxSpecVisitor) VisitOperation(o *flux.Operation) error {
 	}
 
 	return nil
+}
+
+// CreateLogicalNode creates a single logical plan node from a procedure spec.
+// The newly created logical node has no incoming or outgoing edges.
+func CreateLogicalNode(id NodeID, spec ProcedureSpec) *LogicalPlanNode {
+	return &LogicalPlanNode{
+		id:   id,
+		Spec: spec,
+	}
 }

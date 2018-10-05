@@ -3,7 +3,7 @@ package planner
 // PlanNode defines the common interface for interacting with
 // logical and physical plan nodes.
 type PlanNode interface {
-	// Returns an identifier this this plan node
+	// Returns an identifier for this plan node
 	ID() NodeID
 
 	// Plan nodes executed immediately before this node
@@ -12,7 +12,10 @@ type PlanNode interface {
 	// Plan nodes executed immediately after this node
 	Successors() []PlanNode
 
+	// Specification of the procedure represented by this node
 	ProcedureSpec() ProcedureSpec
+
+	// Type of procedure represented by this node
 	Kind() ProcedureKind
 
 	// The types of the tables produced by this node
