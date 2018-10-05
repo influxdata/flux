@@ -13,6 +13,10 @@ type LogicalPlanNode struct {
 	Spec LogicalProcedureSpec
 }
 
+func (lpn *LogicalPlanNode) Kind() ProcedureKind {
+	return lpn.Spec.Kind()
+}
+
 func (lpn *LogicalPlanNode) ProcedureSpec() ProcedureSpec {
 	return lpn.Spec
 }

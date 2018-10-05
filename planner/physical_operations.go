@@ -6,6 +6,8 @@ import (
 	"github.com/influxdata/platform"
 )
 
+const FromRangeKind = "FromRange"
+
 // FromRangeProcedureSpec represents a sequential scanning operation
 type FromRangeProcedureSpec struct {
 	Bucket   string
@@ -17,7 +19,7 @@ type FromRangeProcedureSpec struct {
 }
 
 func (spec *FromRangeProcedureSpec) Kind() ProcedureKind {
-	return "FromRange"
+	return FromRangeKind
 }
 func (spec *FromRangeProcedureSpec) Copy() ProcedureSpec {
 	return &FromRangeProcedureSpec{
@@ -33,6 +35,8 @@ func (spec *FromRangeProcedureSpec) Cost(inStats []Statistics) (Cost, Statistics
 	return Cost{}, Statistics{}
 }
 
+const FromTagFilterKind = "FromTagFilter"
+
 // FromTagFilterProcedureSpec represents an index scanning operation
 type FromTagFilterProcedureSpec struct {
 	Bucket   string
@@ -46,7 +50,7 @@ type FromTagFilterProcedureSpec struct {
 }
 
 func (spec *FromTagFilterProcedureSpec) Kind() ProcedureKind {
-	return "FromTagFilter"
+	return FromTagFilterKind
 }
 func (spec *FromTagFilterProcedureSpec) Copy() ProcedureSpec {
 	tagPreds := make(map[string]string, len(spec.TagEqualityFilters))
@@ -64,6 +68,8 @@ func (spec *FromTagFilterProcedureSpec) Cost(inStats []Statistics) (Cost, Statis
 	return Cost{}, Statistics{}
 }
 
+const FromRangeFieldFilterKind = "FromRangeFieldFilter"
+
 // FromRangeFieldFilterProcedureSpec represents a sequential scanning operation
 type FromRangeFieldFilterProcedureSpec struct {
 	Bucket   string
@@ -79,7 +85,7 @@ type FromRangeFieldFilterProcedureSpec struct {
 }
 
 func (spec *FromRangeFieldFilterProcedureSpec) Kind() ProcedureKind {
-	return "FromRange"
+	return FromRangeFieldFilterKind
 }
 func (spec *FromRangeFieldFilterProcedureSpec) Copy() ProcedureSpec {
 	return &FromRangeFieldFilterProcedureSpec{
