@@ -9,7 +9,7 @@ type PhysicalProcedureSpec interface {
 
 type PhysicalPlanNode struct {
 	Edges
-	id NodeID
+	id   NodeID
 	Spec PhysicalProcedureSpec
 
 	// The attributes required from inputs to this node
