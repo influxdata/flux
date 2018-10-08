@@ -59,12 +59,13 @@ func (p LogicalToPhysicalPlanner) AddRules(rules []Rule) {
 //     plan, err = planner.Plan(plan)
 func (p *LogicalToPhysicalPlanner) Plan(inputPlan *QueryPlan) (*QueryPlan, error) {
 
-	visited := make(map[PlanNode]struct{})
-
-	nodeStack := make([]PlanNode, len(inputPlan.Roots()))
-	copy(nodeStack, inputPlan.Roots())
-
 	for anyChanged := true; anyChanged == true; {
+
+		visited := make(map[PlanNode]struct{})
+
+		nodeStack := make([]PlanNode, len(inputPlan.Roots()))
+		copy(nodeStack, inputPlan.Roots())
+
 		anyChanged = false
 		for ; len(nodeStack) > 0; {
 			node := nodeStack[len(nodeStack)-1]

@@ -1,8 +1,9 @@
-package planner
+package planner_test
 
 import (
 	"fmt"
 	"context"
+	"github.com/influxdata/flux/planner"
 	"testing"
 	"time"
 
@@ -13,22 +14,22 @@ import (
 	"github.com/influxdata/flux/semantic"
 )
 
-var create = map[flux.OperationKind]CreateLogicalProcedureSpec{
+var create = map[flux.OperationKind]planner.CreateLogicalProcedureSpec{
 	// Take a FromOpSpec and translate it to a FromProcedureSpec
-	functions.FromKind: func(op flux.OperationSpec) (LogicalProcedureSpec, error) {
+	functions.FromKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
 		spec, ok := op.(*functions.FromOpSpec)
 
 		if !ok {
 			return nil, fmt.Errorf("invalid spec type %T", op)
 		}
 
-		return &FromProcedureSpec{
+		return &planner.FromProcedureSpec{
 			Bucket:   spec.Bucket,
 			BucketID: spec.BucketID,
 		}, nil
 	},
 	// Take a RangeOpSpec and convert it to a RangeProcedureSpec
-	functions.RangeKind: func(op flux.OperationSpec) (LogicalProcedureSpec, error) {
+	functions.RangeKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
 		spec, ok := op.(*functions.RangeOpSpec)
 
 		if !ok {
@@ -39,7 +40,7 @@ var create = map[flux.OperationKind]CreateLogicalProcedureSpec{
 			spec.TimeCol = execute.DefaultTimeColLabel
 		}
 
-		return &RangeProcedureSpec{
+		return &planner.RangeProcedureSpec{
 			Bounds: flux.Bounds{
 				Start: spec.Start,
 				Stop:  spec.Stop,
@@ -50,62 +51,62 @@ var create = map[flux.OperationKind]CreateLogicalProcedureSpec{
 		}, nil
 	},
 	// Take a FilterOpSpec and translate it to a FilterProcedureSpec
-	functions.FilterKind: func(op flux.OperationSpec) (LogicalProcedureSpec, error) {
+	functions.FilterKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
 		spec, ok := op.(*functions.FilterOpSpec)
 
 		if !ok {
 			return nil, fmt.Errorf("invalid spec type %T", op)
 		}
 
-		return &FilterProcedureSpec{
+		return &planner.FilterProcedureSpec{
 			Fn: spec.Fn.Copy().(*semantic.FunctionExpression),
 		}, nil
 	},
-	functions.YieldKind: func(op flux.OperationSpec) (LogicalProcedureSpec, error) {
+	functions.YieldKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
 		spec, ok := op.(*functions.YieldOpSpec)
 
 		if !ok {
 			return nil, fmt.Errorf("invalid spec type %T", op)
 		}
 
-		return &YieldProcedureSpec{
+		return &planner.YieldProcedureSpec{
 			Name: spec.Name,
 		}, nil
 	},
-	functions.JoinKind: func(op flux.OperationSpec) (LogicalProcedureSpec, error) {
+	functions.JoinKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
 		spec, ok := op.(*functions.JoinOpSpec)
 
 		if !ok {
 			return nil, fmt.Errorf("invalid spec type %T", op)
 		}
 
-		return &JoinProcedureSpec{
+		return &planner.JoinProcedureSpec{
 			On: spec.On,
 		}, nil
 	},
 }
 
 type SimpleRule struct {
-	seenNodes []NodeID
+	seenNodes []planner.NodeID
 }
 
-func (sr *SimpleRule) Pattern() Pattern {
-	return Any()
+func (sr *SimpleRule) Pattern() planner.Pattern {
+	return planner.Any()
 }
 
-func (sr *SimpleRule) Rewrite(node PlanNode) (PlanNode, bool) {
+func (sr *SimpleRule) Rewrite(node planner.PlanNode) (planner.PlanNode, bool) {
 	sr.seenNodes = append(sr.seenNodes, node.ID())
 	return node, false
 }
 
-func fluxToQueryPlan(fluxQuery string) (*QueryPlan, error) {
+func fluxToQueryPlan(fluxQuery string) (*planner.QueryPlan, error) {
 	now := time.Now().UTC()
 	spec, err := flux.Compile(context.Background(), fluxQuery, now)
 	if err != nil {
 		return nil, err
 	}
 
-	qp, err := CreateLogicalPlan(spec, create)
+	qp, err := planner.CreateLogicalPlan(spec, create)
 	return qp, err
 }
 
@@ -114,25 +115,32 @@ func TestPlanTraversal(t *testing.T) {
 	testCases := []struct {
 		name string
 		fluxQuery string
-		nodeIDs []NodeID
+		nodeIDs []planner.NodeID
 	}{
 		{
 			name: "simple",
 			fluxQuery: `from(bucket: "foo")`,
-			nodeIDs: []NodeID{"from0"},
+			nodeIDs: []planner.NodeID{"from0"},
 		},
 		{
 			name: "from and filter",
 			fluxQuery: `from(bucket: "foo") |> filter(fn: (r) => r._field == "cpu")`,
-			nodeIDs: []NodeID{"filter1", "from0"},
+			nodeIDs: []planner.NodeID{"filter1", "from0"},
 		},
+		//{
+		//	name: "multi-root",
+		//	fluxQuery: `
+		//		from(bucket: "foo") |> filter(fn: (r) => r._field == "cpu") |> yield(name: "1")
+		//		from(bucket: "foo") |> filter(fn: (r) => r._field == "fan") |> yield(name: "2")`,
+		//	nodeIDs: []planner.NodeID{"filter1", "from0", "filter3", "from2"},
+		//},
 		{
 			name: "join",
 			fluxQuery: `
 			    left = from(bucket: "foo") |> filter(fn: (r) => r._field == "cpu")
                 right = from(bucket: "foo") |> range(start: -1d)
                 join(tables: {l: left, r: right}, on: ["key"]) |> yield()`,
-			nodeIDs: []NodeID{"yield5", "join4", "filter1", "from0", "range3", "from2"},
+			nodeIDs: []planner.NodeID{"yield5", "join4", "filter1", "from0", "range3", "from2"},
 		},
 		{
 			name: "diamond",
@@ -152,17 +160,17 @@ func TestPlanTraversal(t *testing.T) {
 				right2 = range(start: -1y, table: j)
 				left2 = filter(fn: (r) => r._value > 1.0, table: j)
 				join(tables: {l: left2, r: right2}, on: ["key"])`,
-			nodeIDs: []NodeID{"join7", "filter6", "join4", "filter1", "from0", "range3", "from2", "range5"},
+			nodeIDs: []planner.NodeID{"join7", "filter6", "join4", "filter1", "from0", "range3", "from2", "range5"},
 		},
 	}
 
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
+			//t.Parallel()
 
 			simpleRule := SimpleRule{}
-			planner := NewLogicalToPhysicalPlanner([]Rule{&simpleRule})
+			planner := planner.NewLogicalToPhysicalPlanner([]planner.Rule{&simpleRule})
 
 			qp, err := fluxToQueryPlan(tc.fluxQuery)
 			if err != nil {
