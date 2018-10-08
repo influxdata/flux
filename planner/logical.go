@@ -16,7 +16,12 @@ type LogicalProcedureSpec interface {
 // that describes what the node does.
 type LogicalPlanNode struct {
 	Edges
+	id NodeID
 	Spec LogicalProcedureSpec
+}
+
+func (lpn *LogicalPlanNode) ID() NodeID {
+	return lpn.id
 }
 
 func (lpn *LogicalPlanNode) Kind() ProcedureKind {
@@ -74,6 +79,7 @@ func (v *fluxSpecVisitor) VisitOperation(o *flux.Operation) error {
 
 	// Create a LogicalPlanNode using the LogicalProcedureSpec
 	logicalNode := &LogicalPlanNode{
+		id: NodeID(o.ID),
 		Spec: spec,
 	}
 
