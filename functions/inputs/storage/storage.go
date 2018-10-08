@@ -20,7 +20,7 @@ type HostLookup interface {
 
 type BucketLookup interface {
 	Lookup(orgID platform.ID, name string) (platform.ID, bool)
-	FindAllBuckets(orgID platform.ID) (platform.Bucket, bool)
+	FindAllBuckets(orgID platform.ID) ([]*platform.Bucket, int)
 }
 
 type OrganizationLookup interface {
