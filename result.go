@@ -93,6 +93,7 @@ type ColReader interface {
 
 type GroupKey interface {
 	Cols() []ColMeta
+	Values() []values.Value
 
 	HasCol(label string) bool
 	LabelValue(label string) values.Value
