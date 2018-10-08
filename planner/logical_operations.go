@@ -61,3 +61,39 @@ func (spec *FilterProcedureSpec) Copy() ProcedureSpec {
 func (spec *FilterProcedureSpec) Kind() ProcedureKind {
 	return FilterKind
 }
+
+const YieldKind = "yield"
+
+// YieldProcedureSpec <=> yield()
+type YieldProcedureSpec struct {
+	Name string
+}
+
+func (spec *YieldProcedureSpec) Copy() ProcedureSpec {
+	return &YieldProcedureSpec{
+		Name: spec.Name,
+	}
+}
+
+func (spec *YieldProcedureSpec) Kind() ProcedureKind {
+	return YieldKind
+}
+
+const JoinKind = "join"
+
+// joinProcedureSpec <=> join()
+type JoinProcedureSpec struct {
+	On []string
+}
+
+func (spec *JoinProcedureSpec) Copy() ProcedureSpec {
+	onList := make([]string, len(spec.On))
+	copy(onList, spec.On)
+	return &JoinProcedureSpec{
+		On: onList,
+	}
+}
+
+func (spec *JoinProcedureSpec) Kind() ProcedureKind {
+	return JoinKind
+}

@@ -3,6 +3,9 @@ package planner
 // PlanNode defines the common interface for interacting with
 // logical and physical plan nodes.
 type PlanNode interface {
+	// Returns an identifier this this plan node
+	ID() NodeID
+
 	// Plan nodes executed immediately before this node
 	Predecessors() []PlanNode
 
@@ -21,7 +24,10 @@ type PlanNode interface {
 	AddSuccessors(...PlanNode)
 	AddPredecessors(...PlanNode)
 	RemovePredecessor(PlanNode)
+	ClearSuccessors()
 }
+
+type NodeID string
 
 // QueryPlan holds the roots of the query plan DAG.
 // Roots correspond to nodes that produce final results.
@@ -98,4 +104,8 @@ func (e *Edges) RemovePredecessor(node PlanNode) {
 	} else {
 		e.predecessors = append(e.predecessors[:idx], e.predecessors[idx+1:]...)
 	}
+}
+
+func (e *Edges) ClearSuccessors() {
+	e.successors = e.successors[0:0]
 }

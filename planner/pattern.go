@@ -1,5 +1,7 @@
 package planner
 
+const AnyKind = "*** any procedure kind ***"
+
 // Pattern represents an operator tree pattern
 // It can match itself against a query plan
 type Pattern interface {
@@ -56,7 +58,7 @@ type AnyPattern struct {
 }
 
 func (ap *AnyPattern) Root() ProcedureKind {
-	return "*** any procedure kind ***"
+	return AnyKind
 }
 
 func (ap *AnyPattern) Match(node PlanNode) bool {
