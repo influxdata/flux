@@ -5,102 +5,122 @@ type Planner interface {
 	// Add rules to be enacted by the planner
 	AddRules([]Rule)
 
-	// Remove rules no longer used by the planner
-	RemoveRules([]Rule)
-
 	// Plan takes an initial query plan and returns an optimized plan
-	Plan(PlanNode) (PlanNode, error)
+	Plan(*QueryPlan) (*QueryPlan, error)
 }
 
 type LogicalToPhysicalPlanner struct {
-	rules      map[ProcedureKind]Rule
-	falseMatch map[PlanNode]bool
+	rules      map[ProcedureKind][]Rule
 }
 
 func NewLogicalToPhysicalPlanner(rules []Rule) *LogicalToPhysicalPlanner {
-	transformations := make(map[ProcedureKind]Rule, len(rules))
+	transformations := make(map[ProcedureKind][]Rule, len(rules))
 	for _, rule := range rules {
-		transformations[rule.Pattern().Root()] = rule
+		kindRules := transformations[rule.Pattern().Root()]
+		transformations[rule.Pattern().Root()] = append(kindRules, rule)
 	}
 	return &LogicalToPhysicalPlanner{
 		rules: transformations,
 	}
 }
 
-// matchRule matches a rule in the plan. Nodes that match
-// a rule but cannot be rewritten are skipped if encountered.
-func (p *LogicalToPhysicalPlanner) matchRule(root PlanNode, rule Rule) (PlanNode, bool) {
-	if rule.Pattern().Match(root) && !p.falseMatch[root] {
-		return root, true
+// matchRules applies any applicable rules to the given plan node,
+// and returns the rewritten plan node and whether or not any rewriting was done.
+func (p *LogicalToPhysicalPlanner) matchRules(node PlanNode) (PlanNode, bool) {
+	anyChanged := false
+
+	for _, rule := range p.rules[AnyKind] {
+		newNode, changed := rule.Rewrite(node)
+		anyChanged = anyChanged || changed
+		node = newNode
 	}
-	for _, pred := range root.Predecessors() {
-		if node, matched := p.matchRule(pred, rule); matched {
-			return node, matched
-		}
+
+	for _, rule := range p.rules[node.Kind()] {
+		newNode, changed := rule.Rewrite(node)
+		anyChanged = anyChanged || changed
+		node = newNode
 	}
-	return nil, false
+
+	return node, anyChanged
 }
 
 func (p LogicalToPhysicalPlanner) AddRules(rules []Rule) {
 	for _, rule := range rules {
-		p.rules[rule.Pattern().Root()] = rule
-	}
-}
-
-func (p LogicalToPhysicalPlanner) RemoveRules(rules []Rule) {
-	for _, rule := range rules {
-		delete(p.rules, rule.Pattern().Root())
+		ruleSlice := p.rules[rule.Pattern().Root()]
+		p.rules[rule.Pattern().Root()] = append(ruleSlice, rule)
 	}
 }
 
 // Plan is a fixed-point query planning algorithm.
-// It enacts each rule on the query plan until no more rewrites are possible.
-func (p LogicalToPhysicalPlanner) Plan(root PlanNode) (PlanNode, error) {
-	var transformed bool
-	var newNode PlanNode
+// It traverses the DAG depth-first, attempting to apply rewrite rules at each node.
+// Traversal is repeated until a pass over the DAG results in no changes with the given rule set.
+//
+// Plan may change its argument and/or return a new instance of QueryPlan, so the correct way to call Plan is:
+//     plan, err = planner.Plan(plan)
+func (p *LogicalToPhysicalPlanner) Plan(inputPlan *QueryPlan) (*QueryPlan, error) {
 
-	for _, rule := range p.rules {
+	visited := make(map[PlanNode]struct{})
 
-		// Try to match the root node
-		node, matched := p.matchRule(root, rule)
+	nodeStack := make([]PlanNode, len(inputPlan.Roots()))
+	copy(nodeStack, inputPlan.Roots())
 
-		if matched && node == root {
+	for anyChanged := true; anyChanged == true; {
+		anyChanged = false
+		for ; len(nodeStack) > 0; {
+			node := nodeStack[len(nodeStack)-1]
+			nodeStack = nodeStack[0 : len(nodeStack)-1]
 
-			if newNode, transformed = rule.Rewrite(node); !transformed {
-				// Record false match if root cannot be rewritten
-				p.falseMatch[node] = true
-			} else {
-				// Reassign root if successfully rewritten
-				root = newNode
-			}
-		}
+			_, alreadyVisited := visited[node]
 
-		for {
+			if ! alreadyVisited {
+				newNode, changed := p.matchRules(node)
+				anyChanged = anyChanged || changed
+				if node != newNode {
+					updateSuccessors(inputPlan, node, newNode)
+				}
 
-			// No match means rule will never match
-			if node, matched = p.matchRule(root, rule); !matched {
-				break
-			}
+				// append to stack in reverse order so lower-indexed children
+				// are visited first.
+				for i := len(newNode.Predecessors()); i > 0; i-- {
+					nodeStack = append(nodeStack, newNode.Predecessors()[i - 1])
+				}
 
-			if newNode, transformed = rule.Rewrite(node); !transformed {
-				p.falseMatch[node] = true
-			} else {
-				replacePlanNode(node, newNode)
+				visited[newNode] = struct{}{}
 			}
 		}
 	}
-	return root, nil
+
+	return inputPlan, nil
 }
 
-//  A   B             A   B
+// updateSuccessors looks at all the successors of oldNode
+// and rewires them to point them at newNode.
+// Predecessors of oldNode and newNode are not touched.
+//
+//  A   B             A   B     <-- successors
 //   \ /               \ /
 //   node  becomes   newNode
 //   / \               / \
-//  D   E             D'  E'
-func replacePlanNode(node, newNode PlanNode) {
-	for _, n := range node.Successors() {
-		newNode.AddSuccessors(n)
-		n.RemovePredecessor(node)
-		n.AddPredecessors(newNode)
+//  D   E             D'  E'    <-- predecessors
+func updateSuccessors(plan *QueryPlan, oldNode, newNode PlanNode) {
+	newNode.ClearSuccessors()
+
+	if len(oldNode.Successors()) == 0 {
+		// This is a new root node.
+		plan.Replace(oldNode, newNode)
+		return
 	}
+
+	for _, succ := range oldNode.Successors() {
+		i := 0
+		for ; i < len(succ.Predecessors()); i++ {
+			succ.Predecessors()[i] = newNode
+		}
+
+		if i == len(succ.Predecessors()) {
+			panic("Inconsistent plan graph: successor does not have edge back to predecessor")
+		}
+	}
+
+	newNode.AddSuccessors(oldNode.Successors()...)
 }
