@@ -9,6 +9,7 @@ type PhysicalProcedureSpec interface {
 
 type PhysicalPlanNode struct {
 	Edges
+	id NodeID
 	Spec PhysicalProcedureSpec
 
 	// The attributes required from inputs to this node
@@ -16,6 +17,10 @@ type PhysicalPlanNode struct {
 
 	// The attributes provided to consumers of this node's output
 	OutputAttrs PhysicalAttributes
+}
+
+func (ppn *PhysicalPlanNode) ID() NodeID {
+	return ppn.id
 }
 
 func (ppn *PhysicalPlanNode) ProcedureSpec() ProcedureSpec {
