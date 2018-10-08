@@ -270,7 +270,11 @@ func TestExpression_Kind(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			got := tc.expr.Type().Kind()
+			typ, mono := tc.expr.TypeScheme().MonoType()
+			if !mono {
+				t.Fatal("unexpected polymorphic expression type")
+			}
+			got := typ.Kind()
 
 			if !cmp.Equal(tc.want, got) {
 				t.Errorf("unexpected expression type: -want/+got:\n%s", cmp.Diff(tc.want, got))

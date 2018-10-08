@@ -16,7 +16,7 @@ func Compile(f *semantic.FunctionExpression, inTypes map[string]semantic.Type, b
 	for k, t := range inTypes {
 		builtinDeclarations[k] = semantic.NewExternalVariableDeclaration(k, t)
 	}
-	semantic.SolveTypes(f, builtinDeclarations)
+	ts := f.TypeScheme()
 	declarations := make(map[string]semantic.VariableDeclaration, len(inTypes))
 	for k, t := range inTypes {
 		declarations[k] = semantic.NewExternalVariableDeclaration(k, t)

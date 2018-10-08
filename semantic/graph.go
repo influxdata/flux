@@ -72,9 +72,34 @@ func (*ExternalVariableDeclaration) stmt() {}
 
 type Expression interface {
 	Node
-	Type() Type
+	// TypeScheme reports the type of the expression, which may be polymorphic.
+	TypeScheme() TypeScheme
+	setTypeScheme(ts TypeScheme)
 	expression()
 }
+
+type typeScheme struct {
+	scheme TypeScheme
+}
+
+func (ts *typeScheme) TypeScheme() TypeScheme {
+	if ts.scheme == nil {
+		return anyTypeScheme{}
+	}
+	return ts.scheme
+}
+
+func (ts *typeScheme) setTypeScheme(s TypeScheme) {
+	ts.scheme = s
+}
+
+//anyTypeScheme is polymorphic type scheme for any type.
+type anyTypeScheme struct{}
+
+func (ts anyTypeScheme) MonoType() (Type, bool) {
+	return nil, false
+}
+func (ts anyTypeScheme) typeScheme() {}
 
 func (*ArrayExpression) expression()        {}
 func (*BinaryExpression) expression()       {}
@@ -159,6 +184,10 @@ func (s *BlockStatement) Copy() Node {
 	return ns
 }
 
+type VariableDeclaration interface {
+	Node
+}
+
 type OptionStatement struct {
 	Declaration VariableDeclaration `json:"declaration"`
 }
@@ -213,12 +242,6 @@ func (s *ReturnStatement) Copy() Node {
 	return ns
 }
 
-type VariableDeclaration interface {
-	Statement
-	ID() *Identifier
-	InitType() Type
-}
-
 type NativeVariableDeclaration struct {
 	Identifier *Identifier `json:"identifier"`
 	Init       Expression  `json:"init"`
@@ -226,9 +249,6 @@ type NativeVariableDeclaration struct {
 
 func (d *NativeVariableDeclaration) ID() *Identifier {
 	return d.Identifier
-}
-func (d *NativeVariableDeclaration) InitType() Type {
-	return d.Init.Type()
 }
 
 func (*NativeVariableDeclaration) NodeType() string { return "NativeVariableDeclaration" }
@@ -264,9 +284,6 @@ func NewExternalVariableDeclaration(name string, typ Type) *ExternalVariableDecl
 func (d *ExternalVariableDeclaration) ID() *Identifier {
 	return d.Identifier
 }
-func (d *ExternalVariableDeclaration) InitType() Type {
-	return d.Type
-}
 
 func (*ExternalVariableDeclaration) NodeType() string { return "ExternalVariableDeclaration" }
 
@@ -283,20 +300,11 @@ func (s *ExternalVariableDeclaration) Copy() Node {
 }
 
 type ArrayExpression struct {
+	typeScheme
 	Elements []Expression `json:"elements"`
-	typ      atomic.Value //    Type
 }
 
 func (*ArrayExpression) NodeType() string { return "ArrayExpression" }
-func (e *ArrayExpression) Type() Type {
-	t := e.typ.Load()
-	if t != nil {
-		return t.(Type)
-	}
-	typ := arrayTypeOf(e)
-	e.typ.Store(typ)
-	return typ
-}
 
 func (e *ArrayExpression) Copy() Node {
 	if e == nil {
@@ -317,21 +325,13 @@ func (e *ArrayExpression) Copy() Node {
 
 // FunctionExpression represents the definition of a function
 type FunctionExpression struct {
+	typeScheme
+
 	Defaults *FunctionDefaults `json:"defaults"`
 	Block    *FunctionBlock    `json:"block"`
-	typ      atomic.Value      //Type
 }
 
 func (*FunctionExpression) NodeType() string { return "FunctionExpression" }
-func (e *FunctionExpression) Type() Type {
-	t := e.typ.Load()
-	if t != nil {
-		return t.(Type)
-	}
-	typ := functionTypeOf(e)
-	e.typ.Store(typ)
-	return typ
-}
 
 func (e *FunctionExpression) Copy() Node {
 	if e == nil {
@@ -395,8 +395,8 @@ func (d *FunctionParameterDefault) Copy() Node {
 
 // FunctionBlock represents the function parameters and the function body.
 type FunctionBlock struct {
-	Parameters *FunctionParameters `json:"params"`
-	Body       Node
+	Parameters *FunctionParameters `json:"parameters"`
+	Body       Node                `json:"body"`
 }
 
 func (*FunctionBlock) NodeType() string { return "FunctionBlock" }
@@ -415,7 +415,7 @@ func (b *FunctionBlock) Copy() Node {
 // FunctionParameters represents the list of function parameters and which if any parameter is the pipe parameter.
 type FunctionParameters struct {
 	List []*FunctionParameter `json:"list"`
-	Pipe *Identifier          `json:"piped"`
+	Pipe *Identifier          `json:"pipe"`
 }
 
 func (*FunctionParameters) NodeType() string { return "FunctionParameters" }
@@ -460,19 +460,14 @@ func (p *FunctionParameter) Copy() Node {
 }
 
 type BinaryExpression struct {
+	typeScheme
+
 	Operator ast.OperatorKind `json:"operator"`
 	Left     Expression       `json:"left"`
 	Right    Expression       `json:"right"`
 }
 
 func (*BinaryExpression) NodeType() string { return "BinaryExpression" }
-func (e *BinaryExpression) Type() Type {
-	return binaryTypesLookup[binarySignature{
-		operator: e.Operator,
-		left:     e.Left.Type().Kind(),
-		right:    e.Right.Type().Kind(),
-	}]
-}
 
 func (e *BinaryExpression) Copy() Node {
 	if e == nil {
@@ -488,15 +483,14 @@ func (e *BinaryExpression) Copy() Node {
 }
 
 type CallExpression struct {
+	typeScheme
+
 	Callee    Expression        `json:"callee"`
 	Arguments *ObjectExpression `json:"arguments"`
 	pipe      Expression
 }
 
 func (*CallExpression) NodeType() string { return "CallExpression" }
-func (e *CallExpression) Type() Type {
-	return e.Callee.Type().ReturnType()
-}
 
 func (e *CallExpression) Copy() Node {
 	if e == nil {
@@ -512,6 +506,8 @@ func (e *CallExpression) Copy() Node {
 }
 
 type ConditionalExpression struct {
+	typeScheme
+
 	Test       Expression `json:"test"`
 	Alternate  Expression `json:"alternate"`
 	Consequent Expression `json:"consequent"`
@@ -534,13 +530,14 @@ func (e *ConditionalExpression) Copy() Node {
 }
 
 type LogicalExpression struct {
+	typeScheme
+
 	Operator ast.LogicalOperatorKind `json:"operator"`
 	Left     Expression              `json:"left"`
 	Right    Expression              `json:"right"`
 }
 
 func (*LogicalExpression) NodeType() string { return "LogicalExpression" }
-func (*LogicalExpression) Type() Type       { return Bool }
 
 func (e *LogicalExpression) Copy() Node {
 	if e == nil {
@@ -556,19 +553,13 @@ func (e *LogicalExpression) Copy() Node {
 }
 
 type MemberExpression struct {
+	typeScheme
+
 	Object   Expression `json:"object"`
 	Property string     `json:"property"`
 }
 
 func (*MemberExpression) NodeType() string { return "MemberExpression" }
-
-func (e *MemberExpression) Type() Type {
-	t := e.Object.Type()
-	if t.Kind() != Object {
-		return Invalid
-	}
-	return e.Object.Type().PropertyType(e.Property)
-}
 
 func (e *MemberExpression) Copy() Node {
 	if e == nil {
@@ -583,20 +574,13 @@ func (e *MemberExpression) Copy() Node {
 }
 
 type ObjectExpression struct {
+	typeScheme
+
 	Properties []*Property  `json:"properties"`
 	typ        atomic.Value //Type
 }
 
 func (*ObjectExpression) NodeType() string { return "ObjectExpression" }
-func (e *ObjectExpression) Type() Type {
-	t := e.typ.Load()
-	if t != nil {
-		return t.(Type)
-	}
-	typ := objectTypeOf(e)
-	e.typ.Store(typ)
-	return typ
-}
 
 func (e *ObjectExpression) Copy() Node {
 	if e == nil {
@@ -616,14 +600,13 @@ func (e *ObjectExpression) Copy() Node {
 }
 
 type UnaryExpression struct {
+	typeScheme
+
 	Operator ast.OperatorKind `json:"operator"`
 	Argument Expression       `json:"argument"`
 }
 
 func (*UnaryExpression) NodeType() string { return "UnaryExpression" }
-func (e *UnaryExpression) Type() Type {
-	return e.Argument.Type()
-}
 
 func (e *UnaryExpression) Copy() Node {
 	if e == nil {
@@ -657,14 +640,12 @@ func (p *Property) Copy() Node {
 }
 
 type IdentifierExpression struct {
+	typeScheme
+
 	Name string `json:"name"`
 }
 
 func (*IdentifierExpression) NodeType() string { return "IdentifierExpression" }
-
-func (e *IdentifierExpression) Type() Type {
-	return Invalid
-}
 
 func (e *IdentifierExpression) Copy() Node {
 	if e == nil {
@@ -696,8 +677,12 @@ type BooleanLiteral struct {
 	Value bool `json:"value"`
 }
 
+func (*BooleanLiteral) TypeScheme() TypeScheme {
+	return Bool
+}
+func (*BooleanLiteral) setTypeScheme(TypeScheme) {}
+
 func (*BooleanLiteral) NodeType() string { return "BooleanLiteral" }
-func (*BooleanLiteral) Type() Type       { return Bool }
 
 func (l *BooleanLiteral) Copy() Node {
 	if l == nil {
@@ -713,8 +698,12 @@ type DateTimeLiteral struct {
 	Value time.Time `json:"value"`
 }
 
+func (*DateTimeLiteral) TypeScheme() TypeScheme {
+	return Time
+}
+func (*DateTimeLiteral) setTypeScheme(TypeScheme) {}
+
 func (*DateTimeLiteral) NodeType() string { return "DateTimeLiteral" }
-func (*DateTimeLiteral) Type() Type       { return Time }
 
 func (l *DateTimeLiteral) Copy() Node {
 	if l == nil {
@@ -730,8 +719,12 @@ type DurationLiteral struct {
 	Value time.Duration `json:"value"`
 }
 
+func (*DurationLiteral) TypeScheme() TypeScheme {
+	return Duration
+}
+func (*DurationLiteral) setTypeScheme(TypeScheme) {}
+
 func (*DurationLiteral) NodeType() string { return "DurationLiteral" }
-func (*DurationLiteral) Type() Type       { return Duration }
 
 func (l *DurationLiteral) Copy() Node {
 	if l == nil {
@@ -747,8 +740,12 @@ type IntegerLiteral struct {
 	Value int64 `json:"value"`
 }
 
+func (*IntegerLiteral) TypeScheme() TypeScheme {
+	return Int
+}
+func (*IntegerLiteral) setTypeScheme(TypeScheme) {}
+
 func (*IntegerLiteral) NodeType() string { return "IntegerLiteral" }
-func (*IntegerLiteral) Type() Type       { return Int }
 
 func (l *IntegerLiteral) Copy() Node {
 	if l == nil {
@@ -764,8 +761,12 @@ type FloatLiteral struct {
 	Value float64 `json:"value"`
 }
 
+func (*FloatLiteral) TypeScheme() TypeScheme {
+	return Float
+}
+func (*FloatLiteral) setTypeScheme(TypeScheme) {}
+
 func (*FloatLiteral) NodeType() string { return "FloatLiteral" }
-func (*FloatLiteral) Type() Type       { return Float }
 
 func (l *FloatLiteral) Copy() Node {
 	if l == nil {
@@ -781,8 +782,12 @@ type RegexpLiteral struct {
 	Value *regexp.Regexp `json:"value"`
 }
 
+func (*RegexpLiteral) TypeScheme() TypeScheme {
+	return Regexp
+}
+func (*RegexpLiteral) setTypeScheme(TypeScheme) {}
+
 func (*RegexpLiteral) NodeType() string { return "RegexpLiteral" }
-func (*RegexpLiteral) Type() Type       { return Regexp }
 
 func (l *RegexpLiteral) Copy() Node {
 	if l == nil {
@@ -800,8 +805,12 @@ type StringLiteral struct {
 	Value string `json:"value"`
 }
 
+func (*StringLiteral) TypeScheme() TypeScheme {
+	return String
+}
+func (*StringLiteral) setTypeScheme(TypeScheme) {}
+
 func (*StringLiteral) NodeType() string { return "StringLiteral" }
-func (*StringLiteral) Type() Type       { return String }
 
 func (l *StringLiteral) Copy() Node {
 	if l == nil {
@@ -817,8 +826,12 @@ type UnsignedIntegerLiteral struct {
 	Value uint64 `json:"value"`
 }
 
+func (*UnsignedIntegerLiteral) TypeScheme() TypeScheme {
+	return UInt
+}
+func (*UnsignedIntegerLiteral) setTypeScheme(TypeScheme) {}
+
 func (*UnsignedIntegerLiteral) NodeType() string { return "UnsignedIntegerLiteral" }
-func (*UnsignedIntegerLiteral) Type() Type       { return UInt }
 
 func (l *UnsignedIntegerLiteral) Copy() Node {
 	if l == nil {

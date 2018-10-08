@@ -1,7 +1,7 @@
 package semantic
 
-func InferTypes(program *Program) (SolutionMap, error) {
-	annotations := Annotate(program)
-	constraints := GenerateConstraints(program, annotations)
-	return SolveTypes(program, annotations, constraints)
+func InferTypes(n Node) (SolutionMap, error) {
+	annotations := Annotate(n)
+	constraints := GenerateConstraints(n, annotations)
+	return SolveTypes(annotations, constraints)
 }

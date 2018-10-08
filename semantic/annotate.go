@@ -11,6 +11,7 @@ type TypeVar int
 func (tv TypeVar) MonoType() (Type, bool) {
 	return nil, false
 }
+func (tv TypeVar) typeScheme() {}
 
 func (tv TypeVar) Substitute(c Constraint) Substitutable {
 	if tv == c.left {
@@ -97,8 +98,8 @@ func (v *TypeVarGenerator) NewTypeVar() TypeVar {
 	return n
 }
 
-func Annotate(program *Program) TypeEnvironment {
+func Annotate(n Node) TypeEnvironment {
 	visitor := NewTypeAnnotationVisitor()
-	Walk(visitor, program)
+	Walk(visitor, n)
 	return visitor.TypeEnvironment()
 }

@@ -21,6 +21,7 @@ func (c Constraint) String() string {
 func (c Constraint) MonoType() (Type, bool) {
 	return c.right.MonoType()
 }
+func (c Constraint) typeScheme() {}
 
 func (c Constraint) Substitute(o Constraint) Substitutable {
 	c.right = c.right.Substitute(o)
@@ -33,12 +34,11 @@ func (c Constraint) Vars() []TypeVar {
 
 // Substitutable represents any type expression containing type variables
 type Substitutable interface {
+	TypeScheme
 	// Var returns a list of all vars in the substitutable expression
 	Vars() []TypeVar
 	// Substitute returns a new substitutable with the constraint applied
 	Substitute(Constraint) Substitutable
-	// MonoType returns the concrete type of the substitutable expression if it exists
-	MonoType() (Type, bool)
 }
 
 type arrayTypeScheme struct {
@@ -52,6 +52,7 @@ func (a arrayTypeScheme) MonoType() (Type, bool) {
 	}
 	return NewArrayType(elementType), true
 }
+func (a arrayTypeScheme) typeScheme() {}
 
 func (a arrayTypeScheme) Substitute(c Constraint) Substitutable {
 	a.elementType = a.elementType.Substitute(c)
@@ -81,6 +82,7 @@ func (o objectTypeScheme) MonoType() (Type, bool) {
 	}
 	return NewObjectType(types), true
 }
+func (o objectTypeScheme) typeScheme() {}
 
 func (o objectTypeScheme) Substitute(c Constraint) Substitutable {
 	no := objectTypeScheme{
@@ -136,6 +138,7 @@ func (f functionTypeScheme) MonoType() (Type, bool) {
 		ReturnType: rt,
 	}), true
 }
+func (f functionTypeScheme) typeScheme() {}
 
 func (f functionTypeScheme) Substitute(c Constraint) Substitutable {
 	nf := functionTypeScheme{
@@ -464,16 +467,23 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 		//
 		// -> typeof(a) = typeof(b) = typeof(c)
 		// -------------------------------------------------
-		v.addConstraints(Constraint{
-			left: v.tenv[n],
-			right: arrayTypeScheme{
-				elementType: v.tenv[n.Elements[0]],
-			},
-		})
-		for _, e := range n.Elements {
+		if len(n.Elements) > 0 {
 			v.addConstraints(Constraint{
-				left:  v.tenv[n.Elements[0]],
-				right: v.tenv[e],
+				left: v.tenv[n],
+				right: arrayTypeScheme{
+					elementType: v.tenv[n.Elements[0]],
+				},
+			})
+			for _, e := range n.Elements {
+				v.addConstraints(Constraint{
+					left:  v.tenv[n.Elements[0]],
+					right: v.tenv[e],
+				})
+			}
+		} else {
+			v.addConstraints(Constraint{
+				left:  v.tenv[n],
+				right: EmptyArrayType,
 			})
 		}
 	case *ObjectExpression:
@@ -651,10 +661,10 @@ func (cs ConstraintSet) String() string {
 	return builder.String()
 }
 
-func GenerateConstraints(program *Program, tenv map[Node]TypeVar) ConstraintSet {
+func GenerateConstraints(n Node, tenv map[Node]TypeVar) ConstraintSet {
 	// Generate the rest of the constraints
 	constraintVisitor := NewConstraintGenerationVisitor(tenv)
-	Walk(constraintVisitor, program)
+	Walk(constraintVisitor, n)
 
 	return constraintVisitor.Constraints()
 }

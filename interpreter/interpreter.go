@@ -271,7 +271,7 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (v
 	case *semantic.FunctionExpression:
 		return &function{
 			e:     e,
-			scope: scope.Nest(),
+			scope: scope,
 		}, nil
 	default:
 		return nil, fmt.Errorf("unsupported expression %T", expr)
@@ -621,41 +621,50 @@ func (f *function) Call(argsObj values.Object) (values.Value, error) {
 	return v, nil
 }
 func (f *function) doCall(args Arguments) (values.Value, error) {
-	for _, p := range f.e.Params {
-		if p.Default == nil {
+	blockScope := f.scope.Nest()
+	if f.e.Block.Parameters != nil {
+	PARAMETERS:
+		for _, p := range f.e.Block.Parameters.List {
+			if f.e.Defaults == nil {
+				for _, d := range f.e.Defaults.List {
+					if d.Key.Name == p.Key.Name {
+						v, ok := args.Get(p.Key.Name)
+						if !ok {
+							// Use default value
+							var err error
+							// evaluate default expressions outside the block scope
+							v, err = f.itrp.doExpression(d.Value, f.scope)
+							if err != nil {
+								return nil, err
+							}
+						}
+						blockScope.Set(p.Key.Name, v)
+						continue PARAMETERS
+					}
+				}
+			}
 			v, err := args.GetRequired(p.Key.Name)
 			if err != nil {
 				return nil, err
 			}
-			f.scope.Set(p.Key.Name, v)
-		} else {
-			v, ok := args.Get(p.Key.Name)
-			if !ok {
-				// Use default value
-				var err error
-				v, err = f.itrp.doExpression(p.Default, f.scope)
-				if err != nil {
-					return nil, err
-				}
-			}
-			f.scope.Set(p.Key.Name, v)
+			blockScope.Set(p.Key.Name, v)
 		}
 	}
-	switch n := f.e.Body.(type) {
+	switch n := f.e.Block.Body.(type) {
 	case semantic.Expression:
-		return f.itrp.doExpression(n, f.scope)
+		return f.itrp.doExpression(n, blockScope)
 	case semantic.Statement:
-		_, err := f.itrp.doStatement(n, f.scope)
+		_, err := f.itrp.doStatement(n, blockScope)
 		if err != nil {
 			return nil, err
 		}
-		v := f.scope.Return()
+		v := blockScope.Return()
 		if v.Type() == semantic.Invalid {
 			return nil, errors.New("function has no return value")
 		}
 		return v, nil
 	default:
-		return nil, fmt.Errorf("unsupported function body type %T", f.e.Body)
+		return nil, fmt.Errorf("unsupported function body type %T", f.e.Block.Body)
 	}
 }
 
@@ -693,10 +702,12 @@ func (f *function) Resolve() (semantic.Node, error) {
 func (f function) resolveIdentifiers(n semantic.Node) (semantic.Node, error) {
 	switch n := n.(type) {
 	case *semantic.IdentifierExpression:
-		for _, p := range f.e.Params {
-			if n.Name == p.Key.Name {
-				// Identifier is a parameter do not resolve
-				return n, nil
+		if f.e.Block.Parameters != nil {
+			for _, p := range f.e.Block.Parameters.List {
+				if n.Name == p.Key.Name {
+					// Identifier is a parameter do not resolve
+					return n, nil
+				}
 			}
 		}
 		v, ok := f.scope.Lookup(n.Name)
@@ -743,11 +754,11 @@ func (f function) resolveIdentifiers(n semantic.Node) (semantic.Node, error) {
 		}
 		n.Arguments = node.(*semantic.ObjectExpression)
 	case *semantic.FunctionExpression:
-		node, err := f.resolveIdentifiers(n.Body)
+		node, err := f.resolveIdentifiers(n.Block.Body)
 		if err != nil {
 			return nil, err
 		}
-		n.Body = node
+		n.Block.Body = node
 	case *semantic.BinaryExpression:
 		node, err := f.resolveIdentifiers(n.Left)
 		if err != nil {

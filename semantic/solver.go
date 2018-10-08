@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func SolveTypes(program *Program, tenv TypeEnvironment, constraints ConstraintSet) (SolutionMap, error) {
+func SolveTypes(tenv TypeEnvironment, constraints ConstraintSet) (SolutionMap, error) {
 	solution := make(SolutionMap, len(tenv))
 	//log.Println("tenv", tenv)
 	//log.Println("constraints", constraints)
@@ -52,17 +52,10 @@ func SolveTypes(program *Program, tenv TypeEnvironment, constraints ConstraintSe
 		if mono {
 			solution[n] = typ
 		}
+		if e, ok := n.(Expression); ok {
+			e.setTypeScheme(s)
+		}
 	}
-	// Validate we got a complete solution
-	//if len(solution) != len(tenv) {
-	//	// Populate the missing solutions with Invalid
-	//	for n := range tenv {
-	//		if _, ok := solution[n]; !ok {
-	//			solution[n] = Invalid
-	//		}
-	//	}
-	//	return solution, errors.New("incomplete type solution")
-	//}
 	return solution, nil
 }
 
