@@ -3,15 +3,16 @@ package planner_test
 import (
 	"context"
 	"fmt"
-	"github.com/influxdata/flux/functions/inputs"
-	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/planner"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/functions/inputs"
+	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/semantic"
 )
 
