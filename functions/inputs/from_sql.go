@@ -45,7 +45,7 @@ func createFromSQLOpSpec(args flux.Arguments, administration *flux.Administratio
 
 	if driverName, err := args.GetRequiredString("driverName"); err != nil {
 		return nil, err
-	} else  {
+	} else {
 		spec.DriverName = driverName
 	}
 

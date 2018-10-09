@@ -189,7 +189,6 @@ func (s *GroupProcedureSpec) PushDown(root *plan.Procedure, dup func() *plan.Pro
 	selectSpec.GroupKeys = s.GroupKeys
 }
 
-
 func createGroupTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*GroupProcedureSpec)
 	if !ok {

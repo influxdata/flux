@@ -6,7 +6,7 @@ package builtin
 import (
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/functions/transformations" // Import the built-in functions
-	_ "github.com/influxdata/flux/options"   // Import the built-in options
+	_ "github.com/influxdata/flux/options"                   // Import the built-in options
 )
 
 func init() {

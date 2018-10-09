@@ -73,7 +73,6 @@ func (s *SumProcedureSpec) ReAggregateSpec() plan.ProcedureSpec {
 	return new(SumProcedureSpec)
 }
 
-
 type SumAgg struct{}
 
 func createSumTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {

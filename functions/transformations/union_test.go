@@ -20,7 +20,7 @@ func TestUnion_NewQuery(t *testing.T) {
 				union(tables: [a, b])`,
 			Want: &flux.Spec{Operations: []*flux.Operation{
 				{
-					ID: "from0",
+					ID:   "from0",
 					Spec: &inputs.FromOpSpec{Bucket: "dbA"},
 				},
 				{
@@ -39,7 +39,7 @@ func TestUnion_NewQuery(t *testing.T) {
 					},
 				},
 				{
-					ID: "from2",
+					ID:   "from2",
 					Spec: &inputs.FromOpSpec{Bucket: "dbB"},
 				},
 				{
@@ -58,7 +58,7 @@ func TestUnion_NewQuery(t *testing.T) {
 					},
 				},
 				{
-					ID: "union4",
+					ID:   "union4",
 					Spec: &transformations.UnionOpSpec{},
 				},
 			},
@@ -79,7 +79,7 @@ func TestUnion_NewQuery(t *testing.T) {
 				union(tables: [a, b, c])`,
 			Want: &flux.Spec{Operations: []*flux.Operation{
 				{
-					ID: "from0",
+					ID:   "from0",
 					Spec: &inputs.FromOpSpec{Bucket: "dbA"},
 				},
 				{
@@ -98,7 +98,7 @@ func TestUnion_NewQuery(t *testing.T) {
 					},
 				},
 				{
-					ID: "from2",
+					ID:   "from2",
 					Spec: &inputs.FromOpSpec{Bucket: "dbB"},
 				},
 				{
@@ -117,7 +117,7 @@ func TestUnion_NewQuery(t *testing.T) {
 					},
 				},
 				{
-					ID: "from4",
+					ID:   "from4",
 					Spec: &inputs.FromOpSpec{Bucket: "dbC"},
 				},
 				{
@@ -136,7 +136,7 @@ func TestUnion_NewQuery(t *testing.T) {
 					},
 				},
 				{
-					ID: "union6",
+					ID:   "union6",
 					Spec: &transformations.UnionOpSpec{},
 				},
 			},
@@ -187,9 +187,8 @@ func TestUnionOperation_Marshaling(t *testing.T) {
 		}
 	}`)
 	op := &flux.Operation{
-		ID: "union",
-		Spec: &transformations.UnionOpSpec{
-		},
+		ID:   "union",
+		Spec: &transformations.UnionOpSpec{},
 	}
 	querytest.OperationMarshalingTestHelper(t, data, op)
 }
