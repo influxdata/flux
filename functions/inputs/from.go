@@ -5,7 +5,6 @@ import (
 
 	"github.com/influxdata/flux"
 
-
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/pkg/errors"
@@ -13,9 +12,8 @@ import (
 
 const FromKind = "from"
 
-
 type FromOpSpec struct {
-	Bucket   string      `json:"bucket,omitempty"`
+	Bucket   string `json:"bucket,omitempty"`
 	BucketID string `json:"bucketID,omitempty"`
 }
 

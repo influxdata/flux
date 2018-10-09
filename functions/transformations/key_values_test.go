@@ -12,10 +12,10 @@ import (
 
 func TestKeyValues_Process(t *testing.T) {
 	testCases := []struct {
-		name string
-		spec *transformations.KeyValuesProcedureSpec
-		data []flux.Table
-		want []*executetest.Table
+		name    string
+		spec    *transformations.KeyValuesProcedureSpec
+		data    []flux.Table
+		want    []*executetest.Table
 		wantErr error
 	}{
 		{
@@ -77,9 +77,9 @@ func TestKeyValues_Process(t *testing.T) {
 					{Label: "_value", Type: flux.TString},
 				},
 				Data: [][]interface{}{
-					{"a","tag1", "b"},
-					{"a","tag1", "c"},
-					{"a","tag1", "d"},
+					{"a", "tag1", "b"},
+					{"a", "tag1", "c"},
+					{"a", "tag1", "d"},
 				},
 			}},
 		},
@@ -237,10 +237,10 @@ func TestKeyValues_Process(t *testing.T) {
 					{Label: "_value", Type: flux.TString},
 				},
 				Data: [][]interface{}{
-					{"a","tag0", "a"},
-					{"a","tag1", "b"},
-					{"a","tag1", "c"},
-					{"a","tag1", "d"},
+					{"a", "tag0", "a"},
+					{"a", "tag1", "b"},
+					{"a", "tag1", "c"},
+					{"a", "tag1", "d"},
 				},
 			}},
 		},

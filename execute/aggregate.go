@@ -132,7 +132,6 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 		tableColMap[j] = idx
 	}
 
-
 	tbl.Do(func(cr flux.ColReader) error {
 		for j := range t.config.Columns {
 			vf := aggregates[j]

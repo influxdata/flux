@@ -13,8 +13,8 @@ import (
 const IntegralKind = "integral"
 
 type IntegralOpSpec struct {
-	Unit flux.Duration `json:"unit"`
-	TimeCol string   `json:"timeCol"`
+	Unit    flux.Duration `json:"unit"`
+	TimeCol string        `json:"timeCol"`
 	execute.AggregateConfig
 }
 
@@ -46,7 +46,6 @@ func createIntegralOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 		spec.Unit = flux.Duration(time.Second)
 	}
 
-
 	if timeValue, ok, err := args.GetString("timeCol"); err != nil {
 		return nil, err
 	} else if ok {
@@ -70,8 +69,8 @@ func (s *IntegralOpSpec) Kind() flux.OperationKind {
 }
 
 type IntegralProcedureSpec struct {
-	Unit flux.Duration `json:"unit"`
-	TimeCol string   `json:"timeCol"`
+	Unit    flux.Duration `json:"unit"`
+	TimeCol string        `json:"timeCol"`
 	execute.AggregateConfig
 }
 

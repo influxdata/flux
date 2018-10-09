@@ -51,7 +51,6 @@ type SchemaMutation interface {
 	Copy() SchemaMutation
 }
 
-
 func toStringSet(arr []string) map[string]bool {
 	if arr == nil {
 		return nil

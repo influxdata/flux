@@ -210,4 +210,3 @@ func (s *GeneratorSource) Decode() (flux.Table, error) {
 
 	return b.Table()
 }
-

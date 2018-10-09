@@ -140,8 +140,8 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "float with multiple values",
 			spec: &transformations.IntegralProcedureSpec{
-				Unit: 1,
-				TimeCol:         execute.DefaultTimeColLabel,
+				Unit:    1,
+				TimeCol: execute.DefaultTimeColLabel,
 				AggregateConfig: execute.AggregateConfig{
 					Columns: []string{"x", "y"},
 				},

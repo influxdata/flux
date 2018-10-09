@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 )
@@ -221,7 +221,6 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 	case flux.TTime:
 		timeDistinct = make(map[execute.Time]bool)
 	}
-
 
 	j := execute.ColIdx(t.column, tbl.Cols())
 	return tbl.Do(func(cr flux.ColReader) error {

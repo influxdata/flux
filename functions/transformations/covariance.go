@@ -173,7 +173,6 @@ func (t *CovarianceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 		return errors.New("cannot compute the covariance between different types")
 	}
 
-
 	t.reset()
 	tbl.Do(func(cr flux.ColReader) error {
 		switch typ := cols[xIdx].Type; typ {
