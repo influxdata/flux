@@ -27,12 +27,11 @@ func (lpn *LogicalPlanNode) ProcedureSpec() ProcedureSpec {
 }
 
 // CreateLogicalPlan creates a logical query plan from a flux spec
-func CreateLogicalPlan(spec *flux.Spec, a Administration, ops map[flux.OperationKind]CreateProcedureSpec) (*QueryPlan, error) {
+func CreateLogicalPlan(spec *flux.Spec, a Administration) (*QueryPlan, error) {
 	nodes := make(map[flux.OperationID]PlanNode, len(spec.Operations))
 
 	v := &fluxSpecVisitor{
 		a:     a,
-		ops:   ops,
 		spec:  spec,
 		nodes: nodes,
 	}
@@ -47,7 +46,6 @@ func CreateLogicalPlan(spec *flux.Spec, a Administration, ops map[flux.Operation
 // fluxSpecVisitor visits a flux spec and constructs from it a logical plan DAG
 type fluxSpecVisitor struct {
 	a     Administration
-	ops   map[flux.OperationKind]CreateProcedureSpec
 	spec  *flux.Spec
 	roots []PlanNode
 	nodes map[flux.OperationID]PlanNode
@@ -57,11 +55,16 @@ type fluxSpecVisitor struct {
 // logical procedure spec, and adds it to the current logical plan DAG.
 func (v *fluxSpecVisitor) VisitOperation(o *flux.Operation) error {
 	// Retrieve the create function for this query operation
-	create, ok := v.ops[o.Spec.Kind()]
+	createFns, ok := queryOpToProcedure[o.Spec.Kind()]
 
 	if !ok {
 		return fmt.Errorf("No ProcedureSpec available for %s", o.Spec.Kind())
 	}
+
+	// TODO: differentiate between logical and physical procedures.
+	// There should be just one logical procedure for each operation, but could be
+	// several physical procedures.
+	create := createFns[0]
 
 	// Create a ProcedureSpec from the query operation spec
 	spec, err := create(o.Spec, v.a)

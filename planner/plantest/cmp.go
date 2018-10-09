@@ -1,4 +1,4 @@
-package plannertest
+package plantest
 
 import (
 	"fmt"
