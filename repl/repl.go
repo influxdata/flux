@@ -16,7 +16,7 @@ import (
 	prompt "github.com/c-bata/go-prompt"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/parser"
@@ -179,7 +179,7 @@ func (r *REPL) executeLine(t string, expectYield bool) (values.Value, error) {
 	// Check for yield and execute query
 	if v.Type() == flux.TableObjectType {
 		t := v.(*flux.TableObject)
-		if !expectYield || (expectYield && t.Kind == functions.YieldKind) {
+		if !expectYield || (expectYield && t.Kind == transformations.YieldKind) {
 			spec := flux.ToSpec(r.interpreter, t)
 			return nil, r.doQuery(spec)
 		}

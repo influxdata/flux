@@ -1,23 +1,25 @@
 package planner_test
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 	"github.com/influxdata/flux/planner"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/functions/inputs"
+	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/semantic"
 )
 
 var create = map[flux.OperationKind]planner.CreateLogicalProcedureSpec{
 	// Take a FromOpSpec and translate it to a FromProcedureSpec
-	functions.FromKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
-		spec, ok := op.(*functions.FromOpSpec)
+	inputs.FromKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
+		spec, ok := op.(*inputs.FromOpSpec)
 
 		if !ok {
 			return nil, fmt.Errorf("invalid spec type %T", op)
@@ -29,8 +31,8 @@ var create = map[flux.OperationKind]planner.CreateLogicalProcedureSpec{
 		}, nil
 	},
 	// Take a RangeOpSpec and convert it to a RangeProcedureSpec
-	functions.RangeKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
-		spec, ok := op.(*functions.RangeOpSpec)
+	transformations.RangeKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
+		spec, ok := op.(*transformations.RangeOpSpec)
 
 		if !ok {
 			return nil, fmt.Errorf("invalid spec type %T", op)
@@ -51,8 +53,8 @@ var create = map[flux.OperationKind]planner.CreateLogicalProcedureSpec{
 		}, nil
 	},
 	// Take a FilterOpSpec and translate it to a FilterProcedureSpec
-	functions.FilterKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
-		spec, ok := op.(*functions.FilterOpSpec)
+	transformations.FilterKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
+		spec, ok := op.(*transformations.FilterOpSpec)
 
 		if !ok {
 			return nil, fmt.Errorf("invalid spec type %T", op)
@@ -62,8 +64,8 @@ var create = map[flux.OperationKind]planner.CreateLogicalProcedureSpec{
 			Fn: spec.Fn.Copy().(*semantic.FunctionExpression),
 		}, nil
 	},
-	functions.YieldKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
-		spec, ok := op.(*functions.YieldOpSpec)
+	transformations.YieldKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
+		spec, ok := op.(*transformations.YieldOpSpec)
 
 		if !ok {
 			return nil, fmt.Errorf("invalid spec type %T", op)
@@ -73,8 +75,8 @@ var create = map[flux.OperationKind]planner.CreateLogicalProcedureSpec{
 			Name: spec.Name,
 		}, nil
 	},
-	functions.JoinKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
-		spec, ok := op.(*functions.JoinOpSpec)
+	transformations.JoinKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
+		spec, ok := op.(*transformations.JoinOpSpec)
 
 		if !ok {
 			return nil, fmt.Errorf("invalid spec type %T", op)

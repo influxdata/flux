@@ -1,13 +1,14 @@
 package plan_test
 
 import (
+	"github.com/influxdata/flux/functions/inputs"
 	"strconv"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 )
@@ -22,20 +23,20 @@ func TestLogicalPlanner_Plan(t *testing.T) {
 				Operations: []*flux.Operation{
 					{
 						ID: "0",
-						Spec: &functions.FromOpSpec{
+						Spec: &inputs.FromOpSpec{
 							Bucket: "mybucket",
 						},
 					},
 					{
 						ID: "1",
-						Spec: &functions.RangeOpSpec{
+						Spec: &transformations.RangeOpSpec{
 							Start: flux.Time{Relative: -1 * time.Hour},
 							Stop:  flux.Time{},
 						},
 					},
 					{
 						ID:   "2",
-						Spec: &functions.CountOpSpec{},
+						Spec: &transformations.CountOpSpec{},
 					},
 				},
 				Edges: []flux.Edge{
@@ -47,7 +48,7 @@ func TestLogicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("0"): {
 						ID: plan.ProcedureIDFromOperationID("0"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket: "mybucket",
 						},
 						Parents:  nil,
@@ -55,7 +56,7 @@ func TestLogicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("1"): {
 						ID: plan.ProcedureIDFromOperationID("1"),
-						Spec: &functions.RangeProcedureSpec{
+						Spec: &transformations.RangeProcedureSpec{
 							Bounds: flux.Bounds{
 								Start: flux.Time{Relative: -1 * time.Hour},
 							},
@@ -68,7 +69,7 @@ func TestLogicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("2"): {
 						ID:   plan.ProcedureIDFromOperationID("2"),
-						Spec: &functions.CountProcedureSpec{},
+						Spec: &transformations.CountProcedureSpec{},
 						Parents: []plan.ProcedureID{
 							plan.ProcedureIDFromOperationID("1"),
 						},
@@ -88,7 +89,7 @@ func TestLogicalPlanner_Plan(t *testing.T) {
 				Procedures: map[plan.ProcedureID]*plan.Procedure{
 					plan.ProcedureIDFromOperationID("select0"): {
 						ID: plan.ProcedureIDFromOperationID("select0"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket: "mybucket",
 						},
 						Parents:  nil,
@@ -96,7 +97,7 @@ func TestLogicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("range0"): {
 						ID: plan.ProcedureIDFromOperationID("range0"),
-						Spec: &functions.RangeProcedureSpec{
+						Spec: &transformations.RangeProcedureSpec{
 							Bounds: flux.Bounds{
 								Start: flux.Time{Relative: -1 * time.Hour},
 							},
@@ -109,7 +110,7 @@ func TestLogicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("count0"): {
 						ID:   plan.ProcedureIDFromOperationID("count0"),
-						Spec: &functions.CountProcedureSpec{},
+						Spec: &transformations.CountProcedureSpec{},
 						Parents: []plan.ProcedureID{
 							plan.ProcedureIDFromOperationID("range0"),
 						},
@@ -117,7 +118,7 @@ func TestLogicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("select1"): {
 						ID: plan.ProcedureIDFromOperationID("select1"),
-						Spec: &functions.FromProcedureSpec{
+						Spec: &inputs.FromProcedureSpec{
 							Bucket: "mybucket",
 						},
 						Parents:  nil,
@@ -125,7 +126,7 @@ func TestLogicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("range1"): {
 						ID: plan.ProcedureIDFromOperationID("range1"),
-						Spec: &functions.RangeProcedureSpec{
+						Spec: &transformations.RangeProcedureSpec{
 							Bounds: flux.Bounds{
 								Start: flux.Time{Relative: -1 * time.Hour},
 							},
@@ -138,7 +139,7 @@ func TestLogicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("sum1"): {
 						ID:   plan.ProcedureIDFromOperationID("sum1"),
-						Spec: &functions.SumProcedureSpec{},
+						Spec: &transformations.SumProcedureSpec{},
 						Parents: []plan.ProcedureID{
 							plan.ProcedureIDFromOperationID("range1"),
 						},
@@ -146,7 +147,7 @@ func TestLogicalPlanner_Plan(t *testing.T) {
 					},
 					plan.ProcedureIDFromOperationID("join"): {
 						ID: plan.ProcedureIDFromOperationID("join"),
-						Spec: &functions.MergeJoinProcedureSpec{
+						Spec: &transformations.MergeJoinProcedureSpec{
 							TableNames: map[plan.ProcedureID]string{
 								plan.ProcedureIDFromOperationID("sum1"):   "sum",
 								plan.ProcedureIDFromOperationID("count0"): "count",
@@ -194,41 +195,41 @@ var benchmarkQuery = &flux.Spec{
 	Operations: []*flux.Operation{
 		{
 			ID: "select0",
-			Spec: &functions.FromOpSpec{
+			Spec: &inputs.FromOpSpec{
 				Bucket: "mybucket",
 			},
 		},
 		{
 			ID: "range0",
-			Spec: &functions.RangeOpSpec{
+			Spec: &transformations.RangeOpSpec{
 				Start: flux.Time{Relative: -1 * time.Hour},
 				Stop:  flux.Time{},
 			},
 		},
 		{
 			ID:   "count0",
-			Spec: &functions.CountOpSpec{},
+			Spec: &transformations.CountOpSpec{},
 		},
 		{
 			ID: "select1",
-			Spec: &functions.FromOpSpec{
+			Spec: &inputs.FromOpSpec{
 				Bucket: "mybucket",
 			},
 		},
 		{
 			ID: "range1",
-			Spec: &functions.RangeOpSpec{
+			Spec: &transformations.RangeOpSpec{
 				Start: flux.Time{Relative: -1 * time.Hour},
 				Stop:  flux.Time{},
 			},
 		},
 		{
 			ID:   "sum1",
-			Spec: &functions.SumOpSpec{},
+			Spec: &transformations.SumOpSpec{},
 		},
 		{
 			ID: "join",
-			Spec: &functions.JoinOpSpec{
+			Spec: &transformations.JoinOpSpec{
 				TableNames: map[flux.OperationID]string{
 					"count0": "count",
 					"sum1":   "sum",

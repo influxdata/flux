@@ -1,11 +1,12 @@
 package plan_test
 
 import (
+	"github.com/influxdata/flux/functions/inputs"
 	"testing"
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
 )
 
@@ -19,7 +20,7 @@ func TestPhysicalPlanner_DefaultMemoryLimit(t *testing.T) {
 		Procedures: map[plan.ProcedureID]*plan.Procedure{
 			plan.ProcedureIDFromOperationID("from"): {
 				ID: plan.ProcedureIDFromOperationID("from"),
-				Spec: &functions.FromProcedureSpec{
+				Spec: &inputs.FromProcedureSpec{
 					Bucket: "mydb",
 				},
 				Parents:  nil,
@@ -27,7 +28,7 @@ func TestPhysicalPlanner_DefaultMemoryLimit(t *testing.T) {
 			},
 			plan.ProcedureIDFromOperationID("range"): {
 				ID: plan.ProcedureIDFromOperationID("range"),
-				Spec: &functions.RangeProcedureSpec{
+				Spec: &transformations.RangeProcedureSpec{
 					Bounds: flux.Bounds{
 						Start: flux.Time{
 							IsRelative: true,
@@ -44,7 +45,7 @@ func TestPhysicalPlanner_DefaultMemoryLimit(t *testing.T) {
 			},
 			plan.ProcedureIDFromOperationID("count"): {
 				ID:   plan.ProcedureIDFromOperationID("count"),
-				Spec: &functions.CountProcedureSpec{},
+				Spec: &transformations.CountProcedureSpec{},
 				Parents: []plan.ProcedureID{
 					(plan.ProcedureIDFromOperationID("range")),
 				},
