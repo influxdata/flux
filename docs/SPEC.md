@@ -1225,24 +1225,15 @@ Any output table will have the following properties:
 
 * It always contains a single record.
 * It will have the same group key as the input table.
-* It will have a column `_time` which represents the time of the aggregated record.
-    This can be set as the start or stop time of the input table.
-    By default the stop time is used.
 * It will contain a column for each provided aggregate column.
     The column label will be the same as the input table.
     The type of the column depends on the specific aggregate operation.
+* It will not have a _time column
 
 All aggregate operations have the following properties:
 
 * `columns` list of string
     columns specifies a list of columns to aggregate.
-* `timeSrc` string
-    timeSrc is the source time column to use on the resulting aggregate record.
-    The value must be column with type `time` and must be part of the group key.
-    Defaults to `_stop`.
-* `timeDst` string
-    timeDst is the destination column to use for the resulting aggregate record.
-    Defaults to `_time`.
 
 ##### Covariance
 
@@ -1251,6 +1242,8 @@ Covariance computes the covariance between two columns.
 
 Covariance has the following properties:
 
+* `columns` list of string
+    columns specifies a list of columns to aggregate. Defaults to `["_value"]`
 * `pearsonr` bool
     pearsonr indicates whether the result should be normalized to be the Pearson R coefficient.
 * `valueDst` string
@@ -1267,28 +1260,13 @@ Example:
 Count is an aggregate operation.
 For each aggregated column, it outputs the number of non null records as an integer.
 
+Count has the following property: 
+
+* `columns` list of string
+    columns specifies a list of columns to aggregate. Defaults to `["_value"]`
+
 Example:
 `from(bucket: "telegraf/autogen") |> range(start: -5m) |> count()`
-
-#### Duplicate 
-Duplicate will duplicate a specified column in a table
-
-Duplicate has the following properties:
-
-* `column` string
-	The column to duplicate
-* `as` string
-	The name that should be assigned to the duplicate column
-
-Example usage:
-
-Duplicate column `server` under the name `host`:
-```
-from(bucket: "telegraf/autogen")
-	|> range(start:-5m)
-	|> filter(fn: (r) => r._measurement == "cpu")
-	|> duplicate(column: "host", as: "server")
-```
 
 ##### Integral
 
@@ -1298,6 +1276,8 @@ The curve is defined as function where the domain is the record times and the ra
 
 Integral has the following properties:
 
+* `columns` list of string
+    columns specifies a list of columns to aggregate. Defaults to `["_value"]`
 * `unit` duration
     unit is the time duration to use when computing the integral
 
@@ -1315,6 +1295,11 @@ from(bucket: "telegraf/autogen")
 Mean is an aggregate operation.
 For each aggregated column, it outputs the mean of the non null records as a float.
 
+Mean has the following property: 
+
+* `columns` list of string
+    columns specifies a list of columns to aggregate. Defaults to `["_value"]`
+
 Example: 
 ```
 from(bucket:"telegraf/autogen")
@@ -1325,19 +1310,22 @@ from(bucket:"telegraf/autogen")
     |> mean()
 ```
 
-##### Percentile
+##### Percentile (aggregate)
 
-Percentile is an aggregate operation.
-For each aggregated column, it outputs the value that represents the specified percentile of the non null record as a float.
+Percentile is both an aggregate operation and a selector operation depending on selected options.
+In the aggregate methods, it outputs the value that represents the specified percentile of the non null record as a float.
 
 Percentile has the following properties:
 
+* `columns` list of string
+    columns specifies a list of columns to aggregate. Defaults to `["_value"]`
 * `percentile` float
     A value between 0 and 1 indicating the desired percentile.
-* `exact` bool
-    If true an exact answer is computed, otherwise an approximate answer is computed.
-    Using exact requires that the entire dataset fit in available memory.
-    Defaults to false.
+* `method` string
+    percentile provides 3 methods for computation: 
+    * `estimate_tdigest`: an aggregate result that uses a tdigest data structure to compute an accurate percentile estimate on large data sources. 
+    * `exact_mean`: an aggregate result that takes the average of the two points closest to the percentile value. 
+    * `exact_selector`: see Percentile (selector) 
 * `compression` float
    Compression indicates how many centroids to use when compressing the dataset.
    A larger number produces a more accurate result at the cost of increased memory requirements.
@@ -1349,13 +1337,18 @@ Example:
 from(bucket: "telegraf/autogen")
 	|> range(start: -5m)
 	|> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
-	|> percentile(p: 0.99)
+	|> percentile(p: 0.99, method: "estimate_tdigest", compression: 1000)
 ```
 
 ##### Skew
 
 Skew is an aggregate operation.
 For each aggregated column, it outputs the skew of the non null record as a float.
+
+Skew has the following parameter: 
+
+* `columns` list of string
+    columns specifies a list of columns to aggregate. Defaults to `["_value"]`
 
 Example:
 ```
@@ -1372,6 +1365,11 @@ For each aggregated column, it outputs the difference between the min and max va
 The type of the output column depends on the type of input column: for input columns with type `uint` or `int`, the output is an `int`; for `float` input columns the output is a `float`.
 All other input types are invalid.
 
+Spread has the following parameter: 
+
+* `columns` list of string
+    columns specifies a list of columns to aggregate. Defaults to `["_value"]`
+
 Example:
 ```
 from(bucket: "telegraf/autogen") 
@@ -1383,6 +1381,11 @@ from(bucket: "telegraf/autogen")
 
 Stddev is an aggregate operation.
 For each aggregated column, it outputs the standard deviation of the non null record as a float.
+
+Stddev has the following parameter: 
+
+* `columns` list of string
+    columns specifies a list of columns to aggregate. Defaults to `["_value"]`
 
 Example:
 ```
@@ -1397,6 +1400,11 @@ from(bucket: "telegraf/autogen")
 Stddev is an aggregate operation.
 For each aggregated column, it outputs the sum of the non null record.
 The output column type is the same as the input column type.
+
+Sum has the following parameter: 
+
+* `columns` list of string
+    columns specifies a list of columns to aggregate. Defaults to `["_value"]`
 
 Example:
 ```
@@ -1471,6 +1479,33 @@ from(bucket:"telegraf/autogen")
     |> filter(fn: (r) => r._measurement == "cpu" AND r._field == "usage_system")
     |> min()
 ```
+
+##### Percentile (selector)
+
+Percentile is both an aggregate operation and a selector operation depending on selected options.
+In the aggregate methods, it outputs the value that represents the specified percentile of the non null record as a float.
+
+Percentile has the following properties:
+
+* `column` string
+    column indicates which column will be used for the percentile computation. Defaults to `"_value"`
+* `percentile` float
+    A value between 0 and 1 indicating the desired percentile.
+* `method` string
+    percentile provides 3 methods for computation: 
+    * `estimate_tdigest`: See Percentile (Aggregate) 
+    * `exact_mean`: See Percentile (Aggregate) 
+    * `exact_selector`: a selector result that returns the data point for which at least `percentile` points are less than. 
+
+Example:
+```
+// Determine 99th percentile cpu system usage:
+from(bucket: "telegraf/autogen")
+	|> range(start: -5m)
+	|> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
+	|> percentile(p: 0.99, method: "exact_selector")
+```
+
 
 ##### Sample
 
@@ -1809,6 +1844,27 @@ from(bucket: "telegraf/autogen")
     |> keep(fn: (col) => col =~ /inodes*/) 
 ```
 
+#### Duplicate 
+Duplicate will duplicate a specified column in a table
+
+Duplicate has the following properties:
+
+* `column` string
+	The column to duplicate
+* `as` string
+	The name that should be assigned to the duplicate column
+
+Example usage:
+
+Duplicate column `server` under the name `host`:
+```
+from(bucket: "telegraf/autogen")
+	|> range(start:-5m)
+	|> filter(fn: (r) => r._measurement == "cpu")
+	|> duplicate(column: "host", as: "server")
+```
+
+
 #### Set
 
 Set assigns a static value to each record.
@@ -2042,110 +2098,159 @@ fromRows(bucket:"telegraf/autogen")
 
 Join merges two or more input streams, whose values are equal on a set of common columns, into a single output stream.
 The resulting schema is the union of the input schemas, and the resulting group key is the union of the input group keys.
+**Join** has the following properties:
 
-For example, given the following two streams of data:
+* `tables` object  
+    The map of streams to be joined.  
+* `on` list of strings  
+    The list of columns on which to join.  
+* `method` string  
+    The method of join.  
+    **Default:** `"inner"`  
+    **Possible Values:** `"inner", "cross", "left", "right", "full"`  
+
+Both `tables` and `on` are required parameters.
+The `on` parameter and the `cross` method are mutually exclusive.
+Join currently only supports two input streams.
+
+[IMPL#83](https://github.com/influxdata/flux/issues/83) Add support for joining more than 2 streams  
+[IMPL#84](https://github.com/influxdata/flux/issues/84) Add support for different join types  
+
+Example:
+
+Given the following two streams of data:
 
 * SF_Temperature
 
     | _time | _field | _value |
     | ----- | ------ | ------ |
-    | 0001  | "temp" | 70 |
-    | 0002  | "temp" | 75 |
-    | 0003  | "temp" | 72 |
+    | 0001  | "temp" | 70     |
+    | 0002  | "temp" | 75     |
+    | 0003  | "temp" | 72     |
 
 * NY_Temperature
 
     | _time | _field | _value |
     | ----- | ------ | ------ |
-    | 0001  | "temp" | 55 |
-    | 0002  | "temp" | 56 |
-    | 0003  | "temp" | 55 |
+    | 0001  | "temp" | 55     |
+    | 0002  | "temp" | 56     |
+    | 0003  | "temp" | 55     |
 
-And the following join query: `join(tables: {sf: SF_Temperature, ny: NY_Temperature}, on: ["_time", "_field"])`
+And the following join query:
+
+    join(tables: {sf: SF_Temperature, ny: NY_Temperature}, on: ["_time", "_field"])
 
 The output will be:
 
-| _time | _field | ny__value | sf__value |
+| _time | _field | _value_ny | _value_sf |
 | ----- | ------ |---------- | --------- |
-| 0001  | "temp" | 55 | 70 |
-| 0002  | "temp" | 56 | 75 |
-| 0003  | "temp" | 55 | 72 |
-
-
-##### options
-
-The join operator accepts the following named parameters:
-
-| Name | Type | Required | Default Value | Possible Values |
-| ---- | ---- | -------- | ------- | ------ |
-| tables    | map           | yes   | no default value - must be specified with every call | N/A |
-| on        | string array  | no    | list of columns to join on | N/A |
-| method    | string        | no    | inner | inner, cross, left, right, or outer |
-
-* tables
-
-    Map of tables (or streams) to join together. It is the one required parameter of the join.
-
-* on
-
-    An optional parameter for specifying a list of columns to join on.
-    Defaults to the set of columns that are common to all of the input streams.
-
-* method
-
-    An optional parameter that specifies the type of join to be performed.
-    When not specified, an inner join is performed.
-    The **method** parameter may take on any one of the following values:
-
-    * inner - inner join
-
-    * cross - cross product
-
-    * left - left outer join
-
-    * right - right outer join
-
-    * outer - full outer join
-
-The **on** parameter and the **cross** method are mutually exclusive.
+| 0001  | "temp" | 55        | 70        |
+| 0002  | "temp" | 56        | 75        |
+| 0003  | "temp" | 55        | 72        |
 
 
 ##### output schema
 
 The column schema of the output stream is the union of the input schemas, and the same goes for the output group key.
 Columns that must be renamed due to ambiguity (i.e. columns that occur in more than one input stream) are renamed
-according to the template `<table>_<column>`.
+according to the template `<column>_<table>`.
 
-Examples:
+Example:
 
 * SF_Temperature
-* Group Key {"_field"}
+* Group Key for table `{ _field }`
 
     | _time | _field | _value |
     | ----- | ------ | ------ |
-    | 0001  | "temp" | 70 |
-    | 0002  | "temp" | 75 |
-    | 0003  | "temp" | 72 |
+    | 0001  | "temp" | 70     |
+    | 0002  | "temp" | 75     |
+    | 0003  | "temp" | 72     |
 
 * NY_Temperature
-* Group Key {"_time", "_field"}
+* Group Key for all tables `{ _time, _field }`
 
     | _time | _field | _value |
     | ----- | ------ | ------ |
-    | 0001  | "temp" | 55 |
-    | 0002  | "temp" | 56 |
-    | 0003  | "temp" | 55 |
+    | 0001  | "temp" | 55     |
+
+    | _time | _field | _value |
+    | ----- | ------ | ------ |
+    | 0002  | "temp" | 56     |
+
+    | _time | _field | _value |
+    | ----- | ------ | ------ |
+    | 0003  | "temp" | 55     |
 
 `join(tables: {sf: SF_Temperature, ny: NY_Temperature}, on: ["_time"])` produces:
 
-* Group Key {"_time", "sf__field", "ny__field"}
+* Group Key for all tables `{ _time, _field_ny, _field_sf }`
 
-    | _time | sf__field | sf__value | ny__field | ny__value |
-    | ----- | ------ | ---------- | -------- |--------- |
-    | 0001  | "temp" | 70 | "temp" | 55 |
-    | 0002  | "temp" | 75 | "temp" | 56 |
-    | 0003  | "temp" | 72 | "temp: | 55 |
+    | _time | _field_ny | _field_sf | _value_ny | _value_sf |
+    | ----- | --------- | --------- |---------- | --------- |
+    | 0001  | "temp"    | "temp"    | 55        | 70        |
 
+    | _time | _field_ny | _field_sf | _value_ny | _value_sf |
+    | ----- | --------- | --------- |---------- | --------- |
+    | 0002  | "temp"    | "temp"    | 56        | 75        |
+
+    | _time | _field_ny | _field_sf | _value_ny | _value_sf |
+    | ----- | --------- | --------- |---------- | --------- |
+    | 0003  | "temp"    | "temp"    | 55        | 72        |
+
+#### Union
+
+Union concatenates two or more input streams into a single output stream.  In tables that have identical
+schema and group keys, contents of the tables will be concatenated in the output stream.  The output schemas of 
+the Union operation shall be the union of all input schemas.
+
+Union does not preserve the sort order of the rows within tables. A sort operation may be added if a specific sort order is needed.
+
+Union has the following properties:
+* `tables` a list of streams
+    tables specifies the streams to union together.  There must be at least two streams.
+
+For example, given this stream, `SF_Weather` with group key `"_field"` on both tables:
+
+   |  _time |  _field |  _value |
+   | ----- | ------ | ------ |
+   | 0001  | "temp" | 70 |
+   | 0002  | "temp" | 75 |
+
+   | _time | _field | _value |
+   | ----- | ------ | ------ |
+   | 0001  | "humidity" | 81 |
+   | 0002  | "humidity" | 82 |
+
+And this stream, `NY_Weather`, also with group key `"_field"` on both tables:
+
+   | _time | _field | _value |
+   | ----- | ------ | ------ |
+   | 0001  | "temp" | 55 |
+   | 0002  | "temp" | 56 |
+
+   | _time | _field | _value |
+   | ----- | ------ | ------ |
+   | 0001  | "pressure" | 29.82 |
+   | 0002  | "pressure" | 30.01 |
+
+`union(tables: [SF_Weather, NY_Weather])` produces this stream (whose tables are grouped by `"_field"`):
+
+   | _time | _field | _value |
+   | ----- | ------ | ------ |
+   | 0001  | "temp" | 70 |
+   | 0002  | "temp" | 75 |
+   | 0001  | "temp" | 55 |
+   | 0002  | "temp" | 56 |
+
+   | _time | _field | _value |
+   | ----- | ------ | ------ |
+   | 0001  | "humidity" | 81 |
+   | 0002  | "humidity" | 82 |
+
+   | _time | _field | _value |
+   | ----- | ------ | ------ |
+   | 0001  | "pressure" | 29.82 |
+   | 0002  | "pressure" | 30.01 |
 
 #### Cumulative sum
 

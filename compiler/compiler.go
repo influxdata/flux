@@ -3,6 +3,7 @@ package compiler
 import (
 	"errors"
 	"fmt"
+	"github.com/influxdata/flux"
 
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -287,4 +288,29 @@ func (c *compilationCacheNode) compile(fn *semantic.FunctionExpression, idx int,
 		c.children[t] = child
 	}
 	return child.compile(fn, idx+1, types)
+}
+
+// Utility function for compiling an `fn` parameter for rename or drop/keep. In addition
+// to the function expression, it takes two types to verify the result against:
+// a single argument type, and a single return type.
+func CompileFnParam(fn *semantic.FunctionExpression, paramType, returnType semantic.Type) (Func, string, error) {
+	scope, decls := flux.BuiltIns()
+	compileCache := NewCompilationCache(fn, scope, decls)
+	if len(fn.Params) != 1 {
+		return nil, "", fmt.Errorf("function should only have a single parameter, got %d", len(fn.Params))
+	}
+	paramName := fn.Params[0].Key.Name
+
+	compiled, err := compileCache.Compile(map[string]semantic.Type{
+		paramName: paramType,
+	})
+	if err != nil {
+		return nil, "", err
+	}
+
+	if compiled.Type() != returnType {
+		return nil, "", fmt.Errorf("provided function does not evaluate to type %s", returnType.Kind())
+	}
+
+	return compiled, paramName, nil
 }

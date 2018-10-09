@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/influxdata/flux/functions/inputs"
 	"os"
 	"strconv"
 	"testing"
@@ -12,7 +13,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/functions/transformations"
 	_ "github.com/influxdata/flux/options"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
@@ -65,13 +66,13 @@ func TestSpec_JSON(t *testing.T) {
 		Operations: []*flux.Operation{
 			{
 				ID: "from",
-				Spec: &functions.FromOpSpec{
+				Spec: &inputs.FromOpSpec{
 					Bucket: "mybucket",
 				},
 			},
 			{
 				ID: "range",
-				Spec: &functions.RangeOpSpec{
+				Spec: &transformations.RangeOpSpec{
 					Start: flux.Time{
 						Relative:   -4 * time.Hour,
 						IsRelative: true,
@@ -83,7 +84,7 @@ func TestSpec_JSON(t *testing.T) {
 			},
 			{
 				ID:   "sum",
-				Spec: &functions.SumOpSpec{},
+				Spec: &transformations.SumOpSpec{},
 			},
 		},
 		Edges: []flux.Edge{
