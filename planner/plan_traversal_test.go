@@ -3,7 +3,6 @@ package planner_test
 import (
 	"context"
 	"fmt"
-	"github.com/influxdata/flux/planner"
 	"testing"
 	"time"
 
@@ -13,12 +12,13 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/functions/transformations"
+	"github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/semantic"
 )
 
-var create = map[flux.OperationKind]planner.CreateLogicalProcedureSpec{
+var create = map[flux.OperationKind]planner.CreateProcedureSpec{
 	// Take a FromOpSpec and translate it to a FromProcedureSpec
-	inputs.FromKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
+	inputs.FromKind: func(op flux.OperationSpec, a planner.Administration) (planner.ProcedureSpec, error) {
 		spec, ok := op.(*inputs.FromOpSpec)
 
 		if !ok {
@@ -31,7 +31,7 @@ var create = map[flux.OperationKind]planner.CreateLogicalProcedureSpec{
 		}, nil
 	},
 	// Take a RangeOpSpec and convert it to a RangeProcedureSpec
-	transformations.RangeKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
+	transformations.RangeKind: func(op flux.OperationSpec, a planner.Administration) (planner.ProcedureSpec, error) {
 		spec, ok := op.(*transformations.RangeOpSpec)
 
 		if !ok {
@@ -53,7 +53,7 @@ var create = map[flux.OperationKind]planner.CreateLogicalProcedureSpec{
 		}, nil
 	},
 	// Take a FilterOpSpec and translate it to a FilterProcedureSpec
-	transformations.FilterKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
+	transformations.FilterKind: func(op flux.OperationSpec, a planner.Administration) (planner.ProcedureSpec, error) {
 		spec, ok := op.(*transformations.FilterOpSpec)
 
 		if !ok {
@@ -64,7 +64,7 @@ var create = map[flux.OperationKind]planner.CreateLogicalProcedureSpec{
 			Fn: spec.Fn.Copy().(*semantic.FunctionExpression),
 		}, nil
 	},
-	transformations.YieldKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
+	transformations.YieldKind: func(op flux.OperationSpec, a planner.Administration) (planner.ProcedureSpec, error) {
 		spec, ok := op.(*transformations.YieldOpSpec)
 
 		if !ok {
@@ -75,7 +75,7 @@ var create = map[flux.OperationKind]planner.CreateLogicalProcedureSpec{
 			Name: spec.Name,
 		}, nil
 	},
-	transformations.JoinKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
+	transformations.JoinKind: func(op flux.OperationSpec, a planner.Administration) (planner.ProcedureSpec, error) {
 		spec, ok := op.(*transformations.JoinOpSpec)
 
 		if !ok {
@@ -101,14 +101,14 @@ func (sr *SimpleRule) Rewrite(node planner.PlanNode) (planner.PlanNode, bool) {
 	return node, false
 }
 
-func fluxToQueryPlan(fluxQuery string) (*planner.QueryPlan, error) {
+func fluxToQueryPlan(fluxQuery string, a planner.Administration) (*planner.QueryPlan, error) {
 	now := time.Now().UTC()
 	spec, err := flux.Compile(context.Background(), fluxQuery, now)
 	if err != nil {
 		return nil, err
 	}
 
-	qp, err := planner.CreateLogicalPlan(spec, create)
+	qp, err := planner.CreateLogicalPlan(spec, a, create)
 	return qp, err
 }
 
@@ -174,7 +174,7 @@ func TestPlanTraversal(t *testing.T) {
 			simpleRule := SimpleRule{}
 			planner := planner.NewLogicalToPhysicalPlanner([]planner.Rule{&simpleRule})
 
-			qp, err := fluxToQueryPlan(tc.fluxQuery)
+			qp, err := fluxToQueryPlan(tc.fluxQuery, planner)
 			if err != nil {
 				t.Fatalf("Could not convert Flux to logical plan: %v", err)
 			}
