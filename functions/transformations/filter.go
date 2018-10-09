@@ -2,8 +2,9 @@ package transformations
 
 import (
 	"fmt"
-	"github.com/influxdata/flux/functions/inputs"
 	"log"
+
+	"github.com/influxdata/flux/functions/inputs"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
@@ -101,6 +102,16 @@ func (s *FilterProcedureSpec) PushDownRules() []plan.PushDownRule {
 			},
 		},
 		{
+			Root:    inputs.FromPromKind,
+			Through: []plan.ProcedureKind{GroupKind, LimitKind, RangeKind},
+			Match: func(spec plan.ProcedureSpec) bool {
+				if _, ok := s.Fn.Body.(semantic.Expression); !ok {
+					return false
+				}
+				return true
+			},
+		},
+		{
 			Root:    FilterKind,
 			Through: []plan.ProcedureKind{GroupKind, LimitKind, RangeKind},
 			Match: func(spec plan.ProcedureSpec) bool {
@@ -127,6 +138,8 @@ func (s *FilterProcedureSpec) PushDown(root *plan.Procedure, dup func() *plan.Pr
 		}
 		spec.FilterSet = true
 		spec.Filter = s.Fn
+	case *inputs.FromPromProcedureSpec:
+		_ = spec.SetMatcherFromFilter(s.Fn)
 	case *FilterProcedureSpec:
 		spec.Fn = mergeArrowFunction(spec.Fn, s.Fn)
 	}

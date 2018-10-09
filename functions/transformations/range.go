@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -139,24 +139,40 @@ func (s *RangeProcedureSpec) PushDownRules() []plan.PushDownRule {
 		Match: func(spec plan.ProcedureSpec) bool {
 			return s.TimeCol == "_time"
 		},
-	}}
+	}, {
+		Root:    inputs.FromPromKind,
+		Through: []plan.ProcedureKind{GroupKind, LimitKind, FilterKind},
+		Match: func(spec plan.ProcedureSpec) bool {
+			return s.TimeCol == "_time"
+		},
+	},
+	}
 }
 
 func (s *RangeProcedureSpec) PushDown(root *plan.Procedure, dup func() *plan.Procedure) {
-	selectSpec := root.Spec.(*inputs.FromProcedureSpec)
-	if selectSpec.BoundsSet {
-		// Example case where this matters
-		//    var data = select(database: "mydb")
-		//    var past = data.range(start:-2d,stop:-1d)
-		//    var current = data.range(start:-1d,stop:now)
-		root = dup()
-		selectSpec = root.Spec.(*inputs.FromProcedureSpec)
-		selectSpec.BoundsSet = false
-		selectSpec.Bounds = flux.Bounds{}
+
+	switch spec := root.Spec.(type) {
+	case *inputs.FromProcedureSpec:
+		selectSpec := root.Spec.(*inputs.FromProcedureSpec)
+		if selectSpec.BoundsSet {
+			// Example case where this matters
+			//    var data = select(database: "mydb")
+			//    var past = data.range(start:-2d,stop:-1d)
+			//    var current = data.range(start:-1d,stop:now)
+			root = dup()
+			selectSpec = root.Spec.(*inputs.FromProcedureSpec)
+			selectSpec.BoundsSet = false
+			selectSpec.Bounds = flux.Bounds{}
+			return
+		}
+		selectSpec.BoundsSet = true
+		selectSpec.Bounds = s.Bounds
+
+	case *inputs.FromPromProcedureSpec:
+		spec.Bounds = s.Bounds
+	default:
 		return
 	}
-	selectSpec.BoundsSet = true
-	selectSpec.Bounds = s.Bounds
 }
 
 func (s *RangeProcedureSpec) TimeBounds() flux.Bounds {
