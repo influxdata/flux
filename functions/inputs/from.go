@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/functions/inputs/storage"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/functions/inputs/storage"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/platform"
@@ -29,9 +29,7 @@ const (
 	GroupModeExcept
 )
 
-
 const FromKind = "from"
-
 
 type FromOpSpec struct {
 	Bucket   string      `json:"bucket,omitempty"`
@@ -71,10 +69,10 @@ func createFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		}
 	}
 
-	if spec.Bucket == "" && len(spec.BucketID) == 0 {
+	if spec.Bucket == "" && !spec.BucketID.Valid() {
 		return nil, errors.New("must specify one of bucket or bucketID")
 	}
-	if spec.Bucket != "" && len(spec.BucketID) != 0 {
+	if spec.Bucket != "" && spec.BucketID.Valid() {
 		return nil, errors.New("must specify only one of bucket or bucketID")
 	}
 	return spec, nil
@@ -94,7 +92,7 @@ func (s *FromOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.Buc
 		bf.Name = &s.Bucket
 	}
 
-	if len(s.BucketID) > 0 {
+	if s.BucketID.Valid() {
 		bf.ID = &s.BucketID
 	}
 
@@ -156,9 +154,8 @@ func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(FromProcedureSpec)
 
 	ns.Bucket = s.Bucket
-	if len(s.BucketID) > 0 {
-		ns.BucketID = make(platform.ID, len(s.BucketID))
-		copy(ns.BucketID, s.BucketID)
+	if s.BucketID.Valid() {
+		ns.BucketID = s.BucketID
 	}
 
 	ns.BoundsSet = s.BoundsSet
@@ -225,7 +222,7 @@ func createFromSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a execu
 			return nil, fmt.Errorf("could not find bucket %q", spec.Bucket)
 		}
 		bucketID = b
-	case len(spec.BucketID) != 0:
+	case spec.BucketID.Valid():
 		bucketID = spec.BucketID
 	}
 
@@ -233,8 +230,8 @@ func createFromSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a execu
 		dsid,
 		deps.Reader,
 		storage.ReadSpec{
-			OrganizationID:  orgID,
-			BucketID:        bucketID,
+			OrganizationID:  uint64(orgID),
+			BucketID:        uint64(bucketID),
 			Predicate:       spec.Filter,
 			PointsLimit:     spec.PointsLimit,
 			SeriesLimit:     spec.SeriesLimit,
@@ -258,5 +255,3 @@ func InjectFromDependencies(depsMap execute.Dependencies, deps storage.Dependenc
 	depsMap[FromKind] = deps
 	return nil
 }
-
-

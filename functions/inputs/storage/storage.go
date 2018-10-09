@@ -176,8 +176,8 @@ const (
 )
 
 type ReadSpec struct {
-	OrganizationID []byte
-	BucketID       []byte
+	OrganizationID uint64
+	BucketID       uint64
 
 	RAMLimit     uint64
 	Hosts        []string
