@@ -165,7 +165,10 @@ func TestFluxSpecToLogicalPlan(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if err := plannertest.CompareLogicalPlans(want, got); err != nil {
+			// Comparator function for LogicalPlanNodes
+			f := plannertest.CompareLogicalPlanNodes
+
+			if err := plannertest.ComparePlans(want, got, f); err != nil {
 				t.Fatal(err)
 			}
 		})
