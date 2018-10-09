@@ -114,7 +114,7 @@ func TestFluxSpecToLogicalPlan(t *testing.T) {
 			}
 
 			// Comparator function for LogicalPlanNodes
-			f := plannertest.CompareLogicalPlanNodes
+			f := plantest.CompareLogicalPlanNodes
 
 			if err := plantest.ComparePlans(want, got, f); err != nil {
 				t.Fatal(err)
