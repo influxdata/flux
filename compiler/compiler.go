@@ -16,12 +16,17 @@ func Compile(f *semantic.FunctionExpression, inTypes map[string]semantic.Type, b
 	for k, t := range inTypes {
 		builtinDeclarations[k] = semantic.NewExternalVariableDeclaration(k, t)
 	}
+
+	f = f.Copy().(*semantic.FunctionExpression)
+	semantic.InferTypes(f)
 	ts := f.TypeScheme()
+
+	typ := ts.Instantiate(inTypes)
+
 	declarations := make(map[string]semantic.VariableDeclaration, len(inTypes))
 	for k, t := range inTypes {
 		declarations[k] = semantic.NewExternalVariableDeclaration(k, t)
 	}
-	f = f.Copy().(*semantic.FunctionExpression)
 	semantic.ApplyNewDeclarations(f, declarations)
 
 	root, err := compile(f.Body, builtinScope)

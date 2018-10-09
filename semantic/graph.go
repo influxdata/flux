@@ -21,6 +21,7 @@ type Node interface {
 }
 
 func (*Program) node() {}
+func (*Extern) node()  {}
 
 func (*BlockStatement) node()              {}
 func (*OptionStatement) node()             {}
@@ -63,12 +64,11 @@ type Statement interface {
 	stmt()
 }
 
-func (*BlockStatement) stmt()              {}
-func (*OptionStatement) stmt()             {}
-func (*ExpressionStatement) stmt()         {}
-func (*ReturnStatement) stmt()             {}
-func (*NativeVariableDeclaration) stmt()   {}
-func (*ExternalVariableDeclaration) stmt() {}
+func (*BlockStatement) stmt()            {}
+func (*OptionStatement) stmt()           {}
+func (*ExpressionStatement) stmt()       {}
+func (*ReturnStatement) stmt()           {}
+func (*NativeVariableDeclaration) stmt() {}
 
 type Expression interface {
 	Node
@@ -269,20 +269,37 @@ func (s *NativeVariableDeclaration) Copy() Node {
 	return ns
 }
 
+// Extern is a node that represents a program node with a set of external declarations defined.
+type Extern struct {
+	Declarations []*ExternalVariableDeclaration
+	Program      *Program
+}
+
+func (*Extern) NodeType() string { return "Extern" }
+
+func (e *Extern) Copy() Node {
+	if e == nil {
+		return e
+	}
+	ne := new(Extern)
+	*ne = *e
+
+	if len(e.Declarations) > 0 {
+		ne.Declarations = make([]*ExternalVariableDeclaration, len(e.Declarations))
+		for i, d := range e.Declarations {
+			ne.Declarations[i] = d.Copy().(*ExternalVariableDeclaration)
+		}
+	}
+
+	ne.Program = e.Program.Copy().(*Program)
+
+	return ne
+}
+
+// ExternalVariableDeclaration represents an externaly defined identifier and its type.
 type ExternalVariableDeclaration struct {
 	Identifier *Identifier `json:"identifier"`
-	Type       Type        `json:"type"`
-}
-
-func NewExternalVariableDeclaration(name string, typ Type) *ExternalVariableDeclaration {
-	return &ExternalVariableDeclaration{
-		Identifier: &Identifier{Name: name},
-		Type:       typ,
-	}
-}
-
-func (d *ExternalVariableDeclaration) ID() *Identifier {
-	return d.Identifier
+	TypeScheme TypeScheme  `json:"typeScheme"`
 }
 
 func (*ExternalVariableDeclaration) NodeType() string { return "ExternalVariableDeclaration" }

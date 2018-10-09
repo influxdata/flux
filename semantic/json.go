@@ -9,6 +9,17 @@ import (
 	"time"
 )
 
+func (e *Extern) MarshalJSON() ([]byte, error) {
+	type Alias Extern
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  e.NodeType(),
+		Alias: (*Alias)(e),
+	}
+	return json.Marshal(raw)
+}
 func (p *Program) MarshalJSON() ([]byte, error) {
 	type Alias Program
 	raw := struct {

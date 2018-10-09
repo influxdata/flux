@@ -5,6 +5,12 @@ import (
 	"strings"
 )
 
+func Annotate(n Node) TypeEnvironment {
+	visitor := NewTypeAnnotationVisitor()
+	Walk(visitor, n)
+	return visitor.TypeEnvironment()
+}
+
 // TypeVar is a type variable
 type TypeVar int
 
@@ -58,6 +64,8 @@ func (v *TypeAnnotationVisitor) Visit(node Node) Visitor {
 		v.tenv[n] = v.gen.NewTypeVar()
 	case *NativeVariableDeclaration:
 		v.tenv[n] = v.gen.NewTypeVar()
+	case *ExternalVariableDeclaration:
+		v.tenv[n] = v.gen.NewTypeVar()
 	case *FunctionBlock:
 		// The function body type annotation corresponds to the return type of the function
 		v.tenv[n] = v.gen.NewTypeVar()
@@ -96,10 +104,4 @@ func (v *TypeVarGenerator) NewTypeVar() TypeVar {
 	n := v.next
 	v.next++
 	return n
-}
-
-func Annotate(n Node) TypeEnvironment {
-	visitor := NewTypeAnnotationVisitor()
-	Walk(visitor, n)
-	return visitor.TypeEnvironment()
 }

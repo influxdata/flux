@@ -8,6 +8,14 @@ import (
 	"github.com/influxdata/flux/ast"
 )
 
+func GenerateConstraints(n Node, tenv map[Node]TypeVar) ConstraintSet {
+	// Generate the rest of the constraints
+	constraintVisitor := NewConstraintGenerationVisitor(tenv)
+	Walk(constraintVisitor, n)
+
+	return constraintVisitor.Constraints()
+}
+
 // Constraint represents an equality constraint between type expressions
 type Constraint struct {
 	left  TypeVar
@@ -176,6 +184,7 @@ func (f functionTypeScheme) String() string {
 // ConstraintGenerationVisitor visits a semantic graph and generates
 // constraints between type variables and type expressions.
 type ConstraintGenerationVisitor struct {
+	gen   *TypeVarGenerator
 	tenv  map[Node]TypeVar
 	cons  *[]Constraint
 	scope *IdentifierScope
@@ -186,6 +195,7 @@ type ConstraintGenerationVisitor struct {
 func NewConstraintGenerationVisitor(tenv map[Node]TypeVar) *ConstraintGenerationVisitor {
 	return &ConstraintGenerationVisitor{
 		tenv:  tenv,
+		gen:   &TypeVarGenerator{next: TypeVar(len(tenv))},
 		cons:  new([]Constraint),
 		scope: NewIdentifierScope(),
 	}
@@ -193,6 +203,7 @@ func NewConstraintGenerationVisitor(tenv map[Node]TypeVar) *ConstraintGeneration
 
 func (v *ConstraintGenerationVisitor) nestScope() *ConstraintGenerationVisitor {
 	return &ConstraintGenerationVisitor{
+		gen:          v.gen,
 		tenv:         v.tenv,
 		cons:         v.cons,
 		scope:        v.scope.Nest(),
@@ -202,6 +213,7 @@ func (v *ConstraintGenerationVisitor) nestScope() *ConstraintGenerationVisitor {
 
 func (v *ConstraintGenerationVisitor) nest() *ConstraintGenerationVisitor {
 	return &ConstraintGenerationVisitor{
+		gen:          v.gen,
 		tenv:         v.tenv,
 		cons:         v.cons,
 		scope:        v.scope,
@@ -225,8 +237,29 @@ func (v *ConstraintGenerationVisitor) TypeEnvironment() map[Node]TypeVar {
 func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 	tv := v.tenv[node]
 	switch n := node.(type) {
+	case *Program:
+		// This is not redundant.
+		// The Extern node needs the program to define its own scope apart from the declarations.
+		return v.nestScope()
 	case *BlockStatement:
 		return v.nestScope()
+	case *ExternalVariableDeclaration:
+		// Check scope for previously declared type in local scope
+		prev, ok := v.scope.LocalLookup(n.Identifier.Name)
+		if ok {
+			v.addConstraints(Constraint{
+				left:  v.tenv[prev],
+				right: v.tenv[n],
+			})
+		}
+		// Update scope with the declaration
+		v.scope.Set(n.Identifier.Name, n)
+
+		// Add constraint for externally defined type
+		v.addConstraints(Constraint{
+			left:  v.tenv[n],
+			right: typeSchemeSubstitution{n.TypeScheme},
+		})
 	case *NativeVariableDeclaration:
 		// Check scope for previously declared type in local scope
 		prev, ok := v.scope.LocalLookup(n.Identifier.Name)
@@ -290,7 +323,6 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 	case *FunctionParameter:
 		// maintain scope
 		v.scope.Set(n.Key.Name, n)
-		log.Printf("FunctionParam %p %q", v.scope, n.Key.Name)
 
 		// Find default parameter
 		def, ok := v.lookupDefaultParameter(n)
@@ -506,13 +538,15 @@ func (v *ConstraintGenerationVisitor) Visit(node Node) Visitor {
 	case *IdentifierExpression:
 		node, found := v.scope.Lookup(n.Name)
 		if !found {
-			log.Println(v.scope)
 			panic(fmt.Sprintf("missing identifier %q", n.Name))
 		}
-		tvar := v.tenv[node]
+		// Let-Polymorphism
+		// Each time we use an identifier it may have a different monotype.
+		// As such we "instance" the type each time we have to look it up in the environment.
+		tvar := v.instance(v.tenv[node])
 		v.addConstraints(Constraint{
-			left:  tvar,
-			right: tv,
+			left:  tv,
+			right: tvar,
 		})
 	case *BooleanLiteral:
 		v.addConstraints(Constraint{
@@ -594,6 +628,12 @@ func (v *ConstraintGenerationVisitor) lookupDefaultParameter(p *FunctionParamete
 	}
 	return nil, false
 }
+func (v *ConstraintGenerationVisitor) instance(tv TypeVar) instanceOfType {
+	return instanceOfType{
+		tv:  tv,
+		gen: v.gen,
+	}
+}
 
 // IdentifierScope of the program
 type IdentifierScope struct {
@@ -661,10 +701,70 @@ func (cs ConstraintSet) String() string {
 	return builder.String()
 }
 
-func GenerateConstraints(n Node, tenv map[Node]TypeVar) ConstraintSet {
-	// Generate the rest of the constraints
-	constraintVisitor := NewConstraintGenerationVisitor(tenv)
-	Walk(constraintVisitor, n)
+type typeSchemeSubstitution struct {
+	TypeScheme
+}
 
-	return constraintVisitor.Constraints()
+func (tss typeSchemeSubstitution) Vars() []TypeVar {
+	return nil
+}
+func (tss typeSchemeSubstitution) Substitute(c Constraint) Substitutable {
+	return tss
+}
+
+type instanceOfType struct {
+	tv  TypeVar
+	gen *TypeVarGenerator
+}
+
+func (t instanceOfType) MonoType() (Type, bool) {
+	return nil, false
+}
+func (t instanceOfType) typeScheme() {}
+
+func (t instanceOfType) Vars() []TypeVar {
+	return t.tv.Vars()
+}
+func (t instanceOfType) Substitute(c Constraint) Substitutable {
+	if c.left == t.tv {
+		// Instance the type and return it
+		vars := uniqueVars(c.right.Vars())
+		log.Printf("c %v, vars: %v", c.right, vars)
+		constraints := make([]Constraint, len(vars))
+		for i, v := range vars {
+			nv := t.gen.NewTypeVar()
+			log.Printf("instance %v -> %v", v, nv)
+			constraints[i] = Constraint{
+				left:  v,
+				right: nv,
+			}
+		}
+		for _, cs := range constraints {
+			c.right = c.right.Substitute(cs)
+		}
+		return c.right
+	}
+	return t
+}
+
+func (t instanceOfType) String() string {
+	return fmt.Sprintf("*%v", t.tv)
+}
+
+// uniqueVars in-place filters vars to remove duplicates
+func uniqueVars(vars []TypeVar) []TypeVar {
+	filtered := vars[0:0]
+	for _, v := range vars {
+		found := false
+		for _, f := range filtered {
+			if f == v {
+				found = true
+				break
+			}
+		}
+		if !found {
+			filtered = append(filtered, v)
+		}
+	}
+	return filtered
 }

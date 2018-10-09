@@ -19,6 +19,14 @@ func walk(v Visitor, n Node) {
 				walk(w, s)
 			}
 		}
+	case *Extern:
+		w := v.Visit(n)
+		if w != nil {
+			for _, d := range n.Declarations {
+				walk(w, d)
+			}
+			walk(w, n.Program)
+		}
 	case *BlockStatement:
 		w := v.Visit(n)
 		if w != nil {

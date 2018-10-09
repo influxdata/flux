@@ -2,13 +2,14 @@ package semantic
 
 import (
 	"fmt"
+	"log"
 	"strings"
 )
 
 func SolveTypes(tenv TypeEnvironment, constraints ConstraintSet) (SolutionMap, error) {
 	solution := make(SolutionMap, len(tenv))
-	//log.Println("tenv", tenv)
-	//log.Println("constraints", constraints)
+	log.Println("tenv", tenv)
+	log.Println("constraints", constraints)
 
 	substitution := make(Substitution, len(tenv))
 	for _, c := range constraints {
@@ -30,7 +31,7 @@ func SolveTypes(tenv TypeEnvironment, constraints ConstraintSet) (SolutionMap, e
 		if err != nil {
 			return nil, err
 		}
-		//log.Println("equation cs", cs)
+		log.Println("equation cs", cs)
 		for _, c := range cs {
 			// Substitute the constraint into the substitution
 			for tv, s := range substitution {
@@ -45,7 +46,7 @@ func SolveTypes(tenv TypeEnvironment, constraints ConstraintSet) (SolutionMap, e
 
 	// TODO(nathanielc): Add occurence check
 
-	//log.Println("substitution", substitution)
+	log.Println("substitution", substitution)
 	for n, tv := range tenv {
 		s := substitution[tv]
 		typ, mono := s.MonoType()

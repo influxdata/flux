@@ -11,13 +11,13 @@ import (
 func TestInferTypes(t *testing.T) {
 	testCases := []struct {
 		name     string
-		program  *semantic.Program
+		node     semantic.Node
 		solution SolutionVisitor
 		wantErr  error
 	}{
 		{
 			name: "var assignment",
-			program: &semantic.Program{
+			node: &semantic.Program{
 				Body: []semantic.Statement{
 					&semantic.NativeVariableDeclaration{
 						Identifier: &semantic.Identifier{Name: "a"},
@@ -37,7 +37,7 @@ func TestInferTypes(t *testing.T) {
 		},
 		{
 			name: "redeclaration",
-			program: &semantic.Program{
+			node: &semantic.Program{
 				Body: []semantic.Statement{
 					&semantic.NativeVariableDeclaration{
 						Identifier: &semantic.Identifier{Name: "a"},
@@ -65,7 +65,7 @@ func TestInferTypes(t *testing.T) {
 		},
 		{
 			name: "redeclaration error",
-			program: &semantic.Program{
+			node: &semantic.Program{
 				Body: []semantic.Statement{
 					&semantic.NativeVariableDeclaration{
 						Identifier: &semantic.Identifier{Name: "a"},
@@ -82,7 +82,7 @@ func TestInferTypes(t *testing.T) {
 		},
 		{
 			name: "var assignment with binary expression",
-			program: &semantic.Program{
+			node: &semantic.Program{
 				Body: []semantic.Statement{
 					&semantic.NativeVariableDeclaration{
 						Identifier: &semantic.Identifier{Name: "a"},
@@ -107,7 +107,7 @@ func TestInferTypes(t *testing.T) {
 		},
 		{
 			name: "var assignment with function",
-			program: &semantic.Program{
+			node: &semantic.Program{
 				Body: []semantic.Statement{
 					&semantic.NativeVariableDeclaration{
 						Identifier: &semantic.Identifier{Name: "f"},
@@ -151,7 +151,7 @@ func TestInferTypes(t *testing.T) {
 		},
 		{
 			name: "call function",
-			program: &semantic.Program{
+			node: &semantic.Program{
 				Body: []semantic.Statement{
 					&semantic.NativeVariableDeclaration{
 						Identifier: &semantic.Identifier{Name: "two"},
@@ -208,7 +208,7 @@ func TestInferTypes(t *testing.T) {
 		},
 		{
 			name: "call function identifier",
-			program: &semantic.Program{
+			node: &semantic.Program{
 				Body: []semantic.Statement{
 					&semantic.NativeVariableDeclaration{
 						Identifier: &semantic.Identifier{Name: "add"},
@@ -280,109 +280,135 @@ func TestInferTypes(t *testing.T) {
 				},
 			},
 		},
-		//{
-		//	name: "call polymorphic function",
-		//	program: &semantic.Program{
-		//		Body: []semantic.Statement{
-		//			&semantic.NativeVariableDeclaration{
-		//				Identifier: &semantic.Identifier{Name: "add"},
-		//				Init: &semantic.FunctionExpression{
-		//					Block: &semantic.FunctionBlock{
-		//						Parameters: &semantic.FunctionParameters{
-		//							List: []*semantic.FunctionParameter{
-		//								{Key: &semantic.Identifier{Name: "a"}},
-		//								{Key: &semantic.Identifier{Name: "b"}},
-		//							},
-		//						},
-		//						Body: &semantic.BinaryExpression{
-		//							Operator: ast.AdditionOperator,
-		//							Left:     &semantic.IdentifierExpression{Name: "a"},
-		//							Right:    &semantic.IdentifierExpression{Name: "b"},
-		//						},
-		//					},
-		//				},
-		//			},
-		//			&semantic.NativeVariableDeclaration{
-		//				Identifier: &semantic.Identifier{Name: "two"},
-		//				Init: &semantic.CallExpression{
-		//					Callee: &semantic.IdentifierExpression{Name: "add"},
-		//					Arguments: &semantic.ObjectExpression{
-		//						Properties: []*semantic.Property{
-		//							{
-		//								Key:   &semantic.Identifier{Name: "a"},
-		//								Value: &semantic.IntegerLiteral{Value: 1},
-		//							},
-		//							{
-		//								Key:   &semantic.Identifier{Name: "b"},
-		//								Value: &semantic.IntegerLiteral{Value: 1},
-		//							},
-		//						},
-		//					},
-		//				},
-		//			},
-		//			&semantic.NativeVariableDeclaration{
-		//				Identifier: &semantic.Identifier{Name: "hello"},
-		//				Init: &semantic.CallExpression{
-		//					Callee: &semantic.IdentifierExpression{Name: "add"},
-		//					Arguments: &semantic.ObjectExpression{
-		//						Properties: []*semantic.Property{
-		//							{
-		//								Key:   &semantic.Identifier{Name: "a"},
-		//								Value: &semantic.StringLiteral{Value: "hello "},
-		//							},
-		//							{
-		//								Key:   &semantic.Identifier{Name: "b"},
-		//								Value: &semantic.StringLiteral{Value: "world!"},
-		//							},
-		//						},
-		//					},
-		//				},
-		//			},
-		//		},
-		//	},
-		//	solution: &visitor{
-		//		f: func(node semantic.Node) semantic.Type {
-		//			ft := semantic.NewFunctionType(semantic.FunctionSignature{
-		//				Params: map[string]semantic.Type{
-		//					"a": semantic.Int,
-		//				},
-		//				ReturnType: semantic.Int,
-		//			})
-		//			switch n := node.(type) {
-		//			case *semantic.CallExpression,
-		//				*semantic.BinaryExpression,
-		//				*semantic.FunctionBlock,
-		//				*semantic.FunctionParameter:
-		//				return semantic.Int
-		//			case *semantic.IdentifierExpression:
-		//				switch n.Name {
-		//				case "add":
-		//					return ft
-		//				case "a":
-		//					return semantic.Int
-		//				}
-		//			case *semantic.NativeVariableDeclaration:
-		//				switch n.Identifier.Name {
-		//				case "add":
-		//					return ft
-		//				case "two":
-		//					return semantic.Int
-		//				}
-		//			case *semantic.FunctionExpression:
-		//				return ft
-		//			case *semantic.ObjectExpression:
-		//				return semantic.NewObjectType(map[string]semantic.Type{
-		//					"a": semantic.Int,
-		//				})
-		//			}
-		//			return nil
-		//		},
-		//	},
-		//},
+		{
+			name: "call polymorphic function",
+			node: &semantic.Program{
+				Body: []semantic.Statement{
+					&semantic.NativeVariableDeclaration{
+						Identifier: &semantic.Identifier{Name: "add"},
+						Init: &semantic.FunctionExpression{
+							Block: &semantic.FunctionBlock{
+								Parameters: &semantic.FunctionParameters{
+									List: []*semantic.FunctionParameter{
+										{Key: &semantic.Identifier{Name: "a"}},
+										{Key: &semantic.Identifier{Name: "b"}},
+									},
+								},
+								Body: &semantic.BinaryExpression{
+									Operator: ast.AdditionOperator,
+									Left:     &semantic.IdentifierExpression{Name: "a"},
+									Right:    &semantic.IdentifierExpression{Name: "b"},
+								},
+							},
+						},
+					},
+					&semantic.NativeVariableDeclaration{
+						Identifier: &semantic.Identifier{Name: "two"},
+						Init: &semantic.CallExpression{
+							Callee: &semantic.IdentifierExpression{Name: "add"},
+							Arguments: &semantic.ObjectExpression{
+								Properties: []*semantic.Property{
+									{
+										Key:   &semantic.Identifier{Name: "a"},
+										Value: &semantic.IntegerLiteral{Value: 1},
+									},
+									{
+										Key:   &semantic.Identifier{Name: "b"},
+										Value: &semantic.IntegerLiteral{Value: 1},
+									},
+								},
+							},
+						},
+					},
+					&semantic.NativeVariableDeclaration{
+						Identifier: &semantic.Identifier{Name: "hello"},
+						Init: &semantic.CallExpression{
+							Callee: &semantic.IdentifierExpression{Name: "add"},
+							Arguments: &semantic.ObjectExpression{
+								Properties: []*semantic.Property{
+									{
+										Key:   &semantic.Identifier{Name: "a"},
+										Value: &semantic.StringLiteral{Value: "hello "},
+									},
+									{
+										Key:   &semantic.Identifier{Name: "b"},
+										Value: &semantic.StringLiteral{Value: "world!"},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			solution: &visitor{
+				f: func(node semantic.Node) semantic.Type {
+					ft := semantic.NewFunctionType(semantic.FunctionSignature{
+						Params: map[string]semantic.Type{
+							"a": semantic.Int,
+						},
+						ReturnType: semantic.Int,
+					})
+					switch n := node.(type) {
+					case *semantic.CallExpression,
+						*semantic.BinaryExpression,
+						*semantic.FunctionBlock,
+						*semantic.FunctionParameter:
+						return semantic.Int
+					case *semantic.IdentifierExpression:
+						switch n.Name {
+						case "add":
+							return ft
+						case "a":
+							return semantic.Int
+						}
+					case *semantic.NativeVariableDeclaration:
+						switch n.Identifier.Name {
+						case "add":
+							return ft
+						case "two":
+							return semantic.Int
+						}
+					case *semantic.FunctionExpression:
+						return ft
+					case *semantic.ObjectExpression:
+						return semantic.NewObjectType(map[string]semantic.Type{
+							"a": semantic.Int,
+						})
+					}
+					return nil
+				},
+			},
+		},
+		{
+			name: "extern",
+			node: &semantic.Extern{
+				Declarations: []*semantic.ExternalVariableDeclaration{{
+					Identifier: &semantic.Identifier{Name: "foo"},
+					TypeScheme: semantic.Int,
+				}},
+				Program: &semantic.Program{
+					Body: []semantic.Statement{
+						&semantic.ExpressionStatement{
+							Expression: &semantic.IdentifierExpression{Name: "foo"},
+						},
+					},
+				},
+			},
+			solution: &visitor{
+				f: func(node semantic.Node) semantic.Type {
+					switch node.(type) {
+					case *semantic.IdentifierExpression,
+						*semantic.ExternalVariableDeclaration:
+						return semantic.Int
+					}
+					return nil
+				},
+			},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			solution, err := semantic.InferTypes(tc.program)
+			solution, err := semantic.InferTypes(tc.node)
 			if err != nil {
 				if tc.wantErr != nil {
 					if want, got := tc.wantErr.Error(), err.Error(); want != got {
@@ -394,7 +420,7 @@ func TestInferTypes(t *testing.T) {
 			} else if tc.wantErr != nil {
 				t.Fatalf("expected error: %s: ", tc.wantErr.Error())
 			}
-			semantic.Walk(tc.solution, tc.program)
+			semantic.Walk(tc.solution, tc.node)
 			wantSolution := tc.solution.Solution()
 			if want, got := len(wantSolution), len(solution); got != want {
 				t.Errorf("unexpected solution length want: %d got: %d", want, got)
