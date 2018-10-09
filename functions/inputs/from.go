@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
-
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/pkg/errors"
