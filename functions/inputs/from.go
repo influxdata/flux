@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/functions/inputs/storage"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/functions/inputs/storage"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/platform"
@@ -29,9 +29,7 @@ const (
 	GroupModeExcept
 )
 
-
 const FromKind = "from"
-
 
 type FromOpSpec struct {
 	Bucket   string      `json:"bucket,omitempty"`
@@ -228,21 +226,12 @@ func createFromSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a execu
 		bucketID = spec.BucketID
 	}
 
-	encOrgID, err := orgID.Encode()
-	if err != nil {
-		return nil, err
-	}
-	encBucketID, err := bucketID.Encode()
-	if err != nil {
-		return nil, err
-	}
-
 	return storage.NewSource(
 		dsid,
 		deps.Reader,
 		storage.ReadSpec{
-			OrganizationID:  encOrgID,
-			BucketID:        encBucketID,
+			OrganizationID:  uint64(orgID),
+			BucketID:        uint64(bucketID),
 			Predicate:       spec.Filter,
 			PointsLimit:     spec.PointsLimit,
 			SeriesLimit:     spec.SeriesLimit,
@@ -266,5 +255,3 @@ func InjectFromDependencies(depsMap execute.Dependencies, deps storage.Dependenc
 	depsMap[FromKind] = deps
 	return nil
 }
-
-
