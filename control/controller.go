@@ -30,7 +30,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
-	plan "github.com/influxdata/flux/planner"
+	"github.com/influxdata/flux/plan"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"

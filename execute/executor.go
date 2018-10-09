@@ -9,6 +9,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/planner"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -274,8 +275,8 @@ func (ec executionContext) Allocator() *Allocator {
 func (ec executionContext) Parents() []DatasetID {
 	return ec.parents
 }
-func (ec executionContext) ConvertID(id plan.ProcedureID) DatasetID {
-	return DatasetID(id)
+func (ec executionContext) ConvertID(id planner.ProcedureID) DatasetID {
+	return DatasetID(plan.ProcedureID(id))
 }
 
 func (ec executionContext) Dependencies() Dependencies {

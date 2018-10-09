@@ -5,7 +5,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/plan"
+	plan "github.com/influxdata/flux/planner"
 )
 
 // SpreadKind is the registration name for Flux, query, plan, and execution.

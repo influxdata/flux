@@ -2,11 +2,9 @@ package transformations
 
 import (
 	"fmt"
-	"github.com/influxdata/flux/functions/inputs"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/plan"
+	plan "github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/semantic"
 	"github.com/pkg/errors"
 )
@@ -86,31 +84,6 @@ func (s *LimitProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(LimitProcedureSpec)
 	*ns = *s
 	return ns
-}
-
-func (s *LimitProcedureSpec) PushDownRules() []plan.PushDownRule {
-	return []plan.PushDownRule{{
-		Root:    inputs.FromKind,
-		Through: []plan.ProcedureKind{GroupKind, RangeKind, FilterKind},
-	}}
-}
-func (s *LimitProcedureSpec) PushDown(root *plan.Procedure, dup func() *plan.Procedure) {
-	selectSpec := root.Spec.(*inputs.FromProcedureSpec)
-	if selectSpec.LimitSet {
-		root = dup()
-		selectSpec = root.Spec.(*inputs.FromProcedureSpec)
-		selectSpec.LimitSet = false
-		selectSpec.PointsLimit = 0
-		//selectSpec.PointsOffset = 0
-		selectSpec.SeriesLimit = 0
-		selectSpec.SeriesOffset = 0
-		return
-	}
-	selectSpec.LimitSet = true
-	selectSpec.PointsLimit = s.N
-	//selectSpec.PointsOffset = s.Offset
-	selectSpec.SeriesLimit = 0
-	selectSpec.SeriesOffset = 0
 }
 
 func createLimitTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {

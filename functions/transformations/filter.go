@@ -2,14 +2,12 @@ package transformations
 
 import (
 	"fmt"
-	"github.com/influxdata/flux/functions/inputs"
 	"log"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/plan"
+	plan "github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -79,109 +77,6 @@ func (s *FilterProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(FilterProcedureSpec)
 	ns.Fn = s.Fn.Copy().(*semantic.FunctionExpression)
 	return ns
-}
-
-func (s *FilterProcedureSpec) PushDownRules() []plan.PushDownRule {
-	return []plan.PushDownRule{
-		{
-			Root:    inputs.FromKind,
-			Through: []plan.ProcedureKind{GroupKind, LimitKind, RangeKind},
-			Match: func(spec plan.ProcedureSpec) bool {
-				// TODO(nathanielc): Remove once row functions support calling functions
-				if _, ok := s.Fn.Body.(semantic.Expression); !ok {
-					return false
-				}
-				fs := spec.(*inputs.FromProcedureSpec)
-				if fs.Filter != nil {
-					if _, ok := fs.Filter.Body.(semantic.Expression); !ok {
-						return false
-					}
-				}
-				return true
-			},
-		},
-		{
-			Root:    FilterKind,
-			Through: []plan.ProcedureKind{GroupKind, LimitKind, RangeKind},
-			Match: func(spec plan.ProcedureSpec) bool {
-				// TODO(nathanielc): Remove once row functions support calling functions
-				if _, ok := s.Fn.Body.(semantic.Expression); !ok {
-					return false
-				}
-				fs := spec.(*FilterProcedureSpec)
-				if _, ok := fs.Fn.Body.(semantic.Expression); !ok {
-					return false
-				}
-				return true
-			},
-		},
-	}
-}
-
-func (s *FilterProcedureSpec) PushDown(root *plan.Procedure, dup func() *plan.Procedure) {
-	switch spec := root.Spec.(type) {
-	case *inputs.FromProcedureSpec:
-		if spec.FilterSet {
-			spec.Filter = mergeArrowFunction(spec.Filter, s.Fn)
-			return
-		}
-		spec.FilterSet = true
-		spec.Filter = s.Fn
-	case *FilterProcedureSpec:
-		spec.Fn = mergeArrowFunction(spec.Fn, s.Fn)
-	}
-}
-
-func mergeArrowFunction(a, b *semantic.FunctionExpression) *semantic.FunctionExpression {
-	fn := a.Copy().(*semantic.FunctionExpression)
-
-	aExp, aOK := a.Body.(semantic.Expression)
-	bExp, bOK := b.Body.(semantic.Expression)
-
-	if aOK && bOK {
-		fn.Body = &semantic.LogicalExpression{
-			Operator: ast.AndOperator,
-			Left:     aExp,
-			Right:    bExp,
-		}
-		return fn
-	}
-
-	// TODO(nathanielc): This code is unreachable while the current PushDownRule Match function is inplace.
-
-	and := &semantic.LogicalExpression{
-		Operator: ast.AndOperator,
-		Left:     aExp,
-		Right:    bExp,
-	}
-
-	// Create pass through arguments expression
-	passThroughArgs := &semantic.ObjectExpression{
-		Properties: make([]*semantic.Property, len(a.Params)),
-	}
-	for i, p := range a.Params {
-		passThroughArgs.Properties[i] = &semantic.Property{
-			Key: p.Key,
-			//TODO(nathanielc): Construct valid IdentifierExpression with Declaration for the value.
-			//Value: p.Key,
-		}
-	}
-
-	if !aOK {
-		// Rewrite left expression as a function call.
-		and.Left = &semantic.CallExpression{
-			Callee:    a.Copy().(*semantic.FunctionExpression),
-			Arguments: passThroughArgs.Copy().(*semantic.ObjectExpression),
-		}
-	}
-	if !bOK {
-		// Rewrite right expression as a function call.
-		and.Right = &semantic.CallExpression{
-			Callee:    b.Copy().(*semantic.FunctionExpression),
-			Arguments: passThroughArgs.Copy().(*semantic.ObjectExpression),
-		}
-	}
-	return fn
 }
 
 func createFilterTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {

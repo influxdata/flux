@@ -1,15 +1,12 @@
 package transformations_test
 
 import (
-	"github.com/influxdata/flux/functions/inputs"
 	"testing"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions/transformations"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/querytest"
 )
 
@@ -73,61 +70,4 @@ func TestFirst_Process(t *testing.T) {
 
 func BenchmarkFirst(b *testing.B) {
 	executetest.IndexSelectorFuncBenchmarkHelper(b, new(transformations.FirstSelector), NormalTable)
-}
-
-func TestFirst_PushDown_Match(t *testing.T) {
-	spec := new(transformations.FirstProcedureSpec)
-	from := new(inputs.FromProcedureSpec)
-
-	// Should not match when an aggregate is set
-	from.AggregateSet = true
-	plantest.PhysicalPlan_PushDown_Match_TestHelper(t, spec, from, []bool{false})
-
-	// Should match when no aggregate is set
-	from.AggregateSet = false
-	plantest.PhysicalPlan_PushDown_Match_TestHelper(t, spec, from, []bool{true})
-}
-
-func TestFirst_PushDown(t *testing.T) {
-	spec := new(transformations.FirstProcedureSpec)
-	root := &plan.Procedure{
-		Spec: new(inputs.FromProcedureSpec),
-	}
-	want := &plan.Procedure{
-		Spec: &inputs.FromProcedureSpec{
-			BoundsSet: true,
-			Bounds: flux.Bounds{
-				Start: flux.MinTime,
-				Stop:  flux.Now,
-			},
-			LimitSet:      true,
-			PointsLimit:   1,
-			DescendingSet: true,
-			Descending:    false,
-		},
-	}
-
-	plantest.PhysicalPlan_PushDown_TestHelper(t, spec, root, false, want)
-}
-func TestFirst_PushDown_Duplicate(t *testing.T) {
-	spec := new(transformations.FirstProcedureSpec)
-	root := &plan.Procedure{
-		Spec: &inputs.FromProcedureSpec{
-			BoundsSet: true,
-			Bounds: flux.Bounds{
-				Start: flux.MinTime,
-				Stop:  flux.Now,
-			},
-			LimitSet:      true,
-			PointsLimit:   1,
-			DescendingSet: true,
-			Descending:    false,
-		},
-	}
-	want := &plan.Procedure{
-		// Expect the duplicate has been reset to zero values
-		Spec: new(inputs.FromProcedureSpec),
-	}
-
-	plantest.PhysicalPlan_PushDown_TestHelper(t, spec, root, true, want)
 }

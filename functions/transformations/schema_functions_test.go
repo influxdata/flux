@@ -7,7 +7,7 @@ import (
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/plan"
+	plan "github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"

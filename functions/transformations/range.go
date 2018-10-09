@@ -4,9 +4,8 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/plan"
+	plan "github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
@@ -130,37 +129,6 @@ func (s *RangeProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(RangeProcedureSpec)
 	ns.Bounds = s.Bounds
 	return ns
-}
-
-func (s *RangeProcedureSpec) PushDownRules() []plan.PushDownRule {
-	return []plan.PushDownRule{{
-		Root:    inputs.FromKind,
-		Through: []plan.ProcedureKind{GroupKind, LimitKind, FilterKind},
-		Match: func(spec plan.ProcedureSpec) bool {
-			return s.TimeCol == "_time"
-		},
-	}}
-}
-
-func (s *RangeProcedureSpec) PushDown(root *plan.Procedure, dup func() *plan.Procedure) {
-	selectSpec := root.Spec.(*inputs.FromProcedureSpec)
-	if selectSpec.BoundsSet {
-		// Example case where this matters
-		//    var data = select(database: "mydb")
-		//    var past = data.range(start:-2d,stop:-1d)
-		//    var current = data.range(start:-1d,stop:now)
-		root = dup()
-		selectSpec = root.Spec.(*inputs.FromProcedureSpec)
-		selectSpec.BoundsSet = false
-		selectSpec.Bounds = flux.Bounds{}
-		return
-	}
-	selectSpec.BoundsSet = true
-	selectSpec.Bounds = s.Bounds
-}
-
-func (s *RangeProcedureSpec) TimeBounds() flux.Bounds {
-	return s.Bounds
 }
 
 func createRangeTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
