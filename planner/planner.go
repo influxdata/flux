@@ -11,7 +11,7 @@ type Planner interface {
 	ConvertID()
 
 	// Plan takes an initial query plan and returns an optimized plan
-	Plan(*QueryPlan) (*QueryPlan, error)
+	Plan(*PlanSpec) (*PlanSpec, error)
 }
 
 type LogicalToPhysicalPlanner struct {
@@ -64,9 +64,9 @@ func (p LogicalToPhysicalPlanner) AddRules(rules []Rule) {
 // It traverses the DAG depth-first, attempting to apply rewrite rules at each node.
 // Traversal is repeated until a pass over the DAG results in no changes with the given rule set.
 //
-// Plan may change its argument and/or return a new instance of QueryPlan, so the correct way to call Plan is:
+// Plan may change its argument and/or return a new instance of PlanSpec, so the correct way to call Plan is:
 //     plan, err = planner.Plan(plan)
-func (p *LogicalToPhysicalPlanner) Plan(inputPlan *QueryPlan) (*QueryPlan, error) {
+func (p *LogicalToPhysicalPlanner) Plan(inputPlan *PlanSpec) (*PlanSpec, error) {
 
 	for anyChanged := true; anyChanged == true; {
 
@@ -112,7 +112,7 @@ func (p *LogicalToPhysicalPlanner) Plan(inputPlan *QueryPlan) (*QueryPlan, error
 //   node  becomes   newNode
 //   / \               / \
 //  D   E             D'  E'    <-- predecessors
-func updateSuccessors(plan *QueryPlan, oldNode, newNode PlanNode) {
+func updateSuccessors(plan *PlanSpec, oldNode, newNode PlanNode) {
 	newNode.ClearSuccessors()
 
 	if len(oldNode.Successors()) == 0 {
