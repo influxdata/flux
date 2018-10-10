@@ -28,7 +28,7 @@ func PhysicalPlan_PushDown_Match_TestHelper(t *testing.T, spec plan.PushDownProc
 	}
 }
 
-func PhysicalPlan_PushDown_TestHelper(t *testing.T, spec plan.PushDownProcedureSpec, root *plan.Procedure, wantDuplicated bool, want *plan.Procedure) {
+func  PhysicalPlan_PushDown_TestHelper(t *testing.T, spec plan.PushDownProcedureSpec, root *plan.Procedure, wantDuplicated bool, want *plan.Procedure) {
 	t.Helper()
 
 	var duplicate *plan.Procedure

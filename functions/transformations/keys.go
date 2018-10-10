@@ -8,7 +8,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/plan"
+	plan "github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -30,7 +30,6 @@ func init() {
 	flux.RegisterFunction(KeysKind, createKeysOpSpec, keysSignature)
 	flux.RegisterOpSpec(KeysKind, newKeysOp)
 	plan.RegisterProcedureSpec(KeysKind, newKeysProcedure, KeysKind)
-	plan.RegisterRewriteRule(KeysPointLimitRewriteRule{})
 	execute.RegisterTransformation(KeysKind, createKeysTransformation)
 }
 
@@ -87,36 +86,6 @@ func (s *KeysProcedureSpec) Copy() plan.ProcedureSpec {
 	*ns = *s
 
 	return ns
-}
-
-type KeysPointLimitRewriteRule struct {
-}
-
-func (r KeysPointLimitRewriteRule) Root() plan.ProcedureKind {
-	return inputs.FromKind
-}
-
-func (r KeysPointLimitRewriteRule) Rewrite(pr *plan.Procedure, planner plan.PlanRewriter) error {
-	fromSpec, ok := pr.Spec.(*inputs.FromProcedureSpec)
-	if !ok {
-		return nil
-	}
-
-	var keys *KeysProcedureSpec
-	pr.DoChildren(func(child *plan.Procedure) {
-		if d, ok := child.Spec.(*KeysProcedureSpec); ok {
-			keys = d
-		}
-	})
-	if keys == nil {
-		return nil
-	}
-
-	if !fromSpec.LimitSet {
-		fromSpec.LimitSet = true
-		fromSpec.PointsLimit = -1
-	}
-	return nil
 }
 
 func createKeysTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {

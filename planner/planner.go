@@ -1,9 +1,14 @@
 package planner
 
+import "github.com/influxdata/flux"
+
 // Planner implements a rule-based query planner
 type Planner interface {
 	// Add rules to be enacted by the planner
 	AddRules([]Rule)
+
+
+	ConvertID()
 
 	// Plan takes an initial query plan and returns an optimized plan
 	Plan(*QueryPlan) (*QueryPlan, error)
@@ -11,6 +16,10 @@ type Planner interface {
 
 type LogicalToPhysicalPlanner struct {
 	rules      map[ProcedureKind][]Rule
+}
+
+func (ltpp *LogicalToPhysicalPlanner) ConvertID(foid flux.OperationID) ProcedureID {
+	return ProcedureIDFromOperationID(foid)
 }
 
 func NewLogicalToPhysicalPlanner(rules []Rule) *LogicalToPhysicalPlanner {

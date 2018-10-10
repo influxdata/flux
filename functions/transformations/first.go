@@ -2,11 +2,10 @@ package transformations
 
 import (
 	"fmt"
-	"github.com/influxdata/flux/functions/inputs"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/plan"
+	plan "github.com/influxdata/flux/planner"
 )
 
 const FirstKind = "first"
@@ -62,42 +61,7 @@ func newFirstProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proc
 func (s *FirstProcedureSpec) Kind() plan.ProcedureKind {
 	return FirstKind
 }
-func (s *FirstProcedureSpec) PushDownRules() []plan.PushDownRule {
-	return []plan.PushDownRule{{
-		Root:    inputs.FromKind,
-		Through: []plan.ProcedureKind{GroupKind, LimitKind, FilterKind},
-		Match: func(spec plan.ProcedureSpec) bool {
-			selectSpec := spec.(*inputs.FromProcedureSpec)
-			return !selectSpec.AggregateSet
-		},
-	}}
-}
 
-func (s *FirstProcedureSpec) PushDown(root *plan.Procedure, dup func() *plan.Procedure) {
-	selectSpec := root.Spec.(*inputs.FromProcedureSpec)
-	if selectSpec.BoundsSet || selectSpec.LimitSet || selectSpec.DescendingSet {
-		root = dup()
-		selectSpec = root.Spec.(*inputs.FromProcedureSpec)
-		selectSpec.BoundsSet = false
-		selectSpec.Bounds = flux.Bounds{}
-		selectSpec.LimitSet = false
-		selectSpec.PointsLimit = 0
-		selectSpec.SeriesLimit = 0
-		selectSpec.SeriesOffset = 0
-		selectSpec.DescendingSet = false
-		selectSpec.Descending = false
-		return
-	}
-	selectSpec.BoundsSet = true
-	selectSpec.Bounds = flux.Bounds{
-		Start: flux.MinTime,
-		Stop:  flux.Now,
-	}
-	selectSpec.LimitSet = true
-	selectSpec.PointsLimit = 1
-	selectSpec.DescendingSet = true
-	selectSpec.Descending = false
-}
 func (s *FirstProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(FirstProcedureSpec)
 	*ns = *s

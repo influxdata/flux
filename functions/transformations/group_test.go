@@ -8,8 +8,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions/transformations"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/querytest"
 )
 
@@ -404,41 +402,4 @@ func TestGroup_Process(t *testing.T) {
 			)
 		})
 	}
-}
-
-func TestGroup_PushDown(t *testing.T) {
-	spec := &transformations.GroupProcedureSpec{
-		GroupMode: inputs.GroupModeBy,
-		GroupKeys: []string{"t1", "t2"},
-	}
-	root := &plan.Procedure{
-		Spec: new(inputs.FromProcedureSpec),
-	}
-	want := &plan.Procedure{
-		Spec: &inputs.FromProcedureSpec{
-			GroupingSet: true,
-			GroupMode:   inputs.GroupModeBy,
-			GroupKeys:   []string{"t1", "t2"},
-		},
-	}
-
-	plantest.PhysicalPlan_PushDown_TestHelper(t, spec, root, false, want)
-}
-func TestGroup_PushDown_Duplicate(t *testing.T) {
-	spec := &transformations.GroupProcedureSpec{
-		GroupMode: inputs.GroupModeBy,
-		GroupKeys: []string{"t1", "t2"},
-	}
-	root := &plan.Procedure{
-		Spec: &inputs.FromProcedureSpec{
-			GroupingSet: true,
-			GroupMode:   inputs.GroupModeAll,
-		},
-	}
-	want := &plan.Procedure{
-		// Expect the duplicate has been reset to zero values
-		Spec: new(inputs.FromProcedureSpec),
-	}
-
-	plantest.PhysicalPlan_PushDown_TestHelper(t, spec, root, true, want)
 }

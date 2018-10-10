@@ -5,8 +5,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/functions/inputs"
-	"github.com/influxdata/flux/plan"
+	plan "github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -24,7 +23,6 @@ func init() {
 	flux.RegisterFunction(DistinctKind, createDistinctOpSpec, distinctSignature)
 	flux.RegisterOpSpec(DistinctKind, newDistinctOp)
 	plan.RegisterProcedureSpec(DistinctKind, newDistinctProcedure, DistinctKind)
-	plan.RegisterRewriteRule(DistinctPointLimitRewriteRule{})
 	execute.RegisterTransformation(DistinctKind, createDistinctTransformation)
 }
 
@@ -78,41 +76,6 @@ func (s *DistinctProcedureSpec) Copy() plan.ProcedureSpec {
 	*ns = *s
 
 	return ns
-}
-
-type DistinctPointLimitRewriteRule struct {
-}
-
-func (r DistinctPointLimitRewriteRule) Root() plan.ProcedureKind {
-	return inputs.FromKind
-}
-
-func (r DistinctPointLimitRewriteRule) Rewrite(pr *plan.Procedure, planner plan.PlanRewriter) error {
-	fromSpec, ok := pr.Spec.(*inputs.FromProcedureSpec)
-	if !ok {
-		return nil
-	}
-
-	var distinct *DistinctProcedureSpec
-	pr.DoChildren(func(child *plan.Procedure) {
-		if d, ok := child.Spec.(*DistinctProcedureSpec); ok {
-			distinct = d
-		}
-	})
-	if distinct == nil {
-		return nil
-	}
-
-	groupStar := !fromSpec.GroupingSet && distinct.Column != execute.DefaultValueColLabel
-	groupByColumn := fromSpec.GroupingSet && len(fromSpec.GroupKeys) > 0 &&
-		((fromSpec.GroupMode == inputs.GroupModeBy && execute.ContainsStr(fromSpec.GroupKeys, distinct.Column)) ||
-			(fromSpec.GroupMode == inputs.GroupModeExcept && !execute.ContainsStr(fromSpec.GroupKeys, distinct.Column)))
-	if groupStar || groupByColumn {
-		fromSpec.LimitSet = true
-		fromSpec.PointsLimit = -1
-		return nil
-	}
-	return nil
 }
 
 func createDistinctTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {

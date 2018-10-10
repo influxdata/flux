@@ -1,6 +1,9 @@
-package planner
+package rules
 
 import (
+	"github.com/influxdata/flux/functions/inputs"
+	"github.com/influxdata/flux/functions/transformations"
+	"github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -11,20 +14,20 @@ type FromRangeTransformationRule struct{}
 //     range
 //       |
 //     from
-func (rule FromRangeTransformationRule) Pattern() Pattern {
-	return Pat(RangeKind, Pat(FromKind))
+func (rule FromRangeTransformationRule) Pattern() planner.Pattern {
+	return planner.Pat(transformations.RangeKind, planner.Pat(inputs.FromKind))
 }
 
 // Rewrite performs the logical-to-physical transformation:
 //     range
 //       |     ->     FromRange()
 //     from
-func (rule FromRangeTransformationRule) Rewrite(node PlanNode) (PlanNode, bool) {
-	rangeNode := node.ProcedureSpec().(*RangeProcedureSpec)
-	fromNode := node.Predecessors()[0].ProcedureSpec().(*FromProcedureSpec)
+func (rule FromRangeTransformationRule) Rewrite(node planner.PlanNode) (planner.PlanNode, bool) {
+	rangeNode := node.ProcedureSpec().(*transformations.RangeProcedureSpec)
+	fromNode := node.Predecessors()[0].ProcedureSpec().(*inputs.FromProcedureSpec)
 
-	return &PhysicalPlanNode{
-		Spec: &FromRangeProcedureSpec{
+	return &planner.PhysicalPlanNode{
+		Spec: &planner.FromRangeProcedureSpec{
 			Bucket:   fromNode.Bucket,
 			BucketID: fromNode.BucketID,
 			Bounds:   rangeNode.Bounds,
@@ -68,8 +71,8 @@ func (v *PredicateVisitor) Done() {}
 //     filter
 //       |
 //     from
-func (rule FromTagFilterTransformationRule) Pattern() Pattern {
-	return Pat(FilterKind, Pat(FromKind))
+func (rule FromTagFilterTransformationRule) Pattern() planner.Pattern {
+	return planner.Pat(transformations.FilterKind, planner.Pat(inputs.FromKind))
 }
 
 // Rewrite performs the logical-to-physical transformation:
@@ -77,9 +80,9 @@ func (rule FromTagFilterTransformationRule) Pattern() Pattern {
 // ( tag0 == "something" AND <conjunctive predicate> )    ->    FromTagFilter()
 //                   |
 //                 from
-func (rule FromTagFilterTransformationRule) Rewrite(node PlanNode) (PlanNode, bool) {
-	filterNode := node.ProcedureSpec().(*FilterProcedureSpec)
-	fromNode := node.Predecessors()[0].ProcedureSpec().(*FromProcedureSpec)
+func (rule FromTagFilterTransformationRule) Rewrite(node planner.PlanNode) (planner.PlanNode, bool) {
+	filterNode := node.ProcedureSpec().(*transformations.FilterProcedureSpec)
+	fromNode := node.Predecessors()[0].ProcedureSpec().(*inputs.FromProcedureSpec)
 
 	predicate := filterNode.Fn
 	semantic.Walk(rule.visitor, predicate)
@@ -93,8 +96,8 @@ func (rule FromTagFilterTransformationRule) Rewrite(node PlanNode) (PlanNode, bo
 		tagFilters[k] = v
 	}
 
-	return &PhysicalPlanNode{
-		Spec: &FromTagFilterProcedureSpec{
+	return &planner.PhysicalPlanNode{
+		Spec: &planner.FromTagFilterProcedureSpec{
 			Bucket:   fromNode.Bucket,
 			BucketID: fromNode.BucketID,
 
