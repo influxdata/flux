@@ -19,8 +19,10 @@ type GroupKeyBuilder struct {
 // If the GroupKey passed is nil, a blank GroupKeyBuilder is constructed.
 func NewGroupKeyBuilder(key flux.GroupKey) *GroupKeyBuilder {
 	gkb := &GroupKeyBuilder{}
-	gkb.cols = append(gkb.cols, key.Cols()...)
-	gkb.values = append(gkb.values, key.Values()...)
+	if key != nil {
+		gkb.cols = append(gkb.cols, key.Cols()...)
+		gkb.values = append(gkb.values, key.Values()...)
+	}
 	return gkb
 }
 
