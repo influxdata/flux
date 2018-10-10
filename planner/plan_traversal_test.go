@@ -25,7 +25,7 @@ func (sr *SimpleRule) Rewrite(node planner.PlanNode) (planner.PlanNode, bool) {
 	return node, false
 }
 
-func fluxToQueryPlan(fluxQuery string, a planner.Administration) (*planner.QueryPlan, error) {
+func fluxToQueryPlan(fluxQuery string, a planner.Administration) (*planner.PlanSpec, error) {
 	now := time.Now().UTC()
 	spec, err := flux.Compile(context.Background(), fluxQuery, now)
 	if err != nil {

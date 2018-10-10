@@ -27,7 +27,7 @@ func (lpn *LogicalPlanNode) ProcedureSpec() ProcedureSpec {
 }
 
 // CreateLogicalPlan creates a logical query plan from a flux spec
-func CreateLogicalPlan(spec *flux.Spec, a Administration) (*QueryPlan, error) {
+func CreateLogicalPlan(spec *flux.Spec, a Administration) (*PlanSpec, error) {
 	nodes := make(map[flux.OperationID]PlanNode, len(spec.Operations))
 
 	v := &fluxSpecVisitor{
