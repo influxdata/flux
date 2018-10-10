@@ -10,9 +10,11 @@ type Visitor interface {
 }
 
 func walk(v Visitor, n Node) {
-	defer v.Done()
 	switch n := n.(type) {
 	case *Program:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			for _, s := range n.Body {
@@ -20,6 +22,9 @@ func walk(v Visitor, n Node) {
 			}
 		}
 	case *Extern:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			for _, d := range n.Declarations {
@@ -28,6 +33,9 @@ func walk(v Visitor, n Node) {
 			walk(w, n.Program)
 		}
 	case *BlockStatement:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			for _, s := range n.Body {
@@ -35,36 +43,50 @@ func walk(v Visitor, n Node) {
 			}
 		}
 	case *OptionStatement:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Declaration)
 		}
 	case *ExpressionStatement:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Expression)
 		}
 	case *ReturnStatement:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Argument)
 		}
 	case *NativeVariableDeclaration:
-		if n != nil {
-			w := v.Visit(n)
-			if w != nil {
-				walk(w, n.Identifier)
-				walk(w, n.Init)
-			}
+		if n == nil {
+			return
+		}
+		w := v.Visit(n)
+		if w != nil {
+			walk(w, n.Identifier)
+			walk(w, n.Init)
 		}
 	case *ExternalVariableDeclaration:
-		if n != nil {
-			w := v.Visit(n)
-			if w != nil {
-				walk(w, n.Identifier)
-			}
+		if n == nil {
+			return
+		}
+		w := v.Visit(n)
+		if w != nil {
+			walk(w, n.Identifier)
 		}
 	case *FunctionExpression:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			// Walk defaults first as they are evaluated in
@@ -73,41 +95,55 @@ func walk(v Visitor, n Node) {
 			walk(w, n.Block)
 		}
 	case *FunctionDefaults:
-		if n != nil {
-			w := v.Visit(n)
-			if w != nil {
-				for _, d := range n.List {
-					walk(w, d)
-				}
+		if n == nil {
+			return
+		}
+		w := v.Visit(n)
+		if w != nil {
+			for _, d := range n.List {
+				walk(w, d)
 			}
 		}
 	case *FunctionParameterDefault:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Key)
 			walk(w, n.Value)
 		}
 	case *FunctionBlock:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Parameters)
 			walk(w, n.Body)
 		}
 	case *FunctionParameters:
-		if n != nil {
-			w := v.Visit(n)
-			if w != nil {
-				for _, p := range n.List {
-					walk(w, p)
-				}
+		if n == nil {
+			return
+		}
+		w := v.Visit(n)
+		if w != nil {
+			for _, p := range n.List {
+				walk(w, p)
 			}
 		}
 	case *FunctionParameter:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Key)
 		}
 	case *ArrayExpression:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			for _, e := range n.Elements {
@@ -115,12 +151,18 @@ func walk(v Visitor, n Node) {
 			}
 		}
 	case *BinaryExpression:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Left)
 			walk(w, n.Right)
 		}
 	case *CallExpression:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Callee)
@@ -130,6 +172,9 @@ func walk(v Visitor, n Node) {
 			}
 		}
 	case *ConditionalExpression:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Test)
@@ -137,19 +182,31 @@ func walk(v Visitor, n Node) {
 			walk(w, n.Consequent)
 		}
 	case *IdentifierExpression:
+		if n == nil {
+			return
+		}
 		v.Visit(n)
 	case *LogicalExpression:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Left)
 			walk(w, n.Right)
 		}
 	case *MemberExpression:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Object)
 		}
 	case *ObjectExpression:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			for _, p := range n.Properties {
@@ -157,33 +214,69 @@ func walk(v Visitor, n Node) {
 			}
 		}
 	case *UnaryExpression:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Argument)
 		}
 	case *Identifier:
+		if n == nil {
+			return
+		}
 		v.Visit(n)
 	case *Property:
+		if n == nil {
+			return
+		}
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Key)
 			walk(w, n.Value)
 		}
 	case *BooleanLiteral:
+		if n == nil {
+			return
+		}
 		v.Visit(n)
 	case *DateTimeLiteral:
+		if n == nil {
+			return
+		}
 		v.Visit(n)
 	case *DurationLiteral:
+		if n == nil {
+			return
+		}
 		v.Visit(n)
 	case *FloatLiteral:
+		if n == nil {
+			return
+		}
 		v.Visit(n)
 	case *IntegerLiteral:
+		if n == nil {
+			return
+		}
 		v.Visit(n)
 	case *RegexpLiteral:
+		if n == nil {
+			return
+		}
 		v.Visit(n)
 	case *StringLiteral:
+		if n == nil {
+			return
+		}
 		v.Visit(n)
 	case *UnsignedIntegerLiteral:
+		if n == nil {
+			return
+		}
 		v.Visit(n)
 	}
+	// We cannot use defer here as we only call Done if n != nil,
+	// which we cannot check except for in each case.
+	v.Done()
 }

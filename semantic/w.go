@@ -88,13 +88,14 @@ func newTV(v int) TV {
 }
 
 func (tv TV) String() string {
+	if tv.T != nil && *tv.T != nil {
+		return fmt.Sprintf("%v", tv.Indirect())
+	}
 	return fmt.Sprintf("t%d", tv.V)
 }
 
 func (tv TV) Unify(t T) error {
-	log.Println("TV.Unify", tv)
 	err := unifyVar(t, tv.T)
-	log.Println("TV.Unify", **tv.T)
 	return err
 }
 func (tv TV) Type() (Type, bool) {
@@ -118,7 +119,6 @@ func (tv TV) Indirect() T {
 }
 
 func unifyVar(t T, r **T) error {
-	log.Println("unifyVar", t, r, *r)
 	if *r != nil {
 		return t.Unify(**r)
 	}
@@ -127,7 +127,6 @@ func unifyVar(t T, r **T) error {
 		return nil
 	}
 	*r = &t
-	log.Println("unifyVar", t, r, *r, **r)
 	return nil
 }
 
@@ -154,35 +153,172 @@ func (ts TS) Unsolved() []TV {
 	return ts.T.Unsolved()
 }
 
-func Infer(n Node) (Type, error) {
-	env := &Env{m: make(map[string]TS)}
-	f := newInferer()
-	t, err := f.typeof(env, n)
-	if err != nil {
-		return nil, err
+func Infer(n Node) {
+	v := newInferenceVisitor()
+	Walk(v, n)
+}
+
+type inferenceVisitor struct {
+	f    *Fresher
+	env  *Env
+	node Node
+}
+
+func newInferenceVisitor() *inferenceVisitor {
+	return &inferenceVisitor{
+		f:   new(Fresher),
+		env: &Env{m: make(map[string]TS)},
 	}
-	if t == nil {
-		return nil, errors.New("no type found")
+}
+
+func (v *inferenceVisitor) nest() *inferenceVisitor {
+	return &inferenceVisitor{
+		f:   v.f,
+		env: v.env,
 	}
-	if i, ok := t.(Indirecter); ok {
-		t = i.Indirect()
+}
+func (v *inferenceVisitor) nestEnv() *inferenceVisitor {
+	return &inferenceVisitor{
+		f:   v.f,
+		env: v.env.Nest(),
 	}
-	switch t := t.(type) {
-	case Type:
+}
+
+func (v *inferenceVisitor) Visit(node Node) Visitor {
+	v.node = node
+	log.Printf("typeof %p %T", v, v.node)
+	switch node.(type) {
+	case *FunctionBlock:
+		return v.nestEnv()
+	}
+	return v.nest()
+}
+
+func (v *inferenceVisitor) Done() {
+	t, err := v.typeof()
+	log.Printf("typeof %p %T %v", v, v.node, t)
+	v.node.setTyp(t, err)
+}
+
+func (v *inferenceVisitor) typeof() (T, error) {
+	switch n := v.node.(type) {
+	case *Program:
+		l := len(n.Body)
+		if l > 0 {
+			return n.Body[l-1].typ()
+		}
+		return nil, errors.New("empty program")
+	case *ExpressionStatement:
+		return n.Expression.typ()
+	case *NativeVariableDeclaration:
+		t, err := n.Init.typ()
+		if err != nil {
+			return nil, err
+		}
+		ts := v.schema(t)
+		v.env.Set(n.Identifier.Name, ts)
 		return t, nil
+	case *FunctionExpression:
+		// TODO: Type check n.Defaults
+		return n.Block.typ()
+	case *FunctionBlock:
+		in := objType{
+			properties: make(map[string]T, len(n.Parameters.List)),
+		}
+		for _, p := range n.Parameters.List {
+			pt, err := p.typ()
+			if err != nil {
+				return nil, err
+			}
+			in.properties[p.Key.Name] = pt
+		}
+		out, err := n.Body.typ()
+		if err != nil {
+			return nil, err
+		}
+
+		t := funcTyp{
+			in:  in,
+			out: out,
+		}
+		return t, nil
+	case *FunctionParameter:
+		t := v.f.Fresh()
+		ts := TS{T: t} // function parameters do not need a schema
+		v.env.Set(n.Key.Name, ts)
+		return t, nil
+	case *CallExpression:
+		ct, err := n.Callee.typ()
+		if err != nil {
+			return nil, err
+		}
+		if i, ok := ct.(Indirecter); ok {
+			ct = i.Indirect()
+		}
+		t, ok := ct.(funcTyp)
+		if !ok {
+			return nil, fmt.Errorf("cannot call non function type %T", ct)
+		}
+		//TODO: Apply defaults to arugments here.
+		//TODO: Apply pipe to arugments here.
+		in, err := n.Arguments.typ()
+		if err != nil {
+			return nil, err
+		}
+
+		if err := t.in.Unify(in); err != nil {
+			return nil, err
+		}
+		return t.out, nil
+	case *IdentifierExpression:
+		// Let-Polymorphism, each reference to an identifier
+		// may have its own unique monotype.
+		// Instantiate a new type for each.
+		ts, ok := v.env.Lookup(n.Name)
+		if !ok {
+			return nil, fmt.Errorf("undefined identifier %q", n.Name)
+		}
+		t := v.instantiate(ts)
+		return t, nil
+	case *ObjectExpression:
+		t := objType{
+			properties: make(map[string]T, len(n.Properties)),
+		}
+		for _, p := range n.Properties {
+			pt, err := p.typ()
+			if err != nil {
+				return nil, err
+			}
+			t.properties[p.Key.Name] = pt
+		}
+		return t, nil
+	case *Property:
+		return n.Value.typ()
+	case *BooleanLiteral:
+		return Bool, nil
+	case *IntegerLiteral:
+		return Int, nil
+	case *StringLiteral:
+		return String, nil
 	default:
-		return nil, fmt.Errorf("fail type %T", t)
+		return nil, fmt.Errorf("unsupported %T", n)
 	}
 }
 
-type inferer struct {
-	f      *Fresher
-	noPoly bool
+func (v *inferenceVisitor) instantiate(ts TS) T {
+	tm := make(map[int]TV, len(ts.List))
+	for _, tv := range ts.List {
+		tm[tv.V] = v.f.Fresh()
+	}
+	return ts.T.Instantiate(tm)
 }
-
-func newInferer() *inferer {
-	return &inferer{
-		f: new(Fresher),
+func (v *inferenceVisitor) schema(t T) TS {
+	uv := t.Unsolved()
+	ev := v.env.EnvUnsolved()
+	d := diff(uv, ev)
+	return TS{
+		T:    t,
+		List: d,
 	}
 }
 
@@ -306,145 +442,6 @@ func (t objType) Type() (Type, bool) {
 	}
 	return NewObjectType(properties), true
 }
-
-func (f *inferer) typeof(env *Env, node Node) (t T, _ error) {
-	log.Printf("typeof %T", node)
-	defer func() {
-		log.Printf("typeof %T = %v", node, t)
-	}()
-	switch n := node.(type) {
-	case *Program:
-		var t T
-		var err error
-		for _, s := range n.Body {
-			t, err = f.typeof(env, s)
-			if err != nil {
-				return nil, err
-			}
-		}
-		return t, nil
-	case *ExpressionStatement:
-		return f.typeof(env, n.Expression)
-	case *NativeVariableDeclaration:
-		t, err := f.typeof(env, n.Init)
-		if err != nil {
-			return nil, err
-		}
-		ts := f.schema(env, t)
-		env.Set(n.Identifier.Name, ts)
-		return t, nil
-	case *FunctionExpression:
-		// TODO: Type check n.Defaults
-		return f.typeof(env, n.Block)
-	case *FunctionBlock:
-		env := env.Nest()
-		in := objType{
-			properties: make(map[string]T, len(n.Parameters.List)),
-		}
-		for _, p := range n.Parameters.List {
-			pt, err := f.typeof(env, p)
-			if err != nil {
-				return nil, err
-			}
-			in.properties[p.Key.Name] = pt
-		}
-		f.noPoly = true
-		out, err := f.typeof(env, n.Body)
-		f.noPoly = false
-		if err != nil {
-			return nil, err
-		}
-		t := funcTyp{
-			in:  in,
-			out: out,
-		}
-		return t, nil
-	case *FunctionParameter:
-		t := f.f.Fresh()
-		ts := f.schema(env, t)
-		env.Set(n.Key.Name, ts)
-		return t, nil
-	case *CallExpression:
-		ct, err := f.typeof(env, n.Callee)
-		if err != nil {
-			return nil, err
-		}
-		if i, ok := ct.(Indirecter); ok {
-			ct = i.Indirect()
-		}
-		t, ok := ct.(funcTyp)
-		if !ok {
-			return nil, fmt.Errorf("cannot call non function type %T", ct)
-		}
-		//TODO: Apply defaults to arugments here.
-		//TODO: Apply pipe to arugments here.
-		in, err := f.typeof(env, n.Arguments)
-		if err != nil {
-			return nil, err
-		}
-		if err := t.in.Unify(in); err != nil {
-			return nil, err
-		}
-		return t.out, nil
-	case *IdentifierExpression:
-		// Let-Polymorphism, each reference to an identifier
-		// may have its own unique monotype.
-		// Instantiate a new type for each.
-		ts, ok := env.Lookup(n.Name)
-		if !ok {
-			return nil, fmt.Errorf("undefined identifier %q", n.Name)
-		}
-		var t T
-		if f.noPoly {
-			t = ts.T
-		} else {
-			t = f.instantiate(ts)
-		}
-		log.Printf("ident: %s ts: %v t: %v", n.Name, ts, t)
-		return t, nil
-	case *ObjectExpression:
-		t := objType{
-			properties: make(map[string]T, len(n.Properties)),
-		}
-		for _, p := range n.Properties {
-			pt, err := f.typeof(env, p)
-			if err != nil {
-				return nil, err
-			}
-			t.properties[p.Key.Name] = pt
-		}
-		return t, nil
-	case *Property:
-		return f.typeof(env, n.Value)
-	case *BooleanLiteral:
-		return Bool, nil
-	case *IntegerLiteral:
-		return Int, nil
-	case *StringLiteral:
-		return String, nil
-	default:
-		return nil, fmt.Errorf("unsupported %T", node)
-	}
-}
-
-func (f *inferer) instantiate(ts TS) T {
-	tm := make(map[int]TV, len(ts.List))
-	for _, tv := range ts.List {
-		tm[tv.V] = f.f.Fresh()
-	}
-	return ts.T.Instantiate(tm)
-}
-func (f *inferer) schema(env *Env, t T) TS {
-	uv := t.Unsolved()
-	ev := env.EnvUnsolved()
-	d := diff(uv, ev)
-	return TS{
-		T:    t,
-		List: d,
-	}
-}
-
-func (f *inferer) Done() {}
 
 func union(a, b []TV) []TV {
 	u := a
