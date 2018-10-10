@@ -3,35 +3,34 @@ package compiler
 import (
 	"errors"
 	"fmt"
+
 	"github.com/influxdata/flux"
 
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
-func Compile(f *semantic.FunctionExpression, functionType semantic.Type, builtinScope Scope, builtinDeclarations semantic.DeclarationScope) (Func, error) {
-	if builtinDeclarations == nil {
-		builtinDeclarations = make(semantic.DeclarationScope)
-	}
-	for k, t := range inTypes {
-		builtinDeclarations[k] = semantic.NewExternalVariableDeclaration(k, t)
+func Compile(f *semantic.FunctionExpression, functionType semantic.Type, builtins Scope) (Func, error) {
+	f = f.Copy().(*semantic.FunctionExpression)
+	declarations := externDeclarations(builtins)
+	extern := &semantic.Extern{
+		Declarations: declarations,
+		Node:         f,
 	}
 
-	t := f.Type()
-	err := t.Unify(functionType)
+	semantic.Infer(extern)
+
+	pt := extern.PolyType()
+	err := pt.Unify(functionType)
 	if err != nil {
 		return nil, err
 	}
-
-	typ := ts.Instantiate(inTypes)
-
-	declarations := make(map[string]semantic.VariableDeclaration, len(inTypes))
-	for k, t := range inTypes {
-		declarations[k] = semantic.NewExternalVariableDeclaration(k, t)
+	typ, mono := pt.Type()
+	if !mono {
+		return nil, errors.New("cannot compile polymorphic function")
 	}
-	semantic.ApplyNewDeclarations(f, declarations)
 
-	root, err := compile(f.Body, builtinScope)
+	root, err := compile(f.Block.Body, builtins)
 	if err != nil {
 		return nil, err
 	}
@@ -320,4 +319,15 @@ func CompileFnParam(fn *semantic.FunctionExpression, paramType, returnType seman
 	}
 
 	return compiled, paramName, nil
+}
+
+func externDeclarations(scope Scope) []*semantic.ExternalVariableDeclaration {
+	declarations := make([]*semantic.ExternalVariableDeclaration, len(scope))
+	for k, v := range scope {
+		declarations = append(declarations, &semantic.ExternalVariableDeclaration{
+			Identifier: &semantic.Identifier{Name: k},
+			ExternType: v.Type(),
+		})
+	}
+	return declarations
 }

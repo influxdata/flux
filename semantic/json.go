@@ -9,17 +9,6 @@ import (
 	"time"
 )
 
-func (e *Extern) MarshalJSON() ([]byte, error) {
-	type Alias Extern
-	raw := struct {
-		Type string `json:"type"`
-		*Alias
-	}{
-		Type:  e.NodeType(),
-		Alias: (*Alias)(e),
-	}
-	return json.Marshal(raw)
-}
 func (p *Program) MarshalJSON() ([]byte, error) {
 	type Alias Program
 	raw := struct {
@@ -52,6 +41,48 @@ func (p *Program) UnmarshalJSON(data []byte) error {
 		}
 		p.Body[i] = s
 	}
+	return nil
+}
+func (e *Extern) MarshalJSON() ([]byte, error) {
+	type Alias Extern
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  e.NodeType(),
+		Alias: (*Alias)(e),
+	}
+	return json.Marshal(raw)
+}
+func (e *ExternBlock) MarshalJSON() ([]byte, error) {
+	type Alias ExternBlock
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  e.NodeType(),
+		Alias: (*Alias)(e),
+	}
+	return json.Marshal(raw)
+}
+func (e *ExternBlock) UnmarshalJSON(data []byte) error {
+	type Alias ExternBlock
+	raw := struct {
+		*Alias
+		Node json.RawMessage `json:"node"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*e = *(*ExternBlock)(raw.Alias)
+	}
+
+	n, err := unmarshalNode(raw.Node)
+	if err != nil {
+		return err
+	}
+	e.Node = n
 	return nil
 }
 func (s *BlockStatement) MarshalJSON() ([]byte, error) {

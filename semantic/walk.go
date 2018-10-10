@@ -30,7 +30,15 @@ func walk(v Visitor, n Node) {
 			for _, d := range n.Declarations {
 				walk(w, d)
 			}
-			walk(w, n.Program)
+			walk(w, n.Block)
+		}
+	case *ExternBlock:
+		if n == nil {
+			return
+		}
+		w := v.Visit(n)
+		if w != nil {
+			walk(w, n.Node)
 		}
 	case *BlockStatement:
 		if n == nil {

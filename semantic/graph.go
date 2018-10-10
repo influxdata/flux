@@ -16,24 +16,34 @@ type Node interface {
 	NodeType() string
 	Copy() Node
 
-	Unify(t T) error
 	Type() (Type, error)
-
-	typ() (T, error)
-	setTyp(t T, err error)
+	// PolyType returns a normalized type for the node
+	PolyType() (PolyType, error)
+	polyType() (PolyType, error)
+	setType(t PolyType, err error)
 
 	json.Marshaler
 }
 
 type nodeType struct {
-	t   T
+	t   PolyType
 	err error
 }
 
-func (t *nodeType) typ() (T, error) {
+func (t *nodeType) PolyType() (PolyType, error) {
+	if t.err != nil {
+		return nil, t.err
+	}
+	if t.t == nil {
+		return nil, nil
+	}
+	return normalize(t.t), nil
+}
+
+func (t *nodeType) polyType() (PolyType, error) {
 	return t.t, t.err
 }
-func (t *nodeType) setTyp(typ T, err error) {
+func (t *nodeType) setType(typ PolyType, err error) {
 	t.t = typ
 	t.err = err
 }
@@ -54,8 +64,9 @@ func (t *nodeType) Type() (Type, error) {
 	return tt, nil
 }
 
-func (*Program) node() {}
-func (*Extern) node()  {}
+func (*Program) node()     {}
+func (*Extern) node()      {}
+func (*ExternBlock) node() {}
 
 func (*BlockStatement) node()              {}
 func (*OptionStatement) node()             {}
@@ -289,12 +300,12 @@ func (s *NativeVariableDeclaration) Copy() Node {
 	return ns
 }
 
-// Extern is a node that represents a program node with a set of external declarations defined.
+// Extern is a node that represents a node with a set of external declarations defined.
 type Extern struct {
 	nodeType
 
-	Declarations []*ExternalVariableDeclaration
-	Program      *Program
+	Declarations []*ExternalVariableDeclaration `json:"declarations"`
+	Block        *ExternBlock                   `json:"block"`
 }
 
 func (*Extern) NodeType() string { return "Extern" }
@@ -313,7 +324,7 @@ func (e *Extern) Copy() Node {
 		}
 	}
 
-	ne.Program = e.Program.Copy().(*Program)
+	ne.Block = e.Block.Copy().(*ExternBlock)
 
 	return ne
 }
@@ -323,7 +334,7 @@ type ExternalVariableDeclaration struct {
 	nodeType
 
 	Identifier *Identifier `json:"identifier"`
-	TypeScheme TypeScheme  `json:""`
+	ExternType PolyType    `json:""`
 }
 
 func (*ExternalVariableDeclaration) NodeType() string { return "ExternalVariableDeclaration" }
@@ -338,6 +349,27 @@ func (s *ExternalVariableDeclaration) Copy() Node {
 	ns.Identifier = s.Identifier.Copy().(*Identifier)
 
 	return ns
+}
+
+// ExternBlock is a node that represents a node with a set of external declarations defined.
+type ExternBlock struct {
+	nodeType
+
+	Node Node
+}
+
+func (*ExternBlock) NodeType() string { return "ExternBlock" }
+
+func (e *ExternBlock) Copy() Node {
+	if e == nil {
+		return e
+	}
+	ne := new(ExternBlock)
+	*ne = *e
+
+	ne.Node = e.Node.Copy()
+
+	return ne
 }
 
 type ArrayExpression struct {
@@ -734,11 +766,6 @@ type BooleanLiteral struct {
 	Value bool `json:"value"`
 }
 
-func (*BooleanLiteral) TypeScheme() TypeScheme {
-	return Bool
-}
-func (*BooleanLiteral) setTypeScheme(TypeScheme) {}
-
 func (*BooleanLiteral) NodeType() string { return "BooleanLiteral" }
 
 func (l *BooleanLiteral) Copy() Node {
@@ -756,11 +783,6 @@ type DateTimeLiteral struct {
 
 	Value time.Time `json:"value"`
 }
-
-func (*DateTimeLiteral) TypeScheme() TypeScheme {
-	return Time
-}
-func (*DateTimeLiteral) setTypeScheme(TypeScheme) {}
 
 func (*DateTimeLiteral) NodeType() string { return "DateTimeLiteral" }
 
@@ -780,11 +802,6 @@ type DurationLiteral struct {
 	Value time.Duration `json:"value"`
 }
 
-func (*DurationLiteral) TypeScheme() TypeScheme {
-	return Duration
-}
-func (*DurationLiteral) setTypeScheme(TypeScheme) {}
-
 func (*DurationLiteral) NodeType() string { return "DurationLiteral" }
 
 func (l *DurationLiteral) Copy() Node {
@@ -802,11 +819,6 @@ type IntegerLiteral struct {
 
 	Value int64 `json:"value"`
 }
-
-func (*IntegerLiteral) TypeScheme() TypeScheme {
-	return Int
-}
-func (*IntegerLiteral) setTypeScheme(TypeScheme) {}
 
 func (*IntegerLiteral) NodeType() string { return "IntegerLiteral" }
 
@@ -826,11 +838,6 @@ type FloatLiteral struct {
 	Value float64 `json:"value"`
 }
 
-func (*FloatLiteral) TypeScheme() TypeScheme {
-	return Float
-}
-func (*FloatLiteral) setTypeScheme(TypeScheme) {}
-
 func (*FloatLiteral) NodeType() string { return "FloatLiteral" }
 
 func (l *FloatLiteral) Copy() Node {
@@ -848,11 +855,6 @@ type RegexpLiteral struct {
 
 	Value *regexp.Regexp `json:"value"`
 }
-
-func (*RegexpLiteral) TypeScheme() TypeScheme {
-	return Regexp
-}
-func (*RegexpLiteral) setTypeScheme(TypeScheme) {}
 
 func (*RegexpLiteral) NodeType() string { return "RegexpLiteral" }
 
@@ -874,11 +876,6 @@ type StringLiteral struct {
 	Value string `json:"value"`
 }
 
-func (*StringLiteral) TypeScheme() TypeScheme {
-	return String
-}
-func (*StringLiteral) setTypeScheme(TypeScheme) {}
-
 func (*StringLiteral) NodeType() string { return "StringLiteral" }
 
 func (l *StringLiteral) Copy() Node {
@@ -896,11 +893,6 @@ type UnsignedIntegerLiteral struct {
 
 	Value uint64 `json:"value"`
 }
-
-func (*UnsignedIntegerLiteral) TypeScheme() TypeScheme {
-	return UInt
-}
-func (*UnsignedIntegerLiteral) setTypeScheme(TypeScheme) {}
 
 func (*UnsignedIntegerLiteral) NodeType() string { return "UnsignedIntegerLiteral" }
 
