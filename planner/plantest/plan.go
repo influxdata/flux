@@ -15,7 +15,7 @@ type DAG struct {
 }
 
 // CreatePlanFromDAG constructs a query plan DAG from a set of nodes and edges
-func CreatePlanFromDAG(graph DAG) *planner.QueryPlan {
+func CreatePlanFromDAG(graph DAG) *planner.PlanSpec {
 	predecessors := make(map[planner.PlanNode][]planner.PlanNode)
 	successors := make(map[planner.PlanNode][]planner.PlanNode)
 
