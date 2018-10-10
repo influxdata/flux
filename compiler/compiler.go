@@ -9,7 +9,7 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-func Compile(f *semantic.FunctionExpression, inTypes map[string]semantic.Type, builtinScope Scope, builtinDeclarations semantic.DeclarationScope) (Func, error) {
+func Compile(f *semantic.FunctionExpression, functionType semantic.Type, builtinScope Scope, builtinDeclarations semantic.DeclarationScope) (Func, error) {
 	if builtinDeclarations == nil {
 		builtinDeclarations = make(semantic.DeclarationScope)
 	}
@@ -17,9 +17,11 @@ func Compile(f *semantic.FunctionExpression, inTypes map[string]semantic.Type, b
 		builtinDeclarations[k] = semantic.NewExternalVariableDeclaration(k, t)
 	}
 
-	f = f.Copy().(*semantic.FunctionExpression)
-	semantic.InferTypes(f)
-	ts := f.TypeScheme()
+	t := f.Type()
+	err := t.Unify(functionType)
+	if err != nil {
+		return nil, err
+	}
 
 	typ := ts.Instantiate(inTypes)
 

@@ -16,6 +16,9 @@ type Node interface {
 	NodeType() string
 	Copy() Node
 
+	Unify(t T) error
+	Type() (Type, error)
+
 	typ() (T, error)
 	setTyp(t T, err error)
 
@@ -44,11 +47,11 @@ func (t *nodeType) Type() (Type, error) {
 	if i, ok := typ.(Indirecter); ok {
 		typ = i.Indirect()
 	}
-	tt, mono := typ.Type()
-	if mono {
-		return tt, nil
+	if typ == nil {
+		return nil, nil
 	}
-	return nil, errors.New("no monotype found")
+	tt, _ := typ.Type()
+	return tt, nil
 }
 
 func (*Program) node() {}
@@ -103,7 +106,6 @@ func (*NativeVariableDeclaration) stmt() {}
 
 type Expression interface {
 	Node
-	Type() (Type, error)
 	expression()
 }
 

@@ -5,14 +5,16 @@ import (
 	"fmt"
 	"log"
 	"strings"
+
+	"github.com/influxdata/flux/ast"
 )
 
+func Infer(n Node) {
+	v := newInferenceVisitor()
+	Walk(v, n)
+}
+
 type T interface {
-	Unsolved() []TV
-	Instantiate(tm map[int]TV) T
-	Unify(t T) error
-	// Type produces the monotype of this type
-	Type() (Type, bool)
 }
 
 type Indirecter interface {
@@ -25,8 +27,18 @@ func (k Kind) Unsolved() []TV {
 func (k Kind) Instantiate(map[int]TV) T {
 	return k
 }
-func (k Kind) Unify(T) error {
-	return nil
+func (k Kind) Unify(t T) error {
+	switch t := t.(type) {
+	case TV:
+		return unifyVar(k, t.T)
+	case Kind:
+		if k != t {
+			return fmt.Errorf("type error: %v != %v", k, t)
+		}
+		return nil
+	default:
+		return errors.New("type error")
+	}
 }
 func (k Kind) Type() (Type, bool) {
 	return k, true
@@ -153,11 +165,6 @@ func (ts TS) Unsolved() []TV {
 	return ts.T.Unsolved()
 }
 
-func Infer(n Node) {
-	v := newInferenceVisitor()
-	Walk(v, n)
-}
-
 type inferenceVisitor struct {
 	f    *Fresher
 	env  *Env
@@ -196,18 +203,17 @@ func (v *inferenceVisitor) Visit(node Node) Visitor {
 
 func (v *inferenceVisitor) Done() {
 	t, err := v.typeof()
-	log.Printf("typeof %p %T %v", v, v.node, t)
+	log.Printf("typeof %p %T %v %v", v, v.node, t, err)
 	v.node.setTyp(t, err)
 }
 
 func (v *inferenceVisitor) typeof() (T, error) {
 	switch n := v.node.(type) {
-	case *Program:
-		l := len(n.Body)
-		if l > 0 {
-			return n.Body[l-1].typ()
-		}
-		return nil, errors.New("empty program")
+	case *Identifier,
+		*Program,
+		*FunctionBlock,
+		*FunctionParameters:
+		return nil, nil
 	case *ExpressionStatement:
 		return n.Expression.typ()
 	case *NativeVariableDeclaration:
@@ -216,23 +222,28 @@ func (v *inferenceVisitor) typeof() (T, error) {
 			return nil, err
 		}
 		ts := v.schema(t)
+		existing, ok := v.env.Lookup(n.Identifier.Name)
+		if ok {
+			log.Printf("unify existing %v = %v", existing.T, t)
+			if err := existing.T.Unify(t); err != nil {
+				return nil, err
+			}
+		}
 		v.env.Set(n.Identifier.Name, ts)
 		return t, nil
 	case *FunctionExpression:
 		// TODO: Type check n.Defaults
-		return n.Block.typ()
-	case *FunctionBlock:
 		in := objType{
-			properties: make(map[string]T, len(n.Parameters.List)),
+			properties: make(map[string]T, len(n.Block.Parameters.List)),
 		}
-		for _, p := range n.Parameters.List {
+		for _, p := range n.Block.Parameters.List {
 			pt, err := p.typ()
 			if err != nil {
 				return nil, err
 			}
 			in.properties[p.Key.Name] = pt
 		}
-		out, err := n.Body.typ()
+		out, err := n.Block.Body.typ()
 		if err != nil {
 			return nil, err
 		}
@@ -292,6 +303,46 @@ func (v *inferenceVisitor) typeof() (T, error) {
 			t.properties[p.Key.Name] = pt
 		}
 		return t, nil
+	case *BinaryExpression:
+		lt, err := n.Left.typ()
+		if err != nil {
+			return nil, err
+		}
+		rt, err := n.Right.typ()
+		if err != nil {
+			return nil, err
+		}
+		switch n.Operator {
+		case
+			ast.AdditionOperator,
+			ast.SubtractionOperator,
+			ast.MultiplicationOperator,
+			ast.DivisionOperator:
+			if err := lt.Unify(rt); err != nil {
+				return nil, err
+			}
+			return lt, nil
+		case
+			ast.GreaterThanEqualOperator,
+			ast.LessThanEqualOperator,
+			ast.GreaterThanOperator,
+			ast.LessThanOperator,
+			ast.NotEqualOperator,
+			ast.EqualOperator:
+			return Bool, nil
+		case
+			ast.RegexpMatchOperator,
+			ast.NotRegexpMatchOperator:
+			if err := lt.Unify(String); err != nil {
+				return nil, err
+			}
+			if err := rt.Unify(Regexp); err != nil {
+				return nil, err
+			}
+			return Bool, nil
+		default:
+			return nil, fmt.Errorf("unsupported binary operator %v", n.Operator)
+		}
 	case *Property:
 		return n.Value.typ()
 	case *BooleanLiteral:
@@ -345,6 +396,8 @@ func (t funcTyp) Instantiate(tm map[int]TV) T {
 
 func (t1 funcTyp) Unify(typ T) error {
 	switch t2 := typ.(type) {
+	case TV:
+		unifyVar(t1, t2.T)
 	case funcTyp:
 		if err := t1.in.Unify(t2.in); err != nil {
 			return err
@@ -352,8 +405,6 @@ func (t1 funcTyp) Unify(typ T) error {
 		if err := t1.out.Unify(t2.out); err != nil {
 			return err
 		}
-	case TV:
-		unifyVar(t1, t2.T)
 	default:
 		return errors.New("fail")
 	}
@@ -361,7 +412,7 @@ func (t1 funcTyp) Unify(typ T) error {
 }
 
 func (t funcTyp) Type() (Type, bool) {
-	_, ok := t.in.Type()
+	in, ok := t.in.Type()
 	if !ok {
 		return nil, false
 	}
@@ -370,8 +421,8 @@ func (t funcTyp) Type() (Type, bool) {
 		return nil, false
 	}
 	return NewFunctionType(FunctionSignature{
-		//TODO: Update Signature to use in
-		ReturnType: out,
+		In:  in,
+		Out: out,
 	}), true
 }
 
