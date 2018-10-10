@@ -2,91 +2,15 @@ package planner_test
 
 import (
 	"context"
-	"fmt"
-	"github.com/influxdata/flux/planner"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/functions/inputs"
-	"github.com/influxdata/flux/functions/transformations"
-	"github.com/influxdata/flux/semantic"
+	_ "github.com/influxdata/flux/builtin"
+	"github.com/influxdata/flux/planner"
 )
-
-var create = map[flux.OperationKind]planner.CreateLogicalProcedureSpec{
-	// Take a FromOpSpec and translate it to a FromProcedureSpec
-	inputs.FromKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
-		spec, ok := op.(*inputs.FromOpSpec)
-
-		if !ok {
-			return nil, fmt.Errorf("invalid spec type %T", op)
-		}
-
-		return &planner.FromProcedureSpec{
-			Bucket:   spec.Bucket,
-			BucketID: spec.BucketID,
-		}, nil
-	},
-	// Take a RangeOpSpec and convert it to a RangeProcedureSpec
-	transformations.RangeKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
-		spec, ok := op.(*transformations.RangeOpSpec)
-
-		if !ok {
-			return nil, fmt.Errorf("invalid spec type %T", op)
-		}
-
-		if spec.TimeCol == "" {
-			spec.TimeCol = execute.DefaultTimeColLabel
-		}
-
-		return &planner.RangeProcedureSpec{
-			Bounds: flux.Bounds{
-				Start: spec.Start,
-				Stop:  spec.Stop,
-			},
-			TimeCol:  spec.TimeCol,
-			StartCol: spec.StartCol,
-			StopCol:  spec.StopCol,
-		}, nil
-	},
-	// Take a FilterOpSpec and translate it to a FilterProcedureSpec
-	transformations.FilterKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
-		spec, ok := op.(*transformations.FilterOpSpec)
-
-		if !ok {
-			return nil, fmt.Errorf("invalid spec type %T", op)
-		}
-
-		return &planner.FilterProcedureSpec{
-			Fn: spec.Fn.Copy().(*semantic.FunctionExpression),
-		}, nil
-	},
-	transformations.YieldKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
-		spec, ok := op.(*transformations.YieldOpSpec)
-
-		if !ok {
-			return nil, fmt.Errorf("invalid spec type %T", op)
-		}
-
-		return &planner.YieldProcedureSpec{
-			Name: spec.Name,
-		}, nil
-	},
-	transformations.JoinKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
-		spec, ok := op.(*transformations.JoinOpSpec)
-
-		if !ok {
-			return nil, fmt.Errorf("invalid spec type %T", op)
-		}
-
-		return &planner.JoinProcedureSpec{
-			On: spec.On,
-		}, nil
-	},
-}
 
 type SimpleRule struct {
 	seenNodes []planner.NodeID
@@ -101,14 +25,14 @@ func (sr *SimpleRule) Rewrite(node planner.PlanNode) (planner.PlanNode, bool) {
 	return node, false
 }
 
-func fluxToQueryPlan(fluxQuery string) (*planner.QueryPlan, error) {
+func fluxToQueryPlan(fluxQuery string, a planner.Administration) (*planner.QueryPlan, error) {
 	now := time.Now().UTC()
 	spec, err := flux.Compile(context.Background(), fluxQuery, now)
 	if err != nil {
 		return nil, err
 	}
 
-	qp, err := planner.CreateLogicalPlan(spec, create)
+	qp, err := planner.CreateLogicalPlan(spec, a)
 	return qp, err
 }
 
@@ -172,14 +96,14 @@ func TestPlanTraversal(t *testing.T) {
 			//t.Parallel()
 
 			simpleRule := SimpleRule{}
-			planner := planner.NewLogicalToPhysicalPlanner([]planner.Rule{&simpleRule})
+			aPlanner := planner.NewLogicalToPhysicalPlanner([]planner.Rule{&simpleRule})
 
-			qp, err := fluxToQueryPlan(tc.fluxQuery)
+			qp, err := fluxToQueryPlan(tc.fluxQuery, aPlanner)
 			if err != nil {
 				t.Fatalf("Could not convert Flux to logical plan: %v", err)
 			}
 
-			_, err = planner.Plan(qp)
+			_, err = aPlanner.Plan(qp)
 			if err != nil {
 				t.Fatalf("Could not plan: %v", err)
 			}

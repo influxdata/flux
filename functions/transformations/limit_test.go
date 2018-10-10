@@ -1,15 +1,12 @@
 package transformations_test
 
 import (
-	"github.com/influxdata/flux/functions/inputs"
 	"testing"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions/transformations"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/querytest"
 )
 
@@ -186,38 +183,4 @@ func TestLimit_Process(t *testing.T) {
 			)
 		})
 	}
-}
-
-func TestLimit_PushDown(t *testing.T) {
-	spec := &transformations.LimitProcedureSpec{
-		N: 42,
-	}
-	root := &plan.Procedure{
-		Spec: new(inputs.FromProcedureSpec),
-	}
-	want := &plan.Procedure{
-		Spec: &inputs.FromProcedureSpec{
-			LimitSet:    true,
-			PointsLimit: 42,
-		},
-	}
-
-	plantest.PhysicalPlan_PushDown_TestHelper(t, spec, root, false, want)
-}
-func TestLimit_PushDown_Duplicate(t *testing.T) {
-	spec := &transformations.LimitProcedureSpec{
-		N: 9,
-	}
-	root := &plan.Procedure{
-		Spec: &inputs.FromProcedureSpec{
-			LimitSet:    true,
-			PointsLimit: 42,
-		},
-	}
-	want := &plan.Procedure{
-		// Expect the duplicate has been reset to zero values
-		Spec: new(inputs.FromProcedureSpec),
-	}
-
-	plantest.PhysicalPlan_PushDown_TestHelper(t, spec, root, true, want)
 }

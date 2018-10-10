@@ -11,7 +11,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/plan"
+	plan "github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -158,37 +158,6 @@ func (s *GroupProcedureSpec) Copy() plan.ProcedureSpec {
 
 	return ns
 }
-
-func (s *GroupProcedureSpec) PushDownRules() []plan.PushDownRule {
-	return []plan.PushDownRule{{
-		Root:    inputs.FromKind,
-		Through: []plan.ProcedureKind{LimitKind, RangeKind, FilterKind},
-		Match: func(spec plan.ProcedureSpec) bool {
-			selectSpec := spec.(*inputs.FromProcedureSpec)
-			return !selectSpec.AggregateSet
-		},
-	}}
-}
-
-func (s *GroupProcedureSpec) PushDown(root *plan.Procedure, dup func() *plan.Procedure) {
-	selectSpec := root.Spec.(*inputs.FromProcedureSpec)
-	if selectSpec.GroupingSet {
-		root = dup()
-		selectSpec = root.Spec.(*inputs.FromProcedureSpec)
-		selectSpec.OrderByTime = false
-		selectSpec.GroupingSet = false
-		selectSpec.GroupMode = inputs.GroupModeDefault
-		selectSpec.GroupKeys = nil
-		return
-	}
-	selectSpec.GroupingSet = true
-	// TODO implement OrderByTime
-	//selectSpec.OrderByTime = true
-
-	selectSpec.GroupMode = s.GroupMode
-	selectSpec.GroupKeys = s.GroupKeys
-}
-
 
 func createGroupTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*GroupProcedureSpec)

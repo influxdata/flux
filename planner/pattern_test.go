@@ -1,14 +1,18 @@
-package planner
+package planner_test
 
 import (
 	"testing"
+
+	"github.com/influxdata/flux/functions/inputs"
+	"github.com/influxdata/flux/functions/transformations"
+	"github.com/influxdata/flux/planner"
 )
 
 func TestAny(t *testing.T) {
-	pat := Any()
+	pat := planner.Any()
 
-	node := &LogicalPlanNode{
-		Spec: &FromProcedureSpec{},
+	node := &planner.LogicalPlanNode{
+		Spec: &inputs.FromProcedureSpec{},
 	}
 
 	if ! pat.Match(node) {
@@ -16,7 +20,7 @@ func TestAny(t *testing.T) {
 	}
 }
 
-func addEdge(pred PlanNode, succ PlanNode) {
+func addEdge(pred planner.PlanNode, succ planner.PlanNode) {
 	pred.AddSuccessors(succ)
 	succ.AddPredecessors(pred)
 }
@@ -25,18 +29,18 @@ func TestPat(t *testing.T) {
 
 	// Matches
 	//     <anything> |> filter(...) |> filter(...)
-	filterFilterPat := Pat(FilterKind, Pat(FilterKind, Any()))
+	filterFilterPat := planner.Pat(transformations.FilterKind, planner.Pat(transformations.FilterKind, planner.Any()))
 
 	// Matches
 	//   from(...) |> filter(...)
-	filterFromPat := Pat(FilterKind, Pat(FromKind))
+	filterFromPat := planner.Pat(transformations.FilterKind, planner.Pat(inputs.FromKind))
 
-	from := &LogicalPlanNode{
-		Spec: &FromProcedureSpec{},
+	from := &planner.LogicalPlanNode{
+		Spec: &inputs.FromProcedureSpec{},
 	}
 
-	filter1 := &LogicalPlanNode{
-		Spec: &FilterProcedureSpec{},
+	filter1 := &planner.LogicalPlanNode{
+		Spec: &transformations.FilterProcedureSpec{},
 	}
 
 	addEdge(from, filter1)
@@ -49,8 +53,8 @@ func TestPat(t *testing.T) {
 		t.Fatalf("Expected match")
 	}
 
-	filter2 := &LogicalPlanNode{
-		Spec: &FilterProcedureSpec{},
+	filter2 := &planner.LogicalPlanNode{
+		Spec: &transformations.FilterProcedureSpec{},
 	}
 
 	addEdge(filter1, filter2)
@@ -68,8 +72,8 @@ func TestPat(t *testing.T) {
 
 	// Add another successor to filter1.  Thus should break the filter-filter pattern
 
-	filter3 := &LogicalPlanNode{
-		Spec: &FilterProcedureSpec{},
+	filter3 := &planner.LogicalPlanNode{
+		Spec: &transformations.FilterProcedureSpec{},
 	}
 
 	addEdge(filter1, filter3)

@@ -6,7 +6,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/functions/inputs/storage"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/plan"
+	plan "github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/platform"
 	"github.com/influxdata/platform/query"
@@ -149,9 +149,7 @@ func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proce
 func (s *FromProcedureSpec) Kind() plan.ProcedureKind {
 	return FromKind
 }
-func (s *FromProcedureSpec) TimeBounds() flux.Bounds {
-	return s.Bounds
-}
+
 func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(FromProcedureSpec)
 
