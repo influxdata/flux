@@ -18,7 +18,7 @@ func (v *defaultVisitor) Visit(node planner.PlanNode) Visitor {
 }
 
 // ComparePlans compares two query plans using an arbitrary comparator function f
-func ComparePlans(p, q *planner.QueryPlan, f func(p, q planner.PlanNode) error) error {
+func ComparePlans(p, q *planner.PlanSpec, f func(p, q planner.PlanNode) error) error {
 	v := &defaultVisitor{}
 	w := &defaultVisitor{}
 

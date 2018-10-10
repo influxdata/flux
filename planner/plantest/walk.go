@@ -13,7 +13,7 @@ type Visitor interface {
 
 // Walk traverses a query plan in a depth-first fashion.
 // visitor.Visit() is called on each node exactly once.
-func Walk(plan *planner.QueryPlan, visitor Visitor) {
+func Walk(plan *planner.PlanSpec, visitor Visitor) {
 	roots := plan.Roots()
 
 	sort.Slice(roots, func(i, j int) bool {

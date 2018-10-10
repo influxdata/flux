@@ -34,23 +34,23 @@ type PlanNode interface {
 
 type NodeID string
 
-// QueryPlan holds the roots of the query plan DAG.
+// PlanSpec holds the roots of the query plan DAG.
 // Roots correspond to nodes that produce final results.
-type QueryPlan struct {
+type PlanSpec struct {
 	roots map[PlanNode]struct{}
 }
 
 // NewQueryPlan instantiates a new query plan
-func NewQueryPlan(roots []PlanNode) *QueryPlan {
+func NewQueryPlan(roots []PlanNode) *PlanSpec {
 	r := make(map[PlanNode]struct{}, len(roots))
 	for _, root := range roots {
 		r[root] = struct{}{}
 	}
-	return &QueryPlan{roots: r}
+	return &PlanSpec{roots: r}
 }
 
 // Roots returns the roots of the query plan
-func (plan *QueryPlan) Roots() []PlanNode {
+func (plan *PlanSpec) Roots() []PlanNode {
 	roots := []PlanNode{}
 	for k := range plan.roots {
 		roots = append(roots, k)
@@ -59,7 +59,7 @@ func (plan *QueryPlan) Roots() []PlanNode {
 }
 
 // Replace replaces one of the roots of the query plan
-func (plan *QueryPlan) Replace(root, with PlanNode) {
+func (plan *PlanSpec) Replace(root, with PlanNode) {
 	delete(plan.roots, root)
 	plan.roots[with] = struct{}{}
 }
