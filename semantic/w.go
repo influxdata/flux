@@ -12,7 +12,11 @@ type T interface {
 	Instantiate(tm map[int]TV) T
 	Unify(t T) error
 	// Type produces the monotype of this type
-	Type() Type
+	Type() (Type, bool)
+}
+
+type Indirecter interface {
+	Indirect() T
 }
 
 func (k Kind) Unsolved() []TV {
@@ -24,8 +28,8 @@ func (k Kind) Instantiate(map[int]TV) T {
 func (k Kind) Unify(T) error {
 	return nil
 }
-func (k Kind) Type() Type {
-	return k
+func (k Kind) Type() (Type, bool) {
+	return k, true
 }
 
 type Env struct {
@@ -93,17 +97,24 @@ func (tv TV) Unify(t T) error {
 	log.Println("TV.Unify", **tv.T)
 	return err
 }
-func (tv TV) Type() Type {
-	switch t := (**tv.T).(type) {
-	case Type:
-		return t
+func (tv TV) Type() (Type, bool) {
+	t := tv.Indirect()
+	switch t.(type) {
 	case TV:
-		log.Println("TV.Type rec")
-		return t.Type()
+		return nil, false
 	default:
-		log.Printf("rec %T", **tv.T)
+		return t.Type()
 	}
-	return nil
+}
+
+func (tv TV) Indirect() T {
+	if tv.T != nil && *tv.T != nil {
+		if i, ok := (**tv.T).(Indirecter); ok {
+			return i.Indirect()
+		}
+		return (**tv.T)
+	}
+	return tv
 }
 
 func unifyVar(t T, r **T) error {
@@ -153,18 +164,15 @@ func Infer(n Node) (Type, error) {
 	if t == nil {
 		return nil, errors.New("no type found")
 	}
-	log.Printf("%#v", t)
+	if i, ok := t.(Indirecter); ok {
+		t = i.Indirect()
+	}
 	switch t := t.(type) {
 	case Type:
 		return t, nil
-	case TV:
-		log.Printf("%#v", **t.T)
-		typ := t.Type()
-		if typ != nil {
-			return typ, nil
-		}
+	default:
+		return nil, fmt.Errorf("fail type %T", t)
 	}
-	return nil, errors.New("fail type")
 }
 
 type inferer struct {
@@ -216,10 +224,19 @@ func (t1 funcTyp) Unify(typ T) error {
 	return nil
 }
 
-func (t funcTyp) Type() Type {
+func (t funcTyp) Type() (Type, bool) {
+	_, ok := t.in.Type()
+	if !ok {
+		return nil, false
+	}
+	out, ok := t.out.Type()
+	if !ok {
+		return nil, false
+	}
 	return NewFunctionType(FunctionSignature{
-		ReturnType: t.out.Type(),
-	})
+		//TODO: Update Signature to use in
+		ReturnType: out,
+	}), true
 }
 
 type objType struct {
@@ -278,12 +295,16 @@ func (t1 objType) Unify(typ T) error {
 	return nil
 }
 
-func (t objType) Type() Type {
+func (t objType) Type() (Type, bool) {
 	properties := make(map[string]Type)
 	for k, p := range t.properties {
-		properties[k] = p.Type()
+		pt, ok := p.Type()
+		if !ok {
+			return nil, false
+		}
+		properties[k] = pt
 	}
-	return NewObjectType(properties)
+	return NewObjectType(properties), true
 }
 
 func (f *inferer) typeof(env *Env, node Node) (t T, _ error) {
@@ -348,7 +369,9 @@ func (f *inferer) typeof(env *Env, node Node) (t T, _ error) {
 		if err != nil {
 			return nil, err
 		}
-		//TODO: Resolve through TV indirection
+		if i, ok := ct.(Indirecter); ok {
+			ct = i.Indirect()
+		}
 		t, ok := ct.(funcTyp)
 		if !ok {
 			return nil, fmt.Errorf("cannot call non function type %T", ct)
