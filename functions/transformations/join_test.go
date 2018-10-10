@@ -11,8 +11,8 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions/transformations"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/plan/plantest"
+	plan "github.com/influxdata/flux/planner"
+	"github.com/influxdata/flux/planner/plantest"
 	"github.com/influxdata/flux/querytest"
 )
 

@@ -1,5 +1,7 @@
 package planner
 
+import "github.com/influxdata/flux"
+
 // PlanNode defines the common interface for interacting with
 // logical and physical plan nodes.
 type PlanNode interface {
@@ -111,4 +113,11 @@ func (e *Edges) RemovePredecessor(node PlanNode) {
 
 func (e *Edges) ClearSuccessors() {
 	e.successors = e.successors[0:0]
+}
+
+type WindowSpec struct {
+	Every  flux.Duration
+	Period flux.Duration
+	Round  flux.Duration
+	Start  flux.Time
 }

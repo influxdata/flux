@@ -13,8 +13,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions/transformations"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/querytest"
 )
 
@@ -126,27 +124,6 @@ func TestRangeOperation_Marshaling(t *testing.T) {
 	}
 
 	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
-func TestRange_PushDown(t *testing.T) {
-	spec := &transformations.RangeProcedureSpec{
-		Bounds: flux.Bounds{
-			Stop: flux.Now,
-		},
-	}
-	root := &plan.Procedure{
-		Spec: new(inputs.FromProcedureSpec),
-	}
-	want := &plan.Procedure{
-		Spec: &inputs.FromProcedureSpec{
-			BoundsSet: true,
-			Bounds: flux.Bounds{
-				Stop: flux.Now,
-			},
-		},
-	}
-
-	plantest.PhysicalPlan_PushDown_TestHelper(t, spec, root, false, want)
 }
 
 func TestRange_Process(t *testing.T) {
@@ -527,42 +504,4 @@ func TestRange_Process(t *testing.T) {
 			)
 		})
 	}
-}
-func TestRange_PushDown_Duplicate(t *testing.T) {
-	spec := &transformations.RangeProcedureSpec{
-		Bounds: flux.Bounds{
-			Stop: flux.Now,
-		},
-	}
-	root := &plan.Procedure{
-		Spec: &inputs.FromProcedureSpec{
-			BoundsSet: true,
-			Bounds: flux.Bounds{
-				Start: flux.MinTime,
-				Stop:  flux.Now,
-			},
-		},
-	}
-	want := &plan.Procedure{
-		// Expect the duplicate has been reset to zero values
-		Spec: new(inputs.FromProcedureSpec),
-	}
-
-	plantest.PhysicalPlan_PushDown_TestHelper(t, spec, root, true, want)
-}
-
-func TestRange_PushDown_Match(t *testing.T) {
-	spec := &transformations.RangeProcedureSpec{
-		Bounds: flux.Bounds{
-			Stop: flux.Now,
-		},
-		TimeCol: "_time",
-	}
-	matchSpec := new(inputs.FromProcedureSpec)
-	// Should match when range procedure has column `_time`
-	plantest.PhysicalPlan_PushDown_Match_TestHelper(t, spec, matchSpec, []bool{true})
-
-	// Should not match when range procedure column is anything else
-	spec.TimeCol = "_col"
-	plantest.PhysicalPlan_PushDown_Match_TestHelper(t, spec, matchSpec, []bool{false})
 }

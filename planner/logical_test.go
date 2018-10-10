@@ -2,68 +2,16 @@ package planner_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/functions/inputs"
+	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/planner"
-	"github.com/influxdata/flux/planner/plannertest"
+	"github.com/influxdata/flux/planner/plantest"
 	"github.com/influxdata/flux/semantic"
 )
-
-var createFns = map[flux.OperationKind]planner.CreateLogicalProcedureSpec{
-	// Take a FromOpSpec and translate it to a FromProcedureSpec
-	inputs.FromKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
-		spec, ok := op.(*inputs.FromOpSpec)
-
-		if !ok {
-			return nil, fmt.Errorf("invalid spec type %T", op)
-		}
-
-		return &planner.FromProcedureSpec{
-			Bucket:   spec.Bucket,
-			BucketID: spec.BucketID,
-		}, nil
-	},
-	// Take a RangeOpSpec and convert it to a RangeProcedureSpec
-	transformations.RangeKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
-		spec, ok := op.(*transformations.RangeOpSpec)
-
-		if !ok {
-			return nil, fmt.Errorf("invalid spec type %T", op)
-		}
-
-		if spec.TimeCol == "" {
-			spec.TimeCol = execute.DefaultTimeColLabel
-		}
-
-		return &planner.RangeProcedureSpec{
-			Bounds: flux.Bounds{
-				Start: spec.Start,
-				Stop:  spec.Stop,
-			},
-			TimeCol:  spec.TimeCol,
-			StartCol: spec.StartCol,
-			StopCol:  spec.StopCol,
-		}, nil
-	},
-	// Take a FilterOpSpec and translate it to a FilterProcedureSpec
-	transformations.FilterKind: func(op flux.OperationSpec) (planner.LogicalProcedureSpec, error) {
-		spec, ok := op.(*transformations.FilterOpSpec)
-
-		if !ok {
-			return nil, fmt.Errorf("invalid spec type %T", op)
-		}
-
-		return &planner.FilterProcedureSpec{
-			Fn: spec.Fn.Copy().(*semantic.FunctionExpression),
-		}, nil
-	},
-}
 
 // Test the translation of Flux query to logical plan
 func TestFluxSpecToLogicalPlan(t *testing.T) {
@@ -75,17 +23,17 @@ func TestFluxSpecToLogicalPlan(t *testing.T) {
 		query string
 
 		// Expected query plan
-		plan plannertest.DAG
+		plan plantest.DAG
 	}{
 		{
 			name:  `from() |> range()`,
 			query: `from(bucket: "my-bucket") |> range(start: -1h)`,
-			plan: plannertest.DAG{
+			plan: plantest.DAG{
 				Nodes: []planner.PlanNode{
-					planner.CreateLogicalNode("from0", &planner.FromProcedureSpec{
+					planner.CreateLogicalNode("from0", &inputs.FromProcedureSpec{
 						Bucket: "my-bucket",
 					}),
-					planner.CreateLogicalNode("range1", &planner.RangeProcedureSpec{
+					planner.CreateLogicalNode("range1", &transformations.RangeProcedureSpec{
 						Bounds: flux.Bounds{
 							Start: flux.Time{
 								IsRelative: true,
@@ -108,12 +56,12 @@ func TestFluxSpecToLogicalPlan(t *testing.T) {
 		{
 			name:  `from() |> range() |> filter()`,
 			query: `from(bucket: "my-bucket") |> range(start: -1h) |> filter(fn: (r) => true)`,
-			plan: plannertest.DAG{
+			plan: plantest.DAG{
 				Nodes: []planner.PlanNode{
-					planner.CreateLogicalNode("from0", &planner.FromProcedureSpec{
+					planner.CreateLogicalNode("from0", &inputs.FromProcedureSpec{
 						Bucket: "my-bucket",
 					}),
-					planner.CreateLogicalNode("range1", &planner.RangeProcedureSpec{
+					planner.CreateLogicalNode("range1", &transformations.RangeProcedureSpec{
 						Bounds: flux.Bounds{
 							Start: flux.Time{
 								IsRelative: true,
@@ -127,7 +75,7 @@ func TestFluxSpecToLogicalPlan(t *testing.T) {
 						StartCol: "_start",
 						StopCol:  "_stop",
 					}),
-					planner.CreateLogicalNode("filter2", &planner.FilterProcedureSpec{
+					planner.CreateLogicalNode("filter2", &transformations.FilterProcedureSpec{
 						Fn: &semantic.FunctionExpression{
 							Params: []*semantic.FunctionParam{
 								{
@@ -158,17 +106,17 @@ func TestFluxSpecToLogicalPlan(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			want := plannertest.CreatePlanFromDAG(tc.plan)
-			got, err := planner.CreateLogicalPlan(spec, createFns)
+			want := plantest.CreatePlanFromDAG(tc.plan)
+			got, err := planner.CreateLogicalPlan(spec, planner.NewLogicalToPhysicalPlanner([]planner.Rule{}))
 
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			// Comparator function for LogicalPlanNodes
-			f := plannertest.CompareLogicalPlanNodes
+			f := plantest.CompareLogicalPlanNodes
 
-			if err := plannertest.ComparePlans(want, got, f); err != nil {
+			if err := plantest.ComparePlans(want, got, f); err != nil {
 				t.Fatal(err)
 			}
 		})
