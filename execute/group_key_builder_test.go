@@ -35,6 +35,32 @@ func TestGroupKeyBuilder_Empty(t *testing.T) {
 	}
 }
 
+func TestGroupKeyBuilder_Nil(t *testing.T) {
+	gkb := execute.NewGroupKeyBuilder(nil)
+	gkb.AddKeyValue("_measurement", values.NewStringValue("cpu"))
+
+	key, err := gkb.Build()
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	if got, want := len(key.Cols()), 1; got != want {
+		t.Fatalf("unexpected number of columns -want/+got:\n\t- %d\n\t+ %d", want, got)
+	}
+
+	if got, want := key.Cols(), []flux.ColMeta{
+		{Label: "_measurement", Type: flux.TString},
+	}; !cmp.Equal(want, got) {
+		t.Fatalf("unexpected columns -want/+got:\n%s", cmp.Diff(want, got))
+	}
+
+	if got, want := key.Values(), []values.Value{
+		values.NewStringValue("cpu"),
+	}; !cmp.Equal(want, got) {
+		t.Fatalf("unexpected columns -want/+got:\n%s", cmp.Diff(want, got))
+	}
+}
+
 func TestGroupKeyBuilder_Existing(t *testing.T) {
 	gkb := execute.NewGroupKeyBuilder(
 		execute.NewGroupKey(
