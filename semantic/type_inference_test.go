@@ -444,12 +444,12 @@ func TestInferTypes(t *testing.T) {
 
 type SolutionVisitor interface {
 	semantic.Visitor
-	Solution() semantic.SolutionMap
+	Solution() map[semantic.Node]semantic.Type
 }
 
 type visitor struct {
 	f        func(node semantic.Node) semantic.Type
-	solution semantic.SolutionMap
+	solution map[semantic.Node]semantic.Type
 }
 
 func (v *visitor) Visit(node semantic.Node) semantic.Visitor {
@@ -478,6 +478,6 @@ func (v *visitor) Visit(node semantic.Node) semantic.Visitor {
 
 func (v *visitor) Done() {}
 
-func (v *visitor) Solution() semantic.SolutionMap {
+func (v *visitor) Solution() map[semantic.Node]semantic.Type {
 	return v.solution
 }

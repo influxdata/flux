@@ -420,6 +420,8 @@ func (f *inferer) typeof(env *Env, node Node) (t T, _ error) {
 		return Bool, nil
 	case *IntegerLiteral:
 		return Int, nil
+	case *StringLiteral:
+		return String, nil
 	default:
 		return nil, fmt.Errorf("unsupported %T", node)
 	}
@@ -477,3 +479,34 @@ func diff(a, b []TV) []TV {
 	}
 	return d
 }
+
+type TypeScheme interface {
+	// MonoType returns the monomorphic type if such a type exists.
+	MonoType() (Type, bool)
+
+	// TypeSchemes cannot be created outside of the semantic package
+	typeScheme()
+}
+
+type typeScheme struct {
+	scheme TypeScheme
+}
+
+func (ts *typeScheme) TypeScheme() TypeScheme {
+	if ts.scheme == nil {
+		return anyTypeScheme{}
+	}
+	return ts.scheme
+}
+
+func (ts *typeScheme) setTypeScheme(s TypeScheme) {
+	ts.scheme = s
+}
+
+//anyTypeScheme is polymorphic type scheme for any type.
+type anyTypeScheme struct{}
+
+func (ts anyTypeScheme) MonoType() (Type, bool) {
+	return nil, false
+}
+func (ts anyTypeScheme) typeScheme() {}

@@ -19,9 +19,6 @@ import (
 //
 // Do NOT embed this type into other interfaces or structs as that will invalidate the comparison properties of the interface.
 type Type interface {
-	// Types are Substitutable in that they represent a monotype expression.
-	Substitutable
-
 	// Kind returns the specific kind of this type.
 	Kind() Kind
 
@@ -52,14 +49,6 @@ type Type interface {
 	// Types cannot be created outside of the semantic package
 	// This is needed so that we can cache type definitions.
 	typ()
-}
-
-type TypeScheme interface {
-	// MonoType returns the monomorphic type if such a type exists.
-	MonoType() (Type, bool)
-
-	// TypeSchemes cannot be created outside of the semantic package
-	typeScheme()
 }
 
 type Kind int
@@ -119,12 +108,6 @@ func (k Kind) MonoType() (Type, bool) {
 	}
 }
 func (k Kind) typeScheme() {}
-func (k Kind) Substitute(c Constraint) Substitutable {
-	return k
-}
-func (k Kind) Vars() []TypeVar {
-	return nil
-}
 
 func (k Kind) Kind() Kind {
 	return k
@@ -155,19 +138,6 @@ type arrayType struct {
 
 func (t *arrayType) String() string {
 	return fmt.Sprintf("[%v]", t.elementType)
-}
-
-func (t *arrayType) Substitute(c Constraint) Substitutable {
-	return t
-}
-func (t *arrayType) MonoType() (Type, bool) {
-	return t, true
-}
-
-func (t *arrayType) typeScheme() {}
-
-func (t *arrayType) Vars() []TypeVar {
-	return nil
 }
 
 func (t *arrayType) Kind() Kind {
@@ -211,8 +181,9 @@ func arrayTypeOf(e *ArrayExpression) Type {
 	if len(e.Elements) == 0 {
 		return EmptyArrayType
 	}
-	et, _ := e.Elements[0].TypeScheme().MonoType()
-	return NewArrayType(et)
+	//et, _ := e.Elements[0].TypeScheme().MonoType()
+	//return NewArrayType(et)
+	return nil
 }
 
 // TODO(nathanielc): Make empty array types polymorphic over element type?
@@ -255,18 +226,6 @@ func (t *objectType) String() string {
 	buf.WriteRune('}')
 
 	return buf.String()
-}
-
-func (t *objectType) Substitute(c Constraint) Substitutable {
-	return t
-}
-func (t *objectType) MonoType() (Type, bool) {
-	return t, true
-}
-func (t *objectType) typeScheme() {}
-
-func (t *objectType) Vars() []TypeVar {
-	return nil
 }
 
 func (t *objectType) Kind() Kind {
@@ -332,10 +291,10 @@ var objectTypeCache struct {
 // objectTypeOf returns the Type for the given ObjectExpression.
 func objectTypeOf(e *ObjectExpression) Type {
 	propertyTypes := make(map[string]Type, len(e.Properties))
-	for _, p := range e.Properties {
-		t, _ := p.Value.TypeScheme().MonoType()
-		propertyTypes[p.Key.Name] = t
-	}
+	//for _, p := range e.Properties {
+	//	t, _ := p.Value.TypeScheme().MonoType()
+	//	propertyTypes[p.Key.Name] = t
+	//}
 
 	return NewObjectType(propertyTypes)
 }
@@ -418,17 +377,6 @@ func (t *functionType) String() string {
 	return buf.String()
 }
 
-func (t *functionType) Substitute(c Constraint) Substitutable {
-	return t
-}
-func (t *functionType) MonoType() (Type, bool) {
-	return t, true
-}
-func (t *functionType) typeScheme() {}
-func (t *functionType) Vars() []TypeVar {
-	return nil
-}
-
 func (t *functionType) Kind() Kind {
 	return Function
 }
@@ -498,15 +446,15 @@ func functionTypeOf(e *FunctionExpression) Type {
 	//	//sig.Params[p.Key.Name] = p.Type()
 	//}
 	// Determine returnType
-	switch b := e.Block.Body.(type) {
-	case Expression:
-		t, _ := b.TypeScheme().MonoType()
-		sig.ReturnType = t
-	case *BlockStatement:
-		rs := b.ReturnStatement()
-		t, _ := rs.Argument.TypeScheme().MonoType()
-		sig.ReturnType = t
-	}
+	//switch b := e.Block.Body.(type) {
+	//case Expression:
+	//	//t, _ := b.TypeScheme().MonoType()
+	//	//sig.ReturnType = t
+	//case *BlockStatement:
+	//	//rs := b.ReturnStatement()
+	//	//t, _ := rs.Argument.TypeScheme().MonoType()
+	//	//sig.ReturnType = t
+	//}
 	for _, p := range e.Block.Parameters.List {
 		if e.Block.Parameters.Pipe.Name == p.Key.Name {
 			sig.PipeArgument = p.Key.Name

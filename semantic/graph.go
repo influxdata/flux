@@ -72,34 +72,8 @@ func (*NativeVariableDeclaration) stmt() {}
 
 type Expression interface {
 	Node
-	// TypeScheme reports the type of the expression, which may be polymorphic.
-	TypeScheme() TypeScheme
-	setTypeScheme(ts TypeScheme)
 	expression()
 }
-
-type typeScheme struct {
-	scheme TypeScheme
-}
-
-func (ts *typeScheme) TypeScheme() TypeScheme {
-	if ts.scheme == nil {
-		return anyTypeScheme{}
-	}
-	return ts.scheme
-}
-
-func (ts *typeScheme) setTypeScheme(s TypeScheme) {
-	ts.scheme = s
-}
-
-//anyTypeScheme is polymorphic type scheme for any type.
-type anyTypeScheme struct{}
-
-func (ts anyTypeScheme) MonoType() (Type, bool) {
-	return nil, false
-}
-func (ts anyTypeScheme) typeScheme() {}
 
 func (*ArrayExpression) expression()        {}
 func (*BinaryExpression) expression()       {}

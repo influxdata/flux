@@ -88,14 +88,14 @@ func TestW(t *testing.T) {
 							Arguments: &semantic.ObjectExpression{
 								Properties: []*semantic.Property{{
 									Key:   &semantic.Identifier{Name: "x"},
-									Value: &semantic.IntegerLiteral{Value: 2},
+									Value: &semantic.StringLiteral{Value: "2"},
 								}},
 							},
 						},
 					},
 				},
 			},
-			want: semantic.Int,
+			want: semantic.String,
 		},
 	}
 	for _, tc := range testCases {
