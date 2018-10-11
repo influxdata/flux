@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	
+
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/planner"
@@ -25,33 +25,22 @@ func (sr *SimpleRule) Rewrite(node planner.PlanNode) (planner.PlanNode, bool) {
 	return node, false
 }
 
-func fluxToQueryPlan(fluxQuery string, a planner.Administration) (*planner.PlanSpec, error) {
-	now := time.Now().UTC()
-	spec, err := flux.Compile(context.Background(), fluxQuery, now)
-	if err != nil {
-		return nil, err
-	}
-
-	qp, err := planner.CreateLogicalPlan(spec, a)
-	return qp, err
-}
-
 func TestPlanTraversal(t *testing.T) {
 
 	testCases := []struct {
-		name string
+		name      string
 		fluxQuery string
-		nodeIDs []planner.NodeID
+		nodeIDs   []planner.NodeID
 	}{
 		{
-			name: "simple",
+			name:      "simple",
 			fluxQuery: `from(bucket: "foo")`,
-			nodeIDs: []planner.NodeID{"from0"},
+			nodeIDs:   []planner.NodeID{"from0"},
 		},
 		{
-			name: "from and filter",
+			name:      "from and filter",
 			fluxQuery: `from(bucket: "foo") |> filter(fn: (r) => r._field == "cpu")`,
-			nodeIDs: []planner.NodeID{"filter1", "from0"},
+			nodeIDs:   []planner.NodeID{"filter1", "from0"},
 		},
 		//{
 		//	name: "multi-root",
@@ -93,22 +82,22 @@ func TestPlanTraversal(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			//t.Parallel()
+			t.Parallel()
 
-			simpleRule := SimpleRule{}
-			aPlanner := planner.NewLogicalToPhysicalPlanner([]planner.Rule{&simpleRule})
-
-			qp, err := fluxToQueryPlan(tc.fluxQuery, aPlanner)
+			now := time.Now().UTC()
+			spec, err := flux.Compile(context.Background(), tc.fluxQuery, now)
 			if err != nil {
-				t.Fatalf("Could not convert Flux to logical plan: %v", err)
+				t.Fatalf("Failed to create flux.Spec from text: %v", err)
 			}
 
-			_, err = aPlanner.Plan(qp)
+			simpleRule := SimpleRule{}
+			thePlanner := planner.NewLogicalPlanner(planner.WithRule(&simpleRule))
+			_, err = thePlanner.Plan(spec)
 			if err != nil {
 				t.Fatalf("Could not plan: %v", err)
 			}
 
-			if ! cmp.Equal(tc.nodeIDs, simpleRule.seenNodes) {
+			if !cmp.Equal(tc.nodeIDs, simpleRule.seenNodes) {
 				t.Errorf("Traversal didn't match expected, -want/+got:\n%v",
 					cmp.Diff(tc.nodeIDs, simpleRule.seenNodes))
 			}
