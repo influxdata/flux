@@ -6,28 +6,98 @@ import (
 	"github.com/influxdata/flux"
 )
 
+// LogicalPlanner translates a flux.Spec into a PlanSpec and applies any
+// registered logical rules to the plan.
+//
+// Logical planning should transform the plan in ways that are independent of
+// actual physical algorithms used to implement operations, and independent of
+// the actual data being processed.
+type LogicalPlanner interface {
+	Plan(spec *flux.Spec) (*PlanSpec, error)
+}
+
+// NewLogicalPlanner returns a new logical planner with the given options.
+// The planner will be configured to apply any logical rules that have
+// been registered.
+func NewLogicalPlanner(options ...LogicalOption) LogicalPlanner {
+	thePlanner := &logicalPlanner{
+		heuristicPlanner: newHeuristicPlanner(),
+	}
+
+	// TODO: add any logical rules that have been registered:
+	thePlanner.addRules([]Rule{})
+
+	// Options may add or remove rules, so process them after we've
+	// added registered rules.
+	for _, opt := range options {
+		opt.apply(thePlanner)
+	}
+
+	return thePlanner
+}
+
+// LogicalOption is an option to configure the behavior of the logical planner.
+type LogicalOption interface {
+	apply(*logicalPlanner)
+}
+
+type logicalOption func(*logicalPlanner)
+
+func (opt logicalOption) apply(lp *logicalPlanner) {
+	opt(lp)
+}
+
+type logicalPlanner struct {
+	*heuristicPlanner
+}
+
+// WithRule produces a logical planner option that forces a particular rule to be
+// applied.
+func WithRule(rule Rule) LogicalOption {
+	return logicalOption(func(lp *logicalPlanner) {
+		lp.addRules([]Rule{rule})
+	})
+}
+
+// Plan translates the given flux.Spec to a plan and transforms it by applying rules.
+func (l *logicalPlanner) Plan(spec *flux.Spec) (*PlanSpec, error) {
+	logicalPlan, err := createLogicalPlan(spec, l)
+	if err != nil {
+		return nil, err
+	}
+
+	return l.heuristicPlanner.Plan(logicalPlan)
+}
+
+func (logicalPlanner) ConvertID(oid flux.OperationID) ProcedureID {
+	return ProcedureIDFromOperationID(oid)
+}
+
 // LogicalPlanNode consists of the input and output edges and a procedure spec
 // that describes what the node does.
 type LogicalPlanNode struct {
-	Edges
+	edges
 	id   NodeID
 	Spec ProcedureSpec
 }
 
+// ID returns a human-readable identifier unique to this plan.
 func (lpn *LogicalPlanNode) ID() NodeID {
 	return lpn.id
 }
 
+// Kind returns the kind of procedure performed by this plan node.
 func (lpn *LogicalPlanNode) Kind() ProcedureKind {
 	return lpn.Spec.Kind()
 }
 
+// ProcedureSpec returns the procedure spec for this plan node.
 func (lpn *LogicalPlanNode) ProcedureSpec() ProcedureSpec {
 	return lpn.Spec
 }
 
-// CreateLogicalPlan creates a logical query plan from a flux spec
-func CreateLogicalPlan(spec *flux.Spec, a Administration) (*PlanSpec, error) {
+// createLogicalPlan creates a logical query plan from a flux spec
+func createLogicalPlan(spec *flux.Spec, a Administration) (*PlanSpec, error) {
 	nodes := make(map[flux.OperationID]PlanNode, len(spec.Operations))
 
 	v := &fluxSpecVisitor{
@@ -36,11 +106,11 @@ func CreateLogicalPlan(spec *flux.Spec, a Administration) (*PlanSpec, error) {
 		nodes: nodes,
 	}
 
-	if err := spec.Walk(v.VisitOperation); err != nil {
+	if err := spec.Walk(v.visitOperation); err != nil {
 		return nil, err
 	}
 
-	return NewQueryPlan(v.roots), nil
+	return NewPlanSpec(v.roots), nil
 }
 
 // fluxSpecVisitor visits a flux spec and constructs from it a logical plan DAG
@@ -51,9 +121,9 @@ type fluxSpecVisitor struct {
 	nodes map[flux.OperationID]PlanNode
 }
 
-// VisitOperation takes a flux spec operation, converts it to its equivalent
+// visitOperation takes a flux spec operation, converts it to its equivalent
 // logical procedure spec, and adds it to the current logical plan DAG.
-func (v *fluxSpecVisitor) VisitOperation(o *flux.Operation) error {
+func (v *fluxSpecVisitor) visitOperation(o *flux.Operation) error {
 	// Retrieve the create function for this query operation
 	createFns, ok := queryOpToProcedure[o.Spec.Kind()]
 

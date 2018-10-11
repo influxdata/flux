@@ -38,10 +38,12 @@ type NodeID string
 // Roots correspond to nodes that produce final results.
 type PlanSpec struct {
 	roots map[PlanNode]struct{}
+
+	Resources flux.ResourceManagement
 }
 
-// NewQueryPlan instantiates a new query plan
-func NewQueryPlan(roots []PlanNode) *PlanSpec {
+// NewPlanSpec instantiates a new plan spec.
+func NewPlanSpec(roots []PlanNode) *PlanSpec {
 	r := make(map[PlanNode]struct{}, len(roots))
 	for _, root := range roots {
 		r[root] = struct{}{}
@@ -49,7 +51,7 @@ func NewQueryPlan(roots []PlanNode) *PlanSpec {
 	return &PlanSpec{roots: r}
 }
 
-// Roots returns the roots of the query plan
+// Roots returns the roots (the successor-less nodes) of the query plan
 func (plan *PlanSpec) Roots() []PlanNode {
 	roots := []PlanNode{}
 	for k := range plan.roots {
@@ -73,28 +75,28 @@ type ProcedureSpec interface {
 // ProcedureKind denotes the kind of operation
 type ProcedureKind string
 
-type Edges struct {
+type edges struct {
 	predecessors []PlanNode
 	successors   []PlanNode
 }
 
-func (e *Edges) Predecessors() []PlanNode {
+func (e *edges) Predecessors() []PlanNode {
 	return e.predecessors
 }
 
-func (e *Edges) Successors() []PlanNode {
+func (e *edges) Successors() []PlanNode {
 	return e.successors
 }
 
-func (e *Edges) AddSuccessors(nodes ...PlanNode) {
+func (e *edges) AddSuccessors(nodes ...PlanNode) {
 	e.successors = append(e.successors, nodes...)
 }
 
-func (e *Edges) AddPredecessors(nodes ...PlanNode) {
+func (e *edges) AddPredecessors(nodes ...PlanNode) {
 	e.predecessors = append(e.predecessors, nodes...)
 }
 
-func (e *Edges) RemovePredecessor(node PlanNode) {
+func (e *edges) RemovePredecessor(node PlanNode) {
 	idx := -1
 	for i, pred := range e.predecessors {
 		if node == pred {
@@ -111,7 +113,7 @@ func (e *Edges) RemovePredecessor(node PlanNode) {
 	}
 }
 
-func (e *Edges) ClearSuccessors() {
+func (e *edges) ClearSuccessors() {
 	e.successors = e.successors[0:0]
 }
 

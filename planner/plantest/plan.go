@@ -42,5 +42,5 @@ func CreatePlanFromDAG(graph DAG) *planner.PlanSpec {
 		node.AddSuccessors(successors[node]...)
 	}
 
-	return planner.NewQueryPlan(roots)
+	return planner.NewPlanSpec(roots)
 }

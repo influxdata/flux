@@ -30,7 +30,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/plan"
+	plan "github.com/influxdata/flux/planner"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
@@ -53,7 +53,7 @@ type Controller struct {
 	verbose bool
 
 	lplanner plan.LogicalPlanner
-	pplanner plan.Planner
+	pplanner plan.PhysicalPlanner
 	executor execute.Executor
 	logger   *zap.Logger
 
@@ -66,7 +66,8 @@ type Config struct {
 	ConcurrencyQuota     int
 	MemoryBytesQuota     int64
 	ExecutorDependencies execute.Dependencies
-	PlannerOptions       []plan.Option
+	PPlannerOptions      []plan.PhysicalOption
+	LPlannerOptions      []plan.LogicalOption
 	Logger               *zap.Logger
 	Verbose              bool
 	// MetricLabelKeys is a list of labels to add to the metrics produced by the controller.
@@ -90,8 +91,8 @@ func New(c Config) *Controller {
 		maxConcurrency:       c.ConcurrencyQuota,
 		availableConcurrency: c.ConcurrencyQuota,
 		availableMemory:      c.MemoryBytesQuota,
-		lplanner:             plan.NewLogicalPlanner(),
-		pplanner:             plan.NewPlanner(c.PlannerOptions...),
+		lplanner:             plan.NewLogicalPlanner(c.LPlannerOptions...),
+		pplanner:             plan.NewPhysicalPlanner(c.PPlannerOptions...),
 		executor:             execute.NewExecutor(c.ExecutorDependencies, logger),
 		logger:               logger,
 		verbose:              c.Verbose,
@@ -290,7 +291,7 @@ func (c *Controller) processQuery(q *Query) (pop bool, err error) {
 			log.Println("logical plan", plan.Formatted(lp))
 		}
 
-		p, err := c.pplanner.Plan(lp, nil)
+		p, err := c.pplanner.Plan(lp)
 		if err != nil {
 			return true, errors.Wrap(err, "failed to create physical plan")
 		}
@@ -318,7 +319,8 @@ func (c *Controller) processQuery(q *Query) (pop bool, err error) {
 			return true, errors.New("failed to transition query into executing state")
 		}
 		q.alloc = new(execute.Allocator)
-		r, err := c.executor.Execute(q.executeCtx, q.plan, q.alloc)
+		// TODO: pass the plan to the executor here
+		r, err := c.executor.Execute(q.executeCtx, nil, q.alloc)
 		if err != nil {
 			return true, errors.Wrap(err, "failed to execute query")
 		}
