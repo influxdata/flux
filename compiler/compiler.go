@@ -11,18 +11,23 @@ import (
 )
 
 func Compile(f *semantic.FunctionExpression, functionType semantic.Type, builtins Scope) (Func, error) {
+	if functionType.Kind() != semantic.Function {
+		return nil, errors.New("type must be a function kind")
+	}
 	f = f.Copy().(*semantic.FunctionExpression)
 	declarations := externDeclarations(builtins)
 	extern := &semantic.Extern{
 		Declarations: declarations,
-		Node:         f,
+		Block:        &semantic.ExternBlock{Node: f},
 	}
 
 	semantic.Infer(extern)
 
-	pt := extern.PolyType()
-	err := pt.Unify(functionType)
+	pt, err := extern.PolyType()
 	if err != nil {
+		return nil, err
+	}
+	if err := pt.Unify(functionType.PolyType()); err != nil {
 		return nil, err
 	}
 	typ, mono := pt.Type()
@@ -34,13 +39,9 @@ func Compile(f *semantic.FunctionExpression, functionType semantic.Type, builtin
 	if err != nil {
 		return nil, err
 	}
-	cpy := make(map[string]semantic.Type)
-	for k, v := range inTypes {
-		cpy[k] = v
-	}
 	return compiledFn{
-		root:    root,
-		inTypes: cpy,
+		root:   root,
+		fnType: functionType,
 	}, nil
 }
 
@@ -237,63 +238,45 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 	}
 }
 
-// CompilationCache caches compilation results based on the types of the input parameters.
+// CompilationCache caches compilation results based on the type of the function.
 type CompilationCache struct {
-	fn   *semantic.FunctionExpression
-	root *compilationCacheNode
+	fn       *semantic.FunctionExpression
+	scope    Scope
+	compiled map[semantic.Type]funcErr
 }
 
-func NewCompilationCache(fn *semantic.FunctionExpression, scope Scope, decls semantic.DeclarationScope) *CompilationCache {
+func NewCompilationCache(fn *semantic.FunctionExpression, scope Scope) *CompilationCache {
 	return &CompilationCache{
-		fn: fn,
-		root: &compilationCacheNode{
-			scope: scope,
-			decls: decls,
-		},
+		fn:       fn,
+		scope:    scope,
+		compiled: make(map[semantic.Type]Func),
 	}
 }
 
-// Compile returnes a compiled function bsaed on the provided types.
+// Compile returnes a compiled function bsaed on the provided type.
 // The result will be cached for subsequent calls.
-func (c *CompilationCache) Compile(types map[string]semantic.Type) (Func, error) {
-	return c.root.compile(c.fn, 0, types)
+func (c *CompilationCache) Compile(fnType semantic.Type) (Func, error) {
+	f, ok := c.compiled[fnType]
+	if ok {
+		return f.F, f.Err
+	}
+	f, err := c.compile(fnType)
+	c.compiled[fnType] = funcErr{
+		F:   f,
+		Err: err,
+	}
+	return f, err
 }
 
-type compilationCacheNode struct {
-	scope Scope
-	decls semantic.DeclarationScope
-
-	children map[semantic.Type]*compilationCacheNode
-
-	fn  Func
-	err error
+type funcErr struct {
+	F   Func
+	Err error
 }
 
 // compile recursively searches for a matching child node that has compiled the function.
 // If the compilation has not been performed previously its result is cached and returned.
-func (c *compilationCacheNode) compile(fn *semantic.FunctionExpression, idx int, types map[string]semantic.Type) (Func, error) {
-	if idx == len(fn.Params) {
-		// We are the matching child, return the cached result or do the compilation.
-		if c.fn == nil && c.err == nil {
-			c.fn, c.err = Compile(fn, types, c.scope, c.decls)
-		}
-		return c.fn, c.err
-	}
-	// Find the matching child based on the order.
-	next := fn.Params[idx].Key.Name
-	t := types[next]
-	child := c.children[t]
-	if child == nil {
-		child = &compilationCacheNode{
-			scope: c.scope,
-			decls: c.decls,
-		}
-		if c.children == nil {
-			c.children = make(map[semantic.Type]*compilationCacheNode)
-		}
-		c.children[t] = child
-	}
-	return child.compile(fn, idx+1, types)
+func (c *CompilationCache) compile(fnType semantic.Type) (Func, error) {
+	Compile(c.fn, types, c.scope)
 }
 
 // Utility function for compiling an `fn` parameter for rename or drop/keep. In addition
@@ -321,6 +304,7 @@ func CompileFnParam(fn *semantic.FunctionExpression, paramType, returnType seman
 	return compiled, paramName, nil
 }
 
+// externDeclarations produces a list of external declarations from a scope
 func externDeclarations(scope Scope) []*semantic.ExternalVariableDeclaration {
 	declarations := make([]*semantic.ExternalVariableDeclaration, len(scope))
 	for k, v := range scope {

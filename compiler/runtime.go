@@ -42,7 +42,7 @@ type Func interface {
 
 type compiledFn struct {
 	root    Evaluator
-	inTypes map[string]semantic.Type
+	funcTyp semantic.Type
 }
 
 func (c compiledFn) validate(scope Scope) error {

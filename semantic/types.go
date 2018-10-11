@@ -46,6 +46,8 @@ type Type interface {
 	// It panics if the type's Kind is not Function.
 	PipeArgument() string
 
+	PolyType() PolyType
+
 	// Types cannot be created outside of the semantic package
 	// This is needed so that we can cache type definitions.
 	typ()
@@ -163,6 +165,9 @@ func (t *arrayType) InType() Type {
 }
 func (t *arrayType) OutType() Type {
 	panic(fmt.Errorf("cannot get out type of kind %s", t.Kind()))
+}
+func (t *arrayType) PolyType() PolyType {
+	return t
 }
 
 func (t *arrayType) typ() {}

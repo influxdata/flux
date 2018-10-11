@@ -51,6 +51,9 @@ func (k Kind) Unify(t PolyType) error {
 func (k Kind) Type() (Type, bool) {
 	return k, true
 }
+func (k Kind) PolyType() PolyType {
+	return k
+}
 func (k Kind) Equal(t PolyType) bool {
 	switch t := t.(type) {
 	case Kind:
