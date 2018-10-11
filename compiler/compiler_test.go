@@ -217,7 +217,7 @@ func TestCompileAndEval(t *testing.T) {
 		},
 		{
 			name: "call function via identifier",
-			// f = (r) => {f = (a,b) => a + b return f(a:1, b:r)}
+			// f = (r) => {f = (a,b) => a + b return f(a:1, b:r) + int(v:f(a:1.0, b:2.5))}
 			fn: &semantic.FunctionExpression{
 				Block: &semantic.FunctionBlock{
 					Parameters: &semantic.FunctionParameters{

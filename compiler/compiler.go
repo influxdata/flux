@@ -117,6 +117,8 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 			}, nil
 		}
 
+		// TODO: We need to instantiate a new function expression with the known in type.
+
 		// TODO: How do we apply the instantiation at this stage?
 		// Meaning the instatiate process decouples type variables so that each instance can have its own type.
 		// Here in compliation we need to know how the type variables were linked so we can retrieve the monotype once we know the monotype of the instantiated type variables.

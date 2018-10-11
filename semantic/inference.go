@@ -328,8 +328,8 @@ func (v *inferenceVisitor) typeof() (PolyType, error) {
 		if !ok {
 			return nil, fmt.Errorf("cannot call non function type %T", ct)
 		}
-		//TODO: Apply defaults to arugments here.
-		//TODO: Apply pipe to arugments here.
+		//TODO: Apply defaults to arguments here.
+		//TODO: Apply pipe to arguments here.
 		in, err := n.Arguments.PolyType()
 		if err != nil {
 			return nil, err

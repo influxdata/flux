@@ -65,7 +65,8 @@ The algorithm builds off some basic concepts.
 
 4. Type environment
 
-    A type environment maps nodes to a type scheme. A type scheme is a type expression with a list of free type variables.
+    A type environment maps nodes to a type scheme.
+    A type scheme is a type expression with a list of free type variables.
     A scheme can be "instantiated" into an equivalent but unique type expression.
     This instantiation process is what enables parametric polymorphism.
 
@@ -92,5 +93,4 @@ The algorithm walks the semantic graph and for each node it does the following:
 
 Once the process is completed the type is known for all nodes or an error has occurred.
 Nodes that are polymorphic will have polytypes and monomorphic nodes will have monotypes.
-
 
