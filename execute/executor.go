@@ -8,8 +8,7 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/planner"
+	plan "github.com/influxdata/flux/planner"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -94,21 +93,40 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.PlanSpec, a
 		deps:      e.deps,
 		alloc:     a,
 		resources: p.Resources,
-		results:   make(map[string]flux.Result, len(p.Results)),
+		results:   make(map[string]flux.Result, len(p.Roots())),
 		// TODO(nathanielc): Have the planner specify the dispatcher throughput
 		dispatcher: newPoolDispatcher(10, e.logger),
 	}
-	nodes := make(map[plan.ProcedureID]Node, len(p.Procedures))
-	for name, yield := range p.Results {
-		ds, err := es.createNode(ctx, p.Procedures[yield.ID], nodes)
-		if err != nil {
+	v := &ExecutionNodeVisitor{
+		ctx: ctx,
+		es:  es,
+		en:  make(map[plan.PlanNode]Node),
+		ec:  make(map[plan.PlanNode]executionContext),
+		tr:  make(map[plan.PlanNode]Transformation),
+	}
+
+	if err := plan.Walk(p, v.CreateExecutionContext); err != nil {
+		return nil, err
+	}
+	if err := plan.Walk(p, v.CreateExecutionNode); err != nil {
+		return nil, err
+	}
+	if err := plan.Walk(p, v.CreateTransports); err != nil {
+		return nil, err
+	}
+	return v.es, nil
+
+	/*
+		v := &CreateExecutionNodeVisitor{
+			ctx:   ctx,
+			state: es,
+			trans: make(map[plan.PlanNode]Transformation),
+		}
+		if err := plan.Walk(p, v.Visit); err != nil {
 			return nil, err
 		}
-		r := newResult(name, yield)
-		ds.AddTransformation(r)
-		es.results[name] = r
-	}
-	return es, nil
+		return v.state, nil
+	*/
 }
 
 // DefaultTriggerSpec defines the triggering that should be used for datasets
@@ -119,77 +137,100 @@ type triggeringSpec interface {
 	TriggerSpec() flux.TriggerSpec
 }
 
-func (es *executionState) createNode(ctx context.Context, pr *plan.Procedure, nodes map[plan.ProcedureID]Node) (Node, error) {
-	// Check if we already created this node
-	if n, ok := nodes[pr.ID]; ok {
-		return n, nil
-	}
+// ExecutionNodeVisitor has several `visit` methods for
+// constructing an execution node for a physical procedure.
+type ExecutionNodeVisitor struct {
+	ctx context.Context
+	es  *executionState
 
-	// Add explicit stream context if bounds are set on this node
-	var streamContext streamContext
-	if pr.Bounds != nil {
-		streamContext.bounds = &Bounds{
-			Start: pr.Bounds.Start,
-			Stop:  pr.Bounds.Stop,
-		}
-	}
+	// map plan node to its execution context
+	ec map[plan.PlanNode]executionContext
+	// map plan node to its execution node
+	en map[plan.PlanNode]Node
+	// map plan node to its transformation
+	tr map[plan.PlanNode]Transformation
+}
 
-	// Build execution context
+// CreateExecutionContext creates an execution context for each node in the plan
+func (v *ExecutionNodeVisitor) CreateExecutionContext(node plan.PlanNode) error {
 	ec := executionContext{
-		ctx:           ctx,
-		es:            es,
-		streamContext: streamContext,
+		ctx:     v.ctx,
+		es:      v.es,
+		parents: make([]DatasetID, len(node.Predecessors())),
 	}
+	for i, pred := range node.Predecessors() {
+		id := plan.ProcedureIDFromNodeID(pred.ID())
+		ec.parents[i] = DatasetID(id)
+	}
+	v.ec[node] = ec
+	return nil
+}
 
-	if len(pr.Parents) > 0 {
-		ec.parents = make([]DatasetID, len(pr.Parents))
-		for i, parentID := range pr.Parents {
-			ec.parents[i] = DatasetID(parentID)
+// CreateExecutionNode creates the node that will execute a particular plan node
+func (v *ExecutionNodeVisitor) CreateExecutionNode(node plan.PlanNode) error {
+	spec := node.ProcedureSpec()
+	kind := spec.Kind()
+	id := plan.ProcedureIDFromNodeID(node.ID())
+
+	// Leaf node <=> source node
+	if len(node.Predecessors()) == 0 {
+
+		createSourceFn, ok := procedureToSource[kind]
+
+		if !ok {
+			return fmt.Errorf("unsupported source kind %v", kind)
 		}
-	}
 
-	// If source create source
-	if createS, ok := procedureToSource[pr.Spec.Kind()]; ok {
-		s, err := createS(pr.Spec, DatasetID(pr.ID), ec)
+		source, err := createSourceFn(spec, DatasetID(id), v.ec[node])
+
 		if err != nil {
-			return nil, err
+			return err
 		}
-		es.sources = append(es.sources, s)
-		nodes[pr.ID] = s
-		return s, nil
+
+		v.en[node] = source
+		v.es.sources = append(v.es.sources, source)
 	}
 
-	createT, ok := procedureToTransformation[pr.Spec.Kind()]
+	// Non-leaf node <=> transformation node
+	createTransformationFn, ok := procedureToTransformation[kind]
+
 	if !ok {
-		return nil, fmt.Errorf("unsupported procedure %v", pr.Spec.Kind())
+		return fmt.Errorf("unsupported procedure %v", kind)
 	}
 
-	// Create the transformation
-	t, ds, err := createT(DatasetID(pr.ID), AccumulatingMode, pr.Spec, ec)
+	transformation, dataset, err := createTransformationFn(DatasetID(id), AccumulatingMode, spec, v.ec[node])
+
 	if err != nil {
-		return nil, err
+		return err
 	}
-	nodes[pr.ID] = ds
 
 	// Setup triggering
 	var ts flux.TriggerSpec = DefaultTriggerSpec
-	if t, ok := pr.Spec.(triggeringSpec); ok {
+	if t, ok := spec.(triggeringSpec); ok {
 		ts = t.TriggerSpec()
 	}
-	ds.SetTriggerSpec(ts)
+	dataset.SetTriggerSpec(ts)
 
-	// Recurse creating parents
-	for _, parentID := range pr.Parents {
-		parent, err := es.createNode(ctx, es.p.Procedures[parentID], nodes)
-		if err != nil {
-			return nil, err
-		}
-		transport := newConescutiveTransport(es.dispatcher, t)
-		es.transports = append(es.transports, transport)
-		parent.AddTransformation(transport)
+	v.tr[node] = transformation
+	v.en[node] = dataset
+	return nil
+}
+
+// CreateTransports creates the transport transformations for sending data downstream
+func (v *ExecutionNodeVisitor) CreateTransports(node plan.PlanNode) error {
+	if len(node.Successors()) == 0 {
+		result := newResult(string(node.ID()))
+		v.en[node].AddTransformation(result)
+		v.es.results[string(node.ID())] = result
 	}
 
-	return ds, nil
+	for _, successor := range node.Successors() {
+		transformation := v.tr[successor]
+		transport := newConescutiveTransport(v.es.dispatcher, transformation)
+		v.es.transports = append(v.es.transports, transport)
+		v.en[node].AddTransformation(transport)
+	}
+	return nil
 }
 
 func (es *executionState) abort(err error) {
@@ -275,8 +316,8 @@ func (ec executionContext) Allocator() *Allocator {
 func (ec executionContext) Parents() []DatasetID {
 	return ec.parents
 }
-func (ec executionContext) ConvertID(id planner.ProcedureID) DatasetID {
-	return DatasetID(plan.ProcedureID(id))
+func (ec executionContext) ConvertID(id plan.ProcedureID) DatasetID {
+	return DatasetID(id)
 }
 
 func (ec executionContext) Dependencies() Dependencies {

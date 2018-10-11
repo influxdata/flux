@@ -42,17 +42,11 @@ type Dependencies map[string]interface{}
 type CreateTransformation func(id DatasetID, mode AccumulationMode, spec plan.ProcedureSpec, a Administration) (Transformation, Dataset, error)
 type CreateNewPlannerTransformation func(id DatasetID, mode AccumulationMode, spec planner.ProcedureSpec, a Administration) (Transformation, Dataset, error)
 
-var procedureToTransformation = make(map[plan.ProcedureKind]CreateTransformation)
+var procedureToTransformation = make(map[planner.ProcedureKind]CreateNewPlannerTransformation)
 
-func RegisterTransformation(k plan.ProcedureKind, c CreateNewPlannerTransformation) {
+func RegisterTransformation(k planner.ProcedureKind, c CreateNewPlannerTransformation) {
 	if procedureToTransformation[k] != nil {
 		panic(fmt.Errorf("duplicate registration for transformation with procedure kind %v", k))
 	}
-
-	createFn := func(id DatasetID, mode AccumulationMode, spec plan.ProcedureSpec, a Administration) (Transformation, Dataset, error) {
-		plannerProcSpec := spec.(planner.ProcedureSpec)
-		return c(id, mode, plannerProcSpec, a)
-	}
-
-	procedureToTransformation[k] = createFn
+	procedureToTransformation[k] = c
 }

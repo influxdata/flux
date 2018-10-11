@@ -1,6 +1,10 @@
 package planner
 
-import "github.com/influxdata/flux"
+import (
+	"time"
+
+	"github.com/influxdata/flux"
+)
 
 // PlanNode defines the common interface for interacting with
 // logical and physical plan nodes.
@@ -37,9 +41,10 @@ type NodeID string
 // PlanSpec holds the roots of the query plan DAG.
 // Roots correspond to nodes that produce final results.
 type PlanSpec struct {
-	roots map[PlanNode]struct{}
-
+	roots     map[PlanNode]struct{}
+	names     map[string]PlanNode
 	Resources flux.ResourceManagement
+	Now       time.Time
 }
 
 // NewPlanSpec instantiates a new plan spec.

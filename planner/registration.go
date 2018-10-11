@@ -2,6 +2,7 @@ package planner
 
 import (
 	"fmt"
+
 	"github.com/influxdata/flux"
 	uuid "github.com/satori/go.uuid"
 )
@@ -20,6 +21,10 @@ type Administration interface {
 }
 
 func ProcedureIDFromOperationID(id flux.OperationID) ProcedureID {
+	return ProcedureID(uuid.NewV5(RootUUID, string(id)))
+}
+
+func ProcedureIDFromNodeID(id NodeID) ProcedureID {
 	return ProcedureID(uuid.NewV5(RootUUID, string(id)))
 }
 

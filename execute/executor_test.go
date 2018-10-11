@@ -2,11 +2,9 @@ package execute_test
 
 import (
 	"context"
-	"math"
 	"testing"
+	"math"
 	"time"
-
-	"github.com/influxdata/flux/values"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
@@ -14,13 +12,221 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions/transformations"
-	"github.com/influxdata/flux/plan"
-	uuid "github.com/satori/go.uuid"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/planner/plantest"
+	"github.com/influxdata/flux/planner"
 	"go.uber.org/zap/zaptest"
 )
 
+func init() {
+	execute.RegisterSource("from-test", executetest.CreateFromSource)
+}
+
 var epoch = time.Unix(0, 0)
 
+func TestExecutor_Execute(t *testing.T) {
+	testcases := []struct {
+		name string
+		plan plantest.DAG
+		want map[string][]*executetest.Table
+	}{
+		{
+			name: `from with filter`,
+			plan: plantest.DAG{
+				Nodes: []planner.PlanNode{
+					planner.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
+						[]*executetest.Table{&executetest.Table{
+							KeyCols: []string{"_start", "_stop"},
+							ColMeta: []flux.ColMeta{
+								{Label: "_start", Type: flux.TTime},
+								{Label: "_stop", Type: flux.TTime},
+								{Label: "_time", Type: flux.TTime},
+								{Label: "_value", Type: flux.TFloat},
+							},
+							Data: [][]interface{}{
+								{execute.Time(0), execute.Time(5), execute.Time(0), 1.0},
+								{execute.Time(0), execute.Time(5), execute.Time(1), 2.0},
+								{execute.Time(0), execute.Time(5), execute.Time(2), 3.0},
+								{execute.Time(0), execute.Time(5), execute.Time(3), 4.0},
+								{execute.Time(0), execute.Time(5), execute.Time(4), 5.0},
+							},
+						}},
+					)),
+					planner.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{
+						Fn: &semantic.FunctionExpression{
+							Params: []*semantic.FunctionParam{
+								{
+									Key: &semantic.Identifier{Name: "r"},
+								},
+							},
+							Body: &semantic.BooleanLiteral{Value: true},
+						},
+					}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+			want: map[string][]*executetest.Table{
+				"filter": []*executetest.Table{{
+					KeyCols: []string{"_start", "_stop"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), execute.Time(5), execute.Time(0), 1.0},
+						{execute.Time(0), execute.Time(5), execute.Time(1), 2.0},
+						{execute.Time(0), execute.Time(5), execute.Time(2), 3.0},
+						{execute.Time(0), execute.Time(5), execute.Time(3), 4.0},
+						{execute.Time(0), execute.Time(5), execute.Time(4), 5.0},
+					},
+				}},
+			},
+		},
+		{
+			name: `from with filter with multiple tables`,
+			plan: plantest.DAG{
+				Nodes: []planner.PlanNode{
+					planner.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
+						[]*executetest.Table{
+							{
+								KeyCols: []string{"_start", "_stop"},
+								ColMeta: []flux.ColMeta{
+									{Label: "_start", Type: flux.TTime},
+									{Label: "_stop", Type: flux.TTime},
+									{Label: "_time", Type: flux.TTime},
+									{Label: "_value", Type: flux.TFloat},
+								},
+								Data: [][]interface{}{
+									{execute.Time(0), execute.Time(5), execute.Time(0), 1.0},
+									{execute.Time(0), execute.Time(5), execute.Time(1), 2.0},
+									{execute.Time(0), execute.Time(5), execute.Time(2), 3.0},
+									{execute.Time(0), execute.Time(5), execute.Time(3), 4.0},
+									{execute.Time(0), execute.Time(5), execute.Time(4), 5.0},
+								},
+							},
+							{
+								KeyCols: []string{"_start", "_stop"},
+								ColMeta: []flux.ColMeta{
+									{Label: "_start", Type: flux.TTime},
+									{Label: "_stop", Type: flux.TTime},
+									{Label: "_time", Type: flux.TTime},
+									{Label: "_value", Type: flux.TFloat},
+								},
+								Data: [][]interface{}{
+									{execute.Time(5), execute.Time(10), execute.Time(5), 5.0},
+									{execute.Time(5), execute.Time(10), execute.Time(6), 6.0},
+									{execute.Time(5), execute.Time(10), execute.Time(7), 7.0},
+									{execute.Time(5), execute.Time(10), execute.Time(8), 8.0},
+									{execute.Time(5), execute.Time(10), execute.Time(9), 9.0},
+								},
+							},
+						},
+					)),
+					planner.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{
+						Fn: &semantic.FunctionExpression{
+							Params: []*semantic.FunctionParam{
+								{
+									Key: &semantic.Identifier{Name: "r"},
+								},
+							},
+							Body: &semantic.BooleanLiteral{Value: true},
+						},
+					}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+			want: map[string][]*executetest.Table{
+				"filter": []*executetest.Table{
+					{
+						KeyCols: []string{"_start", "_stop"},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
+						},
+						Data: [][]interface{}{
+							{execute.Time(0), execute.Time(5), execute.Time(0), 1.0},
+							{execute.Time(0), execute.Time(5), execute.Time(1), 2.0},
+							{execute.Time(0), execute.Time(5), execute.Time(2), 3.0},
+							{execute.Time(0), execute.Time(5), execute.Time(3), 4.0},
+							{execute.Time(0), execute.Time(5), execute.Time(4), 5.0},
+						},
+					},
+					{
+						KeyCols: []string{"_start", "_stop"},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
+						},
+						Data: [][]interface{}{
+							{execute.Time(5), execute.Time(10), execute.Time(5), 5.0},
+							{execute.Time(5), execute.Time(10), execute.Time(6), 6.0},
+							{execute.Time(5), execute.Time(10), execute.Time(7), 7.0},
+							{execute.Time(5), execute.Time(10), execute.Time(8), 8.0},
+							{execute.Time(5), execute.Time(10), execute.Time(9), 9.0},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			// Construct physical query plan
+			plan := plantest.CreatePlanFromDAG(tc.plan)
+
+			// Need to refactor these
+			plan.Now = epoch.Add(5)
+			plan.Resources = flux.ResourceManagement{
+				ConcurrencyQuota: 1,
+				MemoryBytesQuota: math.MaxInt64,
+			}
+
+			exe := execute.NewExecutor(nil, zaptest.NewLogger(t))
+			results, err := exe.Execute(context.Background(), plan, executetest.UnlimitedAllocator)
+			if err != nil {
+				t.Fatal(err)
+			}
+			got := make(map[string][]*executetest.Table, len(results))
+			for name, r := range results {
+				if err := r.Tables().Do(func(tbl flux.Table) error {
+					cb, err := executetest.ConvertTable(tbl)
+					if err != nil {
+						return err
+					}
+					got[name] = append(got[name], cb)
+					return nil
+				}); err != nil {
+					t.Fatal(err)
+				}
+			}
+
+			for _, g := range got {
+				executetest.NormalizeTables(g)
+			}
+			for _, w := range tc.want {
+				executetest.NormalizeTables(w)
+			}
+
+			if !cmp.Equal(got, tc.want) {
+				t.Error("unexpected results -want/+got", cmp.Diff(tc.want, got))
+			}
+		})
+	}
+}
+
+/*
 func TestExecutor_Execute(t *testing.T) {
 	testCases := []struct {
 		name string
@@ -543,57 +749,4 @@ func TestExecutor_Execute(t *testing.T) {
 		})
 	}
 }
-
-type testFromProcedureSource struct {
-	data []*executetest.Table
-	ts   []execute.Transformation
-}
-
-func newTestFromProcedureSource(data []*executetest.Table) *testFromProcedureSource {
-	p := &testFromProcedureSource{
-		data: data,
-	}
-	// Normalize the data before anything can read it
-	for _, tbl := range p.data {
-		tbl.Normalize()
-	}
-	return p
-}
-
-func (p *testFromProcedureSource) Kind() plan.ProcedureKind {
-	return "from-test"
-}
-
-func (p *testFromProcedureSource) Copy() plan.ProcedureSpec {
-	return p
-}
-
-func (p *testFromProcedureSource) AddTransformation(t execute.Transformation) {
-	p.ts = append(p.ts, t)
-}
-
-func (p *testFromProcedureSource) Run(ctx context.Context) {
-	id := execute.DatasetID(uuid.NewV4())
-	for _, t := range p.ts {
-		var max execute.Time
-		for _, tbl := range p.data {
-			t.Process(id, tbl)
-			stopIdx := execute.ColIdx(execute.DefaultStopColLabel, tbl.Cols())
-			if stopIdx >= 0 {
-				if s := tbl.Key().ValueTime(stopIdx); s > max {
-					max = s
-				}
-			}
-		}
-		t.UpdateWatermark(id, max)
-		t.Finish(id, nil)
-	}
-}
-
-func init() {
-	execute.RegisterSource("from-test", createTestFromSource)
-}
-
-func createTestFromSource(prSpec plan.ProcedureSpec, id execute.DatasetID, a execute.Administration) (execute.Source, error) {
-	return prSpec.(*testFromProcedureSource), nil
-}
+*/

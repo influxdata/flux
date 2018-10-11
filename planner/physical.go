@@ -110,3 +110,12 @@ func (ppn *PhysicalPlanNode) Cost(inStats []Statistics) (cost Cost, outStats Sta
 // by a physical plan node, such as collation, etc.
 type PhysicalAttributes struct {
 }
+
+// CreatePhysicalNode creates a single physical plan node from a procedure spec.
+// The newly created physical node has no incoming or outgoing edges.
+func CreatePhysicalNode(id NodeID, spec PhysicalProcedureSpec) *PhysicalPlanNode {
+	return &PhysicalPlanNode{
+		id:   id,
+		Spec: spec,
+	}
+}
