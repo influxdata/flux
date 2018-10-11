@@ -229,7 +229,6 @@ func (p *planner) Plan(lp *LogicalPlanSpec, s Storage) (*PlanSpec, error) {
 	// check for bounded procedure specs and make sure they have non-zero bounds.
 	for name, proc := range p.plan.Procedures {
 		pr, ok := proc.Spec.(BoundedProcedureSpec)
-		proc.Spec.Kind()
 		if ok {
 			if pr.TimeBounds().Start.IsZero() && pr.TimeBounds().Stop.IsZero() {
 				return nil, fmt.Errorf(`result '%s' is unbounded. Add a 'range' call to bound the query.`, name)
