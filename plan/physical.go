@@ -9,7 +9,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 )
 
 // DefaultYieldName is the yield name to use in cases where no explicit yield name was specified.
@@ -226,13 +226,11 @@ func (p *planner) Plan(lp *LogicalPlanSpec, s Storage) (*PlanSpec, error) {
 		}
 	}
 
-	// Check to see if any results are unbounded.
-	// Since bounds are inherited,
-	// results will be unbounded only if no bounds were provided
-	// by any parent procedure node.
-	for name, yield := range p.plan.Results {
-		if pr, ok := p.plan.Procedures[yield.ID]; ok {
-			if pr.Bounds == nil {
+	// check for bounded procedure specs and make sure they have non-zero bounds.
+	for name, proc := range p.plan.Procedures {
+		pr, ok := proc.Spec.(BoundedProcedureSpec)
+		if ok {
+			if pr.TimeBounds().Start.IsZero() && pr.TimeBounds().Stop.IsZero() {
 				return nil, fmt.Errorf(`result '%s' is unbounded. Add a 'range' call to bound the query.`, name)
 			}
 		}
