@@ -66,6 +66,37 @@ func (plan *PlanSpec) Replace(root, with PlanNode) {
 	plan.roots[with] = struct{}{}
 }
 
+// BottomUpWalk will execute f for each plan node in the PlanSpec,
+// starting from the sources, and only visiting a node after all its
+// predecessors have been visited.
+func (p *PlanSpec) BottomUpWalk(f func(PlanNode) error) error {
+	visited := make(map[PlanNode]struct{})
+
+	for _, root := range p.Roots() {
+		err := walk(root, f, visited)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func walk(node PlanNode, f func(PlanNode) error, visited map[PlanNode]struct{}) error {
+	if _, ok := visited[node]; ok {
+		return nil
+	}
+
+	visited[node] = struct{}{}
+
+	// Visit each predecessor first
+	for _, pred := range node.Predecessors() {
+		walk(pred, f, visited)
+	}
+
+	return f(node)
+}
+
 // ProcedureSpec specifies a query operation
 type ProcedureSpec interface {
 	Kind() ProcedureKind
