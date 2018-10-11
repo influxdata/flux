@@ -15,7 +15,7 @@ func TestAny(t *testing.T) {
 		Spec: &inputs.FromProcedureSpec{},
 	}
 
-	if ! pat.Match(node) {
+	if !pat.Match(node) {
 		t.Fail()
 	}
 }
@@ -49,7 +49,7 @@ func TestPat(t *testing.T) {
 		t.Fatalf("Unexpected match")
 	}
 
-	if ! filterFromPat.Match(filter1) {
+	if !filterFromPat.Match(filter1) {
 		t.Fatalf("Expected match")
 	}
 
@@ -62,7 +62,7 @@ func TestPat(t *testing.T) {
 	// Now we have
 	//     from |> filter1 |> filter2
 
-	if ! filterFilterPat.Match(filter2) {
+	if !filterFilterPat.Match(filter2) {
 		t.Fatalf("Expected match")
 	}
 
@@ -87,7 +87,7 @@ func TestPat(t *testing.T) {
 		t.Fatalf("Unexpected match")
 	}
 
-	if ! filterFromPat.Match(filter1) {
+	if !filterFromPat.Match(filter1) {
 		t.Fatalf("Expected match")
 	}
 }

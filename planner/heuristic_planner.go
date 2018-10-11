@@ -1,41 +1,27 @@
 package planner
 
-import "github.com/influxdata/flux"
-
-// Planner implements a rule-based query planner
-type Planner interface {
-	// Add rules to be enacted by the planner
-	AddRules([]Rule)
-
-
-	ConvertID()
-
-	// Plan takes an initial query plan and returns an optimized plan
-	Plan(*PlanSpec) (*PlanSpec, error)
+// heuristicPlanner applies a set of rules to the nodes in a PlanSpec
+// until a fixed point is reached and no more rules can be applied.
+type heuristicPlanner struct {
+	rules map[ProcedureKind][]Rule
 }
 
-type LogicalToPhysicalPlanner struct {
-	rules      map[ProcedureKind][]Rule
-}
-
-func (ltpp *LogicalToPhysicalPlanner) ConvertID(foid flux.OperationID) ProcedureID {
-	return ProcedureIDFromOperationID(foid)
-}
-
-func NewLogicalToPhysicalPlanner(rules []Rule) *LogicalToPhysicalPlanner {
-	transformations := make(map[ProcedureKind][]Rule, len(rules))
-	for _, rule := range rules {
-		kindRules := transformations[rule.Pattern().Root()]
-		transformations[rule.Pattern().Root()] = append(kindRules, rule)
+func newHeuristicPlanner() *heuristicPlanner {
+	return &heuristicPlanner{
+		rules: make(map[ProcedureKind][]Rule),
 	}
-	return &LogicalToPhysicalPlanner{
-		rules: transformations,
+}
+
+func (p *heuristicPlanner) addRules(rules []Rule) {
+	for _, rule := range rules {
+		ruleSlice := p.rules[rule.Pattern().Root()]
+		p.rules[rule.Pattern().Root()] = append(ruleSlice, rule)
 	}
 }
 
 // matchRules applies any applicable rules to the given plan node,
 // and returns the rewritten plan node and whether or not any rewriting was done.
-func (p *LogicalToPhysicalPlanner) matchRules(node PlanNode) (PlanNode, bool) {
+func (p *heuristicPlanner) matchRules(node PlanNode) (PlanNode, bool) {
 	anyChanged := false
 
 	for _, rule := range p.rules[AnyKind] {
@@ -53,20 +39,13 @@ func (p *LogicalToPhysicalPlanner) matchRules(node PlanNode) (PlanNode, bool) {
 	return node, anyChanged
 }
 
-func (p LogicalToPhysicalPlanner) AddRules(rules []Rule) {
-	for _, rule := range rules {
-		ruleSlice := p.rules[rule.Pattern().Root()]
-		p.rules[rule.Pattern().Root()] = append(ruleSlice, rule)
-	}
-}
-
 // Plan is a fixed-point query planning algorithm.
 // It traverses the DAG depth-first, attempting to apply rewrite rules at each node.
 // Traversal is repeated until a pass over the DAG results in no changes with the given rule set.
 //
 // Plan may change its argument and/or return a new instance of PlanSpec, so the correct way to call Plan is:
 //     plan, err = planner.Plan(plan)
-func (p *LogicalToPhysicalPlanner) Plan(inputPlan *PlanSpec) (*PlanSpec, error) {
+func (p *heuristicPlanner) Plan(inputPlan *PlanSpec) (*PlanSpec, error) {
 
 	for anyChanged := true; anyChanged == true; {
 
@@ -76,13 +55,13 @@ func (p *LogicalToPhysicalPlanner) Plan(inputPlan *PlanSpec) (*PlanSpec, error) 
 		copy(nodeStack, inputPlan.Roots())
 
 		anyChanged = false
-		for ; len(nodeStack) > 0; {
+		for len(nodeStack) > 0 {
 			node := nodeStack[len(nodeStack)-1]
 			nodeStack = nodeStack[0 : len(nodeStack)-1]
 
 			_, alreadyVisited := visited[node]
 
-			if ! alreadyVisited {
+			if !alreadyVisited {
 				newNode, changed := p.matchRules(node)
 				anyChanged = anyChanged || changed
 				if node != newNode {
@@ -92,7 +71,7 @@ func (p *LogicalToPhysicalPlanner) Plan(inputPlan *PlanSpec) (*PlanSpec, error) 
 				// append to stack in reverse order so lower-indexed children
 				// are visited first.
 				for i := len(newNode.Predecessors()); i > 0; i-- {
-					nodeStack = append(nodeStack, newNode.Predecessors()[i - 1])
+					nodeStack = append(nodeStack, newNode.Predecessors()[i-1])
 				}
 
 				visited[newNode] = struct{}{}
