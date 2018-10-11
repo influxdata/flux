@@ -29,6 +29,16 @@ func NewObject() *object {
 		propertyTypes: make(map[string]semantic.Type),
 	}
 }
+func NewObjectWithValues(values map[string]Value) *object {
+	propertyTypes := make(map[string]semantic.Type, len(values))
+	for k, v := range values {
+		propertyTypes[k] = v.Type()
+	}
+	return &object{
+		values:        values,
+		propertyTypes: propertyTypes,
+	}
+}
 
 func (o *object) String() string {
 	b := new(strings.Builder)

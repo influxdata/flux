@@ -2,6 +2,8 @@ package semantic_test
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/influxdata/flux/ast"
@@ -411,6 +413,115 @@ func TestInferTypes(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "nested functions",
+			node: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "r"}},
+						},
+					},
+					Body: &semantic.BlockStatement{
+						Body: []semantic.Statement{
+							&semantic.NativeVariableDeclaration{
+								Identifier: &semantic.Identifier{Name: "f"},
+								Init: &semantic.FunctionExpression{
+									Block: &semantic.FunctionBlock{
+										Parameters: &semantic.FunctionParameters{
+											List: []*semantic.FunctionParameter{
+												{Key: &semantic.Identifier{Name: "a"}},
+												{Key: &semantic.Identifier{Name: "b"}},
+											},
+										},
+										Body: &semantic.BinaryExpression{
+											Operator: ast.AdditionOperator,
+											Left:     &semantic.IdentifierExpression{Name: "a"},
+											Right:    &semantic.IdentifierExpression{Name: "b"},
+										},
+									},
+								},
+							},
+							&semantic.ReturnStatement{
+								Argument: &semantic.CallExpression{
+									Callee: &semantic.IdentifierExpression{Name: "f"},
+									Arguments: &semantic.ObjectExpression{
+										Properties: []*semantic.Property{
+											{Key: &semantic.Identifier{Name: "a"}, Value: &semantic.IntegerLiteral{Value: 1}},
+											{Key: &semantic.Identifier{Name: "b"}, Value: &semantic.IdentifierExpression{Name: "r"}},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					f := new(semantic.Fresher)
+					_ = f.Fresh()
+					_ = f.Fresh()
+					tv2 := f.Fresh()
+					in := semantic.NewObjectPolyType(map[string]semantic.PolyType{
+						"a": tv2,
+						"b": tv2,
+					})
+					out := tv2
+					ft := semantic.NewFunctionPolyType(in, out)
+					inInt := semantic.NewObjectPolyType(map[string]semantic.PolyType{
+						"a": semantic.Int,
+						"b": semantic.Int,
+					})
+					outInt := semantic.Int
+					ftInt := semantic.NewFunctionPolyType(inInt, outInt)
+					ftR := semantic.NewFunctionPolyType(
+						semantic.NewObjectPolyType(map[string]semantic.PolyType{
+							"r": semantic.Int,
+						}),
+						semantic.Int,
+					)
+					switch n := node.(type) {
+					case *semantic.IdentifierExpression:
+						switch n.Name {
+						case "a", "b":
+							return tv2
+						case "r":
+							return outInt
+						case "f":
+							return ftInt
+						}
+					case *semantic.FunctionExpression:
+						switch n.Block.Body.(type) {
+						case semantic.Statement:
+							return ftR
+						case semantic.Expression:
+							return ft
+						}
+					case *semantic.FunctionParameter:
+						switch n.Key.Name {
+						case "a", "b":
+							return tv2
+						case "r":
+							return outInt
+						}
+					case *semantic.ObjectExpression:
+						return inInt
+					case *semantic.Property:
+						return outInt
+					case *semantic.NativeVariableDeclaration:
+						return ft
+					case *semantic.BinaryExpression:
+						return tv2
+					case *semantic.BlockStatement,
+						*semantic.ReturnStatement,
+						*semantic.CallExpression:
+						return outInt
+					}
+					return nil
+				},
+			},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -453,12 +564,22 @@ func TestInferTypes(t *testing.T) {
 					t.Errorf("unexpected extra nodes in solution node %#v", n)
 				}
 			}
-			//t.Log(solution)
+			t.Log(gotSolution)
 		})
 	}
 }
 
 type SolutionMap map[semantic.Node]semantic.PolyType
+
+func (s SolutionMap) String() string {
+	var builder strings.Builder
+	builder.WriteString("{\n")
+	for n, t := range s {
+		fmt.Fprintf(&builder, "%T: %v\n", n, t)
+	}
+	builder.WriteString("}")
+	return builder.String()
+}
 
 type SolutionVisitor interface {
 	semantic.Visitor

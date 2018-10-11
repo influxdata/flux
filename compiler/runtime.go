@@ -9,6 +9,22 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
+type Func interface {
+	Type() semantic.Type
+	Eval(input values.Object) (values.Value, error)
+	EvalString(input values.Object) (string, error)
+	EvalInt(input values.Object) (int64, error)
+	EvalUInt(input values.Object) (uint64, error)
+	EvalFloat(input values.Object) (float64, error)
+	EvalBool(input values.Object) (bool, error)
+	EvalTime(input values.Object) (values.Time, error)
+	EvalDuration(input values.Object) (values.Duration, error)
+	EvalRegexp(input values.Object) (*regexp.Regexp, error)
+	EvalArray(input values.Object) (values.Array, error)
+	EvalObject(input values.Object) (values.Object, error)
+	EvalFunction(input values.Object) (values.Function, error)
+}
+
 type Evaluator interface {
 	Type() semantic.Type
 	EvalString(scope Scope) string
@@ -24,138 +40,130 @@ type Evaluator interface {
 	EvalFunction(scope Scope) values.Function
 }
 
-type Func interface {
-	Type() semantic.Type
-	EvalString(scope Scope) (string, error)
-	Eval(scope Scope) (values.Value, error)
-	EvalInt(scope Scope) (int64, error)
-	EvalUInt(scope Scope) (uint64, error)
-	EvalFloat(scope Scope) (float64, error)
-	EvalBool(scope Scope) (bool, error)
-	EvalTime(scope Scope) (values.Time, error)
-	EvalDuration(scope Scope) (values.Duration, error)
-	EvalRegexp(scope Scope) (*regexp.Regexp, error)
-	EvalArray(scope Scope) (values.Array, error)
-	EvalObject(scope Scope) (values.Object, error)
-	EvalFunction(scope Scope) (values.Function, error)
-}
-
 type compiledFn struct {
-	root    Evaluator
-	funcTyp semantic.Type
+	root       Evaluator
+	fnType     semantic.Type
+	inputScope Scope
 }
 
-func (c compiledFn) validate(scope Scope) error {
-	// Validate scope
-	for k, t := range c.inTypes {
-		if scope.Type(k) != t {
-			return fmt.Errorf("missing or incorrectly typed value found in scope for name %q", k)
-		}
+func (c compiledFn) validate(input values.Object) error {
+	if input.Type() != c.fnType.InType() {
+		return fmt.Errorf("incorrect input type for compiled function %v", input.Type())
 	}
 	return nil
 }
 
-func (c compiledFn) Type() semantic.Type {
-	return c.root.Type()
+func (c compiledFn) buildScope(input values.Object) error {
+	if err := c.validate(input); err != nil {
+		return err
+	}
+	input.Range(func(k string, v values.Value) {
+		c.inputScope[k] = v
+	})
+	return nil
 }
 
-func (c compiledFn) Eval(scope Scope) (values.Value, error) {
-	if err := c.validate(scope); err != nil {
+func (c compiledFn) Type() semantic.Type {
+	return c.fnType.OutType()
+}
+
+func (c compiledFn) Eval(input values.Object) (values.Value, error) {
+	if err := c.buildScope(input); err != nil {
 		return nil, err
 	}
 	switch c.Type().Kind() {
 	case semantic.String:
-		return values.NewString(c.root.EvalString(scope)), nil
+		return values.NewString(c.root.EvalString(c.inputScope)), nil
 	case semantic.Int:
-		return values.NewInt(c.root.EvalInt(scope)), nil
+		return values.NewInt(c.root.EvalInt(c.inputScope)), nil
 	case semantic.UInt:
-		return values.NewUInt(c.root.EvalUInt(scope)), nil
+		return values.NewUInt(c.root.EvalUInt(c.inputScope)), nil
 	case semantic.Float:
-		return values.NewFloat(c.root.EvalFloat(scope)), nil
+		return values.NewFloat(c.root.EvalFloat(c.inputScope)), nil
 	case semantic.Bool:
-		return values.NewBool(c.root.EvalBool(scope)), nil
+		return values.NewBool(c.root.EvalBool(c.inputScope)), nil
 	case semantic.Time:
-		return values.NewTime(c.root.EvalTime(scope)), nil
+		return values.NewTime(c.root.EvalTime(c.inputScope)), nil
 	case semantic.Duration:
-		return values.NewDuration(c.root.EvalDuration(scope)), nil
+		return values.NewDuration(c.root.EvalDuration(c.inputScope)), nil
 	case semantic.Regexp:
-		return values.NewRegexp(c.root.EvalRegexp(scope)), nil
+		return values.NewRegexp(c.root.EvalRegexp(c.inputScope)), nil
 	case semantic.Array:
-		return c.root.EvalArray(scope), nil
+		return c.root.EvalArray(c.inputScope), nil
 	case semantic.Object:
-		return c.root.EvalObject(scope), nil
+		return c.root.EvalObject(c.inputScope), nil
 	case semantic.Function:
-		return c.root.EvalFunction(scope), nil
+		return c.root.EvalFunction(c.inputScope), nil
 	default:
 		return nil, fmt.Errorf("unsupported kind %s", c.Type().Kind())
 	}
 }
 
-func (c compiledFn) EvalString(scope Scope) (string, error) {
-	if err := c.validate(scope); err != nil {
+func (c compiledFn) EvalString(input values.Object) (string, error) {
+	if err := c.buildScope(input); err != nil {
 		return "", err
 	}
-	return c.root.EvalString(scope), nil
+	return c.root.EvalString(c.inputScope), nil
 }
-func (c compiledFn) EvalBool(scope Scope) (bool, error) {
-	if err := c.validate(scope); err != nil {
+func (c compiledFn) EvalBool(input values.Object) (bool, error) {
+	if err := c.buildScope(input); err != nil {
 		return false, err
 	}
-	return c.root.EvalBool(scope), nil
+	return c.root.EvalBool(c.inputScope), nil
 }
-func (c compiledFn) EvalInt(scope Scope) (int64, error) {
-	if err := c.validate(scope); err != nil {
+func (c compiledFn) EvalInt(input values.Object) (int64, error) {
+	if err := c.buildScope(input); err != nil {
 		return 0, err
 	}
-	return c.root.EvalInt(scope), nil
+	return c.root.EvalInt(c.inputScope), nil
 }
-func (c compiledFn) EvalUInt(scope Scope) (uint64, error) {
-	if err := c.validate(scope); err != nil {
+func (c compiledFn) EvalUInt(input values.Object) (uint64, error) {
+	if err := c.buildScope(input); err != nil {
 		return 0, err
 	}
-	return c.root.EvalUInt(scope), nil
+	return c.root.EvalUInt(c.inputScope), nil
 }
-func (c compiledFn) EvalFloat(scope Scope) (float64, error) {
-	if err := c.validate(scope); err != nil {
+func (c compiledFn) EvalFloat(input values.Object) (float64, error) {
+	if err := c.buildScope(input); err != nil {
 		return 0, err
 	}
-	return c.root.EvalFloat(scope), nil
+	return c.root.EvalFloat(c.inputScope), nil
 }
-func (c compiledFn) EvalTime(scope Scope) (values.Time, error) {
-	if err := c.validate(scope); err != nil {
+func (c compiledFn) EvalTime(input values.Object) (values.Time, error) {
+	if err := c.buildScope(input); err != nil {
 		return 0, err
 	}
-	return c.root.EvalTime(scope), nil
+	return c.root.EvalTime(c.inputScope), nil
 }
-func (c compiledFn) EvalDuration(scope Scope) (values.Duration, error) {
-	if err := c.validate(scope); err != nil {
+func (c compiledFn) EvalDuration(input values.Object) (values.Duration, error) {
+	if err := c.buildScope(input); err != nil {
 		return 0, err
 	}
-	return c.root.EvalDuration(scope), nil
+	return c.root.EvalDuration(c.inputScope), nil
 }
-func (c compiledFn) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
-	if err := c.validate(scope); err != nil {
+func (c compiledFn) EvalRegexp(input values.Object) (*regexp.Regexp, error) {
+	if err := c.buildScope(input); err != nil {
 		return nil, err
 	}
-	return c.root.EvalRegexp(scope), nil
+	return c.root.EvalRegexp(c.inputScope), nil
 }
-func (c compiledFn) EvalArray(scope Scope) (values.Array, error) {
-	if err := c.validate(scope); err != nil {
+func (c compiledFn) EvalArray(input values.Object) (values.Array, error) {
+	if err := c.buildScope(input); err != nil {
 		return nil, err
 	}
-	return c.root.EvalArray(scope), nil
+	return c.root.EvalArray(c.inputScope), nil
 }
-func (c compiledFn) EvalObject(scope Scope) (values.Object, error) {
-	if err := c.validate(scope); err != nil {
+func (c compiledFn) EvalObject(input values.Object) (values.Object, error) {
+	if err := c.buildScope(input); err != nil {
 		return nil, err
 	}
-	return c.root.EvalObject(scope), nil
+	return c.root.EvalObject(c.inputScope), nil
 }
-func (c compiledFn) EvalFunction(scope Scope) (values.Function, error) {
-	if err := c.validate(scope); err != nil {
+func (c compiledFn) EvalFunction(input values.Object) (values.Function, error) {
+	if err := c.buildScope(input); err != nil {
 		return nil, err
 	}
-	return c.root.EvalFunction(scope), nil
+	return c.root.EvalFunction(c.inputScope), nil
 }
 
 type Scope map[string]values.Value

@@ -3,6 +3,7 @@ package compiler
 import (
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/influxdata/flux"
 
@@ -14,35 +15,48 @@ func Compile(f *semantic.FunctionExpression, functionType semantic.Type, builtin
 	if functionType.Kind() != semantic.Function {
 		return nil, errors.New("type must be a function kind")
 	}
-	f = f.Copy().(*semantic.FunctionExpression)
+	// TODO: Determine if we need to copy here:
+	// If we do then we need to copy the type annotations so that copying preserves the type variable linking.
+	//f = f.Copy().(*semantic.FunctionExpression)
 	declarations := externDeclarations(builtins)
 	extern := &semantic.Extern{
 		Declarations: declarations,
 		Block:        &semantic.ExternBlock{Node: f},
 	}
 
+	log.Println("Infer")
 	semantic.Infer(extern)
+	log.Println("Done Infer")
 
 	pt, err := extern.PolyType()
 	if err != nil {
 		return nil, err
 	}
+	log.Println("poly type", pt)
 	if err := pt.Unify(functionType.PolyType()); err != nil {
 		return nil, err
 	}
-	typ, mono := pt.Type()
+	fnType, mono := pt.Type()
 	if !mono {
 		return nil, errors.New("cannot compile polymorphic function")
 	}
+	log.Println("mono type", fnType)
 
 	root, err := compile(f.Block.Body, builtins)
 	if err != nil {
 		return nil, err
 	}
 	return compiledFn{
-		root:   root,
-		fnType: functionType,
+		root:       root,
+		fnType:     fnType,
+		inputScope: make(Scope),
 	}, nil
+}
+
+// monoType ignores any errors when reading the type of a node.
+// This is safe becase we already validated that the function type is a mono type.
+func monoType(t semantic.Type, _ error) semantic.Type {
+	return t
 }
 
 func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
@@ -57,7 +71,7 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 			body[i] = node
 		}
 		return &blockEvaluator{
-			t:    n.ReturnStatement().Argument.Type(),
+			t:    monoType(n.ReturnStatement().Argument.Type()),
 			body: body,
 		}, nil
 	case *semantic.ExpressionStatement:
@@ -76,7 +90,7 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 			return nil, err
 		}
 		return &declarationEvaluator{
-			t:    n.Init.Type(),
+			t:    monoType(n.Init.Type()),
 			id:   n.Identifier.Name,
 			init: node,
 		}, nil
@@ -102,8 +116,14 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 				value: v,
 			}, nil
 		}
+
+		// TODO: How do we apply the instantiation at this stage?
+		// Meaning the instatiate process decouples type variables so that each instance can have its own type.
+		// Here in compliation we need to know how the type variables were linked so we can retrieve the monotype once we know the monotype of the instantiated type variables.
+		t, err := n.Type()
+		log.Printf("IdentifierExpression type: %v %v", t, err)
 		return &identifierEvaluator{
-			t:    n.Type(),
+			t:    monoType(n.Type()),
 			name: n.Name,
 		}, nil
 	case *semantic.MemberExpression:
@@ -112,38 +132,38 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 			return nil, err
 		}
 		return &memberEvaluator{
-			t:        n.Type(),
+			t:        monoType(n.Type()),
 			object:   object,
 			property: n.Property,
 		}, nil
 	case *semantic.BooleanLiteral:
 		return &booleanEvaluator{
-			t: n.Type(),
+			t: monoType(n.Type()),
 			b: n.Value,
 		}, nil
 	case *semantic.IntegerLiteral:
 		return &integerEvaluator{
-			t: n.Type(),
+			t: monoType(n.Type()),
 			i: n.Value,
 		}, nil
 	case *semantic.FloatLiteral:
 		return &floatEvaluator{
-			t: n.Type(),
+			t: monoType(n.Type()),
 			f: n.Value,
 		}, nil
 	case *semantic.StringLiteral:
 		return &stringEvaluator{
-			t: n.Type(),
+			t: monoType(n.Type()),
 			s: n.Value,
 		}, nil
 	case *semantic.RegexpLiteral:
 		return &regexpEvaluator{
-			t: n.Type(),
+			t: monoType(n.Type()),
 			r: n.Value,
 		}, nil
 	case *semantic.DateTimeLiteral:
 		return &timeEvaluator{
-			t:    n.Type(),
+			t:    monoType(n.Type()),
 			time: values.ConvertTime(n.Value),
 		}, nil
 	case *semantic.UnaryExpression:
@@ -152,7 +172,7 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 			return nil, err
 		}
 		return &unaryEvaluator{
-			t:    n.Type(),
+			t:    monoType(n.Type()),
 			node: node,
 		}, nil
 	case *semantic.LogicalExpression:
@@ -165,7 +185,7 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 			return nil, err
 		}
 		return &logicalEvaluator{
-			t:        n.Type(),
+			t:        monoType(n.Type()),
 			operator: n.Operator,
 			left:     l,
 			right:    r,
@@ -175,6 +195,7 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 		if err != nil {
 			return nil, err
 		}
+		log.Printf("%#v", l)
 		lt := l.Type()
 		r, err := compile(n.Right, builtIns)
 		if err != nil {
@@ -190,7 +211,7 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 			return nil, err
 		}
 		return &binaryEvaluator{
-			t:     n.Type(),
+			t:     monoType(n.Type()),
 			left:  l,
 			right: r,
 			f:     f,
@@ -205,31 +226,41 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 			return nil, err
 		}
 		return &callEvaluator{
-			t:      n.Type(),
+			t:      monoType(n.Type()),
 			callee: callee,
 			args:   args,
 		}, nil
 	case *semantic.FunctionExpression:
-		body, err := compile(n.Body, builtIns)
+		body, err := compile(n.Block.Body, builtIns)
 		if err != nil {
 			return nil, err
 		}
-		params := make([]functionParam, len(n.Params))
-		for i, param := range n.Params {
-			params[i] = functionParam{
-				Key:  param.Key.Name,
-				Type: param.Type(),
+		ft := monoType(n.Type())
+		in := ft.InType()
+		propertyTypes := in.Properties()
+		params := make([]functionParam, 0, len(propertyTypes))
+		for k, pt := range propertyTypes {
+			param := functionParam{
+				Key:  k,
+				Type: pt,
 			}
-			if param.Default != nil {
-				d, err := compile(param.Default, builtIns)
-				if err != nil {
-					return nil, err
+			if n.Defaults != nil {
+				// Search for default value
+				for _, d := range n.Defaults.List {
+					if d.Key.Name == k {
+						d, err := compile(d.Value, builtIns)
+						if err != nil {
+							return nil, err
+						}
+						param.Default = d
+						break
+					}
 				}
-				params[i].Default = d
 			}
+			params = append(params, param)
 		}
 		return &functionEvaluator{
-			t:      n.Type(),
+			t:      monoType(n.Type()),
 			params: params,
 			body:   body,
 		}, nil
@@ -249,7 +280,7 @@ func NewCompilationCache(fn *semantic.FunctionExpression, scope Scope) *Compilat
 	return &CompilationCache{
 		fn:       fn,
 		scope:    scope,
-		compiled: make(map[semantic.Type]Func),
+		compiled: make(map[semantic.Type]funcErr),
 	}
 }
 
@@ -260,12 +291,12 @@ func (c *CompilationCache) Compile(fnType semantic.Type) (Func, error) {
 	if ok {
 		return f.F, f.Err
 	}
-	f, err := c.compile(fnType)
+	fun, err := Compile(c.fn, fnType, c.scope)
 	c.compiled[fnType] = funcErr{
-		F:   f,
+		F:   fun,
 		Err: err,
 	}
-	return f, err
+	return fun, err
 }
 
 type funcErr struct {
@@ -310,7 +341,7 @@ func externDeclarations(scope Scope) []*semantic.ExternalVariableDeclaration {
 	for k, v := range scope {
 		declarations = append(declarations, &semantic.ExternalVariableDeclaration{
 			Identifier: &semantic.Identifier{Name: k},
-			ExternType: v.Type(),
+			ExternType: v.Type().PolyType(),
 		})
 	}
 	return declarations

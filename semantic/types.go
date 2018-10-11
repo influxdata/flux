@@ -166,8 +166,9 @@ func (t *arrayType) InType() Type {
 func (t *arrayType) OutType() Type {
 	panic(fmt.Errorf("cannot get out type of kind %s", t.Kind()))
 }
+
 func (t *arrayType) PolyType() PolyType {
-	return t
+	panic("not implemented")
 }
 
 func (t *arrayType) typ() {}
@@ -219,7 +220,7 @@ func (t *objectType) String() string {
 	var buf bytes.Buffer
 	buf.Write([]byte("{"))
 	for k, prop := range t.properties {
-		fmt.Fprintf(&buf, "%s:%v,", k, prop)
+		fmt.Fprintf(&buf, "%s: %v,", k, prop)
 	}
 	buf.WriteRune('}')
 
@@ -251,6 +252,14 @@ func (t *objectType) InType() Type {
 func (t *objectType) OutType() Type {
 	panic(fmt.Errorf("cannot get out type of kind %s", t.Kind()))
 }
+func (t *objectType) PolyType() PolyType {
+	properties := make(map[string]PolyType)
+	for k, p := range t.properties {
+		properties[k] = p.PolyType()
+	}
+	return NewObjectPolyType(properties)
+}
+
 func (t *objectType) typ() {}
 
 func (t *objectType) equal(o *objectType) bool {
@@ -378,6 +387,11 @@ func (t *functionType) OutType() Type {
 func (t *functionType) PipeArgument() string {
 	return t.pipeArgument
 }
+
+func (t *functionType) PolyType() PolyType {
+	return NewFunctionPolyType(t.in.PolyType(), t.out.PolyType())
+}
+
 func (t *functionType) typ() {}
 
 func (t *functionType) equal(o *functionType) bool {

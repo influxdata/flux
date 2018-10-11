@@ -1,7 +1,7 @@
 ### Type Inference in Flux
 --------------------------
 
-Flux is a statically typed language.
+Flux is a strongly and statically typed language.
 Flux does not require explicit type annotions but rather infers the most general type of a variable.
 Flux supports parametric polymorphism.
 
@@ -20,8 +20,8 @@ The following rules will be used to solve for the types in the above program:
 
 1. Binary Addition Rule
 
-    typeof(a + b) = typeof(a)  
-    typeof(a + b) = typeof(b)  
+    typeof(a + b) = typeof(a)
+    typeof(a + b) = typeof(b)
 
 2. Function Rule
 
@@ -38,102 +38,59 @@ The following rules will be used to solve for the types in the above program:
 #### Algorithm
 --------------
 
-The type inference algorithm that Flux uses is based on Wand's algorithm.
-It is completed in the following 3 phases:
+The type inference algorithm that Flux uses is based on algorithm W.
+The algorithm operates on a semantic graph.
+The algorithm builds off some basic concepts.
 
-1. Type annotation phase
+1. Monotype and polytypes
 
-    Input: Semantic graph  
-    Output: Type Environment  
+    A type can be a monotype or a polytype.
+    Monotypes can be only one type, for example `int`, `string` and `boolean` are monotypes.
+    Polytypes can be all types, for example function type `{x:t0} -> t0` takes as input an object with a single key `x` that can have any type.
+    The return value of the function is the type of the `x` parameter.
+    This function's type is a polytype because it is defined for all possible types.
+    It is said the `t0` is a free type variable because it is free to be any type.
 
-    In this phase every expression is assigned a type variable which is a placeholder for a concrete type.
-    A type environment is a mapping from expressions to type variables.
+2. Type expression
 
-    Example:
+    A type expression is description of a type.
+    Type expressions may describe monotypes and polytypes.
 
-        Program:
-        
-            x = 1 + 2
+3. Type annotations
 
-        Type Environment:
+    Every node in a semantic graph may have a type.
+    A type annotation records the node's type.
+    A node's type may be unknown, in which case its annotation is an instance of a type variable.
+    A type variable is a placeholder for an unknown type.
 
-            x   -> t0
-            1+2 -> t1
-            1   -> t2
-            2   -> t3
+4. Type environment
 
-2. Constraint generation phase
+    A type environment maps nodes to a type scheme. A type scheme is a type expression with a list of free type variables.
+    A scheme can be "instantiated" into an equivalent but unique type expression.
+    This instantiation process is what enables parametric polymorphism.
 
-    Input: Type Environment  
-    Output: Set of constraints  
+5. Constraints
 
-    In this phase a set of equations is generated according the Flux type inference rules.
+    A constraint is a requirement that a given type expression be equal to another type expression.
+    As the semantic graph is traversed constraints are applied by unifying types based on the rules of a given node.
 
-    Example:
+6. Unification
 
-        Program:
+    To unify two types is to ensure that the two types are equal.
+    If the types are not equal then a type error has occurred.
+    When a type is unified with a type variable, the variable is "set" to the value of that type.
+    By updating the type variables in this manner the solution to the inference problem is determined.
 
-            x = 1 + 2
 
-        Type Environment:
+The algorithm walks the semantic graph and for each node it does the following:
 
-            x   -> t0
-            1+2 -> t1
-            1   -> t2
-            2   -> t3
+1. Set an empty type annotation on the node.
+2. Update the current type environment based on the scoping rules.
+3. Recurse into each child node, i.e. depth first traversal.
+4. Apply all constraints as unify operations on child node types.
+5. Annotate the type of the current node.
 
-        Constraints:
+Once the process is completed the type is known for all nodes or an error has occurred.
+Nodes that are polymorphic will have polytypes and monomorphic nodes will have monotypes.
 
-            t0 = t1
-            t1 = t2
-            t1 = t3
-            t2 = int
-            t3 = int
 
-3. Sustitution phase
-
-    Input: Set of constraints  
-    Output: Set of solutions  
-
-    In this phase variable substitution is performed for the type expressions on the right-hand side of each constraint.
-    Any type errors will occur in this phase.
-    If no type errors occur, then the result will be a typed program where each variable is given the most general type possible.
-
-    Example:
-
-        Program:
-
-            x = 1 + 2
-
-        Type Environment:
-
-            x   -> t0
-            1+2 -> t1
-            1   -> t2
-            2   -> t3
-
-        Constraints:
-
-            t0 = t1
-            t1 = t2
-            t1 = t3
-            t2 = int
-            t3 = int
-
-        Solutions:
-
-            t0 = int
-            t1 = int
-            t2 = int
-            t3 = int
-
-#### Type Expressions
----------------------
-
-A type expression is either:
-
-1. A concrete type such as int, float, bool, etc.
-2. A type variable such as t0, t1, t2, etc.
-3. A function type expression.
-
-A function type expression is composed of two sets of type expressions - the type expressions for its input parameters and the type expression for its return type.
