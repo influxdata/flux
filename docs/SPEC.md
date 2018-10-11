@@ -1207,8 +1207,8 @@ It takes no input parameters and produces an output table with the following col
 * id (string): the internal ID of the bucket
 * organization (string): the organization this bucket belongs to
 * organizationID (string): the internal ID of the organization
-* RetentionPolicy (string): the name of the retention policy, if present
-* RetentionPeriod (duration): the duration of time for which data is held in this bucket
+* retentionPolicy (string): the name of the retention policy, if present
+* retentionPeriod (duration): the duration of time for which data is held in this bucket
 
 Example: 
 
