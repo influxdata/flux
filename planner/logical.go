@@ -24,12 +24,14 @@ func NewLogicalPlanner(options ...LogicalOption) LogicalPlanner {
 		heuristicPlanner: newHeuristicPlanner(),
 	}
 
+	// TODO: add any logical rules that have been registered:
+	thePlanner.addRules([]Rule{})
+
+	// Options may add or remove rules, so process them after we've
+	// added registered rules.
 	for _, opt := range options {
 		opt.apply(thePlanner)
 	}
-
-	// TODO: add any logical rules that have been registered:
-	thePlanner.addRules([]Rule{})
 
 	return thePlanner
 }

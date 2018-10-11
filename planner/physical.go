@@ -16,12 +16,14 @@ func NewPhysicalPlanner(options ...PhysicalOption) PhysicalPlanner {
 		defaultMemoryLimit: math.MaxInt64,
 	}
 
+	// TODO: add any registered physical rule to planner
+	pp.addRules([]Rule{})
+
+	// Options may add or remove rules, so process them after we've
+	// added registered rules.
 	for _, opt := range options {
 		opt.apply(pp)
 	}
-
-	// TODO: add any registered physical rule to planner
-	pp.addRules([]Rule{})
 
 	return pp
 }
