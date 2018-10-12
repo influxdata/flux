@@ -5,6 +5,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
+	plan "github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/semantic"
 	"github.com/pkg/errors"
 )
@@ -18,6 +19,7 @@ type aggregateTransformation struct {
 }
 
 type AggregateConfig struct {
+	plan.DefaultCost
 	Columns []string `json:"columns"`
 }
 
@@ -131,7 +133,6 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 		})
 		tableColMap[j] = idx
 	}
-
 
 	tbl.Do(func(cr flux.ColReader) error {
 		for j := range t.config.Columns {

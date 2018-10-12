@@ -2,11 +2,8 @@ package execute_test
 
 import (
 	"context"
-	"math"
 	"testing"
-	"time"
-
-	"github.com/influxdata/flux/values"
+	"math"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
@@ -14,32 +11,89 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions/transformations"
-	"github.com/influxdata/flux/plan"
-	uuid "github.com/satori/go.uuid"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/planner/plantest"
+	"github.com/influxdata/flux/planner"
 	"go.uber.org/zap/zaptest"
 )
 
-var epoch = time.Unix(0, 0)
+func init() {
+	execute.RegisterSource("from-test", executetest.CreateFromSource)
+}
 
 func TestExecutor_Execute(t *testing.T) {
-	testCases := []struct {
+	testcases := []struct {
 		name string
-		plan *plan.PlanSpec
+		plan plantest.DAG
 		want map[string][]*executetest.Table
 	}{
 		{
-			name: "simple aggregate",
-			plan: &plan.PlanSpec{
-				Now: epoch.Add(5),
-				Resources: flux.ResourceManagement{
-					ConcurrencyQuota: 1,
-					MemoryBytesQuota: math.MaxInt64,
+			name: `from with filter`,
+			plan: plantest.DAG{
+				Nodes: []planner.PlanNode{
+					planner.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
+						[]*executetest.Table{&executetest.Table{
+							KeyCols: []string{"_start", "_stop"},
+							ColMeta: []flux.ColMeta{
+								{Label: "_start", Type: flux.TTime},
+								{Label: "_stop", Type: flux.TTime},
+								{Label: "_time", Type: flux.TTime},
+								{Label: "_value", Type: flux.TFloat},
+							},
+							Data: [][]interface{}{
+								{execute.Time(0), execute.Time(5), execute.Time(0), 1.0},
+								{execute.Time(0), execute.Time(5), execute.Time(1), 2.0},
+								{execute.Time(0), execute.Time(5), execute.Time(2), 3.0},
+								{execute.Time(0), execute.Time(5), execute.Time(3), 4.0},
+								{execute.Time(0), execute.Time(5), execute.Time(4), 5.0},
+							},
+						}},
+					)),
+					planner.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{
+						Fn: &semantic.FunctionExpression{
+							Params: []*semantic.FunctionParam{
+								{
+									Key: &semantic.Identifier{Name: "r"},
+								},
+							},
+							Body: &semantic.BooleanLiteral{Value: true},
+						},
+					}),
+					planner.CreatePhysicalNode("yield", &transformations.YieldProcedureSpec{
+						Name: "_result",
+					}),
 				},
-				Procedures: map[plan.ProcedureID]*plan.Procedure{
-					plan.ProcedureIDFromOperationID("from"): {
-						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: newTestFromProcedureSource(
-							[]*executetest.Table{&executetest.Table{
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+			want: map[string][]*executetest.Table{
+				"_result": []*executetest.Table{{
+					KeyCols: []string{"_start", "_stop"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), execute.Time(5), execute.Time(0), 1.0},
+						{execute.Time(0), execute.Time(5), execute.Time(1), 2.0},
+						{execute.Time(0), execute.Time(5), execute.Time(2), 3.0},
+						{execute.Time(0), execute.Time(5), execute.Time(3), 4.0},
+						{execute.Time(0), execute.Time(5), execute.Time(4), 5.0},
+					},
+				}},
+			},
+		},
+		{
+			name: `from with filter with multiple tables`,
+			plan: plantest.DAG{
+				Nodes: []planner.PlanNode{
+					planner.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
+						[]*executetest.Table{
+							{
 								KeyCols: []string{"_start", "_stop"},
 								ColMeta: []flux.ColMeta{
 									{Label: "_start", Type: flux.TTime},
@@ -54,373 +108,88 @@ func TestExecutor_Execute(t *testing.T) {
 									{execute.Time(0), execute.Time(5), execute.Time(3), 4.0},
 									{execute.Time(0), execute.Time(5), execute.Time(4), 5.0},
 								},
-							}},
-						),
-						Bounds: &plan.BoundsSpec{
-							Start: values.ConvertTime(time.Unix(0, 1)),
-							Stop:  values.ConvertTime(time.Unix(0, 5)),
-						},
-						Parents:  nil,
-						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("sum")},
-					},
-					plan.ProcedureIDFromOperationID("sum"): {
-						ID: plan.ProcedureIDFromOperationID("sum"),
-						Spec: &transformations.SumProcedureSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
-						},
-						Parents: []plan.ProcedureID{
-							plan.ProcedureIDFromOperationID("from"),
-						},
-						Bounds: &plan.BoundsSpec{
-							Start: values.ConvertTime(time.Unix(0, 1)),
-							Stop:  values.ConvertTime(time.Unix(0, 5)),
-						},
-						Children: nil,
-					},
-				},
-				Results: map[string]plan.YieldSpec{
-					plan.DefaultYieldName: {ID: plan.ProcedureIDFromOperationID("sum")},
-				},
-			},
-			want: map[string][]*executetest.Table{
-				plan.DefaultYieldName: []*executetest.Table{{
-					KeyCols: []string{"_start", "_stop"},
-					ColMeta: []flux.ColMeta{
-						{Label: "_start", Type: flux.TTime},
-						{Label: "_stop", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
-					},
-					Data: [][]interface{}{
-						{execute.Time(0), execute.Time(5), 15.0},
-					},
-				}},
-			},
-		},
-		{
-			name: "simple join",
-			plan: &plan.PlanSpec{
-				Now: epoch.Add(5),
-				Resources: flux.ResourceManagement{
-					ConcurrencyQuota: 1,
-					MemoryBytesQuota: math.MaxInt64,
-				},
-				Procedures: map[plan.ProcedureID]*plan.Procedure{
-					plan.ProcedureIDFromOperationID("from"): {
-						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: newTestFromProcedureSource(
-							[]*executetest.Table{&executetest.Table{
+							},
+							{
 								KeyCols: []string{"_start", "_stop"},
 								ColMeta: []flux.ColMeta{
 									{Label: "_start", Type: flux.TTime},
 									{Label: "_stop", Type: flux.TTime},
 									{Label: "_time", Type: flux.TTime},
-									{Label: "_value", Type: flux.TInt},
+									{Label: "_value", Type: flux.TFloat},
 								},
 								Data: [][]interface{}{
-									{execute.Time(0), execute.Time(5), execute.Time(0), int64(1)},
-									{execute.Time(0), execute.Time(5), execute.Time(1), int64(2)},
-									{execute.Time(0), execute.Time(5), execute.Time(2), int64(3)},
-									{execute.Time(0), execute.Time(5), execute.Time(3), int64(4)},
-									{execute.Time(0), execute.Time(5), execute.Time(4), int64(5)},
+									{execute.Time(5), execute.Time(10), execute.Time(5), 5.0},
+									{execute.Time(5), execute.Time(10), execute.Time(6), 6.0},
+									{execute.Time(5), execute.Time(10), execute.Time(7), 7.0},
+									{execute.Time(5), execute.Time(10), execute.Time(8), 8.0},
+									{execute.Time(5), execute.Time(10), execute.Time(9), 9.0},
 								},
-							}},
-						),
-						Bounds: &plan.BoundsSpec{
-							Start: values.ConvertTime(time.Unix(0, 1)),
-							Stop:  values.ConvertTime(time.Unix(0, 5)),
-						},
-						Parents:  nil,
-						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("sum")},
-					},
-					plan.ProcedureIDFromOperationID("sum"): {
-						ID: plan.ProcedureIDFromOperationID("sum"),
-						Spec: &transformations.SumProcedureSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
-						},
-						Parents: []plan.ProcedureID{
-							plan.ProcedureIDFromOperationID("from"),
-						},
-						Bounds: &plan.BoundsSpec{
-							Start: values.ConvertTime(time.Unix(0, 1)),
-							Stop:  values.ConvertTime(time.Unix(0, 5)),
-						},
-						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("join")},
-					},
-					plan.ProcedureIDFromOperationID("count"): {
-						ID: plan.ProcedureIDFromOperationID("count"),
-						Spec: &transformations.CountProcedureSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
-						},
-						Parents: []plan.ProcedureID{
-							plan.ProcedureIDFromOperationID("from"),
-						},
-						Bounds: &plan.BoundsSpec{
-							Start: values.ConvertTime(time.Unix(0, 1)),
-							Stop:  values.ConvertTime(time.Unix(0, 5)),
-						},
-						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("join")},
-					},
-					plan.ProcedureIDFromOperationID("join"): {
-						ID: plan.ProcedureIDFromOperationID("join"),
-						Spec: &transformations.MergeJoinProcedureSpec{
-							TableNames: map[plan.ProcedureID]string{
-								plan.ProcedureIDFromOperationID("sum"):   "sum",
-								plan.ProcedureIDFromOperationID("count"): "count",
 							},
-							On: []string{"_start", "_stop"},
 						},
-						Parents: []plan.ProcedureID{
-							plan.ProcedureIDFromOperationID("sum"),
-							plan.ProcedureIDFromOperationID("count"),
+					)),
+					planner.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{
+						Fn: &semantic.FunctionExpression{
+							Params: []*semantic.FunctionParam{
+								{
+									Key: &semantic.Identifier{Name: "r"},
+								},
+							},
+							Body: &semantic.BooleanLiteral{Value: true},
 						},
-						Bounds: &plan.BoundsSpec{
-							Start: values.ConvertTime(time.Unix(0, 1)),
-							Stop:  values.ConvertTime(time.Unix(0, 5)),
-						},
-						Children: nil,
-					},
+					}),
+					planner.CreatePhysicalNode("yield", &transformations.YieldProcedureSpec{
+						Name: "_result",
+					}),
 				},
-				Results: map[string]plan.YieldSpec{
-					plan.DefaultYieldName: {ID: plan.ProcedureIDFromOperationID("join")},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
 				},
 			},
 			want: map[string][]*executetest.Table{
-				plan.DefaultYieldName: []*executetest.Table{{
-					KeyCols: []string{"_start", "_stop"},
-					ColMeta: []flux.ColMeta{
-						{Label: "_start", Type: flux.TTime},
-						{Label: "_stop", Type: flux.TTime},
-						{Label: "_value_count", Type: flux.TInt},
-						{Label: "_value_sum", Type: flux.TInt},
-					},
-					Data: [][]interface{}{
-						{execute.Time(0), execute.Time(5), int64(5), int64(15)},
-					},
-				}},
-			},
-		},
-		{
-			name: "join with multiple tables",
-			plan: &plan.PlanSpec{
-				Now: epoch.Add(5),
-				Resources: flux.ResourceManagement{
-					ConcurrencyQuota: 1,
-					MemoryBytesQuota: math.MaxInt64,
-				},
-				Procedures: map[plan.ProcedureID]*plan.Procedure{
-					plan.ProcedureIDFromOperationID("from"): {
-						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: newTestFromProcedureSource(
-							[]*executetest.Table{
-								&executetest.Table{
-									KeyCols: []string{"_start", "_stop", "_key"},
-									ColMeta: []flux.ColMeta{
-										{Label: "_start", Type: flux.TTime},
-										{Label: "_stop", Type: flux.TTime},
-										{Label: "_time", Type: flux.TTime},
-										{Label: "_key", Type: flux.TString},
-										{Label: "_value", Type: flux.TInt},
-									},
-									Data: [][]interface{}{
-										{execute.Time(0), execute.Time(5), execute.Time(0), "a", int64(1)},
-									},
-								},
-								&executetest.Table{
-									KeyCols: []string{"_start", "_stop", "_key"},
-									ColMeta: []flux.ColMeta{
-										{Label: "_start", Type: flux.TTime},
-										{Label: "_stop", Type: flux.TTime},
-										{Label: "_time", Type: flux.TTime},
-										{Label: "_key", Type: flux.TString},
-										{Label: "_value", Type: flux.TInt},
-									},
-									Data: [][]interface{}{
-										{execute.Time(0), execute.Time(5), execute.Time(1), "b", int64(2)},
-									},
-								},
-								&executetest.Table{
-									KeyCols: []string{"_start", "_stop", "_key"},
-									ColMeta: []flux.ColMeta{
-										{Label: "_start", Type: flux.TTime},
-										{Label: "_stop", Type: flux.TTime},
-										{Label: "_time", Type: flux.TTime},
-										{Label: "_key", Type: flux.TString},
-										{Label: "_value", Type: flux.TInt},
-									},
-									Data: [][]interface{}{
-										{execute.Time(0), execute.Time(5), execute.Time(2), "c", int64(3)},
-									},
-								},
-								&executetest.Table{
-									KeyCols: []string{"_start", "_stop", "_key"},
-									ColMeta: []flux.ColMeta{
-										{Label: "_start", Type: flux.TTime},
-										{Label: "_stop", Type: flux.TTime},
-										{Label: "_time", Type: flux.TTime},
-										{Label: "_key", Type: flux.TString},
-										{Label: "_value", Type: flux.TInt},
-									},
-									Data: [][]interface{}{
-										{execute.Time(0), execute.Time(5), execute.Time(3), "d", int64(4)},
-									},
-								},
-								&executetest.Table{
-									KeyCols: []string{"_start", "_stop", "_key"},
-									ColMeta: []flux.ColMeta{
-										{Label: "_start", Type: flux.TTime},
-										{Label: "_stop", Type: flux.TTime},
-										{Label: "_time", Type: flux.TTime},
-										{Label: "_key", Type: flux.TString},
-										{Label: "_value", Type: flux.TInt},
-									},
-									Data: [][]interface{}{
-										{execute.Time(0), execute.Time(5), execute.Time(4), "e", int64(5)},
-									},
-								},
-							},
-						),
-						Parents: nil,
-						Bounds: &plan.BoundsSpec{
-							Start: values.ConvertTime(time.Unix(0, 1)),
-							Stop:  values.ConvertTime(time.Unix(0, 5)),
-						},
-						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("sum")},
-					},
-					plan.ProcedureIDFromOperationID("sum"): {
-						ID: plan.ProcedureIDFromOperationID("sum"),
-						Spec: &transformations.SumProcedureSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
-						},
-						Parents: []plan.ProcedureID{
-							plan.ProcedureIDFromOperationID("from"),
-						},
-						Bounds: &plan.BoundsSpec{
-							Start: values.ConvertTime(time.Unix(0, 1)),
-							Stop:  values.ConvertTime(time.Unix(0, 5)),
-						},
-						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("join")},
-					},
-					plan.ProcedureIDFromOperationID("count"): {
-						ID: plan.ProcedureIDFromOperationID("count"),
-						Spec: &transformations.CountProcedureSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
-						},
-						Parents: []plan.ProcedureID{
-							plan.ProcedureIDFromOperationID("from"),
-						},
-						Bounds: &plan.BoundsSpec{
-							Start: values.ConvertTime(time.Unix(0, 1)),
-							Stop:  values.ConvertTime(time.Unix(0, 5)),
-						},
-						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("join")},
-					},
-					plan.ProcedureIDFromOperationID("join"): {
-						ID: plan.ProcedureIDFromOperationID("join"),
-						Spec: &transformations.MergeJoinProcedureSpec{
-							TableNames: map[plan.ProcedureID]string{
-								plan.ProcedureIDFromOperationID("sum"):   "sum",
-								plan.ProcedureIDFromOperationID("count"): "count",
-							},
-							On: []string{"_start", "_stop", "_key"},
-						},
-						Parents: []plan.ProcedureID{
-							plan.ProcedureIDFromOperationID("sum"),
-							plan.ProcedureIDFromOperationID("count"),
-						},
-						Bounds: &plan.BoundsSpec{
-							Start: values.ConvertTime(time.Unix(0, 1)),
-							Stop:  values.ConvertTime(time.Unix(0, 5)),
-						},
-						Children: nil,
-					},
-				},
-				Results: map[string]plan.YieldSpec{
-					plan.DefaultYieldName: {ID: plan.ProcedureIDFromOperationID("join")},
-				},
-			},
-			want: map[string][]*executetest.Table{
-				plan.DefaultYieldName: []*executetest.Table{
+				"_result": []*executetest.Table{
 					{
-						KeyCols: []string{"_key", "_start", "_stop"},
+						KeyCols: []string{"_start", "_stop"},
 						ColMeta: []flux.ColMeta{
-							{Label: "_key", Type: flux.TString},
 							{Label: "_start", Type: flux.TTime},
 							{Label: "_stop", Type: flux.TTime},
-							{Label: "_value_count", Type: flux.TInt},
-							{Label: "_value_sum", Type: flux.TInt},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{"a", execute.Time(0), execute.Time(5), int64(1), int64(1)},
+							{execute.Time(0), execute.Time(5), execute.Time(0), 1.0},
+							{execute.Time(0), execute.Time(5), execute.Time(1), 2.0},
+							{execute.Time(0), execute.Time(5), execute.Time(2), 3.0},
+							{execute.Time(0), execute.Time(5), execute.Time(3), 4.0},
+							{execute.Time(0), execute.Time(5), execute.Time(4), 5.0},
 						},
 					},
 					{
-						KeyCols: []string{"_key", "_start", "_stop"},
+						KeyCols: []string{"_start", "_stop"},
 						ColMeta: []flux.ColMeta{
-							{Label: "_key", Type: flux.TString},
 							{Label: "_start", Type: flux.TTime},
 							{Label: "_stop", Type: flux.TTime},
-							{Label: "_value_count", Type: flux.TInt},
-							{Label: "_value_sum", Type: flux.TInt},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{"b", execute.Time(0), execute.Time(5), int64(1), int64(2)},
-						},
-					},
-					{
-						KeyCols: []string{"_key", "_start", "_stop"},
-						ColMeta: []flux.ColMeta{
-							{Label: "_key", Type: flux.TString},
-							{Label: "_start", Type: flux.TTime},
-							{Label: "_stop", Type: flux.TTime},
-							{Label: "_value_count", Type: flux.TInt},
-							{Label: "_value_sum", Type: flux.TInt},
-						},
-						Data: [][]interface{}{
-							{"c", execute.Time(0), execute.Time(5), int64(1), int64(3)},
-						},
-					},
-					{
-						KeyCols: []string{"_key", "_start", "_stop"},
-						ColMeta: []flux.ColMeta{
-							{Label: "_key", Type: flux.TString},
-							{Label: "_start", Type: flux.TTime},
-							{Label: "_stop", Type: flux.TTime},
-							{Label: "_value_count", Type: flux.TInt},
-							{Label: "_value_sum", Type: flux.TInt},
-						},
-						Data: [][]interface{}{
-							{"d", execute.Time(0), execute.Time(5), int64(1), int64(4)},
-						},
-					},
-					{
-						KeyCols: []string{"_key", "_start", "_stop"},
-						ColMeta: []flux.ColMeta{
-							{Label: "_key", Type: flux.TString},
-							{Label: "_start", Type: flux.TTime},
-							{Label: "_stop", Type: flux.TTime},
-							{Label: "_value_count", Type: flux.TInt},
-							{Label: "_value_sum", Type: flux.TInt},
-						},
-						Data: [][]interface{}{
-							{"e", execute.Time(0), execute.Time(5), int64(1), int64(5)},
+							{execute.Time(5), execute.Time(10), execute.Time(5), 5.0},
+							{execute.Time(5), execute.Time(10), execute.Time(6), 6.0},
+							{execute.Time(5), execute.Time(10), execute.Time(7), 7.0},
+							{execute.Time(5), execute.Time(10), execute.Time(8), 8.0},
+							{execute.Time(5), execute.Time(10), execute.Time(9), 9.0},
 						},
 					},
 				},
 			},
 		},
 		{
-			name: "multiple aggregates",
-			plan: &plan.PlanSpec{
-				Now: epoch.Add(5),
-				Resources: flux.ResourceManagement{
-					ConcurrencyQuota: 1,
-					MemoryBytesQuota: math.MaxInt64,
-				},
-				Procedures: map[plan.ProcedureID]*plan.Procedure{
-					plan.ProcedureIDFromOperationID("from"): {
-						ID: plan.ProcedureIDFromOperationID("from"),
-						Spec: newTestFromProcedureSource(
-							[]*executetest.Table{&executetest.Table{
+			name: `multiple aggregates`,
+			plan: plantest.DAG{
+				Nodes: []planner.PlanNode{
+					planner.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
+						[]*executetest.Table{
+							{
 								KeyCols: []string{"_start", "_stop"},
 								ColMeta: []flux.ColMeta{
 									{Label: "_start", Type: flux.TTime},
@@ -435,84 +204,235 @@ func TestExecutor_Execute(t *testing.T) {
 									{execute.Time(0), execute.Time(5), execute.Time(3), 4.0},
 									{execute.Time(0), execute.Time(5), execute.Time(4), 5.0},
 								},
-							}},
-						),
-						Bounds: &plan.BoundsSpec{
-							Start: values.ConvertTime(time.Unix(0, 1)),
-							Stop:  values.ConvertTime(time.Unix(0, 5)),
+							},
+							{
+								KeyCols: []string{"_start", "_stop"},
+								ColMeta: []flux.ColMeta{
+									{Label: "_start", Type: flux.TTime},
+									{Label: "_stop", Type: flux.TTime},
+									{Label: "_time", Type: flux.TTime},
+									{Label: "_value", Type: flux.TFloat},
+								},
+								Data: [][]interface{}{
+									{execute.Time(5), execute.Time(10), execute.Time(5), 5.0},
+									{execute.Time(5), execute.Time(10), execute.Time(6), 6.0},
+									{execute.Time(5), execute.Time(10), execute.Time(7), 7.0},
+									{execute.Time(5), execute.Time(10), execute.Time(8), 8.0},
+									{execute.Time(5), execute.Time(10), execute.Time(9), 9.0},
+								},
+							},
 						},
-						Parents: nil,
-						Children: []plan.ProcedureID{
-							plan.ProcedureIDFromOperationID("sum"),
-							plan.ProcedureIDFromOperationID("mean"),
-						},
-					},
-					plan.ProcedureIDFromOperationID("sum"): {
-						ID: plan.ProcedureIDFromOperationID("sum"),
-						Spec: &transformations.SumProcedureSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
-						},
-						Parents: []plan.ProcedureID{
-							plan.ProcedureIDFromOperationID("from"),
-						},
-						Bounds: &plan.BoundsSpec{
-							Start: values.ConvertTime(time.Unix(0, 1)),
-							Stop:  values.ConvertTime(time.Unix(0, 5)),
-						},
-						Children: nil,
-					},
-					plan.ProcedureIDFromOperationID("mean"): {
-						ID: plan.ProcedureIDFromOperationID("mean"),
-						Spec: &transformations.MeanProcedureSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
-						},
-						Parents: []plan.ProcedureID{
-							plan.ProcedureIDFromOperationID("from"),
-						},
-						Bounds: &plan.BoundsSpec{
-							Start: values.ConvertTime(time.Unix(0, 1)),
-							Stop:  values.ConvertTime(time.Unix(0, 5)),
-						},
-						Children: nil,
-					},
+					)),
+					planner.CreatePhysicalNode("sum", &transformations.SumProcedureSpec{
+						AggregateConfig: execute.DefaultAggregateConfig,
+					}),
+					planner.CreatePhysicalNode("yield", &transformations.YieldProcedureSpec{
+						Name: "sum",
+					}),
+					planner.CreatePhysicalNode("mean", &transformations.MeanProcedureSpec{
+						AggregateConfig: execute.DefaultAggregateConfig,
+					}),
+					planner.CreatePhysicalNode("yield", &transformations.YieldProcedureSpec{
+						Name: "mean",
+					}),
+
 				},
-				Results: map[string]plan.YieldSpec{
-					"sum":  {ID: plan.ProcedureIDFromOperationID("sum")},
-					"mean": {ID: plan.ProcedureIDFromOperationID("mean")},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{0, 3},
+					{3, 4},
 				},
 			},
 			want: map[string][]*executetest.Table{
-				"sum": []*executetest.Table{{
-					KeyCols: []string{"_start", "_stop"},
-					ColMeta: []flux.ColMeta{
-						{Label: "_start", Type: flux.TTime},
-						{Label: "_stop", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
+				"sum": []*executetest.Table{
+					{
+						KeyCols: []string{"_start", "_stop"},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
+						},
+						Data: [][]interface{}{
+							{execute.Time(0), execute.Time(5), 15.0},
+						},
 					},
-					Data: [][]interface{}{
-						{execute.Time(0), execute.Time(5), 15.0},
+					{
+						KeyCols: []string{"_start", "_stop"},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
+						},
+						Data: [][]interface{}{
+							{execute.Time(5), execute.Time(10), 35.0},
+						},
 					},
-				}},
-				"mean": []*executetest.Table{{
-					KeyCols: []string{"_start", "_stop"},
-					ColMeta: []flux.ColMeta{
-						{Label: "_start", Type: flux.TTime},
-						{Label: "_stop", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
+				},
+				"mean": []*executetest.Table{
+					{
+						KeyCols: []string{"_start", "_stop"},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
+						},
+						Data: [][]interface{}{
+							{execute.Time(0), execute.Time(5), 3.0},
+						},
 					},
-					Data: [][]interface{}{
-						{execute.Time(0), execute.Time(5), 3.0},
+					{
+						KeyCols: []string{"_start", "_stop"},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
+						},
+						Data: [][]interface{}{
+							{execute.Time(5), execute.Time(10), 7.0},
+						},
 					},
-				}},
+				},
+			},
+		},
+		{
+			name: `diamond join`,
+			plan: plantest.DAG{
+				Nodes: []planner.PlanNode{
+					planner.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
+						[]*executetest.Table{
+							{
+								KeyCols: []string{"_start", "_stop"},
+								ColMeta: []flux.ColMeta{
+									{Label: "_start", Type: flux.TTime},
+									{Label: "_stop", Type: flux.TTime},
+									{Label: "_time", Type: flux.TTime},
+									{Label: "_value", Type: flux.TFloat},
+								},
+								Data: [][]interface{}{
+									{execute.Time(0), execute.Time(5), execute.Time(0), 1.0},
+									{execute.Time(0), execute.Time(5), execute.Time(1), 2.0},
+									{execute.Time(0), execute.Time(5), execute.Time(2), 3.0},
+									{execute.Time(0), execute.Time(5), execute.Time(3), 4.0},
+									{execute.Time(0), execute.Time(5), execute.Time(4), 5.0},
+								},
+							},
+							{
+								KeyCols: []string{"_start", "_stop"},
+								ColMeta: []flux.ColMeta{
+									{Label: "_start", Type: flux.TTime},
+									{Label: "_stop", Type: flux.TTime},
+									{Label: "_time", Type: flux.TTime},
+									{Label: "_value", Type: flux.TFloat},
+								},
+								Data: [][]interface{}{
+									{execute.Time(5), execute.Time(10), execute.Time(5), 1.0},
+									{execute.Time(5), execute.Time(10), execute.Time(6), 2.0},
+									{execute.Time(5), execute.Time(10), execute.Time(7), 3.0},
+									{execute.Time(5), execute.Time(10), execute.Time(8), 4.0},
+									{execute.Time(5), execute.Time(10), execute.Time(9), 5.0},
+								},
+							},
+							{
+								KeyCols: []string{"_start", "_stop"},
+								ColMeta: []flux.ColMeta{
+									{Label: "_start", Type: flux.TTime},
+									{Label: "_stop", Type: flux.TTime},
+									{Label: "_time", Type: flux.TTime},
+									{Label: "_value", Type: flux.TFloat},
+								},
+								Data: [][]interface{}{
+									{execute.Time(10), execute.Time(15), execute.Time(10), 1.0},
+									{execute.Time(10), execute.Time(15), execute.Time(11), 2.0},
+									{execute.Time(10), execute.Time(15), execute.Time(12), 3.0},
+									{execute.Time(10), execute.Time(15), execute.Time(13), 4.0},
+									{execute.Time(10), execute.Time(15), execute.Time(14), 5.0},
+								},
+							},
+						},
+					)),
+					planner.CreatePhysicalNode("sum", &transformations.SumProcedureSpec{
+						AggregateConfig: execute.DefaultAggregateConfig,
+					}),
+					planner.CreatePhysicalNode("count", &transformations.CountProcedureSpec{
+						AggregateConfig: execute.DefaultAggregateConfig,
+					}),
+					planner.CreatePhysicalNode("join", &transformations.MergeJoinProcedureSpec{
+						On: []string{"_start", "_stop"},
+						TableNames: map[planner.ProcedureID]string{
+							planner.ProcedureIDFromOperationID("sum"): "a",
+							planner.ProcedureIDFromOperationID("count"): "b",
+						},
+					}),
+					planner.CreatePhysicalNode("yield", &transformations.YieldProcedureSpec{
+						Name: "_result",
+					}),
+
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{0, 2},
+					{1, 3},
+					{2, 3},
+					{3, 4},
+				},
+			},
+			want: map[string][]*executetest.Table{
+				"_result": []*executetest.Table{
+					{
+						KeyCols: []string{"_start", "_stop"},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_value_a", Type: flux.TFloat},
+							{Label: "_value_b", Type: flux.TInt},
+						},
+						Data: [][]interface{}{
+							{execute.Time(0), execute.Time(5), 15.0, int64(5)},
+						},
+					},
+					{
+						KeyCols: []string{"_start", "_stop"},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_value_a", Type: flux.TFloat},
+							{Label: "_value_b", Type: flux.TInt},
+						},
+						Data: [][]interface{}{
+							{execute.Time(5), execute.Time(10), 15.0, int64(5)},
+						},
+					},
+					{
+						KeyCols: []string{"_start", "_stop"},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_value_a", Type: flux.TFloat},
+							{Label: "_value_b", Type: flux.TInt},
+						},
+						Data: [][]interface{}{
+							{execute.Time(10), execute.Time(15), 15.0, int64(5)},
+						},
+					},
+				},
 			},
 		},
 	}
 
-	for _, tc := range testCases {
+	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			// Construct physical query plan
+			plan := plantest.CreatePlanFromDAG(tc.plan)
+
+			plan.Resources = flux.ResourceManagement{
+				ConcurrencyQuota: 1,
+				MemoryBytesQuota: math.MaxInt64,
+			}
+
 			exe := execute.NewExecutor(nil, zaptest.NewLogger(t))
-			results, err := exe.Execute(context.Background(), tc.plan, executetest.UnlimitedAllocator)
+			results, err := exe.Execute(context.Background(), plan, executetest.UnlimitedAllocator)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -542,58 +462,4 @@ func TestExecutor_Execute(t *testing.T) {
 			}
 		})
 	}
-}
-
-type testFromProcedureSource struct {
-	data []*executetest.Table
-	ts   []execute.Transformation
-}
-
-func newTestFromProcedureSource(data []*executetest.Table) *testFromProcedureSource {
-	p := &testFromProcedureSource{
-		data: data,
-	}
-	// Normalize the data before anything can read it
-	for _, tbl := range p.data {
-		tbl.Normalize()
-	}
-	return p
-}
-
-func (p *testFromProcedureSource) Kind() plan.ProcedureKind {
-	return "from-test"
-}
-
-func (p *testFromProcedureSource) Copy() plan.ProcedureSpec {
-	return p
-}
-
-func (p *testFromProcedureSource) AddTransformation(t execute.Transformation) {
-	p.ts = append(p.ts, t)
-}
-
-func (p *testFromProcedureSource) Run(ctx context.Context) {
-	id := execute.DatasetID(uuid.NewV4())
-	for _, t := range p.ts {
-		var max execute.Time
-		for _, tbl := range p.data {
-			t.Process(id, tbl)
-			stopIdx := execute.ColIdx(execute.DefaultStopColLabel, tbl.Cols())
-			if stopIdx >= 0 {
-				if s := tbl.Key().ValueTime(stopIdx); s > max {
-					max = s
-				}
-			}
-		}
-		t.UpdateWatermark(id, max)
-		t.Finish(id, nil)
-	}
-}
-
-func init() {
-	execute.RegisterSource("from-test", createTestFromSource)
-}
-
-func createTestFromSource(prSpec plan.ProcedureSpec, id execute.DatasetID, a execute.Administration) (execute.Source, error) {
-	return prSpec.(*testFromProcedureSource), nil
 }

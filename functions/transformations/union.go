@@ -64,6 +64,7 @@ func newUnionOp() flux.OperationSpec {
 }
 
 type UnionProcedureSpec struct {
+	plan.DefaultCost
 }
 
 func (s *UnionProcedureSpec) Kind() plan.ProcedureKind {

@@ -67,6 +67,7 @@ func (s *SortOpSpec) Kind() flux.OperationKind {
 }
 
 type SortProcedureSpec struct {
+	plan.DefaultCost
 	Cols []string
 	Desc bool
 }

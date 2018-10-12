@@ -59,6 +59,7 @@ func (s *SetOpSpec) Kind() flux.OperationKind {
 }
 
 type SetProcedureSpec struct {
+	plan.DefaultCost
 	Key, Value string
 }
 

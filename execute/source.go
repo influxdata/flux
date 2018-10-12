@@ -20,18 +20,11 @@ type Source interface {
 type CreateSource func(spec plan.ProcedureSpec, id DatasetID, ctx Administration) (Source, error)
 type CreateNewPlannerSource func(spec planner.ProcedureSpec, id DatasetID, ctx Administration) (Source, error)
 
+var procedureToSource = make(map[planner.ProcedureKind]CreateNewPlannerSource)
 
-var procedureToSource = make(map[plan.ProcedureKind]CreateSource)
-
-func RegisterSource(k plan.ProcedureKind, c CreateNewPlannerSource) {
+func RegisterSource(k planner.ProcedureKind, c CreateNewPlannerSource) {
 	if procedureToSource[k] != nil {
 		panic(fmt.Errorf("duplicate registration for source with procedure kind %v", k))
 	}
-
-	createFn := func(spec plan.ProcedureSpec, id DatasetID, ctx Administration) (Source, error) {
-		plannerProcSpec := spec.(planner.ProcedureSpec)
-		return c(plannerProcSpec, id, ctx)
-	}
-
-	procedureToSource[k] = createFn
+	procedureToSource[k] = c
 }

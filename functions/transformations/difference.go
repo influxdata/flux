@@ -72,6 +72,7 @@ func (s *DifferenceOpSpec) Kind() flux.OperationKind {
 }
 
 type DifferenceProcedureSpec struct {
+	plan.DefaultCost
 	NonNegative bool     `json:"non_negative"`
 	Columns     []string `json:"columns"`
 }

@@ -105,6 +105,7 @@ func (s *FromOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.Buc
 }
 
 type FromProcedureSpec struct {
+	plan.DefaultCost
 	Bucket   string
 	BucketID platform.ID
 

@@ -174,6 +174,7 @@ func (s *JoinOpSpec) Kind() flux.OperationKind {
 }
 
 type MergeJoinProcedureSpec struct {
+	plan.DefaultCost
 	On         []string                    `json:"keys"`
 	TableNames map[plan.ProcedureID]string `json:"table_names"`
 }
