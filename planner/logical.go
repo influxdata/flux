@@ -1,6 +1,7 @@
 package planner
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/influxdata/flux"
@@ -110,7 +111,13 @@ func createLogicalPlan(spec *flux.Spec, a Administration) (*PlanSpec, error) {
 		return nil, err
 	}
 
-	return NewPlanSpec(v.roots), nil
+	logicalPlan, err := validate(CreatePlanSpec(v.roots, spec.Resources, spec.Now))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return logicalPlan, nil
 }
 
 // fluxSpecVisitor visits a flux spec and constructs from it a logical plan DAG
@@ -161,6 +168,29 @@ func (v *fluxSpecVisitor) visitOperation(o *flux.Operation) error {
 	}
 
 	return nil
+}
+
+func validate(plan *PlanSpec) (*PlanSpec, error) {
+	if len(plan.Results()) > 1 {
+		names := make(map[string]struct{}, len(plan.Results()))
+
+		for _, root := range plan.Results() {
+			spec, ok := root.ProcedureSpec().(YieldProcedureSpec)
+
+			if !ok {
+				return nil, errors.New("query must have explicit yields for multiple result")
+			}
+
+			if name, ok := names[spec.YieldName()]; ok {
+				return nil, fmt.Errorf("found duplicate yield name %q", name)
+			}
+
+			if len(root.Predecessors()) != 1 {
+				return nil, errors.New("yield procedures must have exactly one predecessor")
+			}
+		}
+	}
+	return plan, nil
 }
 
 // CreateLogicalNode creates a single logical plan node from a procedure spec.

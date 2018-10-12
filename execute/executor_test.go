@@ -3,6 +3,7 @@ package execute_test
 import (
 	"context"
 	"testing"
+	"time"
 	"math"
 
 	"github.com/google/go-cmp/cmp"
@@ -423,13 +424,14 @@ func TestExecutor_Execute(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			// Construct physical query plan
-			plan := plantest.CreatePlanFromDAG(tc.plan)
 
-			plan.Resources = flux.ResourceManagement{
+			resources := flux.ResourceManagement{
 				ConcurrencyQuota: 1,
 				MemoryBytesQuota: math.MaxInt64,
 			}
+
+			// Construct physical query plan
+			plan := plantest.CreatePlanFromDAG(tc.plan, resources, time.Now())
 
 			exe := execute.NewExecutor(nil, zaptest.NewLogger(t))
 			results, err := exe.Execute(context.Background(), plan, executetest.UnlimitedAllocator)
