@@ -3,6 +3,7 @@ package transformations
 import (
 	"errors"
 	"fmt"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
@@ -75,6 +76,7 @@ func (s *KeyValuesOpSpec) Kind() flux.OperationKind {
 }
 
 type KeyValuesProcedureSpec struct {
+	plan.DefaultCost
 	KeyCols   []string                     `json:"keyCols"`
 	Predicate *semantic.FunctionExpression `json:"fn"`
 }

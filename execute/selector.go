@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
+	plan "github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -15,6 +16,7 @@ type selectorTransformation struct {
 }
 
 type SelectorConfig struct {
+	plan.DefaultCost
 	Column string `json:"column"`
 }
 

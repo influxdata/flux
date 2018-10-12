@@ -92,6 +92,7 @@ func (s *HistogramQuantileOpSpec) Kind() flux.OperationKind {
 }
 
 type HistogramQuantileProcedureSpec struct {
+	plan.DefaultCost
 	Quantile         float64 `json:"quantile"`
 	CountColumn      string  `json:"countColumn"`
 	UpperBoundColumn string  `json:"upperBoundColumn"`

@@ -401,6 +401,7 @@ func (s *DuplicateOpSpec) Mutator() (SchemaMutator, error) {
 }
 
 type SchemaMutationProcedureSpec struct {
+	plan.DefaultCost
 	Mutations []SchemaMutation
 }
 

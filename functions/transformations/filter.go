@@ -56,6 +56,7 @@ func (s *FilterOpSpec) Kind() flux.OperationKind {
 }
 
 type FilterProcedureSpec struct {
+	plan.DefaultCost
 	Fn *semantic.FunctionExpression
 }
 

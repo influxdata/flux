@@ -115,6 +115,7 @@ func groupModeFromSpec(spec *GroupOpSpec) inputs.GroupMode {
 }
 
 type GroupProcedureSpec struct {
+	plan.DefaultCost
 	GroupMode inputs.GroupMode
 	GroupKeys []string
 }

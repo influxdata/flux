@@ -68,6 +68,7 @@ func (s *MapOpSpec) Kind() flux.OperationKind {
 }
 
 type MapProcedureSpec struct {
+	plan.DefaultCost
 	Fn       *semantic.FunctionExpression
 	MergeKey bool
 }

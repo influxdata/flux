@@ -24,3 +24,10 @@ func Add(a Cost, b Cost) Cost {
 		NET:  a.NET + b.NET,
 	}
 }
+
+type DefaultCost struct {
+}
+
+func (c DefaultCost) Cost(inStats []Statistics) (Cost, Statistics) {
+	return Cost{}, Statistics{}
+}

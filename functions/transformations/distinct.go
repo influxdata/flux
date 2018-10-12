@@ -53,6 +53,7 @@ func (s *DistinctOpSpec) Kind() flux.OperationKind {
 }
 
 type DistinctProcedureSpec struct {
+	plan.DefaultCost
 	Column string
 }
 
