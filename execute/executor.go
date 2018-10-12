@@ -93,7 +93,7 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.PlanSpec, a
 		deps:      e.deps,
 		alloc:     a,
 		resources: p.Resources,
-		results:   make(map[string]flux.Result, len(p.Roots())),
+		results:   make(map[string]flux.Result, len(p.Results())),
 		// TODO(nathanielc): Have the planner specify the dispatcher throughput
 		dispatcher: newPoolDispatcher(10, e.logger),
 	}

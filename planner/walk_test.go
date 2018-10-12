@@ -119,7 +119,7 @@ func TestPlanSpec_TopDownWalk(t *testing.T) {
 		return nil
 	})
 
-	want := []planner.NodeID{"2", "1", "5", "0", "4", "7", "3", "8", "6"}
+	want := []planner.NodeID{"0", "3", "6", "8", "4", "7", "1", "5", "2"}
 	if !cmp.Equal(want, got) {
 		t.Errorf("Did not get expected node traversal, -want/+got:\n%v", cmp.Diff(want, got))
 	}
