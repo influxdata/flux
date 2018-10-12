@@ -6,6 +6,8 @@ import (
 	"github.com/influxdata/flux"
 )
 
+const DefaultYieldName = "_result"
+
 // PlanNode defines the common interface for interacting with
 // logical and physical plan nodes.
 type PlanNode interface {
@@ -42,7 +44,6 @@ type NodeID string
 // Roots correspond to nodes that produce final results.
 type PlanSpec struct {
 	roots     map[PlanNode]struct{}
-	names     map[string]PlanNode
 	Resources flux.ResourceManagement
 	Now       time.Time
 }
