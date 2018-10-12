@@ -3,7 +3,6 @@ package inputs
 import (
 	"fmt"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 )
@@ -22,7 +21,6 @@ func init() {
 	flux.RegisterFunction(BucketsKind, createBucketsOpSpec, bucketsSignature)
 	flux.RegisterOpSpec(BucketsKind, newBucketsOp)
 	plan.RegisterProcedureSpec(BucketsKind, newBucketsProcedure, BucketsKind)
-	execute.RegisterSource(BucketsKind, createBucketsSource)
 }
 
 func createBucketsOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
