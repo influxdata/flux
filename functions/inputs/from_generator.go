@@ -83,6 +83,7 @@ func (s *FromGeneratorOpSpec) Kind() flux.OperationKind {
 }
 
 type FromGeneratorProcedureSpec struct {
+	plan.DefaultCost
 	Start time.Time
 	Stop  time.Time
 	Count int64

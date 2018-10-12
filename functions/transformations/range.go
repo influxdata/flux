@@ -94,6 +94,7 @@ func (s *RangeOpSpec) Kind() flux.OperationKind {
 }
 
 type RangeProcedureSpec struct {
+	plan.DefaultCost
 	Bounds   flux.Bounds
 	TimeCol  string
 	StartCol string

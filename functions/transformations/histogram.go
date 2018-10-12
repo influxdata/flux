@@ -95,6 +95,7 @@ func (s *HistogramOpSpec) Kind() flux.OperationKind {
 }
 
 type HistogramProcedureSpec struct {
+	plan.DefaultCost
 	HistogramOpSpec
 }
 

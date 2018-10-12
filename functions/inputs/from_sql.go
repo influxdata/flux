@@ -73,6 +73,7 @@ func (s *FromSQLOpSpec) Kind() flux.OperationKind {
 }
 
 type FromSQLProcedureSpec struct {
+	plan.DefaultCost
 	DriverName     string
 	DataSourceName string
 	Query          string

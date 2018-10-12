@@ -62,6 +62,7 @@ func (s *KeysOpSpec) Kind() flux.OperationKind {
 }
 
 type KeysProcedureSpec struct {
+	plan.DefaultCost
 	Except []string
 }
 

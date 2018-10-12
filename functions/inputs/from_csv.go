@@ -79,6 +79,7 @@ func (s *FromCSVOpSpec) Kind() flux.OperationKind {
 }
 
 type FromCSVProcedureSpec struct {
+	plan.DefaultCost
 	CSV  string
 	File string
 }

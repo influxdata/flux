@@ -5,6 +5,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
+	plan "github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/semantic"
 	"github.com/pkg/errors"
 )
@@ -18,6 +19,7 @@ type aggregateTransformation struct {
 }
 
 type AggregateConfig struct {
+	plan.DefaultCost
 	Columns []string `json:"columns"`
 }
 
