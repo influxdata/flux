@@ -2,6 +2,7 @@ package transformations
 
 import (
 	"fmt"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	plan "github.com/influxdata/flux/planner"
@@ -62,6 +63,7 @@ func (s *LimitOpSpec) Kind() flux.OperationKind {
 }
 
 type LimitProcedureSpec struct {
+	plan.DefaultCost
 	N      int64 `json:"n"`
 	Offset int64 `json:"offset"`
 }

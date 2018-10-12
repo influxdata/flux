@@ -42,7 +42,7 @@ func createYieldOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 	} else if ok {
 		spec.Name = name
 	} else {
-		spec.Name = "_result"
+		spec.Name = plan.DefaultYieldName
 	}
 
 	return spec, nil
@@ -57,6 +57,7 @@ func (s *YieldOpSpec) Kind() flux.OperationKind {
 }
 
 type YieldProcedureSpec struct {
+	plan.DefaultCost
 	Name string `json:"name"`
 }
 

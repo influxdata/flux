@@ -129,6 +129,7 @@ func (s *StateTrackingOpSpec) Kind() flux.OperationKind {
 }
 
 type StateTrackingProcedureSpec struct {
+	plan.DefaultCost
 	Fn *semantic.FunctionExpression
 	CountLabel,
 	DurationLabel string

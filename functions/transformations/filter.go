@@ -56,6 +56,7 @@ func (s *FilterOpSpec) Kind() flux.OperationKind {
 }
 
 type FilterProcedureSpec struct {
+	plan.DefaultCost
 	Fn *semantic.FunctionExpression
 }
 
@@ -77,9 +78,6 @@ func (s *FilterProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(FilterProcedureSpec)
 	ns.Fn = s.Fn.Copy().(*semantic.FunctionExpression)
 	return ns
-}
-func (spec *FilterProcedureSpec) Cost(inStats []plan.Statistics) (plan.Cost, plan.Statistics) {
-	return plan.Cost{}, plan.Statistics{}
 }
 
 func createFilterTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {

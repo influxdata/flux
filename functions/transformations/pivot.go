@@ -96,6 +96,7 @@ func (s *PivotOpSpec) Kind() flux.OperationKind {
 }
 
 type PivotProcedureSpec struct {
+	plan.DefaultCost
 	RowKey   []string
 	ColKey   []string
 	ValueCol string

@@ -3,6 +3,7 @@ package transformations
 import (
 	"errors"
 	"fmt"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
@@ -75,8 +76,9 @@ func (s *KeyValuesOpSpec) Kind() flux.OperationKind {
 }
 
 type KeyValuesProcedureSpec struct {
-	KeyCols      []string                     `json:"keyCols"`
-	Predicate *semantic.FunctionExpression    `json:"fn"`
+	plan.DefaultCost
+	KeyCols   []string                     `json:"keyCols"`
+	Predicate *semantic.FunctionExpression `json:"fn"`
 }
 
 func newKeyValuesProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -86,7 +88,7 @@ func newKeyValuesProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.
 	}
 
 	return &KeyValuesProcedureSpec{
-		KeyCols: spec.KeyCols,
+		KeyCols:   spec.KeyCols,
 		Predicate: spec.PredicateFn,
 	}, nil
 }
@@ -104,11 +106,12 @@ func (s *KeyValuesProcedureSpec) Copy() plan.ProcedureSpec {
 }
 
 type keyValuesTransformation struct {
-	d     execute.Dataset
-	cache execute.TableBuilderCache
-	spec *KeyValuesProcedureSpec
+	d        execute.Dataset
+	cache    execute.TableBuilderCache
+	spec     *KeyValuesProcedureSpec
 	distinct bool
 }
+
 func createKeyValuesTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*KeyValuesProcedureSpec)
 	if !ok {
@@ -122,9 +125,9 @@ func createKeyValuesTransformation(id execute.DatasetID, mode execute.Accumulati
 
 func NewKeyValuesTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *KeyValuesProcedureSpec) *keyValuesTransformation {
 	return &keyValuesTransformation{
-		d:      d,
-		cache:  cache,
-		spec: spec,
+		d:        d,
+		cache:    cache,
+		spec:     spec,
 		distinct: true,
 	}
 }
@@ -141,7 +144,6 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 
 	// TODO: use fn to populate t.spec.keyCols
 
-
 	// we'll ignore keyCol values that just don't exist in the table.
 	cols := tbl.Cols()
 	i := 0
@@ -154,8 +156,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 		return errors.New("no columns matched by keyCols parameter")
 	}
 
-
-	keyColIndices :=  make([]int, len(t.spec.KeyCols))
+	keyColIndices := make([]int, len(t.spec.KeyCols))
 	keyColIndices[i-1] = keyColIndex
 	keyColType := cols[keyColIndex].Type
 	for j, v := range t.spec.KeyCols[i:] {
@@ -169,18 +170,15 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 		}
 	}
 
-
-
 	execute.AddTableKeyCols(tbl.Key(), builder)
 	keyColIdx := builder.AddCol(flux.ColMeta{
 		Label: "_key",
-		Type: flux.TString,
+		Type:  flux.TString,
 	})
 	valueColIdx := builder.AddCol(flux.ColMeta{
 		Label: execute.DefaultValueColLabel,
 		Type:  keyColType,
 	})
-
 
 	var (
 		boolDistinct   map[bool]bool
@@ -191,9 +189,8 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 		timeDistinct   map[execute.Time]bool
 	)
 
-
 	// TODO(adam): implement planner logic that will push down a matching call to distinct() into this call, setting t.distinct to true
-	if t.distinct{
+	if t.distinct {
 		switch keyColType {
 		case flux.TBool:
 			boolDistinct = make(map[bool]bool)

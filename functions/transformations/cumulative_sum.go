@@ -56,6 +56,7 @@ func (s *CumulativeSumOpSpec) Kind() flux.OperationKind {
 }
 
 type CumulativeSumProcedureSpec struct {
+	plan.DefaultCost
 	Columns []string
 }
 

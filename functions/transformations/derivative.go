@@ -87,6 +87,7 @@ func (s *DerivativeOpSpec) Kind() flux.OperationKind {
 }
 
 type DerivativeProcedureSpec struct {
+	plan.DefaultCost
 	Unit        flux.Duration `json:"unit"`
 	NonNegative bool          `json:"non_negative"`
 	Columns     []string      `json:"columns"`

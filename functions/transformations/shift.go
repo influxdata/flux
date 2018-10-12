@@ -70,6 +70,7 @@ func (s *ShiftOpSpec) Kind() flux.OperationKind {
 }
 
 type ShiftProcedureSpec struct {
+	plan.DefaultCost
 	Shift   flux.Duration
 	Columns []string
 }

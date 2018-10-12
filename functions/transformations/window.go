@@ -130,6 +130,7 @@ func (s *WindowOpSpec) Kind() flux.OperationKind {
 }
 
 type WindowProcedureSpec struct {
+	plan.DefaultCost
 	Window     plan.WindowSpec
 	Triggering flux.TriggerSpec
 	TimeCol,
