@@ -1,6 +1,7 @@
 package planner
 
 import (
+	"sort"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -72,13 +73,41 @@ func (plan *PlanSpec) Replace(root, with PlanNode) {
 	plan.roots[with] = struct{}{}
 }
 
+// TopDownWalk will execute f for each plan node in the PlanSpec,
+// only visiting a node after all its predecessors have been visited.
+func (plan *PlanSpec) TopDownWalk(f func(node PlanNode) error) error {
+	var nodes []PlanNode
+
+	plan.BottomUpWalk(func(node PlanNode) error {
+		nodes = append(nodes, node)
+		return nil
+	})
+
+	for i, j := 0, len(nodes)-1; i < j; i, j = i+1, j-1 {
+		nodes[i], nodes[j] = nodes[j], nodes[i]
+	}
+
+	for _, n := range nodes {
+		if err := f(n); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // BottomUpWalk will execute f for each plan node in the PlanSpec,
 // starting from the sources, and only visiting a node after all its
 // predecessors have been visited.
-func (p *PlanSpec) BottomUpWalk(f func(PlanNode) error) error {
+func (plan *PlanSpec) BottomUpWalk(f func(PlanNode) error) error {
 	visited := make(map[PlanNode]struct{})
 
-	for _, root := range p.Roots() {
+	roots := plan.Roots()
+
+	sort.Slice(roots, func(i, j int) bool {
+		return roots[i].ID() < roots[j].ID()
+	})
+
+	for _, root := range roots {
 		err := walk(root, f, visited)
 		if err != nil {
 			return err

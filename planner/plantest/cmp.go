@@ -8,31 +8,27 @@ import (
 	"github.com/influxdata/flux/semantic/semantictest"
 )
 
-type defaultVisitor struct {
-	nodes []planner.PlanNode
-}
-
-func (v *defaultVisitor) Visit(node planner.PlanNode) Visitor {
-	v.nodes = append(v.nodes, node)
-	return v
-}
-
 // ComparePlans compares two query plans using an arbitrary comparator function f
 func ComparePlans(p, q *planner.PlanSpec, f func(p, q planner.PlanNode) error) error {
-	v := &defaultVisitor{}
-	w := &defaultVisitor{}
+	var w, v []planner.PlanNode
 
-	Walk(p, v)
-	Walk(q, w)
+	p.TopDownWalk(func(node planner.PlanNode) error {
+		w = append(w, node)
+		return nil
+	})
 
-	if len(v.nodes) != len(w.nodes) {
-		return fmt.Errorf("plans have %d and %d nodes respectively",
-			len(v.nodes), len(w.nodes))
+	q.TopDownWalk(func(node planner.PlanNode) error {
+		v = append(v, node)
+		return nil
+	})
+
+	if len(w) != len(v) {
+		return fmt.Errorf("plans have %d and %d nodes respectively", len(w), len(v))
 	}
 
-	for i := 0; i < len(v.nodes); i++ {
+	for i := 0; i < len(w); i++ {
 
-		if err := f(v.nodes[i], w.nodes[i]); err != nil {
+		if err := f(w[i], v[i]); err != nil {
 			return err
 		}
 	}
