@@ -383,9 +383,11 @@ func (itrp *Interpreter) doCall(call *semantic.CallExpression, scope *Scope) (va
 	if err != nil {
 		return nil, err
 	}
+
 	if f.HasSideEffect() {
 		itrp.values = append(itrp.values, value)
 	}
+
 	return value, nil
 }
 
@@ -562,34 +564,34 @@ func (f *function) Type() semantic.Type {
 }
 
 func (f *function) Str() string {
-	panic(values.UnexpectedKind(semantic.Object, semantic.String))
+	panic(values.UnexpectedKind(semantic.Function, semantic.String))
 }
 func (f *function) Int() int64 {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Int))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Int))
 }
 func (f *function) UInt() uint64 {
-	panic(values.UnexpectedKind(semantic.Object, semantic.UInt))
+	panic(values.UnexpectedKind(semantic.Function, semantic.UInt))
 }
 func (f *function) Float() float64 {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Float))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Float))
 }
 func (f *function) Bool() bool {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Bool))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Bool))
 }
 func (f *function) Time() values.Time {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Time))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Time))
 }
 func (f *function) Duration() values.Duration {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Duration))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Duration))
 }
 func (f *function) Regexp() *regexp.Regexp {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Regexp))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Regexp))
 }
 func (f *function) Array() values.Array {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Function))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Array))
 }
 func (f *function) Object() values.Object {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Object))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Object))
 }
 func (f *function) Function() values.Function {
 	return f
