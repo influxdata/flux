@@ -103,6 +103,8 @@ func (plan *PlanSpec) BottomUpWalk(f func(PlanNode) error) error {
 
 	roots := plan.Roots()
 
+	// Make sure to sort the roots first otherwise
+	// an in-consistent walk order is possible.
 	sort.Slice(roots, func(i, j int) bool {
 		return roots[i].ID() < roots[j].ID()
 	})

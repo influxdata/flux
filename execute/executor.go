@@ -143,8 +143,12 @@ func (v *createExecutionNodeVisitor) Visit(node plan.PlanNode) error {
 		ec.parents[i] = DatasetID(id)
 	}
 
+	// TODO what to do about stream context?
+
 	switch {
 	case len(node.Successors()) == 0:
+		// If node is a root, create a result.
+		// No need to add transports to predecessors as results pull data from downstream.
 		yield, ok := spec.(plan.YieldProcedureSpec)
 
 		if !ok {
@@ -165,6 +169,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.PlanNode) error {
 		v.nodes[pred].AddTransformation(result)
 
 	case len(node.Predecessors()) == 0:
+		// If node is a leaf, create a source
 		createSourceFn, ok := procedureToSource[kind]
 
 		if !ok {
@@ -181,6 +186,8 @@ func (v *createExecutionNodeVisitor) Visit(node plan.PlanNode) error {
 		v.nodes[node] = source
 
 	default:
+		// If node is internal, create a transformation.
+		// For each predecessor, add a transport for sending data upstream.
 		createTransformationFn, ok := procedureToTransformation[kind]
 
 		if !ok {
