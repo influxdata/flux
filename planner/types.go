@@ -103,6 +103,10 @@ func walk(node PlanNode, f func(PlanNode) error, visited map[PlanNode]struct{}) 
 	return f(node)
 }
 
+type YieldProcedureSpec interface {
+	YieldName() string
+}
+
 // ProcedureSpec specifies a query operation
 type ProcedureSpec interface {
 	Kind() ProcedureKind
