@@ -44,3 +44,27 @@ func RegisterProcedureSpec(k ProcedureKind, c CreateProcedureSpec, qks ...flux.O
 		queryOpToProcedure[qk] = append(queryOpToProcedure[qk], c)
 	}
 }
+
+type CreateRule = func() Rule
+
+var ruleNameToLogicalRule = make(map[string]Rule)
+var ruleNameToPhysicalRule = make(map[string]Rule)
+
+// RegisterLogicalRule registers the rule created by createFn with the logical planner.
+func RegisterLogicalRule(createFn CreateRule) {
+	registerRule(ruleNameToLogicalRule, createFn)
+}
+
+// RegisterPhysicalRule registers the rule created by createFn with the physical planner.
+func RegisterPhysicalRule(createFn CreateRule) {
+	registerRule(ruleNameToPhysicalRule, createFn)
+}
+
+func registerRule(ruleMap map[string]Rule, createFn CreateRule) {
+	rule := createFn()
+	name := rule.Name()
+	if _, ok := ruleMap[name]; ok {
+		panic(fmt.Errorf(`rule with name "%v" has already been registered`, name))
+	}
+	ruleMap[name] = rule
+}
