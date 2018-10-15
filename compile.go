@@ -420,14 +420,14 @@ func (t *TableObject) Equal(rhs values.Value) bool {
 	if t.Len() != r.Len() {
 		return false
 	}
-	for _, k := range t.keys() {
-		val1, ok1 := t.Get(k)
-		val2, ok2 := r.Get(k)
-		if !ok1 || !ok2 || !val1.Equal(val2) {
-			return false
-		}
-	}
-	return true
+	var isEqual = true
+	// Range over both TableObjects and
+	// compare their properties for equality
+	t.Range(func(k string, v values.Value) {
+		w, ok := r.Get(k)
+		isEqual = isEqual && ok && v.Equal(w)
+	})
+	return isEqual
 }
 func (t *TableObject) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Object, semantic.Function))
@@ -444,17 +444,12 @@ func (t *TableObject) Get(name string) (values.Value, bool) {
 	}
 }
 
-func (t *TableObject) keys() []string {
-	tableKeys := make([]string, 0, len(t.args.GetAll())+2)
-	return append(tableKeys, tableParentsKey, tableParentsKey)
-}
-
 func (t *TableObject) Set(name string, v values.Value) {
 	// immutable
 }
 
 func (t *TableObject) Len() int {
-	return len(t.keys())
+	return len(t.args.GetAll()) + 2
 }
 
 func (t *TableObject) Range(f func(name string, v values.Value)) {
