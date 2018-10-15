@@ -76,7 +76,7 @@ func (e *executor) Execute(ctx context.Context, p *plan.PlanSpec, a *Allocator) 
 }
 
 func validatePlan(p *plan.PlanSpec) error {
-	if p.Resources.ConcurrencyQuota == 0 {
+	if p.Resources().ConcurrencyQuota == 0 {
 		return errors.New("plan must have a non-zero concurrency quota")
 	}
 	return nil
@@ -87,12 +87,12 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.PlanSpec, a
 		return nil, errors.Wrap(err, "invalid plan")
 	}
 	// Set allocation limit
-	a.Limit = p.Resources.MemoryBytesQuota
+	a.Limit = p.Resources().MemoryBytesQuota
 	es := &executionState{
 		p:         p,
 		deps:      e.deps,
 		alloc:     a,
-		resources: p.Resources,
+		resources: p.Resources(),
 		results:   make(map[string]flux.Result, len(p.Results())),
 		// TODO(nathanielc): Have the planner specify the dispatcher throughput
 		dispatcher: newPoolDispatcher(10, e.logger),
@@ -288,7 +288,7 @@ func (ec executionContext) Context() context.Context {
 }
 
 func (ec executionContext) ResolveTime(qt flux.Time) Time {
-	return resolveTime(qt, ec.es.p.Now)
+	return resolveTime(qt, ec.es.p.Now())
 }
 
 func (ec executionContext) StreamContext() StreamContext {

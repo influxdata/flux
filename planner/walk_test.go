@@ -2,8 +2,10 @@ package planner_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/planner/plantest"
 )
@@ -60,7 +62,7 @@ func TestPlanSpec_BottomUpWalk(t *testing.T) {
 		},
 	}
 
-	thePlan := plantest.CreatePlanFromDAG(dag)
+	thePlan := plantest.CreatePlanFromDAG(dag, flux.ResourceManagement{}, time.Time{})
 
 	got := make([]planner.NodeID, 0, 9)
 	thePlan.BottomUpWalk(func(n planner.PlanNode) error {
@@ -111,7 +113,7 @@ func TestPlanSpec_TopDownWalk(t *testing.T) {
 		},
 	}
 
-	thePlan := plantest.CreatePlanFromDAG(dag)
+	thePlan := plantest.CreatePlanFromDAG(dag, flux.ResourceManagement{}, time.Time{})
 
 	got := make([]planner.NodeID, 0, 9)
 	thePlan.TopDownWalk(func(n planner.PlanNode) error {

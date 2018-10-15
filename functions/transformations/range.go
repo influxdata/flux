@@ -8,7 +8,6 @@ import (
 	plan "github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 const RangeKind = "range"
@@ -140,12 +139,12 @@ func createRangeTransformation(id execute.DatasetID, mode execute.AccumulationMo
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
 
-	bounds := a.StreamContext().Bounds()
-	if bounds == nil {
-		return nil, nil, errors.New("nil bounds supplied to range")
+	bounds := execute.Bounds{
+		Start: a.ResolveTime(s.Bounds.Start),
+		Stop:  a.ResolveTime(s.Bounds.Stop),
 	}
 
-	t, err := NewRangeTransformation(d, cache, s, *bounds)
+	t, err := NewRangeTransformation(d, cache, s, bounds)
 	if err != nil {
 		return nil, nil, err
 	}
