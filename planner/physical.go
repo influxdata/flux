@@ -34,8 +34,14 @@ func (pp *physicalPlanner) Plan(spec *PlanSpec) (*PlanSpec, error) {
 		return nil, err
 	}
 
-	if transformedSpec.Resources.MemoryBytesQuota == 0 {
-		transformedSpec.Resources.MemoryBytesQuota = pp.defaultMemoryLimit
+	// Update memory quota
+	if transformedSpec.resources.MemoryBytesQuota == 0 {
+		transformedSpec.resources.MemoryBytesQuota = pp.defaultMemoryLimit
+	}
+
+	// Update concurrency quota
+	if transformedSpec.resources.ConcurrencyQuota == 0 {
+		transformedSpec.resources.ConcurrencyQuota = len(spec.results)
 	}
 
 	return transformedSpec, nil

@@ -106,7 +106,7 @@ func TestFluxSpecToLogicalPlan(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			want := plantest.CreatePlanFromDAG(tc.plan)
+			want := plantest.CreatePlanFromDAG(tc.plan, flux.ResourceManagement{}, time.Time{})
 
 			thePlanner := planner.NewLogicalPlanner()
 			got, err := thePlanner.Plan(spec)

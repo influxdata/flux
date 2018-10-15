@@ -41,15 +41,22 @@ type PlanNode interface {
 
 type NodeID string
 
-// PlanSpec holds the result nodes of the query plan DAG
+// PlanSpec holds the result nodes of a query plan with associated metadata
 type PlanSpec struct {
 	results   map[PlanNode]struct{}
-	Resources flux.ResourceManagement
-	Now       time.Time
+	resources flux.ResourceManagement
+	now       time.Time
 }
 
-// NewPlanSpec instantiates a new plan spec.
-func NewPlanSpec(results []PlanNode) *PlanSpec {
+// CreatePlanSpec instantiates a new query plan with result nodes and metadata
+func CreatePlanSpec(results []PlanNode, resources flux.ResourceManagement, now time.Time) *PlanSpec {
+	plan := newPlanSpec(results)
+	plan.resources = resources
+	plan.now = now
+	return plan
+}
+
+func newPlanSpec(results []PlanNode) *PlanSpec {
 	r := make(map[PlanNode]struct{}, len(results))
 	for _, root := range results {
 		r[root] = struct{}{}
@@ -64,6 +71,16 @@ func (plan *PlanSpec) Results() []PlanNode {
 		roots = append(roots, k)
 	}
 	return roots
+}
+
+// Resources returns the resources used by the plan
+func (plan *PlanSpec) Resources() flux.ResourceManagement {
+	return plan.resources
+}
+
+// Now returns the plan's now time
+func (plan *PlanSpec) Now() time.Time {
+	return plan.now
 }
 
 // Replace replaces one of the result nodes of the query plan
