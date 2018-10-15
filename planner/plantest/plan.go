@@ -1,6 +1,9 @@
 package plantest
 
 import (
+	"time"
+
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/planner"
 )
 
@@ -15,7 +18,7 @@ type DAG struct {
 }
 
 // CreatePlanFromDAG constructs a query plan DAG from a set of nodes and edges
-func CreatePlanFromDAG(graph DAG) *planner.PlanSpec {
+func CreatePlanFromDAG(graph DAG, resources flux.ResourceManagement, now time.Time) *planner.PlanSpec {
 	predecessors := make(map[planner.PlanNode][]planner.PlanNode)
 	successors := make(map[planner.PlanNode][]planner.PlanNode)
 
@@ -42,5 +45,5 @@ func CreatePlanFromDAG(graph DAG) *planner.PlanSpec {
 		node.AddSuccessors(successors[node]...)
 	}
 
-	return planner.NewPlanSpec(roots)
+	return planner.CreatePlanSpec(roots, resources, now)
 }

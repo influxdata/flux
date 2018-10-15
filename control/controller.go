@@ -296,11 +296,11 @@ func (c *Controller) processQuery(q *Query) (pop bool, err error) {
 			return true, errors.Wrap(err, "failed to create physical plan")
 		}
 		q.plan = p
-		q.concurrency = p.Resources.ConcurrencyQuota
+		q.concurrency = p.Resources().ConcurrencyQuota
 		if q.concurrency > c.maxConcurrency {
 			q.concurrency = c.maxConcurrency
 		}
-		q.memory = p.Resources.MemoryBytesQuota
+		q.memory = p.Resources().MemoryBytesQuota
 		if c.verbose {
 			log.Println("physical plan", plan.Formatted(q.plan))
 		}
@@ -320,7 +320,7 @@ func (c *Controller) processQuery(q *Query) (pop bool, err error) {
 		}
 		q.alloc = new(execute.Allocator)
 		// TODO: pass the plan to the executor here
-		r, err := c.executor.Execute(q.executeCtx, nil, q.alloc)
+		r, err := c.executor.Execute(q.executeCtx, q.plan, q.alloc)
 		if err != nil {
 			return true, errors.Wrap(err, "failed to execute query")
 		}
