@@ -93,7 +93,7 @@ func (lpn *LogicalPlanNode) ID() NodeID {
 	return lpn.id
 }
 
-// Name returns the kind of procedure performed by this plan node.
+// Kind returns the kind of procedure performed by this plan node.
 func (lpn *LogicalPlanNode) Kind() ProcedureKind {
 	return lpn.Spec.Kind()
 }
