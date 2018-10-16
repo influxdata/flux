@@ -6,24 +6,11 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/planner"
+	"github.com/influxdata/flux/planner/plantest"
 )
-
-type SimpleRule struct {
-	seenNodes []planner.NodeID
-}
-
-func (sr *SimpleRule) Pattern() planner.Pattern {
-	return planner.Any()
-}
-
-func (sr *SimpleRule) Rewrite(node planner.PlanNode) (planner.PlanNode, bool) {
-	sr.seenNodes = append(sr.seenNodes, node.ID())
-	return node, false
-}
 
 func TestPlanTraversal(t *testing.T) {
 
@@ -90,16 +77,16 @@ func TestPlanTraversal(t *testing.T) {
 				t.Fatalf("Failed to create flux.Spec from text: %v", err)
 			}
 
-			simpleRule := SimpleRule{}
-			thePlanner := planner.NewLogicalPlanner(planner.WithRule(&simpleRule))
+			simpleRule := plantest.SimpleRule{}
+			thePlanner := planner.NewLogicalPlanner(planner.WithLogicalRule(&simpleRule))
 			_, err = thePlanner.Plan(spec)
 			if err != nil {
 				t.Fatalf("Could not plan: %v", err)
 			}
 
-			if !cmp.Equal(tc.nodeIDs, simpleRule.seenNodes) {
+			if !cmp.Equal(tc.nodeIDs, simpleRule.SeenNodes) {
 				t.Errorf("Traversal didn't match expected, -want/+got:\n%v",
-					cmp.Diff(tc.nodeIDs, simpleRule.seenNodes))
+					cmp.Diff(tc.nodeIDs, simpleRule.SeenNodes))
 			}
 		})
 	}
