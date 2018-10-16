@@ -2,7 +2,6 @@ package plantest
 
 import (
 	"fmt"
-
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/semantic/semantictest"
@@ -95,7 +94,7 @@ func cmpPlanNode(p, q planner.PlanNode) error {
 	// The specifications of both procedures must be the same
 	if !cmp.Equal(p.ProcedureSpec(), q.ProcedureSpec(), semantictest.CmpOptions...) {
 		return fmt.Errorf("procedure specs not equal -want(%s)/+got(%s) %s",
-			p.ID(), q.ID(), cmp.Diff(p.ProcedureSpec(), q.ProcedureSpec()))
+			p.ID(), q.ID(), cmp.Diff(p.ProcedureSpec(), q.ProcedureSpec(), semantictest.CmpOptions...))
 	}
 
 	return nil
