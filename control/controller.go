@@ -296,11 +296,11 @@ func (c *Controller) processQuery(q *Query) (pop bool, err error) {
 			return true, errors.Wrap(err, "failed to create physical plan")
 		}
 		q.plan = p
-		q.concurrency = p.Resources().ConcurrencyQuota
+		q.concurrency = p.Resources.ConcurrencyQuota
 		if q.concurrency > c.maxConcurrency {
 			q.concurrency = c.maxConcurrency
 		}
-		q.memory = p.Resources().MemoryBytesQuota
+		q.memory = p.Resources.MemoryBytesQuota
 		if c.verbose {
 			log.Println("physical plan", plan.Formatted(q.plan))
 		}
