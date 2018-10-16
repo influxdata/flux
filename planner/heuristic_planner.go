@@ -51,8 +51,10 @@ func (p *heuristicPlanner) Plan(inputPlan *PlanSpec) (*PlanSpec, error) {
 
 		visited := make(map[PlanNode]struct{})
 
-		nodeStack := make([]PlanNode, len(inputPlan.Results()))
-		copy(nodeStack, inputPlan.Results())
+		nodeStack := make([]PlanNode, 0, len(inputPlan.Roots))
+		for root := range inputPlan.Roots {
+			nodeStack = append(nodeStack, root)
+		}
 
 		anyChanged = false
 		for len(nodeStack) > 0 {

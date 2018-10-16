@@ -3,9 +3,7 @@ package planner_test
 import (
 	"math"
 	"testing"
-	"time"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/planner/plantest"
@@ -18,14 +16,13 @@ func TestPhysicalOptions(t *testing.T) {
 	}
 
 	for _, options := range configs {
-		dag := plantest.DAG{
+		spec := &plantest.LogicalPlanSpec{
 			Nodes: []planner.PlanNode{
 				planner.CreateLogicalNode("from0", &inputs.FromProcedureSpec{}),
 			},
-			Edges: [][2]int{},
 		}
 
-		inputPlan := plantest.CreatePlanFromDAG(dag, flux.ResourceManagement{}, time.Time{})
+		inputPlan := plantest.CreateLogicalPlanSpec(spec)
 
 		thePlanner := planner.NewPhysicalPlanner(options...)
 		outputPlan, err := thePlanner.Plan(inputPlan)
@@ -35,11 +32,11 @@ func TestPhysicalOptions(t *testing.T) {
 
 		// If option was specified, we should have overridden the default memory quota.
 		if len(options) > 0 {
-			if outputPlan.Resources().MemoryBytesQuota != 16384 {
+			if outputPlan.Resources.MemoryBytesQuota != 16384 {
 				t.Errorf("Expected memory quota of 16384 with option specified")
 			}
 		} else {
-			if outputPlan.Resources().MemoryBytesQuota != math.MaxInt64 {
+			if outputPlan.Resources.MemoryBytesQuota != math.MaxInt64 {
 				t.Errorf("Expected memory quota of math.MaxInt64 with no options specified")
 			}
 		}
