@@ -31,9 +31,11 @@ func (p *heuristicPlanner) matchRules(node PlanNode) (PlanNode, bool) {
 	}
 
 	for _, rule := range p.rules[node.Kind()] {
-		newNode, changed := rule.Rewrite(node)
-		anyChanged = anyChanged || changed
-		node = newNode
+		if rule.Pattern().Match(node) {
+			newNode, changed := rule.Rewrite(node)
+			anyChanged = anyChanged || changed
+			node = newNode
+		}
 	}
 
 	return node, anyChanged
@@ -103,12 +105,15 @@ func updateSuccessors(plan *PlanSpec, oldNode, newNode PlanNode) {
 	}
 
 	for _, succ := range oldNode.Successors() {
-		i := 0
-		for ; i < len(succ.Predecessors()); i++ {
-			succ.Predecessors()[i] = newNode
+		found := false
+		for i, succPred := range succ.Predecessors() {
+			if succPred == oldNode {
+				found = true
+				succ.Predecessors()[i] = newNode
+			}
 		}
 
-		if i == len(succ.Predecessors()) {
+		if !found {
 			panic("Inconsistent plan graph: successor does not have edge back to predecessor")
 		}
 	}

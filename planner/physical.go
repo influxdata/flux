@@ -157,6 +157,15 @@ func (ppn *PhysicalPlanNode) Kind() ProcedureKind {
 	return ppn.Spec.Kind()
 }
 
+func (ppn *PhysicalPlanNode) ShallowCopy() PlanNode {
+	newNode := new(PhysicalPlanNode)
+	newNode.edges = ppn.edges.shallowCopy()
+	newNode.id = ppn.id + "_copy"
+	// TODO: the type assertion below... is it needed?
+	newNode.Spec = ppn.Spec.Copy().(PhysicalProcedureSpec)
+	return newNode
+}
+
 // Cost provides the self-cost (i.e., does not include the cost of its predecessors) for
 // this plan node.  Caller must provide statistics of predecessors to this node.
 func (ppn *PhysicalPlanNode) Cost(inStats []Statistics) (cost Cost, outStats Statistics) {
