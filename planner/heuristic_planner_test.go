@@ -77,17 +77,16 @@ func TestPlanTraversal(t *testing.T) {
 				t.Fatalf("Failed to create flux.Spec from text: %v", err)
 			}
 
-			var seenNodes []planner.NodeID
-			simpleRule := plantest.SimpleRule{SeenNodes: &seenNodes}
-			thePlanner := planner.NewLogicalPlanner(planner.WithLogicalRule(simpleRule))
+			simpleRule := plantest.SimpleRule{}
+			thePlanner := planner.NewLogicalPlanner(planner.WithLogicalRule(&simpleRule))
 			_, err = thePlanner.Plan(spec)
 			if err != nil {
 				t.Fatalf("Could not plan: %v", err)
 			}
 
-			if !cmp.Equal(tc.nodeIDs, seenNodes) {
+			if !cmp.Equal(tc.nodeIDs, simpleRule.SeenNodes) {
 				t.Errorf("Traversal didn't match expected, -want/+got:\n%v",
-					cmp.Diff(tc.nodeIDs, seenNodes))
+					cmp.Diff(tc.nodeIDs, simpleRule.SeenNodes))
 			}
 		})
 	}

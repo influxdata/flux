@@ -12,12 +12,11 @@ import (
 )
 
 func TestRuleRegistration(t *testing.T) {
-	var seenNodes []planner.NodeID
-	simpleRule := plantest.SimpleRule{SeenNodes: &seenNodes}
+	simpleRule := plantest.SimpleRule{}
 
 	// Register the rule,
 	// then check seenNodes below to check that the rule was invoked.
-	planner.RegisterLogicalRule(simpleRule)
+	planner.RegisterLogicalRule(&simpleRule)
 
 	now := time.Now().UTC()
 	fluxSpec, err := flux.Compile(context.Background(), `from(bucket: "telegraf") |> range(start: -5m)`, now)
@@ -32,13 +31,13 @@ func TestRuleRegistration(t *testing.T) {
 	}
 
 	wantSeenNodes := []planner.NodeID{"range1", "from0"}
-	if !cmp.Equal(wantSeenNodes, seenNodes) {
-		t.Errorf("did not find expected seen nodes, -want/+got:\n%v", cmp.Diff(wantSeenNodes, seenNodes))
+	if !cmp.Equal(wantSeenNodes, simpleRule.SeenNodes) {
+		t.Errorf("did not find expected seen nodes, -want/+got:\n%v", cmp.Diff(wantSeenNodes, simpleRule.SeenNodes))
 	}
 
 	// Test rule registration for the physical planner too.
-	seenNodes = seenNodes[0:0]
-	planner.RegisterPhysicalRule(simpleRule)
+	simpleRule.SeenNodes = simpleRule.SeenNodes[0:0]
+	planner.RegisterPhysicalRule(&simpleRule)
 
 	physicalPlanner := planner.NewPhysicalPlanner()
 	_, err = physicalPlanner.Plan(logicalPlanSpec)
@@ -46,7 +45,7 @@ func TestRuleRegistration(t *testing.T) {
 		t.Fatalf("could not do physical planning: %v", err)
 	}
 
-	if !cmp.Equal(wantSeenNodes, seenNodes) {
-		t.Errorf("did not find expected seen nodes, -want/+got:\n%v", cmp.Diff(wantSeenNodes, seenNodes))
+	if !cmp.Equal(wantSeenNodes, simpleRule.SeenNodes) {
+		t.Errorf("did not find expected seen nodes, -want/+got:\n%v", cmp.Diff(wantSeenNodes, simpleRule.SeenNodes))
 	}
 }
