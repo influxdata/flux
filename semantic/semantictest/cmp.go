@@ -12,6 +12,7 @@ var CmpOptions = []cmp.Option{
 	cmpopts.IgnoreUnexported(semantic.ArrayExpression{}),
 	cmpopts.IgnoreUnexported(semantic.ObjectExpression{}),
 	cmpopts.IgnoreUnexported(semantic.FunctionExpression{}),
+	cmpopts.IgnoreUnexported(semantic.FunctionParam{}),
 	cmpopts.IgnoreUnexported(semantic.IdentifierExpression{}),
 	cmpopts.IgnoreUnexported(semantic.FunctionParam{}),
 	cmp.Comparer(func(x, y *regexp.Regexp) bool { return x.String() == y.String() }),

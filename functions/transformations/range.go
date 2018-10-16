@@ -128,6 +128,9 @@ func (s *RangeProcedureSpec) Kind() plan.ProcedureKind {
 func (s *RangeProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(RangeProcedureSpec)
 	ns.Bounds = s.Bounds
+	ns.TimeCol = s.TimeCol
+	ns.StartCol = s.StartCol
+	ns.StopCol = s.StopCol
 	return ns
 }
 
