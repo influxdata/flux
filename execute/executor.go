@@ -76,7 +76,7 @@ func (e *executor) Execute(ctx context.Context, p *plan.PlanSpec, a *Allocator) 
 }
 
 func validatePlan(p *plan.PlanSpec) error {
-	if p.Resources().ConcurrencyQuota == 0 {
+	if p.Resources.ConcurrencyQuota == 0 {
 		return errors.New("plan must have a non-zero concurrency quota")
 	}
 	return nil
@@ -87,13 +87,13 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.PlanSpec, a
 		return nil, errors.Wrap(err, "invalid plan")
 	}
 	// Set allocation limit
-	a.Limit = p.Resources().MemoryBytesQuota
+	a.Limit = p.Resources.MemoryBytesQuota
 	es := &executionState{
 		p:         p,
 		deps:      e.deps,
 		alloc:     a,
-		resources: p.Resources(),
-		results:   make(map[string]flux.Result, len(p.Results())),
+		resources: p.Resources,
+		results:   make(map[string]flux.Result, len(p.Results)),
 		// TODO(nathanielc): Have the planner specify the dispatcher throughput
 		dispatcher: newPoolDispatcher(10, e.logger),
 	}
@@ -106,6 +106,13 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.PlanSpec, a
 	if err := p.BottomUpWalk(v.Visit); err != nil {
 		return nil, err
 	}
+
+	for name, result := range p.Results {
+		r := newResult(name)
+		v.es.results[name] = r
+		v.nodes[result].AddTransformation(r)
+	}
+
 	return v.es, nil
 }
 
@@ -143,33 +150,8 @@ func (v *createExecutionNodeVisitor) Visit(node plan.PlanNode) error {
 		ec.parents[i] = DatasetID(id)
 	}
 
-	// TODO what to do about stream context?
-
-	switch {
-	case len(node.Successors()) == 0:
-		// If node is a root, create a result.
-		// No need to add transports to predecessors as results pull data from downstream.
-		yield, ok := spec.(plan.YieldProcedureSpec)
-
-		if !ok {
-			return fmt.Errorf("expected yield, instead got %T", spec)
-		}
-
-		numPreds := len(node.Predecessors())
-
-		if numPreds != 1 {
-			return fmt.Errorf("expected 1 predecessor, instead got %d", numPreds)
-		}
-
-		pred := node.Predecessors()[0]
-		name := yield.YieldName()
-
-		result := newResult(name)
-		v.es.results[name] = result
-		v.nodes[pred].AddTransformation(result)
-
-	case len(node.Predecessors()) == 0:
-		// If node is a leaf, create a source
+	// If node is a leaf, create a source
+	if len(node.Predecessors()) == 0 {
 		createSourceFn, ok := procedureToSource[kind]
 
 		if !ok {
@@ -184,8 +166,8 @@ func (v *createExecutionNodeVisitor) Visit(node plan.PlanNode) error {
 
 		v.es.sources = append(v.es.sources, source)
 		v.nodes[node] = source
+	} else {
 
-	default:
 		// If node is internal, create a transformation.
 		// For each predecessor, add a transport for sending data upstream.
 		createTransformationFn, ok := procedureToTransformation[kind]
@@ -288,7 +270,7 @@ func (ec executionContext) Context() context.Context {
 }
 
 func (ec executionContext) ResolveTime(qt flux.Time) Time {
-	return resolveTime(qt, ec.es.p.Now())
+	return resolveTime(qt, ec.es.p.Now)
 }
 
 func (ec executionContext) StreamContext() StreamContext {
