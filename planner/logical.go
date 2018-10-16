@@ -107,6 +107,14 @@ func (lpn *LogicalPlanNode) ProcedureSpec() ProcedureSpec {
 	return lpn.Spec
 }
 
+func (lpn *LogicalPlanNode) ShallowCopy() PlanNode {
+	newNode := new(LogicalPlanNode)
+	newNode.edges = lpn.edges.shallowCopy()
+	newNode.id = lpn.id + "_copy"
+	newNode.Spec = lpn.Spec.Copy()
+	return newNode
+}
+
 // createLogicalPlan creates a logical query plan from a flux spec
 func createLogicalPlan(spec *flux.Spec, a Administration) (*PlanSpec, error) {
 	nodes := make(map[flux.OperationID]PlanNode, len(spec.Operations))
