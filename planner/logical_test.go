@@ -160,6 +160,7 @@ func mergeFilterSpecs(a, b *transformations.FilterProcedureSpec) planner.Procedu
 	bExp, bOK := b.Fn.Body.(semantic.Expression)
 
 	if !aOK || !bOK {
+		// Note that this is just a unit test, so "return" statements are not handled.
 		panic("function body not expression")
 	}
 

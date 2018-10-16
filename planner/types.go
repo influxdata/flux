@@ -228,7 +228,17 @@ func (e *edges) shallowCopy() edges {
 }
 
 // MergeLogicalPlanNodes merges top and bottom plan nodes into a new plan node, with the
-// given procedure spec.  The returned node will have its predecessors set to the predecessors
+// given procedure spec.
+//
+//     V1     V2       V1            V2       <-- successors
+//       \   /
+//        top             mergedNode
+//         |      ==>         |
+//       bottom               W
+//         |
+//         W
+//
+// The returned node will have its predecessors set to the predecessors
 // of "bottom", however, it's successors will not be set---it will be the responsibility of
 // the planner to attach the merged node to its successors.
 func MergeLogicalPlanNodes(top, bottom PlanNode, procSpec ProcedureSpec) PlanNode {
@@ -258,13 +268,13 @@ func MergeLogicalPlanNodes(top, bottom PlanNode, procSpec ProcedureSpec) PlanNod
 
 // SwapPlanNodes swaps two plan nodes and returns an equivalent sub-plan with the nodes swapped.
 //
-//     V    V
-//     |
-//     A    B
-//     |    |
-//     B    copy of A
-//     |    |
-//     W    W
+//     V1   V2        V1   V2
+//       \ /
+//        A              B
+//        |     ==>      |
+//        B          copy of A
+//        |              |
+//        W              W
 //
 // Note that successors of the original top node will not be updated, and the returned
 // plan node will have no successors.  It will be the responsibility of the planner to
