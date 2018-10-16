@@ -25,8 +25,14 @@ func NewLogicalPlanner(options ...LogicalOption) LogicalPlanner {
 		heuristicPlanner: newHeuristicPlanner(),
 	}
 
-	// TODO: add any logical rules that have been registered:
-	thePlanner.addRules([]Rule{})
+	rules := make([]Rule, len(ruleNameToLogicalRule))
+	i := 0
+	for _, v := range ruleNameToLogicalRule {
+		rules[i] = v
+		i++
+	}
+
+	thePlanner.addRules(rules)
 
 	// Options may add or remove rules, so process them after we've
 	// added registered rules.
@@ -52,9 +58,9 @@ type logicalPlanner struct {
 	*heuristicPlanner
 }
 
-// WithRule produces a logical planner option that forces a particular rule to be
+// WithLogicalRule produces a logical planner option that forces a particular rule to be
 // applied.
-func WithRule(rule Rule) LogicalOption {
+func WithLogicalRule(rule Rule) LogicalOption {
 	return logicalOption(func(lp *logicalPlanner) {
 		lp.addRules([]Rule{rule})
 	})
