@@ -78,7 +78,7 @@ func TestPlanTraversal(t *testing.T) {
 			}
 
 			var seenNodes []planner.NodeID
-			simpleRule := plantest.CreateSimpleRuleFn(&seenNodes)()
+			simpleRule := plantest.SimpleRule{SeenNodes: &seenNodes}
 			thePlanner := planner.NewLogicalPlanner(planner.WithLogicalRule(simpleRule))
 			_, err = thePlanner.Plan(spec)
 			if err != nil {
