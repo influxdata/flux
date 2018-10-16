@@ -22,13 +22,13 @@ func TestFluxSpecToLogicalPlan(t *testing.T) {
 		// Flux query string to translate
 		query string
 
-		// Expected query plan
-		plan plantest.DAG
+		// Expected logical query plan
+		spec *plantest.LogicalPlanSpec
 	}{
 		{
 			name:  `from() |> range()`,
 			query: `from(bucket: "my-bucket") |> range(start: -1h)`,
-			plan: plantest.DAG{
+			spec: &plantest.LogicalPlanSpec{
 				Nodes: []planner.PlanNode{
 					planner.CreateLogicalNode("from0", &inputs.FromProcedureSpec{
 						Bucket: "my-bucket",
@@ -56,7 +56,7 @@ func TestFluxSpecToLogicalPlan(t *testing.T) {
 		{
 			name:  `from() |> range() |> filter()`,
 			query: `from(bucket: "my-bucket") |> range(start: -1h) |> filter(fn: (r) => true)`,
-			plan: plantest.DAG{
+			spec: &plantest.LogicalPlanSpec{
 				Nodes: []planner.PlanNode{
 					planner.CreateLogicalNode("from0", &inputs.FromProcedureSpec{
 						Bucket: "my-bucket",
@@ -106,7 +106,8 @@ func TestFluxSpecToLogicalPlan(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			want := plantest.CreatePlanFromDAG(tc.plan, flux.ResourceManagement{}, time.Time{})
+			tc.spec.Now = now
+			want := plantest.CreateLogicalPlanSpec(tc.spec)
 
 			thePlanner := planner.NewLogicalPlanner()
 			got, err := thePlanner.Plan(spec)

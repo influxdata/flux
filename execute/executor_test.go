@@ -6,6 +6,7 @@ import (
 	"time"
 	"math"
 
+	"github.com/influxdata/flux/ast"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
@@ -25,12 +26,56 @@ func init() {
 func TestExecutor_Execute(t *testing.T) {
 	testcases := []struct {
 		name string
-		plan plantest.DAG
+		spec *plantest.PhysicalPlanSpec
 		want map[string][]*executetest.Table
 	}{
 		{
+			name: `from`,
+			spec: &plantest.PhysicalPlanSpec{
+				Nodes: []planner.PlanNode{
+					planner.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
+						[]*executetest.Table{&executetest.Table{
+							KeyCols: []string{"_start", "_stop"},
+							ColMeta: []flux.ColMeta{
+								{Label: "_start", Type: flux.TTime},
+								{Label: "_stop", Type: flux.TTime},
+								{Label: "_time", Type: flux.TTime},
+								{Label: "_value", Type: flux.TFloat},
+							},
+							Data: [][]interface{}{
+								{execute.Time(0), execute.Time(5), execute.Time(0), 1.0},
+								{execute.Time(0), execute.Time(5), execute.Time(1), 2.0},
+								{execute.Time(0), execute.Time(5), execute.Time(2), 3.0},
+								{execute.Time(0), execute.Time(5), execute.Time(3), 4.0},
+								{execute.Time(0), execute.Time(5), execute.Time(4), 5.0},
+							},
+						}},
+					)),
+				},
+				Results: map[string]int{"_result": 0},
+			},
+			want: map[string][]*executetest.Table{
+				"_result": []*executetest.Table{{
+					KeyCols: []string{"_start", "_stop"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), execute.Time(5), execute.Time(0), 1.0},
+						{execute.Time(0), execute.Time(5), execute.Time(1), 2.0},
+						{execute.Time(0), execute.Time(5), execute.Time(2), 3.0},
+						{execute.Time(0), execute.Time(5), execute.Time(3), 4.0},
+						{execute.Time(0), execute.Time(5), execute.Time(4), 5.0},
+					},
+				}},
+			},
+		},
+		{
 			name: `from with filter`,
-			plan: plantest.DAG{
+			spec: &plantest.PhysicalPlanSpec{
 				Nodes: []planner.PlanNode{
 					planner.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{&executetest.Table{
@@ -57,16 +102,24 @@ func TestExecutor_Execute(t *testing.T) {
 									Key: &semantic.Identifier{Name: "r"},
 								},
 							},
-							Body: &semantic.BooleanLiteral{Value: true},
+							Body: &semantic.BinaryExpression{
+								Operator: ast.LessThanOperator,
+								Left: &semantic.MemberExpression{
+									Property: "_value",
+									Object: &semantic.IdentifierExpression{
+										Name: "r",
+									},
+								},
+								Right: &semantic.FloatLiteral{Value: 2.5},
+							},
 						},
-					}),
-					planner.CreatePhysicalNode("yield", &transformations.YieldProcedureSpec{
-						Name: "_result",
 					}),
 				},
 				Edges: [][2]int{
 					{0, 1},
-					{1, 2},
+				},
+				Results: map[string]int{
+					"_result": 1,
 				},
 			},
 			want: map[string][]*executetest.Table{
@@ -81,16 +134,13 @@ func TestExecutor_Execute(t *testing.T) {
 					Data: [][]interface{}{
 						{execute.Time(0), execute.Time(5), execute.Time(0), 1.0},
 						{execute.Time(0), execute.Time(5), execute.Time(1), 2.0},
-						{execute.Time(0), execute.Time(5), execute.Time(2), 3.0},
-						{execute.Time(0), execute.Time(5), execute.Time(3), 4.0},
-						{execute.Time(0), execute.Time(5), execute.Time(4), 5.0},
 					},
 				}},
 			},
 		},
 		{
 			name: `from with filter with multiple tables`,
-			plan: plantest.DAG{
+			spec: &plantest.PhysicalPlanSpec{
 				Nodes: []planner.PlanNode{
 					planner.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{
@@ -135,16 +185,24 @@ func TestExecutor_Execute(t *testing.T) {
 									Key: &semantic.Identifier{Name: "r"},
 								},
 							},
-							Body: &semantic.BooleanLiteral{Value: true},
+							Body: &semantic.BinaryExpression{
+								Operator: ast.LessThanOperator,
+								Left: &semantic.MemberExpression{
+									Property: "_value",
+									Object: &semantic.IdentifierExpression{
+										Name: "r",
+									},
+								},
+								Right: &semantic.FloatLiteral{Value: 7.5},
+							},
 						},
-					}),
-					planner.CreatePhysicalNode("yield", &transformations.YieldProcedureSpec{
-						Name: "_result",
 					}),
 				},
 				Edges: [][2]int{
 					{0, 1},
-					{1, 2},
+				},
+				Results: map[string]int{
+					"_result": 1,
 				},
 			},
 			want: map[string][]*executetest.Table{
@@ -177,8 +235,6 @@ func TestExecutor_Execute(t *testing.T) {
 							{execute.Time(5), execute.Time(10), execute.Time(5), 5.0},
 							{execute.Time(5), execute.Time(10), execute.Time(6), 6.0},
 							{execute.Time(5), execute.Time(10), execute.Time(7), 7.0},
-							{execute.Time(5), execute.Time(10), execute.Time(8), 8.0},
-							{execute.Time(5), execute.Time(10), execute.Time(9), 9.0},
 						},
 					},
 				},
@@ -186,7 +242,7 @@ func TestExecutor_Execute(t *testing.T) {
 		},
 		{
 			name: `multiple aggregates`,
-			plan: plantest.DAG{
+			spec: &plantest.PhysicalPlanSpec{
 				Nodes: []planner.PlanNode{
 					planner.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{
@@ -227,22 +283,18 @@ func TestExecutor_Execute(t *testing.T) {
 					planner.CreatePhysicalNode("sum", &transformations.SumProcedureSpec{
 						AggregateConfig: execute.DefaultAggregateConfig,
 					}),
-					planner.CreatePhysicalNode("yield", &transformations.YieldProcedureSpec{
-						Name: "sum",
-					}),
 					planner.CreatePhysicalNode("mean", &transformations.MeanProcedureSpec{
 						AggregateConfig: execute.DefaultAggregateConfig,
-					}),
-					planner.CreatePhysicalNode("yield", &transformations.YieldProcedureSpec{
-						Name: "mean",
 					}),
 
 				},
 				Edges: [][2]int{
 					{0, 1},
-					{1, 2},
-					{0, 3},
-					{3, 4},
+					{0, 2},
+				},
+				Results: map[string]int{
+					"sum": 1,
+					"mean": 2,
 				},
 			},
 			want: map[string][]*executetest.Table{
@@ -298,7 +350,7 @@ func TestExecutor_Execute(t *testing.T) {
 		},
 		{
 			name: `diamond join`,
-			plan: plantest.DAG{
+			spec: &plantest.PhysicalPlanSpec{
 				Nodes: []planner.PlanNode{
 					planner.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{
@@ -365,9 +417,6 @@ func TestExecutor_Execute(t *testing.T) {
 							planner.ProcedureIDFromOperationID("count"): "b",
 						},
 					}),
-					planner.CreatePhysicalNode("yield", &transformations.YieldProcedureSpec{
-						Name: "_result",
-					}),
 
 				},
 				Edges: [][2]int{
@@ -375,7 +424,9 @@ func TestExecutor_Execute(t *testing.T) {
 					{0, 2},
 					{1, 3},
 					{2, 3},
-					{3, 4},
+				},
+				Results: map[string]int{
+					"_result": 3,
 				},
 			},
 			want: map[string][]*executetest.Table{
@@ -425,13 +476,15 @@ func TestExecutor_Execute(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 
-			resources := flux.ResourceManagement{
+			tc.spec.Resources = flux.ResourceManagement{
 				ConcurrencyQuota: 1,
 				MemoryBytesQuota: math.MaxInt64,
 			}
 
+			tc.spec.Now = time.Now()
+
 			// Construct physical query plan
-			plan := plantest.CreatePlanFromDAG(tc.plan, resources, time.Now())
+			plan := plantest.CreatePhysicalPlanSpec(tc.spec)
 
 			exe := execute.NewExecutor(nil, zaptest.NewLogger(t))
 			results, err := exe.Execute(context.Background(), plan, executetest.UnlimitedAllocator)

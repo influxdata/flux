@@ -2,10 +2,8 @@ package planner_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/planner/plantest"
 )
@@ -26,7 +24,7 @@ func makeNode(id string) planner.PlanNode {
 }
 
 func TestPlanSpec_BottomUpWalk(t *testing.T) {
-	dag := plantest.DAG{
+	spec := &plantest.LogicalPlanSpec{
 		//  0 1 2  additional edge (3->2)
 		//  |\|\|
 		//  3 4 5  additional edge (8->3)
@@ -62,7 +60,7 @@ func TestPlanSpec_BottomUpWalk(t *testing.T) {
 		},
 	}
 
-	thePlan := plantest.CreatePlanFromDAG(dag, flux.ResourceManagement{}, time.Time{})
+	thePlan := plantest.CreateLogicalPlanSpec(spec)
 
 	got := make([]planner.NodeID, 0, 9)
 	thePlan.BottomUpWalk(func(n planner.PlanNode) error {
@@ -77,7 +75,7 @@ func TestPlanSpec_BottomUpWalk(t *testing.T) {
 }
 
 func TestPlanSpec_TopDownWalk(t *testing.T) {
-	dag := plantest.DAG{
+	spec := &plantest.LogicalPlanSpec{
 		//  0 1 2  additional edge (3->2)
 		//  |\|\|
 		//  3 4 5  additional edge (8->3)
@@ -113,7 +111,7 @@ func TestPlanSpec_TopDownWalk(t *testing.T) {
 		},
 	}
 
-	thePlan := plantest.CreatePlanFromDAG(dag, flux.ResourceManagement{}, time.Time{})
+	thePlan := plantest.CreateLogicalPlanSpec(spec)
 
 	got := make([]planner.NodeID, 0, 9)
 	thePlan.TopDownWalk(func(n planner.PlanNode) error {

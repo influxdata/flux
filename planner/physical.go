@@ -1,6 +1,10 @@
 package planner
 
-import "math"
+import (
+	"errors"
+	"fmt"
+	"math"
+)
 
 // PhysicalPlanner performs transforms a logical plan to a physical plan,
 // by applying any registered physical rules.
@@ -40,17 +44,58 @@ func (pp *physicalPlanner) Plan(spec *PlanSpec) (*PlanSpec, error) {
 		return nil, err
 	}
 
+	// Convert yields into result list
+	// TODO: Implement this via a transformation rule
+	final, err := removeYields(transformedSpec)
+	if err != nil {
+		return nil, err
+	}
+
 	// Update memory quota
-	if transformedSpec.resources.MemoryBytesQuota == 0 {
-		transformedSpec.resources.MemoryBytesQuota = pp.defaultMemoryLimit
+	if final.Resources.MemoryBytesQuota == 0 {
+		final.Resources.MemoryBytesQuota = pp.defaultMemoryLimit
 	}
 
 	// Update concurrency quota
-	if transformedSpec.resources.ConcurrencyQuota == 0 {
-		transformedSpec.resources.ConcurrencyQuota = len(spec.results)
+	if final.Resources.ConcurrencyQuota == 0 {
+		final.Resources.ConcurrencyQuota = len(spec.Results)
 	}
 
-	return transformedSpec, nil
+	return final, nil
+}
+
+// TODO: This procedure should be encapsulated in a yield rewrite rule
+func removeYields(plan *PlanSpec) (*PlanSpec, error) {
+	for root := range plan.Roots {
+
+		name := DefaultYieldName
+
+		if yield, ok := root.ProcedureSpec().(YieldProcedureSpec); ok {
+
+			name = yield.YieldName()
+
+			if len(root.Predecessors()) != 1 {
+				return nil, errors.New("yield must have exactly one predecessor")
+			}
+
+			if _, ok := plan.Results[name]; ok {
+				return nil, fmt.Errorf("found duplicate yield name %q", name)
+			}
+
+			newRoot := root.Predecessors()[0]
+			newRoot.RemoveSuccessor(root)
+			plan.Replace(root, newRoot)
+			plan.Results[name] = newRoot
+			continue
+		}
+
+		if _, ok := plan.Results[name]; ok {
+			return nil, fmt.Errorf("found duplicate yield name %q", name)
+		}
+
+		plan.Results[name] = root
+	}
+	return plan, nil
 }
 
 type physicalPlanner struct {

@@ -27,15 +27,12 @@ type PlanNode interface {
 	// Type of procedure represented by this node
 	Kind() ProcedureKind
 
-	// The types of the tables produced by this node
-	// Is it possible to know this at plan time?
-	// Type() []semantic.Type
-
 	// Helper methods for manipulating a plan
 	// These methods are used during planning
 	AddSuccessors(...PlanNode)
 	AddPredecessors(...PlanNode)
 	RemovePredecessor(PlanNode)
+	RemoveSuccessor(PlanNode)
 	ClearSuccessors()
 }
 
@@ -43,50 +40,24 @@ type NodeID string
 
 // PlanSpec holds the result nodes of a query plan with associated metadata
 type PlanSpec struct {
-	results   map[PlanNode]struct{}
-	resources flux.ResourceManagement
-	now       time.Time
+	Roots     map[PlanNode]struct{}
+	Results   map[string]PlanNode
+	Resources flux.ResourceManagement
+	Now       time.Time
 }
 
-// CreatePlanSpec instantiates a new query plan with result nodes and metadata
-func CreatePlanSpec(results []PlanNode, resources flux.ResourceManagement, now time.Time) *PlanSpec {
-	plan := newPlanSpec(results)
-	plan.resources = resources
-	plan.now = now
-	return plan
-}
-
-func newPlanSpec(results []PlanNode) *PlanSpec {
-	r := make(map[PlanNode]struct{}, len(results))
-	for _, root := range results {
-		r[root] = struct{}{}
+// NewPlanSpec initializes a new query plan
+func NewPlanSpec() *PlanSpec {
+	return &PlanSpec{
+		Roots:   make(map[PlanNode]struct{}),
+		Results: make(map[string]PlanNode),
 	}
-	return &PlanSpec{results: r}
 }
 
-// Results returns the successor-less nodes of the query plan
-func (plan *PlanSpec) Results() []PlanNode {
-	roots := []PlanNode{}
-	for k := range plan.results {
-		roots = append(roots, k)
-	}
-	return roots
-}
-
-// Resources returns the resources used by the plan
-func (plan *PlanSpec) Resources() flux.ResourceManagement {
-	return plan.resources
-}
-
-// Now returns the plan's now time
-func (plan *PlanSpec) Now() time.Time {
-	return plan.now
-}
-
-// Replace replaces one of the result nodes of the query plan
-func (plan *PlanSpec) Replace(result, with PlanNode) {
-	delete(plan.results, result)
-	plan.results[with] = struct{}{}
+// Replace replaces one of the root nodes of the query plan
+func (plan *PlanSpec) Replace(root, with PlanNode) {
+	delete(plan.Roots, root)
+	plan.Roots[with] = struct{}{}
 }
 
 // TopDownWalk will execute f for each plan node in the PlanSpec.
@@ -94,7 +65,10 @@ func (plan *PlanSpec) Replace(result, with PlanNode) {
 func (plan *PlanSpec) TopDownWalk(f func(node PlanNode) error) error {
 	visited := make(map[PlanNode]struct{})
 
-	roots := plan.Results()
+	roots := make([]PlanNode, 0, len(plan.Roots))
+	for root := range plan.Roots {
+		roots = append(roots, root)
+	}
 
 	// Make sure to sort the roots first otherwise
 	// an in-consistent walk order is possible.
@@ -122,7 +96,10 @@ func (plan *PlanSpec) TopDownWalk(f func(node PlanNode) error) error {
 func (plan *PlanSpec) BottomUpWalk(f func(PlanNode) error) error {
 	visited := make(map[PlanNode]struct{})
 
-	roots := plan.Results()
+	roots := make([]PlanNode, 0, len(plan.Roots))
+	for root := range plan.Roots {
+		roots = append(roots, root)
+	}
 
 	// Make sure to sort the roots first otherwise
 	// an in-consistent walk order is possible.
@@ -212,6 +189,23 @@ func (e *edges) RemovePredecessor(node PlanNode) {
 		e.predecessors = e.predecessors[:idx]
 	} else {
 		e.predecessors = append(e.predecessors[:idx], e.predecessors[idx+1:]...)
+	}
+}
+
+func (e *edges) RemoveSuccessor(node PlanNode) {
+	idx := -1
+	for i, succ := range e.successors {
+		if node == succ {
+			idx = i
+			break
+		}
+	}
+	if idx == -1 {
+		return
+	} else if idx == len(e.successors)-1 {
+		e.successors = e.successors[:idx]
+	} else {
+		e.successors = append(e.successors[:idx], e.successors[idx+1:]...)
 	}
 }
 
