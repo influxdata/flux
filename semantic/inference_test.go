@@ -310,7 +310,7 @@ func TestInferTypes(t *testing.T) {
 			},
 			solution: &solutionVisitor{
 				f: func(node semantic.Node) semantic.PolyType {
-					f := new(semantic.Fresher)
+					f := semantic.NewFresher()
 					tv := f.Fresh()
 					in := semantic.NewObjectPolyType(map[string]semantic.PolyType{
 						"x": tv,
@@ -459,15 +459,15 @@ func TestInferTypes(t *testing.T) {
 			},
 			solution: &solutionVisitor{
 				f: func(node semantic.Node) semantic.PolyType {
-					f := new(semantic.Fresher)
+					f := semantic.NewFresher()
 					_ = f.Fresh()
-					_ = f.Fresh()
+					tv1 := f.Fresh()
 					tv2 := f.Fresh()
 					in := semantic.NewObjectPolyType(map[string]semantic.PolyType{
-						"a": tv2,
+						"a": tv1,
 						"b": tv2,
 					})
-					out := tv2
+					out := tv1
 					ft := semantic.NewFunctionPolyType(in, out)
 					inInt := semantic.NewObjectPolyType(map[string]semantic.PolyType{
 						"a": semantic.Int,
@@ -484,7 +484,9 @@ func TestInferTypes(t *testing.T) {
 					switch n := node.(type) {
 					case *semantic.IdentifierExpression:
 						switch n.Name {
-						case "a", "b":
+						case "a":
+							return tv1
+						case "b":
 							return tv2
 						case "r":
 							return outInt
@@ -500,7 +502,9 @@ func TestInferTypes(t *testing.T) {
 						}
 					case *semantic.FunctionParameter:
 						switch n.Key.Name {
-						case "a", "b":
+						case "a":
+							return tv1
+						case "b":
 							return tv2
 						case "r":
 							return outInt
@@ -512,7 +516,7 @@ func TestInferTypes(t *testing.T) {
 					case *semantic.NativeVariableDeclaration:
 						return ft
 					case *semantic.BinaryExpression:
-						return tv2
+						return out
 					case *semantic.BlockStatement,
 						*semantic.ReturnStatement,
 						*semantic.CallExpression:
@@ -531,10 +535,12 @@ func TestInferTypes(t *testing.T) {
 				wantSolution = tc.solution.Solution()
 			}
 
-			semantic.Infer(tc.node)
+			ts := semantic.Infer(tc.node)
 
 			// Read all types from node
-			v := new(typeVisitor)
+			v := &typeVisitor{
+				typeSolution: ts,
+			}
 			semantic.Walk(v, tc.node)
 			gotSolution, err := v.Solution()
 			if err != nil {
@@ -622,8 +628,9 @@ func (v *solutionVisitor) Solution() SolutionMap {
 }
 
 type typeVisitor struct {
-	solution SolutionMap
-	err      error
+	typeSolution semantic.TypeSolution
+	solution     SolutionMap
+	err          error
 }
 
 func (v *typeVisitor) Visit(node semantic.Node) semantic.Visitor {
@@ -633,7 +640,7 @@ func (v *typeVisitor) Visit(node semantic.Node) semantic.Visitor {
 	if v.solution == nil {
 		v.solution = make(SolutionMap)
 	}
-	t, err := node.PolyType()
+	t, err := v.typeSolution.PolyTypeOf(node)
 	if err != nil {
 		v.err = err
 		return nil
@@ -675,7 +682,7 @@ type identityCaseVisitor struct {
 }
 
 func newIdentityCaseVisitor() *identityCaseVisitor {
-	f := new(semantic.Fresher)
+	f := semantic.NewFresher()
 	tv0 := f.Fresh()
 	in := semantic.NewObjectPolyType(map[string]semantic.PolyType{
 		"x": tv0,

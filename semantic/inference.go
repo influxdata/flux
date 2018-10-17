@@ -3,22 +3,40 @@ package semantic
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/influxdata/flux/ast"
 )
 
-func Infer(n Node) {
+// TypeSolution is a mapping of Nodes to their types.
+type TypeSolution interface {
+	// TypeOf reports the monotype of the node or an error.
+	TypeOf(n Node) (Type, error)
+	// TypeOf reports the polytype of the node or an error.
+	PolyTypeOf(n Node) (PolyType, error)
+
+	// FreshSolution creates a new solution with fresh type variables
+	FreshSolution() TypeSolution
+
+	// Unify modifies the solution given that a == b.
+	Unify(a, b PolyType) error
+
+	// setType updates the nodes type or type error
+	setType(n Node, pt PolyType, err error)
+}
+
+// Infer produces a solution to type inference for a given semantic graph.
+func Infer(n Node) TypeSolution {
 	v := newInferenceVisitor()
 	Walk(v, n)
+	return v.solution
 }
 
 type PolyType interface {
-	FreeVars() []*TV
-	Instantiate(tm map[int]*TV) PolyType
+	freeVars() []typeVar
+	instantiate(tm map[int]typeVar) PolyType
 
-	Unify(t PolyType) error
+	unify(ts TypeSolution, t PolyType) error
 
 	Type() (Type, bool)
 
@@ -29,23 +47,21 @@ type Indirecter interface {
 	Indirect() PolyType
 }
 
-func (k Kind) FreeVars() []*TV {
+func (k Kind) freeVars() []typeVar {
 	return nil
 }
-func (k Kind) Instantiate(map[int]*TV) PolyType {
+func (k Kind) instantiate(map[int]typeVar) PolyType {
 	return k
 }
-func (k Kind) Unify(t PolyType) error {
+func (k Kind) unify(ts TypeSolution, t PolyType) error {
 	switch t := t.(type) {
-	case *TV:
-		return t.Unify(k)
 	case Kind:
 		if k != t {
 			return fmt.Errorf("type error: %v != %v", k, t)
 		}
 		return nil
 	default:
-		return errors.New("type error")
+		return fmt.Errorf("cannot unify %v with %v", k, t)
 	}
 }
 func (k Kind) Type() (Type, bool) {
@@ -68,10 +84,10 @@ type Env struct {
 	m      map[string]TS
 }
 
-func (e *Env) FreeVars() []*TV {
-	var u []*TV
+func (e *Env) freeVars() []typeVar {
+	var u []typeVar
 	for _, ts := range e.m {
-		u = union(u, ts.FreeVars())
+		u = union(u, ts.freeVars())
 	}
 	return u
 }
@@ -98,140 +114,46 @@ func (e *Env) Nest() *Env {
 	}
 }
 
-type Fresher int
-
-func (f *Fresher) Fresh() *TV {
-	v := int(*f)
-	(*f)++
-	return newTV(v)
-}
-
-// TV is a type variable.
-// By using a pointer to a poly type,
-// type variables are updated to point to their solved type.
-// This update occurs during unification.
-type TV struct {
-	V int
-	// T is a reference to a poly type.
-	// If *T is not nil, then the type of the variable is known.
-	// T itself is guaranteed to be non nil.
-	T *PolyType
-}
-
-func newTV(v int) *TV {
-	return &TV{
-		V: v,
-		T: new(PolyType),
-	}
-}
-
-func (tv *TV) String() string {
-	if *tv.T != nil {
-		return fmt.Sprintf("%v", tv.Indirect())
-	}
-	return fmt.Sprintf("t%d", tv.V)
-}
-
-// Unify ensures the types are equal, updating the type variable necessary.
-func (tv1 *TV) Unify(t PolyType) error {
-	if *tv1.T != nil {
-		return (*tv1.T).Unify(t)
-	}
-	switch tv2 := t.(type) {
-	case *TV:
-		log.Println(tv1.V, " ==> ", tv2.V)
-		// Rename the variables to be the same.
-		// Make both type variables point to the same PolyType.
-		// This way if one or the other is further unified both will be.
-		*tv1 = *tv2
-	default:
-		log.Println(tv1.V, " ==> ", t)
-		// Update the referenced poly type since it is now known.
-		*tv1.T = t
-	}
-	return nil
-}
-func (tv *TV) Type() (Type, bool) {
-	t := tv.Indirect()
-	switch t.(type) {
-	case *TV:
-		return nil, false
-	default:
-		return t.Type()
-	}
-}
-func (tv *TV) Equal(t PolyType) bool {
-	if *tv.T != nil {
-		return (*tv.T).Equal(t)
-	}
-	switch t := t.(type) {
-	case *TV:
-		return tv.V == t.V
-	default:
-		return false
-	}
-}
-
-func (tv *TV) Indirect() PolyType {
-	if *tv.T != nil {
-		return *tv.T
-	}
-	return tv
-}
-
-func (tv *TV) FreeVars() []*TV {
-	if *tv.T != nil {
-		return (*tv.T).FreeVars()
-	}
-	return []*TV{tv}
-}
-
-func (tv1 *TV) Instantiate(tm map[int]*TV) PolyType {
-	if tv2, ok := tm[tv1.V]; ok {
-		return tv2
-	}
-	return tv1
-}
-
 type TS struct {
 	T    PolyType
-	List []*TV
+	List []typeVar
 }
 
-func (ts TS) FreeVars() []*TV {
-	return ts.T.FreeVars()
+func (ts TS) freeVars() []typeVar {
+	return ts.T.freeVars()
 }
 
 type inferenceVisitor struct {
-	f    *Fresher
-	env  *Env
-	node Node
+	env      *Env
+	solution *typeSolution
+	node     Node
 }
 
 func newInferenceVisitor() *inferenceVisitor {
 	return &inferenceVisitor{
-		f:   new(Fresher),
 		env: &Env{m: make(map[string]TS)},
+		solution: &typeSolution{
+			m: make(map[Node]typeAnnotation),
+		},
 	}
 }
 
 func (v *inferenceVisitor) nest() *inferenceVisitor {
 	return &inferenceVisitor{
-		f:   v.f,
-		env: v.env,
+		env:      v.env,
+		solution: v.solution,
 	}
 }
 func (v *inferenceVisitor) nestEnv() *inferenceVisitor {
 	return &inferenceVisitor{
-		f:   v.f,
-		env: v.env.Nest(),
+		env:      v.env.Nest(),
+		solution: v.solution,
 	}
 }
 
 func (v *inferenceVisitor) Visit(node Node) Visitor {
-	node.annotateType(nil, nil)
 	v.node = node
-	log.Printf("typeof %p %T", v, v.node)
+	//log.Printf("typeof %p %T", v, v.node)
 	switch node.(type) {
 	case *ExternBlock,
 		*BlockStatement,
@@ -243,8 +165,8 @@ func (v *inferenceVisitor) Visit(node Node) Visitor {
 
 func (v *inferenceVisitor) Done() {
 	t, err := v.typeof()
-	log.Printf("typeof %p %T %v %v", v, v.node, t, err)
-	v.node.annotateType(t, err)
+	//log.Printf("typeof %p %T %v %v", v, v.node, t, err)
+	v.solution.setType(v.node, t, err)
 }
 
 func (v *inferenceVisitor) typeof() (PolyType, error) {
@@ -255,35 +177,35 @@ func (v *inferenceVisitor) typeof() (PolyType, error) {
 		*FunctionParameters:
 		return nil, nil
 	case *BlockStatement:
-		return n.ReturnStatement().PolyType()
+		return v.solution.PolyTypeOf(n.ReturnStatement())
 	case *ReturnStatement:
-		return n.Argument.PolyType()
+		return v.solution.PolyTypeOf(n.Argument)
 	case *Extern:
-		return n.Block.PolyType()
+		return v.solution.PolyTypeOf(n.Block)
 	case *ExternBlock:
-		return n.Node.PolyType()
+		return v.solution.PolyTypeOf(n.Node)
 	case *ExpressionStatement:
-		return n.Expression.PolyType()
+		return v.solution.PolyTypeOf(n.Expression)
 	case *ExternalVariableDeclaration:
 		t := n.ExternType
 		ts := v.schema(t)
 		existing, ok := v.env.Lookup(n.Identifier.Name)
 		if ok {
-			if err := existing.T.Unify(t); err != nil {
+			if err := v.solution.Unify(existing.T, t); err != nil {
 				return nil, err
 			}
 		}
 		v.env.Set(n.Identifier.Name, ts)
 		return t, nil
 	case *NativeVariableDeclaration:
-		t, err := n.Init.PolyType()
+		t, err := v.solution.PolyTypeOf(n.Init)
 		if err != nil {
 			return nil, err
 		}
 		ts := v.schema(t)
 		existing, ok := v.env.Lookup(n.Identifier.Name)
 		if ok {
-			if err := existing.T.Unify(t); err != nil {
+			if err := v.solution.Unify(existing.T, t); err != nil {
 				return nil, err
 			}
 		}
@@ -295,13 +217,13 @@ func (v *inferenceVisitor) typeof() (PolyType, error) {
 			properties: make(map[string]PolyType, len(n.Block.Parameters.List)),
 		}
 		for _, p := range n.Block.Parameters.List {
-			pt, err := p.PolyType()
+			pt, err := v.solution.PolyTypeOf(p)
 			if err != nil {
 				return nil, err
 			}
 			in.properties[p.Key.Name] = pt
 		}
-		out, err := n.Block.Body.PolyType()
+		out, err := v.solution.PolyTypeOf(n.Block.Body)
 		if err != nil {
 			return nil, err
 		}
@@ -312,12 +234,12 @@ func (v *inferenceVisitor) typeof() (PolyType, error) {
 		}
 		return t, nil
 	case *FunctionParameter:
-		t := v.f.Fresh()
+		t := v.solution.Fresh()
 		ts := TS{T: t} // function parameters do not need a schema
 		v.env.Set(n.Key.Name, ts)
 		return t, nil
 	case *CallExpression:
-		ct, err := n.Callee.PolyType()
+		ct, err := v.solution.PolyTypeOf(n.Callee)
 		if err != nil {
 			return nil, err
 		}
@@ -330,12 +252,12 @@ func (v *inferenceVisitor) typeof() (PolyType, error) {
 		}
 		//TODO: Apply defaults to arguments here.
 		//TODO: Apply pipe to arguments here.
-		in, err := n.Arguments.PolyType()
+		in, err := v.solution.PolyTypeOf(n.Arguments)
 		if err != nil {
 			return nil, err
 		}
 
-		if err := t.in.Unify(in); err != nil {
+		if err := v.solution.Unify(t.in, in); err != nil {
 			return nil, err
 		}
 		return t.out, nil
@@ -354,7 +276,7 @@ func (v *inferenceVisitor) typeof() (PolyType, error) {
 			properties: make(map[string]PolyType, len(n.Properties)),
 		}
 		for _, p := range n.Properties {
-			pt, err := p.PolyType()
+			pt, err := v.solution.PolyTypeOf(p)
 			if err != nil {
 				return nil, err
 			}
@@ -362,11 +284,11 @@ func (v *inferenceVisitor) typeof() (PolyType, error) {
 		}
 		return t, nil
 	case *BinaryExpression:
-		lt, err := n.Left.PolyType()
+		lt, err := v.solution.PolyTypeOf(n.Left)
 		if err != nil {
 			return nil, err
 		}
-		rt, err := n.Right.PolyType()
+		rt, err := v.solution.PolyTypeOf(n.Right)
 		if err != nil {
 			return nil, err
 		}
@@ -376,7 +298,7 @@ func (v *inferenceVisitor) typeof() (PolyType, error) {
 			ast.SubtractionOperator,
 			ast.MultiplicationOperator,
 			ast.DivisionOperator:
-			if err := lt.Unify(rt); err != nil {
+			if err := v.solution.Unify(lt, rt); err != nil {
 				return nil, err
 			}
 			return lt, nil
@@ -391,10 +313,10 @@ func (v *inferenceVisitor) typeof() (PolyType, error) {
 		case
 			ast.RegexpMatchOperator,
 			ast.NotRegexpMatchOperator:
-			if err := lt.Unify(String); err != nil {
+			if err := v.solution.Unify(lt, String); err != nil {
 				return nil, err
 			}
-			if err := rt.Unify(Regexp); err != nil {
+			if err := v.solution.Unify(rt, Regexp); err != nil {
 				return nil, err
 			}
 			return Bool, nil
@@ -402,7 +324,7 @@ func (v *inferenceVisitor) typeof() (PolyType, error) {
 			return nil, fmt.Errorf("unsupported binary operator %v", n.Operator)
 		}
 	case *Property:
-		return n.Value.PolyType()
+		return v.solution.PolyTypeOf(n.Value)
 	case *BooleanLiteral:
 		return Bool, nil
 	case *IntegerLiteral:
@@ -417,15 +339,20 @@ func (v *inferenceVisitor) typeof() (PolyType, error) {
 }
 
 func (v *inferenceVisitor) instantiate(ts TS) PolyType {
-	tm := make(map[int]*TV, len(ts.List))
+	tm := make(map[int]typeVar, len(ts.List))
 	for _, tv := range ts.List {
-		tm[tv.V] = v.f.Fresh()
+		idx := v.solution.indirectVar(tv.idx)
+		if ntv, ok := tm[idx]; ok {
+			tm[tv.idx] = ntv
+		} else {
+			tm[idx] = v.solution.Fresh()
+		}
 	}
-	return ts.T.Instantiate(tm)
+	return ts.T.instantiate(tm)
 }
 func (v *inferenceVisitor) schema(t PolyType) TS {
-	uv := t.FreeVars()
-	ev := v.env.FreeVars()
+	uv := t.freeVars()
+	ev := v.env.freeVars()
 	d := diff(uv, ev)
 	return TS{
 		T:    t,
@@ -450,30 +377,28 @@ func (t functionPolyType) String() string {
 	return fmt.Sprintf("(%v) -> %v", t.in, t.out)
 }
 
-func (t functionPolyType) FreeVars() []*TV {
-	return union(t.in.FreeVars(), t.out.FreeVars())
+func (t functionPolyType) freeVars() []typeVar {
+	return union(t.in.freeVars(), t.out.freeVars())
 }
 
-func (t functionPolyType) Instantiate(tm map[int]*TV) PolyType {
+func (t functionPolyType) instantiate(tm map[int]typeVar) PolyType {
 	return functionPolyType{
-		in:  t.in.Instantiate(tm),
-		out: t.out.Instantiate(tm),
+		in:  t.in.instantiate(tm),
+		out: t.out.instantiate(tm),
 	}
 }
 
-func (t1 functionPolyType) Unify(typ PolyType) error {
+func (t1 functionPolyType) unify(ts TypeSolution, typ PolyType) error {
 	switch t2 := typ.(type) {
-	case *TV:
-		return t2.Unify(t1)
 	case functionPolyType:
-		if err := t1.in.Unify(t2.in); err != nil {
+		if err := ts.Unify(t1.in, t2.in); err != nil {
 			return err
 		}
-		if err := t1.out.Unify(t2.out); err != nil {
+		if err := ts.Unify(t1.out, t2.out); err != nil {
 			return err
 		}
 	default:
-		return errors.New("fail")
+		return fmt.Errorf("cannot unify %v with %v", t1, typ)
 	}
 	return nil
 }
@@ -522,25 +447,25 @@ func (t objectPolyType) String() string {
 	return builder.String()
 }
 
-func (t objectPolyType) FreeVars() []*TV {
-	var vars []*TV
+func (t objectPolyType) freeVars() []typeVar {
+	var vars []typeVar
 	for _, p := range t.properties {
-		vars = union(vars, p.FreeVars())
+		vars = union(vars, p.freeVars())
 	}
 	return vars
 }
 
-func (t objectPolyType) Instantiate(tm map[int]*TV) PolyType {
+func (t objectPolyType) instantiate(tm map[int]typeVar) PolyType {
 	properties := make(map[string]PolyType, len(t.properties))
 	for k, p := range t.properties {
-		properties[k] = p.Instantiate(tm)
+		properties[k] = p.instantiate(tm)
 	}
 	return objectPolyType{
 		properties: properties,
 	}
 }
 
-func (t1 objectPolyType) Unify(typ PolyType) error {
+func (t1 objectPolyType) unify(ts TypeSolution, typ PolyType) error {
 	switch t2 := typ.(type) {
 	case objectPolyType:
 		if len(t1.properties) != len(t2.properties) {
@@ -551,15 +476,13 @@ func (t1 objectPolyType) Unify(typ PolyType) error {
 			if !ok {
 				return fmt.Errorf("missing parameter %q", k)
 			}
-			err := p1.Unify(p2)
+			err := ts.Unify(p1, p2)
 			if err != nil {
 				return err
 			}
 		}
-	case *TV:
-		return t2.Unify(t1)
 	default:
-		return errors.New("fail")
+		return fmt.Errorf("cannot unify %v with %v", t1, typ)
 	}
 	return nil
 }
@@ -593,7 +516,7 @@ func (t1 objectPolyType) Equal(t2 PolyType) bool {
 	}
 }
 
-func union(a, b []*TV) []*TV {
+func union(a, b []typeVar) []typeVar {
 	u := a
 	for _, v := range b {
 		found := false
@@ -610,8 +533,8 @@ func union(a, b []*TV) []*TV {
 	return u
 }
 
-func diff(a, b []*TV) []*TV {
-	d := make([]*TV, 0, len(a))
+func diff(a, b []typeVar) []typeVar {
+	d := make([]typeVar, 0, len(a))
 	for _, v := range a {
 		found := false
 		for _, f := range b {
@@ -625,4 +548,201 @@ func diff(a, b []*TV) []*TV {
 		}
 	}
 	return d
+}
+
+type typeSolution struct {
+	m map[Node]typeAnnotation
+	// vars is a map of typeVar index to a PolyType pointer.
+	// The type of the typeVar is known when the pointer points to a non-nil PolyType.
+	// All pointers in the list are themselves guaranteed to be non nil.
+	vars []*PolyType
+}
+
+type typeAnnotation struct {
+	poly PolyType
+	err  error
+}
+
+func (s *typeSolution) String() string {
+	var builder strings.Builder
+	builder.WriteString("{\n")
+	for idx, ptr := range s.vars {
+		fmt.Fprintf(&builder, "t%d -> %v\n", idx, *ptr)
+	}
+	builder.WriteString("}")
+	return builder.String()
+}
+func (s *typeSolution) FreshSolution() TypeSolution {
+	ns := &typeSolution{
+		m:    make(map[Node]typeAnnotation, len(s.m)),
+		vars: make([]*PolyType, len(s.vars)),
+	}
+	tm := make(map[int]typeVar, len(s.vars))
+	for i, ptr := range s.vars {
+		tm[i] = typeVar{
+			idx:      i,
+			solution: ns,
+		}
+		// make fresh copies of the var pointers
+		idx := s.indirectVar(i)
+		if idx < i {
+			// Preserve existing type var mappings
+			ns.vars[i] = ns.vars[idx]
+		}
+		ns.vars[i] = new(PolyType)
+		*ns.vars[i] = *ptr
+	}
+
+	for n, ta := range s.m {
+		if ta.poly != nil {
+			ta.poly = ta.poly.instantiate(tm)
+		}
+		ns.m[n] = ta
+	}
+	return ns
+}
+
+func (s *typeSolution) TypeOf(n Node) (Type, error) {
+	ta, ok := s.m[n]
+	if !ok {
+		// Should this be an error?
+		return nil, nil
+	}
+	if ta.err != nil {
+		return nil, ta.err
+	}
+	poly := s.indirect(ta.poly)
+	mono, ok := poly.Type()
+	if !ok {
+		return nil, errors.New("node is not monomorphic")
+	}
+	return mono, nil
+}
+
+func (s *typeSolution) PolyTypeOf(n Node) (PolyType, error) {
+	ta := s.m[n]
+	if ta.err != nil {
+		return nil, ta.err
+	}
+	return s.indirect(ta.poly), nil
+}
+
+func (s *typeSolution) setType(n Node, poly PolyType, err error) {
+	s.m[n] = typeAnnotation{
+		poly: poly,
+		err:  err,
+	}
+}
+
+func (s *typeSolution) indirectVar(idxA int) int {
+	ptrA := s.vars[idxA]
+	// Pick the smallest index that is equal, including itself
+	for idxB, ptrB := range s.vars[:idxA] {
+		if ptrA == ptrB {
+			return idxB
+		}
+	}
+	return idxA
+}
+
+func (s *typeSolution) indirect(t PolyType) PolyType {
+	tv, ok := t.(typeVar)
+	if ok {
+		t := s.vars[tv.idx]
+		if *t != nil {
+			return s.indirect(*t)
+		}
+	}
+	return t
+}
+
+func (s *typeSolution) Unify(a, b PolyType) error {
+	tvA, okA := a.(typeVar)
+	tvB, okB := b.(typeVar)
+
+	switch {
+	case !okA && !okB:
+		return a.unify(s, b)
+	case okA && okB:
+		// tvA == tvB
+		// Map all a's to b's
+		s.vars[tvB.idx] = s.vars[tvA.idx]
+	case okA && !okB:
+		// Substitute all tvA's with b
+		*s.vars[tvA.idx] = b
+	case !okA && okB:
+		// Substitute all tvB's with a
+		*s.vars[tvB.idx] = a
+	}
+	return nil
+}
+
+func (s *typeSolution) Fresh() typeVar {
+	idx := len(s.vars)
+	s.vars = append(s.vars, new(PolyType))
+	return typeVar{
+		idx:      idx,
+		solution: s,
+	}
+}
+
+type typeVar struct {
+	idx      int
+	solution *typeSolution
+}
+
+// lookup returns the PolyType from the solution, which will be nil if it is unknown.
+func (tv typeVar) lookup() PolyType {
+	return *tv.solution.vars[tv.idx]
+}
+
+func (tv typeVar) String() string {
+	if t := tv.lookup(); t != nil {
+		return fmt.Sprintf("%v", t)
+	}
+	return fmt.Sprintf("t%d", tv.idx)
+}
+
+func (tv typeVar) unify(ts TypeSolution, t PolyType) error {
+	return errors.New("unification should not reach typeVars")
+}
+func (tv typeVar) Type() (Type, bool) {
+	if t := tv.lookup(); t != nil {
+		return t.Type()
+	}
+	return nil, false
+}
+
+func (tv1 typeVar) Equal(t2 PolyType) bool {
+	if t1 := tv1.lookup(); t1 != nil {
+		return t1.Equal(t2)
+	}
+	switch tv2 := t2.(type) {
+	case typeVar:
+		return tv1.idx == tv2.idx
+	default:
+		return false
+	}
+}
+
+func (tv typeVar) freeVars() []typeVar {
+	if t := tv.lookup(); t != nil {
+		return t.freeVars()
+	}
+	return []typeVar{tv}
+}
+
+func (tv1 typeVar) instantiate(tm map[int]typeVar) PolyType {
+	if tv2, ok := tm[tv1.idx]; ok {
+		return tv2
+	}
+	return tv1
+}
+
+type Fresher interface {
+	Fresh() typeVar
+}
+
+func NewFresher() Fresher {
+	return new(typeSolution)
 }

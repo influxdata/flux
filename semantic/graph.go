@@ -16,51 +16,7 @@ type Node interface {
 	NodeType() string
 	Copy() Node
 
-	// Type returns the monotype of the node if it exists.
-	Type() (Type, error)
-	// PolyType returns the poly type of the node
-	PolyType() (PolyType, error)
-	annotateType(t PolyType, err error)
-
 	json.Marshaler
-}
-
-type typeAnnotation struct {
-	typ  Type
-	poly PolyType
-	err  error
-}
-
-func (t *typeAnnotation) PolyType() (PolyType, error) {
-	return t.poly, t.err
-}
-func (t *typeAnnotation) annotateType(typ PolyType, err error) {
-	t.typ = nil
-	t.poly = typ
-	t.err = err
-}
-
-func (t *typeAnnotation) Type() (Type, error) {
-	if t.err != nil {
-		return nil, t.err
-	}
-	if t.typ != nil {
-		return t.typ, nil
-	}
-
-	typ := t.poly
-	if i, ok := typ.(Indirecter); ok {
-		typ = i.Indirect()
-	}
-	if typ == nil {
-		return nil, nil
-	}
-	mt, mono := typ.Type()
-	if !mono {
-		return nil, errors.New("type is not monomorphic")
-	}
-	t.typ = mt
-	return mt, nil
 }
 
 func (*Program) node()     {}
