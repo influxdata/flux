@@ -180,10 +180,16 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 			dc := c
 			// Derivative always results in a float
 			dc.Type = flux.TFloat
-			builder.AddCol(dc)
+			_, err := builder.AddCol(dc)
+			if err != nil {
+				return err
+			}
 			derivatives[j] = newDerivative(j, t.unit, t.nonNegative)
 		} else {
-			builder.AddCol(c)
+			_, err := builder.AddCol(c)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	if timeIdx < 0 {

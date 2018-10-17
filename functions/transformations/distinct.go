@@ -154,11 +154,18 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 	colIdx := execute.ColIdx(t.column, tbl.Cols())
 	if colIdx < 0 {
 		// doesn't exist in this table, so add an empty value
-		execute.AddTableKeyCols(tbl.Key(), builder)
-		colIdx = builder.AddCol(flux.ColMeta{
+		err := execute.AddTableKeyCols(tbl.Key(), builder)
+		if err != nil {
+			return err
+		}
+		colIdx, err = builder.AddCol(flux.ColMeta{
 			Label: execute.DefaultValueColLabel,
 			Type:  flux.TString,
 		})
+		if err != nil {
+			return err
+		}
+
 		builder.AppendString(colIdx, "")
 		execute.AppendKeyValues(tbl.Key(), builder)
 		// TODO: hack required to ensure data flows downstream
@@ -169,11 +176,17 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 
 	col := tbl.Cols()[colIdx]
 
-	execute.AddTableKeyCols(tbl.Key(), builder)
-	colIdx = builder.AddCol(flux.ColMeta{
+	err := execute.AddTableKeyCols(tbl.Key(), builder)
+	if err != nil {
+		return err
+	}
+	colIdx, err = builder.AddCol(flux.ColMeta{
 		Label: execute.DefaultValueColLabel,
 		Type:  col.Type,
 	})
+	if err != nil {
+		return err
+	}
 
 	if tbl.Key().HasCol(t.column) {
 		j := execute.ColIdx(t.column, tbl.Key().Cols())

@@ -215,11 +215,14 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Tab
 	if !created {
 		return fmt.Errorf("found duplicate table with key: %v", tbl.Key())
 	}
-	execute.AddTableCols(tbl, builder)
+	err := execute.AddTableCols(tbl, builder)
+	if err != nil {
+		return err
+	}
 
 	// Prepare the functions for the column types.
 	cols := tbl.Cols()
-	err := t.fn.Prepare(cols)
+	err = t.fn.Prepare(cols)
 	if err != nil {
 		// TODO(nathanielc): Should we not fail the query for failed compilation?
 		return err
@@ -229,16 +232,22 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Tab
 
 	// Add new value columns
 	if t.countLabel != "" {
-		countCol = builder.AddCol(flux.ColMeta{
+		countCol, err = builder.AddCol(flux.ColMeta{
 			Label: t.countLabel,
 			Type:  flux.TInt,
 		})
+		if err != nil {
+			return err
+		}
 	}
 	if t.durationLabel != "" {
-		durationCol = builder.AddCol(flux.ColMeta{
+		durationCol, err = builder.AddCol(flux.ColMeta{
 			Label: t.durationLabel,
 			Type:  flux.TInt,
 		})
+		if err != nil {
+			return err
+		}
 	}
 
 	var (

@@ -468,18 +468,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					{21.0, 22.0, 23.0},
 				},
 			}},
-			want: []*executetest.Table{{
-				ColMeta: []flux.ColMeta{
-					{Label: "new_name", Type: flux.TFloat},
-					{Label: "new_name", Type: flux.TFloat},
-					{Label: "new_name", Type: flux.TFloat},
-				},
-				Data: [][]interface{}{
-					{1.0, 2.0, 3.0},
-					{11.0, 12.0, 13.0},
-					{21.0, 22.0, 23.0},
-				},
-			}},
+			wantErr: errors.New("table builder already has column with label new_name"),
 		},
 		{
 			name: "drop predicate (col) => col ~= /reg/",

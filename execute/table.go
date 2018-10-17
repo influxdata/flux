@@ -53,51 +53,63 @@ type OneTimeTable interface {
 // CacheOneTimeTable returns a table that can be read multiple times.
 // If the table is not a OneTimeTable it is returned directly.
 // Otherwise its contents are read into a new table.
-func CacheOneTimeTable(t flux.Table, a *Allocator) flux.Table {
+func CacheOneTimeTable(t flux.Table, a *Allocator) (flux.Table, error) {
 	_, ok := t.(OneTimeTable)
 	if !ok {
-		return t
+		return t, nil
 	}
 	return CopyTable(t, a)
 }
 
 // CopyTable returns a copy of the table and is OneTimeTable safe.
-func CopyTable(t flux.Table, a *Allocator) flux.Table {
+func CopyTable(t flux.Table, a *Allocator) (flux.Table, error) {
 	builder := NewColListTableBuilder(t.Key(), a)
 
 	cols := t.Cols()
 	colMap := make([]int, len(cols))
 	for j, c := range cols {
 		colMap[j] = j
-		builder.AddCol(c)
+		_, err := builder.AddCol(c)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	AppendMappedTable(t, builder, colMap)
 	// ColListTableBuilders do not error
 	nb, _ := builder.Table()
-	return nb
+	return nb, nil
 }
 
 // AddTableCols adds the columns of b onto builder.
-func AddTableCols(t flux.Table, builder TableBuilder) {
+func AddTableCols(t flux.Table, builder TableBuilder) error {
 	cols := t.Cols()
 	for _, c := range cols {
-		builder.AddCol(c)
+		_, err := builder.AddCol(c)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func AddTableKeyCols(key flux.GroupKey, builder TableBuilder) {
+func AddTableKeyCols(key flux.GroupKey, builder TableBuilder) error {
 	for _, c := range key.Cols() {
-		builder.AddCol(c)
+		_, err := builder.AddCol(c)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // AddNewCols adds the columns of b onto builder that did not already exist.
 // Returns the mapping of builder cols to table cols.
-func AddNewCols(t flux.Table, builder TableBuilder) []int {
+func AddNewCols(t flux.Table, builder TableBuilder) ([]int, error) {
 	cols := t.Cols()
 	existing := builder.Cols()
 	colMap := make([]int, len(existing))
+	var err error
 	for j, c := range cols {
 		found := false
 		for ej, ec := range existing {
@@ -108,11 +120,11 @@ func AddNewCols(t flux.Table, builder TableBuilder) []int {
 			}
 		}
 		if !found {
-			builder.AddCol(c)
+			_, err = builder.AddCol(c)
 			colMap = append(colMap, j)
 		}
 	}
-	return colMap
+	return colMap, err
 }
 
 // AppendMappedTable appends data from table t onto builder.
@@ -315,7 +327,7 @@ type TableBuilder interface {
 
 	// AddCol increases the size of the table by one column.
 	// The index of the column is returned.
-	AddCol(flux.ColMeta) int
+	AddCol(flux.ColMeta) (int, error)
 
 	// Set sets the value at the specified coordinates
 	// The rows and columns must exist before calling set, otherwise Set panics.
@@ -398,7 +410,11 @@ func (b ColListTableBuilder) Cols() []flux.ColMeta {
 	return b.table.colMeta
 }
 
-func (b ColListTableBuilder) AddCol(c flux.ColMeta) int {
+func (b ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
+	if ColIdx(c.Label, b.Cols()) >= 0 {
+		return -1, fmt.Errorf("table builder already has column with label %s", c.Label)
+	}
+
 	var col column
 	switch c.Type {
 	case flux.TBool:
@@ -436,7 +452,7 @@ func (b ColListTableBuilder) AddCol(c flux.ColMeta) int {
 	}
 	b.table.colMeta = append(b.table.colMeta, c)
 	b.table.cols = append(b.table.cols, col)
-	return len(b.table.cols) - 1
+	return len(b.table.cols) - 1, nil
 }
 
 func (b ColListTableBuilder) SetBool(i int, j int, value bool) {

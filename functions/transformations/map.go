@@ -167,17 +167,23 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 			builder, created := t.cache.TableBuilder(key)
 			if created {
 				if t.mergeKey {
-					execute.AddTableKeyCols(tbl.Key(), builder)
+					err := execute.AddTableKeyCols(tbl.Key(), builder)
+					if err != nil {
+						return err
+					}
 				}
 				// Add columns from function in sorted order
 				for _, k := range keys {
 					if t.mergeKey && tbl.Key().HasCol(k) {
 						continue
 					}
-					builder.AddCol(flux.ColMeta{
+					_, err := builder.AddCol(flux.ColMeta{
 						Label: k,
 						Type:  execute.ConvertFromKind(properties[k].Kind()),
 					})
+					if err != nil {
+						return err
+					}
 				}
 			}
 			for j, c := range builder.Cols() {

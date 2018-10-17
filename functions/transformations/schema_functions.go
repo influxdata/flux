@@ -481,7 +481,10 @@ func (t *schemaMutationTransformation) Process(id execute.DatasetID, tbl flux.Ta
 	builder, created := t.cache.TableBuilder(ctx.Key())
 	if created {
 		for _, c := range ctx.Cols() {
-			builder.AddCol(c)
+			_, err := builder.AddCol(c)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

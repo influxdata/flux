@@ -26,6 +26,7 @@ var skipTests = map[string]string{
 	"difference_panic":          "difference() panics when no table is supplied",
 	"string_interp":             "string interpolation not working as expected in flux (https://github.com/influxdata/platform/issues/404)",
 	"to":                        "to functions are not supported in the testing framework (https://github.com/influxdata/flux/issues/77)",
+	"task_per_line":             "bug in group by caused by heterogeneous table schemas (https://github.com/influxdata/flux/issues/100)",
 }
 
 var querier = querytest.NewQuerier()
