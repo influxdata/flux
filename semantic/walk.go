@@ -6,7 +6,7 @@ func Walk(v Visitor, node Node) {
 
 type Visitor interface {
 	Visit(node Node) Visitor
-	Done()
+	Done(node Node)
 }
 
 func walk(v Visitor, n Node) {
@@ -286,5 +286,36 @@ func walk(v Visitor, n Node) {
 	}
 	// We cannot use defer here as we only call Done if n != nil,
 	// which we cannot check except for in each case.
-	v.Done()
+	v.Done(n)
+}
+
+type NestingVisitor interface {
+	Visitor
+	Nest() NestingVisitor
+}
+
+// ScopedVisitor will nest the given visitor when the scope changes.
+type ScopedVisitor struct {
+	v NestingVisitor
+}
+
+func NewScopedVisitor(v NestingVisitor) ScopedVisitor {
+	return ScopedVisitor{v: v}
+}
+
+func (v ScopedVisitor) Visit(node Node) Visitor {
+	v.v = v.v.Visit(node).(NestingVisitor)
+	switch node.(type) {
+	case *ExternBlock,
+		*BlockStatement,
+		*FunctionBlock:
+		return ScopedVisitor{
+			v: v.v.Nest(),
+		}
+	}
+	return v
+}
+
+func (v ScopedVisitor) Done(node Node) {
+	v.v.Done(node)
 }

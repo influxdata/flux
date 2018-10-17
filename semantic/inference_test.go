@@ -621,7 +621,7 @@ func (v *solutionVisitor) Visit(node semantic.Node) semantic.Visitor {
 	return v
 }
 
-func (v *solutionVisitor) Done() {}
+func (v *solutionVisitor) Done(semantic.Node) {}
 
 func (v *solutionVisitor) Solution() SolutionMap {
 	return v.solution
@@ -651,7 +651,7 @@ func (v *typeVisitor) Visit(node semantic.Node) semantic.Visitor {
 	return v
 }
 
-func (v *typeVisitor) Done() {}
+func (v *typeVisitor) Done(semantic.Node) {}
 
 func (v *typeVisitor) Solution() (SolutionMap, error) {
 	return v.solution, v.err
@@ -770,7 +770,7 @@ func (v *identityCaseVisitor) Visit(node semantic.Node) semantic.Visitor {
 	return v
 }
 
-func (v *identityCaseVisitor) Done() {
+func (v *identityCaseVisitor) Done(semantic.Node) {
 }
 func (v *identityCaseVisitor) Solution() SolutionMap {
 	return v.solution

@@ -28,7 +28,7 @@ type TypeSolution interface {
 // Infer produces a solution to type inference for a given semantic graph.
 func Infer(n Node) TypeSolution {
 	v := newInferenceVisitor()
-	Walk(v, n)
+	Walk(NewScopedVisitor(v), n)
 	return v.solution
 }
 
@@ -126,7 +126,6 @@ func (ts TS) freeVars() []typeVar {
 type inferenceVisitor struct {
 	env      *Env
 	solution *typeSolution
-	node     Node
 }
 
 func newInferenceVisitor() *inferenceVisitor {
@@ -138,39 +137,33 @@ func newInferenceVisitor() *inferenceVisitor {
 	}
 }
 
-func (v *inferenceVisitor) nest() *inferenceVisitor {
-	return &inferenceVisitor{
+func (v inferenceVisitor) nest() inferenceVisitor {
+	return inferenceVisitor{
 		env:      v.env,
 		solution: v.solution,
 	}
 }
-func (v *inferenceVisitor) nestEnv() *inferenceVisitor {
-	return &inferenceVisitor{
+
+func (v inferenceVisitor) Nest() NestingVisitor {
+	return inferenceVisitor{
 		env:      v.env.Nest(),
 		solution: v.solution,
 	}
 }
 
-func (v *inferenceVisitor) Visit(node Node) Visitor {
-	v.node = node
+func (v inferenceVisitor) Visit(node Node) Visitor {
 	//log.Printf("typeof %p %T", v, v.node)
-	switch node.(type) {
-	case *ExternBlock,
-		*BlockStatement,
-		*FunctionBlock:
-		return v.nestEnv()
-	}
 	return v.nest()
 }
 
-func (v *inferenceVisitor) Done() {
-	t, err := v.typeof()
+func (v inferenceVisitor) Done(node Node) {
+	t, err := v.typeof(node)
 	//log.Printf("typeof %p %T %v %v", v, v.node, t, err)
-	v.solution.setType(v.node, t, err)
+	v.solution.setType(node, t, err)
 }
 
-func (v *inferenceVisitor) typeof() (PolyType, error) {
-	switch n := v.node.(type) {
+func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
+	switch n := node.(type) {
 	case *Identifier,
 		*Program,
 		*FunctionBlock,

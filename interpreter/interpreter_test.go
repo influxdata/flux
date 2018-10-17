@@ -16,12 +16,10 @@ import (
 
 var testScope = make(map[string]values.Value)
 var optionScope = make(map[string]values.Value)
-var testDeclarations = make(semantic.DeclarationScope)
 var optionsObject = values.NewObject()
 
 func addFunc(f *function) {
 	testScope[f.name] = f
-	testDeclarations[f.name] = semantic.NewExternalVariableDeclaration(f.name, f.t)
 }
 
 func addOption(name string, opt values.Value) {
@@ -32,7 +30,7 @@ func init() {
 	addFunc(&function{
 		name: "fortyTwo",
 		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			ReturnType: semantic.Float,
+			Out: semantic.Float,
 		}),
 		call: func(args values.Object) (values.Value, error) {
 			return values.NewFloat(42.0), nil
@@ -42,7 +40,7 @@ func init() {
 	addFunc(&function{
 		name: "six",
 		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			ReturnType: semantic.Float,
+			Out: semantic.Float,
 		}),
 		call: func(args values.Object) (values.Value, error) {
 			return values.NewFloat(6.0), nil
@@ -52,7 +50,7 @@ func init() {
 	addFunc(&function{
 		name: "nine",
 		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			ReturnType: semantic.Float,
+			Out: semantic.Float,
 		}),
 		call: func(args values.Object) (values.Value, error) {
 			return values.NewFloat(9.0), nil
@@ -62,7 +60,7 @@ func init() {
 	addFunc(&function{
 		name: "fail",
 		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			ReturnType: semantic.Bool,
+			Out: semantic.Bool,
 		}),
 		call: func(args values.Object) (values.Value, error) {
 			return nil, errors.New("fail")
@@ -72,8 +70,8 @@ func init() {
 	addFunc(&function{
 		name: "plusOne",
 		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			Params:       map[string]semantic.Type{"x": semantic.Float},
-			ReturnType:   semantic.Float,
+			In:           semantic.NewObjectType(map[string]semantic.Type{"x": semantic.Float}),
+			Out:          semantic.Float,
 			PipeArgument: "x",
 		}),
 		call: func(args values.Object) (values.Value, error) {
@@ -88,7 +86,7 @@ func init() {
 	addFunc(&function{
 		name: "sideEffect",
 		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			ReturnType: semantic.Int,
+			Out: semantic.Int,
 		}),
 		call: func(args values.Object) (values.Value, error) {
 			return values.NewInt(0), nil
@@ -172,14 +170,14 @@ func TestEval(t *testing.T) {
 			},
 		},
 		{
-			name: "arrow function",
+			name: "function",
 			query: `
             plusSix = (r) => r + six()
             plusSix(r:1.0) == 7.0 or fail()
 			`,
 		},
 		{
-			name: "arrow function block",
+			name: "function block",
 			query: `
             f = (r) => {
                 r2 = r * r
@@ -340,7 +338,7 @@ func TestEval(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			graph, err := semantic.New(program, testDeclarations.Copy())
+			graph, err := semantic.New(program)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -363,16 +361,16 @@ func TestEval(t *testing.T) {
 }
 func TestResolver(t *testing.T) {
 	var got semantic.Expression
-	declarations := make(semantic.DeclarationScope)
 	f := &function{
 		name: "resolver",
 		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			Params: map[string]semantic.Type{
+			In: semantic.NewObjectType(map[string]semantic.Type{
 				"f": semantic.NewFunctionType(semantic.FunctionSignature{
-					Params: map[string]semantic.Type{"r": semantic.Int},
+					In:  semantic.NewObjectType(map[string]semantic.Type{"r": semantic.Int}),
+					Out: semantic.Int,
 				}),
-			},
-			ReturnType: semantic.Int,
+			}),
+			Out: semantic.Int,
 		}),
 		call: func(args values.Object) (values.Value, error) {
 			f, ok := args.Get("f")
@@ -392,8 +390,8 @@ func TestResolver(t *testing.T) {
 		},
 		hasSideEffect: false,
 	}
-	testScope[f.name] = f
-	declarations[f.name] = semantic.NewExternalVariableDeclaration(f.name, f.t)
+	scope := make(map[string]values.Value)
+	scope[f.name] = f
 
 	program, err := parser.NewAST(`
 	x = 42
@@ -403,30 +401,31 @@ func TestResolver(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	graph, err := semantic.New(program, testDeclarations)
+	graph, err := semantic.New(program)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	itrp := interpreter.NewInterpreter(optionScope, testScope)
+	itrp := interpreter.NewInterpreter(nil, scope)
 
 	if err := itrp.Eval(graph); err != nil {
 		t.Fatal(err)
 	}
 
 	want := &semantic.FunctionExpression{
-		Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-		Body: &semantic.BinaryExpression{
-			Operator: ast.AdditionOperator,
-			Left:     &semantic.IdentifierExpression{Name: "r"},
-			Right:    &semantic.IntegerLiteral{Value: 42},
+		Block: &semantic.FunctionBlock{
+			Parameters: &semantic.FunctionParameters{
+				List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+			},
+			Body: &semantic.BinaryExpression{
+				Operator: ast.AdditionOperator,
+				Left:     &semantic.IdentifierExpression{Name: "r"},
+				Right:    &semantic.IntegerLiteral{Value: 42},
+			},
 		},
 	}
 	if !cmp.Equal(want, got, semantictest.CmpOptions...) {
 		t.Errorf("unexpected resoved function: -want/+got\n%s", cmp.Diff(want, got, semantictest.CmpOptions...))
-	}
-	if wt, gt := want.Type(), got.Type(); wt != gt {
-		t.Errorf("unexpected resoved function types: want: %v got: %v", wt, gt)
 	}
 }
 

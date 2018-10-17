@@ -347,7 +347,7 @@ func CompileFnParam(fn *semantic.FunctionExpression, paramType, returnType seman
 
 // externDeclarations produces a list of external declarations from a scope
 func externDeclarations(scope Scope) []*semantic.ExternalVariableDeclaration {
-	declarations := make([]*semantic.ExternalVariableDeclaration, len(scope))
+	declarations := make([]*semantic.ExternalVariableDeclaration, 0, len(scope))
 	for k, v := range scope {
 		declarations = append(declarations, &semantic.ExternalVariableDeclaration{
 			Identifier: &semantic.Identifier{Name: k},
