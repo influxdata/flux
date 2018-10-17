@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 
 	"github.com/influxdata/flux/ast"
@@ -257,6 +258,7 @@ func (e *blockEvaluator) Type() semantic.Type {
 }
 
 func (e *blockEvaluator) eval(scope Scope) {
+	log.Println("blockEvaluator", e.body)
 	for _, b := range e.body {
 		e.value = eval(b, scope)
 	}
@@ -1077,7 +1079,7 @@ func (e *functionEvaluator) EvalFunction(scope Scope) values.Function {
 		t:      e.t,
 		body:   e.body,
 		params: e.params,
-		scope:  scope.Copy(),
+		scope:  scope,
 	}
 }
 

@@ -42,7 +42,7 @@ func Compile(f *semantic.FunctionExpression, functionType semantic.Type, builtin
 	}
 	log.Println("mono type", fnType)
 
-	root, err := compile(f.Block.Body, builtins)
+	root, err := compile(f.Block.Body, builtins, make(map[string]*semantic.FunctionExpression))
 	if err != nil {
 		return nil, err
 	}
@@ -59,12 +59,12 @@ func monoType(t semantic.Type, _ error) semantic.Type {
 	return t
 }
 
-func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
+func compile(n semantic.Node, builtIns Scope, funcExprs map[string]*semantic.FunctionExpression) (Evaluator, error) {
 	switch n := n.(type) {
 	case *semantic.BlockStatement:
 		body := make([]Evaluator, len(n.Body))
 		for i, s := range n.Body {
-			node, err := compile(s, builtIns)
+			node, err := compile(s, builtIns, funcExprs)
 			if err != nil {
 				return nil, err
 			}
@@ -77,7 +77,7 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 	case *semantic.ExpressionStatement:
 		return nil, errors.New("statement does nothing, sideffects are not supported by the compiler")
 	case *semantic.ReturnStatement:
-		node, err := compile(n.Argument, builtIns)
+		node, err := compile(n.Argument, builtIns, funcExprs)
 		if err != nil {
 			return nil, err
 		}
@@ -85,7 +85,13 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 			Evaluator: node,
 		}, nil
 	case *semantic.NativeVariableDeclaration:
-		node, err := compile(n.Init, builtIns)
+		if fe, ok := n.Init.(*semantic.FunctionExpression); ok {
+			funcExprs[n.Identifier.Name] = fe
+			return &blockEvaluator{
+				t: semantic.Invalid,
+			}, nil
+		}
+		node, err := compile(n.Init, builtIns, funcExprs)
 		if err != nil {
 			return nil, err
 		}
@@ -98,7 +104,7 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 		properties := make(map[string]Evaluator, len(n.Properties))
 		propertyTypes := make(map[string]semantic.Type, len(n.Properties))
 		for _, p := range n.Properties {
-			node, err := compile(p.Value, builtIns)
+			node, err := compile(p.Value, builtIns, funcExprs)
 			if err != nil {
 				return nil, err
 			}
@@ -117,19 +123,20 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 			}, nil
 		}
 
-		// TODO: We need to instantiate a new function expression with the known in type.
-
-		// TODO: How do we apply the instantiation at this stage?
-		// Meaning the instatiate process decouples type variables so that each instance can have its own type.
-		// Here in compliation we need to know how the type variables were linked so we can retrieve the monotype once we know the monotype of the instantiated type variables.
-		t, err := n.Type()
-		log.Printf("IdentifierExpression type: %v %v", t, err)
+		// Create type instance of the function
+		if fe, ok := funcExprs[n.Name]; ok {
+			t, err := n.Type()
+			if err != nil {
+				return nil, err
+			}
+			return compileFunctionInstance(fe, t.PolyType(), builtIns, funcExprs)
+		}
 		return &identifierEvaluator{
 			t:    monoType(n.Type()),
 			name: n.Name,
 		}, nil
 	case *semantic.MemberExpression:
-		object, err := compile(n.Object, builtIns)
+		object, err := compile(n.Object, builtIns, funcExprs)
 		if err != nil {
 			return nil, err
 		}
@@ -169,7 +176,7 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 			time: values.ConvertTime(n.Value),
 		}, nil
 	case *semantic.UnaryExpression:
-		node, err := compile(n.Argument, builtIns)
+		node, err := compile(n.Argument, builtIns, funcExprs)
 		if err != nil {
 			return nil, err
 		}
@@ -178,11 +185,11 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 			node: node,
 		}, nil
 	case *semantic.LogicalExpression:
-		l, err := compile(n.Left, builtIns)
+		l, err := compile(n.Left, builtIns, funcExprs)
 		if err != nil {
 			return nil, err
 		}
-		r, err := compile(n.Right, builtIns)
+		r, err := compile(n.Right, builtIns, funcExprs)
 		if err != nil {
 			return nil, err
 		}
@@ -193,13 +200,12 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 			right:    r,
 		}, nil
 	case *semantic.BinaryExpression:
-		l, err := compile(n.Left, builtIns)
+		l, err := compile(n.Left, builtIns, funcExprs)
 		if err != nil {
 			return nil, err
 		}
-		log.Printf("%#v", l)
 		lt := l.Type()
-		r, err := compile(n.Right, builtIns)
+		r, err := compile(n.Right, builtIns, funcExprs)
 		if err != nil {
 			return nil, err
 		}
@@ -219,11 +225,11 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 			f:     f,
 		}, nil
 	case *semantic.CallExpression:
-		callee, err := compile(n.Callee, builtIns)
+		args, err := compile(n.Arguments, builtIns, funcExprs)
 		if err != nil {
 			return nil, err
 		}
-		args, err := compile(n.Arguments, builtIns)
+		callee, err := compile(n.Callee, builtIns, funcExprs)
 		if err != nil {
 			return nil, err
 		}
@@ -233,42 +239,72 @@ func compile(n semantic.Node, builtIns Scope) (Evaluator, error) {
 			args:   args,
 		}, nil
 	case *semantic.FunctionExpression:
-		body, err := compile(n.Block.Body, builtIns)
+		fnType, err := n.Type()
 		if err != nil {
-			return nil, err
+			return nil, errors.New("cannot compile polymorphic functions")
 		}
-		ft := monoType(n.Type())
-		in := ft.InType()
-		propertyTypes := in.Properties()
-		params := make([]functionParam, 0, len(propertyTypes))
-		for k, pt := range propertyTypes {
-			param := functionParam{
-				Key:  k,
-				Type: pt,
-			}
-			if n.Defaults != nil {
-				// Search for default value
-				for _, d := range n.Defaults.List {
-					if d.Key.Name == k {
-						d, err := compile(d.Value, builtIns)
-						if err != nil {
-							return nil, err
-						}
-						param.Default = d
-						break
-					}
-				}
-			}
-			params = append(params, param)
-		}
-		return &functionEvaluator{
-			t:      monoType(n.Type()),
-			params: params,
-			body:   body,
-		}, nil
+		return compileFunction(n, fnType, builtIns, funcExprs)
 	default:
 		return nil, fmt.Errorf("unknown semantic node of type %T", n)
 	}
+}
+
+func compileFunctionInstance(n *semantic.FunctionExpression, t semantic.PolyType, builtIns Scope, funcExprs map[string]*semantic.FunctionExpression) (*functionEvaluator, error) {
+	pt, err := n.PolyType()
+	if err != nil {
+		return nil, err
+	}
+	vars := pt.FreeVars()
+	f := new(semantic.Fresher)
+	tm := make(map[int]*semantic.TV, len(vars))
+	for _, tv := range vars {
+		tm[tv.V] = f.Fresh()
+	}
+	pt = pt.Instantiate(tm)
+	if err := pt.Unify(t); err != nil {
+		return nil, err
+	}
+	fnType, mono := pt.Type()
+	if !mono {
+		return nil, errors.New("cannot compile polymorphic function within function")
+	}
+	log.Println("fnType", fnType)
+	return compileFunction(n, fnType, builtIns, funcExprs)
+}
+
+func compileFunction(n *semantic.FunctionExpression, fnType semantic.Type, builtIns Scope, funcExprs map[string]*semantic.FunctionExpression) (*functionEvaluator, error) {
+	body, err := compile(n.Block.Body, builtIns, funcExprs)
+	if err != nil {
+		return nil, err
+	}
+	in := fnType.InType()
+	propertyTypes := in.Properties()
+	params := make([]functionParam, 0, len(propertyTypes))
+	for k, pt := range propertyTypes {
+		param := functionParam{
+			Key:  k,
+			Type: pt,
+		}
+		if n.Defaults != nil {
+			// Search for default value
+			for _, d := range n.Defaults.List {
+				if d.Key.Name == k {
+					d, err := compile(d.Value, builtIns, funcExprs)
+					if err != nil {
+						return nil, err
+					}
+					param.Default = d
+					break
+				}
+			}
+		}
+		params = append(params, param)
+	}
+	return &functionEvaluator{
+		t:      fnType,
+		params: params,
+		body:   body,
+	}, nil
 }
 
 // CompilationCache caches compilation results based on the type of the function.

@@ -217,7 +217,7 @@ func TestCompileAndEval(t *testing.T) {
 		},
 		{
 			name: "call function via identifier",
-			// f = (r) => {f = (a,b) => a + b return f(a:1, b:r) + int(v:f(a:1.0, b:2.5))}
+			// f = (r) => {f = (a,b) => a + b return f(a:1, b:r)}
 			fn: &semantic.FunctionExpression{
 				Block: &semantic.FunctionBlock{
 					Parameters: &semantic.FunctionParameters{
@@ -270,6 +270,69 @@ func TestCompileAndEval(t *testing.T) {
 				"r": values.NewInt(4),
 			}),
 			want:    values.NewInt(5),
+			wantErr: false,
+		},
+		{
+			name: "call function via identifier with different types",
+			// f = (r) => {i = (x) => x return i(x:i)(x:r+1)}
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "r"}},
+						},
+					},
+					Body: &semantic.BlockStatement{
+						Body: []semantic.Statement{
+							&semantic.NativeVariableDeclaration{
+								Identifier: &semantic.Identifier{Name: "i"},
+								Init: &semantic.FunctionExpression{
+									Block: &semantic.FunctionBlock{
+										Parameters: &semantic.FunctionParameters{
+											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "x"}}},
+										},
+										Body: &semantic.IdentifierExpression{Name: "x"},
+									},
+								},
+							},
+							&semantic.ReturnStatement{
+								Argument: &semantic.CallExpression{
+									Callee: &semantic.CallExpression{
+										Callee: &semantic.IdentifierExpression{Name: "i"},
+										Arguments: &semantic.ObjectExpression{
+											Properties: []*semantic.Property{
+												{Key: &semantic.Identifier{Name: "x"}, Value: &semantic.IdentifierExpression{Name: "i"}},
+											},
+										},
+									},
+									Arguments: &semantic.ObjectExpression{
+										Properties: []*semantic.Property{
+											{
+												Key: &semantic.Identifier{Name: "x"},
+												Value: &semantic.BinaryExpression{
+													Operator: ast.AdditionOperator,
+													Left:     &semantic.IdentifierExpression{Name: "r"},
+													Right:    &semantic.IntegerLiteral{Value: 1},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			fnType: semantic.NewFunctionType(semantic.FunctionSignature{
+				In: semantic.NewObjectType(map[string]semantic.Type{
+					"r": semantic.Int,
+				}),
+				Out: semantic.Int,
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewIntValue(4),
+			}),
+			want:    values.NewIntValue(5),
 			wantErr: false,
 		},
 	}

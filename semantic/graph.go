@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"regexp"
 	"strconv"
 	"time"
@@ -50,7 +49,6 @@ func (t *typeAnnotation) Type() (Type, error) {
 	}
 
 	typ := t.poly
-	log.Println("poly", typ)
 	if i, ok := typ.(Indirecter); ok {
 		typ = i.Indirect()
 	}

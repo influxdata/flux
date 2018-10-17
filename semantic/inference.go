@@ -15,8 +15,8 @@ func Infer(n Node) {
 }
 
 type PolyType interface {
-	freeVars() []*TV
-	instantiate(tm map[int]*TV) PolyType
+	FreeVars() []*TV
+	Instantiate(tm map[int]*TV) PolyType
 
 	Unify(t PolyType) error
 
@@ -29,10 +29,10 @@ type Indirecter interface {
 	Indirect() PolyType
 }
 
-func (k Kind) freeVars() []*TV {
+func (k Kind) FreeVars() []*TV {
 	return nil
 }
-func (k Kind) instantiate(map[int]*TV) PolyType {
+func (k Kind) Instantiate(map[int]*TV) PolyType {
 	return k
 }
 func (k Kind) Unify(t PolyType) error {
@@ -68,10 +68,10 @@ type Env struct {
 	m      map[string]TS
 }
 
-func (e *Env) freeVars() []*TV {
+func (e *Env) FreeVars() []*TV {
 	var u []*TV
 	for _, ts := range e.m {
-		u = union(u, ts.freeVars())
+		u = union(u, ts.FreeVars())
 	}
 	return u
 }
@@ -179,14 +179,14 @@ func (tv *TV) Indirect() PolyType {
 	return tv
 }
 
-func (tv *TV) freeVars() []*TV {
+func (tv *TV) FreeVars() []*TV {
 	if *tv.T != nil {
-		return (*tv.T).freeVars()
+		return (*tv.T).FreeVars()
 	}
 	return []*TV{tv}
 }
 
-func (tv1 *TV) instantiate(tm map[int]*TV) PolyType {
+func (tv1 *TV) Instantiate(tm map[int]*TV) PolyType {
 	if tv2, ok := tm[tv1.V]; ok {
 		return tv2
 	}
@@ -198,8 +198,8 @@ type TS struct {
 	List []*TV
 }
 
-func (ts TS) freeVars() []*TV {
-	return ts.T.freeVars()
+func (ts TS) FreeVars() []*TV {
+	return ts.T.FreeVars()
 }
 
 type inferenceVisitor struct {
@@ -421,12 +421,11 @@ func (v *inferenceVisitor) instantiate(ts TS) PolyType {
 	for _, tv := range ts.List {
 		tm[tv.V] = v.f.Fresh()
 	}
-	log.Println("tm", tm)
-	return ts.T.instantiate(tm)
+	return ts.T.Instantiate(tm)
 }
 func (v *inferenceVisitor) schema(t PolyType) TS {
-	uv := t.freeVars()
-	ev := v.env.freeVars()
+	uv := t.FreeVars()
+	ev := v.env.FreeVars()
 	d := diff(uv, ev)
 	return TS{
 		T:    t,
@@ -451,14 +450,14 @@ func (t functionPolyType) String() string {
 	return fmt.Sprintf("(%v) -> %v", t.in, t.out)
 }
 
-func (t functionPolyType) freeVars() []*TV {
-	return union(t.in.freeVars(), t.out.freeVars())
+func (t functionPolyType) FreeVars() []*TV {
+	return union(t.in.FreeVars(), t.out.FreeVars())
 }
 
-func (t functionPolyType) instantiate(tm map[int]*TV) PolyType {
+func (t functionPolyType) Instantiate(tm map[int]*TV) PolyType {
 	return functionPolyType{
-		in:  t.in.instantiate(tm),
-		out: t.out.instantiate(tm),
+		in:  t.in.Instantiate(tm),
+		out: t.out.Instantiate(tm),
 	}
 }
 
@@ -523,18 +522,18 @@ func (t objectPolyType) String() string {
 	return builder.String()
 }
 
-func (t objectPolyType) freeVars() []*TV {
+func (t objectPolyType) FreeVars() []*TV {
 	var vars []*TV
 	for _, p := range t.properties {
-		vars = union(vars, p.freeVars())
+		vars = union(vars, p.FreeVars())
 	}
 	return vars
 }
 
-func (t objectPolyType) instantiate(tm map[int]*TV) PolyType {
+func (t objectPolyType) Instantiate(tm map[int]*TV) PolyType {
 	properties := make(map[string]PolyType, len(t.properties))
 	for k, p := range t.properties {
-		properties[k] = p.instantiate(tm)
+		properties[k] = p.Instantiate(tm)
 	}
 	return objectPolyType{
 		properties: properties,
