@@ -1,4 +1,4 @@
-package planner
+package plan
 
 import (
 	"sort"
@@ -256,7 +256,7 @@ func (e *edges) shallowCopy() edges {
 //
 // The returned node will have its predecessors set to the predecessors
 // of "bottom", however, it's successors will not be set---it will be the responsibility of
-// the planner to attach the merged node to its successors.
+// the plan to attach the merged node to its successors.
 func MergeLogicalPlanNodes(top, bottom PlanNode, procSpec ProcedureSpec) PlanNode {
 	if len(top.Predecessors()) != 1 ||
 		len(bottom.Successors()) != 1 ||
@@ -293,7 +293,7 @@ func MergeLogicalPlanNodes(top, bottom PlanNode, procSpec ProcedureSpec) PlanNod
 //        W              W
 //
 // Note that successors of the original top node will not be updated, and the returned
-// plan node will have no successors.  It will be the responsibility of the planner to
+// plan node will have no successors.  It will be the responsibility of the plan to
 // attach the swapped nodes to successors.
 func SwapPlanNodes(top, bottom PlanNode) PlanNode {
 	if len(top.Predecessors()) != 1 ||

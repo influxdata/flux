@@ -1,4 +1,4 @@
-package planner_test
+package plan_test
 
 import (
 	"testing"
@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/influxdata/flux/planner"
-	"github.com/influxdata/flux/planner/plantest"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/values"
 )
 
@@ -16,20 +16,20 @@ func TestBoundsIntersect(t *testing.T) {
 	tests := []struct {
 		name string
 		now  time.Time
-		a, b *planner.Bounds
-		want *planner.Bounds
+		a, b *plan.Bounds
+		want *plan.Bounds
 	}{
 		{
 			name: "contained",
-			a: &planner.Bounds{
+			a: &plan.Bounds{
 				Start: values.ConvertTime(now.Add(-1 * time.Hour)),
 				Stop:  values.ConvertTime(now),
 			},
-			b: &planner.Bounds{
+			b: &plan.Bounds{
 				Start: values.ConvertTime(now.Add(-30 * time.Minute)),
 				Stop:  values.ConvertTime(now),
 			},
-			want: &planner.Bounds{
+			want: &plan.Bounds{
 				Start: values.ConvertTime(now.Add(-30 * time.Minute)),
 				Stop:  values.ConvertTime(now),
 			},
@@ -37,15 +37,15 @@ func TestBoundsIntersect(t *testing.T) {
 		{
 			name: "contained sym",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			a: &planner.Bounds{
+			a: &plan.Bounds{
 				Start: values.ConvertTime(now.Add(-30 * time.Minute)),
 				Stop:  values.ConvertTime(now),
 			},
-			b: &planner.Bounds{
+			b: &plan.Bounds{
 				Start: values.ConvertTime(now.Add(-1 * time.Hour)),
 				Stop:  values.ConvertTime(now),
 			},
-			want: &planner.Bounds{
+			want: &plan.Bounds{
 				Start: values.ConvertTime(now.Add(-30 * time.Minute)),
 				Stop:  values.ConvertTime(now),
 			},
@@ -53,63 +53,63 @@ func TestBoundsIntersect(t *testing.T) {
 		{
 			name: "no overlap",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			a: &planner.Bounds{
+			a: &plan.Bounds{
 				Start: values.ConvertTime(now.Add(-1 * time.Hour)),
 				Stop:  values.ConvertTime(now),
 			},
-			b: &planner.Bounds{
+			b: &plan.Bounds{
 				Start: values.ConvertTime(now.Add(-3 * time.Hour)),
 				Stop:  values.ConvertTime(now.Add(-2 * time.Hour)),
 			},
-			want: planner.EmptyBounds,
+			want: plan.EmptyBounds,
 		},
 		{
 			name: "overlap",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			a: &planner.Bounds{
+			a: &plan.Bounds{
 				Start: values.ConvertTime(now.Add(-1 * time.Hour)),
 				Stop:  values.ConvertTime(now),
 			},
-			b: &planner.Bounds{
+			b: &plan.Bounds{
 				Start: values.ConvertTime(now.Add(-2 * time.Hour)),
 				Stop:  values.ConvertTime(now.Add(-30 * time.Minute)),
 			},
-			want: &planner.Bounds{
+			want: &plan.Bounds{
 				Start: values.ConvertTime(now.Add(-1 * time.Hour)),
 				Stop:  values.ConvertTime(now.Add(-30 * time.Minute)),
 			},
 		},
 		{
 			name: "absolute times",
-			a: &planner.Bounds{
+			a: &plan.Bounds{
 				Start: values.ConvertTime(time.Date(2018, time.January, 1, 0, 1, 0, 0, time.UTC)),
 				Stop:  values.ConvertTime(time.Date(2018, time.January, 1, 0, 3, 0, 0, time.UTC)),
 			},
-			b: &planner.Bounds{
+			b: &plan.Bounds{
 				Start: values.ConvertTime(time.Date(2018, time.January, 1, 0, 4, 0, 0, time.UTC)),
 				Stop:  values.ConvertTime(time.Date(2018, time.January, 1, 0, 5, 0, 0, time.UTC)),
 			},
-			want: planner.EmptyBounds,
+			want: plan.EmptyBounds,
 		},
 		{
 			name: "intersect with empty returns empty",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			a: &planner.Bounds{
+			a: &plan.Bounds{
 				Start: values.ConvertTime(time.Date(2018, time.January, 1, 0, 15, 0, 0, time.UTC)),
 				Stop:  values.ConvertTime(now),
 			},
-			b:    planner.EmptyBounds,
-			want: planner.EmptyBounds,
+			b:    plan.EmptyBounds,
+			want: plan.EmptyBounds,
 		},
 		{
 			name: "intersect with empty returns empty sym",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			a:    planner.EmptyBounds,
-			b: &planner.Bounds{
+			a:    plan.EmptyBounds,
+			b: &plan.Bounds{
 				Start: values.ConvertTime(time.Date(2018, time.January, 1, 0, 15, 0, 0, time.UTC)),
 				Stop:  values.ConvertTime(now),
 			},
-			want: planner.EmptyBounds,
+			want: plan.EmptyBounds,
 		},
 	}
 	for _, tt := range tests {
@@ -127,55 +127,55 @@ func TestBounds_Union(t *testing.T) {
 	tests := []struct {
 		name string
 		now  time.Time
-		a, b *planner.Bounds
-		want *planner.Bounds
+		a, b *plan.Bounds
+		want *plan.Bounds
 	}{
 		{
 			name: "basic case",
-			a: &planner.Bounds{
+			a: &plan.Bounds{
 				Start: values.ConvertTime(time.Date(2018, time.January, 1, 0, 1, 0, 0, time.UTC)),
 				Stop:  values.ConvertTime(time.Date(2018, time.January, 1, 0, 3, 0, 0, time.UTC)),
 			},
-			b: &planner.Bounds{
+			b: &plan.Bounds{
 				Start: values.ConvertTime(time.Date(2018, time.January, 1, 0, 2, 0, 0, time.UTC)),
 				Stop:  values.ConvertTime(time.Date(2018, time.January, 1, 0, 4, 0, 0, time.UTC)),
 			},
-			want: &planner.Bounds{
+			want: &plan.Bounds{
 				Start: values.ConvertTime(time.Date(2018, time.January, 1, 0, 1, 0, 0, time.UTC)),
 				Stop:  values.ConvertTime(time.Date(2018, time.January, 1, 0, 4, 0, 0, time.UTC)),
 			},
 		},
 		{
 			name: "union with empty returns empty",
-			a: &planner.Bounds{
+			a: &plan.Bounds{
 				Start: values.ConvertTime(time.Date(2018, time.January, 1, 0, 15, 0, 0, time.UTC)),
 				Stop:  values.ConvertTime(now),
 			},
-			b:    planner.EmptyBounds,
-			want: planner.EmptyBounds,
+			b:    plan.EmptyBounds,
+			want: plan.EmptyBounds,
 		},
 		{
 			name: "union with empty returns empty sym",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			a:    planner.EmptyBounds,
-			b: &planner.Bounds{
+			a:    plan.EmptyBounds,
+			b: &plan.Bounds{
 				Start: values.ConvertTime(time.Date(2018, time.January, 1, 0, 15, 0, 0, time.UTC)),
 				Stop:  values.ConvertTime(now),
 			},
-			want: planner.EmptyBounds,
+			want: plan.EmptyBounds,
 		},
 		{
 			name: "no overlap",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			a: &planner.Bounds{
+			a: &plan.Bounds{
 				Start: values.ConvertTime(time.Date(2018, time.January, 1, 0, 15, 0, 0, time.UTC)),
 				Stop:  values.ConvertTime(time.Date(2018, time.January, 1, 0, 20, 0, 0, time.UTC)),
 			},
-			b: &planner.Bounds{
+			b: &plan.Bounds{
 				Start: values.ConvertTime(time.Date(2018, time.January, 1, 0, 45, 0, 0, time.UTC)),
 				Stop:  values.ConvertTime(time.Date(2018, time.January, 1, 0, 50, 0, 0, time.UTC)),
 			},
-			want: &planner.Bounds{
+			want: &plan.Bounds{
 				Start: values.ConvertTime(time.Date(2018, time.January, 1, 0, 15, 0, 0, time.UTC)),
 				Stop:  values.ConvertTime(time.Date(2018, time.January, 1, 0, 50, 0, 0, time.UTC)),
 			},
@@ -197,13 +197,13 @@ func TestBounds_IsEmpty(t *testing.T) {
 	tests := []struct {
 		name   string
 		now    time.Time
-		bounds *planner.Bounds
+		bounds *plan.Bounds
 		want   bool
 	}{
 		{
 			name: "empty bounds / start == stop",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			bounds: &planner.Bounds{
+			bounds: &plan.Bounds{
 				Start: values.ConvertTime(now),
 				Stop:  values.ConvertTime(now),
 			},
@@ -212,7 +212,7 @@ func TestBounds_IsEmpty(t *testing.T) {
 		{
 			name: "empty bounds / absolute now == relative now",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			bounds: &planner.Bounds{
+			bounds: &plan.Bounds{
 				Start: values.ConvertTime(now),
 				Stop:  values.ConvertTime(time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC)),
 			},
@@ -221,7 +221,7 @@ func TestBounds_IsEmpty(t *testing.T) {
 		{
 			name: "start > stop",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			bounds: &planner.Bounds{
+			bounds: &plan.Bounds{
 				Start: values.ConvertTime(now.Add(time.Hour)),
 				Stop:  values.ConvertTime(now),
 			},
@@ -230,7 +230,7 @@ func TestBounds_IsEmpty(t *testing.T) {
 		{
 			name: "start < stop",
 			now:  time.Date(2018, time.August, 14, 11, 0, 0, 0, time.UTC),
-			bounds: &planner.Bounds{
+			bounds: &plan.Bounds{
 				Start: values.ConvertTime(now.Add(-1 * time.Hour)),
 				Stop:  values.ConvertTime(now),
 			},
@@ -250,19 +250,19 @@ func TestBounds_IsEmpty(t *testing.T) {
 
 // A BoundsAwareProcedureSpec that intersects its bounds with its predecessors' bounds
 type mockBoundsIntersectProcedureSpec struct {
-	planner.DefaultCost
-	bounds *planner.Bounds
+	plan.DefaultCost
+	bounds *plan.Bounds
 }
 
-func (m *mockBoundsIntersectProcedureSpec) Kind() planner.ProcedureKind {
+func (m *mockBoundsIntersectProcedureSpec) Kind() plan.ProcedureKind {
 	return "mock-intersect-bounds"
 }
 
-func (m *mockBoundsIntersectProcedureSpec) Copy() planner.ProcedureSpec {
+func (m *mockBoundsIntersectProcedureSpec) Copy() plan.ProcedureSpec {
 	return &mockBoundsIntersectProcedureSpec{}
 }
 
-func (m *mockBoundsIntersectProcedureSpec) TimeBounds(predecessorBounds *planner.Bounds) *planner.Bounds {
+func (m *mockBoundsIntersectProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bounds {
 	if predecessorBounds != nil {
 		return predecessorBounds.Intersect(m.bounds)
 	}
@@ -271,19 +271,19 @@ func (m *mockBoundsIntersectProcedureSpec) TimeBounds(predecessorBounds *planner
 
 // A BoundsAwareProcedureSpec that shifts its predecessors' bounds
 type mockBoundsShiftProcedureSpec struct {
-	planner.DefaultCost
+	plan.DefaultCost
 	by values.Duration
 }
 
-func (m *mockBoundsShiftProcedureSpec) Kind() planner.ProcedureKind {
+func (m *mockBoundsShiftProcedureSpec) Kind() plan.ProcedureKind {
 	return "mock-shift-bounds"
 }
 
-func (m *mockBoundsShiftProcedureSpec) Copy() planner.ProcedureSpec {
+func (m *mockBoundsShiftProcedureSpec) Copy() plan.ProcedureSpec {
 	return &mockBoundsShiftProcedureSpec{}
 }
 
-func (m *mockBoundsShiftProcedureSpec) TimeBounds(predecessorBounds *planner.Bounds) *planner.Bounds {
+func (m *mockBoundsShiftProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bounds {
 	if predecessorBounds != nil {
 		return predecessorBounds.Shift(m.by)
 	}
@@ -291,23 +291,23 @@ func (m *mockBoundsShiftProcedureSpec) TimeBounds(predecessorBounds *planner.Bou
 }
 
 // Create a PlanNode with id and mockBoundsIntersectProcedureSpec
-func makeBoundsNode(id string, bounds *planner.Bounds) planner.PlanNode {
-	return planner.CreatePhysicalNode(planner.NodeID(id),
+func makeBoundsNode(id string, bounds *plan.Bounds) plan.PlanNode {
+	return plan.CreatePhysicalNode(plan.NodeID(id),
 		&mockBoundsIntersectProcedureSpec{
 			bounds: bounds,
 		})
 }
 
 // Create a PlanNode with id and mockBoundsShiftProcedureSpec
-func makeShiftNode(id string, duration values.Duration) planner.PlanNode {
-	return planner.CreateLogicalNode(planner.NodeID(id),
+func makeShiftNode(id string, duration values.Duration) plan.PlanNode {
+	return plan.CreateLogicalNode(plan.NodeID(id),
 		&mockBoundsShiftProcedureSpec{
 			by: duration,
 		})
 }
 
-func bounds(start, stop int) *planner.Bounds {
-	return &planner.Bounds{
+func bounds(start, stop int) *plan.Bounds {
+	return &plan.Bounds{
 		Start: values.Time(start),
 		Stop:  values.Time(stop),
 	}
@@ -321,16 +321,16 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 		// Nodes and edges defining plan
 		spec *plantest.PhysicalPlanSpec
 		// Map from node ID to the expected bounds for that node
-		want map[planner.NodeID]*planner.Bounds
+		want map[plan.NodeID]*plan.Bounds
 	}{
 		{
 			name: "no bounds",
 			spec: &plantest.PhysicalPlanSpec{
-				Nodes: []planner.PlanNode{
+				Nodes: []plan.PlanNode{
 					makeNode("0"),
 				},
 			},
-			want: map[planner.NodeID]*planner.Bounds{
+			want: map[plan.NodeID]*plan.Bounds{
 				"0": nil,
 			},
 		},
@@ -338,7 +338,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			name: "single time bounds",
 			// 0 -> 1 -> 2 -> 3 -> 4
 			spec: &plantest.PhysicalPlanSpec{
-				Nodes: []planner.PlanNode{
+				Nodes: []plan.PlanNode{
 					makeNode("0"),
 					makeNode("1"),
 					makeBoundsNode("2", bounds(5, 10)),
@@ -352,7 +352,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 					{3, 4},
 				},
 			},
-			want: map[planner.NodeID]*planner.Bounds{
+			want: map[plan.NodeID]*plan.Bounds{
 				"0": nil,
 				"1": nil,
 				"2": bounds(5, 10),
@@ -363,7 +363,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			name: "multiple intersect time bounds",
 			// 0 -> 1 -> 2 -> 3 -> 4
 			spec: &plantest.PhysicalPlanSpec{
-				Nodes: []planner.PlanNode{
+				Nodes: []plan.PlanNode{
 					makeNode("0"),
 					makeBoundsNode("1", bounds(5, 10)),
 					makeNode("2"),
@@ -377,7 +377,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 					{3, 4},
 				},
 			},
-			want: map[planner.NodeID]*planner.Bounds{
+			want: map[plan.NodeID]*plan.Bounds{
 				"0": nil,
 				"1": bounds(5, 10),
 				"2": bounds(5, 10),
@@ -388,7 +388,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			name: "shift nil time bounds",
 			// 0 -> 1 -> 2
 			spec: &plantest.PhysicalPlanSpec{
-				Nodes: []planner.PlanNode{
+				Nodes: []plan.PlanNode{
 					makeNode("0"),
 					makeShiftNode("1", values.Duration(5)),
 					makeNode("2"),
@@ -398,7 +398,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 					{1, 2},
 				},
 			},
-			want: map[planner.NodeID]*planner.Bounds{
+			want: map[plan.NodeID]*plan.Bounds{
 				"0": nil,
 				"1": nil,
 				"2": nil,
@@ -408,7 +408,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			name: "shift bounds after intersecting bounds",
 			// 0 -> 1 -> 2 -> 3 -> 4
 			spec: &plantest.PhysicalPlanSpec{
-				Nodes: []planner.PlanNode{
+				Nodes: []plan.PlanNode{
 					makeNode("0"),
 					makeBoundsNode("1", bounds(5, 10)),
 					makeNode("2"),
@@ -422,7 +422,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 					{3, 4},
 				},
 			},
-			want: map[planner.NodeID]*planner.Bounds{
+			want: map[plan.NodeID]*plan.Bounds{
 				"0": nil,
 				"1": bounds(5, 10),
 				"2": bounds(5, 10),
@@ -435,7 +435,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			//  / \
 			// 0   1
 			spec: &plantest.PhysicalPlanSpec{
-				Nodes: []planner.PlanNode{
+				Nodes: []plan.PlanNode{
 					makeBoundsNode("0", bounds(5, 10)),
 					makeBoundsNode("1", bounds(12, 20)),
 					makeNode("2"),
@@ -445,7 +445,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 					{1, 2},
 				},
 			},
-			want: map[planner.NodeID]*planner.Bounds{
+			want: map[plan.NodeID]*plan.Bounds{
 				"0": bounds(5, 10),
 				"1": bounds(12, 20),
 				"2": bounds(5, 20),
@@ -459,7 +459,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			//    \ /
 			//     0
 			spec: &plantest.PhysicalPlanSpec{
-				Nodes: []planner.PlanNode{
+				Nodes: []plan.PlanNode{
 					makeNode("0"),
 					makeBoundsNode("1", bounds(5, 10)),
 					makeNode("2"),
@@ -473,7 +473,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 					{1, 4},
 				},
 			},
-			want: map[planner.NodeID]*planner.Bounds{
+			want: map[plan.NodeID]*plan.Bounds{
 				"0": nil,
 				"1": bounds(5, 10),
 				"2": nil,
@@ -490,13 +490,13 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			thePlan := plantest.CreatePhysicalPlanSpec(tc.spec)
 
 			// Method used to compute the bounds at each node
-			if err := thePlan.BottomUpWalk(planner.ComputeBounds); err != nil {
+			if err := thePlan.BottomUpWalk(plan.ComputeBounds); err != nil {
 				t.Fatal(err)
 			}
 
 			// Map NodeID -> Bounds
-			got := make(map[planner.NodeID]*planner.Bounds)
-			thePlan.BottomUpWalk(func(n planner.PlanNode) error {
+			got := make(map[plan.NodeID]*plan.Bounds)
+			thePlan.BottomUpWalk(func(n plan.PlanNode) error {
 				got[n.ID()] = n.Bounds()
 				return nil
 			})

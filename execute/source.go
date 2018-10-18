@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/planner"
 )
 
 type Node interface {
@@ -18,11 +17,11 @@ type Source interface {
 }
 
 type CreateSource func(spec plan.ProcedureSpec, id DatasetID, ctx Administration) (Source, error)
-type CreateNewPlannerSource func(spec planner.ProcedureSpec, id DatasetID, ctx Administration) (Source, error)
+type CreateNewPlannerSource func(spec plan.ProcedureSpec, id DatasetID, ctx Administration) (Source, error)
 
-var procedureToSource = make(map[planner.ProcedureKind]CreateNewPlannerSource)
+var procedureToSource = make(map[plan.ProcedureKind]CreateNewPlannerSource)
 
-func RegisterSource(k planner.ProcedureKind, c CreateNewPlannerSource) {
+func RegisterSource(k plan.ProcedureKind, c CreateNewPlannerSource) {
 	if procedureToSource[k] != nil {
 		panic(fmt.Errorf("duplicate registration for source with procedure kind %v", k))
 	}

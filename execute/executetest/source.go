@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/planner"
+	"github.com/influxdata/flux/plan"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -26,16 +26,16 @@ func NewFromProcedureSpec(data []*Table) *FromProcedureSpec {
 	return &FromProcedureSpec{data: data}
 }
 
-func (src *FromProcedureSpec) Kind() planner.ProcedureKind {
+func (src *FromProcedureSpec) Kind() plan.ProcedureKind {
 	return FromTestKind
 }
 
-func (src *FromProcedureSpec) Copy() planner.ProcedureSpec {
+func (src *FromProcedureSpec) Copy() plan.ProcedureSpec {
 	return src
 }
 
-func (src *FromProcedureSpec) Cost(inStats []planner.Statistics) (planner.Cost, planner.Statistics) {
-	return planner.Cost{}, planner.Statistics{}
+func (src *FromProcedureSpec) Cost(inStats []plan.Statistics) (plan.Cost, plan.Statistics) {
+	return plan.Cost{}, plan.Statistics{}
 }
 
 func (src *FromProcedureSpec) AddTransformation(t execute.Transformation) {
@@ -60,6 +60,6 @@ func (src *FromProcedureSpec) Run(ctx context.Context) {
 	}
 }
 
-func CreateFromSource(spec planner.ProcedureSpec, id execute.DatasetID, a execute.Administration) (execute.Source, error) {
+func CreateFromSource(spec plan.ProcedureSpec, id execute.DatasetID, a execute.Administration) (execute.Source, error) {
 	return spec.(*FromProcedureSpec), nil
 }

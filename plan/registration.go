@@ -1,4 +1,4 @@
-package planner
+package plan
 
 import (
 	"fmt"
@@ -55,12 +55,12 @@ func RegisterProcedureSpec(k ProcedureKind, c CreateProcedureSpec, qks ...flux.O
 var ruleNameToLogicalRule = make(map[string]Rule)
 var ruleNameToPhysicalRule = make(map[string]Rule)
 
-// RegisterLogicalRule registers the rule created by createFn with the logical planner.
+// RegisterLogicalRule registers the rule created by createFn with the logical plan.
 func RegisterLogicalRule(rule Rule) {
 	registerRule(ruleNameToLogicalRule, rule)
 }
 
-// RegisterPhysicalRule registers the rule created by createFn with the physical planner.
+// RegisterPhysicalRule registers the rule created by createFn with the physical plan.
 func RegisterPhysicalRule(rule Rule) {
 	registerRule(ruleNameToPhysicalRule, rule)
 }

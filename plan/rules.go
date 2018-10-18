@@ -1,4 +1,4 @@
-package planner
+package plan
 
 // Rule is transformation rule for a query operation
 type Rule interface {

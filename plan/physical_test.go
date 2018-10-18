@@ -1,30 +1,30 @@
-package planner_test
+package plan_test
 
 import (
 	"math"
 	"testing"
 
 	"github.com/influxdata/flux/functions/inputs"
-	"github.com/influxdata/flux/planner"
-	"github.com/influxdata/flux/planner/plantest"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
 )
 
 func TestPhysicalOptions(t *testing.T) {
-	configs := [][]planner.PhysicalOption{
-		{planner.WithDefaultMemoryLimit(16384)},
+	configs := [][]plan.PhysicalOption{
+		{plan.WithDefaultMemoryLimit(16384)},
 		{},
 	}
 
 	for _, options := range configs {
 		spec := &plantest.LogicalPlanSpec{
-			Nodes: []planner.PlanNode{
-				planner.CreateLogicalNode("from0", &inputs.FromProcedureSpec{}),
+			Nodes: []plan.PlanNode{
+				plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{}),
 			},
 		}
 
 		inputPlan := plantest.CreateLogicalPlanSpec(spec)
 
-		thePlanner := planner.NewPhysicalPlanner(options...)
+		thePlanner := plan.NewPhysicalPlanner(options...)
 		outputPlan, err := thePlanner.Plan(inputPlan)
 		if err != nil {
 			t.Fatalf("Physical planning failed: %v", err)

@@ -1,4 +1,4 @@
-package planner
+package plan
 
 import (
 	"fmt"
@@ -17,8 +17,8 @@ type LogicalPlanner interface {
 	Plan(spec *flux.Spec) (*PlanSpec, error)
 }
 
-// NewLogicalPlanner returns a new logical planner with the given options.
-// The planner will be configured to apply any logical rules that have
+// NewLogicalPlanner returns a new logical plan with the given options.
+// The plan will be configured to apply any logical rules that have
 // been registered.
 func NewLogicalPlanner(options ...LogicalOption) LogicalPlanner {
 	thePlanner := &logicalPlanner{
@@ -43,7 +43,7 @@ func NewLogicalPlanner(options ...LogicalOption) LogicalPlanner {
 	return thePlanner
 }
 
-// LogicalOption is an option to configure the behavior of the logical planner.
+// LogicalOption is an option to configure the behavior of the logical plan.
 type LogicalOption interface {
 	apply(*logicalPlanner)
 }
@@ -58,7 +58,7 @@ type logicalPlanner struct {
 	*heuristicPlanner
 }
 
-// WithLogicalRule produces a logical planner option that forces a particular rule to be
+// WithLogicalRule produces a logical plan option that forces a particular rule to be
 // applied.
 func WithLogicalRule(rule Rule) LogicalOption {
 	return logicalOption(func(lp *logicalPlanner) {

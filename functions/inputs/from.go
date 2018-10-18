@@ -6,7 +6,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/functions/inputs/storage"
 	"github.com/influxdata/flux/execute"
-	plan "github.com/influxdata/flux/planner"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/platform"
 	"github.com/influxdata/platform/query"
