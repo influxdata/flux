@@ -390,11 +390,17 @@ func (t *functionType) PipeArgument() string {
 }
 
 func (t *functionType) PolyType() PolyType {
+	var in PolyType
+	if t.in != nil {
+		in = t.in.PolyType()
+	} else {
+		in = objectPolyType{}
+	}
 	var defaults PolyType
 	if t.defaults != nil {
 		defaults = t.defaults.PolyType()
 	}
-	return NewFunctionPolyType(t.in.PolyType(), defaults, t.out.PolyType(), t.pipeArgument)
+	return NewFunctionPolyType(in, defaults, t.out.PolyType(), t.pipeArgument)
 }
 
 func (t *functionType) typ() {}

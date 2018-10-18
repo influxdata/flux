@@ -15,6 +15,8 @@ type Interpreter struct {
 	values  []values.Value
 	options *Scope
 	globals *Scope
+
+	typeSol semantic.TypeSolution
 }
 
 // NewInterpreter instantiates a new Flux Interpreter whose builtin values are not mutable.
@@ -73,11 +75,32 @@ func (itrp *Interpreter) SetOption(name string, val values.Value) {
 }
 
 // Eval evaluates the expressions composing a Flux program.
-func (itrp *Interpreter) Eval(program *semantic.Program) error {
-	return itrp.eval(program)
+func (itrp *Interpreter) Eval(program semantic.Node) error {
+	itrp.typeSol = semantic.Infer(program)
+	// Check for any type errors
+	if err := itrp.typeSol.Err(); err != nil {
+		return err
+	}
+	return itrp.doRoot(program)
 }
 
-func (itrp *Interpreter) eval(program *semantic.Program) error {
+func (itrp *Interpreter) doRoot(node semantic.Node) error {
+	switch n := node.(type) {
+	case *semantic.Program:
+		return itrp.doProgram(n)
+	case *semantic.Extern:
+		return itrp.doExtern(n)
+	default:
+		return fmt.Errorf("unsupported root node %T", node)
+	}
+}
+
+func (itrp *Interpreter) doExtern(extern *semantic.Extern) error {
+	// We do not care about the type declarations
+	return itrp.doRoot(extern.Block.Node)
+}
+
+func (itrp *Interpreter) doProgram(program *semantic.Program) error {
 	topLevelScope := itrp.globals
 	for _, stmt := range program.Body {
 		val, err := itrp.doStatement(stmt, topLevelScope)
@@ -163,6 +186,21 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (v
 		value, ok := scope.Lookup(e.Name)
 		if !ok {
 			return nil, fmt.Errorf("undefined identifier %q", e.Name)
+		}
+		if fv, ok := value.(*function); ok {
+			it, err := itrp.typeSol.PolyTypeOf(e)
+			if err != nil {
+				return nil, err
+			}
+			ft, err := itrp.typeSol.PolyTypeOf(fv.e)
+			if err != nil {
+				return nil, err
+			}
+
+			typeSol := itrp.typeSol.FreshSolution()
+			// Unify the identifier type and the function type.
+			typeSol.Unify(it, ft)
+			fv.sol = typeSol
 		}
 		return value, nil
 	case *semantic.CallExpression:
@@ -270,6 +308,7 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (v
 		}
 	case *semantic.FunctionExpression:
 		return &function{
+			sol:   itrp.typeSol,
 			e:     e,
 			scope: scope,
 		}, nil
@@ -363,11 +402,12 @@ func (itrp *Interpreter) doCall(call *semantic.CallExpression, scope *Scope) (va
 	if err != nil {
 		return nil, err
 	}
-	if callee.Type().Kind() != semantic.Function {
+	ft := callee.Type()
+	if ft.Kind() != semantic.Function {
 		return nil, fmt.Errorf("cannot call function, value is of type %v", callee.Type())
 	}
 	f := callee.Function()
-	argObj, err := itrp.doArguments(call.Arguments, scope)
+	argObj, err := itrp.doArguments(call.Arguments, scope, ft.PipeArgument(), call.Pipe)
 	if err != nil {
 		return nil, err
 	}
@@ -391,7 +431,7 @@ func (itrp *Interpreter) doCall(call *semantic.CallExpression, scope *Scope) (va
 	return value, nil
 }
 
-func (itrp *Interpreter) doArguments(args *semantic.ObjectExpression, scope *Scope) (values.Object, error) {
+func (itrp *Interpreter) doArguments(args *semantic.ObjectExpression, scope *Scope, pipeArgument string, pipe semantic.Expression) (values.Object, error) {
 	obj := values.NewObject()
 	if args == nil || len(args.Properties) == 0 {
 		return obj, nil
@@ -406,6 +446,16 @@ func (itrp *Interpreter) doArguments(args *semantic.ObjectExpression, scope *Sco
 		}
 
 		obj.Set(p.Key.Name, value)
+	}
+	if pipe != nil && pipeArgument == "" {
+		return nil, errors.New("pipe argument value provided to function with no pipe argument")
+	}
+	if pipe != nil && pipeArgument != "" {
+		value, err := itrp.doExpression(pipe, scope)
+		if err != nil {
+			return nil, err
+		}
+		obj.Set(pipeArgument, value)
 	}
 	return obj, nil
 }
@@ -552,6 +602,7 @@ func (v value) String() string {
 }
 
 type function struct {
+	sol   semantic.TypeSolution
 	e     *semantic.FunctionExpression
 	scope *Scope
 	call  func(Arguments) (values.Value, error)
@@ -560,7 +611,11 @@ type function struct {
 }
 
 func (f *function) Type() semantic.Type {
-	return semantic.NewFunctionType(semantic.FunctionSignature{})
+	typ, err := f.sol.TypeOf(f.e)
+	if err != nil {
+		return semantic.Invalid
+	}
+	return typ
 }
 
 func (f *function) Str() string {

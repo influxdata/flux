@@ -17,6 +17,7 @@ import (
 var testScope = make(map[string]values.Value)
 var optionScope = make(map[string]values.Value)
 var optionsObject = values.NewObject()
+var extern *semantic.Extern
 
 func addFunc(f *function) {
 	testScope[f.name] = f
@@ -99,16 +100,16 @@ func init() {
 
 	addOption("task", optionsObject)
 
-	//extern = &semantic.Extern{
-	//	Declarations: make([]*semantic.ExternalVariableDeclaration, 0, len(testScope)),
-	//	Block:        new(semantic.ExternBlock),
-	//}
-	//for k, v := range testScope {
-	//	extern.Declarations = append(extern.Declarations, &semantic.ExternalVariableDeclaration{
-	//		Identifier: &semantic.Identifier{Name: k},
-	//		ExternType: v.Type().PolyType(),
-	//	})
-	//}
+	extern = &semantic.Extern{
+		Declarations: make([]*semantic.ExternalVariableDeclaration, 0, len(testScope)),
+		Block:        new(semantic.ExternBlock),
+	}
+	for k, v := range testScope {
+		extern.Declarations = append(extern.Declarations, &semantic.ExternalVariableDeclaration{
+			Identifier: &semantic.Identifier{Name: k},
+			ExternType: v.Type().PolyType(),
+		})
+	}
 }
 
 // TestEval tests whether a program can run to completion or not
@@ -189,6 +190,16 @@ func TestEval(t *testing.T) {
 		},
 		{
 			name: "function block",
+			query: `
+            f = (r) => {
+                r1 = 1.0 + r
+                return (r + r1) / r
+            }
+            f(r:1.0) == 3.0 or fail()
+			`,
+		},
+		{
+			name: "function block polymorphic",
 			query: `
             f = (r) => {
                 r2 = r * r
@@ -354,10 +365,13 @@ func TestEval(t *testing.T) {
 				t.Fatal(err)
 			}
 
+			externGraph := extern.Copy().(*semantic.Extern)
+			externGraph.Block.Node = graph
+
 			// Create new interpreter scope for each test case
 			itrp := interpreter.NewInterpreter(optionScope, testScope)
 
-			err = itrp.Eval(graph)
+			err = itrp.Eval(externGraph)
 			if !tc.wantErr && err != nil {
 				t.Fatal(err)
 			} else if tc.wantErr && err == nil {

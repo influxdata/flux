@@ -25,7 +25,6 @@ func analyzeProgram(prog *ast.Program) (*Program, error) {
 		}
 		p.Body[i] = n
 	}
-	Walk(newFinalizeVisitor(), p)
 	return p, nil
 }
 
@@ -307,7 +306,7 @@ func analyzePipeExpression(pipe *ast.PipeExpression) (*CallExpression, error) {
 		return nil, err
 	}
 
-	call.pipe = value
+	call.Pipe = value
 	return call, nil
 }
 
@@ -484,100 +483,4 @@ func toDuration(lit ast.Duration) (time.Duration, error) {
 		dur, err = time.ParseDuration(strconv.FormatInt(mag, 10) + unit)
 	}
 	return dur, err
-}
-
-// finalizeVisitor is responsible for performing any final actions on the semantic graph after the intial generation from the AST.
-type finalizeVisitor struct {
-	funcExprs *functionPipeScope
-}
-
-func newFinalizeVisitor() Visitor {
-	return ScopedVisitor{
-		v: finalizeVisitor{
-			funcExprs: new(functionPipeScope),
-		},
-	}
-}
-
-func (v finalizeVisitor) Visit(node Node) Visitor {
-	switch n := node.(type) {
-	case *ExternalVariableDeclaration:
-		if ft, ok := n.ExternType.(functionPolyType); ok {
-			v.funcExprs.Set(n.Identifier.Name, ft.pipe)
-		}
-	case *NativeVariableDeclaration:
-		if fe, ok := n.Init.(*FunctionExpression); ok {
-			if fe.Block.Parameters != nil && fe.Block.Parameters.Pipe != nil {
-				v.funcExprs.Set(n.Identifier.Name, fe.Block.Parameters.Pipe.Name)
-			}
-		}
-	}
-	return v
-}
-
-func (v finalizeVisitor) Done(node Node) {
-	switch n := node.(type) {
-	case *CallExpression:
-		if n.pipe == nil {
-			break
-		}
-		pipe, ok := v.findCallee(n.Callee)
-		// Add pipe argument to call args
-		if ok {
-			if n.Arguments == nil {
-				n.Arguments = new(ObjectExpression)
-			}
-			n.Arguments.Properties = append(n.Arguments.Properties, &Property{
-				Key:   &Identifier{Name: pipe},
-				Value: n.pipe,
-			})
-		}
-	}
-}
-
-func (v finalizeVisitor) findCallee(callee Expression) (string, bool) {
-	switch n := callee.(type) {
-	case *IdentifierExpression:
-		return v.funcExprs.Lookup(n.Name)
-	case *FunctionExpression:
-		if n.Block.Parameters != nil && n.Block.Parameters.Pipe != nil {
-			return n.Block.Parameters.Pipe.Name, true
-		}
-	}
-	return "", false
-}
-
-func (v finalizeVisitor) Nest() NestingVisitor {
-	return finalizeVisitor{
-		funcExprs: v.funcExprs.Nest(),
-	}
-}
-
-type functionPipeScope struct {
-	parent *functionPipeScope
-	funcs  map[string]string
-}
-
-func (f *functionPipeScope) Set(n string, pipe string) {
-	if f.funcs == nil {
-		f.funcs = make(map[string]string)
-	}
-	f.funcs[n] = pipe
-}
-
-func (f *functionPipeScope) Lookup(n string) (string, bool) {
-	pipe, ok := f.funcs[n]
-	if ok {
-		return pipe, true
-	}
-	if f.parent != nil {
-		return f.parent.Lookup(n)
-	}
-	return "", false
-}
-
-func (f *functionPipeScope) Nest() *functionPipeScope {
-	return &functionPipeScope{
-		parent: f,
-	}
 }

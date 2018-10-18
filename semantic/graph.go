@@ -317,7 +317,9 @@ func (e *ExternBlock) Copy() Node {
 	ne := new(ExternBlock)
 	*ne = *e
 
-	ne.Node = e.Node.Copy()
+	if ne.Node != nil {
+		ne.Node = e.Node.Copy()
+	}
 
 	return ne
 }

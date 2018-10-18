@@ -21,6 +21,10 @@ type TypeSolution interface {
 	// Unify modifies the solution given that a == b.
 	Unify(a, b PolyType) error
 
+	// Err returns an error from the inference solution if any exist.
+	// There may be more than one error, each node can be inspected for specific errors.
+	Err() error
+
 	// setType updates the nodes type or type error
 	setType(n Node, pt PolyType, err error)
 }
@@ -359,7 +363,7 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 	case *StringLiteral:
 		return String, nil
 	default:
-		return nil, fmt.Errorf("unsupported %T", n)
+		return nil, fmt.Errorf("unsupported node type %T", n)
 	}
 }
 
@@ -387,7 +391,7 @@ func (v *inferenceVisitor) schema(t PolyType) TS {
 
 // functionPolyType represent a function, all functions transform a single input type into an output type.
 type functionPolyType struct {
-	in       objectPolyType
+	in       PolyType
 	defaults objectPolyType
 	out      PolyType
 	pipe     string
@@ -401,7 +405,7 @@ func NewFunctionPolyType(in, defaults, out PolyType, pipe string) PolyType {
 		d = defaults.(objectPolyType)
 	}
 	return functionPolyType{
-		in:       in.(objectPolyType),
+		in:       in,
 		defaults: d,
 		out:      out,
 		pipe:     pipe,
@@ -607,6 +611,9 @@ type typeSolution struct {
 	// The type of the typeVar is known when the pointer points to a non-nil PolyType.
 	// All pointers in the list are themselves guaranteed to be non nil.
 	vars []*PolyType
+
+	// err is any error encountered while computing inference.
+	err error
 }
 
 type typeAnnotation struct {
@@ -679,6 +686,9 @@ func (s *typeSolution) PolyTypeOf(n Node) (PolyType, error) {
 }
 
 func (s *typeSolution) setType(n Node, poly PolyType, err error) {
+	if s.err == nil && err != nil {
+		s.err = err
+	}
 	s.m[n] = typeAnnotation{
 		poly: poly,
 		err:  err,
@@ -735,6 +745,10 @@ func (s *typeSolution) Fresh() typeVar {
 		idx:      idx,
 		solution: s,
 	}
+}
+
+func (s *typeSolution) Err() error {
+	return s.err
 }
 
 type typeVar struct {
