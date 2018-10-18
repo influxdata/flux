@@ -287,12 +287,23 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Tab
 				}
 				count++
 			}
-			execute.AppendRecordForCols(i, cr, builder, cr.Cols())
+			colMap := make([]int, len(cr.Cols()))
+			colMap = execute.ColMap(colMap, builder, cr)
+			err = execute.AppendMappedRecordExplicit(i, cr, builder, colMap)
+			if err != nil {
+				return err
+			}
 			if countCol > 0 {
-				builder.AppendInt(countCol, count)
+				err = builder.AppendInt(countCol, count)
+				if err != nil {
+					return err
+				}
 			}
 			if durationCol > 0 {
-				builder.AppendInt(durationCol, duration)
+				err = builder.AppendInt(durationCol, duration)
+				if err != nil {
+					return err
+				}
 			}
 		}
 		return nil

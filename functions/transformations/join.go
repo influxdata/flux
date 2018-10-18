@@ -416,10 +416,12 @@ func (buf *streamBuffer) table(key flux.GroupKey) *execute.ColListTableBuilder {
 func (buf *streamBuffer) insert(table flux.Table) {
 	// Construct a new table builder with same schema as input table
 	builder := execute.NewColListTableBuilder(table.Key(), buf.alloc)
-	execute.AddTableCols(table, builder)
+	// this will only error if we try to add a duplicate column to the builder.
+	// since this is a new table, that won't happen.
+	_ = execute.AddTableCols(table, builder)
 
-	// Append the input table to this builder
-	execute.AppendTable(table, builder)
+	// Append the input table to this builder, safe to ignore errors
+	_ = execute.AppendTable(table, builder)
 
 	// Insert this table into the buffer
 	buf.data[table.Key()] = builder

@@ -276,10 +276,11 @@ func TestGroup_Process(t *testing.T) {
 						{Label: "_value", Type: flux.TFloat},
 						{Label: "t1", Type: flux.TString},
 						{Label: "t2", Type: flux.TString},
+						{Label: "t3", Type: flux.TInt},
 					},
 					Data: [][]interface{}{
-						{execute.Time(2), 1.0, "a", "y"},
-						{execute.Time(1), 2.0, "a", "x"},
+						{execute.Time(2), 1.0, "a", "y", int64(0)},
+						{execute.Time(1), 2.0, "a", "x", int64(5)},
 					},
 				},
 				{
@@ -289,10 +290,11 @@ func TestGroup_Process(t *testing.T) {
 						{Label: "_value", Type: flux.TFloat},
 						{Label: "t1", Type: flux.TString},
 						{Label: "t2", Type: flux.TString},
+						{Label: "t3", Type: flux.TInt},
 					},
 					Data: [][]interface{}{
-						{execute.Time(2), 7.0, "b", "y"},
-						{execute.Time(1), 4.0, "b", "x"},
+						{execute.Time(2), 7.0, "b", "y", int64(0)},
+						{execute.Time(1), 4.0, "b", "x", int64(7)},
 					},
 				},
 			},
