@@ -14,8 +14,8 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/planner/plantest"
-	"github.com/influxdata/flux/planner"
+	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/plan"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -32,8 +32,8 @@ func TestExecutor_Execute(t *testing.T) {
 		{
 			name: `from`,
 			spec: &plantest.PhysicalPlanSpec{
-				Nodes: []planner.PlanNode{
-					planner.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{&executetest.Table{
 							KeyCols: []string{"_start", "_stop"},
 							ColMeta: []flux.ColMeta{
@@ -76,8 +76,8 @@ func TestExecutor_Execute(t *testing.T) {
 		{
 			name: `from with filter`,
 			spec: &plantest.PhysicalPlanSpec{
-				Nodes: []planner.PlanNode{
-					planner.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{&executetest.Table{
 							KeyCols: []string{"_start", "_stop"},
 							ColMeta: []flux.ColMeta{
@@ -95,7 +95,7 @@ func TestExecutor_Execute(t *testing.T) {
 							},
 						}},
 					)),
-					planner.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{
+					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{
 						Fn: &semantic.FunctionExpression{
 							Params: []*semantic.FunctionParam{
 								{
@@ -141,8 +141,8 @@ func TestExecutor_Execute(t *testing.T) {
 		{
 			name: `from with filter with multiple tables`,
 			spec: &plantest.PhysicalPlanSpec{
-				Nodes: []planner.PlanNode{
-					planner.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{
 							{
 								KeyCols: []string{"_start", "_stop"},
@@ -178,7 +178,7 @@ func TestExecutor_Execute(t *testing.T) {
 							},
 						},
 					)),
-					planner.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{
+					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{
 						Fn: &semantic.FunctionExpression{
 							Params: []*semantic.FunctionParam{
 								{
@@ -243,8 +243,8 @@ func TestExecutor_Execute(t *testing.T) {
 		{
 			name: `multiple aggregates`,
 			spec: &plantest.PhysicalPlanSpec{
-				Nodes: []planner.PlanNode{
-					planner.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{
 							{
 								KeyCols: []string{"_start", "_stop"},
@@ -280,10 +280,10 @@ func TestExecutor_Execute(t *testing.T) {
 							},
 						},
 					)),
-					planner.CreatePhysicalNode("sum", &transformations.SumProcedureSpec{
+					plan.CreatePhysicalNode("sum", &transformations.SumProcedureSpec{
 						AggregateConfig: execute.DefaultAggregateConfig,
 					}),
-					planner.CreatePhysicalNode("mean", &transformations.MeanProcedureSpec{
+					plan.CreatePhysicalNode("mean", &transformations.MeanProcedureSpec{
 						AggregateConfig: execute.DefaultAggregateConfig,
 					}),
 
@@ -351,8 +351,8 @@ func TestExecutor_Execute(t *testing.T) {
 		{
 			name: `diamond join`,
 			spec: &plantest.PhysicalPlanSpec{
-				Nodes: []planner.PlanNode{
-					planner.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{
 							{
 								KeyCols: []string{"_start", "_stop"},
@@ -404,17 +404,17 @@ func TestExecutor_Execute(t *testing.T) {
 							},
 						},
 					)),
-					planner.CreatePhysicalNode("sum", &transformations.SumProcedureSpec{
+					plan.CreatePhysicalNode("sum", &transformations.SumProcedureSpec{
 						AggregateConfig: execute.DefaultAggregateConfig,
 					}),
-					planner.CreatePhysicalNode("count", &transformations.CountProcedureSpec{
+					plan.CreatePhysicalNode("count", &transformations.CountProcedureSpec{
 						AggregateConfig: execute.DefaultAggregateConfig,
 					}),
-					planner.CreatePhysicalNode("join", &transformations.MergeJoinProcedureSpec{
+					plan.CreatePhysicalNode("join", &transformations.MergeJoinProcedureSpec{
 						On: []string{"_start", "_stop"},
-						TableNames: map[planner.ProcedureID]string{
-							planner.ProcedureIDFromOperationID("sum"): "a",
-							planner.ProcedureIDFromOperationID("count"): "b",
+						TableNames: map[plan.ProcedureID]string{
+							plan.ProcedureIDFromOperationID("sum"): "a",
+							plan.ProcedureIDFromOperationID("count"): "b",
 						},
 					}),
 

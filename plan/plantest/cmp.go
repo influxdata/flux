@@ -4,20 +4,20 @@ import (
 	"fmt"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/planner"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic/semantictest"
 )
 
 // ComparePlans compares two query plans using an arbitrary comparator function f
-func ComparePlans(p, q *planner.PlanSpec, f func(p, q planner.PlanNode) error) error {
-	var w, v []planner.PlanNode
+func ComparePlans(p, q *plan.PlanSpec, f func(p, q plan.PlanNode) error) error {
+	var w, v []plan.PlanNode
 
-	p.TopDownWalk(func(node planner.PlanNode) error {
+	p.TopDownWalk(func(node plan.PlanNode) error {
 		w = append(w, node)
 		return nil
 	})
 
-	q.TopDownWalk(func(node planner.PlanNode) error {
+	q.TopDownWalk(func(node plan.PlanNode) error {
 		v = append(v, node)
 		return nil
 	})
@@ -37,12 +37,12 @@ func ComparePlans(p, q *planner.PlanSpec, f func(p, q planner.PlanNode) error) e
 }
 
 // CompareLogicalPlanNodes is a comparator fuction for LogicalPlanNodes
-func CompareLogicalPlanNodes(p, q planner.PlanNode) error {
-	if _, ok := p.(*planner.LogicalPlanNode); !ok {
+func CompareLogicalPlanNodes(p, q plan.PlanNode) error {
+	if _, ok := p.(*plan.LogicalPlanNode); !ok {
 		return fmt.Errorf("expected %s to be a LogicalPlanNode", p.ID())
 	}
 
-	if _, ok := q.(*planner.LogicalPlanNode); !ok {
+	if _, ok := q.(*plan.LogicalPlanNode); !ok {
 		return fmt.Errorf("expected %s to be a LogicalPlanNode", q.ID())
 	}
 
@@ -50,15 +50,15 @@ func CompareLogicalPlanNodes(p, q planner.PlanNode) error {
 }
 
 // ComparePhysicalPlanNodes is a comparator function for PhysicalPlanNodes
-func ComparePhysicalPlanNodes(p, q planner.PlanNode) error {
-	var pp, qq *planner.PhysicalPlanNode
+func ComparePhysicalPlanNodes(p, q plan.PlanNode) error {
+	var pp, qq *plan.PhysicalPlanNode
 	var ok bool
 
-	if pp, ok = p.(*planner.PhysicalPlanNode); !ok {
+	if pp, ok = p.(*plan.PhysicalPlanNode); !ok {
 		return fmt.Errorf("expected %s to be a PhysicalPlanNode", p.ID())
 	}
 
-	if qq, ok = q.(*planner.PhysicalPlanNode); !ok {
+	if qq, ok = q.(*plan.PhysicalPlanNode); !ok {
 		return fmt.Errorf("expected %s to be a PhysicalPlanNode", q.ID())
 	}
 
@@ -81,7 +81,7 @@ func ComparePhysicalPlanNodes(p, q planner.PlanNode) error {
 	return nil
 }
 
-func cmpPlanNode(p, q planner.PlanNode) error {
+func cmpPlanNode(p, q plan.PlanNode) error {
 	// Both nodes must have the same ID
 	if p.ID() != q.ID() {
 		return fmt.Errorf("wanted %s, but got %s", p.ID(), q.ID())

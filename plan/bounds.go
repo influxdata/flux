@@ -1,4 +1,4 @@
-package planner
+package plan
 
 import "github.com/influxdata/flux/values"
 
