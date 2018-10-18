@@ -15,6 +15,9 @@ type PlanNode interface {
 	// Returns an identifier for this plan node
 	ID() NodeID
 
+	// Returns the time bounds for this plan node
+	Bounds() *Bounds
+
 	// Plan nodes executed immediately before this node
 	Predecessors() []PlanNode
 
@@ -29,6 +32,7 @@ type PlanNode interface {
 
 	// Helper methods for manipulating a plan
 	// These methods are used during planning
+	SetBounds(bounds *Bounds)
 	AddSuccessors(...PlanNode)
 	AddPredecessors(...PlanNode)
 	RemovePredecessor(PlanNode)
@@ -156,6 +160,18 @@ type ProcedureSpec interface {
 
 // ProcedureKind denotes the kind of operation
 type ProcedureKind string
+
+type bounds struct {
+	value *Bounds
+}
+
+func (b *bounds) SetBounds(bounds *Bounds) {
+	b.value = bounds
+}
+
+func (b *bounds) Bounds() *Bounds {
+	return b.value
+}
 
 type edges struct {
 	predecessors []PlanNode

@@ -14,13 +14,13 @@ import (
 	"github.com/influxdata/flux/semantic"
 )
 
-func compile(fluxText string) (*flux.Spec, error) {
-	now := time.Now().UTC()
+func compile(fluxText string, now time.Time) (*flux.Spec, error) {
 	return flux.Compile(context.Background(), fluxText, now)
 }
 
 // Test the translation of Flux query to logical plan
 func TestFluxSpecToLogicalPlan(t *testing.T) {
+	now := time.Now().UTC()
 	testcases := []struct {
 		// Name of the test
 		name string
@@ -48,6 +48,7 @@ func TestFluxSpecToLogicalPlan(t *testing.T) {
 							Stop: flux.Time{
 								IsRelative: true,
 							},
+							Now: now,
 						},
 						TimeCol:  "_time",
 						StartCol: "_start",
@@ -76,6 +77,7 @@ func TestFluxSpecToLogicalPlan(t *testing.T) {
 							Stop: flux.Time{
 								IsRelative: true,
 							},
+							Now: now,
 						},
 						TimeCol:  "_time",
 						StartCol: "_start",
@@ -105,7 +107,7 @@ func TestFluxSpecToLogicalPlan(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			spec, err := compile(tc.query)
+			spec, err := compile(tc.query, now)
 
 			if err != nil {
 				t.Fatal(err)
@@ -308,7 +310,7 @@ func TestLogicalPlanner(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			fluxSpec, err := compile(tc.flux)
+			fluxSpec, err := compile(tc.flux, time.Now().UTC())
 			if err != nil {
 				t.Fatalf("could not compile flux query: %v", err)
 			}

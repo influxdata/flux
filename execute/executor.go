@@ -138,11 +138,21 @@ func (v *createExecutionNodeVisitor) Visit(node plan.PlanNode) error {
 	kind := spec.Kind()
 	id := plan.ProcedureIDFromNodeID(node.ID())
 
+	// Add explicit stream context if bounds are set on this node
+	var streamContext streamContext
+	if node.Bounds() != nil {
+		streamContext.bounds = &Bounds{
+			Start: node.Bounds().Start,
+			Stop:  node.Bounds().Stop,
+		}
+	}
+
 	// Build execution context
 	ec := executionContext{
-		ctx:     v.ctx,
-		es:      v.es,
-		parents: make([]DatasetID, len(node.Predecessors())),
+		ctx:           v.ctx,
+		es:            v.es,
+		parents:       make([]DatasetID, len(node.Predecessors())),
+		streamContext: streamContext,
 	}
 
 	for i, pred := range node.Predecessors() {

@@ -51,6 +51,11 @@ func (pp *physicalPlanner) Plan(spec *PlanSpec) (*PlanSpec, error) {
 		return nil, err
 	}
 
+	// Compute time bounds for nodes in the plan
+	if err := final.BottomUpWalk(ComputeBounds); err != nil {
+		return nil, err
+	}
+
 	// Update memory quota
 	if final.Resources.MemoryBytesQuota == 0 {
 		final.Resources.MemoryBytesQuota = pp.defaultMemoryLimit
@@ -132,6 +137,7 @@ type PhysicalProcedureSpec interface {
 // PhysicalPlanNode represents a physical operation in a plan.
 type PhysicalPlanNode struct {
 	edges
+	bounds
 	id   NodeID
 	Spec PhysicalProcedureSpec
 

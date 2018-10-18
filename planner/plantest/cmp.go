@@ -2,6 +2,7 @@ package plantest
 
 import (
 	"fmt"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/semantic/semantictest"
@@ -89,6 +90,12 @@ func cmpPlanNode(p, q planner.PlanNode) error {
 	// Both nodes must be the same kind of procedure
 	if p.Kind() != q.Kind() {
 		return fmt.Errorf("wanted %s, but got %s", p.Kind(), q.Kind())
+	}
+
+	// Both nodes must have the same time bounds
+	if !cmp.Equal(p.Bounds(), q.Bounds()) {
+		return fmt.Errorf("plan nodes have different bounds -want(%s)/+got(%s) %s",
+			p.ID(), q.ID(), cmp.Diff(p.Bounds(), q.Bounds()))
 	}
 
 	// The specifications of both procedures must be the same
