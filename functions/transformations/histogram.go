@@ -166,18 +166,27 @@ func (t *histogramTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 		return fmt.Errorf("column %q must be a float got %v", t.spec.Column, col.Type)
 	}
 
-	execute.AddTableKeyCols(tbl.Key(), builder)
-	boundIdx := builder.AddCol(flux.ColMeta{
+	err := execute.AddTableKeyCols(tbl.Key(), builder)
+	if err != nil {
+		return err
+	}
+	boundIdx, err := builder.AddCol(flux.ColMeta{
 		Label: t.spec.UpperBoundColumn,
 		Type:  flux.TFloat,
 	})
-	countIdx := builder.AddCol(flux.ColMeta{
+	if err != nil {
+		return err
+	}
+	countIdx, err := builder.AddCol(flux.ColMeta{
 		Label: t.spec.CountColumn,
 		Type:  flux.TFloat,
 	})
+	if err != nil {
+		return err
+	}
 	totalRows := 0.0
 	counts := make([]float64, len(t.spec.Buckets))
-	err := tbl.Do(func(cr flux.ColReader) error {
+	err = tbl.Do(func(cr flux.ColReader) error {
 		totalRows += float64(cr.Len())
 		for _, v := range cr.Floats(valueIdx) {
 			idx := sort.Search(len(t.spec.Buckets), func(i int) bool {

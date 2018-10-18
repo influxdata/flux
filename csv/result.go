@@ -565,7 +565,10 @@ func (d *tableDecoder) init(line []string) error {
 	key := execute.NewGroupKey(keyCols, keyValues)
 	d.builder = execute.NewColListTableBuilder(key, newUnlimitedAllocator())
 	for _, c := range d.meta.Cols {
-		d.builder.AddCol(c.ColMeta)
+		_, err := d.builder.AddCol(c.ColMeta)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

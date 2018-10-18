@@ -190,7 +190,10 @@ func (s *GeneratorSource) Decode() (flux.Table, error) {
 	}
 
 	for _, col := range cols {
-		b.AddCol(col)
+		_, err := b.AddCol(col)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	cols = b.Cols()

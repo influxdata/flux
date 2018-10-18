@@ -847,7 +847,10 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 	builder := execute.NewColListTableBuilder(groupKey, c.alloc)
 
 	for _, column := range c.schema.columns {
-		builder.AddCol(column)
+		_, err := builder.AddCol(column)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Perform sort merge join

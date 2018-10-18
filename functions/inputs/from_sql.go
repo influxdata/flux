@@ -194,7 +194,10 @@ func (c *SQLIterator) Decode() (flux.Table, error) {
 					execute.PanicUnknownType(flux.TInvalid)
 				}
 
-				builder.AddCol(flux.ColMeta{Label: columnNames[i], Type: dataType})
+				_, err := builder.AddCol(flux.ColMeta{Label: columnNames[i], Type: dataType})
+				if err != nil {
+					return nil, err
+				}
 			}
 			firstRow = false
 		}

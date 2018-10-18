@@ -135,18 +135,26 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 		return fmt.Errorf("integral found duplicate table with key: %v", tbl.Key())
 	}
 
-	execute.AddTableKeyCols(tbl.Key(), builder)
+	var err error
+	err = execute.AddTableKeyCols(tbl.Key(), builder)
+	if err != nil {
+		return err
+	}
 
 	cols := tbl.Cols()
 	integrals := make([]*integral, len(cols))
 	colMap := make([]int, len(cols))
+
 	for j, c := range cols {
 		if execute.ContainsStr(t.spec.Columns, c.Label) {
 			integrals[j] = newIntegral(time.Duration(t.spec.Unit))
-			colMap[j] = builder.AddCol(flux.ColMeta{
+			colMap[j], err = builder.AddCol(flux.ColMeta{
 				Label: c.Label,
 				Type:  flux.TFloat,
 			})
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -154,7 +162,7 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 	if timeIdx < 0 {
 		return fmt.Errorf("no column %q exists", t.spec.TimeCol)
 	}
-	err := tbl.Do(func(cr flux.ColReader) error {
+	err = tbl.Do(func(cr flux.ColReader) error {
 		for j, in := range integrals {
 			if in == nil {
 				continue

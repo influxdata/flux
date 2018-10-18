@@ -157,13 +157,19 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 			case flux.TFloat:
 				typ = flux.TFloat
 			}
-			builder.AddCol(flux.ColMeta{
+			_, err := builder.AddCol(flux.ColMeta{
 				Label: c.Label,
 				Type:  typ,
 			})
+			if err != nil {
+				return err
+			}
 			differences[j] = newDifference(j, t.nonNegative)
 		} else {
-			builder.AddCol(c)
+			_, err := builder.AddCol(c)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

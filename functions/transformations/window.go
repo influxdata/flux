@@ -318,7 +318,10 @@ func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl flux.Table
 		builder, created := t.cache.TableBuilder(key)
 		if created {
 			for _, c := range newCols {
-				builder.AddCol(c)
+				_, err := builder.AddCol(c)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -334,7 +337,10 @@ func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl flux.Table
 				builder, created := t.cache.TableBuilder(key)
 				if created {
 					for _, c := range newCols {
-						builder.AddCol(c)
+						_, err := builder.AddCol(c)
+						if err != nil {
+							return err
+						}
 					}
 				}
 

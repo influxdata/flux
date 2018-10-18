@@ -233,3 +233,8 @@ func NormalizeTables(bs []*Table) {
 		b.Key()
 	}
 }
+
+func MustCopyTable(tbl flux.Table) flux.Table {
+	cpy, _ := execute.CopyTable(tbl, UnlimitedAllocator)
+	return cpy
+}

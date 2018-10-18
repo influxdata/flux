@@ -232,7 +232,11 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	groupKeyString := newGroupKey.String()
 	if created {
 		for _, c := range cols {
-			builder.AddCol(c)
+			_, err := builder.AddCol(c)
+			if err != nil {
+				return err
+			}
+
 		}
 		t.colKeyMaps[groupKeyString] = make(map[string]int)
 		t.rowKeyMaps[groupKeyString] = make(map[string]int)
@@ -264,7 +268,10 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 					Label: colKey,
 					Type:  valueColType,
 				}
-				builder.AddCol(newCol)
+				_, err := builder.AddCol(newCol)
+				if err != nil {
+					return err
+				}
 				nextRowCol := t.nextRowCol[groupKeyString]
 				growColumn(builder, newCol.Type, nextRowCol.nextCol, builder.NRows())
 				t.colKeyMaps[groupKeyString][colKey] = nextRowCol.nextCol
