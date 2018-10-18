@@ -472,7 +472,7 @@ type CallExpression struct {
 
 	Callee    Expression        `json:"callee"`
 	Arguments *ObjectExpression `json:"arguments"`
-	Pipe      Expression
+	Pipe      Expression        `json:"pipe,omitempty"`
 }
 
 func (*CallExpression) NodeType() string { return "CallExpression" }

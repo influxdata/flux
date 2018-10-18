@@ -7,13 +7,9 @@ import (
 )
 
 func MustType(e semantic.Expression) semantic.Type {
-	//semantic.InferTypes(e)
-	//t, mono := e.TypeScheme().MonoType()
-	//if !mono {
-	//	panic("type must be a mono type")
-	//}
-	//return t
-	return nil
+	ts := semantic.Infer(e)
+	typ, _ := ts.TypeOf(e)
+	return typ
 }
 
 func TestTypes_Comparable(t *testing.T) {

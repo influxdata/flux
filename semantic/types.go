@@ -389,6 +389,13 @@ func (t *functionType) PipeArgument() string {
 	return t.pipeArgument
 }
 
+func (a *functionType) equal(b *functionType) bool {
+	return a.in == b.in &&
+		a.defaults == b.defaults &&
+		a.out == b.out &&
+		a.pipeArgument == b.pipeArgument
+}
+
 func (t *functionType) PolyType() PolyType {
 	var in PolyType
 	if t.in != nil {
@@ -400,17 +407,23 @@ func (t *functionType) PolyType() PolyType {
 	if t.defaults != nil {
 		defaults = t.defaults.PolyType()
 	}
-	return NewFunctionPolyType(in, defaults, t.out.PolyType(), t.pipeArgument)
+	return NewFunctionPolyType(PolyFunctionSignature{
+		In:           in,
+		Defaults:     defaults,
+		Out:          t.out.PolyType(),
+		PipeArgument: t.pipeArgument,
+	})
 }
 
 func (t *functionType) typ() {}
 
 // functionTypeCache caches all *functionTypes.
-var functionTypeCache = struct {
-	sync.Mutex // Guards access to cache map
-	cache      map[functionType]*functionType
-}{
-	cache: make(map[functionType]*functionType),
+var functionTypeCache struct {
+	sync.Mutex // Guards stores (but not loads) on m.
+
+	// m is a map[Type][]*functionType keyed by the elementType of the array.
+	// Elements in m are append-only and thus safe for concurrent reading.
+	m sync.Map
 }
 
 type FunctionSignature struct {
@@ -421,22 +434,39 @@ type FunctionSignature struct {
 }
 
 func NewFunctionType(sig FunctionSignature) Type {
-	// Create new object type
+	// Still no cache entry, add it.
 	ft := &functionType{
 		in:           sig.In,
+		defaults:     sig.Defaults,
 		out:          sig.Out,
 		pipeArgument: sig.PipeArgument,
 	}
+	// Lookup functionType in cache by in type
+	if ts, ok := functionTypeCache.m.Load(sig.In); ok {
+		// Search for matching function type
+		for _, t := range ts.([]*functionType) {
+			if t.equal(ft) {
+				return t
+			}
+		}
+	}
 
+	// Type not found in cache, lock and retry.
 	functionTypeCache.Lock()
 	defer functionTypeCache.Unlock()
 
-	t, ok := functionTypeCache.cache[*ft]
-	if ok {
-		return t
+	// First read again while holding the lock.
+	var types []*functionType
+	if ts, ok := functionTypeCache.m.Load(sig.In); ok {
+		types = ts.([]*functionType)
+		// Search for matching function type
+		for _, t := range types {
+			if t.equal(ft) {
+				return t
+			}
+		}
 	}
 
-	// Still no cache entry, add it.
-	functionTypeCache.cache[*ft] = ft
+	functionTypeCache.m.Store(sig.In, append(types, ft))
 	return ft
 }
