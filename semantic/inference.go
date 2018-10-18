@@ -201,16 +201,16 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 		v.env.Set(n.Identifier.Name, ts)
 		return t, nil
 	case *FunctionExpression:
-
-		in := objectPolyType{
-			properties: make(map[string]PolyType, len(n.Block.Parameters.List)),
-		}
-		for _, p := range n.Block.Parameters.List {
-			pt, err := v.solution.PolyTypeOf(p)
-			if err != nil {
-				return nil, err
+		in := objectPolyType{}
+		if n.Block.Parameters != nil {
+			in.properties = make(map[string]PolyType, len(n.Block.Parameters.List))
+			for _, p := range n.Block.Parameters.List {
+				pt, err := v.solution.PolyTypeOf(p)
+				if err != nil {
+					return nil, err
+				}
+				in.properties[p.Key.Name] = pt
 			}
-			in.properties[p.Key.Name] = pt
 		}
 		var defaults objectPolyType
 		if n.Defaults != nil {
@@ -390,9 +390,10 @@ type functionPolyType struct {
 	in       objectPolyType
 	defaults objectPolyType
 	out      PolyType
+	pipe     string
 }
 
-func NewFunctionPolyType(in, defaults, out PolyType) PolyType {
+func NewFunctionPolyType(in, defaults, out PolyType, pipe string) PolyType {
 	var d objectPolyType
 	if defaults == nil {
 		d = objectPolyType{}
@@ -403,6 +404,7 @@ func NewFunctionPolyType(in, defaults, out PolyType) PolyType {
 		in:       in.(objectPolyType),
 		defaults: d,
 		out:      out,
+		pipe:     pipe,
 	}
 }
 
@@ -434,6 +436,9 @@ func (t1 functionPolyType) unify(ts TypeSolution, typ PolyType) error {
 		if err := ts.Unify(t1.out, t2.out); err != nil {
 			return err
 		}
+		if t1.pipe != t2.pipe {
+			return errors.New("cannot unify functions with differring pipe arguments")
+		}
 	default:
 		return fmt.Errorf("cannot unify %v with %v", t1, typ)
 	}
@@ -454,16 +459,20 @@ func (t functionPolyType) Type() (Type, bool) {
 		return nil, false
 	}
 	return NewFunctionType(FunctionSignature{
-		In:       in,
-		Defaults: defaults,
-		Out:      out,
+		In:           in,
+		Defaults:     defaults,
+		Out:          out,
+		PipeArgument: t.pipe,
 	}), true
 }
 
 func (t1 functionPolyType) Equal(t2 PolyType) bool {
 	switch t2 := t2.(type) {
 	case functionPolyType:
-		return t1.in.Equal(t2.in) && t1.defaults.Equal(t2.defaults) && t1.out.Equal(t2.out)
+		return t1.in.Equal(t2.in) &&
+			t1.defaults.Equal(t2.defaults) &&
+			t1.out.Equal(t2.out) &&
+			t1.pipe == t2.pipe
 	default:
 		return false
 	}

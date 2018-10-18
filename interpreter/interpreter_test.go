@@ -98,6 +98,17 @@ func init() {
 	optionsObject.Set("repeat", values.NewInt(100))
 
 	addOption("task", optionsObject)
+
+	//extern = &semantic.Extern{
+	//	Declarations: make([]*semantic.ExternalVariableDeclaration, 0, len(testScope)),
+	//	Block:        new(semantic.ExternBlock),
+	//}
+	//for k, v := range testScope {
+	//	extern.Declarations = append(extern.Declarations, &semantic.ExternalVariableDeclaration{
+	//		Identifier: &semantic.Identifier{Name: k},
+	//		ExternType: v.Type().PolyType(),
+	//	})
+	//}
 }
 
 // TestEval tests whether a program can run to completion or not

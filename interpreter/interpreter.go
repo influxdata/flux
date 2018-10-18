@@ -15,7 +15,6 @@ type Interpreter struct {
 	values  []values.Value
 	options *Scope
 	globals *Scope
-	typeSol semantic.TypeSolution
 }
 
 // NewInterpreter instantiates a new Flux Interpreter whose builtin values are not mutable.
@@ -75,7 +74,6 @@ func (itrp *Interpreter) SetOption(name string, val values.Value) {
 
 // Eval evaluates the expressions composing a Flux program.
 func (itrp *Interpreter) Eval(program *semantic.Program) error {
-	itrp.typeSol = semantic.Infer(program)
 	return itrp.eval(program)
 }
 
@@ -627,8 +625,8 @@ func (f *function) doCall(args Arguments) (values.Value, error) {
 	if f.e.Block.Parameters != nil {
 	PARAMETERS:
 		for _, p := range f.e.Block.Parameters.List {
-			if f.e.Defaults == nil {
-				for _, d := range f.e.Defaults.List {
+			if f.e.Defaults != nil {
+				for _, d := range f.e.Defaults.Properties {
 					if d.Key.Name == p.Key.Name {
 						v, ok := args.Get(p.Key.Name)
 						if !ok {

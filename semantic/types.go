@@ -358,6 +358,7 @@ func NewObjectType(propertyTypes map[string]Type) Type {
 
 type functionType struct {
 	in           Type
+	defaults     Type
 	out          Type
 	pipeArgument string
 }
@@ -389,14 +390,14 @@ func (t *functionType) PipeArgument() string {
 }
 
 func (t *functionType) PolyType() PolyType {
-	return NewFunctionPolyType(t.in.PolyType(), nil, t.out.PolyType())
+	var defaults PolyType
+	if t.defaults != nil {
+		defaults = t.defaults.PolyType()
+	}
+	return NewFunctionPolyType(t.in.PolyType(), defaults, t.out.PolyType(), t.pipeArgument)
 }
 
 func (t *functionType) typ() {}
-
-func (t *functionType) equal(o *functionType) bool {
-	return t == o || *t == *o
-}
 
 // functionTypeCache caches all *functionTypes.
 var functionTypeCache = struct {
