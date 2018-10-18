@@ -147,7 +147,7 @@ func (a *SkewAgg) DoFloat(vs []float64) {
 		a.m1 += deltaN
 	}
 }
-func (a *SkewAgg) Type() flux.DataType {
+func (a *SkewAgg) Type() flux.ColType {
 	return flux.TFloat
 }
 func (a *SkewAgg) ValueFloat() float64 {

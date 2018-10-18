@@ -150,7 +150,7 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 		}
 
 		if found {
-			var typ flux.DataType
+			var typ flux.ColType
 			switch c.Type {
 			case flux.TInt, flux.TUInt:
 				typ = flux.TInt

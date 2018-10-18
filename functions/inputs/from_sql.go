@@ -172,7 +172,7 @@ func (c *SQLIterator) Decode() (flux.Table, error) {
 
 		if firstRow {
 			for i, col := range columns {
-				var dataType flux.DataType
+				var dataType flux.ColType
 				switch col.(type) {
 				case bool:
 					dataType = flux.TBool
