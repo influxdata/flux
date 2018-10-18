@@ -389,7 +389,7 @@ func (t *functionType) PipeArgument() string {
 }
 
 func (t *functionType) PolyType() PolyType {
-	return NewFunctionPolyType(t.in.PolyType(), t.out.PolyType())
+	return NewFunctionPolyType(t.in.PolyType(), nil, t.out.PolyType())
 }
 
 func (t *functionType) typ() {}
@@ -408,6 +408,7 @@ var functionTypeCache = struct {
 
 type FunctionSignature struct {
 	In           Type // Must always be an object type
+	Defaults     Type
 	Out          Type
 	PipeArgument string
 }

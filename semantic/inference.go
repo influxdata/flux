@@ -43,10 +43,6 @@ type PolyType interface {
 	Equal(t PolyType) bool
 }
 
-type Indirecter interface {
-	Indirect() PolyType
-}
-
 func (k Kind) freeVars() []typeVar {
 	return nil
 }
@@ -205,7 +201,7 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 		v.env.Set(n.Identifier.Name, ts)
 		return t, nil
 	case *FunctionExpression:
-		// TODO: Type check n.Defaults
+
 		in := objectPolyType{
 			properties: make(map[string]PolyType, len(n.Block.Parameters.List)),
 		}
@@ -216,14 +212,42 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 			}
 			in.properties[p.Key.Name] = pt
 		}
+		var defaults objectPolyType
+		if n.Defaults != nil {
+			// Unify defaults
+			for _, d := range n.Defaults.Properties {
+				dt, err := v.solution.PolyTypeOf(d.Value)
+				if err != nil {
+					return nil, err
+				}
+				pt, ok := in.properties[d.Key.Name]
+				if !ok {
+					return nil, fmt.Errorf("default defined for unknown parameter %q", d.Key.Name)
+				}
+				if err := v.solution.Unify(dt, pt); err != nil {
+					return nil, err
+				}
+			}
+			// Collect defaults type
+			t, err := v.solution.PolyTypeOf(n.Defaults)
+			if err != nil {
+				return nil, err
+			}
+			d, ok := t.(objectPolyType)
+			if !ok {
+				return nil, fmt.Errorf("unexpected type of defaults %T, must by an object type", t)
+			}
+			defaults = d
+		}
 		out, err := v.solution.PolyTypeOf(n.Block.Body)
 		if err != nil {
 			return nil, err
 		}
 
 		t := functionPolyType{
-			in:  in,
-			out: out,
+			in:       in,
+			defaults: defaults,
+			out:      out,
 		}
 		return t, nil
 	case *FunctionParameter:
@@ -236,19 +260,27 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 		if err != nil {
 			return nil, err
 		}
-		if i, ok := ct.(Indirecter); ok {
-			ct = i.Indirect()
-		}
 		t, ok := ct.(functionPolyType)
 		if !ok {
 			return nil, fmt.Errorf("cannot call non function type %T", ct)
 		}
-		//TODO: Apply defaults to arguments here.
-		//TODO: Apply pipe to arguments here.
-		in, err := v.solution.PolyTypeOf(n.Arguments)
+
+		args, err := v.solution.PolyTypeOf(n.Arguments)
 		if err != nil {
 			return nil, err
 		}
+		in, ok := args.(objectPolyType)
+		if !ok {
+			return nil, fmt.Errorf("unexpected type of arguments %T, must be a object type", args)
+		}
+		//Apply defaults to arguments in type
+		for k, p := range t.defaults.properties {
+			if _, ok := in.properties[k]; !ok {
+				in.properties[k] = p
+			}
+		}
+
+		//TODO: Apply pipe to arguments here?
 
 		if err := v.solution.Unify(t.in, in); err != nil {
 			return nil, err
@@ -355,14 +387,22 @@ func (v *inferenceVisitor) schema(t PolyType) TS {
 
 // functionPolyType represent a function, all functions transform a single input type into an output type.
 type functionPolyType struct {
-	in  PolyType
-	out PolyType
+	in       objectPolyType
+	defaults objectPolyType
+	out      PolyType
 }
 
-func NewFunctionPolyType(in, out PolyType) PolyType {
+func NewFunctionPolyType(in, defaults, out PolyType) PolyType {
+	var d objectPolyType
+	if defaults == nil {
+		d = objectPolyType{}
+	} else {
+		d = defaults.(objectPolyType)
+	}
 	return functionPolyType{
-		in:  in,
-		out: out,
+		in:       in.(objectPolyType),
+		defaults: d,
+		out:      out,
 	}
 }
 
@@ -376,8 +416,9 @@ func (t functionPolyType) freeVars() []typeVar {
 
 func (t functionPolyType) instantiate(tm map[int]typeVar) PolyType {
 	return functionPolyType{
-		in:  t.in.instantiate(tm),
-		out: t.out.instantiate(tm),
+		in:       t.in.instantiate(tm).(objectPolyType),
+		defaults: t.defaults.instantiate(tm).(objectPolyType),
+		out:      t.out.instantiate(tm),
 	}
 }
 
@@ -385,6 +426,9 @@ func (t1 functionPolyType) unify(ts TypeSolution, typ PolyType) error {
 	switch t2 := typ.(type) {
 	case functionPolyType:
 		if err := ts.Unify(t1.in, t2.in); err != nil {
+			return err
+		}
+		if err := ts.Unify(t1.defaults, t2.defaults); err != nil {
 			return err
 		}
 		if err := ts.Unify(t1.out, t2.out); err != nil {
@@ -401,20 +445,25 @@ func (t functionPolyType) Type() (Type, bool) {
 	if !ok {
 		return nil, false
 	}
+	defaults, ok := t.defaults.Type()
+	if !ok {
+		return nil, false
+	}
 	out, ok := t.out.Type()
 	if !ok {
 		return nil, false
 	}
 	return NewFunctionType(FunctionSignature{
-		In:  in,
-		Out: out,
+		In:       in,
+		Defaults: defaults,
+		Out:      out,
 	}), true
 }
 
 func (t1 functionPolyType) Equal(t2 PolyType) bool {
 	switch t2 := t2.(type) {
 	case functionPolyType:
-		return t1.in.Equal(t2.in) && t1.out.Equal(t2.out)
+		return t1.in.Equal(t2.in) && t1.defaults.Equal(t2.defaults) && t1.out.Equal(t2.out)
 	default:
 		return false
 	}
@@ -462,7 +511,7 @@ func (t1 objectPolyType) unify(ts TypeSolution, typ PolyType) error {
 	switch t2 := typ.(type) {
 	case objectPolyType:
 		if len(t1.properties) != len(t2.properties) {
-			return fmt.Errorf("mismatched properties")
+			return fmt.Errorf("mismatched properties %v != %v", t1, t2)
 		}
 		for k, p1 := range t1.properties {
 			p2, ok := t2.properties[k]
@@ -643,7 +692,7 @@ func (s *typeSolution) indirect(t PolyType) PolyType {
 	if ok {
 		t := s.vars[tv.idx]
 		if *t != nil {
-			return s.indirect(*t)
+			return *t
 		}
 	}
 	return t

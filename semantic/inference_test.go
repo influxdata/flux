@@ -147,9 +147,64 @@ func TestInferTypes(t *testing.T) {
 						return semantic.Int
 					case *semantic.NativeVariableDeclaration,
 						*semantic.FunctionExpression:
-						return semantic.NewFunctionPolyType(in, semantic.Int)
+						return semantic.NewFunctionPolyType(in, nil, semantic.Int)
 					case *semantic.ObjectExpression:
 						return in
+					}
+					return nil
+				},
+			},
+		},
+		{
+			name: "var assignment with function with defaults",
+			node: &semantic.Program{
+				Body: []semantic.Statement{
+					&semantic.NativeVariableDeclaration{
+						Identifier: &semantic.Identifier{Name: "f"},
+						Init: &semantic.FunctionExpression{
+							Defaults: &semantic.ObjectExpression{
+								Properties: []*semantic.Property{{
+									Key:   &semantic.Identifier{Name: "b"},
+									Value: &semantic.IntegerLiteral{Value: 0},
+								}},
+							},
+							Block: &semantic.FunctionBlock{
+								Parameters: &semantic.FunctionParameters{
+									List: []*semantic.FunctionParameter{
+										{Key: &semantic.Identifier{Name: "a"}},
+										{Key: &semantic.Identifier{Name: "b"}},
+									},
+								},
+								Body: &semantic.BinaryExpression{
+									Operator: ast.AdditionOperator,
+									Left:     &semantic.IdentifierExpression{Name: "a"},
+									Right:    &semantic.IdentifierExpression{Name: "b"},
+								},
+							},
+						},
+					},
+				},
+			},
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					in := semantic.NewObjectPolyType(map[string]semantic.PolyType{
+						"a": semantic.Int,
+						"b": semantic.Int,
+					})
+					defaults := semantic.NewObjectPolyType(map[string]semantic.PolyType{
+						"b": semantic.Int,
+					})
+					switch node.(type) {
+					case *semantic.BinaryExpression,
+						*semantic.IdentifierExpression,
+						*semantic.Property,
+						*semantic.FunctionParameter:
+						return semantic.Int
+					case *semantic.NativeVariableDeclaration,
+						*semantic.FunctionExpression:
+						return semantic.NewFunctionPolyType(in, defaults, semantic.Int)
+					case *semantic.ObjectExpression:
+						return defaults
 					}
 					return nil
 				},
@@ -200,7 +255,7 @@ func TestInferTypes(t *testing.T) {
 						*semantic.IdentifierExpression:
 						return semantic.Int
 					case *semantic.FunctionExpression:
-						return semantic.NewFunctionPolyType(in, semantic.Int)
+						return semantic.NewFunctionPolyType(in, nil, semantic.Int)
 					case *semantic.ObjectExpression:
 						return in
 					}
@@ -248,7 +303,7 @@ func TestInferTypes(t *testing.T) {
 					in := semantic.NewObjectPolyType(map[string]semantic.PolyType{
 						"a": semantic.Int,
 					})
-					ft := semantic.NewFunctionPolyType(in, semantic.Int)
+					ft := semantic.NewFunctionPolyType(in, nil, semantic.Int)
 					switch n := node.(type) {
 					case *semantic.CallExpression,
 						*semantic.BinaryExpression,
@@ -315,11 +370,11 @@ func TestInferTypes(t *testing.T) {
 					in := semantic.NewObjectPolyType(map[string]semantic.PolyType{
 						"x": tv,
 					})
-					ft := semantic.NewFunctionPolyType(in, tv)
+					ft := semantic.NewFunctionPolyType(in, nil, tv)
 					inMono := semantic.NewObjectPolyType(map[string]semantic.PolyType{
 						"x": semantic.Int,
 					})
-					ftMono := semantic.NewFunctionPolyType(inMono, semantic.Int)
+					ftMono := semantic.NewFunctionPolyType(inMono, nil, semantic.Int)
 					switch n := node.(type) {
 					case *semantic.ExpressionStatement,
 						*semantic.CallExpression,
@@ -468,17 +523,18 @@ func TestInferTypes(t *testing.T) {
 						"b": tv2,
 					})
 					out := tv1
-					ft := semantic.NewFunctionPolyType(in, out)
+					ft := semantic.NewFunctionPolyType(in, nil, out)
 					inInt := semantic.NewObjectPolyType(map[string]semantic.PolyType{
 						"a": semantic.Int,
 						"b": semantic.Int,
 					})
 					outInt := semantic.Int
-					ftInt := semantic.NewFunctionPolyType(inInt, outInt)
+					ftInt := semantic.NewFunctionPolyType(inInt, nil, outInt)
 					ftR := semantic.NewFunctionPolyType(
 						semantic.NewObjectPolyType(map[string]semantic.PolyType{
 							"r": semantic.Int,
 						}),
+						nil,
 						semantic.Int,
 					)
 					switch n := node.(type) {
@@ -688,19 +744,19 @@ func newIdentityCaseVisitor() *identityCaseVisitor {
 		"x": tv0,
 	})
 	out := tv0
-	ft := semantic.NewFunctionPolyType(in, out)
+	ft := semantic.NewFunctionPolyType(in, nil, out)
 
 	inInt := semantic.NewObjectPolyType(map[string]semantic.PolyType{
 		"x": semantic.Int,
 	})
 	outInt := semantic.Int
-	ftInt := semantic.NewFunctionPolyType(inInt, outInt)
+	ftInt := semantic.NewFunctionPolyType(inInt, nil, outInt)
 
 	inF := semantic.NewObjectPolyType(map[string]semantic.PolyType{
 		"x": ftInt,
 	})
-	outF := semantic.NewFunctionPolyType(inInt, outInt)
-	ftF := semantic.NewFunctionPolyType(inF, outF)
+	outF := semantic.NewFunctionPolyType(inInt, nil, outInt)
+	ftF := semantic.NewFunctionPolyType(inF, nil, outF)
 
 	return &identityCaseVisitor{
 		solution: make(SolutionMap),

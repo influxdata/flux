@@ -216,6 +216,58 @@ func TestCompileAndEval(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "call function with defaults",
+			// f = (r) => ((a=0,b) => a + b)(b:r)
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "r"}},
+						},
+					},
+					Body: &semantic.CallExpression{
+						Callee: &semantic.FunctionExpression{
+							Defaults: &semantic.ObjectExpression{
+								Properties: []*semantic.Property{{
+									Key:   &semantic.Identifier{Name: "a"},
+									Value: &semantic.IntegerLiteral{Value: 0},
+								}},
+							},
+							Block: &semantic.FunctionBlock{
+								Parameters: &semantic.FunctionParameters{
+									List: []*semantic.FunctionParameter{
+										{Key: &semantic.Identifier{Name: "a"}},
+										{Key: &semantic.Identifier{Name: "b"}},
+									},
+								},
+								Body: &semantic.BinaryExpression{
+									Operator: ast.AdditionOperator,
+									Left:     &semantic.IdentifierExpression{Name: "a"},
+									Right:    &semantic.IdentifierExpression{Name: "b"},
+								},
+							},
+						},
+						Arguments: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{Key: &semantic.Identifier{Name: "b"}, Value: &semantic.IdentifierExpression{Name: "r"}},
+							},
+						},
+					},
+				},
+			},
+			fnType: semantic.NewFunctionType(semantic.FunctionSignature{
+				In: semantic.NewObjectType(map[string]semantic.Type{
+					"r": semantic.Int,
+				}),
+				Out: semantic.Int,
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewIntValue(4),
+			}),
+			want:    values.NewIntValue(4),
+			wantErr: false,
+		},
+		{
 			name: "call function via identifier",
 			// f = (r) => {f = (a,b) => a + b return f(a:1, b:r)}
 			fn: &semantic.FunctionExpression{

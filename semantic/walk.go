@@ -102,25 +102,6 @@ func walk(v Visitor, n Node) {
 			walk(w, n.Defaults)
 			walk(w, n.Block)
 		}
-	case *FunctionDefaults:
-		if n == nil {
-			return
-		}
-		w := v.Visit(n)
-		if w != nil {
-			for _, d := range n.List {
-				walk(w, d)
-			}
-		}
-	case *FunctionParameterDefault:
-		if n == nil {
-			return
-		}
-		w := v.Visit(n)
-		if w != nil {
-			walk(w, n.Key)
-			walk(w, n.Value)
-		}
 	case *FunctionBlock:
 		if n == nil {
 			return

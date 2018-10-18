@@ -44,11 +44,9 @@ func (*UnaryExpression) node()       {}
 func (*Identifier) node() {}
 func (*Property) node()   {}
 
-func (*FunctionDefaults) node()         {}
-func (*FunctionParameterDefault) node() {}
-func (*FunctionParameters) node()       {}
-func (*FunctionParameter) node()        {}
-func (*FunctionBlock) node()            {}
+func (*FunctionParameters) node() {}
+func (*FunctionParameter) node()  {}
+func (*FunctionBlock) node()      {}
 
 func (*BooleanLiteral) node()         {}
 func (*DateTimeLiteral) node()        {}
@@ -356,7 +354,7 @@ func (e *ArrayExpression) Copy() Node {
 type FunctionExpression struct {
 	typeAnnotation
 
-	Defaults *FunctionDefaults `json:"defaults"`
+	Defaults *ObjectExpression `json:"defaults"`
 	Block    *FunctionBlock    `json:"block"`
 }
 
@@ -370,60 +368,11 @@ func (e *FunctionExpression) Copy() Node {
 	*ne = *e
 
 	if e.Defaults != nil {
-		ne.Defaults = e.Defaults.Copy().(*FunctionDefaults)
+		ne.Defaults = e.Defaults.Copy().(*ObjectExpression)
 	}
 	ne.Block = e.Block.Copy().(*FunctionBlock)
 
 	return ne
-}
-
-// FunctionDefaults is a list of default values for function parameters
-type FunctionDefaults struct {
-	typeAnnotation
-
-	List []*FunctionParameterDefault `json:"list"`
-}
-
-func (*FunctionDefaults) NodeType() string { return "FunctionDefaults" }
-
-func (d *FunctionDefaults) Copy() Node {
-	if d == nil {
-		return d
-	}
-	nd := new(FunctionDefaults)
-	*nd = *d
-
-	if len(d.List) > 0 {
-		nd.List = make([]*FunctionParameterDefault, len(d.List))
-		for i, dp := range d.List {
-			nd.List[i] = dp.Copy().(*FunctionParameterDefault)
-		}
-	}
-
-	return nd
-}
-
-// FunctionParameterDefault represents the default value of a function parameter.
-type FunctionParameterDefault struct {
-	typeAnnotation
-
-	Key   *Identifier `json:"key"`
-	Value Expression  `json:"value"`
-}
-
-func (*FunctionParameterDefault) NodeType() string { return "FunctionParameterDefault" }
-
-func (d *FunctionParameterDefault) Copy() Node {
-	if d == nil {
-		return d
-	}
-	nd := new(FunctionParameterDefault)
-	*nd = *d
-
-	nd.Key = d.Key.Copy().(*Identifier)
-	nd.Value = d.Value.Copy().(Expression)
-
-	return nd
 }
 
 // FunctionBlock represents the function parameters and the function body.
@@ -1032,7 +981,7 @@ func analyzeLiteral(lit ast.Literal) (Literal, error) {
 
 func analyzeArrowFunctionExpression(arrow *ast.ArrowFunctionExpression) (*FunctionExpression, error) {
 	var parameters *FunctionParameters
-	var defaults *FunctionDefaults
+	var defaults *ObjectExpression
 	if len(arrow.Params) > 0 {
 		pipedCount := 0
 		parameters = new(FunctionParameters)
@@ -1065,10 +1014,10 @@ func analyzeArrowFunctionExpression(arrow *ast.ArrowFunctionExpression) (*Functi
 			parameters.List[i] = &FunctionParameter{Key: key}
 			if def != nil {
 				if defaults == nil {
-					defaults = new(FunctionDefaults)
-					defaults.List = make([]*FunctionParameterDefault, 0, len(arrow.Params))
+					defaults = new(ObjectExpression)
+					defaults.Properties = make([]*Property, 0, len(arrow.Params))
 				}
-				defaults.List = append(defaults.List, &FunctionParameterDefault{
+				defaults.Properties = append(defaults.Properties, &Property{
 					Key:   key,
 					Value: def,
 				})

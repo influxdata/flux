@@ -256,7 +256,7 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, fun
 			}
 			if n.Defaults != nil {
 				// Search for default value
-				for _, d := range n.Defaults.List {
+				for _, d := range n.Defaults.Properties {
 					if d.Key.Name == k {
 						d, err := compile(d.Value, typeSol, builtIns, funcExprs)
 						if err != nil {

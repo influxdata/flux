@@ -321,49 +321,6 @@ func (e *FunctionExpression) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(raw)
 }
-func (e *FunctionDefaults) MarshalJSON() ([]byte, error) {
-	type Alias FunctionDefaults
-	raw := struct {
-		Type string `json:"type"`
-		*Alias
-	}{
-		Type:  e.NodeType(),
-		Alias: (*Alias)(e),
-	}
-	return json.Marshal(raw)
-}
-func (e *FunctionParameterDefault) MarshalJSON() ([]byte, error) {
-	type Alias FunctionParameterDefault
-	raw := struct {
-		Type string `json:"type"`
-		*Alias
-	}{
-		Type:  e.NodeType(),
-		Alias: (*Alias)(e),
-	}
-	return json.Marshal(raw)
-}
-func (e *FunctionParameterDefault) UnmarshalJSON(data []byte) error {
-	type Alias FunctionParameterDefault
-	raw := struct {
-		*Alias
-		Value json.RawMessage `json:"value"`
-	}{}
-	if err := json.Unmarshal(data, &raw); err != nil {
-		return err
-	}
-	if raw.Alias != nil {
-		*e = *(*FunctionParameterDefault)(raw.Alias)
-	}
-
-	value, err := unmarshalExpression(raw.Value)
-	if err != nil {
-		return err
-	}
-	e.Value = value
-
-	return nil
-}
 func (e *FunctionBlock) MarshalJSON() ([]byte, error) {
 	type Alias FunctionBlock
 	raw := struct {
@@ -985,10 +942,6 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 		node = new(DateTimeLiteral)
 	case "FunctionExpression":
 		node = new(FunctionExpression)
-	case "FunctionDefaults":
-		node = new(FunctionDefaults)
-	case "FunctionParameterDefault":
-		node = new(FunctionParameterDefault)
 	case "FunctionBlock":
 		node = new(FunctionBlock)
 	case "FunctionParameters":

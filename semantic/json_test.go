@@ -115,15 +115,15 @@ func TestJSONMarshal(t *testing.T) {
 		{
 			name: "function expression",
 			node: &semantic.FunctionExpression{
-				Defaults: &semantic.FunctionDefaults{
-					List: []*semantic.FunctionParameterDefault{{Key: &semantic.Identifier{Name: "a"}, Value: &semantic.StringLiteral{Value: "hi"}}},
+				Defaults: &semantic.ObjectExpression{
+					Properties: []*semantic.Property{{Key: &semantic.Identifier{Name: "a"}, Value: &semantic.StringLiteral{Value: "hi"}}},
 				},
 				Block: &semantic.FunctionBlock{
 					Parameters: &semantic.FunctionParameters{List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "a"}}}},
 					Body:       &semantic.IdentifierExpression{Name: "a"},
 				},
 			},
-			want: `{"type":"FunctionExpression","defaults":{"type":"FunctionDefaults","list":[{"type":"FunctionParameterDefault","key":{"type":"Identifier","name":"a"},"value":{"type":"StringLiteral","value":"hi"}}]},"block":{"type":"FunctionBlock","parameters":{"type":"FunctionParameters","list":[{"type":"FunctionParameter","key":{"type":"Identifier","name":"a"}}],"pipe":null},"body":{"type":"IdentifierExpression","name":"a"}}}`,
+			want: `{"type":"FunctionExpression","defaults":{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"a"},"value":{"type":"StringLiteral","value":"hi"}}]},"block":{"type":"FunctionBlock","parameters":{"type":"FunctionParameters","list":[{"type":"FunctionParameter","key":{"type":"Identifier","name":"a"}}],"pipe":null},"body":{"type":"IdentifierExpression","name":"a"}}}`,
 		},
 		{
 			name: "binary expression",
