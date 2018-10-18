@@ -2,6 +2,7 @@ package planner
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/influxdata/flux"
 	uuid "github.com/satori/go.uuid"
@@ -18,6 +19,7 @@ func (id ProcedureID) String() string {
 
 type Administration interface {
 	ConvertID(flux.OperationID) ProcedureID
+	Now() time.Time
 }
 
 func ProcedureIDFromOperationID(id flux.OperationID) ProcedureID {
@@ -28,6 +30,11 @@ func ProcedureIDFromNodeID(id NodeID) ProcedureID {
 	return ProcedureID(uuid.NewV5(RootUUID, string(id)))
 }
 
+// TODO: Is it necessary to pass in an Administration?
+// Currently Administration only converts IDs and provides
+// access to the now time. If it is determined that there
+// is no need for ProcedureIDs then we could probably just
+// pass in the now time directly.
 type CreateProcedureSpec func(flux.OperationSpec, Administration) (ProcedureSpec, error)
 
 var kindToProcedure = make(map[ProcedureKind]CreateProcedureSpec)

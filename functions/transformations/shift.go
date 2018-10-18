@@ -2,6 +2,7 @@ package transformations
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
@@ -73,9 +74,18 @@ type ShiftProcedureSpec struct {
 	plan.DefaultCost
 	Shift   flux.Duration
 	Columns []string
+	Now     time.Time
 }
 
-func newShiftProcedure(qs flux.OperationSpec, _ plan.Administration) (plan.ProcedureSpec, error) {
+// TimeBounds implements plan.BoundsAwareProcedureSpec
+func (s *ShiftProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bounds {
+	if predecessorBounds != nil {
+		return predecessorBounds.Shift(values.Duration(s.Shift))
+	}
+	return nil
+}
+
+func newShiftProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*ShiftOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -84,6 +94,7 @@ func newShiftProcedure(qs flux.OperationSpec, _ plan.Administration) (plan.Proce
 	return &ShiftProcedureSpec{
 		Shift:   spec.Shift,
 		Columns: spec.Columns,
+		Now:     pa.Now(),
 	}, nil
 }
 

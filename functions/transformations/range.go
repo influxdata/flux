@@ -8,6 +8,7 @@ import (
 	plan "github.com/influxdata/flux/planner"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
+	"github.com/pkg/errors"
 )
 
 const RangeKind = "range"
@@ -100,6 +101,18 @@ type RangeProcedureSpec struct {
 	StopCol  string
 }
 
+// TimeBounds implements plan.BoundsAwareProcedureSpec
+func (s *RangeProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bounds {
+	bounds := &plan.Bounds{
+		Start: values.ConvertTime(s.Bounds.Start.Time(s.Bounds.Now)),
+		Stop:  values.ConvertTime(s.Bounds.Stop.Time(s.Bounds.Now)),
+	}
+	if predecessorBounds != nil {
+		bounds = bounds.Intersect(predecessorBounds)
+	}
+	return bounds
+}
+
 func newRangeProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*RangeOpSpec)
 
@@ -111,11 +124,21 @@ func newRangeProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proc
 		spec.TimeCol = execute.DefaultTimeColLabel
 	}
 
+	bounds := flux.Bounds{
+		Start: spec.Start,
+		Stop:  spec.Stop,
+		Now:   pa.Now(),
+	}
+
+	if bounds.HasZero() {
+		return nil, errors.New(`cannot pass zero time to 'range'`)
+	}
+	if bounds.IsEmpty() {
+		return nil, errors.New("cannot query an empty range")
+	}
+
 	return &RangeProcedureSpec{
-		Bounds: flux.Bounds{
-			Start: spec.Start,
-			Stop:  spec.Stop,
-		},
+		Bounds:   bounds,
 		TimeCol:  spec.TimeCol,
 		StartCol: spec.StartCol,
 		StopCol:  spec.StopCol,
@@ -142,12 +165,9 @@ func createRangeTransformation(id execute.DatasetID, mode execute.AccumulationMo
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
 
-	bounds := execute.Bounds{
-		Start: a.ResolveTime(s.Bounds.Start),
-		Stop:  a.ResolveTime(s.Bounds.Stop),
-	}
+	bounds := a.StreamContext().Bounds()
 
-	t, err := NewRangeTransformation(d, cache, s, bounds)
+	t, err := NewRangeTransformation(d, cache, s, *bounds)
 	if err != nil {
 		return nil, nil, err
 	}
