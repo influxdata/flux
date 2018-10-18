@@ -2,6 +2,7 @@ package planner
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/influxdata/flux"
 )
@@ -67,7 +68,7 @@ func WithLogicalRule(rule Rule) LogicalOption {
 
 // Plan translates the given flux.Spec to a plan and transforms it by applying rules.
 func (l *logicalPlanner) Plan(spec *flux.Spec) (*PlanSpec, error) {
-	logicalPlan, err := createLogicalPlan(spec, l)
+	logicalPlan, err := createLogicalPlan(spec)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +81,16 @@ func (l *logicalPlanner) Plan(spec *flux.Spec) (*PlanSpec, error) {
 	return newLogicalPlan, nil
 }
 
-func (logicalPlanner) ConvertID(oid flux.OperationID) ProcedureID {
+// TODO: This is unnecessary if we no longer need ProcedureIDs
+type administration struct {
+	now time.Time
+}
+
+func (a administration) Now() time.Time {
+	return a.now
+}
+
+func (a administration) ConvertID(oid flux.OperationID) ProcedureID {
 	return ProcedureIDFromOperationID(oid)
 }
 
@@ -88,6 +98,7 @@ func (logicalPlanner) ConvertID(oid flux.OperationID) ProcedureID {
 // that describes what the node does.
 type LogicalPlanNode struct {
 	edges
+	bounds
 	id   NodeID
 	Spec ProcedureSpec
 }
@@ -116,15 +127,16 @@ func (lpn *LogicalPlanNode) ShallowCopy() PlanNode {
 }
 
 // createLogicalPlan creates a logical query plan from a flux spec
-func createLogicalPlan(spec *flux.Spec, a Administration) (*PlanSpec, error) {
+func createLogicalPlan(spec *flux.Spec) (*PlanSpec, error) {
 	nodes := make(map[flux.OperationID]PlanNode, len(spec.Operations))
+	admin := administration{now: spec.Now}
 
 	plan := NewPlanSpec()
 	plan.Resources = spec.Resources
 	plan.Now = spec.Now
 
 	v := &fluxSpecVisitor{
-		a:     a,
+		a:     admin,
 		spec:  spec,
 		plan:  plan,
 		nodes: nodes,
