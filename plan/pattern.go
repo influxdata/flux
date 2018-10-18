@@ -1,4 +1,4 @@
-package planner
+package plan
 
 const AnyKind = "*** any procedure kind ***"
 

@@ -1,262 +1,327 @@
 package plan_test
 
 import (
-	"github.com/influxdata/flux/functions/inputs"
-	"strconv"
+	"context"
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/semantic"
 )
 
-func TestLogicalPlanner_Plan(t *testing.T) {
-	testCases := []struct {
-		q  *flux.Spec
-		ap *plan.LogicalPlanSpec
+func compile(fluxText string, now time.Time) (*flux.Spec, error) {
+	return flux.Compile(context.Background(), fluxText, now)
+}
+
+// Test the translation of Flux query to logical plan
+func TestFluxSpecToLogicalPlan(t *testing.T) {
+	now := time.Now().UTC()
+	testcases := []struct {
+		// Name of the test
+		name string
+
+		// Flux query string to translate
+		query string
+
+		// Expected logical query plan
+		spec *plantest.LogicalPlanSpec
 	}{
 		{
-			q: &flux.Spec{
-				Operations: []*flux.Operation{
-					{
-						ID: "0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
-					},
-					{
-						ID: "1",
-						Spec: &transformations.RangeOpSpec{
-							Start: flux.Time{Relative: -1 * time.Hour},
-							Stop:  flux.Time{},
-						},
-					},
-					{
-						ID:   "2",
-						Spec: &transformations.CountOpSpec{},
-					},
-				},
-				Edges: []flux.Edge{
-					{Parent: "0", Child: "1"},
-					{Parent: "1", Child: "2"},
-				},
-			},
-			ap: &plan.LogicalPlanSpec{
-				Procedures: map[plan.ProcedureID]*plan.Procedure{
-					plan.ProcedureIDFromOperationID("0"): {
-						ID: plan.ProcedureIDFromOperationID("0"),
-						Spec: &inputs.FromProcedureSpec{
-							Bucket: "mybucket",
-						},
-						Parents:  nil,
-						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("1")},
-					},
-					plan.ProcedureIDFromOperationID("1"): {
-						ID: plan.ProcedureIDFromOperationID("1"),
-						Spec: &transformations.RangeProcedureSpec{
-							Bounds: flux.Bounds{
-								Start: flux.Time{Relative: -1 * time.Hour},
+			name:  `from() |> range()`,
+			query: `from(bucket: "my-bucket") |> range(start: -1h)`,
+			spec: &plantest.LogicalPlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{
+						Bucket: "my-bucket",
+					}),
+					plan.CreateLogicalNode("range1", &transformations.RangeProcedureSpec{
+						Bounds: flux.Bounds{
+							Start: flux.Time{
+								IsRelative: true,
+								Relative:   -1 * time.Hour,
 							},
-							TimeCol: "_time",
+							Stop: flux.Time{
+								IsRelative: true,
+							},
+							Now: now,
 						},
-						Parents: []plan.ProcedureID{
-							plan.ProcedureIDFromOperationID("0"),
-						},
-						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("2")},
-					},
-					plan.ProcedureIDFromOperationID("2"): {
-						ID:   plan.ProcedureIDFromOperationID("2"),
-						Spec: &transformations.CountProcedureSpec{},
-						Parents: []plan.ProcedureID{
-							plan.ProcedureIDFromOperationID("1"),
-						},
-						Children: nil,
-					},
+						TimeCol:  "_time",
+						StartCol: "_start",
+						StopCol:  "_stop",
+					}),
 				},
-				Order: []plan.ProcedureID{
-					plan.ProcedureIDFromOperationID("0"),
-					plan.ProcedureIDFromOperationID("1"),
-					plan.ProcedureIDFromOperationID("2"),
+				Edges: [][2]int{
+					{0, 1},
 				},
 			},
 		},
 		{
-			q: benchmarkQuery,
-			ap: &plan.LogicalPlanSpec{
-				Procedures: map[plan.ProcedureID]*plan.Procedure{
-					plan.ProcedureIDFromOperationID("select0"): {
-						ID: plan.ProcedureIDFromOperationID("select0"),
-						Spec: &inputs.FromProcedureSpec{
-							Bucket: "mybucket",
-						},
-						Parents:  nil,
-						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("range0")},
-					},
-					plan.ProcedureIDFromOperationID("range0"): {
-						ID: plan.ProcedureIDFromOperationID("range0"),
-						Spec: &transformations.RangeProcedureSpec{
-							Bounds: flux.Bounds{
-								Start: flux.Time{Relative: -1 * time.Hour},
+			name:  `from() |> range() |> filter()`,
+			query: `from(bucket: "my-bucket") |> range(start: -1h) |> filter(fn: (r) => true)`,
+			spec: &plantest.LogicalPlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{
+						Bucket: "my-bucket",
+					}),
+					plan.CreateLogicalNode("range1", &transformations.RangeProcedureSpec{
+						Bounds: flux.Bounds{
+							Start: flux.Time{
+								IsRelative: true,
+								Relative:   -1 * time.Hour,
 							},
-							TimeCol: "_time",
-						},
-						Parents: []plan.ProcedureID{
-							plan.ProcedureIDFromOperationID("select0"),
-						},
-						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("count0")},
-					},
-					plan.ProcedureIDFromOperationID("count0"): {
-						ID:   plan.ProcedureIDFromOperationID("count0"),
-						Spec: &transformations.CountProcedureSpec{},
-						Parents: []plan.ProcedureID{
-							plan.ProcedureIDFromOperationID("range0"),
-						},
-						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("join")},
-					},
-					plan.ProcedureIDFromOperationID("select1"): {
-						ID: plan.ProcedureIDFromOperationID("select1"),
-						Spec: &inputs.FromProcedureSpec{
-							Bucket: "mybucket",
-						},
-						Parents:  nil,
-						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("range1")},
-					},
-					plan.ProcedureIDFromOperationID("range1"): {
-						ID: plan.ProcedureIDFromOperationID("range1"),
-						Spec: &transformations.RangeProcedureSpec{
-							Bounds: flux.Bounds{
-								Start: flux.Time{Relative: -1 * time.Hour},
+							Stop: flux.Time{
+								IsRelative: true,
 							},
-							TimeCol: "_time",
+							Now: now,
 						},
-						Parents: []plan.ProcedureID{
-							plan.ProcedureIDFromOperationID("select1"),
-						},
-						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("sum1")},
-					},
-					plan.ProcedureIDFromOperationID("sum1"): {
-						ID:   plan.ProcedureIDFromOperationID("sum1"),
-						Spec: &transformations.SumProcedureSpec{},
-						Parents: []plan.ProcedureID{
-							plan.ProcedureIDFromOperationID("range1"),
-						},
-						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("join")},
-					},
-					plan.ProcedureIDFromOperationID("join"): {
-						ID: plan.ProcedureIDFromOperationID("join"),
-						Spec: &transformations.MergeJoinProcedureSpec{
-							TableNames: map[plan.ProcedureID]string{
-								plan.ProcedureIDFromOperationID("sum1"):   "sum",
-								plan.ProcedureIDFromOperationID("count0"): "count",
+						TimeCol:  "_time",
+						StartCol: "_start",
+						StopCol:  "_stop",
+					}),
+					plan.CreateLogicalNode("filter2", &transformations.FilterProcedureSpec{
+						Fn: &semantic.FunctionExpression{
+							Params: []*semantic.FunctionParam{
+								{
+									Key: &semantic.Identifier{Name: "r"},
+								},
 							},
+							Body: &semantic.BooleanLiteral{Value: true},
 						},
-						Parents: []plan.ProcedureID{
-							plan.ProcedureIDFromOperationID("count0"),
-							plan.ProcedureIDFromOperationID("sum1"),
-						},
-						Children: nil,
-					},
+					}),
 				},
-				Order: []plan.ProcedureID{
-					plan.ProcedureIDFromOperationID("select1"),
-					plan.ProcedureIDFromOperationID("range1"),
-					plan.ProcedureIDFromOperationID("sum1"),
-					plan.ProcedureIDFromOperationID("select0"),
-					plan.ProcedureIDFromOperationID("range0"),
-					plan.ProcedureIDFromOperationID("count0"),
-					plan.ProcedureIDFromOperationID("join"),
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
 				},
 			},
 		},
 	}
-	for i, tc := range testCases {
-		tc := tc
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			// Set Now time on query spec
-			tc.q.Now = time.Now().UTC()
-			tc.ap.Now = tc.q.Now
 
-			planner := plan.NewLogicalPlanner()
-			got, err := planner.Plan(tc.q)
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			spec, err := compile(tc.query, now)
+
 			if err != nil {
 				t.Fatal(err)
 			}
-			if !cmp.Equal(got, tc.ap, plantest.CmpOptions...) {
-				t.Errorf("unexpected logical plan -want/+got %s", cmp.Diff(tc.ap, got, plantest.CmpOptions...))
+
+			want := plantest.CreateLogicalPlanSpec(tc.spec)
+
+			thePlanner := plan.NewLogicalPlanner()
+			got, err := thePlanner.Plan(spec)
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// Comparator function for LogicalPlanNodes
+			f := plantest.CompareLogicalPlanNodes
+
+			if err := plantest.ComparePlans(want, got, f); err != nil {
+				t.Fatal(err)
 			}
 		})
 	}
 }
 
-var benchmarkQuery = &flux.Spec{
-	Operations: []*flux.Operation{
-		{
-			ID: "select0",
-			Spec: &inputs.FromOpSpec{
-				Bucket: "mybucket",
+type MergeFiltersRule struct {
+}
+
+func (MergeFiltersRule) Name() string {
+	return "mergeFilters"
+}
+
+func (MergeFiltersRule) Pattern() plan.Pattern {
+	return plan.Pat(transformations.FilterKind,
+		plan.Pat(transformations.FilterKind,
+			plan.Any()))
+}
+
+func (MergeFiltersRule) Rewrite(pn plan.PlanNode) (plan.PlanNode, bool) {
+	specTop := pn.ProcedureSpec()
+
+	filterSpecTop := specTop.(*transformations.FilterProcedureSpec)
+	filterSpecBottom := pn.Predecessors()[0].ProcedureSpec().(*transformations.FilterProcedureSpec)
+	mergedFilterSpec := mergeFilterSpecs(filterSpecTop, filterSpecBottom)
+
+	return plan.MergeLogicalPlanNodes(pn, pn.Predecessors()[0], mergedFilterSpec), true
+}
+
+func mergeFilterSpecs(a, b *transformations.FilterProcedureSpec) plan.ProcedureSpec {
+	fn := a.Fn.Copy().(*semantic.FunctionExpression)
+
+	aExp, aOK := a.Fn.Body.(semantic.Expression)
+	bExp, bOK := b.Fn.Body.(semantic.Expression)
+
+	if !aOK || !bOK {
+		// Note that this is just a unit test, so "return" statements are not handled.
+		panic("function body not expression")
+	}
+
+	fn.Body = &semantic.LogicalExpression{
+		Operator: ast.AndOperator,
+		Left:     aExp,
+		Right:    bExp,
+	}
+
+	return &transformations.FilterProcedureSpec{
+		Fn: fn,
+	}
+}
+
+type PushFilterThroughMapRule struct {
+}
+
+func (PushFilterThroughMapRule) Name() string {
+	return "pushFilterThroughMap"
+}
+
+func (PushFilterThroughMapRule) Pattern() plan.Pattern {
+	return plan.Pat(transformations.FilterKind,
+		plan.Pat(transformations.MapKind,
+			plan.Any()))
+}
+
+func (PushFilterThroughMapRule) Rewrite(pn plan.PlanNode) (plan.PlanNode, bool) {
+	// It will not always be possible to push a filter through a map... but this is just a unit test.
+	return plan.SwapPlanNodes(pn, pn.Predecessors()[0]), true
+}
+
+func init() {
+	plan.RegisterLogicalRule(MergeFiltersRule{})
+	plan.RegisterLogicalRule(PushFilterThroughMapRule{})
+}
+
+func TestLogicalPlanner(t *testing.T) {
+	testcases := []struct {
+		name     string
+		flux     string
+		wantPlan plantest.LogicalPlanSpec
+	}{{
+		name: "with merge-able filters",
+		flux: `
+			from(bucket: "telegraf") |>
+				filter(fn: (r) => r._measurement == "cpu") |>
+				filter(fn: (r) => r._value > 0.5) |>
+				filter(fn: (r) => r._value < 0.9) |>
+				yield(name: "result")`,
+		wantPlan: plantest.LogicalPlanSpec{
+			Nodes: []plan.PlanNode{
+				plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{Bucket: "telegraf"}),
+				plan.CreateLogicalNode("merged_filter1_merged_filter2_filter3", &transformations.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
+					Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
+					Body: &semantic.LogicalExpression{Operator: ast.AndOperator,
+						Left: &semantic.LogicalExpression{Operator: ast.AndOperator,
+							Left: &semantic.BinaryExpression{Operator: ast.LessThanOperator,
+								Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+								Right: &semantic.FloatLiteral{Value: 0.9}},
+							Right: &semantic.BinaryExpression{Operator: ast.GreaterThanOperator,
+								Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+								Right: &semantic.FloatLiteral{Value: 0.5}}},
+						Right: &semantic.BinaryExpression{Operator: ast.EqualOperator,
+							Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_measurement"},
+							Right: &semantic.StringLiteral{Value: "cpu"}}}},
+				}),
+				plan.CreateLogicalNode("yield4", &transformations.YieldProcedureSpec{Name: "result"}),
+			},
+			Edges: [][2]int{
+				{0, 1},
+				{1, 2},
 			},
 		},
+	},
 		{
-			ID: "range0",
-			Spec: &transformations.RangeOpSpec{
-				Start: flux.Time{Relative: -1 * time.Hour},
-				Stop:  flux.Time{},
-			},
-		},
+			name: "with swappable map and filter",
+			flux: `from(bucket: "telegraf") |> map(fn: (r) => r._value * 2.0) |> filter(fn: (r) => r._value < 10.0) |> yield(name: "result")`,
+			wantPlan: plantest.LogicalPlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{Bucket: "telegraf"}),
+					plan.CreateLogicalNode("filter2_copy", &transformations.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
+						Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
+						Body: &semantic.BinaryExpression{Operator: ast.LessThanOperator,
+							Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+							Right: &semantic.FloatLiteral{Value: 10}},
+					}}),
+					plan.CreateLogicalNode("map1", &transformations.MapProcedureSpec{
+						Fn: &semantic.FunctionExpression{
+							Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
+							Body: &semantic.BinaryExpression{Operator: ast.MultiplicationOperator,
+								Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+								Right: &semantic.FloatLiteral{Value: 2}}},
+						MergeKey: true,
+					}),
+					plan.CreateLogicalNode("yield3", &transformations.YieldProcedureSpec{Name: "result"}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+				},
+			}},
 		{
-			ID:   "count0",
-			Spec: &transformations.CountOpSpec{},
-		},
-		{
-			ID: "select1",
-			Spec: &inputs.FromOpSpec{
-				Bucket: "mybucket",
-			},
-		},
-		{
-			ID: "range1",
-			Spec: &transformations.RangeOpSpec{
-				Start: flux.Time{Relative: -1 * time.Hour},
-				Stop:  flux.Time{},
-			},
-		},
-		{
-			ID:   "sum1",
-			Spec: &transformations.SumOpSpec{},
-		},
-		{
-			ID: "join",
-			Spec: &transformations.JoinOpSpec{
-				TableNames: map[flux.OperationID]string{
-					"count0": "count",
-					"sum1":   "sum",
+			name: "rules working together",
+			flux: `
+				from(bucket: "telegraf") |>
+					filter(fn: (r) => r._value != 0) |>
+					map(fn: (r) => r._value * 10) |>
+					filter(fn: (r) => f._value < 100) |>
+					yield(name: "result")`,
+			wantPlan: plantest.LogicalPlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{Bucket: "telegraf"}),
+					plan.CreateLogicalNode("merged_filter1_filter3_copy", &transformations.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
+						Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
+						Body: &semantic.LogicalExpression{Operator: ast.AndOperator,
+							Left: &semantic.BinaryExpression{Operator: ast.LessThanOperator,
+								Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "f"}, Property: "_value"},
+								Right: &semantic.IntegerLiteral{Value: 100}},
+							Right: &semantic.BinaryExpression{Operator: ast.NotEqualOperator,
+								Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+								Right: &semantic.IntegerLiteral{}}},
+					}}),
+					plan.CreateLogicalNode("map2", &transformations.MapProcedureSpec{Fn: &semantic.FunctionExpression{
+						Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
+						Body: &semantic.BinaryExpression{Operator: ast.MultiplicationOperator,
+							Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+							Right: &semantic.IntegerLiteral{Value: 10}}},
+						MergeKey: true,
+					}),
+					plan.CreateLogicalNode("yield4", &transformations.YieldProcedureSpec{Name: "result"}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
 				},
 			},
 		},
-	},
-	Edges: []flux.Edge{
-		{Parent: "select0", Child: "range0"},
-		{Parent: "range0", Child: "count0"},
-		{Parent: "select1", Child: "range1"},
-		{Parent: "range1", Child: "sum1"},
-		{Parent: "count0", Child: "join"},
-		{Parent: "sum1", Child: "join"},
-	},
-}
+	}
 
-var benchLogicalPlan *plan.LogicalPlanSpec
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 
-func BenchmarkLogicalPlan(b *testing.B) {
-	var err error
-	planner := plan.NewLogicalPlanner()
-	b.ResetTimer()
-	for n := 0; n < b.N; n++ {
-		benchLogicalPlan, err = planner.Plan(benchmarkQuery)
-		if err != nil {
-			b.Fatal(err)
-		}
+			fluxSpec, err := compile(tc.flux, time.Now().UTC())
+			if err != nil {
+				t.Fatalf("could not compile flux query: %v", err)
+			}
+
+			logicalPlanner := plan.NewLogicalPlanner()
+			logicalPlan, err := logicalPlanner.Plan(fluxSpec)
+
+			wantPlan := plantest.CreateLogicalPlanSpec(&tc.wantPlan)
+			if err := plantest.ComparePlans(wantPlan, logicalPlan, plantest.CompareLogicalPlanNodes); err != nil {
+				t.Error(err)
+			}
+		})
 	}
 }

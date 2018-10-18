@@ -9,7 +9,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
-	plan "github.com/influxdata/flux/planner"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"

@@ -6,7 +6,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
-	plan "github.com/influxdata/flux/planner"
+	"github.com/influxdata/flux/plan"
 )
 
 const StddevKind = "stddev"

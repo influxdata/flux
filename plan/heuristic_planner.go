@@ -1,4 +1,4 @@
-package planner
+package plan
 
 // heuristicPlanner applies a set of rules to the nodes in a PlanSpec
 // until a fixed point is reached and no more rules can be applied.
@@ -46,7 +46,7 @@ func (p *heuristicPlanner) matchRules(node PlanNode) (PlanNode, bool) {
 // Traversal is repeated until a pass over the DAG results in no changes with the given rule set.
 //
 // Plan may change its argument and/or return a new instance of PlanSpec, so the correct way to call Plan is:
-//     plan, err = planner.Plan(plan)
+//     plan, err = plan.Plan(plan)
 func (p *heuristicPlanner) Plan(inputPlan *PlanSpec) (*PlanSpec, error) {
 
 	for anyChanged := true; anyChanged == true; {
