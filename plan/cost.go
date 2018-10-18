@@ -1,4 +1,4 @@
-package planner
+package plan
 
 type Statistics struct {
 	Cardinality      int64

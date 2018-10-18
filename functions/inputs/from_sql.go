@@ -10,7 +10,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
-	plan "github.com/influxdata/flux/planner"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	_ "github.com/lib/pq"
