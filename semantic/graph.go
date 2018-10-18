@@ -157,14 +157,12 @@ func (s *BlockStatement) Copy() Node {
 	return ns
 }
 
-type VariableDeclaration interface {
-	Node
-}
-
 type OptionStatement struct {
 	typeAnnotation
 
-	Declaration VariableDeclaration `json:"declaration"`
+	// Declaration represents the declaration of the option.
+	// Must be one of *ExternalVariableDeclaration or *NativeVariableDeclaration.
+	Declaration Node `json:"declaration"`
 }
 
 func (s *OptionStatement) NodeType() string { return "OptionStatement" }
@@ -176,7 +174,7 @@ func (s *OptionStatement) Copy() Node {
 	ns := new(OptionStatement)
 	*ns = *s
 
-	ns.Declaration = s.Declaration.Copy().(VariableDeclaration)
+	ns.Declaration = s.Declaration.Copy()
 
 	return ns
 }

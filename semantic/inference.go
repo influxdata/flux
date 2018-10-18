@@ -61,7 +61,7 @@ func (k Kind) unify(ts TypeSolution, t PolyType) error {
 		}
 		return nil
 	default:
-		return fmt.Errorf("cannot unify %v with %v", k, t)
+		return fmt.Errorf("cannot unify primitive %v with %v", k, t)
 	}
 }
 func (k Kind) Type() (Type, bool) {
@@ -99,6 +99,13 @@ func (e *Env) Lookup(n string) (TS, bool) {
 	}
 	if e.parent != nil {
 		return e.parent.Lookup(n)
+	}
+	return TS{}, false
+}
+func (e *Env) LocalLookup(n string) (TS, bool) {
+	ts, ok := e.m[n]
+	if ok {
+		return ts, true
 	}
 	return TS{}, false
 }
@@ -163,9 +170,13 @@ func (v inferenceVisitor) Done(node Node) {
 }
 
 func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
+	if node == nil {
+		panic("nil")
+	}
 	switch n := node.(type) {
 	case *Identifier,
 		*Program,
+		*OptionStatement,
 		*FunctionBlock,
 		*FunctionParameters:
 		return nil, nil
@@ -196,7 +207,7 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 			return nil, err
 		}
 		ts := v.schema(t)
-		existing, ok := v.env.Lookup(n.Identifier.Name)
+		existing, ok := v.env.LocalLookup(n.Identifier.Name)
 		if ok {
 			if err := v.solution.Unify(existing.T, t); err != nil {
 				return nil, err
@@ -247,11 +258,16 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 		if err != nil {
 			return nil, err
 		}
+		var pipe string
+		if n.Block.Parameters != nil && n.Block.Parameters.Pipe != nil {
+			pipe = n.Block.Parameters.Pipe.Name
+		}
 
 		t := functionPolyType{
 			in:       in,
 			defaults: defaults,
 			out:      out,
+			pipe:     pipe,
 		}
 		return t, nil
 	case *FunctionParameter:
@@ -283,8 +299,16 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 				in.properties[k] = p
 			}
 		}
-
-		//TODO: Apply pipe to arguments here?
+		if t.pipe == "" && n.Pipe != nil {
+			return nil, errors.New("cannot pipe into non pipe function")
+		}
+		if n.Pipe != nil {
+			pt, err := v.solution.PolyTypeOf(n.Pipe)
+			if err != nil {
+				return nil, err
+			}
+			in.properties[t.pipe] = pt
+		}
 
 		if err := v.solution.Unify(t.in, in); err != nil {
 			return nil, err
@@ -312,6 +336,22 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 			t.properties[p.Key.Name] = pt
 		}
 		return t, nil
+	case *LogicalExpression:
+		lt, err := v.solution.PolyTypeOf(n.Left)
+		if err != nil {
+			return nil, err
+		}
+		rt, err := v.solution.PolyTypeOf(n.Right)
+		if err != nil {
+			return nil, err
+		}
+		if err := v.solution.Unify(lt, Bool); err != nil {
+			return nil, err
+		}
+		if err := v.solution.Unify(rt, Bool); err != nil {
+			return nil, err
+		}
+		return Bool, err
 	case *BinaryExpression:
 		lt, err := v.solution.PolyTypeOf(n.Left)
 		if err != nil {
@@ -352,18 +392,54 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 		default:
 			return nil, fmt.Errorf("unsupported binary operator %v", n.Operator)
 		}
+	case *UnaryExpression:
+		t, err := v.solution.PolyTypeOf(n.Argument)
+		if err != nil {
+			return nil, err
+		}
+		switch n.Operator {
+		case ast.NotOperator:
+			if err := v.solution.Unify(t, Bool); err != nil {
+				return nil, err
+			}
+			return Bool, nil
+		default:
+			return t, nil
+		}
+	case *MemberExpression:
+		t, err := v.solution.PolyTypeOf(n.Object)
+		if err != nil {
+			return nil, err
+		}
+		ot, ok := t.(objectPolyType)
+		if !ok {
+			return nil, fmt.Errorf("cannot get member of non object %T", t)
+		}
+		mt, ok := ot.properties[n.Property]
+		if !ok {
+			return nil, fmt.Errorf("object has no property %q", n.Property)
+		}
+		return mt, nil
 	case *Property:
 		return v.solution.PolyTypeOf(n.Value)
-	case *BooleanLiteral:
-		return Bool, nil
-	case *IntegerLiteral:
-		return Int, nil
-	case *FloatLiteral:
-		return Float, nil
 	case *StringLiteral:
 		return String, nil
+	case *IntegerLiteral:
+		return Int, nil
+	case *UnsignedIntegerLiteral:
+		return UInt, nil
+	case *FloatLiteral:
+		return Float, nil
+	case *BooleanLiteral:
+		return Bool, nil
+	case *DateTimeLiteral:
+		return Time, nil
+	case *DurationLiteral:
+		return Duration, nil
+	case *RegexpLiteral:
+		return Regexp, nil
 	default:
-		return nil, fmt.Errorf("unsupported node type %T", n)
+		return nil, fmt.Errorf("unsupported node type %T", node)
 	}
 }
 
@@ -413,7 +489,7 @@ func NewFunctionPolyType(in, defaults, out PolyType, pipe string) PolyType {
 }
 
 func (t functionPolyType) String() string {
-	return fmt.Sprintf("(%v) -> %v", t.in, t.out)
+	return fmt.Sprintf("(%v) defaults: %v pipe: %q -> %v", t.in, t.defaults, t.pipe, t.out)
 }
 
 func (t functionPolyType) freeVars() []typeVar {
@@ -425,6 +501,7 @@ func (t functionPolyType) instantiate(tm map[int]typeVar) PolyType {
 		in:       t.in.instantiate(tm).(objectPolyType),
 		defaults: t.defaults.instantiate(tm).(objectPolyType),
 		out:      t.out.instantiate(tm),
+		pipe:     t.pipe,
 	}
 }
 
@@ -444,7 +521,7 @@ func (t1 functionPolyType) unify(ts TypeSolution, typ PolyType) error {
 			return errors.New("cannot unify functions with differring pipe arguments")
 		}
 	default:
-		return fmt.Errorf("cannot unify %v with %v", t1, typ)
+		return fmt.Errorf("cannot unify function %v with %v", t1, typ)
 	}
 	return nil
 }
@@ -537,7 +614,7 @@ func (t1 objectPolyType) unify(ts TypeSolution, typ PolyType) error {
 			}
 		}
 	default:
-		return fmt.Errorf("cannot unify %v with %v", t1, typ)
+		return fmt.Errorf("cannot unify object %v with %v", t1, typ)
 	}
 	return nil
 }

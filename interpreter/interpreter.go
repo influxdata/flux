@@ -2,6 +2,7 @@ package interpreter
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 
 	"github.com/influxdata/flux/ast"
@@ -172,6 +173,13 @@ func (itrp *Interpreter) doVariableDeclaration(declaration *semantic.NativeVaria
 	if err != nil {
 		return nil, err
 	}
+	v := scope.Get(declaration.Identifier.Name)
+	if v != nil {
+		if v.Type() != value.Type() {
+			return nil, fmt.Errorf("cannot redefine %q with different type", declaration.Identifier.Name)
+		}
+	}
+	log.Println("declaration", declaration.Identifier.Name, value)
 	scope.Set(declaration.Identifier.Name, value)
 	return value, nil
 }
@@ -411,6 +419,7 @@ func (itrp *Interpreter) doCall(call *semantic.CallExpression, scope *Scope) (va
 	if err != nil {
 		return nil, err
 	}
+	log.Println(argObj, call.Pipe, ft.PipeArgument())
 
 	// Check if the function is an interpFunction and rebind it.
 	if af, ok := f.(*function); ok {
@@ -433,7 +442,7 @@ func (itrp *Interpreter) doCall(call *semantic.CallExpression, scope *Scope) (va
 
 func (itrp *Interpreter) doArguments(args *semantic.ObjectExpression, scope *Scope, pipeArgument string, pipe semantic.Expression) (values.Object, error) {
 	obj := values.NewObject()
-	if args == nil || len(args.Properties) == 0 {
+	if pipe == nil && (args == nil || len(args.Properties) == 0) {
 		return obj, nil
 	}
 	for _, p := range args.Properties {
@@ -448,9 +457,9 @@ func (itrp *Interpreter) doArguments(args *semantic.ObjectExpression, scope *Sco
 		obj.Set(p.Key.Name, value)
 	}
 	if pipe != nil && pipeArgument == "" {
-		return nil, errors.New("pipe argument value provided to function with no pipe argument")
+		return nil, errors.New("pipe argument value provided to function with no pipe argument defined")
 	}
-	if pipe != nil && pipeArgument != "" {
+	if pipe != nil {
 		value, err := itrp.doExpression(pipe, scope)
 		if err != nil {
 			return nil, err
@@ -783,7 +792,7 @@ func (f function) resolveIdentifiers(n semantic.Node) (semantic.Node, error) {
 		if err != nil {
 			return nil, err
 		}
-		n.Declaration = node.(semantic.VariableDeclaration)
+		n.Declaration = node
 	case *semantic.ExpressionStatement:
 		node, err := f.resolveIdentifiers(n.Expression)
 		if err != nil {

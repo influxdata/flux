@@ -848,7 +848,7 @@ func unmarshalExpression(msg json.RawMessage) (Expression, error) {
 	}
 	return e, nil
 }
-func unmarshalVariableDeclaration(msg json.RawMessage) (VariableDeclaration, error) {
+func unmarshalVariableDeclaration(msg json.RawMessage) (Node, error) {
 	if checkNullMsg(msg) {
 		return nil, nil
 	}
@@ -856,11 +856,13 @@ func unmarshalVariableDeclaration(msg json.RawMessage) (VariableDeclaration, err
 	if err != nil {
 		return nil, err
 	}
-	v, ok := n.(VariableDeclaration)
-	if !ok {
+	switch n.(type) {
+	case *ExternalVariableDeclaration,
+		*NativeVariableDeclaration:
+		return n, nil
+	default:
 		return nil, fmt.Errorf("node %q is not a variable declaration", n.NodeType())
 	}
-	return v, nil
 }
 func unmarshalLiteral(msg json.RawMessage) (Literal, error) {
 	if checkNullMsg(msg) {

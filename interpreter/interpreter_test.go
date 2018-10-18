@@ -121,7 +121,7 @@ func TestEval(t *testing.T) {
 		want    []values.Value
 	}{
 		{
-			name:  "call function",
+			name:  "call builtin function",
 			query: "six()",
 			want: []values.Value{
 				values.NewFloat(6.0),
@@ -145,13 +145,10 @@ func TestEval(t *testing.T) {
 		{
 			name: "reassign nested scope",
 			query: `
-			six = six()
-			six()
+			s = () => 6
+			s = s()
 			`,
 			wantErr: true,
-			want: []values.Value{
-				values.NewFloat(6.0),
-			},
 		},
 		{
 			name: "binary expressions",

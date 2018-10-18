@@ -1,5 +1,7 @@
 package semantic
 
+import "fmt"
+
 func Walk(v Visitor, node Node) {
 	walk(v, node)
 }
@@ -55,7 +57,7 @@ func walk(v Visitor, n Node) {
 			return
 		}
 		w := v.Visit(n)
-		if w != nil {
+		if w != nil && n.Declaration != nil {
 			walk(w, n.Declaration)
 		}
 	case *ExpressionStatement:
@@ -156,7 +158,9 @@ func walk(v Visitor, n Node) {
 		if w != nil {
 			walk(w, n.Callee)
 			walk(w, n.Arguments)
-			walk(w, n.Pipe)
+			if n.Pipe != nil {
+				walk(w, n.Pipe)
+			}
 		}
 	case *ConditionalExpression:
 		if n == nil {
@@ -262,6 +266,8 @@ func walk(v Visitor, n Node) {
 			return
 		}
 		v.Visit(n)
+	default:
+		panic(fmt.Errorf("walk not defined for node %T", n))
 	}
 	// We cannot use defer here as we only call Done if n != nil,
 	// which we cannot check except for in each case.
