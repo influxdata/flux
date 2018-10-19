@@ -3,6 +3,8 @@ package semantic
 import (
 	"errors"
 	"fmt"
+	"log"
+	"sort"
 	"strings"
 
 	"github.com/influxdata/flux/ast"
@@ -159,13 +161,13 @@ func (v inferenceVisitor) Nest() NestingVisitor {
 }
 
 func (v inferenceVisitor) Visit(node Node) Visitor {
-	//log.Printf("typeof %p %T", v, v.node)
+	log.Printf("typeof %T", node)
 	return v.nest()
 }
 
 func (v inferenceVisitor) Done(node Node) {
 	t, err := v.typeof(node)
-	//log.Printf("typeof %p %T %v %v", v, v.node, t, err)
+	log.Printf("typeof %T %v %v", node, t, err)
 	v.solution.setType(node, t, err)
 }
 
@@ -460,14 +462,18 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 
 func (v *inferenceVisitor) instantiate(ts TS) PolyType {
 	tm := make(map[int]typeVar, len(ts.List))
+	// The type vars that are equal are resolved to the smallest var index.
+	// As such we iterate over free vars from smallest to largest.
+	sort.Slice(ts.List, func(i, j int) bool { return ts.List[i].idx < ts.List[j].idx })
 	for _, tv := range ts.List {
-		idx := v.solution.indirectVar(tv.idx)
+		idx := v.solution.smallestVarIndex(tv.idx)
 		if ntv, ok := tm[idx]; ok {
 			tm[tv.idx] = ntv
 		} else {
 			tm[idx] = v.solution.Fresh()
 		}
 	}
+	log.Println(tm)
 	return ts.T.instantiate(tm)
 }
 func (v *inferenceVisitor) schema(t PolyType) TS {
@@ -790,7 +796,7 @@ func (s *typeSolution) FreshSolution() TypeSolution {
 			solution: ns,
 		}
 		// make fresh copies of the var pointers
-		idx := s.indirectVar(i)
+		idx := s.smallestVarIndex(i)
 		if idx < i {
 			// Preserve existing type var mappings
 			ns.vars[i] = ns.vars[idx]
@@ -843,7 +849,8 @@ func (s *typeSolution) setType(n Node, poly PolyType, err error) {
 	}
 }
 
-func (s *typeSolution) indirectVar(idxA int) int {
+// smallestVarIndex returns the smallest index of an equivalent var.
+func (s *typeSolution) smallestVarIndex(idxA int) int {
 	ptrA := s.vars[idxA]
 	// Pick the smallest index that is equal, including itself
 	for idxB, ptrB := range s.vars[:idxA] {
@@ -868,6 +875,7 @@ func (s *typeSolution) indirect(t PolyType) PolyType {
 func (s *typeSolution) Unify(a, b PolyType) error {
 	tvA, okA := a.(typeVar)
 	tvB, okB := b.(typeVar)
+	log.Println("unify", a, b)
 
 	switch {
 	case !okA && !okB:

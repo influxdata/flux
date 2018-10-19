@@ -29,11 +29,11 @@ var DefaultAggregateConfig = AggregateConfig{
 
 func DefaultAggregateSignature() semantic.FunctionSignature {
 	return semantic.FunctionSignature{
-		Params: map[string]semantic.Type{
+		In: semantic.NewObjectType(map[string]semantic.Type{
 			flux.TableParameter: flux.TableObjectType,
 			"columns":           semantic.NewArrayType(semantic.String),
-		},
-		ReturnType:   flux.TableObjectType,
+		}),
+		Out:          flux.TableObjectType,
 		PipeArgument: flux.TableParameter,
 	}
 }

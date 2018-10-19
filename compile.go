@@ -70,12 +70,15 @@ func Eval(itrp *interpreter.Interpreter, q string) error {
 	}
 
 	// Convert AST program to a semantic program
-	semProg, err := semantic.New(astProg, builtinDeclarations.Copy())
+	semProg, err := semantic.New(astProg)
 	if err != nil {
 		return err
 	}
 
-	if err := itrp.Eval(semProg); err != nil {
+	externProg := extern.Copy().(*semantic.Extern)
+	externProg.Block.Node = semProg
+
+	if err := itrp.Eval(externProg); err != nil {
 		return err
 	}
 	return nil
@@ -96,7 +99,7 @@ func NewInterpreter() *interpreter.Interpreter {
 func nowFunc(now time.Time) values.Function {
 	timeVal := values.NewTime(values.ConvertTime(now))
 	ftype := semantic.NewFunctionType(semantic.FunctionSignature{
-		ReturnType: semantic.Time,
+		Out: semantic.Time,
 	})
 	call := func(args values.Object) (values.Value, error) {
 		return timeVal, nil
@@ -147,7 +150,9 @@ type CreateOperationSpec func(args Arguments, a *Administration) (OperationSpec,
 
 var builtinValues = make(map[string]values.Value)
 var builtinOptions = make(map[string]values.Value)
-var builtinDeclarations = make(semantic.DeclarationScope)
+var extern = &semantic.Extern{
+	Block: new(semantic.ExternBlock),
+}
 
 // list of builtin scripts
 var builtinScripts = make(map[string]string)
@@ -198,7 +203,10 @@ func RegisterBuiltInValue(name string, v values.Value) {
 	if _, ok := builtinValues[name]; ok {
 		panic(fmt.Errorf("duplicate registration for builtin %q", name))
 	}
-	builtinDeclarations[name] = semantic.NewExternalVariableDeclaration(name, v.Type())
+	extern.Declarations = append(extern.Declarations, &semantic.ExternalVariableDeclaration{
+		Identifier: &semantic.Identifier{Name: name},
+		ExternType: v.Type().PolyType(),
+	})
 	builtinValues[name] = v
 }
 
@@ -234,7 +242,7 @@ func evalBuiltInScripts() error {
 		if err != nil {
 			return errors.Wrapf(err, "failed to parse builtin %q", name)
 		}
-		semProg, err := semantic.New(astProg, builtinDeclarations)
+		semProg, err := semantic.New(astProg)
 		if err != nil {
 			return errors.Wrapf(err, "failed to create semantic graph for builtin %q", name)
 		}
@@ -465,16 +473,16 @@ func (t *TableObject) Range(f func(name string, v values.Value)) {
 // It is safe to modify the returned signature.
 func DefaultFunctionSignature() semantic.FunctionSignature {
 	return semantic.FunctionSignature{
-		Params: map[string]semantic.Type{
+		In: semantic.NewObjectType(map[string]semantic.Type{
 			TableParameter: TableObjectType,
-		},
-		ReturnType:   TableObjectType,
+		}),
+		Out:          TableObjectType,
 		PipeArgument: TableParameter,
 	}
 }
 
 // BuiltIns returns a copy of the builtin values and their declarations.
-func BuiltIns() (map[string]values.Value, semantic.DeclarationScope) {
+func BuiltIns() map[string]values.Value {
 	if !finalized {
 		panic("builtins not finalized")
 	}
@@ -482,7 +490,7 @@ func BuiltIns() (map[string]values.Value, semantic.DeclarationScope) {
 	for k, v := range builtinValues {
 		cpy[k] = v
 	}
-	return cpy, builtinDeclarations.Copy()
+	return cpy
 }
 
 type Administration struct {
