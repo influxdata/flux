@@ -318,26 +318,20 @@ type funcErr struct {
 	Err error
 }
 
-// compile recursively searches for a matching child node that has compiled the function.
-// If the compilation has not been performed previously its result is cached and returned.
-func (c *CompilationCache) compile(fnType semantic.Type) (Func, error) {
-	Compile(c.fn, types, c.scope)
-}
-
 // Utility function for compiling an `fn` parameter for rename or drop/keep. In addition
 // to the function expression, it takes two types to verify the result against:
 // a single argument type, and a single return type.
 func CompileFnParam(fn *semantic.FunctionExpression, paramType, returnType semantic.Type) (Func, string, error) {
-	scope, decls := flux.BuiltIns()
-	compileCache := NewCompilationCache(fn, scope, decls)
-	if len(fn.Params) != 1 {
-		return nil, "", fmt.Errorf("function should only have a single parameter, got %d", len(fn.Params))
+	scope := flux.BuiltIns()
+	compileCache := NewCompilationCache(fn, scope)
+	if fn.Block.Parameters != nil && len(fn.Block.Parameters.List) != 1 {
+		return nil, "", errors.New("function should only have a single parameter")
 	}
-	paramName := fn.Params[0].Key.Name
+	paramName := fn.Block.Parameters.List[0].Key.Name
 
-	compiled, err := compileCache.Compile(map[string]semantic.Type{
+	compiled, err := compileCache.Compile(semantic.NewObjectType(map[string]semantic.Type{
 		paramName: paramType,
-	})
+	}))
 	if err != nil {
 		return nil, "", err
 	}

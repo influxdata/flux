@@ -20,15 +20,18 @@ type FromOpSpec struct {
 	BucketID string `json:"bucketID,omitempty"`
 }
 
-var fromSignature = semantic.FunctionSignature{
-	Params: map[string]semantic.Type{
-		"bucket":   semantic.String,
-		"bucketID": semantic.String,
-	},
-	ReturnType: flux.TableObjectType,
-}
-
 func init() {
+	fromSignature := flux.FunctionSignature(
+		map[string]semantic.Type{
+			"bucket":   semantic.String,
+			"bucketID": semantic.String,
+		},
+		[]string{
+			"bucket",
+			"bucketID",
+		},
+	)
+
 	flux.RegisterFunction(FromKind, createFromOpSpec, fromSignature)
 	flux.RegisterOpSpec(FromKind, newFromOp)
 	plan.RegisterProcedureSpec(FromKind, newFromProcedure, FromKind)
