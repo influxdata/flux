@@ -4,34 +4,19 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/functions/inputs/storage"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/functions/inputs/storage"
+	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	"github.com/influxdata/platform"
 	"github.com/influxdata/platform/query"
 	"github.com/pkg/errors"
 )
 
-type GroupMode int
-
-const (
-	// GroupModeDefault will use the default grouping of GroupModeAll.
-	GroupModeDefault GroupMode = 0
-
-	// GroupModeNone merges all series into a single group.
-	GroupModeNone GroupMode = 1 << iota
-	// GroupModeAll produces a separate table for each series.
-	GroupModeAll
-	// GroupModeBy produces a table for each unique value of the specified GroupKeys.
-	GroupModeBy
-	// GroupModeExcept produces a table for the unique values of all keys, except those specified by GroupKeys.
-	GroupModeExcept
-)
-
-
 const FromKind = "from"
-
 
 type FromOpSpec struct {
 	Bucket   string      `json:"bucket,omitempty"`
@@ -128,11 +113,46 @@ type FromProcedureSpec struct {
 
 	GroupingSet bool
 	OrderByTime bool
-	GroupMode   GroupMode
+	GroupMode   functions.GroupMode
 	GroupKeys   []string
 
 	AggregateSet    bool
 	AggregateMethod string
+}
+
+// FromRangeTransformationRule pushes a `range` into a `from`
+type FromRangeTransformationRule struct{}
+
+// Name returns the name of the rule
+func (rule FromRangeTransformationRule) Name() string {
+	return "FromRangeTransformation"
+}
+
+// Pattern returns the pattern that matches `from -> range`
+func (rule FromRangeTransformationRule) Pattern() plan.Pattern {
+	return plan.Pat(transformations.RangeKind, plan.Pat(FromKind))
+}
+
+// Rewrite attempts to rewrite a `from -> range` into a `FromRange`
+func (rule FromRangeTransformationRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool) {
+	from := node.Predecessors()[0]
+	fromSpec := from.ProcedureSpec().(*FromProcedureSpec)
+	rangeSpec := node.ProcedureSpec().(*transformations.RangeProcedureSpec)
+
+	// Range can only be pushed into from once
+	if fromSpec.BoundsSet {
+		return node, false
+	}
+
+	fromRange := fromSpec.Copy().(*FromProcedureSpec)
+	fromRange.BoundsSet = true
+	fromRange.Bounds = rangeSpec.Bounds
+
+	merged, err := plan.MergePhysicalPlanNodes(node, from, fromRange)
+	if err != nil {
+		return node, false
+	}
+	return merged, true
 }
 
 func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -181,6 +201,21 @@ func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
 	ns.AggregateMethod = s.AggregateMethod
 
 	return ns
+}
+
+// TimeBounds implements plan.BoundsAwareProcedureSpec
+func (s *FromProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bounds {
+	if s.BoundsSet {
+		bounds := &plan.Bounds{
+			Start: values.ConvertTime(s.Bounds.Start.Time(s.Bounds.Now)),
+			Stop:  values.ConvertTime(s.Bounds.Stop.Time(s.Bounds.Now)),
+		}
+		if predecessorBounds != nil {
+			bounds = bounds.Intersect(predecessorBounds)
+		}
+		return bounds
+	}
+	return nil
 }
 
 func createFromSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a execute.Administration) (execute.Source, error) {
@@ -257,5 +292,3 @@ func InjectFromDependencies(depsMap execute.Dependencies, deps storage.Dependenc
 	depsMap[FromKind] = deps
 	return nil
 }
-
-
