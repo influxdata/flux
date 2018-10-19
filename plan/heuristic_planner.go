@@ -21,24 +21,30 @@ func (p *heuristicPlanner) addRules(rules []Rule) {
 
 // matchRules applies any applicable rules to the given plan node,
 // and returns the rewritten plan node and whether or not any rewriting was done.
-func (p *heuristicPlanner) matchRules(node PlanNode) (PlanNode, bool) {
+func (p *heuristicPlanner) matchRules(node PlanNode) (PlanNode, bool, error) {
 	anyChanged := false
 
 	for _, rule := range p.rules[AnyKind] {
-		newNode, changed := rule.Rewrite(node)
+		newNode, changed, err := rule.Rewrite(node)
+		if err != nil {
+			return nil, false, err
+		}
 		anyChanged = anyChanged || changed
 		node = newNode
 	}
 
 	for _, rule := range p.rules[node.Kind()] {
 		if rule.Pattern().Match(node) {
-			newNode, changed := rule.Rewrite(node)
+			newNode, changed, err := rule.Rewrite(node)
+			if err != nil {
+				return nil, false, err
+			}
 			anyChanged = anyChanged || changed
 			node = newNode
 		}
 	}
 
-	return node, anyChanged
+	return node, anyChanged, nil
 }
 
 // Plan is a fixed-point query planning algorithm.
@@ -66,7 +72,10 @@ func (p *heuristicPlanner) Plan(inputPlan *PlanSpec) (*PlanSpec, error) {
 			_, alreadyVisited := visited[node]
 
 			if !alreadyVisited {
-				newNode, changed := p.matchRules(node)
+				newNode, changed, err := p.matchRules(node)
+				if err != nil {
+					return nil, err
+				}
 				anyChanged = anyChanged || changed
 				if node != newNode {
 					updateSuccessors(inputPlan, node, newNode)

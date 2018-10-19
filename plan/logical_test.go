@@ -145,14 +145,19 @@ func (MergeFiltersRule) Pattern() plan.Pattern {
 			plan.Any()))
 }
 
-func (MergeFiltersRule) Rewrite(pn plan.PlanNode) (plan.PlanNode, bool) {
+func (MergeFiltersRule) Rewrite(pn plan.PlanNode) (plan.PlanNode, bool, error) {
 	specTop := pn.ProcedureSpec()
 
 	filterSpecTop := specTop.(*transformations.FilterProcedureSpec)
 	filterSpecBottom := pn.Predecessors()[0].ProcedureSpec().(*transformations.FilterProcedureSpec)
 	mergedFilterSpec := mergeFilterSpecs(filterSpecTop, filterSpecBottom)
 
-	return plan.MergeLogicalPlanNodes(pn, pn.Predecessors()[0], mergedFilterSpec), true
+	newNode, err := plan.MergeLogicalPlanNodes(pn, pn.Predecessors()[0], mergedFilterSpec)
+	if err != nil {
+		return pn, false, err
+	}
+
+	return newNode, true, nil
 }
 
 func mergeFilterSpecs(a, b *transformations.FilterProcedureSpec) plan.ProcedureSpec {
@@ -190,9 +195,15 @@ func (PushFilterThroughMapRule) Pattern() plan.Pattern {
 			plan.Any()))
 }
 
-func (PushFilterThroughMapRule) Rewrite(pn plan.PlanNode) (plan.PlanNode, bool) {
+func (PushFilterThroughMapRule) Rewrite(pn plan.PlanNode) (plan.PlanNode, bool, error) {
 	// It will not always be possible to push a filter through a map... but this is just a unit test.
-	return plan.SwapPlanNodes(pn, pn.Predecessors()[0]), true
+
+	swapped, err := plan.SwapPlanNodes(pn, pn.Predecessors()[0])
+	if err != nil {
+		return nil, false, err
+	}
+
+	return swapped, true, nil
 }
 
 func init() {

@@ -178,9 +178,9 @@ func (rule MergeFromRangeRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool)
 	// Finally merge nodes into single operation
 	merged, err := plan.MergePhysicalPlanNodes(node, from, fromRange)
 	if err != nil {
-		return node, false
+		return node, false, err
 	}
-	return merged, true
+	return merged, true, nil
 }
 
 func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
