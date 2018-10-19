@@ -229,7 +229,7 @@ Examples:
     2018-01-01T00:00:00Z + 1mo30d   // 2018-03-02T00:00:00Z, Months are applied first to get February 1st, then days are added resulting in March 2 in 2018.
     2018-01-31T00:00:00Z + 1mo1d    // 2018-03-01T00:00:00Z, Months are applied first to get February 28th, then days are added resulting in March 1 in 2018.
 
-[IMPL#253](https://github.com/influxdata/platform/issues/253) Parse duration literals
+[IMPL#657](https://github.com/influxdata/platform/issues/657) Implement Duration vectors
 
 #### Date and time literals
 
@@ -257,6 +257,8 @@ Examples:
     2018-08-15T13:36:23-07:00
     2009-10-15T09:00:00       // October 15th 2009 at 9 AM in the default location
     2018-01-01                // midnight on January 1st 2018 in the default location
+
+[IMPL#152](https://github.com/influxdata/flux/issues/152) Implement shorthand time literals
 
 #### String literals
 
@@ -343,9 +345,6 @@ Examples:
 
 The regular expression syntax is defined by [RE2](https://github.com/google/re2/wiki/Syntax).
 
-
-[IMPL#250](https://github.com/influxdata/platform/issues/250) Parse regular expression literals
-
 ### Variables
 
 A variable holds a value.
@@ -430,7 +429,7 @@ A _function type_ represents a set of all functions with the same argument and r
 A _generator type_ represents a value that produces an unknown number of other values.
 The generated values may be of any other type but must all be the same type.
 
-[IMPL#XXX](https://github.com/influxdata/platform/query/issues/XXX) Implement generators
+[IMPL#658](https://github.com/influxdata/platform/query/issues/658) Implement Generators types
 
 ### Blocks
 
@@ -595,6 +594,8 @@ Package names must be valid Flux identifiers.
 The package statement must be the first statement of every Flux source file.
 If a file does not declare a package statement, all identifiers in that file will belong to the special _main_ package.
 
+[IMPL#247](https://github.com/influxdata/platform/issues/247) Add package/namespace support
+
 ##### package main
 
 The _main_ package is special for a few reasons:
@@ -688,6 +689,8 @@ The default value is set using the time zone of the running process.
 
     option location = fixedZone(offset:-5h) // set timezone to be 5 hours west of UTC
     option location = loadLocation(name:"America/Denver") // set location to be America/Denver
+
+[IMPL#660](https://github.com/influxdata/platform/issues/660) Implement Location option
 
 #### Return statements
 
@@ -828,6 +831,9 @@ Friday    = 5
 Saturday  = 6
 ```
 
+
+[IMPL#153](https://github.com/influxdata/flux/issues/153) Add Days of the Week constants
+
 ###### Months of the year
 
 Months are represented as integers in the range `[1-12]`.
@@ -848,6 +854,8 @@ November  = 11
 December  = 12
 ```
 
+[IMPL#154](https://github.com/influxdata/flux/issues/154) Add Months of the Year constants
+
 ##### Time and date functions
 
 These are builtin functions that all take a single `time` argument and return an integer.
@@ -867,12 +875,12 @@ These are builtin functions that all take a single `time` argument and return an
 * `month` - integer
     Month returns the month of the year for the provided time in the range `[1-12]`.
 
+[IMPL#155](https://github.com/influxdata/flux/issues/155) Implement Time and date functions 
+
 ##### System Time
 
 The builtin function `systemTime` returns the current system time.
 All calls to `systemTime` within a single evaluation of a Flux script return the same time.
-
-[IMPL#XXX](https://github.com/influxdata/platform/query/issues/XXX) Make systemTime consistent for a single evaluation.
 
 #### Intervals
 
@@ -973,7 +981,7 @@ Examples using known start and stop dates:
     // [2018-04-15, 2018-05-15)
 
 
-[IMPL#XXX](https://github.com/influxdata/platform/query/issues/XXX) Implement intervals function
+[IMPL#659](https://github.com/influxdata/platform/query/issues/659) Implement intervals function
 
 
 ##### Builtin Intervals
@@ -1019,6 +1027,9 @@ Examples:
     fixedZone(offset:-5h) // time zone 5 hours west of UTC
     fixedZone(offset:4h30m) // time zone 4 and a half hours east of UTC
 
+
+[IMPL#156](https://github.com/influxdata/flux/issues/156) Implement FixedZone function
+
 #### LoadLocation
 
 LoadLoacation loads a locations from a time zone database.
@@ -1034,6 +1045,8 @@ Examples:
     loadLocation(name:"America/Denver")
     loadLocation(name:"America/Chicago")
     loadLocation(name:"Africa/Tunis")
+
+[IMPL#157](https://github.com/influxdata/flux/issues/157) Implement LoadLoacation function
 
 ## Query engine
 
@@ -1432,8 +1445,9 @@ from(bucket: "telegraf/autogen")
 
 #### Multiple aggregates
 
-TODO(nathanielc): Need a way to apply multiple aggregates to same table
+Multiple aggregates can be applied to the same table using the `aggregate` function.
 
+[IMPL#139](https://github.com/influxdata/platform/issues/139) Add aggregate function
 
 #### Selector operations
 
@@ -2506,13 +2520,6 @@ If you need to convert other columns use the `map` function directly with the `u
 ### Composite data types
 
 A composite data type is a collection of primitive data types that together have a higher meaning.
-
-#### Histogram data type
-
-Histogram is a composite type that represents a discrete cumulative distribution.
-Given a histogram with N buckets there will be N columns with the label `le_X` where `X` is replaced with the upper bucket boundary.
-
-[IMPL#241](https://github.com/influxdata/platform/issues/241) Add support for a histogram composite data type.
 
 ### Triggers
 
