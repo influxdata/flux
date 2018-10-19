@@ -21,7 +21,7 @@ const MergeJoinKind = "merge-join"
 func init() {
 	joinSignature := semantic.FunctionSignature{
 		In: semantic.NewObjectType(map[string]semantic.Type{
-			"tables": semantic.Object,
+			"tables": semantic.NewObjectType(nil),
 			"on":     semantic.NewArrayType(semantic.String),
 			"method": semantic.String,
 		}),

@@ -238,6 +238,7 @@ func FinalizeBuiltIns() {
 func evalBuiltInScripts() error {
 	itrp := interpreter.NewMutableInterpreter(builtinOptions, builtinValues)
 	for name, script := range builtinScripts {
+		log.Println("BUILTIN", name)
 		astProg, err := parser.NewAST(script)
 		if err != nil {
 			return errors.Wrapf(err, "failed to parse builtin %q", name)
@@ -252,6 +253,7 @@ func evalBuiltInScripts() error {
 		if err := itrp.Eval(externProg); err != nil {
 			return errors.Wrapf(err, "failed to evaluate builtin %q", name)
 		}
+		log.Println("BUILTIN DONE", name)
 	}
 	return nil
 }

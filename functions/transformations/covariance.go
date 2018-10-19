@@ -41,7 +41,7 @@ cov = (x,y,on,pearsonr=false) =>
         tables:{x:x, y:y},
         on:on,
     )
-    |> covariance(pearsonr:pearsonr, columns:["x__value","y__value"])
+    |> covariance(pearsonr:pearsonr, columns:["_value_x","_value_y"])
 
 pearsonr = (x,y,on) => cov(x:x, y:y, on:on, pearsonr:true)
 `

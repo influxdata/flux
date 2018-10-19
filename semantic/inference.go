@@ -138,10 +138,11 @@ func (ts TS) freeVars() []typeVar {
 type inferenceVisitor struct {
 	env      *Env
 	solution *typeSolution
+	fe       *FunctionExpression
 }
 
-func newInferenceVisitor() *inferenceVisitor {
-	return &inferenceVisitor{
+func newInferenceVisitor() inferenceVisitor {
+	return inferenceVisitor{
 		env: &Env{m: make(map[string]TS)},
 		solution: &typeSolution{
 			m: make(map[Node]typeAnnotation),
@@ -149,23 +150,21 @@ func newInferenceVisitor() *inferenceVisitor {
 	}
 }
 
-func (v inferenceVisitor) nest() inferenceVisitor {
-	return inferenceVisitor{
-		env:      v.env,
-		solution: v.solution,
-	}
-}
-
 func (v inferenceVisitor) Nest() NestingVisitor {
 	return inferenceVisitor{
 		env:      v.env.Nest(),
 		solution: v.solution,
+		fe:       v.fe,
 	}
 }
 
 func (v inferenceVisitor) Visit(node Node) Visitor {
 	log.Printf("typeof %T", node)
-	return v.nest()
+	switch n := node.(type) {
+	case *FunctionExpression:
+		v.fe = n
+	}
+	return v
 }
 
 func (v inferenceVisitor) Done(node Node) {
@@ -182,8 +181,7 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 	case *Identifier,
 		*Program,
 		*OptionStatement,
-		*FunctionBlock,
-		*FunctionParameters:
+		*FunctionBlock:
 		return nil, nil
 	case *BlockStatement:
 		return v.solution.PolyTypeOf(n.ReturnStatement())
@@ -221,44 +219,20 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 		v.env.Set(n.Identifier.Name, ts)
 		return t, nil
 	case *FunctionExpression:
-		in := objectPolyType{}
-		if n.Block.Parameters != nil {
-			in.properties = make(map[string]PolyType, len(n.Block.Parameters.List))
-			for _, p := range n.Block.Parameters.List {
-				pt, err := v.solution.PolyTypeOf(p)
-				if err != nil {
-					return nil, err
-				}
-				in.properties[p.Key.Name] = pt
-			}
+		in, err := v.solution.PolyTypeOf(n.Block.Parameters)
+		if err != nil {
+			return nil, err
 		}
+
 		var defaults objectPolyType
-		if n.Defaults != nil {
-			// Unify defaults
-			for _, d := range n.Defaults.Properties {
-				dt, err := v.solution.PolyTypeOf(d.Value)
-				if err != nil {
-					return nil, err
-				}
-				pt, ok := in.properties[d.Key.Name]
-				if !ok {
-					return nil, fmt.Errorf("default defined for unknown parameter %q", d.Key.Name)
-				}
-				if err := v.solution.Unify(dt, pt); err != nil {
-					return nil, err
-				}
-			}
-			// Collect defaults type
-			t, err := v.solution.PolyTypeOf(n.Defaults)
-			if err != nil {
-				return nil, err
-			}
-			d, ok := t.(objectPolyType)
-			if !ok {
-				return nil, fmt.Errorf("unexpected type of defaults %T, must by an object type", t)
-			}
-			defaults = d
+		d, err := v.solution.PolyTypeOf(n.Defaults)
+		if err != nil {
+			return nil, err
 		}
+		if d != nil {
+			defaults, _ = d.(objectPolyType)
+		}
+
 		out, err := v.solution.PolyTypeOf(n.Block.Body)
 		if err != nil {
 			return nil, err
@@ -275,6 +249,36 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 			pipeArgument: pipeArgument,
 		}
 		return t, nil
+	//case *FunctionDefaults:
+	//	return v.solution.PolyTypeOf(n.Object)
+	case *FunctionParameters:
+		in := objectPolyType{
+			properties: make(map[string]PolyType, len(n.List)),
+		}
+		for _, p := range n.List {
+			pt, err := v.solution.PolyTypeOf(p)
+			if err != nil {
+				return nil, err
+			}
+			in.properties[p.Key.Name] = pt
+		}
+		// Unify defaults
+		if v.fe.Defaults != nil {
+			for _, d := range v.fe.Defaults.Properties {
+				dt, err := v.solution.PolyTypeOf(d.Value)
+				if err != nil {
+					return nil, err
+				}
+				pt, ok := in.properties[d.Key.Name]
+				if !ok {
+					return nil, fmt.Errorf("default defined for unknown parameter %q", d.Key.Name)
+				}
+				if err := v.solution.Unify(dt, pt); err != nil {
+					return nil, err
+				}
+			}
+		}
+		return in, nil
 	case *FunctionParameter:
 		t := v.solution.Fresh()
 		ts := TS{T: t} // function parameters do not need a schema
@@ -287,7 +291,7 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 		}
 		t, ok := ct.(functionPolyType)
 		if !ok {
-			return nil, fmt.Errorf("cannot call non function type %T", ct)
+			return nil, fmt.Errorf("cannot call non function type %v", ct)
 		}
 
 		args, err := v.solution.PolyTypeOf(n.Arguments)
@@ -450,6 +454,8 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 				t.properties[n.Property] = mt
 			}
 			return mt, nil
+		case arrayPolyType:
+			return t.elementType, nil
 		default:
 			return nil, fmt.Errorf("cannot get member of non object %T", t)
 		}
@@ -645,12 +651,23 @@ func (t1 objectPolyType) unify(ts TypeSolution, typ PolyType) error {
 	switch t2 := typ.(type) {
 	case objectPolyType:
 		if len(t1.properties) != len(t2.properties) {
-			return fmt.Errorf("mismatched properties %v != %v", t1, t2)
+			for k := range t1.properties {
+				_, ok := t2.properties[k]
+				if !ok {
+					return fmt.Errorf("missing property %q", k)
+				}
+			}
+			for k := range t2.properties {
+				_, ok := t1.properties[k]
+				if !ok {
+					return fmt.Errorf("extra property %q", k)
+				}
+			}
 		}
 		for k, p1 := range t1.properties {
 			p2, ok := t2.properties[k]
 			if !ok {
-				return fmt.Errorf("missing parameter %q", k)
+				return fmt.Errorf("missing property %q", k)
 			}
 			err := ts.Unify(p1, p2)
 			if err != nil {
@@ -878,7 +895,13 @@ func (s *typeSolution) smallestVarIndex(idxA int) int {
 	return idxA
 }
 
-func (s *typeSolution) indirect(t PolyType) PolyType {
+func (s *typeSolution) indirect(t PolyType) (pt PolyType) {
+	defer func() {
+		if tv, ok := t.(typeVar); ok && tv.idx == 12 {
+			log.Println("indirect", t, pt)
+			log.Println(s)
+		}
+	}()
 	tv, ok := t.(typeVar)
 	if ok {
 		t := s.vars[tv.idx]
@@ -892,7 +915,14 @@ func (s *typeSolution) indirect(t PolyType) PolyType {
 func (s *typeSolution) Unify(a, b PolyType) error {
 	tvA, okA := a.(typeVar)
 	tvB, okB := b.(typeVar)
-	log.Println("unify", a, b)
+	if okA && tvA.idx == 12 {
+		log.Println("unify", a, b)
+		defer log.Println(s)
+	}
+	if okB && tvB.idx == 12 {
+		log.Println("unify", a, b)
+		defer log.Println(s)
+	}
 
 	switch {
 	case !okA && !okB:

@@ -26,11 +26,11 @@ bottom = (n, cols=["_value"], table=<-) => _sortLimit(table:table, n:n, cols:col
 // _highestOrLowest is a helper function, which reduces all groups into a single group by specific tags and a reducer function,
 // then it selects the highest or lowest records based on the cols and the _sortLimit function.
 // The default reducer assumes no reducing needs to be performed.
-_highestOrLowest = (n, _sortLimit, reducer=(t=<-) => t, cols=["_value"], by=[], table=<-) =>
+_highestOrLowest = (n, _sortLimit=(table=<-,n,cols) => table, reducer=(table=<-) => table, cols=["_value"], by=[], table=<-) =>
 	table
 		|> group(by:by)
 		|> reducer()
-		|> group(keep:by)
+		|> group(by:by)
 		|> _sortLimit(n:n, cols:cols)
 
 // highestMax returns the top N records from all groups using the maximum of each group.
@@ -41,7 +41,7 @@ highestMax = (n, cols=["_value"], by=[], table=<-) =>
 		cols:cols,
 		by:by,
 		// TODO(nathanielc): Once max/min support selecting based on multiple columns change this to pass all columns.
-		reducer: (t=<-) => max(table:t, column:cols[0]),
+		reducer: (table=<-) => table |> max(column:cols[0]),
 		_sortLimit: top,
 	)
 
@@ -52,7 +52,7 @@ highestAverage = (n, cols=["_value"], by=[], table=<-) =>
 		n:n,
 		cols:cols,
 		by:by,
-		reducer: (t=<-) => mean(table:t, ),
+		reducer: (table=<-) => table |> mean(),
 		_sortLimit: top,
 	)
 
@@ -63,7 +63,7 @@ highestCurrent = (n, cols=["_value"], by=[], table=<-) =>
 		n:n,
 		cols:cols,
 		by:by,
-		reducer: (t=<-) => last(table:t, column:cols[0]),
+		reducer: (table=<-) => table |> last(column:cols[0]),
 		_sortLimit: top,
 	)
 
@@ -75,7 +75,7 @@ lowestMin = (n, cols=["_value"], by=[], table=<-) =>
 		cols:cols,
 		by:by,
 		// TODO(nathanielc): Once max/min support selecting based on multiple columns change this to pass all columns.
-		reducer: (t=<-) => min(table:t, column:cols[0]),
+		reducer: (table=<-) => table |> min(column:cols[0]),
 		_sortLimit: bottom,
 	)
 
@@ -86,7 +86,7 @@ lowestAverage = (n, cols=["_value"], by=[], table=<-) =>
 		n:n,
 		cols:cols,
 		by:by,
-		reducer: (t=<-) => mean(table:t),
+		reducer: (table=<-) => table |> mean(),
 		_sortLimit: bottom,
 	)
 
@@ -97,7 +97,7 @@ lowestCurrent = (n, cols=["_value"], by=[], table=<-) =>
 		n:n,
 		cols:cols,
 		by:by,
-		reducer: (t=<-) => last(table:t, column:cols[0]),
+		reducer: (table=<-) => table |> last(column:cols[0]),
 		_sortLimit: bottom,
 	)
 `
