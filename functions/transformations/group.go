@@ -3,13 +3,13 @@ package transformations
 import (
 	"errors"
 	"fmt"
-	"github.com/influxdata/flux/functions/inputs"
 	"sort"
 
 	"math/bits"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/functions"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -94,29 +94,29 @@ func (s *GroupOpSpec) Kind() flux.OperationKind {
 	return GroupKind
 }
 
-func groupModeFromSpec(spec *GroupOpSpec) inputs.GroupMode {
-	var mode inputs.GroupMode
+func groupModeFromSpec(spec *GroupOpSpec) functions.GroupMode {
+	var mode functions.GroupMode
 	if spec.All {
-		mode |= inputs.GroupModeAll
+		mode |= functions.GroupModeAll
 	}
 	if spec.None {
-		mode |= inputs.GroupModeNone
+		mode |= functions.GroupModeNone
 	}
 	if len(spec.By) > 0 {
-		mode |= inputs.GroupModeBy
+		mode |= functions.GroupModeBy
 	}
 	if len(spec.Except) > 0 {
-		mode |= inputs.GroupModeExcept
+		mode |= functions.GroupModeExcept
 	}
-	if mode == inputs.GroupModeDefault {
-		mode = inputs.GroupModeAll
+	if mode == functions.GroupModeDefault {
+		mode = functions.GroupModeAll
 	}
 	return mode
 }
 
 type GroupProcedureSpec struct {
 	plan.DefaultCost
-	GroupMode inputs.GroupMode
+	GroupMode functions.GroupMode
 	GroupKeys []string
 }
 
@@ -129,11 +129,11 @@ func newGroupProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proc
 	mode := groupModeFromSpec(spec)
 	var keys []string
 	switch mode {
-	case inputs.GroupModeAll:
-	case inputs.GroupModeNone:
-	case inputs.GroupModeBy:
+	case functions.GroupModeAll:
+	case functions.GroupModeNone:
+	case functions.GroupModeBy:
 		keys = spec.By
-	case inputs.GroupModeExcept:
+	case functions.GroupModeExcept:
 		keys = spec.Except
 	default:
 		return nil, fmt.Errorf("invalid GroupOpSpec; multiple modes detected")
@@ -175,7 +175,7 @@ type groupTransformation struct {
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 
-	mode inputs.GroupMode
+	mode functions.GroupMode
 	keys []string
 }
 
@@ -197,11 +197,11 @@ func (t *groupTransformation) RetractTable(id execute.DatasetID, key flux.GroupK
 func (t *groupTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	cols := tbl.Cols()
 	on := make(map[string]bool, len(cols))
-	if t.mode == inputs.GroupModeBy && len(t.keys) > 0 {
+	if t.mode == functions.GroupModeBy && len(t.keys) > 0 {
 		for _, k := range t.keys {
 			on[k] = true
 		}
-	} else if t.mode == inputs.GroupModeExcept && len(t.keys) > 0 {
+	} else if t.mode == functions.GroupModeExcept && len(t.keys) > 0 {
 	COLS:
 		for _, c := range cols {
 			for _, label := range t.keys {
