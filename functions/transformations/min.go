@@ -14,9 +14,9 @@ type MinOpSpec struct {
 	execute.SelectorConfig
 }
 
-var minSignature = execute.DefaultSelectorSignature()
-
 func init() {
+	minSignature := execute.SelectorSignature(nil, nil)
+
 	flux.RegisterFunction(MinKind, createMinOpSpec, minSignature)
 	flux.RegisterOpSpec(MinKind, newMinOp)
 	plan.RegisterProcedureSpec(MinKind, newMinProcedure, MinKind)

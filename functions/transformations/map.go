@@ -20,11 +20,16 @@ type MapOpSpec struct {
 	MergeKey bool                         `json:"mergeKey"`
 }
 
-var mapSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	mapSignature.Params["fn"] = semantic.Function
-	mapSignature.Params["mergeKey"] = semantic.Bool
+	mapSignature := flux.FunctionSignature(
+		map[string]semantic.Type{
+			"fn":       semantic.Function,
+			"mergeKey": semantic.Bool,
+		},
+		[]string{
+			"mergeKey",
+		},
+	)
 
 	flux.RegisterFunction(MapKind, createMapOpSpec, mapSignature)
 	flux.RegisterOpSpec(MapKind, newMapOp)

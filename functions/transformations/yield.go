@@ -14,16 +14,11 @@ type YieldOpSpec struct {
 	Name string `json:"name"`
 }
 
-var yieldSignature = semantic.FunctionSignature{
-	Params: map[string]semantic.Type{
-		flux.TableParameter: flux.TableObjectType,
-		"name":              semantic.String,
-	},
-	ReturnType:   flux.TableObjectType,
-	PipeArgument: flux.TableParameter,
-}
-
 func init() {
+	yieldSignature := flux.FunctionSignature(map[string]semantic.Type{
+		"name": semantic.String,
+	}, nil)
+
 	flux.RegisterFunctionWithSideEffect(YieldKind, createYieldOpSpec, yieldSignature)
 	flux.RegisterOpSpec(YieldKind, newYieldOp)
 	plan.RegisterProcedureSpecWithSideEffect(YieldKind, newYieldProcedure, YieldKind)

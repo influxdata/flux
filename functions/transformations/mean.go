@@ -15,9 +15,9 @@ type MeanOpSpec struct {
 	execute.AggregateConfig
 }
 
-var meanSignature = execute.DefaultAggregateSignature()
-
 func init() {
+	meanSignature := execute.AggregateSignature(nil, nil)
+
 	flux.RegisterFunction(MeanKind, createMeanOpSpec, meanSignature)
 	flux.RegisterOpSpec(MeanKind, newMeanOp)
 	plan.RegisterProcedureSpec(MeanKind, newMeanProcedure, MeanKind)

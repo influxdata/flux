@@ -48,18 +48,15 @@ func TestCompilationCache(t *testing.T) {
 	}
 	testCases := []struct {
 		name   string
-		fnType semantic.Type
+		inType semantic.Type
 		input  values.Object
 		want   values.Value
 	}{
 		{
 			name: "floats",
-			fnType: semantic.NewFunctionType(semantic.FunctionSignature{
-				In: semantic.NewObjectType(map[string]semantic.Type{
-					"a": semantic.Float,
-					"b": semantic.Float,
-				}),
-				Out: semantic.Float,
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"a": semantic.Float,
+				"b": semantic.Float,
 			}),
 			input: values.NewObjectWithValues(map[string]values.Value{
 				"a": values.NewFloat(5),
@@ -69,12 +66,9 @@ func TestCompilationCache(t *testing.T) {
 		},
 		{
 			name: "ints",
-			fnType: semantic.NewFunctionType(semantic.FunctionSignature{
-				In: semantic.NewObjectType(map[string]semantic.Type{
-					"a": semantic.Int,
-					"b": semantic.Int,
-				}),
-				Out: semantic.Int,
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"a": semantic.Int,
+				"b": semantic.Int,
 			}),
 			input: values.NewObjectWithValues(map[string]values.Value{
 				"a": values.NewInt(5),
@@ -84,12 +78,9 @@ func TestCompilationCache(t *testing.T) {
 		},
 		{
 			name: "uints",
-			fnType: semantic.NewFunctionType(semantic.FunctionSignature{
-				In: semantic.NewObjectType(map[string]semantic.Type{
-					"a": semantic.UInt,
-					"b": semantic.UInt,
-				}),
-				Out: semantic.UInt,
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"a": semantic.UInt,
+				"b": semantic.UInt,
 			}),
 			input: values.NewObjectWithValues(map[string]values.Value{
 				"a": values.NewUInt(5),
@@ -104,11 +95,11 @@ func TestCompilationCache(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			f0, err := cache.Compile(tc.fnType)
+			f0, err := cache.Compile(tc.inType)
 			if err != nil {
 				t.Fatal(err)
 			}
-			f1, err := cache.Compile(tc.fnType)
+			f1, err := cache.Compile(tc.inType)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -139,7 +130,7 @@ func TestCompileAndEval(t *testing.T) {
 	testCases := []struct {
 		name    string
 		fn      *semantic.FunctionExpression
-		fnType  semantic.Type
+		inType  semantic.Type
 		input   values.Object
 		want    values.Value
 		wantErr bool
@@ -156,11 +147,8 @@ func TestCompileAndEval(t *testing.T) {
 					Body: &semantic.IdentifierExpression{Name: "r"},
 				},
 			},
-			fnType: semantic.NewFunctionType(semantic.FunctionSignature{
-				In: semantic.NewObjectType(map[string]semantic.Type{
-					"r": semantic.Int,
-				}),
-				Out: semantic.Int,
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"r": semantic.Int,
 			}),
 			input: values.NewObjectWithValues(map[string]values.Value{
 				"r": values.NewInt(4),
@@ -203,11 +191,8 @@ func TestCompileAndEval(t *testing.T) {
 					},
 				},
 			},
-			fnType: semantic.NewFunctionType(semantic.FunctionSignature{
-				In: semantic.NewObjectType(map[string]semantic.Type{
-					"r": semantic.Int,
-				}),
-				Out: semantic.Int,
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"r": semantic.Int,
 			}),
 			input: values.NewObjectWithValues(map[string]values.Value{
 				"r": values.NewInt(4),
@@ -255,11 +240,8 @@ func TestCompileAndEval(t *testing.T) {
 					},
 				},
 			},
-			fnType: semantic.NewFunctionType(semantic.FunctionSignature{
-				In: semantic.NewObjectType(map[string]semantic.Type{
-					"r": semantic.Int,
-				}),
-				Out: semantic.Int,
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"r": semantic.Int,
 			}),
 			input: values.NewObjectWithValues(map[string]values.Value{
 				"r": values.NewIntValue(4),
@@ -312,11 +294,8 @@ func TestCompileAndEval(t *testing.T) {
 					},
 				},
 			},
-			fnType: semantic.NewFunctionType(semantic.FunctionSignature{
-				In: semantic.NewObjectType(map[string]semantic.Type{
-					"r": semantic.Int,
-				}),
-				Out: semantic.Int,
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"r": semantic.Int,
 			}),
 			input: values.NewObjectWithValues(map[string]values.Value{
 				"r": values.NewInt(4),
@@ -375,11 +354,8 @@ func TestCompileAndEval(t *testing.T) {
 					},
 				},
 			},
-			fnType: semantic.NewFunctionType(semantic.FunctionSignature{
-				In: semantic.NewObjectType(map[string]semantic.Type{
-					"r": semantic.Int,
-				}),
-				Out: semantic.Int,
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"r": semantic.Int,
 			}),
 			input: values.NewObjectWithValues(map[string]values.Value{
 				"r": values.NewIntValue(4),
@@ -392,7 +368,7 @@ func TestCompileAndEval(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			f, err := compiler.Compile(tc.fn, tc.fnType, nil)
+			f, err := compiler.Compile(tc.fn, tc.inType, nil)
 			if tc.wantErr != (err != nil) {
 				t.Fatalf("unexpected error %s", err)
 			}

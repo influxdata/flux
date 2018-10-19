@@ -41,8 +41,8 @@ func (c *stringConv) Type() semantic.Type {
 	return semantic.NewFunctionType(semantic.FunctionSignature{
 		// TODO: We need support for polymorphic function signatures and free type variables.
 		// Probably use a Hindley-Milner type inference system?
-		Params:     map[string]semantic.Type{conversionArg: semantic.Int},
-		ReturnType: semantic.String,
+		In:  semantic.NewObjectType(map[string]semantic.Type{conversionArg: semantic.Int}),
+		Out: semantic.String,
 	})
 }
 func (c *stringConv) Str() string {
@@ -122,8 +122,8 @@ func (c *intConv) Type() semantic.Type {
 	return semantic.NewFunctionType(semantic.FunctionSignature{
 		// TODO: We need support for polymorphic function signatures and free type variables.
 		// Probably use a Hindley-Milner type inference system?
-		Params:     map[string]semantic.Type{conversionArg: semantic.Int},
-		ReturnType: semantic.Int,
+		In:  semantic.NewObjectType(map[string]semantic.Type{conversionArg: semantic.Int}),
+		Out: semantic.Int,
 	})
 }
 func (c *intConv) Str() string {
@@ -211,8 +211,8 @@ func (c *uintConv) Type() semantic.Type {
 	return semantic.NewFunctionType(semantic.FunctionSignature{
 		// TODO: We need support for polymorphic function signatures and free type variables.
 		// Probably use a Hindley-Milner type inference system?
-		Params:     map[string]semantic.Type{conversionArg: semantic.Int},
-		ReturnType: semantic.UInt,
+		In:  semantic.NewObjectType(map[string]semantic.Type{conversionArg: semantic.Int}),
+		Out: semantic.UInt,
 	})
 }
 func (c *uintConv) Str() string {
@@ -300,8 +300,8 @@ func (c *floatConv) Type() semantic.Type {
 	return semantic.NewFunctionType(semantic.FunctionSignature{
 		// TODO: We need support for polymorphic function signatures and free type variables.
 		// Probably use a Hindley-Milner type inference system?
-		Params:     map[string]semantic.Type{conversionArg: semantic.Int},
-		ReturnType: semantic.Float,
+		In:  semantic.NewObjectType(map[string]semantic.Type{conversionArg: semantic.Int}),
+		Out: semantic.Float,
 	})
 }
 func (c *floatConv) Str() string {
@@ -385,8 +385,8 @@ func (c *boolConv) Type() semantic.Type {
 	return semantic.NewFunctionType(semantic.FunctionSignature{
 		// TODO: We need support for polymorphic function signatures and free type variables.
 		// Probably use a Hindley-Milner type inference system?
-		Params:     map[string]semantic.Type{conversionArg: semantic.Int},
-		ReturnType: semantic.Bool,
+		In:  semantic.NewObjectType(map[string]semantic.Type{conversionArg: semantic.Int}),
+		Out: semantic.Bool,
 	})
 }
 func (c *boolConv) Str() string {
@@ -490,8 +490,8 @@ func (c *timeConv) Type() semantic.Type {
 	return semantic.NewFunctionType(semantic.FunctionSignature{
 		// TODO: We need support for polymorphic function signatures and free type variables.
 		// Probably use a Hindley-Milner type inference system?
-		Params:     map[string]semantic.Type{conversionArg: semantic.Int},
-		ReturnType: semantic.Time,
+		In:  semantic.NewObjectType(map[string]semantic.Type{conversionArg: semantic.Int}),
+		Out: semantic.Time,
 	})
 }
 func (c *timeConv) Str() string {
@@ -567,8 +567,8 @@ func (c *durationConv) Type() semantic.Type {
 	return semantic.NewFunctionType(semantic.FunctionSignature{
 		// TODO: We need support for polymorphic function signatures and free type variables.
 		// Probably use a Hindley-Milner type inference system?
-		Params:     map[string]semantic.Type{conversionArg: semantic.Int},
-		ReturnType: semantic.Duration,
+		In:  semantic.NewObjectType(map[string]semantic.Type{conversionArg: semantic.Int}),
+		Out: semantic.Duration,
 	})
 }
 func (c *durationConv) Str() string {

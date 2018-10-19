@@ -1,13 +1,13 @@
 package semantic
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"sort"
 	"strings"
 
 	"github.com/influxdata/flux/ast"
+	"github.com/pkg/errors"
 )
 
 // TypeSolution is a mapping of Nodes to their types.
@@ -19,6 +19,9 @@ type TypeSolution interface {
 
 	// FreshSolution creates a new solution with fresh type variables
 	FreshSolution() TypeSolution
+
+	// Fresh creates a new type variable within the solution.
+	Fresh() typeVar
 
 	// Unify modifies the solution given that a == b.
 	Unify(a, b PolyType) error
@@ -428,15 +431,28 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 		if err != nil {
 			return nil, err
 		}
-		ot, ok := t.(objectPolyType)
-		if !ok {
+		// TODO(nathanielc): How can we unify against object types without having a concrete objectPolyType?
+		// The below is a hack to create or mutate it if the property does not exist.
+		switch t := t.(type) {
+		case typeVar:
+			mt := v.solution.Fresh()
+			ot := NewObjectPolyType(map[string]PolyType{
+				n.Property: mt,
+			})
+			if err := v.solution.Unify(t, ot); err != nil {
+				return nil, err
+			}
+			return mt, nil
+		case objectPolyType:
+			mt, ok := t.properties[n.Property]
+			if !ok {
+				mt = v.solution.Fresh()
+				t.properties[n.Property] = mt
+			}
+			return mt, nil
+		default:
 			return nil, fmt.Errorf("cannot get member of non object %T", t)
 		}
-		mt, ok := ot.properties[n.Property]
-		if !ok {
-			return nil, fmt.Errorf("object has no property %q", n.Property)
-		}
-		return mt, nil
 	case *Property:
 		return v.solution.PolyTypeOf(n.Value)
 	case *StringLiteral:
@@ -601,7 +617,7 @@ func (t objectPolyType) String() string {
 	var builder strings.Builder
 	builder.WriteString("{")
 	for k, t := range t.properties {
-		fmt.Fprintf(&builder, "%s: %v,", k, t)
+		fmt.Fprintf(&builder, "%s: %v, ", k, t)
 	}
 	builder.WriteString("}")
 	return builder.String()
@@ -840,6 +856,7 @@ func (s *typeSolution) PolyTypeOf(n Node) (PolyType, error) {
 }
 
 func (s *typeSolution) setType(n Node, poly PolyType, err error) {
+	err = errors.Wrapf(err, "type error %v", n.Location())
 	if s.err == nil && err != nil {
 		s.err = err
 	}

@@ -21,10 +21,10 @@ type KeysOpSpec struct {
 	Except []string `json:"except"`
 }
 
-var keysSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	keysSignature.Params["except"] = semantic.NewArrayType(semantic.String)
+	keysSignature := flux.FunctionSignature(map[string]semantic.Type{
+		"except": semantic.NewArrayType(semantic.String),
+	}, nil)
 
 	flux.RegisterFunction(KeysKind, createKeysOpSpec, keysSignature)
 	flux.RegisterOpSpec(KeysKind, newKeysOp)

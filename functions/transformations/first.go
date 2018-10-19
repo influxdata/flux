@@ -14,9 +14,9 @@ type FirstOpSpec struct {
 	execute.SelectorConfig
 }
 
-var firstSignature = execute.DefaultSelectorSignature()
-
 func init() {
+	firstSignature := execute.SelectorSignature(nil, nil)
+
 	flux.RegisterFunction(FirstKind, createFirstOpSpec, firstSignature)
 	flux.RegisterOpSpec(FirstKind, newFirstOp)
 	plan.RegisterProcedureSpec(FirstKind, newFirstProcedure, FirstKind)

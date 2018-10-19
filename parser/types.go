@@ -387,9 +387,9 @@ func datetime(text []byte, pos position) (*ast.DateTimeLiteral, error) {
 	}, nil
 }
 
-func base(text []byte, pos position) *ast.BaseNode {
-	return &ast.BaseNode{
-		Loc: &ast.SourceLocation{
+func base(text []byte, pos position) ast.BaseNode {
+	return ast.BaseNode{
+		Loc: ast.SourceLocation{
 			Start: ast.Position{
 				Line:   pos.line,
 				Column: pos.col,

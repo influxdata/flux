@@ -1,10 +1,11 @@
 package transformations_test
 
 import (
-	"github.com/influxdata/flux/functions/inputs"
 	"regexp"
 	"testing"
 	"time"
+
+	"github.com/influxdata/flux/functions/inputs"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
@@ -32,24 +33,28 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &transformations.FilterOpSpec{
 							Fn: &semantic.FunctionExpression{
-								Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-								Body: &semantic.LogicalExpression{
-									Operator: ast.AndOperator,
-									Left: &semantic.BinaryExpression{
-										Operator: ast.EqualOperator,
-										Left: &semantic.MemberExpression{
-											Object:   &semantic.IdentifierExpression{Name: "r"},
-											Property: "t1",
-										},
-										Right: &semantic.StringLiteral{Value: "val1"},
+								Block: &semantic.FunctionBlock{
+									Parameters: &semantic.FunctionParameters{
+										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 									},
-									Right: &semantic.BinaryExpression{
-										Operator: ast.EqualOperator,
-										Left: &semantic.MemberExpression{
-											Object:   &semantic.IdentifierExpression{Name: "r"},
-											Property: "t2",
+									Body: &semantic.LogicalExpression{
+										Operator: ast.AndOperator,
+										Left: &semantic.BinaryExpression{
+											Operator: ast.EqualOperator,
+											Left: &semantic.MemberExpression{
+												Object:   &semantic.IdentifierExpression{Name: "r"},
+												Property: "t1",
+											},
+											Right: &semantic.StringLiteral{Value: "val1"},
 										},
-										Right: &semantic.StringLiteral{Value: "val2"},
+										Right: &semantic.BinaryExpression{
+											Operator: ast.EqualOperator,
+											Left: &semantic.MemberExpression{
+												Object:   &semantic.IdentifierExpression{Name: "r"},
+												Property: "t2",
+											},
+											Right: &semantic.StringLiteral{Value: "val2"},
+										},
 									},
 								},
 							},
@@ -111,35 +116,39 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &transformations.FilterOpSpec{
 							Fn: &semantic.FunctionExpression{
-								Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-								Body: &semantic.LogicalExpression{
-									Operator: ast.OrOperator,
-									Left: &semantic.LogicalExpression{
-										Operator: ast.AndOperator,
-										Left: &semantic.BinaryExpression{
-											Operator: ast.EqualOperator,
-											Left: &semantic.MemberExpression{
-												Object:   &semantic.IdentifierExpression{Name: "r"},
-												Property: "t1",
+								Block: &semantic.FunctionBlock{
+									Parameters: &semantic.FunctionParameters{
+										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+									},
+									Body: &semantic.LogicalExpression{
+										Operator: ast.OrOperator,
+										Left: &semantic.LogicalExpression{
+											Operator: ast.AndOperator,
+											Left: &semantic.BinaryExpression{
+												Operator: ast.EqualOperator,
+												Left: &semantic.MemberExpression{
+													Object:   &semantic.IdentifierExpression{Name: "r"},
+													Property: "t1",
+												},
+												Right: &semantic.StringLiteral{Value: "val1"},
 											},
-											Right: &semantic.StringLiteral{Value: "val1"},
+											Right: &semantic.BinaryExpression{
+												Operator: ast.EqualOperator,
+												Left: &semantic.MemberExpression{
+													Object:   &semantic.IdentifierExpression{Name: "r"},
+													Property: "t2",
+												},
+												Right: &semantic.StringLiteral{Value: "val2"},
+											},
 										},
 										Right: &semantic.BinaryExpression{
 											Operator: ast.EqualOperator,
 											Left: &semantic.MemberExpression{
 												Object:   &semantic.IdentifierExpression{Name: "r"},
-												Property: "t2",
+												Property: "t3",
 											},
-											Right: &semantic.StringLiteral{Value: "val2"},
+											Right: &semantic.StringLiteral{Value: "val3"},
 										},
-									},
-									Right: &semantic.BinaryExpression{
-										Operator: ast.EqualOperator,
-										Left: &semantic.MemberExpression{
-											Object:   &semantic.IdentifierExpression{Name: "r"},
-											Property: "t3",
-										},
-										Right: &semantic.StringLiteral{Value: "val3"},
 									},
 								},
 							},
@@ -197,24 +206,28 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &transformations.FilterOpSpec{
 							Fn: &semantic.FunctionExpression{
-								Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-								Body: &semantic.LogicalExpression{
-									Operator: ast.AndOperator,
-									Left: &semantic.BinaryExpression{
-										Operator: ast.EqualOperator,
-										Left: &semantic.MemberExpression{
-											Object:   &semantic.IdentifierExpression{Name: "r"},
-											Property: "t1",
-										},
-										Right: &semantic.StringLiteral{Value: "val1"},
+								Block: &semantic.FunctionBlock{
+									Parameters: &semantic.FunctionParameters{
+										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 									},
-									Right: &semantic.BinaryExpression{
-										Operator: ast.EqualOperator,
-										Left: &semantic.MemberExpression{
-											Object:   &semantic.IdentifierExpression{Name: "r"},
-											Property: "_field",
+									Body: &semantic.LogicalExpression{
+										Operator: ast.AndOperator,
+										Left: &semantic.BinaryExpression{
+											Operator: ast.EqualOperator,
+											Left: &semantic.MemberExpression{
+												Object:   &semantic.IdentifierExpression{Name: "r"},
+												Property: "t1",
+											},
+											Right: &semantic.StringLiteral{Value: "val1"},
 										},
-										Right: &semantic.IntegerLiteral{Value: 10},
+										Right: &semantic.BinaryExpression{
+											Operator: ast.EqualOperator,
+											Left: &semantic.MemberExpression{
+												Object:   &semantic.IdentifierExpression{Name: "r"},
+												Property: "_field",
+											},
+											Right: &semantic.IntegerLiteral{Value: 10},
+										},
 									},
 								},
 							},
@@ -272,24 +285,28 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &transformations.FilterOpSpec{
 							Fn: &semantic.FunctionExpression{
-								Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-								Body: &semantic.LogicalExpression{
-									Operator: ast.AndOperator,
-									Left: &semantic.BinaryExpression{
-										Operator: ast.EqualOperator,
-										Left: &semantic.MemberExpression{
-											Object:   &semantic.IdentifierExpression{Name: "r"},
-											Property: "t1",
-										},
-										Right: &semantic.StringLiteral{Value: "val1"},
+								Block: &semantic.FunctionBlock{
+									Parameters: &semantic.FunctionParameters{
+										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 									},
-									Right: &semantic.BinaryExpression{
-										Operator: ast.EqualOperator,
-										Left: &semantic.MemberExpression{
-											Object:   &semantic.IdentifierExpression{Name: "r"},
-											Property: "_field",
+									Body: &semantic.LogicalExpression{
+										Operator: ast.AndOperator,
+										Left: &semantic.BinaryExpression{
+											Operator: ast.EqualOperator,
+											Left: &semantic.MemberExpression{
+												Object:   &semantic.IdentifierExpression{Name: "r"},
+												Property: "t1",
+											},
+											Right: &semantic.StringLiteral{Value: "val1"},
 										},
-										Right: &semantic.IntegerLiteral{Value: 10},
+										Right: &semantic.BinaryExpression{
+											Operator: ast.EqualOperator,
+											Left: &semantic.MemberExpression{
+												Object:   &semantic.IdentifierExpression{Name: "r"},
+												Property: "_field",
+											},
+											Right: &semantic.IntegerLiteral{Value: 10},
+										},
 									},
 								},
 							},
@@ -347,24 +364,28 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &transformations.FilterOpSpec{
 							Fn: &semantic.FunctionExpression{
-								Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-								Body: &semantic.LogicalExpression{
-									Operator: ast.AndOperator,
-									Left: &semantic.BinaryExpression{
-										Operator: ast.EqualOperator,
-										Left: &semantic.MemberExpression{
-											Object:   &semantic.IdentifierExpression{Name: "r"},
-											Property: "t1",
-										},
-										Right: &semantic.RegexpLiteral{Value: regexp.MustCompile("val1")},
+								Block: &semantic.FunctionBlock{
+									Parameters: &semantic.FunctionParameters{
+										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 									},
-									Right: &semantic.BinaryExpression{
-										Operator: ast.EqualOperator,
-										Left: &semantic.MemberExpression{
-											Object:   &semantic.IdentifierExpression{Name: "r"},
-											Property: "_field",
+									Body: &semantic.LogicalExpression{
+										Operator: ast.AndOperator,
+										Left: &semantic.BinaryExpression{
+											Operator: ast.EqualOperator,
+											Left: &semantic.MemberExpression{
+												Object:   &semantic.IdentifierExpression{Name: "r"},
+												Property: "t1",
+											},
+											Right: &semantic.RegexpLiteral{Value: regexp.MustCompile("val1")},
 										},
-										Right: &semantic.FloatLiteral{Value: 10.5},
+										Right: &semantic.BinaryExpression{
+											Operator: ast.EqualOperator,
+											Left: &semantic.MemberExpression{
+												Object:   &semantic.IdentifierExpression{Name: "r"},
+												Property: "_field",
+											},
+											Right: &semantic.FloatLiteral{Value: 10.5},
+										},
 									},
 								},
 							},
@@ -418,14 +439,18 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &transformations.FilterOpSpec{
 							Fn: &semantic.FunctionExpression{
-								Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-								Body: &semantic.BinaryExpression{
-									Operator: ast.EqualOperator,
-									Left: &semantic.MemberExpression{
-										Object:   &semantic.IdentifierExpression{Name: "r"},
-										Property: "t1",
+								Block: &semantic.FunctionBlock{
+									Parameters: &semantic.FunctionParameters{
+										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 									},
-									Right: &semantic.RegexpLiteral{Value: regexp.MustCompile(`va/l1`)},
+									Body: &semantic.BinaryExpression{
+										Operator: ast.EqualOperator,
+										Left: &semantic.MemberExpression{
+											Object:   &semantic.IdentifierExpression{Name: "r"},
+											Property: "t1",
+										},
+										Right: &semantic.RegexpLiteral{Value: regexp.MustCompile(`va/l1`)},
+									},
 								},
 							},
 						},
@@ -456,24 +481,28 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &transformations.FilterOpSpec{
 							Fn: &semantic.FunctionExpression{
-								Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-								Body: &semantic.LogicalExpression{
-									Operator: ast.AndOperator,
-									Left: &semantic.BinaryExpression{
-										Operator: ast.EqualOperator,
-										Left: &semantic.MemberExpression{
-											Object:   &semantic.IdentifierExpression{Name: "r"},
-											Property: "t1",
-										},
-										Right: &semantic.RegexpLiteral{Value: regexp.MustCompile(`va/l1`)},
+								Block: &semantic.FunctionBlock{
+									Parameters: &semantic.FunctionParameters{
+										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 									},
-									Right: &semantic.BinaryExpression{
-										Operator: ast.NotEqualOperator,
-										Left: &semantic.MemberExpression{
-											Object:   &semantic.IdentifierExpression{Name: "r"},
-											Property: "t2",
+									Body: &semantic.LogicalExpression{
+										Operator: ast.AndOperator,
+										Left: &semantic.BinaryExpression{
+											Operator: ast.EqualOperator,
+											Left: &semantic.MemberExpression{
+												Object:   &semantic.IdentifierExpression{Name: "r"},
+												Property: "t1",
+											},
+											Right: &semantic.RegexpLiteral{Value: regexp.MustCompile(`va/l1`)},
 										},
-										Right: &semantic.RegexpLiteral{Value: regexp.MustCompile(`val2`)},
+										Right: &semantic.BinaryExpression{
+											Operator: ast.NotEqualOperator,
+											Left: &semantic.MemberExpression{
+												Object:   &semantic.IdentifierExpression{Name: "r"},
+												Property: "t2",
+											},
+											Right: &semantic.RegexpLiteral{Value: regexp.MustCompile(`val2`)},
+										},
 									},
 								},
 							},
@@ -525,14 +554,18 @@ func TestFilterOperation_Marshaling(t *testing.T) {
 		ID: "filter",
 		Spec: &transformations.FilterOpSpec{
 			Fn: &semantic.FunctionExpression{
-				Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-				Body: &semantic.BinaryExpression{
-					Operator: ast.NotEqualOperator,
-					Left: &semantic.MemberExpression{
-						Object:   &semantic.IdentifierExpression{Name: "r"},
-						Property: "_measurement",
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 					},
-					Right: &semantic.StringLiteral{Value: "mem"},
+					Body: &semantic.BinaryExpression{
+						Operator: ast.NotEqualOperator,
+						Left: &semantic.MemberExpression{
+							Object:   &semantic.IdentifierExpression{Name: "r"},
+							Property: "_measurement",
+						},
+						Right: &semantic.StringLiteral{Value: "mem"},
+					},
 				},
 			},
 		},
@@ -551,14 +584,18 @@ func TestFilter_Process(t *testing.T) {
 			name: `_value>5`,
 			spec: &transformations.FilterProcedureSpec{
 				Fn: &semantic.FunctionExpression{
-					Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-					Body: &semantic.BinaryExpression{
-						Operator: ast.GreaterThanOperator,
-						Left: &semantic.MemberExpression{
-							Object:   &semantic.IdentifierExpression{Name: "r"},
-							Property: "_value",
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 						},
-						Right: &semantic.FloatLiteral{Value: 5},
+						Body: &semantic.BinaryExpression{
+							Operator: ast.GreaterThanOperator,
+							Left: &semantic.MemberExpression{
+								Object:   &semantic.IdentifierExpression{Name: "r"},
+								Property: "_value",
+							},
+							Right: &semantic.FloatLiteral{Value: 5},
+						},
 					},
 				},
 			},
@@ -586,15 +623,19 @@ func TestFilter_Process(t *testing.T) {
 			name: "_value>5 multiple blocks",
 			spec: &transformations.FilterProcedureSpec{
 				Fn: &semantic.FunctionExpression{
-					Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-					Body: &semantic.BinaryExpression{
-						Operator: ast.GreaterThanOperator,
-						Left: &semantic.MemberExpression{
-							Object:   &semantic.IdentifierExpression{Name: "r"},
-							Property: "_value",
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 						},
-						Right: &semantic.FloatLiteral{
-							Value: 5,
+						Body: &semantic.BinaryExpression{
+							Operator: ast.GreaterThanOperator,
+							Left: &semantic.MemberExpression{
+								Object:   &semantic.IdentifierExpression{Name: "r"},
+								Property: "_value",
+							},
+							Right: &semantic.FloatLiteral{
+								Value: 5,
+							},
 						},
 					},
 				},
@@ -656,39 +697,43 @@ func TestFilter_Process(t *testing.T) {
 			name: "_value>5 and t1 = a and t2 = y",
 			spec: &transformations.FilterProcedureSpec{
 				Fn: &semantic.FunctionExpression{
-					Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-					Body: &semantic.LogicalExpression{
-						Operator: ast.AndOperator,
-						Left: &semantic.BinaryExpression{
-							Operator: ast.GreaterThanOperator,
-							Left: &semantic.MemberExpression{
-								Object:   &semantic.IdentifierExpression{Name: "r"},
-								Property: "_value",
-							},
-							Right: &semantic.FloatLiteral{
-								Value: 5,
-							},
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 						},
-						Right: &semantic.LogicalExpression{
+						Body: &semantic.LogicalExpression{
 							Operator: ast.AndOperator,
 							Left: &semantic.BinaryExpression{
-								Operator: ast.EqualOperator,
+								Operator: ast.GreaterThanOperator,
 								Left: &semantic.MemberExpression{
 									Object:   &semantic.IdentifierExpression{Name: "r"},
-									Property: "t1",
+									Property: "_value",
 								},
-								Right: &semantic.StringLiteral{
-									Value: "a",
+								Right: &semantic.FloatLiteral{
+									Value: 5,
 								},
 							},
-							Right: &semantic.BinaryExpression{
-								Operator: ast.EqualOperator,
-								Left: &semantic.MemberExpression{
-									Object:   &semantic.IdentifierExpression{Name: "r"},
-									Property: "t2",
+							Right: &semantic.LogicalExpression{
+								Operator: ast.AndOperator,
+								Left: &semantic.BinaryExpression{
+									Operator: ast.EqualOperator,
+									Left: &semantic.MemberExpression{
+										Object:   &semantic.IdentifierExpression{Name: "r"},
+										Property: "t1",
+									},
+									Right: &semantic.StringLiteral{
+										Value: "a",
+									},
 								},
-								Right: &semantic.StringLiteral{
-									Value: "y",
+								Right: &semantic.BinaryExpression{
+									Operator: ast.EqualOperator,
+									Left: &semantic.MemberExpression{
+										Object:   &semantic.IdentifierExpression{Name: "r"},
+										Property: "t2",
+									},
+									Right: &semantic.StringLiteral{
+										Value: "y",
+									},
 								},
 							},
 						},

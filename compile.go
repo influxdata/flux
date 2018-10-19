@@ -246,8 +246,10 @@ func evalBuiltInScripts() error {
 		if err != nil {
 			return errors.Wrapf(err, "failed to create semantic graph for builtin %q", name)
 		}
+		externProg := extern.Copy().(*semantic.Extern)
+		externProg.Block.Node = semProg
 
-		if err := itrp.Eval(semProg); err != nil {
+		if err := itrp.Eval(externProg); err != nil {
 			return errors.Wrapf(err, "failed to evaluate builtin %q", name)
 		}
 	}
@@ -469,13 +471,20 @@ func (t *TableObject) Range(f func(name string, v values.Value)) {
 	f(tableParentsKey, t.Parents)
 }
 
-// DefaultFunctionSignature returns a FunctionSignature for standard functions which accept a table piped argument.
-// It is safe to modify the returned signature.
-func DefaultFunctionSignature() semantic.FunctionSignature {
+// FunctionSignature returns a standard functions signature which accepts a table piped argument,
+// with any additional arguments.
+func FunctionSignature(args map[string]semantic.Type, defaults []string) semantic.FunctionSignature {
+	if args == nil {
+		args = make(map[string]semantic.Type)
+	}
+	args[TableParameter] = TableObjectType
+	dt := make(map[string]semantic.Type, len(defaults))
+	for _, d := range defaults {
+		dt[d] = args[d]
+	}
 	return semantic.FunctionSignature{
-		In: semantic.NewObjectType(map[string]semantic.Type{
-			TableParameter: TableObjectType,
-		}),
+		In:           semantic.NewObjectType(args),
+		Defaults:     semantic.NewObjectType(dt),
 		Out:          TableObjectType,
 		PipeArgument: TableParameter,
 	}

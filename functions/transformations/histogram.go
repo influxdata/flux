@@ -25,13 +25,13 @@ type HistogramOpSpec struct {
 	Normalize        bool      `json:"normalize"`
 }
 
-var histogramSignature = execute.DefaultAggregateSignature()
-
 func init() {
-	histogramSignature.Params["column"] = semantic.String
-	histogramSignature.Params["upperBoundColumn"] = semantic.String
-	histogramSignature.Params["buckets"] = semantic.NewArrayType(semantic.Float)
-	histogramSignature.Params["normalize"] = semantic.Bool
+	histogramSignature := execute.AggregateSignature(map[string]semantic.Type{
+		"column":           semantic.String,
+		"upperBoundColumn": semantic.String,
+		"buckets":          semantic.NewArrayType(semantic.Float),
+		"normalize":        semantic.Bool,
+	}, nil)
 
 	flux.RegisterFunction(HistogramKind, createHistogramOpSpec, histogramSignature)
 	flux.RegisterBuiltInValue("linearBuckets", linearBuckets{})
@@ -242,13 +242,13 @@ type linearBuckets struct{}
 
 func (b linearBuckets) Type() semantic.Type {
 	return semantic.NewFunctionType(semantic.FunctionSignature{
-		Params: map[string]semantic.Type{
+		In: semantic.NewObjectType(map[string]semantic.Type{
 			"start":    semantic.Float,
 			"width":    semantic.Float,
 			"count":    semantic.Int,
 			"infinity": semantic.Bool,
-		},
-		ReturnType: semantic.String,
+		}),
+		Out: semantic.String,
 	})
 }
 
@@ -363,13 +363,13 @@ type logarithmicBuckets struct{}
 
 func (b logarithmicBuckets) Type() semantic.Type {
 	return semantic.NewFunctionType(semantic.FunctionSignature{
-		Params: map[string]semantic.Type{
+		In: semantic.NewObjectType(map[string]semantic.Type{
 			"start":    semantic.Float,
 			"factor":   semantic.Float,
 			"count":    semantic.Int,
 			"infinity": semantic.Bool,
-		},
-		ReturnType: semantic.String,
+		}),
+		Out: semantic.String,
 	})
 }
 

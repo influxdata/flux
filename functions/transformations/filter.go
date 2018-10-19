@@ -17,11 +17,11 @@ type FilterOpSpec struct {
 	Fn *semantic.FunctionExpression `json:"fn"`
 }
 
-var filterSignature = flux.DefaultFunctionSignature()
-
 func init() {
 	//TODO(nathanielc): Use complete function signature here, or formalize soft kind validation instead of complete function validation.
-	filterSignature.Params["fn"] = semantic.Function
+	filterSignature := flux.FunctionSignature(map[string]semantic.Type{
+		"fn": semantic.Function,
+	}, nil)
 
 	flux.RegisterFunction(FilterKind, createFilterOpSpec, filterSignature)
 	flux.RegisterOpSpec(FilterKind, newFilterOp)

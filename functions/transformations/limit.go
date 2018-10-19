@@ -19,11 +19,15 @@ type LimitOpSpec struct {
 	Offset int64 `json:"offset"`
 }
 
-var limitSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	limitSignature.Params["n"] = semantic.Int
-	limitSignature.Params["offset"] = semantic.Int
+	limitSignature := flux.FunctionSignature(map[string]semantic.Type{
+		"n":      semantic.Int,
+		"offset": semantic.Int,
+	},
+		[]string{
+			"offset",
+		},
+	)
 
 	flux.RegisterFunction(LimitKind, createLimitOpSpec, limitSignature)
 	flux.RegisterOpSpec(LimitKind, newLimitOp)

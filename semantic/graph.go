@@ -13,7 +13,15 @@ type Node interface {
 	NodeType() string
 	Copy() Node
 
+	Location() ast.SourceLocation
+
 	json.Marshaler
+}
+
+type loc ast.SourceLocation
+
+func (l loc) Location() ast.SourceLocation {
+	return ast.SourceLocation(l)
 }
 
 func (*Program) node()     {}
@@ -104,7 +112,7 @@ func (*StringLiteral) literal()          {}
 func (*UnsignedIntegerLiteral) literal() {}
 
 type Program struct {
-	typeAnnotation
+	loc
 
 	Body []Statement `json:"body"`
 }
@@ -129,7 +137,7 @@ func (p *Program) Copy() Node {
 }
 
 type BlockStatement struct {
-	typeAnnotation
+	loc
 
 	Body []Statement `json:"body"`
 }
@@ -158,7 +166,7 @@ func (s *BlockStatement) Copy() Node {
 }
 
 type OptionStatement struct {
-	typeAnnotation
+	loc
 
 	// Declaration represents the declaration of the option.
 	// Must be one of *ExternalVariableDeclaration or *NativeVariableDeclaration.
@@ -180,7 +188,7 @@ func (s *OptionStatement) Copy() Node {
 }
 
 type ExpressionStatement struct {
-	typeAnnotation
+	loc
 
 	Expression Expression `json:"expression"`
 }
@@ -200,7 +208,7 @@ func (s *ExpressionStatement) Copy() Node {
 }
 
 type ReturnStatement struct {
-	typeAnnotation
+	loc
 
 	Argument Expression `json:"argument"`
 }
@@ -220,7 +228,7 @@ func (s *ReturnStatement) Copy() Node {
 }
 
 type NativeVariableDeclaration struct {
-	typeAnnotation
+	loc
 
 	Identifier *Identifier `json:"identifier"`
 	Init       Expression  `json:"init"`
@@ -250,7 +258,7 @@ func (s *NativeVariableDeclaration) Copy() Node {
 
 // Extern is a node that represents a node with a set of external declarations defined.
 type Extern struct {
-	typeAnnotation
+	loc
 
 	Declarations []*ExternalVariableDeclaration `json:"declarations"`
 	Block        *ExternBlock                   `json:"block"`
@@ -279,7 +287,7 @@ func (e *Extern) Copy() Node {
 
 // ExternalVariableDeclaration represents an externaly defined identifier and its type.
 type ExternalVariableDeclaration struct {
-	typeAnnotation
+	loc
 
 	Identifier *Identifier `json:"identifier"`
 	ExternType PolyType    `json:""`
@@ -301,7 +309,7 @@ func (s *ExternalVariableDeclaration) Copy() Node {
 
 // ExternBlock is a node that represents a node with a set of external declarations defined.
 type ExternBlock struct {
-	typeAnnotation
+	loc
 
 	Node Node
 }
@@ -323,7 +331,7 @@ func (e *ExternBlock) Copy() Node {
 }
 
 type ArrayExpression struct {
-	typeAnnotation
+	loc
 
 	Elements []Expression `json:"elements"`
 }
@@ -349,7 +357,7 @@ func (e *ArrayExpression) Copy() Node {
 
 // FunctionExpression represents the definition of a function
 type FunctionExpression struct {
-	typeAnnotation
+	loc
 
 	Defaults *ObjectExpression `json:"defaults"`
 	Block    *FunctionBlock    `json:"block"`
@@ -374,7 +382,7 @@ func (e *FunctionExpression) Copy() Node {
 
 // FunctionBlock represents the function parameters and the function body.
 type FunctionBlock struct {
-	typeAnnotation
+	loc
 
 	Parameters *FunctionParameters `json:"parameters"`
 	Body       Node                `json:"body"`
@@ -395,7 +403,7 @@ func (b *FunctionBlock) Copy() Node {
 
 // FunctionParameters represents the list of function parameters and which if any parameter is the pipe parameter.
 type FunctionParameters struct {
-	typeAnnotation
+	loc
 
 	List []*FunctionParameter `json:"list"`
 	Pipe *Identifier          `json:"pipe"`
@@ -425,7 +433,7 @@ func (p *FunctionParameters) Copy() Node {
 
 // FunctionParameter represents a function parameter.
 type FunctionParameter struct {
-	typeAnnotation
+	loc
 
 	Key *Identifier `json:"key"`
 }
@@ -445,7 +453,7 @@ func (p *FunctionParameter) Copy() Node {
 }
 
 type BinaryExpression struct {
-	typeAnnotation
+	loc
 
 	Operator ast.OperatorKind `json:"operator"`
 	Left     Expression       `json:"left"`
@@ -468,7 +476,7 @@ func (e *BinaryExpression) Copy() Node {
 }
 
 type CallExpression struct {
-	typeAnnotation
+	loc
 
 	Callee    Expression        `json:"callee"`
 	Arguments *ObjectExpression `json:"arguments"`
@@ -492,7 +500,7 @@ func (e *CallExpression) Copy() Node {
 }
 
 type ConditionalExpression struct {
-	typeAnnotation
+	loc
 
 	Test       Expression `json:"test"`
 	Alternate  Expression `json:"alternate"`
@@ -516,7 +524,7 @@ func (e *ConditionalExpression) Copy() Node {
 }
 
 type LogicalExpression struct {
-	typeAnnotation
+	loc
 
 	Operator ast.LogicalOperatorKind `json:"operator"`
 	Left     Expression              `json:"left"`
@@ -539,7 +547,7 @@ func (e *LogicalExpression) Copy() Node {
 }
 
 type MemberExpression struct {
-	typeAnnotation
+	loc
 
 	Object   Expression `json:"object"`
 	Property string     `json:"property"`
@@ -560,7 +568,7 @@ func (e *MemberExpression) Copy() Node {
 }
 
 type ObjectExpression struct {
-	typeAnnotation
+	loc
 
 	Properties []*Property `json:"properties"`
 }
@@ -585,7 +593,7 @@ func (e *ObjectExpression) Copy() Node {
 }
 
 type UnaryExpression struct {
-	typeAnnotation
+	loc
 
 	Operator ast.OperatorKind `json:"operator"`
 	Argument Expression       `json:"argument"`
@@ -606,7 +614,7 @@ func (e *UnaryExpression) Copy() Node {
 }
 
 type Property struct {
-	typeAnnotation
+	loc
 
 	Key   *Identifier `json:"key"`
 	Value Expression  `json:"value"`
@@ -627,7 +635,7 @@ func (p *Property) Copy() Node {
 }
 
 type IdentifierExpression struct {
-	typeAnnotation
+	loc
 
 	Name string `json:"name"`
 }
@@ -645,7 +653,7 @@ func (e *IdentifierExpression) Copy() Node {
 }
 
 type Identifier struct {
-	typeAnnotation
+	loc
 
 	Name string `json:"name"`
 }
@@ -663,7 +671,7 @@ func (i *Identifier) Copy() Node {
 }
 
 type BooleanLiteral struct {
-	typeAnnotation
+	loc
 
 	Value bool `json:"value"`
 }
@@ -681,7 +689,7 @@ func (l *BooleanLiteral) Copy() Node {
 }
 
 type DateTimeLiteral struct {
-	typeAnnotation
+	loc
 
 	Value time.Time `json:"value"`
 }
@@ -699,7 +707,7 @@ func (l *DateTimeLiteral) Copy() Node {
 }
 
 type DurationLiteral struct {
-	typeAnnotation
+	loc
 
 	Value time.Duration `json:"value"`
 }
@@ -717,7 +725,7 @@ func (l *DurationLiteral) Copy() Node {
 }
 
 type IntegerLiteral struct {
-	typeAnnotation
+	loc
 
 	Value int64 `json:"value"`
 }
@@ -735,7 +743,7 @@ func (l *IntegerLiteral) Copy() Node {
 }
 
 type FloatLiteral struct {
-	typeAnnotation
+	loc
 
 	Value float64 `json:"value"`
 }
@@ -753,7 +761,7 @@ func (l *FloatLiteral) Copy() Node {
 }
 
 type RegexpLiteral struct {
-	typeAnnotation
+	loc
 
 	Value *regexp.Regexp `json:"value"`
 }
@@ -773,7 +781,7 @@ func (l *RegexpLiteral) Copy() Node {
 }
 
 type StringLiteral struct {
-	typeAnnotation
+	loc
 
 	Value string `json:"value"`
 }
@@ -791,7 +799,7 @@ func (l *StringLiteral) Copy() Node {
 }
 
 type UnsignedIntegerLiteral struct {
-	typeAnnotation
+	loc
 
 	Value uint64 `json:"value"`
 }

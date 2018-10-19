@@ -24,13 +24,21 @@ type GroupOpSpec struct {
 	None   bool     `json:"none"`
 }
 
-var groupSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	groupSignature.Params["by"] = semantic.NewArrayType(semantic.String)
-	groupSignature.Params["except"] = semantic.NewArrayType(semantic.String)
-	groupSignature.Params["none"] = semantic.Bool
-	groupSignature.Params["all"] = semantic.Bool
+	groupSignature := flux.FunctionSignature(
+		map[string]semantic.Type{
+			"by":     semantic.NewArrayType(semantic.String),
+			"except": semantic.NewArrayType(semantic.String),
+			"none":   semantic.Bool,
+			"all":    semantic.Bool,
+		},
+		[]string{
+			"by",
+			"except",
+			"none",
+			"all",
+		},
+	)
 
 	flux.RegisterFunction(GroupKind, createGroupOpSpec, groupSignature)
 	flux.RegisterOpSpec(GroupKind, newGroupOp)

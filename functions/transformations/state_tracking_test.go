@@ -28,14 +28,18 @@ func TestStateTrackingOperation_Marshaling(t *testing.T) {
 
 func TestStateTracking_Process(t *testing.T) {
 	gt5 := &semantic.FunctionExpression{
-		Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-		Body: &semantic.BinaryExpression{
-			Operator: ast.GreaterThanOperator,
-			Left: &semantic.MemberExpression{
-				Object:   &semantic.IdentifierExpression{Name: "r"},
-				Property: "_value",
+		Block: &semantic.FunctionBlock{
+			Parameters: &semantic.FunctionParameters{
+				List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 			},
-			Right: &semantic.FloatLiteral{Value: 5.0},
+			Body: &semantic.BinaryExpression{
+				Operator: ast.GreaterThanOperator,
+				Left: &semantic.MemberExpression{
+					Object:   &semantic.IdentifierExpression{Name: "r"},
+					Property: "_value",
+				},
+				Right: &semantic.FloatLiteral{Value: 5.0},
+			},
 		},
 	}
 	testCases := []struct {

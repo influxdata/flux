@@ -58,10 +58,7 @@ type MutationRegistrar struct {
 }
 
 func (m MutationRegistrar) Register() {
-	signature := flux.DefaultFunctionSignature()
-	for name, typ := range m.Args {
-		signature.Params[name] = typ
-	}
+	signature := flux.FunctionSignature(m.Args, nil)
 
 	flux.RegisterFunction(string(m.Kind), m.Create, signature)
 	flux.RegisterOpSpec(m.Kind, m.New)

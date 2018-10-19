@@ -23,17 +23,16 @@ type FromGeneratorOpSpec struct {
 	Fn    *semantic.FunctionExpression `json:"fn"`
 }
 
-var fromGeneratorSignature = semantic.FunctionSignature{
-	Params: map[string]semantic.Type{
-		"start": semantic.Time,
-		"stop":  semantic.Time,
-		"count": semantic.Int,
-		"fn":    semantic.Function,
-	},
-	ReturnType: flux.TableObjectType,
-}
-
 func init() {
+	fromGeneratorSignature := semantic.FunctionSignature{
+		In: semantic.NewObjectType(map[string]semantic.Type{
+			"start": semantic.Time,
+			"stop":  semantic.Time,
+			"count": semantic.Int,
+			"fn":    semantic.Function,
+		}),
+		Out: flux.TableObjectType,
+	}
 	flux.RegisterFunction(FromGeneratorKind, createFromGeneratorOpSpec, fromGeneratorSignature)
 	flux.RegisterOpSpec(FromGeneratorKind, newFromGeneratorOp)
 	plan.RegisterProcedureSpec(FromGeneratorKind, newFromGeneratorProcedure, FromGeneratorKind)
@@ -204,11 +203,10 @@ func (s *GeneratorSource) Decode() (flux.Table, error) {
 	timeIdx := execute.ColIdx("_time", cols)
 	valueIdx := execute.ColIdx("_value", cols)
 	for i := 0; i < int(s.Count); i++ {
-		if err := b.AppendTime(timeIdx, values.ConvertTime(s.Start.Add(time.Duration(i)*deltaT))); err != nil {
-			return nil, err
-		}
-		scope := map[string]values.Value{s.Param: values.NewInt(int64(i))}
-		v, err := s.Fn.EvalInt(scope)
+		b.AppendTime(timeIdx, values.ConvertTime(s.Start.Add(time.Duration(i)*deltaT)))
+		in := values.NewObject()
+		in.Set(s.Param, values.NewInt(int64(i)))
+		v, err := s.Fn.EvalInt(in)
 		if err != nil {
 			return nil, err
 		}

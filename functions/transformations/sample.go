@@ -19,11 +19,11 @@ type SampleOpSpec struct {
 	execute.SelectorConfig
 }
 
-var sampleSignature = execute.DefaultSelectorSignature()
-
 func init() {
-	sampleSignature.Params["n"] = semantic.Int
-	sampleSignature.Params["pos"] = semantic.Int
+	sampleSignature := execute.SelectorSignature(map[string]semantic.Type{
+		"n":   semantic.Int,
+		"pos": semantic.Int,
+	}, nil)
 
 	flux.RegisterFunction(SampleKind, createSampleOpSpec, sampleSignature)
 	flux.RegisterOpSpec(SampleKind, newSampleOp)

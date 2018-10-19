@@ -24,11 +24,11 @@ type FromCSVOpSpec struct {
 }
 
 var fromCSVSignature = semantic.FunctionSignature{
-	Params: map[string]semantic.Type{
+	In: semantic.NewObjectType(map[string]semantic.Type{
 		"csv":  semantic.String,
 		"file": semantic.String,
-	},
-	ReturnType: flux.TableObjectType,
+	}),
+	Out: flux.TableObjectType,
 }
 
 func init() {

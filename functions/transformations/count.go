@@ -14,9 +14,8 @@ type CountOpSpec struct {
 	execute.AggregateConfig
 }
 
-var countSignature = execute.DefaultAggregateSignature()
-
 func init() {
+	countSignature := execute.AggregateSignature(nil, nil)
 	flux.RegisterFunction(CountKind, createCountOpSpec, countSignature)
 	flux.RegisterOpSpec(CountKind, newCountOp)
 	plan.RegisterProcedureSpec(CountKind, newCountProcedure, CountKind)

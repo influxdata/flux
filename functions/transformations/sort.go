@@ -18,11 +18,11 @@ type SortOpSpec struct {
 	Desc bool     `json:"desc"`
 }
 
-var sortSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	sortSignature.Params["cols"] = semantic.NewArrayType(semantic.String)
-	sortSignature.Params["desc"] = semantic.Bool
+	sortSignature := flux.FunctionSignature(map[string]semantic.Type{
+		"cols": semantic.NewArrayType(semantic.String),
+		"desc": semantic.Bool,
+	}, nil)
 
 	flux.RegisterFunction(SortKind, createSortOpSpec, sortSignature)
 	flux.RegisterOpSpec(SortKind, newSortOp)

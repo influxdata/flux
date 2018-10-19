@@ -14,9 +14,9 @@ type SumOpSpec struct {
 	execute.AggregateConfig
 }
 
-var sumSignature = execute.DefaultAggregateSignature()
-
 func init() {
+	sumSignature := execute.AggregateSignature(nil, nil)
+
 	flux.RegisterFunction(SumKind, createSumOpSpec, sumSignature)
 	flux.RegisterOpSpec(SumKind, newSumOp)
 	plan.RegisterProcedureSpec(SumKind, newSumProcedure, SumKind)

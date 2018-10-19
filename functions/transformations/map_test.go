@@ -31,16 +31,20 @@ func TestMap_NewQuery(t *testing.T) {
 						Spec: &transformations.MapOpSpec{
 							MergeKey: true,
 							Fn: &semantic.FunctionExpression{
-								Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-								Body: &semantic.BinaryExpression{
-									Operator: ast.AdditionOperator,
-									Left: &semantic.MemberExpression{
-										Object: &semantic.IdentifierExpression{
-											Name: "r",
-										},
-										Property: "_value",
+								Block: &semantic.FunctionBlock{
+									Parameters: &semantic.FunctionParameters{
+										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 									},
-									Right: &semantic.IntegerLiteral{Value: 1},
+									Body: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "_value",
+										},
+										Right: &semantic.IntegerLiteral{Value: 1},
+									},
 								},
 							},
 						},
@@ -67,16 +71,20 @@ func TestMap_NewQuery(t *testing.T) {
 						Spec: &transformations.MapOpSpec{
 							MergeKey: true,
 							Fn: &semantic.FunctionExpression{
-								Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-								Body: &semantic.BinaryExpression{
-									Operator: ast.AdditionOperator,
-									Left: &semantic.MemberExpression{
-										Object: &semantic.IdentifierExpression{
-											Name: "r",
-										},
-										Property: "_value",
+								Block: &semantic.FunctionBlock{
+									Parameters: &semantic.FunctionParameters{
+										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 									},
-									Right: &semantic.IntegerLiteral{Value: 2},
+									Body: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "_value",
+										},
+										Right: &semantic.IntegerLiteral{Value: 2},
+									},
 								},
 							},
 						},
@@ -128,16 +136,20 @@ func TestMapOperation_Marshaling(t *testing.T) {
 		ID: "map",
 		Spec: &transformations.MapOpSpec{
 			Fn: &semantic.FunctionExpression{
-				Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-				Body: &semantic.BinaryExpression{
-					Operator: ast.SubtractionOperator,
-					Left: &semantic.MemberExpression{
-						Object: &semantic.IdentifierExpression{
-							Name: "r",
-						},
-						Property: "_value",
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 					},
-					Right: &semantic.FloatLiteral{Value: 5.6},
+					Body: &semantic.BinaryExpression{
+						Operator: ast.SubtractionOperator,
+						Left: &semantic.MemberExpression{
+							Object: &semantic.IdentifierExpression{
+								Name: "r",
+							},
+							Property: "_value",
+						},
+						Right: &semantic.FloatLiteral{Value: 5.6},
+					},
 				},
 			},
 		},
@@ -156,30 +168,34 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
-					Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-					Body: &semantic.ObjectExpression{
-						Properties: []*semantic.Property{
-							{
-								Key: &semantic.Identifier{Name: "_time"},
-								Value: &semantic.MemberExpression{
-									Object: &semantic.IdentifierExpression{
-										Name: "r",
-									},
-									Property: "_time",
-								},
-							},
-							{
-								Key: &semantic.Identifier{Name: "_value"},
-								Value: &semantic.BinaryExpression{
-									Operator: ast.AdditionOperator,
-									Left: &semantic.MemberExpression{
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{
+									Key: &semantic.Identifier{Name: "_time"},
+									Value: &semantic.MemberExpression{
 										Object: &semantic.IdentifierExpression{
 											Name: "r",
 										},
-										Property: "_value",
+										Property: "_time",
 									},
-									Right: &semantic.FloatLiteral{
-										Value: 5,
+								},
+								{
+									Key: &semantic.Identifier{Name: "_value"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "_value",
+										},
+										Right: &semantic.FloatLiteral{
+											Value: 5,
+										},
 									},
 								},
 							},
@@ -213,30 +229,34 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: true,
 				Fn: &semantic.FunctionExpression{
-					Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-					Body: &semantic.ObjectExpression{
-						Properties: []*semantic.Property{
-							{
-								Key: &semantic.Identifier{Name: "_time"},
-								Value: &semantic.MemberExpression{
-									Object: &semantic.IdentifierExpression{
-										Name: "r",
-									},
-									Property: "_time",
-								},
-							},
-							{
-								Key: &semantic.Identifier{Name: "_value"},
-								Value: &semantic.BinaryExpression{
-									Operator: ast.AdditionOperator,
-									Left: &semantic.MemberExpression{
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{
+									Key: &semantic.Identifier{Name: "_time"},
+									Value: &semantic.MemberExpression{
 										Object: &semantic.IdentifierExpression{
 											Name: "r",
 										},
-										Property: "_value",
+										Property: "_time",
 									},
-									Right: &semantic.FloatLiteral{
-										Value: 5,
+								},
+								{
+									Key: &semantic.Identifier{Name: "_value"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "_value",
+										},
+										Right: &semantic.FloatLiteral{
+											Value: 5,
+										},
 									},
 								},
 							},
@@ -276,30 +296,34 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
-					Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-					Body: &semantic.ObjectExpression{
-						Properties: []*semantic.Property{
-							{
-								Key: &semantic.Identifier{Name: "_time"},
-								Value: &semantic.MemberExpression{
-									Object: &semantic.IdentifierExpression{
-										Name: "r",
-									},
-									Property: "_time",
-								},
-							},
-							{
-								Key: &semantic.Identifier{Name: "_value"},
-								Value: &semantic.BinaryExpression{
-									Operator: ast.AdditionOperator,
-									Left: &semantic.MemberExpression{
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{
+									Key: &semantic.Identifier{Name: "_time"},
+									Value: &semantic.MemberExpression{
 										Object: &semantic.IdentifierExpression{
 											Name: "r",
 										},
-										Property: "_value",
+										Property: "_time",
 									},
-									Right: &semantic.FloatLiteral{
-										Value: 5,
+								},
+								{
+									Key: &semantic.Identifier{Name: "_value"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "_value",
+										},
+										Right: &semantic.FloatLiteral{
+											Value: 5,
+										},
 									},
 								},
 							},
@@ -336,43 +360,47 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: true,
 				Fn: &semantic.FunctionExpression{
-					Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-					Body: &semantic.ObjectExpression{
-						Properties: []*semantic.Property{
-							{
-								Key: &semantic.Identifier{Name: "_time"},
-								Value: &semantic.MemberExpression{
-									Object: &semantic.IdentifierExpression{
-										Name: "r",
-									},
-									Property: "_time",
-								},
-							},
-							{
-								Key: &semantic.Identifier{Name: "host"},
-								Value: &semantic.BinaryExpression{
-									Operator: ast.AdditionOperator,
-									Left: &semantic.MemberExpression{
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{
+									Key: &semantic.Identifier{Name: "_time"},
+									Value: &semantic.MemberExpression{
 										Object: &semantic.IdentifierExpression{
 											Name: "r",
 										},
-										Property: "host",
+										Property: "_time",
 									},
-									Right: &semantic.StringLiteral{Value: ".local"},
 								},
-							},
-							{
-								Key: &semantic.Identifier{Name: "_value"},
-								Value: &semantic.BinaryExpression{
-									Operator: ast.AdditionOperator,
-									Left: &semantic.MemberExpression{
-										Object: &semantic.IdentifierExpression{
-											Name: "r",
+								{
+									Key: &semantic.Identifier{Name: "host"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "host",
 										},
-										Property: "_value",
+										Right: &semantic.StringLiteral{Value: ".local"},
 									},
-									Right: &semantic.FloatLiteral{
-										Value: 5,
+								},
+								{
+									Key: &semantic.Identifier{Name: "_value"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "_value",
+										},
+										Right: &semantic.FloatLiteral{
+											Value: 5,
+										},
 									},
 								},
 							},
@@ -412,52 +440,56 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: true,
 				Fn: &semantic.FunctionExpression{
-					Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-					Body: &semantic.ObjectExpression{
-						Properties: []*semantic.Property{
-							{
-								Key: &semantic.Identifier{Name: "_time"},
-								Value: &semantic.MemberExpression{
-									Object: &semantic.IdentifierExpression{
-										Name: "r",
-									},
-									Property: "_time",
-								},
-							},
-							{
-								Key: &semantic.Identifier{Name: "host"},
-								Value: &semantic.BinaryExpression{
-									Operator: ast.AdditionOperator,
-									Left: &semantic.MemberExpression{
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{
+									Key: &semantic.Identifier{Name: "_time"},
+									Value: &semantic.MemberExpression{
 										Object: &semantic.IdentifierExpression{
 											Name: "r",
 										},
-										Property: "host",
+										Property: "_time",
 									},
-									Right: &semantic.BinaryExpression{
+								},
+								{
+									Key: &semantic.Identifier{Name: "host"},
+									Value: &semantic.BinaryExpression{
 										Operator: ast.AdditionOperator,
-										Left:     &semantic.StringLiteral{Value: "."},
-										Right: &semantic.MemberExpression{
+										Left: &semantic.MemberExpression{
 											Object: &semantic.IdentifierExpression{
 												Name: "r",
 											},
-											Property: "domain",
+											Property: "host",
+										},
+										Right: &semantic.BinaryExpression{
+											Operator: ast.AdditionOperator,
+											Left:     &semantic.StringLiteral{Value: "."},
+											Right: &semantic.MemberExpression{
+												Object: &semantic.IdentifierExpression{
+													Name: "r",
+												},
+												Property: "domain",
+											},
 										},
 									},
 								},
-							},
-							{
-								Key: &semantic.Identifier{Name: "_value"},
-								Value: &semantic.BinaryExpression{
-									Operator: ast.AdditionOperator,
-									Left: &semantic.MemberExpression{
-										Object: &semantic.IdentifierExpression{
-											Name: "r",
+								{
+									Key: &semantic.Identifier{Name: "_value"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "_value",
 										},
-										Property: "_value",
-									},
-									Right: &semantic.FloatLiteral{
-										Value: 5,
+										Right: &semantic.FloatLiteral{
+											Value: 5,
+										},
 									},
 								},
 							},
@@ -511,33 +543,37 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
-					Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-					Body: &semantic.ObjectExpression{
-						Properties: []*semantic.Property{
-							{
-								Key: &semantic.Identifier{Name: "_time"},
-								Value: &semantic.MemberExpression{
-									Object: &semantic.IdentifierExpression{
-										Name: "r",
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{
+									Key: &semantic.Identifier{Name: "_time"},
+									Value: &semantic.MemberExpression{
+										Object: &semantic.IdentifierExpression{
+											Name: "r",
+										},
+										Property: "_time",
 									},
-									Property: "_time",
 								},
-							},
-							{
-								Key: &semantic.Identifier{Name: "_value"},
-								Value: &semantic.BinaryExpression{
-									Operator: ast.MultiplicationOperator,
-									Left: &semantic.MemberExpression{
-										Object: &semantic.IdentifierExpression{
-											Name: "r",
+								{
+									Key: &semantic.Identifier{Name: "_value"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.MultiplicationOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "_value",
 										},
-										Property: "_value",
-									},
-									Right: &semantic.MemberExpression{
-										Object: &semantic.IdentifierExpression{
-											Name: "r",
+										Right: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "_value",
 										},
-										Property: "_value",
 									},
 								},
 							},
@@ -571,32 +607,36 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
-					Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-					Body: &semantic.ObjectExpression{
-						Properties: []*semantic.Property{
-							{
-								Key: &semantic.Identifier{Name: "_time"},
-								Value: &semantic.MemberExpression{
-									Object: &semantic.IdentifierExpression{
-										Name: "r",
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{
+									Key: &semantic.Identifier{Name: "_time"},
+									Value: &semantic.MemberExpression{
+										Object: &semantic.IdentifierExpression{
+											Name: "r",
+										},
+										Property: "_time",
 									},
-									Property: "_time",
 								},
-							},
-							{
-								Key: &semantic.Identifier{Name: "_value"},
-								Value: &semantic.CallExpression{
-									Callee: &semantic.IdentifierExpression{Name: "float"},
-									Arguments: &semantic.ObjectExpression{
-										Properties: []*semantic.Property{{
-											Key: &semantic.Identifier{Name: "v"},
-											Value: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
+								{
+									Key: &semantic.Identifier{Name: "_value"},
+									Value: &semantic.CallExpression{
+										Callee: &semantic.IdentifierExpression{Name: "float"},
+										Arguments: &semantic.ObjectExpression{
+											Properties: []*semantic.Property{{
+												Key: &semantic.Identifier{Name: "v"},
+												Value: &semantic.MemberExpression{
+													Object: &semantic.IdentifierExpression{
+														Name: "r",
+													},
+													Property: "_value",
 												},
-												Property: "_value",
-											},
-										}},
+											}},
+										},
 									},
 								},
 							},
@@ -630,32 +670,36 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
-					Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-					Body: &semantic.ObjectExpression{
-						Properties: []*semantic.Property{
-							{
-								Key: &semantic.Identifier{Name: "_time"},
-								Value: &semantic.MemberExpression{
-									Object: &semantic.IdentifierExpression{
-										Name: "r",
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{
+									Key: &semantic.Identifier{Name: "_time"},
+									Value: &semantic.MemberExpression{
+										Object: &semantic.IdentifierExpression{
+											Name: "r",
+										},
+										Property: "_time",
 									},
-									Property: "_time",
 								},
-							},
-							{
-								Key: &semantic.Identifier{Name: "_value"},
-								Value: &semantic.CallExpression{
-									Callee: &semantic.IdentifierExpression{Name: "float"},
-									Arguments: &semantic.ObjectExpression{
-										Properties: []*semantic.Property{{
-											Key: &semantic.Identifier{Name: "v"},
-											Value: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
+								{
+									Key: &semantic.Identifier{Name: "_value"},
+									Value: &semantic.CallExpression{
+										Callee: &semantic.IdentifierExpression{Name: "float"},
+										Arguments: &semantic.ObjectExpression{
+											Properties: []*semantic.Property{{
+												Key: &semantic.Identifier{Name: "v"},
+												Value: &semantic.MemberExpression{
+													Object: &semantic.IdentifierExpression{
+														Name: "r",
+													},
+													Property: "_value",
 												},
-												Property: "_value",
-											},
-										}},
+											}},
+										},
 									},
 								},
 							},

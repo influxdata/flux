@@ -21,14 +21,14 @@ type RangeOpSpec struct {
 	StopCol  string    `json:"stopCol"`
 }
 
-var rangeSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	rangeSignature.Params["start"] = semantic.Time
-	rangeSignature.Params["stop"] = semantic.Time
-	rangeSignature.Params["timeCol"] = semantic.String
-	rangeSignature.Params["startCol"] = semantic.String
-	rangeSignature.Params["stopCol"] = semantic.String
+	rangeSignature := flux.FunctionSignature(map[string]semantic.Type{
+		"start":    semantic.Time,
+		"stop":     semantic.Time,
+		"timeCol":  semantic.String,
+		"startCol": semantic.String,
+		"stopCol":  semantic.String,
+	}, nil)
 
 	flux.RegisterFunction(RangeKind, createRangeOpSpec, rangeSignature)
 	flux.RegisterOpSpec(RangeKind, newRangeOp)

@@ -24,14 +24,14 @@ type HistogramQuantileOpSpec struct {
 	MinValue         float64 `json:"minValue"`
 }
 
-var histogramQuantileSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	histogramQuantileSignature.Params["quantile"] = semantic.Float
-	histogramQuantileSignature.Params["countColumn"] = semantic.String
-	histogramQuantileSignature.Params["upperBoundColumn"] = semantic.String
-	histogramQuantileSignature.Params["valueColumn"] = semantic.String
-	histogramQuantileSignature.Params["minValue"] = semantic.Float
+	histogramQuantileSignature := flux.FunctionSignature(map[string]semantic.Type{
+		"quantile":         semantic.Float,
+		"countColumn":      semantic.String,
+		"upperBoundColumn": semantic.String,
+		"valueColumn":      semantic.String,
+		"minValue":         semantic.Float,
+	}, nil)
 
 	flux.RegisterFunction(HistogramQuantileKind, createHistogramQuantileOpSpec, histogramQuantileSignature)
 	flux.RegisterOpSpec(HistogramQuantileKind, newHistogramQuantileOp)

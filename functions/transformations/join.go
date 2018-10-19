@@ -18,6 +18,27 @@ import (
 const JoinKind = "join"
 const MergeJoinKind = "merge-join"
 
+func init() {
+	joinSignature := semantic.FunctionSignature{
+		In: semantic.NewObjectType(map[string]semantic.Type{
+			"tables": semantic.Object,
+			"on":     semantic.NewArrayType(semantic.String),
+			"method": semantic.String,
+		}),
+		Defaults: semantic.NewObjectType(map[string]semantic.Type{
+			"on":     semantic.NewArrayType(semantic.String),
+			"method": semantic.String,
+		}),
+		Out:          flux.TableObjectType,
+		PipeArgument: "tables",
+	}
+	flux.RegisterFunction(JoinKind, createJoinOpSpec, joinSignature)
+	flux.RegisterOpSpec(JoinKind, newJoinOp)
+	//TODO(nathanielc): Allow for other types of join implementations
+	plan.RegisterProcedureSpec(MergeJoinKind, newMergeJoinProcedure, JoinKind)
+	execute.RegisterTransformation(MergeJoinKind, createMergeJoinTransformation)
+}
+
 // All supported join types in Flux
 var methods = map[string]bool{
 	"inner": true,
@@ -55,24 +76,6 @@ func (params *joinParams) Swap(i, j int) {
 }
 func (params *joinParams) Less(i, j int) bool {
 	return params.names[i] < params.names[j]
-}
-
-var joinSignature = semantic.FunctionSignature{
-	Params: map[string]semantic.Type{
-		"tables": semantic.Object,
-		"on":     semantic.NewArrayType(semantic.String),
-		"method": semantic.String,
-	},
-	ReturnType:   flux.TableObjectType,
-	PipeArgument: "tables",
-}
-
-func init() {
-	flux.RegisterFunction(JoinKind, createJoinOpSpec, joinSignature)
-	flux.RegisterOpSpec(JoinKind, newJoinOp)
-	//TODO(nathanielc): Allow for other types of join implementations
-	plan.RegisterProcedureSpec(MergeJoinKind, newMergeJoinProcedure, JoinKind)
-	execute.RegisterTransformation(MergeJoinKind, createMergeJoinTransformation)
 }
 
 func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {

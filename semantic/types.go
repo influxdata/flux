@@ -168,7 +168,7 @@ func (t *arrayType) OutType() Type {
 }
 
 func (t *arrayType) PolyType() PolyType {
-	panic("not implemented")
+	return NewArrayPolyType(t.elementType.PolyType())
 }
 
 func (t *arrayType) typ() {}

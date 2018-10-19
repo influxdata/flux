@@ -30,15 +30,15 @@ func (c *SelectorConfig) ReadArgs(args flux.Arguments) error {
 	return nil
 }
 
-func DefaultSelectorSignature() semantic.FunctionSignature {
-	return semantic.FunctionSignature{
-		Params: map[string]semantic.Type{
-			flux.TableParameter: flux.TableObjectType,
-			"column":            semantic.String,
-		},
-		ReturnType:   flux.TableObjectType,
-		PipeArgument: flux.TableParameter,
+// SelectorSignature returns a function signature common to all selector functions,
+// with any additional arguments.
+func SelectorSignature(args map[string]semantic.Type, defaults []string) semantic.FunctionSignature {
+	if args == nil {
+		args = make(map[string]semantic.Type)
 	}
+	args["column"] = semantic.String
+	defaults = append(defaults, "column")
+	return flux.FunctionSignature(args, defaults)
 }
 
 type rowSelectorTransformation struct {

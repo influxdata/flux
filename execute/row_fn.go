@@ -14,7 +14,7 @@ import (
 type rowFn struct {
 	fn               *semantic.FunctionExpression
 	compilationCache *compiler.CompilationCache
-	scope            compiler.Scope
+	inRecord         values.Object
 
 	preparedFn compiler.Func
 
@@ -26,14 +26,14 @@ type rowFn struct {
 }
 
 func newRowFn(fn *semantic.FunctionExpression) (rowFn, error) {
-	if len(fn.Params) != 1 {
-		return rowFn{}, fmt.Errorf("function should only have a single parameter, got %d", len(fn.Params))
+	if fn.Block.Parameters != nil && len(fn.Block.Parameters.List) != 1 {
+		return rowFn{}, errors.New("function should only have a single parameter")
 	}
-	scope, decls := flux.BuiltIns()
+	scope := flux.BuiltIns()
 	return rowFn{
-		compilationCache: compiler.NewCompilationCache(fn, scope, decls),
-		scope:            make(compiler.Scope, 1),
-		recordName:       fn.Params[0].Key.Name,
+		compilationCache: compiler.NewCompilationCache(fn, scope),
+		inRecord:         values.NewObject(),
+		recordName:       fn.Block.Parameters.List[0].Key.Name,
 		references:       findColReferences(fn),
 		recordCols:       make(map[string]int),
 	}, nil
@@ -58,9 +58,11 @@ func (f *rowFn) prepare(cols []flux.ColMeta) error {
 	}
 	f.record = NewRecord(semantic.NewObjectType(propertyTypes))
 	// Compile fn for given types
-	fn, err := f.compilationCache.Compile(map[string]semantic.Type{
-		f.recordName: f.record.Type(),
-	})
+	fn, err := f.compilationCache.Compile(
+		semantic.NewObjectType(map[string]semantic.Type{
+			f.recordName: f.record.Type(),
+		}),
+	)
 	if err != nil {
 		return err
 	}
@@ -116,8 +118,8 @@ func (f *rowFn) eval(row int, cr flux.ColReader) (values.Value, error) {
 	for _, r := range f.references {
 		f.record.Set(r, ValueForRow(cr, row, f.recordCols[r]))
 	}
-	f.scope[f.recordName] = f.record
-	return f.preparedFn.Eval(f.scope)
+	f.inRecord.Set(f.recordName, f.record)
+	return f.preparedFn.Eval(f.inRecord)
 }
 
 type RowPredicateFn struct {
@@ -206,7 +208,7 @@ func (f *RowMapFn) Eval(row int, cr flux.ColReader) (values.Object, error) {
 
 func findColReferences(fn *semantic.FunctionExpression) []string {
 	v := &colReferenceVisitor{
-		recordName: fn.Params[0].Key.Name,
+		recordName: fn.Block.Parameters.List[0].Key.Name,
 	}
 	semantic.Walk(v, fn)
 	return v.refs
@@ -226,7 +228,7 @@ func (c *colReferenceVisitor) Visit(node semantic.Node) semantic.Visitor {
 	return c
 }
 
-func (c *colReferenceVisitor) Done() {}
+func (c *colReferenceVisitor) Done(semantic.Node) {}
 
 type Record struct {
 	t      semantic.Type

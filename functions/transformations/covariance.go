@@ -19,12 +19,14 @@ type CovarianceOpSpec struct {
 	execute.AggregateConfig
 }
 
-var covarianceSignature = execute.DefaultAggregateSignature()
-
 func init() {
-	covarianceSignature.Params["pearsonr"] = semantic.Bool
-	covarianceSignature.Params["valueDst"] = semantic.String
-
+	var covarianceSignature = execute.AggregateSignature(
+		map[string]semantic.Type{
+			"pearsonr": semantic.Bool,
+			"valueDst": semantic.String,
+		},
+		[]string{"pearsonr", "valueDst"},
+	)
 	flux.RegisterBuiltIn("covariance", covarianceBuiltIn)
 	flux.RegisterFunction(CovarianceKind, createCovarianceOpSpec, covarianceSignature)
 	flux.RegisterOpSpec(CovarianceKind, newCovarianceOp)

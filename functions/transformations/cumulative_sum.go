@@ -16,10 +16,15 @@ type CumulativeSumOpSpec struct {
 	Columns []string `json:"columns"`
 }
 
-var cumulativeSumSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	cumulativeSumSignature.Params["columns"] = semantic.NewArrayType(semantic.String)
+	cumulativeSumSignature := flux.FunctionSignature(
+		map[string]semantic.Type{
+			"columns": semantic.NewArrayType(semantic.String),
+		},
+		[]string{
+			"columns",
+		},
+	)
 
 	flux.RegisterFunction(CumulativeSumKind, createCumulativeSumOpSpec, cumulativeSumSignature)
 	flux.RegisterOpSpec(CumulativeSumKind, newCumulativeSumOp)

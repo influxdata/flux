@@ -15,10 +15,10 @@ type DistinctOpSpec struct {
 	Column string `json:"column"`
 }
 
-var distinctSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	distinctSignature.Params["column"] = semantic.String
+	distinctSignature := flux.FunctionSignature(map[string]semantic.Type{
+		"column": semantic.String,
+	}, nil)
 
 	flux.RegisterFunction(DistinctKind, createDistinctOpSpec, distinctSignature)
 	flux.RegisterOpSpec(DistinctKind, newDistinctOp)

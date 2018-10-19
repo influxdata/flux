@@ -51,6 +51,31 @@ type SchemaMutation interface {
 	Copy() SchemaMutation
 }
 
+// Utility function for compiling an `fn` parameter for rename or drop/keep. In addition
+// to the function expression, it takes two types to verify the result against:
+// a single argument type, and a single return type.
+func compileFnParam(fn *semantic.FunctionExpression, paramType, returnType semantic.Type) (compiler.Func, string, error) {
+	scope := flux.BuiltIns()
+	compileCache := compiler.NewCompilationCache(fn, scope)
+	if fn.Block.Parameters != nil && len(fn.Block.Parameters.List) != 1 {
+		return nil, "", errors.New("function should only have a single parameter")
+	}
+	paramName := fn.Block.Parameters.List[0].Key.Name
+
+	compiled, err := compileCache.Compile(semantic.NewObjectType(map[string]semantic.Type{
+		paramName: paramType,
+	}))
+	if err != nil {
+		return nil, "", err
+	}
+
+	if compiled.Type() != returnType {
+		return nil, "", fmt.Errorf("provided function does not evaluate to type %s", returnType.Kind())
+	}
+
+	return compiled, paramName, nil
+}
+
 func toStringSet(arr []string) map[string]bool {
 	if arr == nil {
 		return nil
@@ -73,7 +98,7 @@ func checkCol(label string, cols []flux.ColMeta) error {
 type RenameMutator struct {
 	Cols      map[string]string
 	Fn        compiler.Func
-	Scope     map[string]values.Value
+	Input     values.Object
 	ParamName string
 }
 
@@ -97,7 +122,7 @@ func NewRenameMutator(qs flux.OperationSpec) (*RenameMutator, error) {
 
 		m.Fn = compiledFn
 		m.ParamName = param
-		m.Scope = make(map[string]values.Value, 1)
+		m.Input = values.NewObject()
 	}
 	return m, nil
 }
@@ -111,8 +136,8 @@ func (m *RenameMutator) renameCol(col *flux.ColMeta) error {
 			col.Label = newName
 		}
 	} else if m.Fn != nil {
-		m.Scope[m.ParamName] = values.NewString(col.Label)
-		newName, err := m.Fn.EvalString(m.Scope)
+		m.Input.Set(m.ParamName, values.NewString(col.Label))
+		newName, err := m.Fn.EvalString(m.Input)
 		if err != nil {
 			return err
 		}
@@ -163,7 +188,7 @@ type DropKeepMutator struct {
 	Predicate     compiler.Func
 	FlipPredicate bool
 	ParamName     string
-	Scope         map[string]values.Value
+	Input         values.Object
 }
 
 func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
@@ -181,7 +206,7 @@ func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
 			}
 			m.Predicate = compiledFn
 			m.ParamName = param
-			m.Scope = make(map[string]values.Value, 1)
+			m.Input = values.NewObject()
 		}
 	case *KeepOpSpec:
 		if s.Cols != nil {
@@ -196,7 +221,7 @@ func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
 			m.FlipPredicate = true
 
 			m.ParamName = param
-			m.Scope = make(map[string]values.Value, 1)
+			m.Input = values.NewObject()
 		}
 	default:
 		return nil, fmt.Errorf("invalid spec type %T", qs)
@@ -226,8 +251,8 @@ func (m *DropKeepMutator) checkColumns(tableCols []flux.ColMeta) error {
 }
 
 func (m *DropKeepMutator) shouldDrop(col string) (bool, error) {
-	m.Scope[m.ParamName] = values.NewString(col)
-	if shouldDrop, err := m.Predicate.EvalBool(m.Scope); err != nil {
+	m.Input.Set(m.ParamName, values.NewString(col))
+	if shouldDrop, err := m.Predicate.EvalBool(m.Input); err != nil {
 		return false, err
 	} else if m.FlipPredicate {
 		return !shouldDrop, nil

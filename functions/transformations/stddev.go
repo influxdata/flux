@@ -15,9 +15,9 @@ type StddevOpSpec struct {
 	execute.AggregateConfig
 }
 
-var stddevSignature = execute.DefaultAggregateSignature()
-
 func init() {
+	stddevSignature := execute.AggregateSignature(nil, nil)
+
 	flux.RegisterFunction(StddevKind, createStddevOpSpec, stddevSignature)
 	flux.RegisterOpSpec(StddevKind, newStddevOp)
 	plan.RegisterProcedureSpec(StddevKind, newStddevProcedure, StddevKind)

@@ -20,17 +20,20 @@ type PivotOpSpec struct {
 	ValueCol string   `json:"valueCol"`
 }
 
-var pivotSignature = flux.DefaultFunctionSignature()
-
 var fromRowsBuiltin = `
-// fromRows will access a database and retrieve data aligned into time-aligned tuples, grouped by measurement.  
+// fromRows will access a database and retrieve data aligned into time-aligned tuples, grouped by measurement.
 fromRows = (bucket="",bucketID="") => from(bucket:bucket,bucketID:bucketID) |> pivot(rowKey:["_time"], colKey: ["_field"], valueCol: "_value")
 `
 
 func init() {
-	pivotSignature.Params["rowKey"] = semantic.Array
-	pivotSignature.Params["colKey"] = semantic.Array
-	pivotSignature.Params["valueCol"] = semantic.String
+	pivotSignature := flux.FunctionSignature(
+		map[string]semantic.Type{
+			"rowKey":   semantic.Array,
+			"colKey":   semantic.Array,
+			"valueCol": semantic.String,
+		},
+		nil,
+	)
 
 	flux.RegisterFunction(PivotKind, createPivotOpSpec, pivotSignature)
 	flux.RegisterBuiltIn("fromRows", fromRowsBuiltin)

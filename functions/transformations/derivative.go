@@ -21,13 +21,13 @@ type DerivativeOpSpec struct {
 	TimeSrc     string        `json:"timeSrc"`
 }
 
-var derivativeSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	derivativeSignature.Params["unit"] = semantic.Duration
-	derivativeSignature.Params["nonNegative"] = semantic.Bool
-	derivativeSignature.Params["columns"] = semantic.NewArrayType(semantic.String)
-	derivativeSignature.Params["timeSrc"] = semantic.String
+	derivativeSignature := flux.FunctionSignature(map[string]semantic.Type{
+		"unit":        semantic.Duration,
+		"nonNegative": semantic.Bool,
+		"columns":     semantic.NewArrayType(semantic.String),
+		"timeSrc":     semantic.String,
+	}, nil)
 
 	flux.RegisterFunction(DerivativeKind, createDerivativeOpSpec, derivativeSignature)
 	flux.RegisterOpSpec(DerivativeKind, newDerivativeOp)

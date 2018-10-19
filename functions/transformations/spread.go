@@ -11,9 +11,9 @@ import (
 // SpreadKind is the registration name for Flux, query, plan, and execution.
 const SpreadKind = "spread"
 
-var spreadSignature = execute.DefaultAggregateSignature()
-
 func init() {
+	spreadSignature := execute.AggregateSignature(nil, nil)
+
 	flux.RegisterFunction(SpreadKind, createSpreadOpSpec, spreadSignature)
 	flux.RegisterOpSpec(SpreadKind, newSpreadOp)
 	plan.RegisterProcedureSpec(SpreadKind, newSpreadProcedure, SpreadKind)

@@ -17,11 +17,11 @@ type SetOpSpec struct {
 	Value string `json:"value"`
 }
 
-var setSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	setSignature.Params["key"] = semantic.String
-	setSignature.Params["value"] = semantic.String
+	setSignature := flux.FunctionSignature(map[string]semantic.Type{
+		"key":   semantic.String,
+		"value": semantic.String,
+	}, nil)
 
 	flux.RegisterFunction(SetKind, createSetOpSpec, setSignature)
 	flux.RegisterOpSpec(SetKind, newSetOp)

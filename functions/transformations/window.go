@@ -28,17 +28,17 @@ type WindowOpSpec struct {
 
 var infinityVar = values.NewDuration(math.MaxInt64)
 
-var windowSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	windowSignature.Params["every"] = semantic.Duration
-	windowSignature.Params["period"] = semantic.Duration
-	windowSignature.Params["round"] = semantic.Duration
-	windowSignature.Params["start"] = semantic.Time
-	windowSignature.Params["timeCol"] = semantic.String
-	windowSignature.Params["startColLabel"] = semantic.String
-	windowSignature.Params["stopColLabel"] = semantic.String
-	windowSignature.Params["createEmpty"] = semantic.Bool
+	windowSignature := flux.FunctionSignature(map[string]semantic.Type{
+		"every":         semantic.Duration,
+		"period":        semantic.Duration,
+		"round":         semantic.Duration,
+		"start":         semantic.Time,
+		"timeCol":       semantic.String,
+		"startColLabel": semantic.String,
+		"stopColLabel":  semantic.String,
+		"createEmpty":   semantic.Bool,
+	}, nil)
 
 	flux.RegisterFunction(WindowKind, createWindowOpSpec, windowSignature)
 	flux.RegisterOpSpec(WindowKind, newWindowOp)

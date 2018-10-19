@@ -10,9 +10,9 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-func Compile(f *semantic.FunctionExpression, functionType semantic.Type, builtins Scope) (Func, error) {
-	if functionType.Kind() != semantic.Function {
-		return nil, errors.New("type must be a function kind")
+func Compile(f *semantic.FunctionExpression, in semantic.Type, builtins Scope) (Func, error) {
+	if in.Kind() != semantic.Object {
+		return nil, errors.New("input type must be an object kind")
 	}
 	declarations := externDeclarations(builtins)
 	extern := &semantic.Extern{
@@ -26,7 +26,11 @@ func Compile(f *semantic.FunctionExpression, functionType semantic.Type, builtin
 	if err != nil {
 		return nil, err
 	}
-	if err := typeSol.Unify(pt, functionType.PolyType()); err != nil {
+	fpt := semantic.NewFunctionPolyType(semantic.PolyFunctionSignature{
+		In:  in.PolyType(),
+		Out: typeSol.Fresh(),
+	})
+	if err := typeSol.Unify(pt, fpt); err != nil {
 		return nil, err
 	}
 	fnType, mono := pt.Type()
@@ -294,15 +298,15 @@ func NewCompilationCache(fn *semantic.FunctionExpression, scope Scope) *Compilat
 	}
 }
 
-// Compile returnes a compiled function bsaed on the provided type.
+// Compile returns a compiled function based on the provided type.
 // The result will be cached for subsequent calls.
-func (c *CompilationCache) Compile(fnType semantic.Type) (Func, error) {
-	f, ok := c.compiled[fnType]
+func (c *CompilationCache) Compile(in semantic.Type) (Func, error) {
+	f, ok := c.compiled[in]
 	if ok {
 		return f.F, f.Err
 	}
-	fun, err := Compile(c.fn, fnType, c.scope)
-	c.compiled[fnType] = funcErr{
+	fun, err := Compile(c.fn, in, c.scope)
+	c.compiled[in] = funcErr{
 		F:   fun,
 		Err: err,
 	}
