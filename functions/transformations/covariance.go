@@ -192,12 +192,10 @@ func (t *CovarianceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 		return err
 	}
 
-	err = execute.AppendKeyValues(tbl.Key(), builder)
-	if err != nil {
+	if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
 		return err
 	}
-	err = builder.AppendFloat(valueIdx, t.value())
-	return err
+	return builder.AppendFloat(valueIdx, t.value())
 }
 
 func (t *CovarianceTransformation) reset() {

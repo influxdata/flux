@@ -57,14 +57,12 @@ func CopyTable(t flux.Table, a *Allocator) (flux.Table, error) {
 	colMap := make([]int, len(cols))
 	for j, c := range cols {
 		colMap[j] = j
-		_, err := builder.AddCol(c)
-		if err != nil {
+		if _, err := builder.AddCol(c); err != nil {
 			return nil, err
 		}
 	}
 
-	err := AppendMappedTable(t, builder, colMap)
-	if err != nil {
+	if err := AppendMappedTable(t, builder, colMap); err != nil {
 		return nil, err
 	}
 	// ColListTableBuilders do not error
@@ -76,8 +74,7 @@ func CopyTable(t flux.Table, a *Allocator) (flux.Table, error) {
 func AddTableCols(t flux.Table, builder TableBuilder) error {
 	cols := t.Cols()
 	for _, c := range cols {
-		_, err := builder.AddCol(c)
-		if err != nil {
+		if _, err := builder.AddCol(c); err != nil {
 			return err
 		}
 	}
@@ -86,8 +83,7 @@ func AddTableCols(t flux.Table, builder TableBuilder) error {
 
 func AddTableKeyCols(key flux.GroupKey, builder TableBuilder) error {
 	for _, c := range key.Cols() {
-		_, err := builder.AddCol(c)
-		if err != nil {
+		if _, err := builder.AddCol(c); err != nil {
 			return err
 		}
 	}
@@ -99,18 +95,16 @@ func AddTableKeyCols(key flux.GroupKey, builder TableBuilder) error {
 func AddNewTableCols(t flux.Table, builder TableBuilder, colMap []int) ([]int, error) {
 	cols := t.Cols()
 	existing := builder.Cols()
-	l := len(builder.Cols())
-	if cap(colMap) < l {
+	if l := len(builder.Cols()); cap(colMap) < l {
 		colMap = make([]int, len(builder.Cols()))
 	} else {
 		colMap = colMap[:l]
 	}
 
-	for j, _ := range colMap {
+	for j := range colMap {
 		colMap[j] = -1
 	}
 
-	var err error
 	for j, c := range cols {
 		found := false
 		for ej, ec := range existing {
@@ -121,9 +115,7 @@ func AddNewTableCols(t flux.Table, builder TableBuilder, colMap []int) ([]int, e
 			}
 		}
 		if !found {
-			_, err = builder.AddCol(c)
-
-			if err != nil {
+			if _, err := builder.AddCol(c); err != nil {
 				return nil, err
 			}
 			colMap = append(colMap, j)
@@ -160,8 +152,7 @@ func AppendTable(t flux.Table, builder TableBuilder) error {
 // The colMap is a map of builder column index to cr column index.
 func AppendMappedCols(cr flux.ColReader, builder TableBuilder, colMap []int) error {
 	for j := range builder.Cols() {
-		err := AppendCol(j, colMap[j], cr, builder)
-		if err != nil {
+		if err := AppendCol(j, colMap[j], cr, builder); err != nil {
 			return err
 		}
 	}
@@ -172,8 +163,7 @@ func AppendMappedCols(cr flux.ColReader, builder TableBuilder, colMap []int) err
 // This function assumes that builder and cr have the same column schema.
 func AppendCols(cr flux.ColReader, builder TableBuilder) error {
 	for j := range builder.Cols() {
-		err := AppendCol(j, j, cr, builder)
-		if err != nil {
+		if err := AppendCol(j, j, cr, builder); err != nil {
 			return err
 		}
 	}
@@ -212,28 +202,12 @@ func AppendCol(bj, cj int, cr flux.ColReader, builder TableBuilder) error {
 
 // AppendRecord appends the record from cr onto builder assuming matching columns.
 func AppendRecord(i int, cr flux.ColReader, builder TableBuilder) error {
-	var err error
+
 	if !ColsMatch(builder, cr) {
 		return errors.New("AppendRecord column schema mismatch")
 	}
-	for j, c := range builder.Cols() {
-		switch c.Type {
-		case flux.TBool:
-			err = builder.AppendBool(j, cr.Bools(j)[i])
-		case flux.TInt:
-			err = builder.AppendInt(j, cr.Ints(j)[i])
-		case flux.TUInt:
-			err = builder.AppendUInt(j, cr.UInts(j)[i])
-		case flux.TFloat:
-			err = builder.AppendFloat(j, cr.Floats(j)[i])
-		case flux.TString:
-			err = builder.AppendString(j, cr.Strings(j)[i])
-		case flux.TTime:
-			err = builder.AppendTime(j, cr.Times(j)[i])
-		default:
-			PanicUnknownType(c.Type)
-		}
-		if err != nil {
+	for j := range builder.Cols() {
+		if err := builder.AppendValue(j, ValueForRow(cr, i, j)); err != nil {
 			return err
 		}
 	}
@@ -246,9 +220,9 @@ func AppendMappedRecordWithDefaults(i int, cr flux.ColReader, builder TableBuild
 	if len(colMap) != len(builder.Cols()) {
 		return errors.New("AppendMappedRecordWithDefaults: colMap must have an entry for each table builder column")
 	}
-	var err error
 	// TODO(adam): these zero values should be set to null when we have null support
 	for j, c := range builder.Cols() {
+		var err error
 		switch c.Type {
 		case flux.TBool:
 			var val bool
@@ -299,13 +273,12 @@ func AppendMappedRecordWithDefaults(i int, cr flux.ColReader, builder TableBuild
 // AppendMappedRecordWExplicit appends the records from cr onto builder, using colMap as a map of builder index to cr index.
 // if an entry in the colMap indicates a mismatched column, no value is appended.
 func AppendMappedRecordExplicit(i int, cr flux.ColReader, builder TableBuilder, colMap []int) error {
-
-	var err error
 	// TODO(adam): these zero values should be set to null when we have null support
 	for j, c := range builder.Cols() {
 		if colMap[j] < 0 {
 			continue
 		}
+		var err error
 		switch c.Type {
 		case flux.TBool:
 			err = builder.AppendBool(j, cr.Bools(colMap[j])[i])
@@ -407,6 +380,28 @@ func ColIdx(label string, cols []flux.ColMeta) int {
 }
 func HasCol(label string, cols []flux.ColMeta) bool {
 	return ColIdx(label, cols) >= 0
+}
+
+// ValueForRow retrieves a value from a column reader at the given index.
+func ValueForRow(cr flux.ColReader, i, j int) values.Value {
+	t := cr.Cols()[j].Type
+	switch t {
+	case flux.TString:
+		return values.NewString(cr.Strings(j)[i])
+	case flux.TInt:
+		return values.NewInt(cr.Ints(j)[i])
+	case flux.TUInt:
+		return values.NewUInt(cr.UInts(j)[i])
+	case flux.TFloat:
+		return values.NewFloat(cr.Floats(j)[i])
+	case flux.TBool:
+		return values.NewBool(cr.Bools(j)[i])
+	case flux.TTime:
+		return values.NewTime(cr.Times(j)[i])
+	default:
+		PanicUnknownType(t)
+		return values.InvalidValue
+	}
 }
 
 // TableBuilder builds tables that can be used multiple times
@@ -517,7 +512,9 @@ func (b ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 		b.table.colMeta = append(b.table.colMeta, c)
 		b.table.cols = append(b.table.cols, col)
 		if b.NRows() > 0 {
-			b.GrowBools(newIdx, b.NRows())
+			if err := b.GrowBools(newIdx, b.NRows()); err != nil {
+				return -1, err
+			}
 		}
 	case flux.TInt:
 		col = &intColumn{
@@ -527,7 +524,9 @@ func (b ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 		b.table.colMeta = append(b.table.colMeta, c)
 		b.table.cols = append(b.table.cols, col)
 		if b.NRows() > 0 {
-			b.GrowInts(newIdx, b.NRows())
+			if err := b.GrowInts(newIdx, b.NRows()); err != nil {
+				return -1, err
+			}
 		}
 	case flux.TUInt:
 		col = &uintColumn{
@@ -537,7 +536,9 @@ func (b ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 		b.table.colMeta = append(b.table.colMeta, c)
 		b.table.cols = append(b.table.cols, col)
 		if b.NRows() > 0 {
-			b.GrowUInts(newIdx, b.NRows())
+			if err := b.GrowUInts(newIdx, b.NRows()); err != nil {
+				return -1, err
+			}
 		}
 	case flux.TFloat:
 		col = &floatColumn{
@@ -547,7 +548,9 @@ func (b ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 		b.table.colMeta = append(b.table.colMeta, c)
 		b.table.cols = append(b.table.cols, col)
 		if b.NRows() > 0 {
-			b.GrowFloats(newIdx, b.NRows())
+			if err := b.GrowFloats(newIdx, b.NRows()); err != nil {
+				return -1, err
+			}
 		}
 	case flux.TString:
 		col = &stringColumn{
@@ -557,7 +560,9 @@ func (b ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 		b.table.colMeta = append(b.table.colMeta, c)
 		b.table.cols = append(b.table.cols, col)
 		if b.NRows() > 0 {
-			b.GrowStrings(newIdx, b.NRows())
+			if err := b.GrowStrings(newIdx, b.NRows()); err != nil {
+				return -1, err
+			}
 		}
 	case flux.TTime:
 		col = &timeColumn{
@@ -567,7 +572,9 @@ func (b ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 		b.table.colMeta = append(b.table.colMeta, c)
 		b.table.cols = append(b.table.cols, col)
 		if b.NRows() > 0 {
-			b.GrowTimes(newIdx, b.NRows())
+			if err := b.GrowTimes(newIdx, b.NRows()); err != nil {
+				return -1, err
+			}
 		}
 	default:
 		PanicUnknownType(c.Type)
@@ -576,16 +583,14 @@ func (b ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 }
 
 func (b ColListTableBuilder) SetBool(i int, j int, value bool) error {
-	err := b.checkCol(j, flux.TBool)
-	if err != nil {
+	if err := b.checkCol(j, flux.TBool); err != nil {
 		return err
 	}
 	b.table.cols[j].(*boolColumn).data[i] = value
 	return nil
 }
 func (b ColListTableBuilder) AppendBool(j int, value bool) error {
-	err := b.checkCol(j, flux.TBool)
-	if err != nil {
+	if err := b.checkCol(j, flux.TBool); err != nil {
 		return err
 	}
 	col := b.table.cols[j].(*boolColumn)
@@ -594,8 +599,7 @@ func (b ColListTableBuilder) AppendBool(j int, value bool) error {
 	return nil
 }
 func (b ColListTableBuilder) AppendBools(j int, values []bool) error {
-	err := b.checkCol(j, flux.TBool)
-	if err != nil {
+	if err := b.checkCol(j, flux.TBool); err != nil {
 		return err
 	}
 	col := b.table.cols[j].(*boolColumn)
@@ -604,8 +608,7 @@ func (b ColListTableBuilder) AppendBools(j int, values []bool) error {
 	return nil
 }
 func (b ColListTableBuilder) GrowBools(j, n int) error {
-	err := b.checkCol(j, flux.TBool)
-	if err != nil {
+	if err := b.checkCol(j, flux.TBool); err != nil {
 		return err
 	}
 	col := b.table.cols[j].(*boolColumn)
@@ -615,17 +618,15 @@ func (b ColListTableBuilder) GrowBools(j, n int) error {
 }
 
 func (b ColListTableBuilder) SetInt(i int, j int, value int64) error {
-	err := b.checkCol(j, flux.TInt)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TInt); err != nil {
+		return err
 	}
 	b.table.cols[j].(*intColumn).data[i] = value
 	return nil
 }
 func (b ColListTableBuilder) AppendInt(j int, value int64) error {
-	err := b.checkCol(j, flux.TInt)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TInt); err != nil {
+		return err
 	}
 	col := b.table.cols[j].(*intColumn)
 	col.data = b.alloc.AppendInts(col.data, value)
@@ -633,9 +634,8 @@ func (b ColListTableBuilder) AppendInt(j int, value int64) error {
 	return nil
 }
 func (b ColListTableBuilder) AppendInts(j int, values []int64) error {
-	err := b.checkCol(j, flux.TInt)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TInt); err != nil {
+		return err
 	}
 	col := b.table.cols[j].(*intColumn)
 	col.data = b.alloc.AppendInts(col.data, values...)
@@ -643,9 +643,8 @@ func (b ColListTableBuilder) AppendInts(j int, values []int64) error {
 	return nil
 }
 func (b ColListTableBuilder) GrowInts(j, n int) error {
-	err := b.checkCol(j, flux.TInt)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TInt); err != nil {
+		return err
 	}
 	col := b.table.cols[j].(*intColumn)
 	col.data = b.alloc.GrowInts(col.data, n)
@@ -654,17 +653,15 @@ func (b ColListTableBuilder) GrowInts(j, n int) error {
 }
 
 func (b ColListTableBuilder) SetUInt(i int, j int, value uint64) error {
-	err := b.checkCol(j, flux.TUInt)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TUInt); err != nil {
+		return err
 	}
 	b.table.cols[j].(*uintColumn).data[i] = value
 	return nil
 }
 func (b ColListTableBuilder) AppendUInt(j int, value uint64) error {
-	err := b.checkCol(j, flux.TUInt)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TUInt); err != nil {
+		return err
 	}
 	col := b.table.cols[j].(*uintColumn)
 	col.data = b.alloc.AppendUInts(col.data, value)
@@ -672,9 +669,8 @@ func (b ColListTableBuilder) AppendUInt(j int, value uint64) error {
 	return nil
 }
 func (b ColListTableBuilder) AppendUInts(j int, values []uint64) error {
-	err := b.checkCol(j, flux.TUInt)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TUInt); err != nil {
+		return err
 	}
 	col := b.table.cols[j].(*uintColumn)
 	col.data = b.alloc.AppendUInts(col.data, values...)
@@ -682,9 +678,8 @@ func (b ColListTableBuilder) AppendUInts(j int, values []uint64) error {
 	return nil
 }
 func (b ColListTableBuilder) GrowUInts(j, n int) error {
-	err := b.checkCol(j, flux.TUInt)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TUInt); err != nil {
+		return err
 	}
 	col := b.table.cols[j].(*uintColumn)
 	col.data = b.alloc.GrowUInts(col.data, n)
@@ -693,17 +688,15 @@ func (b ColListTableBuilder) GrowUInts(j, n int) error {
 }
 
 func (b ColListTableBuilder) SetFloat(i int, j int, value float64) error {
-	err := b.checkCol(j, flux.TFloat)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TFloat); err != nil {
+		return err
 	}
 	b.table.cols[j].(*floatColumn).data[i] = value
 	return nil
 }
 func (b ColListTableBuilder) AppendFloat(j int, value float64) error {
-	err := b.checkCol(j, flux.TFloat)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TFloat); err != nil {
+		return err
 	}
 	col := b.table.cols[j].(*floatColumn)
 	col.data = b.alloc.AppendFloats(col.data, value)
@@ -711,9 +704,8 @@ func (b ColListTableBuilder) AppendFloat(j int, value float64) error {
 	return nil
 }
 func (b ColListTableBuilder) AppendFloats(j int, values []float64) error {
-	err := b.checkCol(j, flux.TFloat)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TFloat); err != nil {
+		return err
 	}
 	col := b.table.cols[j].(*floatColumn)
 	col.data = b.alloc.AppendFloats(col.data, values...)
@@ -721,9 +713,8 @@ func (b ColListTableBuilder) AppendFloats(j int, values []float64) error {
 	return nil
 }
 func (b ColListTableBuilder) GrowFloats(j, n int) error {
-	err := b.checkCol(j, flux.TFloat)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TFloat); err != nil {
+		return err
 	}
 	col := b.table.cols[j].(*floatColumn)
 	col.data = b.alloc.GrowFloats(col.data, n)
@@ -732,17 +723,15 @@ func (b ColListTableBuilder) GrowFloats(j, n int) error {
 }
 
 func (b ColListTableBuilder) SetString(i int, j int, value string) error {
-	err := b.checkCol(j, flux.TString)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TString); err != nil {
+		return err
 	}
 	b.table.cols[j].(*stringColumn).data[i] = value
 	return nil
 }
 func (b ColListTableBuilder) AppendString(j int, value string) error {
-	err := b.checkCol(j, flux.TString)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TString); err != nil {
+		return err
 	}
 	col := b.table.cols[j].(*stringColumn)
 	col.data = b.alloc.AppendStrings(col.data, value)
@@ -750,9 +739,8 @@ func (b ColListTableBuilder) AppendString(j int, value string) error {
 	return nil
 }
 func (b ColListTableBuilder) AppendStrings(j int, values []string) error {
-	err := b.checkCol(j, flux.TString)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TString); err != nil {
+		return err
 	}
 	col := b.table.cols[j].(*stringColumn)
 	col.data = b.alloc.AppendStrings(col.data, values...)
@@ -760,9 +748,8 @@ func (b ColListTableBuilder) AppendStrings(j int, values []string) error {
 	return nil
 }
 func (b ColListTableBuilder) GrowStrings(j, n int) error {
-	err := b.checkCol(j, flux.TString)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TString); err != nil {
+		return err
 	}
 	col := b.table.cols[j].(*stringColumn)
 	col.data = b.alloc.GrowStrings(col.data, n)
@@ -771,17 +758,15 @@ func (b ColListTableBuilder) GrowStrings(j, n int) error {
 }
 
 func (b ColListTableBuilder) SetTime(i int, j int, value Time) error {
-	err := b.checkCol(j, flux.TTime)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TTime); err != nil {
+		return err
 	}
 	b.table.cols[j].(*timeColumn).data[i] = value
 	return nil
 }
 func (b ColListTableBuilder) AppendTime(j int, value Time) error {
-	err := b.checkCol(j, flux.TTime)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TTime); err != nil {
+		return err
 	}
 	col := b.table.cols[j].(*timeColumn)
 	col.data = b.alloc.AppendTimes(col.data, value)
@@ -789,9 +774,8 @@ func (b ColListTableBuilder) AppendTime(j int, value Time) error {
 	return nil
 }
 func (b ColListTableBuilder) AppendTimes(j int, values []Time) error {
-	err := b.checkCol(j, flux.TTime)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TTime); err != nil {
+		return err
 	}
 	col := b.table.cols[j].(*timeColumn)
 	col.data = b.alloc.AppendTimes(col.data, values...)
@@ -800,9 +784,8 @@ func (b ColListTableBuilder) AppendTimes(j int, values []Time) error {
 
 }
 func (b ColListTableBuilder) GrowTimes(j, n int) error {
-	err := b.checkCol(j, flux.TTime)
-	if err != nil {
-		return nil
+	if err := b.checkCol(j, flux.TTime); err != nil {
+		return err
 	}
 	col := b.table.cols[j].(*timeColumn)
 	col.data = b.alloc.GrowTimes(col.data, n)
@@ -828,7 +811,6 @@ func (b ColListTableBuilder) SetValue(i, j int, v values.Value) error {
 	default:
 		panic(fmt.Errorf("unexpected value type %v", v.Type()))
 	}
-	return nil
 }
 
 func (b ColListTableBuilder) AppendValue(j int, v values.Value) error {

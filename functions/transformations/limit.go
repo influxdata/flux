@@ -149,17 +149,18 @@ func (t *limitTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	if !created {
 		return fmt.Errorf("limit found duplicate table with key: %v", tbl.Key())
 	}
-	err := execute.AddTableCols(tbl, builder)
-	if err != nil {
+	if err := execute.AddTableCols(tbl, builder); err != nil {
 		return err
 	}
 	// AppendTable with limit
 	n := t.n
 	offset := t.offset
-	err = tbl.Do(func(cr flux.ColReader) error {
+	var finishedErr error
+	err := tbl.Do(func(cr flux.ColReader) error {
 		if n <= 0 {
 			// Returning an error terminates iteration
-			return errors.New("finished")
+			finishedErr = errors.New("finished")
+			return finishedErr
 		}
 		l := cr.Len()
 		if l <= offset {
@@ -187,7 +188,7 @@ func (t *limitTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		return nil
 	})
 
-	if err != nil && err.Error() != "finished" {
+	if err != nil && finishedErr == nil {
 		return err
 	}
 	return nil
