@@ -19,6 +19,10 @@ func (p *heuristicPlanner) addRules(rules []Rule) {
 	}
 }
 
+func (p *heuristicPlanner) clearRules() {
+	p.rules = make(map[ProcedureKind][]Rule)
+}
+
 // matchRules applies any applicable rules to the given plan node,
 // and returns the rewritten plan node and whether or not any rewriting was done.
 func (p *heuristicPlanner) matchRules(node PlanNode) (PlanNode, bool, error) {

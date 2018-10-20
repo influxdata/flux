@@ -206,11 +206,6 @@ func (PushFilterThroughMapRule) Rewrite(pn plan.PlanNode) (plan.PlanNode, bool, 
 	return swapped, true, nil
 }
 
-func init() {
-	plan.RegisterLogicalRule(MergeFiltersRule{})
-	plan.RegisterLogicalRule(PushFilterThroughMapRule{})
-}
-
 func TestLogicalPlanner(t *testing.T) {
 	testcases := []struct {
 		name     string
@@ -326,7 +321,7 @@ func TestLogicalPlanner(t *testing.T) {
 				t.Fatalf("could not compile flux query: %v", err)
 			}
 
-			logicalPlanner := plan.NewLogicalPlanner()
+			logicalPlanner := plan.NewLogicalPlanner(plan.OnlyLogicalRules(MergeFiltersRule{}, PushFilterThroughMapRule{}))
 			logicalPlan, err := logicalPlanner.Plan(fluxSpec)
 
 			wantPlan := plantest.CreateLogicalPlanSpec(&tc.wantPlan)

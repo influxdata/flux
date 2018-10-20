@@ -58,11 +58,12 @@ type logicalPlanner struct {
 	*heuristicPlanner
 }
 
-// WithLogicalRule produces a logical plan option that forces a particular rule to be
+// OnlyLogicalRules produces a logical plan option that forces only a set of particular rules to be
 // applied.
-func WithLogicalRule(rule Rule) LogicalOption {
+func OnlyLogicalRules(rules ...Rule) LogicalOption {
 	return logicalOption(func(lp *logicalPlanner) {
-		lp.addRules([]Rule{rule})
+		lp.clearRules()
+		lp.addRules(rules)
 	})
 }
 

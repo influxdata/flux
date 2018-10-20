@@ -35,7 +35,7 @@ func init() {
 	flux.RegisterFunction(FromKind, createFromOpSpec, fromSignature)
 	flux.RegisterOpSpec(FromKind, newFromOp)
 	plan.RegisterProcedureSpec(FromKind, newFromProcedure, FromKind)
-	plan.RegisterPhysicalRule(MergeFromRangeRule{})
+	plan.RegisterPhysicalRules(MergeFromRangeRule{}, FromFilterMergeRule{})
 	execute.RegisterSource(FromKind, createFromSource)
 }
 

@@ -444,7 +444,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			after := plantest.CreatePhysicalPlanSpec(tc.after)
 
 			physicalPlanner := plan.NewPhysicalPlanner(
-				plan.WithPhysicalRule(tc.rules...),
+				plan.OnlyPhysicalRules(tc.rules...),
 			)
 
 			pp, err := physicalPlanner.Plan(before)

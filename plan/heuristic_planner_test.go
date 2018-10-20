@@ -77,7 +77,7 @@ func TestPlanTraversal(t *testing.T) {
 			}
 
 			simpleRule := plantest.SimpleRule{}
-			thePlanner := plan.NewLogicalPlanner(plan.WithLogicalRule(&simpleRule))
+			thePlanner := plan.NewLogicalPlanner(plan.OnlyLogicalRules(&simpleRule))
 			_, err = thePlanner.Plan(spec)
 			if err != nil {
 				t.Fatalf("Could not plan: %v", err)

@@ -136,9 +136,10 @@ func WithDefaultMemoryLimit(memBytes int64) PhysicalOption {
 	})
 }
 
-// WithPhysicalRule produces a physical plan option that forces a particular rule to be applied.
-func WithPhysicalRule(rules ...Rule) PhysicalOption {
+// OnlyPhysicalRules produces a physical plan option that forces only a particular set of rules to be applied.
+func OnlyPhysicalRules(rules ...Rule) PhysicalOption {
 	return physicalOption(func(pp *physicalPlanner) {
+		pp.clearRules()
 		pp.addRules(rules)
 	})
 }
