@@ -183,6 +183,37 @@ func (rule MergeFromRangeRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool)
 	return merged, true, nil
 }
 
+type FromFilterMergeRule struct {
+}
+
+func (FromFilterMergeRule) Name() string {
+	return "mergeFilterFrom"
+}
+
+func (FromFilterMergeRule) Pattern() plan.Pattern {
+	return plan.Pat(transformations.FilterKind, plan.Pat(FromKind))
+}
+
+func (FromFilterMergeRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool, error) {
+	filterSpec := node.ProcedureSpec().(*transformations.FilterProcedureSpec)
+	fromSpec := node.Predecessors()[0].ProcedureSpec().(*FromProcedureSpec)
+
+	mergedSpec := fromSpec.Copy().(*FromProcedureSpec)
+	if mergedSpec.FilterSet {
+		mergedSpec.Filter = semantic.MergeArrowFunction(fromSpec.Filter, filterSpec.Fn)
+	} else {
+		mergedSpec.FilterSet = true
+		mergedSpec.Filter = filterSpec.Fn.Copy().(*semantic.FunctionExpression)
+	}
+
+	merged, err := plan.MergePhysicalPlanNodes(node, node.Predecessors()[0], mergedSpec)
+	if err != nil {
+		return nil, false, err
+	}
+
+	return merged, true, nil
+}
+
 func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*FromOpSpec)
 	if !ok {

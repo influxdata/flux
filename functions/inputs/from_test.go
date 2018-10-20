@@ -1,6 +1,8 @@
 package inputs_test
 
 import (
+	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/semantic"
 	"testing"
 	"time"
 
@@ -194,6 +196,42 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 		from  = &inputs.FromProcedureSpec{}
 		mean  = &transformations.MeanProcedureSpec{}
 		count = &transformations.CountProcedureSpec{}
+
+		filterFn1 = &semantic.FunctionExpression{
+			Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
+			Body: &semantic.BinaryExpression{Operator: ast.LessThanOperator,
+				Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+				Right: &semantic.FloatLiteral{Value: 10}},
+		}
+
+		filterFn2 = &semantic.FunctionExpression{
+			Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
+			Body: &semantic.BinaryExpression{Operator: ast.GreaterThanOperator,
+				Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+				Right: &semantic.FloatLiteral{Value: 5}},
+		}
+
+		filterFnBoth = &semantic.FunctionExpression{
+			Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
+			Body: &semantic.LogicalExpression{Operator: ast.AndOperator,
+				Left: &semantic.BinaryExpression{Operator: ast.LessThanOperator,
+					Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+					Right: &semantic.FloatLiteral{Value: 10}},
+				Right: &semantic.BinaryExpression{Operator: ast.GreaterThanOperator,
+					Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+					Right: &semantic.FloatLiteral{Value: 5}},
+			},
+		}
+		fromWithBoundsAndFilter = &inputs.FromProcedureSpec{
+			BoundsSet: true,
+			Bounds: flux.Bounds{
+				Start: fluxTime(5),
+				Stop:  fluxTime(10),
+				Now:   now,
+			},
+			FilterSet: true,
+			Filter: filterFn1,
+		}
 	)
 
 	tests := []struct {
@@ -330,6 +368,68 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 				Edges: [][2]int{
 					{0, 1},
 					{0, 2},
+				},
+			},
+		},
+		{
+			name: "from filter",
+			// from -> filter  =>  from
+			rules: []plan.Rule{inputs.FromFilterMergeRule{}},
+			before: &plantest.PhysicalPlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: filterFn1}),
+				},
+				Edges: [][2]int {
+					{0, 1},
+				},
+			},
+			after: &plantest.PhysicalPlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("merged_from_filter", &inputs.FromProcedureSpec{FilterSet: true, Filter: filterFn1}),
+				},
+			},
+		},
+		{
+			name: "from filter filter",
+			// from -> filter -> filter  =>  from    (rule applied twice)
+			rules: []plan.Rule{inputs.FromFilterMergeRule{}},
+			before: &plantest.PhysicalPlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter1", &transformations.FilterProcedureSpec{Fn: filterFn1}),
+					plan.CreatePhysicalNode("filter2", &transformations.FilterProcedureSpec{Fn: filterFn2}),
+				},
+				Edges: [][2]int {
+					{0, 1},
+					{1, 2},
+				},
+			},
+			after: &plantest.PhysicalPlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("merged_merged_from_filter1_filter2",
+						&inputs.FromProcedureSpec{FilterSet: true, Filter: filterFnBoth}),
+				},
+			},
+		},
+		{
+			name: "from range filter",
+			// from -> range -> filter  =>  from
+			rules: []plan.Rule{inputs.FromFilterMergeRule{}, inputs.FromRangeTransformationRule{}},
+			before: &plantest.PhysicalPlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("range", rangeWithBounds),
+					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: filterFn1}),
+				},
+				Edges: [][2]int {
+					{0, 1},
+					{1, 2},
+				},
+			},
+			after: &plantest.PhysicalPlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("merged_merged_from_range_filter", fromWithBoundsAndFilter),
 				},
 			},
 		},
