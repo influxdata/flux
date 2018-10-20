@@ -35,6 +35,7 @@ func init() {
 	flux.RegisterFunction(FromKind, createFromOpSpec, fromSignature)
 	flux.RegisterOpSpec(FromKind, newFromOp)
 	plan.RegisterProcedureSpec(FromKind, newFromProcedure, FromKind)
+	plan.RegisterPhysicalRule(MergeFromRange{})
 	execute.RegisterSource(FromKind, createFromSource)
 }
 
@@ -120,34 +121,61 @@ type FromProcedureSpec struct {
 	AggregateMethod string
 }
 
-// FromRangeTransformationRule pushes a `range` into a `from`
-type FromRangeTransformationRule struct{}
+// MergeFromRange pushes a `range` into a `from`
+type MergeFromRange struct{}
 
 // Name returns the name of the rule
-func (rule FromRangeTransformationRule) Name() string {
-	return "FromRangeTransformation"
+func (rule MergeFromRange) Name() string {
+	return "MergeFromRange"
 }
 
 // Pattern returns the pattern that matches `from -> range`
-func (rule FromRangeTransformationRule) Pattern() plan.Pattern {
+func (rule MergeFromRange) Pattern() plan.Pattern {
 	return plan.Pat(transformations.RangeKind, plan.Pat(FromKind))
 }
 
 // Rewrite attempts to rewrite a `from -> range` into a `FromRange`
-func (rule FromRangeTransformationRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool) {
+func (rule MergeFromRange) Rewrite(node plan.PlanNode) (plan.PlanNode, bool) {
 	from := node.Predecessors()[0]
 	fromSpec := from.ProcedureSpec().(*FromProcedureSpec)
 	rangeSpec := node.ProcedureSpec().(*transformations.RangeProcedureSpec)
-
-	// Range can only be pushed into from once
-	if fromSpec.BoundsSet {
-		return node, false
-	}
-
 	fromRange := fromSpec.Copy().(*FromProcedureSpec)
-	fromRange.BoundsSet = true
+
+	// Set new bounds to `range` bounds initially
 	fromRange.Bounds = rangeSpec.Bounds
 
+	var (
+		now   = rangeSpec.Bounds.Now
+		start = rangeSpec.Bounds.Start
+		stop  = rangeSpec.Bounds.Stop
+	)
+
+	bounds := &plan.Bounds{
+		Start: values.ConvertTime(start.Time(now)),
+		Stop:  values.ConvertTime(stop.Time(now)),
+	}
+
+	// Intersect bounds if `from` already bounded
+	if fromSpec.BoundsSet {
+		now = fromSpec.Bounds.Now
+		start = fromSpec.Bounds.Start
+		stop = fromSpec.Bounds.Stop
+
+		fromBounds := &plan.Bounds{
+			Start: values.ConvertTime(start.Time(now)),
+			Stop:  values.ConvertTime(stop.Time(now)),
+		}
+
+		bounds = bounds.Intersect(fromBounds)
+		fromRange.Bounds = flux.Bounds{
+			Start: flux.Time{Absolute: bounds.Start.Time()},
+			Stop:  flux.Time{Absolute: bounds.Stop.Time()},
+		}
+	}
+
+	fromRange.BoundsSet = true
+
+	// Finally merge nodes into single operation
 	merged, err := plan.MergePhysicalPlanNodes(node, from, fromRange)
 	if err != nil {
 		return node, false
@@ -209,9 +237,6 @@ func (s *FromProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bou
 		bounds := &plan.Bounds{
 			Start: values.ConvertTime(s.Bounds.Start.Time(s.Bounds.Now)),
 			Stop:  values.ConvertTime(s.Bounds.Stop.Time(s.Bounds.Now)),
-		}
-		if predecessorBounds != nil {
-			bounds = bounds.Intersect(predecessorBounds)
 		}
 		return bounds
 	}
