@@ -69,10 +69,11 @@ func (p *heuristicPlanner) Plan(inputPlan *PlanSpec) (*PlanSpec, error) {
 
 			if !alreadyVisited {
 				newNode, changed := p.matchRules(node)
-				anyChanged = anyChanged || changed
-				if node != newNode {
+				if changed {
 					updateSuccessors(inputPlan, node, newNode)
 				}
+
+				anyChanged = anyChanged || changed
 
 				// append to stack in reverse order so lower-indexed children
 				// are visited first.
