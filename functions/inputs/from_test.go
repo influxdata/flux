@@ -227,7 +227,6 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			Bounds: flux.Bounds{
 				Start: fluxTime(5),
 				Stop:  fluxTime(10),
-				Now:   now,
 			},
 			FilterSet: true,
 			Filter: filterFn1,
@@ -415,7 +414,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 		{
 			name: "from range filter",
 			// from -> range -> filter  =>  from
-			rules: []plan.Rule{inputs.FromFilterMergeRule{}, inputs.FromRangeTransformationRule{}},
+			rules: []plan.Rule{inputs.FromFilterMergeRule{}, inputs.MergeFromRangeRule{}},
 			before: &plantest.PhysicalPlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),

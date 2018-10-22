@@ -135,7 +135,7 @@ func (rule MergeFromRangeRule) Pattern() plan.Pattern {
 }
 
 // Rewrite attempts to rewrite a `from -> range` into a `FromRange`
-func (rule MergeFromRangeRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool) {
+func (rule MergeFromRangeRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool, error) {
 	from := node.Predecessors()[0]
 	fromSpec := from.ProcedureSpec().(*FromProcedureSpec)
 	rangeSpec := node.ProcedureSpec().(*transformations.RangeProcedureSpec)
@@ -178,8 +178,9 @@ func (rule MergeFromRangeRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool)
 	// Finally merge nodes into single operation
 	merged, err := plan.MergePhysicalPlanNodes(node, from, fromRange)
 	if err != nil {
-		return node, false, err
+		return nil, false, err
 	}
+
 	return merged, true, nil
 }
 
