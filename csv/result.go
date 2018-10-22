@@ -972,33 +972,33 @@ func decodeValue(value string, c colMeta) (values.Value, error) {
 		if err != nil {
 			return nil, err
 		}
-		val = values.NewBoolValue(v)
+		val = values.NewBool(v)
 	case flux.TInt:
 		v, err := strconv.ParseInt(value, 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		val = values.NewIntValue(v)
+		val = values.NewInt(v)
 	case flux.TUInt:
 		v, err := strconv.ParseUint(value, 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		val = values.NewUIntValue(v)
+		val = values.NewUInt(v)
 	case flux.TFloat:
 		v, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			return nil, err
 		}
-		val = values.NewFloatValue(v)
+		val = values.NewFloat(v)
 	case flux.TString:
-		val = values.NewStringValue(value)
+		val = values.NewString(value)
 	case flux.TTime:
 		v, err := decodeTime(value, c.fmt)
 		if err != nil {
 			return nil, err
 		}
-		val = values.NewTimeValue(v)
+		val = values.NewTime(v)
 	default:
 		return nil, fmt.Errorf("unsupported type %v", c.Type)
 	}

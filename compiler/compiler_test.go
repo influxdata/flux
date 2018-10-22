@@ -67,10 +67,10 @@ func TestCompilationCache(t *testing.T) {
 				"b": semantic.Float,
 			},
 			scope: map[string]values.Value{
-				"a": values.NewFloatValue(5),
-				"b": values.NewFloatValue(4),
+				"a": values.NewFloat(5),
+				"b": values.NewFloat(4),
 			},
-			want: values.NewFloatValue(9),
+			want: values.NewFloat(9),
 		},
 		{
 			name: "ints",
@@ -79,10 +79,10 @@ func TestCompilationCache(t *testing.T) {
 				"b": semantic.Int,
 			},
 			scope: map[string]values.Value{
-				"a": values.NewIntValue(5),
-				"b": values.NewIntValue(4),
+				"a": values.NewInt(5),
+				"b": values.NewInt(4),
 			},
-			want: values.NewIntValue(9),
+			want: values.NewInt(9),
 		},
 		{
 			name: "uints",
@@ -91,10 +91,10 @@ func TestCompilationCache(t *testing.T) {
 				"b": semantic.UInt,
 			},
 			scope: map[string]values.Value{
-				"a": values.NewUIntValue(5),
-				"b": values.NewUIntValue(4),
+				"a": values.NewUInt(5),
+				"b": values.NewUInt(4),
 			},
-			want: values.NewUIntValue(9),
+			want: values.NewUInt(9),
 		},
 	}
 
@@ -156,9 +156,9 @@ func TestCompileAndEval(t *testing.T) {
 				"r": semantic.Int,
 			},
 			scope: map[string]values.Value{
-				"r": values.NewIntValue(4),
+				"r": values.NewInt(4),
 			},
-			want:    values.NewIntValue(4),
+			want:    values.NewInt(4),
 			wantErr: false,
 		},
 		{
@@ -191,9 +191,9 @@ func TestCompileAndEval(t *testing.T) {
 				"r": semantic.Int,
 			},
 			scope: map[string]values.Value{
-				"r": values.NewIntValue(4),
+				"r": values.NewInt(4),
 			},
-			want:    values.NewIntValue(5),
+			want:    values.NewInt(5),
 			wantErr: false,
 		},
 		{
@@ -235,9 +235,9 @@ func TestCompileAndEval(t *testing.T) {
 				"r": semantic.Int,
 			},
 			scope: map[string]values.Value{
-				"r": values.NewIntValue(4),
+				"r": values.NewInt(4),
 			},
-			want:    values.NewIntValue(5),
+			want:    values.NewInt(5),
 			wantErr: false,
 		},
 	}

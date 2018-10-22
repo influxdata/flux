@@ -1,17 +1,18 @@
 package execute_test
 
 import (
+	"testing"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/values"
-	"testing"
 
 	"github.com/influxdata/flux/execute"
 )
 
 func TestGroupKeyBuilder_Empty(t *testing.T) {
 	var gkb execute.GroupKeyBuilder
-	gkb.AddKeyValue("_measurement", values.NewStringValue("cpu"))
+	gkb.AddKeyValue("_measurement", values.NewString("cpu"))
 
 	key, err := gkb.Build()
 	if err != nil {
@@ -29,7 +30,7 @@ func TestGroupKeyBuilder_Empty(t *testing.T) {
 	}
 
 	if got, want := key.Values(), []values.Value{
-		values.NewStringValue("cpu"),
+		values.NewString("cpu"),
 	}; !cmp.Equal(want, got) {
 		t.Fatalf("unexpected columns -want/+got:\n%s", cmp.Diff(want, got))
 	}
@@ -37,7 +38,7 @@ func TestGroupKeyBuilder_Empty(t *testing.T) {
 
 func TestGroupKeyBuilder_Nil(t *testing.T) {
 	gkb := execute.NewGroupKeyBuilder(nil)
-	gkb.AddKeyValue("_measurement", values.NewStringValue("cpu"))
+	gkb.AddKeyValue("_measurement", values.NewString("cpu"))
 
 	key, err := gkb.Build()
 	if err != nil {
@@ -55,7 +56,7 @@ func TestGroupKeyBuilder_Nil(t *testing.T) {
 	}
 
 	if got, want := key.Values(), []values.Value{
-		values.NewStringValue("cpu"),
+		values.NewString("cpu"),
 	}; !cmp.Equal(want, got) {
 		t.Fatalf("unexpected columns -want/+got:\n%s", cmp.Diff(want, got))
 	}
@@ -71,11 +72,11 @@ func TestGroupKeyBuilder_Existing(t *testing.T) {
 				},
 			},
 			[]values.Value{
-				values.NewStringValue("cpu"),
+				values.NewString("cpu"),
 			},
 		),
 	)
-	gkb.AddKeyValue("_field", values.NewStringValue("usage_user"))
+	gkb.AddKeyValue("_field", values.NewString("usage_user"))
 
 	key, err := gkb.Build()
 	if err != nil {
@@ -94,8 +95,8 @@ func TestGroupKeyBuilder_Existing(t *testing.T) {
 	}
 
 	if got, want := key.Values(), []values.Value{
-		values.NewStringValue("cpu"),
-		values.NewStringValue("usage_user"),
+		values.NewString("cpu"),
+		values.NewString("usage_user"),
 	}; !cmp.Equal(want, got) {
 		t.Fatalf("unexpected columns -want/+got:\n%s", cmp.Diff(want, got))
 	}

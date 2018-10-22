@@ -111,7 +111,7 @@ func (m *RenameMutator) renameCol(col *flux.ColMeta) error {
 			col.Label = newName
 		}
 	} else if m.Fn != nil {
-		m.Scope[m.ParamName] = values.NewStringValue(col.Label)
+		m.Scope[m.ParamName] = values.NewString(col.Label)
 		newName, err := m.Fn.EvalString(m.Scope)
 		if err != nil {
 			return err
@@ -226,7 +226,7 @@ func (m *DropKeepMutator) checkColumns(tableCols []flux.ColMeta) error {
 }
 
 func (m *DropKeepMutator) shouldDrop(col string) (bool, error) {
-	m.Scope[m.ParamName] = values.NewStringValue(col)
+	m.Scope[m.ParamName] = values.NewString(col)
 	if shouldDrop, err := m.Predicate.EvalBool(m.Scope); err != nil {
 		return false, err
 	} else if m.FlipPredicate {

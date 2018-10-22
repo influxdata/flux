@@ -129,7 +129,7 @@ func (t *setTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 		for j, c := range key.Cols() {
 			cols[j] = c
 			if j == idx {
-				vs[j] = values.NewStringValue(t.value)
+				vs[j] = values.NewString(t.value)
 			} else {
 				vs[j] = key.Value(j)
 			}

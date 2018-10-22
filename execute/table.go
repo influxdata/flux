@@ -27,17 +27,17 @@ func GroupKeyForRowOn(i int, cr flux.ColReader, on map[string]bool) flux.GroupKe
 		cols = append(cols, c)
 		switch c.Type {
 		case flux.TBool:
-			vs = append(vs, values.NewBoolValue(cr.Bools(j)[i]))
+			vs = append(vs, values.NewBool(cr.Bools(j)[i]))
 		case flux.TInt:
-			vs = append(vs, values.NewIntValue(cr.Ints(j)[i]))
+			vs = append(vs, values.NewInt(cr.Ints(j)[i]))
 		case flux.TUInt:
-			vs = append(vs, values.NewUIntValue(cr.UInts(j)[i]))
+			vs = append(vs, values.NewUInt(cr.UInts(j)[i]))
 		case flux.TFloat:
-			vs = append(vs, values.NewFloatValue(cr.Floats(j)[i]))
+			vs = append(vs, values.NewFloat(cr.Floats(j)[i]))
 		case flux.TString:
-			vs = append(vs, values.NewStringValue(cr.Strings(j)[i]))
+			vs = append(vs, values.NewString(cr.Strings(j)[i]))
 		case flux.TTime:
-			vs = append(vs, values.NewTimeValue(cr.Times(j)[i]))
+			vs = append(vs, values.NewTime(cr.Times(j)[i]))
 		}
 	}
 	return NewGroupKey(cols, vs)
@@ -770,17 +770,17 @@ func (t *ColListTable) GetRow(row int) values.Object {
 	for j, col := range t.colMeta {
 		switch col.Type {
 		case flux.TBool:
-			val = values.NewBoolValue(t.cols[j].(*boolColumn).data[row])
+			val = values.NewBool(t.cols[j].(*boolColumn).data[row])
 		case flux.TInt:
-			val = values.NewIntValue(t.cols[j].(*intColumn).data[row])
+			val = values.NewInt(t.cols[j].(*intColumn).data[row])
 		case flux.TUInt:
-			val = values.NewUIntValue(t.cols[j].(*uintColumn).data[row])
+			val = values.NewUInt(t.cols[j].(*uintColumn).data[row])
 		case flux.TFloat:
-			val = values.NewFloatValue(t.cols[j].(*floatColumn).data[row])
+			val = values.NewFloat(t.cols[j].(*floatColumn).data[row])
 		case flux.TString:
-			val = values.NewStringValue(t.cols[j].(*stringColumn).data[row])
+			val = values.NewString(t.cols[j].(*stringColumn).data[row])
 		case flux.TTime:
-			val = values.NewTimeValue(t.cols[j].(*timeColumn).data[row])
+			val = values.NewTime(t.cols[j].(*timeColumn).data[row])
 		}
 		record.Set(col.Label, val)
 	}

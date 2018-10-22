@@ -32,7 +32,7 @@ func TestNames(t *testing.T) {
 func TestDeclaration(t *testing.T) {
 	name := "foo"
 	scope := interpreter.NewScope()
-	scope.Set(name, values.NewIntValue(5))
+	scope.Set(name, values.NewInt(5))
 	declarations := make(semantic.DeclarationScope)
 	declarations[name] = semantic.NewExternalVariableDeclaration(name, semantic.Int)
 

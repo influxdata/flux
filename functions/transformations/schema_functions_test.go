@@ -1,9 +1,10 @@
 package transformations_test
 
 import (
-	"github.com/influxdata/flux/functions/inputs"
 	"regexp"
 	"testing"
+
+	"github.com/influxdata/flux/functions/inputs"
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute/executetest"
@@ -724,7 +725,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 						Label: "1a",
 						Type:  flux.TFloat,
 					}},
-					[]values.Value{values.NewFloatValue(1.0)},
+					[]values.Value{values.NewFloat(1.0)},
 				),
 			}},
 			want: []*executetest.Table{{
@@ -745,7 +746,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 						Label: "1b",
 						Type:  flux.TFloat,
 					}},
-					[]values.Value{values.NewFloatValue(1.0)},
+					[]values.Value{values.NewFloat(1.0)},
 				),
 			}},
 		},
@@ -776,7 +777,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 						Label: "2a",
 						Type:  flux.TFloat,
 					}},
-					[]values.Value{values.NewFloatValue(2.0)},
+					[]values.Value{values.NewFloat(2.0)},
 				),
 			}},
 			want: []*executetest.Table{{
@@ -821,7 +822,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 						{Label: "1a", Type: flux.TFloat},
 						{Label: "3a", Type: flux.TFloat},
 					},
-					[]values.Value{values.NewFloatValue(1.0), values.NewFloatValue(3.0)},
+					[]values.Value{values.NewFloat(1.0), values.NewFloat(3.0)},
 				),
 			}},
 			want: []*executetest.Table{{
@@ -839,7 +840,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					[]flux.ColMeta{
 						{Label: "1a", Type: flux.TFloat},
 					},
-					[]values.Value{values.NewFloatValue(1.0)},
+					[]values.Value{values.NewFloat(1.0)},
 				),
 			}},
 		},

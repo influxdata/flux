@@ -46,9 +46,9 @@ func init() {
 			{Label: "t1", Type: flux.TString},
 		},
 		[]values.Value{
-			values.NewTimeValue(start),
-			values.NewTimeValue(stop),
-			values.NewStringValue(t1Value),
+			values.NewTime(start),
+			values.NewTime(stop),
+			values.NewString(t1Value),
 		},
 	)
 	normalTableBuilder := execute.NewColListTableBuilder(key, executetest.UnlimitedAllocator)

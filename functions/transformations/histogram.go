@@ -325,7 +325,7 @@ func (b linearBuckets) Call(args values.Object) (values.Value, error) {
 	}
 	infV, ok := args.Get("infinity")
 	if !ok {
-		infV = values.NewBoolValue(true)
+		infV = values.NewBool(true)
 	}
 	if infV.Type() != semantic.Bool {
 		return nil, errors.New("infinity must be a bool")
@@ -341,11 +341,11 @@ func (b linearBuckets) Call(args values.Object) (values.Value, error) {
 	elements := make([]values.Value, l)
 	bound := start
 	for i := 0; i < l; i++ {
-		elements[i] = values.NewFloatValue(bound)
+		elements[i] = values.NewFloat(bound)
 		bound += width
 	}
 	if inf {
-		elements[l-1] = values.NewFloatValue(math.Inf(1))
+		elements[l-1] = values.NewFloat(math.Inf(1))
 	}
 	counts := values.NewArrayWithBacking(semantic.Float, elements)
 	return counts, nil
@@ -446,7 +446,7 @@ func (b logarithmicBuckets) Call(args values.Object) (values.Value, error) {
 	}
 	infV, ok := args.Get("infinity")
 	if !ok {
-		infV = values.NewBoolValue(true)
+		infV = values.NewBool(true)
 	}
 	if infV.Type() != semantic.Bool {
 		return nil, errors.New("infinity must be a bool")
@@ -462,11 +462,11 @@ func (b logarithmicBuckets) Call(args values.Object) (values.Value, error) {
 	elements := make([]values.Value, l)
 	bound := start
 	for i := 0; i < l; i++ {
-		elements[i] = values.NewFloatValue(bound)
+		elements[i] = values.NewFloat(bound)
 		bound *= factor
 	}
 	if inf {
-		elements[l-1] = values.NewFloatValue(math.Inf(1))
+		elements[l-1] = values.NewFloat(math.Inf(1))
 	}
 	counts := values.NewArrayWithBacking(semantic.Float, elements)
 	return counts, nil

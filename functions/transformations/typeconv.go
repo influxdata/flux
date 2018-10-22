@@ -113,7 +113,7 @@ func (c *stringConv) Call(args values.Object) (values.Value, error) {
 	default:
 		return nil, fmt.Errorf("cannot convert %v to string", v.Type())
 	}
-	return values.NewStringValue(str), nil
+	return values.NewString(str), nil
 }
 
 type intConv struct{}
@@ -202,7 +202,7 @@ func (c *intConv) Call(args values.Object) (values.Value, error) {
 	default:
 		return nil, fmt.Errorf("cannot convert %v to int", v.Type())
 	}
-	return values.NewIntValue(i), nil
+	return values.NewInt(i), nil
 }
 
 type uintConv struct{}
@@ -291,7 +291,7 @@ func (c *uintConv) Call(args values.Object) (values.Value, error) {
 	default:
 		return nil, fmt.Errorf("cannot convert %v to uint", v.Type())
 	}
-	return values.NewUIntValue(i), nil
+	return values.NewUInt(i), nil
 }
 
 type floatConv struct{}
@@ -376,7 +376,7 @@ func (c *floatConv) Call(args values.Object) (values.Value, error) {
 	default:
 		return nil, fmt.Errorf("cannot convert %v to float", v.Type())
 	}
-	return values.NewFloatValue(float), nil
+	return values.NewFloat(float), nil
 }
 
 type boolConv struct{}
@@ -481,7 +481,7 @@ func (c *boolConv) Call(args values.Object) (values.Value, error) {
 	default:
 		return nil, fmt.Errorf("cannot convert %v to float", v.Type())
 	}
-	return values.NewBoolValue(b), nil
+	return values.NewBool(b), nil
 }
 
 type timeConv struct{}
@@ -558,7 +558,7 @@ func (c *timeConv) Call(args values.Object) (values.Value, error) {
 	default:
 		return nil, fmt.Errorf("cannot convert %v to time", v.Type())
 	}
-	return values.NewTimeValue(t), nil
+	return values.NewTime(t), nil
 }
 
 type durationConv struct{}
@@ -635,5 +635,5 @@ func (c *durationConv) Call(args values.Object) (values.Value, error) {
 	default:
 		return nil, fmt.Errorf("cannot convert %v to duration", v.Type())
 	}
-	return values.NewDurationValue(d), nil
+	return values.NewDuration(d), nil
 }
