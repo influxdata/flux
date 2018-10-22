@@ -35,7 +35,7 @@ func init() {
 	flux.RegisterFunction(FromKind, createFromOpSpec, fromSignature)
 	flux.RegisterOpSpec(FromKind, newFromOp)
 	plan.RegisterProcedureSpec(FromKind, newFromProcedure, FromKind)
-	plan.RegisterPhysicalRule(MergeFromRange{})
+	plan.RegisterPhysicalRule(MergeFromRangeRule{})
 	execute.RegisterSource(FromKind, createFromSource)
 }
 
@@ -121,21 +121,21 @@ type FromProcedureSpec struct {
 	AggregateMethod string
 }
 
-// MergeFromRange pushes a `range` into a `from`
-type MergeFromRange struct{}
+// MergeFromRangeRule pushes a `range` into a `from`
+type MergeFromRangeRule struct{}
 
 // Name returns the name of the rule
-func (rule MergeFromRange) Name() string {
-	return "MergeFromRange"
+func (rule MergeFromRangeRule) Name() string {
+	return "MergeFromRangeRule"
 }
 
 // Pattern returns the pattern that matches `from -> range`
-func (rule MergeFromRange) Pattern() plan.Pattern {
+func (rule MergeFromRangeRule) Pattern() plan.Pattern {
 	return plan.Pat(transformations.RangeKind, plan.Pat(FromKind))
 }
 
 // Rewrite attempts to rewrite a `from -> range` into a `FromRange`
-func (rule MergeFromRange) Rewrite(node plan.PlanNode) (plan.PlanNode, bool) {
+func (rule MergeFromRangeRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool) {
 	from := node.Predecessors()[0]
 	fromSpec := from.ProcedureSpec().(*FromProcedureSpec)
 	rangeSpec := node.ProcedureSpec().(*transformations.RangeProcedureSpec)

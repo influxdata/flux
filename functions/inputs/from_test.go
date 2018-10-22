@@ -205,7 +205,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 		{
 			name: "from range",
 			// from -> range  =>  from
-			rules: []plan.Rule{&inputs.MergeFromRange{}},
+			rules: []plan.Rule{&inputs.MergeFromRangeRule{}},
 			before: &plantest.PhysicalPlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
@@ -222,7 +222,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 		{
 			name: "from range with successor node",
 			// from -> range -> count  =>  from -> count
-			rules: []plan.Rule{&inputs.MergeFromRange{}},
+			rules: []plan.Rule{&inputs.MergeFromRangeRule{}},
 			before: &plantest.PhysicalPlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
@@ -245,7 +245,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 		{
 			name: "from with multiple ranges",
 			// from -> range -> range  =>  from
-			rules: []plan.Rule{&inputs.MergeFromRange{}},
+			rules: []plan.Rule{&inputs.MergeFromRangeRule{}},
 			before: &plantest.PhysicalPlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
@@ -270,7 +270,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			//      range       =>      \    /
 			//        |                  from
 			//       from
-			rules: []plan.Rule{&inputs.MergeFromRange{}},
+			rules: []plan.Rule{&inputs.MergeFromRangeRule{}},
 			before: &plantest.PhysicalPlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
@@ -305,7 +305,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			// range    count                                      range    count
 			//     \    /       =>   cannot push range into a   =>     \    /
 			//      from           from with multiple sucessors         from
-			rules: []plan.Rule{&inputs.MergeFromRange{}},
+			rules: []plan.Rule{&inputs.MergeFromRangeRule{}},
 			before: &plantest.PhysicalPlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
