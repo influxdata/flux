@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/influxdata/flux/functions/inputs"
 	"os"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/influxdata/flux/functions/inputs"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -300,7 +301,7 @@ func Example_setOption() {
 	itrp := flux.NewInterpreter()
 
 	// Set a new option from the interpreter
-	itrp.SetOption("dummy_option", values.NewIntValue(3))
+	itrp.SetOption("dummy_option", values.NewInt(3))
 
 	fmt.Printf("dummy_option = %d", itrp.Option("dummy_option").Int())
 	// Output: dummy_option = 3
@@ -348,7 +349,7 @@ func Example_overrideDefaultOptionInternally() {
 		ReturnType: semantic.Time,
 	})
 	functionCall := func(args values.Object) (values.Value, error) {
-		return values.NewTimeValue(values.ConvertTime(timeValue)), nil
+		return values.NewTime(values.ConvertTime(timeValue)), nil
 	}
 	sideEffect := false
 

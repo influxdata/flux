@@ -22,7 +22,7 @@ func SystemTime() values.Value {
 		ReturnType: semantic.Time,
 	})
 	call := func(args values.Object) (values.Value, error) {
-		return values.NewTimeValue(values.ConvertTime(time.Now().UTC())), nil
+		return values.NewTime(values.ConvertTime(time.Now().UTC())), nil
 	}
 	sideEffect := false
 	return values.NewFunction(name, ftype, call, sideEffect)

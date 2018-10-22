@@ -143,7 +143,7 @@ func (t *shiftTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 				return fmt.Errorf("column %q is not of type time", c.Label)
 			}
 			cols[j] = c
-			vs[j] = values.NewTimeValue(key.ValueTime(j).Add(t.shift))
+			vs[j] = values.NewTime(key.ValueTime(j).Add(t.shift))
 		} else {
 			cols[j] = c
 			vs[j] = key.Value(j)

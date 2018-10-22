@@ -26,7 +26,7 @@ type WindowOpSpec struct {
 	CreateEmpty   bool             `json:"createEmpty"`
 }
 
-var infinityVar = values.NewDurationValue(math.MaxInt64)
+var infinityVar = values.NewDuration(math.MaxInt64)
 
 var windowSignature = flux.DefaultFunctionSignature()
 
@@ -382,9 +382,9 @@ func (t *fixedWindowTransformation) newWindowGroupKey(tbl flux.Table, keyCols []
 		cols[j] = c
 		switch c.Label {
 		case t.startColLabel:
-			vs[j] = values.NewTimeValue(bnds.Start)
+			vs[j] = values.NewTime(bnds.Start)
 		case t.stopColLabel:
-			vs[j] = values.NewTimeValue(bnds.Stop)
+			vs[j] = values.NewTime(bnds.Stop)
 		default:
 			vs[j] = tbl.Key().Value(keyColMap[j])
 		}

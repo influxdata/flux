@@ -208,17 +208,17 @@ func ValueForRow(i, j int, cr flux.ColReader) values.Value {
 	t := cr.Cols()[j].Type
 	switch t {
 	case flux.TString:
-		return values.NewStringValue(cr.Strings(j)[i])
+		return values.NewString(cr.Strings(j)[i])
 	case flux.TInt:
-		return values.NewIntValue(cr.Ints(j)[i])
+		return values.NewInt(cr.Ints(j)[i])
 	case flux.TUInt:
-		return values.NewUIntValue(cr.UInts(j)[i])
+		return values.NewUInt(cr.UInts(j)[i])
 	case flux.TFloat:
-		return values.NewFloatValue(cr.Floats(j)[i])
+		return values.NewFloat(cr.Floats(j)[i])
 	case flux.TBool:
-		return values.NewBoolValue(cr.Bools(j)[i])
+		return values.NewBool(cr.Bools(j)[i])
 	case flux.TTime:
-		return values.NewTimeValue(cr.Times(j)[i])
+		return values.NewTime(cr.Times(j)[i])
 	default:
 		PanicUnknownType(t)
 		return nil

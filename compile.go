@@ -94,7 +94,7 @@ func NewInterpreter() *interpreter.Interpreter {
 }
 
 func nowFunc(now time.Time) values.Function {
-	timeVal := values.NewTimeValue(values.ConvertTime(now))
+	timeVal := values.NewTime(values.ConvertTime(now))
 	ftype := semantic.NewFunctionType(semantic.FunctionSignature{
 		ReturnType: semantic.Time,
 	})
@@ -436,7 +436,7 @@ func (t *TableObject) Function() values.Function {
 func (t *TableObject) Get(name string) (values.Value, bool) {
 	switch name {
 	case tableKindKey:
-		return values.NewStringValue(string(t.Kind)), true
+		return values.NewString(string(t.Kind)), true
 	case tableParentsKey:
 		return t.Parents, true
 	default:
@@ -457,7 +457,7 @@ func (t *TableObject) Range(f func(name string, v values.Value)) {
 		val, _ := t.args.Get(arg)
 		f(arg, val)
 	}
-	f(tableKindKey, values.NewStringValue(string(t.Kind)))
+	f(tableKindKey, values.NewString(string(t.Kind)))
 	f(tableParentsKey, t.Parents)
 }
 

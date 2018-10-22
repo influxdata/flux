@@ -65,21 +65,21 @@ func (c compiledFn) Eval(scope Scope) (values.Value, error) {
 	}
 	switch c.Type().Kind() {
 	case semantic.String:
-		return values.NewStringValue(c.root.EvalString(scope)), nil
+		return values.NewString(c.root.EvalString(scope)), nil
 	case semantic.Int:
-		return values.NewIntValue(c.root.EvalInt(scope)), nil
+		return values.NewInt(c.root.EvalInt(scope)), nil
 	case semantic.UInt:
-		return values.NewUIntValue(c.root.EvalUInt(scope)), nil
+		return values.NewUInt(c.root.EvalUInt(scope)), nil
 	case semantic.Float:
-		return values.NewFloatValue(c.root.EvalFloat(scope)), nil
+		return values.NewFloat(c.root.EvalFloat(scope)), nil
 	case semantic.Bool:
-		return values.NewBoolValue(c.root.EvalBool(scope)), nil
+		return values.NewBool(c.root.EvalBool(scope)), nil
 	case semantic.Time:
-		return values.NewTimeValue(c.root.EvalTime(scope)), nil
+		return values.NewTime(c.root.EvalTime(scope)), nil
 	case semantic.Duration:
-		return values.NewDurationValue(c.root.EvalDuration(scope)), nil
+		return values.NewDuration(c.root.EvalDuration(scope)), nil
 	case semantic.Regexp:
-		return values.NewRegexpValue(c.root.EvalRegexp(scope)), nil
+		return values.NewRegexp(c.root.EvalRegexp(scope)), nil
 	case semantic.Array:
 		return c.root.EvalArray(scope), nil
 	case semantic.Object:
@@ -212,21 +212,21 @@ func (s Scope) Copy() Scope {
 func eval(e Evaluator, scope Scope) values.Value {
 	switch e.Type().Kind() {
 	case semantic.String:
-		return values.NewStringValue(e.EvalString(scope))
+		return values.NewString(e.EvalString(scope))
 	case semantic.Int:
-		return values.NewIntValue(e.EvalInt(scope))
+		return values.NewInt(e.EvalInt(scope))
 	case semantic.UInt:
-		return values.NewUIntValue(e.EvalUInt(scope))
+		return values.NewUInt(e.EvalUInt(scope))
 	case semantic.Float:
-		return values.NewFloatValue(e.EvalFloat(scope))
+		return values.NewFloat(e.EvalFloat(scope))
 	case semantic.Bool:
-		return values.NewBoolValue(e.EvalBool(scope))
+		return values.NewBool(e.EvalBool(scope))
 	case semantic.Time:
-		return values.NewTimeValue(e.EvalTime(scope))
+		return values.NewTime(e.EvalTime(scope))
 	case semantic.Duration:
-		return values.NewDurationValue(e.EvalDuration(scope))
+		return values.NewDuration(e.EvalDuration(scope))
 	case semantic.Regexp:
-		return values.NewRegexpValue(e.EvalRegexp(scope))
+		return values.NewRegexp(e.EvalRegexp(scope))
 	case semantic.Array:
 		return e.EvalArray(scope)
 	case semantic.Object:
