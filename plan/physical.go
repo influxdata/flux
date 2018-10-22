@@ -131,7 +131,7 @@ func WithDefaultMemoryLimit(memBytes int64) PhysicalOption {
 // WithPhysicalRule produces a physical plan option that forces a particular rule to be applied.
 func WithPhysicalRule(rules ...Rule) PhysicalOption {
 	return physicalOption(func(pp *physicalPlanner) {
-		pp.addRules(rules)
+		pp.addRules(rules...)
 	})
 }
 
