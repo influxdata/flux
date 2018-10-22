@@ -46,8 +46,8 @@ func (okp *OneKindPattern) Match(node PlanNode) bool {
 	}
 
 	// Recursively match each predecessor
-	for i, pred := range node.Predecessors() {
-		if !okp.predecessors[i].Match(pred) {
+	for i, pattern := range okp.predecessors {
+		if !pattern.Match(node.Predecessors()[i]) {
 			return false
 		}
 	}

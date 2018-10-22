@@ -4,34 +4,19 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/functions/inputs/storage"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/functions/inputs/storage"
+	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	"github.com/influxdata/platform"
 	"github.com/influxdata/platform/query"
 	"github.com/pkg/errors"
 )
 
-type GroupMode int
-
-const (
-	// GroupModeDefault will use the default grouping of GroupModeAll.
-	GroupModeDefault GroupMode = 0
-
-	// GroupModeNone merges all series into a single group.
-	GroupModeNone GroupMode = 1 << iota
-	// GroupModeAll produces a separate table for each series.
-	GroupModeAll
-	// GroupModeBy produces a table for each unique value of the specified GroupKeys.
-	GroupModeBy
-	// GroupModeExcept produces a table for the unique values of all keys, except those specified by GroupKeys.
-	GroupModeExcept
-)
-
-
 const FromKind = "from"
-
 
 type FromOpSpec struct {
 	Bucket   string      `json:"bucket,omitempty"`
@@ -50,6 +35,7 @@ func init() {
 	flux.RegisterFunction(FromKind, createFromOpSpec, fromSignature)
 	flux.RegisterOpSpec(FromKind, newFromOp)
 	plan.RegisterProcedureSpec(FromKind, newFromProcedure, FromKind)
+	plan.RegisterPhysicalRule(MergeFromRangeRule{})
 	execute.RegisterSource(FromKind, createFromSource)
 }
 
@@ -128,11 +114,73 @@ type FromProcedureSpec struct {
 
 	GroupingSet bool
 	OrderByTime bool
-	GroupMode   GroupMode
+	GroupMode   functions.GroupMode
 	GroupKeys   []string
 
 	AggregateSet    bool
 	AggregateMethod string
+}
+
+// MergeFromRangeRule pushes a `range` into a `from`
+type MergeFromRangeRule struct{}
+
+// Name returns the name of the rule
+func (rule MergeFromRangeRule) Name() string {
+	return "MergeFromRangeRule"
+}
+
+// Pattern returns the pattern that matches `from -> range`
+func (rule MergeFromRangeRule) Pattern() plan.Pattern {
+	return plan.Pat(transformations.RangeKind, plan.Pat(FromKind))
+}
+
+// Rewrite attempts to rewrite a `from -> range` into a `FromRange`
+func (rule MergeFromRangeRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool) {
+	from := node.Predecessors()[0]
+	fromSpec := from.ProcedureSpec().(*FromProcedureSpec)
+	rangeSpec := node.ProcedureSpec().(*transformations.RangeProcedureSpec)
+	fromRange := fromSpec.Copy().(*FromProcedureSpec)
+
+	// Set new bounds to `range` bounds initially
+	fromRange.Bounds = rangeSpec.Bounds
+
+	var (
+		now   = rangeSpec.Bounds.Now
+		start = rangeSpec.Bounds.Start
+		stop  = rangeSpec.Bounds.Stop
+	)
+
+	bounds := &plan.Bounds{
+		Start: values.ConvertTime(start.Time(now)),
+		Stop:  values.ConvertTime(stop.Time(now)),
+	}
+
+	// Intersect bounds if `from` already bounded
+	if fromSpec.BoundsSet {
+		now = fromSpec.Bounds.Now
+		start = fromSpec.Bounds.Start
+		stop = fromSpec.Bounds.Stop
+
+		fromBounds := &plan.Bounds{
+			Start: values.ConvertTime(start.Time(now)),
+			Stop:  values.ConvertTime(stop.Time(now)),
+		}
+
+		bounds = bounds.Intersect(fromBounds)
+		fromRange.Bounds = flux.Bounds{
+			Start: flux.Time{Absolute: bounds.Start.Time()},
+			Stop:  flux.Time{Absolute: bounds.Stop.Time()},
+		}
+	}
+
+	fromRange.BoundsSet = true
+
+	// Finally merge nodes into single operation
+	merged, err := plan.MergePhysicalPlanNodes(node, from, fromRange)
+	if err != nil {
+		return node, false
+	}
+	return merged, true
 }
 
 func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -181,6 +229,18 @@ func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
 	ns.AggregateMethod = s.AggregateMethod
 
 	return ns
+}
+
+// TimeBounds implements plan.BoundsAwareProcedureSpec
+func (s *FromProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bounds {
+	if s.BoundsSet {
+		bounds := &plan.Bounds{
+			Start: values.ConvertTime(s.Bounds.Start.Time(s.Bounds.Now)),
+			Stop:  values.ConvertTime(s.Bounds.Stop.Time(s.Bounds.Now)),
+		}
+		return bounds
+	}
+	return nil
 }
 
 func createFromSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a execute.Administration) (execute.Source, error) {
@@ -257,5 +317,3 @@ func InjectFromDependencies(depsMap execute.Dependencies, deps storage.Dependenc
 	depsMap[FromKind] = deps
 	return nil
 }
-
-

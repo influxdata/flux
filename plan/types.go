@@ -1,6 +1,7 @@
 package plan
 
 import (
+	"fmt"
 	"sort"
 	"time"
 
@@ -35,8 +36,6 @@ type PlanNode interface {
 	SetBounds(bounds *Bounds)
 	AddSuccessors(...PlanNode)
 	AddPredecessors(...PlanNode)
-	RemovePredecessor(PlanNode)
-	RemoveSuccessor(PlanNode)
 	ClearSuccessors()
 	ClearPredecessors()
 
@@ -194,40 +193,6 @@ func (e *edges) AddPredecessors(nodes ...PlanNode) {
 	e.predecessors = append(e.predecessors, nodes...)
 }
 
-func (e *edges) RemovePredecessor(node PlanNode) {
-	idx := -1
-	for i, pred := range e.predecessors {
-		if node == pred {
-			idx = i
-			break
-		}
-	}
-	if idx == -1 {
-		return
-	} else if idx == len(e.predecessors)-1 {
-		e.predecessors = e.predecessors[:idx]
-	} else {
-		e.predecessors = append(e.predecessors[:idx], e.predecessors[idx+1:]...)
-	}
-}
-
-func (e *edges) RemoveSuccessor(node PlanNode) {
-	idx := -1
-	for i, succ := range e.successors {
-		if node == succ {
-			idx = i
-			break
-		}
-	}
-	if idx == -1 {
-		return
-	} else if idx == len(e.successors)-1 {
-		e.successors = e.successors[:idx]
-	} else {
-		e.successors = append(e.successors[:idx], e.successors[idx+1:]...)
-	}
-}
-
 func (e *edges) ClearSuccessors() {
 	e.successors = e.successors[0:0]
 }
@@ -280,6 +245,30 @@ func MergeLogicalPlanNodes(top, bottom PlanNode, procSpec ProcedureSpec) PlanNod
 	}
 
 	return mergedNode
+}
+
+func MergePhysicalPlanNodes(top, bottom PlanNode, procSpec PhysicalProcedureSpec) (PlanNode, error) {
+	if len(top.Predecessors()) != 1 ||
+		len(bottom.Successors()) != 1 ||
+		top.Predecessors()[0] != bottom {
+		return nil, fmt.Errorf("cannot merge %s and %s due to topological issues", top.ID(), bottom.ID())
+	}
+
+	mergedNode := &PhysicalPlanNode{
+		id:   "merged_" + bottom.ID() + "_" + top.ID(),
+		Spec: procSpec,
+	}
+
+	mergedNode.AddPredecessors(bottom.Predecessors()...)
+	for i, pred := range bottom.Predecessors() {
+		for _, succ := range pred.Successors() {
+			if succ == bottom {
+				pred.Successors()[i] = mergedNode
+			}
+		}
+	}
+
+	return mergedNode, nil
 }
 
 // SwapPlanNodes swaps two plan nodes and returns an equivalent sub-plan with the nodes swapped.
