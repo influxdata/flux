@@ -1,12 +1,12 @@
 package transformations_test
 
 import (
-	"github.com/influxdata/flux/functions/inputs"
 	"testing"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/functions"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/querytest"
 )
@@ -32,7 +32,7 @@ func TestGroup_Process(t *testing.T) {
 		{
 			name: "fan in",
 			spec: &transformations.GroupProcedureSpec{
-				GroupMode: inputs.GroupModeBy,
+				GroupMode: functions.GroupModeBy,
 				GroupKeys: []string{"t1"},
 			},
 			data: []flux.Table{
@@ -117,7 +117,7 @@ func TestGroup_Process(t *testing.T) {
 		{
 			name: "fan in ignoring",
 			spec: &transformations.GroupProcedureSpec{
-				GroupMode: inputs.GroupModeExcept,
+				GroupMode: functions.GroupModeExcept,
 				GroupKeys: []string{"_time", "_value", "t2"},
 			},
 			data: []flux.Table{
@@ -211,7 +211,7 @@ func TestGroup_Process(t *testing.T) {
 			// Right now the order of input tables determines whether the column is included.
 			name: "fan in missing columns",
 			spec: &transformations.GroupProcedureSpec{
-				GroupMode: inputs.GroupModeBy,
+				GroupMode: functions.GroupModeBy,
 				GroupKeys: []string{"t1"},
 			},
 			data: []flux.Table{
@@ -300,7 +300,7 @@ func TestGroup_Process(t *testing.T) {
 		{
 			name: "fan out",
 			spec: &transformations.GroupProcedureSpec{
-				GroupMode: inputs.GroupModeBy,
+				GroupMode: functions.GroupModeBy,
 				GroupKeys: []string{"t1"},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -342,7 +342,7 @@ func TestGroup_Process(t *testing.T) {
 		{
 			name: "fan out ignoring",
 			spec: &transformations.GroupProcedureSpec{
-				GroupMode: inputs.GroupModeExcept,
+				GroupMode: functions.GroupModeExcept,
 				GroupKeys: []string{"_time", "_value", "t2"},
 			},
 			data: []flux.Table{&executetest.Table{
