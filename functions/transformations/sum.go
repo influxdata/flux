@@ -110,7 +110,7 @@ func (a *SumIntAgg) DoInt(vs []int64) {
 		a.sum += v
 	}
 }
-func (a *SumIntAgg) Type() flux.DataType {
+func (a *SumIntAgg) Type() flux.ColType {
 	return flux.TInt
 }
 func (a *SumIntAgg) ValueInt() int64 {
@@ -126,7 +126,7 @@ func (a *SumUIntAgg) DoUInt(vs []uint64) {
 		a.sum += v
 	}
 }
-func (a *SumUIntAgg) Type() flux.DataType {
+func (a *SumUIntAgg) Type() flux.ColType {
 	return flux.TUInt
 }
 func (a *SumUIntAgg) ValueUInt() uint64 {
@@ -142,7 +142,7 @@ func (a *SumFloatAgg) DoFloat(vs []float64) {
 		a.sum += v
 	}
 }
-func (a *SumFloatAgg) Type() flux.DataType {
+func (a *SumFloatAgg) Type() flux.ColType {
 	return flux.TFloat
 }
 func (a *SumFloatAgg) ValueFloat() float64 {

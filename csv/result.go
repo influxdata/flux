@@ -1101,8 +1101,8 @@ func copyLine(line []string) []string {
 	return cpy
 }
 
-// decodeType returns the execute.DataType and any additional format description.
-func decodeType(datatype string) (t flux.DataType, desc string, err error) {
+// decodeType returns the flux.ColType and any additional format description.
+func decodeType(datatype string) (t flux.ColType, desc string, err error) {
 	split := strings.SplitN(datatype, ":", 2)
 	if len(split) > 1 {
 		desc = split[1]

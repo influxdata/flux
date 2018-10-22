@@ -68,7 +68,7 @@ func (f *rowFn) prepare(cols []flux.ColMeta) error {
 	return nil
 }
 
-func ConvertToKind(t flux.DataType) semantic.Kind {
+func ConvertToKind(t flux.ColType) semantic.Kind {
 	// TODO make this an array lookup.
 	switch t {
 	case flux.TInvalid:
@@ -90,7 +90,7 @@ func ConvertToKind(t flux.DataType) semantic.Kind {
 	}
 }
 
-func ConvertFromKind(k semantic.Kind) flux.DataType {
+func ConvertFromKind(k semantic.Kind) flux.ColType {
 	// TODO make this an array lookup.
 	switch k {
 	case semantic.Invalid:

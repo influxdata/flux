@@ -632,17 +632,17 @@ func (b ColListTableBuilder) AppendValue(j int, v values.Value) {
 	}
 }
 
-func (b ColListTableBuilder) checkColType(j int, typ flux.DataType) {
+func (b ColListTableBuilder) checkColType(j int, typ flux.ColType) {
 	CheckColType(b.table.colMeta[j], typ)
 }
 
-func CheckColType(col flux.ColMeta, typ flux.DataType) {
+func CheckColType(col flux.ColMeta, typ flux.ColType) {
 	if col.Type != typ {
 		panic(fmt.Errorf("column %s is not of type %v", col.Label, typ))
 	}
 }
 
-func PanicUnknownType(typ flux.DataType) {
+func PanicUnknownType(typ flux.ColType) {
 	panic(fmt.Errorf("unknown type %v", typ))
 }
 

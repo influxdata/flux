@@ -138,7 +138,7 @@ func (a *SpreadIntAgg) DoInt(vs []int64) {
 	}
 }
 
-func (a *SpreadIntAgg) Type() flux.DataType {
+func (a *SpreadIntAgg) Type() flux.ColType {
 	return flux.TInt
 }
 
@@ -161,7 +161,7 @@ func (a *SpreadUIntAgg) DoUInt(vs []uint64) {
 	}
 }
 
-func (a *SpreadUIntAgg) Type() flux.DataType {
+func (a *SpreadUIntAgg) Type() flux.ColType {
 	return flux.TUInt
 }
 
@@ -184,7 +184,7 @@ func (a *SpreadFloatAgg) DoFloat(vs []float64) {
 	}
 }
 
-func (a *SpreadFloatAgg) Type() flux.DataType {
+func (a *SpreadFloatAgg) Type() flux.ColType {
 	return flux.TFloat
 }
 

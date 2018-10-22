@@ -204,7 +204,7 @@ type Aggregate interface {
 }
 
 type ValueFunc interface {
-	Type() flux.DataType
+	Type() flux.ColType
 }
 type DoBoolAgg interface {
 	ValueFunc
