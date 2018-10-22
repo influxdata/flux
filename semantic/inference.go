@@ -285,10 +285,27 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 		v.env.Set(n.Key.Name, ts)
 		return t, nil
 	case *CallExpression:
+		args, err := v.solution.PolyTypeOf(n.Arguments)
+		if err != nil {
+			return nil, err
+		}
+
+		out := v.solution.Fresh()
+		ft := NewFunctionPolyType(FunctionSignature{
+			In:  args,
+			Out: out,
+		})
+
 		ct, err := v.solution.PolyTypeOf(n.Callee)
 		if err != nil {
 			return nil, err
 		}
+
+		if err := v.solution.Unify(ft, ct); err != nil {
+			return nil, err
+		}
+		return out, nil
+
 		t, ok := ct.(functionPolyType)
 		if !ok {
 			return nil, fmt.Errorf("cannot call non function type %v", ct)

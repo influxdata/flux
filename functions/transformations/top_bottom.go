@@ -30,7 +30,7 @@ _highestOrLowest = (n, _sortLimit=(table=<-,n,cols) => table, reducer=(table=<-)
 	table
 		|> group(by:by)
 		|> reducer()
-		|> group(by:by)
+		|> group(none:true)
 		|> _sortLimit(n:n, cols:cols)
 
 // highestMax returns the top N records from all groups using the maximum of each group.
