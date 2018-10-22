@@ -91,9 +91,8 @@ func removeYields(plan *PlanSpec) (*PlanSpec, error) {
 			newSucc := make([]PlanNode, 0, len(newRoot.Successors()))
 
 			for _, succ := range newRoot.Successors() {
-				newSucc = append(newSucc, succ)
-				if succ == root {
-					continue
+				if succ != root {
+					newSucc = append(newSucc, succ)
 				}
 			}
 
