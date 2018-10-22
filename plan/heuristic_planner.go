@@ -12,7 +12,7 @@ func newHeuristicPlanner() *heuristicPlanner {
 	}
 }
 
-func (p *heuristicPlanner) addRules(rules []Rule) {
+func (p *heuristicPlanner) addRules(rules ...Rule) {
 	for _, rule := range rules {
 		ruleSlice := p.rules[rule.Pattern().Root()]
 		p.rules[rule.Pattern().Root()] = append(ruleSlice, rule)
@@ -25,9 +25,11 @@ func (p *heuristicPlanner) matchRules(node PlanNode) (PlanNode, bool) {
 	anyChanged := false
 
 	for _, rule := range p.rules[AnyKind] {
-		newNode, changed := rule.Rewrite(node)
-		anyChanged = anyChanged || changed
-		node = newNode
+		if rule.Pattern().Match(node) {
+			newNode, changed := rule.Rewrite(node)
+			anyChanged = anyChanged || changed
+			node = newNode
+		}
 	}
 
 	for _, rule := range p.rules[node.Kind()] {

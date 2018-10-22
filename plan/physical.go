@@ -1,8 +1,6 @@
 package plan
 
 import (
-	"errors"
-	"fmt"
 	"math"
 )
 
@@ -27,7 +25,7 @@ func NewPhysicalPlanner(options ...PhysicalOption) PhysicalPlanner {
 		i++
 	}
 
-	pp.addRules(rules)
+	pp.addRules(rules...)
 
 	// Options may add or remove rules, so process them after we've
 	// added registered rules.
@@ -69,46 +67,40 @@ func (pp *physicalPlanner) Plan(spec *PlanSpec) (*PlanSpec, error) {
 	return final, nil
 }
 
-// TODO: This procedure should be encapsulated in a yield rewrite rule
+type removeYieldRule struct {
+}
+
+func (removeYieldRule) Name() string {
+	return "removeYield"
+}
+
+func (removeYieldRule) Pattern() Pattern {
+	return YieldPat(Any())
+}
+
+func (removeYieldRule) Rewrite(pn PlanNode) (PlanNode, bool) {
+	pred := pn.Predecessors()[0]
+	pred.ClearSuccessors()
+	return pred, true
+}
+
 func removeYields(plan *PlanSpec) (*PlanSpec, error) {
-	for root := range plan.Roots {
-
-		name := DefaultYieldName
-
-		if yield, ok := root.ProcedureSpec().(YieldProcedureSpec); ok {
-
-			name = yield.YieldName()
-
-			if len(root.Predecessors()) != 1 {
-				return nil, errors.New("yield must have exactly one predecessor")
-			}
-
-			if _, ok := plan.Results[name]; ok {
-				return nil, fmt.Errorf("found duplicate yield name %q", name)
-			}
-
-			newRoot := root.Predecessors()[0]
-			newSucc := make([]PlanNode, 0, len(newRoot.Successors()))
-
-			for _, succ := range newRoot.Successors() {
-				if succ != root {
-					newSucc = append(newSucc, succ)
-				}
-			}
-
-			newRoot.ClearSuccessors()
-			newRoot.AddSuccessors(newSucc...)
-			plan.Replace(root, newRoot)
-			plan.Results[name] = newRoot
-			continue
+	// Add each yield node to the plan's result map
+	plan.TopDownWalk(func(pn PlanNode) error {
+		if yieldSpec, ok := pn.ProcedureSpec().(YieldProcedureSpec); ok {
+			plan.Results[yieldSpec.YieldName()] = pn.Predecessors()[0]
 		}
+		return nil
+	})
 
-		if _, ok := plan.Results[name]; ok {
-			return nil, fmt.Errorf("found duplicate yield name %q", name)
-		}
-
-		plan.Results[name] = root
+	// Remove the yield nodes
+	hp := newHeuristicPlanner()
+	hp.addRules(removeYieldRule{})
+	plan, err := hp.Plan(plan)
+	if err != nil {
+		return nil, err
 	}
+
 	return plan, nil
 }
 

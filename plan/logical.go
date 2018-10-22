@@ -32,7 +32,7 @@ func NewLogicalPlanner(options ...LogicalOption) LogicalPlanner {
 		i++
 	}
 
-	thePlanner.addRules(rules)
+	thePlanner.addRules(rules...)
 
 	// Options may add or remove rules, so process them after we've
 	// added registered rules.
@@ -62,7 +62,7 @@ type logicalPlanner struct {
 // applied.
 func WithLogicalRule(rule Rule) LogicalOption {
 	return logicalOption(func(lp *logicalPlanner) {
-		lp.addRules([]Rule{rule})
+		lp.addRules(rule)
 	})
 }
 
