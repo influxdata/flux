@@ -88,7 +88,16 @@ func removeYields(plan *PlanSpec) (*PlanSpec, error) {
 			}
 
 			newRoot := root.Predecessors()[0]
-			newRoot.RemoveSuccessor(root)
+			newSucc := make([]PlanNode, 0, len(newRoot.Successors()))
+
+			for _, succ := range newRoot.Successors() {
+				if succ != root {
+					newSucc = append(newSucc, succ)
+				}
+			}
+
+			newRoot.ClearSuccessors()
+			newRoot.AddSuccessors(newSucc...)
 			plan.Replace(root, newRoot)
 			plan.Results[name] = newRoot
 			continue
@@ -124,6 +133,13 @@ func (opt physicalOption) apply(p *physicalPlanner) {
 func WithDefaultMemoryLimit(memBytes int64) PhysicalOption {
 	return physicalOption(func(p *physicalPlanner) {
 		p.defaultMemoryLimit = memBytes
+	})
+}
+
+// WithPhysicalRule produces a physical plan option that forces a particular rule to be applied.
+func WithPhysicalRule(rules ...Rule) PhysicalOption {
+	return physicalOption(func(pp *physicalPlanner) {
+		pp.addRules(rules)
 	})
 }
 
