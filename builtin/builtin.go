@@ -6,6 +6,7 @@ package builtin
 import (
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/functions/inputs"          // Import the built-in sources
+	_ "github.com/influxdata/flux/functions/outputs"         // Import the built-in sinks
 	_ "github.com/influxdata/flux/functions/transformations" // Import the built-in functions
 	_ "github.com/influxdata/flux/options"                   // Import the built-in options
 )

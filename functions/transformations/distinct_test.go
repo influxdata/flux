@@ -73,9 +73,9 @@ func TestDistinct_Process(t *testing.T) {
 					{Label: "_value", Type: flux.TString},
 				},
 				Data: [][]interface{}{
-					{"a","b"},
-					{"a","c"},
-					{"a","d"},
+					{"a", "b"},
+					{"a", "c"},
+					{"a", "d"},
 				},
 			}},
 		},
@@ -152,9 +152,9 @@ func TestDistinct_Process(t *testing.T) {
 					{Label: "_value", Type: flux.TString},
 				},
 				Data: [][]interface{}{
-					{"a","b"},
-					{"a","c"},
-					{"a","d"},
+					{"a", "b"},
+					{"a", "c"},
+					{"a", "d"},
 				},
 			},
 				{
@@ -164,9 +164,9 @@ func TestDistinct_Process(t *testing.T) {
 						{Label: "_value", Type: flux.TString},
 					},
 					Data: [][]interface{}{
-						{"x","b"},
-						{"x","c"},
-						{"x","e"},
+						{"x", "b"},
+						{"x", "c"},
+						{"x", "e"},
 					},
 				}},
 		},

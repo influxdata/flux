@@ -1,11 +1,11 @@
 package transformations_test
 
 import (
-	"github.com/influxdata/flux/functions/inputs"
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/functions/inputs"
+
 	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 
@@ -359,14 +359,8 @@ func TestRange_Process(t *testing.T) {
 				},
 			}},
 			groupKey: func() flux.GroupKey {
-				t1, err := values.NewValue(values.Time(10*time.Minute.Nanoseconds()), semantic.Time)
-				if err != nil {
-					t.Fatal(err)
-				}
-				t2, err := values.NewValue(values.Time(20*time.Minute.Nanoseconds()), semantic.Time)
-				if err != nil {
-					t.Fatal(err)
-				}
+				t1 := values.NewTime(values.Time(10 * time.Minute.Nanoseconds()))
+				t2 := values.NewTime(values.Time(20 * time.Minute.Nanoseconds()))
 
 				vs := []values.Value{t1, t2}
 				return execute.NewGroupKey(

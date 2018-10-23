@@ -35,4 +35,3 @@ func BenchmarkSum(b *testing.B) {
 		10000816.96729983,
 	)
 }
-

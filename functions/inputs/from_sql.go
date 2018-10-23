@@ -45,7 +45,7 @@ func createFromSQLOpSpec(args flux.Arguments, administration *flux.Administratio
 
 	if driverName, err := args.GetRequiredString("driverName"); err != nil {
 		return nil, err
-	} else  {
+	} else {
 		spec.DriverName = driverName
 	}
 
@@ -173,7 +173,7 @@ func (c *SQLIterator) Decode() (flux.Table, error) {
 
 		if firstRow {
 			for i, col := range columns {
-				var dataType flux.DataType
+				var dataType flux.ColType
 				switch col.(type) {
 				case bool:
 					dataType = flux.TBool
@@ -195,7 +195,10 @@ func (c *SQLIterator) Decode() (flux.Table, error) {
 					execute.PanicUnknownType(flux.TInvalid)
 				}
 
-				builder.AddCol(flux.ColMeta{Label: columnNames[i], Type: dataType})
+				_, err := builder.AddCol(flux.ColMeta{Label: columnNames[i], Type: dataType})
+				if err != nil {
+					return nil, err
+				}
 			}
 			firstRow = false
 		}

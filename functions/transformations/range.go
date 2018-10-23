@@ -212,8 +212,10 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		return fmt.Errorf("range found duplicate table with key: %v", tbl.Key())
 	}
 
-	execute.AddTableCols(tbl, builder)
-
+	err := execute.AddTableCols(tbl, builder)
+	if err != nil {
+		return err
+	}
 	timeIdx := execute.ColIdx(t.timeCol, tbl.Cols())
 	if timeIdx < 0 {
 		return fmt.Errorf("range error: supplied time column %s doesn't exist", t.timeCol)
@@ -260,7 +262,10 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 			Label: t.startCol,
 			Type:  flux.TTime,
 		}
-		builder.AddCol(c)
+		_, err := builder.AddCol(c)
+		if err != nil {
+			return err
+		}
 		startAdded = true
 	}
 
@@ -270,11 +275,14 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 			Label: t.stopCol,
 			Type:  flux.TTime,
 		}
-		builder.AddCol(c)
+		_, err := builder.AddCol(c)
+		if err != nil {
+			return err
+		}
 		stopAdded = true
 	}
 
-	err := tbl.Do(func(cr flux.ColReader) error {
+	err = tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			tVal := cr.Times(timeIdx)[i]

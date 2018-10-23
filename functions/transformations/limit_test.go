@@ -60,7 +60,7 @@ func TestLimit_Process(t *testing.T) {
 				N:      1,
 				Offset: 1,
 			},
-			data: []flux.Table{execute.CopyTable(&executetest.Table{
+			data: []flux.Table{executetest.MustCopyTable(&executetest.Table{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
@@ -70,7 +70,7 @@ func TestLimit_Process(t *testing.T) {
 					{execute.Time(2), 1.0},
 					{execute.Time(3), 0.0},
 				},
-			}, executetest.UnlimitedAllocator)},
+			})},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -170,7 +170,6 @@ func TestLimit_Process(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			executetest.ProcessTestHelper(
 				t,
