@@ -23,5 +23,3 @@ func (y generatedYieldProcedureSpec) Copy() ProcedureSpec {
 func (y generatedYieldProcedureSpec) YieldName() string {
 	return y.name
 }
-
-

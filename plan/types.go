@@ -54,7 +54,7 @@ type PlanSpec struct {
 // NewPlanSpec initializes a new query plan
 func NewPlanSpec() *PlanSpec {
 	return &PlanSpec{
-		Roots:   make(map[PlanNode]struct{}),
+		Roots: make(map[PlanNode]struct{}),
 	}
 }
 

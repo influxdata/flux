@@ -2,20 +2,20 @@ package execute_test
 
 import (
 	"context"
+	"math"
 	"testing"
 	"time"
-	"math"
 
-	"github.com/influxdata/flux/ast"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/ast"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions/transformations"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/semantic"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -413,7 +413,7 @@ func TestExecutor_Execute(t *testing.T) {
 					plan.CreatePhysicalNode("join", &transformations.MergeJoinProcedureSpec{
 						On: []string{"_start", "_stop"},
 						TableNames: map[plan.ProcedureID]string{
-							plan.ProcedureIDFromOperationID("sum"): "a",
+							plan.ProcedureIDFromOperationID("sum"):   "a",
 							plan.ProcedureIDFromOperationID("count"): "b",
 						},
 					}),
@@ -466,6 +466,129 @@ func TestExecutor_Execute(t *testing.T) {
 						},
 					},
 				},
+			},
+		},
+		{
+			name: "yield with successor",
+			spec: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
+						[]*executetest.Table{&executetest.Table{
+							KeyCols: []string{"_start", "_stop"},
+							ColMeta: []flux.ColMeta{
+								{Label: "_start", Type: flux.TTime},
+								{Label: "_stop", Type: flux.TTime},
+								{Label: "_time", Type: flux.TTime},
+								{Label: "_value", Type: flux.TFloat},
+							},
+							Data: [][]interface{}{
+								{execute.Time(0), execute.Time(5), execute.Time(0), 1.0},
+								{execute.Time(0), execute.Time(5), execute.Time(1), 2.0},
+								{execute.Time(0), execute.Time(5), execute.Time(2), 3.0},
+								{execute.Time(0), execute.Time(5), execute.Time(3), 4.0},
+								{execute.Time(0), execute.Time(5), execute.Time(4), 5.0},
+							},
+						}},
+					)),
+					plan.CreatePhysicalNode("yield0", executetest.NewYieldProcedureSpec("from")),
+					plan.CreatePhysicalNode("sum", &transformations.SumProcedureSpec{
+						AggregateConfig: execute.DefaultAggregateConfig,
+					}),
+					plan.CreatePhysicalNode("yield1", executetest.NewYieldProcedureSpec("sum")),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+				},
+			},
+			want: map[string][]*executetest.Table{
+				"from": []*executetest.Table{{
+					KeyCols: []string{"_start", "_stop"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), execute.Time(5), execute.Time(0), 1.0},
+						{execute.Time(0), execute.Time(5), execute.Time(1), 2.0},
+						{execute.Time(0), execute.Time(5), execute.Time(2), 3.0},
+						{execute.Time(0), execute.Time(5), execute.Time(3), 4.0},
+						{execute.Time(0), execute.Time(5), execute.Time(4), 5.0},
+					},
+				}},
+				"sum": []*executetest.Table{{
+					KeyCols: []string{"_start", "_stop"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), execute.Time(5), 15.0},
+					},
+				}},
+			},
+		},
+		{
+			name: "adjacent yields",
+			spec: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
+						[]*executetest.Table{&executetest.Table{
+							KeyCols: []string{"_start", "_stop"},
+							ColMeta: []flux.ColMeta{
+								{Label: "_start", Type: flux.TTime},
+								{Label: "_stop", Type: flux.TTime},
+								{Label: "_time", Type: flux.TTime},
+								{Label: "_value", Type: flux.TFloat},
+							},
+							Data: [][]interface{}{
+								{execute.Time(0), execute.Time(5), execute.Time(0), 1.0},
+								{execute.Time(0), execute.Time(5), execute.Time(1), 2.0},
+								{execute.Time(0), execute.Time(5), execute.Time(2), 3.0},
+								{execute.Time(0), execute.Time(5), execute.Time(3), 4.0},
+								{execute.Time(0), execute.Time(5), execute.Time(4), 5.0},
+							},
+						}},
+					)),
+					plan.CreatePhysicalNode("sum", &transformations.SumProcedureSpec{
+						AggregateConfig: execute.DefaultAggregateConfig,
+					}),
+					plan.CreatePhysicalNode("yield0", executetest.NewYieldProcedureSpec("sum0")),
+					plan.CreatePhysicalNode("yield1", executetest.NewYieldProcedureSpec("sum1")),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+				},
+			},
+			want: map[string][]*executetest.Table{
+				"sum0": []*executetest.Table{{
+					KeyCols: []string{"_start", "_stop"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), execute.Time(5), 15.0},
+					},
+				}},
+				"sum1": []*executetest.Table{{
+					KeyCols: []string{"_start", "_stop"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), execute.Time(5), 15.0},
+					},
+				}},
 			},
 		},
 	}

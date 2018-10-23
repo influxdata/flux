@@ -54,14 +54,7 @@ func (pp *physicalPlanner) Plan(spec *PlanSpec) (*PlanSpec, error) {
 
 	// Update concurrency quota
 	if transformedSpec.Resources.ConcurrencyQuota == 0 {
-		numYields := 0
-		spec.TopDownWalk(func(pn PlanNode) error {
-			if _, isYield := pn.ProcedureSpec().(YieldProcedureSpec); isYield {
-				numYields++
-			}
-			return nil
-		})
-		transformedSpec.Resources.ConcurrencyQuota = numYields
+		transformedSpec.Resources.ConcurrencyQuota = len(transformedSpec.Roots)
 	}
 
 	return transformedSpec, nil

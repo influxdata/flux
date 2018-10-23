@@ -18,12 +18,6 @@ func Pat(kind ProcedureKind, predecessors ...Pattern) Pattern {
 	}
 }
 
-// YieldPat returns a pattern that matches any yield node with a predecessor
-// that matches the given predecessor pattern.
-func YieldPat(pred Pattern) Pattern {
-	return YieldPattern{pred: pred}
-}
-
 // Any returns a pattern that matches anything.
 func Any() Pattern {
 	return &AnyPattern{}
@@ -61,22 +55,6 @@ func (okp OneKindPattern) Match(node PlanNode) bool {
 		}
 	}
 	return true
-}
-
-type YieldPattern struct {
-	pred Pattern
-}
-
-func (YieldPattern) Root() ProcedureKind {
-	return AnyKind
-}
-
-func (yp YieldPattern) Match(pn PlanNode) bool {
-	if _, ok := pn.ProcedureSpec().(YieldProcedureSpec); ok {
-		return yp.pred.Match(pn.Predecessors()[0])
-	}
-
-	return false
 }
 
 type AnyPattern struct {

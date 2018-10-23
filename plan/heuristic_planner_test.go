@@ -11,20 +11,20 @@ import (
 func TestPlanTraversal(t *testing.T) {
 
 	testCases := []struct {
-		name      string
-		plan      plantest.PlanSpec
-		nodeIDs   []plan.NodeID
+		name    string
+		plan    plantest.PlanSpec
+		nodeIDs []plan.NodeID
 	}{
 		{
-			name:      "simple",
+			name: "simple",
 			//        0
 			plan: plantest.PlanSpec{
 				Nodes: []plan.PlanNode{plantest.CreateLogicalMockNode("0")},
 			},
-			nodeIDs:   []plan.NodeID{"0"},
+			nodeIDs: []plan.NodeID{"0"},
 		},
 		{
-			name:      "two nodes",
+			name: "two nodes",
 			//        1
 			//        |
 			//        0
@@ -37,7 +37,7 @@ func TestPlanTraversal(t *testing.T) {
 					{0, 1},
 				},
 			},
-			nodeIDs:   []plan.NodeID{"1", "0"},
+			nodeIDs: []plan.NodeID{"1", "0"},
 		},
 		{
 			name: "multi-root",
