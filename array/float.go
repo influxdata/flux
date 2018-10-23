@@ -10,3 +10,13 @@ type Float interface {
 	// of the array and null values will be present, but the data at null indexes will be invalid.
 	Float64Values() []float64
 }
+
+// FloatBuilder represents an abstraction over building a float array.
+type FloatBuilder interface {
+	BaseBuilder
+	Append(v float64)
+	AppendValues(v []float64, valid ...[]bool)
+
+	// BuildFloatArray will construct the array.
+	BuildFloatArray() Float
+}

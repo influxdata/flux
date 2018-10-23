@@ -10,3 +10,13 @@ type UInt interface {
 	// of the array and null values will be present, but the data at null indexes will be invalid.
 	Uint64Values() []uint64
 }
+
+// UIntBuilder represents an abstraction over building a uint array.
+type UIntBuilder interface {
+	BaseBuilder
+	Append(v uint64)
+	AppendValues(v []uint64, valid ...[]bool)
+
+	// BuildUIntArray will construct the array.
+	BuildUIntArray() UInt
+}
