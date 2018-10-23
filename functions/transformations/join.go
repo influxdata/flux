@@ -870,7 +870,7 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 						}
 						newColumn := c.schemaMap[column]
 						newColumnIdx := c.colIndex[newColumn]
-						execute.AppendValue(builder, newColumnIdx, columnVal)
+						builder.AppendValue(newColumnIdx, columnVal)
 					})
 
 					rightRecord.Range(func(columnName string, columnVal values.Value) {
@@ -884,7 +884,7 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 						// No need to append value if column is part of the join key.
 						// Because value already appended when iterating over left record.
 						if !c.on[newColumn.Label] {
-							execute.AppendValue(builder, newColumnIdx, columnVal)
+							builder.AppendValue(newColumnIdx, columnVal)
 						}
 					})
 				}

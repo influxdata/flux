@@ -196,7 +196,7 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 						return fmt.Errorf("could not find value for column %q", c.Label)
 					}
 				}
-				execute.AppendValue(builder, j, v)
+				builder.AppendValue(j, v)
 			}
 		}
 		return nil

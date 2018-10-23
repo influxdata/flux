@@ -19,26 +19,14 @@ func init() {
 }
 
 func ValueEqual(x, y values.Value) bool {
-	if x.Type() != y.Type() {
-		return false
-	}
 	switch k := x.Type().Kind(); k {
-	case semantic.Bool:
-		return x.Bool() == y.Bool()
-	case semantic.UInt:
-		return x.UInt() == y.UInt()
-	case semantic.Int:
-		return x.Int() == y.Int()
-	case semantic.Float:
-		return x.Float() == y.Float()
-	case semantic.String:
-		return x.Str() == y.Str()
-	case semantic.Time:
-		return x.Time() == y.Time()
 	case semantic.Object:
+		if x.Type() != y.Type() {
+			return false
+		}
 		return cmp.Equal(x.Object(), y.Object(), CmpOptions...)
 	default:
-		return false
+		return x.Equal(y)
 	}
 }
 

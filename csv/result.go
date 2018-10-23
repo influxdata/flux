@@ -578,28 +578,8 @@ func (d *tableDecoder) appendRecord(record []string) error {
 	d.empty = false
 	for j, c := range d.meta.Cols {
 		if record[j] == "" && d.meta.Defaults[j] != nil {
-			switch c.Type {
-			case flux.TBool:
-				v := d.meta.Defaults[j].Bool()
-				d.builder.AppendBool(j, v)
-			case flux.TInt:
-				v := d.meta.Defaults[j].Int()
-				d.builder.AppendInt(j, v)
-			case flux.TUInt:
-				v := d.meta.Defaults[j].UInt()
-				d.builder.AppendUInt(j, v)
-			case flux.TFloat:
-				v := d.meta.Defaults[j].Float()
-				d.builder.AppendFloat(j, v)
-			case flux.TString:
-				v := d.meta.Defaults[j].Str()
-				d.builder.AppendString(j, v)
-			case flux.TTime:
-				v := d.meta.Defaults[j].Time()
-				d.builder.AppendTime(j, v)
-			default:
-				return fmt.Errorf("unsupported column type %v", c.Type)
-			}
+			v := d.meta.Defaults[j]
+			d.builder.AppendValue(j, v)
 			continue
 		}
 		if err := decodeValueInto(j, c, record[j], d.builder); err != nil {

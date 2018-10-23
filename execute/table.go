@@ -25,20 +25,7 @@ func GroupKeyForRowOn(i int, cr flux.ColReader, on map[string]bool) flux.GroupKe
 			continue
 		}
 		cols = append(cols, c)
-		switch c.Type {
-		case flux.TBool:
-			vs = append(vs, values.NewBool(cr.Bools(j)[i]))
-		case flux.TInt:
-			vs = append(vs, values.NewInt(cr.Ints(j)[i]))
-		case flux.TUInt:
-			vs = append(vs, values.NewUInt(cr.UInts(j)[i]))
-		case flux.TFloat:
-			vs = append(vs, values.NewFloat(cr.Floats(j)[i]))
-		case flux.TString:
-			vs = append(vs, values.NewString(cr.Strings(j)[i]))
-		case flux.TTime:
-			vs = append(vs, values.NewTime(cr.Times(j)[i]))
-		}
+		vs = append(vs, ValueForRow(cr, i, j))
 	}
 	return NewGroupKey(cols, vs)
 }
@@ -254,45 +241,15 @@ func ColMap(colMap []int, builder TableBuilder, cr flux.ColReader) []int {
 
 // AppendRecordForCols appends the only the columns provided from cr onto builder.
 func AppendRecordForCols(i int, cr flux.ColReader, builder TableBuilder, cols []flux.ColMeta) {
-	for j, c := range cols {
-		switch c.Type {
-		case flux.TBool:
-			builder.AppendBool(j, cr.Bools(j)[i])
-		case flux.TInt:
-			builder.AppendInt(j, cr.Ints(j)[i])
-		case flux.TUInt:
-			builder.AppendUInt(j, cr.UInts(j)[i])
-		case flux.TFloat:
-			builder.AppendFloat(j, cr.Floats(j)[i])
-		case flux.TString:
-			builder.AppendString(j, cr.Strings(j)[i])
-		case flux.TTime:
-			builder.AppendTime(j, cr.Times(j)[i])
-		default:
-			PanicUnknownType(c.Type)
-		}
+	for j := range cols {
+		builder.AppendValue(j, ValueForRow(cr, i, j))
 	}
 }
 
 func AppendKeyValues(key flux.GroupKey, builder TableBuilder) {
 	for j, c := range key.Cols() {
 		idx := ColIdx(c.Label, builder.Cols())
-		switch c.Type {
-		case flux.TBool:
-			builder.AppendBool(idx, key.ValueBool(j))
-		case flux.TInt:
-			builder.AppendInt(idx, key.ValueInt(j))
-		case flux.TUInt:
-			builder.AppendUInt(idx, key.ValueUInt(j))
-		case flux.TFloat:
-			builder.AppendFloat(idx, key.ValueFloat(j))
-		case flux.TString:
-			builder.AppendString(idx, key.ValueString(j))
-		case flux.TTime:
-			builder.AppendTime(idx, key.ValueTime(j))
-		default:
-			PanicUnknownType(c.Type)
-		}
+		builder.AppendValue(idx, key.Value(j))
 	}
 }
 

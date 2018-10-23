@@ -114,7 +114,7 @@ func ConvertFromKind(k semantic.Kind) flux.ColType {
 
 func (f *rowFn) eval(row int, cr flux.ColReader) (values.Value, error) {
 	for _, r := range f.references {
-		f.record.Set(r, ValueForRow(row, f.recordCols[r], cr))
+		f.record.Set(r, ValueForRow(cr, row, f.recordCols[r]))
 	}
 	f.scope[f.recordName] = f.record
 	return f.preparedFn.Eval(f.scope)
@@ -204,7 +204,8 @@ func (f *RowMapFn) Eval(row int, cr flux.ColReader) (values.Object, error) {
 	return v.Object(), nil
 }
 
-func ValueForRow(i, j int, cr flux.ColReader) values.Value {
+// ValueForRow retrieves a value from a column reader at the given index.
+func ValueForRow(cr flux.ColReader, i, j int) values.Value {
 	t := cr.Cols()[j].Type
 	switch t {
 	case flux.TString:
@@ -221,26 +222,7 @@ func ValueForRow(i, j int, cr flux.ColReader) values.Value {
 		return values.NewTime(cr.Times(j)[i])
 	default:
 		PanicUnknownType(t)
-		return nil
-	}
-}
-
-func AppendValue(builder TableBuilder, j int, v values.Value) {
-	switch k := v.Type().Kind(); k {
-	case semantic.Bool:
-		builder.AppendBool(j, v.Bool())
-	case semantic.Int:
-		builder.AppendInt(j, v.Int())
-	case semantic.UInt:
-		builder.AppendUInt(j, v.UInt())
-	case semantic.Float:
-		builder.AppendFloat(j, v.Float())
-	case semantic.String:
-		builder.AppendString(j, v.Str())
-	case semantic.Time:
-		builder.AppendTime(j, v.Time())
-	default:
-		PanicUnknownType(ConvertFromKind(k))
+		return values.InvalidValue
 	}
 }
 
