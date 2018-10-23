@@ -164,7 +164,7 @@ func (v *fluxSpecVisitor) addYieldName(pn PlanNode) error {
 	name := yieldSpec.YieldName()
 	_, isDup := v.yieldNames[name]
 	if isDup {
-		return fmt.Errorf("dupllicate yield name \"%v\" found on plan node: %v", name, pn.ID())
+		return fmt.Errorf("duplicate yield name \"%v\" found on plan node: %v", name, pn.ID())
 	}
 
 	v.yieldNames[name] = struct{}{}
