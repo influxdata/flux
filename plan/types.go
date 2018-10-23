@@ -271,8 +271,7 @@ func SwapPlanNodes(top, bottom PlanNode) (PlanNode, error) {
 	if len(top.Predecessors()) != 1 ||
 		len(bottom.Successors()) != 1 ||
 		len(bottom.Predecessors()) != 1 {
-			return nil, fmt.Errorf("cannot swap nodes %v and %v due to topological issue", top.ID(), bottom.ID())
-		panic("SwapPlanNodes cannot swap due to topological issue")
+		return nil, fmt.Errorf("cannot swap nodes %v and %v due to topological issue", top.ID(), bottom.ID())
 	}
 
 	newBottom := top.ShallowCopy()
