@@ -1,5 +1,7 @@
 package plan
 
+import "sort"
+
 // heuristicPlanner applies a set of rules to the nodes in a PlanSpec
 // until a fixed point is reached and no more rules can be applied.
 type heuristicPlanner struct {
@@ -59,6 +61,12 @@ func (p *heuristicPlanner) Plan(inputPlan *PlanSpec) (*PlanSpec, error) {
 		for root := range inputPlan.Roots {
 			nodeStack = append(nodeStack, root)
 		}
+
+		// Sort the roots so that we always traverse deterministically
+		// (sort descending so that we pop off the stack in ascending order)
+		sort.Slice(nodeStack, func(i, j int) bool {
+			return nodeStack[i].ID() > nodeStack[j].ID()
+		})
 
 		anyChanged = false
 		for len(nodeStack) > 0 {
