@@ -24,7 +24,7 @@ func makeNode(id string) plan.PlanNode {
 }
 
 func TestPlanSpec_BottomUpWalk(t *testing.T) {
-	spec := &plantest.LogicalPlanSpec{
+	spec := &plantest.PlanSpec{
 		//  0 1 2  additional edge (3->2)
 		//  |\|\|
 		//  3 4 5  additional edge (8->3)
@@ -60,7 +60,7 @@ func TestPlanSpec_BottomUpWalk(t *testing.T) {
 		},
 	}
 
-	thePlan := plantest.CreateLogicalPlanSpec(spec)
+	thePlan := plantest.CreatePlanSpec(spec)
 
 	got := make([]plan.NodeID, 0, 9)
 	thePlan.BottomUpWalk(func(n plan.PlanNode) error {
@@ -75,7 +75,7 @@ func TestPlanSpec_BottomUpWalk(t *testing.T) {
 }
 
 func TestPlanSpec_TopDownWalk(t *testing.T) {
-	spec := &plantest.LogicalPlanSpec{
+	spec := &plantest.PlanSpec{
 		//  0 1 2  additional edge (3->2)
 		//  |\|\|
 		//  3 4 5  additional edge (8->3)
@@ -111,7 +111,7 @@ func TestPlanSpec_TopDownWalk(t *testing.T) {
 		},
 	}
 
-	thePlan := plantest.CreateLogicalPlanSpec(spec)
+	thePlan := plantest.CreatePlanSpec(spec)
 
 	got := make([]plan.NodeID, 0, 9)
 	thePlan.TopDownWalk(func(n plan.PlanNode) error {

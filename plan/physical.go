@@ -1,8 +1,6 @@
 package plan
 
 import (
-	"errors"
-	"fmt"
 	"math"
 )
 
@@ -27,7 +25,7 @@ func NewPhysicalPlanner(options ...PhysicalOption) PhysicalPlanner {
 		i++
 	}
 
-	pp.addRules(rules)
+	pp.addRules(rules...)
 
 	// Options may add or remove rules, so process them after we've
 	// added registered rules.
@@ -44,72 +42,22 @@ func (pp *physicalPlanner) Plan(spec *PlanSpec) (*PlanSpec, error) {
 		return nil, err
 	}
 
-	// Convert yields into result list
-	// TODO: Implement this via a transformation rule
-	final, err := removeYields(transformedSpec)
-	if err != nil {
-		return nil, err
-	}
-
 	// Compute time bounds for nodes in the plan
-	if err := final.BottomUpWalk(ComputeBounds); err != nil {
+	if err := transformedSpec.BottomUpWalk(ComputeBounds); err != nil {
 		return nil, err
 	}
 
 	// Update memory quota
-	if final.Resources.MemoryBytesQuota == 0 {
-		final.Resources.MemoryBytesQuota = pp.defaultMemoryLimit
+	if transformedSpec.Resources.MemoryBytesQuota == 0 {
+		transformedSpec.Resources.MemoryBytesQuota = pp.defaultMemoryLimit
 	}
 
 	// Update concurrency quota
-	if final.Resources.ConcurrencyQuota == 0 {
-		final.Resources.ConcurrencyQuota = len(spec.Results)
+	if transformedSpec.Resources.ConcurrencyQuota == 0 {
+		transformedSpec.Resources.ConcurrencyQuota = len(transformedSpec.Roots)
 	}
 
-	return final, nil
-}
-
-// TODO: This procedure should be encapsulated in a yield rewrite rule
-func removeYields(plan *PlanSpec) (*PlanSpec, error) {
-	for root := range plan.Roots {
-
-		name := DefaultYieldName
-
-		if yield, ok := root.ProcedureSpec().(YieldProcedureSpec); ok {
-
-			name = yield.YieldName()
-
-			if len(root.Predecessors()) != 1 {
-				return nil, errors.New("yield must have exactly one predecessor")
-			}
-
-			if _, ok := plan.Results[name]; ok {
-				return nil, fmt.Errorf("found duplicate yield name %q", name)
-			}
-
-			newRoot := root.Predecessors()[0]
-			newSucc := make([]PlanNode, 0, len(newRoot.Successors()))
-
-			for _, succ := range newRoot.Successors() {
-				if succ != root {
-					newSucc = append(newSucc, succ)
-				}
-			}
-
-			newRoot.ClearSuccessors()
-			newRoot.AddSuccessors(newSucc...)
-			plan.Replace(root, newRoot)
-			plan.Results[name] = newRoot
-			continue
-		}
-
-		if _, ok := plan.Results[name]; ok {
-			return nil, fmt.Errorf("found duplicate yield name %q", name)
-		}
-
-		plan.Results[name] = root
-	}
-	return plan, nil
+	return transformedSpec, nil
 }
 
 type physicalPlanner struct {
@@ -139,7 +87,7 @@ func WithDefaultMemoryLimit(memBytes int64) PhysicalOption {
 // WithPhysicalRule produces a physical plan option that forces a particular rule to be applied.
 func WithPhysicalRule(rules ...Rule) PhysicalOption {
 	return physicalOption(func(pp *physicalPlanner) {
-		pp.addRules(rules)
+		pp.addRules(rules...)
 	})
 }
 
