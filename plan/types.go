@@ -47,7 +47,6 @@ type NodeID string
 // PlanSpec holds the result nodes of a query plan with associated metadata
 type PlanSpec struct {
 	Roots     map[PlanNode]struct{}
-	Results   map[string]PlanNode
 	Resources flux.ResourceManagement
 	Now       time.Time
 }
@@ -55,8 +54,7 @@ type PlanSpec struct {
 // NewPlanSpec initializes a new query plan
 func NewPlanSpec() *PlanSpec {
 	return &PlanSpec{
-		Roots:   make(map[PlanNode]struct{}),
-		Results: make(map[string]PlanNode),
+		Roots: make(map[PlanNode]struct{}),
 	}
 }
 
@@ -145,10 +143,6 @@ func walk(node PlanNode, preFn, postFn func(PlanNode) error, visited map[PlanNod
 
 	// Post-order traversal
 	return postFn(node)
-}
-
-type YieldProcedureSpec interface {
-	YieldName() string
 }
 
 // ProcedureSpec specifies a query operation
