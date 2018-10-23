@@ -11,6 +11,14 @@ type Pattern interface {
 
 // Pat returns a pattern that can match a plan node with the given ProcedureKind
 // and whose predecessors match the given predecessor patterns.
+//
+// For example, to construct a pattern that matches a join followed by a sum:
+//
+//   sum
+//    |
+//   |X|    <=>  join(A, B) |> sum()  <=>  Pat(SumKind, Pat(JoinKind, Any(), Any()))
+//  /   \
+// A     B
 func Pat(kind ProcedureKind, predecessors ...Pattern) Pattern {
 	return &OneKindPattern{
 		kind:         kind,
@@ -23,6 +31,11 @@ func Any() Pattern {
 	return &AnyPattern{}
 }
 
+// OneKindPattern matches a specified procedure with a predecessor pattern
+//
+//                   ProcedureKind
+//                 /       |  ...  \
+//        pattern1     pattern2  ... patternK
 type OneKindPattern struct {
 	kind         ProcedureKind
 	predecessors []Pattern
@@ -57,8 +70,8 @@ func (okp OneKindPattern) Match(node PlanNode) bool {
 	return true
 }
 
-type AnyPattern struct {
-}
+// AnyPattern describes (and matches) any plan node
+type AnyPattern struct{}
 
 func (AnyPattern) Root() ProcedureKind {
 	return AnyKind
