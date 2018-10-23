@@ -2,9 +2,10 @@ package plan_test
 
 import (
 	"context"
-	"github.com/google/go-cmp/cmp"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/plan"
@@ -30,7 +31,7 @@ func TestRuleRegistration(t *testing.T) {
 		t.Fatalf("could not do logical planning: %v", err)
 	}
 
-	wantSeenNodes := []plan.NodeID{"range1", "from0"}
+	wantSeenNodes := []plan.NodeID{"generated_yield", "range1", "from0"}
 	if !cmp.Equal(wantSeenNodes, simpleRule.SeenNodes) {
 		t.Errorf("did not find expected seen nodes, -want/+got:\n%v", cmp.Diff(wantSeenNodes, simpleRule.SeenNodes))
 	}
@@ -45,6 +46,9 @@ func TestRuleRegistration(t *testing.T) {
 		t.Fatalf("could not do physical planning: %v", err)
 	}
 
+	// Here seen nodes reflects two passes: on the first pass, after simpleRule visits range1, the range node
+	// is pushed into the from.  The second pass changes nothing and shows both nodes in the plan
+	wantSeenNodes = []plan.NodeID{"generated_yield", "range1", "generated_yield", "merged_from0_range1"}
 	if !cmp.Equal(wantSeenNodes, simpleRule.SeenNodes) {
 		t.Errorf("did not find expected seen nodes, -want/+got:\n%v", cmp.Diff(wantSeenNodes, simpleRule.SeenNodes))
 	}

@@ -16,13 +16,13 @@ func TestPhysicalOptions(t *testing.T) {
 	}
 
 	for _, options := range configs {
-		spec := &plantest.LogicalPlanSpec{
+		spec := &plantest.PlanSpec{
 			Nodes: []plan.PlanNode{
 				plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{}),
 			},
 		}
 
-		inputPlan := plantest.CreateLogicalPlanSpec(spec)
+		inputPlan := plantest.CreatePlanSpec(spec)
 
 		thePlanner := plan.NewPhysicalPlanner(options...)
 		outputPlan, err := thePlanner.Plan(inputPlan)

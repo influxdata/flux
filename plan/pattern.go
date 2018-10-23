@@ -9,6 +9,8 @@ type Pattern interface {
 	Match(PlanNode) bool
 }
 
+// Pat returns a pattern that can match a plan node with the given ProcedureKind
+// and whose predecessors match the given predecessor patterns.
 func Pat(kind ProcedureKind, predecessors ...Pattern) Pattern {
 	return &OneKindPattern{
 		kind:         kind,
@@ -16,6 +18,7 @@ func Pat(kind ProcedureKind, predecessors ...Pattern) Pattern {
 	}
 }
 
+// Any returns a pattern that matches anything.
 func Any() Pattern {
 	return &AnyPattern{}
 }
@@ -25,11 +28,11 @@ type OneKindPattern struct {
 	predecessors []Pattern
 }
 
-func (okp *OneKindPattern) Root() ProcedureKind {
+func (okp OneKindPattern) Root() ProcedureKind {
 	return okp.kind
 }
 
-func (okp *OneKindPattern) Match(node PlanNode) bool {
+func (okp OneKindPattern) Match(node PlanNode) bool {
 	if node.Kind() != okp.kind {
 		return false
 	}
@@ -57,10 +60,10 @@ func (okp *OneKindPattern) Match(node PlanNode) bool {
 type AnyPattern struct {
 }
 
-func (ap *AnyPattern) Root() ProcedureKind {
+func (AnyPattern) Root() ProcedureKind {
 	return AnyKind
 }
 
-func (ap *AnyPattern) Match(node PlanNode) bool {
+func (AnyPattern) Match(node PlanNode) bool {
 	return true
 }
