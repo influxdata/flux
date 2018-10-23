@@ -811,41 +811,13 @@ func TestInferTypes(t *testing.T) {
 								},
 								Body: &semantic.BinaryExpression{
 									Operator: ast.AdditionOperator,
-									Left:     &semantic.IdentifierExpression{Name: "a"},
-									Right:    &semantic.IdentifierExpression{Name: "b"},
-								},
-							},
-						},
-					},
-					&semantic.NativeVariableDeclaration{
-						Identifier: &semantic.Identifier{Name: "sub"},
-						Init: &semantic.FunctionExpression{
-							Block: &semantic.FunctionBlock{
-								Parameters: &semantic.FunctionParameters{
-									List: []*semantic.FunctionParameter{
-										{Key: &semantic.Identifier{Name: "a"}},
-										{Key: &semantic.Identifier{Name: "b"}},
+									Left: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left:     &semantic.IdentifierExpression{Name: "a"},
+										Right:    &semantic.IdentifierExpression{Name: "b"},
 									},
+									Right: &semantic.IdentifierExpression{Name: "c"},
 								},
-								Body: &semantic.BinaryExpression{
-									Operator: ast.SubtractionOperator,
-									Left:     &semantic.IdentifierExpression{Name: "a"},
-									Right:    &semantic.IdentifierExpression{Name: "b"},
-								},
-							},
-						},
-					},
-					&semantic.NativeVariableDeclaration{
-						Identifier: &semantic.Identifier{Name: "x"},
-						Init: &semantic.FunctionExpression{
-							Block: &semantic.FunctionBlock{
-								Parameters: &semantic.FunctionParameters{
-									List: []*semantic.FunctionParameter{
-										{Key: &semantic.Identifier{Name: "a"}},
-										{Key: &semantic.Identifier{Name: "b"}},
-									},
-								},
-								Body: &semantic.FloatLiteral{Value: 42.0},
 							},
 						},
 					},
@@ -856,28 +828,6 @@ func TestInferTypes(t *testing.T) {
 								Properties: []*semantic.Property{{
 									Key:   &semantic.Identifier{Name: "f"},
 									Value: &semantic.IdentifierExpression{Name: "add"},
-								}},
-							},
-						},
-					},
-					&semantic.ExpressionStatement{
-						Expression: &semantic.CallExpression{
-							Callee: &semantic.IdentifierExpression{Name: "foo"},
-							Arguments: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{{
-									Key:   &semantic.Identifier{Name: "f"},
-									Value: &semantic.IdentifierExpression{Name: "sub"},
-								}},
-							},
-						},
-					},
-					&semantic.ExpressionStatement{
-						Expression: &semantic.CallExpression{
-							Callee: &semantic.IdentifierExpression{Name: "foo"},
-							Arguments: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{{
-									Key:   &semantic.Identifier{Name: "f"},
-									Value: &semantic.IdentifierExpression{Name: "x"},
 								}},
 							},
 						},

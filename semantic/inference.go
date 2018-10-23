@@ -237,16 +237,16 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 		if err != nil {
 			return nil, err
 		}
-		var pipeArgument string
-		if n.Block.Parameters != nil && n.Block.Parameters.Pipe != nil {
-			pipeArgument = n.Block.Parameters.Pipe.Name
-		}
+		//var pipeArgument string
+		//if n.Block.Parameters != nil && n.Block.Parameters.Pipe != nil {
+		//	pipeArgument = n.Block.Parameters.Pipe.Name
+		//}
 
 		t := functionPolyType{
-			in:           in,
-			defaults:     defaults,
-			out:          out,
-			pipeArgument: pipeArgument,
+			in:       in,
+			defaults: defaults,
+			out:      out,
+			//pipeArgument: pipeArgument,
 		}
 		return t, nil
 	//case *FunctionDefaults:
@@ -289,61 +289,25 @@ func (v *inferenceVisitor) typeof(node Node) (PolyType, error) {
 		if err != nil {
 			return nil, err
 		}
-
-		out := v.solution.Fresh()
-		ft := NewFunctionPolyType(FunctionSignature{
-			In:  args,
-			Out: out,
-		})
-
 		ct, err := v.solution.PolyTypeOf(n.Callee)
 		if err != nil {
 			return nil, err
+		}
+
+		out := v.solution.Fresh()
+		ft := callFunctionPolyType{
+			in:  args,
+			out: out,
 		}
 
 		if err := v.solution.Unify(ft, ct); err != nil {
 			return nil, err
 		}
 		return out, nil
-
-		t, ok := ct.(functionPolyType)
-		if !ok {
-			return nil, fmt.Errorf("cannot call non function type %v", ct)
-		}
-
-		args, err := v.solution.PolyTypeOf(n.Arguments)
-		if err != nil {
-			return nil, err
-		}
-		in, ok := args.(objectPolyType)
-		if !ok {
-			return nil, fmt.Errorf("unexpected type of arguments %T, must be a object type", args)
-		}
-		//Apply defaults to arguments in type
-		for k, p := range t.defaults.properties {
-			if _, ok := in.properties[k]; !ok {
-				in.properties[k] = p
-			}
-		}
-		if t.pipeArgument == "" && n.Pipe != nil {
-			return nil, errors.New("cannot pipe into non pipe function")
-		}
-		if n.Pipe != nil {
-			pt, err := v.solution.PolyTypeOf(n.Pipe)
-			if err != nil {
-				return nil, err
-			}
-			in.properties[t.pipeArgument] = pt
-		}
-
-		if err := v.solution.Unify(t.in, in); err != nil {
-			return nil, err
-		}
-		return t.out, nil
 	case *IdentifierExpression:
 		// Let-Polymorphism, each reference to an identifier
 		// may have its own unique monotype.
-		// instantiate a new type for each.
+		// Instantiate a new type for each lookup.
 		ts, ok := v.env.Lookup(n.Name)
 		if !ok {
 			return nil, fmt.Errorf("undefined identifier %q", n.Name)
@@ -512,7 +476,6 @@ func (v *inferenceVisitor) instantiate(ts TS) PolyType {
 			tm[idx] = v.solution.Fresh()
 		}
 	}
-	log.Println(tm)
 	return ts.T.instantiate(tm)
 }
 func (v *inferenceVisitor) schema(t PolyType) TS {
@@ -527,10 +490,10 @@ func (v *inferenceVisitor) schema(t PolyType) TS {
 
 // functionPolyType represent a function, all functions transform a single input type into an output type.
 type functionPolyType struct {
-	in           PolyType
-	defaults     objectPolyType
-	out          PolyType
-	pipeArgument string
+	in       PolyType
+	defaults PolyType
+	out      PolyType
+	//pipeArgument string
 }
 
 type PolyFunctionSignature struct {
@@ -544,31 +507,33 @@ func NewFunctionPolyType(sig PolyFunctionSignature) PolyType {
 	var d objectPolyType
 	if sig.Defaults == nil {
 		d = objectPolyType{}
-	} else {
-		d = sig.Defaults.(objectPolyType)
 	}
 	return functionPolyType{
-		in:           sig.In,
-		defaults:     d,
-		out:          sig.Out,
-		pipeArgument: sig.PipeArgument,
+		in:       sig.In,
+		defaults: d,
+		out:      sig.Out,
+		//pipeArgument: sig.PipeArgument,
 	}
 }
 
 func (t functionPolyType) String() string {
-	return fmt.Sprintf("(%v) defaults: %v pipe: %q -> %v", t.in, t.defaults, t.pipeArgument, t.out)
+	return fmt.Sprintf("(%v) %v -> %v", t.in, t.defaults, t.out)
+	//return fmt.Sprintf("(%v) defaults: %v pipe: %q -> %v", t.in, t.defaults, t.pipeArgument, t.out)
 }
 
 func (t functionPolyType) freeVars() []typeVar {
-	return union(t.in.freeVars(), t.out.freeVars())
+
+	return union(t.defaults.freeVars(),
+		union(t.in.freeVars(),
+			t.out.freeVars()))
 }
 
-func (t functionPolyType) instantiate(tm map[int]typeVar) PolyType {
+func (t functionPolyType) instantiate(tm map[int]typeVar) (it PolyType) {
 	return functionPolyType{
-		in:           t.in.instantiate(tm).(objectPolyType),
-		defaults:     t.defaults.instantiate(tm).(objectPolyType),
-		out:          t.out.instantiate(tm),
-		pipeArgument: t.pipeArgument,
+		in:       t.in.instantiate(tm),
+		defaults: t.defaults.instantiate(tm),
+		out:      t.out.instantiate(tm),
+		//pipeArgument: t.pipeArgument,
 	}
 }
 
@@ -584,9 +549,11 @@ func (t1 functionPolyType) unify(ts TypeSolution, typ PolyType) error {
 		if err := ts.Unify(t1.out, t2.out); err != nil {
 			return err
 		}
-		if t1.pipeArgument != t2.pipeArgument {
-			return errors.New("cannot unify functions with differring pipe arguments")
-		}
+		//if t1.pipeArgument != t2.pipeArgument {
+		//	return errors.New("cannot unify functions with differring pipe arguments")
+		//}
+	case callFunctionPolyType:
+		return unifyFunctionWithCall(t1, t2, ts)
 	default:
 		return fmt.Errorf("cannot unify function %v with %v", t1, typ)
 	}
@@ -607,10 +574,10 @@ func (t functionPolyType) Type() (Type, bool) {
 		return nil, false
 	}
 	return NewFunctionType(FunctionSignature{
-		In:           in,
-		Defaults:     defaults,
-		Out:          out,
-		PipeArgument: t.pipeArgument,
+		In:       in,
+		Defaults: defaults,
+		Out:      out,
+		//PipeArgument: t.pipeArgument,
 	}), true
 }
 
@@ -619,11 +586,103 @@ func (t1 functionPolyType) Equal(t2 PolyType) bool {
 	case functionPolyType:
 		return t1.in.Equal(t2.in) &&
 			t1.defaults.Equal(t2.defaults) &&
-			t1.out.Equal(t2.out) &&
-			t1.pipeArgument == t2.pipeArgument
+			t1.out.Equal(t2.out)
+		//t1.pipeArgument == t2.pipeArgument
 	default:
 		return false
 	}
+}
+
+// callFunctionPolyType represent a function, all functions transform a single input type into an output type.
+type callFunctionPolyType struct {
+	in  PolyType
+	out PolyType
+	//pipeArgument string
+}
+
+func (t callFunctionPolyType) String() string {
+	return fmt.Sprintf("(%v) -> %v", t.in, t.out)
+	//return fmt.Sprintf("(%v) defaults: %v pipe: %q -> %v", t.in, t.defaults, t.pipeArgument, t.out)
+}
+
+func (t callFunctionPolyType) freeVars() []typeVar {
+	return union(t.in.freeVars(), t.out.freeVars())
+}
+
+func (t callFunctionPolyType) instantiate(tm map[int]typeVar) (it PolyType) {
+	return callFunctionPolyType{
+		in:  t.in.instantiate(tm),
+		out: t.out.instantiate(tm),
+		//pipeArgument: t.pipeArgument,
+	}
+}
+
+func (t1 callFunctionPolyType) unify(ts TypeSolution, typ PolyType) error {
+	switch t2 := typ.(type) {
+	case callFunctionPolyType:
+		if err := ts.Unify(t1.in, t2.in); err != nil {
+			return err
+		}
+		if err := ts.Unify(t1.out, t2.out); err != nil {
+			return err
+		}
+		//if t1.pipeArgument != t2.pipeArgument {
+		//	return errors.New("cannot unify functions with differring pipe arguments")
+		//}
+	case functionPolyType:
+		return unifyFunctionWithCall(t2, t1, ts)
+	default:
+		return fmt.Errorf("cannot unify function %v with %v", t1, typ)
+	}
+	return nil
+}
+
+func (t callFunctionPolyType) Type() (Type, bool) {
+	in, ok := t.in.Type()
+	if !ok {
+		return nil, false
+	}
+	out, ok := t.out.Type()
+	if !ok {
+		return nil, false
+	}
+	return NewFunctionType(FunctionSignature{
+		In:  in,
+		Out: out,
+		//PipeArgument: t.pipeArgument,
+	}), true
+}
+
+func (t1 callFunctionPolyType) Equal(t2 PolyType) bool {
+	switch t2 := t2.(type) {
+	case callFunctionPolyType:
+		return t1.in.Equal(t2.in) &&
+			t1.out.Equal(t2.out)
+		//t1.pipeArgument == t2.pipeArgument
+	default:
+		return false
+	}
+}
+
+func unifyFunctionWithCall(ft functionPolyType, ct callFunctionPolyType, ts TypeSolution) error {
+	log.Println("unifyFunctionWithCall", ft, ct)
+	cin := ct.in.(objectPolyType)
+	fin := ft.in.(objectPolyType)
+	defaults := ft.defaults.(objectPolyType)
+	for k, fp := range fin.properties {
+		cp, ok := cin.properties[k]
+		if !ok {
+			_, isDefault := defaults.properties[k]
+			if !isDefault {
+				return fmt.Errorf("function call missing parameter %q", k)
+			}
+			continue
+		}
+		if err := ts.Unify(fp, cp); err != nil {
+			return err
+		}
+	}
+	return ts.Unify(ft.out, ct.out)
 }
 
 type objectPolyType struct {
@@ -654,7 +713,7 @@ func (t objectPolyType) freeVars() []typeVar {
 	return vars
 }
 
-func (t objectPolyType) instantiate(tm map[int]typeVar) PolyType {
+func (t objectPolyType) instantiate(tm map[int]typeVar) (it PolyType) {
 	properties := make(map[string]PolyType, len(t.properties))
 	for k, p := range t.properties {
 		properties[k] = p.instantiate(tm)
@@ -913,12 +972,6 @@ func (s *typeSolution) smallestVarIndex(idxA int) int {
 }
 
 func (s *typeSolution) indirect(t PolyType) (pt PolyType) {
-	defer func() {
-		if tv, ok := t.(typeVar); ok && tv.idx == 12 {
-			log.Println("indirect", t, pt)
-			log.Println(s)
-		}
-	}()
 	tv, ok := t.(typeVar)
 	if ok {
 		t := s.vars[tv.idx]
@@ -932,14 +985,6 @@ func (s *typeSolution) indirect(t PolyType) (pt PolyType) {
 func (s *typeSolution) Unify(a, b PolyType) error {
 	tvA, okA := a.(typeVar)
 	tvB, okB := b.(typeVar)
-	if okA && tvA.idx == 12 {
-		log.Println("unify", a, b)
-		defer log.Println(s)
-	}
-	if okB && tvB.idx == 12 {
-		log.Println("unify", a, b)
-		defer log.Println(s)
-	}
 
 	switch {
 	case !okA && !okB:
@@ -1018,6 +1063,9 @@ func (tv typeVar) freeVars() []typeVar {
 }
 
 func (tv1 typeVar) instantiate(tm map[int]typeVar) PolyType {
+	if t := tv1.lookup(); t != nil {
+		return t.instantiate(tm)
+	}
 	if tv2, ok := tm[tv1.idx]; ok {
 		return tv2
 	}
