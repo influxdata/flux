@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -32,21 +31,11 @@ func (gkb *GroupKeyBuilder) AddKeyValue(key string, value values.Value) *GroupKe
 		return gkb
 	}
 
-	cm := flux.ColMeta{Label: key}
-	switch k := value.Type().Kind(); k {
-	case semantic.Bool:
-		cm.Type = flux.TBool
-	case semantic.UInt:
-		cm.Type = flux.TUInt
-	case semantic.Int:
-		cm.Type = flux.TInt
-	case semantic.Float:
-		cm.Type = flux.TFloat
-	case semantic.String:
-		cm.Type = flux.TString
-	case semantic.Time:
-		cm.Type = flux.TTime
-	default:
+	cm := flux.ColMeta{
+		Label: key,
+		Type:  flux.ColumnType(value.Type()),
+	}
+	if cm.Type == flux.TInvalid {
 		gkb.err = fmt.Errorf("invalid group key type: %s", value.Type())
 		return gkb
 	}
