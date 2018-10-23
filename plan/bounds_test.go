@@ -319,13 +319,13 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 		// Name of test
 		name string
 		// Nodes and edges defining plan
-		spec *plantest.PhysicalPlanSpec
+		spec *plantest.PlanSpec
 		// Map from node ID to the expected bounds for that node
 		want map[plan.NodeID]*plan.Bounds
 	}{
 		{
 			name: "no bounds",
-			spec: &plantest.PhysicalPlanSpec{
+			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					makeNode("0"),
 				},
@@ -337,7 +337,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 		{
 			name: "single time bounds",
 			// 0 -> 1 -> 2 -> 3 -> 4
-			spec: &plantest.PhysicalPlanSpec{
+			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					makeNode("0"),
 					makeNode("1"),
@@ -362,7 +362,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 		{
 			name: "multiple intersect time bounds",
 			// 0 -> 1 -> 2 -> 3 -> 4
-			spec: &plantest.PhysicalPlanSpec{
+			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					makeNode("0"),
 					makeBoundsNode("1", bounds(5, 10)),
@@ -387,7 +387,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 		{
 			name: "shift nil time bounds",
 			// 0 -> 1 -> 2
-			spec: &plantest.PhysicalPlanSpec{
+			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					makeNode("0"),
 					makeShiftNode("1", values.Duration(5)),
@@ -407,7 +407,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 		{
 			name: "shift bounds after intersecting bounds",
 			// 0 -> 1 -> 2 -> 3 -> 4
-			spec: &plantest.PhysicalPlanSpec{
+			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					makeNode("0"),
 					makeBoundsNode("1", bounds(5, 10)),
@@ -434,7 +434,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			//   2
 			//  / \
 			// 0   1
-			spec: &plantest.PhysicalPlanSpec{
+			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					makeBoundsNode("0", bounds(5, 10)),
 					makeBoundsNode("1", bounds(12, 20)),
@@ -458,7 +458,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			//   1   2
 			//    \ /
 			//     0
-			spec: &plantest.PhysicalPlanSpec{
+			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					makeNode("0"),
 					makeBoundsNode("1", bounds(5, 10)),
@@ -487,7 +487,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			// Create plan from spec
-			thePlan := plantest.CreatePhysicalPlanSpec(tc.spec)
+			thePlan := plantest.CreatePlanSpec(tc.spec)
 
 			// Method used to compute the bounds at each node
 			if err := thePlan.BottomUpWalk(plan.ComputeBounds); err != nil {

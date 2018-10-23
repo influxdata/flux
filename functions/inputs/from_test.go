@@ -236,21 +236,21 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 	tests := []struct {
 		name   string
 		rules  []plan.Rule
-		before *plantest.PhysicalPlanSpec
-		after  *plantest.PhysicalPlanSpec
+		before *plantest.PlanSpec
+		after  *plantest.PlanSpec
 	}{
 		{
 			name: "from range",
 			// from -> range  =>  from
 			rules: []plan.Rule{&inputs.MergeFromRangeRule{}},
-			before: &plantest.PhysicalPlanSpec{
+			before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
 					plan.CreatePhysicalNode("range", rangeWithBounds),
 				},
 				Edges: [][2]int{{0, 1}},
 			},
-			after: &plantest.PhysicalPlanSpec{
+			after: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("merged_from_range", fromWithBounds),
 				},
@@ -260,7 +260,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			name: "from range with successor node",
 			// from -> range -> count  =>  from -> count
 			rules: []plan.Rule{&inputs.MergeFromRangeRule{}},
-			before: &plantest.PhysicalPlanSpec{
+			before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
 					plan.CreatePhysicalNode("range", rangeWithBounds),
@@ -271,7 +271,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 					{1, 2},
 				},
 			},
-			after: &plantest.PhysicalPlanSpec{
+			after: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("merged_from_range", fromWithBounds),
 					plan.CreatePhysicalNode("count", count),
@@ -283,7 +283,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			name: "from with multiple ranges",
 			// from -> range -> range  =>  from
 			rules: []plan.Rule{&inputs.MergeFromRangeRule{}},
-			before: &plantest.PhysicalPlanSpec{
+			before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
 					plan.CreatePhysicalNode("range0", rangeWithBounds),
@@ -294,7 +294,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 					{1, 2},
 				},
 			},
-			after: &plantest.PhysicalPlanSpec{
+			after: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("merged_merged_from_range0_range1", fromWithIntersectedBounds),
 				},
@@ -308,7 +308,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			//        |                  from
 			//       from
 			rules: []plan.Rule{&inputs.MergeFromRangeRule{}},
-			before: &plantest.PhysicalPlanSpec{
+			before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
 					plan.CreatePhysicalNode("range", rangeWithBounds),
@@ -325,15 +325,19 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 					{4, 5},
 				},
 			},
-			after: &plantest.PhysicalPlanSpec{
+			after: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("merged_from_range", fromWithBounds),
 					plan.CreatePhysicalNode("count", count),
+					plan.CreatePhysicalNode("yield0", yield("count")),
 					plan.CreatePhysicalNode("mean", mean),
+					plan.CreatePhysicalNode("yield1", yield("mean")),
 				},
 				Edges: [][2]int{
 					{0, 1},
-					{0, 2},
+					{1, 2},
+					{0, 3},
+					{3, 4},
 				},
 			},
 		},
@@ -343,7 +347,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			//     \    /       =>   cannot push range into a   =>     \    /
 			//      from           from with multiple sucessors         from
 			rules: []plan.Rule{&inputs.MergeFromRangeRule{}},
-			before: &plantest.PhysicalPlanSpec{
+			before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
 					plan.CreatePhysicalNode("range", rangeWithBounds),
@@ -358,15 +362,19 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 					{3, 4},
 				},
 			},
-			after: &plantest.PhysicalPlanSpec{
+			after: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
 					plan.CreatePhysicalNode("range", rangeWithBounds),
+					plan.CreatePhysicalNode("yield0", yield("range")),
 					plan.CreatePhysicalNode("count", count),
+					plan.CreatePhysicalNode("yield1", yield("count")),
 				},
 				Edges: [][2]int{
 					{0, 1},
-					{0, 2},
+					{1, 2},
+					{0, 3},
+					{3, 4},
 				},
 			},
 		},
@@ -374,7 +382,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			name: "from filter",
 			// from -> filter  =>  from
 			rules: []plan.Rule{inputs.FromFilterMergeRule{}},
-			before: &plantest.PhysicalPlanSpec{
+			before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
 					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: filterFn1}),
@@ -383,7 +391,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 					{0, 1},
 				},
 			},
-			after: &plantest.PhysicalPlanSpec{
+			after: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("merged_from_filter", &inputs.FromProcedureSpec{FilterSet: true, Filter: filterFn1}),
 				},
@@ -393,7 +401,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			name: "from filter filter",
 			// from -> filter -> filter  =>  from    (rule applied twice)
 			rules: []plan.Rule{inputs.FromFilterMergeRule{}},
-			before: &plantest.PhysicalPlanSpec{
+			before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
 					plan.CreatePhysicalNode("filter1", &transformations.FilterProcedureSpec{Fn: filterFn1}),
@@ -404,7 +412,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 					{1, 2},
 				},
 			},
-			after: &plantest.PhysicalPlanSpec{
+			after: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("merged_merged_from_filter1_filter2",
 						&inputs.FromProcedureSpec{FilterSet: true, Filter: filterFnBoth}),
@@ -415,7 +423,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			name: "from range filter",
 			// from -> range -> filter  =>  from
 			rules: []plan.Rule{inputs.FromFilterMergeRule{}, inputs.MergeFromRangeRule{}},
-			before: &plantest.PhysicalPlanSpec{
+			before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
 					plan.CreatePhysicalNode("range", rangeWithBounds),
@@ -426,7 +434,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 					{1, 2},
 				},
 			},
-			after: &plantest.PhysicalPlanSpec{
+			after: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("merged_merged_from_range_filter", fromWithBoundsAndFilter),
 				},
@@ -439,8 +447,8 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			before := plantest.CreatePhysicalPlanSpec(tc.before)
-			after := plantest.CreatePhysicalPlanSpec(tc.after)
+			before := plantest.CreatePlanSpec(tc.before)
+			after := plantest.CreatePlanSpec(tc.after)
 
 			physicalPlanner := plan.NewPhysicalPlanner(
 				plan.OnlyPhysicalRules(tc.rules...),

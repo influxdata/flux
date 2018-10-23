@@ -1,5 +1,7 @@
 package plan
 
+import "sort"
+
 // heuristicPlanner applies a set of rules to the nodes in a PlanSpec
 // until a fixed point is reached and no more rules can be applied.
 type heuristicPlanner struct {
@@ -12,7 +14,7 @@ func newHeuristicPlanner() *heuristicPlanner {
 	}
 }
 
-func (p *heuristicPlanner) addRules(rules []Rule) {
+func (p *heuristicPlanner) addRules(rules ...Rule) {
 	for _, rule := range rules {
 		ruleSlice := p.rules[rule.Pattern().Root()]
 		p.rules[rule.Pattern().Root()] = append(ruleSlice, rule)
@@ -29,12 +31,14 @@ func (p *heuristicPlanner) matchRules(node PlanNode) (PlanNode, bool, error) {
 	anyChanged := false
 
 	for _, rule := range p.rules[AnyKind] {
-		newNode, changed, err := rule.Rewrite(node)
-		if err != nil {
-			return nil, false, err
+		if rule.Pattern().Match(node) {
+			newNode, changed, err := rule.Rewrite(node)
+			if err != nil {
+				return nil, false, err
+			}
+			anyChanged = anyChanged || changed
+			node = newNode
 		}
-		anyChanged = anyChanged || changed
-		node = newNode
 	}
 
 	for _, rule := range p.rules[node.Kind()] {
@@ -68,6 +72,12 @@ func (p *heuristicPlanner) Plan(inputPlan *PlanSpec) (*PlanSpec, error) {
 			nodeStack = append(nodeStack, root)
 		}
 
+		// Sort the roots so that we always traverse deterministically
+		// (sort descending so that we pop off the stack in ascending order)
+		sort.Slice(nodeStack, func(i, j int) bool {
+			return nodeStack[i].ID() > nodeStack[j].ID()
+		})
+
 		anyChanged = false
 		for len(nodeStack) > 0 {
 			node := nodeStack[len(nodeStack)-1]
@@ -81,9 +91,11 @@ func (p *heuristicPlanner) Plan(inputPlan *PlanSpec) (*PlanSpec, error) {
 					return nil, err
 				}
 				anyChanged = anyChanged || changed
-				if node != newNode {
+				if changed {
 					updateSuccessors(inputPlan, node, newNode)
 				}
+
+				anyChanged = anyChanged || changed
 
 				// append to stack in reverse order so lower-indexed children
 				// are visited first.
