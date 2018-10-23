@@ -18,6 +18,13 @@ func (p Position) String() string {
 	return fmt.Sprintf("%d:%d", p.Line, p.Column)
 }
 
+func (p Position) Less(o Position) bool {
+	if p.Line == o.Line {
+		return p.Column < o.Column
+	}
+	return p.Line < o.Line
+}
+
 // SourceLocation represents the location of a node in the AST
 type SourceLocation struct {
 	Start  Position `json:"start"`            // Start is the location in the source the node starts
@@ -27,6 +34,13 @@ type SourceLocation struct {
 
 func (l SourceLocation) String() string {
 	return fmt.Sprintf("%v-%v", l.Start, l.End)
+}
+
+func (l SourceLocation) Less(o SourceLocation) bool {
+	if l.Start == o.Start {
+		return l.End.Less(o.End)
+	}
+	return l.Start.Less(o.Start)
 }
 
 // Node represents a node in the InfluxDB abstract syntax tree.

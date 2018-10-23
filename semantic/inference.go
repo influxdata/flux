@@ -62,7 +62,7 @@ func (k Kind) unify(ts TypeSolution, t PolyType) error {
 	switch t := t.(type) {
 	case Kind:
 		if k != t {
-			return fmt.Errorf("type error: %v != %v", k, t)
+			return fmt.Errorf("%v != %v", k, t)
 		}
 		return nil
 	default:
@@ -504,8 +504,8 @@ type PolyFunctionSignature struct {
 }
 
 func NewFunctionPolyType(sig PolyFunctionSignature) PolyType {
-	var d objectPolyType
-	if sig.Defaults == nil {
+	d := sig.Defaults
+	if d == nil {
 		d = objectPolyType{}
 	}
 	return functionPolyType{
@@ -598,6 +598,13 @@ type callFunctionPolyType struct {
 	in  PolyType
 	out PolyType
 	//pipeArgument string
+}
+
+func NewCallFunctionPolyType(in, out PolyType) callFunctionPolyType {
+	return callFunctionPolyType{
+		in:  in,
+		out: out,
+	}
 }
 
 func (t callFunctionPolyType) String() string {

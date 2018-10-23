@@ -186,7 +186,10 @@ func analyzeLiteral(lit ast.Literal) (Literal, error) {
 
 func analyzeArrowFunctionExpression(arrow *ast.ArrowFunctionExpression) (*FunctionExpression, error) {
 	var parameters *FunctionParameters
-	var defaults *ObjectExpression
+	var defaults = &ObjectExpression{
+		loc:        loc(arrow.Location()),
+		Properties: make([]*Property, 0, len(arrow.Params)),
+	}
 	if len(arrow.Params) > 0 {
 		pipedCount := 0
 		parameters = &FunctionParameters{
@@ -223,10 +226,6 @@ func analyzeArrowFunctionExpression(arrow *ast.ArrowFunctionExpression) (*Functi
 				Key: key,
 			}
 			if def != nil {
-				if defaults == nil {
-					defaults = new(ObjectExpression)
-					defaults.Properties = make([]*Property, 0, len(arrow.Params))
-				}
 				defaults.Properties = append(defaults.Properties, &Property{
 					loc:   loc(p.Location()),
 					Key:   key,
@@ -276,7 +275,9 @@ func analyzeCallExpression(call *ast.CallExpression) (*CallExpression, error) {
 			return nil, err
 		}
 	} else {
-		args = new(ObjectExpression)
+		args = &ObjectExpression{
+			loc: loc(call.Location()),
+		}
 	}
 
 	return &CallExpression{

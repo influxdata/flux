@@ -29,8 +29,8 @@ func toDurationSlice(durations []*singleDurationLiteral) []ast.Duration {
 
 func program(body interface{}, text []byte, pos position) (*ast.Program, error) {
 	return &ast.Program{
-		Body:     body.([]ast.Statement),
 		BaseNode: base(text, pos),
+		Body:     body.([]ast.Statement),
 	}, nil
 }
 
@@ -60,23 +60,25 @@ func optionstmt(id, expr interface{}, text []byte, pos position) (*ast.OptionSta
 	return &ast.OptionStatement{
 		BaseNode: base(text, pos),
 		Declaration: &ast.VariableDeclarator{
-			ID:   id.(*ast.Identifier),
-			Init: expr.(ast.Expression),
+			BaseNode: base(text, pos),
+			ID:       id.(*ast.Identifier),
+			Init:     expr.(ast.Expression),
 		},
 	}, nil
 }
 
 func varstmt(declaration interface{}, text []byte, pos position) (*ast.VariableDeclaration, error) {
 	return &ast.VariableDeclaration{
-		Declarations: []*ast.VariableDeclarator{declaration.(*ast.VariableDeclarator)},
 		BaseNode:     base(text, pos),
+		Declarations: []*ast.VariableDeclarator{declaration.(*ast.VariableDeclarator)},
 	}, nil
 }
 
 func vardecl(id, initializer interface{}, text []byte, pos position) (*ast.VariableDeclarator, error) {
 	return &ast.VariableDeclarator{
-		ID:   id.(*ast.Identifier),
-		Init: initializer.(ast.Expression),
+		BaseNode: base(text, pos),
+		ID:       id.(*ast.Identifier),
+		Init:     initializer.(ast.Expression),
 	}, nil
 }
 
