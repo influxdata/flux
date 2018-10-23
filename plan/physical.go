@@ -42,66 +42,29 @@ func (pp *physicalPlanner) Plan(spec *PlanSpec) (*PlanSpec, error) {
 		return nil, err
 	}
 
-	// Convert yields into result list
-	// TODO: Implement this via a transformation rule
-	final, err := removeYields(transformedSpec)
-	if err != nil {
-		return nil, err
-	}
-
 	// Compute time bounds for nodes in the plan
-	if err := final.BottomUpWalk(ComputeBounds); err != nil {
+	if err := transformedSpec.BottomUpWalk(ComputeBounds); err != nil {
 		return nil, err
 	}
 
 	// Update memory quota
-	if final.Resources.MemoryBytesQuota == 0 {
-		final.Resources.MemoryBytesQuota = pp.defaultMemoryLimit
+	if transformedSpec.Resources.MemoryBytesQuota == 0 {
+		transformedSpec.Resources.MemoryBytesQuota = pp.defaultMemoryLimit
 	}
 
 	// Update concurrency quota
-	if final.Resources.ConcurrencyQuota == 0 {
-		final.Resources.ConcurrencyQuota = len(spec.Results)
+	if transformedSpec.Resources.ConcurrencyQuota == 0 {
+		numYields := 0
+		spec.TopDownWalk(func(pn PlanNode) error {
+			if _, isYield := pn.ProcedureSpec().(YieldProcedureSpec); isYield {
+				numYields++
+			}
+			return nil
+		})
+		transformedSpec.Resources.ConcurrencyQuota = numYields
 	}
 
-	return final, nil
-}
-
-type removeYieldRule struct {
-}
-
-func (removeYieldRule) Name() string {
-	return "removeYield"
-}
-
-func (removeYieldRule) Pattern() Pattern {
-	return YieldPat(Any())
-}
-
-func (removeYieldRule) Rewrite(pn PlanNode) (PlanNode, bool) {
-	pred := pn.Predecessors()[0]
-	pred.ClearSuccessors()
-	return pred, true
-}
-
-func removeYields(plan *PlanSpec) (*PlanSpec, error) {
-	// Add each yield node to the plan's result map
-	plan.TopDownWalk(func(pn PlanNode) error {
-		if yieldSpec, ok := pn.ProcedureSpec().(YieldProcedureSpec); ok {
-			plan.Results[yieldSpec.YieldName()] = pn.Predecessors()[0]
-		}
-		return nil
-	})
-
-	// Remove the yield nodes
-	hp := newHeuristicPlanner()
-	hp.addRules(removeYieldRule{})
-	plan, err := hp.Plan(plan)
-	if err != nil {
-		return nil, err
-	}
-
-	return plan, nil
+	return transformedSpec, nil
 }
 
 type physicalPlanner struct {

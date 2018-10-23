@@ -12,13 +12,13 @@ func TestPlanTraversal(t *testing.T) {
 
 	testCases := []struct {
 		name      string
-		plan      plantest.LogicalPlanSpec
+		plan      plantest.PlanSpec
 		nodeIDs   []plan.NodeID
 	}{
 		{
 			name:      "simple",
 			//        0
-			plan: plantest.LogicalPlanSpec{
+			plan: plantest.PlanSpec{
 				Nodes: []plan.PlanNode{plantest.CreateLogicalMockNode("0")},
 			},
 			nodeIDs:   []plan.NodeID{"0"},
@@ -28,7 +28,7 @@ func TestPlanTraversal(t *testing.T) {
 			//        1
 			//        |
 			//        0
-			plan: plantest.LogicalPlanSpec{
+			plan: plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plantest.CreateLogicalMockNode("0"),
 					plantest.CreateLogicalMockNode("1"),
@@ -44,7 +44,7 @@ func TestPlanTraversal(t *testing.T) {
 			//        1    3
 			//        |    |
 			//        0    2
-			plan: plantest.LogicalPlanSpec{
+			plan: plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plantest.CreateLogicalMockNode("0"),
 					plantest.CreateLogicalMockNode("1"),
@@ -65,7 +65,7 @@ func TestPlanTraversal(t *testing.T) {
 			//      1   3
 			//      |   |
 			//      0   2
-			plan: plantest.LogicalPlanSpec{
+			plan: plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plantest.CreateLogicalMockNode("0"),
 					plantest.CreateLogicalMockNode("1"),
@@ -93,7 +93,7 @@ func TestPlanTraversal(t *testing.T) {
 			//          1   3
 			//          |   |
 			//          0   2
-			plan: plantest.LogicalPlanSpec{
+			plan: plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plantest.CreateLogicalMockNode("0"),
 					plantest.CreateLogicalMockNode("1"),
@@ -124,7 +124,7 @@ func TestPlanTraversal(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			planSpec := plantest.CreateLogicalPlanSpec(&tc.plan)
+			planSpec := plantest.CreatePlanSpec(&tc.plan)
 
 			simpleRule := plantest.SimpleRule{}
 			thePlanner := plan.NewPhysicalPlanner(plan.WithPhysicalRule(&simpleRule))

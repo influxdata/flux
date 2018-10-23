@@ -26,12 +26,12 @@ func init() {
 func TestExecutor_Execute(t *testing.T) {
 	testcases := []struct {
 		name string
-		spec *plantest.PhysicalPlanSpec
+		spec *plantest.PlanSpec
 		want map[string][]*executetest.Table
 	}{
 		{
 			name: `from`,
-			spec: &plantest.PhysicalPlanSpec{
+			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{&executetest.Table{
@@ -51,8 +51,11 @@ func TestExecutor_Execute(t *testing.T) {
 							},
 						}},
 					)),
+					plan.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
 				},
-				Results: map[string]int{"_result": 0},
+				Edges: [][2]int{
+					{0, 1},
+				},
 			},
 			want: map[string][]*executetest.Table{
 				"_result": []*executetest.Table{{
@@ -75,7 +78,7 @@ func TestExecutor_Execute(t *testing.T) {
 		},
 		{
 			name: `from with filter`,
-			spec: &plantest.PhysicalPlanSpec{
+			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{&executetest.Table{
@@ -114,12 +117,11 @@ func TestExecutor_Execute(t *testing.T) {
 							},
 						},
 					}),
+					plan.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
 				},
 				Edges: [][2]int{
 					{0, 1},
-				},
-				Results: map[string]int{
-					"_result": 1,
+					{1, 2},
 				},
 			},
 			want: map[string][]*executetest.Table{
@@ -140,7 +142,7 @@ func TestExecutor_Execute(t *testing.T) {
 		},
 		{
 			name: `from with filter with multiple tables`,
-			spec: &plantest.PhysicalPlanSpec{
+			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{
@@ -197,12 +199,11 @@ func TestExecutor_Execute(t *testing.T) {
 							},
 						},
 					}),
+					plan.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
 				},
 				Edges: [][2]int{
 					{0, 1},
-				},
-				Results: map[string]int{
-					"_result": 1,
+					{1, 2},
 				},
 			},
 			want: map[string][]*executetest.Table{
@@ -242,7 +243,7 @@ func TestExecutor_Execute(t *testing.T) {
 		},
 		{
 			name: `multiple aggregates`,
-			spec: &plantest.PhysicalPlanSpec{
+			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{
@@ -286,15 +287,14 @@ func TestExecutor_Execute(t *testing.T) {
 					plan.CreatePhysicalNode("mean", &transformations.MeanProcedureSpec{
 						AggregateConfig: execute.DefaultAggregateConfig,
 					}),
-
+					plan.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("sum")),
+					plan.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("mean")),
 				},
 				Edges: [][2]int{
 					{0, 1},
 					{0, 2},
-				},
-				Results: map[string]int{
-					"sum": 1,
-					"mean": 2,
+					{1, 3},
+					{2, 4},
 				},
 			},
 			want: map[string][]*executetest.Table{
@@ -350,7 +350,7 @@ func TestExecutor_Execute(t *testing.T) {
 		},
 		{
 			name: `diamond join`,
-			spec: &plantest.PhysicalPlanSpec{
+			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{
@@ -417,16 +417,14 @@ func TestExecutor_Execute(t *testing.T) {
 							plan.ProcedureIDFromOperationID("count"): "b",
 						},
 					}),
-
+					plan.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
 				},
 				Edges: [][2]int{
 					{0, 1},
 					{0, 2},
 					{1, 3},
 					{2, 3},
-				},
-				Results: map[string]int{
-					"_result": 3,
+					{3, 4},
 				},
 			},
 			want: map[string][]*executetest.Table{
@@ -484,7 +482,7 @@ func TestExecutor_Execute(t *testing.T) {
 			tc.spec.Now = time.Now()
 
 			// Construct physical query plan
-			plan := plantest.CreatePhysicalPlanSpec(tc.spec)
+			plan := plantest.CreatePlanSpec(tc.spec)
 
 			exe := execute.NewExecutor(nil, zaptest.NewLogger(t))
 			results, err := exe.Execute(context.Background(), plan, executetest.UnlimitedAllocator)

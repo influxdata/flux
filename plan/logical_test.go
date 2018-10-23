@@ -29,7 +29,7 @@ func TestFluxSpecToLogicalPlan(t *testing.T) {
 		query string
 
 		// Expected logical query plan
-		spec *plantest.LogicalPlanSpec
+		spec *plantest.PlanSpec
 
 		// Whether or not an error is expected
 		wantErr bool
@@ -37,7 +37,7 @@ func TestFluxSpecToLogicalPlan(t *testing.T) {
 		{
 			name:  `from range`,
 			query: `from(bucket: "my-bucket") |> range(start: -1h) |> yield()`,
-			spec: &plantest.LogicalPlanSpec{
+			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{
 						Bucket: "my-bucket",
@@ -69,7 +69,7 @@ func TestFluxSpecToLogicalPlan(t *testing.T) {
 		{
 			name:  `from range filter`,
 			query: `from(bucket: "my-bucket") |> range(start: -1h) |> filter(fn: (r) => true) |> yield()`,
-			spec: &plantest.LogicalPlanSpec{
+			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{
 						Bucket: "my-bucket",
@@ -139,7 +139,7 @@ func TestFluxSpecToLogicalPlan(t *testing.T) {
 					t.Fatal("expected error, but got none")
 				}
 			} else {
-				want := plantest.CreateLogicalPlanSpec(tc.spec)
+				want := plantest.CreatePlanSpec(tc.spec)
 
 				// Comparator function for LogicalPlanNodes
 				f := plantest.CompareLogicalPlanNodes
@@ -224,7 +224,7 @@ func TestLogicalPlanner(t *testing.T) {
 	testcases := []struct {
 		name     string
 		flux     string
-		wantPlan plantest.LogicalPlanSpec
+		wantPlan plantest.PlanSpec
 	}{{
 		name: "with merge-able filters",
 		flux: `
@@ -233,7 +233,7 @@ func TestLogicalPlanner(t *testing.T) {
 				filter(fn: (r) => r._value > 0.5) |>
 				filter(fn: (r) => r._value < 0.9) |>
 				yield(name: "result")`,
-		wantPlan: plantest.LogicalPlanSpec{
+		wantPlan: plantest.PlanSpec{
 			Nodes: []plan.PlanNode{
 				plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{Bucket: "telegraf"}),
 				plan.CreateLogicalNode("merged_filter1_merged_filter2_filter3", &transformations.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
@@ -261,7 +261,7 @@ func TestLogicalPlanner(t *testing.T) {
 		{
 			name: "with swappable map and filter",
 			flux: `from(bucket: "telegraf") |> map(fn: (r) => r._value * 2.0) |> filter(fn: (r) => r._value < 10.0) |> yield(name: "result")`,
-			wantPlan: plantest.LogicalPlanSpec{
+			wantPlan: plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{Bucket: "telegraf"}),
 					plan.CreateLogicalNode("filter2_copy", &transformations.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
@@ -294,7 +294,7 @@ func TestLogicalPlanner(t *testing.T) {
 					map(fn: (r) => r._value * 10) |>
 					filter(fn: (r) => f._value < 100) |>
 					yield(name: "result")`,
-			wantPlan: plantest.LogicalPlanSpec{
+			wantPlan: plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{Bucket: "telegraf"}),
 					plan.CreateLogicalNode("merged_filter1_filter3_copy", &transformations.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
@@ -338,7 +338,7 @@ func TestLogicalPlanner(t *testing.T) {
 			logicalPlanner := plan.NewLogicalPlanner()
 			logicalPlan, err := logicalPlanner.Plan(fluxSpec)
 
-			wantPlan := plantest.CreateLogicalPlanSpec(&tc.wantPlan)
+			wantPlan := plantest.CreatePlanSpec(&tc.wantPlan)
 			if err := plantest.ComparePlans(wantPlan, logicalPlan, plantest.CompareLogicalPlanNodes); err != nil {
 				t.Error(err)
 			}

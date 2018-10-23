@@ -7,8 +7,8 @@ import (
 	"github.com/influxdata/flux/plan"
 )
 
-// LogicalPlanSpec is a set of nodes and edges of a logical query plan
-type LogicalPlanSpec struct {
+// PlanSpec is a set of nodes and edges of a logical query plan
+type PlanSpec struct {
 	Nodes []plan.PlanNode
 
 	// Edges is a list of predecessor-to-successor edges.
@@ -21,30 +21,9 @@ type LogicalPlanSpec struct {
 	Now time.Time
 }
 
-// PhysicalPlanSpec is a LogicalPlanSpec with a set of result nodes
-type PhysicalPlanSpec struct {
-	Nodes     []plan.PlanNode
-	Edges     [][2]int
-	Resources flux.ResourceManagement
-	Now       time.Time
-
-	// Results maps a name to a result node.
-	// "a": 3 => Nodes[3] is a result node.
-	Results map[string]int
-}
-
-// CreateLogicalPlanSpec creates a logcial plan from a set of nodes and edges
-func CreateLogicalPlanSpec(spec *LogicalPlanSpec) *plan.PlanSpec {
+// CreatePlanSpec creates a logical plan from a set of nodes and edges
+func CreatePlanSpec(spec *PlanSpec) *plan.PlanSpec {
 	return createPlanSpec(spec.Nodes, spec.Edges, spec.Resources, spec.Now)
-}
-
-// CreatePhysicalPlanSpec creates a physical plan from a set of nodes, edges, and results
-func CreatePhysicalPlanSpec(spec *PhysicalPlanSpec) *plan.PlanSpec {
-	plan := createPlanSpec(spec.Nodes, spec.Edges, spec.Resources, spec.Now)
-	for name, i := range spec.Results {
-		plan.Results[name] = spec.Nodes[i]
-	}
-	return plan
 }
 
 func createPlanSpec(nodes []plan.PlanNode, edges [][2]int, resources flux.ResourceManagement, now time.Time) *plan.PlanSpec {

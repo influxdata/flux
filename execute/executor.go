@@ -93,7 +93,7 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.PlanSpec, a
 		deps:      e.deps,
 		alloc:     a,
 		resources: p.Resources,
-		results:   make(map[string]flux.Result, len(p.Results)),
+		results:   make(map[string]flux.Result),
 		// TODO(nathanielc): Have the planner specify the dispatcher throughput
 		dispatcher: newPoolDispatcher(10, e.logger),
 	}
@@ -105,12 +105,6 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.PlanSpec, a
 
 	if err := p.BottomUpWalk(v.Visit); err != nil {
 		return nil, err
-	}
-
-	for name, result := range p.Results {
-		r := newResult(name)
-		v.es.results[name] = r
-		v.nodes[result].AddTransformation(r)
 	}
 
 	return v.es, nil
@@ -132,11 +126,40 @@ type createExecutionNodeVisitor struct {
 	nodes map[plan.PlanNode]Node
 }
 
+func skipYields(pn plan.PlanNode) plan.PlanNode {
+	isYield := func(pn plan.PlanNode) bool {
+		_, ok := pn.ProcedureSpec().(plan.YieldProcedureSpec)
+		return ok
+	}
+
+	for isYield(pn) {
+		pn = pn.Predecessors()[0]
+	}
+
+	return pn
+}
+
+func nonYieldPredecessors(pn plan.PlanNode) []plan.PlanNode {
+	nodes := make([]plan.PlanNode, len(pn.Predecessors()))
+	for i, pred := range pn.Predecessors() {
+		nodes[i] = skipYields(pred)
+	}
+
+	return nodes
+}
+
 // Visit creates the node that will execute a particular plan node
 func (v *createExecutionNodeVisitor) Visit(node plan.PlanNode) error {
 	spec := node.ProcedureSpec()
 	kind := spec.Kind()
 	id := plan.ProcedureIDFromNodeID(node.ID())
+
+	if yieldSpec, ok := spec.(plan.YieldProcedureSpec); ok {
+		r := newResult(yieldSpec.YieldName())
+		v.es.results[yieldSpec.YieldName()] = r
+		v.nodes[skipYields(node)].AddTransformation(r)
+		return nil
+	}
 
 	// Add explicit stream context if bounds are set on this node
 	var streamContext streamContext
@@ -155,7 +178,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.PlanNode) error {
 		streamContext: streamContext,
 	}
 
-	for i, pred := range node.Predecessors() {
+	for i, pred := range nonYieldPredecessors(node) {
 		id := plan.ProcedureIDFromNodeID(pred.ID())
 		ec.parents[i] = DatasetID(id)
 	}
@@ -200,7 +223,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.PlanNode) error {
 		ds.SetTriggerSpec(ts)
 		v.nodes[node] = ds
 
-		for _, p := range node.Predecessors() {
+		for _, p := range nonYieldPredecessors(node) {
 			executionNode := v.nodes[p]
 			transport := newConescutiveTransport(v.es.dispatcher, tr)
 			v.es.transports = append(v.es.transports, transport)

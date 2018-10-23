@@ -47,7 +47,6 @@ type NodeID string
 // PlanSpec holds the result nodes of a query plan with associated metadata
 type PlanSpec struct {
 	Roots     map[PlanNode]struct{}
-	Results   map[string]PlanNode
 	Resources flux.ResourceManagement
 	Now       time.Time
 }
@@ -56,7 +55,6 @@ type PlanSpec struct {
 func NewPlanSpec() *PlanSpec {
 	return &PlanSpec{
 		Roots:   make(map[PlanNode]struct{}),
-		Results: make(map[string]PlanNode),
 	}
 }
 
