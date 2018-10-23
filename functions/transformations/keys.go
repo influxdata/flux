@@ -131,8 +131,14 @@ func (t *keysTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 		return fmt.Errorf("keys found duplicate table with key: %v", tbl.Key())
 	}
 
-	execute.AddTableKeyCols(tbl.Key(), builder)
-	colIdx := builder.AddCol(flux.ColMeta{Label: execute.DefaultValueColLabel, Type: flux.TString})
+	err := execute.AddTableKeyCols(tbl.Key(), builder)
+	if err != nil {
+		return err
+	}
+	colIdx, err := builder.AddCol(flux.ColMeta{Label: execute.DefaultValueColLabel, Type: flux.TString})
+	if err != nil {
+		return err
+	}
 
 	cols := tbl.Cols()
 	sort.Slice(cols, func(i, j int) bool {

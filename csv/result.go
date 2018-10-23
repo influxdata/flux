@@ -565,7 +565,10 @@ func (d *tableDecoder) init(line []string) error {
 	key := execute.NewGroupKey(keyCols, keyValues)
 	d.builder = execute.NewColListTableBuilder(key, newUnlimitedAllocator())
 	for _, c := range d.meta.Cols {
-		d.builder.AddCol(c.ColMeta)
+		_, err := d.builder.AddCol(c.ColMeta)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -575,28 +578,8 @@ func (d *tableDecoder) appendRecord(record []string) error {
 	d.empty = false
 	for j, c := range d.meta.Cols {
 		if record[j] == "" && d.meta.Defaults[j] != nil {
-			switch c.Type {
-			case flux.TBool:
-				v := d.meta.Defaults[j].Bool()
-				d.builder.AppendBool(j, v)
-			case flux.TInt:
-				v := d.meta.Defaults[j].Int()
-				d.builder.AppendInt(j, v)
-			case flux.TUInt:
-				v := d.meta.Defaults[j].UInt()
-				d.builder.AppendUInt(j, v)
-			case flux.TFloat:
-				v := d.meta.Defaults[j].Float()
-				d.builder.AppendFloat(j, v)
-			case flux.TString:
-				v := d.meta.Defaults[j].Str()
-				d.builder.AppendString(j, v)
-			case flux.TTime:
-				v := d.meta.Defaults[j].Time()
-				d.builder.AppendTime(j, v)
-			default:
-				return fmt.Errorf("unsupported column type %v", c.Type)
-			}
+			v := d.meta.Defaults[j]
+			d.builder.AppendValue(j, v)
 			continue
 		}
 		if err := decodeValueInto(j, c, record[j], d.builder); err != nil {
@@ -969,33 +952,33 @@ func decodeValue(value string, c colMeta) (values.Value, error) {
 		if err != nil {
 			return nil, err
 		}
-		val = values.NewBoolValue(v)
+		val = values.NewBool(v)
 	case flux.TInt:
 		v, err := strconv.ParseInt(value, 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		val = values.NewIntValue(v)
+		val = values.NewInt(v)
 	case flux.TUInt:
 		v, err := strconv.ParseUint(value, 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		val = values.NewUIntValue(v)
+		val = values.NewUInt(v)
 	case flux.TFloat:
 		v, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			return nil, err
 		}
-		val = values.NewFloatValue(v)
+		val = values.NewFloat(v)
 	case flux.TString:
-		val = values.NewStringValue(value)
+		val = values.NewString(value)
 	case flux.TTime:
 		v, err := decodeTime(value, c.fmt)
 		if err != nil {
 			return nil, err
 		}
-		val = values.NewTimeValue(v)
+		val = values.NewTime(v)
 	default:
 		return nil, fmt.Errorf("unsupported type %v", c.Type)
 	}
@@ -1098,8 +1081,8 @@ func copyLine(line []string) []string {
 	return cpy
 }
 
-// decodeType returns the execute.DataType and any additional format description.
-func decodeType(datatype string) (t flux.DataType, desc string, err error) {
+// decodeType returns the flux.ColType and any additional format description.
+func decodeType(datatype string) (t flux.ColType, desc string, err error) {
 	split := strings.SplitN(datatype, ":", 2)
 	if len(split) > 1 {
 		desc = split[1]

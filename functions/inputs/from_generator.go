@@ -2,8 +2,9 @@ package inputs
 
 import (
 	"fmt"
-	"github.com/influxdata/flux/values"
 	"time"
+
+	"github.com/influxdata/flux/values"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/compiler"
@@ -173,8 +174,8 @@ func (s *GeneratorSource) Decode() (flux.Table, error) {
 		},
 	}
 	vs := []values.Value{
-		values.NewTimeValue(values.ConvertTime(s.Start)),
-		values.NewTimeValue(values.ConvertTime(s.Stop)),
+		values.NewTime(values.ConvertTime(s.Start)),
+		values.NewTime(values.ConvertTime(s.Stop)),
 	}
 	groupKey := execute.NewGroupKey(ks, vs)
 	b := execute.NewColListTableBuilder(groupKey, s.alloc)
@@ -191,7 +192,10 @@ func (s *GeneratorSource) Decode() (flux.Table, error) {
 	}
 
 	for _, col := range cols {
-		b.AddCol(col)
+		_, err := b.AddCol(col)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	cols = b.Cols()
@@ -201,7 +205,7 @@ func (s *GeneratorSource) Decode() (flux.Table, error) {
 	valueIdx := execute.ColIdx("_value", cols)
 	for i := 0; i < int(s.Count); i++ {
 		b.AppendTime(timeIdx, values.ConvertTime(s.Start.Add(time.Duration(i)*deltaT)))
-		scope := map[string]values.Value{s.Param: values.NewIntValue(int64(i))}
+		scope := map[string]values.Value{s.Param: values.NewInt(int64(i))}
 		v, err := s.Fn.EvalInt(scope)
 		if err != nil {
 			return nil, err
@@ -211,4 +215,3 @@ func (s *GeneratorSource) Decode() (flux.Table, error) {
 
 	return b.Table()
 }
-

@@ -119,100 +119,74 @@ func (v value) String() string {
 // InvalidValue is a non nil value who's type is semantic.Invalid
 var InvalidValue = value{t: semantic.Invalid}
 
-func NewValue(v interface{}, k semantic.Kind) (Value, error) {
-	switch k {
-	case semantic.String:
-		_, ok := v.(string)
-		if !ok {
-			return nil, fmt.Errorf("string value must have type string, got %T", v)
-		}
-	case semantic.Int:
-		_, ok := v.(int64)
-		if !ok {
-			return nil, fmt.Errorf("int value must have type int64, got %T", v)
-		}
-	case semantic.UInt:
-		_, ok := v.(uint64)
-		if !ok {
-			return nil, fmt.Errorf("uint value must have type uint64, got %T", v)
-		}
-	case semantic.Float:
-		_, ok := v.(float64)
-		if !ok {
-			return nil, fmt.Errorf("float value must have type float64, got %T", v)
-		}
-	case semantic.Bool:
-		_, ok := v.(bool)
-		if !ok {
-			return nil, fmt.Errorf("bool value must have type bool, got %T", v)
-		}
-	case semantic.Time:
-		_, ok := v.(Time)
-		if !ok {
-			return nil, fmt.Errorf("time value must have type Time, got %T", v)
-		}
-	case semantic.Duration:
-		_, ok := v.(Duration)
-		if !ok {
-			return nil, fmt.Errorf("duration value must have type Duration, got %T", v)
-		}
-	case semantic.Regexp:
-		_, ok := v.(*regexp.Regexp)
-		if !ok {
-			return nil, fmt.Errorf("regexp value must have type *regexp.Regexp, got %T", v)
-		}
+// New constructs a new Value by inferring the type from the interface. If the interface
+// does not translate to a valid Value type, then InvalidValue is returned.
+func New(v interface{}) Value {
+	switch v := v.(type) {
+	case string:
+		return NewString(v)
+	case int64:
+		return NewInt(v)
+	case uint64:
+		return NewUInt(v)
+	case float64:
+		return NewFloat(v)
+	case bool:
+		return NewBool(v)
+	case Time:
+		return NewTime(v)
+	case Duration:
+		return NewDuration(v)
+	case *regexp.Regexp:
+		return NewRegexp(v)
 	default:
-		return nil, fmt.Errorf("unsupported value kind %v", k)
+		return InvalidValue
 	}
-	return value{
-		t: k,
-		v: v,
-	}, nil
 }
 
-func NewStringValue(v string) Value {
+func NewString(v string) Value {
 	return value{
 		t: semantic.String,
 		v: v,
 	}
 }
-func NewIntValue(v int64) Value {
+func NewInt(v int64) Value {
 	return value{
 		t: semantic.Int,
 		v: v,
 	}
 }
-func NewUIntValue(v uint64) Value {
+func NewUInt(v uint64) Value {
 	return value{
 		t: semantic.UInt,
 		v: v,
 	}
 }
-func NewFloatValue(v float64) Value {
+func NewFloat(v float64) Value {
 	return value{
 		t: semantic.Float,
 		v: v,
 	}
 }
-func NewBoolValue(v bool) Value {
+func NewBool(v bool) Value {
 	return value{
 		t: semantic.Bool,
 		v: v,
 	}
 }
-func NewTimeValue(v Time) Value {
+func NewTime(v Time) Value {
 	return value{
 		t: semantic.Time,
 		v: v,
 	}
 }
-func NewDurationValue(v Duration) Value {
+func NewDuration(v Duration) Value {
 	return value{
 		t: semantic.Duration,
 		v: v,
 	}
 }
-func NewRegexpValue(v *regexp.Regexp) Value {
+func NewRegexp(v *regexp.Regexp) Value {
 	return value{
 		t: semantic.Regexp,
 		v: v,

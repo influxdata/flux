@@ -120,7 +120,7 @@ func (a *MeanAgg) DoFloat(vs []float64) {
 		a.sum += v
 	}
 }
-func (a *MeanAgg) Type() flux.DataType {
+func (a *MeanAgg) Type() flux.ColType {
 	return flux.TFloat
 }
 func (a *MeanAgg) ValueFloat() float64 {

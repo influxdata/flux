@@ -129,7 +129,7 @@ func (a *StddevAgg) DoFloat(vs []float64) {
 		a.m2 += delta * delta2
 	}
 }
-func (a *StddevAgg) Type() flux.DataType {
+func (a *StddevAgg) Type() flux.ColType {
 	return flux.TFloat
 }
 func (a *StddevAgg) ValueFloat() float64 {

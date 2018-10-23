@@ -417,10 +417,12 @@ func (buf *streamBuffer) table(key flux.GroupKey) *execute.ColListTableBuilder {
 func (buf *streamBuffer) insert(table flux.Table) {
 	// Construct a new table builder with same schema as input table
 	builder := execute.NewColListTableBuilder(table.Key(), buf.alloc)
-	execute.AddTableCols(table, builder)
+	// this will only error if we try to add a duplicate column to the builder.
+	// since this is a new table, that won't happen.
+	_ = execute.AddTableCols(table, builder)
 
-	// Append the input table to this builder
-	execute.AppendTable(table, builder)
+	// Append the input table to this builder, safe to ignore errors
+	_ = execute.AppendTable(table, builder)
 
 	// Insert this table into the buffer
 	buf.data[table.Key()] = builder
@@ -848,7 +850,10 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 	builder := execute.NewColListTableBuilder(groupKey, c.alloc)
 
 	for _, column := range c.schema.columns {
-		builder.AddCol(column)
+		_, err := builder.AddCol(column)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Perform sort merge join
@@ -868,7 +873,7 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 						}
 						newColumn := c.schemaMap[column]
 						newColumnIdx := c.colIndex[newColumn]
-						execute.AppendValue(builder, newColumnIdx, columnVal)
+						builder.AppendValue(newColumnIdx, columnVal)
 					})
 
 					rightRecord.Range(func(columnName string, columnVal values.Value) {
@@ -882,7 +887,7 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 						// No need to append value if column is part of the join key.
 						// Because value already appended when iterating over left record.
 						if !c.on[newColumn.Label] {
-							execute.AppendValue(builder, newColumnIdx, columnVal)
+							builder.AppendValue(newColumnIdx, columnVal)
 						}
 					})
 				}

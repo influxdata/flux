@@ -167,18 +167,27 @@ func (t *histogramTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 		return fmt.Errorf("column %q must be a float got %v", t.spec.Column, col.Type)
 	}
 
-	execute.AddTableKeyCols(tbl.Key(), builder)
-	boundIdx := builder.AddCol(flux.ColMeta{
+	err := execute.AddTableKeyCols(tbl.Key(), builder)
+	if err != nil {
+		return err
+	}
+	boundIdx, err := builder.AddCol(flux.ColMeta{
 		Label: t.spec.UpperBoundColumn,
 		Type:  flux.TFloat,
 	})
-	countIdx := builder.AddCol(flux.ColMeta{
+	if err != nil {
+		return err
+	}
+	countIdx, err := builder.AddCol(flux.ColMeta{
 		Label: t.spec.CountColumn,
 		Type:  flux.TFloat,
 	})
+	if err != nil {
+		return err
+	}
 	totalRows := 0.0
 	counts := make([]float64, len(t.spec.Buckets))
-	err := tbl.Do(func(cr flux.ColReader) error {
+	err = tbl.Do(func(cr flux.ColReader) error {
 		totalRows += float64(cr.Len())
 		for _, v := range cr.Floats(valueIdx) {
 			idx := sort.Search(len(t.spec.Buckets), func(i int) bool {
@@ -317,7 +326,7 @@ func (b linearBuckets) Call(args values.Object) (values.Value, error) {
 	}
 	infV, ok := args.Get("infinity")
 	if !ok {
-		infV = values.NewBoolValue(true)
+		infV = values.NewBool(true)
 	}
 	if infV.Type() != semantic.Bool {
 		return nil, errors.New("infinity must be a bool")
@@ -333,11 +342,11 @@ func (b linearBuckets) Call(args values.Object) (values.Value, error) {
 	elements := make([]values.Value, l)
 	bound := start
 	for i := 0; i < l; i++ {
-		elements[i] = values.NewFloatValue(bound)
+		elements[i] = values.NewFloat(bound)
 		bound += width
 	}
 	if inf {
-		elements[l-1] = values.NewFloatValue(math.Inf(1))
+		elements[l-1] = values.NewFloat(math.Inf(1))
 	}
 	counts := values.NewArrayWithBacking(semantic.Float, elements)
 	return counts, nil
@@ -438,7 +447,7 @@ func (b logarithmicBuckets) Call(args values.Object) (values.Value, error) {
 	}
 	infV, ok := args.Get("infinity")
 	if !ok {
-		infV = values.NewBoolValue(true)
+		infV = values.NewBool(true)
 	}
 	if infV.Type() != semantic.Bool {
 		return nil, errors.New("infinity must be a bool")
@@ -454,11 +463,11 @@ func (b logarithmicBuckets) Call(args values.Object) (values.Value, error) {
 	elements := make([]values.Value, l)
 	bound := start
 	for i := 0; i < l; i++ {
-		elements[i] = values.NewFloatValue(bound)
+		elements[i] = values.NewFloat(bound)
 		bound *= factor
 	}
 	if inf {
-		elements[l-1] = values.NewFloatValue(math.Inf(1))
+		elements[l-1] = values.NewFloat(math.Inf(1))
 	}
 	counts := values.NewArrayWithBacking(semantic.Float, elements)
 	return counts, nil

@@ -1,9 +1,10 @@
 package transformations_test
 
 import (
-	"github.com/influxdata/flux/functions/inputs"
 	"regexp"
 	"testing"
+
+	"github.com/influxdata/flux/functions/inputs"
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute/executetest"
@@ -468,18 +469,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					{21.0, 22.0, 23.0},
 				},
 			}},
-			want: []*executetest.Table{{
-				ColMeta: []flux.ColMeta{
-					{Label: "new_name", Type: flux.TFloat},
-					{Label: "new_name", Type: flux.TFloat},
-					{Label: "new_name", Type: flux.TFloat},
-				},
-				Data: [][]interface{}{
-					{1.0, 2.0, 3.0},
-					{11.0, 12.0, 13.0},
-					{21.0, 22.0, 23.0},
-				},
-			}},
+			wantErr: errors.New("table builder already has column with label new_name"),
 		},
 		{
 			name: "drop predicate (col) => col ~= /reg/",
@@ -735,7 +725,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 						Label: "1a",
 						Type:  flux.TFloat,
 					}},
-					[]values.Value{values.NewFloatValue(1.0)},
+					[]values.Value{values.NewFloat(1.0)},
 				),
 			}},
 			want: []*executetest.Table{{
@@ -756,7 +746,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 						Label: "1b",
 						Type:  flux.TFloat,
 					}},
-					[]values.Value{values.NewFloatValue(1.0)},
+					[]values.Value{values.NewFloat(1.0)},
 				),
 			}},
 		},
@@ -787,7 +777,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 						Label: "2a",
 						Type:  flux.TFloat,
 					}},
-					[]values.Value{values.NewFloatValue(2.0)},
+					[]values.Value{values.NewFloat(2.0)},
 				),
 			}},
 			want: []*executetest.Table{{
@@ -832,7 +822,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 						{Label: "1a", Type: flux.TFloat},
 						{Label: "3a", Type: flux.TFloat},
 					},
-					[]values.Value{values.NewFloatValue(1.0), values.NewFloatValue(3.0)},
+					[]values.Value{values.NewFloat(1.0), values.NewFloat(3.0)},
 				),
 			}},
 			want: []*executetest.Table{{
@@ -850,7 +840,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					[]flux.ColMeta{
 						{Label: "1a", Type: flux.TFloat},
 					},
-					[]values.Value{values.NewFloatValue(1.0)},
+					[]values.Value{values.NewFloat(1.0)},
 				),
 			}},
 		},

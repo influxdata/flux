@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/querytest"
 )
@@ -90,4 +90,3 @@ func BenchmarkCount(b *testing.B) {
 		int64(len(NormalData)),
 	)
 }
-

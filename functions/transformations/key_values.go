@@ -170,15 +170,24 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 		}
 	}
 
-	execute.AddTableKeyCols(tbl.Key(), builder)
-	keyColIdx := builder.AddCol(flux.ColMeta{
+	err := execute.AddTableKeyCols(tbl.Key(), builder)
+	if err != nil {
+		return err
+	}
+	keyColIdx, err := builder.AddCol(flux.ColMeta{
 		Label: "_key",
 		Type:  flux.TString,
 	})
-	valueColIdx := builder.AddCol(flux.ColMeta{
+	if err != nil {
+		return err
+	}
+	valueColIdx, err := builder.AddCol(flux.ColMeta{
 		Label: execute.DefaultValueColLabel,
 		Type:  keyColType,
 	})
+	if err != nil {
+		return err
+	}
 
 	var (
 		boolDistinct   map[bool]bool

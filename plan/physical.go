@@ -1,8 +1,6 @@
 package plan
 
-import (
-	"math"
-)
+import "math"
 
 // PhysicalPlanner performs transforms a logical plan to a physical plan,
 // by applying any registered physical rules.

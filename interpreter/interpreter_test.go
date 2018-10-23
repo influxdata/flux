@@ -35,7 +35,7 @@ func init() {
 			ReturnType: semantic.Float,
 		}),
 		call: func(args values.Object) (values.Value, error) {
-			return values.NewFloatValue(42.0), nil
+			return values.NewFloat(42.0), nil
 		},
 		hasSideEffect: false,
 	})
@@ -45,7 +45,7 @@ func init() {
 			ReturnType: semantic.Float,
 		}),
 		call: func(args values.Object) (values.Value, error) {
-			return values.NewFloatValue(6.0), nil
+			return values.NewFloat(6.0), nil
 		},
 		hasSideEffect: false,
 	})
@@ -55,7 +55,7 @@ func init() {
 			ReturnType: semantic.Float,
 		}),
 		call: func(args values.Object) (values.Value, error) {
-			return values.NewFloatValue(9.0), nil
+			return values.NewFloat(9.0), nil
 		},
 		hasSideEffect: false,
 	})
@@ -81,7 +81,7 @@ func init() {
 			if !ok {
 				return nil, errors.New("missing argument x")
 			}
-			return values.NewFloatValue(v.Float() + 1), nil
+			return values.NewFloat(v.Float() + 1), nil
 		},
 		hasSideEffect: false,
 	})
@@ -91,13 +91,13 @@ func init() {
 			ReturnType: semantic.Int,
 		}),
 		call: func(args values.Object) (values.Value, error) {
-			return values.NewIntValue(0), nil
+			return values.NewInt(0), nil
 		},
 		hasSideEffect: true,
 	})
 
-	optionsObject.Set("name", values.NewStringValue("foo"))
-	optionsObject.Set("repeat", values.NewIntValue(100))
+	optionsObject.Set("name", values.NewString("foo"))
+	optionsObject.Set("repeat", values.NewInt(100))
 
 	addOption("task", optionsObject)
 }
@@ -114,7 +114,7 @@ func TestEval(t *testing.T) {
 			name:  "call function",
 			query: "six()",
 			want: []values.Value{
-				values.NewFloatValue(6.0),
+				values.NewFloat(6.0),
 			},
 		},
 		{
@@ -140,7 +140,7 @@ func TestEval(t *testing.T) {
 			`,
 			wantErr: true,
 			want: []values.Value{
-				values.NewFloatValue(6.0),
+				values.NewFloat(6.0),
 			},
 		},
 		{
@@ -152,9 +152,9 @@ func TestEval(t *testing.T) {
 			answer = fortyTwo() == six * nine
 			`,
 			want: []values.Value{
-				values.NewFloatValue(6),
-				values.NewFloatValue(9),
-				values.NewBoolValue(false),
+				values.NewFloat(6),
+				values.NewFloat(9),
+				values.NewBool(false),
 			},
 		},
 		{
@@ -166,9 +166,9 @@ func TestEval(t *testing.T) {
             answer = (not (fortyTwo() == six * nine)) or fail()
 			`,
 			want: []values.Value{
-				values.NewFloatValue(6.0),
-				values.NewFloatValue(9.0),
-				values.NewBoolValue(true),
+				values.NewFloat(6.0),
+				values.NewFloat(9.0),
+				values.NewBool(true),
 			},
 		},
 		{
@@ -268,7 +268,7 @@ func TestEval(t *testing.T) {
 			six() |> plusOne() == 7.0 or fail()
 			`,
 			want: []values.Value{
-				values.NewBoolValue(true),
+				values.NewBool(true),
 			},
 		},
 		{
@@ -277,7 +277,7 @@ func TestEval(t *testing.T) {
 			"abba" =~ /^a.*a$/ or fail()
 			`,
 			want: []values.Value{
-				values.NewBoolValue(true),
+				values.NewBool(true),
 			},
 		},
 		{
@@ -286,7 +286,7 @@ func TestEval(t *testing.T) {
 			"abc" =~ /^a.*a$/ and fail()
 			`,
 			want: []values.Value{
-				values.NewBoolValue(false),
+				values.NewBool(false),
 			},
 		},
 		{
@@ -295,7 +295,7 @@ func TestEval(t *testing.T) {
 			"abc" !~ /^a.*a$/ or fail()
 			`,
 			want: []values.Value{
-				values.NewBoolValue(true),
+				values.NewBool(true),
 			},
 		},
 		{
@@ -304,7 +304,7 @@ func TestEval(t *testing.T) {
 			"abba" !~ /^a.*a$/ and fail()
 			`,
 			want: []values.Value{
-				values.NewBoolValue(false),
+				values.NewBool(false),
 			},
 		},
 		{
@@ -319,16 +319,16 @@ func TestEval(t *testing.T) {
 			`,
 			want: []values.Value{
 				optionsObject,
-				values.NewBoolValue(true),
-				values.NewBoolValue(true),
+				values.NewBool(true),
+				values.NewBool(true),
 			},
 		},
 		{
 			name:  "query with side effects",
 			query: `sideEffect() == 0 or fail()`,
 			want: []values.Value{
-				values.NewIntValue(0),
-				values.NewBoolValue(true),
+				values.NewInt(0),
+				values.NewBool(true),
 			},
 		},
 	}

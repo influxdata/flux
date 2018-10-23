@@ -197,15 +197,15 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (v
 			if v.Type() != semantic.Bool {
 				return nil, fmt.Errorf("operand to unary expression is not a boolean value, got %v", v.Type())
 			}
-			return values.NewBoolValue(!v.Bool()), nil
+			return values.NewBool(!v.Bool()), nil
 		case ast.SubtractionOperator:
 			switch t := v.Type(); t {
 			case semantic.Int:
-				return values.NewIntValue(-v.Int()), nil
+				return values.NewInt(-v.Int()), nil
 			case semantic.Float:
-				return values.NewFloatValue(-v.Float()), nil
+				return values.NewFloat(-v.Float()), nil
 			case semantic.Duration:
-				return values.NewDurationValue(-v.Duration()), nil
+				return values.NewDuration(-v.Duration()), nil
 			default:
 				return nil, fmt.Errorf("operand to unary expression is not a number value, got %v", v.Type())
 			}
@@ -245,10 +245,10 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (v
 
 		if e.Operator == ast.AndOperator && !left {
 			// Early return
-			return values.NewBoolValue(false), nil
+			return values.NewBool(false), nil
 		} else if e.Operator == ast.OrOperator && left {
 			// Early return
-			return values.NewBoolValue(true), nil
+			return values.NewBool(true), nil
 		}
 
 		r, err := itrp.doExpression(e.Right, scope)
@@ -262,9 +262,9 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (v
 
 		switch e.Operator {
 		case ast.AndOperator:
-			return values.NewBoolValue(left && right), nil
+			return values.NewBool(left && right), nil
 		case ast.OrOperator:
-			return values.NewBoolValue(left || right), nil
+			return values.NewBool(left || right), nil
 		default:
 			return nil, fmt.Errorf("invalid logical operator %v", e.Operator)
 		}
@@ -315,21 +315,21 @@ func (itrp *Interpreter) doObject(m *semantic.ObjectExpression, scope *Scope) (v
 func (itrp *Interpreter) doLiteral(lit semantic.Literal) (values.Value, error) {
 	switch l := lit.(type) {
 	case *semantic.DateTimeLiteral:
-		return values.NewTimeValue(values.Time(l.Value.UnixNano())), nil
+		return values.NewTime(values.Time(l.Value.UnixNano())), nil
 	case *semantic.DurationLiteral:
-		return values.NewDurationValue(values.Duration(l.Value)), nil
+		return values.NewDuration(values.Duration(l.Value)), nil
 	case *semantic.FloatLiteral:
-		return values.NewFloatValue(l.Value), nil
+		return values.NewFloat(l.Value), nil
 	case *semantic.IntegerLiteral:
-		return values.NewIntValue(l.Value), nil
+		return values.NewInt(l.Value), nil
 	case *semantic.UnsignedIntegerLiteral:
-		return values.NewUIntValue(l.Value), nil
+		return values.NewUInt(l.Value), nil
 	case *semantic.StringLiteral:
-		return values.NewStringValue(l.Value), nil
+		return values.NewString(l.Value), nil
 	case *semantic.RegexpLiteral:
-		return values.NewRegexpValue(l.Value), nil
+		return values.NewRegexp(l.Value), nil
 	case *semantic.BooleanLiteral:
-		return values.NewBoolValue(l.Value), nil
+		return values.NewBool(l.Value), nil
 	default:
 		return nil, fmt.Errorf("unknown literal type %T", lit)
 	}
@@ -383,9 +383,11 @@ func (itrp *Interpreter) doCall(call *semantic.CallExpression, scope *Scope) (va
 	if err != nil {
 		return nil, err
 	}
+
 	if f.HasSideEffect() {
 		itrp.values = append(itrp.values, value)
 	}
+
 	return value, nil
 }
 
@@ -562,34 +564,34 @@ func (f *function) Type() semantic.Type {
 }
 
 func (f *function) Str() string {
-	panic(values.UnexpectedKind(semantic.Object, semantic.String))
+	panic(values.UnexpectedKind(semantic.Function, semantic.String))
 }
 func (f *function) Int() int64 {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Int))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Int))
 }
 func (f *function) UInt() uint64 {
-	panic(values.UnexpectedKind(semantic.Object, semantic.UInt))
+	panic(values.UnexpectedKind(semantic.Function, semantic.UInt))
 }
 func (f *function) Float() float64 {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Float))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Float))
 }
 func (f *function) Bool() bool {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Bool))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Bool))
 }
 func (f *function) Time() values.Time {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Time))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Time))
 }
 func (f *function) Duration() values.Duration {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Duration))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Duration))
 }
 func (f *function) Regexp() *regexp.Regexp {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Regexp))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Regexp))
 }
 func (f *function) Array() values.Array {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Function))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Array))
 }
 func (f *function) Object() values.Object {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Object))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Object))
 }
 func (f *function) Function() values.Function {
 	return f

@@ -32,8 +32,8 @@ func CreateSourceFromDecoder(decoder SourceDecoder, dsid execute.DatasetID, a ex
 
 type sourceIterator struct {
 	decoder SourceDecoder
-	id   execute.DatasetID
-	ts   []execute.Transformation
+	id      execute.DatasetID
+	ts      []execute.Transformation
 }
 
 func (c *sourceIterator) Do(f func(flux.Table) error) error {

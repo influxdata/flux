@@ -234,7 +234,7 @@ func (a *PercentileAgg) DoFloat(vs []float64) {
 	}
 }
 
-func (a *PercentileAgg) Type() flux.DataType {
+func (a *PercentileAgg) Type() flux.ColType {
 	return flux.TFloat
 }
 func (a *PercentileAgg) ValueFloat() float64 {
@@ -288,7 +288,7 @@ func (a *ExactPercentileAgg) DoFloat(vs []float64) {
 	a.data = append(a.data, vs...)
 }
 
-func (a *ExactPercentileAgg) Type() flux.DataType {
+func (a *ExactPercentileAgg) Type() flux.ColType {
 	return flux.TFloat
 }
 
