@@ -1086,17 +1086,17 @@ func encodeValue(value values.Value, c colMeta) (string, error) {
 func encodeValueFrom(i, j int, c colMeta, cr flux.ColReader) (string, error) {
 	switch c.Type {
 	case flux.TBool:
-		return strconv.FormatBool(cr.Bools(j)[i]), nil
+		return strconv.FormatBool(cr.Bools(j).Value(i)), nil
 	case flux.TInt:
-		return strconv.FormatInt(cr.Ints(j)[i], 10), nil
+		return strconv.FormatInt(cr.Ints(j).Value(i), 10), nil
 	case flux.TUInt:
-		return strconv.FormatUint(cr.UInts(j)[i], 10), nil
+		return strconv.FormatUint(cr.UInts(j).Value(i), 10), nil
 	case flux.TFloat:
-		return strconv.FormatFloat(cr.Floats(j)[i], 'f', -1, 64), nil
+		return strconv.FormatFloat(cr.Floats(j).Value(i), 'f', -1, 64), nil
 	case flux.TString:
-		return cr.Strings(j)[i], nil
+		return cr.Strings(j).Value(i), nil
 	case flux.TTime:
-		return encodeTime(cr.Times(j)[i], c.fmt), nil
+		return encodeTime(cr.Times(j).Value(i), c.fmt), nil
 	default:
 		return "", fmt.Errorf("unknown type %v", c.Type)
 	}

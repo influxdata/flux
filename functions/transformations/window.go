@@ -336,7 +336,7 @@ func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl flux.Table
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
-			tm := cr.Times(timeIdx)[i]
+			tm := cr.Times(timeIdx).Value(i)
 			bounds := t.getWindowBounds(tm)
 
 			for _, bnds := range bounds {

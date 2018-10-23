@@ -2,10 +2,10 @@ package transformations
 
 import (
 	"fmt"
-
 	"math/rand"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -164,18 +164,18 @@ func (s *SampleSelector) selectSample(l int) []int {
 	return s.selected
 }
 
-func (s *SampleSelector) DoBool(vs []bool) []int {
-	return s.selectSample(len(vs))
+func (s *SampleSelector) DoBool(vs array.BooleanRef) []int {
+	return s.selectSample(vs.Len())
 }
-func (s *SampleSelector) DoInt(vs []int64) []int {
-	return s.selectSample(len(vs))
+func (s *SampleSelector) DoInt(vs array.IntRef) []int {
+	return s.selectSample(vs.Len())
 }
-func (s *SampleSelector) DoUInt(vs []uint64) []int {
-	return s.selectSample(len(vs))
+func (s *SampleSelector) DoUInt(vs array.UIntRef) []int {
+	return s.selectSample(vs.Len())
 }
-func (s *SampleSelector) DoFloat(vs []float64) []int {
-	return s.selectSample(len(vs))
+func (s *SampleSelector) DoFloat(vs array.FloatRef) []int {
+	return s.selectSample(vs.Len())
 }
-func (s *SampleSelector) DoString(vs []string) []int {
-	return s.selectSample(len(vs))
+func (s *SampleSelector) DoString(vs array.StringRef) []int {
+	return s.selectSample(vs.Len())
 }

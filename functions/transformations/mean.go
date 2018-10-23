@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 )
@@ -100,23 +101,23 @@ func (a *MeanAgg) NewStringAgg() execute.DoStringAgg {
 	return nil
 }
 
-func (a *MeanAgg) DoInt(vs []int64) {
-	a.count += float64(len(vs))
-	for _, v := range vs {
+func (a *MeanAgg) DoInt(vs array.IntRef) {
+	a.count += float64(vs.Len())
+	for _, v := range vs.Int64Values() {
 		//TODO handle overflow
 		a.sum += float64(v)
 	}
 }
-func (a *MeanAgg) DoUInt(vs []uint64) {
-	a.count += float64(len(vs))
-	for _, v := range vs {
+func (a *MeanAgg) DoUInt(vs array.UIntRef) {
+	a.count += float64(vs.Len())
+	for _, v := range vs.Uint64Values() {
 		//TODO handle overflow
 		a.sum += float64(v)
 	}
 }
-func (a *MeanAgg) DoFloat(vs []float64) {
-	a.count += float64(len(vs))
-	for _, v := range vs {
+func (a *MeanAgg) DoFloat(vs array.FloatRef) {
+	a.count += float64(vs.Len())
+	for _, v := range vs.Float64Values() {
 		a.sum += v
 	}
 }

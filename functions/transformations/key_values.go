@@ -232,7 +232,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 				}
 				switch keyColType {
 				case flux.TBool:
-					v := cr.Bools(rowIdx)[i]
+					v := cr.Bools(rowIdx).Value(i)
 					if t.distinct {
 						if boolDistinct[v] {
 							continue
@@ -246,7 +246,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 						return err
 					}
 				case flux.TInt:
-					v := cr.Ints(rowIdx)[i]
+					v := cr.Ints(rowIdx).Value(i)
 					if t.distinct {
 						if intDistinct[v] {
 							continue
@@ -260,7 +260,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 						return err
 					}
 				case flux.TUInt:
-					v := cr.UInts(rowIdx)[i]
+					v := cr.UInts(rowIdx).Value(i)
 					if t.distinct {
 						if uintDistinct[v] {
 							continue
@@ -274,7 +274,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 						return err
 					}
 				case flux.TFloat:
-					v := cr.Floats(rowIdx)[i]
+					v := cr.Floats(rowIdx).Value(i)
 					if t.distinct {
 						if floatDistinct[v] {
 							continue
@@ -288,7 +288,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 						return err
 					}
 				case flux.TString:
-					v := cr.Strings(rowIdx)[i]
+					v := cr.Strings(rowIdx).Value(i)
 					if t.distinct {
 						if stringDistinct[v] {
 							continue
@@ -302,7 +302,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 						return err
 					}
 				case flux.TTime:
-					v := cr.Times(rowIdx)[i]
+					v := cr.Times(rowIdx).Value(i)
 					if t.distinct {
 						if timeDistinct[v] {
 							continue

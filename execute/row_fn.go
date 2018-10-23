@@ -205,6 +205,28 @@ func (f *RowMapFn) Eval(row int, cr flux.ColReader) (values.Object, error) {
 	return v.Object(), nil
 }
 
+// ValueForRow retrieves a value from a column reader at the given index.
+func ValueForRow(cr flux.ColReader, i, j int) values.Value {
+	t := cr.Cols()[j].Type
+	switch t {
+	case flux.TString:
+		return values.NewString(cr.Strings(j).Value(i))
+	case flux.TInt:
+		return values.NewInt(cr.Ints(j).Value(i))
+	case flux.TUInt:
+		return values.NewUInt(cr.UInts(j).Value(i))
+	case flux.TFloat:
+		return values.NewFloat(cr.Floats(j).Value(i))
+	case flux.TBool:
+		return values.NewBool(cr.Bools(j).Value(i))
+	case flux.TTime:
+		return values.NewTime(cr.Times(j).Value(i))
+	default:
+		PanicUnknownType(t)
+		return values.InvalidValue
+	}
+}
+
 func findColReferences(fn *semantic.FunctionExpression) []string {
 	v := &colReferenceVisitor{
 		recordName: fn.Block.Parameters.List[0].Key.Name,

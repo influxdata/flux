@@ -226,7 +226,7 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 			// Check distinct
 			switch col.Type {
 			case flux.TBool:
-				v := cr.Bools(j)[i]
+				v := cr.Bools(j).Value(i)
 				if boolDistinct[v] {
 					continue
 				}
@@ -235,7 +235,7 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 					return err
 				}
 			case flux.TInt:
-				v := cr.Ints(j)[i]
+				v := cr.Ints(j).Value(i)
 				if intDistinct[v] {
 					continue
 				}
@@ -244,7 +244,7 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 					return err
 				}
 			case flux.TUInt:
-				v := cr.UInts(j)[i]
+				v := cr.UInts(j).Value(i)
 				if uintDistinct[v] {
 					continue
 				}
@@ -253,7 +253,7 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 					return err
 				}
 			case flux.TFloat:
-				v := cr.Floats(j)[i]
+				v := cr.Floats(j).Value(i)
 				if floatDistinct[v] {
 					continue
 				}
@@ -262,7 +262,7 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 					return err
 				}
 			case flux.TString:
-				v := cr.Strings(j)[i]
+				v := cr.Strings(j).Value(i)
 				if stringDistinct[v] {
 					continue
 				}
@@ -271,7 +271,7 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 					return err
 				}
 			case flux.TTime:
-				v := cr.Times(j)[i]
+				v := cr.Times(j).Value(i)
 				if timeDistinct[v] {
 					continue
 				}

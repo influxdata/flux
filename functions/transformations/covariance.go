@@ -187,7 +187,7 @@ func (t *CovarianceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 	err = tbl.Do(func(cr flux.ColReader) error {
 		switch typ := cols[xIdx].Type; typ {
 		case flux.TFloat:
-			t.DoFloat(cr.Floats(xIdx), cr.Floats(yIdx))
+			t.DoFloat(cr.Floats(xIdx).Float64Values(), cr.Floats(yIdx).Float64Values())
 		default:
 			return fmt.Errorf("covariance does not support %v", typ)
 		}

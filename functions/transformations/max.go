@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 )
@@ -128,9 +129,9 @@ func (s *MaxSelector) selectRow(idx int, cr flux.ColReader) {
 	}
 }
 
-func (s *MaxIntSelector) DoInt(vs []int64, cr flux.ColReader) {
+func (s *MaxIntSelector) DoInt(vs array.IntRef, cr flux.ColReader) {
 	maxIdx := -1
-	for i, v := range vs {
+	for i, v := range vs.Int64Values() {
 		if !s.set || v > s.max {
 			s.set = true
 			s.max = v
@@ -139,9 +140,9 @@ func (s *MaxIntSelector) DoInt(vs []int64, cr flux.ColReader) {
 	}
 	s.selectRow(maxIdx, cr)
 }
-func (s *MaxUIntSelector) DoUInt(vs []uint64, cr flux.ColReader) {
+func (s *MaxUIntSelector) DoUInt(vs array.UIntRef, cr flux.ColReader) {
 	maxIdx := -1
-	for i, v := range vs {
+	for i, v := range vs.Uint64Values() {
 		if !s.set || v > s.max {
 			s.set = true
 			s.max = v
@@ -150,9 +151,9 @@ func (s *MaxUIntSelector) DoUInt(vs []uint64, cr flux.ColReader) {
 	}
 	s.selectRow(maxIdx, cr)
 }
-func (s *MaxFloatSelector) DoFloat(vs []float64, cr flux.ColReader) {
+func (s *MaxFloatSelector) DoFloat(vs array.FloatRef, cr flux.ColReader) {
 	maxIdx := -1
-	for i, v := range vs {
+	for i, v := range vs.Float64Values() {
 		if !s.set || v > s.max {
 			s.set = true
 			s.max = v

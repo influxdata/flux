@@ -4,7 +4,9 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/staticarray"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -103,28 +105,28 @@ func (cr ColReader) Len() int {
 	return 1
 }
 
-func (cr ColReader) Bools(j int) []bool {
-	return []bool{cr.row[j].(bool)}
+func (cr ColReader) Bools(j int) array.BooleanRef {
+	return staticarray.Boolean([]bool{cr.row[j].(bool)})
 }
 
-func (cr ColReader) Ints(j int) []int64 {
-	return []int64{cr.row[j].(int64)}
+func (cr ColReader) Ints(j int) array.IntRef {
+	return staticarray.Int([]int64{cr.row[j].(int64)})
 }
 
-func (cr ColReader) UInts(j int) []uint64 {
-	return []uint64{cr.row[j].(uint64)}
+func (cr ColReader) UInts(j int) array.UIntRef {
+	return staticarray.UInt([]uint64{cr.row[j].(uint64)})
 }
 
-func (cr ColReader) Floats(j int) []float64 {
-	return []float64{cr.row[j].(float64)}
+func (cr ColReader) Floats(j int) array.FloatRef {
+	return staticarray.Float([]float64{cr.row[j].(float64)})
 }
 
-func (cr ColReader) Strings(j int) []string {
-	return []string{cr.row[j].(string)}
+func (cr ColReader) Strings(j int) array.StringRef {
+	return staticarray.String([]string{cr.row[j].(string)})
 }
 
-func (cr ColReader) Times(j int) []execute.Time {
-	return []execute.Time{cr.row[j].(execute.Time)}
+func (cr ColReader) Times(j int) array.TimeRef {
+	return staticarray.Time([]values.Time{cr.row[j].(execute.Time)})
 }
 
 func TablesFromCache(c execute.DataCache) (tables []*Table, err error) {
@@ -190,17 +192,17 @@ func ConvertTable(tbl flux.Table) (*Table, error) {
 				var v interface{}
 				switch c.Type {
 				case flux.TBool:
-					v = cr.Bools(j)[i]
+					v = cr.Bools(j).Value(i)
 				case flux.TInt:
-					v = cr.Ints(j)[i]
+					v = cr.Ints(j).Value(i)
 				case flux.TUInt:
-					v = cr.UInts(j)[i]
+					v = cr.UInts(j).Value(i)
 				case flux.TFloat:
-					v = cr.Floats(j)[i]
+					v = cr.Floats(j).Value(i)
 				case flux.TString:
-					v = cr.Strings(j)[i]
+					v = cr.Strings(j).Value(i)
 				case flux.TTime:
-					v = cr.Times(j)[i]
+					v = cr.Times(j).Value(i)
 				default:
 					panic(fmt.Errorf("unknown column type %s", c.Type))
 				}

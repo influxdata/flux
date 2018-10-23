@@ -7,6 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/staticarray"
 )
 
 // AggFuncTestHelper splits the data in half, runs Do over each split and compares
@@ -17,9 +18,9 @@ func AggFuncTestHelper(t *testing.T, agg execute.Aggregate, data []float64, want
 	// Call Do twice, since this is possible according to the interface.
 	h := len(data) / 2
 	vf := agg.NewFloatAgg()
-	vf.DoFloat(data[:h])
+	vf.DoFloat(staticarray.Float(data[:h]))
 	if h < len(data) {
-		vf.DoFloat(data[h:])
+		vf.DoFloat(staticarray.Float(data[h:]))
 	}
 
 	var got interface{}
@@ -47,7 +48,7 @@ func AggFuncBenchmarkHelper(b *testing.B, agg execute.Aggregate, data []float64,
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		vf := agg.NewFloatAgg()
-		vf.DoFloat(data)
+		vf.DoFloat(staticarray.Float(data))
 		var got interface{}
 		switch vf.Type() {
 		case flux.TBool:

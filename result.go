@@ -3,6 +3,7 @@ package flux
 import (
 	"io"
 
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/iocounter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -116,12 +117,12 @@ type ColReader interface {
 	// Len returns the length of the slices.
 	// All slices will have the same length.
 	Len() int
-	Bools(j int) []bool
-	Ints(j int) []int64
-	UInts(j int) []uint64
-	Floats(j int) []float64
-	Strings(j int) []string
-	Times(j int) []values.Time
+	Bools(j int) array.BooleanRef
+	Ints(j int) array.IntRef
+	UInts(j int) array.UIntRef
+	Floats(j int) array.FloatRef
+	Strings(j int) array.StringRef
+	Times(j int) array.TimeRef
 }
 
 type GroupKey interface {

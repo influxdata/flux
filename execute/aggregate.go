@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
@@ -219,23 +220,23 @@ type ValueFunc interface {
 }
 type DoBoolAgg interface {
 	ValueFunc
-	DoBool([]bool)
+	DoBool(array.BooleanRef)
 }
 type DoFloatAgg interface {
 	ValueFunc
-	DoFloat([]float64)
+	DoFloat(array.FloatRef)
 }
 type DoIntAgg interface {
 	ValueFunc
-	DoInt([]int64)
+	DoInt(array.IntRef)
 }
 type DoUIntAgg interface {
 	ValueFunc
-	DoUInt([]uint64)
+	DoUInt(array.UIntRef)
 }
 type DoStringAgg interface {
 	ValueFunc
-	DoString([]string)
+	DoString(array.StringRef)
 }
 
 type BoolValueFunc interface {

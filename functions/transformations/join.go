@@ -958,27 +958,27 @@ func equalRowKeys(x, y int, table flux.ColReader, on map[string]bool) bool {
 		}
 		switch c.Type {
 		case flux.TBool:
-			if xv, yv := table.Bools(j)[x], table.Bools(j)[y]; xv != yv {
+			if xv, yv := table.Bools(j).Value(x), table.Bools(j).Value(y); xv != yv {
 				return false
 			}
 		case flux.TInt:
-			if xv, yv := table.Ints(j)[x], table.Ints(j)[y]; xv != yv {
+			if xv, yv := table.Ints(j).Value(x), table.Ints(j).Value(y); xv != yv {
 				return false
 			}
 		case flux.TUInt:
-			if xv, yv := table.UInts(j)[x], table.UInts(j)[y]; xv != yv {
+			if xv, yv := table.UInts(j).Value(x), table.UInts(j).Value(y); xv != yv {
 				return false
 			}
 		case flux.TFloat:
-			if xv, yv := table.Floats(j)[x], table.Floats(j)[y]; xv != yv {
+			if xv, yv := table.Floats(j).Value(x), table.Floats(j).Value(y); xv != yv {
 				return false
 			}
 		case flux.TString:
-			if xv, yv := table.Strings(j)[x], table.Strings(j)[y]; xv != yv {
+			if xv, yv := table.Strings(j).Value(x), table.Strings(j).Value(y); xv != yv {
 				return false
 			}
 		case flux.TTime:
-			if xv, yv := table.Times(j)[x], table.Times(j)[y]; xv != yv {
+			if xv, yv := table.Times(j).Value(x), table.Times(j).Value(y); xv != yv {
 				return false
 			}
 		default:

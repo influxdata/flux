@@ -8,6 +8,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/internal/staticarray"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -194,17 +196,23 @@ func AppendCol(bj, cj int, cr flux.ColReader, builder TableBuilder) error {
 
 	switch c.Type {
 	case flux.TBool:
-		return builder.AppendBools(bj, cr.Bools(cj))
+		return builder.AppendBools(bj, cr.Bools(cj).(interface {
+			BoolValues() []bool
+		}).BoolValues())
 	case flux.TInt:
-		return builder.AppendInts(bj, cr.Ints(cj))
+		return builder.AppendInts(bj, cr.Ints(cj).Int64Values())
 	case flux.TUInt:
-		return builder.AppendUInts(bj, cr.UInts(cj))
+		return builder.AppendUInts(bj, cr.UInts(cj).Uint64Values())
 	case flux.TFloat:
-		return builder.AppendFloats(bj, cr.Floats(cj))
+		return builder.AppendFloats(bj, cr.Floats(cj).Float64Values())
 	case flux.TString:
-		return builder.AppendStrings(bj, cr.Strings(cj))
+		return builder.AppendStrings(bj, cr.Strings(cj).(interface {
+			StringValues() []string
+		}).StringValues())
 	case flux.TTime:
-		return builder.AppendTimes(bj, cr.Times(cj))
+		return builder.AppendTimes(bj, cr.Times(cj).(interface {
+			TimeValues() []values.Time
+		}).TimeValues())
 	default:
 		PanicUnknownType(c.Type)
 	}
@@ -238,37 +246,37 @@ func AppendMappedRecordWithDefaults(i int, cr flux.ColReader, builder TableBuild
 		case flux.TBool:
 			var val bool
 			if colMap[j] >= 0 {
-				val = cr.Bools(colMap[j])[i]
+				val = cr.Bools(colMap[j]).Value(i)
 			}
 			err = builder.AppendBool(j, val)
 		case flux.TInt:
 			var val int64
 			if colMap[j] >= 0 {
-				val = cr.Ints(colMap[j])[i]
+				val = cr.Ints(colMap[j]).Value(i)
 			}
 			err = builder.AppendInt(j, val)
 		case flux.TUInt:
 			var val uint64
 			if colMap[j] >= 0 {
-				val = cr.UInts(colMap[j])[i]
+				val = cr.UInts(colMap[j]).Value(i)
 			}
 			err = builder.AppendUInt(j, val)
 		case flux.TFloat:
 			var val float64
 			if colMap[j] >= 0 {
-				val = cr.Floats(colMap[j])[i]
+				val = cr.Floats(colMap[j]).Value(i)
 			}
 			err = builder.AppendFloat(j, val)
 		case flux.TString:
 			var val string
 			if colMap[j] >= 0 {
-				val = cr.Strings(colMap[j])[i]
+				val = cr.Strings(colMap[j]).Value(i)
 			}
 			err = builder.AppendString(j, val)
 		case flux.TTime:
 			var val Time
 			if colMap[j] >= 0 {
-				val = cr.Times(colMap[j])[i]
+				val = cr.Times(colMap[j]).Value(i)
 			}
 			err = builder.AppendTime(j, val)
 		default:
@@ -292,17 +300,17 @@ func AppendMappedRecordExplicit(i int, cr flux.ColReader, builder TableBuilder, 
 		var err error
 		switch c.Type {
 		case flux.TBool:
-			err = builder.AppendBool(j, cr.Bools(colMap[j])[i])
+			err = builder.AppendBool(j, cr.Bools(colMap[j]).Value(i))
 		case flux.TInt:
-			err = builder.AppendInt(j, cr.Ints(colMap[j])[i])
+			err = builder.AppendInt(j, cr.Ints(colMap[j]).Value(i))
 		case flux.TUInt:
-			err = builder.AppendUInt(j, cr.UInts(colMap[j])[i])
+			err = builder.AppendUInt(j, cr.UInts(colMap[j]).Value(i))
 		case flux.TFloat:
-			err = builder.AppendFloat(j, cr.Floats(colMap[j])[i])
+			err = builder.AppendFloat(j, cr.Floats(colMap[j]).Value(i))
 		case flux.TString:
-			err = builder.AppendString(j, cr.Strings(colMap[j])[i])
+			err = builder.AppendString(j, cr.Strings(colMap[j]).Value(i))
 		case flux.TTime:
-			err = builder.AppendTime(j, cr.Times(colMap[j])[i])
+			err = builder.AppendTime(j, cr.Times(colMap[j]).Value(i))
 		default:
 			PanicUnknownType(c.Type)
 		}
@@ -465,28 +473,6 @@ func ColIdx(label string, cols []flux.ColMeta) int {
 }
 func HasCol(label string, cols []flux.ColMeta) bool {
 	return ColIdx(label, cols) >= 0
-}
-
-// ValueForRow retrieves a value from a column reader at the given index.
-func ValueForRow(cr flux.ColReader, i, j int) values.Value {
-	t := cr.Cols()[j].Type
-	switch t {
-	case flux.TString:
-		return values.NewString(cr.Strings(j)[i])
-	case flux.TInt:
-		return values.NewInt(cr.Ints(j)[i])
-	case flux.TUInt:
-		return values.NewUInt(cr.UInts(j)[i])
-	case flux.TFloat:
-		return values.NewFloat(cr.Floats(j)[i])
-	case flux.TBool:
-		return values.NewBool(cr.Bools(j)[i])
-	case flux.TTime:
-		return values.NewTime(cr.Times(j)[i])
-	default:
-		PanicUnknownType(t)
-		return values.InvalidValue
-	}
 }
 
 // TableBuilder builds tables that can be used multiple times
@@ -676,7 +662,7 @@ func (b ColListTableBuilder) LevelColumns() error {
 	for idx, c := range b.table.colMeta {
 		switch c.Type {
 		case flux.TBool:
-			toGrow := b.NRows() - len(b.table.Bools(idx))
+			toGrow := b.NRows() - b.table.Bools(idx).Len()
 			if toGrow > 0 {
 				if err := b.GrowBools(idx, toGrow); err != nil {
 					return err
@@ -687,7 +673,7 @@ func (b ColListTableBuilder) LevelColumns() error {
 				_ = fmt.Errorf("column %s is longer than expected length of table", c.Label)
 			}
 		case flux.TInt:
-			toGrow := b.NRows() - len(b.table.Ints(idx))
+			toGrow := b.NRows() - b.table.Ints(idx).Len()
 			if toGrow > 0 {
 				if err := b.GrowInts(idx, toGrow); err != nil {
 					return err
@@ -698,7 +684,7 @@ func (b ColListTableBuilder) LevelColumns() error {
 				_ = fmt.Errorf("column %s is longer than expected length of table", c.Label)
 			}
 		case flux.TUInt:
-			toGrow := b.NRows() - len(b.table.UInts(idx))
+			toGrow := b.NRows() - b.table.UInts(idx).Len()
 			if toGrow > 0 {
 				if err := b.GrowUInts(idx, toGrow); err != nil {
 					return err
@@ -709,7 +695,7 @@ func (b ColListTableBuilder) LevelColumns() error {
 				_ = fmt.Errorf("column %s is longer than expected length of table", c.Label)
 			}
 		case flux.TFloat:
-			toGrow := b.NRows() - len(b.table.Floats(idx))
+			toGrow := b.NRows() - b.table.Floats(idx).Len()
 			if toGrow > 0 {
 				if err := b.GrowFloats(idx, toGrow); err != nil {
 					return err
@@ -720,7 +706,7 @@ func (b ColListTableBuilder) LevelColumns() error {
 				_ = fmt.Errorf("column %s is longer than expected length of table", c.Label)
 			}
 		case flux.TString:
-			toGrow := b.NRows() - len(b.table.Strings(idx))
+			toGrow := b.NRows() - b.table.Strings(idx).Len()
 			if toGrow > 0 {
 				if err := b.GrowStrings(idx, toGrow); err != nil {
 					return err
@@ -731,7 +717,7 @@ func (b ColListTableBuilder) LevelColumns() error {
 				_ = fmt.Errorf("column %s is longer than expected length of table", c.Label)
 			}
 		case flux.TTime:
-			toGrow := b.NRows() - len(b.table.Times(idx))
+			toGrow := b.NRows() - b.table.Times(idx).Len()
 			if toGrow > 0 {
 				if err := b.GrowTimes(idx, toGrow); err != nil {
 					return err
@@ -1135,30 +1121,30 @@ func (t *ColListTable) Do(f func(flux.ColReader) error) error {
 	return f(t)
 }
 
-func (t *ColListTable) Bools(j int) []bool {
+func (t *ColListTable) Bools(j int) array.BooleanRef {
 	CheckColType(t.colMeta[j], flux.TBool)
-	return t.cols[j].(*boolColumn).data
+	return staticarray.Boolean(t.cols[j].(*boolColumn).data)
 }
-func (t *ColListTable) Ints(j int) []int64 {
+func (t *ColListTable) Ints(j int) array.IntRef {
 	CheckColType(t.colMeta[j], flux.TInt)
-	return t.cols[j].(*intColumn).data
+	return staticarray.Int(t.cols[j].(*intColumn).data)
 }
-func (t *ColListTable) UInts(j int) []uint64 {
+func (t *ColListTable) UInts(j int) array.UIntRef {
 	CheckColType(t.colMeta[j], flux.TUInt)
-	return t.cols[j].(*uintColumn).data
+	return staticarray.UInt(t.cols[j].(*uintColumn).data)
 }
-func (t *ColListTable) Floats(j int) []float64 {
+func (t *ColListTable) Floats(j int) array.FloatRef {
 	CheckColType(t.colMeta[j], flux.TFloat)
-	return t.cols[j].(*floatColumn).data
+	return staticarray.Float(t.cols[j].(*floatColumn).data)
 }
-func (t *ColListTable) Strings(j int) []string {
+func (t *ColListTable) Strings(j int) array.StringRef {
 	meta := t.colMeta[j]
 	CheckColType(meta, flux.TString)
-	return t.cols[j].(*stringColumn).data
+	return staticarray.String(t.cols[j].(*stringColumn).data)
 }
-func (t *ColListTable) Times(j int) []Time {
+func (t *ColListTable) Times(j int) array.TimeRef {
 	CheckColType(t.colMeta[j], flux.TTime)
-	return t.cols[j].(*timeColumn).data
+	return staticarray.Time(t.cols[j].(*timeColumn).data)
 }
 
 func (t *ColListTable) Copy() *ColListTable {

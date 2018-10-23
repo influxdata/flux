@@ -277,7 +277,7 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Tab
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
-			tm := cr.Times(timeIdx)[i]
+			tm := cr.Times(timeIdx).Value(i)
 			match, err := t.fn.Eval(i, cr)
 			if err != nil {
 				log.Printf("failed to evaluate state count expression: %v", err)

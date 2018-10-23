@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 )
@@ -105,8 +106,8 @@ type SumIntAgg struct {
 	sum int64
 }
 
-func (a *SumIntAgg) DoInt(vs []int64) {
-	for _, v := range vs {
+func (a *SumIntAgg) DoInt(vs array.IntRef) {
+	for _, v := range vs.Int64Values() {
 		a.sum += v
 	}
 }
@@ -121,8 +122,8 @@ type SumUIntAgg struct {
 	sum uint64
 }
 
-func (a *SumUIntAgg) DoUInt(vs []uint64) {
-	for _, v := range vs {
+func (a *SumUIntAgg) DoUInt(vs array.UIntRef) {
+	for _, v := range vs.Uint64Values() {
 		a.sum += v
 	}
 }
@@ -137,8 +138,8 @@ type SumFloatAgg struct {
 	sum float64
 }
 
-func (a *SumFloatAgg) DoFloat(vs []float64) {
-	for _, v := range vs {
+func (a *SumFloatAgg) DoFloat(vs array.FloatRef) {
+	for _, v := range vs.Float64Values() {
 		a.sum += v
 	}
 }

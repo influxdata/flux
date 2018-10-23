@@ -214,8 +214,8 @@ func (t histogramQuantileTransformation) Process(id execute.DatasetID, tbl flux.
 			curr := i + offset
 			prev := curr - 1
 			cdf[curr] = bucket{
-				count:      cr.Floats(countIdx)[i],
-				upperBound: cr.Floats(upperBoundIdx)[i],
+				count:      cr.Floats(countIdx).Value(i),
+				upperBound: cr.Floats(upperBoundIdx).Value(i),
 			}
 			if prev >= 0 {
 				sorted = sorted && cdf[prev].upperBound <= cdf[curr].upperBound

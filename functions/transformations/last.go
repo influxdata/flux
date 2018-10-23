@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 )
@@ -118,18 +119,18 @@ func (s *LastSelector) selectLast(l int, cr flux.ColReader) {
 	}
 }
 
-func (s *LastSelector) DoBool(vs []bool, cr flux.ColReader) {
-	s.selectLast(len(vs), cr)
+func (s *LastSelector) DoBool(vs array.BooleanRef, cr flux.ColReader) {
+	s.selectLast(vs.Len(), cr)
 }
-func (s *LastSelector) DoInt(vs []int64, cr flux.ColReader) {
-	s.selectLast(len(vs), cr)
+func (s *LastSelector) DoInt(vs array.IntRef, cr flux.ColReader) {
+	s.selectLast(vs.Len(), cr)
 }
-func (s *LastSelector) DoUInt(vs []uint64, cr flux.ColReader) {
-	s.selectLast(len(vs), cr)
+func (s *LastSelector) DoUInt(vs array.UIntRef, cr flux.ColReader) {
+	s.selectLast(vs.Len(), cr)
 }
-func (s *LastSelector) DoFloat(vs []float64, cr flux.ColReader) {
-	s.selectLast(len(vs), cr)
+func (s *LastSelector) DoFloat(vs array.FloatRef, cr flux.ColReader) {
+	s.selectLast(vs.Len(), cr)
 }
-func (s *LastSelector) DoString(vs []string, cr flux.ColReader) {
-	s.selectLast(len(vs), cr)
+func (s *LastSelector) DoString(vs array.StringRef, cr flux.ColReader) {
+	s.selectLast(vs.Len(), cr)
 }

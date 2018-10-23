@@ -216,18 +216,18 @@ func (f *Formatter) writeHeaderSeparator(w *writeToHelper) {
 func (f *Formatter) valueBuf(i, j int, typ flux.ColType, cr flux.ColReader) (buf []byte) {
 	switch typ {
 	case flux.TBool:
-		buf = strconv.AppendBool(f.fmtBuf[0:0], cr.Bools(j)[i])
+		buf = strconv.AppendBool(f.fmtBuf[0:0], cr.Bools(j).Value(i))
 	case flux.TInt:
-		buf = strconv.AppendInt(f.fmtBuf[0:0], cr.Ints(j)[i], 10)
+		buf = strconv.AppendInt(f.fmtBuf[0:0], cr.Ints(j).Value(i), 10)
 	case flux.TUInt:
-		buf = strconv.AppendUint(f.fmtBuf[0:0], cr.UInts(j)[i], 10)
+		buf = strconv.AppendUint(f.fmtBuf[0:0], cr.UInts(j).Value(i), 10)
 	case flux.TFloat:
 		// TODO allow specifying format and precision
-		buf = strconv.AppendFloat(f.fmtBuf[0:0], cr.Floats(j)[i], 'f', -1, 64)
+		buf = strconv.AppendFloat(f.fmtBuf[0:0], cr.Floats(j).Value(i), 'f', -1, 64)
 	case flux.TString:
-		buf = []byte(cr.Strings(j)[i])
+		buf = []byte(cr.Strings(j).Value(i))
 	case flux.TTime:
-		buf = []byte(cr.Times(j)[i].String())
+		buf = []byte(cr.Times(j).Value(i).String())
 	}
 	return
 }

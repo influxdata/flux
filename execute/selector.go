@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -252,19 +253,19 @@ type IndexSelector interface {
 	NewStringSelector() DoStringIndexSelector
 }
 type DoBoolIndexSelector interface {
-	DoBool([]bool) []int
+	DoBool(array.BooleanRef) []int
 }
 type DoIntIndexSelector interface {
-	DoInt([]int64) []int
+	DoInt(array.IntRef) []int
 }
 type DoUIntIndexSelector interface {
-	DoUInt([]uint64) []int
+	DoUInt(array.UIntRef) []int
 }
 type DoFloatIndexSelector interface {
-	DoFloat([]float64) []int
+	DoFloat(array.FloatRef) []int
 }
 type DoStringIndexSelector interface {
-	DoString([]string) []int
+	DoString(array.StringRef) []int
 }
 
 type RowSelector interface {
@@ -281,23 +282,23 @@ type Rower interface {
 
 type DoBoolRowSelector interface {
 	Rower
-	DoBool(vs []bool, cr flux.ColReader)
+	DoBool(vs array.BooleanRef, cr flux.ColReader)
 }
 type DoIntRowSelector interface {
 	Rower
-	DoInt(vs []int64, cr flux.ColReader)
+	DoInt(vs array.IntRef, cr flux.ColReader)
 }
 type DoUIntRowSelector interface {
 	Rower
-	DoUInt(vs []uint64, cr flux.ColReader)
+	DoUInt(vs array.UIntRef, cr flux.ColReader)
 }
 type DoFloatRowSelector interface {
 	Rower
-	DoFloat(vs []float64, cr flux.ColReader)
+	DoFloat(vs array.FloatRef, cr flux.ColReader)
 }
 type DoStringRowSelector interface {
 	Rower
-	DoString(vs []string, cr flux.ColReader)
+	DoString(vs array.StringRef, cr flux.ColReader)
 }
 
 type Row struct {
@@ -310,17 +311,17 @@ func ReadRow(i int, cr flux.ColReader) (row Row) {
 	for j, c := range cols {
 		switch c.Type {
 		case flux.TBool:
-			row.Values[j] = cr.Bools(j)[i]
+			row.Values[j] = cr.Bools(j).Value(i)
 		case flux.TInt:
-			row.Values[j] = cr.Ints(j)[i]
+			row.Values[j] = cr.Ints(j).Value(i)
 		case flux.TUInt:
-			row.Values[j] = cr.UInts(j)[i]
+			row.Values[j] = cr.UInts(j).Value(i)
 		case flux.TFloat:
-			row.Values[j] = cr.Floats(j)[i]
+			row.Values[j] = cr.Floats(j).Value(i)
 		case flux.TString:
-			row.Values[j] = cr.Strings(j)[i]
+			row.Values[j] = cr.Strings(j).Value(i)
 		case flux.TTime:
-			row.Values[j] = cr.Times(j)[i]
+			row.Values[j] = cr.Times(j).Value(i)
 		}
 	}
 	return

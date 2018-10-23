@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 )
@@ -109,8 +110,8 @@ func (a *SkewAgg) NewStringAgg() execute.DoStringAgg {
 	return nil
 }
 
-func (a *SkewAgg) DoInt(vs []int64) {
-	for _, v := range vs {
+func (a *SkewAgg) DoInt(vs array.IntRef) {
+	for _, v := range vs.Int64Values() {
 		n0 := a.n
 		a.n++
 		// TODO handle overflow
@@ -122,8 +123,8 @@ func (a *SkewAgg) DoInt(vs []int64) {
 		a.m1 += deltaN
 	}
 }
-func (a *SkewAgg) DoUInt(vs []uint64) {
-	for _, v := range vs {
+func (a *SkewAgg) DoUInt(vs array.UIntRef) {
+	for _, v := range vs.Uint64Values() {
 		n0 := a.n
 		a.n++
 		// TODO handle overflow
@@ -135,8 +136,8 @@ func (a *SkewAgg) DoUInt(vs []uint64) {
 		a.m1 += deltaN
 	}
 }
-func (a *SkewAgg) DoFloat(vs []float64) {
-	for _, v := range vs {
+func (a *SkewAgg) DoFloat(vs array.FloatRef) {
+	for _, v := range vs.Float64Values() {
 		n0 := a.n
 		a.n++
 		delta := v - a.m1

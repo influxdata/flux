@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -178,31 +179,31 @@ type sliceColReader struct {
 }
 
 func (cr sliceColReader) Len() int {
-	return cr.stop
+	return cr.stop - cr.start
 }
 
-func (cr sliceColReader) Bools(j int) []bool {
-	return cr.ColReader.Bools(j)[cr.start:cr.stop]
+func (cr sliceColReader) Bools(j int) array.BooleanRef {
+	return cr.ColReader.Bools(j).BooleanSlice(cr.start, cr.stop)
 }
 
-func (cr sliceColReader) Ints(j int) []int64 {
-	return cr.ColReader.Ints(j)[cr.start:cr.stop]
+func (cr sliceColReader) Ints(j int) array.IntRef {
+	return cr.ColReader.Ints(j).IntSlice(cr.start, cr.stop)
 }
 
-func (cr sliceColReader) UInts(j int) []uint64 {
-	return cr.ColReader.UInts(j)[cr.start:cr.stop]
+func (cr sliceColReader) UInts(j int) array.UIntRef {
+	return cr.ColReader.UInts(j).UIntSlice(cr.start, cr.stop)
 }
 
-func (cr sliceColReader) Floats(j int) []float64 {
-	return cr.ColReader.Floats(j)[cr.start:cr.stop]
+func (cr sliceColReader) Floats(j int) array.FloatRef {
+	return cr.ColReader.Floats(j).FloatSlice(cr.start, cr.stop)
 }
 
-func (cr sliceColReader) Strings(j int) []string {
-	return cr.ColReader.Strings(j)[cr.start:cr.stop]
+func (cr sliceColReader) Strings(j int) array.StringRef {
+	return cr.ColReader.Strings(j).StringSlice(cr.start, cr.stop)
 }
 
-func (cr sliceColReader) Times(j int) []execute.Time {
-	return cr.ColReader.Times(j)[cr.start:cr.stop]
+func (cr sliceColReader) Times(j int) array.TimeRef {
+	return cr.ColReader.Times(j).TimeSlice(cr.start, cr.stop)
 }
 
 func (t *limitTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {

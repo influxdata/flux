@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 const CumulativeSumKind = "cumulativeSum"
@@ -140,51 +141,57 @@ func (t *cumulativeSumTransformation) Process(id execute.DatasetID, tbl flux.Tab
 		for j, c := range cols {
 			switch c.Type {
 			case flux.TBool:
-				if err := builder.AppendBools(j, cr.Bools(j)); err != nil {
+				if err := builder.AppendBools(j, cr.Bools(j).(interface {
+					BoolValues() []bool
+				}).BoolValues()); err != nil {
 					return err
 				}
 			case flux.TInt:
 				if sumers[j] != nil {
 					for i := 0; i < l; i++ {
-						if err := builder.AppendInt(j, sumers[j].sumInt(cr.Ints(j)[i])); err != nil {
+						if err := builder.AppendInt(j, sumers[j].sumInt(cr.Ints(j).Value(i))); err != nil {
 							return err
 						}
 					}
 				} else {
-					if err := builder.AppendInts(j, cr.Ints(j)); err != nil {
+					if err := builder.AppendInts(j, cr.Ints(j).Int64Values()); err != nil {
 						return err
 					}
 				}
 			case flux.TUInt:
 				if sumers[j] != nil {
 					for i := 0; i < l; i++ {
-						if err := builder.AppendUInt(j, sumers[j].sumUInt(cr.UInts(j)[i])); err != nil {
+						if err := builder.AppendUInt(j, sumers[j].sumUInt(cr.UInts(j).Value(i))); err != nil {
 							return err
 						}
 					}
 				} else {
-					if err := builder.AppendUInts(j, cr.UInts(j)); err != nil {
+					if err := builder.AppendUInts(j, cr.UInts(j).Uint64Values()); err != nil {
 						return err
 					}
 				}
 			case flux.TFloat:
 				if sumers[j] != nil {
 					for i := 0; i < l; i++ {
-						if err := builder.AppendFloat(j, sumers[j].sumFloat(cr.Floats(j)[i])); err != nil {
+						if err := builder.AppendFloat(j, sumers[j].sumFloat(cr.Floats(j).Value(i))); err != nil {
 							return err
 						}
 					}
 				} else {
-					if err := builder.AppendFloats(j, cr.Floats(j)); err != nil {
+					if err := builder.AppendFloats(j, cr.Floats(j).Float64Values()); err != nil {
 						return err
 					}
 				}
 			case flux.TString:
-				if err := builder.AppendStrings(j, cr.Strings(j)); err != nil {
+				if err := builder.AppendStrings(j, cr.Strings(j).(interface {
+					StringValues() []string
+				}).StringValues()); err != nil {
 					return err
 				}
 			case flux.TTime:
-				if err := builder.AppendTimes(j, cr.Times(j)); err != nil {
+				if err := builder.AppendTimes(j, cr.Times(j).(interface {
+					TimeValues() []values.Time
+				}).TimeValues()); err != nil {
 					return err
 				}
 			}

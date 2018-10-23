@@ -342,17 +342,17 @@ func growColumn(builder execute.TableBuilder, colType flux.ColType, colIdx, nRow
 func setBuilderValue(cr flux.ColReader, builder execute.TableBuilder, readerColType flux.ColType, readerRowIndex, readerColIndex, builderRow, builderCol int) error {
 	switch readerColType {
 	case flux.TBool:
-		return builder.SetBool(builderRow, builderCol, cr.Bools(readerColIndex)[readerRowIndex])
+		return builder.SetBool(builderRow, builderCol, cr.Bools(readerColIndex).Value(readerRowIndex))
 	case flux.TInt:
-		return builder.SetInt(builderRow, builderCol, cr.Ints(readerColIndex)[readerRowIndex])
+		return builder.SetInt(builderRow, builderCol, cr.Ints(readerColIndex).Value(readerRowIndex))
 	case flux.TUInt:
-		return builder.SetUInt(builderRow, builderCol, cr.UInts(readerColIndex)[readerRowIndex])
+		return builder.SetUInt(builderRow, builderCol, cr.UInts(readerColIndex).Value(readerRowIndex))
 	case flux.TFloat:
-		return builder.SetFloat(builderRow, builderCol, cr.Floats(readerColIndex)[readerRowIndex])
+		return builder.SetFloat(builderRow, builderCol, cr.Floats(readerColIndex).Value(readerRowIndex))
 	case flux.TString:
-		return builder.SetString(builderRow, builderCol, cr.Strings(readerColIndex)[readerRowIndex])
+		return builder.SetString(builderRow, builderCol, cr.Strings(readerColIndex).Value(readerRowIndex))
 	case flux.TTime:
-		return builder.SetTime(builderRow, builderCol, cr.Times(readerColIndex)[readerRowIndex])
+		return builder.SetTime(builderRow, builderCol, cr.Times(readerColIndex).Value(readerRowIndex))
 	default:
 		execute.PanicUnknownType(readerColType)
 		return fmt.Errorf("invalid column type: %s", readerColType)
@@ -362,17 +362,17 @@ func setBuilderValue(cr flux.ColReader, builder execute.TableBuilder, readerColT
 func appendBuilderValue(cr flux.ColReader, builder execute.TableBuilder, readerColType flux.ColType, readerRowIndex, readerColIndex, builderColIndex int) error {
 	switch readerColType {
 	case flux.TBool:
-		return builder.AppendBool(builderColIndex, cr.Bools(readerColIndex)[readerRowIndex])
+		return builder.AppendBool(builderColIndex, cr.Bools(readerColIndex).Value(readerRowIndex))
 	case flux.TInt:
-		return builder.AppendInt(builderColIndex, cr.Ints(readerColIndex)[readerRowIndex])
+		return builder.AppendInt(builderColIndex, cr.Ints(readerColIndex).Value(readerRowIndex))
 	case flux.TUInt:
-		return builder.AppendUInt(builderColIndex, cr.UInts(readerColIndex)[readerRowIndex])
+		return builder.AppendUInt(builderColIndex, cr.UInts(readerColIndex).Value(readerRowIndex))
 	case flux.TFloat:
-		return builder.AppendFloat(builderColIndex, cr.Floats(readerColIndex)[readerRowIndex])
+		return builder.AppendFloat(builderColIndex, cr.Floats(readerColIndex).Value(readerRowIndex))
 	case flux.TString:
-		return builder.AppendString(builderColIndex, cr.Strings(readerColIndex)[readerRowIndex])
+		return builder.AppendString(builderColIndex, cr.Strings(readerColIndex).Value(readerRowIndex))
 	case flux.TTime:
-		return builder.AppendTime(builderColIndex, cr.Times(readerColIndex)[readerRowIndex])
+		return builder.AppendTime(builderColIndex, cr.Times(readerColIndex).Value(readerRowIndex))
 	default:
 		execute.PanicUnknownType(readerColType)
 		return fmt.Errorf("invalid column type: %s", readerColType)
@@ -382,17 +382,17 @@ func appendBuilderValue(cr flux.ColReader, builder execute.TableBuilder, readerC
 func valueToStr(cr flux.ColReader, c flux.ColMeta, row, col int) string {
 	switch c.Type {
 	case flux.TBool:
-		return strconv.FormatBool(cr.Bools(col)[row])
+		return strconv.FormatBool(cr.Bools(col).Value(row))
 	case flux.TInt:
-		return strconv.FormatInt(cr.Ints(col)[row], 10)
+		return strconv.FormatInt(cr.Ints(col).Value(row), 10)
 	case flux.TUInt:
-		return strconv.FormatUint(cr.UInts(col)[row], 10)
+		return strconv.FormatUint(cr.UInts(col).Value(row), 10)
 	case flux.TFloat:
-		return strconv.FormatFloat(cr.Floats(col)[row], 'E', -1, 64)
+		return strconv.FormatFloat(cr.Floats(col).Value(row), 'E', -1, 64)
 	case flux.TString:
-		return cr.Strings(col)[row]
+		return cr.Strings(col).Value(row)
 	case flux.TTime:
-		return cr.Times(col)[row].String()
+		return cr.Times(col).Value(row).String()
 	default:
 		execute.PanicUnknownType(c.Type)
 	}

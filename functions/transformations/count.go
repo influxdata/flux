@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 )
@@ -102,20 +103,20 @@ func (a *CountAgg) NewStringAgg() execute.DoStringAgg {
 	return new(CountAgg)
 }
 
-func (a *CountAgg) DoBool(vs []bool) {
-	a.count += int64(len(vs))
+func (a *CountAgg) DoBool(vs array.BooleanRef) {
+	a.count += int64(vs.Len() - vs.NullN())
 }
-func (a *CountAgg) DoUInt(vs []uint64) {
-	a.count += int64(len(vs))
+func (a *CountAgg) DoUInt(vs array.UIntRef) {
+	a.count += int64(vs.Len() - vs.NullN())
 }
-func (a *CountAgg) DoInt(vs []int64) {
-	a.count += int64(len(vs))
+func (a *CountAgg) DoInt(vs array.IntRef) {
+	a.count += int64(vs.Len() - vs.NullN())
 }
-func (a *CountAgg) DoFloat(vs []float64) {
-	a.count += int64(len(vs))
+func (a *CountAgg) DoFloat(vs array.FloatRef) {
+	a.count += int64(vs.Len() - vs.NullN())
 }
-func (a *CountAgg) DoString(vs []string) {
-	a.count += int64(len(vs))
+func (a *CountAgg) DoString(vs array.StringRef) {
+	a.count += int64(vs.Len())
 }
 
 func (a *CountAgg) Type() flux.ColType {

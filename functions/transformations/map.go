@@ -229,17 +229,17 @@ func groupKeyForObject(i int, cr flux.ColReader, obj values.Object, on map[strin
 		} else {
 			switch c.Type {
 			case flux.TBool:
-				vs = append(vs, values.NewBool(cr.Bools(j)[i]))
+				vs = append(vs, values.NewBool(cr.Bools(j).Value(i)))
 			case flux.TInt:
-				vs = append(vs, values.NewInt(cr.Ints(j)[i]))
+				vs = append(vs, values.NewInt(cr.Ints(j).Value(i)))
 			case flux.TUInt:
-				vs = append(vs, values.NewUInt(cr.UInts(j)[i]))
+				vs = append(vs, values.NewUInt(cr.UInts(j).Value(i)))
 			case flux.TFloat:
-				vs = append(vs, values.NewFloat(cr.Floats(j)[i]))
+				vs = append(vs, values.NewFloat(cr.Floats(j).Value(i)))
 			case flux.TString:
-				vs = append(vs, values.NewString(cr.Strings(j)[i]))
+				vs = append(vs, values.NewString(cr.Strings(j).Value(i)))
 			case flux.TTime:
-				vs = append(vs, values.NewTime(cr.Times(j)[i]))
+				vs = append(vs, values.NewTime(cr.Times(j).Value(i)))
 			}
 		}
 	}

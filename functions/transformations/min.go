@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 )
@@ -128,9 +129,9 @@ func (s *MinSelector) selectRow(idx int, cr flux.ColReader) {
 	}
 }
 
-func (s *MinIntSelector) DoInt(vs []int64, cr flux.ColReader) {
+func (s *MinIntSelector) DoInt(vs array.IntRef, cr flux.ColReader) {
 	minIdx := -1
-	for i, v := range vs {
+	for i, v := range vs.Int64Values() {
 		if !s.set || v < s.min {
 			s.set = true
 			s.min = v
@@ -139,9 +140,9 @@ func (s *MinIntSelector) DoInt(vs []int64, cr flux.ColReader) {
 	}
 	s.selectRow(minIdx, cr)
 }
-func (s *MinUIntSelector) DoUInt(vs []uint64, cr flux.ColReader) {
+func (s *MinUIntSelector) DoUInt(vs array.UIntRef, cr flux.ColReader) {
 	minIdx := -1
-	for i, v := range vs {
+	for i, v := range vs.Uint64Values() {
 		if !s.set || v < s.min {
 			s.set = true
 			s.min = v
@@ -150,9 +151,9 @@ func (s *MinUIntSelector) DoUInt(vs []uint64, cr flux.ColReader) {
 	}
 	s.selectRow(minIdx, cr)
 }
-func (s *MinFloatSelector) DoFloat(vs []float64, cr flux.ColReader) {
+func (s *MinFloatSelector) DoFloat(vs array.FloatRef, cr flux.ColReader) {
 	minIdx := -1
-	for i, v := range vs {
+	for i, v := range vs.Float64Values() {
 		if !s.set || v < s.min {
 			s.set = true
 			s.min = v

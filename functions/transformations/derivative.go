@@ -5,6 +5,8 @@ import (
 	"math"
 	"time"
 
+	"github.com/influxdata/flux/values"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
@@ -208,14 +210,16 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 			d := derivatives[j]
 			switch c.Type {
 			case flux.TBool:
-				if err := builder.AppendBools(j, cr.Bools(j)[firstIdx:]); err != nil {
+				if err := builder.AppendBools(j, cr.Bools(j).(interface {
+					BoolValues() []bool
+				}).BoolValues()[firstIdx:]); err != nil {
 					return err
 				}
 			case flux.TInt:
 				if d != nil {
 					for i := 0; i < l; i++ {
-						time := cr.Times(timeIdx)[i]
-						v := d.updateInt(time, cr.Ints(j)[i])
+						time := cr.Times(timeIdx).Value(i)
+						v := d.updateInt(time, cr.Ints(j).Value(i))
 						if i != 0 || firstIdx == 0 {
 							if err := builder.AppendFloat(j, v); err != nil {
 								return err
@@ -223,15 +227,15 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 						}
 					}
 				} else {
-					if err := builder.AppendInts(j, cr.Ints(j)[firstIdx:]); err != nil {
+					if err := builder.AppendInts(j, cr.Ints(j).Int64Values()[firstIdx:]); err != nil {
 						return err
 					}
 				}
 			case flux.TUInt:
 				if d != nil {
 					for i := 0; i < l; i++ {
-						time := cr.Times(timeIdx)[i]
-						v := d.updateUInt(time, cr.UInts(j)[i])
+						time := cr.Times(timeIdx).Value(i)
+						v := d.updateUInt(time, cr.UInts(j).Value(i))
 						if i != 0 || firstIdx == 0 {
 							if err := builder.AppendFloat(j, v); err != nil {
 								return err
@@ -239,15 +243,15 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 						}
 					}
 				} else {
-					if err := builder.AppendUInts(j, cr.UInts(j)[firstIdx:]); err != nil {
+					if err := builder.AppendUInts(j, cr.UInts(j).Uint64Values()[firstIdx:]); err != nil {
 						return err
 					}
 				}
 			case flux.TFloat:
 				if d != nil {
 					for i := 0; i < l; i++ {
-						time := cr.Times(timeIdx)[i]
-						v := d.updateFloat(time, cr.Floats(j)[i])
+						time := cr.Times(timeIdx).Value(i)
+						v := d.updateFloat(time, cr.Floats(j).Value(i))
 						if i != 0 || firstIdx == 0 {
 							if err := builder.AppendFloat(j, v); err != nil {
 								return err
@@ -255,16 +259,20 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 						}
 					}
 				} else {
-					if err := builder.AppendFloats(j, cr.Floats(j)[firstIdx:]); err != nil {
+					if err := builder.AppendFloats(j, cr.Floats(j).Float64Values()[firstIdx:]); err != nil {
 						return err
 					}
 				}
 			case flux.TString:
-				if err := builder.AppendStrings(j, cr.Strings(j)[firstIdx:]); err != nil {
+				if err := builder.AppendStrings(j, cr.Strings(j).(interface {
+					StringValues() []string
+				}).StringValues()[firstIdx:]); err != nil {
 					return err
 				}
 			case flux.TTime:
-				if err := builder.AppendTimes(j, cr.Times(j)[firstIdx:]); err != nil {
+				if err := builder.AppendTimes(j, cr.Times(j).(interface {
+					TimeValues() []values.Time
+				}).TimeValues()[firstIdx:]); err != nil {
 					return err
 				}
 			}

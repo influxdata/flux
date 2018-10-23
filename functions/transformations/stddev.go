@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 )
@@ -97,9 +98,9 @@ func (a *StddevAgg) NewFloatAgg() execute.DoFloatAgg {
 func (a *StddevAgg) NewStringAgg() execute.DoStringAgg {
 	return nil
 }
-func (a *StddevAgg) DoInt(vs []int64) {
+func (a *StddevAgg) DoInt(vs array.IntRef) {
 	var delta, delta2 float64
-	for _, v := range vs {
+	for _, v := range vs.Int64Values() {
 		a.n++
 		// TODO handle overflow
 		delta = float64(v) - a.mean
@@ -108,9 +109,9 @@ func (a *StddevAgg) DoInt(vs []int64) {
 		a.m2 += delta * delta2
 	}
 }
-func (a *StddevAgg) DoUInt(vs []uint64) {
+func (a *StddevAgg) DoUInt(vs array.UIntRef) {
 	var delta, delta2 float64
-	for _, v := range vs {
+	for _, v := range vs.Uint64Values() {
 		a.n++
 		// TODO handle overflow
 		delta = float64(v) - a.mean
@@ -119,9 +120,9 @@ func (a *StddevAgg) DoUInt(vs []uint64) {
 		a.m2 += delta * delta2
 	}
 }
-func (a *StddevAgg) DoFloat(vs []float64) {
+func (a *StddevAgg) DoFloat(vs array.FloatRef) {
 	var delta, delta2 float64
-	for _, v := range vs {
+	for _, v := range vs.Float64Values() {
 		a.n++
 		delta = v - a.mean
 		a.mean += delta / a.n

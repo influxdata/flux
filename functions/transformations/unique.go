@@ -156,37 +156,37 @@ func (t *uniqueTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 			// Check unique
 			switch col.Type {
 			case flux.TBool:
-				v := cr.Bools(colIdx)[i]
+				v := cr.Bools(colIdx).Value(i)
 				if boolUnique[v] {
 					continue
 				}
 				boolUnique[v] = true
 			case flux.TInt:
-				v := cr.Ints(colIdx)[i]
+				v := cr.Ints(colIdx).Value(i)
 				if intUnique[v] {
 					continue
 				}
 				intUnique[v] = true
 			case flux.TUInt:
-				v := cr.UInts(colIdx)[i]
+				v := cr.UInts(colIdx).Value(i)
 				if uintUnique[v] {
 					continue
 				}
 				uintUnique[v] = true
 			case flux.TFloat:
-				v := cr.Floats(colIdx)[i]
+				v := cr.Floats(colIdx).Value(i)
 				if floatUnique[v] {
 					continue
 				}
 				floatUnique[v] = true
 			case flux.TString:
-				v := cr.Strings(colIdx)[i]
+				v := cr.Strings(colIdx).Value(i)
 				if stringUnique[v] {
 					continue
 				}
 				stringUnique[v] = true
 			case flux.TTime:
-				v := cr.Times(colIdx)[i]
+				v := cr.Times(colIdx).Value(i)
 				if timeUnique[v] {
 					continue
 				}

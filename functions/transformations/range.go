@@ -283,7 +283,7 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
-			tVal := cr.Times(timeIdx)[i]
+			tVal := cr.Times(timeIdx).Value(i)
 			if !t.bounds.Contains(tVal) {
 				continue
 			}
@@ -295,7 +295,7 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 					if startAdded {
 						start = t.bounds.Start
 					} else {
-						start = cr.Times(j)[i]
+						start = cr.Times(j).Value(i)
 					}
 
 					if start < t.bounds.Start {
@@ -310,7 +310,7 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 					if stopAdded {
 						stop = t.bounds.Stop
 					} else {
-						stop = cr.Times(j)[i]
+						stop = cr.Times(j).Value(i)
 					}
 
 					if stop > t.bounds.Stop {
