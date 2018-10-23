@@ -37,3 +37,66 @@ func (a Int) IntSlice(start, stop int) array.Int {
 func (a Int) Int64Values() []int64 {
 	return []int64(a)
 }
+
+var _ array.IntBuilder = (*IntBuilder)(nil)
+
+type IntBuilder []int64
+
+func (b *IntBuilder) Len() int {
+	if b == nil {
+		return 0
+	}
+	return len(*b)
+}
+
+func (b *IntBuilder) Cap() int {
+	if b == nil {
+		return 0
+	}
+	return cap(*b)
+}
+
+func (b *IntBuilder) Reserve(n int) {
+	if b == nil {
+		*b = make([]int64, 0, n)
+		return
+	} else if cap(*b) < n {
+		newB := make([]int64, len(*b), n)
+		copy(newB, *b)
+		*b = newB
+	}
+}
+
+func (b *IntBuilder) BuildArray() array.Base {
+	return b.BuildIntArray()
+}
+
+func (b *IntBuilder) Append(v int64) {
+	if b == nil {
+		*b = append([]int64{}, v)
+		return
+	}
+	*b = append(*b, v)
+}
+
+func (b *IntBuilder) AppendNull() {
+	// The staticarray does not support nulls so it will do the current behavior of just appending
+	// the zero value.
+	b.Append(0)
+}
+
+func (b *IntBuilder) AppendValues(v []int64, valid ...[]bool) {
+	// We ignore the valid array since it does not apply to this implementation type.
+	if b == nil {
+		*b = append([]int64{}, v...)
+		return
+	}
+	*b = append(*b, v...)
+}
+
+func (b *IntBuilder) BuildIntArray() array.Int {
+	if b == nil {
+		return Int(nil)
+	}
+	return Int(*b)
+}

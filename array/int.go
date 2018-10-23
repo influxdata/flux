@@ -10,3 +10,13 @@ type Int interface {
 	// of the array and null values will be present, but the data at null indexes will be invalid.
 	Int64Values() []int64
 }
+
+// IntBuilder represents an abstraction over building a int array.
+type IntBuilder interface {
+	BaseBuilder
+	Append(v int64)
+	AppendValues(v []int64, valid ...[]bool)
+
+	// BuildIntArray will construct the array.
+	BuildIntArray() Int
+}

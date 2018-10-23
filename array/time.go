@@ -12,3 +12,13 @@ type Time interface {
 	// of the array and null values will be present, but the data at null indexes will be invalid.
 	TimeValues() []values.Time
 }
+
+// TimeBuilder represents an abstraction over building a time array.
+type TimeBuilder interface {
+	BaseBuilder
+	Append(v values.Time)
+	AppendValues(v []values.Time, valid ...[]bool)
+
+	// BuildTimeArray will construct the array.
+	BuildTimeArray() Time
+}
