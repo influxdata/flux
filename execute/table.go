@@ -1,6 +1,7 @@
 package execute
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"sync/atomic"
@@ -56,13 +57,14 @@ func CopyTable(t flux.Table, a *Allocator) (flux.Table, error) {
 	colMap := make([]int, len(cols))
 	for j, c := range cols {
 		colMap[j] = j
-		_, err := builder.AddCol(c)
-		if err != nil {
+		if _, err := builder.AddCol(c); err != nil {
 			return nil, err
 		}
 	}
 
-	AppendMappedTable(t, builder, colMap)
+	if err := AppendMappedTable(t, builder, colMap); err != nil {
+		return nil, err
+	}
 	// ColListTableBuilders do not error
 	nb, _ := builder.Table()
 	return nb, nil
@@ -72,8 +74,7 @@ func CopyTable(t flux.Table, a *Allocator) (flux.Table, error) {
 func AddTableCols(t flux.Table, builder TableBuilder) error {
 	cols := t.Cols()
 	for _, c := range cols {
-		_, err := builder.AddCol(c)
-		if err != nil {
+		if _, err := builder.AddCol(c); err != nil {
 			return err
 		}
 	}
@@ -82,8 +83,7 @@ func AddTableCols(t flux.Table, builder TableBuilder) error {
 
 func AddTableKeyCols(key flux.GroupKey, builder TableBuilder) error {
 	for _, c := range key.Cols() {
-		_, err := builder.AddCol(c)
-		if err != nil {
+		if _, err := builder.AddCol(c); err != nil {
 			return err
 		}
 	}
@@ -92,11 +92,19 @@ func AddTableKeyCols(key flux.GroupKey, builder TableBuilder) error {
 
 // AddNewCols adds the columns of b onto builder that did not already exist.
 // Returns the mapping of builder cols to table cols.
-func AddNewCols(t flux.Table, builder TableBuilder) ([]int, error) {
+func AddNewTableCols(t flux.Table, builder TableBuilder, colMap []int) ([]int, error) {
 	cols := t.Cols()
 	existing := builder.Cols()
-	colMap := make([]int, len(existing))
-	var err error
+	if l := len(builder.Cols()); cap(colMap) < l {
+		colMap = make([]int, len(builder.Cols()))
+	} else {
+		colMap = colMap[:l]
+	}
+
+	for j := range colMap {
+		colMap[j] = -1
+	}
+
 	for j, c := range cols {
 		found := false
 		for ej, ec := range existing {
@@ -107,119 +115,206 @@ func AddNewCols(t flux.Table, builder TableBuilder) ([]int, error) {
 			}
 		}
 		if !found {
-			_, err = builder.AddCol(c)
+			if _, err := builder.AddCol(c); err != nil {
+				return nil, err
+			}
 			colMap = append(colMap, j)
 		}
 	}
-	return colMap, err
+	return colMap, nil
 }
 
 // AppendMappedTable appends data from table t onto builder.
 // The colMap is a map of builder column index to table column index.
-func AppendMappedTable(t flux.Table, builder TableBuilder, colMap []int) {
+func AppendMappedTable(t flux.Table, builder TableBuilder, colMap []int) error {
 	if len(t.Cols()) == 0 {
-		return
+		return nil
 	}
 
-	t.Do(func(cr flux.ColReader) error {
-		AppendMappedCols(cr, builder, colMap)
-		return nil
+	return t.Do(func(cr flux.ColReader) error {
+		return AppendMappedCols(cr, builder, colMap)
 	})
 }
 
 // AppendTable appends data from table t onto builder.
 // This function assumes builder and t have the same column schema.
-func AppendTable(t flux.Table, builder TableBuilder) {
+func AppendTable(t flux.Table, builder TableBuilder) error {
 	if len(t.Cols()) == 0 {
-		return
+		return nil
 	}
 
-	t.Do(func(cr flux.ColReader) error {
-		AppendCols(cr, builder)
-		return nil
+	return t.Do(func(cr flux.ColReader) error {
+		return AppendCols(cr, builder)
 	})
 }
 
 // AppendMappedCols appends all columns from cr onto builder.
 // The colMap is a map of builder column index to cr column index.
-func AppendMappedCols(cr flux.ColReader, builder TableBuilder, colMap []int) {
+func AppendMappedCols(cr flux.ColReader, builder TableBuilder, colMap []int) error {
 	for j := range builder.Cols() {
-		AppendCol(j, colMap[j], cr, builder)
+		if err := AppendCol(j, colMap[j], cr, builder); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // AppendCols appends all columns from cr onto builder.
 // This function assumes that builder and cr have the same column schema.
-func AppendCols(cr flux.ColReader, builder TableBuilder) {
+func AppendCols(cr flux.ColReader, builder TableBuilder) error {
 	for j := range builder.Cols() {
-		AppendCol(j, j, cr, builder)
+		if err := AppendCol(j, j, cr, builder); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // AppendCol append a column from cr onto builder
 // The indexes bj and cj are builder and col reader indexes respectively.
-func AppendCol(bj, cj int, cr flux.ColReader, builder TableBuilder) {
+func AppendCol(bj, cj int, cr flux.ColReader, builder TableBuilder) error {
+	if cj < 0 || cj > len(cr.Cols()) {
+		return errors.New("AppendCol column reader index out of bounds")
+	}
+	if bj < 0 || bj > len(builder.Cols()) {
+		return errors.New("AppendCol builder index out of bounds")
+	}
 	c := cr.Cols()[cj]
+
 	switch c.Type {
 	case flux.TBool:
-		builder.AppendBools(bj, cr.Bools(cj))
+		return builder.AppendBools(bj, cr.Bools(cj))
 	case flux.TInt:
-		builder.AppendInts(bj, cr.Ints(cj))
+		return builder.AppendInts(bj, cr.Ints(cj))
 	case flux.TUInt:
-		builder.AppendUInts(bj, cr.UInts(cj))
+		return builder.AppendUInts(bj, cr.UInts(cj))
 	case flux.TFloat:
-		builder.AppendFloats(bj, cr.Floats(cj))
+		return builder.AppendFloats(bj, cr.Floats(cj))
 	case flux.TString:
-		builder.AppendStrings(bj, cr.Strings(cj))
+		return builder.AppendStrings(bj, cr.Strings(cj))
 	case flux.TTime:
-		builder.AppendTimes(bj, cr.Times(cj))
+		return builder.AppendTimes(bj, cr.Times(cj))
 	default:
 		PanicUnknownType(c.Type)
 	}
+	return nil
 }
 
 // AppendRecord appends the record from cr onto builder assuming matching columns.
-func AppendRecord(i int, cr flux.ColReader, builder TableBuilder) {
-	for j, c := range builder.Cols() {
-		switch c.Type {
-		case flux.TBool:
-			builder.AppendBool(j, cr.Bools(j)[i])
-		case flux.TInt:
-			builder.AppendInt(j, cr.Ints(j)[i])
-		case flux.TUInt:
-			builder.AppendUInt(j, cr.UInts(j)[i])
-		case flux.TFloat:
-			builder.AppendFloat(j, cr.Floats(j)[i])
-		case flux.TString:
-			builder.AppendString(j, cr.Strings(j)[i])
-		case flux.TTime:
-			builder.AppendTime(j, cr.Times(j)[i])
-		default:
-			PanicUnknownType(c.Type)
+func AppendRecord(i int, cr flux.ColReader, builder TableBuilder) error {
+
+	if !ColsMatch(builder, cr) {
+		return errors.New("AppendRecord column schema mismatch")
+	}
+	for j := range builder.Cols() {
+		if err := builder.AppendValue(j, ValueForRow(cr, i, j)); err != nil {
+			return err
 		}
 	}
+	return nil
 }
 
-// AppendMappedRecord appends the records from cr onto builder, using colMap as a map of builder index to cr index.
-func AppendMappedRecord(i int, cr flux.ColReader, builder TableBuilder, colMap []int) {
+// AppendMappedRecordWithDefaults appends the records from cr onto builder, using colMap as a map of builder index to cr index.
+// if an entry in the colMap indicates a mismatched column, a default value is assigned to the builder's column
+func AppendMappedRecordWithDefaults(i int, cr flux.ColReader, builder TableBuilder, colMap []int) error {
+	if len(colMap) != len(builder.Cols()) {
+		return errors.New("AppendMappedRecordWithDefaults: colMap must have an entry for each table builder column")
+	}
+	// TODO(adam): these zero values should be set to null when we have null support
 	for j, c := range builder.Cols() {
+		var err error
 		switch c.Type {
 		case flux.TBool:
-			builder.AppendBool(j, cr.Bools(colMap[j])[i])
+			var val bool
+			if colMap[j] >= 0 {
+				val = cr.Bools(colMap[j])[i]
+			}
+			err = builder.AppendBool(j, val)
 		case flux.TInt:
-			builder.AppendInt(j, cr.Ints(colMap[j])[i])
+			var val int64
+			if colMap[j] >= 0 {
+				val = cr.Ints(colMap[j])[i]
+			}
+			err = builder.AppendInt(j, val)
 		case flux.TUInt:
-			builder.AppendUInt(j, cr.UInts(colMap[j])[i])
+			var val uint64
+			if colMap[j] >= 0 {
+				val = cr.UInts(colMap[j])[i]
+			}
+			err = builder.AppendUInt(j, val)
 		case flux.TFloat:
-			builder.AppendFloat(j, cr.Floats(colMap[j])[i])
+			var val float64
+			if colMap[j] >= 0 {
+				val = cr.Floats(colMap[j])[i]
+			}
+			err = builder.AppendFloat(j, val)
 		case flux.TString:
-			builder.AppendString(j, cr.Strings(colMap[j])[i])
+			var val string
+			if colMap[j] >= 0 {
+				val = cr.Strings(colMap[j])[i]
+			}
+			err = builder.AppendString(j, val)
 		case flux.TTime:
-			builder.AppendTime(j, cr.Times(colMap[j])[i])
+			var val Time
+			if colMap[j] >= 0 {
+				val = cr.Times(colMap[j])[i]
+			}
+			err = builder.AppendTime(j, val)
 		default:
 			PanicUnknownType(c.Type)
 		}
+		if err != nil {
+			return err
+		}
 	}
+	return nil
+}
+
+// AppendMappedRecordWExplicit appends the records from cr onto builder, using colMap as a map of builder index to cr index.
+// if an entry in the colMap indicates a mismatched column, no value is appended.
+func AppendMappedRecordExplicit(i int, cr flux.ColReader, builder TableBuilder, colMap []int) error {
+	// TODO(adam): these zero values should be set to null when we have null support
+	for j, c := range builder.Cols() {
+		if colMap[j] < 0 {
+			continue
+		}
+		var err error
+		switch c.Type {
+		case flux.TBool:
+			err = builder.AppendBool(j, cr.Bools(colMap[j])[i])
+		case flux.TInt:
+			err = builder.AppendInt(j, cr.Ints(colMap[j])[i])
+		case flux.TUInt:
+			err = builder.AppendUInt(j, cr.UInts(colMap[j])[i])
+		case flux.TFloat:
+			err = builder.AppendFloat(j, cr.Floats(colMap[j])[i])
+		case flux.TString:
+			err = builder.AppendString(j, cr.Strings(colMap[j])[i])
+		case flux.TTime:
+			err = builder.AppendTime(j, cr.Times(colMap[j])[i])
+		default:
+			PanicUnknownType(c.Type)
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// ColsMatch returns true if builder and cr have identical column sets (order dependent)
+func ColsMatch(builder TableBuilder, cr flux.ColReader) bool {
+	bCols := builder.Cols()
+	crCols := cr.Cols()
+	if len(bCols) != len(crCols) {
+		return false
+	}
+	for j, bc := range builder.Cols() {
+		if bc != crCols[j] {
+			return false
+		}
+	}
+	return true
 }
 
 // ColMap writes a mapping of builder index to column reader index into colMap.
@@ -240,17 +335,30 @@ func ColMap(colMap []int, builder TableBuilder, cr flux.ColReader) []int {
 }
 
 // AppendRecordForCols appends the only the columns provided from cr onto builder.
-func AppendRecordForCols(i int, cr flux.ColReader, builder TableBuilder, cols []flux.ColMeta) {
-	for j := range cols {
-		builder.AppendValue(j, ValueForRow(cr, i, j))
+func AppendRecordForCols(i int, cr flux.ColReader, builder TableBuilder, cols []flux.ColMeta) error {
+	if len(cr.Cols()) != len(builder.Cols()) || len(cr.Cols()) != len(cols) {
+		return errors.New("appended records must include all columns")
 	}
+	for j := range cols {
+		if err := builder.AppendValue(j, ValueForRow(cr, i, j)); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func AppendKeyValues(key flux.GroupKey, builder TableBuilder) {
+func AppendKeyValues(key flux.GroupKey, builder TableBuilder) error {
 	for j, c := range key.Cols() {
 		idx := ColIdx(c.Label, builder.Cols())
-		builder.AppendValue(idx, key.Value(j))
+		if idx < 0 {
+			return fmt.Errorf("group key column %s not found in output table", c.Label)
+		}
+
+		if err := builder.AppendValue(idx, key.Value(j)); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func ContainsStr(strs []string, str string) bool {
@@ -274,6 +382,28 @@ func HasCol(label string, cols []flux.ColMeta) bool {
 	return ColIdx(label, cols) >= 0
 }
 
+// ValueForRow retrieves a value from a column reader at the given index.
+func ValueForRow(cr flux.ColReader, i, j int) values.Value {
+	t := cr.Cols()[j].Type
+	switch t {
+	case flux.TString:
+		return values.NewString(cr.Strings(j)[i])
+	case flux.TInt:
+		return values.NewInt(cr.Ints(j)[i])
+	case flux.TUInt:
+		return values.NewUInt(cr.UInts(j)[i])
+	case flux.TFloat:
+		return values.NewFloat(cr.Floats(j)[i])
+	case flux.TBool:
+		return values.NewBool(cr.Bools(j)[i])
+	case flux.TTime:
+		return values.NewTime(cr.Times(j)[i])
+	default:
+		PanicUnknownType(t)
+		return values.InvalidValue
+	}
+}
+
 // TableBuilder builds tables that can be used multiple times
 type TableBuilder interface {
 	Key() flux.GroupKey
@@ -288,34 +418,34 @@ type TableBuilder interface {
 
 	// Set sets the value at the specified coordinates
 	// The rows and columns must exist before calling set, otherwise Set panics.
-	SetBool(i, j int, value bool)
-	SetInt(i, j int, value int64)
-	SetUInt(i, j int, value uint64)
-	SetFloat(i, j int, value float64)
-	SetString(i, j int, value string)
-	SetTime(i, j int, value Time)
-	SetValue(i, j int, value values.Value)
+	SetBool(i, j int, value bool) error
+	SetInt(i, j int, value int64) error
+	SetUInt(i, j int, value uint64) error
+	SetFloat(i, j int, value float64) error
+	SetString(i, j int, value string) error
+	SetTime(i, j int, value Time) error
+	SetValue(i, j int, value values.Value) error
 
 	// Append will add a single value to the end of a column.  Will set the number of
 	// rows in the table to the size of the new column. It's the caller's job to make sure
 	// that the expected number of rows in each column is equal.
-	AppendBool(j int, value bool)
-	AppendInt(j int, value int64)
-	AppendUInt(j int, value uint64)
-	AppendFloat(j int, value float64)
-	AppendString(j int, value string)
-	AppendTime(j int, value Time)
-	AppendValue(j int, value values.Value)
+	AppendBool(j int, value bool) error
+	AppendInt(j int, value int64) error
+	AppendUInt(j int, value uint64) error
+	AppendFloat(j int, value float64) error
+	AppendString(j int, value string) error
+	AppendTime(j int, value Time) error
+	AppendValue(j int, value values.Value) error
 
 	// AppendBools and similar functions will append multiple values to column j.  As above,
 	// it will set the numer of rows in the table to the size of the new column.  It's the
 	// caller's job to make sure that the expected number of rows in each column is equal.
-	AppendBools(j int, values []bool)
-	AppendInts(j int, values []int64)
-	AppendUInts(j int, values []uint64)
-	AppendFloats(j int, values []float64)
-	AppendStrings(j int, values []string)
-	AppendTimes(j int, values []Time)
+	AppendBools(j int, values []bool) error
+	AppendInts(j int, values []int64) error
+	AppendUInts(j int, values []uint64) error
+	AppendFloats(j int, values []float64) error
+	AppendStrings(j int, values []string) error
+	AppendTimes(j int, values []Time) error
 	// TODO(adam): determine if there's a useful API for AppendValues
 	// AppendValues(j int, values []values.Value)
 
@@ -323,12 +453,12 @@ type TableBuilder interface {
 	// If the column has enough capacity, no reallocation is necessary.  If the capacity is insufficient,
 	// a new slice is allocated with 1.5*newCapacity.  As with the Append functions, it is the
 	// caller's job to make sure that the expected number of rows in each column is equal.
-	GrowBools(j, n int)
-	GrowInts(j, n int)
-	GrowUInts(j, n int)
-	GrowFloats(j, n int)
-	GrowStrings(j, n int)
-	GrowTimes(j, n int)
+	GrowBools(j, n int) error
+	GrowInts(j, n int) error
+	GrowUInts(j, n int) error
+	GrowFloats(j, n int) error
+	GrowStrings(j, n int) error
+	GrowTimes(j, n int) error
 
 	// Sort the rows of the by the values of the columns in the order listed.
 	Sort(cols []string, desc bool)
@@ -371,7 +501,7 @@ func (b ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 	if ColIdx(c.Label, b.Cols()) >= 0 {
 		return -1, fmt.Errorf("table builder already has column with label %s", c.Label)
 	}
-
+	newIdx := len(b.table.cols)
 	var col column
 	switch c.Type {
 	case flux.TBool:
@@ -379,218 +509,335 @@ func (b ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 			ColMeta: c,
 			alloc:   b.alloc,
 		}
+		b.table.colMeta = append(b.table.colMeta, c)
+		b.table.cols = append(b.table.cols, col)
+		if b.NRows() > 0 {
+			if err := b.GrowBools(newIdx, b.NRows()); err != nil {
+				return -1, err
+			}
+		}
 	case flux.TInt:
 		col = &intColumn{
 			ColMeta: c,
 			alloc:   b.alloc,
+		}
+		b.table.colMeta = append(b.table.colMeta, c)
+		b.table.cols = append(b.table.cols, col)
+		if b.NRows() > 0 {
+			if err := b.GrowInts(newIdx, b.NRows()); err != nil {
+				return -1, err
+			}
 		}
 	case flux.TUInt:
 		col = &uintColumn{
 			ColMeta: c,
 			alloc:   b.alloc,
 		}
+		b.table.colMeta = append(b.table.colMeta, c)
+		b.table.cols = append(b.table.cols, col)
+		if b.NRows() > 0 {
+			if err := b.GrowUInts(newIdx, b.NRows()); err != nil {
+				return -1, err
+			}
+		}
 	case flux.TFloat:
 		col = &floatColumn{
 			ColMeta: c,
 			alloc:   b.alloc,
+		}
+		b.table.colMeta = append(b.table.colMeta, c)
+		b.table.cols = append(b.table.cols, col)
+		if b.NRows() > 0 {
+			if err := b.GrowFloats(newIdx, b.NRows()); err != nil {
+				return -1, err
+			}
 		}
 	case flux.TString:
 		col = &stringColumn{
 			ColMeta: c,
 			alloc:   b.alloc,
 		}
+		b.table.colMeta = append(b.table.colMeta, c)
+		b.table.cols = append(b.table.cols, col)
+		if b.NRows() > 0 {
+			if err := b.GrowStrings(newIdx, b.NRows()); err != nil {
+				return -1, err
+			}
+		}
 	case flux.TTime:
 		col = &timeColumn{
 			ColMeta: c,
 			alloc:   b.alloc,
 		}
+		b.table.colMeta = append(b.table.colMeta, c)
+		b.table.cols = append(b.table.cols, col)
+		if b.NRows() > 0 {
+			if err := b.GrowTimes(newIdx, b.NRows()); err != nil {
+				return -1, err
+			}
+		}
 	default:
 		PanicUnknownType(c.Type)
 	}
-	b.table.colMeta = append(b.table.colMeta, c)
-	b.table.cols = append(b.table.cols, col)
-	return len(b.table.cols) - 1, nil
+	return newIdx, nil
 }
 
-func (b ColListTableBuilder) SetBool(i int, j int, value bool) {
-	b.checkColType(j, flux.TBool)
+func (b ColListTableBuilder) SetBool(i int, j int, value bool) error {
+	if err := b.checkCol(j, flux.TBool); err != nil {
+		return err
+	}
 	b.table.cols[j].(*boolColumn).data[i] = value
+	return nil
 }
-func (b ColListTableBuilder) AppendBool(j int, value bool) {
-	b.checkColType(j, flux.TBool)
+func (b ColListTableBuilder) AppendBool(j int, value bool) error {
+	if err := b.checkCol(j, flux.TBool); err != nil {
+		return err
+	}
 	col := b.table.cols[j].(*boolColumn)
 	col.data = b.alloc.AppendBools(col.data, value)
 	b.table.nrows = len(col.data)
+	return nil
 }
-func (b ColListTableBuilder) AppendBools(j int, values []bool) {
-	b.checkColType(j, flux.TBool)
+func (b ColListTableBuilder) AppendBools(j int, values []bool) error {
+	if err := b.checkCol(j, flux.TBool); err != nil {
+		return err
+	}
 	col := b.table.cols[j].(*boolColumn)
 	col.data = b.alloc.AppendBools(col.data, values...)
 	b.table.nrows = len(col.data)
+	return nil
 }
-func (b ColListTableBuilder) GrowBools(j, n int) {
-	b.checkColType(j, flux.TBool)
+func (b ColListTableBuilder) GrowBools(j, n int) error {
+	if err := b.checkCol(j, flux.TBool); err != nil {
+		return err
+	}
 	col := b.table.cols[j].(*boolColumn)
 	col.data = b.alloc.GrowBools(col.data, n)
 	b.table.nrows = len(col.data)
+	return nil
 }
 
-func (b ColListTableBuilder) SetInt(i int, j int, value int64) {
-	b.checkColType(j, flux.TInt)
+func (b ColListTableBuilder) SetInt(i int, j int, value int64) error {
+	if err := b.checkCol(j, flux.TInt); err != nil {
+		return err
+	}
 	b.table.cols[j].(*intColumn).data[i] = value
+	return nil
 }
-func (b ColListTableBuilder) AppendInt(j int, value int64) {
-	b.checkColType(j, flux.TInt)
+func (b ColListTableBuilder) AppendInt(j int, value int64) error {
+	if err := b.checkCol(j, flux.TInt); err != nil {
+		return err
+	}
 	col := b.table.cols[j].(*intColumn)
 	col.data = b.alloc.AppendInts(col.data, value)
 	b.table.nrows = len(col.data)
+	return nil
 }
-func (b ColListTableBuilder) AppendInts(j int, values []int64) {
-	b.checkColType(j, flux.TInt)
+func (b ColListTableBuilder) AppendInts(j int, values []int64) error {
+	if err := b.checkCol(j, flux.TInt); err != nil {
+		return err
+	}
 	col := b.table.cols[j].(*intColumn)
 	col.data = b.alloc.AppendInts(col.data, values...)
 	b.table.nrows = len(col.data)
+	return nil
 }
-func (b ColListTableBuilder) GrowInts(j, n int) {
-	b.checkColType(j, flux.TInt)
+func (b ColListTableBuilder) GrowInts(j, n int) error {
+	if err := b.checkCol(j, flux.TInt); err != nil {
+		return err
+	}
 	col := b.table.cols[j].(*intColumn)
 	col.data = b.alloc.GrowInts(col.data, n)
 	b.table.nrows = len(col.data)
+	return nil
 }
 
-func (b ColListTableBuilder) SetUInt(i int, j int, value uint64) {
-	b.checkColType(j, flux.TUInt)
+func (b ColListTableBuilder) SetUInt(i int, j int, value uint64) error {
+	if err := b.checkCol(j, flux.TUInt); err != nil {
+		return err
+	}
 	b.table.cols[j].(*uintColumn).data[i] = value
+	return nil
 }
-func (b ColListTableBuilder) AppendUInt(j int, value uint64) {
-	b.checkColType(j, flux.TUInt)
+func (b ColListTableBuilder) AppendUInt(j int, value uint64) error {
+	if err := b.checkCol(j, flux.TUInt); err != nil {
+		return err
+	}
 	col := b.table.cols[j].(*uintColumn)
 	col.data = b.alloc.AppendUInts(col.data, value)
 	b.table.nrows = len(col.data)
+	return nil
 }
-func (b ColListTableBuilder) AppendUInts(j int, values []uint64) {
-	b.checkColType(j, flux.TUInt)
+func (b ColListTableBuilder) AppendUInts(j int, values []uint64) error {
+	if err := b.checkCol(j, flux.TUInt); err != nil {
+		return err
+	}
 	col := b.table.cols[j].(*uintColumn)
 	col.data = b.alloc.AppendUInts(col.data, values...)
 	b.table.nrows = len(col.data)
+	return nil
 }
-func (b ColListTableBuilder) GrowUInts(j, n int) {
-	b.checkColType(j, flux.TUInt)
+func (b ColListTableBuilder) GrowUInts(j, n int) error {
+	if err := b.checkCol(j, flux.TUInt); err != nil {
+		return err
+	}
 	col := b.table.cols[j].(*uintColumn)
 	col.data = b.alloc.GrowUInts(col.data, n)
 	b.table.nrows = len(col.data)
+	return nil
 }
 
-func (b ColListTableBuilder) SetFloat(i int, j int, value float64) {
-	b.checkColType(j, flux.TFloat)
+func (b ColListTableBuilder) SetFloat(i int, j int, value float64) error {
+	if err := b.checkCol(j, flux.TFloat); err != nil {
+		return err
+	}
 	b.table.cols[j].(*floatColumn).data[i] = value
+	return nil
 }
-func (b ColListTableBuilder) AppendFloat(j int, value float64) {
-	b.checkColType(j, flux.TFloat)
+func (b ColListTableBuilder) AppendFloat(j int, value float64) error {
+	if err := b.checkCol(j, flux.TFloat); err != nil {
+		return err
+	}
 	col := b.table.cols[j].(*floatColumn)
 	col.data = b.alloc.AppendFloats(col.data, value)
 	b.table.nrows = len(col.data)
+	return nil
 }
-func (b ColListTableBuilder) AppendFloats(j int, values []float64) {
-	b.checkColType(j, flux.TFloat)
+func (b ColListTableBuilder) AppendFloats(j int, values []float64) error {
+	if err := b.checkCol(j, flux.TFloat); err != nil {
+		return err
+	}
 	col := b.table.cols[j].(*floatColumn)
 	col.data = b.alloc.AppendFloats(col.data, values...)
 	b.table.nrows = len(col.data)
+	return nil
 }
-func (b ColListTableBuilder) GrowFloats(j, n int) {
-	b.checkColType(j, flux.TFloat)
+func (b ColListTableBuilder) GrowFloats(j, n int) error {
+	if err := b.checkCol(j, flux.TFloat); err != nil {
+		return err
+	}
 	col := b.table.cols[j].(*floatColumn)
 	col.data = b.alloc.GrowFloats(col.data, n)
 	b.table.nrows = len(col.data)
+	return nil
 }
 
-func (b ColListTableBuilder) SetString(i int, j int, value string) {
-	b.checkColType(j, flux.TString)
+func (b ColListTableBuilder) SetString(i int, j int, value string) error {
+	if err := b.checkCol(j, flux.TString); err != nil {
+		return err
+	}
 	b.table.cols[j].(*stringColumn).data[i] = value
+	return nil
 }
-func (b ColListTableBuilder) AppendString(j int, value string) {
-	meta := b.table.cols[j].Meta()
-	CheckColType(meta, flux.TString)
+func (b ColListTableBuilder) AppendString(j int, value string) error {
+	if err := b.checkCol(j, flux.TString); err != nil {
+		return err
+	}
 	col := b.table.cols[j].(*stringColumn)
 	col.data = b.alloc.AppendStrings(col.data, value)
 	b.table.nrows = len(col.data)
+	return nil
 }
-func (b ColListTableBuilder) AppendStrings(j int, values []string) {
-	b.checkColType(j, flux.TString)
+func (b ColListTableBuilder) AppendStrings(j int, values []string) error {
+	if err := b.checkCol(j, flux.TString); err != nil {
+		return err
+	}
 	col := b.table.cols[j].(*stringColumn)
 	col.data = b.alloc.AppendStrings(col.data, values...)
 	b.table.nrows = len(col.data)
+	return nil
 }
-func (b ColListTableBuilder) GrowStrings(j, n int) {
-	b.checkColType(j, flux.TString)
+func (b ColListTableBuilder) GrowStrings(j, n int) error {
+	if err := b.checkCol(j, flux.TString); err != nil {
+		return err
+	}
 	col := b.table.cols[j].(*stringColumn)
 	col.data = b.alloc.GrowStrings(col.data, n)
 	b.table.nrows = len(col.data)
+	return nil
 }
 
-func (b ColListTableBuilder) SetTime(i int, j int, value Time) {
-	b.checkColType(j, flux.TTime)
+func (b ColListTableBuilder) SetTime(i int, j int, value Time) error {
+	if err := b.checkCol(j, flux.TTime); err != nil {
+		return err
+	}
 	b.table.cols[j].(*timeColumn).data[i] = value
+	return nil
 }
-func (b ColListTableBuilder) AppendTime(j int, value Time) {
-	b.checkColType(j, flux.TTime)
+func (b ColListTableBuilder) AppendTime(j int, value Time) error {
+	if err := b.checkCol(j, flux.TTime); err != nil {
+		return err
+	}
 	col := b.table.cols[j].(*timeColumn)
 	col.data = b.alloc.AppendTimes(col.data, value)
 	b.table.nrows = len(col.data)
+	return nil
 }
-func (b ColListTableBuilder) AppendTimes(j int, values []Time) {
-	b.checkColType(j, flux.TTime)
+func (b ColListTableBuilder) AppendTimes(j int, values []Time) error {
+	if err := b.checkCol(j, flux.TTime); err != nil {
+		return err
+	}
 	col := b.table.cols[j].(*timeColumn)
 	col.data = b.alloc.AppendTimes(col.data, values...)
 	b.table.nrows = len(col.data)
+	return nil
+
 }
-func (b ColListTableBuilder) GrowTimes(j, n int) {
-	b.checkColType(j, flux.TTime)
+func (b ColListTableBuilder) GrowTimes(j, n int) error {
+	if err := b.checkCol(j, flux.TTime); err != nil {
+		return err
+	}
 	col := b.table.cols[j].(*timeColumn)
 	col.data = b.alloc.GrowTimes(col.data, n)
 	b.table.nrows = len(col.data)
+	return nil
+
 }
 
-func (b ColListTableBuilder) SetValue(i, j int, v values.Value) {
+func (b ColListTableBuilder) SetValue(i, j int, v values.Value) error {
 	switch v.Type() {
 	case semantic.Bool:
-		b.SetBool(i, j, v.Bool())
+		return b.SetBool(i, j, v.Bool())
 	case semantic.Int:
-		b.SetInt(i, j, v.Int())
+		return b.SetInt(i, j, v.Int())
 	case semantic.UInt:
-		b.SetUInt(i, j, v.UInt())
+		return b.SetUInt(i, j, v.UInt())
 	case semantic.Float:
-		b.SetFloat(i, j, v.Float())
+		return b.SetFloat(i, j, v.Float())
 	case semantic.String:
-		b.SetString(i, j, v.Str())
+		return b.SetString(i, j, v.Str())
 	case semantic.Time:
-		b.SetTime(i, j, v.Time())
+		return b.SetTime(i, j, v.Time())
 	default:
 		panic(fmt.Errorf("unexpected value type %v", v.Type()))
 	}
 }
 
-func (b ColListTableBuilder) AppendValue(j int, v values.Value) {
+func (b ColListTableBuilder) AppendValue(j int, v values.Value) error {
 	switch v.Type() {
 	case semantic.Bool:
-		b.AppendBool(j, v.Bool())
+		return b.AppendBool(j, v.Bool())
 	case semantic.Int:
-		b.AppendInt(j, v.Int())
+		return b.AppendInt(j, v.Int())
 	case semantic.UInt:
-		b.AppendUInt(j, v.UInt())
+		return b.AppendUInt(j, v.UInt())
 	case semantic.Float:
-		b.AppendFloat(j, v.Float())
+		return b.AppendFloat(j, v.Float())
 	case semantic.String:
-		b.AppendString(j, v.Str())
+		return b.AppendString(j, v.Str())
 	case semantic.Time:
-		b.AppendTime(j, v.Time())
+		return b.AppendTime(j, v.Time())
 	default:
 		panic(fmt.Errorf("unexpected value type %v", v.Type()))
 	}
 }
 
-func (b ColListTableBuilder) checkColType(j int, typ flux.ColType) {
+func (b ColListTableBuilder) checkCol(j int, typ flux.ColType) error {
+	if j < 0 || j > len(b.table.cols) {
+		return fmt.Errorf("column does not exist, index out of bounds: %d", j)
+	}
 	CheckColType(b.table.colMeta[j], typ)
+	return nil
 }
 
 func CheckColType(col flux.ColMeta, typ flux.ColType) {

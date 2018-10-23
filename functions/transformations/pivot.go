@@ -268,15 +268,14 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 					Label: colKey,
 					Type:  valueColType,
 				}
-				_, err := builder.AddCol(newCol)
+				nextCol, err := builder.AddCol(newCol)
 				if err != nil {
 					return err
 				}
-				nextRowCol := t.nextRowCol[groupKeyString]
-				growColumn(builder, newCol.Type, nextRowCol.nextCol, builder.NRows())
-				t.colKeyMaps[groupKeyString][colKey] = nextRowCol.nextCol
-				nextRowCol.nextCol++
-				t.nextRowCol[groupKeyString] = nextRowCol
+				//nextRowCol := t.nextRowCol[groupKeyString]
+				t.colKeyMaps[groupKeyString][colKey] = nextCol
+				//nextRowCol.nextCol++
+				//t.nextRowCol[groupKeyString] = nextRowCol
 			}
 			//  1.  if we've not seen rowKey before, then we need to append a new row, with copied values for the
 			//  existing columns, as well as zero values for the pivoted columns.

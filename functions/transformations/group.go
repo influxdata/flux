@@ -246,12 +246,17 @@ func (t *groupTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			key := execute.GroupKeyForRowOn(i, cr, on)
-			builder, created := t.cache.TableBuilder(key)
-			if created {
-				execute.AddTableCols(tbl, builder)
+			builder, _ := t.cache.TableBuilder(key)
+
+			colMap, err := execute.AddNewTableCols(tbl, builder, colMap)
+			if err != nil {
+				return err
 			}
-			colMap = execute.ColMap(colMap, builder, cr)
-			execute.AppendMappedRecord(i, cr, builder, colMap)
+
+			err = execute.AppendMappedRecordWithDefaults(i, cr, builder, colMap)
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	})
