@@ -29,7 +29,6 @@ type Administration interface {
 	StreamContext() StreamContext
 	Allocator() *Allocator
 	Parents() []DatasetID
-	ConvertID(plan.ProcedureID) DatasetID
 
 	Dependencies() Dependencies
 }

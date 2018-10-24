@@ -411,11 +411,8 @@ func TestExecutor_Execute(t *testing.T) {
 						AggregateConfig: execute.DefaultAggregateConfig,
 					}),
 					plan.CreatePhysicalNode("join", &transformations.MergeJoinProcedureSpec{
-						On: []string{"_start", "_stop"},
-						TableNames: map[plan.ProcedureID]string{
-							plan.ProcedureIDFromOperationID("sum"):   "a",
-							plan.ProcedureIDFromOperationID("count"): "b",
-						},
+						On:         []string{"_start", "_stop"},
+						TableNames: []string{"a", "b"},
 					}),
 					plan.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
 				},
