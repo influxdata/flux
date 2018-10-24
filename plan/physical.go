@@ -1,6 +1,9 @@
 package plan
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
 
 // PhysicalPlanner performs transforms a logical plan to a physical plan,
 // by applying any registered physical rules.
@@ -119,6 +122,16 @@ func (ppn *PhysicalPlanNode) ID() NodeID {
 // ProcedureSpec returns the procedure spec for this plan node.
 func (ppn *PhysicalPlanNode) ProcedureSpec() ProcedureSpec {
 	return ppn.Spec
+}
+
+func (ppn *PhysicalPlanNode) ReplaceSpec(newSpec ProcedureSpec) error {
+	physSpec, ok := newSpec.(PhysicalProcedureSpec)
+	if !ok {
+		return fmt.Errorf("couldn't replace ProcedureSpec for physical plan node \"%v\"", ppn.ID())
+	}
+
+	ppn.Spec = physSpec
+	return nil
 }
 
 // Kind returns the procedure kind for this plan node.

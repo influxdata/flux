@@ -30,6 +30,14 @@ func fluxTime(t int64) flux.Time {
 	}
 }
 
+func makeFilterFn(exprs ...semantic.Expression) *semantic.FunctionExpression {
+	body := semantic.ExprsToConjunction(exprs...)
+	return &semantic.FunctionExpression{
+		Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
+		Body:   body,
+	}
+}
+
 func TestFrom_PlannerTransformationRules(t *testing.T) {
 	var (
 		fromWithBounds = &inputs.FromProcedureSpec{
@@ -62,39 +70,21 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 		mean  = &transformations.MeanProcedureSpec{}
 		count = &transformations.CountProcedureSpec{}
 
-		filterFn1 = &semantic.FunctionExpression{
-			Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-			Body: &semantic.BinaryExpression{Operator: ast.LessThanOperator,
-				Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-				Right: &semantic.FloatLiteral{Value: 10}},
-		}
+		pushableExpr1 = &semantic.BinaryExpression{Operator: ast.EqualOperator,
+			Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_measurement"},
+			Right: &semantic.StringLiteral{Value: "cpu"}}
 
-		filterFn2 = &semantic.FunctionExpression{
-			Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-			Body: &semantic.BinaryExpression{Operator: ast.GreaterThanOperator,
-				Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-				Right: &semantic.FloatLiteral{Value: 5}},
-		}
+		pushableExpr2 = &semantic.BinaryExpression{Operator: ast.EqualOperator,
+			Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_field"},
+			Right: &semantic.StringLiteral{Value: "cpu"}}
 
-		filterFnBoth = &semantic.FunctionExpression{
+		unpushableExpr = &semantic.BinaryExpression{Operator: ast.LessThanOperator,
+			Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+			Right: &semantic.FloatLiteral{Value: 0.5}}
+
+		statementFn = &semantic.FunctionExpression{
 			Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-			Body: &semantic.LogicalExpression{Operator: ast.AndOperator,
-				Left: &semantic.BinaryExpression{Operator: ast.LessThanOperator,
-					Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-					Right: &semantic.FloatLiteral{Value: 10}},
-				Right: &semantic.BinaryExpression{Operator: ast.GreaterThanOperator,
-					Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-					Right: &semantic.FloatLiteral{Value: 5}},
-			},
-		}
-		fromWithBoundsAndFilter = &inputs.FromProcedureSpec{
-			BoundsSet: true,
-			Bounds: flux.Bounds{
-				Start: fluxTime(5),
-				Stop:  fluxTime(10),
-			},
-			FilterSet: true,
-			Filter: filterFn1,
+			Body: &semantic.ReturnStatement{Argument: &semantic.BooleanLiteral{Value: true}},
 		}
 	)
 
@@ -246,33 +236,36 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 		{
 			name: "from filter",
 			// from -> filter  =>  from
-			rules: []plan.Rule{inputs.FromFilterMergeRule{}},
+			rules: []plan.Rule{inputs.MergeFromFilterRule{}},
 			before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
-					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: filterFn1}),
+					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: makeFilterFn(pushableExpr1)}),
 				},
-				Edges: [][2]int {
+				Edges: [][2]int{
 					{0, 1},
 				},
 			},
 			after: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("merged_from_filter", &inputs.FromProcedureSpec{FilterSet: true, Filter: filterFn1}),
+					plan.CreatePhysicalNode("merged_from_filter", &inputs.FromProcedureSpec{
+						FilterSet: true,
+						Filter:    makeFilterFn(pushableExpr1),
+					}),
 				},
 			},
 		},
 		{
 			name: "from filter filter",
 			// from -> filter -> filter  =>  from    (rule applied twice)
-			rules: []plan.Rule{inputs.FromFilterMergeRule{}},
+			rules: []plan.Rule{inputs.MergeFromFilterRule{}},
 			before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
-					plan.CreatePhysicalNode("filter1", &transformations.FilterProcedureSpec{Fn: filterFn1}),
-					plan.CreatePhysicalNode("filter2", &transformations.FilterProcedureSpec{Fn: filterFn2}),
+					plan.CreatePhysicalNode("filter1", &transformations.FilterProcedureSpec{Fn: makeFilterFn(pushableExpr1)}),
+					plan.CreatePhysicalNode("filter2", &transformations.FilterProcedureSpec{Fn: makeFilterFn(pushableExpr2)}),
 				},
-				Edges: [][2]int {
+				Edges: [][2]int{
 					{0, 1},
 					{1, 2},
 				},
@@ -280,37 +273,122 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			after: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("merged_merged_from_filter1_filter2",
-						&inputs.FromProcedureSpec{FilterSet: true, Filter: filterFnBoth}),
+						&inputs.FromProcedureSpec{
+							FilterSet: true,
+							Filter:    makeFilterFn(pushableExpr1, pushableExpr2),
+						}),
+				},
+			},
+		},
+		{
+			name: "from partially-pushable-filter",
+			// from -> partially-pushable-filter  =>  from-with-filter -> unpushable-filter
+			rules: []plan.Rule{inputs.MergeFromFilterRule{}},
+			before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: makeFilterFn(pushableExpr1, unpushableExpr)}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+			after: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from",
+						&inputs.FromProcedureSpec{
+							FilterSet: true,
+							Filter:    makeFilterFn(pushableExpr1),
+						}),
+					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: makeFilterFn(unpushableExpr)}),
+				},
+				Edges: [][2]int{
+					{0, 1},
 				},
 			},
 		},
 		{
 			name: "from range filter",
 			// from -> range -> filter  =>  from
-			rules: []plan.Rule{inputs.FromFilterMergeRule{}, inputs.MergeFromRangeRule{}},
+			rules: []plan.Rule{inputs.MergeFromFilterRule{}, inputs.MergeFromRangeRule{}},
 			before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
 					plan.CreatePhysicalNode("range", rangeWithBounds),
-					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: filterFn1}),
+					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: makeFilterFn(pushableExpr1)}),
 				},
-				Edges: [][2]int {
+				Edges: [][2]int{
 					{0, 1},
 					{1, 2},
 				},
 			},
 			after: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("merged_merged_from_range_filter", fromWithBoundsAndFilter),
+					plan.CreatePhysicalNode("merged_merged_from_range_filter", &inputs.FromProcedureSpec{
+						FilterSet: true,
+						Filter:    makeFilterFn(pushableExpr1),
+						BoundsSet: true,
+						Bounds: flux.Bounds{
+							Start: fluxTime(5),
+							Stop:  fluxTime(10),
+						},
+					}),
 				},
 			},
+		},
+		{
+			name: "from unpushable filter",
+			// from -> filter  =>  from -> filter   (no change)
+			rules: []plan.Rule{inputs.MergeFromFilterRule{}},
+			before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: makeFilterFn(unpushableExpr)}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+			after: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: makeFilterFn(unpushableExpr)}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+		},
+		{
+			name: "from with statement filter",
+			// from -> filter(with statement function)  =>  from -> filter(with statement function)  (no change)
+			rules: []plan.Rule{inputs.MergeFromFilterRule{}},
+			before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: statementFn}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+			after: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: statementFn}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+
 		},
 	}
 
 	for _, tc := range tests {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
+			//t.Parallel()
 
 			before := plantest.CreatePlanSpec(tc.before)
 			after := plantest.CreatePlanSpec(tc.after)

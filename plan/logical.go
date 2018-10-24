@@ -119,6 +119,11 @@ func (lpn *LogicalPlanNode) ProcedureSpec() ProcedureSpec {
 	return lpn.Spec
 }
 
+func (lpn *LogicalPlanNode) ReplaceSpec(newSpec ProcedureSpec) error {
+	lpn.Spec = newSpec
+	return nil
+}
+
 func (lpn *LogicalPlanNode) ShallowCopy() PlanNode {
 	newNode := new(LogicalPlanNode)
 	newNode.edges = lpn.edges.shallowCopy()

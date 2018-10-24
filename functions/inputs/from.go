@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/functions"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
@@ -31,7 +32,7 @@ func init() {
 	flux.RegisterFunction(FromKind, createFromOpSpec, fromSignature)
 	flux.RegisterOpSpec(FromKind, newFromOp)
 	plan.RegisterProcedureSpec(FromKind, newFromProcedure, FromKind)
-	plan.RegisterPhysicalRules(MergeFromRangeRule{}, FromFilterMergeRule{})
+	plan.RegisterPhysicalRules(MergeFromRangeRule{}, MergeFromFilterRule{})
 }
 
 func createFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
@@ -160,35 +161,135 @@ func (rule MergeFromRangeRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool,
 	return merged, true, nil
 }
 
-type FromFilterMergeRule struct {
+type MergeFromFilterRule struct {
 }
 
-func (FromFilterMergeRule) Name() string {
-	return "mergeFilterFrom"
+func (MergeFromFilterRule) Name() string {
+	return "MergeFromFilterRule"
 }
 
-func (FromFilterMergeRule) Pattern() plan.Pattern {
+func (MergeFromFilterRule) Pattern() plan.Pattern {
 	return plan.Pat(transformations.FilterKind, plan.Pat(FromKind))
 }
 
-func (FromFilterMergeRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool, error) {
-	filterSpec := node.ProcedureSpec().(*transformations.FilterProcedureSpec)
-	fromSpec := node.Predecessors()[0].ProcedureSpec().(*FromProcedureSpec)
-
-	mergedSpec := fromSpec.Copy().(*FromProcedureSpec)
-	if mergedSpec.FilterSet {
-		mergedSpec.Filter = semantic.MergeArrowFunction(fromSpec.Filter, filterSpec.Fn)
-	} else {
-		mergedSpec.FilterSet = true
-		mergedSpec.Filter = filterSpec.Fn.Copy().(*semantic.FunctionExpression)
+func (MergeFromFilterRule) Rewrite(filterNode plan.PlanNode) (plan.PlanNode, bool, error) {
+	filterSpec := filterNode.ProcedureSpec().(*transformations.FilterProcedureSpec)
+	bodyExpr, ok := filterSpec.Fn.Body.(semantic.Expression)
+	if !ok {
+		return filterNode, false, nil
 	}
 
-	merged, err := plan.MergePhysicalPlanNodes(node, node.Predecessors()[0], mergedSpec)
+	pushable, notPushable, err := semantic.PartitionPredicates(bodyExpr, isPushableExpr)
 	if err != nil {
 		return nil, false, err
 	}
 
-	return merged, true, nil
+	if pushable == nil {
+		// Nothing could be pushed down, no rewrite can happen
+		return filterNode, false, nil
+	}
+
+	fromNode := filterNode.Predecessors()[0]
+	newFromSpec := fromNode.ProcedureSpec().Copy().(*FromProcedureSpec)
+	if newFromSpec.FilterSet {
+		newBody := semantic.ExprsToConjunction(newFromSpec.Filter.Body.(semantic.Expression), pushable)
+		newFromSpec.Filter.Body = newBody
+	} else {
+		newFromSpec.FilterSet = true
+		newFromSpec.Filter = filterSpec.Fn.Copy().(*semantic.FunctionExpression)
+		newFromSpec.Filter.Body = pushable
+	}
+
+	if notPushable == nil {
+		// All predicates could be pushed down, so eliminate the filter
+		mergedNode, err := plan.MergePhysicalPlanNodes(filterNode, fromNode, newFromSpec)
+		if err != nil {
+			return nil, false, err
+		}
+		return mergedNode, true, nil
+	}
+
+	err = fromNode.ReplaceSpec(newFromSpec)
+	if err != nil {
+		return nil, false, err
+	}
+
+	newFilterSpec := filterSpec.Copy().(*transformations.FilterProcedureSpec)
+	newFilterSpec.Fn.Body = notPushable
+	err = filterNode.ReplaceSpec(newFilterSpec)
+	if err != nil {
+		return nil, false, err
+	}
+
+	return filterNode, true, nil
+}
+
+func isPushableExpr(expr semantic.Expression) (bool, error) {
+	switch e := expr.(type) {
+	case *semantic.LogicalExpression:
+		b, err := isPushableExpr(e.Left)
+		if err != nil {
+			return false, err
+		}
+
+		if !b {
+			return false, nil
+		}
+
+		return isPushableExpr(e.Right)
+
+	case *semantic.BinaryExpression:
+		if !isPushableOperator(e.Operator) {
+			return false, nil
+		}
+
+		b, err := isPushableExpr(e.Left)
+		if err != nil {
+			return false, err
+		}
+
+		if !b {
+			return false, nil
+		}
+
+		return isPushableExpr(e.Right)
+
+	case *semantic.StringLiteral:
+		return true, nil
+	case *semantic.IntegerLiteral:
+		return true, nil
+	case *semantic.BooleanLiteral:
+		return true, nil
+	case *semantic.FloatLiteral:
+		return true, nil
+	case *semantic.RegexpLiteral:
+		return true, nil
+	case *semantic.MemberExpression:
+		if idExpr, ok := e.Object.(*semantic.IdentifierExpression); ok && idExpr.Name == "r" {
+				return true, nil
+		}
+
+		return false, nil
+	}
+
+	return false, nil
+}
+
+func isPushableOperator(kind ast.OperatorKind) bool {
+	pushableOperators := []ast.OperatorKind{
+		ast.EqualOperator,
+		ast.NotEqualOperator,
+		ast.RegexpMatchOperator,
+		ast.NotRegexpMatchOperator,
+	}
+
+	for _, op := range pushableOperators {
+		if op == kind {
+			return true
+		}
+	}
+
+	return false
 }
 
 func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {

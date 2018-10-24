@@ -28,6 +28,9 @@ type PlanNode interface {
 	// Specification of the procedure represented by this node
 	ProcedureSpec() ProcedureSpec
 
+	// Replaces the procedure spec of this node with another
+	ReplaceSpec(ProcedureSpec) error
+
 	// Type of procedure represented by this node
 	Kind() ProcedureKind
 
