@@ -358,7 +358,7 @@ identity(x:identity)(x:2)
 					})
 					switch n := node.(type) {
 					case *semantic.CallExpression:
-						switch l := n.Location().Start.Column; l {
+						switch n.Location().Start.Column {
 						case 1:
 							return outF
 						case 21:
@@ -367,14 +367,14 @@ identity(x:identity)(x:2)
 					case *semantic.IdentifierExpression:
 						switch n.Name {
 						case "identity":
-							switch l := n.Location().Start.Column; l {
+							switch n.Location().Start.Column {
 							case 1:
 								return ftF
 							case 12:
 								return ftInt
 							}
 						case "x":
-							switch l := n.Location().Start.Column; l {
+							switch n.Location().Start.Column {
 							case 2:
 								return ftInt
 							case 19:
@@ -386,7 +386,7 @@ identity(x:identity)(x:2)
 					case *semantic.FunctionParameter:
 						return out
 					case *semantic.Property:
-						switch l := n.Location().Start.Column; l {
+						switch n.Location().Start.Column {
 						case 10:
 							return outF
 						case 22:
@@ -396,7 +396,7 @@ identity(x:identity)(x:2)
 						*semantic.FunctionExpression:
 						return ft
 					case *semantic.ObjectExpression:
-						switch l := n.Location().Start.Line; l {
+						switch n.Location().Start.Line {
 						case 2:
 							return semantic.NewObjectPolyType(nil)
 						case 3:
@@ -502,7 +502,7 @@ identity(x:identity)(x:2)
 							return ft
 						}
 					case *semantic.FunctionParameters:
-						switch l := n.Location().Start.Line; l {
+						switch n.Location().Start.Line {
 						case 2:
 							return inR
 						case 3:
@@ -518,7 +518,7 @@ identity(x:identity)(x:2)
 							return outInt
 						}
 					case *semantic.ObjectExpression:
-						switch l := n.Location().Start.Line; l {
+						switch n.Location().Start.Line {
 						case 2, 3:
 							return semantic.NewObjectPolyType(nil)
 						case 4:
@@ -608,37 +608,37 @@ foo(f:add)
 					case *semantic.ExpressionStatement:
 						return out
 					case *semantic.NativeVariableDeclaration:
-						switch l := n.Location().Start.Line; l {
+						switch n.Location().Start.Line {
 						case 2:
 							return foo
 						case 3:
 							return add
 						}
 					case *semantic.FunctionExpression:
-						switch l := n.Location().Start.Line; l {
+						switch n.Location().Start.Line {
 						case 2:
 							return foo
 						case 3:
 							return add
 						}
 					case *semantic.FunctionParameters:
-						switch l := n.Location().Start.Line; l {
+						switch n.Location().Start.Line {
 						case 2:
 							return inFoo
 						case 3:
 							return inAdd
 						}
 					case *semantic.FunctionParameter:
-						switch l := n.Location().Start.Line; l {
+						switch n.Location().Start.Line {
 						case 2:
 							return call
 						case 3:
 							return semantic.Int
 						}
 					case *semantic.ObjectExpression:
-						switch l := n.Location().Start.Line; l {
+						switch n.Location().Start.Line {
 						case 2:
-							switch l := n.Location().Start.Column; l {
+							switch n.Location().Start.Column {
 							case 7:
 								return semantic.NewObjectPolyType(nil)
 							case 16:
@@ -652,14 +652,14 @@ foo(f:add)
 							})
 						}
 					case *semantic.Property:
-						switch l := n.Location().Start.Line; l {
+						switch n.Location().Start.Line {
 						case 2, 3:
 							return semantic.Int
 						case 4:
 							return add
 						}
 					case *semantic.CallExpression:
-						switch l := n.Location().Start.Line; l {
+						switch n.Location().Start.Line {
 						case 2:
 							return outCall
 						case 4:
@@ -678,6 +678,180 @@ foo(f:add)
 						case "f":
 							return call
 						}
+					}
+					return nil
+				},
+			},
+		},
+		{
+			name: "structural polymorphism",
+			script: `
+jim  = {name: "Jim", age: 30, weight: 100.0}
+jane = {name: "Jane", age: 31}
+
+device = {name: 42, lat:28.25892, lon: 15.62234}
+
+name = (p) => p.name
+
+name(p:jim)
+name(p:jane)
+name(p:device)
+`,
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					return nil
+				},
+			},
+		},
+		{
+			name: "function with polymorphic object parameter",
+			script: `
+foo = (r) => ({
+    a: r.a,
+    a2: r.a*r.a,
+    b: r.b,
+})
+foo(r:{a:1,b:"hi"})
+foo(r:{a:1.1,b:42.0})
+`,
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					f := semantic.NewFresher()
+					tv0 := f.Fresh()
+					tv1 := f.Fresh()
+					tv2 := f.Fresh()
+
+					r := semantic.NewObjectPolyType(map[string]semantic.PolyType{
+						"a": tv0,
+						"b": tv1,
+					})
+					fooIn := semantic.NewObjectPolyType(map[string]semantic.PolyType{
+						"r": r,
+					})
+					fooOut := semantic.NewObjectPolyType(map[string]semantic.PolyType{
+						"a": tv0,
+						"b": tv1,
+					})
+					foo := semantic.NewFunctionPolyType(semantic.PolyFunctionSignature{
+						In:  fooIn,
+						Out: fooOut,
+					})
+
+					out1 := semantic.NewObjectPolyType(map[string]semantic.PolyType{
+						"a": semantic.Int,
+						"b": semantic.String,
+					})
+					out2 := semantic.NewObjectPolyType(map[string]semantic.PolyType{
+						"a": semantic.Float,
+						"b": semantic.Float,
+					})
+
+					switch n := node.(type) {
+					case *semantic.ExpressionStatement:
+						switch n.Location().Start.Line {
+						case 7:
+							return out1
+						case 8:
+							return out2
+						}
+					case *semantic.NativeVariableDeclaration:
+						return foo
+					case *semantic.FunctionExpression:
+						return foo
+					case *semantic.FunctionParameters:
+						return fooIn
+					case *semantic.FunctionParameter:
+						return r
+					case *semantic.ObjectExpression:
+						return semantic.Int
+					case *semantic.Property:
+						return semantic.Int
+					case *semantic.CallExpression:
+						switch n.Location().Start.Line {
+						case 7:
+							return out1
+						case 8:
+							return out2
+						}
+					case *semantic.BinaryExpression:
+						return tv2
+					case *semantic.IdentifierExpression:
+					}
+					return nil
+				},
+			},
+		},
+		{
+			name: "polymorphic array",
+			script: `
+toList = (x) => [x]
+is = toList(x: 1)
+fs = toList(x: 2.0)
+is[0]
+fs[0]
+			`,
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					f := semantic.NewFresher()
+					tv0 := f.Fresh()
+					tv1 := f.Fresh()
+					tv2 := f.Fresh()
+
+					r := semantic.NewObjectPolyType(map[string]semantic.PolyType{
+						"a": tv0,
+						"b": tv1,
+					})
+					fooIn := semantic.NewObjectPolyType(map[string]semantic.PolyType{
+						"r": r,
+					})
+					fooOut := semantic.NewObjectPolyType(map[string]semantic.PolyType{
+						"a": tv0,
+						"b": tv1,
+					})
+					foo := semantic.NewFunctionPolyType(semantic.PolyFunctionSignature{
+						In:  fooIn,
+						Out: fooOut,
+					})
+
+					out1 := semantic.NewObjectPolyType(map[string]semantic.PolyType{
+						"a": semantic.Int,
+						"b": semantic.String,
+					})
+					out2 := semantic.NewObjectPolyType(map[string]semantic.PolyType{
+						"a": semantic.Float,
+						"b": semantic.Float,
+					})
+
+					switch n := node.(type) {
+					case *semantic.ExpressionStatement:
+						switch n.Location().Start.Line {
+						case 7:
+							return out1
+						case 8:
+							return out2
+						}
+					case *semantic.NativeVariableDeclaration:
+						return foo
+					case *semantic.FunctionExpression:
+						return foo
+					case *semantic.FunctionParameters:
+						return fooIn
+					case *semantic.FunctionParameter:
+						return r
+					case *semantic.ObjectExpression:
+						return semantic.Int
+					case *semantic.Property:
+						return semantic.Int
+					case *semantic.CallExpression:
+						switch n.Location().Start.Line {
+						case 7:
+							return out1
+						case 8:
+							return out2
+						}
+					case *semantic.BinaryExpression:
+						return tv2
+					case *semantic.IdentifierExpression:
 					}
 					return nil
 				},
