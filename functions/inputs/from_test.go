@@ -1,17 +1,17 @@
 package inputs_test
 
 import (
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/semantic"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/semantic/semantictest"
 )
 
@@ -388,7 +388,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 	for _, tc := range tests {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			//t.Parallel()
+			t.Parallel()
 
 			before := plantest.CreatePlanSpec(tc.before)
 			after := plantest.CreatePlanSpec(tc.after)
