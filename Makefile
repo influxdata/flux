@@ -45,6 +45,18 @@ bin/$(GOOS)/cmpgen: ./ast/asttest/cmpgen/main.go
 fmt: $(SOURCES_NO_VENDOR)
 	goimports -w $^
 
+checkfmt:
+	GO111MODULE=on go mod tidy
+	@if ! git --no-pager diff --exit-code -- go.mod go.sum; then \
+		>&2 echo "modules are not tidy, please run 'go mod tidy'"; \
+		exit 1; \
+	fi
+	go fmt ./...
+	@if ! git --no-pager diff --quiet; then \
+		>&2 echo "files are not formatted, please run 'go fmt ./...'"; \
+		exit 1; \
+	fi
+
 test:
 	$(GO_TEST) ./...
 
@@ -58,5 +70,5 @@ bench:
 	$(GO_TEST) -bench=. -run=^$$ ./...
 
 
-.PHONY: all clean fmt test test-race vet bench $(SUBDIRS)
+.PHONY: all clean fmt test test-race vet bench checkfmt $(SUBDIRS)
 

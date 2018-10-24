@@ -160,12 +160,17 @@ func (t *CovarianceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 	if !created {
 		return fmt.Errorf("covariance found duplicate table with key: %v", tbl.Key())
 	}
-	execute.AddTableKeyCols(tbl.Key(), builder)
-
-	valueIdx := builder.AddCol(flux.ColMeta{
+	err := execute.AddTableKeyCols(tbl.Key(), builder)
+	if err != nil {
+		return err
+	}
+	valueIdx, err := builder.AddCol(flux.ColMeta{
 		Label: t.spec.ValueLabel,
 		Type:  flux.TFloat,
 	})
+	if err != nil {
+		return err
+	}
 	xIdx := execute.ColIdx(t.spec.Columns[0], cols)
 	yIdx := execute.ColIdx(t.spec.Columns[1], cols)
 
@@ -173,9 +178,8 @@ func (t *CovarianceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 		return errors.New("cannot compute the covariance between different types")
 	}
 
-
 	t.reset()
-	tbl.Do(func(cr flux.ColReader) error {
+	err = tbl.Do(func(cr flux.ColReader) error {
 		switch typ := cols[xIdx].Type; typ {
 		case flux.TFloat:
 			t.DoFloat(cr.Floats(xIdx), cr.Floats(yIdx))
@@ -184,10 +188,14 @@ func (t *CovarianceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 
-	execute.AppendKeyValues(tbl.Key(), builder)
-	builder.AppendFloat(valueIdx, t.value())
-	return nil
+	if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
+		return err
+	}
+	return builder.AppendFloat(valueIdx, t.value())
 }
 
 func (t *CovarianceTransformation) reset() {

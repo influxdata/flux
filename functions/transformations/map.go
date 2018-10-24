@@ -168,17 +168,23 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 			builder, created := t.cache.TableBuilder(key)
 			if created {
 				if t.mergeKey {
-					execute.AddTableKeyCols(tbl.Key(), builder)
+					err := execute.AddTableKeyCols(tbl.Key(), builder)
+					if err != nil {
+						return err
+					}
 				}
 				// Add columns from function in sorted order
 				for _, k := range keys {
 					if t.mergeKey && tbl.Key().HasCol(k) {
 						continue
 					}
-					builder.AddCol(flux.ColMeta{
+					_, err := builder.AddCol(flux.ColMeta{
 						Label: k,
 						Type:  execute.ConvertFromKind(properties[k].Kind()),
 					})
+					if err != nil {
+						return err
+					}
 				}
 			}
 			for j, c := range builder.Cols() {
@@ -191,7 +197,7 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 						return fmt.Errorf("could not find value for column %q", c.Label)
 					}
 				}
-				execute.AppendValue(builder, j, v)
+				builder.AppendValue(j, v)
 			}
 		}
 		return nil
@@ -212,17 +218,17 @@ func groupKeyForObject(i int, cr flux.ColReader, obj values.Object, on map[strin
 		} else {
 			switch c.Type {
 			case flux.TBool:
-				vs = append(vs, values.NewBoolValue(cr.Bools(j)[i]))
+				vs = append(vs, values.NewBool(cr.Bools(j)[i]))
 			case flux.TInt:
-				vs = append(vs, values.NewIntValue(cr.Ints(j)[i]))
+				vs = append(vs, values.NewInt(cr.Ints(j)[i]))
 			case flux.TUInt:
-				vs = append(vs, values.NewUIntValue(cr.UInts(j)[i]))
+				vs = append(vs, values.NewUInt(cr.UInts(j)[i]))
 			case flux.TFloat:
-				vs = append(vs, values.NewFloatValue(cr.Floats(j)[i]))
+				vs = append(vs, values.NewFloat(cr.Floats(j)[i]))
 			case flux.TString:
-				vs = append(vs, values.NewStringValue(cr.Strings(j)[i]))
+				vs = append(vs, values.NewString(cr.Strings(j)[i]))
 			case flux.TTime:
-				vs = append(vs, values.NewTimeValue(cr.Times(j)[i]))
+				vs = append(vs, values.NewTime(cr.Times(j)[i]))
 			}
 		}
 	}

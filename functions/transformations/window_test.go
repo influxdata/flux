@@ -1,11 +1,12 @@
 package transformations_test
 
 import (
-	"github.com/influxdata/flux/functions/inputs"
 	"sort"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/influxdata/flux/functions/inputs"
 
 	"github.com/influxdata/flux/values"
 
@@ -115,8 +116,8 @@ func newEmptyWindowTable(start execute.Time, stop execute.Time, cols []flux.ColM
 				{Label: "_stop", Type: flux.TTime},
 			},
 			[]values.Value{
-				values.NewTimeValue(start),
-				values.NewTimeValue(stop),
+				values.NewTime(start),
+				values.NewTime(stop),
 			},
 		),
 	}
@@ -284,8 +285,8 @@ func TestFixedWindow_Process(t *testing.T) {
 								{Label: "_stop", Type: flux.TTime},
 							},
 							[]values.Value{
-								values.NewTimeValue(start + execute.Time(3*time.Minute)),
-								values.NewTimeValue(start + execute.Time(4*time.Minute)),
+								values.NewTime(start + execute.Time(3*time.Minute)),
+								values.NewTime(start + execute.Time(4*time.Minute)),
 							},
 						),
 					},

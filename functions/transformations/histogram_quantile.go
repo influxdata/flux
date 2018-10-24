@@ -169,11 +169,17 @@ func (t histogramQuantileTransformation) Process(id execute.DatasetID, tbl flux.
 		return fmt.Errorf("histogramQuantile found duplicate table with key: %v", tbl.Key())
 	}
 
-	execute.AddTableKeyCols(tbl.Key(), builder)
-	valueIdx := builder.AddCol(flux.ColMeta{
+	err := execute.AddTableKeyCols(tbl.Key(), builder)
+	if err != nil {
+		return err
+	}
+	valueIdx, err := builder.AddCol(flux.ColMeta{
 		Label: t.spec.ValueColumn,
 		Type:  flux.TFloat,
 	})
+	if err != nil {
+		return err
+	}
 
 	countIdx := execute.ColIdx(t.spec.CountColumn, tbl.Cols())
 	if countIdx < 0 {
@@ -192,7 +198,7 @@ func (t histogramQuantileTransformation) Process(id execute.DatasetID, tbl flux.
 	// Read buckets
 	var cdf []bucket
 	sorted := true //track if the cdf was naturally sorted
-	err := tbl.Do(func(cr flux.ColReader) error {
+	err = tbl.Do(func(cr flux.ColReader) error {
 		offset := len(cdf)
 		// Grow cdf by number of rows
 		l := offset + cr.Len()

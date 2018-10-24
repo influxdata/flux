@@ -130,7 +130,7 @@ func (t *setTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 		for j, c := range key.Cols() {
 			cols[j] = c
 			if j == idx {
-				vs[j] = values.NewStringValue(t.value)
+				vs[j] = values.NewString(t.value)
 			} else {
 				vs[j] = key.Value(j)
 			}
@@ -139,12 +139,18 @@ func (t *setTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 	}
 	builder, created := t.cache.TableBuilder(key)
 	if created {
-		execute.AddTableCols(tbl, builder)
+		err := execute.AddTableCols(tbl, builder)
+		if err != nil {
+			return err
+		}
 		if !execute.HasCol(t.key, builder.Cols()) {
-			builder.AddCol(flux.ColMeta{
+			_, err = builder.AddCol(flux.ColMeta{
 				Label: t.key,
 				Type:  flux.TString,
 			})
+			if err != nil {
+				return err
+			}
 		}
 	}
 	idx := execute.ColIdx(t.key, builder.Cols())

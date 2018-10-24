@@ -30,74 +30,74 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	{Operator: ast.AdditionOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.Int()
-		return NewIntValue(l + r)
+		return NewInt(l + r)
 	},
 	{Operator: ast.AdditionOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.UInt()
-		return NewUIntValue(l + r)
+		return NewUInt(l + r)
 	},
 	{Operator: ast.AdditionOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.Float()
-		return NewFloatValue(l + r)
+		return NewFloat(l + r)
 	},
 	{Operator: ast.SubtractionOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.Int()
-		return NewIntValue(l - r)
+		return NewInt(l - r)
 	},
 	{Operator: ast.SubtractionOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.UInt()
-		return NewUIntValue(l - r)
+		return NewUInt(l - r)
 	},
 	{Operator: ast.SubtractionOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.Float()
-		return NewFloatValue(l - r)
+		return NewFloat(l - r)
 	},
 	{Operator: ast.MultiplicationOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.Int()
-		return NewIntValue(l * r)
+		return NewInt(l * r)
 	},
 	{Operator: ast.MultiplicationOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.UInt()
-		return NewUIntValue(l * r)
+		return NewUInt(l * r)
 	},
 	{Operator: ast.MultiplicationOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.Float()
-		return NewFloatValue(l * r)
+		return NewFloat(l * r)
 	},
 	{Operator: ast.DivisionOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.Int()
 		if r == 0 {
 			// TODO(#38): reject divisions with a constant 0 divisor.
-			return NewIntValue(0)
+			return NewInt(0)
 		}
-		return NewIntValue(l / r)
+		return NewInt(l / r)
 	},
 	{Operator: ast.DivisionOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.UInt()
 		if r == 0 {
 			// TODO(#38): reject divisions with a constant 0 divisor.
-			return NewUIntValue(0)
+			return NewUInt(0)
 		}
-		return NewUIntValue(l / r)
+		return NewUInt(l / r)
 	},
 	{Operator: ast.DivisionOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.Float()
 		if r == 0 {
 			// TODO(#38): reject divisions with a constant 0 divisor.
-			return NewFloatValue(math.NaN())
+			return NewFloat(math.NaN())
 		}
-		return NewFloatValue(l / r)
+		return NewFloat(l / r)
 	},
 
 	//---------------------
@@ -109,53 +109,53 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	{Operator: ast.LessThanEqualOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.Int()
-		return NewBoolValue(l <= r)
+		return NewBool(l <= r)
 	},
 	{Operator: ast.LessThanEqualOperator, Left: semantic.Int, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.UInt()
 		if l < 0 {
-			return NewBoolValue(true)
+			return NewBool(true)
 		}
-		return NewBoolValue(uint64(l) <= r)
+		return NewBool(uint64(l) <= r)
 	},
 	{Operator: ast.LessThanEqualOperator, Left: semantic.Int, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.Float()
-		return NewBoolValue(float64(l) <= r)
+		return NewBool(float64(l) <= r)
 	},
 	{Operator: ast.LessThanEqualOperator, Left: semantic.UInt, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.Int()
 		if r < 0 {
-			return NewBoolValue(false)
+			return NewBool(false)
 		}
-		return NewBoolValue(l <= uint64(r))
+		return NewBool(l <= uint64(r))
 	},
 	{Operator: ast.LessThanEqualOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.UInt()
-		return NewBoolValue(l <= r)
+		return NewBool(l <= r)
 	},
 	{Operator: ast.LessThanEqualOperator, Left: semantic.UInt, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.Float()
-		return NewBoolValue(float64(l) <= r)
+		return NewBool(float64(l) <= r)
 	},
 	{Operator: ast.LessThanEqualOperator, Left: semantic.Float, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.Int()
-		return NewBoolValue(l <= float64(r))
+		return NewBool(l <= float64(r))
 	},
 	{Operator: ast.LessThanEqualOperator, Left: semantic.Float, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.UInt()
-		return NewBoolValue(l <= float64(r))
+		return NewBool(l <= float64(r))
 	},
 	{Operator: ast.LessThanEqualOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.Float()
-		return NewBoolValue(l <= r)
+		return NewBool(l <= r)
 	},
 
 	// LessThanOperator
@@ -163,53 +163,53 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	{Operator: ast.LessThanOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.Int()
-		return NewBoolValue(l < r)
+		return NewBool(l < r)
 	},
 	{Operator: ast.LessThanOperator, Left: semantic.Int, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.UInt()
 		if l < 0 {
-			return NewBoolValue(true)
+			return NewBool(true)
 		}
-		return NewBoolValue(uint64(l) < r)
+		return NewBool(uint64(l) < r)
 	},
 	{Operator: ast.LessThanOperator, Left: semantic.Int, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.Float()
-		return NewBoolValue(float64(l) < r)
+		return NewBool(float64(l) < r)
 	},
 	{Operator: ast.LessThanOperator, Left: semantic.UInt, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.Int()
 		if r < 0 {
-			return NewBoolValue(false)
+			return NewBool(false)
 		}
-		return NewBoolValue(l < uint64(r))
+		return NewBool(l < uint64(r))
 	},
 	{Operator: ast.LessThanOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.UInt()
-		return NewBoolValue(l < r)
+		return NewBool(l < r)
 	},
 	{Operator: ast.LessThanOperator, Left: semantic.UInt, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.Float()
-		return NewBoolValue(float64(l) < r)
+		return NewBool(float64(l) < r)
 	},
 	{Operator: ast.LessThanOperator, Left: semantic.Float, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.Int()
-		return NewBoolValue(l < float64(r))
+		return NewBool(l < float64(r))
 	},
 	{Operator: ast.LessThanOperator, Left: semantic.Float, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.UInt()
-		return NewBoolValue(l < float64(r))
+		return NewBool(l < float64(r))
 	},
 	{Operator: ast.LessThanOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.Float()
-		return NewBoolValue(l < r)
+		return NewBool(l < r)
 	},
 
 	// GreaterThanEqualOperator
@@ -217,53 +217,53 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.Int()
-		return NewBoolValue(l >= r)
+		return NewBool(l >= r)
 	},
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Int, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.UInt()
 		if l < 0 {
-			return NewBoolValue(true)
+			return NewBool(true)
 		}
-		return NewBoolValue(uint64(l) >= r)
+		return NewBool(uint64(l) >= r)
 	},
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Int, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.Float()
-		return NewBoolValue(float64(l) >= r)
+		return NewBool(float64(l) >= r)
 	},
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.UInt, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.Int()
 		if r < 0 {
-			return NewBoolValue(false)
+			return NewBool(false)
 		}
-		return NewBoolValue(l >= uint64(r))
+		return NewBool(l >= uint64(r))
 	},
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.UInt()
-		return NewBoolValue(l >= r)
+		return NewBool(l >= r)
 	},
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.UInt, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.Float()
-		return NewBoolValue(float64(l) >= r)
+		return NewBool(float64(l) >= r)
 	},
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Float, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.Int()
-		return NewBoolValue(l >= float64(r))
+		return NewBool(l >= float64(r))
 	},
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Float, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.UInt()
-		return NewBoolValue(l >= float64(r))
+		return NewBool(l >= float64(r))
 	},
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.Float()
-		return NewBoolValue(l >= r)
+		return NewBool(l >= r)
 	},
 
 	// GreaterThanOperator
@@ -271,53 +271,53 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	{Operator: ast.GreaterThanOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.Int()
-		return NewBoolValue(l > r)
+		return NewBool(l > r)
 	},
 	{Operator: ast.GreaterThanOperator, Left: semantic.Int, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.UInt()
 		if l < 0 {
-			return NewBoolValue(true)
+			return NewBool(true)
 		}
-		return NewBoolValue(uint64(l) > r)
+		return NewBool(uint64(l) > r)
 	},
 	{Operator: ast.GreaterThanOperator, Left: semantic.Int, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.Float()
-		return NewBoolValue(float64(l) > r)
+		return NewBool(float64(l) > r)
 	},
 	{Operator: ast.GreaterThanOperator, Left: semantic.UInt, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.Int()
 		if r < 0 {
-			return NewBoolValue(false)
+			return NewBool(false)
 		}
-		return NewBoolValue(l > uint64(r))
+		return NewBool(l > uint64(r))
 	},
 	{Operator: ast.GreaterThanOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.UInt()
-		return NewBoolValue(l > r)
+		return NewBool(l > r)
 	},
 	{Operator: ast.GreaterThanOperator, Left: semantic.UInt, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.Float()
-		return NewBoolValue(float64(l) > r)
+		return NewBool(float64(l) > r)
 	},
 	{Operator: ast.GreaterThanOperator, Left: semantic.Float, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.Int()
-		return NewBoolValue(l > float64(r))
+		return NewBool(l > float64(r))
 	},
 	{Operator: ast.GreaterThanOperator, Left: semantic.Float, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.UInt()
-		return NewBoolValue(l > float64(r))
+		return NewBool(l > float64(r))
 	},
 	{Operator: ast.GreaterThanOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.Float()
-		return NewBoolValue(l > r)
+		return NewBool(l > r)
 	},
 
 	// EqualOperator
@@ -325,58 +325,58 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	{Operator: ast.EqualOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.Int()
-		return NewBoolValue(l == r)
+		return NewBool(l == r)
 	},
 	{Operator: ast.EqualOperator, Left: semantic.Int, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.UInt()
 		if l < 0 {
-			return NewBoolValue(false)
+			return NewBool(false)
 		}
-		return NewBoolValue(uint64(l) == r)
+		return NewBool(uint64(l) == r)
 	},
 	{Operator: ast.EqualOperator, Left: semantic.Int, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.Float()
-		return NewBoolValue(float64(l) == r)
+		return NewBool(float64(l) == r)
 	},
 	{Operator: ast.EqualOperator, Left: semantic.UInt, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.Int()
 		if r < 0 {
-			return NewBoolValue(false)
+			return NewBool(false)
 		}
-		return NewBoolValue(l == uint64(r))
+		return NewBool(l == uint64(r))
 	},
 	{Operator: ast.EqualOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.UInt()
-		return NewBoolValue(l == r)
+		return NewBool(l == r)
 	},
 	{Operator: ast.EqualOperator, Left: semantic.UInt, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.Float()
-		return NewBoolValue(float64(l) == r)
+		return NewBool(float64(l) == r)
 	},
 	{Operator: ast.EqualOperator, Left: semantic.Float, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.Int()
-		return NewBoolValue(l == float64(r))
+		return NewBool(l == float64(r))
 	},
 	{Operator: ast.EqualOperator, Left: semantic.Float, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.UInt()
-		return NewBoolValue(l == float64(r))
+		return NewBool(l == float64(r))
 	},
 	{Operator: ast.EqualOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.Float()
-		return NewBoolValue(l == r)
+		return NewBool(l == r)
 	},
 	{Operator: ast.EqualOperator, Left: semantic.String, Right: semantic.String}: func(lv, rv Value) Value {
 		l := lv.Str()
 		r := rv.Str()
-		return NewBoolValue(l == r)
+		return NewBool(l == r)
 	},
 
 	// NotEqualOperator
@@ -384,83 +384,83 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	{Operator: ast.NotEqualOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.Int()
-		return NewBoolValue(l != r)
+		return NewBool(l != r)
 	},
 	{Operator: ast.NotEqualOperator, Left: semantic.Int, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.UInt()
 		if l < 0 {
-			return NewBoolValue(true)
+			return NewBool(true)
 		}
-		return NewBoolValue(uint64(l) != r)
+		return NewBool(uint64(l) != r)
 	},
 	{Operator: ast.NotEqualOperator, Left: semantic.Int, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.Float()
-		return NewBoolValue(float64(l) != r)
+		return NewBool(float64(l) != r)
 	},
 	{Operator: ast.NotEqualOperator, Left: semantic.UInt, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.Int()
 		if r < 0 {
-			return NewBoolValue(true)
+			return NewBool(true)
 		}
-		return NewBoolValue(l != uint64(r))
+		return NewBool(l != uint64(r))
 	},
 	{Operator: ast.NotEqualOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.UInt()
-		return NewBoolValue(l != r)
+		return NewBool(l != r)
 	},
 	{Operator: ast.NotEqualOperator, Left: semantic.UInt, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.UInt()
 		r := rv.Float()
-		return NewBoolValue(float64(l) != r)
+		return NewBool(float64(l) != r)
 	},
 	{Operator: ast.NotEqualOperator, Left: semantic.Float, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.Int()
-		return NewBoolValue(l != float64(r))
+		return NewBool(l != float64(r))
 	},
 	{Operator: ast.NotEqualOperator, Left: semantic.Float, Right: semantic.UInt}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.UInt()
-		return NewBoolValue(l != float64(r))
+		return NewBool(l != float64(r))
 	},
 	{Operator: ast.NotEqualOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) Value {
 		l := lv.Float()
 		r := rv.Float()
-		return NewBoolValue(l != r)
+		return NewBool(l != r)
 	},
 	{Operator: ast.NotEqualOperator, Left: semantic.String, Right: semantic.String}: func(lv, rv Value) Value {
 		l := lv.Str()
 		r := rv.Str()
-		return NewBoolValue(l != r)
+		return NewBool(l != r)
 	},
 	{Operator: ast.RegexpMatchOperator, Left: semantic.String, Right: semantic.Regexp}: func(lv, rv Value) Value {
 		l := lv.Str()
 		r := rv.Regexp()
-		return NewBoolValue(r.MatchString(l))
+		return NewBool(r.MatchString(l))
 	},
 	{Operator: ast.RegexpMatchOperator, Left: semantic.Regexp, Right: semantic.String}: func(lv, rv Value) Value {
 		l := lv.Regexp()
 		r := rv.Str()
-		return NewBoolValue(l.MatchString(r))
+		return NewBool(l.MatchString(r))
 	},
 	{Operator: ast.NotRegexpMatchOperator, Left: semantic.String, Right: semantic.Regexp}: func(lv, rv Value) Value {
 		l := lv.Str()
 		r := rv.Regexp()
-		return NewBoolValue(!r.MatchString(l))
+		return NewBool(!r.MatchString(l))
 	},
 	{Operator: ast.NotRegexpMatchOperator, Left: semantic.Regexp, Right: semantic.String}: func(lv, rv Value) Value {
 		l := lv.Regexp()
 		r := rv.Str()
-		return NewBoolValue(!l.MatchString(r))
+		return NewBool(!l.MatchString(r))
 	},
 
 	{Operator: ast.AdditionOperator, Left: semantic.String, Right: semantic.String}: func(lv, rv Value) Value {
 		l := lv.Str()
 		r := rv.Str()
-		return NewStringValue(l + r)
+		return NewString(l + r)
 	},
 }

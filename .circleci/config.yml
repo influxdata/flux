@@ -24,6 +24,7 @@ jobs:
             - flux-gomod-{{ .Branch }}-                # Matches a new commit on an existing branch.
             - flux-gomod-                              # Matches a new branch.
       # Run tests
+      - run: make checkfmt
       - run: make vet
       - run: make test
       - save_cache:

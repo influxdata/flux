@@ -76,7 +76,7 @@ func TestSample_Process(t *testing.T) {
 				Pos: 0,
 			},
 			name: "everything in single Do call",
-			data: execute.CopyTable(&executetest.Table{
+			data: executetest.MustCopyTable(&executetest.Table{
 				KeyCols: []string{"t1"},
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -96,7 +96,7 @@ func TestSample_Process(t *testing.T) {
 					{execute.Time(80), 3.0, "a", "y"},
 					{execute.Time(90), 10.0, "a", "x"},
 				},
-			}, executetest.UnlimitedAllocator),
+			}),
 			want: [][]int{{
 				0,
 				1,
@@ -116,7 +116,7 @@ func TestSample_Process(t *testing.T) {
 				Pos: 0,
 			},
 			name: "every-other-even",
-			data: execute.CopyTable(&executetest.Table{
+			data: executetest.MustCopyTable(&executetest.Table{
 				KeyCols: []string{"t1"},
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -136,7 +136,7 @@ func TestSample_Process(t *testing.T) {
 					{execute.Time(80), 3.0, "a", "y"},
 					{execute.Time(90), 10.0, "a", "x"},
 				},
-			}, executetest.UnlimitedAllocator),
+			}),
 			want: [][]int{{
 				0,
 				2,
@@ -151,7 +151,7 @@ func TestSample_Process(t *testing.T) {
 				Pos: 1,
 			},
 			name: "every-other-odd",
-			data: execute.CopyTable(&executetest.Table{
+			data: executetest.MustCopyTable(&executetest.Table{
 				KeyCols: []string{"t1"},
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -171,7 +171,7 @@ func TestSample_Process(t *testing.T) {
 					{execute.Time(80), 3.0, "a", "y"},
 					{execute.Time(90), 10.0, "a", "x"},
 				},
-			}, executetest.UnlimitedAllocator),
+			}),
 			want: [][]int{{
 				1,
 				3,
@@ -186,7 +186,7 @@ func TestSample_Process(t *testing.T) {
 				Pos: 0,
 			},
 			name: "every-third-0",
-			data: execute.CopyTable(&executetest.Table{
+			data: executetest.MustCopyTable(&executetest.Table{
 				KeyCols: []string{"t1"},
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -206,7 +206,7 @@ func TestSample_Process(t *testing.T) {
 					{execute.Time(80), 3.0, "a", "y"},
 					{execute.Time(90), 10.0, "a", "x"},
 				},
-			}, executetest.UnlimitedAllocator),
+			}),
 			want: [][]int{{
 				0,
 				3,
@@ -220,7 +220,7 @@ func TestSample_Process(t *testing.T) {
 				Pos: 1,
 			},
 			name: "every-third-1",
-			data: execute.CopyTable(&executetest.Table{
+			data: executetest.MustCopyTable(&executetest.Table{
 				KeyCols: []string{"t1"},
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -240,7 +240,7 @@ func TestSample_Process(t *testing.T) {
 					{execute.Time(80), 3.0, "a", "y"},
 					{execute.Time(90), 10.0, "a", "x"},
 				},
-			}, executetest.UnlimitedAllocator),
+			}),
 			want: [][]int{{
 				1,
 				4,
@@ -253,7 +253,7 @@ func TestSample_Process(t *testing.T) {
 				Pos: 2,
 			},
 			name: "every-third-2",
-			data: execute.CopyTable(&executetest.Table{
+			data: executetest.MustCopyTable(&executetest.Table{
 				KeyCols: []string{"t1"},
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -273,7 +273,7 @@ func TestSample_Process(t *testing.T) {
 					{execute.Time(80), 3.0, "a", "y"},
 					{execute.Time(90), 10.0, "a", "x"},
 				},
-			}, executetest.UnlimitedAllocator),
+			}),
 			want: [][]int{{
 				2,
 				5,

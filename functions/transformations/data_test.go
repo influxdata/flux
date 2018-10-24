@@ -46,28 +46,46 @@ func init() {
 			{Label: "t1", Type: flux.TString},
 		},
 		[]values.Value{
-			values.NewTimeValue(start),
-			values.NewTimeValue(stop),
-			values.NewStringValue(t1Value),
+			values.NewTime(start),
+			values.NewTime(stop),
+			values.NewString(t1Value),
 		},
 	)
 	normalTableBuilder := execute.NewColListTableBuilder(key, executetest.UnlimitedAllocator)
 
-	normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultTimeColLabel, Type: flux.TTime})
-	normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultStartColLabel, Type: flux.TTime})
-	normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultStopColLabel, Type: flux.TTime})
-	normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultValueColLabel, Type: flux.TFloat})
-	normalTableBuilder.AddCol(flux.ColMeta{Label: "t1", Type: flux.TString})
-	normalTableBuilder.AddCol(flux.ColMeta{Label: "t2", Type: flux.TString})
+	_, err := normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultTimeColLabel, Type: flux.TTime})
+	if err != nil {
+		return
+	}
+	_, err = normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultStartColLabel, Type: flux.TTime})
+	if err != nil {
+		return
+	}
+	_, err = normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultStopColLabel, Type: flux.TTime})
+	if err != nil {
+		return
+	}
+	_, err = normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultValueColLabel, Type: flux.TFloat})
+	if err != nil {
+		return
+	}
+	_, err = normalTableBuilder.AddCol(flux.ColMeta{Label: "t1", Type: flux.TString})
+	if err != nil {
+		return
+	}
+	_, err = normalTableBuilder.AddCol(flux.ColMeta{Label: "t2", Type: flux.TString})
+	if err != nil {
+		return
+	}
 
 	times := make([]execute.Time, N)
 	startTimes := make([]execute.Time, N)
 	stopTimes := make([]execute.Time, N)
-	values := NormalData
+	normalValues := NormalData
 	t1 := make([]string, N)
 	t2 := make([]string, N)
 
-	for i, v := range values {
+	for i, v := range normalValues {
 		startTimes[i] = start
 		stopTimes[i] = stop
 		t1[i] = t1Value
@@ -87,7 +105,7 @@ func init() {
 	normalTableBuilder.AppendTimes(0, times)
 	normalTableBuilder.AppendTimes(1, startTimes)
 	normalTableBuilder.AppendTimes(2, stopTimes)
-	normalTableBuilder.AppendFloats(3, values)
+	normalTableBuilder.AppendFloats(3, normalValues)
 	normalTableBuilder.AppendStrings(4, t1)
 	normalTableBuilder.AppendStrings(5, t2)
 

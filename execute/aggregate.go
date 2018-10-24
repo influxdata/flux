@@ -93,7 +93,7 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 	builderColMap := make([]int, len(t.config.Columns))
 	tableColMap := make([]int, len(t.config.Columns))
 	aggregates := make([]ValueFunc, len(t.config.Columns))
-
+	var err error
 	cols := tbl.Cols()
 	for j, label := range t.config.Columns {
 		idx := -1
@@ -127,14 +127,18 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 			return fmt.Errorf("unsupported aggregate column type %v", c.Type)
 		}
 		aggregates[j] = vf
-		builderColMap[j] = builder.AddCol(flux.ColMeta{
+
+		builderColMap[j], err = builder.AddCol(flux.ColMeta{
 			Label: c.Label,
 			Type:  vf.Type(),
 		})
+		if err != nil {
+			return err
+		}
 		tableColMap[j] = idx
 	}
 
-	tbl.Do(func(cr flux.ColReader) error {
+	err = tbl.Do(func(cr flux.ColReader) error {
 		for j := range t.config.Columns {
 			vf := aggregates[j]
 
@@ -158,6 +162,9 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 	for j, vf := range aggregates {
 		bj := builderColMap[j]
 		// Append aggregated value
@@ -199,7 +206,7 @@ type Aggregate interface {
 }
 
 type ValueFunc interface {
-	Type() flux.DataType
+	Type() flux.ColType
 }
 type DoBoolAgg interface {
 	ValueFunc

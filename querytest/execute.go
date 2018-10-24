@@ -6,8 +6,8 @@ import (
 	"math"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/control"
+	"github.com/influxdata/flux/functions/inputs"
 )
 
 type Querier struct {

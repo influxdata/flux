@@ -119,7 +119,7 @@ func (a *CountAgg) DoString(vs []string) {
 	a.count += int64(len(vs))
 }
 
-func (a *CountAgg) Type() flux.DataType {
+func (a *CountAgg) Type() flux.ColType {
 	return flux.TInt
 }
 func (a *CountAgg) ValueInt() int64 {

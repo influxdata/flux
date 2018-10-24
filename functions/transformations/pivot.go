@@ -188,7 +188,7 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	// determine the initial column schema
 	colKeyIndex := make(map[string]int)
 	valueColIndex := -1
-	var valueColType flux.DataType
+	var valueColType flux.ColType
 	for _, v := range t.spec.ColKey {
 		colKeyIndex[v] = -1
 	}
@@ -233,7 +233,11 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	groupKeyString := newGroupKey.String()
 	if created {
 		for _, c := range cols {
-			builder.AddCol(c)
+			_, err := builder.AddCol(c)
+			if err != nil {
+				return err
+			}
+
 		}
 		t.colKeyMaps[groupKeyString] = make(map[string]int)
 		t.rowKeyMaps[groupKeyString] = make(map[string]int)
@@ -265,12 +269,14 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 					Label: colKey,
 					Type:  valueColType,
 				}
-				builder.AddCol(newCol)
-				nextRowCol := t.nextRowCol[groupKeyString]
-				growColumn(builder, newCol.Type, nextRowCol.nextCol, builder.NRows())
-				t.colKeyMaps[groupKeyString][colKey] = nextRowCol.nextCol
-				nextRowCol.nextCol++
-				t.nextRowCol[groupKeyString] = nextRowCol
+				nextCol, err := builder.AddCol(newCol)
+				if err != nil {
+					return err
+				}
+				//nextRowCol := t.nextRowCol[groupKeyString]
+				t.colKeyMaps[groupKeyString][colKey] = nextCol
+				//nextRowCol.nextCol++
+				//t.nextRowCol[groupKeyString] = nextRowCol
 			}
 			//  1.  if we've not seen rowKey before, then we need to append a new row, with copied values for the
 			//  existing columns, as well as zero values for the pivoted columns.
@@ -304,7 +310,7 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	return err
 }
 
-func growColumn(builder execute.TableBuilder, colType flux.DataType, colIdx, nRows int) {
+func growColumn(builder execute.TableBuilder, colType flux.ColType, colIdx, nRows int) {
 	switch colType {
 	case flux.TBool:
 		builder.GrowBools(colIdx, nRows)
@@ -323,7 +329,7 @@ func growColumn(builder execute.TableBuilder, colType flux.DataType, colIdx, nRo
 	}
 }
 
-func setBuilderValue(cr flux.ColReader, builder execute.TableBuilder, readerColType flux.DataType, readerRowIndex, readerColIndex, builderRow, builderCol int) {
+func setBuilderValue(cr flux.ColReader, builder execute.TableBuilder, readerColType flux.ColType, readerRowIndex, readerColIndex, builderRow, builderCol int) {
 	switch readerColType {
 	case flux.TBool:
 		builder.SetBool(builderRow, builderCol, cr.Bools(readerColIndex)[readerRowIndex])
@@ -342,7 +348,7 @@ func setBuilderValue(cr flux.ColReader, builder execute.TableBuilder, readerColT
 	}
 }
 
-func appendBuilderValue(cr flux.ColReader, builder execute.TableBuilder, readerColType flux.DataType, readerRowIndex, readerColIndex, builderColIndex int) {
+func appendBuilderValue(cr flux.ColReader, builder execute.TableBuilder, readerColType flux.ColType, readerRowIndex, readerColIndex, builderColIndex int) {
 	switch readerColType {
 	case flux.TBool:
 		builder.AppendBool(builderColIndex, cr.Bools(readerColIndex)[readerRowIndex])
