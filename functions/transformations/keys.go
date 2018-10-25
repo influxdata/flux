@@ -3,7 +3,6 @@ package transformations
 import (
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
@@ -139,16 +138,10 @@ type keysTransformation struct {
 }
 
 func NewKeysTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *KeysProcedureSpec) *keysTransformation {
-	var except []string
-	if len(spec.Except) > 0 {
-		except = append([]string{}, spec.Except...)
-		sort.Strings(except)
-	}
-
 	return &keysTransformation{
 		d:      d,
 		cache:  cache,
-		except: except,
+		except: spec.Except,
 	}
 }
 
@@ -162,42 +155,49 @@ func (t *keysTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 		return fmt.Errorf("keys found duplicate table with key: %v", tbl.Key())
 	}
 
-	err := execute.AddTableKeyCols(tbl.Key(), builder)
-	if err != nil {
+	var except map[string]struct{}
+	if len(t.except) > 0 {
+		except = make(map[string]struct{}, len(t.except))
+		for _, name := range t.except {
+			except[name] = struct{}{}
+		}
+	}
+
+	keys := make([]string, 0, len(tbl.Cols()))
+	for _, c := range tbl.Cols() {
+		if _, ok := except[c.Label]; ok {
+			// Skip past this column if it is in the list of except.
+			continue
+		}
+		keys = append(keys, c.Label)
+	}
+	// TODO(jsternberg): Should these keys be sorted?
+	sort.Strings(keys)
+
+	// Add the key to this table.
+	if err := execute.AddTableKeyCols(tbl.Key(), builder); err != nil {
 		return err
 	}
+
+	// Create a new column for the key names and add them.
+	// TODO(jsternberg): The table builder automatically sizes this to
+	// the key size if we do this after appending the key values, so we
+	// have to do this before.
 	colIdx, err := builder.AddCol(flux.ColMeta{Label: execute.DefaultValueColLabel, Type: flux.TString})
 	if err != nil {
 		return err
 	}
 
-	cols := tbl.Cols()
-	sort.Slice(cols, func(i, j int) bool {
-		return cols[i].Label < cols[j].Label
-	})
-
-	var i int
-	if len(t.except) > 0 {
-		var j int
-		for i < len(cols) && j < len(t.except) {
-			c := strings.Compare(cols[i].Label, t.except[j])
-			if c < 0 {
-				execute.AppendKeyValues(tbl.Key(), builder)
-				builder.AppendString(colIdx, cols[i].Label)
-				i++
-			} else if c > 0 {
-				j++
-			} else {
-				i++
-				j++
-			}
+	// Append the key values repeatedly to the table.
+	for i := 0; i < len(keys); i++ {
+		if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
+			return err
 		}
 	}
 
-	// add remaining
-	for ; i < len(cols); i++ {
-		execute.AppendKeyValues(tbl.Key(), builder)
-		builder.AppendString(colIdx, cols[i].Label)
+	// Append the keys to the column index.
+	if err := builder.AppendStrings(colIdx, keys); err != nil {
+		return err
 	}
 
 	// TODO: this is a hack
