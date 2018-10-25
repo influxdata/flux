@@ -12,9 +12,9 @@ func (sr *SimpleRule) Pattern() plan.Pattern {
 	return plan.Any()
 }
 
-func (sr *SimpleRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool) {
+func (sr *SimpleRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool, error) {
 	sr.SeenNodes = append(sr.SeenNodes, node.ID())
-	return node, false
+	return node, false, nil
 }
 
 func (sr *SimpleRule) Name() string {

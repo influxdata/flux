@@ -58,11 +58,12 @@ type logicalPlanner struct {
 	*heuristicPlanner
 }
 
-// WithLogicalRule produces a logical plan option that forces a particular rule to be
+// OnlyLogicalRules produces a logical plan option that forces only a set of particular rules to be
 // applied.
-func WithLogicalRule(rule Rule) LogicalOption {
+func OnlyLogicalRules(rules ...Rule) LogicalOption {
 	return logicalOption(func(lp *logicalPlanner) {
-		lp.addRules(rule)
+		lp.clearRules()
+		lp.addRules(rules...)
 	})
 }
 
@@ -111,6 +112,11 @@ func (lpn *LogicalPlanNode) Kind() ProcedureKind {
 // ProcedureSpec returns the procedure spec for this plan node.
 func (lpn *LogicalPlanNode) ProcedureSpec() ProcedureSpec {
 	return lpn.Spec
+}
+
+func (lpn *LogicalPlanNode) ReplaceSpec(newSpec ProcedureSpec) error {
+	lpn.Spec = newSpec
+	return nil
 }
 
 func (lpn *LogicalPlanNode) ShallowCopy() PlanNode {
