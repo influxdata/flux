@@ -1,7 +1,6 @@
 package transformations_test
 
 import (
-	"github.com/influxdata/flux/functions/inputs"
 	"sort"
 	"testing"
 	"time"
@@ -10,9 +9,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/functions/transformations"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/querytest"
 )
 
@@ -183,12 +181,8 @@ func TestJoinOperation_Marshaling(t *testing.T) {
 }
 
 func TestMergeJoin_Process(t *testing.T) {
-	parentID0 := plantest.RandomProcedureID()
-	parentID1 := plantest.RandomProcedureID()
-	tableNames := map[plan.ProcedureID]string{
-		parentID0: "a",
-		parentID1: "b",
-	}
+	tableNames := []string{"a", "b"}
+
 	testCases := []struct {
 		skip  bool
 		name  string
@@ -1295,11 +1289,18 @@ func TestMergeJoin_Process(t *testing.T) {
 			if tc.skip {
 				t.Skip()
 			}
-			parents := []execute.DatasetID{execute.DatasetID(parentID0), execute.DatasetID(parentID1)}
+
+			id0 := executetest.RandomDatasetID()
+			id1 := executetest.RandomDatasetID()
+
+			parents := []execute.DatasetID{
+				execute.DatasetID(id0),
+				execute.DatasetID(id1),
+			}
 
 			tableNames := make(map[execute.DatasetID]string, len(tc.spec.TableNames))
-			for pid, name := range tc.spec.TableNames {
-				tableNames[execute.DatasetID(pid)] = name
+			for i, name := range tc.spec.TableNames {
+				tableNames[parents[i]] = name
 			}
 
 			d := executetest.NewDataset(executetest.RandomDatasetID())

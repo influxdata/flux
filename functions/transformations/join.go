@@ -19,55 +19,42 @@ const JoinKind = "join"
 const MergeJoinKind = "merge-join"
 
 // All supported join types in Flux
-var methods map[string]bool = map[string]bool{
+var methods = map[string]bool{
 	"inner": true,
 }
 
+// JoinOpSpec specifies a particular join operation
 type JoinOpSpec struct {
-	// On is a list of tags on which to join.
-	On []string `json:"on"`
-	// TableNames are the names to give to each parent when populating the parameter for the function.
-	// The first parent is referenced by the first name and so forth.
-	// TODO(nathanielc): Change this to a map of parent operation IDs to names.
-	// Then make it possible for the transformation to map operation IDs to parent IDs.
 	TableNames map[flux.OperationID]string `json:"tableNames"`
-	// Method is a the type of join to perform
-	Method string `json:"method"`
-	// tableNames maps each TableObject being joined to the parameter that holds it.
-	tableNames map[*flux.TableObject]string
-}
-
-type params struct {
-	vars []string
-	vals []*flux.TableObject
-}
-
-type joinParams params
-
-func newJoinParams(capacity int) *joinParams {
-	params := &joinParams{
-		vars: make([]string, 0, capacity),
-		vals: make([]*flux.TableObject, 0, capacity),
-	}
-	return params
-}
-
-func (params *joinParams) add(newVar string, newVal *flux.TableObject) {
-	params.vars = append(params.vars, newVar)
-	params.vals = append(params.vals, newVal)
+	On         []string                    `json:"on"`
+	Method     string                      `json:"method"`
+	params     *joinParams
 }
 
 // joinParams implements the Sort interface in order
 // to build the query spec in a consistent manner.
+type joinParams struct {
+	names      []string
+	operations []*flux.TableObject
+}
+
+func newJoinParams(capacity int) *joinParams {
+	params := &joinParams{
+		names:      make([]string, 0, capacity),
+		operations: make([]*flux.TableObject, 0, capacity),
+	}
+	return params
+}
+
 func (params *joinParams) Len() int {
-	return len(params.vals)
+	return len(params.operations)
 }
 func (params *joinParams) Swap(i, j int) {
-	params.vars[i], params.vars[j] = params.vars[j], params.vars[i]
-	params.vals[i], params.vals[j] = params.vals[j], params.vals[i]
+	params.names[i], params.names[j] = params.names[j], params.names[i]
+	params.operations[i], params.operations[j] = params.operations[j], params.operations[i]
 }
 func (params *joinParams) Less(i, j int) bool {
-	return params.vars[i] < params.vars[j]
+	return params.names[i] < params.names[j]
 }
 
 var joinSignature = semantic.FunctionSignature{
@@ -89,10 +76,7 @@ func init() {
 }
 
 func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
-	spec := &JoinOpSpec{
-		TableNames: make(map[flux.OperationID]string),
-		tableNames: make(map[*flux.TableObject]string),
-	}
+	spec := new(JoinOpSpec)
 
 	// On specifies the columns to join on. If 'on' is not present in the arguments
 	// to join, the default value will be set when the join tables are processed.
@@ -128,22 +112,25 @@ func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		return nil, err
 	}
 
-	joinParams := newJoinParams(tables.Len())
-	tables.Range(func(k string, t values.Value) {
+	spec.TableNames = make(map[flux.OperationID]string, tables.Len())
+	spec.params = newJoinParams(tables.Len())
+	tables.Range(func(name string, operation values.Value) {
 		if err != nil {
 			return
 		}
-		if t.Type().Kind() != semantic.Object {
-			err = fmt.Errorf("value for key %q in tables must be an object: got %v", k, t.Type().Kind())
+		if operation.Type().Kind() != semantic.Object {
+			err = fmt.Errorf("expected %q to be object type; instead got %v",
+				name, operation.Type().Kind())
 			return
 		}
-		if t.Type() != flux.TableObjectType {
-			err = fmt.Errorf("value for key %q in tables must be an table object: got %v", k, t.Type())
+		if operation.Type() != flux.TableObjectType {
+			err = fmt.Errorf("expected %q to be TableObject type, instead got %v",
+				name, operation.Type())
 			return
 		}
-		p := t.(*flux.TableObject)
-		joinParams.add(k, p)
-		spec.tableNames[p] = k
+		table := operation.(*flux.TableObject)
+		spec.params.names = append(spec.params.names, name)
+		spec.params.operations = append(spec.params.operations, table)
 	})
 	if err != nil {
 		return nil, err
@@ -151,17 +138,18 @@ func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 
 	// Add parents in a consistent manner by sorting
 	// based on their corresponding function parameter.
-	sort.Sort(joinParams)
-	for _, p := range joinParams.vals {
-		a.AddParent(p)
+	sort.Sort(spec.params)
+	for _, op := range spec.params.operations {
+		a.AddParent(op)
 	}
 
 	return spec, nil
 }
 
 func (t *JoinOpSpec) IDer(ider flux.IDer) {
-	for p, k := range t.tableNames {
-		t.TableNames[ider.ID(p)] = k
+	for i, name := range t.params.names {
+		operation := t.params.operations[i]
+		t.TableNames[ider.ID(operation)] = name
 	}
 }
 
@@ -175,28 +163,30 @@ func (s *JoinOpSpec) Kind() flux.OperationKind {
 
 type MergeJoinProcedureSpec struct {
 	plan.DefaultCost
-	On         []string                    `json:"keys"`
-	TableNames map[plan.ProcedureID]string `json:"table_names"`
+	TableNames []string `json:"table_names"`
+	On         []string `json:"keys"`
 }
 
 func newMergeJoinProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	spec, ok := qs.(*JoinOpSpec)
-	if !ok {
+	var spec *JoinOpSpec
+	var ok bool
+
+	if spec, ok = qs.(*JoinOpSpec); !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
 	}
 
-	tableNames := make(map[plan.ProcedureID]string, len(spec.TableNames))
-	for qid, name := range spec.TableNames {
-		pid := pa.ConvertID(qid)
-		tableNames[pid] = name
-	}
+	tableNames := make([]string, spec.params.Len())
+	copy(tableNames, spec.params.names)
 
-	p := &MergeJoinProcedureSpec{
-		On:         spec.On,
+	on := make([]string, len(spec.On))
+	copy(on, spec.On)
+
+	sort.Strings(on)
+
+	return &MergeJoinProcedureSpec{
+		On:         on,
 		TableNames: tableNames,
-	}
-	sort.Strings(p.On)
-	return p, nil
+	}, nil
 }
 
 func (s *MergeJoinProcedureSpec) Kind() plan.ProcedureKind {
@@ -211,13 +201,6 @@ func (s *MergeJoinProcedureSpec) Copy() plan.ProcedureSpec {
 	return ns
 }
 
-func (s *MergeJoinProcedureSpec) ParentChanged(old, new plan.ProcedureID) {
-	if v, ok := s.TableNames[old]; ok {
-		delete(s.TableNames, old)
-		s.TableNames[new] = v
-	}
-}
-
 func createMergeJoinTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*MergeJoinProcedureSpec)
 	if !ok {
@@ -230,9 +213,8 @@ func createMergeJoinTransformation(id execute.DatasetID, mode execute.Accumulati
 	}
 
 	tableNames := make(map[execute.DatasetID]string, len(s.TableNames))
-	for pid, name := range s.TableNames {
-		id := a.ConvertID(pid)
-		tableNames[id] = name
+	for i, name := range s.TableNames {
+		tableNames[parents[i]] = name
 	}
 
 	cache := NewMergeJoinCache(a.Allocator(), parents, tableNames, s.On)
