@@ -15,6 +15,8 @@ type BinaryFuncSignature struct {
 	Left, Right semantic.Type
 }
 
+// LookupBinaryFunction returns an appropriate binary function that evaluates two values and returns another value.
+// If the two types are not compatible with the given operation, this returns an error.
 func LookupBinaryFunction(sig BinaryFuncSignature) (BinaryFunction, error) {
 	f, ok := binaryFuncLookup[sig]
 	if !ok {
