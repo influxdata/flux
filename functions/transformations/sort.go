@@ -141,8 +141,12 @@ func (t *sortTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 	if !created {
 		return fmt.Errorf("sort found duplicate table with key: %v", tbl.Key())
 	}
-	execute.AddTableCols(tbl, builder)
-	execute.AppendTable(tbl, builder)
+	if err := execute.AddTableCols(tbl, builder); err != nil {
+		return err
+	}
+	if err := execute.AppendTable(tbl, builder); err != nil {
+		return err
+	}
 
 	builder.Sort(t.cols, t.desc)
 	return nil

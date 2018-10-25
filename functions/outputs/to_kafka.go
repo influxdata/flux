@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"io"
 	"sort"
-	"sync"
 	"time"
 
 	"github.com/cespare/xxhash"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/pkg/syncutil"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/line-protocol"
@@ -318,10 +318,10 @@ func (t *ToKafkaTransformation) Process(id execute.DatasetID, tbl flux.Table) (e
 		isTag[i] = sort.SearchStrings(t.spec.Spec.TagColumns, col.Label) < len(t.spec.Spec.TagColumns) && t.spec.Spec.TagColumns[sort.SearchStrings(t.spec.Spec.TagColumns, col.Label)] == col.Label
 	}
 	m.name = t.spec.Spec.Name
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		err = tbl.Do(func(er flux.ColReader) error {
+
+	var wg syncutil.WaitGroup
+	wg.Do(func() error {
+		if err := tbl.Do(func(er flux.ColReader) error {
 			l := er.Len()
 			for i := 0; i < l; i++ {
 				m.truncateTagsAndFields()
@@ -364,10 +364,12 @@ func (t *ToKafkaTransformation) Process(id execute.DatasetID, tbl flux.Table) (e
 				}
 			}
 			return nil
-		})
-		pw.Close()
-		wg.Done()
-	}()
+		}); err != nil {
+			_ = pw.Close()
+			return err
+		}
+		return pw.Close()
+	})
 	// write the data to kafka
 	{
 		scan := bufio.NewScanner(pr)
@@ -395,7 +397,9 @@ func (t *ToKafkaTransformation) Process(id execute.DatasetID, tbl flux.Table) (e
 			err = w.WriteMessages(context.Background(), msgBuf[:i]...)
 		}
 	}
-	wg.Wait()
+	if err := wg.Wait(); err != nil {
+		return err
+	}
 	return err
 }
 

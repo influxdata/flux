@@ -243,7 +243,7 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		t.nextRowCol[groupKeyString] = rowCol{nextCol: len(cols), nextRow: 0}
 	}
 
-	err := tbl.Do(func(cr flux.ColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		for row := 0; row < cr.Len(); row++ {
 			rowKey := ""
 			colKey := ""
@@ -282,12 +282,16 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 			if _, ok := t.rowKeyMaps[groupKeyString][rowKey]; !ok {
 				// rowkey U groupKey cols
 				for cidx, c := range cols {
-					appendBuilderValue(cr, builder, c.Type, row, colMap[cidx], cidx)
+					if err := appendBuilderValue(cr, builder, c.Type, row, colMap[cidx], cidx); err != nil {
+						return err
+					}
 				}
 
 				// zero-out the known key columns we've already discovered.
 				for _, v := range t.colKeyMaps[groupKeyString] {
-					growColumn(builder, valueColType, v, 1)
+					if err := growColumn(builder, valueColType, v, 1); err != nil {
+						return err
+					}
 				}
 				nextRowCol := t.nextRowCol[groupKeyString]
 				t.rowKeyMaps[groupKeyString][rowKey] = nextRowCol.nextRow
@@ -299,70 +303,73 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 			// if we found a new row key, we added a new row with zeroes set for all the value columns
 			// so in all cases we know the row exists, and the column exists.  we need to grab the
 			// value from valueCol and assign it to its pivoted position.
-			setBuilderValue(cr, builder, valueColType, row, valueColIndex, t.rowKeyMaps[groupKeyString][rowKey],
-				t.colKeyMaps[groupKeyString][colKey])
+			if err := setBuilderValue(cr, builder, valueColType, row, valueColIndex, t.rowKeyMaps[groupKeyString][rowKey],
+				t.colKeyMaps[groupKeyString][colKey]); err != nil {
+				return err
+			}
 
 		}
 		return nil
 	})
-
-	return err
 }
 
-func growColumn(builder execute.TableBuilder, colType flux.ColType, colIdx, nRows int) {
+func growColumn(builder execute.TableBuilder, colType flux.ColType, colIdx, nRows int) error {
 	switch colType {
 	case flux.TBool:
-		builder.GrowBools(colIdx, nRows)
+		return builder.GrowBools(colIdx, nRows)
 	case flux.TInt:
-		builder.GrowInts(colIdx, nRows)
+		return builder.GrowInts(colIdx, nRows)
 	case flux.TUInt:
-		builder.GrowUInts(colIdx, nRows)
+		return builder.GrowUInts(colIdx, nRows)
 	case flux.TFloat:
-		builder.GrowFloats(colIdx, nRows)
+		return builder.GrowFloats(colIdx, nRows)
 	case flux.TString:
-		builder.GrowStrings(colIdx, nRows)
+		return builder.GrowStrings(colIdx, nRows)
 	case flux.TTime:
-		builder.GrowTimes(colIdx, nRows)
+		return builder.GrowTimes(colIdx, nRows)
 	default:
 		execute.PanicUnknownType(colType)
+		return fmt.Errorf("invalid column type: %s", colType)
 	}
 }
 
-func setBuilderValue(cr flux.ColReader, builder execute.TableBuilder, readerColType flux.ColType, readerRowIndex, readerColIndex, builderRow, builderCol int) {
+func setBuilderValue(cr flux.ColReader, builder execute.TableBuilder, readerColType flux.ColType, readerRowIndex, readerColIndex, builderRow, builderCol int) error {
 	switch readerColType {
 	case flux.TBool:
-		builder.SetBool(builderRow, builderCol, cr.Bools(readerColIndex)[readerRowIndex])
+		return builder.SetBool(builderRow, builderCol, cr.Bools(readerColIndex)[readerRowIndex])
 	case flux.TInt:
-		builder.SetInt(builderRow, builderCol, cr.Ints(readerColIndex)[readerRowIndex])
+		return builder.SetInt(builderRow, builderCol, cr.Ints(readerColIndex)[readerRowIndex])
 	case flux.TUInt:
-		builder.SetUInt(builderRow, builderCol, cr.UInts(readerColIndex)[readerRowIndex])
+		return builder.SetUInt(builderRow, builderCol, cr.UInts(readerColIndex)[readerRowIndex])
 	case flux.TFloat:
-		builder.SetFloat(builderRow, builderCol, cr.Floats(readerColIndex)[readerRowIndex])
+		return builder.SetFloat(builderRow, builderCol, cr.Floats(readerColIndex)[readerRowIndex])
 	case flux.TString:
-		builder.SetString(builderRow, builderCol, cr.Strings(readerColIndex)[readerRowIndex])
+		return builder.SetString(builderRow, builderCol, cr.Strings(readerColIndex)[readerRowIndex])
 	case flux.TTime:
-		builder.SetTime(builderRow, builderCol, cr.Times(readerColIndex)[readerRowIndex])
+		return builder.SetTime(builderRow, builderCol, cr.Times(readerColIndex)[readerRowIndex])
 	default:
 		execute.PanicUnknownType(readerColType)
+		return fmt.Errorf("invalid column type: %s", readerColType)
 	}
 }
 
-func appendBuilderValue(cr flux.ColReader, builder execute.TableBuilder, readerColType flux.ColType, readerRowIndex, readerColIndex, builderColIndex int) {
+func appendBuilderValue(cr flux.ColReader, builder execute.TableBuilder, readerColType flux.ColType, readerRowIndex, readerColIndex, builderColIndex int) error {
 	switch readerColType {
 	case flux.TBool:
-		builder.AppendBool(builderColIndex, cr.Bools(readerColIndex)[readerRowIndex])
+		return builder.AppendBool(builderColIndex, cr.Bools(readerColIndex)[readerRowIndex])
 	case flux.TInt:
-		builder.AppendInt(builderColIndex, cr.Ints(readerColIndex)[readerRowIndex])
+		return builder.AppendInt(builderColIndex, cr.Ints(readerColIndex)[readerRowIndex])
 	case flux.TUInt:
-		builder.AppendUInt(builderColIndex, cr.UInts(readerColIndex)[readerRowIndex])
+		return builder.AppendUInt(builderColIndex, cr.UInts(readerColIndex)[readerRowIndex])
 	case flux.TFloat:
-		builder.AppendFloat(builderColIndex, cr.Floats(readerColIndex)[readerRowIndex])
+		return builder.AppendFloat(builderColIndex, cr.Floats(readerColIndex)[readerRowIndex])
 	case flux.TString:
-		builder.AppendString(builderColIndex, cr.Strings(readerColIndex)[readerRowIndex])
+		return builder.AppendString(builderColIndex, cr.Strings(readerColIndex)[readerRowIndex])
 	case flux.TTime:
-		builder.AppendTime(builderColIndex, cr.Times(readerColIndex)[readerRowIndex])
+		return builder.AppendTime(builderColIndex, cr.Times(readerColIndex)[readerRowIndex])
 	default:
 		execute.PanicUnknownType(readerColType)
+		return fmt.Errorf("invalid column type: %s", readerColType)
 	}
 }
 

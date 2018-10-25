@@ -347,25 +347,16 @@ func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl flux.Table
 				for j, c := range builder.Cols() {
 					switch c.Label {
 					case t.startColLabel:
-						builder.AppendTime(startColIdx, bnds.Start)
+						if err := builder.AppendTime(startColIdx, bnds.Start); err != nil {
+							return err
+						}
 					case t.stopColLabel:
-						builder.AppendTime(stopColIdx, bnds.Stop)
+						if err := builder.AppendTime(stopColIdx, bnds.Stop); err != nil {
+							return err
+						}
 					default:
-						switch c.Type {
-						case flux.TBool:
-							builder.AppendBool(j, cr.Bools(j)[i])
-						case flux.TInt:
-							builder.AppendInt(j, cr.Ints(j)[i])
-						case flux.TUInt:
-							builder.AppendUInt(j, cr.UInts(j)[i])
-						case flux.TFloat:
-							builder.AppendFloat(j, cr.Floats(j)[i])
-						case flux.TString:
-							builder.AppendString(j, cr.Strings(j)[i])
-						case flux.TTime:
-							builder.AppendTime(j, cr.Times(j)[i])
-						default:
-							execute.PanicUnknownType(c.Type)
+						if err := builder.AppendValue(j, execute.ValueForRow(cr, i, j)); err != nil {
+							return err
 						}
 					}
 				}

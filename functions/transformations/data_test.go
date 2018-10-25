@@ -53,28 +53,22 @@ func init() {
 	)
 	normalTableBuilder := execute.NewColListTableBuilder(key, executetest.UnlimitedAllocator)
 
-	_, err := normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultTimeColLabel, Type: flux.TTime})
-	if err != nil {
+	if _, err := normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultTimeColLabel, Type: flux.TTime}); err != nil {
 		return
 	}
-	_, err = normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultStartColLabel, Type: flux.TTime})
-	if err != nil {
+	if _, err := normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultStartColLabel, Type: flux.TTime}); err != nil {
 		return
 	}
-	_, err = normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultStopColLabel, Type: flux.TTime})
-	if err != nil {
+	if _, err := normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultStopColLabel, Type: flux.TTime}); err != nil {
 		return
 	}
-	_, err = normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultValueColLabel, Type: flux.TFloat})
-	if err != nil {
+	if _, err := normalTableBuilder.AddCol(flux.ColMeta{Label: execute.DefaultValueColLabel, Type: flux.TFloat}); err != nil {
 		return
 	}
-	_, err = normalTableBuilder.AddCol(flux.ColMeta{Label: "t1", Type: flux.TString})
-	if err != nil {
+	if _, err := normalTableBuilder.AddCol(flux.ColMeta{Label: "t1", Type: flux.TString}); err != nil {
 		return
 	}
-	_, err = normalTableBuilder.AddCol(flux.ColMeta{Label: "t2", Type: flux.TString})
-	if err != nil {
+	if _, err := normalTableBuilder.AddCol(flux.ColMeta{Label: "t2", Type: flux.TString}); err != nil {
 		return
 	}
 
@@ -102,12 +96,12 @@ func init() {
 		}
 	}
 
-	normalTableBuilder.AppendTimes(0, times)
-	normalTableBuilder.AppendTimes(1, startTimes)
-	normalTableBuilder.AppendTimes(2, stopTimes)
-	normalTableBuilder.AppendFloats(3, normalValues)
-	normalTableBuilder.AppendStrings(4, t1)
-	normalTableBuilder.AppendStrings(5, t2)
+	_ = normalTableBuilder.AppendTimes(0, times)
+	_ = normalTableBuilder.AppendTimes(1, startTimes)
+	_ = normalTableBuilder.AppendTimes(2, stopTimes)
+	_ = normalTableBuilder.AppendFloats(3, normalValues)
+	_ = normalTableBuilder.AppendStrings(4, t1)
+	_ = normalTableBuilder.AppendStrings(5, t2)
 
 	NormalTable, _ = normalTableBuilder.Table()
 }

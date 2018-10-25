@@ -204,18 +204,24 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 			d := derivatives[j]
 			switch c.Type {
 			case flux.TBool:
-				builder.AppendBools(j, cr.Bools(j)[firstIdx:])
+				if err := builder.AppendBools(j, cr.Bools(j)[firstIdx:]); err != nil {
+					return err
+				}
 			case flux.TInt:
 				if d != nil {
 					for i := 0; i < l; i++ {
 						time := cr.Times(timeIdx)[i]
 						v := d.updateInt(time, cr.Ints(j)[i])
 						if i != 0 || firstIdx == 0 {
-							builder.AppendFloat(j, v)
+							if err := builder.AppendFloat(j, v); err != nil {
+								return err
+							}
 						}
 					}
 				} else {
-					builder.AppendInts(j, cr.Ints(j)[firstIdx:])
+					if err := builder.AppendInts(j, cr.Ints(j)[firstIdx:]); err != nil {
+						return err
+					}
 				}
 			case flux.TUInt:
 				if d != nil {
@@ -223,11 +229,15 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 						time := cr.Times(timeIdx)[i]
 						v := d.updateUInt(time, cr.UInts(j)[i])
 						if i != 0 || firstIdx == 0 {
-							builder.AppendFloat(j, v)
+							if err := builder.AppendFloat(j, v); err != nil {
+								return err
+							}
 						}
 					}
 				} else {
-					builder.AppendUInts(j, cr.UInts(j)[firstIdx:])
+					if err := builder.AppendUInts(j, cr.UInts(j)[firstIdx:]); err != nil {
+						return err
+					}
 				}
 			case flux.TFloat:
 				if d != nil {
@@ -235,16 +245,24 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 						time := cr.Times(timeIdx)[i]
 						v := d.updateFloat(time, cr.Floats(j)[i])
 						if i != 0 || firstIdx == 0 {
-							builder.AppendFloat(j, v)
+							if err := builder.AppendFloat(j, v); err != nil {
+								return err
+							}
 						}
 					}
 				} else {
-					builder.AppendFloats(j, cr.Floats(j)[firstIdx:])
+					if err := builder.AppendFloats(j, cr.Floats(j)[firstIdx:]); err != nil {
+						return err
+					}
 				}
 			case flux.TString:
-				builder.AppendStrings(j, cr.Strings(j)[firstIdx:])
+				if err := builder.AppendStrings(j, cr.Strings(j)[firstIdx:]); err != nil {
+					return err
+				}
 			case flux.TTime:
-				builder.AppendTimes(j, cr.Times(j)[firstIdx:])
+				if err := builder.AppendTimes(j, cr.Times(j)[firstIdx:]); err != nil {
+					return err
+				}
 			}
 		}
 		// Now that we skipped the first row, start at 0 for the rest of the batches

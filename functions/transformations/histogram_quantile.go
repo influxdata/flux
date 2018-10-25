@@ -236,8 +236,12 @@ func (t histogramQuantileTransformation) Process(id execute.DatasetID, tbl flux.
 	if err != nil {
 		return err
 	}
-	execute.AppendKeyValues(tbl.Key(), builder)
-	builder.AppendFloat(valueIdx, q)
+	if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
+		return err
+	}
+	if err := builder.AppendFloat(valueIdx, q); err != nil {
+		return err
+	}
 	return nil
 }
 

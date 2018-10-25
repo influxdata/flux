@@ -113,7 +113,9 @@ func (t *uniqueTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	if !created {
 		return fmt.Errorf("unique found duplicate table with key: %v", tbl.Key())
 	}
-	execute.AddTableCols(tbl, builder)
+	if err := execute.AddTableCols(tbl, builder); err != nil {
+		return err
+	}
 
 	colIdx := execute.ColIdx(t.column, builder.Cols())
 	if colIdx < 0 {
@@ -187,7 +189,9 @@ func (t *uniqueTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 				timeUnique[v] = true
 			}
 
-			execute.AppendRecord(i, cr, builder)
+			if err := execute.AppendRecord(i, cr, builder); err != nil {
+				return err
+			}
 		}
 		return nil
 	})

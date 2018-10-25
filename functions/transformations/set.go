@@ -143,11 +143,10 @@ func (t *setTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 			return err
 		}
 		if !execute.HasCol(t.key, builder.Cols()) {
-			_, err = builder.AddCol(flux.ColMeta{
+			if _, err = builder.AddCol(flux.ColMeta{
 				Label: t.key,
 				Type:  flux.TString,
-			})
-			if err != nil {
+			}); err != nil {
 				return err
 			}
 		}
@@ -158,12 +157,16 @@ func (t *setTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 			if j == idx {
 				continue
 			}
-			execute.AppendCol(j, j, cr, builder)
+			if err := execute.AppendCol(j, j, cr, builder); err != nil {
+				return err
+			}
 		}
 		// Set new value
 		l := cr.Len()
 		for i := 0; i < l; i++ {
-			builder.AppendString(idx, t.value)
+			if err := builder.AppendString(idx, t.value); err != nil {
+				return err
+			}
 		}
 		return nil
 	})

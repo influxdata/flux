@@ -157,11 +157,10 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 			case flux.TFloat:
 				typ = flux.TFloat
 			}
-			_, err := builder.AddCol(flux.ColMeta{
+			if _, err := builder.AddCol(flux.ColMeta{
 				Label: c.Label,
 				Type:  typ,
-			})
-			if err != nil {
+			}); err != nil {
 				return err
 			}
 			differences[j] = newDifference(j, t.nonNegative)
@@ -183,44 +182,62 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 				d := differences[j]
 				switch c.Type {
 				case flux.TBool:
-					builder.AppendBools(j, cr.Bools(j)[firstIdx:])
+					if err := builder.AppendBools(j, cr.Bools(j)[firstIdx:]); err != nil {
+						return err
+					}
 				case flux.TInt:
 					if d != nil {
 						for i := 0; i < l; i++ {
 							v := d.updateInt(cr.Ints(j)[i])
 							if i != 0 || firstIdx == 0 {
-								builder.AppendInt(j, v)
+								if err := builder.AppendInt(j, v); err != nil {
+									return err
+								}
 							}
 						}
 					} else {
-						builder.AppendInts(j, cr.Ints(j)[firstIdx:])
+						if err := builder.AppendInts(j, cr.Ints(j)[firstIdx:]); err != nil {
+							return err
+						}
 					}
 				case flux.TUInt:
 					if d != nil {
 						for i := 0; i < l; i++ {
 							v := d.updateUInt(cr.UInts(j)[i])
 							if i != 0 || firstIdx == 0 {
-								builder.AppendInt(j, v)
+								if err := builder.AppendInt(j, v); err != nil {
+									return err
+								}
 							}
 						}
 					} else {
-						builder.AppendUInts(j, cr.UInts(j)[firstIdx:])
+						if err := builder.AppendUInts(j, cr.UInts(j)[firstIdx:]); err != nil {
+							return err
+						}
 					}
 				case flux.TFloat:
 					if d != nil {
 						for i := 0; i < l; i++ {
 							v := d.updateFloat(cr.Floats(j)[i])
 							if i != 0 || firstIdx == 0 {
-								builder.AppendFloat(j, v)
+								if err := builder.AppendFloat(j, v); err != nil {
+									return err
+								}
 							}
 						}
 					} else {
-						builder.AppendFloats(j, cr.Floats(j)[firstIdx:])
+						if err := builder.AppendFloats(j, cr.Floats(j)[firstIdx:]); err != nil {
+							return err
+						}
 					}
 				case flux.TString:
-					builder.AppendStrings(j, cr.Strings(j)[firstIdx:])
+					if err := builder.AppendStrings(j, cr.Strings(j)[firstIdx:]); err != nil {
+						return err
+					}
 				case flux.TTime:
-					builder.AppendTimes(j, cr.Times(j)[firstIdx:])
+					if err := builder.AppendTimes(j, cr.Times(j)[firstIdx:]); err != nil {
+						return err
+					}
 				}
 			}
 		}
