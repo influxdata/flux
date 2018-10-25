@@ -84,7 +84,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 
 		statementFn = &semantic.FunctionExpression{
 			Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-			Body: &semantic.ReturnStatement{Argument: &semantic.BooleanLiteral{Value: true}},
+			Body:   &semantic.ReturnStatement{Argument: &semantic.BooleanLiteral{Value: true}},
 		}
 	)
 
@@ -381,7 +381,6 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 					{0, 1},
 				},
 			},
-
 		},
 	}
 

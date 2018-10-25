@@ -266,7 +266,7 @@ func isPushableExpr(expr semantic.Expression) (bool, error) {
 		return true, nil
 	case *semantic.MemberExpression:
 		if idExpr, ok := e.Object.(*semantic.IdentifierExpression); ok && idExpr.Name == "r" {
-				return true, nil
+			return true, nil
 		}
 
 		return false, nil

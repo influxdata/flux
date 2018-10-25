@@ -39,8 +39,8 @@ func ExprsToConjunction(exprs ...Expression) Expression {
 	expr := exprs[0]
 	for _, e := range exprs[1:] {
 		expr = &LogicalExpression{
-			Left: expr,
-			Right: e,
+			Left:     expr,
+			Right:    e,
 			Operator: ast.AndOperator,
 		}
 	}
