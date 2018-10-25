@@ -264,6 +264,9 @@ func (t *fixedWindowTransformation) RetractTable(id execute.DatasetID, key flux.
 
 func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	timeIdx := execute.ColIdx(t.timeCol, tbl.Cols())
+	if timeIdx < 0 {
+		return fmt.Errorf("missing time column %q", t.timeCol)
+	}
 
 	newCols := make([]flux.ColMeta, 0, len(tbl.Cols())+2)
 	keyCols := make([]flux.ColMeta, 0, len(tbl.Cols())+2)
@@ -415,9 +418,7 @@ func (t *fixedWindowTransformation) clipBounds(bnds *execute.Bounds) {
 
 func (t *fixedWindowTransformation) getWindowBounds(now execute.Time) []execute.Bounds {
 	if t.w.Every == infinityVar.Duration() {
-		return []execute.Bounds{
-			{Start: execute.MinTime, Stop: execute.MaxTime},
-		}
+		return []execute.Bounds{t.bounds}
 	}
 	start, stop := t.generateInitialBounds(now, now)
 
