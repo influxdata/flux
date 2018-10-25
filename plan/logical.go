@@ -81,17 +81,12 @@ func (l *logicalPlanner) Plan(spec *flux.Spec) (*PlanSpec, error) {
 	return newLogicalPlan, nil
 }
 
-// TODO: This is unnecessary if we no longer need ProcedureIDs
 type administration struct {
 	now time.Time
 }
 
 func (a administration) Now() time.Time {
 	return a.now
-}
-
-func (a administration) ConvertID(oid flux.OperationID) ProcedureID {
-	return ProcedureIDFromOperationID(oid)
 }
 
 // LogicalPlanNode consists of the input and output edges and a procedure spec

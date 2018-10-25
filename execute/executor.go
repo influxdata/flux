@@ -152,7 +152,7 @@ func nonYieldPredecessors(pn plan.PlanNode) []plan.PlanNode {
 func (v *createExecutionNodeVisitor) Visit(node plan.PlanNode) error {
 	spec := node.ProcedureSpec()
 	kind := spec.Kind()
-	id := plan.ProcedureIDFromNodeID(node.ID())
+	id := DatasetIDFromNodeID(node.ID())
 
 	if yieldSpec, ok := spec.(plan.YieldProcedureSpec); ok {
 		r := newResult(yieldSpec.YieldName())
@@ -179,8 +179,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.PlanNode) error {
 	}
 
 	for i, pred := range nonYieldPredecessors(node) {
-		id := plan.ProcedureIDFromNodeID(pred.ID())
-		ec.parents[i] = DatasetID(id)
+		ec.parents[i] = DatasetIDFromNodeID(pred.ID())
 	}
 
 	// If node is a leaf, create a source
@@ -191,7 +190,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.PlanNode) error {
 			return fmt.Errorf("unsupported source kind %v", kind)
 		}
 
-		source, err := createSourceFn(spec, DatasetID(id), ec)
+		source, err := createSourceFn(spec, id, ec)
 
 		if err != nil {
 			return err
@@ -209,7 +208,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.PlanNode) error {
 			return fmt.Errorf("unsupported procedure %v", kind)
 		}
 
-		tr, ds, err := createTransformationFn(DatasetID(id), AccumulatingMode, spec, ec)
+		tr, ds, err := createTransformationFn(id, AccumulatingMode, spec, ec)
 
 		if err != nil {
 			return err
@@ -316,9 +315,6 @@ func (ec executionContext) Allocator() *Allocator {
 
 func (ec executionContext) Parents() []DatasetID {
 	return ec.parents
-}
-func (ec executionContext) ConvertID(id plan.ProcedureID) DatasetID {
-	return DatasetID(id)
 }
 
 func (ec executionContext) Dependencies() Dependencies {
