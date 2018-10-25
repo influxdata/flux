@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/functions"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -30,6 +32,7 @@ func init() {
 	flux.RegisterFunction(FromKind, createFromOpSpec, fromSignature)
 	flux.RegisterOpSpec(FromKind, newFromOp)
 	plan.RegisterProcedureSpec(FromKind, newFromProcedure, FromKind)
+	plan.RegisterPhysicalRules(MergeFromRangeRule{}, MergeFromFilterRule{})
 }
 
 func createFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
@@ -109,7 +112,7 @@ func (rule MergeFromRangeRule) Pattern() plan.Pattern {
 }
 
 // Rewrite attempts to rewrite a `from -> range` into a `FromRange`
-func (rule MergeFromRangeRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool) {
+func (rule MergeFromRangeRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool, error) {
 	from := node.Predecessors()[0]
 	fromSpec := from.ProcedureSpec().(*FromProcedureSpec)
 	rangeSpec := node.ProcedureSpec().(*transformations.RangeProcedureSpec)
@@ -152,9 +155,219 @@ func (rule MergeFromRangeRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool)
 	// Finally merge nodes into single operation
 	merged, err := plan.MergePhysicalPlanNodes(node, from, fromRange)
 	if err != nil {
-		return node, false
+		return nil, false, err
 	}
-	return merged, true
+
+	return merged, true, nil
+}
+
+// MergeFromFilterRule is a rule that pushes filters into from procedures to be evaluated in the storage layer.
+// TODO: Code that analyzes predicates should be put in platform, or anywhere sources are actually created.
+// This is so we can tailor push down logic to actual capabilities of storage (whether InfluxDB or some other source).
+// Also this rule is likely to be replaced by a more generic rule when we have a better
+// framework for pushing filters, etc into sources.
+type MergeFromFilterRule struct {
+}
+
+func (MergeFromFilterRule) Name() string {
+	return "MergeFromFilterRule"
+}
+
+func (MergeFromFilterRule) Pattern() plan.Pattern {
+	return plan.Pat(transformations.FilterKind, plan.Pat(FromKind))
+}
+
+func (MergeFromFilterRule) Rewrite(filterNode plan.PlanNode) (plan.PlanNode, bool, error) {
+	filterSpec := filterNode.ProcedureSpec().(*transformations.FilterProcedureSpec)
+	bodyExpr, ok := filterSpec.Fn.Body.(semantic.Expression)
+	if !ok {
+		return filterNode, false, nil
+	}
+
+	if len(filterSpec.Fn.Params) != 1 {
+		// I would expect that type checking would catch this, but just to be safe...
+		return filterNode, false, nil
+	}
+
+	paramName := filterSpec.Fn.Params[0].Key.Name
+
+	pushable, notPushable, err := semantic.PartitionPredicates(bodyExpr, func(e semantic.Expression) (bool, error) {
+		return isPushableExpr(paramName, e)
+	})
+	if err != nil {
+		return nil, false, err
+	}
+
+	if pushable == nil {
+		// Nothing could be pushed down, no rewrite can happen
+		return filterNode, false, nil
+	}
+
+	fromNode := filterNode.Predecessors()[0]
+	newFromSpec := fromNode.ProcedureSpec().Copy().(*FromProcedureSpec)
+	if newFromSpec.FilterSet {
+		newBody := semantic.ExprsToConjunction(newFromSpec.Filter.Body.(semantic.Expression), pushable)
+		newFromSpec.Filter.Body = newBody
+	} else {
+		newFromSpec.FilterSet = true
+		newFromSpec.Filter = filterSpec.Fn.Copy().(*semantic.FunctionExpression)
+		newFromSpec.Filter.Body = pushable
+	}
+
+	if notPushable == nil {
+		// All predicates could be pushed down, so eliminate the filter
+		mergedNode, err := plan.MergePhysicalPlanNodes(filterNode, fromNode, newFromSpec)
+		if err != nil {
+			return nil, false, err
+		}
+		return mergedNode, true, nil
+	}
+
+	err = fromNode.ReplaceSpec(newFromSpec)
+	if err != nil {
+		return nil, false, err
+	}
+
+	newFilterSpec := filterSpec.Copy().(*transformations.FilterProcedureSpec)
+	newFilterSpec.Fn.Body = notPushable
+	err = filterNode.ReplaceSpec(newFilterSpec)
+	if err != nil {
+		return nil, false, err
+	}
+
+	return filterNode, true, nil
+}
+
+// isPushableExpr determines if a predicate expression can be pushed down into the storage layer.
+func isPushableExpr(paramName string, expr semantic.Expression) (bool, error) {
+	switch e := expr.(type) {
+	case *semantic.LogicalExpression:
+		b, err := isPushableExpr(paramName, e.Left)
+		if err != nil {
+			return false, err
+		}
+
+		if !b {
+			return false, nil
+		}
+
+		return isPushableExpr(paramName, e.Right)
+
+	case *semantic.BinaryExpression:
+		if isPushablePredicate(paramName, e) {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func isPushablePredicate(paramName string, be *semantic.BinaryExpression) bool {
+	// Manual testing seems to indicate that (at least right now) we can
+	// only handle predicates of the form <fn param>.<property> <op> <literal>
+	// and the literal must be on the RHS.
+
+	if !isLiteral(be.Right) {
+		return false
+	}
+
+	if isField(paramName, be.Left) && isPushableFieldOperator(be.Operator) {
+		return true
+	}
+
+	if isTag(paramName, be.Left) && isPushableTagOperator(be.Operator) {
+		return true
+	}
+
+	return false
+}
+
+func isLiteral(e semantic.Expression) bool {
+	switch e.(type) {
+	case *semantic.StringLiteral:
+		return true
+	case *semantic.IntegerLiteral:
+		return true
+	case *semantic.BooleanLiteral:
+		return true
+	case *semantic.FloatLiteral:
+		return true
+	case *semantic.RegexpLiteral:
+		return true
+	}
+
+	return false
+}
+
+const fieldValueProperty = "_value"
+
+func isTag(paramName string, e semantic.Expression) bool {
+	memberExpr := validateMemberExpr(paramName, e)
+	return memberExpr != nil && memberExpr.Property != fieldValueProperty
+}
+
+func isField(paramName string, e semantic.Expression) bool {
+	memberExpr := validateMemberExpr(paramName, e)
+	return memberExpr != nil && memberExpr.Property == fieldValueProperty
+}
+
+func validateMemberExpr(paramName string, e semantic.Expression) *semantic.MemberExpression {
+	memberExpr, ok := e.(*semantic.MemberExpression)
+	if !ok {
+		return nil
+	}
+
+	idExpr, ok := memberExpr.Object.(*semantic.IdentifierExpression)
+	if !ok {
+		return nil
+	}
+
+	if idExpr.Name != paramName {
+		return nil
+	}
+
+	return memberExpr
+}
+
+func isPushableTagOperator(kind ast.OperatorKind) bool {
+	pushableOperators := []ast.OperatorKind{
+		ast.EqualOperator,
+		ast.NotEqualOperator,
+		ast.RegexpMatchOperator,
+		ast.NotRegexpMatchOperator,
+	}
+
+	for _, op := range pushableOperators {
+		if op == kind {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isPushableFieldOperator(kind ast.OperatorKind) bool {
+	if isPushableTagOperator(kind) {
+		return true
+	}
+
+	// Fields can be filtered by anything that tags can be filtered by,
+	// plus range operators.
+
+	moreOperators := []ast.OperatorKind{
+		ast.LessThanEqualOperator,
+		ast.LessThanOperator,
+		ast.GreaterThanEqualOperator,
+		ast.GreaterThanOperator,
+	}
+
+	for _, op := range moreOperators {
+		if op == kind {
+			return true
+		}
+	}
+
+	return false
 }
 
 func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {

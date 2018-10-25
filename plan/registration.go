@@ -32,20 +32,22 @@ func RegisterProcedureSpec(k ProcedureKind, c CreateProcedureSpec, qks ...flux.O
 var ruleNameToLogicalRule = make(map[string]Rule)
 var ruleNameToPhysicalRule = make(map[string]Rule)
 
-// RegisterLogicalRule registers the rule created by createFn with the logical plan.
-func RegisterLogicalRule(rule Rule) {
-	registerRule(ruleNameToLogicalRule, rule)
+// RegisterLogicalRules registers the rule created by createFn with the logical plan.
+func RegisterLogicalRules(rules ...Rule) {
+	registerRule(ruleNameToLogicalRule, rules...)
 }
 
-// RegisterPhysicalRule registers the rule created by createFn with the physical plan.
-func RegisterPhysicalRule(rule Rule) {
-	registerRule(ruleNameToPhysicalRule, rule)
+// RegisterPhysicalRules registers the rule created by createFn with the physical plan.
+func RegisterPhysicalRules(rules ...Rule) {
+	registerRule(ruleNameToPhysicalRule, rules...)
 }
 
-func registerRule(ruleMap map[string]Rule, rule Rule) {
-	name := rule.Name()
-	if _, ok := ruleMap[name]; ok {
-		panic(fmt.Errorf(`rule with name "%v" has already been registered`, name))
+func registerRule(ruleMap map[string]Rule, rules ...Rule) {
+	for _, rule := range rules {
+		name := rule.Name()
+		if _, ok := ruleMap[name]; ok {
+			panic(fmt.Errorf(`rule with name "%v" has already been registered`, name))
+		}
+		ruleMap[name] = rule
 	}
-	ruleMap[name] = rule
 }

@@ -1,6 +1,7 @@
 package plan
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -84,9 +85,10 @@ func WithDefaultMemoryLimit(memBytes int64) PhysicalOption {
 	})
 }
 
-// WithPhysicalRule produces a physical plan option that forces a particular rule to be applied.
-func WithPhysicalRule(rules ...Rule) PhysicalOption {
+// OnlyPhysicalRules produces a physical plan option that forces only a particular set of rules to be applied.
+func OnlyPhysicalRules(rules ...Rule) PhysicalOption {
 	return physicalOption(func(pp *physicalPlanner) {
+		pp.clearRules()
 		pp.addRules(rules...)
 	})
 }
@@ -120,6 +122,16 @@ func (ppn *PhysicalPlanNode) ID() NodeID {
 // ProcedureSpec returns the procedure spec for this plan node.
 func (ppn *PhysicalPlanNode) ProcedureSpec() ProcedureSpec {
 	return ppn.Spec
+}
+
+func (ppn *PhysicalPlanNode) ReplaceSpec(newSpec ProcedureSpec) error {
+	physSpec, ok := newSpec.(PhysicalProcedureSpec)
+	if !ok {
+		return fmt.Errorf("couldn't replace ProcedureSpec for physical plan node \"%v\"", ppn.ID())
+	}
+
+	ppn.Spec = physSpec
+	return nil
 }
 
 // Kind returns the procedure kind for this plan node.

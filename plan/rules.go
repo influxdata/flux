@@ -9,5 +9,5 @@ type Rule interface {
 	Pattern() Pattern
 
 	// Rewrite an operation into an equivalent one
-	Rewrite(PlanNode) (PlanNode, bool)
+	Rewrite(PlanNode) (PlanNode, bool, error)
 }
