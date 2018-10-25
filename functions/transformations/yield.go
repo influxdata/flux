@@ -26,7 +26,7 @@ var yieldSignature = semantic.FunctionSignature{
 func init() {
 	flux.RegisterFunctionWithSideEffect(YieldKind, createYieldOpSpec, yieldSignature)
 	flux.RegisterOpSpec(YieldKind, newYieldOp)
-	plan.RegisterProcedureSpec(YieldKind, newYieldProcedure, YieldKind)
+	plan.RegisterProcedureSpecWithSideEffect(YieldKind, newYieldProcedure, YieldKind)
 }
 
 func createYieldOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
