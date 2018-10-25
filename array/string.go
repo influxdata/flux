@@ -1,10 +1,19 @@
 package array
 
+// StringRef is a reference to a String.
+type StringRef interface {
+	BaseRef
+	Value(i int) string
+	StringSlice(start, stop int) StringRef
+}
+
 // String represents an abstraction over a string array.
 type String interface {
-	Base
-	Value(i int) string
-	StringSlice(start, stop int) String
+	StringRef
+
+	// Free will release the memory for this array. After Free is called,
+	// the array should no longer be used.
+	Free()
 }
 
 // StringBuilder represents an abstraction over building a string array.

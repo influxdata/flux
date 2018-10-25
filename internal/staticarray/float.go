@@ -1,102 +1,141 @@
 package staticarray
 
-import "github.com/influxdata/flux/array"
+import (
+	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/semantic"
+)
 
-var _ array.Float = Float(nil)
+type floats struct {
+	data  []float64
+	alloc *memory.Allocator
+}
 
-type Float []float64
+func Float(data []float64) array.Float {
+	return &floats{data: data}
+}
 
-func (a Float) IsNull(i int) bool {
+func (a *floats) Type() semantic.Type {
+	return semantic.Float
+}
+
+func (a *floats) IsNull(i int) bool {
 	return false
 }
 
-func (a Float) IsValid(i int) bool {
-	return i >= 0 && i < len(a)
+func (a *floats) IsValid(i int) bool {
+	return i >= 0 && i < len(a.data)
 }
 
-func (a Float) Len() int {
-	return len(a)
+func (a *floats) Len() int {
+	return len(a.data)
 }
 
-func (a Float) NullN() int {
+func (a *floats) NullN() int {
 	return 0
 }
 
-func (a Float) Value(i int) float64 {
-	return a[i]
+func (a *floats) Value(i int) float64 {
+	return a.data[i]
 }
 
-func (a Float) Slice(start, stop int) array.Base {
+func (a *floats) Copy() array.Base {
+	panic("implement me")
+}
+
+func (a *floats) Free() {
+	if a.alloc != nil {
+		a.alloc.Free(cap(a.data) * float64Size)
+	}
+	a.data = nil
+}
+
+func (a *floats) Slice(start, stop int) array.BaseRef {
 	return a.FloatSlice(start, stop)
 }
 
-func (a Float) FloatSlice(start, stop int) array.Float {
-	return Float(a[start:stop])
+func (a *floats) FloatSlice(start, stop int) array.FloatRef {
+	return Float(a.data[start:stop])
 }
 
-func (a Float) Float64Values() []float64 {
-	return []float64(a)
+func (a *floats) Float64Values() []float64 {
+	return a.data
 }
 
-var _ array.FloatBuilder = (*FloatBuilder)(nil)
+func FloatBuilder(a *memory.Allocator) array.FloatBuilder {
+	return &floatBuilder{alloc: a}
+}
 
-type FloatBuilder []float64
+type floatBuilder struct {
+	data  []float64
+	alloc *memory.Allocator
+}
 
-func (b *FloatBuilder) Len() int {
+func (b *floatBuilder) Type() semantic.Type {
+	return semantic.Float
+}
+
+func (b *floatBuilder) Len() int {
 	if b == nil {
 		return 0
 	}
-	return len(*b)
+	return len(b.data)
 }
 
-func (b *FloatBuilder) Cap() int {
-	if b == nil {
-		return 0
-	}
-	return cap(*b)
+func (b *floatBuilder) Cap() int {
+	return cap(b.data)
 }
 
-func (b *FloatBuilder) Reserve(n int) {
-	if b == nil {
-		*b = make([]float64, 0, n)
+func (b *floatBuilder) Reserve(n int) {
+	newCap := len(b.data) + n
+	if newCap := len(b.data) + n; newCap <= cap(b.data) {
 		return
-	} else if cap(*b) < n {
-		newB := make([]float64, len(*b), n)
-		copy(newB, *b)
-		*b = newB
 	}
+	if err := b.alloc.Allocate(newCap * float64Size); err != nil {
+		panic(err)
+	}
+	data := make([]float64, len(b.data), newCap)
+	copy(data, b.data)
+	b.alloc.Free(cap(b.data) * float64Size)
+	b.data = data
 }
 
-func (b *FloatBuilder) BuildArray() array.Base {
+func (b *floatBuilder) BuildArray() array.Base {
 	return b.BuildFloatArray()
 }
 
-func (b *FloatBuilder) Append(v float64) {
-	if b == nil {
-		*b = append([]float64{}, v)
-		return
-	}
-	*b = append(*b, v)
+func (b *floatBuilder) Free() {
+	panic("implement me")
 }
 
-func (b *FloatBuilder) AppendNull() {
+func (b *floatBuilder) Append(v float64) {
+	if len(b.data) == cap(b.data) {
+		// Grow the slice in the same way as built-in append.
+		n := len(b.data)
+		if n == 0 {
+			n = 2
+		}
+		b.Reserve(n)
+	}
+	b.data = append(b.data, v)
+}
+
+func (b *floatBuilder) AppendNull() {
 	// The staticarray does not support nulls so it will do the current behavior of just appending
 	// the zero value.
 	b.Append(0)
 }
 
-func (b *FloatBuilder) AppendValues(v []float64, valid ...[]bool) {
-	// We ignore the valid array since it does not apply to this implementation type.
-	if b == nil {
-		*b = append([]float64{}, v...)
-		return
+func (b *floatBuilder) AppendValues(v []float64, valid ...[]bool) {
+	if newCap := len(b.data) + len(v); newCap > cap(b.data) {
+		b.Reserve(newCap - cap(b.data))
 	}
-	*b = append(*b, v...)
+	b.data = append(b.data, v...)
 }
 
-func (b *FloatBuilder) BuildFloatArray() array.Float {
-	if b == nil {
-		return Float(nil)
+func (b *floatBuilder) BuildFloatArray() array.Float {
+	return &floats{
+		data:  b.data,
+		alloc: b.alloc,
 	}
-	return Float(*b)
 }
