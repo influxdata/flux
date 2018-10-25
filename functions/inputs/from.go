@@ -161,6 +161,11 @@ func (rule MergeFromRangeRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool,
 	return merged, true, nil
 }
 
+// MergeFromFilterRule is a rule that pushes filters into from procedures to be evaluated in the storage layer.
+// TODO: Code that analyzes predicates should be put in platform, or anywhere sources are actually created.
+// This is so we can tailor push down logic to actual capabilities of storage (whether InfluxDB or some other source).
+// Also this rule is likely to be replaced by a more generic rule when we have a better
+// framework for pushing filters, etc into sources.
 type MergeFromFilterRule struct {
 }
 
@@ -179,7 +184,16 @@ func (MergeFromFilterRule) Rewrite(filterNode plan.PlanNode) (plan.PlanNode, boo
 		return filterNode, false, nil
 	}
 
-	pushable, notPushable, err := semantic.PartitionPredicates(bodyExpr, isPushableExpr)
+	if len(filterSpec.Fn.Params) != 1 {
+		// I would expect that type checking would catch this, but just to be safe...
+		return filterNode, false, nil
+	}
+
+	paramName := filterSpec.Fn.Params[0].Key.Name
+
+	pushable, notPushable, err := semantic.PartitionPredicates(bodyExpr, func(e semantic.Expression) (bool, error) {
+		return isPushableExpr(paramName, e)
+	})
 	if err != nil {
 		return nil, false, err
 	}
@@ -224,10 +238,11 @@ func (MergeFromFilterRule) Rewrite(filterNode plan.PlanNode) (plan.PlanNode, boo
 	return filterNode, true, nil
 }
 
-func isPushableExpr(expr semantic.Expression) (bool, error) {
+// isPushableExpr determines if a predicate expression can be pushed down into the storage layer.
+func isPushableExpr(paramName string, expr semantic.Expression) (bool, error) {
 	switch e := expr.(type) {
 	case *semantic.LogicalExpression:
-		b, err := isPushableExpr(e.Left)
+		b, err := isPushableExpr(paramName, e.Left)
 		if err != nil {
 			return false, err
 		}
@@ -236,46 +251,85 @@ func isPushableExpr(expr semantic.Expression) (bool, error) {
 			return false, nil
 		}
 
-		return isPushableExpr(e.Right)
+		return isPushableExpr(paramName, e.Right)
 
 	case *semantic.BinaryExpression:
-		if !isPushableOperator(e.Operator) {
-			return false, nil
-		}
-
-		b, err := isPushableExpr(e.Left)
-		if err != nil {
-			return false, err
-		}
-
-		if !b {
-			return false, nil
-		}
-
-		return isPushableExpr(e.Right)
-
-	case *semantic.StringLiteral:
-		return true, nil
-	case *semantic.IntegerLiteral:
-		return true, nil
-	case *semantic.BooleanLiteral:
-		return true, nil
-	case *semantic.FloatLiteral:
-		return true, nil
-	case *semantic.RegexpLiteral:
-		return true, nil
-	case *semantic.MemberExpression:
-		if idExpr, ok := e.Object.(*semantic.IdentifierExpression); ok && idExpr.Name == "r" {
+		if isPushablePredicate(paramName, e) {
 			return true, nil
 		}
-
-		return false, nil
 	}
 
 	return false, nil
 }
 
-func isPushableOperator(kind ast.OperatorKind) bool {
+func isPushablePredicate(paramName string, be *semantic.BinaryExpression) bool {
+	// Manual testing seems to indicate that (at least right now) we can
+	// only handle predicates of the form <fn param>.<property> <op> <literal>
+	// and the literal must be on the RHS.
+
+	if !isLiteral(be.Right) {
+		return false
+	}
+
+	if isField(paramName, be.Left) && isPushableFieldOperator(be.Operator) {
+		return true
+	}
+
+	if isTag(paramName, be.Left) && isPushableTagOperator(be.Operator) {
+		return true
+	}
+
+	return false
+}
+
+func isLiteral(e semantic.Expression) bool {
+	switch e.(type) {
+	case *semantic.StringLiteral:
+		return true
+	case *semantic.IntegerLiteral:
+		return true
+	case *semantic.BooleanLiteral:
+		return true
+	case *semantic.FloatLiteral:
+		return true
+	case *semantic.RegexpLiteral:
+		return true
+	}
+
+	return false
+}
+
+const fieldValueProperty = "_value"
+
+func isTag(paramName string, e semantic.Expression) bool {
+	memberExpr := validateMemberExpr(paramName, e)
+	return memberExpr != nil && memberExpr.Property != fieldValueProperty
+}
+
+func isField(paramName string, e semantic.Expression) bool {
+	memberExpr := validateMemberExpr(paramName, e)
+	return memberExpr != nil && memberExpr.Property == fieldValueProperty
+}
+
+func validateMemberExpr(paramName string, e semantic.Expression) *semantic.MemberExpression {
+	memberExpr, ok := e.(*semantic.MemberExpression)
+	if !ok {
+		return nil
+	}
+
+	idExpr, ok := memberExpr.Object.(*semantic.IdentifierExpression)
+	if !ok {
+		return nil
+	}
+
+	if idExpr.Name != paramName {
+		return nil
+	}
+
+	return memberExpr
+}
+
+func isPushableTagOperator(kind ast.OperatorKind) bool {
 	pushableOperators := []ast.OperatorKind{
 		ast.EqualOperator,
 		ast.NotEqualOperator,
@@ -284,6 +338,30 @@ func isPushableOperator(kind ast.OperatorKind) bool {
 	}
 
 	for _, op := range pushableOperators {
+		if op == kind {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isPushableFieldOperator(kind ast.OperatorKind) bool {
+	if isPushableTagOperator(kind) {
+		return true
+	}
+
+	// Fields can be filtered by anything that tags can be filtered by,
+	// plus range operators.
+
+	moreOperators := []ast.OperatorKind{
+		ast.LessThanEqualOperator,
+		ast.LessThanOperator,
+		ast.GreaterThanEqualOperator,
+		ast.GreaterThanOperator,
+	}
+
+	for _, op := range moreOperators {
 		if op == kind {
 			return true
 		}

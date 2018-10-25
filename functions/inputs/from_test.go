@@ -79,8 +79,8 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			Right: &semantic.StringLiteral{Value: "cpu"}}
 
 		unpushableExpr = &semantic.BinaryExpression{Operator: ast.LessThanOperator,
-			Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-			Right: &semantic.FloatLiteral{Value: 0.5}}
+			Left:  &semantic.FloatLiteral{Value: 0.5},
+			Right: &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"}}
 
 		statementFn = &semantic.FunctionExpression{
 			Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
