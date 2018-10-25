@@ -173,7 +173,7 @@ func (v *fluxSpecVisitor) addYieldName(pn PlanNode) error {
 }
 
 func generateYieldNode(pred PlanNode) PlanNode {
-	yieldSpec := generatedYieldProcedureSpec{name: DefaultYieldName}
+	yieldSpec := &GeneratedYieldProcedureSpec{Name: DefaultYieldName}
 	yieldNode := CreateLogicalNode(NodeID("generated_yield"), yieldSpec)
 	pred.AddSuccessors(yieldNode)
 	yieldNode.AddPredecessors(pred)
@@ -184,7 +184,7 @@ func generateYieldNode(pred PlanNode) PlanNode {
 // logical procedure spec, and adds it to the current logical plan DAG.
 func (v *fluxSpecVisitor) visitOperation(o *flux.Operation) error {
 	// Retrieve the create function for this query operation
-	createFns, ok := queryOpToProcedure[o.Spec.Kind()]
+	createFns, ok := createProcedureFnsFromKind(o.Spec.Kind())
 
 	if !ok {
 		return fmt.Errorf("no ProcedureSpec available for %s", o.Spec.Kind())
@@ -223,17 +223,17 @@ func (v *fluxSpecVisitor) visitOperation(o *flux.Operation) error {
 
 	// no children => no successors => root node
 	if len(v.spec.Children(o.ID)) == 0 {
-		if isYield {
+		if isYield || hasSideEffects(procedureSpec) {
 			v.plan.Roots[logicalNode] = struct{}{}
 		} else {
 			// Generate a yield node
-			generatedYieldNode := generateYieldNode(logicalNode)
-			err = v.addYieldName(generatedYieldNode)
+			generateYieldNode := generateYieldNode(logicalNode)
+			err = v.addYieldName(generateYieldNode)
 			if err != nil {
 				return err
 			}
+			v.plan.Roots[generateYieldNode] = struct{}{}
 
-			v.plan.Roots[generatedYieldNode] = struct{}{}
 		}
 	}
 

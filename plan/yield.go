@@ -6,20 +6,20 @@ type YieldProcedureSpec interface {
 	YieldName() string
 }
 
-// generatedYieldSpec provides a special planner-generated yield for queries that don't
+// GeneratedYieldProcedureSpec provides a special planner-generated yield for queries that don't
 // have explicit calls to yield().
-type generatedYieldProcedureSpec struct {
-	name string
+type GeneratedYieldProcedureSpec struct {
+	Name string
 }
 
-func (y generatedYieldProcedureSpec) Kind() ProcedureKind {
+func (y *GeneratedYieldProcedureSpec) Kind() ProcedureKind {
 	return generatedYieldKind
 }
 
-func (y generatedYieldProcedureSpec) Copy() ProcedureSpec {
-	return generatedYieldProcedureSpec{name: y.name}
+func (y *GeneratedYieldProcedureSpec) Copy() ProcedureSpec {
+	return &GeneratedYieldProcedureSpec{Name: y.Name}
 }
 
-func (y generatedYieldProcedureSpec) YieldName() string {
-	return y.name
+func (y *GeneratedYieldProcedureSpec) YieldName() string {
+	return y.Name
 }
