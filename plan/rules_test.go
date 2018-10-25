@@ -17,7 +17,7 @@ func TestRuleRegistration(t *testing.T) {
 
 	// Register the rule,
 	// then check seenNodes below to check that the rule was invoked.
-	plan.RegisterLogicalRule(&simpleRule)
+	plan.RegisterLogicalRules(&simpleRule)
 
 	now := time.Now().UTC()
 	fluxSpec, err := flux.Compile(context.Background(), `from(bucket: "telegraf") |> range(start: -5m)`, now)
@@ -38,7 +38,7 @@ func TestRuleRegistration(t *testing.T) {
 
 	// Test rule registration for the physical plan too.
 	simpleRule.SeenNodes = simpleRule.SeenNodes[0:0]
-	plan.RegisterPhysicalRule(&simpleRule)
+	plan.RegisterPhysicalRules(&simpleRule)
 
 	physicalPlanner := plan.NewPhysicalPlanner()
 	_, err = physicalPlanner.Plan(logicalPlanSpec)

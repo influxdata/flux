@@ -27,6 +27,9 @@ type PlanNode interface {
 	// Specification of the procedure represented by this node
 	ProcedureSpec() ProcedureSpec
 
+	// Replaces the procedure spec of this node with another
+	ReplaceSpec(ProcedureSpec) error
+
 	// Type of procedure represented by this node
 	Kind() ProcedureKind
 
@@ -134,53 +137,42 @@ func (e *edges) shallowCopy() edges {
 // The returned node will have its predecessors set to the predecessors
 // of "bottom", however, it's successors will not be set---it will be the responsibility of
 // the plan to attach the merged node to its successors.
-func MergeLogicalPlanNodes(top, bottom PlanNode, procSpec ProcedureSpec) PlanNode {
-	if len(top.Predecessors()) != 1 ||
-		len(bottom.Successors()) != 1 ||
-		len(bottom.Predecessors()) != 1 ||
-		top.Predecessors()[0] != bottom {
-		panic("MergeLogicalPlanNodes cannot merge due to topological issue")
-	}
-
-	mergedNode := &LogicalPlanNode{
+func MergeLogicalPlanNodes(top, bottom PlanNode, procSpec ProcedureSpec) (PlanNode, error) {
+	merged := &LogicalPlanNode{
 		id:   "merged_" + bottom.ID() + "_" + top.ID(),
 		Spec: procSpec,
 	}
 
-	mergedNode.AddPredecessors(bottom.Predecessors()...)
-	bottomPred := bottom.Predecessors()[0]
-	for i, bottomPredSucc := range bottomPred.Successors() {
-		if bottomPredSucc == bottom {
-			bottomPred.Successors()[i] = mergedNode
-			break
-		}
-	}
-
-	return mergedNode
+	return mergePlanNodes(top, bottom, merged)
 }
 
 func MergePhysicalPlanNodes(top, bottom PlanNode, procSpec PhysicalProcedureSpec) (PlanNode, error) {
+	merged := &PhysicalPlanNode{
+		id:   "merged_" + bottom.ID() + "_" + top.ID(),
+		Spec: procSpec,
+	}
+
+	return mergePlanNodes(top, bottom, merged)
+}
+
+func mergePlanNodes(top, bottom, merged PlanNode) (PlanNode, error) {
 	if len(top.Predecessors()) != 1 ||
 		len(bottom.Successors()) != 1 ||
 		top.Predecessors()[0] != bottom {
 		return nil, fmt.Errorf("cannot merge %s and %s due to topological issues", top.ID(), bottom.ID())
 	}
 
-	mergedNode := &PhysicalPlanNode{
-		id:   "merged_" + bottom.ID() + "_" + top.ID(),
-		Spec: procSpec,
-	}
-
-	mergedNode.AddPredecessors(bottom.Predecessors()...)
-	for i, pred := range bottom.Predecessors() {
+	merged.AddPredecessors(bottom.Predecessors()...)
+	for i, pred := range merged.Predecessors() {
 		for _, succ := range pred.Successors() {
 			if succ == bottom {
-				pred.Successors()[i] = mergedNode
+				pred.Successors()[i] = merged
 			}
 		}
 	}
 
-	return mergedNode, nil
+	return merged, nil
+
 }
 
 // SwapPlanNodes swaps two plan nodes and returns an equivalent sub-plan with the nodes swapped.
@@ -196,11 +188,11 @@ func MergePhysicalPlanNodes(top, bottom PlanNode, procSpec PhysicalProcedureSpec
 // Note that successors of the original top node will not be updated, and the returned
 // plan node will have no successors.  It will be the responsibility of the plan to
 // attach the swapped nodes to successors.
-func SwapPlanNodes(top, bottom PlanNode) PlanNode {
+func SwapPlanNodes(top, bottom PlanNode) (PlanNode, error) {
 	if len(top.Predecessors()) != 1 ||
 		len(bottom.Successors()) != 1 ||
 		len(bottom.Predecessors()) != 1 {
-		panic("SwapPlanNodes cannot swap due to topological issue")
+		return nil, fmt.Errorf("cannot swap nodes %v and %v due to topological issue", top.ID(), bottom.ID())
 	}
 
 	newBottom := top.ShallowCopy()
@@ -218,7 +210,7 @@ func SwapPlanNodes(top, bottom PlanNode) PlanNode {
 	bottom.ClearPredecessors()
 	bottom.AddPredecessors(newBottom)
 	bottom.ClearSuccessors()
-	return bottom
+	return bottom, nil
 }
 
 type WindowSpec struct {

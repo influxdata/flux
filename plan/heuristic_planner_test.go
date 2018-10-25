@@ -127,7 +127,7 @@ func TestPlanTraversal(t *testing.T) {
 			planSpec := plantest.CreatePlanSpec(&tc.plan)
 
 			simpleRule := plantest.SimpleRule{}
-			thePlanner := plan.NewPhysicalPlanner(plan.WithPhysicalRule(&simpleRule))
+			thePlanner := plan.NewPhysicalPlanner(plan.OnlyPhysicalRules(&simpleRule))
 			_, err := thePlanner.Plan(planSpec)
 			if err != nil {
 				t.Fatalf("Could not plan: %v", err)
