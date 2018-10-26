@@ -8,21 +8,6 @@ import (
 	"github.com/influxdata/flux/plan/plantest"
 )
 
-type mockProcedureSpec struct {
-}
-
-func (m *mockProcedureSpec) Kind() plan.ProcedureKind {
-	return "mock"
-}
-
-func (m *mockProcedureSpec) Copy() plan.ProcedureSpec {
-	return &mockProcedureSpec{}
-}
-
-func makeNode(id string) plan.PlanNode {
-	return plan.CreateLogicalNode(plan.NodeID(id), &mockProcedureSpec{})
-}
-
 func TestPlanSpec_BottomUpWalk(t *testing.T) {
 	spec := &plantest.PlanSpec{
 		//  0 1 2  additional edge (3->2)
@@ -31,17 +16,17 @@ func TestPlanSpec_BottomUpWalk(t *testing.T) {
 		//  |/|/|
 		//  6 7 8
 		Nodes: []plan.PlanNode{
-			makeNode("0"),
-			makeNode("1"),
-			makeNode("2"),
+			plantest.CreateLogicalMockNode("0"),
+			plantest.CreateLogicalMockNode("1"),
+			plantest.CreateLogicalMockNode("2"),
 
-			makeNode("3"),
-			makeNode("4"),
-			makeNode("5"),
+			plantest.CreateLogicalMockNode("3"),
+			plantest.CreateLogicalMockNode("4"),
+			plantest.CreateLogicalMockNode("5"),
 
-			makeNode("6"),
-			makeNode("7"),
-			makeNode("8"),
+			plantest.CreateLogicalMockNode("6"),
+			plantest.CreateLogicalMockNode("7"),
+			plantest.CreateLogicalMockNode("8"),
 		},
 		Edges: [][2]int{
 			{6, 3},
@@ -82,17 +67,17 @@ func TestPlanSpec_TopDownWalk(t *testing.T) {
 		//  |/|/|
 		//  6 7 8
 		Nodes: []plan.PlanNode{
-			makeNode("0"),
-			makeNode("1"),
-			makeNode("2"),
+			plantest.CreateLogicalMockNode("0"),
+			plantest.CreateLogicalMockNode("1"),
+			plantest.CreateLogicalMockNode("2"),
 
-			makeNode("3"),
-			makeNode("4"),
-			makeNode("5"),
+			plantest.CreateLogicalMockNode("3"),
+			plantest.CreateLogicalMockNode("4"),
+			plantest.CreateLogicalMockNode("5"),
 
-			makeNode("6"),
-			makeNode("7"),
-			makeNode("8"),
+			plantest.CreateLogicalMockNode("6"),
+			plantest.CreateLogicalMockNode("7"),
+			plantest.CreateLogicalMockNode("8"),
 		},
 		Edges: [][2]int{
 			{6, 3},

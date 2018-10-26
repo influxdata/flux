@@ -14,19 +14,60 @@ type Administration interface {
 // CreateProcedureSpec creates a ProcedureSpec from an OperationSpec and Administration
 type CreateProcedureSpec func(flux.OperationSpec, Administration) (ProcedureSpec, error)
 
-var kindToProcedure = make(map[ProcedureKind]CreateProcedureSpec)
-var queryOpToProcedure = make(map[flux.OperationKind][]CreateProcedureSpec)
+var createProcedureFns = struct {
+	kind      map[ProcedureKind]CreateProcedureSpec
+	operation map[flux.OperationKind][]CreateProcedureSpec
+
+	sideEffectKind      map[ProcedureKind]CreateProcedureSpec
+	sideEffectOperation map[flux.OperationKind][]CreateProcedureSpec
+}{
+	kind:      make(map[ProcedureKind]CreateProcedureSpec),
+	operation: make(map[flux.OperationKind][]CreateProcedureSpec),
+
+	sideEffectKind:      make(map[ProcedureKind]CreateProcedureSpec),
+	sideEffectOperation: make(map[flux.OperationKind][]CreateProcedureSpec),
+}
 
 // RegisterProcedureSpec registers a new procedure with the specified kind.
 // The call panics if the kind is not unique.
 func RegisterProcedureSpec(k ProcedureKind, c CreateProcedureSpec, qks ...flux.OperationKind) {
-	if kindToProcedure[k] != nil {
+	if createProcedureFns.kind[k] != nil {
 		panic(fmt.Errorf("duplicate registration for procedure kind %v", k))
 	}
-	kindToProcedure[k] = c
+	createProcedureFns.kind[k] = c
 	for _, qk := range qks {
-		queryOpToProcedure[qk] = append(queryOpToProcedure[qk], c)
+		createProcedureFns.operation[qk] = append(createProcedureFns.operation[qk], c)
 	}
+}
+
+// RegisterProcedureSpecWithSideEffect registers a new procedure that produces side effects
+func RegisterProcedureSpecWithSideEffect(k ProcedureKind, c CreateProcedureSpec, qks ...flux.OperationKind) {
+	if createProcedureFns.sideEffectKind[k] != nil {
+		panic(fmt.Errorf("duplicate registration for procedure kind %v", k))
+	}
+	createProcedureFns.sideEffectKind[k] = c
+	for _, qk := range qks {
+		createProcedureFns.sideEffectOperation[qk] = append(createProcedureFns.sideEffectOperation[qk], c)
+	}
+}
+
+func createProcedureFnsFromKind(kind flux.OperationKind) ([]CreateProcedureSpec, bool) {
+	var fns []CreateProcedureSpec
+	var ok bool
+
+	if fns, ok = createProcedureFns.operation[kind]; ok {
+		return fns, ok
+	}
+	if fns, ok = createProcedureFns.sideEffectOperation[kind]; ok {
+		return fns, ok
+	}
+	return nil, false
+
+}
+
+func hasSideEffects(spec ProcedureSpec) bool {
+	_, ok := createProcedureFns.sideEffectKind[spec.Kind()]
+	return ok
 }
 
 var ruleNameToLogicalRule = make(map[string]Rule)

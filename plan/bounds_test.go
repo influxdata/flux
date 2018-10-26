@@ -327,7 +327,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			name: "no bounds",
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					makeNode("0"),
+					plantest.CreatePhysicalMockNode("0"),
 				},
 			},
 			want: map[plan.NodeID]*plan.Bounds{
@@ -339,11 +339,11 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			// 0 -> 1 -> 2 -> 3 -> 4
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					makeNode("0"),
-					makeNode("1"),
+					plantest.CreatePhysicalMockNode("0"),
+					plantest.CreatePhysicalMockNode("1"),
 					makeBoundsNode("2", bounds(5, 10)),
-					makeNode("3"),
-					makeNode("4"),
+					plantest.CreatePhysicalMockNode("3"),
+					plantest.CreatePhysicalMockNode("4"),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -364,11 +364,11 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			// 0 -> 1 -> 2 -> 3 -> 4
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					makeNode("0"),
+					plantest.CreatePhysicalMockNode("0"),
 					makeBoundsNode("1", bounds(5, 10)),
-					makeNode("2"),
+					plantest.CreatePhysicalMockNode("2"),
 					makeBoundsNode("3", bounds(7, 11)),
-					makeNode("4"),
+					plantest.CreatePhysicalMockNode("4"),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -389,9 +389,9 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			// 0 -> 1 -> 2
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					makeNode("0"),
+					plantest.CreatePhysicalMockNode("0"),
 					makeShiftNode("1", values.Duration(5)),
-					makeNode("2"),
+					plantest.CreatePhysicalMockNode("2"),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -409,11 +409,11 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			// 0 -> 1 -> 2 -> 3 -> 4
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					makeNode("0"),
+					plantest.CreatePhysicalMockNode("0"),
 					makeBoundsNode("1", bounds(5, 10)),
-					makeNode("2"),
+					plantest.CreatePhysicalMockNode("2"),
 					makeShiftNode("3", values.Duration(5)),
-					makeNode("4"),
+					plantest.CreatePhysicalMockNode("4"),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -438,7 +438,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 				Nodes: []plan.PlanNode{
 					makeBoundsNode("0", bounds(5, 10)),
 					makeBoundsNode("1", bounds(12, 20)),
-					makeNode("2"),
+					plantest.CreatePhysicalMockNode("2"),
 				},
 				Edges: [][2]int{
 					{0, 2},
@@ -460,11 +460,11 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			//     0
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					makeNode("0"),
+					plantest.CreatePhysicalMockNode("0"),
 					makeBoundsNode("1", bounds(5, 10)),
-					makeNode("2"),
-					makeNode("3"),
-					makeNode("4"),
+					plantest.CreatePhysicalMockNode("2"),
+					plantest.CreatePhysicalMockNode("3"),
+					plantest.CreatePhysicalMockNode("4"),
 				},
 				Edges: [][2]int{
 					{0, 1},

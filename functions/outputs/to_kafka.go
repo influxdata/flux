@@ -51,7 +51,7 @@ func init() {
 	flux.RegisterFunctionWithSideEffect(ToKafkaKind, createToKafkaOpSpec, ToKafkaSignature)
 	flux.RegisterOpSpec(ToKafkaKind,
 		func() flux.OperationSpec { return &ToKafkaOpSpec{} })
-	plan.RegisterProcedureSpec(ToKafkaKind, newToKafkaProcedure, ToKafkaKind)
+	plan.RegisterProcedureSpecWithSideEffect(ToKafkaKind, newToKafkaProcedure, ToKafkaKind)
 	execute.RegisterTransformation(ToKafkaKind, createToKafkaTransformation)
 }
 
