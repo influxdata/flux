@@ -37,10 +37,6 @@ type TypeSolution interface {
 	setType(n Node, pt PolyType, err error)
 }
 
-type Constraint struct {
-	a, b PolyType
-}
-
 // Infer produces a solution to type inference for a given semantic graph.
 func Infer(n Node) TypeSolution {
 	v := newInferenceVisitor()
