@@ -4,7 +4,6 @@ import (
 	"math"
 	"testing"
 
-	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 )
@@ -18,7 +17,11 @@ func TestPhysicalOptions(t *testing.T) {
 	for _, options := range configs {
 		spec := &plantest.PlanSpec{
 			Nodes: []plan.PlanNode{
-				plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{}),
+				plantest.CreatePhysicalMockNode("0"),
+				plantest.CreatePhysicalMockNode("1"),
+			},
+			Edges: [][2]int{
+				{0, 1},
 			},
 		}
 
