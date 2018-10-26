@@ -431,12 +431,12 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 
 func TestFromRangeValidation(t *testing.T) {
 	testSpec := plantest.PlanSpec{
-		//     from
+		//       3
+		//     /  \
 		//    /    \
 		//   1      2
 		//    \    /
-		//     \  /
-		//      3
+		//     from
 		Nodes: []plan.PlanNode{
 			plan.CreatePhysicalNode("from", &inputs.FromProcedureSpec{}),
 			plantest.CreatePhysicalMockNode("1"),
