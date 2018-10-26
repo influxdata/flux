@@ -11,11 +11,11 @@ import (
 	"runtime"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/pkg/syncutil"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/line-protocol"
@@ -350,12 +350,11 @@ func (t *ToHTTPTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		isValue[i] = sort.SearchStrings(t.spec.Spec.ValueColumns, col.Label) < len(t.spec.Spec.ValueColumns) && t.spec.Spec.ValueColumns[sort.SearchStrings(t.spec.Spec.ValueColumns, col.Label)] == col.Label
 		isTag[i] = sort.SearchStrings(t.spec.Spec.TagColumns, col.Label) < len(t.spec.Spec.TagColumns) && t.spec.Spec.TagColumns[sort.SearchStrings(t.spec.Spec.TagColumns, col.Label)] == col.Label
 	}
-	wg := sync.WaitGroup{}
-	var err error
-	wg.Add(1)
-	go func() {
+
+	var wg syncutil.WaitGroup
+	wg.Do(func() error {
 		m.name = t.spec.Spec.Name
-		tbl.Do(func(er flux.ColReader) error {
+		err := tbl.Do(func(er flux.ColReader) error {
 			l := er.Len()
 			for i := 0; i < l; i++ {
 				m.truncateTagsAndFields()
@@ -400,9 +399,11 @@ func (t *ToHTTPTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 			}
 			return nil
 		})
-		pw.Close()
-		wg.Done()
-	}()
+		if e := pw.Close(); e != nil && err == nil {
+			err = e
+		}
+		return err
+	})
 
 	req, err := http.NewRequest(t.spec.Spec.Method, t.spec.Spec.URL, pr)
 	if err != nil {
@@ -424,8 +425,12 @@ func (t *ToHTTPTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	if err != nil {
 		return err
 	}
-	wg.Wait()
-	resp.Body.Close()
+	if err := wg.Wait(); err != nil {
+		return err
+	}
+	if err := resp.Body.Close(); err != nil {
+		return err
+	}
 
 	return req.Body.Close()
 }
