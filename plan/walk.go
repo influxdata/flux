@@ -76,7 +76,9 @@ func walk(node PlanNode, preFn, postFn func(PlanNode) error, visited map[PlanNod
 	}
 
 	for _, pred := range node.Predecessors() {
-		walk(pred, preFn, postFn, visited)
+		if err := walk(pred, preFn, postFn, visited); err != nil {
+			return err
+		}
 	}
 
 	// Post-order traversal
