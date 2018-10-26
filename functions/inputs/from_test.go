@@ -201,7 +201,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			name: "cannot push range into from",
 			// range    count                                      range    count
 			//     \    /       =>   cannot push range into a   =>     \    /
-			//      from           from with multiple sucessors         from
+			//      from           from with multiple successors        from
 			rules: []plan.Rule{&inputs.MergeFromRangeRule{}},
 			before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
@@ -393,8 +393,10 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			before := plantest.CreatePlanSpec(tc.before)
 			after := plantest.CreatePlanSpec(tc.after)
 
+			// Disable validation so that we can avoid having to push a range into every from
 			physicalPlanner := plan.NewPhysicalPlanner(
 				plan.OnlyPhysicalRules(tc.rules...),
+				plan.DisableValidatation(),
 			)
 
 			pp, err := physicalPlanner.Plan(before)
@@ -425,5 +427,36 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 					cmp.Diff(want, got, semantictest.CmpOptions...))
 			}
 		})
+	}
+}
+
+func TestFromRangeValidation(t *testing.T) {
+	testSpec := plantest.PlanSpec{
+		//       3
+		//     /  \
+		//    /    \
+		//   1      2
+		//    \    /
+		//     from
+		Nodes: []plan.PlanNode{
+			plan.CreatePhysicalNode("from", &inputs.FromProcedureSpec{}),
+			plantest.CreatePhysicalMockNode("1"),
+			plantest.CreatePhysicalMockNode("2"),
+			plantest.CreatePhysicalMockNode("3"),
+		},
+		Edges: [][2]int{
+			{0, 1},
+			{0, 2},
+			{1, 3},
+			{2, 3},
+		},
+	}
+
+	ps := plantest.CreatePlanSpec(&testSpec)
+	pp := plan.NewPhysicalPlanner(plan.OnlyPhysicalRules())
+	_, err := pp.Plan(ps)
+
+	if err == nil {
+		t.Error("Expected from with no range to fail physical planning")
 	}
 }

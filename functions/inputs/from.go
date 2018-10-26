@@ -98,6 +98,14 @@ type FromProcedureSpec struct {
 	AggregateMethod string
 }
 
+func (s FromProcedureSpec) PostPhysicalValidate(id plan.NodeID) error {
+	if !s.BoundsSet || (s.Bounds.Start.IsZero() && s.Bounds.Stop.IsZero()) {
+		return fmt.Errorf(`result '%s' is unbounded. Add a 'range' call to bound the query`, id)
+	}
+
+	return nil
+}
+
 // MergeFromRangeRule pushes a `range` into a `from`
 type MergeFromRangeRule struct{}
 

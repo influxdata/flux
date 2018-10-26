@@ -48,6 +48,14 @@ func (pp *physicalPlanner) Plan(spec *PlanSpec) (*PlanSpec, error) {
 		return nil, err
 	}
 
+	// Ensure that the plan is valid
+	if !pp.disableValidation {
+		err = validatePhysicalPlan(transformedSpec)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	// Update memory quota
 	if transformedSpec.Resources.MemoryBytesQuota == 0 {
 		transformedSpec.Resources.MemoryBytesQuota = pp.defaultMemoryLimit
@@ -61,9 +69,20 @@ func (pp *physicalPlanner) Plan(spec *PlanSpec) (*PlanSpec, error) {
 	return transformedSpec, nil
 }
 
+func validatePhysicalPlan(plan *PlanSpec) error {
+	err := plan.BottomUpWalk(func(pn PlanNode) error {
+		if validator, ok := pn.ProcedureSpec().(PostPhysicalValidator); ok {
+			return validator.PostPhysicalValidate(pn.ID())
+		}
+		return nil
+	})
+	return err
+}
+
 type physicalPlanner struct {
 	*heuristicPlanner
 	defaultMemoryLimit int64
+	disableValidation  bool
 }
 
 // PhysicalOption is an option to configure the behavior of the physical plan.
@@ -90,6 +109,12 @@ func OnlyPhysicalRules(rules ...Rule) PhysicalOption {
 	return physicalOption(func(pp *physicalPlanner) {
 		pp.clearRules()
 		pp.addRules(rules...)
+	})
+}
+
+func DisableValidatation() PhysicalOption {
+	return physicalOption(func(p *physicalPlanner) {
+		p.disableValidation = true
 	})
 }
 
@@ -166,4 +191,10 @@ func CreatePhysicalNode(id NodeID, spec PhysicalProcedureSpec) *PhysicalPlanNode
 		id:   id,
 		Spec: spec,
 	}
+}
+
+// PostPhysicalValidator provides an interface that can be implemented by PhysicalProcedureSpecs for any
+// validation checks to be performed post-physical planning.
+type PostPhysicalValidator interface {
+	PostPhysicalValidate(id NodeID) error
 }
