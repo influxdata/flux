@@ -82,7 +82,7 @@ func init() {
 	flux.RegisterFunctionWithSideEffect(ToHTTPKind, createToHTTPOpSpec, ToHTTPSignature)
 	flux.RegisterOpSpec(ToHTTPKind,
 		func() flux.OperationSpec { return &ToHTTPOpSpec{} })
-	plan.RegisterProcedureSpec(ToHTTPKind, newToHTTPProcedure, ToHTTPKind)
+	plan.RegisterProcedureSpecWithSideEffect(ToHTTPKind, newToHTTPProcedure, ToHTTPKind)
 	execute.RegisterTransformation(ToHTTPKind, createToHTTPTransformation)
 }
 
