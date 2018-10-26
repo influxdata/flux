@@ -561,7 +561,10 @@ foo(f:add)
 						"b": semantic.Int,
 					})
 					outCall := tv1
-					call := semantic.NewCallFunctionPolyType(inCall, outCall)
+					call := semantic.NewFunctionPolyType(semantic.PolyFunctionSignature{
+						In:  inCall,
+						Out: outCall,
+					})
 
 					inFoo := semantic.NewObjectPolyType(map[string]semantic.PolyType{
 						"f": call,
@@ -577,7 +580,10 @@ foo(f:add)
 						"b": semantic.Int,
 					})
 					outCallInt := semantic.Int
-					callInt := semantic.NewCallFunctionPolyType(inCallInt, outCallInt)
+					callInt := semantic.NewFunctionPolyType(semantic.PolyFunctionSignature{
+						In:  inCallInt,
+						Out: outCallInt,
+					})
 
 					inFooInt := semantic.NewObjectPolyType(map[string]semantic.PolyType{
 						"f": callInt,
