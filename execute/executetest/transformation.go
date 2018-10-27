@@ -19,11 +19,24 @@ func ProcessTestHelper(
 ) {
 	t.Helper()
 
-	d := NewDataset(RandomDatasetID())
-	c := execute.NewTableBuilderCache(UnlimitedAllocator)
-	c.SetTriggerSpec(execute.DefaultTriggerSpec)
+	ProcessTest(t, data, want, wantErr, func() (execute.DataCache, execute.Transformation) {
+		d := NewDataset(RandomDatasetID())
+		c := execute.NewTableBuilderCache(UnlimitedAllocator)
+		c.SetTriggerSpec(execute.DefaultTriggerSpec)
+		return c, create(d, c)
+	})
+}
 
-	tx := create(d, c)
+func ProcessTest(
+	t *testing.T,
+	data []flux.Table,
+	want []*Table,
+	wantErr error,
+	create func() (execute.DataCache, execute.Transformation),
+) {
+	t.Helper()
+
+	c, tx := create()
 
 	parentID := RandomDatasetID()
 	for _, b := range data {

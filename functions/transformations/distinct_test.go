@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions/transformations"
+	"github.com/influxdata/flux/internal/execute/tablebuilder"
 )
 
 func TestDistinct_Process(t *testing.T) {
@@ -174,13 +175,16 @@ func TestDistinct_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			executetest.ProcessTestHelper(
+			executetest.ProcessTest(
 				t,
 				tc.data,
 				tc.want,
 				nil,
-				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					return transformations.NewDistinctTransformation(d, c, tc.spec)
+				func() (execute.DataCache, execute.Transformation) {
+					d := executetest.NewDataset(executetest.RandomDatasetID())
+					c := tablebuilder.NewCache(executetest.UnlimitedAllocator)
+					c.SetTriggerSpec(execute.DefaultTriggerSpec)
+					return c, transformations.NewDistinctTransformation(d, c, tc.spec)
 				},
 			)
 		})
