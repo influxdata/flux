@@ -1,4 +1,4 @@
-package inference
+package semantic
 
 import "strings"
 

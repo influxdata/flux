@@ -1,4 +1,4 @@
-package inference
+package semantic
 
 import (
 	"fmt"
@@ -6,9 +6,9 @@ import (
 	"strings"
 )
 
-type Substitution map[Tvar]Type
+type Substitution map[Tvar]PolyType
 
-func (s Substitution) ApplyType(t Type) Type {
+func (s Substitution) ApplyType(t PolyType) PolyType {
 	for tv, typ := range s {
 		t = t.SubstType(tv, typ)
 	}
@@ -21,18 +21,18 @@ func (s Substitution) ApplyScheme(ts Scheme) Scheme {
 	return ts
 }
 
-func (s Substitution) ApplyKind(k Kind) Kind {
+func (s Substitution) ApplyKind(k KindConstraint) KindConstraint {
 	for tv, typ := range s {
 		k = k.SubstKind(tv, typ)
 	}
 	return k
 }
 
-func (s Substitution) ApplyEnv(env Env) Env {
+func (s Substitution) ApplyEnv(env *Env) *Env {
 	for tv, typ := range s {
-		for n, ts := range env {
-			env[n] = ts.Substitute(tv, typ)
-		}
+		env.RangeSet(func(n string, scheme Scheme) Scheme {
+			return scheme.Substitute(tv, typ)
+		})
 	}
 	return env
 }
