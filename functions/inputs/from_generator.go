@@ -204,13 +204,17 @@ func (s *GeneratorSource) Decode() (flux.Table, error) {
 	timeIdx := execute.ColIdx("_time", cols)
 	valueIdx := execute.ColIdx("_value", cols)
 	for i := 0; i < int(s.Count); i++ {
-		b.AppendTime(timeIdx, values.ConvertTime(s.Start.Add(time.Duration(i)*deltaT)))
+		if err := b.AppendTime(timeIdx, values.ConvertTime(s.Start.Add(time.Duration(i)*deltaT))); err != nil {
+			return nil, err
+		}
 		scope := map[string]values.Value{s.Param: values.NewInt(int64(i))}
 		v, err := s.Fn.EvalInt(scope)
 		if err != nil {
 			return nil, err
 		}
-		b.AppendInt(valueIdx, v)
+		if err := b.AppendInt(valueIdx, v); err != nil {
+			return nil, err
+		}
 	}
 
 	return b.Table()

@@ -135,9 +135,7 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 		return fmt.Errorf("integral found duplicate table with key: %v", tbl.Key())
 	}
 
-	var err error
-	err = execute.AddTableKeyCols(tbl.Key(), builder)
-	if err != nil {
+	if err := execute.AddTableKeyCols(tbl.Key(), builder); err != nil {
 		return err
 	}
 
@@ -148,6 +146,8 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 	for j, c := range cols {
 		if execute.ContainsStr(t.spec.Columns, c.Label) {
 			integrals[j] = newIntegral(time.Duration(t.spec.Unit))
+
+			var err error
 			colMap[j], err = builder.AddCol(flux.ColMeta{
 				Label: c.Label,
 				Type:  flux.TFloat,
@@ -162,7 +162,7 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 	if timeIdx < 0 {
 		return fmt.Errorf("no column %q exists", t.spec.TimeCol)
 	}
-	err = tbl.Do(func(cr flux.ColReader) error {
+	if err := tbl.Do(func(cr flux.ColReader) error {
 		for j, in := range integrals {
 			if in == nil {
 				continue
@@ -174,17 +174,20 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 			}
 		}
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return err
 	}
 
-	execute.AppendKeyValues(tbl.Key(), builder)
+	if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
+		return err
+	}
 	for j, in := range integrals {
 		if in == nil {
 			continue
 		}
-		builder.AppendFloat(colMap[j], in.value())
+		if err := builder.AppendFloat(colMap[j], in.value()); err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -122,10 +122,14 @@ func (t *unionTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if created {
-		execute.AddTableCols(tbl, builder)
+		if err := execute.AddTableCols(tbl, builder); err != nil {
+			return err
+		}
 	}
 
-	execute.AppendTable(tbl, builder)
+	if err := execute.AppendTable(tbl, builder); err != nil {
+		return err
+	}
 
 	return nil
 }

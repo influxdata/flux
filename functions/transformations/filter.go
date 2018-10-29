@@ -6,6 +6,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -123,7 +124,9 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	if !created {
 		return fmt.Errorf("filter found duplicate table with key: %v", tbl.Key())
 	}
-	execute.AddTableCols(tbl, builder)
+	if err := execute.AddTableCols(tbl, builder); err != nil {
+		return err
+	}
 
 	// Prepare the function for the column types.
 	cols := tbl.Cols()
@@ -143,7 +146,9 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 				// No match, skipping
 				continue
 			}
-			execute.AppendRecord(i, cr, builder)
+			if err := execute.AppendRecord(i, cr, builder); err != nil {
+				return err
+			}
 		}
 		return nil
 	})

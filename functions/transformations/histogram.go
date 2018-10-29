@@ -209,13 +209,19 @@ func (t *histogramTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 	// Add records making counts cumulative
 	total := 0.0
 	for i, v := range counts {
-		execute.AppendKeyValues(tbl.Key(), builder)
+		if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
+			return err
+		}
 		count := v + total
 		if t.spec.Normalize {
 			count /= totalRows
 		}
-		builder.AppendFloat(countIdx, count)
-		builder.AppendFloat(boundIdx, t.spec.Buckets[i])
+		if err := builder.AppendFloat(countIdx, count); err != nil {
+			return err
+		}
+		if err := builder.AppendFloat(boundIdx, t.spec.Buckets[i]); err != nil {
+			return err
+		}
 		total += v
 	}
 	return nil

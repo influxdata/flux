@@ -167,17 +167,23 @@ func (t *shiftTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	if !created {
 		return fmt.Errorf("shift found duplicate table with key: %v", tbl.Key())
 	}
-	execute.AddTableCols(tbl, builder)
+	if err := execute.AddTableCols(tbl, builder); err != nil {
+		return err
+	}
 
 	return tbl.Do(func(cr flux.ColReader) error {
 		for j, c := range cr.Cols() {
 			if execute.ContainsStr(t.columns, c.Label) {
 				l := cr.Len()
 				for i := 0; i < l; i++ {
-					builder.AppendTime(j, cr.Times(j)[i].Add(t.shift))
+					if err := builder.AppendTime(j, cr.Times(j)[i].Add(t.shift)); err != nil {
+						return err
+					}
 				}
 			} else {
-				execute.AppendCol(j, j, cr, builder)
+				if err := execute.AppendCol(j, j, cr, builder); err != nil {
+					return err
+				}
 			}
 		}
 		return nil

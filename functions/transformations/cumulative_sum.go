@@ -118,7 +118,9 @@ func (t *cumulativeSumTransformation) Process(id execute.DatasetID, tbl flux.Tab
 	if !created {
 		return fmt.Errorf("cumulative sum found duplicate table with key: %v", tbl.Key())
 	}
-	execute.AddTableCols(tbl, builder)
+	if err := execute.AddTableCols(tbl, builder); err != nil {
+		return err
+	}
 
 	cols := tbl.Cols()
 	sumers := make([]*cumulativeSum, len(cols))
@@ -135,35 +137,53 @@ func (t *cumulativeSumTransformation) Process(id execute.DatasetID, tbl flux.Tab
 		for j, c := range cols {
 			switch c.Type {
 			case flux.TBool:
-				builder.AppendBools(j, cr.Bools(j))
+				if err := builder.AppendBools(j, cr.Bools(j)); err != nil {
+					return err
+				}
 			case flux.TInt:
 				if sumers[j] != nil {
 					for i := 0; i < l; i++ {
-						builder.AppendInt(j, sumers[j].sumInt(cr.Ints(j)[i]))
+						if err := builder.AppendInt(j, sumers[j].sumInt(cr.Ints(j)[i])); err != nil {
+							return err
+						}
 					}
 				} else {
-					builder.AppendInts(j, cr.Ints(j))
+					if err := builder.AppendInts(j, cr.Ints(j)); err != nil {
+						return err
+					}
 				}
 			case flux.TUInt:
 				if sumers[j] != nil {
 					for i := 0; i < l; i++ {
-						builder.AppendUInt(j, sumers[j].sumUInt(cr.UInts(j)[i]))
+						if err := builder.AppendUInt(j, sumers[j].sumUInt(cr.UInts(j)[i])); err != nil {
+							return err
+						}
 					}
 				} else {
-					builder.AppendUInts(j, cr.UInts(j))
+					if err := builder.AppendUInts(j, cr.UInts(j)); err != nil {
+						return err
+					}
 				}
 			case flux.TFloat:
 				if sumers[j] != nil {
 					for i := 0; i < l; i++ {
-						builder.AppendFloat(j, sumers[j].sumFloat(cr.Floats(j)[i]))
+						if err := builder.AppendFloat(j, sumers[j].sumFloat(cr.Floats(j)[i])); err != nil {
+							return err
+						}
 					}
 				} else {
-					builder.AppendFloats(j, cr.Floats(j))
+					if err := builder.AppendFloats(j, cr.Floats(j)); err != nil {
+						return err
+					}
 				}
 			case flux.TString:
-				builder.AppendStrings(j, cr.Strings(j))
+				if err := builder.AppendStrings(j, cr.Strings(j)); err != nil {
+					return err
+				}
 			case flux.TTime:
-				builder.AppendTimes(j, cr.Times(j))
+				if err := builder.AppendTimes(j, cr.Times(j)); err != nil {
+					return err
+				}
 			}
 		}
 		return nil

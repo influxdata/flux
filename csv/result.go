@@ -579,7 +579,9 @@ func (d *tableDecoder) appendRecord(record []string) error {
 	for j, c := range d.meta.Cols {
 		if record[j] == "" && d.meta.Defaults[j] != nil {
 			v := d.meta.Defaults[j]
-			d.builder.AppendValue(j, v)
+			if err := d.builder.AppendValue(j, v); err != nil {
+				return err
+			}
 			continue
 		}
 		if err := decodeValueInto(j, c, record[j], d.builder); err != nil {
@@ -992,37 +994,36 @@ func decodeValueInto(j int, c colMeta, value string, builder execute.TableBuilde
 		if err != nil {
 			return err
 		}
-		builder.AppendBool(j, v)
+		return builder.AppendBool(j, v)
 	case flux.TInt:
 		v, err := strconv.ParseInt(value, 10, 64)
 		if err != nil {
 			return err
 		}
-		builder.AppendInt(j, v)
+		return builder.AppendInt(j, v)
 	case flux.TUInt:
 		v, err := strconv.ParseUint(value, 10, 64)
 		if err != nil {
 			return err
 		}
-		builder.AppendUInt(j, v)
+		return builder.AppendUInt(j, v)
 	case flux.TFloat:
 		v, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			return err
 		}
-		builder.AppendFloat(j, v)
+		return builder.AppendFloat(j, v)
 	case flux.TString:
-		builder.AppendString(j, value)
+		return builder.AppendString(j, value)
 	case flux.TTime:
 		t, err := decodeTime(value, c.fmt)
 		if err != nil {
 			return err
 		}
-		builder.AppendTime(j, t)
+		return builder.AppendTime(j, t)
 	default:
 		return fmt.Errorf("unsupported type %v", c.Type)
 	}
-	return nil
 }
 
 func encodeValue(value values.Value, c colMeta) (string, error) {

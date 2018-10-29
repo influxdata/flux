@@ -352,26 +352,34 @@ func (t *ExactPercentileSelectorTransformation) Process(id execute.DatasetID, tb
 	}
 
 	copyTable := execute.NewColListTableBuilder(tbl.Key(), t.a)
-	execute.AddTableCols(tbl, copyTable)
-	execute.AppendTable(tbl, copyTable)
+	if err := execute.AddTableCols(tbl, copyTable); err != nil {
+		return err
+	}
+	if err := execute.AppendTable(tbl, copyTable); err != nil {
+		return err
+	}
 	copyTable.Sort([]string{t.spec.Column}, false)
 
 	n := copyTable.RawTable().NRows()
 	index := getQuantileIndex(t.spec.Percentile, n)
 	row := copyTable.RawTable().GetRow(index)
 
-	builder, new := t.cache.TableBuilder(tbl.Key())
-	if !new {
+	builder, created := t.cache.TableBuilder(tbl.Key())
+	if !created {
 		return fmt.Errorf("found duplicate table with key: %v", tbl.Key())
 	}
-	execute.AddTableCols(tbl, builder)
+	if err := execute.AddTableCols(tbl, builder); err != nil {
+		return err
+	}
 
 	for j, col := range builder.Cols() {
 		v, ok := row.Get(col.Label)
 		if !ok {
 			return fmt.Errorf("unexpected column in percentile select")
 		}
-		builder.AppendValue(j, v)
+		if err := builder.AppendValue(j, v); err != nil {
+			return err
+		}
 	}
 
 	return nil

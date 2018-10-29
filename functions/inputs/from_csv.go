@@ -168,7 +168,9 @@ func (c *CSVSource) Run(ctx context.Context) {
 
 	if maxSet {
 		for _, t := range c.ts {
-			t.UpdateWatermark(c.id, max)
+			if err = t.UpdateWatermark(c.id, max); err != nil {
+				goto FINISH
+			}
 		}
 	}
 

@@ -83,17 +83,18 @@ func (t *aggregateTransformation) RetractTable(id DatasetID, key flux.GroupKey) 
 }
 
 func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
-	builder, new := t.cache.TableBuilder(tbl.Key())
-	if !new {
+	builder, created := t.cache.TableBuilder(tbl.Key())
+	if !created {
 		return fmt.Errorf("aggregate found duplicate table with key: %v", tbl.Key())
 	}
 
-	AddTableKeyCols(tbl.Key(), builder)
+	if err := AddTableKeyCols(tbl.Key(), builder); err != nil {
+		return err
+	}
 
 	builderColMap := make([]int, len(t.config.Columns))
 	tableColMap := make([]int, len(t.config.Columns))
 	aggregates := make([]ValueFunc, len(t.config.Columns))
-	var err error
 	cols := tbl.Cols()
 	for j, label := range t.config.Columns {
 		idx := -1
@@ -128,6 +129,7 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 		}
 		aggregates[j] = vf
 
+		var err error
 		builderColMap[j], err = builder.AddCol(flux.ColMeta{
 			Label: c.Label,
 			Type:  vf.Type(),
@@ -138,7 +140,7 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 		tableColMap[j] = idx
 	}
 
-	err = tbl.Do(func(cr flux.ColReader) error {
+	if err := tbl.Do(func(cr flux.ColReader) error {
 		for j := range t.config.Columns {
 			vf := aggregates[j]
 
@@ -161,8 +163,7 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 			}
 		}
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return err
 	}
 	for j, vf := range aggregates {
@@ -170,21 +171,29 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 		// Append aggregated value
 		switch vf.Type() {
 		case flux.TBool:
-			builder.AppendBool(bj, vf.(BoolValueFunc).ValueBool())
+			if err := builder.AppendBool(bj, vf.(BoolValueFunc).ValueBool()); err != nil {
+				return err
+			}
 		case flux.TInt:
-			builder.AppendInt(bj, vf.(IntValueFunc).ValueInt())
+			if err := builder.AppendInt(bj, vf.(IntValueFunc).ValueInt()); err != nil {
+				return err
+			}
 		case flux.TUInt:
-			builder.AppendUInt(bj, vf.(UIntValueFunc).ValueUInt())
+			if err := builder.AppendUInt(bj, vf.(UIntValueFunc).ValueUInt()); err != nil {
+				return err
+			}
 		case flux.TFloat:
-			builder.AppendFloat(bj, vf.(FloatValueFunc).ValueFloat())
+			if err := builder.AppendFloat(bj, vf.(FloatValueFunc).ValueFloat()); err != nil {
+				return err
+			}
 		case flux.TString:
-			builder.AppendString(bj, vf.(StringValueFunc).ValueString())
+			if err := builder.AppendString(bj, vf.(StringValueFunc).ValueString()); err != nil {
+				return err
+			}
 		}
 	}
 
-	AppendKeyValues(tbl.Key(), builder)
-
-	return nil
+	return AppendKeyValues(tbl.Key(), builder)
 }
 
 func (t *aggregateTransformation) UpdateWatermark(id DatasetID, mark Time) error {

@@ -52,7 +52,9 @@ func (c *sourceIterator) Do(f func(flux.Table) error) error {
 		if err != nil {
 			return err
 		}
-		f(tbl)
+		if err := f(tbl); err != nil {
+			return err
+		}
 		more, err = c.decoder.Fetch()
 		if err != nil {
 			return err

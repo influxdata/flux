@@ -206,20 +206,34 @@ func (c *SQLIterator) Decode() (flux.Table, error) {
 		for i, col := range columns {
 			switch col.(type) {
 			case bool:
-				builder.AppendBool(i, col.(bool))
+				if err := builder.AppendBool(i, col.(bool)); err != nil {
+					return nil, err
+				}
 			case int64:
-				builder.AppendInt(i, col.(int64))
+				if err := builder.AppendInt(i, col.(int64)); err != nil {
+					return nil, err
+				}
 			case uint64:
-				builder.AppendUInt(i, col.(uint64))
+				if err := builder.AppendUInt(i, col.(uint64)); err != nil {
+					return nil, err
+				}
 			case float64:
-				builder.AppendFloat(i, col.(float64))
+				if err := builder.AppendFloat(i, col.(float64)); err != nil {
+					return nil, err
+				}
 			case string:
-				builder.AppendString(i, col.(string))
+				if err := builder.AppendString(i, col.(string)); err != nil {
+					return nil, err
+				}
 			case []uint8:
 				// Hack for MySQL, might need to work with charset?
-				builder.AppendString(i, string(col.([]uint8)))
+				if err := builder.AppendString(i, string(col.([]uint8))); err != nil {
+					return nil, err
+				}
 			case time.Time:
-				builder.AppendTime(i, values.ConvertTime(col.(time.Time)))
+				if err := builder.AppendTime(i, values.ConvertTime(col.(time.Time))); err != nil {
+					return nil, err
+				}
 			default:
 				execute.PanicUnknownType(flux.TInvalid)
 			}

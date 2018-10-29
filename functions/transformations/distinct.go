@@ -118,11 +118,10 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 	colIdx := execute.ColIdx(t.column, tbl.Cols())
 	if colIdx < 0 {
 		// doesn't exist in this table, so add an empty value
-		err := execute.AddTableKeyCols(tbl.Key(), builder)
-		if err != nil {
+		if err := execute.AddTableKeyCols(tbl.Key(), builder); err != nil {
 			return err
 		}
-		colIdx, err = builder.AddCol(flux.ColMeta{
+		colIdx, err := builder.AddCol(flux.ColMeta{
 			Label: execute.DefaultValueColLabel,
 			Type:  flux.TString,
 		})
@@ -130,8 +129,12 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 			return err
 		}
 
-		builder.AppendString(colIdx, "")
-		execute.AppendKeyValues(tbl.Key(), builder)
+		if err := builder.AppendString(colIdx, ""); err != nil {
+			return err
+		}
+		if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
+			return err
+		}
 		// TODO: hack required to ensure data flows downstream
 		return tbl.Do(func(flux.ColReader) error {
 			return nil
@@ -140,11 +143,10 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 
 	col := tbl.Cols()[colIdx]
 
-	err := execute.AddTableKeyCols(tbl.Key(), builder)
-	if err != nil {
+	if err := execute.AddTableKeyCols(tbl.Key(), builder); err != nil {
 		return err
 	}
-	colIdx, err = builder.AddCol(flux.ColMeta{
+	colIdx, err := builder.AddCol(flux.ColMeta{
 		Label: execute.DefaultValueColLabel,
 		Type:  col.Type,
 	})
@@ -156,20 +158,34 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 		j := execute.ColIdx(t.column, tbl.Key().Cols())
 		switch col.Type {
 		case flux.TBool:
-			builder.AppendBool(colIdx, tbl.Key().ValueBool(j))
+			if err := builder.AppendBool(colIdx, tbl.Key().ValueBool(j)); err != nil {
+				return err
+			}
 		case flux.TInt:
-			builder.AppendInt(colIdx, tbl.Key().ValueInt(j))
+			if err := builder.AppendInt(colIdx, tbl.Key().ValueInt(j)); err != nil {
+				return err
+			}
 		case flux.TUInt:
-			builder.AppendUInt(colIdx, tbl.Key().ValueUInt(j))
+			if err := builder.AppendUInt(colIdx, tbl.Key().ValueUInt(j)); err != nil {
+				return err
+			}
 		case flux.TFloat:
-			builder.AppendFloat(colIdx, tbl.Key().ValueFloat(j))
+			if err := builder.AppendFloat(colIdx, tbl.Key().ValueFloat(j)); err != nil {
+				return err
+			}
 		case flux.TString:
-			builder.AppendString(colIdx, tbl.Key().ValueString(j))
+			if err := builder.AppendString(colIdx, tbl.Key().ValueString(j)); err != nil {
+				return err
+			}
 		case flux.TTime:
-			builder.AppendTime(colIdx, tbl.Key().ValueTime(j))
+			if err := builder.AppendTime(colIdx, tbl.Key().ValueTime(j)); err != nil {
+				return err
+			}
 		}
 
-		execute.AppendKeyValues(tbl.Key(), builder)
+		if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
+			return err
+		}
 		// TODO: hack required to ensure data flows downstream
 		return tbl.Do(func(flux.ColReader) error {
 			return nil
@@ -212,45 +228,59 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 					continue
 				}
 				boolDistinct[v] = true
-				builder.AppendBool(colIdx, v)
+				if err := builder.AppendBool(colIdx, v); err != nil {
+					return err
+				}
 			case flux.TInt:
 				v := cr.Ints(j)[i]
 				if intDistinct[v] {
 					continue
 				}
 				intDistinct[v] = true
-				builder.AppendInt(colIdx, v)
+				if err := builder.AppendInt(colIdx, v); err != nil {
+					return err
+				}
 			case flux.TUInt:
 				v := cr.UInts(j)[i]
 				if uintDistinct[v] {
 					continue
 				}
 				uintDistinct[v] = true
-				builder.AppendUInt(colIdx, v)
+				if err := builder.AppendUInt(colIdx, v); err != nil {
+					return err
+				}
 			case flux.TFloat:
 				v := cr.Floats(j)[i]
 				if floatDistinct[v] {
 					continue
 				}
 				floatDistinct[v] = true
-				builder.AppendFloat(colIdx, v)
+				if err := builder.AppendFloat(colIdx, v); err != nil {
+					return err
+				}
 			case flux.TString:
 				v := cr.Strings(j)[i]
 				if stringDistinct[v] {
 					continue
 				}
 				stringDistinct[v] = true
-				builder.AppendString(colIdx, v)
+				if err := builder.AppendString(colIdx, v); err != nil {
+					return err
+				}
 			case flux.TTime:
 				v := cr.Times(j)[i]
 				if timeDistinct[v] {
 					continue
 				}
 				timeDistinct[v] = true
-				builder.AppendTime(colIdx, v)
+				if err := builder.AppendTime(colIdx, v); err != nil {
+					return err
+				}
 			}
 
-			execute.AppendKeyValues(tbl.Key(), builder)
+			if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
+				return err
+			}
 		}
 		return nil
 	})

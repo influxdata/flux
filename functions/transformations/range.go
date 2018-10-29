@@ -212,8 +212,7 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		return fmt.Errorf("range found duplicate table with key: %v", tbl.Key())
 	}
 
-	err := execute.AddTableCols(tbl, builder)
-	if err != nil {
+	if err := execute.AddTableCols(tbl, builder); err != nil {
 		return err
 	}
 	timeIdx := execute.ColIdx(t.timeCol, tbl.Cols())
@@ -248,8 +247,7 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	}
 
 	if forwardTable {
-		execute.AppendTable(tbl, builder)
-		return nil
+		return execute.AppendTable(tbl, builder)
 	}
 
 	// If the start and/or stop columns don't exist,
@@ -262,8 +260,7 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 			Label: t.startCol,
 			Type:  flux.TTime,
 		}
-		_, err := builder.AddCol(c)
-		if err != nil {
+		if _, err := builder.AddCol(c); err != nil {
 			return err
 		}
 		startAdded = true
@@ -275,14 +272,13 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 			Label: t.stopCol,
 			Type:  flux.TTime,
 		}
-		_, err := builder.AddCol(c)
-		if err != nil {
+		if _, err := builder.AddCol(c); err != nil {
 			return err
 		}
 		stopAdded = true
 	}
 
-	err = tbl.Do(func(cr flux.ColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			tVal := cr.Times(timeIdx)[i]
@@ -303,7 +299,9 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 					if start < t.bounds.Start {
 						start = t.bounds.Start
 					}
-					builder.AppendTime(j, start)
+					if err := builder.AppendTime(j, start); err != nil {
+						return err
+					}
 				case t.stopCol:
 					var stop values.Time
 					// If we just inserted a stop column with no values populated
@@ -316,30 +314,18 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 					if stop > t.bounds.Stop {
 						stop = t.bounds.Stop
 					}
-					builder.AppendTime(j, stop)
+					if err := builder.AppendTime(j, stop); err != nil {
+						return err
+					}
 				default:
-					switch c.Type {
-					case flux.TBool:
-						builder.AppendBool(j, cr.Bools(j)[i])
-					case flux.TInt:
-						builder.AppendInt(j, cr.Ints(j)[i])
-					case flux.TUInt:
-						builder.AppendUInt(j, cr.UInts(j)[i])
-					case flux.TFloat:
-						builder.AppendFloat(j, cr.Floats(j)[i])
-					case flux.TString:
-						builder.AppendString(j, cr.Strings(j)[i])
-					case flux.TTime:
-						builder.AppendTime(j, cr.Times(j)[i])
-					default:
-						execute.PanicUnknownType(c.Type)
+					if err := builder.AppendValue(j, execute.ValueForRow(cr, i, j)); err != nil {
+						return err
 					}
 				}
 			}
 		}
 		return nil
 	})
-	return err
 }
 
 func (t *rangeTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
