@@ -7,6 +7,7 @@ import (
 	"sync/atomic"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -41,7 +42,7 @@ type OneTimeTable interface {
 // CacheOneTimeTable returns a table that can be read multiple times.
 // If the table is not a OneTimeTable it is returned directly.
 // Otherwise its contents are read into a new table.
-func CacheOneTimeTable(t flux.Table, a *Allocator) (flux.Table, error) {
+func CacheOneTimeTable(t flux.Table, a *memory.Allocator) (flux.Table, error) {
 	_, ok := t.(OneTimeTable)
 	if !ok {
 		return t, nil
@@ -50,7 +51,7 @@ func CacheOneTimeTable(t flux.Table, a *Allocator) (flux.Table, error) {
 }
 
 // CopyTable returns a copy of the table and is OneTimeTable safe.
-func CopyTable(t flux.Table, a *Allocator) (flux.Table, error) {
+func CopyTable(t flux.Table, a *memory.Allocator) (flux.Table, error) {
 	builder := NewColListTableBuilder(t.Key(), a)
 
 	cols := t.Cols()
@@ -489,10 +490,10 @@ type ColListTableBuilder struct {
 	alloc *Allocator
 }
 
-func NewColListTableBuilder(key flux.GroupKey, a *Allocator) *ColListTableBuilder {
+func NewColListTableBuilder(key flux.GroupKey, a *memory.Allocator) *ColListTableBuilder {
 	return &ColListTableBuilder{
 		table: &ColListTable{key: key},
-		alloc: a,
+		alloc: &Allocator{Allocator: a},
 	}
 }
 
@@ -1336,12 +1337,12 @@ type TableBuilderCache interface {
 
 type tableBuilderCache struct {
 	tables *GroupLookup
-	alloc  *Allocator
+	alloc  *memory.Allocator
 
 	triggerSpec flux.TriggerSpec
 }
 
-func NewTableBuilderCache(a *Allocator) *tableBuilderCache {
+func NewTableBuilderCache(a *memory.Allocator) *tableBuilderCache {
 	return &tableBuilderCache{
 		tables: NewGroupLookup(),
 		alloc:  a,

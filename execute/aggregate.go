@@ -5,6 +5,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/pkg/errors"
@@ -70,7 +71,7 @@ func NewAggregateTransformation(d Dataset, c TableBuilderCache, agg Aggregate, c
 	}
 }
 
-func NewAggregateTransformationAndDataset(id DatasetID, mode AccumulationMode, agg Aggregate, config AggregateConfig, a *Allocator) (*aggregateTransformation, Dataset) {
+func NewAggregateTransformationAndDataset(id DatasetID, mode AccumulationMode, agg Aggregate, config AggregateConfig, a *memory.Allocator) (*aggregateTransformation, Dataset) {
 	cache := NewTableBuilderCache(a)
 	d := NewDataset(id, mode, cache)
 	return NewAggregateTransformation(d, cache, agg, config), d

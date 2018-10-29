@@ -7,7 +7,7 @@ import (
 
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
-	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/plan"
 	"github.com/pkg/errors"
@@ -95,7 +95,7 @@ func TestController_EnqueueQuery_Failure(t *testing.T) {
 
 func TestController_ExecuteQuery_Failure(t *testing.T) {
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(context.Context, *plan.PlanSpec, *execute.Allocator) (map[string]flux.Result, error) {
+	executor.ExecuteFn = func(context.Context, *plan.PlanSpec, *memory.Allocator) (map[string]flux.Result, error) {
 		return nil, errors.New("expected")
 	}
 
@@ -138,7 +138,7 @@ func TestController_ExecuteQuery_Failure(t *testing.T) {
 
 func TestController_CancelQuery(t *testing.T) {
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(context.Context, *plan.PlanSpec, *execute.Allocator) (map[string]flux.Result, error) {
+	executor.ExecuteFn = func(context.Context, *plan.PlanSpec, *memory.Allocator) (map[string]flux.Result, error) {
 		// Return an empty result.
 		return map[string]flux.Result{}, nil
 	}
@@ -181,7 +181,7 @@ func TestController_BlockedExecutor(t *testing.T) {
 	done := make(chan struct{})
 
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(context.Context, *plan.PlanSpec, *execute.Allocator) (map[string]flux.Result, error) {
+	executor.ExecuteFn = func(context.Context, *plan.PlanSpec, *memory.Allocator) (map[string]flux.Result, error) {
 		<-done
 		return nil, nil
 	}
