@@ -16,7 +16,6 @@ import (
 	prompt "github.com/c-bata/go-prompt"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/parser"
@@ -57,8 +56,6 @@ func addBuiltIn(script string, itrp *interpreter.Interpreter, declarations seman
 func New(q Querier) *REPL {
 	itrp := flux.NewInterpreter()
 	_, decls := flux.BuiltIns()
-	addBuiltIn("run = () => yield(table:_)", itrp, decls)
-
 	return &REPL{
 		interpreter:  itrp,
 		declarations: decls,
@@ -131,13 +128,13 @@ func (r *REPL) completer(d prompt.Document) []prompt.Suggest {
 }
 
 func (r *REPL) Input(t string) error {
-	_, err := r.executeLine(t, false)
+	_, err := r.executeLine(t)
 	return err
 }
 
 // input processes a line of input and prints the result.
 func (r *REPL) input(t string) {
-	v, err := r.executeLine(t, true)
+	v, err := r.executeLine(t)
 	if err != nil {
 		fmt.Println("Error:", err)
 	} else if v != nil {
@@ -147,7 +144,7 @@ func (r *REPL) input(t string) {
 
 // executeLine processes a line of input.
 // If the input evaluates to a valid value, that value is returned.
-func (r *REPL) executeLine(t string, expectYield bool) (values.Value, error) {
+func (r *REPL) executeLine(t string) (values.Value, error) {
 	if t == "" {
 		return nil, nil
 	}
@@ -179,13 +176,9 @@ func (r *REPL) executeLine(t string, expectYield bool) (values.Value, error) {
 	// Check for yield and execute query
 	if v.Type() == flux.TableObjectType {
 		t := v.(*flux.TableObject)
-		if !expectYield || (expectYield && t.Kind == transformations.YieldKind) {
-			spec := flux.ToSpec(r.interpreter, t)
-			return nil, r.doQuery(spec)
-		}
+		spec := flux.ToSpec(r.interpreter, t)
+		return nil, r.doQuery(spec)
 	}
-
-	r.interpreter.SetVar("_", v)
 
 	// Print value
 	if v.Type() != semantic.Invalid {
