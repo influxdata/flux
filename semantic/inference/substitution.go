@@ -46,20 +46,18 @@ func (s Substitution) ApplyTvar(tv Tvar) Tvar {
 	}
 }
 
-func (a Substitution) Merge(b Substitution) (m Substitution) {
-	m = make(Substitution, len(a)+len(b))
-	// Apply B to all of A
-	for tvA, tA := range a {
-		m[tvA] = b.ApplyType(tA)
+// Merge r into l.
+func (l Substitution) Merge(r Substitution) {
+	// Apply right to all of l
+	for tvL, tL := range l {
+		l[tvL] = r.ApplyType(tL)
 	}
-	// Add any missing from B
-	for tvB, tB := range b {
-		_, ok := m[tvB]
-		if !ok {
-			m[tvB] = tB
+	// Add missing key from r to l
+	for tvR, tR := range r {
+		if _, ok := l[tvR]; !ok {
+			l[tvR] = tR
 		}
 	}
-	return m
 }
 
 func (s Substitution) String() string {
@@ -69,7 +67,10 @@ func (s Substitution) String() string {
 		vars = append(vars, int(tv))
 	}
 	sort.Ints(vars)
-	builder.WriteString("{\n")
+	builder.WriteString("{")
+	if len(s) > 1 {
+		builder.WriteString("\n")
+	}
 	for i, tvi := range vars {
 		tv := Tvar(tvi)
 		if i != 0 {

@@ -9,22 +9,24 @@ import (
 	"github.com/influxdata/flux/semantic"
 )
 
-type Basic interface {
+type TypeExpression interface {
+	FreeVars(*Ctx) TvarSet
+	Type(map[Tvar]Kind) (semantic.Type, error)
 }
 
 type Type interface {
+	TypeExpression
 	Occurs(tv Tvar) bool
 	SubstType(tv Tvar, t Type) Type
-	FreeVars(*Ctx) TvarSet
 	UnifyType(map[Tvar]Kind, Type) (Substitution, error)
+	// Normalize rewrites all free variables with fresh variables starting at zero.
+	//Normalize() Type
 }
 
 type Kind interface {
-	Invalid() bool
+	TypeExpression
 	SubstKind(tv Tvar, t Type) Kind
-	FreeVars(*Ctx) TvarSet
-	UnifyKind(map[Tvar]Kind, Tvar, Kind) (Substitution, error)
-	Merge(c *Ctx, k Kind) Kind
+	UnifyKind(map[Tvar]Kind, Kind) (Kind, Substitution, error)
 }
 
 type TypeClass interface {
@@ -47,9 +49,11 @@ func (a Tvar) SubstType(b Tvar, t Type) Type {
 }
 func (tv Tvar) FreeVars(c *Ctx) TvarSet {
 	fvs := TvarSet{tv}
-	k, ok := c.kindConst[tv]
+	ks, ok := c.kindConst[tv]
 	if ok {
-		fvs = fvs.union(k.FreeVars(c))
+		for _, k := range ks {
+			fvs = fvs.union(k.FreeVars(c))
+		}
 	}
 	return fvs
 }
@@ -59,15 +63,25 @@ func (l Tvar) UnifyType(kinds map[Tvar]Kind, r Type) (Substitution, error) {
 		if l == r {
 			return nil, nil
 		}
-		subst, err := unifyKindsByVar(kinds, l, r)
+		subst := make(Substitution)
+		s, err := unifyKindsByVar(kinds, l, r)
 		if err != nil {
 			return nil, err
 		}
-		s := subst.Merge(Substitution{l: r})
-		return s, nil
+		subst.Merge(s)
+		subst.Merge(Substitution{l: r})
+		return subst, nil
 	default:
 		return unifyVarAndType(kinds, l, r)
 	}
+}
+
+func (tv Tvar) Type(kinds map[Tvar]Kind) (semantic.Type, error) {
+	k, ok := kinds[tv]
+	if !ok {
+		return nil, fmt.Errorf("type variable %q is not monomorphic", tv)
+	}
+	return k.Type(kinds)
 }
 
 type basic semantic.Kind
@@ -78,6 +92,7 @@ func (b basic) String() string {
 
 func (b basic) Occurs(Tvar) bool                                    { return false }
 func (b basic) SubstType(Tvar, Type) Type                           { return b }
+func (b basic) Type(map[Tvar]Kind) (semantic.Type, error)           { return semantic.Kind(b), nil }
 func (b basic) FreeVars(*Ctx) TvarSet                               { return nil }
 func (b basic) UnifyType(map[Tvar]Kind, Type) (Substitution, error) { return nil, nil }
 
@@ -89,6 +104,7 @@ func (i invalid) String() string {
 
 func (i invalid) Occurs(tv Tvar) bool                                 { return false }
 func (i invalid) SubstType(Tvar, Type) Type                           { return i }
+func (i invalid) Type(map[Tvar]Kind) (semantic.Type, error)           { return semantic.Invalid, nil }
 func (i invalid) FreeVars(*Ctx) TvarSet                               { return nil }
 func (i invalid) UnifyType(map[Tvar]Kind, Type) (Substitution, error) { return nil, nil }
 
@@ -118,6 +134,13 @@ func (a list) UnifyType(kinds map[Tvar]Kind, b Type) (Substitution, error) {
 	default:
 		return nil, fmt.Errorf("cannot unify list with %T", b)
 	}
+}
+func (l list) Type(kinds map[Tvar]Kind) (semantic.Type, error) {
+	t, err := l.typ.Type(kinds)
+	if err != nil {
+		return nil, err
+	}
+	return semantic.NewArrayType(t), nil
 }
 
 type function struct {
@@ -193,33 +216,50 @@ func (l function) UnifyType(kinds map[Tvar]Kind, r Type) (Substitution, error) {
 			if err != nil {
 				return nil, err
 			}
-			subst = subst.Merge(s)
+			subst.Merge(s)
 		}
 		s, err := unifyTypes(kinds, l.ret, r.ret)
 		if err != nil {
 			return nil, err
 		}
-		subst = subst.Merge(s)
+		subst.Merge(s)
 		return subst, nil
 	default:
 		return nil, fmt.Errorf("cannot unify list with %T", r)
 	}
 }
+func (f function) Type(kinds map[Tvar]Kind) (semantic.Type, error) {
+	ret, err := f.ret.Type(kinds)
+	if err != nil {
+		return nil, err
+	}
+	parameters := make(map[string]semantic.Type, len(f.args))
+	for l, a := range f.args {
+		t, err := a.Type(kinds)
+		if err != nil {
+			return nil, err
+		}
+		parameters[l] = t
+	}
+	in := semantic.NewObjectType(parameters)
+	return semantic.NewFunctionType(semantic.FunctionSignature{
+		In:  in,
+		Out: ret,
+	}), nil
+}
 
 type KClass struct{}
 
-func (k KClass) Invalid() bool           { return false }
 func (k KClass) FreeVars(c *Ctx) TvarSet { return nil }
 func (k KClass) SubstKind(tv Tvar, t Type) Kind {
 	return k
 }
-func (a KClass) UnifyKind(kinds map[Tvar]Kind, tv Tvar, b Kind) (Substitution, error) {
+func (l KClass) UnifyKind(kinds map[Tvar]Kind, r Kind) (Kind, Substitution, error) {
 	//TODO
-	return nil, nil
+	return nil, nil, nil
 }
-func (a KClass) Merge(c *Ctx, b Kind) Kind {
-	//TODO
-	return a
+func (k KClass) Type(map[Tvar]Kind) (semantic.Type, error) {
+	return nil, errors.New("KClass has no type")
 }
 
 type KRecord struct {
@@ -262,40 +302,41 @@ func (k KRecord) FreeVars(c *Ctx) TvarSet {
 	return fvs
 }
 
-func (a KRecord) UnifyKind(kinds map[Tvar]Kind, tv Tvar, k Kind) (Substitution, error) {
-	b, ok := k.(KRecord)
+func (l KRecord) UnifyKind(kinds map[Tvar]Kind, k Kind) (kind Kind, _ Substitution, _ error) {
+	r, ok := k.(KRecord)
 	if !ok {
-		return nil, fmt.Errorf("cannot unify record with %T", k)
+		return nil, nil, fmt.Errorf("cannot unify record with %T", k)
 	}
 
 	// Merge fields building up a substitution
 	subst := make(Substitution)
-	fields := make(map[string]Type, len(a.fields)+len(b.fields))
-	for f, typA := range a.fields {
-		typB, ok := b.fields[f]
+	fields := make(map[string]Type, len(l.fields)+len(r.fields))
+	for f, typL := range l.fields {
+		fields[f] = typL
+		typR, ok := r.fields[f]
 		if !ok {
-			fields[f] = typA
 			continue
 		}
-		s, err := typA.UnifyType(kinds, typB)
+		s, err := unifyTypes(kinds, typL, typR)
 		if err != nil {
 			fields[f] = invalid{}
 		}
-		subst = subst.Merge(s)
+		subst.Merge(s)
+		fields[f] = subst.ApplyType(typL)
 	}
-	for f, typB := range b.fields {
-		_, ok := a.fields[f]
+	for f, typR := range r.fields {
+		_, ok := l.fields[f]
 		if !ok {
-			fields[f] = typB
+			fields[f] = typR
 		}
 	}
 
 	// Manage label bounds
-	upper := a.upper.intersect(b.upper)
-	lower := a.lower.union(b.lower)
+	upper := l.upper.intersect(r.upper)
+	lower := l.lower.union(r.lower)
 
 	if !upper.isSuperSet(lower) {
-		return nil, fmt.Errorf("unknown record accces l: %v, u: %v", lower, upper)
+		return nil, nil, fmt.Errorf("unknown record accces l: %v, u: %v", lower, upper)
 	}
 
 	kr := KRecord{
@@ -304,45 +345,27 @@ func (a KRecord) UnifyKind(kinds map[Tvar]Kind, tv Tvar, k Kind) (Substitution, 
 		upper:  upper,
 	}
 	if kr.Invalid() {
-		return nil, fmt.Errorf("invalid record access %v", kr)
+		return nil, nil, fmt.Errorf("invalid record access %v", kr)
 	}
-	kinds[tv] = kr
-	return subst, nil
+	return kr, subst, nil
 }
 
-func (a KRecord) Merge(c *Ctx, k Kind) Kind {
-	b, ok := k.(KRecord)
-	if !ok {
-		//return nil, fmt.Errorf("cannot merge record with %T", k)
-		panic("boo")
-	}
-
-	// Merge fields building up a substitution
-	fields := make(map[string]Type, len(a.fields)+len(b.fields))
-	for f, typA := range a.fields {
-		fields[f] = typA
-	}
-	for f, typB := range b.fields {
-		_, ok := fields[f]
+func (k KRecord) Type(kinds map[Tvar]Kind) (semantic.Type, error) {
+	properties := make(map[string]semantic.Type, len(k.upper))
+	for _, l := range k.upper {
+		ft, ok := k.fields[l]
 		if !ok {
-			fields[f] = typB
+			return nil, fmt.Errorf("error: missing type information for %q", l)
+		}
+		if _, ok := ft.(invalid); !ok {
+			t, err := ft.Type(kinds)
+			if err != nil {
+				return nil, err
+			}
+			properties[l] = t
 		}
 	}
-
-	// Manage label bounds
-	upper := a.upper.intersect(b.upper)
-	lower := a.lower.union(b.lower)
-
-	for _, l := range lower {
-		// Passing nil types here?
-		// Means fail, how to fail here?
-		c.AddTypeConst(a.fields[l], b.fields[l])
-	}
-	return KRecord{
-		fields: fields,
-		lower:  lower,
-		upper:  upper,
-	}
+	return semantic.NewObjectType(properties), nil
 }
 
 type Comparable struct{}

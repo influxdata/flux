@@ -68,7 +68,11 @@ type visitor struct {
 }
 
 func (v visitor) Visit(n semantic.Node) semantic.Visitor {
-	t, _ := v.sol.TypeOf(n)
+	t, err := v.sol.TypeOf(n)
+	if err != nil {
+		log.Printf("%T@%v: %v", n, n.Location(), err)
+		return v
+	}
 	if t != nil {
 		log.Printf("%T@%v: %v", n, n.Location(), t)
 	}

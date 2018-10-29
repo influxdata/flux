@@ -7,8 +7,8 @@ import (
 
 type Ctx struct {
 	typeConst []TypeConstraint
-	kindConst map[Tvar]Kind
-	num       Tvar
+	kindConst map[Tvar][]Kind
+	f         fresher
 }
 
 type TypeConstraint struct {
@@ -25,7 +25,7 @@ func (tc TypeConstraint) FreeVars(c *Ctx) TvarSet {
 
 func NewCtx() *Ctx {
 	return &Ctx{
-		kindConst: make(map[Tvar]Kind),
+		kindConst: make(map[Tvar][]Kind),
 	}
 }
 
@@ -36,18 +36,8 @@ func (c *Ctx) AddTypeConst(l, r Type) {
 	})
 }
 
-func (c *Ctx) AddKindConst(tv Tvar, nk Kind) {
-	k, ok := c.kindConst[tv]
-	if ok {
-		nk = k.Merge(c, nk)
-	}
-	c.kindConst[tv] = nk
-}
-
-func (c *Ctx) Fresh() Tvar {
-	tv := c.num
-	c.num++
-	return tv
+func (c *Ctx) AddKindConst(tv Tvar, k Kind) {
+	c.kindConst[tv] = append(c.kindConst[tv], k)
 }
 
 func (c *Ctx) Inst(s Scheme) (t Type) {
@@ -57,17 +47,19 @@ func (c *Ctx) Inst(s Scheme) (t Type) {
 	// Create a substituion for the new type variables
 	subst := make(Substitution, len(s.Free))
 	for _, tv := range s.Free {
-		fresh := c.Fresh()
+		fresh := c.f.Fresh()
 		subst[tv] = fresh
 	}
 
 	// Add any new kind constraints
 	for _, tv := range s.Free {
-		k, ok := c.kindConst[tv]
+		ks, ok := c.kindConst[tv]
 		if ok {
 			ntv := subst.ApplyTvar(tv)
-			nk := subst.ApplyKind(k)
-			c.AddKindConst(ntv, nk)
+			for _, k := range ks {
+				nk := subst.ApplyKind(k)
+				c.AddKindConst(ntv, nk)
+			}
 		}
 	}
 

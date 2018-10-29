@@ -55,7 +55,7 @@ func generateType(c *Ctx, e Env, n semantic.Node) (Type, error) {
 		args := make(map[string]Type, len(n.Block.Parameters.List))
 		required := make([]string, 0, len(args))
 		for _, arg := range n.Block.Parameters.List {
-			tv := c.Fresh()
+			tv := c.f.Fresh()
 			e[arg.Key.Name] = Scheme{T: tv}
 			args[arg.Key.Name] = tv
 			hasDefault := false
@@ -96,7 +96,7 @@ func generateType(c *Ctx, e Env, n semantic.Node) (Type, error) {
 		ft := function{
 			args:     args,
 			required: required,
-			ret:      c.Fresh(),
+			ret:      c.f.Fresh(),
 		}
 		c.AddTypeConst(typ, ft)
 		return ft.ret, nil
@@ -111,7 +111,7 @@ func generateType(c *Ctx, e Env, n semantic.Node) (Type, error) {
 			fields[field.Key.Name] = t
 			upper = append(upper, field.Key.Name)
 		}
-		tv := c.Fresh()
+		tv := c.f.Fresh()
 		c.AddKindConst(tv, KRecord{
 			fields: fields,
 			lower:  newLabelSet(),
@@ -119,7 +119,7 @@ func generateType(c *Ctx, e Env, n semantic.Node) (Type, error) {
 		})
 		return tv, nil
 	case *semantic.MemberExpression:
-		ptv := c.Fresh()
+		ptv := c.f.Fresh()
 		t, err := generateType(c, e, n.Object)
 		if err != nil {
 			return nil, err
@@ -140,12 +140,22 @@ func generateType(c *Ctx, e Env, n semantic.Node) (Type, error) {
 }
 
 func unifyTypes(kinds map[Tvar]Kind, l, r Type) (Substitution, error) {
-	log.Println("unify", l, r)
+	log.Println("unifyTypes", l, r)
 	return l.UnifyType(kinds, r)
 }
 
-func unifyKinds(kinds map[Tvar]Kind, tv Tvar, l, r Kind) (Substitution, error) {
-	return l.UnifyKind(kinds, tv, r)
+func unifyKinds(kinds map[Tvar]Kind, tvl, tvr Tvar, l, r Kind) (Substitution, error) {
+	k, s, err := l.UnifyKind(kinds, r)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("unifyKinds %v = %v == %v = %v ==> %v :: %v", tvl, l, tvr, r, k, s)
+	kinds[tvr] = k
+	if tvl != tvr {
+		log.Println("unifyKinds.deleting", tvl)
+		delete(s, tvl)
+	}
+	return s, nil
 }
 
 func unifyVarAndType(kinds map[Tvar]Kind, tv Tvar, t Type) (Substitution, error) {
@@ -161,17 +171,11 @@ func unifyKindsByVar(kinds map[Tvar]Kind, l, r Tvar) (Substitution, error) {
 	kr, okr := kinds[r]
 	switch {
 	case okl && okr:
-		subst, err := unifyKinds(kinds, r, kl, kr)
-		if err != nil {
-			return nil, err
-		}
-		//log.Println("deleting", l)
-		//delete(kinds, l)
-		return subst, nil
+		return unifyKinds(kinds, l, r, kl, kr)
 	case okl && !okr:
 		kinds[r] = kl
-		//log.Println("deleting", l)
-		//delete(kinds, l)
+		log.Println("unifyKindsByVar.deleting", l)
+		delete(kinds, l)
 	}
 	return nil, nil
 }
@@ -191,18 +195,9 @@ func unifyKindsByType(kinds map[Tvar]Kind, tv Tvar, t Type) (Substitution, error
 	return nil, nil
 }
 
-func solve(program *semantic.Program) (sol *solution, err error) {
-	sol = &solution{
-		nodes: make(map[semantic.Node]Type),
-	}
+func generateConstraints(program *semantic.Program) (*Ctx, error) {
 	c := NewCtx()
 	env := make(Env)
-	defer func() {
-		//log.Println("Ctx", c)
-		//log.Println("Env", env)
-		log.Println("Err", err)
-		//log.Println("Solution", sol)
-	}()
 	for _, s := range program.Body {
 		switch s := s.(type) {
 		case *semantic.NativeVariableDeclaration:
@@ -215,63 +210,110 @@ func solve(program *semantic.Program) (sol *solution, err error) {
 				Free: t.FreeVars(c),
 			}
 			env[s.Identifier.Name] = scheme
-			sol.nodes[s] = t
 		case *semantic.ExpressionStatement:
 			t, err := generateType(c, env, s.Expression)
 			if err != nil {
 				return nil, err
 			}
-			sol.nodes[s] = t
 		}
 	}
-	log.Println("Generated Constraints", c)
+	return c, nil
+}
 
-	kinds := make(map[Tvar]Kind, len(c.kindConst))
+func Infer(program *semantic.Program) (Solution, error) {
+	cs, err := generateConstraints(program)
+	if err != nil {
+		return nil, err
+	}
+	log.Println("Generated Constraints", cs)
+	s := &Solution{
+		cs:    cs,
+		nodes: make(map[semantic.Node]Type),
+	}
+	err := s.solve()
+	if err != nil {
+		return nil, err
+	}
+	return s, nil
+}
+
+type Solution struct {
+	cs    *Ctx
+	kinds kindsMap
+	nodes map[semantic.Node]typeAnnotation
+}
+
+type typeAnnotation struct {
+	Type Type
+	Err  error
+}
+
+func (sol *Solution) solve() error {
+	kinds := make(map[Tvar]Kind, len(sol.cs.kindConst))
 	subst := make(Substitution)
-	defer func() {
-		log.Println("kinds", kindsMap(kinds))
-		log.Println("subst", subst)
-	}()
-	for tv, kind := range c.kindConst {
-		kinds[tv] = kind
+	for tv, ks := range sol.cs.kindConst {
+		kinds[tv] = ks[0]
 	}
 
-	for _, tc := range c.typeConst {
+	for tvl, ks := range sol.cs.kindConst {
+		for _, k := range ks {
+			tvr := subst.ApplyTvar(tvl)
+			kind := kinds[tvr]
+			s, err := unifyKinds(kinds, tvl, tvr, kind, k)
+			if err != nil {
+				return nil, err
+			}
+			subst.Merge(s)
+		}
+	}
+
+	for _, tc := range sol.cs.typeConst {
 		l := subst.ApplyType(tc.l)
 		r := subst.ApplyType(tc.r)
 		s, err := unifyTypes(kinds, l, r)
 		if err != nil {
 			return nil, err
 		}
-		subst = subst.Merge(s)
+		subst.Merge(s)
 	}
 
-	skinds := make(map[Tvar]Kind, len(kinds))
+	s.kinds = make(map[Tvar]Kind, len(kinds))
 	for tv, k := range kinds {
 		k = subst.ApplyKind(k)
 		tv = subst.ApplyTvar(tv)
-		skinds[tv] = k
+		s.kinds[tv] = k
 	}
-	kinds = skinds
-	env = subst.ApplyEnv(env)
-	return sol, nil
+	return nil
 }
 
-func Infer(program *semantic.Program) (Solution, error) {
-	return solve(program)
+func (s *Solution) TypeOf(n semantic.Node) (semantic.Type, error) {
+	t, ok := s.nodes[n]
+	if !ok {
+		return nil, nil
+	}
+	if t.Err != nil {
+		return nil, t.Err
+	}
+	return t.Type(s.kinds)
 }
 
-type Solution interface {
-	TypeOf(n semantic.Node) (Type, error)
+func (s *Solution) NormalizedTypeOf(n semantic.Node) (Type, error) {
+	t, ok := s.nodes[n]
+	if !ok {
+		return nil, nil
+	}
+	if t.Err != nil {
+		return nil, t.Err
+	}
+	// Normalize Type
+	// return t.Normalize()
+	return t, nil
 }
 
-type solution struct {
-	kinds map[Tvar]Kind
-	nodes map[semantic.Node]Type
-}
-
-func (s *solution) TypeOf(n semantic.Node) (Type, error) {
-	return s.nodes[n], nil
+func (s *Solution) AddConstraint(l, r Type) error {
+	s.kinds = nil
+	s.nodes = make(map[semantic.Node]Type)
+	return s.solve()
 }
 
 type kindsMap map[Tvar]Kind
