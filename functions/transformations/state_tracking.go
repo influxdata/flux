@@ -26,18 +26,19 @@ type StateTrackingOpSpec struct {
 func init() {
 	stateTrackingSignature := flux.FunctionSignature(
 		map[string]semantic.PolyType{
-			"fn":            semantic.Function,
+			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{
+					"r": semantic.Tvar(1),
+				},
+				Required: semantic.LabelSet{"r"},
+				Return:   semantic.Bool,
+			}),
 			"countLabel":    semantic.String,
 			"durationLabel": semantic.String,
 			"durationUnit":  semantic.Duration,
 			"timeCol":       semantic.String,
 		},
-		[]string{
-			"countLabel",
-			"durationLabel",
-			"durationUnit",
-			"timeCol",
-		},
+		[]string{"fn"},
 	)
 
 	flux.RegisterFunction(StateTrackingKind, createStateTrackingOpSpec, stateTrackingSignature)

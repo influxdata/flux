@@ -26,7 +26,7 @@ func init() {
 		map[string]semantic.PolyType{
 			"tables": semantic.NewArrayPolyType(flux.TableObjectType),
 		},
-		nil,
+		[]string{"tables"},
 	)
 
 	flux.RegisterFunction(UnionKind, createUnionOpSpec, unionSignature)

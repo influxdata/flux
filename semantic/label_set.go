@@ -7,10 +7,10 @@ import "strings"
 type LabelSet []string
 
 func EmptyLabelSet() LabelSet {
-	return make(LabelSet, 0, 10)
+	return LabelSet{}
 }
 
-func toLabelSet(s []string) LabelSet {
+func ToLabelSet(s []string) LabelSet {
 	if s == nil {
 		return LabelSet{}
 	}

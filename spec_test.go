@@ -344,7 +344,7 @@ func Example_overrideDefaultOptionInternally() {
 	timeValue := time.Date(2018, 7, 13, 0, 0, 0, 0, time.UTC)
 	functionName := "newTime"
 	functionType := semantic.NewFunctionType(semantic.FunctionSignature{
-		Out: semantic.Time,
+		Return: semantic.Time,
 	})
 	functionCall := func(args values.Object) (values.Value, error) {
 		return values.NewTime(values.ConvertTime(timeValue)), nil

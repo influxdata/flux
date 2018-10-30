@@ -23,12 +23,16 @@ type MapOpSpec struct {
 func init() {
 	mapSignature := flux.FunctionSignature(
 		map[string]semantic.PolyType{
-			"fn":       semantic.Function,
+			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{
+					"r": semantic.Tvar(1),
+				},
+				Required: semantic.LabelSet{"r"},
+				Return:   semantic.Tvar(2),
+			}),
 			"mergeKey": semantic.Bool,
 		},
-		[]string{
-			"mergeKey",
-		},
+		[]string{"fn"},
 	)
 
 	flux.RegisterFunction(MapKind, createMapOpSpec, mapSignature)

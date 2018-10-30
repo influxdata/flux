@@ -31,7 +31,7 @@ func init() {
 			"dataSourceName": semantic.String,
 			"query":          semantic.String,
 		},
-		semantic.LabelSet{"driverName", "dataSourceName", "query"},
+		[]string{"driverName", "dataSourceName", "query"},
 	)
 	flux.RegisterFunction(FromSQLKind, createFromSQLOpSpec, fromSQLSignature)
 	flux.RegisterOpSpec(FromSQLKind, newFromSQLOp)

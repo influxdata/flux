@@ -485,7 +485,7 @@ func FunctionSignature(parameters map[string]semantic.PolyType, required []strin
 	parameters[TableParameter] = TableObjectType
 	return semantic.FunctionPolySignature{
 		Parameters:   parameters,
-		Required:     required,
+		Required:     semantic.ToLabelSet(required),
 		Return:       TableObjectType,
 		PipeArgument: TableParameter,
 	}

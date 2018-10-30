@@ -19,10 +19,13 @@ type KeyValuesOpSpec struct {
 }
 
 func init() {
-	keyValuesSignature := flux.FunctionSignature(map[string]semantic.PolyType{
-		"keyCols": semantic.NewArrayPolyType(semantic.String),
-		"fn":      semantic.Function,
-	}, nil)
+	keyValuesSignature := flux.FunctionSignature(
+		map[string]semantic.PolyType{
+			"keyCols": semantic.NewArrayPolyType(semantic.String),
+			"fn":      semantic.Function,
+		},
+		nil,
+	)
 
 	flux.RegisterFunction(KeyValuesKind, createKeyValuesOpSpec, keyValuesSignature)
 	flux.RegisterOpSpec(KeyValuesKind, newKeyValuesOp)

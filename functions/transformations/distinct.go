@@ -16,9 +16,12 @@ type DistinctOpSpec struct {
 }
 
 func init() {
-	distinctSignature := flux.FunctionSignature(map[string]semantic.PolyType{
-		"column": semantic.String,
-	}, nil)
+	distinctSignature := flux.FunctionSignature(
+		map[string]semantic.PolyType{
+			"column": semantic.String,
+		},
+		nil,
+	)
 
 	flux.RegisterFunction(DistinctKind, createDistinctOpSpec, distinctSignature)
 	flux.RegisterOpSpec(DistinctKind, newDistinctOp)

@@ -32,7 +32,7 @@ func init() {
 			"colKey":   semantic.Array,
 			"valueCol": semantic.String,
 		},
-		nil,
+		[]string{"rowKey", "colKey", "valueCol"},
 	)
 
 	flux.RegisterFunction(PivotKind, createPivotOpSpec, pivotSignature)

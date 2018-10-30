@@ -37,7 +37,7 @@ func init() {
 				Return:   semantic.Int,
 			}),
 		},
-		semantic.LabelSet{"start", "stop", "count", "fn"},
+		[]string{"start", "stop", "count", "fn"},
 	)
 	flux.RegisterFunction(FromGeneratorKind, createFromGeneratorOpSpec, fromGeneratorSignature)
 	flux.RegisterOpSpec(FromGeneratorKind, newFromGeneratorOp)

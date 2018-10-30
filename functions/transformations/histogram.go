@@ -26,12 +26,15 @@ type HistogramOpSpec struct {
 }
 
 func init() {
-	histogramSignature := execute.AggregateSignature(map[string]semantic.PolyType{
-		"column":           semantic.String,
-		"upperBoundColumn": semantic.String,
-		"buckets":          semantic.NewArrayPolyType(semantic.Float),
-		"normalize":        semantic.Bool,
-	}, nil)
+	histogramSignature := execute.AggregateSignature(
+		map[string]semantic.PolyType{
+			"column":           semantic.String,
+			"upperBoundColumn": semantic.String,
+			"buckets":          semantic.NewArrayPolyType(semantic.Float),
+			"normalize":        semantic.Bool,
+		},
+		[]string{"buckets"},
+	)
 
 	flux.RegisterFunction(HistogramKind, createHistogramOpSpec, histogramSignature)
 	flux.RegisterBuiltInValue("linearBuckets", linearBuckets{})

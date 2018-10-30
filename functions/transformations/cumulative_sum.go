@@ -21,9 +21,7 @@ func init() {
 		map[string]semantic.PolyType{
 			"columns": semantic.NewArrayPolyType(semantic.String),
 		},
-		[]string{
-			"columns",
-		},
+		nil,
 	)
 
 	flux.RegisterFunction(CumulativeSumKind, createCumulativeSumOpSpec, cumulativeSumSignature)

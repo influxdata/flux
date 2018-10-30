@@ -19,10 +19,13 @@ type IntegralOpSpec struct {
 }
 
 func init() {
-	integralSignature := execute.AggregateSignature(map[string]semantic.PolyType{
-		"unit":    semantic.Duration,
-		"timeCol": semantic.String,
-	}, nil)
+	integralSignature := execute.AggregateSignature(
+		map[string]semantic.PolyType{
+			"unit":    semantic.Duration,
+			"timeCol": semantic.String,
+		},
+		nil,
+	)
 
 	flux.RegisterFunction(IntegralKind, createIntegralOpSpec, integralSignature)
 	flux.RegisterOpSpec(IntegralKind, newIntegralOp)

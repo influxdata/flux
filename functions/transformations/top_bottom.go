@@ -26,7 +26,7 @@ bottom = (n, cols=["_value"], table=<-) => _sortLimit(table:table, n:n, cols:col
 // _highestOrLowest is a helper function, which reduces all groups into a single group by specific tags and a reducer function,
 // then it selects the highest or lowest records based on the cols and the _sortLimit function.
 // The default reducer assumes no reducing needs to be performed.
-_highestOrLowest = (n, _sortLimit=(table=<-,n,cols) => table, reducer=(table=<-) => table, cols=["_value"], by=[], table=<-) =>
+_highestOrLowest = (n, _sortLimit, reducer, cols=["_value"], by=[], table=<-) =>
 	table
 		|> group(by:by)
 		|> reducer()

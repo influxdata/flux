@@ -25,9 +25,8 @@ func init() {
 			"on":     semantic.NewArrayPolyType(semantic.String),
 			"method": semantic.String,
 		},
-		Required:     semantic.LabelSet{"tables"},
-		Return:       flux.TableObjectType,
-		PipeArgument: "tables",
+		Required: semantic.LabelSet{"tables"},
+		Return:   flux.TableObjectType,
 	}
 	flux.RegisterFunction(JoinKind, createJoinOpSpec, joinSignature)
 	flux.RegisterOpSpec(JoinKind, newJoinOp)

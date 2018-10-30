@@ -40,11 +40,7 @@ func init() {
 			"compression": semantic.Float,
 			"method":      semantic.String,
 		},
-		[]string{
-			"column",
-			"compression",
-			"method",
-		},
+		[]string{"percentile"},
 	)
 
 	flux.RegisterFunction(PercentileKind, createPercentileOpSpec, percentileSignature)

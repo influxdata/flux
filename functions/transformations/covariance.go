@@ -25,7 +25,7 @@ func init() {
 			"pearsonr": semantic.Bool,
 			"valueDst": semantic.String,
 		},
-		[]string{"pearsonr", "valueDst"},
+		nil,
 	)
 	flux.RegisterBuiltIn("covariance", covarianceBuiltIn)
 	flux.RegisterFunction(CovarianceKind, createCovarianceOpSpec, covarianceSignature)

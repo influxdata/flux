@@ -32,12 +32,7 @@ func init() {
 			"none":   semantic.Bool,
 			"all":    semantic.Bool,
 		},
-		[]string{
-			"by",
-			"except",
-			"none",
-			"all",
-		},
+		nil,
 	)
 
 	flux.RegisterFunction(GroupKind, createGroupOpSpec, groupSignature)

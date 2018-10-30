@@ -20,10 +20,13 @@ type SampleOpSpec struct {
 }
 
 func init() {
-	sampleSignature := execute.SelectorSignature(map[string]semantic.PolyType{
-		"n":   semantic.Int,
-		"pos": semantic.Int,
-	}, nil)
+	sampleSignature := execute.SelectorSignature(
+		map[string]semantic.PolyType{
+			"n":   semantic.Int,
+			"pos": semantic.Int,
+		},
+		[]string{"n"},
+	)
 
 	flux.RegisterFunction(SampleKind, createSampleOpSpec, sampleSignature)
 	flux.RegisterOpSpec(SampleKind, newSampleOp)

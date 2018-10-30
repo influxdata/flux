@@ -27,6 +27,27 @@ const (
 	DefaultToHTTPTimeout = 1 * time.Second
 )
 
+func init() {
+	toHTTPSignature := flux.FunctionSignature(
+		map[string]semantic.PolyType{
+			"url":          semantic.String,
+			"method":       semantic.String,
+			"name":         semantic.String,
+			"timeout":      semantic.Duration,
+			"timeColumn":   semantic.String,
+			"tagColumns":   semantic.NewArrayPolyType(semantic.String),
+			"valueColumns": semantic.NewArrayPolyType(semantic.String),
+		},
+		[]string{"url"},
+	)
+
+	flux.RegisterFunctionWithSideEffect(ToHTTPKind, createToHTTPOpSpec, toHTTPSignature)
+	flux.RegisterOpSpec(ToHTTPKind,
+		func() flux.OperationSpec { return &ToHTTPOpSpec{} })
+	plan.RegisterProcedureSpecWithSideEffect(ToHTTPKind, newToHTTPProcedure, ToHTTPKind)
+	execute.RegisterTransformation(ToHTTPKind, createToHTTPTransformation)
+}
+
 // DefaultToHTTPUserAgent is the default user agent used by ToHttp
 var DefaultToHTTPUserAgent = "fluxd/dev"
 
@@ -66,27 +87,6 @@ type ToHTTPOpSpec struct {
 	TimeColumn   string            `json:"timeColumn"`
 	TagColumns   []string          `json:"tagColumns"`
 	ValueColumns []string          `json:"valueColumns"`
-}
-
-func init() {
-	toHTTPSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"url":          semantic.String,
-			"method":       semantic.String,
-			"name":         semantic.String,
-			"timeout":      semantic.Duration,
-			"timeColumn":   semantic.String,
-			"tagColumns":   semantic.NewArrayPolyType(semantic.String),
-			"valueColumns": semantic.NewArrayPolyType(semantic.String),
-		},
-		[]string{"url"},
-	)
-
-	flux.RegisterFunctionWithSideEffect(ToHTTPKind, createToHTTPOpSpec, toHTTPSignature)
-	flux.RegisterOpSpec(ToHTTPKind,
-		func() flux.OperationSpec { return &ToHTTPOpSpec{} })
-	plan.RegisterProcedureSpecWithSideEffect(ToHTTPKind, newToHTTPProcedure, ToHTTPKind)
-	execute.RegisterTransformation(ToHTTPKind, createToHTTPTransformation)
 }
 
 // ReadArgs loads a flux.Arguments into ToHTTPOpSpec.  It sets several default values.

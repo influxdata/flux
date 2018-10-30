@@ -19,10 +19,13 @@ type SortOpSpec struct {
 }
 
 func init() {
-	sortSignature := flux.FunctionSignature(map[string]semantic.PolyType{
-		"cols": semantic.NewArrayPolyType(semantic.String),
-		"desc": semantic.Bool,
-	}, nil)
+	sortSignature := flux.FunctionSignature(
+		map[string]semantic.PolyType{
+			"cols": semantic.NewArrayPolyType(semantic.String),
+			"desc": semantic.Bool,
+		},
+		nil,
+	)
 
 	flux.RegisterFunction(SortKind, createSortOpSpec, sortSignature)
 	flux.RegisterOpSpec(SortKind, newSortOp)

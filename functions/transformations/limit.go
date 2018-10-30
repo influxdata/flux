@@ -20,13 +20,12 @@ type LimitOpSpec struct {
 }
 
 func init() {
-	limitSignature := flux.FunctionSignature(map[string]semantic.PolyType{
-		"n":      semantic.Int,
-		"offset": semantic.Int,
-	},
-		[]string{
-			"offset",
+	limitSignature := flux.FunctionSignature(
+		map[string]semantic.PolyType{
+			"n":      semantic.Int,
+			"offset": semantic.Int,
 		},
+		[]string{"n"},
 	)
 
 	flux.RegisterFunction(LimitKind, createLimitOpSpec, limitSignature)

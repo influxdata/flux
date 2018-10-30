@@ -24,10 +24,11 @@ type FromCSVOpSpec struct {
 }
 
 func init() {
-	fromCSVSignature := flux.FunctionSignature(map[string]semantic.PolyType{
-		"csv":  semantic.String,
-		"file": semantic.String,
-	},
+	fromCSVSignature := flux.FunctionSignature(
+		map[string]semantic.PolyType{
+			"csv":  semantic.String,
+			"file": semantic.String,
+		},
 		nil,
 	)
 	flux.RegisterFunction(FromCSVKind, createFromCSVOpSpec, fromCSVSignature)

@@ -26,10 +26,7 @@ func init() {
 			"bucket":   semantic.String,
 			"bucketID": semantic.String,
 		},
-		[]string{
-			"bucket",
-			"bucketID",
-		},
+		nil,
 	)
 
 	flux.RegisterFunction(FromKind, createFromOpSpec, fromSignature)

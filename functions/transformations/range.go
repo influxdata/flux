@@ -22,13 +22,16 @@ type RangeOpSpec struct {
 }
 
 func init() {
-	rangeSignature := flux.FunctionSignature(map[string]semantic.PolyType{
-		"start":    semantic.Time,
-		"stop":     semantic.Time,
-		"timeCol":  semantic.String,
-		"startCol": semantic.String,
-		"stopCol":  semantic.String,
-	}, nil)
+	rangeSignature := flux.FunctionSignature(
+		map[string]semantic.PolyType{
+			"start":    semantic.Time,
+			"stop":     semantic.Time,
+			"timeCol":  semantic.String,
+			"startCol": semantic.String,
+			"stopCol":  semantic.String,
+		},
+		[]string{"start"},
+	)
 
 	flux.RegisterFunction(RangeKind, createRangeOpSpec, rangeSignature)
 	flux.RegisterOpSpec(RangeKind, newRangeOp)
