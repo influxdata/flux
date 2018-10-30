@@ -17,8 +17,8 @@ type TypeSolution interface {
 	//AddConstraint(l, r PolyType) error
 }
 
-// Infer produces a solution to type inference for a given semantic graph.
-func Infer(n Node) (TypeSolution, error) {
+// InferTypes produces a solution to type inference for a given semantic graph.
+func InferTypes(n Node) (TypeSolution, error) {
 	annotator := Annotate(n)
 	cs := GenerateConstraints(n, annotator)
 	return SolveConstraints(cs)

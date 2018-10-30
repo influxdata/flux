@@ -30,7 +30,11 @@ func Compile(f *semantic.FunctionExpression, in semantic.Type, builtins Scope) (
 		In:  in.PolyType(),
 		Out: typeSol.Fresh(),
 	})
-	if err := typeSol.Unify(pt, fpt); err != nil {
+	if err := typeSol.AddConstraint(pt, fpt); err != nil {
+		return nil, err
+	}
+	pt, err = typeSol.PolyTypeOf(extern)
+	if err != nil {
 		return nil, err
 	}
 	fnType, mono := pt.Type()

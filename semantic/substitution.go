@@ -50,9 +50,9 @@ func (s Substitution) ApplyTvar(tv Tvar) Tvar {
 func (l Substitution) Merge(r Substitution) {
 	// Apply right to all of l
 	for tvL, tL := range l {
-		l[tvL] = r.ApplyType(tL)
+		l[r.ApplyTvar(tvL)] = r.ApplyType(tL)
 	}
-	// Add missing key from r to l
+	// Add missing keys from r to l
 	for tvR, tR := range r {
 		if _, ok := l[tvR]; !ok {
 			l[tvR] = tR

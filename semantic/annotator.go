@@ -1,7 +1,8 @@
 package semantic
 
-func Annotate(node Node) *Annotator {
-	annotator := &Annotator{
+func Annotate(node Node) Annotator {
+	annotator := Annotator{
+		f:           new(fresher),
 		annotations: make(map[Node]annotation),
 	}
 	Walk(annotator, node)
@@ -9,7 +10,7 @@ func Annotate(node Node) *Annotator {
 }
 
 type Annotator struct {
-	f           fresher
+	f           *fresher
 	annotations map[Node]annotation
 }
 
@@ -19,10 +20,11 @@ type annotation struct {
 	Err  error
 }
 
-func (v *Annotator) Visit(node Node) Visitor {
+func (v Annotator) Visit(node Node) Visitor {
 	switch n := node.(type) {
 	case *FunctionBlock,
 		*FunctionParameter,
+		*Property,
 		Expression:
 		v.annotations[n] = annotation{
 			Var: v.f.Fresh(),
@@ -30,4 +32,4 @@ func (v *Annotator) Visit(node Node) Visitor {
 	}
 	return v
 }
-func (v *Annotator) Done(node Node) {}
+func (v Annotator) Done(node Node) {}

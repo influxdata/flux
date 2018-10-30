@@ -2,13 +2,15 @@ package semantic
 
 import "strings"
 
+// LabelSet is a set of string labels.
+// The nil value of a LabelSet has special meaning as the infinite set of all possible string labels.
 type LabelSet []string
 
-func newLabelSet() LabelSet {
+func EmptyLabelSet() LabelSet {
 	return make(LabelSet, 0, 10)
 }
 
-var allLabels = LabelSet(nil)
+var AllLabels = LabelSet(nil)
 
 func (s LabelSet) String() string {
 	if s == nil {
@@ -99,6 +101,13 @@ func (a LabelSet) isSubSet(b LabelSet) bool {
 }
 
 func (a LabelSet) equal(b LabelSet) bool {
+	if a == nil && b == nil {
+		return true
+	}
+	if a == nil && b != nil ||
+		b == nil && a != nil {
+		return false
+	}
 	if len(a) != len(b) {
 		return false
 	}

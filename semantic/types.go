@@ -87,13 +87,9 @@ func (k Kind) String() string {
 	return "kind" + strconv.Itoa(int(k))
 }
 
-func (k Kind) PolyType() PolyType {
-	return basic(k)
-}
+func (k Kind) PolyType() PolyType { return k }
+func (k Kind) Kind() Kind         { return k }
 
-func (k Kind) Kind() Kind {
-	return k
-}
 func (k Kind) PropertyType(name string) Type {
 	panic(fmt.Errorf("cannot get type of property %q, from kind %q", name, k))
 }

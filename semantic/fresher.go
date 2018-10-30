@@ -4,10 +4,13 @@ type Fresher interface {
 	Fresh() Tvar
 }
 
+func NewFresher() Fresher {
+	return new(fresher)
+}
+
 type fresher Tvar
 
 func (f *fresher) Fresh() Tvar {
-	fresh := *f
 	(*f)++
-	return Tvar(fresh)
+	return Tvar(*f)
 }

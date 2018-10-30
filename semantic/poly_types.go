@@ -10,6 +10,7 @@ import (
 type TypeExpression interface {
 	FreeVars(*Constraints) TvarSet
 	Type(map[Tvar]KindConstraint) (Type, error)
+	polyType(map[Tvar]KindConstraint) (PolyType, error)
 }
 
 type PolyType interface {
@@ -19,6 +20,8 @@ type PolyType interface {
 	UnifyType(map[Tvar]KindConstraint, PolyType) (Substitution, error)
 	// Normalize rewrites all free variables with fresh variables starting at zero.
 	//Normalize() PolyType
+
+	Equal(PolyType) bool
 }
 
 type KindConstraint interface {
@@ -33,6 +36,9 @@ type TypeClass interface {
 type Tvar int
 
 func (tv Tvar) String() string {
+	if tv == 0 {
+		return "<>"
+	}
 	return fmt.Sprintf("t%d", int(tv))
 }
 
@@ -81,22 +87,49 @@ func (tv Tvar) Type(kinds map[Tvar]KindConstraint) (Type, error) {
 	}
 	return k.Type(kinds)
 }
-
-type basic Kind
-
-func NewBasicPolyType(k Kind) PolyType {
-	return basic(k)
+func (tv Tvar) polyType(kinds map[Tvar]KindConstraint) (PolyType, error) {
+	k, ok := kinds[tv]
+	if !ok {
+		return tv, nil
+	}
+	return k.polyType(kinds)
+}
+func (tv Tvar) Equal(t PolyType) bool {
+	switch t := t.(type) {
+	case Tvar:
+		return tv == t
+	default:
+		return false
+	}
 }
 
-func (b basic) String() string {
-	return Kind(b).String()
+// PolyType methods for Kind
+func (k Kind) Occurs(Tvar) bool                                   { return false }
+func (k Kind) SubstType(Tvar, PolyType) PolyType                  { return k }
+func (k Kind) Type(map[Tvar]KindConstraint) (Type, error)         { return k, nil }
+func (k Kind) polyType(map[Tvar]KindConstraint) (PolyType, error) { return k, nil }
+func (k Kind) FreeVars(*Constraints) TvarSet                      { return nil }
+func (k Kind) UnifyType(kinds map[Tvar]KindConstraint, t PolyType) (Substitution, error) {
+	switch t := t.(type) {
+	case Kind:
+		if t != k {
+			return nil, fmt.Errorf("%v != %v", k, t)
+		}
+	case Tvar:
+		return t.UnifyType(kinds, k)
+	default:
+		return nil, fmt.Errorf("cannot unify %v with %T", k, t)
+	}
+	return nil, nil
 }
-
-func (b basic) Occurs(Tvar) bool                                                  { return false }
-func (b basic) SubstType(Tvar, PolyType) PolyType                                 { return b }
-func (b basic) Type(map[Tvar]KindConstraint) (Type, error)                        { return Kind(b), nil }
-func (b basic) FreeVars(*Constraints) TvarSet                                     { return nil }
-func (b basic) UnifyType(map[Tvar]KindConstraint, PolyType) (Substitution, error) { return nil, nil }
+func (k Kind) Equal(t PolyType) bool {
+	switch t := t.(type) {
+	case Kind:
+		return t == k
+	default:
+		return false
+	}
+}
 
 type invalid struct{}
 
@@ -107,8 +140,17 @@ func (i invalid) String() string {
 func (i invalid) Occurs(tv Tvar) bool                                               { return false }
 func (i invalid) SubstType(Tvar, PolyType) PolyType                                 { return i }
 func (i invalid) Type(map[Tvar]KindConstraint) (Type, error)                        { return Invalid, nil }
+func (i invalid) polyType(map[Tvar]KindConstraint) (PolyType, error)                { return i, nil }
 func (i invalid) FreeVars(*Constraints) TvarSet                                     { return nil }
 func (i invalid) UnifyType(map[Tvar]KindConstraint, PolyType) (Substitution, error) { return nil, nil }
+func (i invalid) Equal(t PolyType) bool {
+	switch t.(type) {
+	case invalid:
+		return true
+	default:
+		return false
+	}
+}
 
 type list struct {
 	typ PolyType
@@ -137,6 +179,8 @@ func (a list) UnifyType(kinds map[Tvar]KindConstraint, b PolyType) (Substitution
 	switch b := b.(type) {
 	case list:
 		return unifyTypes(kinds, a.typ, b.typ)
+	case Tvar:
+		return b.UnifyType(kinds, a)
 	default:
 		return nil, fmt.Errorf("cannot unify list with %T", b)
 	}
@@ -148,25 +192,34 @@ func (l list) Type(kinds map[Tvar]KindConstraint) (Type, error) {
 	}
 	return NewArrayType(t), nil
 }
-
-type function struct {
-	args     map[string]PolyType
-	required LabelSet
-	ret      PolyType
+func (l list) polyType(map[Tvar]KindConstraint) (PolyType, error) { return l, nil }
+func (l list) Equal(t PolyType) bool {
+	switch t := t.(type) {
+	case list:
+		return l.typ.Equal(t.typ)
+	default:
+		return false
+	}
 }
 
-func NewFunctionPolyType(parameters map[string]PolyType, required []string, ret PolyType) PolyType {
+type function struct {
+	parameters map[string]PolyType
+	required   LabelSet
+	ret        PolyType
+}
+
+func NewFunctionPolyType(parameters map[string]PolyType, required LabelSet, ret PolyType) PolyType {
 	return function{
-		args:     parameters,
-		required: LabelSet(required),
-		ret:      ret,
+		parameters: parameters,
+		required:   LabelSet(required),
+		ret:        ret,
 	}
 }
 
 func (f function) String() string {
 	var builder strings.Builder
-	keys := make([]string, 0, len(f.args))
-	for k := range f.args {
+	keys := make([]string, 0, len(f.parameters))
+	for k := range f.parameters {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
@@ -178,14 +231,14 @@ func (f function) String() string {
 		if f.required.contains(k) {
 			builder.WriteString("^")
 		}
-		fmt.Fprintf(&builder, "%s: %v", k, f.args[k])
+		fmt.Fprintf(&builder, "%s: %v", k, f.parameters[k])
 	}
 	fmt.Fprintf(&builder, ") -> %v", f.ret)
 	return builder.String()
 }
 
 func (f function) Occurs(tv Tvar) bool {
-	for _, a := range f.args {
+	for _, a := range f.parameters {
 		occurs := a.Occurs(tv)
 		if occurs {
 			return true
@@ -195,19 +248,19 @@ func (f function) Occurs(tv Tvar) bool {
 }
 
 func (f function) SubstType(tv Tvar, typ PolyType) PolyType {
-	args := make(map[string]PolyType, len(f.args))
-	for k, t := range f.args {
-		args[k] = t.SubstType(tv, typ)
+	parameters := make(map[string]PolyType, len(f.parameters))
+	for k, t := range f.parameters {
+		parameters[k] = t.SubstType(tv, typ)
 	}
 	return function{
-		args:     args,
-		required: f.required.copy(),
-		ret:      f.ret.SubstType(tv, typ),
+		parameters: parameters,
+		required:   f.required.copy(),
+		ret:        f.ret.SubstType(tv, typ),
 	}
 }
 func (f function) FreeVars(c *Constraints) TvarSet {
 	fvs := f.ret.FreeVars(c)
-	for _, t := range f.args {
+	for _, t := range f.parameters {
 		fvs = fvs.union(t.FreeVars(c))
 	}
 	return fvs
@@ -219,8 +272,8 @@ func (l function) UnifyType(kinds map[Tvar]KindConstraint, r PolyType) (Substitu
 			return nil, fmt.Errorf("missing required parameters l: %v r: %v", l.required, r.required)
 		}
 		subst := make(Substitution)
-		for f, tl := range l.args {
-			tr, ok := r.args[f]
+		for f, tl := range l.parameters {
+			tr, ok := r.parameters[f]
 			if !ok && l.required.contains(f) {
 				return nil, errors.New("missing")
 			}
@@ -238,6 +291,8 @@ func (l function) UnifyType(kinds map[Tvar]KindConstraint, r PolyType) (Substitu
 		}
 		subst.Merge(s)
 		return subst, nil
+	case Tvar:
+		return r.UnifyType(kinds, l)
 	default:
 		return nil, fmt.Errorf("cannot unify list with %T", r)
 	}
@@ -247,8 +302,8 @@ func (f function) Type(kinds map[Tvar]KindConstraint) (Type, error) {
 	if err != nil {
 		return nil, err
 	}
-	parameters := make(map[string]Type, len(f.args))
-	for l, a := range f.args {
+	parameters := make(map[string]Type, len(f.parameters))
+	for l, a := range f.parameters {
 		t, err := a.Type(kinds)
 		if err != nil {
 			return nil, err
@@ -261,6 +316,113 @@ func (f function) Type(kinds map[Tvar]KindConstraint) (Type, error) {
 		Return:       ret,
 		PipeArgument: "",
 	}), nil
+}
+func (f function) polyType(map[Tvar]KindConstraint) (PolyType, error) { return f, nil }
+func (f function) Equal(t PolyType) bool {
+	switch t := t.(type) {
+	case function:
+		if len(f.parameters) != len(t.parameters) ||
+			!f.required.equal(t.required) ||
+			!f.ret.Equal(t.ret) {
+			return false
+		}
+		for k, p := range f.parameters {
+			op, ok := t.parameters[k]
+			if !ok || !p.Equal(op) {
+				return false
+			}
+		}
+		return true
+	default:
+		return false
+	}
+}
+
+type object struct {
+	krecord KRecord
+}
+
+func NewEmptyObjectPolyType() PolyType {
+	return NewObjectPolyType(nil, LabelSet{}, LabelSet{})
+}
+func NewObjectPolyType(properties map[string]PolyType, lower, upper LabelSet) PolyType {
+	return object{
+		krecord: KRecord{
+			properties: properties,
+			lower:      lower,
+			upper:      upper,
+		},
+	}
+}
+
+func (o object) String() string {
+	return o.krecord.String()
+}
+
+func (o object) Occurs(tv Tvar) bool {
+	for _, p := range o.krecord.properties {
+		occurs := p.Occurs(tv)
+		if occurs {
+			return true
+		}
+	}
+	return false
+}
+
+func (o object) SubstType(tv Tvar, typ PolyType) PolyType {
+	properties := make(map[string]PolyType, len(o.krecord.properties))
+	for k, t := range o.krecord.properties {
+		properties[k] = t.SubstType(tv, typ)
+	}
+	return object{
+		krecord: KRecord{
+			properties: properties,
+			lower:      o.krecord.lower.copy(),
+			upper:      o.krecord.upper.copy(),
+		},
+	}
+}
+func (o object) FreeVars(c *Constraints) TvarSet {
+	var fvs TvarSet
+	for _, t := range o.krecord.properties {
+		fvs = fvs.union(t.FreeVars(c))
+	}
+	return fvs
+}
+
+func (l object) UnifyType(kinds map[Tvar]KindConstraint, r PolyType) (Substitution, error) {
+	switch r := r.(type) {
+	case object:
+		_, subst, err := l.krecord.UnifyKind(kinds, r.krecord)
+		return subst, err
+	case Tvar:
+		return r.UnifyType(kinds, l)
+	default:
+		return nil, fmt.Errorf("cannot unify object with %T", r)
+	}
+}
+func (o object) Type(kinds map[Tvar]KindConstraint) (Type, error) {
+	return o.krecord.Type(kinds)
+}
+func (o object) polyType(map[Tvar]KindConstraint) (PolyType, error) { return o, nil }
+func (o object) Equal(t PolyType) bool {
+	switch t := t.(type) {
+	case object:
+		if len(o.krecord.properties) != len(t.krecord.properties) ||
+			!o.krecord.lower.equal(t.krecord.lower) ||
+			!o.krecord.upper.equal(t.krecord.upper) {
+			return false
+		}
+		for k, p := range o.krecord.properties {
+			op, ok := t.krecord.properties[k]
+			if !ok || !p.Equal(op) {
+				return false
+			}
+		}
+		return true
+	default:
+		return false
+	}
 }
 
 type KClass struct{}
@@ -276,20 +438,23 @@ func (l KClass) UnifyKind(kinds map[Tvar]KindConstraint, r KindConstraint) (Kind
 func (k KClass) Type(map[Tvar]KindConstraint) (Type, error) {
 	return nil, errors.New("KClass has no type")
 }
+func (k KClass) polyType(map[Tvar]KindConstraint) (PolyType, error) {
+	return nil, errors.New("KClass has no poly type")
+}
 
 type KRecord struct {
-	fields map[string]PolyType
-	lower  LabelSet
-	upper  LabelSet
+	properties map[string]PolyType
+	lower      LabelSet
+	upper      LabelSet
 }
 
 func (k KRecord) String() string {
-	return fmt.Sprintf("{%v %v %v}", k.fields, k.lower, k.upper)
+	return fmt.Sprintf("{%v %v %v}", k.properties, k.lower, k.upper)
 }
 
 func (k KRecord) Invalid() bool {
 	for _, l := range k.lower {
-		t := k.fields[l]
+		t := k.properties[l]
 		_, ok := t.(invalid)
 		if ok {
 			return true
@@ -299,19 +464,19 @@ func (k KRecord) Invalid() bool {
 }
 
 func (k KRecord) SubstKind(tv Tvar, t PolyType) KindConstraint {
-	fields := make(map[string]PolyType)
-	for k, f := range k.fields {
-		fields[k] = f.SubstType(tv, t)
+	properties := make(map[string]PolyType)
+	for k, f := range k.properties {
+		properties[k] = f.SubstType(tv, t)
 	}
 	return KRecord{
-		fields: fields,
-		upper:  k.upper.copy(),
-		lower:  k.lower.copy(),
+		properties: properties,
+		upper:      k.upper.copy(),
+		lower:      k.lower.copy(),
 	}
 }
 func (k KRecord) FreeVars(c *Constraints) TvarSet {
 	var fvs TvarSet
-	for _, f := range k.fields {
+	for _, f := range k.properties {
 		fvs = fvs.union(f.FreeVars(c))
 	}
 	return fvs
@@ -323,26 +488,26 @@ func (l KRecord) UnifyKind(kinds map[Tvar]KindConstraint, k KindConstraint) (kin
 		return nil, nil, fmt.Errorf("cannot unify record with %T", k)
 	}
 
-	// Merge fields building up a substitution
+	// Merge properties building up a substitution
 	subst := make(Substitution)
-	fields := make(map[string]PolyType, len(l.fields)+len(r.fields))
-	for f, typL := range l.fields {
-		fields[f] = typL
-		typR, ok := r.fields[f]
+	properties := make(map[string]PolyType, len(l.properties)+len(r.properties))
+	for f, typL := range l.properties {
+		properties[f] = typL
+		typR, ok := r.properties[f]
 		if !ok {
 			continue
 		}
 		s, err := unifyTypes(kinds, typL, typR)
 		if err != nil {
-			fields[f] = invalid{}
+			properties[f] = invalid{}
 		}
 		subst.Merge(s)
-		fields[f] = subst.ApplyType(typL)
+		properties[f] = subst.ApplyType(typL)
 	}
-	for f, typR := range r.fields {
-		_, ok := l.fields[f]
+	for f, typR := range r.properties {
+		_, ok := l.properties[f]
 		if !ok {
-			fields[f] = typR
+			properties[f] = typR
 		}
 	}
 
@@ -355,9 +520,9 @@ func (l KRecord) UnifyKind(kinds map[Tvar]KindConstraint, k KindConstraint) (kin
 	}
 
 	kr := KRecord{
-		fields: fields,
-		lower:  lower,
-		upper:  upper,
+		properties: properties,
+		lower:      lower,
+		upper:      upper,
 	}
 	if kr.Invalid() {
 		return nil, nil, fmt.Errorf("invalid record access %v", kr)
@@ -368,7 +533,7 @@ func (l KRecord) UnifyKind(kinds map[Tvar]KindConstraint, k KindConstraint) (kin
 func (k KRecord) Type(kinds map[Tvar]KindConstraint) (Type, error) {
 	properties := make(map[string]Type, len(k.upper))
 	for _, l := range k.upper {
-		ft, ok := k.fields[l]
+		ft, ok := k.properties[l]
 		if !ok {
 			return nil, fmt.Errorf("error: missing type information for %q", l)
 		}
@@ -381,6 +546,23 @@ func (k KRecord) Type(kinds map[Tvar]KindConstraint) (Type, error) {
 		}
 	}
 	return NewObjectType(properties), nil
+}
+func (k KRecord) polyType(kinds map[Tvar]KindConstraint) (PolyType, error) {
+	properties := make(map[string]PolyType, len(k.upper))
+	for _, l := range k.upper {
+		ft, ok := k.properties[l]
+		if !ok {
+			return nil, fmt.Errorf("error: missing type information for %q", l)
+		}
+		if _, ok := ft.(invalid); !ok {
+			t, err := ft.polyType(kinds)
+			if err != nil {
+				return nil, err
+			}
+			properties[l] = t
+		}
+	}
+	return NewObjectPolyType(properties, k.lower, k.upper), nil
 }
 
 type Comparable struct{}

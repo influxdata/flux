@@ -39,6 +39,9 @@ func (e *Env) Nest() *Env {
 
 func (e *Env) FreeVars() TvarSet {
 	var ftv TvarSet
+	if e == nil {
+		return ftv
+	}
 	for _, s := range e.m {
 		ftv = ftv.union(s.Free)
 	}

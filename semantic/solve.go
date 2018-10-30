@@ -1,11 +1,13 @@
 package semantic
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"sort"
 	"strings"
+
+	"github.com/influxdata/flux/ast"
+	"github.com/pkg/errors"
 )
 
 func SolveConstraints(cs *Constraints) (TypeSolution, error) {
@@ -52,7 +54,7 @@ func (sol *Solution) solve() error {
 		r := subst.ApplyType(tc.r)
 		s, err := unifyTypes(kinds, l, r)
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "type error %v", tc.loc)
 		}
 		subst.Merge(s)
 	}
@@ -64,6 +66,13 @@ func (sol *Solution) solve() error {
 		tv = subst.ApplyTvar(tv)
 		sol.kinds[tv] = k
 	}
+	for n, ann := range sol.cs.annotations {
+		if ann.Type != nil {
+			ann.Type = subst.ApplyType(ann.Type)
+			sol.cs.annotations[n] = ann
+		}
+	}
+	log.Println("subst", subst)
 	return nil
 }
 
@@ -86,16 +95,19 @@ func (s *Solution) PolyTypeOf(n Node) (PolyType, error) {
 	if a.Err != nil {
 		return nil, a.Err
 	}
-	return a.Type, nil
+	if a.Type == nil {
+		return nil, fmt.Errorf("node %T@%v has no poly type", n, n.Location())
+	}
+	return a.Type.polyType(s.kinds)
 }
 
 func (s *Solution) AddConstraint(l, r PolyType) error {
 	s.kinds = nil
-	s.cs.AddTypeConst(l, r)
+	s.cs.AddTypeConst(l, r, ast.SourceLocation{})
 	return s.solve()
 }
 
-func unifyTypes(kinds map[Tvar]KindConstraint, l, r PolyType) (Substitution, error) {
+func unifyTypes(kinds map[Tvar]KindConstraint, l, r PolyType) (s Substitution, _ error) {
 	log.Println("unifyTypes", l, r)
 	return l.UnifyType(kinds, r)
 }
@@ -116,7 +128,7 @@ func unifyKinds(kinds map[Tvar]KindConstraint, tvl, tvr Tvar, l, r KindConstrain
 
 func unifyVarAndType(kinds map[Tvar]KindConstraint, tv Tvar, t PolyType) (Substitution, error) {
 	if t.Occurs(tv) {
-		return nil, errors.New("cycle found")
+		return nil, fmt.Errorf("type var %v occurs in %v creating a cycle", tv, t)
 	}
 	unifyKindsByType(kinds, tv, t)
 	return Substitution{tv: t}, nil
