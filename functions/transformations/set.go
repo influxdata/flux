@@ -18,7 +18,7 @@ type SetOpSpec struct {
 }
 
 func init() {
-	setSignature := flux.FunctionSignature(map[string]semantic.Type{
+	setSignature := flux.FunctionSignature(map[string]semantic.PolyType{
 		"key":   semantic.String,
 		"value": semantic.String,
 	}, nil)

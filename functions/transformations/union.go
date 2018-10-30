@@ -23,8 +23,8 @@ func (s *UnionOpSpec) Kind() flux.OperationKind {
 
 func init() {
 	unionSignature := flux.FunctionSignature(
-		map[string]semantic.Type{
-			"tables": semantic.NewArrayType(flux.TableObjectType),
+		map[string]semantic.PolyType{
+			"tables": semantic.NewArrayPolyType(flux.TableObjectType),
 		},
 		nil,
 	)

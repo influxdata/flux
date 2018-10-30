@@ -22,7 +22,7 @@ type FromOpSpec struct {
 
 func init() {
 	fromSignature := flux.FunctionSignature(
-		map[string]semantic.Type{
+		map[string]semantic.PolyType{
 			"bucket":   semantic.String,
 			"bucketID": semantic.String,
 		},
@@ -190,17 +190,17 @@ func (MergeFromFilterRule) Pattern() plan.Pattern {
 
 func (MergeFromFilterRule) Rewrite(filterNode plan.PlanNode) (plan.PlanNode, bool, error) {
 	filterSpec := filterNode.ProcedureSpec().(*transformations.FilterProcedureSpec)
-	bodyExpr, ok := filterSpec.Fn.Body.(semantic.Expression)
+	bodyExpr, ok := filterSpec.Fn.Block.Body.(semantic.Expression)
 	if !ok {
 		return filterNode, false, nil
 	}
 
-	if len(filterSpec.Fn.Params) != 1 {
+	if len(filterSpec.Fn.Block.Parameters.List) != 1 {
 		// I would expect that type checking would catch this, but just to be safe...
 		return filterNode, false, nil
 	}
 
-	paramName := filterSpec.Fn.Params[0].Key.Name
+	paramName := filterSpec.Fn.Block.Parameters.List[0].Key.Name
 
 	pushable, notPushable, err := semantic.PartitionPredicates(bodyExpr, func(e semantic.Expression) (bool, error) {
 		return isPushableExpr(paramName, e)
@@ -217,12 +217,12 @@ func (MergeFromFilterRule) Rewrite(filterNode plan.PlanNode) (plan.PlanNode, boo
 	fromNode := filterNode.Predecessors()[0]
 	newFromSpec := fromNode.ProcedureSpec().Copy().(*FromProcedureSpec)
 	if newFromSpec.FilterSet {
-		newBody := semantic.ExprsToConjunction(newFromSpec.Filter.Body.(semantic.Expression), pushable)
-		newFromSpec.Filter.Body = newBody
+		newBody := semantic.ExprsToConjunction(newFromSpec.Filter.Block.Body.(semantic.Expression), pushable)
+		newFromSpec.Filter.Block.Body = newBody
 	} else {
 		newFromSpec.FilterSet = true
 		newFromSpec.Filter = filterSpec.Fn.Copy().(*semantic.FunctionExpression)
-		newFromSpec.Filter.Body = pushable
+		newFromSpec.Filter.Block.Body = pushable
 	}
 
 	if notPushable == nil {
@@ -240,7 +240,7 @@ func (MergeFromFilterRule) Rewrite(filterNode plan.PlanNode) (plan.PlanNode, boo
 	}
 
 	newFilterSpec := filterSpec.Copy().(*transformations.FilterProcedureSpec)
-	newFilterSpec.Fn.Body = notPushable
+	newFilterSpec.Fn.Block.Body = notPushable
 	err = filterNode.ReplaceSpec(newFilterSpec)
 	if err != nil {
 		return nil, false, err

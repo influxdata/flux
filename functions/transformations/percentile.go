@@ -34,7 +34,7 @@ type PercentileOpSpec struct {
 
 func init() {
 	percentileSignature := flux.FunctionSignature(
-		map[string]semantic.Type{
+		map[string]semantic.PolyType{
 			"column":      semantic.String,
 			"percentile":  semantic.Float,
 			"compression": semantic.Float,

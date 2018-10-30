@@ -22,8 +22,8 @@ type KeysOpSpec struct {
 }
 
 func init() {
-	keysSignature := flux.FunctionSignature(map[string]semantic.Type{
-		"except": semantic.NewArrayType(semantic.String),
+	keysSignature := flux.FunctionSignature(map[string]semantic.PolyType{
+		"except": semantic.NewArrayPolyType(semantic.String),
 	}, nil)
 
 	flux.RegisterFunction(KeysKind, createKeysOpSpec, keysSignature)

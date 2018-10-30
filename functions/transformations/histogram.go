@@ -26,10 +26,10 @@ type HistogramOpSpec struct {
 }
 
 func init() {
-	histogramSignature := execute.AggregateSignature(map[string]semantic.Type{
+	histogramSignature := execute.AggregateSignature(map[string]semantic.PolyType{
 		"column":           semantic.String,
 		"upperBoundColumn": semantic.String,
-		"buckets":          semantic.NewArrayType(semantic.Float),
+		"buckets":          semantic.NewArrayPolyType(semantic.Float),
 		"normalize":        semantic.Bool,
 	}, nil)
 
@@ -242,13 +242,14 @@ type linearBuckets struct{}
 
 func (b linearBuckets) Type() semantic.Type {
 	return semantic.NewFunctionType(semantic.FunctionSignature{
-		In: semantic.NewObjectType(map[string]semantic.Type{
+		Parameters: map[string]semantic.Type{
 			"start":    semantic.Float,
 			"width":    semantic.Float,
 			"count":    semantic.Int,
 			"infinity": semantic.Bool,
-		}),
-		Out: semantic.String,
+		},
+		Required: semantic.LabelSet{"start", "width", "count"},
+		Return:   semantic.NewArrayType(semantic.Float),
 	})
 }
 
@@ -363,13 +364,14 @@ type logarithmicBuckets struct{}
 
 func (b logarithmicBuckets) Type() semantic.Type {
 	return semantic.NewFunctionType(semantic.FunctionSignature{
-		In: semantic.NewObjectType(map[string]semantic.Type{
+		Parameters: map[string]semantic.Type{
 			"start":    semantic.Float,
 			"factor":   semantic.Float,
 			"count":    semantic.Int,
 			"infinity": semantic.Bool,
-		}),
-		Out: semantic.String,
+		},
+		Required: semantic.LabelSet{"start", "factor", "count"},
+		Return:   semantic.NewArrayType(semantic.Float),
 	})
 }
 

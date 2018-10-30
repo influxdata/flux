@@ -37,13 +37,15 @@ var missingArg = fmt.Errorf("missing argument %q", conversionArg)
 
 type stringConv struct{}
 
+var required = semantic.LabelSet{conversionArg}
+
 func (c *stringConv) Type() semantic.Type {
-	return semantic.NewFunctionType(semantic.FunctionSignature{
-		// TODO: We need support for polymorphic function signatures and free type variables.
-		// Probably use a Hindley-Milner type inference system?
-		In:  semantic.NewObjectType(map[string]semantic.Type{conversionArg: semantic.Int}),
-		Out: semantic.String,
-	})
+	return semantic.Function
+	//return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+	//	Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
+	//	Required:   required,
+	//	Return:     semantic.String,
+	//})
 }
 func (c *stringConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
@@ -119,12 +121,12 @@ func (c *stringConv) Call(args values.Object) (values.Value, error) {
 type intConv struct{}
 
 func (c *intConv) Type() semantic.Type {
-	return semantic.NewFunctionType(semantic.FunctionSignature{
-		// TODO: We need support for polymorphic function signatures and free type variables.
-		// Probably use a Hindley-Milner type inference system?
-		In:  semantic.NewObjectType(map[string]semantic.Type{conversionArg: semantic.Int}),
-		Out: semantic.Int,
-	})
+	return semantic.Function
+	//return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+	//	Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
+	//	Required:   required,
+	//	Return:     semantic.Int,
+	//})
 }
 func (c *intConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
@@ -208,12 +210,12 @@ func (c *intConv) Call(args values.Object) (values.Value, error) {
 type uintConv struct{}
 
 func (c *uintConv) Type() semantic.Type {
-	return semantic.NewFunctionType(semantic.FunctionSignature{
-		// TODO: We need support for polymorphic function signatures and free type variables.
-		// Probably use a Hindley-Milner type inference system?
-		In:  semantic.NewObjectType(map[string]semantic.Type{conversionArg: semantic.Int}),
-		Out: semantic.UInt,
-	})
+	return semantic.Function
+	//return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+	//	Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
+	//	Required:   required,
+	//	Return:     semantic.UInt,
+	//})
 }
 func (c *uintConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
@@ -297,12 +299,12 @@ func (c *uintConv) Call(args values.Object) (values.Value, error) {
 type floatConv struct{}
 
 func (c *floatConv) Type() semantic.Type {
-	return semantic.NewFunctionType(semantic.FunctionSignature{
-		// TODO: We need support for polymorphic function signatures and free type variables.
-		// Probably use a Hindley-Milner type inference system?
-		In:  semantic.NewObjectType(map[string]semantic.Type{conversionArg: semantic.Int}),
-		Out: semantic.Float,
-	})
+	return semantic.Function
+	//return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+	//	Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
+	//	Required:   required,
+	//	Return:     semantic.Float,
+	//})
 }
 func (c *floatConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
@@ -382,12 +384,12 @@ func (c *floatConv) Call(args values.Object) (values.Value, error) {
 type boolConv struct{}
 
 func (c *boolConv) Type() semantic.Type {
-	return semantic.NewFunctionType(semantic.FunctionSignature{
-		// TODO: We need support for polymorphic function signatures and free type variables.
-		// Probably use a Hindley-Milner type inference system?
-		In:  semantic.NewObjectType(map[string]semantic.Type{conversionArg: semantic.Int}),
-		Out: semantic.Bool,
-	})
+	return semantic.Function
+	//return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+	//	Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
+	//	Required:   required,
+	//	Return:     semantic.Bool,
+	//})
 }
 func (c *boolConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
@@ -487,12 +489,12 @@ func (c *boolConv) Call(args values.Object) (values.Value, error) {
 type timeConv struct{}
 
 func (c *timeConv) Type() semantic.Type {
-	return semantic.NewFunctionType(semantic.FunctionSignature{
-		// TODO: We need support for polymorphic function signatures and free type variables.
-		// Probably use a Hindley-Milner type inference system?
-		In:  semantic.NewObjectType(map[string]semantic.Type{conversionArg: semantic.Int}),
-		Out: semantic.Time,
-	})
+	return semantic.Function
+	//return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+	//	Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
+	//	Required:   required,
+	//	Return:     semantic.Time,
+	//})
 }
 func (c *timeConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
@@ -564,12 +566,12 @@ func (c *timeConv) Call(args values.Object) (values.Value, error) {
 type durationConv struct{}
 
 func (c *durationConv) Type() semantic.Type {
-	return semantic.NewFunctionType(semantic.FunctionSignature{
-		// TODO: We need support for polymorphic function signatures and free type variables.
-		// Probably use a Hindley-Milner type inference system?
-		In:  semantic.NewObjectType(map[string]semantic.Type{conversionArg: semantic.Int}),
-		Out: semantic.Duration,
-	})
+	return semantic.Function
+	//return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+	//	Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
+	//	Required:   required,
+	//	Return:     semantic.Duration,
+	//})
 }
 func (c *durationConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))

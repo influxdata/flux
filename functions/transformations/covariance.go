@@ -21,7 +21,7 @@ type CovarianceOpSpec struct {
 
 func init() {
 	var covarianceSignature = execute.AggregateSignature(
-		map[string]semantic.Type{
+		map[string]semantic.PolyType{
 			"pearsonr": semantic.Bool,
 			"valueDst": semantic.String,
 		},

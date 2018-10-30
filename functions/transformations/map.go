@@ -22,7 +22,7 @@ type MapOpSpec struct {
 
 func init() {
 	mapSignature := flux.FunctionSignature(
-		map[string]semantic.Type{
+		map[string]semantic.PolyType{
 			"fn":       semantic.Function,
 			"mergeKey": semantic.Bool,
 		},

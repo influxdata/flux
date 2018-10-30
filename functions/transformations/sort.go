@@ -19,8 +19,8 @@ type SortOpSpec struct {
 }
 
 func init() {
-	sortSignature := flux.FunctionSignature(map[string]semantic.Type{
-		"cols": semantic.NewArrayType(semantic.String),
+	sortSignature := flux.FunctionSignature(map[string]semantic.PolyType{
+		"cols": semantic.NewArrayPolyType(semantic.String),
 		"desc": semantic.Bool,
 	}, nil)
 

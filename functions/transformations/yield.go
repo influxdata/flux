@@ -15,7 +15,7 @@ type YieldOpSpec struct {
 }
 
 func init() {
-	yieldSignature := flux.FunctionSignature(map[string]semantic.Type{
+	yieldSignature := flux.FunctionSignature(map[string]semantic.PolyType{
 		"name": semantic.String,
 	}, nil)
 

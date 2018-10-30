@@ -19,9 +19,18 @@ type FilterOpSpec struct {
 
 func init() {
 	//TODO(nathanielc): Use complete function signature here, or formalize soft kind validation instead of complete function validation.
-	filterSignature := flux.FunctionSignature(map[string]semantic.Type{
-		"fn": semantic.Function,
-	}, nil)
+	filterSignature := flux.FunctionSignature(
+		map[string]semantic.PolyType{
+			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{
+					"r": semantic.Tvar(1),
+				},
+				Required: semantic.LabelSet{"r"},
+				Return:   semantic.Bool,
+			}),
+		},
+		nil,
+	)
 
 	flux.RegisterFunction(FilterKind, createFilterOpSpec, filterSignature)
 	flux.RegisterOpSpec(FilterKind, newFilterOp)

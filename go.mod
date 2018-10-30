@@ -18,7 +18,7 @@ require (
 	github.com/gonum/matrix v0.0.0-20180124231301-a41cc49d4c29 // indirect
 	github.com/gonum/stat v0.0.0-20180125090729-ec9c8a1062f4
 	github.com/google/go-cmp v0.2.0
-	github.com/influxdata/line-protocol v0.0.0-20180522152040-32c6aa80de5e // indirect
+	github.com/influxdata/line-protocol v0.0.0-20180522152040-32c6aa80de5e
 	github.com/influxdata/tdigest v0.0.0-20180711151920-a7d76c6f093a
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v1.0.0

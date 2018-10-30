@@ -16,7 +16,7 @@ type UniqueOpSpec struct {
 }
 
 func init() {
-	uniqueSignature := flux.FunctionSignature(map[string]semantic.Type{
+	uniqueSignature := flux.FunctionSignature(map[string]semantic.PolyType{
 		"column": semantic.String,
 	}, nil)
 

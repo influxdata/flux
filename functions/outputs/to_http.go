@@ -18,6 +18,7 @@ import (
 	"github.com/influxdata/flux/internal/pkg/syncutil"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	protocol "github.com/influxdata/line-protocol"
 	"github.com/pkg/errors"
 )
 

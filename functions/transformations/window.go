@@ -29,7 +29,7 @@ type WindowOpSpec struct {
 var infinityVar = values.NewDuration(math.MaxInt64)
 
 func init() {
-	windowSignature := flux.FunctionSignature(map[string]semantic.Type{
+	windowSignature := flux.FunctionSignature(map[string]semantic.PolyType{
 		"every":         semantic.Duration,
 		"period":        semantic.Duration,
 		"round":         semantic.Duration,

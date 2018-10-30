@@ -22,10 +22,10 @@ type DerivativeOpSpec struct {
 }
 
 func init() {
-	derivativeSignature := flux.FunctionSignature(map[string]semantic.Type{
+	derivativeSignature := flux.FunctionSignature(map[string]semantic.PolyType{
 		"unit":        semantic.Duration,
 		"nonNegative": semantic.Bool,
-		"columns":     semantic.NewArrayType(semantic.String),
+		"columns":     semantic.NewArrayPolyType(semantic.String),
 		"timeSrc":     semantic.String,
 	}, nil)
 

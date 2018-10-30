@@ -19,7 +19,7 @@ func init() {
 func SystemTime() values.Value {
 	name := systemTimeFuncName
 	ftype := semantic.NewFunctionType(semantic.FunctionSignature{
-		Out: semantic.Time,
+		Return: semantic.Time,
 	})
 	call := func(args values.Object) (values.Value, error) {
 		return values.NewTime(values.ConvertTime(time.Now().UTC())), nil

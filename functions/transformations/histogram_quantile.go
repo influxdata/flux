@@ -25,7 +25,7 @@ type HistogramQuantileOpSpec struct {
 }
 
 func init() {
-	histogramQuantileSignature := flux.FunctionSignature(map[string]semantic.Type{
+	histogramQuantileSignature := flux.FunctionSignature(map[string]semantic.PolyType{
 		"quantile":         semantic.Float,
 		"countColumn":      semantic.String,
 		"upperBoundColumn": semantic.String,

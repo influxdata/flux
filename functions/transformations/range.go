@@ -22,7 +22,7 @@ type RangeOpSpec struct {
 }
 
 func init() {
-	rangeSignature := flux.FunctionSignature(map[string]semantic.Type{
+	rangeSignature := flux.FunctionSignature(map[string]semantic.PolyType{
 		"start":    semantic.Time,
 		"stop":     semantic.Time,
 		"timeCol":  semantic.String,

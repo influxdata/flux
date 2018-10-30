@@ -19,7 +19,7 @@ type IntegralOpSpec struct {
 }
 
 func init() {
-	integralSignature := execute.AggregateSignature(map[string]semantic.Type{
+	integralSignature := execute.AggregateSignature(map[string]semantic.PolyType{
 		"unit":    semantic.Duration,
 		"timeCol": semantic.String,
 	}, nil)

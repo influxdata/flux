@@ -27,7 +27,7 @@ fromRows = (bucket="",bucketID="") => from(bucket:bucket,bucketID:bucketID) |> p
 
 func init() {
 	pivotSignature := flux.FunctionSignature(
-		map[string]semantic.Type{
+		map[string]semantic.PolyType{
 			"rowKey":   semantic.Array,
 			"colKey":   semantic.Array,
 			"valueCol": semantic.String,

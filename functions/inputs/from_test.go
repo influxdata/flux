@@ -34,8 +34,12 @@ func fluxTime(t int64) flux.Time {
 func makeFilterFn(exprs ...semantic.Expression) *semantic.FunctionExpression {
 	body := semantic.ExprsToConjunction(exprs...)
 	return &semantic.FunctionExpression{
-		Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-		Body:   body,
+		Block: &semantic.FunctionBlock{
+			Parameters: &semantic.FunctionParameters{
+				List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+			},
+			Body: body,
+		},
 	}
 }
 
@@ -84,8 +88,12 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			Right: &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"}}
 
 		statementFn = &semantic.FunctionExpression{
-			Params: []*semantic.FunctionParam{{Key: &semantic.Identifier{Name: "r"}}},
-			Body:   &semantic.ReturnStatement{Argument: &semantic.BooleanLiteral{Value: true}},
+			Block: &semantic.FunctionBlock{
+				Parameters: &semantic.FunctionParameters{
+					List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+				},
+				Body: &semantic.ReturnStatement{Argument: &semantic.BooleanLiteral{Value: true}},
+			},
 		}
 	)
 

@@ -26,9 +26,9 @@ type GroupOpSpec struct {
 
 func init() {
 	groupSignature := flux.FunctionSignature(
-		map[string]semantic.Type{
-			"by":     semantic.NewArrayType(semantic.String),
-			"except": semantic.NewArrayType(semantic.String),
+		map[string]semantic.PolyType{
+			"by":     semantic.NewArrayPolyType(semantic.String),
+			"except": semantic.NewArrayPolyType(semantic.String),
 			"none":   semantic.Bool,
 			"all":    semantic.Bool,
 		},

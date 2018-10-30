@@ -22,7 +22,7 @@ func init() {
 	joinSignature := semantic.FunctionPolySignature{
 		Parameters: map[string]semantic.PolyType{
 			"tables": semantic.NewObjectPolyType(nil, semantic.EmptyLabelSet(), semantic.AllLabels),
-			"on":     semantic.NewArrayType(semantic.String),
+			"on":     semantic.NewArrayPolyType(semantic.String),
 			"method": semantic.String,
 		},
 		Required:     semantic.LabelSet{"tables"},
@@ -123,12 +123,16 @@ func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 				name, operation.Type().Kind())
 			return
 		}
-		if operation.Type() != flux.TableObjectType {
-			err = fmt.Errorf("expected %q to be TableObject type, instead got %v",
-				name, operation.Type())
+		//if operation.Type() != flux.TableObjectType {
+		//	err = fmt.Errorf("expected %q to be TableObject type, instead got %v",
+		//		name, operation.Type())
+		//	return
+		//}
+		table, ok := operation.(*flux.TableObject)
+		if !ok {
+			err = fmt.Errorf("expected %q to be TableObject type, instead got %v", name, operation.Type())
 			return
 		}
-		table := operation.(*flux.TableObject)
 		spec.params.names = append(spec.params.names, name)
 		spec.params.operations = append(spec.params.operations, table)
 	})

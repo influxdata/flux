@@ -20,7 +20,7 @@ type SampleOpSpec struct {
 }
 
 func init() {
-	sampleSignature := execute.SelectorSignature(map[string]semantic.Type{
+	sampleSignature := execute.SelectorSignature(map[string]semantic.PolyType{
 		"n":   semantic.Int,
 		"pos": semantic.Int,
 	}, nil)

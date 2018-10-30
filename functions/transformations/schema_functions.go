@@ -52,7 +52,7 @@ var SchemaMutationOps = []flux.OperationKind{}
 // should not have their own ProcedureSpec.
 type MutationRegistrar struct {
 	Kind   flux.OperationKind
-	Args   map[string]semantic.Type
+	Args   map[string]semantic.PolyType
 	Create flux.CreateOperationSpec
 	New    flux.NewOperationSpec
 }
@@ -70,37 +70,45 @@ func (m MutationRegistrar) Register() {
 
 // A list of all MutationRegistrars to register.
 // To register a new mutation, add an entry to this list.
+var predicateType = semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+	Parameters: map[string]semantic.PolyType{
+		"col": semantic.String,
+	},
+	Required: semantic.LabelSet{"col"},
+	Return:   semantic.Bool,
+})
+
 var Registrars = []MutationRegistrar{
 	{
 		Kind: RenameKind,
-		Args: map[string]semantic.Type{
+		Args: map[string]semantic.PolyType{
 			"columns": semantic.Object,
-			"fn":      semantic.Function,
+			"fn":      predicateType,
 		},
 		Create: createRenameOpSpec,
 		New:    newRenameOp,
 	},
 	{
 		Kind: DropKind,
-		Args: map[string]semantic.Type{
-			"columns": semantic.NewArrayType(semantic.String),
-			"fn":      semantic.Function,
+		Args: map[string]semantic.PolyType{
+			"columns": semantic.NewArrayPolyType(semantic.String),
+			"fn":      predicateType,
 		},
 		Create: createDropOpSpec,
 		New:    newDropOp,
 	},
 	{
 		Kind: KeepKind,
-		Args: map[string]semantic.Type{
-			"columns": semantic.NewArrayType(semantic.String),
-			"fn":      semantic.Function,
+		Args: map[string]semantic.PolyType{
+			"columns": semantic.NewArrayPolyType(semantic.String),
+			"fn":      predicateType,
 		},
 		Create: createKeepOpSpec,
 		New:    newKeepOp,
 	},
 	{
 		Kind: DuplicateKind,
-		Args: map[string]semantic.Type{
+		Args: map[string]semantic.PolyType{
 			"column": semantic.String,
 			"as":     semantic.String,
 		},

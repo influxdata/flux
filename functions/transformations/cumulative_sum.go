@@ -18,8 +18,8 @@ type CumulativeSumOpSpec struct {
 
 func init() {
 	cumulativeSumSignature := flux.FunctionSignature(
-		map[string]semantic.Type{
-			"columns": semantic.NewArrayType(semantic.String),
+		map[string]semantic.PolyType{
+			"columns": semantic.NewArrayPolyType(semantic.String),
 		},
 		[]string{
 			"columns",

@@ -15,6 +15,7 @@ import (
 	"github.com/influxdata/flux/internal/pkg/syncutil"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	protocol "github.com/influxdata/line-protocol"
 	"github.com/pkg/errors"
 	kafka "github.com/segmentio/kafka-go"
 )
@@ -39,14 +40,14 @@ type ToKafkaOpSpec struct {
 func init() {
 	toKafkaSignature := flux.FunctionSignature(
 		map[string]semantic.PolyType{
-			"brokers":      semantic.NewArrayType(semantic.String),
+			"brokers":      semantic.NewArrayPolyType(semantic.String),
 			"topic":        semantic.String,
 			"balancer":     semantic.String,
 			"name":         semantic.String,
 			"nameColumn":   semantic.String,
 			"timeColumn":   semantic.String,
-			"tagColumns":   semantic.NewArrayType(semantic.String),
-			"valueColumns": semantic.NewArrayType(semantic.String),
+			"tagColumns":   semantic.NewArrayPolyType(semantic.String),
+			"valueColumns": semantic.NewArrayPolyType(semantic.String),
 		},
 		[]string{"brokers", "topic"},
 	)
