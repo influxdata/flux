@@ -73,6 +73,7 @@ func (sol *Solution) solve() error {
 		}
 	}
 	log.Println("subst", subst)
+	log.Println("kinds", sol.kinds)
 	return nil
 }
 
@@ -120,8 +121,10 @@ func unifyKinds(kinds map[Tvar]KindConstraint, tvl, tvr Tvar, l, r KindConstrain
 	log.Printf("unifyKinds %v = %v == %v = %v ==> %v :: %v", tvl, l, tvr, r, k, s)
 	kinds[tvr] = k
 	if tvl != tvr {
+		// The substituion now knows that tvl = tvr
+		// No need to keep the kind constraints around for tvl
 		log.Println("unifyKinds.deleting", tvl)
-		delete(s, tvl)
+		delete(kinds, tvl)
 	}
 	return s, nil
 }

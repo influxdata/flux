@@ -192,7 +192,15 @@ func (l list) Type(kinds map[Tvar]KindConstraint) (Type, error) {
 	}
 	return NewArrayType(t), nil
 }
-func (l list) polyType(map[Tvar]KindConstraint) (PolyType, error) { return l, nil }
+func (l list) polyType(kinds map[Tvar]KindConstraint) (PolyType, error) {
+	t, err := l.typ.polyType(kinds)
+	if err != nil {
+		return nil, err
+	}
+	return list{
+		typ: t,
+	}, nil
+}
 func (l list) Equal(t PolyType) bool {
 	switch t := t.(type) {
 	case list:
@@ -317,7 +325,25 @@ func (f function) Type(kinds map[Tvar]KindConstraint) (Type, error) {
 		PipeArgument: "",
 	}), nil
 }
-func (f function) polyType(map[Tvar]KindConstraint) (PolyType, error) { return f, nil }
+func (f function) polyType(kinds map[Tvar]KindConstraint) (PolyType, error) {
+	ret, err := f.ret.polyType(kinds)
+	if err != nil {
+		return nil, err
+	}
+	parameters := make(map[string]PolyType, len(f.parameters))
+	for k, v := range f.parameters {
+		t, err := v.polyType(kinds)
+		if err != nil {
+			return nil, err
+		}
+		parameters[k] = t
+	}
+	return function{
+		parameters: parameters,
+		required:   f.required.copy(),
+		ret:        ret,
+	}, nil
+}
 func (f function) Equal(t PolyType) bool {
 	switch t := t.(type) {
 	case function:
@@ -404,7 +430,9 @@ func (l object) UnifyType(kinds map[Tvar]KindConstraint, r PolyType) (Substituti
 func (o object) Type(kinds map[Tvar]KindConstraint) (Type, error) {
 	return o.krecord.Type(kinds)
 }
-func (o object) polyType(map[Tvar]KindConstraint) (PolyType, error) { return o, nil }
+func (o object) polyType(kinds map[Tvar]KindConstraint) (PolyType, error) {
+	return o.krecord.polyType(kinds)
+}
 func (o object) Equal(t PolyType) bool {
 	switch t := t.(type) {
 	case object:
@@ -532,11 +560,7 @@ func (l KRecord) UnifyKind(kinds map[Tvar]KindConstraint, k KindConstraint) (kin
 
 func (k KRecord) Type(kinds map[Tvar]KindConstraint) (Type, error) {
 	properties := make(map[string]Type, len(k.upper))
-	for _, l := range k.upper {
-		ft, ok := k.properties[l]
-		if !ok {
-			return nil, fmt.Errorf("error: missing type information for %q", l)
-		}
+	for l, ft := range k.properties {
 		if _, ok := ft.(invalid); !ok {
 			t, err := ft.Type(kinds)
 			if err != nil {
@@ -549,11 +573,7 @@ func (k KRecord) Type(kinds map[Tvar]KindConstraint) (Type, error) {
 }
 func (k KRecord) polyType(kinds map[Tvar]KindConstraint) (PolyType, error) {
 	properties := make(map[string]PolyType, len(k.upper))
-	for _, l := range k.upper {
-		ft, ok := k.properties[l]
-		if !ok {
-			return nil, fmt.Errorf("error: missing type information for %q", l)
-		}
+	for l, ft := range k.properties {
 		if _, ok := ft.(invalid); !ok {
 			t, err := ft.polyType(kinds)
 			if err != nil {
