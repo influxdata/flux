@@ -240,6 +240,7 @@ func (r *resultDecoder) Do(f func(flux.Table) error) error {
 		if err := f(b); err != nil {
 			return err
 		}
+		<-b.done
 		// track whether we hit the EOF
 		r.eof = b.eof
 		// track any extra line that was read
@@ -416,7 +417,7 @@ type tableDecoder struct {
 
 	empty bool
 
-	more bool
+	done chan struct{}
 
 	eof       bool
 	extraLine []string
@@ -434,9 +435,12 @@ func newTable(
 		meta: meta,
 		// assume its empty until we append a record
 		empty: true,
+		done:  make(chan struct{}),
 	}
-	var err error
-	b.more, err = b.advance(extraLine)
+	more, err := b.advance(extraLine)
+	if !more {
+		close(b.done)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -454,8 +458,16 @@ func (d *tableDecoder) Do(f func(flux.ColReader) error) (err error) {
 	}
 	d.builder.ClearData()
 
-	for d.more {
-		d.more, err = d.advance(nil)
+	select {
+	case <-d.done:
+		return nil
+	default:
+	}
+
+	more := true
+	defer close(d.done)
+	for more {
+		more, err = d.advance(nil)
 		if err != nil {
 			return
 		}
