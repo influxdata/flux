@@ -1,0 +1,9 @@
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string
+#group,false,false,true,true,false,false,true,true
+#default,_result,,,,,,,
+,result,table,_start,_stop,_time,_value,_field,_measurement
+,,0,1970-01-01T00:00:00Z,1970-01-01T00:00:00.000000019Z,1970-01-01T00:00:00Z,0,n,ctr
+,,0,1970-01-01T00:00:00Z,1970-01-01T00:00:00.000000019Z,1970-01-01T00:00:00.000000001Z,1,n,ctr
+,,0,1970-01-01T00:00:00Z,1970-01-01T00:00:00.000000019Z,1970-01-01T00:00:00.000000018Z,18,n,ctr
+,,0,1970-01-01T00:00:00Z,1970-01-01T00:00:00.000000019Z,1970-01-01T00:00:00.000000019Z,19,n,ctr
+
