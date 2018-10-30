@@ -243,17 +243,23 @@ func (t *histogramTransformation) Finish(id execute.DatasetID, err error) {
 // linearBuckets is a helper function for creating buckets spaced linearly
 type linearBuckets struct{}
 
+var linearBucketsType = semantic.NewFunctionType(semantic.FunctionSignature{
+	Parameters: map[string]semantic.Type{
+		"start":    semantic.Float,
+		"width":    semantic.Float,
+		"count":    semantic.Int,
+		"infinity": semantic.Bool,
+	},
+	Required: semantic.LabelSet{"start", "width", "count"},
+	Return:   semantic.NewArrayType(semantic.Float),
+})
+var linearBucketsPolyType = linearBucketsType.PolyType()
+
 func (b linearBuckets) Type() semantic.Type {
-	return semantic.NewFunctionType(semantic.FunctionSignature{
-		Parameters: map[string]semantic.Type{
-			"start":    semantic.Float,
-			"width":    semantic.Float,
-			"count":    semantic.Int,
-			"infinity": semantic.Bool,
-		},
-		Required: semantic.LabelSet{"start", "width", "count"},
-		Return:   semantic.NewArrayType(semantic.Float),
-	})
+	return linearBucketsType
+}
+func (b linearBuckets) PolyType() semantic.PolyType {
+	return linearBucketsPolyType
 }
 
 func (b linearBuckets) Str() string {
@@ -365,17 +371,23 @@ func (b linearBuckets) Call(args values.Object) (values.Value, error) {
 // logarithmicBuckets is a helper function for creating buckets spaced by an logarithmic factor.
 type logarithmicBuckets struct{}
 
+var logarithmicBucketsType = semantic.NewFunctionType(semantic.FunctionSignature{
+	Parameters: map[string]semantic.Type{
+		"start":    semantic.Float,
+		"factor":   semantic.Float,
+		"count":    semantic.Int,
+		"infinity": semantic.Bool,
+	},
+	Required: semantic.LabelSet{"start", "factor", "count"},
+	Return:   semantic.NewArrayType(semantic.Float),
+})
+var logarithmicBucketsPolyType = logarithmicBucketsType.PolyType()
+
 func (b logarithmicBuckets) Type() semantic.Type {
-	return semantic.NewFunctionType(semantic.FunctionSignature{
-		Parameters: map[string]semantic.Type{
-			"start":    semantic.Float,
-			"factor":   semantic.Float,
-			"count":    semantic.Int,
-			"infinity": semantic.Bool,
-		},
-		Required: semantic.LabelSet{"start", "factor", "count"},
-		Return:   semantic.NewArrayType(semantic.Float),
-	})
+	return logarithmicBucketsType
+}
+func (b logarithmicBuckets) PolyType() semantic.PolyType {
+	return logarithmicBucketsPolyType
 }
 
 func (b logarithmicBuckets) Str() string {

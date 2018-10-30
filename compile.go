@@ -205,7 +205,7 @@ func RegisterBuiltInValue(name string, v values.Value) {
 	}
 	extern.Declarations = append(extern.Declarations, &semantic.ExternalVariableDeclaration{
 		Identifier: &semantic.Identifier{Name: name},
-		ExternType: v.Type().PolyType(),
+		ExternType: v.PolyType(),
 	})
 	builtinValues[name] = v
 }
@@ -238,7 +238,6 @@ func FinalizeBuiltIns() {
 func evalBuiltInScripts() error {
 	itrp := interpreter.NewMutableInterpreter(builtinOptions, builtinValues)
 	for name, script := range builtinScripts {
-		log.Println("BUILTIN", name)
 		astProg, err := parser.NewAST(script)
 		if err != nil {
 			return errors.Wrapf(err, "failed to parse builtin %q", name)
@@ -253,19 +252,28 @@ func evalBuiltInScripts() error {
 		if err := itrp.Eval(externProg); err != nil {
 			return errors.Wrapf(err, "failed to evaluate builtin %q", name)
 		}
-		log.Println("BUILTIN DONE", name)
+		// Rebuild the external declarations based on the builtinValues
+		extern.Declarations = make([]*semantic.ExternalVariableDeclaration, 0, len(builtinValues))
+		for name, v := range builtinValues {
+			extern.Declarations = append(extern.Declarations, &semantic.ExternalVariableDeclaration{
+				Identifier: &semantic.Identifier{Name: name},
+				ExternType: v.PolyType(),
+			})
+		}
 	}
 	return nil
 }
 
 var TableObjectType = semantic.NewObjectPolyType(
+	//TODO: When values.Value support polytyped values, we can add the commented fields back in
 	map[string]semantic.PolyType{
-		tableKindKey:    semantic.String,
-		tableSpecKey:    semantic.Tvar(1),
-		tableParentsKey: semantic.Tvar(2),
+		tableKindKey: semantic.String,
+		//tableSpecKey:    semantic.Tvar(1),
+		//tableParentsKey: semantic.Tvar(2),
 	},
 	semantic.EmptyLabelSet(),
-	semantic.LabelSet{tableKindKey, tableSpecKey, tableParentsKey},
+	//semantic.LabelSet{tableKindKey, tableSpecKey, tableParentsKey},
+	semantic.LabelSet{tableKindKey},
 )
 
 // IDer produces the mapping of table Objects to OpertionIDs
@@ -395,6 +403,9 @@ func (t *TableObject) buildSpec(ider IDer, spec *Spec, visited map[*TableObject]
 func (t *TableObject) Type() semantic.Type {
 	typ, _ := TableObjectType.MonoType()
 	return typ
+}
+func (t *TableObject) PolyType() semantic.PolyType {
+	return TableObjectType
 }
 
 func (t *TableObject) Str() string {
@@ -555,6 +566,9 @@ func (f *function) Type() semantic.Type {
 	// TODO(nathanielc): Update values.Value interface to use PolyTypes
 	t, _ := f.t.MonoType()
 	return t
+}
+func (f *function) PolyType() semantic.PolyType {
+	return f.t
 }
 func (f *function) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))

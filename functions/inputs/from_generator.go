@@ -24,8 +24,8 @@ type FromGeneratorOpSpec struct {
 }
 
 func init() {
-	fromGeneratorSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
+	fromGeneratorSignature := semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{
 			"start": semantic.Time,
 			"stop":  semantic.Time,
 			"count": semantic.Int,
@@ -37,8 +37,9 @@ func init() {
 				Return:   semantic.Int,
 			}),
 		},
-		[]string{"start", "stop", "count", "fn"},
-	)
+		Required: semantic.LabelSet{"start", "stop", "count", "fn"},
+		Return:   flux.TableObjectType,
+	}
 	flux.RegisterFunction(FromGeneratorKind, createFromGeneratorOpSpec, fromGeneratorSignature)
 	flux.RegisterOpSpec(FromGeneratorKind, newFromGeneratorOp)
 	plan.RegisterProcedureSpec(FromGeneratorKind, newFromGeneratorProcedure, FromGeneratorKind)

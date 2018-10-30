@@ -101,19 +101,14 @@ func (a LabelSet) isSuperSet(b LabelSet) bool {
 	return true
 }
 
-func (a LabelSet) isSubSet(b LabelSet) bool {
-	if b == nil {
-		return true
-	}
-	if a == nil {
-		return false
-	}
+func (a LabelSet) diff(b LabelSet) LabelSet {
+	diff := make(LabelSet, 0, len(a))
 	for _, l := range a {
 		if !b.contains(l) {
-			return false
+			diff = append(diff, l)
 		}
 	}
-	return true
+	return diff
 }
 
 func (a LabelSet) equal(b LabelSet) bool {

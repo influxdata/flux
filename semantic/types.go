@@ -128,6 +128,9 @@ func (t *arrayType) FunctionSignature() FunctionSignature {
 	panic(fmt.Errorf("cannot get function signature of kind %s", t.Kind()))
 }
 func (t *arrayType) PolyType() PolyType {
+	if t.elementType == nil {
+		return Invalid
+	}
 	return NewArrayPolyType(t.elementType.PolyType())
 }
 

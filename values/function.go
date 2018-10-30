@@ -39,6 +39,9 @@ func (f *function) String() string {
 func (f *function) Type() semantic.Type {
 	return f.t
 }
+func (f *function) PolyType() semantic.PolyType {
+	return f.t.PolyType()
+}
 
 func (f *function) Str() string {
 	panic(UnexpectedKind(semantic.Object, semantic.String))

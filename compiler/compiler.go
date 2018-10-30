@@ -359,7 +359,7 @@ func externDeclarations(scope Scope) []*semantic.ExternalVariableDeclaration {
 	for k, v := range scope {
 		declarations = append(declarations, &semantic.ExternalVariableDeclaration{
 			Identifier: &semantic.Identifier{Name: k},
-			ExternType: v.Type().PolyType(),
+			ExternType: v.PolyType(),
 		})
 	}
 	return declarations

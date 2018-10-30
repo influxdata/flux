@@ -34,7 +34,7 @@ func init() {
 			"every":         semantic.Duration,
 			"period":        semantic.Duration,
 			"round":         semantic.Duration,
-			"start":         semantic.Time,
+			"start":         semantic.Tvar(1), // See similar TODO on range
 			"timeCol":       semantic.String,
 			"startColLabel": semantic.String,
 			"stopColLabel":  semantic.String,

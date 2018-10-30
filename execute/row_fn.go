@@ -244,6 +244,9 @@ func NewRecord(t semantic.Type) *Record {
 func (r *Record) Type() semantic.Type {
 	return r.t
 }
+func (r *Record) PolyType() semantic.PolyType {
+	return r.t.PolyType()
+}
 
 func (r *Record) Str() string {
 	panic(values.UnexpectedKind(semantic.Object, semantic.String))

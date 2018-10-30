@@ -30,8 +30,9 @@ func addOption(name string, opt values.Value) {
 func init() {
 	addFunc(&function{
 		name: "fortyTwo",
-		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			Return: semantic.Float,
+		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+			Required: semantic.EmptyLabelSet(),
+			Return:   semantic.Float,
 		}),
 		call: func(args values.Object) (values.Value, error) {
 			return values.NewFloat(42.0), nil
@@ -40,8 +41,9 @@ func init() {
 	})
 	addFunc(&function{
 		name: "six",
-		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			Return: semantic.Float,
+		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+			Required: semantic.EmptyLabelSet(),
+			Return:   semantic.Float,
 		}),
 		call: func(args values.Object) (values.Value, error) {
 			return values.NewFloat(6.0), nil
@@ -50,8 +52,9 @@ func init() {
 	})
 	addFunc(&function{
 		name: "nine",
-		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			Return: semantic.Float,
+		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+			Required: semantic.EmptyLabelSet(),
+			Return:   semantic.Float,
 		}),
 		call: func(args values.Object) (values.Value, error) {
 			return values.NewFloat(9.0), nil
@@ -60,8 +63,9 @@ func init() {
 	})
 	addFunc(&function{
 		name: "fail",
-		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			Return: semantic.Bool,
+		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+			Required: semantic.EmptyLabelSet(),
+			Return:   semantic.Bool,
 		}),
 		call: func(args values.Object) (values.Value, error) {
 			return nil, errors.New("fail")
@@ -70,8 +74,8 @@ func init() {
 	})
 	addFunc(&function{
 		name: "plusOne",
-		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			Parameters:   map[string]semantic.Type{"x": semantic.Float},
+		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+			Parameters:   map[string]semantic.PolyType{"x": semantic.Float},
 			Required:     []string{"x"},
 			Return:       semantic.Float,
 			PipeArgument: "x",
@@ -87,8 +91,9 @@ func init() {
 	})
 	addFunc(&function{
 		name: "sideEffect",
-		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			Return: semantic.Int,
+		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+			Required: semantic.EmptyLabelSet(),
+			Return:   semantic.Int,
 		}),
 		call: func(args values.Object) (values.Value, error) {
 			return values.NewInt(0), nil
@@ -108,7 +113,7 @@ func init() {
 	for k, v := range testScope {
 		extern.Declarations = append(extern.Declarations, &semantic.ExternalVariableDeclaration{
 			Identifier: &semantic.Identifier{Name: k},
-			ExternType: v.Type().PolyType(),
+			ExternType: v.PolyType(),
 		})
 	}
 }
@@ -395,10 +400,10 @@ func TestResolver(t *testing.T) {
 	var got semantic.Expression
 	f := &function{
 		name: "resolver",
-		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			Parameters: map[string]semantic.Type{
-				"f": semantic.NewFunctionType(semantic.FunctionSignature{
-					Parameters: map[string]semantic.Type{"r": semantic.Int},
+		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+			Parameters: map[string]semantic.PolyType{
+				"f": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+					Parameters: map[string]semantic.PolyType{"r": semantic.Int},
 					Required:   []string{"r"},
 					Return:     semantic.Int,
 				}),
@@ -476,12 +481,16 @@ func TestResolver(t *testing.T) {
 
 type function struct {
 	name          string
-	t             semantic.Type
+	t             semantic.PolyType
 	call          func(args values.Object) (values.Value, error)
 	hasSideEffect bool
 }
 
 func (f *function) Type() semantic.Type {
+	t, _ := f.t.MonoType()
+	return t
+}
+func (f *function) PolyType() semantic.PolyType {
 	return f.t
 }
 

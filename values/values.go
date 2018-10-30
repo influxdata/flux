@@ -10,6 +10,7 @@ import (
 
 type Typer interface {
 	Type() semantic.Type
+	PolyType() semantic.PolyType
 }
 
 type Value interface {
@@ -35,6 +36,9 @@ type value struct {
 
 func (v value) Type() semantic.Type {
 	return v.t
+}
+func (v value) PolyType() semantic.PolyType {
+	return v.t.PolyType()
 }
 func (v value) Str() string {
 	CheckKind(v.t.Kind(), semantic.String)

@@ -21,6 +21,8 @@ type PolyType interface {
 	UnifyType(map[Tvar]KindConstraint, PolyType) (Substitution, error)
 
 	Equal(PolyType) bool
+
+	Kind() Kind
 }
 
 type KindConstraint interface {
@@ -32,6 +34,9 @@ type KindConstraint interface {
 // Tvar represents a type variable meaning its type could be any possible type.
 type Tvar int
 
+func (tv Tvar) Kind() Kind {
+	return Invalid
+}
 func (tv Tvar) String() string {
 	if tv == 0 {
 		// tv == 0 is not considered valid,
@@ -53,10 +58,12 @@ func (a Tvar) SubstType(b Tvar, t PolyType) PolyType {
 }
 func (tv Tvar) FreeVars(c *Constraints) TvarSet {
 	fvs := TvarSet{tv}
-	ks, ok := c.kindConst[tv]
-	if ok {
-		for _, k := range ks {
-			fvs = fvs.union(k.FreeVars(c))
+	if c != nil {
+		ks, ok := c.kindConst[tv]
+		if ok {
+			for _, k := range ks {
+				fvs = fvs.union(k.FreeVars(c))
+			}
 		}
 	}
 	return fvs
@@ -141,6 +148,7 @@ func (i invalid) String() string {
 	return "INVALID"
 }
 
+func (i invalid) Kind() Kind                                                        { return Invalid }
 func (i invalid) Occurs(tv Tvar) bool                                               { return false }
 func (i invalid) SubstType(Tvar, PolyType) PolyType                                 { return i }
 func (i invalid) Type(map[Tvar]KindConstraint) (Type, error)                        { return Invalid, nil }
@@ -165,6 +173,9 @@ func NewArrayPolyType(elementType PolyType) PolyType {
 	return list{typ: elementType}
 }
 
+func (l list) Kind() Kind {
+	return Array
+}
 func (l list) String() string {
 	return fmt.Sprintf("[%v]", l.typ)
 }
@@ -248,6 +259,22 @@ func NewFunctionPolyType(sig FunctionPolySignature) PolyType {
 	}
 }
 
+func (f function) Kind() Kind {
+	return Function
+}
+func (f function) Signature() FunctionPolySignature {
+	parameters := make(map[string]PolyType, len(f.parameters))
+	for k, t := range f.parameters {
+		parameters[k] = t
+	}
+	return FunctionPolySignature{
+		Parameters:   parameters,
+		Required:     f.required.copy(),
+		Return:       f.ret,
+		PipeArgument: f.pipeArgument,
+	}
+}
+
 func (f function) String() string {
 	var builder strings.Builder
 	keys := make([]string, 0, len(f.parameters))
@@ -262,6 +289,9 @@ func (f function) String() string {
 		}
 		if f.required.contains(k) {
 			builder.WriteString("^")
+		}
+		if f.pipeArgument == k {
+			builder.WriteString("<-")
 		}
 		fmt.Fprintf(&builder, "%s: %v", k, f.parameters[k])
 	}
@@ -301,16 +331,18 @@ func (f function) FreeVars(c *Constraints) TvarSet {
 func (l function) UnifyType(kinds map[Tvar]KindConstraint, r PolyType) (Substitution, error) {
 	switch r := r.(type) {
 	case function:
-		if !l.required.isSubSet(r.required) {
-			return nil, fmt.Errorf("missing required parameters l: %v r: %v", l.required, r.required)
+		missing := l.required.diff(r.required)
+		for _, lbl := range missing {
+			if _, ok := r.parameters[lbl]; !ok && lbl != l.pipeArgument {
+				// Pipe parameters are validated below
+				return nil, fmt.Errorf("missing required parameter %q", lbl)
+			}
 		}
 		subst := make(Substitution)
 		for f, tl := range l.parameters {
 			tr, ok := r.parameters[f]
 			if !ok {
-				if l.required.contains(f) {
-					return nil, errors.New("missing")
-				}
+				// We already validated missing parameters, this must be the pipe parameter.
 				continue
 			}
 			typl := subst.ApplyType(tl)
@@ -367,7 +399,7 @@ func (f function) Type(kinds map[Tvar]KindConstraint) (Type, error) {
 	parameters := make(map[string]Type, len(f.parameters))
 	required := f.required.copy()
 	for l, a := range f.parameters {
-		if l == pipeLabel {
+		if l == pipeLabel && f.pipeArgument != "" {
 			l = f.pipeArgument
 			required = required.remove(pipeLabel)
 			required = append(required, l)
@@ -393,7 +425,7 @@ func (f function) MonoType() (Type, bool) {
 	parameters := make(map[string]Type, len(f.parameters))
 	required := f.required.copy()
 	for l, a := range f.parameters {
-		if l == pipeLabel {
+		if l == pipeLabel && f.pipeArgument != "" {
 			l = f.pipeArgument
 			required = required.remove(pipeLabel)
 			required = append(required, l)
@@ -419,7 +451,7 @@ func (f function) resolvePolyType(kinds map[Tvar]KindConstraint) (PolyType, erro
 	parameters := make(map[string]PolyType, len(f.parameters))
 	required := f.required.copy()
 	for l, v := range f.parameters {
-		if l == pipeLabel {
+		if l == pipeLabel && f.pipeArgument != "" {
 			l = f.pipeArgument
 			required = required.remove(pipeLabel)
 			required = append(required, l)
@@ -475,6 +507,9 @@ func NewObjectPolyType(properties map[string]PolyType, lower, upper LabelSet) Po
 	}
 }
 
+func (o object) Kind() Kind {
+	return Object
+}
 func (o object) String() string {
 	return o.krecord.String()
 }
@@ -548,6 +583,14 @@ func (o object) Equal(t PolyType) bool {
 	default:
 		return false
 	}
+}
+
+func (o object) KindConstraint() KindConstraint {
+	return o.krecord
+}
+
+type KindConstrainter interface {
+	KindConstraint() KindConstraint
 }
 
 type KClass struct{}

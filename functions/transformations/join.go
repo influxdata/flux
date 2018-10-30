@@ -117,16 +117,11 @@ func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		if err != nil {
 			return
 		}
-		if operation.Type().Kind() != semantic.Object {
+		if operation.PolyType().Kind() != semantic.Object {
 			err = fmt.Errorf("expected %q to be object type; instead got %v",
-				name, operation.Type().Kind())
+				name, operation.PolyType().Kind())
 			return
 		}
-		//if operation.Type() != flux.TableObjectType {
-		//	err = fmt.Errorf("expected %q to be TableObject type, instead got %v",
-		//		name, operation.Type())
-		//	return
-		//}
 		table, ok := operation.(*flux.TableObject)
 		if !ok {
 			err = fmt.Errorf("expected %q to be TableObject type, instead got %v", name, operation.Type())

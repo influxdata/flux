@@ -33,6 +33,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &transformations.FilterOpSpec{
 							Fn: &semantic.FunctionExpression{
+								Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
 										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -116,6 +117,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &transformations.FilterOpSpec{
 							Fn: &semantic.FunctionExpression{
+								Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
 										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -206,6 +208,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &transformations.FilterOpSpec{
 							Fn: &semantic.FunctionExpression{
+								Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
 										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -285,6 +288,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &transformations.FilterOpSpec{
 							Fn: &semantic.FunctionExpression{
+								Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
 										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -364,6 +368,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &transformations.FilterOpSpec{
 							Fn: &semantic.FunctionExpression{
+								Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
 										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -439,6 +444,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &transformations.FilterOpSpec{
 							Fn: &semantic.FunctionExpression{
+								Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
 										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -481,6 +487,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &transformations.FilterOpSpec{
 							Fn: &semantic.FunctionExpression{
+								Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
 										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -529,22 +536,30 @@ func TestFilterOperation_Marshaling(t *testing.T) {
 		"kind":"filter",
 		"spec":{
 			"fn":{
-				"type": "ArrowFunctionExpression",
-				"params": [{"type":"FunctionParam","key":{"type":"Identifier","name":"r"}}],
-				"body":{
-					"type":"BinaryExpression",
-					"operator": "!=",
-					"left":{
-						"type":"MemberExpression",
-						"object": {
-							"type": "IdentifierExpression",
-							"name":"r"
-						},
-						"property": "_measurement"
+				"type": "FunctionExpression",
+				"block":{
+					"type":"FunctionBlock",
+					"parameters": {
+						"type":"FunctionParameters",
+						"list": [
+							{"type":"FunctionParameter","key":{"type":"Identifier","name":"r"}}
+						]
 					},
-					"right":{
-						"type":"StringLiteral",
-						"value":"mem"
+					"body":{
+						"type":"BinaryExpression",
+						"operator": "!=",
+						"left":{
+							"type":"MemberExpression",
+							"object": {
+								"type": "IdentifierExpression",
+								"name":"r"
+							},
+							"property": "_measurement"
+						},
+						"right":{
+							"type":"StringLiteral",
+							"value":"mem"
+						}
 					}
 				}
 			}
@@ -584,6 +599,7 @@ func TestFilter_Process(t *testing.T) {
 			name: `_value>5`,
 			spec: &transformations.FilterProcedureSpec{
 				Fn: &semantic.FunctionExpression{
+					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -623,6 +639,7 @@ func TestFilter_Process(t *testing.T) {
 			name: "_value>5 multiple blocks",
 			spec: &transformations.FilterProcedureSpec{
 				Fn: &semantic.FunctionExpression{
+					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -697,6 +714,7 @@ func TestFilter_Process(t *testing.T) {
 			name: "_value>5 and t1 = a and t2 = y",
 			spec: &transformations.FilterProcedureSpec{
 				Fn: &semantic.FunctionExpression{
+					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},

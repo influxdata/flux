@@ -22,14 +22,16 @@ type PivotOpSpec struct {
 
 var fromRowsBuiltin = `
 // fromRows will access a database and retrieve data aligned into time-aligned tuples, grouped by measurement.
-fromRows = (bucket="",bucketID="") => from(bucket:bucket,bucketID:bucketID) |> pivot(rowKey:["_time"], colKey: ["_field"], valueCol: "_value")
+fromRows = (bucket="",bucketID="") =>
+    from(bucket:bucket,bucketID:bucketID)
+        |> pivot(rowKey:["_time"], colKey: ["_field"], valueCol: "_value")
 `
 
 func init() {
 	pivotSignature := flux.FunctionSignature(
 		map[string]semantic.PolyType{
-			"rowKey":   semantic.Array,
-			"colKey":   semantic.Array,
+			"rowKey":   semantic.NewArrayPolyType(semantic.String),
+			"colKey":   semantic.NewArrayPolyType(semantic.String),
 			"valueCol": semantic.String,
 		},
 		[]string{"rowKey", "colKey", "valueCol"},

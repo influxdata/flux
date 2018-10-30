@@ -24,13 +24,14 @@ type FromCSVOpSpec struct {
 }
 
 func init() {
-	fromCSVSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
+	fromCSVSignature := semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{
 			"csv":  semantic.String,
 			"file": semantic.String,
 		},
-		nil,
-	)
+		Required: semantic.EmptyLabelSet(),
+		Return:   flux.TableObjectType,
+	}
 	flux.RegisterFunction(FromCSVKind, createFromCSVOpSpec, fromCSVSignature)
 	flux.RegisterOpSpec(FromCSVKind, newFromCSVOp)
 	plan.RegisterProcedureSpec(FromCSVKind, newFromCSVProcedure, FromCSVKind)

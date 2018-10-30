@@ -24,8 +24,9 @@ type RangeOpSpec struct {
 func init() {
 	rangeSignature := flux.FunctionSignature(
 		map[string]semantic.PolyType{
-			"start":    semantic.Time,
-			"stop":     semantic.Time,
+			// TODO(nathanielc): Add polymorphic constants and a type class for time/durations
+			"start":    semantic.Tvar(1),
+			"stop":     semantic.Tvar(2),
 			"timeCol":  semantic.String,
 			"startCol": semantic.String,
 			"stopCol":  semantic.String,

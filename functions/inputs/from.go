@@ -21,13 +21,14 @@ type FromOpSpec struct {
 }
 
 func init() {
-	fromSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
+	fromSignature := semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{
 			"bucket":   semantic.String,
 			"bucketID": semantic.String,
 		},
-		nil,
-	)
+		Required: semantic.EmptyLabelSet(),
+		Return:   flux.TableObjectType,
+	}
 
 	flux.RegisterFunction(FromKind, createFromOpSpec, fromSignature)
 	flux.RegisterOpSpec(FromKind, newFromOp)

@@ -194,20 +194,6 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (v
 		if !ok {
 			return nil, fmt.Errorf("undefined identifier %q", e.Name)
 		}
-		if fv, ok := value.(*function); ok {
-			it, err := itrp.typeSol.PolyTypeOf(e)
-			if err != nil {
-				return nil, err
-			}
-			ft, err := itrp.typeSol.PolyTypeOf(fv.e)
-			if err != nil {
-				return nil, err
-			}
-
-			typeSol := itrp.typeSol.FreshSolution()
-			typeSol.AddConstraint(it, ft)
-			fv.sol = typeSol
-		}
 		return value, nil
 	case *semantic.CallExpression:
 		v, err := itrp.doCall(e, scope)
@@ -403,18 +389,21 @@ func DoFunctionCall(f func(args Arguments) (values.Value, error), argsObj values
 	return v, nil
 }
 
+type functionType interface {
+	Signature() semantic.FunctionPolySignature
+}
+
 func (itrp *Interpreter) doCall(call *semantic.CallExpression, scope *Scope) (values.Value, error) {
 	callee, err := itrp.doExpression(call.Callee, scope)
 	if err != nil {
 		return nil, err
 	}
-	ft := callee.Type()
+	ft := callee.PolyType()
 	if ft.Kind() != semantic.Function {
 		return nil, fmt.Errorf("cannot call function, value is of type %v", callee.Type())
 	}
 	f := callee.Function()
-	sig := ft.FunctionSignature()
-	log.Println("doCall", sig)
+	sig := ft.(functionType).Signature()
 	argObj, err := itrp.doArguments(call.Arguments, scope, sig.PipeArgument, call.Pipe)
 	if err != nil {
 		return nil, err
@@ -625,6 +614,13 @@ func (f *function) Type() semantic.Type {
 	}
 	return typ
 }
+func (f *function) PolyType() semantic.PolyType {
+	typ, err := f.sol.PolyTypeOf(f.e)
+	if err != nil {
+		return semantic.Invalid
+	}
+	return typ
+}
 
 func (f *function) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
@@ -722,7 +718,7 @@ func (f *function) doCall(args Arguments) (values.Value, error) {
 			return nil, err
 		}
 		v := blockScope.Return()
-		if v.Type() == semantic.Invalid {
+		if v.PolyType().Kind() == semantic.Invalid {
 			return nil, errors.New("function has no return value")
 		}
 		return v, nil
@@ -1192,8 +1188,9 @@ func (a *arguments) get(name string, kind semantic.Kind, required bool) (values.
 		}
 		return nil, false, nil
 	}
-	if v.Type().Kind() != kind {
-		return nil, true, fmt.Errorf("keyword argument %q should be of kind %v, but got %v", name, kind, v.Type().Kind())
+	log.Println("get value", v, v.PolyType())
+	if v.PolyType().Kind() != kind {
+		return nil, true, fmt.Errorf("keyword argument %q should be of kind %v, but got %v", name, kind, v.PolyType().Kind())
 	}
 	return v, true, nil
 }

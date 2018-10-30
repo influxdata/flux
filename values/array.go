@@ -54,6 +54,9 @@ func (a *array) String() string {
 func (a *array) Type() semantic.Type {
 	return a.t
 }
+func (a *array) PolyType() semantic.PolyType {
+	return a.t.PolyType()
+}
 
 func (a *array) Get(i int) Value {
 	if i >= len(a.elements) {

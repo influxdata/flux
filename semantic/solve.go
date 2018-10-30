@@ -101,7 +101,7 @@ func (s *Solution) TypeOf(n Node) (Type, error) {
 func (s *Solution) PolyTypeOf(n Node) (PolyType, error) {
 	a, ok := s.cs.annotations[n]
 	if !ok {
-		return nil, nil
+		return nil, fmt.Errorf("no type annotation for node %T@%v", n, n.Location())
 	}
 	if a.Err != nil {
 		return nil, a.Err
@@ -113,13 +113,16 @@ func (s *Solution) PolyTypeOf(n Node) (PolyType, error) {
 }
 
 func (s *Solution) AddConstraint(l, r PolyType) error {
+	if l == nil || r == nil {
+		return errors.New("cannot add type constraint on nil types")
+	}
 	s.kinds = nil
 	s.cs.AddTypeConst(l, r, ast.SourceLocation{})
 	return s.solve()
 }
 
 func unifyTypes(kinds map[Tvar]KindConstraint, l, r PolyType) (s Substitution, _ error) {
-	log.Println("unifyTypes", l, r)
+	log.Printf("unifyTypes %v == %v", l, r)
 	return l.UnifyType(kinds, r)
 }
 

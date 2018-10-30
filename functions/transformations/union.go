@@ -22,12 +22,13 @@ func (s *UnionOpSpec) Kind() flux.OperationKind {
 }
 
 func init() {
-	unionSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
+	unionSignature := semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{
 			"tables": semantic.NewArrayPolyType(flux.TableObjectType),
 		},
-		[]string{"tables"},
-	)
+		Required: semantic.LabelSet{"tables"},
+		Return:   flux.TableObjectType,
+	}
 
 	flux.RegisterFunction(UnionKind, createUnionOpSpec, unionSignature)
 	flux.RegisterOpSpec(UnionKind, newUnionOp)

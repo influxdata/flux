@@ -25,14 +25,15 @@ type FromSQLOpSpec struct {
 }
 
 func init() {
-	fromSQLSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
+	fromSQLSignature := semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{
 			"driverName":     semantic.String,
 			"dataSourceName": semantic.String,
 			"query":          semantic.String,
 		},
-		[]string{"driverName", "dataSourceName", "query"},
-	)
+		Required: semantic.LabelSet{"driverName", "dataSourceName", "query"},
+		Return:   flux.TableObjectType,
+	}
 	flux.RegisterFunction(FromSQLKind, createFromSQLOpSpec, fromSQLSignature)
 	flux.RegisterOpSpec(FromSQLKind, newFromSQLOp)
 	plan.RegisterProcedureSpec(FromSQLKind, newFromSQLProcedure, FromSQLKind)

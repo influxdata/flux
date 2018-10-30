@@ -40,12 +40,14 @@ type stringConv struct{}
 var required = semantic.LabelSet{conversionArg}
 
 func (c *stringConv) Type() semantic.Type {
-	return semantic.Function
-	//return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-	//	Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
-	//	Required:   required,
-	//	Return:     semantic.String,
-	//})
+	return semantic.Invalid
+}
+func (c *stringConv) PolyType() semantic.PolyType {
+	return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
+		Required:   required,
+		Return:     semantic.String,
+	})
 }
 func (c *stringConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
@@ -81,9 +83,6 @@ func (c *stringConv) Function() values.Function {
 	return c
 }
 func (c *stringConv) Equal(rhs values.Value) bool {
-	if c.Type() != rhs.Type() {
-		return false
-	}
 	f, ok := rhs.(*stringConv)
 	return ok && (c == f)
 }
@@ -121,12 +120,14 @@ func (c *stringConv) Call(args values.Object) (values.Value, error) {
 type intConv struct{}
 
 func (c *intConv) Type() semantic.Type {
-	return semantic.Function
-	//return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-	//	Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
-	//	Required:   required,
-	//	Return:     semantic.Int,
-	//})
+	return semantic.Invalid
+}
+func (c *intConv) PolyType() semantic.PolyType {
+	return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
+		Required:   required,
+		Return:     semantic.Int,
+	})
 }
 func (c *intConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
@@ -162,9 +163,6 @@ func (c *intConv) Function() values.Function {
 	return c
 }
 func (c *intConv) Equal(rhs values.Value) bool {
-	if c.Type() != rhs.Type() {
-		return false
-	}
 	f, ok := rhs.(*intConv)
 	return ok && (c == f)
 }
@@ -210,12 +208,14 @@ func (c *intConv) Call(args values.Object) (values.Value, error) {
 type uintConv struct{}
 
 func (c *uintConv) Type() semantic.Type {
-	return semantic.Function
-	//return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-	//	Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
-	//	Required:   required,
-	//	Return:     semantic.UInt,
-	//})
+	return semantic.Invalid
+}
+func (c *uintConv) PolyType() semantic.PolyType {
+	return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
+		Required:   required,
+		Return:     semantic.UInt,
+	})
 }
 func (c *uintConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
@@ -251,9 +251,6 @@ func (c *uintConv) Function() values.Function {
 	return c
 }
 func (c *uintConv) Equal(rhs values.Value) bool {
-	if c.Type() != rhs.Type() {
-		return false
-	}
 	f, ok := rhs.(*uintConv)
 	return ok && (c == f)
 }
@@ -299,12 +296,14 @@ func (c *uintConv) Call(args values.Object) (values.Value, error) {
 type floatConv struct{}
 
 func (c *floatConv) Type() semantic.Type {
-	return semantic.Function
-	//return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-	//	Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
-	//	Required:   required,
-	//	Return:     semantic.Float,
-	//})
+	return semantic.Invalid
+}
+func (c *floatConv) PolyType() semantic.PolyType {
+	return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
+		Required:   required,
+		Return:     semantic.Float,
+	})
 }
 func (c *floatConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
@@ -340,9 +339,6 @@ func (c *floatConv) Function() values.Function {
 	return c
 }
 func (c *floatConv) Equal(rhs values.Value) bool {
-	if c.Type() != rhs.Type() {
-		return false
-	}
 	f, ok := rhs.(*floatConv)
 	return ok && (c == f)
 }
@@ -384,12 +380,14 @@ func (c *floatConv) Call(args values.Object) (values.Value, error) {
 type boolConv struct{}
 
 func (c *boolConv) Type() semantic.Type {
-	return semantic.Function
-	//return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-	//	Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
-	//	Required:   required,
-	//	Return:     semantic.Bool,
-	//})
+	return semantic.Invalid
+}
+func (c *boolConv) PolyType() semantic.PolyType {
+	return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
+		Required:   required,
+		Return:     semantic.Bool,
+	})
 }
 func (c *boolConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
@@ -425,9 +423,6 @@ func (c *boolConv) Function() values.Function {
 	return c
 }
 func (c *boolConv) Equal(rhs values.Value) bool {
-	if c.Type() != rhs.Type() {
-		return false
-	}
 	f, ok := rhs.(*boolConv)
 	return ok && (c == f)
 }
@@ -489,12 +484,14 @@ func (c *boolConv) Call(args values.Object) (values.Value, error) {
 type timeConv struct{}
 
 func (c *timeConv) Type() semantic.Type {
-	return semantic.Function
-	//return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-	//	Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
-	//	Required:   required,
-	//	Return:     semantic.Time,
-	//})
+	return semantic.Invalid
+}
+func (c *timeConv) PolyType() semantic.PolyType {
+	return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
+		Required:   required,
+		Return:     semantic.Time,
+	})
 }
 func (c *timeConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
@@ -530,9 +527,6 @@ func (c *timeConv) Function() values.Function {
 	return c
 }
 func (c *timeConv) Equal(rhs values.Value) bool {
-	if c.Type() != rhs.Type() {
-		return false
-	}
 	f, ok := rhs.(*timeConv)
 	return ok && (c == f)
 }
@@ -566,12 +560,14 @@ func (c *timeConv) Call(args values.Object) (values.Value, error) {
 type durationConv struct{}
 
 func (c *durationConv) Type() semantic.Type {
-	return semantic.Function
-	//return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-	//	Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
-	//	Required:   required,
-	//	Return:     semantic.Duration,
-	//})
+	return semantic.Invalid
+}
+func (c *durationConv) PolyType() semantic.PolyType {
+	return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
+		Required:   required,
+		Return:     semantic.Duration,
+	})
 }
 func (c *durationConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
@@ -607,9 +603,6 @@ func (c *durationConv) Function() values.Function {
 	return c
 }
 func (c *durationConv) Equal(rhs values.Value) bool {
-	if c.Type() != rhs.Type() {
-		return false
-	}
 	f, ok := rhs.(*durationConv)
 	return ok && (c == f)
 }

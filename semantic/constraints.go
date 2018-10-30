@@ -83,7 +83,20 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 	nodeVar := v.cs.annotations[n].Var
 	switch n := n.(type) {
 	case *ExternalVariableDeclaration:
-		t := n.ExternType
+		// Do not trust external type variables,
+		// substitute them with fresh vars.
+		ftv := n.ExternType.FreeVars(nil)
+		subst := make(Substitution, len(ftv))
+		for _, tv := range ftv {
+			subst[tv] = v.cs.f.Fresh()
+		}
+		t := subst.ApplyType(n.ExternType)
+		// Check if this type knows about its kind constraints
+		if kt, ok := t.(KindConstrainter); ok {
+			tv := v.cs.f.Fresh()
+			v.cs.AddKindConst(tv, kt.KindConstraint())
+			t = tv
+		}
 		existing, ok := v.env.LocalLookup(n.Identifier.Name)
 		if ok {
 			v.cs.AddTypeConst(t, existing.T, n.Location())
@@ -248,7 +261,6 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 				return nil, err
 			}
 			parameters[pipeLabel] = t
-			required = append(required, pipeLabel)
 		}
 		ft := function{
 			parameters: parameters,

@@ -1105,6 +1105,9 @@ type functionParam struct {
 func (f *functionValue) Type() semantic.Type {
 	return f.t
 }
+func (f *functionValue) PolyType() semantic.PolyType {
+	return f.t.PolyType()
+}
 
 func (f *functionValue) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))

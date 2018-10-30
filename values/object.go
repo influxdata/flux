@@ -67,6 +67,10 @@ func (o *object) Type() semantic.Type {
 	return typ
 }
 
+func (o *object) PolyType() semantic.PolyType {
+	return o.Type().PolyType()
+}
+
 func (o *object) Set(name string, v Value) {
 	o.values[name] = v
 	if o.propertyTypes[name] != v.Type() {

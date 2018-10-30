@@ -359,7 +359,7 @@ func (e *ArrayExpression) Copy() Node {
 type FunctionExpression struct {
 	loc `json:"-"`
 
-	Defaults *ObjectExpression `json:"defaults"`
+	Defaults *ObjectExpression `json:"defaults,omitempty"`
 	Block    *FunctionBlock    `json:"block"`
 }
 
@@ -379,28 +379,6 @@ func (e *FunctionExpression) Copy() Node {
 
 	return ne
 }
-
-//// FunctionDefaults represents the defaults to a function's parameters
-//type FunctionDefaults struct {
-//	loc `json:"-"`
-//	Object *ObjectExpression `json:"object"`
-//}
-//
-//func (*FunctionDefaults) NodeType() string { return "FunctionDefaults" }
-//
-//func (e *FunctionDefaults) Copy() Node {
-//	if e == nil {
-//		return e
-//	}
-//	ne := new(FunctionDefaults)
-//	*ne = *e
-//
-//	if e.Object != nil {
-//		ne.Object = e.Object.Copy().(*ObjectExpression)
-//	}
-//
-//	return ne
-//}
 
 // FunctionBlock represents the function parameters and the function body.
 type FunctionBlock struct {
