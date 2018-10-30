@@ -10,6 +10,13 @@ func EmptyLabelSet() LabelSet {
 	return make(LabelSet, 0, 10)
 }
 
+func toLabelSet(s []string) LabelSet {
+	if s == nil {
+		return LabelSet{}
+	}
+	return LabelSet(s)
+}
+
 var AllLabels = LabelSet(nil)
 
 func (s LabelSet) String() string {
@@ -38,6 +45,15 @@ func (s LabelSet) contains(l string) bool {
 		}
 	}
 	return false
+}
+func (s LabelSet) remove(l string) LabelSet {
+	filtered := s[0:0]
+	for _, lbl := range s {
+		if l != lbl {
+			filtered = append(filtered, lbl)
+		}
+	}
+	return filtered
 }
 
 func (s LabelSet) union(o LabelSet) LabelSet {

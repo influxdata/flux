@@ -1,18 +1,17 @@
 package compiler
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/influxdata/flux"
-
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
+	"github.com/pkg/errors"
 )
 
 func Compile(f *semantic.FunctionExpression, in semantic.Type, builtins Scope) (Func, error) {
 	if in.Kind() != semantic.Object {
-		return nil, errors.New("input type must be an object kind")
+		return nil, errors.New("function input must be an object")
 	}
 	declarations := externDeclarations(builtins)
 	extern := &semantic.Extern{
@@ -20,26 +19,30 @@ func Compile(f *semantic.FunctionExpression, in semantic.Type, builtins Scope) (
 		Block:        &semantic.ExternBlock{Node: f},
 	}
 
-	typeSol := semantic.Infer(extern)
-
-	pt, err := typeSol.PolyTypeOf(extern)
+	typeSol, err := semantic.InferTypes(extern)
 	if err != nil {
 		return nil, err
 	}
-	fpt := semantic.NewFunctionPolyType(semantic.PolyFunctionSignature{
-		In:  in.PolyType(),
-		Out: typeSol.Fresh(),
+
+	pt, err := typeSol.PolyTypeOf(f)
+	if err != nil {
+		return nil, err
+	}
+	props := in.Properties()
+	parameters := make(map[string]semantic.PolyType, len(props))
+	for k, p := range props {
+		parameters[k] = p.PolyType()
+	}
+	fpt := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+		Parameters: parameters,
+		Return:     typeSol.Fresh(),
 	})
 	if err := typeSol.AddConstraint(pt, fpt); err != nil {
 		return nil, err
 	}
-	pt, err = typeSol.PolyTypeOf(extern)
+	fnType, err := typeSol.TypeOf(f)
 	if err != nil {
-		return nil, err
-	}
-	fnType, mono := pt.Type()
-	if !mono {
-		return nil, errors.New("cannot compile polymorphic function")
+		return nil, errors.Wrap(err, "cannot compile polymorphic function")
 	}
 
 	root, err := compile(f.Block.Body, typeSol, builtins, make(map[string]*semantic.FunctionExpression))
@@ -136,8 +139,12 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, fun
 			}
 
 			typeSol := typeSol.FreshSolution()
-			// Unify the identifier type and the function type.
-			typeSol.Unify(it, ft)
+			// Add constraint on the identifier type and the function type.
+			// This way all type variables in the body of the function will know their monotype.
+			err = typeSol.AddConstraint(it, ft)
+			if err != nil {
+				return nil, err
+			}
 
 			return compile(fe, typeSol, builtIns, funcExprs)
 		}
@@ -254,10 +261,9 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, fun
 		if err != nil {
 			return nil, err
 		}
-		in := fnType.InType()
-		propertyTypes := in.Properties()
-		params := make([]functionParam, 0, len(propertyTypes))
-		for k, pt := range propertyTypes {
+		sig := fnType.FunctionSignature()
+		params := make([]functionParam, 0, len(sig.Parameters))
+		for k, pt := range sig.Parameters {
 			param := functionParam{
 				Key:  k,
 				Type: pt,

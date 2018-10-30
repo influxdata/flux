@@ -24,6 +24,16 @@ type Solution struct {
 	kinds kindsMap
 }
 
+func (s *Solution) Fresh() Tvar {
+	return s.cs.f.Fresh()
+}
+
+func (s *Solution) FreshSolution() TypeSolution {
+	return &Solution{
+		cs: s.cs.Copy(),
+	}
+}
+
 func (sol *Solution) solve() error {
 	// Create substituion
 	subst := make(Substitution)
@@ -37,7 +47,7 @@ func (sol *Solution) solve() error {
 
 	// Unify all kind constraints
 	for tvl, ks := range sol.cs.kindConst {
-		for _, k := range ks {
+		for _, k := range ks[1:] {
 			tvr := subst.ApplyTvar(tvl)
 			kind := kinds[tvr]
 			s, err := unifyKinds(kinds, tvl, tvr, kind, k)
@@ -99,7 +109,7 @@ func (s *Solution) PolyTypeOf(n Node) (PolyType, error) {
 	if a.Type == nil {
 		return nil, fmt.Errorf("node %T@%v has no poly type", n, n.Location())
 	}
-	return a.Type.polyType(s.kinds)
+	return a.Type.resolvePolyType(s.kinds)
 }
 
 func (s *Solution) AddConstraint(l, r PolyType) error {

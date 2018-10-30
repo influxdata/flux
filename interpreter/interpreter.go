@@ -77,11 +77,11 @@ func (itrp *Interpreter) SetOption(name string, val values.Value) {
 
 // Eval evaluates the expressions composing a Flux program.
 func (itrp *Interpreter) Eval(program semantic.Node) error {
-	itrp.typeSol = semantic.Infer(program)
-	// Check for any type errors
-	if err := itrp.typeSol.Err(); err != nil {
+	sol, err := semantic.InferTypes(program)
+	if err != nil {
 		return err
 	}
+	itrp.typeSol = sol
 	return itrp.doRoot(program)
 }
 
@@ -179,7 +179,6 @@ func (itrp *Interpreter) doVariableDeclaration(declaration *semantic.NativeVaria
 			return nil, fmt.Errorf("cannot redefine %q with different type", declaration.Identifier.Name)
 		}
 	}
-	log.Println("declaration", declaration.Identifier.Name, value)
 	scope.Set(declaration.Identifier.Name, value)
 	return value, nil
 }
@@ -206,8 +205,7 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (v
 			}
 
 			typeSol := itrp.typeSol.FreshSolution()
-			// Unify the identifier type and the function type.
-			typeSol.Unify(it, ft)
+			typeSol.AddConstraint(it, ft)
 			fv.sol = typeSol
 		}
 		return value, nil
@@ -415,11 +413,12 @@ func (itrp *Interpreter) doCall(call *semantic.CallExpression, scope *Scope) (va
 		return nil, fmt.Errorf("cannot call function, value is of type %v", callee.Type())
 	}
 	f := callee.Function()
-	argObj, err := itrp.doArguments(call.Arguments, scope, ft.PipeArgument(), call.Pipe)
+	sig := ft.FunctionSignature()
+	log.Println("doCall", sig)
+	argObj, err := itrp.doArguments(call.Arguments, scope, sig.PipeArgument, call.Pipe)
 	if err != nil {
 		return nil, err
 	}
-	log.Println(argObj, call.Pipe, ft.PipeArgument())
 
 	// Check if the function is an interpFunction and rebind it.
 	if af, ok := f.(*function); ok {
@@ -457,7 +456,7 @@ func (itrp *Interpreter) doArguments(args *semantic.ObjectExpression, scope *Sco
 		obj.Set(p.Key.Name, value)
 	}
 	if pipe != nil && pipeArgument == "" {
-		return nil, errors.New("pipe argument value provided to function with no pipe argument defined")
+		return nil, errors.New("pipe parameter value provided to function with no pipe parameter defined")
 	}
 	if pipe != nil {
 		value, err := itrp.doExpression(pipe, scope)

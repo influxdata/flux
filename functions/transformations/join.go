@@ -19,17 +19,14 @@ const JoinKind = "join"
 const MergeJoinKind = "merge-join"
 
 func init() {
-	joinSignature := semantic.FunctionSignature{
-		In: semantic.NewObjectType(map[string]semantic.Type{
-			"tables": semantic.NewObjectType(nil),
+	joinSignature := semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{
+			"tables": semantic.NewObjectPolyType(nil, semantic.EmptyLabelSet(), semantic.AllLabels),
 			"on":     semantic.NewArrayType(semantic.String),
 			"method": semantic.String,
-		}),
-		Defaults: semantic.NewObjectType(map[string]semantic.Type{
-			"on":     semantic.NewArrayType(semantic.String),
-			"method": semantic.String,
-		}),
-		Out:          flux.TableObjectType,
+		},
+		Required:     semantic.LabelSet{"tables"},
+		Return:       flux.TableObjectType,
 		PipeArgument: "tables",
 	}
 	flux.RegisterFunction(JoinKind, createJoinOpSpec, joinSignature)

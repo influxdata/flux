@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
+	"github.com/pkg/errors"
 )
 
 type Func interface {
@@ -47,8 +48,15 @@ type compiledFn struct {
 }
 
 func (c compiledFn) validate(input values.Object) error {
-	if input.Type() != c.fnType.InType() {
-		return fmt.Errorf("incorrect input type for compiled function %v", input.Type())
+	sig := c.fnType.FunctionSignature()
+	properties := input.Type().Properties()
+	if len(properties) != len(sig.Parameters) {
+		return errors.New("mismatched parameters and properties")
+	}
+	for k, v := range sig.Parameters {
+		if properties[k] != v {
+			return fmt.Errorf("parameter %q has the wrong type, expected %v got %v.", k, v, properties[k])
+		}
 	}
 	return nil
 }
@@ -64,7 +72,7 @@ func (c compiledFn) buildScope(input values.Object) error {
 }
 
 func (c compiledFn) Type() semantic.Type {
-	return c.fnType.OutType()
+	return c.fnType.FunctionSignature().Return
 }
 
 func (c compiledFn) Eval(input values.Object) (values.Value, error) {

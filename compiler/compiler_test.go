@@ -244,9 +244,9 @@ func TestCompileAndEval(t *testing.T) {
 				"r": semantic.Int,
 			}),
 			input: values.NewObjectWithValues(map[string]values.Value{
-				"r": values.NewIntValue(4),
+				"r": values.NewInt(4),
 			}),
-			want:    values.NewIntValue(4),
+			want:    values.NewInt(4),
 			wantErr: false,
 		},
 		{
@@ -358,9 +358,9 @@ func TestCompileAndEval(t *testing.T) {
 				"r": semantic.Int,
 			}),
 			input: values.NewObjectWithValues(map[string]values.Value{
-				"r": values.NewIntValue(4),
+				"r": values.NewInt(4),
 			}),
-			want:    values.NewIntValue(5),
+			want:    values.NewInt(5),
 			wantErr: false,
 		},
 	}

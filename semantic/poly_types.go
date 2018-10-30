@@ -10,7 +10,8 @@ import (
 type TypeExpression interface {
 	FreeVars(*Constraints) TvarSet
 	Type(map[Tvar]KindConstraint) (Type, error)
-	polyType(map[Tvar]KindConstraint) (PolyType, error)
+	MonoType() (Type, bool)
+	resolvePolyType(map[Tvar]KindConstraint) (PolyType, error)
 }
 
 type PolyType interface {
@@ -18,8 +19,6 @@ type PolyType interface {
 	Occurs(tv Tvar) bool
 	SubstType(tv Tvar, t PolyType) PolyType
 	UnifyType(map[Tvar]KindConstraint, PolyType) (Substitution, error)
-	// Normalize rewrites all free variables with fresh variables starting at zero.
-	//Normalize() PolyType
 
 	Equal(PolyType) bool
 }
@@ -30,14 +29,15 @@ type KindConstraint interface {
 	UnifyKind(map[Tvar]KindConstraint, KindConstraint) (KindConstraint, Substitution, error)
 }
 
-type TypeClass interface {
-}
-
+// Tvar represents a type variable meaning its type could be any possible type.
 type Tvar int
 
 func (tv Tvar) String() string {
 	if tv == 0 {
-		return "<>"
+		// tv == 0 is not considered valid,
+		// we denote that by using a different
+		// symbol other than t0.
+		return "><"
 	}
 	return fmt.Sprintf("t%d", int(tv))
 }
@@ -87,12 +87,15 @@ func (tv Tvar) Type(kinds map[Tvar]KindConstraint) (Type, error) {
 	}
 	return k.Type(kinds)
 }
-func (tv Tvar) polyType(kinds map[Tvar]KindConstraint) (PolyType, error) {
+func (tv Tvar) MonoType() (Type, bool) {
+	return nil, false
+}
+func (tv Tvar) resolvePolyType(kinds map[Tvar]KindConstraint) (PolyType, error) {
 	k, ok := kinds[tv]
 	if !ok {
 		return tv, nil
 	}
-	return k.polyType(kinds)
+	return k.resolvePolyType(kinds)
 }
 func (tv Tvar) Equal(t PolyType) bool {
 	switch t := t.(type) {
@@ -104,11 +107,12 @@ func (tv Tvar) Equal(t PolyType) bool {
 }
 
 // PolyType methods for Kind
-func (k Kind) Occurs(Tvar) bool                                   { return false }
-func (k Kind) SubstType(Tvar, PolyType) PolyType                  { return k }
-func (k Kind) Type(map[Tvar]KindConstraint) (Type, error)         { return k, nil }
-func (k Kind) polyType(map[Tvar]KindConstraint) (PolyType, error) { return k, nil }
-func (k Kind) FreeVars(*Constraints) TvarSet                      { return nil }
+func (k Kind) Occurs(Tvar) bool                                          { return false }
+func (k Kind) SubstType(Tvar, PolyType) PolyType                         { return k }
+func (k Kind) Type(map[Tvar]KindConstraint) (Type, error)                { return k, nil }
+func (k Kind) MonoType() (Type, bool)                                    { return k, true }
+func (k Kind) resolvePolyType(map[Tvar]KindConstraint) (PolyType, error) { return k, nil }
+func (k Kind) FreeVars(*Constraints) TvarSet                             { return nil }
 func (k Kind) UnifyType(kinds map[Tvar]KindConstraint, t PolyType) (Substitution, error) {
 	switch t := t.(type) {
 	case Kind:
@@ -140,7 +144,8 @@ func (i invalid) String() string {
 func (i invalid) Occurs(tv Tvar) bool                                               { return false }
 func (i invalid) SubstType(Tvar, PolyType) PolyType                                 { return i }
 func (i invalid) Type(map[Tvar]KindConstraint) (Type, error)                        { return Invalid, nil }
-func (i invalid) polyType(map[Tvar]KindConstraint) (PolyType, error)                { return i, nil }
+func (i invalid) MonoType() (Type, bool)                                            { return nil, false }
+func (i invalid) resolvePolyType(map[Tvar]KindConstraint) (PolyType, error)         { return i, nil }
 func (i invalid) FreeVars(*Constraints) TvarSet                                     { return nil }
 func (i invalid) UnifyType(map[Tvar]KindConstraint, PolyType) (Substitution, error) { return nil, nil }
 func (i invalid) Equal(t PolyType) bool {
@@ -192,8 +197,15 @@ func (l list) Type(kinds map[Tvar]KindConstraint) (Type, error) {
 	}
 	return NewArrayType(t), nil
 }
-func (l list) polyType(kinds map[Tvar]KindConstraint) (PolyType, error) {
-	t, err := l.typ.polyType(kinds)
+func (l list) MonoType() (Type, bool) {
+	t, ok := l.typ.MonoType()
+	if !ok {
+		return nil, false
+	}
+	return NewArrayType(t), true
+}
+func (l list) resolvePolyType(kinds map[Tvar]KindConstraint) (PolyType, error) {
+	t, err := l.typ.resolvePolyType(kinds)
 	if err != nil {
 		return nil, err
 	}
@@ -210,17 +222,29 @@ func (l list) Equal(t PolyType) bool {
 	}
 }
 
+// pipeLabel is a hidden label on which all pipe arguments are passed according to type inference.
+const pipeLabel = "|pipe|"
+
 type function struct {
-	parameters map[string]PolyType
-	required   LabelSet
-	ret        PolyType
+	parameters   map[string]PolyType
+	required     LabelSet
+	ret          PolyType
+	pipeArgument string
 }
 
-func NewFunctionPolyType(parameters map[string]PolyType, required LabelSet, ret PolyType) PolyType {
+type FunctionPolySignature struct {
+	Parameters   map[string]PolyType
+	Required     LabelSet
+	Return       PolyType
+	PipeArgument string
+}
+
+func NewFunctionPolyType(sig FunctionPolySignature) PolyType {
 	return function{
-		parameters: parameters,
-		required:   LabelSet(required),
-		ret:        ret,
+		parameters:   sig.Parameters,
+		required:     sig.Required.remove(sig.PipeArgument),
+		ret:          sig.Return,
+		pipeArgument: sig.PipeArgument,
 	}
 }
 
@@ -261,9 +285,10 @@ func (f function) SubstType(tv Tvar, typ PolyType) PolyType {
 		parameters[k] = t.SubstType(tv, typ)
 	}
 	return function{
-		parameters: parameters,
-		required:   f.required.copy(),
-		ret:        f.ret.SubstType(tv, typ),
+		parameters:   parameters,
+		required:     f.required.copy(),
+		ret:          f.ret.SubstType(tv, typ),
+		pipeArgument: f.pipeArgument,
 	}
 }
 func (f function) FreeVars(c *Constraints) TvarSet {
@@ -282,12 +307,31 @@ func (l function) UnifyType(kinds map[Tvar]KindConstraint, r PolyType) (Substitu
 		subst := make(Substitution)
 		for f, tl := range l.parameters {
 			tr, ok := r.parameters[f]
-			if !ok && l.required.contains(f) {
-				return nil, errors.New("missing")
+			if !ok {
+				if l.required.contains(f) {
+					return nil, errors.New("missing")
+				}
+				continue
 			}
 			typl := subst.ApplyType(tl)
 			typr := subst.ApplyType(tr)
 			s, err := unifyTypes(kinds, typl, typr)
+			if err != nil {
+				return nil, err
+			}
+			subst.Merge(s)
+		}
+		// Check for valid pipe parameter
+		if l.pipeArgument != "" {
+			pipel, okl := l.lookupPipe(l.pipeArgument)
+			if !okl {
+				return nil, fmt.Errorf("left missing pipe parameter %v %v", l.pipeArgument, l)
+			}
+			piper, okr := r.lookupPipe(l.pipeArgument)
+			if !okr {
+				return nil, fmt.Errorf("right missing pipe parameter %v %v", l.pipeArgument, r)
+			}
+			s, err := unifyTypes(kinds, pipel, piper)
 			if err != nil {
 				return nil, err
 			}
@@ -305,13 +349,29 @@ func (l function) UnifyType(kinds map[Tvar]KindConstraint, r PolyType) (Substitu
 		return nil, fmt.Errorf("cannot unify list with %T", r)
 	}
 }
+
+func (f function) lookupPipe(label string) (PolyType, bool) {
+	t, ok := f.parameters[label]
+	if ok {
+		return t, true
+	}
+	t, ok = f.parameters[pipeLabel]
+	return t, ok
+}
+
 func (f function) Type(kinds map[Tvar]KindConstraint) (Type, error) {
 	ret, err := f.ret.Type(kinds)
 	if err != nil {
 		return nil, err
 	}
 	parameters := make(map[string]Type, len(f.parameters))
+	required := f.required.copy()
 	for l, a := range f.parameters {
+		if l == pipeLabel {
+			l = f.pipeArgument
+			required = required.remove(pipeLabel)
+			required = append(required, l)
+		}
 		t, err := a.Type(kinds)
 		if err != nil {
 			return nil, err
@@ -320,28 +380,61 @@ func (f function) Type(kinds map[Tvar]KindConstraint) (Type, error) {
 	}
 	return NewFunctionType(FunctionSignature{
 		Parameters:   parameters,
-		Required:     []string(f.required.copy()),
+		Required:     required,
 		Return:       ret,
-		PipeArgument: "",
+		PipeArgument: f.pipeArgument,
 	}), nil
 }
-func (f function) polyType(kinds map[Tvar]KindConstraint) (PolyType, error) {
-	ret, err := f.ret.polyType(kinds)
+func (f function) MonoType() (Type, bool) {
+	ret, ok := f.ret.MonoType()
+	if !ok {
+		return nil, false
+	}
+	parameters := make(map[string]Type, len(f.parameters))
+	required := f.required.copy()
+	for l, a := range f.parameters {
+		if l == pipeLabel {
+			l = f.pipeArgument
+			required = required.remove(pipeLabel)
+			required = append(required, l)
+		}
+		t, ok := a.MonoType()
+		if !ok {
+			return nil, false
+		}
+		parameters[l] = t
+	}
+	return NewFunctionType(FunctionSignature{
+		Parameters:   parameters,
+		Required:     required,
+		Return:       ret,
+		PipeArgument: f.pipeArgument,
+	}), true
+}
+func (f function) resolvePolyType(kinds map[Tvar]KindConstraint) (PolyType, error) {
+	ret, err := f.ret.resolvePolyType(kinds)
 	if err != nil {
 		return nil, err
 	}
 	parameters := make(map[string]PolyType, len(f.parameters))
-	for k, v := range f.parameters {
-		t, err := v.polyType(kinds)
+	required := f.required.copy()
+	for l, v := range f.parameters {
+		if l == pipeLabel {
+			l = f.pipeArgument
+			required = required.remove(pipeLabel)
+			required = append(required, l)
+		}
+		t, err := v.resolvePolyType(kinds)
 		if err != nil {
 			return nil, err
 		}
-		parameters[k] = t
+		parameters[l] = t
 	}
 	return function{
-		parameters: parameters,
-		required:   f.required.copy(),
-		ret:        ret,
+		parameters:   parameters,
+		required:     required,
+		ret:          ret,
+		pipeArgument: f.pipeArgument,
 	}, nil
 }
 func (f function) Equal(t PolyType) bool {
@@ -349,7 +442,8 @@ func (f function) Equal(t PolyType) bool {
 	case function:
 		if len(f.parameters) != len(t.parameters) ||
 			!f.required.equal(t.required) ||
-			!f.ret.Equal(t.ret) {
+			!f.ret.Equal(t.ret) ||
+			f.pipeArgument != t.pipeArgument {
 			return false
 		}
 		for k, p := range f.parameters {
@@ -430,8 +524,11 @@ func (l object) UnifyType(kinds map[Tvar]KindConstraint, r PolyType) (Substituti
 func (o object) Type(kinds map[Tvar]KindConstraint) (Type, error) {
 	return o.krecord.Type(kinds)
 }
-func (o object) polyType(kinds map[Tvar]KindConstraint) (PolyType, error) {
-	return o.krecord.polyType(kinds)
+func (o object) MonoType() (Type, bool) {
+	return o.krecord.MonoType()
+}
+func (o object) resolvePolyType(kinds map[Tvar]KindConstraint) (PolyType, error) {
+	return o.krecord.resolvePolyType(kinds)
 }
 func (o object) Equal(t PolyType) bool {
 	switch t := t.(type) {
@@ -466,7 +563,10 @@ func (l KClass) UnifyKind(kinds map[Tvar]KindConstraint, r KindConstraint) (Kind
 func (k KClass) Type(map[Tvar]KindConstraint) (Type, error) {
 	return nil, errors.New("KClass has no type")
 }
-func (k KClass) polyType(map[Tvar]KindConstraint) (PolyType, error) {
+func (k KClass) MonoType() (Type, bool) {
+	return nil, false
+}
+func (k KClass) resolvePolyType(map[Tvar]KindConstraint) (PolyType, error) {
 	return nil, errors.New("KClass has no poly type")
 }
 
@@ -559,7 +659,7 @@ func (l KRecord) UnifyKind(kinds map[Tvar]KindConstraint, k KindConstraint) (kin
 }
 
 func (k KRecord) Type(kinds map[Tvar]KindConstraint) (Type, error) {
-	properties := make(map[string]Type, len(k.upper))
+	properties := make(map[string]Type, len(k.properties))
 	for l, ft := range k.properties {
 		if _, ok := ft.(invalid); !ok {
 			t, err := ft.Type(kinds)
@@ -571,11 +671,24 @@ func (k KRecord) Type(kinds map[Tvar]KindConstraint) (Type, error) {
 	}
 	return NewObjectType(properties), nil
 }
-func (k KRecord) polyType(kinds map[Tvar]KindConstraint) (PolyType, error) {
+func (k KRecord) MonoType() (Type, bool) {
+	properties := make(map[string]Type, len(k.properties))
+	for l, ft := range k.properties {
+		if _, ok := ft.(invalid); !ok {
+			t, ok := ft.MonoType()
+			if !ok {
+				return nil, false
+			}
+			properties[l] = t
+		}
+	}
+	return NewObjectType(properties), false
+}
+func (k KRecord) resolvePolyType(kinds map[Tvar]KindConstraint) (PolyType, error) {
 	properties := make(map[string]PolyType, len(k.upper))
 	for l, ft := range k.properties {
 		if _, ok := ft.(invalid); !ok {
-			t, err := ft.polyType(kinds)
+			t, err := ft.resolvePolyType(kinds)
 			if err != nil {
 				return nil, err
 			}

@@ -136,11 +136,11 @@ f = (a) => 1 + a
 						*semantic.FunctionParameter:
 						return semantic.Int
 					case *semantic.FunctionExpression:
-						return semantic.NewFunctionPolyType(
-							params,
-							required,
-							semantic.Int,
-						)
+						return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+							Parameters: params,
+							Required:   required,
+							Return:     semantic.Int,
+						})
 					case *semantic.ObjectExpression:
 						return semantic.NewEmptyObjectPolyType()
 					}
@@ -168,11 +168,11 @@ f = (a,b=0) => a + b
 						*semantic.FunctionParameter:
 						return semantic.Int
 					case *semantic.FunctionExpression:
-						return semantic.NewFunctionPolyType(
-							params,
-							required,
-							semantic.Int,
-						)
+						return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+							Parameters: params,
+							Required:   required,
+							Return:     semantic.Int,
+						})
 					case *semantic.ObjectExpression:
 						return semantic.NewObjectPolyType(
 							map[string]semantic.PolyType{
@@ -232,11 +232,11 @@ f = (a,b=0) => a + b
 						*semantic.IdentifierExpression:
 						return semantic.Int
 					case *semantic.FunctionExpression:
-						return semantic.NewFunctionPolyType(
-							params,
-							required,
-							semantic.Int,
-						)
+						return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+							Parameters: params,
+							Required:   required,
+							Return:     semantic.Int,
+						})
 					case *semantic.ObjectExpression:
 						return semantic.NewObjectPolyType(
 							map[string]semantic.PolyType{
@@ -262,11 +262,11 @@ f = (a,b=0) => a + b
 						"a": semantic.Int,
 					}
 					required := semantic.LabelSet{"a"}
-					ft := semantic.NewFunctionPolyType(
-						params,
-						required,
-						semantic.Int,
-					)
+					ft := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: params,
+						Required:   required,
+						Return:     semantic.Int,
+					})
 					switch n := node.(type) {
 					case *semantic.CallExpression,
 						*semantic.BinaryExpression,
@@ -307,41 +307,41 @@ identity(x:identity)(x:2)
 `,
 			solution: &solutionVisitor{
 				f: func(node semantic.Node) semantic.PolyType {
-					t4 := semantic.Tvar(4)
+					tv := semantic.Tvar(4)
 					params := map[string]semantic.PolyType{
-						"x": t4,
+						"x": tv,
 					}
 					required := semantic.LabelSet{"x"}
-					out := t4
-					ft := semantic.NewFunctionPolyType(
-						params,
-						required,
-						out,
-					)
+					out := tv
+					ft := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: params,
+						Required:   required,
+						Return:     out,
+					})
 
 					paramsInt := map[string]semantic.PolyType{
 						"x": semantic.Int,
 					}
 					outInt := semantic.Int
-					ftInt := semantic.NewFunctionPolyType(
-						paramsInt,
-						required,
-						outInt,
-					)
+					ftInt := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: paramsInt,
+						Required:   required,
+						Return:     outInt,
+					})
 
 					paramsF := map[string]semantic.PolyType{
 						"x": ftInt,
 					}
-					outF := semantic.NewFunctionPolyType(
-						paramsInt,
-						required,
-						outInt,
-					)
-					ftF := semantic.NewFunctionPolyType(
-						paramsF,
-						required,
-						outF,
-					)
+					outF := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: paramsInt,
+						Required:   required,
+						Return:     outInt,
+					})
+					ftF := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: paramsF,
+						Required:   required,
+						Return:     outF,
+					})
 					switch n := node.(type) {
 					case *semantic.CallExpression:
 						switch n.Location().Start.Column {
@@ -435,44 +435,44 @@ identity(x:identity)(x:2)
 }`,
 			solution: &solutionVisitor{
 				f: func(node semantic.Node) semantic.PolyType {
-					t9 := semantic.Tvar(9)
+					tv := semantic.Tvar(10)
 					params := map[string]semantic.PolyType{
-						"a": t9,
-						"b": t9,
+						"a": tv,
+						"b": tv,
 					}
 					requiredAB := semantic.LabelSet{"a", "b"}
-					out := t9
-					ft := semantic.NewFunctionPolyType(
-						params,
-						requiredAB,
-						out,
-					)
+					out := tv
+					ft := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: params,
+						Required:   requiredAB,
+						Return:     out,
+					})
 					paramsInt := map[string]semantic.PolyType{
 						"a": semantic.Int,
 						"b": semantic.Int,
 					}
 					outInt := semantic.Int
-					ftInt := semantic.NewFunctionPolyType(
-						paramsInt,
-						requiredAB,
-						outInt,
-					)
+					ftInt := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: paramsInt,
+						Required:   requiredAB,
+						Return:     outInt,
+					})
 					paramsR := map[string]semantic.PolyType{
 						"r": semantic.Int,
 					}
 					requiredR := semantic.LabelSet{"r"}
-					ftR := semantic.NewFunctionPolyType(
-						paramsR,
-						requiredR,
-						semantic.Int,
-					)
+					ftR := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: paramsR,
+						Required:   requiredR,
+						Return:     semantic.Int,
+					})
 					switch n := node.(type) {
 					case *semantic.IdentifierExpression:
 						switch n.Name {
 						case "a":
-							return t9
+							return tv
 						case "b":
-							return t9
+							return tv
 						case "r":
 							return outInt
 						case "f":
@@ -490,14 +490,14 @@ identity(x:identity)(x:2)
 						case 2:
 							return outInt
 						case 3:
-							return t9
+							return tv
 						}
 					case *semantic.FunctionParameter:
 						switch n.Key.Name {
 						case "a":
-							return t9
+							return tv
 						case "b":
-							return t9
+							return tv
 						case "r":
 							return outInt
 						}
@@ -534,29 +534,29 @@ foo(f:add)
 			`,
 			solution: &solutionVisitor{
 				f: func(node semantic.Node) semantic.PolyType {
-					t30 := semantic.Tvar(30)
+					tv := semantic.Tvar(30)
 					paramsCall := map[string]semantic.PolyType{
 						"a": semantic.Int,
 						"b": semantic.Int,
 					}
 					requiredAB := semantic.LabelSet{"a", "b"}
-					outCall := t30
-					call := semantic.NewFunctionPolyType(
-						paramsCall,
-						requiredAB,
-						outCall,
-					)
+					outCall := tv
+					call := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: paramsCall,
+						Required:   requiredAB,
+						Return:     outCall,
+					})
 
 					paramsFoo := map[string]semantic.PolyType{
 						"f": call,
 					}
 					requiredF := semantic.LabelSet{"f"}
 					outFoo := outCall
-					foo := semantic.NewFunctionPolyType(
-						paramsFoo,
-						requiredF,
-						outFoo,
-					)
+					foo := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: paramsFoo,
+						Required:   requiredF,
+						Return:     outFoo,
+					})
 
 					paramsCallInt := map[string]semantic.PolyType{
 						"a": semantic.Int,
@@ -564,20 +564,20 @@ foo(f:add)
 					}
 					outCallInt := semantic.Int
 
-					callInt := semantic.NewFunctionPolyType(
-						paramsCallInt,
-						requiredAB,
-						outCallInt,
-					)
+					callInt := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: paramsCallInt,
+						Required:   requiredAB,
+						Return:     outCallInt,
+					})
 					paramsFooInt := map[string]semantic.PolyType{
 						"f": callInt,
 					}
 					outFooInt := outCallInt
-					fooInt := semantic.NewFunctionPolyType(
-						paramsFooInt,
-						requiredF,
-						outFooInt,
-					)
+					fooInt := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: paramsFooInt,
+						Required:   requiredF,
+						Return:     outFooInt,
+					})
 
 					paramsAdd := map[string]semantic.PolyType{
 						"a": semantic.Int,
@@ -585,11 +585,11 @@ foo(f:add)
 						"c": semantic.Int,
 					}
 					outAdd := semantic.Int
-					add := semantic.NewFunctionPolyType(
-						paramsAdd,
-						requiredAB,
-						outAdd,
-					)
+					add := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: paramsAdd,
+						Required:   requiredAB,
+						Return:     outAdd,
+					})
 
 					out := semantic.Int
 					switch n := node.(type) {
@@ -669,15 +669,15 @@ foo(f:add)
 						case 4:
 							return semantic.NewObjectPolyType(
 								map[string]semantic.PolyType{
-									"f": semantic.NewFunctionPolyType(
-										map[string]semantic.PolyType{
+									"f": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+										Parameters: map[string]semantic.PolyType{
 											"a": semantic.Int,
 											"b": semantic.Int,
 											"c": semantic.Int,
 										},
-										requiredAB,
-										semantic.Int,
-									),
+										Required: requiredAB,
+										Return:   semantic.Int,
+									}),
 								},
 								semantic.EmptyLabelSet(),
 								requiredF,
@@ -786,15 +786,15 @@ name(p:device)
 						semantic.LabelSet{"name"},
 						semantic.AllLabels,
 					)
-					name := semantic.NewFunctionPolyType(
-						map[string]semantic.PolyType{
+					name := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: map[string]semantic.PolyType{
 							"p": p,
 						},
-						semantic.LabelSet{"p"},
-						tv,
-					)
-					nameCallJim := semantic.NewFunctionPolyType(
-						map[string]semantic.PolyType{
+						Required: semantic.LabelSet{"p"},
+						Return:   tv,
+					})
+					nameCallJim := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: map[string]semantic.PolyType{
 							"p": semantic.NewObjectPolyType(
 								map[string]semantic.PolyType{
 									"name":   semantic.String,
@@ -805,11 +805,11 @@ name(p:device)
 								semantic.LabelSet{"name", "age", "weight"},
 							),
 						},
-						semantic.LabelSet{"p"},
-						semantic.String,
-					)
-					nameCallJane := semantic.NewFunctionPolyType(
-						map[string]semantic.PolyType{
+						Required: semantic.LabelSet{"p"},
+						Return:   semantic.String,
+					})
+					nameCallJane := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: map[string]semantic.PolyType{
 							"p": semantic.NewObjectPolyType(
 								map[string]semantic.PolyType{
 									"name": semantic.String,
@@ -819,11 +819,11 @@ name(p:device)
 								semantic.LabelSet{"name", "age"},
 							),
 						},
-						semantic.LabelSet{"p"},
-						semantic.String,
-					)
-					nameCallDevice := semantic.NewFunctionPolyType(
-						map[string]semantic.PolyType{
+						Required: semantic.LabelSet{"p"},
+						Return:   semantic.String,
+					})
+					nameCallDevice := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: map[string]semantic.PolyType{
 							"p": semantic.NewObjectPolyType(
 								map[string]semantic.PolyType{
 									"name": semantic.Int,
@@ -834,9 +834,9 @@ name(p:device)
 								semantic.LabelSet{"name", "lat", "lon"},
 							),
 						},
-						semantic.LabelSet{"p"},
-						semantic.Int,
-					)
+						Required: semantic.LabelSet{"p"},
+						Return:   semantic.Int,
+					})
 
 					nameJim := semantic.String
 					nameJane := semantic.String
@@ -937,13 +937,13 @@ foo(r:{a:1.1,b:42.0})
 `,
 			solution: &solutionVisitor{
 				f: func(node semantic.Node) semantic.PolyType {
-					t38 := semantic.Tvar(38)
-					t39 := semantic.Tvar(39)
+					tvA := semantic.Tvar(38)
+					tvB := semantic.Tvar(39)
 
 					r := semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{
-							"a": t38,
-							"b": t39,
+							"a": tvA,
+							"b": tvB,
 						},
 						semantic.LabelSet{"a", "b"},
 						semantic.AllLabels,
@@ -954,18 +954,18 @@ foo(r:{a:1.1,b:42.0})
 					requiredR := semantic.LabelSet{"r"}
 					fooOut := semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{
-							"a":  t38,
-							"a2": t38,
-							"b":  t39,
+							"a":  tvA,
+							"a2": tvA,
+							"b":  tvB,
 						},
 						semantic.EmptyLabelSet(),
 						semantic.LabelSet{"a", "a2", "b"},
 					)
-					foo := semantic.NewFunctionPolyType(
-						fooParams,
-						requiredR,
-						fooOut,
-					)
+					foo := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: fooParams,
+						Required:   requiredR,
+						Return:     fooOut,
+					})
 
 					obj1 := semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{
@@ -978,10 +978,10 @@ foo(r:{a:1.1,b:42.0})
 					params1 := map[string]semantic.PolyType{
 						"r": obj1,
 					}
-					foo1 := semantic.NewFunctionPolyType(
-						params1,
-						requiredR,
-						semantic.NewObjectPolyType(
+					foo1 := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: params1,
+						Required:   requiredR,
+						Return: semantic.NewObjectPolyType(
 							map[string]semantic.PolyType{
 								"a":  semantic.Int,
 								"a2": semantic.Int,
@@ -990,7 +990,7 @@ foo(r:{a:1.1,b:42.0})
 							semantic.EmptyLabelSet(),
 							semantic.LabelSet{"a", "a2", "b"},
 						),
-					)
+					})
 					obj2 := semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{
 							"a": semantic.Float,
@@ -1002,10 +1002,10 @@ foo(r:{a:1.1,b:42.0})
 					params2 := map[string]semantic.PolyType{
 						"r": obj2,
 					}
-					foo2 := semantic.NewFunctionPolyType(
-						params2,
-						requiredR,
-						semantic.NewObjectPolyType(
+					foo2 := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: params2,
+						Required:   requiredR,
+						Return: semantic.NewObjectPolyType(
 							map[string]semantic.PolyType{
 								"a":  semantic.Float,
 								"a2": semantic.Float,
@@ -1014,7 +1014,7 @@ foo(r:{a:1.1,b:42.0})
 							semantic.EmptyLabelSet(),
 							semantic.LabelSet{"a", "a2", "b"},
 						),
-					)
+					})
 
 					out1 := semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{
@@ -1068,11 +1068,11 @@ foo(r:{a:1.1,b:42.0})
 					case *semantic.Property:
 						switch l, c := n.Location().Start.Line, n.Location().Start.Column; {
 						case l == 3:
-							return t38
+							return tvA
 						case l == 4:
-							return t38
+							return tvA
 						case l == 5:
-							return t39
+							return tvB
 						case l == 7 && c == 5:
 							return semantic.NewObjectPolyType(
 								map[string]semantic.PolyType{
@@ -1103,9 +1103,9 @@ foo(r:{a:1.1,b:42.0})
 					case *semantic.MemberExpression:
 						switch n.Location().Start.Line {
 						case 3, 4:
-							return t38
+							return tvA
 						case 5:
-							return t39
+							return tvB
 						}
 					case *semantic.CallExpression:
 						switch n.Location().Start.Line {
@@ -1115,7 +1115,7 @@ foo(r:{a:1.1,b:42.0})
 							return out2
 						}
 					case *semantic.BinaryExpression:
-						return t38
+						return tvA
 					case *semantic.IdentifierExpression:
 						switch n.Location().Start.Line {
 						case 3, 4, 5:

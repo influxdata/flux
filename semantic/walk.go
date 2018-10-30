@@ -289,7 +289,11 @@ func NewScopedVisitor(v NestingVisitor) ScopedVisitor {
 }
 
 func (v ScopedVisitor) Visit(node Node) Visitor {
-	v.v = v.v.Visit(node).(NestingVisitor)
+	visitor := v.v.Visit(node)
+	if visitor == nil {
+		return nil
+	}
+	v.v = visitor.(NestingVisitor)
 	switch node.(type) {
 	case *ExternBlock,
 		*BlockStatement,

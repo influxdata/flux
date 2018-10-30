@@ -207,13 +207,14 @@ func (t *objectType) FunctionSignature() FunctionSignature {
 	panic(fmt.Errorf("cannot get function signature of kind %s", t.Kind()))
 }
 func (t *objectType) PolyType() PolyType {
-	properties := make(map[string]PolyType)
+	properties := make(map[string]PolyType, len(t.properties))
+	labels := make([]string, 0, len(t.properties))
 	for k, p := range t.properties {
 		properties[k] = p.PolyType()
+		labels = append(labels, k)
 	}
-	//return NewObjectPolyType(properties)
-	// Needs to create a KRecord with lower empty and upper equal to set of properties
-	panic("not implemented")
+
+	return NewObjectPolyType(properties, LabelSet{}, labels)
 }
 
 func (t *objectType) typ() {}
@@ -364,7 +365,8 @@ func (t *functionType) FunctionSignature() FunctionSignature {
 func (a *functionType) equal(b *functionType) bool {
 	if len(a.parameters) != len(b.parameters) ||
 		a.pipeArgument != b.pipeArgument ||
-		!a.required.equal(b.required) {
+		!a.required.equal(b.required) ||
+		a.ret != b.ret {
 		return false
 	}
 	for k, pA := range a.parameters {
@@ -381,11 +383,11 @@ func (t *functionType) PolyType() PolyType {
 	for k, p := range t.parameters {
 		parameters[k] = p.PolyType()
 	}
-	return NewFunctionPolyType(
-		parameters,
-		[]string(t.required.copy()),
-		t.ret.PolyType(),
-	)
+	return NewFunctionPolyType(FunctionPolySignature{
+		Parameters: parameters,
+		Required:   t.required.copy(),
+		Return:     t.ret.PolyType(),
+	})
 }
 
 func (t *functionType) typ() {}
@@ -406,11 +408,10 @@ type FunctionSignature struct {
 	PipeArgument string
 }
 
-func NewFunctionType(sig FunctionSignature) Type {
-	// Still no cache entry, add it.
+func NewFunctionType(sig FunctionSignature) (t Type) {
 	ft := &functionType{
 		parameters:   sig.Parameters,
-		required:     LabelSet(sig.Required),
+		required:     toLabelSet(sig.Required).remove(sig.PipeArgument),
 		ret:          sig.Return,
 		pipeArgument: sig.PipeArgument,
 	}

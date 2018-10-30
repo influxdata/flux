@@ -31,7 +31,7 @@ func init() {
 	addFunc(&function{
 		name: "fortyTwo",
 		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			Out: semantic.Float,
+			Return: semantic.Float,
 		}),
 		call: func(args values.Object) (values.Value, error) {
 			return values.NewFloat(42.0), nil
@@ -41,7 +41,7 @@ func init() {
 	addFunc(&function{
 		name: "six",
 		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			Out: semantic.Float,
+			Return: semantic.Float,
 		}),
 		call: func(args values.Object) (values.Value, error) {
 			return values.NewFloat(6.0), nil
@@ -51,7 +51,7 @@ func init() {
 	addFunc(&function{
 		name: "nine",
 		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			Out: semantic.Float,
+			Return: semantic.Float,
 		}),
 		call: func(args values.Object) (values.Value, error) {
 			return values.NewFloat(9.0), nil
@@ -61,7 +61,7 @@ func init() {
 	addFunc(&function{
 		name: "fail",
 		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			Out: semantic.Bool,
+			Return: semantic.Bool,
 		}),
 		call: func(args values.Object) (values.Value, error) {
 			return nil, errors.New("fail")
@@ -71,8 +71,9 @@ func init() {
 	addFunc(&function{
 		name: "plusOne",
 		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			In:           semantic.NewObjectType(map[string]semantic.Type{"x": semantic.Float}),
-			Out:          semantic.Float,
+			Parameters:   map[string]semantic.Type{"x": semantic.Float},
+			Required:     []string{"x"},
+			Return:       semantic.Float,
 			PipeArgument: "x",
 		}),
 		call: func(args values.Object) (values.Value, error) {
@@ -87,7 +88,7 @@ func init() {
 	addFunc(&function{
 		name: "sideEffect",
 		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			Out: semantic.Int,
+			Return: semantic.Int,
 		}),
 		call: func(args values.Object) (values.Value, error) {
 			return values.NewInt(0), nil
@@ -200,17 +201,18 @@ func TestEval(t *testing.T) {
 			query: `
             f = (r) => {
                 r2 = r * r
-                return (r - r2) / r2
+                return r2 / r
             }
-            f(r:2.0) == -0.5 or fail()
+            f(r:2.0) == 2.0 or fail()
+            f(r:2) == 2 or fail()
 			`,
 		},
 		{
-			name: "arrow function with default param",
+			name: "function with default param",
 			query: `
             addN = (r,n=4) => r + n
             addN(r:2) == 6 or fail()
-			addN(r:3,n:1) == 4 or fail()
+            addN(r:3,n:1) == 4 or fail()
 			`,
 		},
 		{
@@ -273,6 +275,14 @@ func TestEval(t *testing.T) {
 			`,
 		},
 		{
+			name: "missing pipe",
+			query: `
+			add = (a=<-,b) => a + b
+			add(b:2) == 3 or fail()
+			`,
+			wantErr: true,
+		},
+		{
 			name: "pipe expression function",
 			query: `
 			add = (a=<-,b) => a + b
@@ -325,7 +335,7 @@ func TestEval(t *testing.T) {
 			},
 		},
 		{
-			name: "options metadata before query",
+			name: "options metadata",
 			query: `
 			option task = {
 				name: "foo",
@@ -386,13 +396,15 @@ func TestResolver(t *testing.T) {
 	f := &function{
 		name: "resolver",
 		t: semantic.NewFunctionType(semantic.FunctionSignature{
-			In: semantic.NewObjectType(map[string]semantic.Type{
+			Parameters: map[string]semantic.Type{
 				"f": semantic.NewFunctionType(semantic.FunctionSignature{
-					In:  semantic.NewObjectType(map[string]semantic.Type{"r": semantic.Int}),
-					Out: semantic.Int,
+					Parameters: map[string]semantic.Type{"r": semantic.Int},
+					Required:   []string{"r"},
+					Return:     semantic.Int,
 				}),
-			}),
-			Out: semantic.Int,
+			},
+			Required: []string{"f"},
+			Return:   semantic.Int,
 		}),
 		call: func(args values.Object) (values.Value, error) {
 			f, ok := args.Get("f")
@@ -427,14 +439,25 @@ func TestResolver(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	extern := &semantic.Extern{
+		Declarations: make([]*semantic.ExternalVariableDeclaration, 0, len(testScope)),
+		Block:        &semantic.ExternBlock{Node: graph},
+	}
+	for k, v := range scope {
+		extern.Declarations = append(extern.Declarations, &semantic.ExternalVariableDeclaration{
+			Identifier: &semantic.Identifier{Name: k},
+			ExternType: v.Type().PolyType(),
+		})
+	}
 
 	itrp := interpreter.NewInterpreter(nil, scope)
 
-	if err := itrp.Eval(graph); err != nil {
+	if err := itrp.Eval(extern); err != nil {
 		t.Fatal(err)
 	}
 
 	want := &semantic.FunctionExpression{
+		Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 		Block: &semantic.FunctionBlock{
 			Parameters: &semantic.FunctionParameters{
 				List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},

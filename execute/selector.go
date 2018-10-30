@@ -32,13 +32,12 @@ func (c *SelectorConfig) ReadArgs(args flux.Arguments) error {
 
 // SelectorSignature returns a function signature common to all selector functions,
 // with any additional arguments.
-func SelectorSignature(args map[string]semantic.Type, defaults []string) semantic.FunctionSignature {
+func SelectorSignature(args map[string]semantic.PolyType, required []string) semantic.FunctionPolySignature {
 	if args == nil {
-		args = make(map[string]semantic.Type)
+		args = make(map[string]semantic.PolyType)
 	}
 	args["column"] = semantic.String
-	defaults = append(defaults, "column")
-	return flux.FunctionSignature(args, defaults)
+	return flux.FunctionSignature(args, required)
 }
 
 type rowSelectorTransformation struct {

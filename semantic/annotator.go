@@ -25,6 +25,8 @@ func (v Annotator) Visit(node Node) Visitor {
 	case *FunctionBlock,
 		*FunctionParameter,
 		*Property,
+		*BlockStatement,
+		*ReturnStatement,
 		Expression:
 		v.annotations[n] = annotation{
 			Var: v.f.Fresh(),

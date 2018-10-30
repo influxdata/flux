@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func GenerateConstraints(node Node, annotator Annotator) *Constraints {
+func GenerateConstraints(node Node, annotator Annotator) (*Constraints, error) {
 	cg := ConstraintGenerator{
 		cs: &Constraints{
 			f:           annotator.f,
@@ -17,26 +17,31 @@ func GenerateConstraints(node Node, annotator Annotator) *Constraints {
 			kindConst:   make(map[Tvar][]KindConstraint),
 		},
 		env: NewEnv(),
+		err: new(error),
 	}
-	log.Println("Pre", cg.cs)
 	Walk(NewScopedVisitor(cg), node)
 	log.Println("GenerateConstraints", cg.cs)
-	return cg.cs
+	return cg.cs, *cg.err
 }
 
 type ConstraintGenerator struct {
 	cs  *Constraints
 	env *Env
+	err *error
 }
 
 func (v ConstraintGenerator) Nest() NestingVisitor {
 	return ConstraintGenerator{
 		cs:  v.cs,
 		env: v.env.Nest(),
+		err: v.err,
 	}
 }
 
 func (v ConstraintGenerator) Visit(node Node) Visitor {
+	if *v.err != nil {
+		return nil
+	}
 	return v
 }
 
@@ -48,10 +53,12 @@ func (v ConstraintGenerator) Done(node Node) {
 		if !a.Var.Equal(a.Type) {
 			v.cs.AddTypeConst(a.Var, a.Type, node.Location())
 		}
-
 	}
 	a.Err = errors.Wrapf(a.Err, "type error %v", node.Location())
 	log.Printf("typeof %T@%v %v %v %v", node, node.Location(), a.Var, a.Type, a.Err)
+	if *v.err == nil && a.Err != nil {
+		*v.err = a.Err
+	}
 }
 
 func (v ConstraintGenerator) lookup(n Node) (PolyType, error) {
@@ -84,7 +91,6 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		scheme := v.scheme(t)
 		v.env.Set(n.Identifier.Name, scheme)
 		return nil, nil
-
 	case *NativeVariableDeclaration:
 		t, err := v.lookup(n.Init)
 		if err != nil {
@@ -137,48 +143,84 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		case
 			ast.RegexpMatchOperator,
 			ast.NotRegexpMatchOperator:
-			v.cs.AddTypeConst(l, String, n.Left.Location())
-			v.cs.AddTypeConst(r, Regexp, n.Right.Location())
+			v.cs.AddTypeConst(l, String, n.Location())
+			v.cs.AddTypeConst(r, Regexp, n.Location())
 			return Bool, nil
 		default:
 			return nil, fmt.Errorf("unsupported binary operator %v", n.Operator)
 		}
+	case *LogicalExpression:
+		l, err := v.lookup(n.Left)
+		if err != nil {
+			return nil, err
+		}
+		r, err := v.lookup(n.Right)
+		if err != nil {
+			return nil, err
+		}
+		v.cs.AddTypeConst(l, Bool, n.Location())
+		v.cs.AddTypeConst(r, Bool, n.Location())
+		return Bool, nil
+	case *UnaryExpression:
+		t, err := v.lookup(n.Argument)
+		if err != nil {
+			return nil, err
+		}
+		switch n.Operator {
+		case ast.NotOperator:
+			v.cs.AddTypeConst(t, Bool, n.Location())
+			return Bool, nil
+
+		}
+		return t, nil
 	case *FunctionExpression:
-		parameters := make(map[string]PolyType, len(n.Block.Parameters.List))
-		required := make([]string, 0, len(parameters))
-		for _, param := range n.Block.Parameters.List {
-			t, err := v.lookup(param)
-			if err != nil {
-				return nil, err
+		var parameters map[string]PolyType
+		required := EmptyLabelSet()
+		var pipeArgument string
+		if n.Block.Parameters != nil {
+			if n.Block.Parameters.Pipe != nil {
+				pipeArgument = n.Block.Parameters.Pipe.Name
 			}
-			parameters[param.Key.Name] = t
-			hasDefault := false
-			if n.Defaults != nil {
-				for _, p := range n.Defaults.Properties {
-					if p.Key.Name == param.Key.Name {
-						hasDefault = true
-						dt, err := v.lookup(p)
-						if err != nil {
-							return nil, err
+			parameters = make(map[string]PolyType, len(n.Block.Parameters.List))
+			required = make([]string, 0, len(parameters))
+			for _, param := range n.Block.Parameters.List {
+				t, err := v.lookup(param)
+				if err != nil {
+					return nil, err
+				}
+				isPipe := param.Key.Name == pipeArgument
+				parameters[param.Key.Name] = t
+				if isPipe {
+					parameters[pipeLabel] = t
+				}
+				hasDefault := false
+				if n.Defaults != nil {
+					for _, p := range n.Defaults.Properties {
+						if p.Key.Name == param.Key.Name {
+							hasDefault = true
+							dt, err := v.lookup(p)
+							if err != nil {
+								return nil, err
+							}
+							v.cs.AddTypeConst(t, dt, p.Location())
+							break
 						}
-						v.cs.AddTypeConst(t, dt, p.Location())
-						break
 					}
 				}
+				if !hasDefault && !isPipe {
+					required = append(required, param.Key.Name)
+				}
 			}
-			if !hasDefault {
-				required = append(required, param.Key.Name)
-			}
-
 		}
 		ret, err := v.lookup(n.Block)
 		if err != nil {
 			return nil, err
 		}
 		return function{
-			parameters: parameters,
-			required:   required,
-			ret:        ret,
+			parameters:   parameters,
+			required:     required,
+			ret:          ret,
+			pipeArgument: pipeArgument,
 		}, nil
 	case *FunctionParameter:
 		v.env.Set(n.Key.Name, Scheme{T: nodeVar})
@@ -199,6 +241,14 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			}
 			parameters[arg.Key.Name] = t
 			required = append(required, arg.Key.Name)
+		}
+		if n.Pipe != nil {
+			t, err := v.lookup(n.Pipe)
+			if err != nil {
+				return nil, err
+			}
+			parameters[pipeLabel] = t
+			required = append(required, pipeLabel)
 		}
 		ft := function{
 			parameters: parameters,
@@ -280,6 +330,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 	case *Program,
 		*Extern,
 		*ExternBlock,
+		*OptionStatement,
 		*Identifier,
 		*FunctionParameters,
 		*ExpressionStatement:
@@ -295,6 +346,28 @@ type Constraints struct {
 
 	typeConst []TypeConstraint
 	kindConst map[Tvar][]KindConstraint
+}
+
+func (c *Constraints) Copy() *Constraints {
+	n := &Constraints{
+		f:           new(fresher),
+		annotations: make(map[Node]annotation, len(c.annotations)),
+		typeConst:   make([]TypeConstraint, len(c.typeConst)),
+		kindConst:   make(map[Tvar][]KindConstraint, len(c.kindConst)),
+	}
+	*n.f = *c.f
+	for k, v := range c.annotations {
+		n.annotations[k] = v
+	}
+	for k, v := range c.typeConst {
+		n.typeConst[k] = v
+	}
+	for k, v := range c.kindConst {
+		kinds := make([]KindConstraint, len(v))
+		copy(kinds, v)
+		n.kindConst[k] = kinds
+	}
+	return n
 }
 
 type TypeConstraint struct {
