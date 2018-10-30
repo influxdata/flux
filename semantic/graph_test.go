@@ -172,6 +172,9 @@ func TestNew(t *testing.T) {
 					&semantic.NativeVariableDeclaration{
 						Identifier: &semantic.Identifier{Name: "f"},
 						Init: &semantic.FunctionExpression{
+							Defaults: &semantic.ObjectExpression{
+								Properties: []*semantic.Property{},
+							},
 							Block: &semantic.FunctionBlock{
 								Parameters: &semantic.FunctionParameters{
 									List: []*semantic.FunctionParameter{
