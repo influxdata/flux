@@ -43,6 +43,15 @@ func withEachFluxFile(t testing.TB, fn func(prefix, caseName string)) {
 		t.Fatalf("error searching for Flux files: %s", err)
 	}
 
+	path = filepath.Join(dir, "testdata/random")
+
+	randFiles, err := filepath.Glob(filepath.Join(path, "*.flux"))
+	if err != nil {
+		t.Fatalf("error searching for Flux files: %s", err)
+	}
+
+	fluxFiles = append(fluxFiles, randFiles...)
+
 	for _, fluxFile := range fluxFiles {
 		ext := filepath.Ext(fluxFile)
 		prefix := fluxFile[0 : len(fluxFile)-len(ext)]
