@@ -71,18 +71,6 @@ func TestInferTypes(t *testing.T) {
 a = true
 a = 13
 			`,
-			node: &semantic.Program{
-				Body: []semantic.Statement{
-					&semantic.NativeVariableDeclaration{
-						Identifier: &semantic.Identifier{Name: "a"},
-						Init:       &semantic.BooleanLiteral{Value: true},
-					},
-					&semantic.NativeVariableDeclaration{
-						Identifier: &semantic.Identifier{Name: "a"},
-						Init:       &semantic.IntegerLiteral{Value: 13},
-					},
-				},
-			},
 			wantErr: errors.New(`type error 3:1-3:7: int != bool`),
 		},
 		{
@@ -1405,6 +1393,14 @@ foo(r:{a:1.1,b:42.0})
 					return nil
 				},
 			},
+		},
+		{
+			name: "object kind unification error",
+			script: `
+plus1 = (r={_value:1}) => r._value + 1
+plus1(r:{_value: 2.0})
+`,
+			wantErr: errors.New(`type error 3:1-3:23: invalid record access "_value": int != float`),
 		},
 	}
 	for _, tc := range testCases {

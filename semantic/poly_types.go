@@ -1,10 +1,11 @@
 package semantic
 
 import (
-	"errors"
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // TypeExpression represents an expression describing a type.
@@ -156,7 +157,9 @@ func (n Nature) Equal(t PolyType) bool {
 	}
 }
 
-type invalid struct{}
+type invalid struct {
+	err error
+}
 
 func (i invalid) String() string {
 	return "INVALID"
@@ -637,17 +640,6 @@ func (k KRecord) String() string {
 	return fmt.Sprintf("{%v %v %v}", k.properties, k.lower, k.upper)
 }
 
-func (k KRecord) Invalid() bool {
-	for _, l := range k.lower {
-		t := k.properties[l]
-		_, ok := t.(invalid)
-		if ok {
-			return true
-		}
-	}
-	return false
-}
-
 func (k KRecord) substituteKind(tv Tvar, t PolyType) Kind {
 	properties := make(map[string]PolyType)
 	for k, f := range k.properties {
@@ -684,10 +676,11 @@ func (l KRecord) unifyKind(kinds map[Tvar]Kind, k Kind) (kind Kind, _ Substituti
 		}
 		s, err := unifyTypes(kinds, typL, typR)
 		if err != nil {
-			properties[f] = invalid{}
+			properties[f] = invalid{err: err}
+		} else {
+			subst.Merge(s)
+			properties[f] = subst.ApplyType(typL)
 		}
-		subst.Merge(s)
-		properties[f] = subst.ApplyType(typL)
 	}
 	for f, typR := range r.properties {
 		_, ok := l.properties[f]
@@ -709,8 +702,13 @@ func (l KRecord) unifyKind(kinds map[Tvar]Kind, k Kind) (kind Kind, _ Substituti
 		lower:      lower,
 		upper:      upper,
 	}
-	if kr.Invalid() {
-		return nil, nil, fmt.Errorf("invalid record access %v", kr)
+	// Check for invalid records in lower bound
+	for _, lbl := range kr.lower {
+		t := kr.properties[lbl]
+		i, ok := t.(invalid)
+		if ok {
+			return nil, nil, errors.Wrapf(i.err, "invalid record access %q", lbl)
+		}
 	}
 	return kr, subst, nil
 }
