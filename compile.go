@@ -267,6 +267,12 @@ var TableObjectType = semantic.NewObjectPolyType(
 	semantic.LabelSet{tableKindKey},
 )
 
+var TableObjectMonoType semantic.Type
+
+func init() {
+	TableObjectMonoType, _ = TableObjectType.MonoType()
+}
+
 // IDer produces the mapping of table Objects to OpertionIDs
 type IDer interface {
 	ID(*TableObject) OperationID

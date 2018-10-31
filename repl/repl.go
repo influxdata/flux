@@ -25,9 +25,8 @@ import (
 )
 
 type REPL struct {
-	interpreter  *interpreter.Interpreter
-	declarations semantic.DeclarationScope
-	querier      Querier
+	interpreter *interpreter.Interpreter
+	querier     Querier
 
 	cancelMu   sync.Mutex
 	cancelFunc context.CancelFunc
@@ -37,12 +36,12 @@ type Querier interface {
 	Query(ctx context.Context, compiler flux.Compiler) (flux.ResultIterator, error)
 }
 
-func addBuiltIn(script string, itrp *interpreter.Interpreter, declarations semantic.DeclarationScope) error {
+func addBuiltIn(script string, itrp *interpreter.Interpreter) error {
 	astProg, err := parser.NewAST(script)
 	if err != nil {
 		return errors.Wrap(err, "failed to parse builtin")
 	}
-	semProg, err := semantic.New(astProg, declarations)
+	semProg, err := semantic.New(astProg)
 	if err != nil {
 		return errors.Wrap(err, "failed to create semantic graph for builtin")
 	}
@@ -55,11 +54,9 @@ func addBuiltIn(script string, itrp *interpreter.Interpreter, declarations seman
 
 func New(q Querier) *REPL {
 	itrp := flux.NewInterpreter()
-	_, decls := flux.BuiltIns()
 	return &REPL{
-		interpreter:  itrp,
-		declarations: decls,
-		querier:      q,
+		interpreter: itrp,
+		querier:     q,
 	}
 }
 
@@ -162,7 +159,7 @@ func (r *REPL) executeLine(t string) (values.Value, error) {
 		return nil, err
 	}
 
-	semProg, err := semantic.New(astProg, r.declarations)
+	semProg, err := semantic.New(astProg)
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +171,7 @@ func (r *REPL) executeLine(t string) (values.Value, error) {
 	v := r.interpreter.Return()
 
 	// Check for yield and execute query
-	if v.Type() == flux.TableObjectType {
+	if v.Type() == flux.TableObjectMonoType {
 		t := v.(*flux.TableObject)
 		spec := flux.ToSpec(r.interpreter, t)
 		return nil, r.doQuery(spec)
