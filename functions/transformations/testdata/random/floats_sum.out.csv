@@ -1,0 +1,6 @@
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,double
+#group,false,false,true,true,true,true,false
+#default,_result,,,,,,
+,result,table,_start,_stop,_measurement,_field,_value
+,,0,1970-01-01T00:00:00Z,1970-01-02T00:00:00Z,m,f,149.77881809558454
+
