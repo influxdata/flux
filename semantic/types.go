@@ -418,6 +418,9 @@ func NewFunctionType(sig FunctionSignature) (t Type) {
 		ret:          sig.Return,
 		pipeArgument: sig.PipeArgument,
 	}
+	if ft.ret == nil {
+		ft.ret = Nil
+	}
 	in := NewObjectType(ft.parameters)
 	// Lookup functionType in cache by in type
 	if ts, ok := functionTypeCache.m.Load(in); ok {
