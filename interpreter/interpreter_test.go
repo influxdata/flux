@@ -31,7 +31,7 @@ func init() {
 	addFunc(&function{
 		name: "fortyTwo",
 		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Required: semantic.EmptyLabelSet(),
+			Required: nil,
 			Return:   semantic.Float,
 		}),
 		call: func(args values.Object) (values.Value, error) {
@@ -42,7 +42,7 @@ func init() {
 	addFunc(&function{
 		name: "six",
 		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Required: semantic.EmptyLabelSet(),
+			Required: nil,
 			Return:   semantic.Float,
 		}),
 		call: func(args values.Object) (values.Value, error) {
@@ -53,7 +53,7 @@ func init() {
 	addFunc(&function{
 		name: "nine",
 		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Required: semantic.EmptyLabelSet(),
+			Required: nil,
 			Return:   semantic.Float,
 		}),
 		call: func(args values.Object) (values.Value, error) {
@@ -64,7 +64,7 @@ func init() {
 	addFunc(&function{
 		name: "fail",
 		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Required: semantic.EmptyLabelSet(),
+			Required: nil,
 			Return:   semantic.Bool,
 		}),
 		call: func(args values.Object) (values.Value, error) {
@@ -92,7 +92,7 @@ func init() {
 	addFunc(&function{
 		name: "sideEffect",
 		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Required: semantic.EmptyLabelSet(),
+			Required: nil,
 			Return:   semantic.Int,
 		}),
 		call: func(args values.Object) (values.Value, error) {
@@ -108,7 +108,6 @@ func init() {
 
 	extern = &semantic.Extern{
 		Declarations: make([]*semantic.ExternalVariableDeclaration, 0, len(testScope)),
-		Block:        new(semantic.ExternBlock),
 	}
 	for k, v := range testScope {
 		extern.Declarations = append(extern.Declarations, &semantic.ExternalVariableDeclaration{
@@ -377,13 +376,10 @@ func TestEval(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			externGraph := extern.Copy().(*semantic.Extern)
-			externGraph.Block.Node = graph
-
 			// Create new interpreter scope for each test case
-			itrp := interpreter.NewInterpreter(optionScope, testScope)
+			itrp := interpreter.NewInterpreter(optionScope, testScope, extern)
 
-			err = itrp.Eval(externGraph)
+			err = itrp.Eval(graph)
 			if !tc.wantErr && err != nil {
 				t.Fatal(err)
 			} else if tc.wantErr && err == nil {
@@ -444,25 +440,16 @@ func TestResolver(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	extern := &semantic.Extern{
-		Declarations: make([]*semantic.ExternalVariableDeclaration, 0, len(testScope)),
-		Block:        &semantic.ExternBlock{Node: graph},
-	}
-	for k, v := range scope {
-		extern.Declarations = append(extern.Declarations, &semantic.ExternalVariableDeclaration{
-			Identifier: &semantic.Identifier{Name: k},
-			ExternType: v.Type().PolyType(),
-		})
-	}
+	extern := new(semantic.Extern)
+	interpreter.AddExternalDeclarations(extern, scope)
 
-	itrp := interpreter.NewInterpreter(nil, scope)
+	itrp := interpreter.NewInterpreter(nil, scope, extern)
 
-	if err := itrp.Eval(extern); err != nil {
+	if err := itrp.Eval(graph); err != nil {
 		t.Fatal(err)
 	}
 
 	want := &semantic.FunctionExpression{
-		Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 		Block: &semantic.FunctionBlock{
 			Parameters: &semantic.FunctionParameters{
 				List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},

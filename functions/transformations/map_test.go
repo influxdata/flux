@@ -32,7 +32,6 @@ func TestMap_NewQuery(t *testing.T) {
 						Spec: &transformations.MapOpSpec{
 							MergeKey: true,
 							Fn: &semantic.FunctionExpression{
-								Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
 										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -73,7 +72,6 @@ func TestMap_NewQuery(t *testing.T) {
 						Spec: &transformations.MapOpSpec{
 							MergeKey: true,
 							Fn: &semantic.FunctionExpression{
-								Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
 										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -179,7 +177,6 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
-					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -241,7 +238,6 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: true,
 				Fn: &semantic.FunctionExpression{
-					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -309,7 +305,6 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
-					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -374,7 +369,6 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: true,
 				Fn: &semantic.FunctionExpression{
-					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -455,7 +449,6 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: true,
 				Fn: &semantic.FunctionExpression{
-					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -559,7 +552,6 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
-					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -624,7 +616,6 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
-					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -688,7 +679,6 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
-					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},

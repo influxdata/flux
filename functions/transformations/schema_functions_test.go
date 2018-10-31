@@ -159,7 +159,6 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 						ID: "drop1",
 						Spec: &transformations.DropOpSpec{
 							Predicate: &semantic.FunctionExpression{
-								Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
 										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "col"}}},
@@ -205,7 +204,6 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 						ID: "keep1",
 						Spec: &transformations.KeepOpSpec{
 							Predicate: &semantic.FunctionExpression{
-								Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
 										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "col"}}},
@@ -251,7 +249,6 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 						ID: "rename1",
 						Spec: &transformations.RenameOpSpec{
 							Fn: &semantic.FunctionExpression{
-								Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
 										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "col"}}},
@@ -464,7 +461,6 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				Mutations: []transformations.SchemaMutation{
 					&transformations.RenameOpSpec{
 						Fn: &semantic.FunctionExpression{
-							Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 							Block: &semantic.FunctionBlock{
 								Parameters: &semantic.FunctionParameters{
 									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "col"}}},
@@ -497,7 +493,6 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				Mutations: []transformations.SchemaMutation{
 					&transformations.DropOpSpec{
 						Predicate: &semantic.FunctionExpression{
-							Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 							Block: &semantic.FunctionBlock{
 								Parameters: &semantic.FunctionParameters{
 									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "col"}}},
@@ -545,7 +540,6 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				Mutations: []transformations.SchemaMutation{
 					&transformations.KeepOpSpec{
 						Predicate: &semantic.FunctionExpression{
-							Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 							Block: &semantic.FunctionBlock{
 								Parameters: &semantic.FunctionParameters{
 									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "col"}}},

@@ -13,6 +13,7 @@ import (
 
 // Interpreter used to interpret a Flux program
 type Interpreter struct {
+	extern  *semantic.Extern
 	values  []values.Value
 	options *Scope
 	globals *Scope
@@ -22,10 +23,11 @@ type Interpreter struct {
 
 // NewInterpreter instantiates a new Flux Interpreter whose builtin values are not mutable.
 // Options are always mutable.
-func NewInterpreter(options, builtins map[string]values.Value) *Interpreter {
+func NewInterpreter(options, builtins map[string]values.Value, extern *semantic.Extern) *Interpreter {
 	optionScope := NewScopeWithValues(options)
 	globalScope := optionScope.NestWithValues(builtins)
 	interpreter := &Interpreter{
+		extern:  extern,
 		options: optionScope,
 		globals: globalScope.Nest(),
 	}
@@ -34,10 +36,11 @@ func NewInterpreter(options, builtins map[string]values.Value) *Interpreter {
 
 // NewMutableInterpreter instantiates a new Flux Interpreter whose builtin values are mutable.
 // Options are always mutable.
-func NewMutableInterpreter(options, builtins map[string]values.Value) *Interpreter {
+func NewMutableInterpreter(options, builtins map[string]values.Value, extern *semantic.Extern) *Interpreter {
 	optionScope := NewScopeWithValues(options)
 	globalScope := optionScope.NestWithValues(builtins)
 	interpreter := &Interpreter{
+		extern:  extern,
 		options: optionScope,
 		globals: globalScope,
 	}
@@ -77,6 +80,11 @@ func (itrp *Interpreter) SetOption(name string, val values.Value) {
 
 // Eval evaluates the expressions composing a Flux program.
 func (itrp *Interpreter) Eval(program semantic.Node) error {
+	if itrp.extern != nil {
+		extern := itrp.extern.Copy().(*semantic.Extern)
+		extern.Block = &semantic.ExternBlock{Node: program}
+		program = extern
+	}
 	sol, err := semantic.InferTypes(program)
 	if err != nil {
 		return err
@@ -97,7 +105,7 @@ func (itrp *Interpreter) doRoot(node semantic.Node) error {
 }
 
 func (itrp *Interpreter) doExtern(extern *semantic.Extern) error {
-	// We do not care about the type declarations
+	// We do not care about the type declarations, they were only important for type inference.
 	return itrp.doRoot(extern.Block.Node)
 }
 
@@ -117,6 +125,7 @@ func (itrp *Interpreter) doProgram(program *semantic.Program) error {
 
 // doStatement returns the resolved value of a top-level statement
 func (itrp *Interpreter) doStatement(stmt semantic.Statement, scope *Scope) (values.Value, error) {
+	log.Println("doStatement", stmt)
 	scope.SetReturn(values.InvalidValue)
 	switch s := stmt.(type) {
 	case *semantic.OptionStatement:
@@ -169,6 +178,7 @@ func (itrp *Interpreter) doOptionStatement(declaration *semantic.NativeVariableD
 }
 
 func (itrp *Interpreter) doVariableDeclaration(declaration *semantic.NativeVariableDeclaration, scope *Scope) (values.Value, error) {
+	log.Println("doVariableDeclaration", declaration.Identifier.Name)
 	value, err := itrp.doExpression(declaration.Init, scope)
 	if err != nil {
 		return nil, err
@@ -179,6 +189,7 @@ func (itrp *Interpreter) doVariableDeclaration(declaration *semantic.NativeVaria
 			return nil, fmt.Errorf("cannot redefine %q with different type", declaration.Identifier.Name)
 		}
 	}
+	log.Println("Scope.Set", declaration.Identifier.Name, value)
 	scope.Set(declaration.Identifier.Name, value)
 	return value, nil
 }
@@ -1188,7 +1199,6 @@ func (a *arguments) get(name string, kind semantic.Kind, required bool) (values.
 		}
 		return nil, false, nil
 	}
-	log.Println("get value", v, v.PolyType())
 	if v.PolyType().Kind() != kind {
 		return nil, true, fmt.Errorf("keyword argument %q should be of kind %v, but got %v", name, kind, v.PolyType().Kind())
 	}
@@ -1205,4 +1215,13 @@ func (a *arguments) listUnused() []string {
 		})
 	}
 	return unused
+}
+
+func AddExternalDeclarations(extern *semantic.Extern, scope map[string]values.Value) {
+	for k, v := range scope {
+		extern.Declarations = append(extern.Declarations, &semantic.ExternalVariableDeclaration{
+			Identifier: &semantic.Identifier{Name: k},
+			ExternType: v.PolyType(),
+		})
+	}
 }

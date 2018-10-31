@@ -307,7 +307,7 @@ identity(x:identity)(x:2)
 `,
 			solution: &solutionVisitor{
 				f: func(node semantic.Node) semantic.PolyType {
-					tv := semantic.Tvar(4)
+					tv := semantic.Tvar(3)
 					params := map[string]semantic.PolyType{
 						"x": tv,
 					}
@@ -468,7 +468,7 @@ identity(x:identity)(x:2)
 }`,
 			solution: &solutionVisitor{
 				f: func(node semantic.Node) semantic.PolyType {
-					tv := semantic.Tvar(10)
+					tv := semantic.Tvar(8)
 					params := map[string]semantic.PolyType{
 						"a": tv,
 						"b": tv,
@@ -652,7 +652,7 @@ foo(f:add)
 			`,
 			solution: &solutionVisitor{
 				f: func(node semantic.Node) semantic.PolyType {
-					tv := semantic.Tvar(30)
+					tv := semantic.Tvar(29)
 					paramsCall := map[string]semantic.PolyType{
 						"a": semantic.Int,
 						"b": semantic.Int,
@@ -815,7 +815,7 @@ foo(f:add)
 			`,
 			solution: &solutionVisitor{
 				f: func(node semantic.Node) semantic.PolyType {
-					tv := semantic.Tvar(27)
+					tv := semantic.Tvar(26)
 					paramsCall := map[string]semantic.PolyType{
 						"a": semantic.Int,
 						"b": semantic.Int,
@@ -1054,7 +1054,7 @@ name(p:device)
 						semantic.LabelSet{"p"},
 					)
 
-					tv := semantic.Tvar(41)
+					tv := semantic.Tvar(40)
 					p := semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{
 							"name": tv,
@@ -1213,8 +1213,8 @@ foo(r:{a:1.1,b:42.0})
 `,
 			solution: &solutionVisitor{
 				f: func(node semantic.Node) semantic.PolyType {
-					tvA := semantic.Tvar(38)
-					tvB := semantic.Tvar(39)
+					tvA := semantic.Tvar(37)
+					tvB := semantic.Tvar(38)
 
 					r := semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{

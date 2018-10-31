@@ -75,10 +75,7 @@ func Eval(itrp *interpreter.Interpreter, q string) error {
 		return err
 	}
 
-	externProg := extern.Copy().(*semantic.Extern)
-	externProg.Block.Node = semProg
-
-	if err := itrp.Eval(externProg); err != nil {
+	if err := itrp.Eval(semProg); err != nil {
 		return err
 	}
 	return nil
@@ -93,7 +90,7 @@ func NewInterpreter() *interpreter.Interpreter {
 		options[k] = v
 	}
 
-	return interpreter.NewInterpreter(options, builtinValues)
+	return interpreter.NewInterpreter(options, builtinValues, extern)
 }
 
 func nowFunc(now time.Time) values.Function {
@@ -150,9 +147,7 @@ type CreateOperationSpec func(args Arguments, a *Administration) (OperationSpec,
 
 var builtinValues = make(map[string]values.Value)
 var builtinOptions = make(map[string]values.Value)
-var extern = &semantic.Extern{
-	Block: new(semantic.ExternBlock),
-}
+var extern = new(semantic.Extern)
 
 // list of builtin scripts
 var builtinScripts = make(map[string]string)
@@ -203,10 +198,6 @@ func RegisterBuiltInValue(name string, v values.Value) {
 	if _, ok := builtinValues[name]; ok {
 		panic(fmt.Errorf("duplicate registration for builtin %q", name))
 	}
-	extern.Declarations = append(extern.Declarations, &semantic.ExternalVariableDeclaration{
-		Identifier: &semantic.Identifier{Name: name},
-		ExternType: v.PolyType(),
-	})
 	builtinValues[name] = v
 }
 
@@ -229,14 +220,24 @@ func FinalizeBuiltIns() {
 	}
 	finalized = true
 
+	// Populate extern declarations
+	extern.Declarations = make([]*semantic.ExternalVariableDeclaration, 0, len(builtinValues)+len(builtinOptions))
+	interpreter.AddExternalDeclarations(extern, builtinValues)
+	interpreter.AddExternalDeclarations(extern, builtinOptions)
+
 	err := evalBuiltInScripts()
 	if err != nil {
 		panic(err)
 	}
+
+	// Rebuild the external declarations based on any additions to the builtinValues
+	extern.Declarations = make([]*semantic.ExternalVariableDeclaration, 0, len(builtinValues)+len(builtinOptions))
+	interpreter.AddExternalDeclarations(extern, builtinValues)
+	interpreter.AddExternalDeclarations(extern, builtinOptions)
 }
 
 func evalBuiltInScripts() error {
-	itrp := interpreter.NewMutableInterpreter(builtinOptions, builtinValues)
+	itrp := interpreter.NewMutableInterpreter(builtinOptions, builtinValues, extern)
 	for name, script := range builtinScripts {
 		astProg, err := parser.NewAST(script)
 		if err != nil {
@@ -246,19 +247,9 @@ func evalBuiltInScripts() error {
 		if err != nil {
 			return errors.Wrapf(err, "failed to create semantic graph for builtin %q", name)
 		}
-		externProg := extern.Copy().(*semantic.Extern)
-		externProg.Block.Node = semProg
 
-		if err := itrp.Eval(externProg); err != nil {
+		if err := itrp.Eval(semProg); err != nil {
 			return errors.Wrapf(err, "failed to evaluate builtin %q", name)
-		}
-		// Rebuild the external declarations based on the builtinValues
-		extern.Declarations = make([]*semantic.ExternalVariableDeclaration, 0, len(builtinValues))
-		for name, v := range builtinValues {
-			extern.Declarations = append(extern.Declarations, &semantic.ExternalVariableDeclaration{
-				Identifier: &semantic.Identifier{Name: name},
-				ExternType: v.PolyType(),
-			})
 		}
 	}
 	return nil

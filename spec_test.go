@@ -320,7 +320,10 @@ func Example_overrideDefaultOptionExternally() {
 	semanticProgram, _ := semantic.New(ast)
 
 	// Evaluate program
-	itrp.Eval(semanticProgram)
+	err := itrp.Eval(semanticProgram)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	// After evaluating the program, lookup the value of what_time_is_it
 	now, _ := itrp.GlobalScope().Lookup("what_time_is_it")
@@ -357,7 +360,10 @@ func Example_overrideDefaultOptionInternally() {
 	itrp.SetOption("now", newNowFunc)
 
 	// Evaluate program
-	itrp.Eval(semanticProgram)
+	err := itrp.Eval(semanticProgram)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	// After evaluating the program, lookup the value of what_time_is_it
 	now, _ := itrp.GlobalScope().Lookup("what_time_is_it")
