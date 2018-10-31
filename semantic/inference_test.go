@@ -1433,6 +1433,13 @@ plus1(r:{_value: 2.0})
 				},
 			},
 		},
+		{
+			name: "occurs check",
+			script: `
+(f) => { return f(a:f) }
+`,
+			wantErr: errors.New(`type error 2:17-2:23: type var t3 occurs in (^a: t3) -> t11 creating a cycle`),
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
