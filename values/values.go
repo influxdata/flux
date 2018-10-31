@@ -41,54 +41,54 @@ func (v value) PolyType() semantic.PolyType {
 	return v.t.PolyType()
 }
 func (v value) Str() string {
-	CheckKind(v.t.Kind(), semantic.String)
+	CheckKind(v.t.Nature(), semantic.String)
 	return v.v.(string)
 }
 func (v value) Int() int64 {
-	CheckKind(v.t.Kind(), semantic.Int)
+	CheckKind(v.t.Nature(), semantic.Int)
 	return v.v.(int64)
 }
 func (v value) UInt() uint64 {
-	CheckKind(v.t.Kind(), semantic.UInt)
+	CheckKind(v.t.Nature(), semantic.UInt)
 	return v.v.(uint64)
 }
 func (v value) Float() float64 {
-	CheckKind(v.t.Kind(), semantic.Float)
+	CheckKind(v.t.Nature(), semantic.Float)
 	return v.v.(float64)
 }
 func (v value) Bool() bool {
-	CheckKind(v.t.Kind(), semantic.Bool)
+	CheckKind(v.t.Nature(), semantic.Bool)
 	return v.v.(bool)
 }
 func (v value) Time() Time {
-	CheckKind(v.t.Kind(), semantic.Time)
+	CheckKind(v.t.Nature(), semantic.Time)
 	return v.v.(Time)
 }
 func (v value) Duration() Duration {
-	CheckKind(v.t.Kind(), semantic.Duration)
+	CheckKind(v.t.Nature(), semantic.Duration)
 	return v.v.(Duration)
 }
 func (v value) Regexp() *regexp.Regexp {
-	CheckKind(v.t.Kind(), semantic.Regexp)
+	CheckKind(v.t.Nature(), semantic.Regexp)
 	return v.v.(*regexp.Regexp)
 }
 func (v value) Array() Array {
-	CheckKind(v.t.Kind(), semantic.Array)
+	CheckKind(v.t.Nature(), semantic.Array)
 	return v.v.(Array)
 }
 func (v value) Object() Object {
-	CheckKind(v.t.Kind(), semantic.Object)
+	CheckKind(v.t.Nature(), semantic.Object)
 	return v.v.(Object)
 }
 func (v value) Function() Function {
-	CheckKind(v.t.Kind(), semantic.Function)
+	CheckKind(v.t.Nature(), semantic.Function)
 	return v.v.(Function)
 }
 func (v value) Equal(r Value) bool {
 	if v.Type() != r.Type() {
 		return false
 	}
-	switch k := v.Type().Kind(); k {
+	switch k := v.Type().Nature(); k {
 	case semantic.Bool:
 		return v.Bool() == r.Bool()
 	case semantic.UInt:
@@ -197,12 +197,12 @@ func NewRegexp(v *regexp.Regexp) Value {
 	}
 }
 
-func UnexpectedKind(got, exp semantic.Kind) error {
+func UnexpectedKind(got, exp semantic.Nature) error {
 	return fmt.Errorf("unexpected kind: got %q expected %q", got, exp)
 }
 
 // CheckKind panics if got != exp.
-func CheckKind(got, exp semantic.Kind) {
+func CheckKind(got, exp semantic.Nature) {
 	if got != exp {
 		panic(UnexpectedKind(got, exp))
 	}

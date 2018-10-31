@@ -695,7 +695,7 @@ func (a Arguments) GetRequiredDuration(name string) (Duration, error) {
 }
 
 func ToQueryTime(value values.Value) (Time, error) {
-	switch value.Type().Kind() {
+	switch value.Type().Nature() {
 	case semantic.Time:
 		return Time{
 			Absolute: value.Time().Time(),

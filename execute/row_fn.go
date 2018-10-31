@@ -70,7 +70,7 @@ func (f *rowFn) prepare(cols []flux.ColMeta) error {
 	return nil
 }
 
-func ConvertToKind(t flux.ColType) semantic.Kind {
+func ConvertToKind(t flux.ColType) semantic.Nature {
 	// TODO make this an array lookup.
 	switch t {
 	case flux.TInvalid:
@@ -92,7 +92,7 @@ func ConvertToKind(t flux.ColType) semantic.Kind {
 	}
 }
 
-func ConvertFromKind(k semantic.Kind) flux.ColType {
+func ConvertFromKind(k semantic.Nature) flux.ColType {
 	// TODO make this an array lookup.
 	switch k {
 	case semantic.Invalid:
@@ -177,7 +177,7 @@ func (f *RowMapFn) Prepare(cols []flux.ColMeta) error {
 	if err != nil {
 		return err
 	}
-	k := f.preparedFn.Type().Kind()
+	k := f.preparedFn.Type().Nature()
 	f.isWrap = k != semantic.Object
 	if f.isWrap {
 		f.wrapObj = NewRecord(semantic.NewObjectType(map[string]semantic.Type{

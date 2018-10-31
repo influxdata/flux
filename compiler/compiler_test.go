@@ -19,7 +19,7 @@ func init() {
 }
 
 func ValueEqual(x, y values.Value) bool {
-	switch k := x.Type().Kind(); k {
+	switch k := x.Type().Nature(); k {
 	case semantic.Object:
 		if x.Type() != y.Type() {
 			return false

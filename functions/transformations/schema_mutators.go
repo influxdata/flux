@@ -70,7 +70,7 @@ func compileFnParam(fn *semantic.FunctionExpression, paramType, returnType seman
 	}
 
 	if compiled.Type() != returnType {
-		return nil, "", fmt.Errorf("provided function does not evaluate to type %s", returnType.Kind())
+		return nil, "", fmt.Errorf("provided function does not evaluate to type %s", returnType.Nature())
 	}
 
 	return compiled, paramName, nil

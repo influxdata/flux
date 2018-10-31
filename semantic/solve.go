@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// SolveConstraints solves the type inference problem defined by the constraints.
 func SolveConstraints(cs *Constraints) (TypeSolution, error) {
 	s := &Solution{cs: cs}
 	err := s.solve()
@@ -18,6 +19,7 @@ func SolveConstraints(cs *Constraints) (TypeSolution, error) {
 	return s, nil
 }
 
+// Solution implement TypeSolution and solves the unification problem.
 type Solution struct {
 	cs    *Constraints
 	kinds kindsMap
@@ -33,11 +35,29 @@ func (s *Solution) FreshSolution() TypeSolution {
 	}
 }
 
+// solve uses Robinson flavor unification to solve the constraints.
+// Robison unification is the idea that given a constraint that two types are equal, those types are unified.
+//
+// Unifying two types means to do one of the following:
+//  1. Given two primitive types assert the types are the same or report an error.
+//  2. Given a type variable and another type record that the type variable now has the given type.
+//  3. Recurse into children types of compound types, for example unify the return types of functions.
+//
+// The unification process has two domains over which it operates.
+// The type domain and the kind domain.
+// Unifying types occurs as explained above.
+// Unifying kinds is the same process except in the kind domain.
+// The domains are NOT independent, unifying two types may require that two kinds be unified.
+// Similarly unifying two kinds may require that two types be unified.
+//
+// These two separate domains allow for structural polymorphism among other things.
+// Specifically the structure of objects is constrained in the kind domain not the type domain.
+// See "Simple Type Inference for Structural Polymorphism" Jacques Garrigue https://caml.inria.fr/pub/papers/garrigue-structural_poly-fool02.pdf for details on this approach.
 func (sol *Solution) solve() error {
 	// Create substituion
 	subst := make(Substitution)
 	// Create map of unified kind constraints
-	kinds := make(map[Tvar]KindConstraint, len(sol.cs.kindConst))
+	kinds := make(map[Tvar]Kind, len(sol.cs.kindConst))
 
 	// Initialize unified kinds with first kind constraint
 	for tv, ks := range sol.cs.kindConst {
@@ -69,12 +89,13 @@ func (sol *Solution) solve() error {
 	}
 
 	// Apply substituion to kind constraints
-	sol.kinds = make(map[Tvar]KindConstraint, len(kinds))
+	sol.kinds = make(map[Tvar]Kind, len(kinds))
 	for tv, k := range kinds {
 		k = subst.ApplyKind(k)
 		tv = subst.ApplyTvar(tv)
 		sol.kinds[tv] = k
 	}
+	// Apply substitution to the type annotations
 	for n, ann := range sol.cs.annotations {
 		if ann.Type != nil {
 			ann.Type = subst.ApplyType(ann.Type)
@@ -94,7 +115,7 @@ func (s *Solution) TypeOf(n Node) (Type, error) {
 	if a.Err != nil {
 		return nil, a.Err
 	}
-	return a.Type.Type(s.kinds)
+	return a.Type.resolveType(s.kinds)
 }
 
 func (s *Solution) PolyTypeOf(n Node) (PolyType, error) {
@@ -120,13 +141,13 @@ func (s *Solution) AddConstraint(l, r PolyType) error {
 	return s.solve()
 }
 
-func unifyTypes(kinds map[Tvar]KindConstraint, l, r PolyType) (s Substitution, _ error) {
+func unifyTypes(kinds map[Tvar]Kind, l, r PolyType) (s Substitution, _ error) {
 	//log.Printf("unifyTypes %v == %v", l, r)
-	return l.UnifyType(kinds, r)
+	return l.unifyType(kinds, r)
 }
 
-func unifyKinds(kinds map[Tvar]KindConstraint, tvl, tvr Tvar, l, r KindConstraint) (Substitution, error) {
-	k, s, err := l.UnifyKind(kinds, r)
+func unifyKinds(kinds map[Tvar]Kind, tvl, tvr Tvar, l, r Kind) (Substitution, error) {
+	k, s, err := l.unifyKind(kinds, r)
 	if err != nil {
 		return nil, err
 	}
@@ -140,15 +161,15 @@ func unifyKinds(kinds map[Tvar]KindConstraint, tvl, tvr Tvar, l, r KindConstrain
 	return s, nil
 }
 
-func unifyVarAndType(kinds map[Tvar]KindConstraint, tv Tvar, t PolyType) (Substitution, error) {
-	if t.Occurs(tv) {
+func unifyVarAndType(kinds map[Tvar]Kind, tv Tvar, t PolyType) (Substitution, error) {
+	if t.occurs(tv) {
 		return nil, fmt.Errorf("type var %v occurs in %v creating a cycle", tv, t)
 	}
 	unifyKindsByType(kinds, tv, t)
 	return Substitution{tv: t}, nil
 }
 
-func unifyKindsByVar(kinds map[Tvar]KindConstraint, l, r Tvar) (Substitution, error) {
+func unifyKindsByVar(kinds map[Tvar]Kind, l, r Tvar) (Substitution, error) {
 	kl, okl := kinds[l]
 	kr, okr := kinds[r]
 	switch {
@@ -161,7 +182,7 @@ func unifyKindsByVar(kinds map[Tvar]KindConstraint, l, r Tvar) (Substitution, er
 	return nil, nil
 }
 
-func unifyKindsByType(kinds map[Tvar]KindConstraint, tv Tvar, t PolyType) (Substitution, error) {
+func unifyKindsByType(kinds map[Tvar]Kind, tv Tvar, t PolyType) (Substitution, error) {
 	k, ok := kinds[tv]
 	if !ok {
 		return nil, nil
@@ -176,7 +197,7 @@ func unifyKindsByType(kinds map[Tvar]KindConstraint, tv Tvar, t PolyType) (Subst
 	return nil, nil
 }
 
-type kindsMap map[Tvar]KindConstraint
+type kindsMap map[Tvar]Kind
 
 func (kinds kindsMap) String() string {
 	var builder strings.Builder

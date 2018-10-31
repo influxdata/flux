@@ -8,12 +8,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+// GenerateConstraints walks the graph and generates constraints between type vairables provided in the annotations.
 func GenerateConstraints(node Node, annotator Annotator) (*Constraints, error) {
 	cg := ConstraintGenerator{
 		cs: &Constraints{
 			f:           annotator.f,
 			annotations: annotator.annotations,
-			kindConst:   make(map[Tvar][]KindConstraint),
+			kindConst:   make(map[Tvar][]Kind),
 		},
 		env: NewEnv(),
 		err: new(error),
@@ -23,12 +24,14 @@ func GenerateConstraints(node Node, annotator Annotator) (*Constraints, error) {
 	return cg.cs, *cg.err
 }
 
+// ConstraintGenerator implements NestingVisitor and generates constraints as it walks the graph.
 type ConstraintGenerator struct {
 	cs  *Constraints
 	env *Env
 	err *error
 }
 
+// Nest nests the internal type environment to obey scoping rules.
 func (v ConstraintGenerator) Nest() NestingVisitor {
 	return ConstraintGenerator{
 		cs:  v.cs,
@@ -37,6 +40,7 @@ func (v ConstraintGenerator) Nest() NestingVisitor {
 	}
 }
 
+// Visit visits each node, the algorithm is depth first so nothing is performed in Visit except for an error check.
 func (v ConstraintGenerator) Visit(node Node) Visitor {
 	if *v.err != nil {
 		return nil
@@ -44,6 +48,7 @@ func (v ConstraintGenerator) Visit(node Node) Visitor {
 	return v
 }
 
+// Done visits nodes after all children of the node have been visited.
 func (v ConstraintGenerator) Done(node Node) {
 	a := v.cs.annotations[node]
 	a.Type, a.Err = v.typeof(node)
@@ -60,6 +65,7 @@ func (v ConstraintGenerator) Done(node Node) {
 	}
 }
 
+// lookup returns the poly type of the visited node.
 func (v ConstraintGenerator) lookup(n Node) (PolyType, error) {
 	a, ok := v.cs.annotations[n]
 	if !ok {
@@ -70,21 +76,24 @@ func (v ConstraintGenerator) lookup(n Node) (PolyType, error) {
 	}
 	return a.Type, a.Err
 }
+
+// scheme produces a type scheme from a poly type, this includes the generalize step.
 func (v ConstraintGenerator) scheme(t PolyType) Scheme {
-	ftv := t.FreeVars(v.cs).diff(v.env.FreeVars())
+	ftv := t.freeVars(v.cs).diff(v.env.FreeVars())
 	return Scheme{
 		T:    t,
 		Free: ftv,
 	}
 }
 
+// typeof determines the poly type of a node.
 func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 	nodeVar := v.cs.annotations[n].Var
 	switch n := n.(type) {
 	case *ExternalVariableDeclaration:
 		// Do not trust external type variables,
 		// substitute them with fresh vars.
-		ftv := n.ExternType.FreeVars(nil)
+		ftv := n.ExternType.freeVars(nil)
 		subst := make(Substitution, len(ftv))
 		for _, tv := range ftv {
 			subst[tv] = v.cs.f.Fresh()
@@ -304,7 +313,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		})
 		return ptv, nil
 	case *ArrayExpression:
-		at := list{typ: NewObjectPolyType(nil, nil, AllLabels())}
+		at := array{typ: NewObjectPolyType(nil, nil, AllLabels())}
 		if len(n.Elements) > 0 {
 			et, err := v.lookup(n.Elements[0])
 			if err != nil {
@@ -351,12 +360,13 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 	}
 }
 
+// Constraints is a set of constraints.
 type Constraints struct {
 	f           *fresher
 	annotations map[Node]annotation
 
 	typeConst []TypeConstraint
-	kindConst map[Tvar][]KindConstraint
+	kindConst map[Tvar][]Kind
 }
 
 func (c *Constraints) Copy() *Constraints {
@@ -364,7 +374,7 @@ func (c *Constraints) Copy() *Constraints {
 		f:           new(fresher),
 		annotations: make(map[Node]annotation, len(c.annotations)),
 		typeConst:   make([]TypeConstraint, len(c.typeConst)),
-		kindConst:   make(map[Tvar][]KindConstraint, len(c.kindConst)),
+		kindConst:   make(map[Tvar][]Kind, len(c.kindConst)),
 	}
 	*n.f = *c.f
 	for k, v := range c.annotations {
@@ -374,13 +384,14 @@ func (c *Constraints) Copy() *Constraints {
 		n.typeConst[k] = v
 	}
 	for k, v := range c.kindConst {
-		kinds := make([]KindConstraint, len(v))
+		kinds := make([]Kind, len(v))
 		copy(kinds, v)
 		n.kindConst[k] = kinds
 	}
 	return n
 }
 
+// TypeConstraint states that the left and right types must be equal.
 type TypeConstraint struct {
 	l, r PolyType
 	loc  ast.SourceLocation
@@ -398,10 +409,12 @@ func (c *Constraints) AddTypeConst(l, r PolyType, loc ast.SourceLocation) {
 	})
 }
 
-func (c *Constraints) AddKindConst(tv Tvar, k KindConstraint) {
+func (c *Constraints) AddKindConst(tv Tvar, k Kind) {
 	c.kindConst[tv] = append(c.kindConst[tv], k)
 }
 
+// Instantiate produces a new poly type where the free variables from the scheme have been made fresh.
+// This way each new instantiation of a scheme is independent of the other but all have the same constraint structure.
 func (c *Constraints) Instantiate(s Scheme, loc ast.SourceLocation) (t PolyType) {
 	if len(s.Free) == 0 {
 		return s.T
@@ -427,7 +440,7 @@ func (c *Constraints) Instantiate(s Scheme, loc ast.SourceLocation) (t PolyType)
 
 	// Add any new type constraints
 	for _, tc := range c.typeConst {
-		fvs := tc.l.FreeVars(c)
+		fvs := tc.l.freeVars(c)
 		// Only add new constraints that constrain the left hand free vars
 		if fvs.hasIntersect(s.Free) {
 			l := subst.ApplyType(tc.l)

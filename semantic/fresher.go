@@ -1,6 +1,8 @@
 package semantic
 
+// Fresher produces fresh type variables.
 type Fresher interface {
+	// Fresh produces a new unused type variable.
 	Fresh() Tvar
 }
 

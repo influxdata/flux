@@ -117,9 +117,9 @@ func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		if err != nil {
 			return
 		}
-		if operation.PolyType().Kind() != semantic.Object {
+		if operation.PolyType().Nature() != semantic.Object {
 			err = fmt.Errorf("expected %q to be object type; instead got %v",
-				name, operation.PolyType().Kind())
+				name, operation.PolyType().Nature())
 			return
 		}
 		table, ok := operation.(*flux.TableObject)

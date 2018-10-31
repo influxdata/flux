@@ -86,7 +86,7 @@ func (c Completer) FunctionSuggestion(name string) (FunctionSuggestion, error) {
 	params := make(map[string]string, len(sig.Parameters))
 
 	for k, v := range sig.Parameters {
-		params[k] = v.Kind().String()
+		params[k] = v.Nature().String()
 	}
 
 	s = FunctionSuggestion{
@@ -104,5 +104,5 @@ func DefaultCompleter() Completer {
 }
 
 func isFunction(v values.Value) bool {
-	return v.PolyType().Kind() == semantic.Function
+	return v.PolyType().Nature() == semantic.Function
 }

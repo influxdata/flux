@@ -13,15 +13,15 @@ import (
 
 // Type is the representation of a Flux type.
 // Type is a monomorphic, meaning that it represents a single type and is not polymorphic.
-// See TypeScheme for polymorphic types.
+// See PolyType for polymorphic types.
 //
 // Type values are comparable and as such can be used as map keys and directly comparison using the == operator.
 // Two types are equal if they represent identical types.
 //
 // Do NOT embed this type into other interfaces or structs as that will invalidate the comparison properties of the interface.
 type Type interface {
-	// Kind returns the specific kind of this type.
-	Kind() Kind
+	// Nature returns the specific primitive description of this type.
+	Nature() Nature
 
 	// PropertyType returns the type of a given property.
 	// It panics if the type's Kind is not Object
@@ -46,10 +46,11 @@ type Type interface {
 	typ()
 }
 
-type Kind int
+// Nature is the primitive description of a type.
+type Nature int
 
 const (
-	Invalid Kind = iota
+	Invalid Nature = iota
 	Nil
 	String
 	Int
@@ -64,7 +65,7 @@ const (
 	Function
 )
 
-var kindNames = []string{
+var natureNames = []string{
 	Invalid:  "invalid",
 	Nil:      "nil",
 	String:   "string",
@@ -80,29 +81,29 @@ var kindNames = []string{
 	Function: "function",
 }
 
-func (k Kind) String() string {
-	if int(k) < len(kindNames) {
-		return kindNames[k]
+func (n Nature) String() string {
+	if int(n) < len(natureNames) {
+		return natureNames[n]
 	}
-	return "kind" + strconv.Itoa(int(k))
+	return "nature" + strconv.Itoa(int(n))
 }
 
-func (k Kind) PolyType() PolyType { return k }
-func (k Kind) Kind() Kind         { return k }
+func (n Nature) PolyType() PolyType { return n }
+func (n Nature) Nature() Nature     { return n }
 
-func (k Kind) PropertyType(name string) Type {
-	panic(fmt.Errorf("cannot get type of property %q, from kind %q", name, k))
+func (n Nature) PropertyType(name string) Type {
+	panic(fmt.Errorf("cannot get type of property %q, from kind %q", name, n))
 }
-func (k Kind) Properties() map[string]Type {
-	panic(fmt.Errorf("cannot get properties from kind %s", k))
+func (n Nature) Properties() map[string]Type {
+	panic(fmt.Errorf("cannot get properties from kind %s", n))
 }
-func (k Kind) ElementType() Type {
-	panic(fmt.Errorf("cannot get element type from kind %s", k))
+func (n Nature) ElementType() Type {
+	panic(fmt.Errorf("cannot get element type from kind %s", n))
 }
-func (k Kind) FunctionSignature() FunctionSignature {
-	panic(fmt.Errorf("cannot get function signature from kind %s", k))
+func (n Nature) FunctionSignature() FunctionSignature {
+	panic(fmt.Errorf("cannot get function signature from kind %s", n))
 }
-func (k Kind) typ() {}
+func (n Nature) typ() {}
 
 type arrayType struct {
 	elementType Type
@@ -112,20 +113,20 @@ func (t *arrayType) String() string {
 	return fmt.Sprintf("[%v]", t.elementType)
 }
 
-func (t *arrayType) Kind() Kind {
+func (t *arrayType) Nature() Nature {
 	return Array
 }
 func (t *arrayType) PropertyType(name string) Type {
-	panic(fmt.Errorf("cannot get property type of kind %s", t.Kind()))
+	panic(fmt.Errorf("cannot get property type of kind %s", t.Nature()))
 }
 func (t *arrayType) Properties() map[string]Type {
-	panic(fmt.Errorf("cannot get properties type of kind %s", t.Kind()))
+	panic(fmt.Errorf("cannot get properties type of kind %s", t.Nature()))
 }
 func (t *arrayType) ElementType() Type {
 	return t.elementType
 }
 func (t *arrayType) FunctionSignature() FunctionSignature {
-	panic(fmt.Errorf("cannot get function signature of kind %s", t.Kind()))
+	panic(fmt.Errorf("cannot get function signature of kind %s", t.Nature()))
 }
 func (t *arrayType) PolyType() PolyType {
 	if t.elementType == nil {
@@ -190,7 +191,7 @@ func (t *objectType) String() string {
 	return buf.String()
 }
 
-func (t *objectType) Kind() Kind {
+func (t *objectType) Nature() Nature {
 	return Object
 }
 func (t *objectType) PropertyType(name string) Type {
@@ -204,10 +205,10 @@ func (t *objectType) Properties() map[string]Type {
 	return t.properties
 }
 func (t *objectType) ElementType() Type {
-	panic(fmt.Errorf("cannot get element type of kind %s", t.Kind()))
+	panic(fmt.Errorf("cannot get element type of kind %s", t.Nature()))
 }
 func (t *objectType) FunctionSignature() FunctionSignature {
-	panic(fmt.Errorf("cannot get function signature of kind %s", t.Kind()))
+	panic(fmt.Errorf("cannot get function signature of kind %s", t.Nature()))
 }
 func (t *objectType) PolyType() PolyType {
 	properties := make(map[string]PolyType, len(t.properties))
@@ -270,7 +271,7 @@ func NewObjectType(propertyTypes map[string]Type) Type {
 
 		// track hash of property names and kinds
 		sum.Write([]byte(p))
-		binary.Write(sum, binary.LittleEndian, t.Kind())
+		binary.Write(sum, binary.LittleEndian, t.Nature())
 	}
 
 	// Create new object type
@@ -344,17 +345,17 @@ func (t *functionType) String() string {
 	return builder.String()
 }
 
-func (t *functionType) Kind() Kind {
+func (t *functionType) Nature() Nature {
 	return Function
 }
 func (t *functionType) PropertyType(name string) Type {
-	panic(fmt.Errorf("cannot get property type of kind %s", t.Kind()))
+	panic(fmt.Errorf("cannot get property type of kind %s", t.Nature()))
 }
 func (t *functionType) Properties() map[string]Type {
-	panic(fmt.Errorf("cannot get properties type of kind %s", t.Kind()))
+	panic(fmt.Errorf("cannot get properties type of kind %s", t.Nature()))
 }
 func (t *functionType) ElementType() Type {
-	panic(fmt.Errorf("cannot get element type of kind %s", t.Kind()))
+	panic(fmt.Errorf("cannot get element type of kind %s", t.Nature()))
 }
 func (t *functionType) FunctionSignature() FunctionSignature {
 	return FunctionSignature{

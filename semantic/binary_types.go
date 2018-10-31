@@ -4,10 +4,10 @@ import "github.com/influxdata/flux/ast"
 
 type binarySignature struct {
 	operator    ast.OperatorKind
-	left, right Kind
+	left, right Nature
 }
 
-var binaryTypesLookup = map[binarySignature]Kind{
+var binaryTypesLookup = map[binarySignature]Nature{
 	//---------------
 	// Math Operators
 	//---------------

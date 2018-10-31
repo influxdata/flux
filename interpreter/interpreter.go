@@ -218,7 +218,7 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (v
 		if err != nil {
 			return nil, err
 		}
-		if typ := obj.Type().Kind(); typ != semantic.Object {
+		if typ := obj.Type().Nature(); typ != semantic.Object {
 			return nil, fmt.Errorf("cannot access property %q on value of type %s", e.Property, typ)
 		}
 		v, ok := obj.Object().Get(e.Property)
@@ -410,7 +410,7 @@ func (itrp *Interpreter) doCall(call *semantic.CallExpression, scope *Scope) (va
 		return nil, err
 	}
 	ft := callee.PolyType()
-	if ft.Kind() != semantic.Function {
+	if ft.Nature() != semantic.Function {
 		return nil, fmt.Errorf("cannot call function, value is of type %v", callee.Type())
 	}
 	f := callee.Function()
@@ -729,7 +729,7 @@ func (f *function) doCall(args Arguments) (values.Value, error) {
 			return nil, err
 		}
 		v := blockScope.Return()
-		if v.PolyType().Kind() == semantic.Invalid {
+		if v.PolyType().Nature() == semantic.Invalid {
 			return nil, errors.New("function has no return value")
 		}
 		return v, nil
@@ -903,7 +903,7 @@ func (f function) resolveIdentifiers(n semantic.Node) (semantic.Node, error) {
 }
 
 func resolveValue(v values.Value) (semantic.Node, error) {
-	switch k := v.Type().Kind(); k {
+	switch k := v.Type().Nature(); k {
 	case semantic.String:
 		return &semantic.StringLiteral{
 			Value: v.Str(),
@@ -1025,7 +1025,7 @@ type Arguments interface {
 	GetFloat(name string) (float64, bool, error)
 	GetBool(name string) (bool, bool, error)
 	GetFunction(name string) (values.Function, bool, error)
-	GetArray(name string, t semantic.Kind) (values.Array, bool, error)
+	GetArray(name string, t semantic.Nature) (values.Array, bool, error)
 	GetObject(name string) (values.Object, bool, error)
 
 	GetRequiredString(name string) (string, error)
@@ -1033,7 +1033,7 @@ type Arguments interface {
 	GetRequiredFloat(name string) (float64, error)
 	GetRequiredBool(name string) (bool, error)
 	GetRequiredFunction(name string) (values.Function, error)
-	GetRequiredArray(name string, t semantic.Kind) (values.Array, error)
+	GetRequiredArray(name string, t semantic.Nature) (values.Array, error)
 	GetRequiredObject(name string) (values.Object, error)
 
 	// listUnused returns the list of provided arguments that were not used by the function.
@@ -1138,7 +1138,7 @@ func (a *arguments) GetRequiredBool(name string) (bool, error) {
 	return v.Bool(), nil
 }
 
-func (a *arguments) GetArray(name string, t semantic.Kind) (values.Array, bool, error) {
+func (a *arguments) GetArray(name string, t semantic.Nature) (values.Array, bool, error) {
 	v, ok, err := a.get(name, semantic.Array, false)
 	if err != nil || !ok {
 		return nil, ok, err
@@ -1149,14 +1149,14 @@ func (a *arguments) GetArray(name string, t semantic.Kind) (values.Array, bool, 
 	}
 	return v.Array(), ok, nil
 }
-func (a *arguments) GetRequiredArray(name string, t semantic.Kind) (values.Array, error) {
+func (a *arguments) GetRequiredArray(name string, t semantic.Nature) (values.Array, error) {
 	v, _, err := a.get(name, semantic.Array, true)
 	if err != nil {
 		return nil, err
 	}
 	arr := v.Array()
-	if arr.Type().ElementType().Kind() != t {
-		return nil, fmt.Errorf("keyword argument %q should be of an array of type %v, but got an array of type %v", name, t, arr.Type().ElementType().Kind())
+	if arr.Type().ElementType().Nature() != t {
+		return nil, fmt.Errorf("keyword argument %q should be of an array of type %v, but got an array of type %v", name, t, arr.Type().ElementType().Nature())
 	}
 	return arr, nil
 }
@@ -1190,7 +1190,7 @@ func (a *arguments) GetRequiredObject(name string) (values.Object, error) {
 	return v.Object(), nil
 }
 
-func (a *arguments) get(name string, kind semantic.Kind, required bool) (values.Value, bool, error) {
+func (a *arguments) get(name string, kind semantic.Nature, required bool) (values.Value, bool, error) {
 	a.used[name] = true
 	v, ok := a.obj.Get(name)
 	if !ok {
@@ -1199,8 +1199,8 @@ func (a *arguments) get(name string, kind semantic.Kind, required bool) (values.
 		}
 		return nil, false, nil
 	}
-	if v.PolyType().Kind() != kind {
-		return nil, true, fmt.Errorf("keyword argument %q should be of kind %v, but got %v", name, kind, v.PolyType().Kind())
+	if v.PolyType().Nature() != kind {
+		return nil, true, fmt.Errorf("keyword argument %q should be of kind %v, but got %v", name, kind, v.PolyType().Nature())
 	}
 	return v, true, nil
 }

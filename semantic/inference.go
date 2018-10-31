@@ -1,5 +1,15 @@
 package semantic
 
+// InferTypes produces a solution to type inference for a given semantic graph.
+func InferTypes(n Node) (TypeSolution, error) {
+	annotator := Annotate(n)
+	cs, err := GenerateConstraints(n, annotator)
+	if err != nil {
+		return nil, err
+	}
+	return SolveConstraints(cs)
+}
+
 // TypeSolution is a mapping of Nodes to their types.
 type TypeSolution interface {
 	// TypeOf reports the monotype of the node or an error.
@@ -15,14 +25,4 @@ type TypeSolution interface {
 
 	// AddConstraint adds a new constraint and solves again reporting any errors.
 	AddConstraint(l, r PolyType) error
-}
-
-// InferTypes produces a solution to type inference for a given semantic graph.
-func InferTypes(n Node) (TypeSolution, error) {
-	annotator := Annotate(n)
-	cs, err := GenerateConstraints(n, annotator)
-	if err != nil {
-		return nil, err
-	}
-	return SolveConstraints(cs)
 }

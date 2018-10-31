@@ -96,7 +96,7 @@ func (c *stringConv) Call(args values.Object) (values.Value, error) {
 	if !ok {
 		return nil, missingArg
 	}
-	switch v.Type().Kind() {
+	switch v.Type().Nature() {
 	case semantic.String:
 		str = v.Str()
 	case semantic.Int:
@@ -176,7 +176,7 @@ func (c *intConv) Call(args values.Object) (values.Value, error) {
 	if !ok {
 		return nil, missingArg
 	}
-	switch v.Type().Kind() {
+	switch v.Type().Nature() {
 	case semantic.String:
 		n, err := strconv.ParseInt(v.Str(), 10, 64)
 		if err != nil {
@@ -264,7 +264,7 @@ func (c *uintConv) Call(args values.Object) (values.Value, error) {
 	if !ok {
 		return nil, missingArg
 	}
-	switch v.Type().Kind() {
+	switch v.Type().Nature() {
 	case semantic.String:
 		n, err := strconv.ParseUint(v.Str(), 10, 64)
 		if err != nil {
@@ -352,7 +352,7 @@ func (c *floatConv) Call(args values.Object) (values.Value, error) {
 	if !ok {
 		return nil, missingArg
 	}
-	switch v.Type().Kind() {
+	switch v.Type().Nature() {
 	case semantic.String:
 		n, err := strconv.ParseFloat(v.Str(), 64)
 		if err != nil {
@@ -436,7 +436,7 @@ func (c *boolConv) Call(args values.Object) (values.Value, error) {
 	if !ok {
 		return nil, missingArg
 	}
-	switch v.Type().Kind() {
+	switch v.Type().Nature() {
 	case semantic.String:
 		switch s := v.Str(); s {
 		case "true":
@@ -540,7 +540,7 @@ func (c *timeConv) Call(args values.Object) (values.Value, error) {
 	if !ok {
 		return nil, missingArg
 	}
-	switch v.Type().Kind() {
+	switch v.Type().Nature() {
 	case semantic.String:
 		n, err := values.ParseTime(v.Str())
 		if err != nil {
@@ -616,7 +616,7 @@ func (c *durationConv) Call(args values.Object) (values.Value, error) {
 	if !ok {
 		return nil, missingArg
 	}
-	switch v.Type().Kind() {
+	switch v.Type().Nature() {
 	case semantic.String:
 		n, err := values.ParseDuration(v.Str())
 		if err != nil {

@@ -6,24 +6,25 @@ import (
 	"strings"
 )
 
+// Substitution is a maping of type variables to a poly type.
 type Substitution map[Tvar]PolyType
 
 func (s Substitution) ApplyType(t PolyType) PolyType {
 	for tv, typ := range s {
-		t = t.SubstType(tv, typ)
+		t = t.substituteType(tv, typ)
 	}
 	return t
 }
 func (s Substitution) ApplyScheme(ts Scheme) Scheme {
 	for tv, typ := range s {
-		ts.T = ts.T.SubstType(tv, typ)
+		ts.T = ts.T.substituteType(tv, typ)
 	}
 	return ts
 }
 
-func (s Substitution) ApplyKind(k KindConstraint) KindConstraint {
+func (s Substitution) ApplyKind(k Kind) Kind {
 	for tv, typ := range s {
-		k = k.SubstKind(tv, typ)
+		k = k.substituteKind(tv, typ)
 	}
 	return k
 }

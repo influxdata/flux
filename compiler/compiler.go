@@ -10,7 +10,7 @@ import (
 )
 
 func Compile(f *semantic.FunctionExpression, in semantic.Type, builtins Scope) (Func, error) {
-	if in.Kind() != semantic.Object {
+	if in.Nature() != semantic.Object {
 		return nil, errors.New("function input must be an object")
 	}
 	declarations := externDeclarations(builtins)
@@ -347,7 +347,7 @@ func CompileFnParam(fn *semantic.FunctionExpression, paramType, returnType seman
 	}
 
 	if compiled.Type() != returnType {
-		return nil, "", fmt.Errorf("provided function does not evaluate to type %s", returnType.Kind())
+		return nil, "", fmt.Errorf("provided function does not evaluate to type %s", returnType.Nature())
 	}
 
 	return compiled, paramName, nil

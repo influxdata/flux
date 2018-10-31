@@ -1,5 +1,6 @@
 package semantic
 
+// Tvarset is a set of type variables.
 type TvarSet []Tvar
 
 func (s TvarSet) contains(tv Tvar) bool {
@@ -49,9 +50,3 @@ func (a TvarSet) diff(b TvarSet) TvarSet {
 	}
 	return diff
 }
-
-//func (s TvarSet) copy() TvarSet {
-//	c := make(TvarSet, len(s))
-//	copy(c, s)
-//	return c
-//}

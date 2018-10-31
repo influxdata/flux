@@ -189,7 +189,7 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 					}
 					_, err := builder.AddCol(flux.ColMeta{
 						Label: k,
-						Type:  execute.ConvertFromKind(properties[k].Kind()),
+						Type:  execute.ConvertFromKind(properties[k].Nature()),
 					})
 					if err != nil {
 						return err
