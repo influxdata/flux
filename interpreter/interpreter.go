@@ -12,7 +12,6 @@ import (
 
 // Interpreter used to interpret a Flux program
 type Interpreter struct {
-	extern  *semantic.Extern
 	values  []values.Value
 	options *Scope
 	globals *Scope
@@ -22,11 +21,10 @@ type Interpreter struct {
 
 // NewInterpreter instantiates a new Flux Interpreter whose builtin values are not mutable.
 // Options are always mutable.
-func NewInterpreter(options, builtins map[string]values.Value, extern *semantic.Extern) *Interpreter {
+func NewInterpreter(options, builtins map[string]values.Value) *Interpreter {
 	optionScope := NewScopeWithValues(options)
 	globalScope := optionScope.NestWithValues(builtins)
 	interpreter := &Interpreter{
-		extern:  extern,
 		options: optionScope,
 		globals: globalScope.Nest(),
 	}
@@ -35,11 +33,10 @@ func NewInterpreter(options, builtins map[string]values.Value, extern *semantic.
 
 // NewMutableInterpreter instantiates a new Flux Interpreter whose builtin values are mutable.
 // Options are always mutable.
-func NewMutableInterpreter(options, builtins map[string]values.Value, extern *semantic.Extern) *Interpreter {
+func NewMutableInterpreter(options, builtins map[string]values.Value) *Interpreter {
 	optionScope := NewScopeWithValues(options)
 	globalScope := optionScope.NestWithValues(builtins)
 	interpreter := &Interpreter{
-		extern:  extern,
 		options: optionScope,
 		globals: globalScope,
 	}
@@ -79,12 +76,15 @@ func (itrp *Interpreter) SetOption(name string, val values.Value) {
 
 // Eval evaluates the expressions composing a Flux program.
 func (itrp *Interpreter) Eval(program semantic.Node) error {
-	if itrp.extern != nil {
-		extern := itrp.extern.Copy().(*semantic.Extern)
-		extern.Block = &semantic.ExternBlock{Node: program}
-		program = extern
+	extern := &semantic.Extern{
+		Block:        &semantic.ExternBlock{Node: program},
+		Declarations: make([]*semantic.ExternalVariableDeclaration, 0, itrp.globals.Len()+itrp.options.Len()),
 	}
-	sol, err := semantic.InferTypes(program)
+	// Add declarations for values in scope
+	addExternalDeclarations(extern, itrp.options)
+	addExternalDeclarations(extern, itrp.globals)
+
+	sol, err := semantic.InferTypes(extern)
 	if err != nil {
 		return err
 	}
@@ -575,6 +575,12 @@ func (s *Scope) Range(f func(k string, v values.Value)) {
 	if s.parent != nil {
 		s.parent.Range(f)
 	}
+}
+func (s *Scope) Len() int {
+	if s == nil {
+		return 0
+	}
+	return len(s.values) + s.parent.Len()
 }
 
 // Value represents any value that can be the result of evaluating any expression.
@@ -1213,11 +1219,11 @@ func (a *arguments) listUnused() []string {
 	return unused
 }
 
-func AddExternalDeclarations(extern *semantic.Extern, scope map[string]values.Value) {
-	for k, v := range scope {
+func addExternalDeclarations(extern *semantic.Extern, scope *Scope) {
+	scope.Range(func(k string, v values.Value) {
 		extern.Declarations = append(extern.Declarations, &semantic.ExternalVariableDeclaration{
 			Identifier: &semantic.Identifier{Name: k},
 			ExternType: v.PolyType(),
 		})
-	}
+	})
 }

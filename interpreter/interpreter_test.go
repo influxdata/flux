@@ -17,7 +17,6 @@ import (
 var testScope = make(map[string]values.Value)
 var optionScope = make(map[string]values.Value)
 var optionsObject = values.NewObject()
-var extern *semantic.Extern
 
 func addFunc(f *function) {
 	testScope[f.name] = f
@@ -105,16 +104,6 @@ func init() {
 	optionsObject.Set("repeat", values.NewInt(100))
 
 	addOption("task", optionsObject)
-
-	extern = &semantic.Extern{
-		Declarations: make([]*semantic.ExternalVariableDeclaration, 0, len(testScope)),
-	}
-	for k, v := range testScope {
-		extern.Declarations = append(extern.Declarations, &semantic.ExternalVariableDeclaration{
-			Identifier: &semantic.Identifier{Name: k},
-			ExternType: v.PolyType(),
-		})
-	}
 }
 
 // TestEval tests whether a program can run to completion or not
@@ -377,7 +366,7 @@ func TestEval(t *testing.T) {
 			}
 
 			// Create new interpreter scope for each test case
-			itrp := interpreter.NewInterpreter(optionScope, testScope, extern)
+			itrp := interpreter.NewInterpreter(optionScope, testScope)
 
 			err = itrp.Eval(graph)
 			if !tc.wantErr && err != nil {
@@ -440,10 +429,8 @@ func TestResolver(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	extern := new(semantic.Extern)
-	interpreter.AddExternalDeclarations(extern, scope)
 
-	itrp := interpreter.NewInterpreter(nil, scope, extern)
+	itrp := interpreter.NewInterpreter(nil, scope)
 
 	if err := itrp.Eval(graph); err != nil {
 		t.Fatal(err)

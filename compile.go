@@ -90,7 +90,7 @@ func NewInterpreter() *interpreter.Interpreter {
 		options[k] = v
 	}
 
-	return interpreter.NewInterpreter(options, builtinValues, extern)
+	return interpreter.NewInterpreter(options, builtinValues)
 }
 
 func nowFunc(now time.Time) values.Function {
@@ -147,7 +147,6 @@ type CreateOperationSpec func(args Arguments, a *Administration) (OperationSpec,
 
 var builtinValues = make(map[string]values.Value)
 var builtinOptions = make(map[string]values.Value)
-var extern = new(semantic.Extern)
 
 // list of builtin scripts
 var builtinScripts = make(map[string]string)
@@ -220,24 +219,14 @@ func FinalizeBuiltIns() {
 	}
 	finalized = true
 
-	// Populate extern declarations
-	extern.Declarations = make([]*semantic.ExternalVariableDeclaration, 0, len(builtinValues)+len(builtinOptions))
-	interpreter.AddExternalDeclarations(extern, builtinValues)
-	interpreter.AddExternalDeclarations(extern, builtinOptions)
-
 	err := evalBuiltInScripts()
 	if err != nil {
 		panic(err)
 	}
-
-	// Rebuild the external declarations based on any additions to the builtinValues
-	extern.Declarations = make([]*semantic.ExternalVariableDeclaration, 0, len(builtinValues)+len(builtinOptions))
-	interpreter.AddExternalDeclarations(extern, builtinValues)
-	interpreter.AddExternalDeclarations(extern, builtinOptions)
 }
 
 func evalBuiltInScripts() error {
-	itrp := interpreter.NewMutableInterpreter(builtinOptions, builtinValues, extern)
+	itrp := interpreter.NewMutableInterpreter(builtinOptions, builtinValues)
 	for name, script := range builtinScripts {
 		astProg, err := parser.NewAST(script)
 		if err != nil {
