@@ -25,13 +25,16 @@ type HistogramOpSpec struct {
 	Normalize        bool      `json:"normalize"`
 }
 
-var histogramSignature = execute.DefaultAggregateSignature()
-
 func init() {
-	histogramSignature.Params["column"] = semantic.String
-	histogramSignature.Params["upperBoundColumn"] = semantic.String
-	histogramSignature.Params["buckets"] = semantic.NewArrayType(semantic.Float)
-	histogramSignature.Params["normalize"] = semantic.Bool
+	histogramSignature := execute.AggregateSignature(
+		map[string]semantic.PolyType{
+			"column":           semantic.String,
+			"upperBoundColumn": semantic.String,
+			"buckets":          semantic.NewArrayPolyType(semantic.Float),
+			"normalize":        semantic.Bool,
+		},
+		[]string{"buckets"},
+	)
 
 	flux.RegisterFunction(HistogramKind, createHistogramOpSpec, histogramSignature)
 	flux.RegisterBuiltInValue("linearBuckets", linearBuckets{})
@@ -240,16 +243,23 @@ func (t *histogramTransformation) Finish(id execute.DatasetID, err error) {
 // linearBuckets is a helper function for creating buckets spaced linearly
 type linearBuckets struct{}
 
+var linearBucketsType = semantic.NewFunctionType(semantic.FunctionSignature{
+	Parameters: map[string]semantic.Type{
+		"start":    semantic.Float,
+		"width":    semantic.Float,
+		"count":    semantic.Int,
+		"infinity": semantic.Bool,
+	},
+	Required: semantic.LabelSet{"start", "width", "count"},
+	Return:   semantic.NewArrayType(semantic.Float),
+})
+var linearBucketsPolyType = linearBucketsType.PolyType()
+
 func (b linearBuckets) Type() semantic.Type {
-	return semantic.NewFunctionType(semantic.FunctionSignature{
-		Params: map[string]semantic.Type{
-			"start":    semantic.Float,
-			"width":    semantic.Float,
-			"count":    semantic.Int,
-			"infinity": semantic.Bool,
-		},
-		ReturnType: semantic.String,
-	})
+	return linearBucketsType
+}
+func (b linearBuckets) PolyType() semantic.PolyType {
+	return linearBucketsPolyType
 }
 
 func (b linearBuckets) Str() string {
@@ -361,16 +371,23 @@ func (b linearBuckets) Call(args values.Object) (values.Value, error) {
 // logarithmicBuckets is a helper function for creating buckets spaced by an logarithmic factor.
 type logarithmicBuckets struct{}
 
+var logarithmicBucketsType = semantic.NewFunctionType(semantic.FunctionSignature{
+	Parameters: map[string]semantic.Type{
+		"start":    semantic.Float,
+		"factor":   semantic.Float,
+		"count":    semantic.Int,
+		"infinity": semantic.Bool,
+	},
+	Required: semantic.LabelSet{"start", "factor", "count"},
+	Return:   semantic.NewArrayType(semantic.Float),
+})
+var logarithmicBucketsPolyType = logarithmicBucketsType.PolyType()
+
 func (b logarithmicBuckets) Type() semantic.Type {
-	return semantic.NewFunctionType(semantic.FunctionSignature{
-		Params: map[string]semantic.Type{
-			"start":    semantic.Float,
-			"factor":   semantic.Float,
-			"count":    semantic.Int,
-			"infinity": semantic.Bool,
-		},
-		ReturnType: semantic.String,
-	})
+	return logarithmicBucketsType
+}
+func (b logarithmicBuckets) PolyType() semantic.PolyType {
+	return logarithmicBucketsPolyType
 }
 
 func (b logarithmicBuckets) Str() string {

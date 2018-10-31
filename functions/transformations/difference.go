@@ -18,11 +18,14 @@ type DifferenceOpSpec struct {
 	Columns     []string `json:"columns"`
 }
 
-var differenceSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	differenceSignature.Params["nonNegative"] = semantic.Bool
-	derivativeSignature.Params["columns"] = semantic.NewArrayType(semantic.String)
+	differenceSignature := flux.FunctionSignature(
+		map[string]semantic.PolyType{
+			"nonNegative": semantic.Bool,
+			"columns":     semantic.NewArrayPolyType(semantic.String),
+		},
+		nil,
+	)
 
 	flux.RegisterFunction(DifferenceKind, createDifferenceOpSpec, differenceSignature)
 	flux.RegisterOpSpec(DifferenceKind, newDifferenceOp)

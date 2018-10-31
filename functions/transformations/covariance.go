@@ -19,12 +19,14 @@ type CovarianceOpSpec struct {
 	execute.AggregateConfig
 }
 
-var covarianceSignature = execute.DefaultAggregateSignature()
-
 func init() {
-	covarianceSignature.Params["pearsonr"] = semantic.Bool
-	covarianceSignature.Params["valueDst"] = semantic.String
-
+	var covarianceSignature = execute.AggregateSignature(
+		map[string]semantic.PolyType{
+			"pearsonr": semantic.Bool,
+			"valueDst": semantic.String,
+		},
+		nil,
+	)
 	flux.RegisterBuiltIn("covariance", covarianceBuiltIn)
 	flux.RegisterFunction(CovarianceKind, createCovarianceOpSpec, covarianceSignature)
 	flux.RegisterOpSpec(CovarianceKind, newCovarianceOp)
@@ -39,7 +41,7 @@ cov = (x,y,on,pearsonr=false) =>
         tables:{x:x, y:y},
         on:on,
     )
-    |> covariance(pearsonr:pearsonr, columns:["x__value","y__value"])
+    |> covariance(pearsonr:pearsonr, columns:["_value_x","_value_y"])
 
 pearsonr = (x,y,on) => cov(x:x, y:y, on:on, pearsonr:true)
 `

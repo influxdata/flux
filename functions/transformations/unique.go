@@ -15,10 +15,13 @@ type UniqueOpSpec struct {
 	Column string `json:"column"`
 }
 
-var uniqueSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	uniqueSignature.Params["column"] = semantic.String
+	uniqueSignature := flux.FunctionSignature(
+		map[string]semantic.PolyType{
+			"column": semantic.String,
+		},
+		nil,
+	)
 
 	flux.RegisterFunction(UniqueKind, createUniqueOpSpec, uniqueSignature)
 	flux.RegisterOpSpec(UniqueKind, newUniqueOp)

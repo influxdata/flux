@@ -18,7 +18,7 @@ import (
 	"github.com/influxdata/flux/internal/pkg/syncutil"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/line-protocol"
+	protocol "github.com/influxdata/line-protocol"
 	"github.com/pkg/errors"
 )
 
@@ -26,6 +26,27 @@ const (
 	ToHTTPKind           = "toHTTP"
 	DefaultToHTTPTimeout = 1 * time.Second
 )
+
+func init() {
+	toHTTPSignature := flux.FunctionSignature(
+		map[string]semantic.PolyType{
+			"url":          semantic.String,
+			"method":       semantic.String,
+			"name":         semantic.String,
+			"timeout":      semantic.Duration,
+			"timeColumn":   semantic.String,
+			"tagColumns":   semantic.NewArrayPolyType(semantic.String),
+			"valueColumns": semantic.NewArrayPolyType(semantic.String),
+		},
+		[]string{"url"},
+	)
+
+	flux.RegisterFunctionWithSideEffect(ToHTTPKind, createToHTTPOpSpec, toHTTPSignature)
+	flux.RegisterOpSpec(ToHTTPKind,
+		func() flux.OperationSpec { return &ToHTTPOpSpec{} })
+	plan.RegisterProcedureSpecWithSideEffect(ToHTTPKind, newToHTTPProcedure, ToHTTPKind)
+	execute.RegisterTransformation(ToHTTPKind, createToHTTPTransformation)
+}
 
 // DefaultToHTTPUserAgent is the default user agent used by ToHttp
 var DefaultToHTTPUserAgent = "fluxd/dev"
@@ -66,24 +87,6 @@ type ToHTTPOpSpec struct {
 	TimeColumn   string            `json:"timeColumn"`
 	TagColumns   []string          `json:"tagColumns"`
 	ValueColumns []string          `json:"valueColumns"`
-}
-
-var ToHTTPSignature = flux.DefaultFunctionSignature()
-
-func init() {
-	ToHTTPSignature.Params["url"] = semantic.String
-	ToHTTPSignature.Params["method"] = semantic.String
-	ToHTTPSignature.Params["name"] = semantic.String
-	ToHTTPSignature.Params["timeout"] = semantic.Duration
-	ToHTTPSignature.Params["timeColumn"] = semantic.String
-	ToHTTPSignature.Params["tagColumns"] = semantic.NewArrayType(semantic.String)
-	ToHTTPSignature.Params["valueColumns"] = semantic.NewArrayType(semantic.String)
-
-	flux.RegisterFunctionWithSideEffect(ToHTTPKind, createToHTTPOpSpec, ToHTTPSignature)
-	flux.RegisterOpSpec(ToHTTPKind,
-		func() flux.OperationSpec { return &ToHTTPOpSpec{} })
-	plan.RegisterProcedureSpecWithSideEffect(ToHTTPKind, newToHTTPProcedure, ToHTTPKind)
-	execute.RegisterTransformation(ToHTTPKind, createToHTTPTransformation)
 }
 
 // ReadArgs loads a flux.Arguments into ToHTTPOpSpec.  It sets several default values.

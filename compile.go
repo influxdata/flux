@@ -21,7 +21,7 @@ const (
 	tableKindKey    = "kind"
 	tableParentsKey = "parents"
 	nowOption       = "now"
-	//tableSpecKey    = "spec"
+	tableSpecKey    = "spec"
 )
 
 type Option func(*options)
@@ -70,7 +70,7 @@ func Eval(itrp *interpreter.Interpreter, q string) error {
 	}
 
 	// Convert AST program to a semantic program
-	semProg, err := semantic.New(astProg, builtinDeclarations.Copy())
+	semProg, err := semantic.New(astProg)
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func NewInterpreter() *interpreter.Interpreter {
 func nowFunc(now time.Time) values.Function {
 	timeVal := values.NewTime(values.ConvertTime(now))
 	ftype := semantic.NewFunctionType(semantic.FunctionSignature{
-		ReturnType: semantic.Time,
+		Return: semantic.Time,
 	})
 	call := func(args values.Object) (values.Value, error) {
 		return timeVal, nil
@@ -147,7 +147,6 @@ type CreateOperationSpec func(args Arguments, a *Administration) (OperationSpec,
 
 var builtinValues = make(map[string]values.Value)
 var builtinOptions = make(map[string]values.Value)
-var builtinDeclarations = make(semantic.DeclarationScope)
 
 // list of builtin scripts
 var builtinScripts = make(map[string]string)
@@ -165,9 +164,9 @@ func RegisterBuiltIn(name, script string) {
 // Name is the name of the function as it would be called.
 // c is a function reference of type CreateOperationSpec
 // sig is a function signature type that specifies the names and types of each argument for the function.
-func RegisterFunction(name string, c CreateOperationSpec, sig semantic.FunctionSignature) {
+func RegisterFunction(name string, c CreateOperationSpec, sig semantic.FunctionPolySignature) {
 	f := function{
-		t:             semantic.NewFunctionType(sig),
+		t:             semantic.NewFunctionPolyType(sig),
 		name:          name,
 		createOpSpec:  c,
 		hasSideEffect: false,
@@ -180,9 +179,9 @@ func RegisterFunction(name string, c CreateOperationSpec, sig semantic.FunctionS
 // name is the name of the function as it would be called
 // c is a function reference of type CreateOperationSpec
 // sig is a function signature type that specifies the names and types of each argument for the function
-func RegisterFunctionWithSideEffect(name string, c CreateOperationSpec, sig semantic.FunctionSignature) {
+func RegisterFunctionWithSideEffect(name string, c CreateOperationSpec, sig semantic.FunctionPolySignature) {
 	f := function{
-		t:             semantic.NewFunctionType(sig),
+		t:             semantic.NewFunctionPolyType(sig),
 		name:          name,
 		createOpSpec:  c,
 		hasSideEffect: true,
@@ -198,7 +197,6 @@ func RegisterBuiltInValue(name string, v values.Value) {
 	if _, ok := builtinValues[name]; ok {
 		panic(fmt.Errorf("duplicate registration for builtin %q", name))
 	}
-	builtinDeclarations[name] = semantic.NewExternalVariableDeclaration(name, v.Type())
 	builtinValues[name] = v
 }
 
@@ -234,7 +232,7 @@ func evalBuiltInScripts() error {
 		if err != nil {
 			return errors.Wrapf(err, "failed to parse builtin %q", name)
 		}
-		semProg, err := semantic.New(astProg, builtinDeclarations)
+		semProg, err := semantic.New(astProg)
 		if err != nil {
 			return errors.Wrapf(err, "failed to create semantic graph for builtin %q", name)
 		}
@@ -246,13 +244,23 @@ func evalBuiltInScripts() error {
 	return nil
 }
 
-var TableObjectType = semantic.NewObjectType(map[string]semantic.Type{
-	tableKindKey: semantic.String,
-	// TODO(nathanielc): The spec types vary significantly making type comparisons impossible, for now the solution is to state the type as an empty object.
-	//tableSpecKey: semantic.EmptyObject,
-	// TODO(nathanielc): Support recursive types, for now we state that the array has empty objects.
-	tableParentsKey: semantic.NewArrayType(semantic.EmptyObject),
-})
+var TableObjectType = semantic.NewObjectPolyType(
+	//TODO: When values.Value support polytyped values, we can add the commented fields back in
+	map[string]semantic.PolyType{
+		tableKindKey: semantic.String,
+		//tableSpecKey:    semantic.Tvar(1),
+		//tableParentsKey: semantic.Tvar(2),
+	},
+	nil,
+	//semantic.LabelSet{tableKindKey, tableSpecKey, tableParentsKey},
+	semantic.LabelSet{tableKindKey},
+)
+
+var TableObjectMonoType semantic.Type
+
+func init() {
+	TableObjectMonoType, _ = TableObjectType.MonoType()
+}
 
 // IDer produces the mapping of table Objects to OpertionIDs
 type IDer interface {
@@ -379,6 +387,10 @@ func (t *TableObject) buildSpec(ider IDer, spec *Spec, visited map[*TableObject]
 }
 
 func (t *TableObject) Type() semantic.Type {
+	typ, _ := TableObjectType.MonoType()
+	return typ
+}
+func (t *TableObject) PolyType() semantic.PolyType {
 	return TableObjectType
 }
 
@@ -461,20 +473,23 @@ func (t *TableObject) Range(f func(name string, v values.Value)) {
 	f(tableParentsKey, t.Parents)
 }
 
-// DefaultFunctionSignature returns a FunctionSignature for standard functions which accept a table piped argument.
-// It is safe to modify the returned signature.
-func DefaultFunctionSignature() semantic.FunctionSignature {
-	return semantic.FunctionSignature{
-		Params: map[string]semantic.Type{
-			TableParameter: TableObjectType,
-		},
-		ReturnType:   TableObjectType,
+// FunctionSignature returns a standard functions signature which accepts a table piped argument,
+// with any additional arguments.
+func FunctionSignature(parameters map[string]semantic.PolyType, required []string) semantic.FunctionPolySignature {
+	if parameters == nil {
+		parameters = make(map[string]semantic.PolyType)
+	}
+	parameters[TableParameter] = TableObjectType
+	return semantic.FunctionPolySignature{
+		Parameters:   parameters,
+		Required:     semantic.LabelSet(required),
+		Return:       TableObjectType,
 		PipeArgument: TableParameter,
 	}
 }
 
 // BuiltIns returns a copy of the builtin values and their declarations.
-func BuiltIns() (map[string]values.Value, semantic.DeclarationScope) {
+func BuiltIns() map[string]values.Value {
 	if !finalized {
 		panic("builtins not finalized")
 	}
@@ -482,7 +497,7 @@ func BuiltIns() (map[string]values.Value, semantic.DeclarationScope) {
 	for k, v := range builtinValues {
 		cpy[k] = v
 	}
-	return cpy, builtinDeclarations.Copy()
+	return cpy
 }
 
 type Administration struct {
@@ -528,12 +543,17 @@ func (a *Administration) AddParent(np *TableObject) {
 
 type function struct {
 	name          string
-	t             semantic.Type
+	t             semantic.PolyType
 	createOpSpec  CreateOperationSpec
 	hasSideEffect bool
 }
 
 func (f *function) Type() semantic.Type {
+	// TODO(nathanielc): Update values.Value interface to use PolyTypes
+	t, _ := f.t.MonoType()
+	return t
+}
+func (f *function) PolyType() semantic.PolyType {
 	return f.t
 }
 func (f *function) Str() string {
@@ -664,7 +684,7 @@ func (a Arguments) GetRequiredDuration(name string) (Duration, error) {
 }
 
 func ToQueryTime(value values.Value) (Time, error) {
-	switch value.Type().Kind() {
+	switch value.Type().Nature() {
 	case semantic.Time:
 		return Time{
 			Absolute: value.Time().Time(),

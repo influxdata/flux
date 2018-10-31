@@ -52,16 +52,13 @@ var SchemaMutationOps = []flux.OperationKind{}
 // should not have their own ProcedureSpec.
 type MutationRegistrar struct {
 	Kind   flux.OperationKind
-	Args   map[string]semantic.Type
+	Args   map[string]semantic.PolyType
 	Create flux.CreateOperationSpec
 	New    flux.NewOperationSpec
 }
 
 func (m MutationRegistrar) Register() {
-	signature := flux.DefaultFunctionSignature()
-	for name, typ := range m.Args {
-		signature.Params[name] = typ
-	}
+	signature := flux.FunctionSignature(m.Args, nil)
 
 	flux.RegisterFunction(string(m.Kind), m.Create, signature)
 	flux.RegisterOpSpec(m.Kind, m.New)
@@ -76,34 +73,52 @@ func (m MutationRegistrar) Register() {
 var Registrars = []MutationRegistrar{
 	{
 		Kind: RenameKind,
-		Args: map[string]semantic.Type{
+		Args: map[string]semantic.PolyType{
 			"columns": semantic.Object,
-			"fn":      semantic.Function,
+			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{
+					"col": semantic.String,
+				},
+				Required: semantic.LabelSet{"col"},
+				Return:   semantic.String,
+			}),
 		},
 		Create: createRenameOpSpec,
 		New:    newRenameOp,
 	},
 	{
 		Kind: DropKind,
-		Args: map[string]semantic.Type{
-			"columns": semantic.NewArrayType(semantic.String),
-			"fn":      semantic.Function,
+		Args: map[string]semantic.PolyType{
+			"columns": semantic.NewArrayPolyType(semantic.String),
+			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{
+					"col": semantic.String,
+				},
+				Required: semantic.LabelSet{"col"},
+				Return:   semantic.Bool,
+			}),
 		},
 		Create: createDropOpSpec,
 		New:    newDropOp,
 	},
 	{
 		Kind: KeepKind,
-		Args: map[string]semantic.Type{
-			"columns": semantic.NewArrayType(semantic.String),
-			"fn":      semantic.Function,
+		Args: map[string]semantic.PolyType{
+			"columns": semantic.NewArrayPolyType(semantic.String),
+			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{
+					"col": semantic.String,
+				},
+				Required: semantic.LabelSet{"col"},
+				Return:   semantic.Bool,
+			}),
 		},
 		Create: createKeepOpSpec,
 		New:    newKeepOp,
 	},
 	{
 		Kind: DuplicateKind,
-		Args: map[string]semantic.Type{
+		Args: map[string]semantic.PolyType{
 			"column": semantic.String,
 			"as":     semantic.String,
 		},

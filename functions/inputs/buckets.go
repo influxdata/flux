@@ -2,9 +2,9 @@ package inputs
 
 import (
 	"fmt"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const BucketsKind = "buckets"
@@ -12,12 +12,9 @@ const BucketsKind = "buckets"
 type BucketsOpSpec struct {
 }
 
-var bucketsSignature = semantic.FunctionSignature{
-	Params:     map[string]semantic.Type{},
-	ReturnType: flux.TableObjectType,
-}
-
 func init() {
+	bucketsSignature := flux.FunctionSignature(nil, nil)
+
 	flux.RegisterFunction(BucketsKind, createBucketsOpSpec, bucketsSignature)
 	flux.RegisterOpSpec(BucketsKind, newBucketsOp)
 	plan.RegisterProcedureSpec(BucketsKind, newBucketsProcedure, BucketsKind)

@@ -100,7 +100,7 @@ func TestCovariance_NewQuery(t *testing.T) {
 							ValueDst:           execute.DefaultValueColLabel,
 							PearsonCorrelation: true,
 							AggregateConfig: execute.AggregateConfig{
-								Columns: []string{"x__value", "y__value"},
+								Columns: []string{"_value_x", "_value_y"},
 							},
 						},
 					},

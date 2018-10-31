@@ -14,9 +14,9 @@ type LastOpSpec struct {
 	execute.SelectorConfig
 }
 
-var lastSignature = execute.DefaultSelectorSignature()
-
 func init() {
+	lastSignature := execute.SelectorSignature(nil, nil)
+
 	flux.RegisterFunction(LastKind, createLastOpSpec, lastSignature)
 	flux.RegisterOpSpec(LastKind, newLastOp)
 	plan.RegisterProcedureSpec(LastKind, newLastProcedure, LastKind)

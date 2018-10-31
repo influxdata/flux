@@ -20,11 +20,20 @@ type MapOpSpec struct {
 	MergeKey bool                         `json:"mergeKey"`
 }
 
-var mapSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	mapSignature.Params["fn"] = semantic.Function
-	mapSignature.Params["mergeKey"] = semantic.Bool
+	mapSignature := flux.FunctionSignature(
+		map[string]semantic.PolyType{
+			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{
+					"r": semantic.Tvar(1),
+				},
+				Required: semantic.LabelSet{"r"},
+				Return:   semantic.Tvar(2),
+			}),
+			"mergeKey": semantic.Bool,
+		},
+		[]string{"fn"},
+	)
 
 	flux.RegisterFunction(MapKind, createMapOpSpec, mapSignature)
 	flux.RegisterOpSpec(MapKind, newMapOp)
@@ -180,7 +189,7 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 					}
 					_, err := builder.AddCol(flux.ColMeta{
 						Label: k,
-						Type:  execute.ConvertFromKind(properties[k].Kind()),
+						Type:  execute.ConvertFromKind(properties[k].Nature()),
 					})
 					if err != nil {
 						return err

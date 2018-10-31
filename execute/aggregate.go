@@ -27,15 +27,14 @@ var DefaultAggregateConfig = AggregateConfig{
 	Columns: []string{DefaultValueColLabel},
 }
 
-func DefaultAggregateSignature() semantic.FunctionSignature {
-	return semantic.FunctionSignature{
-		Params: map[string]semantic.Type{
-			flux.TableParameter: flux.TableObjectType,
-			"columns":           semantic.NewArrayType(semantic.String),
-		},
-		ReturnType:   flux.TableObjectType,
-		PipeArgument: flux.TableParameter,
+// AggregateSignature returns a function signature common to all aggregate functions,
+// with any additional arguments.
+func AggregateSignature(args map[string]semantic.PolyType, required []string) semantic.FunctionPolySignature {
+	if args == nil {
+		args = make(map[string]semantic.PolyType)
 	}
+	args["columns"] = semantic.NewArrayPolyType(semantic.String)
+	return flux.FunctionSignature(args, required)
 }
 
 func (c AggregateConfig) Copy() AggregateConfig {

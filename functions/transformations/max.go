@@ -14,9 +14,9 @@ type MaxOpSpec struct {
 	execute.SelectorConfig
 }
 
-var maxSignature = execute.DefaultSelectorSignature()
-
 func init() {
+	maxSignature := execute.SelectorSignature(nil, nil)
+
 	flux.RegisterFunction(MaxKind, createMaxOpSpec, maxSignature)
 	flux.RegisterOpSpec(MaxKind, newMaxOp)
 	plan.RegisterProcedureSpec(MaxKind, newMaxProcedure, MaxKind)

@@ -15,7 +15,7 @@ import (
 	"github.com/influxdata/flux/internal/pkg/syncutil"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/line-protocol"
+	protocol "github.com/influxdata/line-protocol"
 	"github.com/pkg/errors"
 	kafka "github.com/segmentio/kafka-go"
 )
@@ -37,18 +37,21 @@ type ToKafkaOpSpec struct {
 	MsgBufSize   int      `json:"msgBufferSize"` // the maximim number of messages to buffer before sending to kafka, the library we use defaults to 100
 }
 
-var ToKafkaSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	ToKafkaSignature.Params["brokers"] = semantic.NewArrayType(semantic.String)
-	ToKafkaSignature.Params["topic"] = semantic.String
-	ToKafkaSignature.Params["balancer"] = semantic.String
-	ToKafkaSignature.Params["name"] = semantic.String
-	ToKafkaSignature.Params["nameColumn"] = semantic.String
-	ToKafkaSignature.Params["timeColumn"] = semantic.String
-	ToKafkaSignature.Params["tagColumns"] = semantic.NewArrayType(semantic.String)
-	ToKafkaSignature.Params["valueColumns"] = semantic.NewArrayType(semantic.String)
-	flux.RegisterFunctionWithSideEffect(ToKafkaKind, createToKafkaOpSpec, ToKafkaSignature)
+	toKafkaSignature := flux.FunctionSignature(
+		map[string]semantic.PolyType{
+			"brokers":      semantic.NewArrayPolyType(semantic.String),
+			"topic":        semantic.String,
+			"balancer":     semantic.String,
+			"name":         semantic.String,
+			"nameColumn":   semantic.String,
+			"timeColumn":   semantic.String,
+			"tagColumns":   semantic.NewArrayPolyType(semantic.String),
+			"valueColumns": semantic.NewArrayPolyType(semantic.String),
+		},
+		[]string{"brokers", "topic"},
+	)
+	flux.RegisterFunctionWithSideEffect(ToKafkaKind, createToKafkaOpSpec, toKafkaSignature)
 	flux.RegisterOpSpec(ToKafkaKind,
 		func() flux.OperationSpec { return &ToKafkaOpSpec{} })
 	plan.RegisterProcedureSpecWithSideEffect(ToKafkaKind, newToKafkaProcedure, ToKafkaKind)

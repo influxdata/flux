@@ -15,9 +15,9 @@ type SkewOpSpec struct {
 	execute.AggregateConfig
 }
 
-var skewSignature = execute.DefaultAggregateSignature()
-
 func init() {
+	skewSignature := execute.AggregateSignature(nil, nil)
+
 	flux.RegisterFunction(SkewKind, createSkewOpSpec, skewSignature)
 	flux.RegisterOpSpec(SkewKind, newSkewOp)
 	plan.RegisterProcedureSpec(SkewKind, newSkewProcedure, SkewKind)

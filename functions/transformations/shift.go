@@ -19,11 +19,14 @@ type ShiftOpSpec struct {
 	Columns []string      `json:"columns"`
 }
 
-var shiftSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	shiftSignature.Params["shift"] = semantic.Duration
-	shiftSignature.Params["columns"] = semantic.NewArrayType(semantic.String)
+	shiftSignature := flux.FunctionSignature(
+		map[string]semantic.PolyType{
+			"shift":   semantic.Duration,
+			"columns": semantic.NewArrayPolyType(semantic.String),
+		},
+		[]string{"shift"},
+	)
 
 	flux.RegisterFunction(ShiftKind, createShiftOpSpec, shiftSignature)
 	flux.RegisterOpSpec(ShiftKind, newShiftOp)

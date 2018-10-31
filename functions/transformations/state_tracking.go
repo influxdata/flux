@@ -23,14 +23,23 @@ type StateTrackingOpSpec struct {
 	TimeCol       string                       `json:"timeCol"`
 }
 
-var stateTrackingSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	stateTrackingSignature.Params["fn"] = semantic.Function
-	stateTrackingSignature.Params["countLabel"] = semantic.String
-	stateTrackingSignature.Params["durationLabel"] = semantic.String
-	stateTrackingSignature.Params["durationUnit"] = semantic.Duration
-	stateTrackingSignature.Params["timeCol"] = semantic.String
+	stateTrackingSignature := flux.FunctionSignature(
+		map[string]semantic.PolyType{
+			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{
+					"r": semantic.Tvar(1),
+				},
+				Required: semantic.LabelSet{"r"},
+				Return:   semantic.Bool,
+			}),
+			"countLabel":    semantic.String,
+			"durationLabel": semantic.String,
+			"durationUnit":  semantic.Duration,
+			"timeCol":       semantic.String,
+		},
+		[]string{"fn"},
+	)
 
 	flux.RegisterFunction(StateTrackingKind, createStateTrackingOpSpec, stateTrackingSignature)
 	flux.RegisterBuiltIn("state-tracking", stateTrackingBuiltin)

@@ -18,11 +18,14 @@ type IntegralOpSpec struct {
 	execute.AggregateConfig
 }
 
-var integralSignature = execute.DefaultAggregateSignature()
-
 func init() {
-	integralSignature.Params["unit"] = semantic.Duration
-	integralSignature.Params["timeCol"] = semantic.String
+	integralSignature := execute.AggregateSignature(
+		map[string]semantic.PolyType{
+			"unit":    semantic.Duration,
+			"timeCol": semantic.String,
+		},
+		nil,
+	)
 
 	flux.RegisterFunction(IntegralKind, createIntegralOpSpec, integralSignature)
 	flux.RegisterOpSpec(IntegralKind, newIntegralOp)

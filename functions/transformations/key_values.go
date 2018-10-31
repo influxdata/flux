@@ -18,11 +18,14 @@ type KeyValuesOpSpec struct {
 	PredicateFn *semantic.FunctionExpression `json:"fn"`
 }
 
-var keyValuesSignature = flux.DefaultFunctionSignature()
-
 func init() {
-	keyValuesSignature.Params["keyCols"] = semantic.NewArrayType(semantic.String)
-	keyValuesSignature.Params["fn"] = semantic.Function
+	keyValuesSignature := flux.FunctionSignature(
+		map[string]semantic.PolyType{
+			"keyCols": semantic.NewArrayPolyType(semantic.String),
+			"fn":      semantic.Function,
+		},
+		nil,
+	)
 
 	flux.RegisterFunction(KeyValuesKind, createKeyValuesOpSpec, keyValuesSignature)
 	flux.RegisterOpSpec(KeyValuesKind, newKeyValuesOp)

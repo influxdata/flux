@@ -23,17 +23,23 @@ type FromGeneratorOpSpec struct {
 	Fn    *semantic.FunctionExpression `json:"fn"`
 }
 
-var fromGeneratorSignature = semantic.FunctionSignature{
-	Params: map[string]semantic.Type{
-		"start": semantic.Time,
-		"stop":  semantic.Time,
-		"count": semantic.Int,
-		"fn":    semantic.Function,
-	},
-	ReturnType: flux.TableObjectType,
-}
-
 func init() {
+	fromGeneratorSignature := semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{
+			"start": semantic.Time,
+			"stop":  semantic.Time,
+			"count": semantic.Int,
+			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{
+					"n": semantic.Int,
+				},
+				Required: semantic.LabelSet{"n"},
+				Return:   semantic.Int,
+			}),
+		},
+		Required: semantic.LabelSet{"start", "stop", "count", "fn"},
+		Return:   flux.TableObjectType,
+	}
 	flux.RegisterFunction(FromGeneratorKind, createFromGeneratorOpSpec, fromGeneratorSignature)
 	flux.RegisterOpSpec(FromGeneratorKind, newFromGeneratorOp)
 	plan.RegisterProcedureSpec(FromGeneratorKind, newFromGeneratorProcedure, FromGeneratorKind)
@@ -87,7 +93,6 @@ type FromGeneratorProcedureSpec struct {
 	Start time.Time
 	Stop  time.Time
 	Count int64
-	Param string
 	Fn    compiler.Func
 }
 
@@ -98,7 +103,7 @@ func newFromGeneratorProcedure(qs flux.OperationSpec, pa plan.Administration) (p
 		return nil, fmt.Errorf("invalid spec type %T", qs)
 	}
 
-	fn, param, err := compiler.CompileFnParam(spec.Fn, semantic.Int, semantic.Int)
+	fn, _, err := compiler.CompileFnParam(spec.Fn, semantic.Int, semantic.Int)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +111,6 @@ func newFromGeneratorProcedure(qs flux.OperationSpec, pa plan.Administration) (p
 		Count: spec.Count,
 		Start: spec.Start,
 		Stop:  spec.Stop,
-		Param: param,
 		Fn:    fn,
 	}, nil
 }
@@ -131,7 +135,6 @@ func createFromGeneratorSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID
 	s.Start = spec.Start
 	s.Stop = spec.Stop
 	s.Count = spec.Count
-	s.Param = spec.Param
 	s.Fn = spec.Fn
 
 	return CreateSourceFromDecoder(s, dsid, a)
@@ -144,7 +147,6 @@ type GeneratorSource struct {
 	Count int64
 	alloc *execute.Allocator
 	Fn    compiler.Func
-	Param string
 }
 
 func NewGeneratorSource(a *execute.Allocator) *GeneratorSource {
@@ -204,11 +206,10 @@ func (s *GeneratorSource) Decode() (flux.Table, error) {
 	timeIdx := execute.ColIdx("_time", cols)
 	valueIdx := execute.ColIdx("_value", cols)
 	for i := 0; i < int(s.Count); i++ {
-		if err := b.AppendTime(timeIdx, values.ConvertTime(s.Start.Add(time.Duration(i)*deltaT))); err != nil {
-			return nil, err
-		}
-		scope := map[string]values.Value{s.Param: values.NewInt(int64(i))}
-		v, err := s.Fn.EvalInt(scope)
+		b.AppendTime(timeIdx, values.ConvertTime(s.Start.Add(time.Duration(i)*deltaT)))
+		in := values.NewObject()
+		in.Set("n", values.NewInt(int64(i)))
+		v, err := s.Fn.EvalInt(in)
 		if err != nil {
 			return nil, err
 		}

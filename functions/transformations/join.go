@@ -18,6 +18,23 @@ import (
 const JoinKind = "join"
 const MergeJoinKind = "merge-join"
 
+func init() {
+	joinSignature := semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{
+			"tables": semantic.NewObjectPolyType(nil, nil, semantic.AllLabels()),
+			"on":     semantic.NewArrayPolyType(semantic.String),
+			"method": semantic.String,
+		},
+		Required: semantic.LabelSet{"tables"},
+		Return:   flux.TableObjectType,
+	}
+	flux.RegisterFunction(JoinKind, createJoinOpSpec, joinSignature)
+	flux.RegisterOpSpec(JoinKind, newJoinOp)
+	//TODO(nathanielc): Allow for other types of join implementations
+	plan.RegisterProcedureSpec(MergeJoinKind, newMergeJoinProcedure, JoinKind)
+	execute.RegisterTransformation(MergeJoinKind, createMergeJoinTransformation)
+}
+
 // All supported join types in Flux
 var methods = map[string]bool{
 	"inner": true,
@@ -55,24 +72,6 @@ func (params *joinParams) Swap(i, j int) {
 }
 func (params *joinParams) Less(i, j int) bool {
 	return params.names[i] < params.names[j]
-}
-
-var joinSignature = semantic.FunctionSignature{
-	Params: map[string]semantic.Type{
-		"tables": semantic.Object,
-		"on":     semantic.NewArrayType(semantic.String),
-		"method": semantic.String,
-	},
-	ReturnType:   flux.TableObjectType,
-	PipeArgument: "tables",
-}
-
-func init() {
-	flux.RegisterFunction(JoinKind, createJoinOpSpec, joinSignature)
-	flux.RegisterOpSpec(JoinKind, newJoinOp)
-	//TODO(nathanielc): Allow for other types of join implementations
-	plan.RegisterProcedureSpec(MergeJoinKind, newMergeJoinProcedure, JoinKind)
-	execute.RegisterTransformation(MergeJoinKind, createMergeJoinTransformation)
 }
 
 func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
@@ -118,17 +117,16 @@ func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		if err != nil {
 			return
 		}
-		if operation.Type().Kind() != semantic.Object {
+		if operation.PolyType().Nature() != semantic.Object {
 			err = fmt.Errorf("expected %q to be object type; instead got %v",
-				name, operation.Type().Kind())
+				name, operation.PolyType().Nature())
 			return
 		}
-		if operation.Type() != flux.TableObjectType {
-			err = fmt.Errorf("expected %q to be TableObject type, instead got %v",
-				name, operation.Type())
+		table, ok := operation.(*flux.TableObject)
+		if !ok {
+			err = fmt.Errorf("expected %q to be TableObject type, instead got %v", name, operation.Type())
 			return
 		}
-		table := operation.(*flux.TableObject)
 		spec.params.names = append(spec.params.names, name)
 		spec.params.operations = append(spec.params.operations, table)
 	})

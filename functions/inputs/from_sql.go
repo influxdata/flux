@@ -24,16 +24,16 @@ type FromSQLOpSpec struct {
 	Query          string `json:"query,omitempty"`
 }
 
-var fromSQLSignature = semantic.FunctionSignature{
-	Params: map[string]semantic.Type{
-		"driverName":     semantic.String,
-		"dataSourceName": semantic.String,
-		"query":          semantic.String,
-	},
-	ReturnType: flux.TableObjectType,
-}
-
 func init() {
+	fromSQLSignature := semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{
+			"driverName":     semantic.String,
+			"dataSourceName": semantic.String,
+			"query":          semantic.String,
+		},
+		Required: semantic.LabelSet{"driverName", "dataSourceName", "query"},
+		Return:   flux.TableObjectType,
+	}
 	flux.RegisterFunction(FromSQLKind, createFromSQLOpSpec, fromSQLSignature)
 	flux.RegisterOpSpec(FromSQLKind, newFromSQLOp)
 	plan.RegisterProcedureSpec(FromSQLKind, newFromSQLProcedure, FromSQLKind)

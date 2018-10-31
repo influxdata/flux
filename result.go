@@ -60,7 +60,7 @@ const (
 // ColumnType returns the column type when given a semantic.Type.
 // It returns flux.TInvalid if the Type is not a valid column type.
 func ColumnType(typ semantic.Type) ColType {
-	switch typ.Kind() {
+	switch typ.Nature() {
 	case semantic.Bool:
 		return TBool
 	case semantic.Int:

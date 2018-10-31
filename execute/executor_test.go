@@ -100,20 +100,24 @@ func TestExecutor_Execute(t *testing.T) {
 					)),
 					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{
 						Fn: &semantic.FunctionExpression{
-							Params: []*semantic.FunctionParam{
-								{
-									Key: &semantic.Identifier{Name: "r"},
-								},
-							},
-							Body: &semantic.BinaryExpression{
-								Operator: ast.LessThanOperator,
-								Left: &semantic.MemberExpression{
-									Property: "_value",
-									Object: &semantic.IdentifierExpression{
-										Name: "r",
+							Block: &semantic.FunctionBlock{
+								Parameters: &semantic.FunctionParameters{
+									List: []*semantic.FunctionParameter{
+										{
+											Key: &semantic.Identifier{Name: "r"},
+										},
 									},
 								},
-								Right: &semantic.FloatLiteral{Value: 2.5},
+								Body: &semantic.BinaryExpression{
+									Operator: ast.LessThanOperator,
+									Left: &semantic.MemberExpression{
+										Property: "_value",
+										Object: &semantic.IdentifierExpression{
+											Name: "r",
+										},
+									},
+									Right: &semantic.FloatLiteral{Value: 2.5},
+								},
 							},
 						},
 					}),
@@ -182,20 +186,24 @@ func TestExecutor_Execute(t *testing.T) {
 					)),
 					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{
 						Fn: &semantic.FunctionExpression{
-							Params: []*semantic.FunctionParam{
-								{
-									Key: &semantic.Identifier{Name: "r"},
-								},
-							},
-							Body: &semantic.BinaryExpression{
-								Operator: ast.LessThanOperator,
-								Left: &semantic.MemberExpression{
-									Property: "_value",
-									Object: &semantic.IdentifierExpression{
-										Name: "r",
+							Block: &semantic.FunctionBlock{
+								Parameters: &semantic.FunctionParameters{
+									List: []*semantic.FunctionParameter{
+										{
+											Key: &semantic.Identifier{Name: "r"},
+										},
 									},
 								},
-								Right: &semantic.FloatLiteral{Value: 7.5},
+								Body: &semantic.BinaryExpression{
+									Operator: ast.LessThanOperator,
+									Left: &semantic.MemberExpression{
+										Property: "_value",
+										Object: &semantic.IdentifierExpression{
+											Name: "r",
+										},
+									},
+									Right: &semantic.FloatLiteral{Value: 7.5},
+								},
 							},
 						},
 					}),

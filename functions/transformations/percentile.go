@@ -32,13 +32,16 @@ type PercentileOpSpec struct {
 	execute.SelectorConfig
 }
 
-var percentileSignature = execute.DefaultAggregateSignature()
-
 func init() {
-	percentileSignature.Params["column"] = semantic.String
-	percentileSignature.Params["p"] = semantic.Float
-	percentileSignature.Params["compression"] = semantic.Float
-	percentileSignature.Params["method"] = semantic.String
+	percentileSignature := flux.FunctionSignature(
+		map[string]semantic.PolyType{
+			"column":      semantic.String,
+			"percentile":  semantic.Float,
+			"compression": semantic.Float,
+			"method":      semantic.String,
+		},
+		[]string{"percentile"},
+	)
 
 	flux.RegisterFunction(PercentileKind, createPercentileOpSpec, percentileSignature)
 	flux.RegisterBuiltIn("median", medianBuiltin)

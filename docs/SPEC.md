@@ -352,11 +352,10 @@ A variable can only hold values defined by its type.
 
 ### Types
 
-A type defines the set of values and operations on those values.
+A type defines a set of values and operations on those values.
 Types are never explicitly declared as part of the syntax.
 Types are always inferred from the usage of the value.
-
-[IMPL#249](https://github.com/influxdata/platform/issues/249) Specify type inference rules
+Type inference follows a Hindley-Milner style inference system.
 
 #### Boolean types
 
@@ -430,6 +429,44 @@ A _generator type_ represents a value that produces an unknown number of other v
 The generated values may be of any other type but must all be the same type.
 
 [IMPL#658](https://github.com/influxdata/platform/query/issues/658) Implement Generators types
+
+##### Polymorphism
+
+Flux types can be polymorphic, meaning that a type may take on many different types.
+Flux supports let-polymorphism and structural polymorphism.
+
+Let-polymorphism is the concept that each time an identifier is referenced is may take on a different type.
+For example:
+
+    add = (a,b) => a + b
+    add(a:1,b:2) // 3
+    add(a:1.5,b:2.0) // 3.5
+
+The identifiers `a` and `b` in the body of the `add` function are used as both `int` and `float` types.
+This is let-polymorphism, each different use of an identifier may have a different type.
+
+Structural polymorphism is the concept that structures (objects in Flux) can be used by the same function even if the structures themselves are different.
+For example:
+
+    john = {name:"John", lastName:"Smith"}
+    jane = {name:"Jane", age:44}
+
+    // John and Jane are objects with different types.
+    // We can still define a function that can operate on both objects safely.
+
+    // name returns the name of a person
+    name = (person) => person.name
+
+    name(person:john) // John
+    name(person:jane) // Jane
+
+    device = {id: 125325, lat: 15.6163, lon: 62.6623}
+
+    name(person:device) // Type error, "device" does not have a property name.
+
+This is structural polymorphism, objects of differing types can be used as the same type so long as they both contain the necessary properties. The necessary properties are determined by the use of the object.
+
+This form of polymorphism means that these checks are performed during type inference and not during runtime. Type errors are found and reported before runtime.
 
 ### Blocks
 

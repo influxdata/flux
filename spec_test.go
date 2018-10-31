@@ -315,13 +315,15 @@ func Example_overrideDefaultOptionExternally() {
 		what_time_is_it = now()`
 
 	itrp := flux.NewInterpreter()
-	_, declarations := flux.BuiltIns()
 
 	ast, _ := parser.NewAST(queryString)
-	semanticProgram, _ := semantic.New(ast, declarations)
+	semanticProgram, _ := semantic.New(ast)
 
 	// Evaluate program
-	itrp.Eval(semanticProgram)
+	err := itrp.Eval(semanticProgram)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	// After evaluating the program, lookup the value of what_time_is_it
 	now, _ := itrp.GlobalScope().Lookup("what_time_is_it")
@@ -337,16 +339,15 @@ func Example_overrideDefaultOptionInternally() {
 	queryString := `what_time_is_it = now()`
 
 	itrp := flux.NewInterpreter()
-	_, declarations := flux.BuiltIns()
 
 	ast, _ := parser.NewAST(queryString)
-	semanticProgram, _ := semantic.New(ast, declarations)
+	semanticProgram, _ := semantic.New(ast)
 
 	// Define a new now function which returns a static time value of 2018-07-13T00:00:00.000000000Z
 	timeValue := time.Date(2018, 7, 13, 0, 0, 0, 0, time.UTC)
 	functionName := "newTime"
 	functionType := semantic.NewFunctionType(semantic.FunctionSignature{
-		ReturnType: semantic.Time,
+		Return: semantic.Time,
 	})
 	functionCall := func(args values.Object) (values.Value, error) {
 		return values.NewTime(values.ConvertTime(timeValue)), nil
@@ -359,7 +360,10 @@ func Example_overrideDefaultOptionInternally() {
 	itrp.SetOption("now", newNowFunc)
 
 	// Evaluate program
-	itrp.Eval(semanticProgram)
+	err := itrp.Eval(semanticProgram)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	// After evaluating the program, lookup the value of what_time_is_it
 	now, _ := itrp.GlobalScope().Lookup("what_time_is_it")
