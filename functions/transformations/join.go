@@ -823,9 +823,8 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 	var leftSet, rightSet subset
 	var leftKey, rightKey flux.GroupKey
 
-	leftTable, rightTable := left.RawTable(), right.RawTable()
-	leftSet, leftKey = c.advance(leftSet.Stop, leftTable)
-	rightSet, rightKey = c.advance(rightSet.Stop, rightTable)
+	leftSet, leftKey = c.advance(leftSet.Stop, left)
+	rightSet, rightKey = c.advance(rightSet.Stop, right)
 
 	keys := map[execute.DatasetID]flux.GroupKey{
 		c.leftID:  left.Key(),
@@ -850,8 +849,8 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 			for l := leftSet.Start; l < leftSet.Stop; l++ {
 				for r := rightSet.Start; r < rightSet.Stop; r++ {
 
-					leftRecord := leftTable.GetRow(l)
-					rightRecord := rightTable.GetRow(r)
+					leftRecord := left.GetRow(l)
+					rightRecord := right.GetRow(r)
 
 					leftRecord.Range(func(columnName string, columnVal values.Value) {
 						column := tableCol{
@@ -879,12 +878,12 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 					})
 				}
 			}
-			leftSet, leftKey = c.advance(leftSet.Stop, leftTable)
-			rightSet, rightKey = c.advance(rightSet.Stop, rightTable)
+			leftSet, leftKey = c.advance(leftSet.Stop, left)
+			rightSet, rightKey = c.advance(rightSet.Stop, right)
 		} else if leftKey.Less(rightKey) {
-			leftSet, leftKey = c.advance(leftSet.Stop, leftTable)
+			leftSet, leftKey = c.advance(leftSet.Stop, left)
 		} else {
-			rightSet, rightKey = c.advance(rightSet.Stop, rightTable)
+			rightSet, rightKey = c.advance(rightSet.Stop, right)
 		}
 	}
 

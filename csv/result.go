@@ -460,10 +460,29 @@ func newTable(
 }
 
 func (d *tableDecoder) Do(f func(flux.ColReader) error) (err error) {
+	return d.do(func(table flux.Table) error {
+		return table.Do(func(cr flux.ColReader) error {
+			return f(cr)
+		})
+	})
+}
+
+func (d *tableDecoder) DoArrow(f func(flux.ArrowColReader) error) error {
+	return d.do(func(table flux.Table) error {
+		return table.DoArrow(func(cr flux.ArrowColReader) error {
+			return f(cr)
+		})
+	})
+}
+
+// TODO(jsternberg): This method can be removed and merged with DoArrow when
+// we remove the flux.ColReader and replace Do with DoArrow.
+func (d *tableDecoder) do(f func(table flux.Table) error) error {
 	// Send off first batch from first advance call.
-	err = f(d.builder.RawTable())
-	if err != nil {
-		return
+	if table, err := d.builder.Table(); err != nil {
+		return err
+	} else if err := f(table); err != nil {
+		return err
 	}
 	d.builder.ClearData()
 
@@ -476,19 +495,21 @@ func (d *tableDecoder) Do(f func(flux.ColReader) error) (err error) {
 	more := true
 	defer close(d.done)
 	for more {
+		var err error
 		more, err = d.advance(nil)
 		if err != nil {
-			return
+			return err
 		}
-		rawTable := d.builder.RawTable()
-		err = f(rawTable)
+		table, err := d.builder.Table()
 		if err != nil {
-			return
+			return err
+		} else if err := f(table); err != nil {
+			return err
 		}
-		d.stats = d.stats.Add(rawTable.Statistics())
+		d.stats = d.stats.Add(table.Statistics())
 		d.builder.ClearData()
 	}
-	return
+	return nil
 }
 
 func (d *tableDecoder) Statistics() flux.Statistics {
