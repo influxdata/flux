@@ -1402,6 +1402,37 @@ plus1(r:{_value: 2.0})
 `,
 			wantErr: errors.New(`type error 3:1-3:23: invalid record access "_value": int != float`),
 		},
+		{
+			name: "generalize types",
+			script: `
+(x) => {
+	y = x
+	return y
+}
+`,
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					tv := semantic.Tvar(3)
+					switch node.(type) {
+					case *semantic.FunctionBlock,
+						*semantic.FunctionParameter,
+						*semantic.BlockStatement,
+						*semantic.IdentifierExpression,
+						*semantic.ReturnStatement:
+						return tv
+					case *semantic.FunctionExpression:
+						return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+							Parameters: map[string]semantic.PolyType{
+								"x": tv,
+							},
+							Required: semantic.LabelSet{"x"},
+							Return:   tv,
+						})
+					}
+					return nil
+				},
+			},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc

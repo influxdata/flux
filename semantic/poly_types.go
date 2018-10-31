@@ -762,6 +762,11 @@ type Scheme struct {
 	Free TvarSet
 }
 
+// freeVars returns the free vars unioned with the free vars in T.
+func (s Scheme) freeVars(c *Constraints) TvarSet {
+	return s.Free.union(s.T.freeVars(c))
+}
+
 func (s Scheme) Substitute(tv Tvar, t PolyType) Scheme {
 	fvs := make(TvarSet, 0, len(s.Free))
 	for _, ftv := range s.Free {

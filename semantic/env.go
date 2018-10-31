@@ -42,14 +42,17 @@ func (e *Env) Nest() *Env {
 	return n
 }
 
-// FreeVars reports all free variables in the env.
-func (e *Env) FreeVars() TvarSet {
+// freeVars reports all free variables in the env.
+func (e *Env) freeVars(c *Constraints) TvarSet {
 	var ftv TvarSet
 	if e == nil {
 		return ftv
 	}
 	for _, s := range e.m {
-		ftv = ftv.union(s.Free)
+		ftv = ftv.union(s.freeVars(c))
+	}
+	if e.parent != nil {
+		return ftv.union(e.parent.freeVars(c))
 	}
 	return ftv
 }

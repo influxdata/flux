@@ -79,7 +79,7 @@ func (v ConstraintGenerator) lookup(n Node) (PolyType, error) {
 
 // scheme produces a type scheme from a poly type, this includes the generalize step.
 func (v ConstraintGenerator) scheme(t PolyType) Scheme {
-	ftv := t.freeVars(v.cs).diff(v.env.FreeVars())
+	ftv := t.freeVars(v.cs).diff(v.env.freeVars(v.cs))
 	return Scheme{
 		T:    t,
 		Free: ftv,
