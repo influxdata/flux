@@ -29,7 +29,7 @@ func init() {
 			"csv":  semantic.String,
 			"file": semantic.String,
 		},
-		Required: semantic.EmptyLabelSet(),
+		Required: nil,
 		Return:   flux.TableObjectType,
 	}
 	flux.RegisterFunction(FromCSVKind, createFromCSVOpSpec, fromCSVSignature)

@@ -21,7 +21,7 @@ const MergeJoinKind = "merge-join"
 func init() {
 	joinSignature := semantic.FunctionPolySignature{
 		Parameters: map[string]semantic.PolyType{
-			"tables": semantic.NewObjectPolyType(nil, semantic.EmptyLabelSet(), semantic.AllLabels),
+			"tables": semantic.NewObjectPolyType(nil, nil, semantic.AllLabels()),
 			"on":     semantic.NewArrayPolyType(semantic.String),
 			"method": semantic.String,
 		},

@@ -271,7 +271,7 @@ var TableObjectType = semantic.NewObjectPolyType(
 		//tableSpecKey:    semantic.Tvar(1),
 		//tableParentsKey: semantic.Tvar(2),
 	},
-	semantic.EmptyLabelSet(),
+	nil,
 	//semantic.LabelSet{tableKindKey, tableSpecKey, tableParentsKey},
 	semantic.LabelSet{tableKindKey},
 )
@@ -496,7 +496,7 @@ func FunctionSignature(parameters map[string]semantic.PolyType, required []strin
 	parameters[TableParameter] = TableObjectType
 	return semantic.FunctionPolySignature{
 		Parameters:   parameters,
-		Required:     semantic.ToLabelSet(required),
+		Required:     semantic.LabelSet(required),
 		Return:       TableObjectType,
 		PipeArgument: TableParameter,
 	}

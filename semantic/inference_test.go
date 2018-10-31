@@ -178,7 +178,7 @@ f = (a,b=0) => a + b
 							map[string]semantic.PolyType{
 								"b": semantic.Int,
 							},
-							semantic.EmptyLabelSet(),
+							nil,
 							semantic.LabelSet{"b"},
 						)
 					}
@@ -242,7 +242,7 @@ f = (a,b=0) => a + b
 							map[string]semantic.PolyType{
 								"a": semantic.Int,
 							},
-							semantic.EmptyLabelSet(),
+							nil,
 							required,
 						)
 					}
@@ -290,7 +290,7 @@ f = (a,b=0) => a + b
 						case 3:
 							return semantic.NewObjectPolyType(
 								params,
-								semantic.EmptyLabelSet(),
+								nil,
 								required,
 							)
 						}
@@ -389,13 +389,13 @@ identity(x:identity)(x:2)
 							case 10:
 								return semantic.NewObjectPolyType(
 									paramsF,
-									semantic.EmptyLabelSet(),
+									nil,
 									required,
 								)
 							case 22:
 								return semantic.NewObjectPolyType(
 									paramsInt,
-									semantic.EmptyLabelSet(),
+									nil,
 									required,
 								)
 							}
@@ -435,7 +435,7 @@ identity(x:identity)(x:2)
 						map[string]semantic.PolyType{
 							"x": semantic.Tvar(9),
 						},
-						semantic.EmptyLabelSet(),
+						nil,
 						semantic.LabelSet{"x"},
 					),
 				}},
@@ -451,7 +451,7 @@ identity(x:identity)(x:2)
 							map[string]semantic.PolyType{
 								"x": semantic.Tvar(5),
 							},
-							semantic.EmptyLabelSet(),
+							nil,
 							semantic.LabelSet{"x"},
 						)
 					}
@@ -549,7 +549,7 @@ identity(x:identity)(x:2)
 						case 4:
 							return semantic.NewObjectPolyType(
 								paramsInt,
-								semantic.EmptyLabelSet(),
+								nil,
 								requiredAB,
 							)
 						}
@@ -582,12 +582,12 @@ add(a:1,b:2)
 
 					objWith := semantic.NewObjectPolyType(
 						callWith,
-						semantic.EmptyLabelSet(),
+						nil,
 						requiredABC,
 					)
 					objWithout := semantic.NewObjectPolyType(
 						callWithout,
-						semantic.EmptyLabelSet(),
+						nil,
 						requiredAB,
 					)
 
@@ -630,7 +630,7 @@ add(a:1,b:2)
 								map[string]semantic.PolyType{
 									"c": semantic.Int,
 								},
-								semantic.EmptyLabelSet(),
+								nil,
 								semantic.LabelSet{"c"},
 							)
 						case 3:
@@ -766,13 +766,13 @@ foo(f:add)
 							case 7:
 								return semantic.NewObjectPolyType(
 									nil,
-									semantic.EmptyLabelSet(),
-									semantic.EmptyLabelSet(),
+									nil,
+									nil,
 								)
 							case 16:
 								return semantic.NewObjectPolyType(
 									paramsCallInt,
-									semantic.EmptyLabelSet(),
+									nil,
 									requiredAB,
 								)
 							}
@@ -781,7 +781,7 @@ foo(f:add)
 								map[string]semantic.PolyType{
 									"c": semantic.Int,
 								},
-								semantic.EmptyLabelSet(),
+								nil,
 								semantic.LabelSet{"c"},
 							)
 						case 4:
@@ -797,7 +797,7 @@ foo(f:add)
 										Return:   semantic.Int,
 									}),
 								},
-								semantic.EmptyLabelSet(),
+								nil,
 								requiredF,
 							)
 						}
@@ -927,13 +927,13 @@ foo(f:add)
 						case l == 2 && c == 7:
 							return semantic.NewObjectPolyType(
 								nil,
-								semantic.EmptyLabelSet(),
-								semantic.EmptyLabelSet(),
+								nil,
+								nil,
 							)
 						case l == 2 && c == 16:
 							return semantic.NewObjectPolyType(
 								paramsCallInt,
-								semantic.EmptyLabelSet(),
+								nil,
 								requiredAB,
 							)
 						case l == 3:
@@ -941,7 +941,7 @@ foo(f:add)
 								map[string]semantic.PolyType{
 									"b": semantic.Int,
 								},
-								semantic.EmptyLabelSet(),
+								nil,
 								semantic.LabelSet{"b"},
 							)
 						case l == 4:
@@ -956,7 +956,7 @@ foo(f:add)
 										Return:   semantic.Int,
 									}),
 								},
-								semantic.EmptyLabelSet(),
+								nil,
 								requiredF,
 							)
 						}
@@ -986,7 +986,7 @@ name(p:device)
 							"age":    semantic.Int,
 							"weight": semantic.Float,
 						},
-						semantic.EmptyLabelSet(),
+						nil,
 						semantic.LabelSet{"name", "age", "weight"},
 					)
 					jimCall := semantic.NewObjectPolyType(
@@ -1002,7 +1002,7 @@ name(p:device)
 						map[string]semantic.PolyType{
 							"p": jimCall,
 						},
-						semantic.EmptyLabelSet(),
+						nil,
 						semantic.LabelSet{"p"},
 					)
 					jane := semantic.NewObjectPolyType(
@@ -1010,7 +1010,7 @@ name(p:device)
 							"name": semantic.String,
 							"age":  semantic.Int,
 						},
-						semantic.EmptyLabelSet(),
+						nil,
 						semantic.LabelSet{"name", "age"},
 					)
 					janeCall := semantic.NewObjectPolyType(
@@ -1025,7 +1025,7 @@ name(p:device)
 						map[string]semantic.PolyType{
 							"p": janeCall,
 						},
-						semantic.EmptyLabelSet(),
+						nil,
 						semantic.LabelSet{"p"},
 					)
 					device := semantic.NewObjectPolyType(
@@ -1034,7 +1034,7 @@ name(p:device)
 							"lat":  semantic.Float,
 							"lon":  semantic.Float,
 						},
-						semantic.EmptyLabelSet(),
+						nil,
 						semantic.LabelSet{"name", "lat", "lon"},
 					)
 					deviceCall := semantic.NewObjectPolyType(
@@ -1050,7 +1050,7 @@ name(p:device)
 						map[string]semantic.PolyType{
 							"p": deviceCall,
 						},
-						semantic.EmptyLabelSet(),
+						nil,
 						semantic.LabelSet{"p"},
 					)
 
@@ -1060,7 +1060,7 @@ name(p:device)
 							"name": tv,
 						},
 						semantic.LabelSet{"name"},
-						semantic.AllLabels,
+						semantic.AllLabels(),
 					)
 					name := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 						Parameters: map[string]semantic.PolyType{
@@ -1222,7 +1222,7 @@ foo(r:{a:1.1,b:42.0})
 							"b": tvB,
 						},
 						semantic.LabelSet{"a", "b"},
-						semantic.AllLabels,
+						semantic.AllLabels(),
 					)
 					fooParams := map[string]semantic.PolyType{
 						"r": r,
@@ -1234,7 +1234,7 @@ foo(r:{a:1.1,b:42.0})
 							"a2": tvA,
 							"b":  tvB,
 						},
-						semantic.EmptyLabelSet(),
+						nil,
 						semantic.LabelSet{"a", "a2", "b"},
 					)
 					foo := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
@@ -1263,7 +1263,7 @@ foo(r:{a:1.1,b:42.0})
 								"a2": semantic.Int,
 								"b":  semantic.String,
 							},
-							semantic.EmptyLabelSet(),
+							nil,
 							semantic.LabelSet{"a", "a2", "b"},
 						),
 					})
@@ -1287,7 +1287,7 @@ foo(r:{a:1.1,b:42.0})
 								"a2": semantic.Float,
 								"b":  semantic.Float,
 							},
-							semantic.EmptyLabelSet(),
+							nil,
 							semantic.LabelSet{"a", "a2", "b"},
 						),
 					})
@@ -1298,7 +1298,7 @@ foo(r:{a:1.1,b:42.0})
 							"a2": semantic.Int,
 							"b":  semantic.String,
 						},
-						semantic.EmptyLabelSet(),
+						nil,
 						semantic.LabelSet{"a", "a2", "b"},
 					)
 					out2 := semantic.NewObjectPolyType(
@@ -1307,7 +1307,7 @@ foo(r:{a:1.1,b:42.0})
 							"a2": semantic.Float,
 							"b":  semantic.Float,
 						},
-						semantic.EmptyLabelSet(),
+						nil,
 						semantic.LabelSet{"a", "a2", "b"},
 					)
 
@@ -1327,7 +1327,7 @@ foo(r:{a:1.1,b:42.0})
 						case l == 7 && c == 5:
 							return semantic.NewObjectPolyType(
 								params1,
-								semantic.EmptyLabelSet(),
+								nil,
 								requiredR,
 							)
 						case l == 7 && c == 8:
@@ -1335,7 +1335,7 @@ foo(r:{a:1.1,b:42.0})
 						case l == 8 && c == 5:
 							return semantic.NewObjectPolyType(
 								params2,
-								semantic.EmptyLabelSet(),
+								nil,
 								requiredR,
 							)
 						case l == 8 && c == 8:

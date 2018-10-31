@@ -26,7 +26,7 @@ func init() {
 			"bucket":   semantic.String,
 			"bucketID": semantic.String,
 		},
-		Required: semantic.EmptyLabelSet(),
+		Required: nil,
 		Return:   flux.TableObjectType,
 	}
 

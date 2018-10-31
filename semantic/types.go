@@ -414,7 +414,7 @@ type FunctionSignature struct {
 func NewFunctionType(sig FunctionSignature) (t Type) {
 	ft := &functionType{
 		parameters:   sig.Parameters,
-		required:     ToLabelSet(sig.Required).remove(sig.PipeArgument),
+		required:     LabelSet(sig.Required).remove(sig.PipeArgument),
 		ret:          sig.Return,
 		pipeArgument: sig.PipeArgument,
 	}

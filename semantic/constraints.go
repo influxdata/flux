@@ -187,7 +187,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		return t, nil
 	case *FunctionExpression:
 		var parameters map[string]PolyType
-		required := EmptyLabelSet()
+		var required LabelSet
 		var pipeArgument string
 		if n.Block.Parameters != nil {
 			if n.Block.Parameters.Pipe != nil {
@@ -281,7 +281,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		}
 		v.cs.AddKindConst(nodeVar, KRecord{
 			properties: properties,
-			lower:      EmptyLabelSet(),
+			lower:      nil,
 			upper:      upper,
 		})
 		return nodeVar, nil
@@ -300,11 +300,11 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		v.cs.AddKindConst(tv, KRecord{
 			properties: map[string]PolyType{n.Property: ptv},
 			lower:      LabelSet{n.Property},
-			upper:      AllLabels,
+			upper:      AllLabels(),
 		})
 		return ptv, nil
 	case *ArrayExpression:
-		at := list{typ: NewObjectPolyType(nil, EmptyLabelSet(), AllLabels)}
+		at := list{typ: NewObjectPolyType(nil, nil, AllLabels())}
 		if len(n.Elements) > 0 {
 			et, err := v.lookup(n.Elements[0])
 			if err != nil {

@@ -3,24 +3,18 @@ package semantic
 import "strings"
 
 // LabelSet is a set of string labels.
-// The nil value of a LabelSet has special meaning as the infinite set of all possible string labels.
 type LabelSet []string
 
-func EmptyLabelSet() LabelSet {
-	return LabelSet{}
-}
+// allLabels is a sentinal values indicating the set is the infinite set of all possible string labels.
+const allLabels = "-all-"
 
-func ToLabelSet(s []string) LabelSet {
-	if s == nil {
-		return LabelSet{}
-	}
-	return LabelSet(s)
+// AllLabels returns a label set that represents the infinite set of all possible string labels.
+func AllLabels() LabelSet {
+	return LabelSet{allLabels}
 }
-
-var AllLabels = LabelSet(nil)
 
 func (s LabelSet) String() string {
-	if s == nil {
+	if s.isAllLabels() {
 		return "L"
 	}
 	if len(s) == 0 {
@@ -36,6 +30,10 @@ func (s LabelSet) String() string {
 	}
 	builder.WriteString(")")
 	return builder.String()
+}
+
+func (s LabelSet) isAllLabels() bool {
+	return len(s) == 1 && s[0] == allLabels
 }
 
 func (s LabelSet) contains(l string) bool {
@@ -57,7 +55,7 @@ func (s LabelSet) remove(l string) LabelSet {
 }
 
 func (s LabelSet) union(o LabelSet) LabelSet {
-	if s == nil {
+	if s.isAllLabels() {
 		return s
 	}
 	union := make(LabelSet, len(s), len(s)+len(o))
@@ -71,10 +69,10 @@ func (s LabelSet) union(o LabelSet) LabelSet {
 }
 
 func (s LabelSet) intersect(o LabelSet) LabelSet {
-	if s == nil {
+	if s.isAllLabels() {
 		return o
 	}
-	if o == nil {
+	if o.isAllLabels() {
 		return s
 	}
 	intersect := make(LabelSet, 0, len(s))
@@ -87,10 +85,10 @@ func (s LabelSet) intersect(o LabelSet) LabelSet {
 }
 
 func (a LabelSet) isSuperSet(b LabelSet) bool {
-	if a == nil {
+	if a.isAllLabels() {
 		return true
 	}
-	if b == nil {
+	if b.isAllLabels() {
 		return false
 	}
 	for _, l := range b {
@@ -102,6 +100,9 @@ func (a LabelSet) isSuperSet(b LabelSet) bool {
 }
 
 func (a LabelSet) diff(b LabelSet) LabelSet {
+	if a.isAllLabels() {
+		return a
+	}
 	diff := make(LabelSet, 0, len(a))
 	for _, l := range a {
 		if !b.contains(l) {
@@ -112,11 +113,11 @@ func (a LabelSet) diff(b LabelSet) LabelSet {
 }
 
 func (a LabelSet) equal(b LabelSet) bool {
-	if a == nil && b == nil {
+	if a.isAllLabels() && b.isAllLabels() {
 		return true
 	}
-	if a == nil && b != nil ||
-		b == nil && a != nil {
+	if a.isAllLabels() && !b.isAllLabels() ||
+		b.isAllLabels() && !a.isAllLabels() {
 		return false
 	}
 	if len(a) != len(b) {
@@ -131,9 +132,6 @@ func (a LabelSet) equal(b LabelSet) bool {
 }
 
 func (s LabelSet) copy() LabelSet {
-	if s == nil {
-		return nil
-	}
 	c := make(LabelSet, len(s))
 	copy(c, s)
 	return c

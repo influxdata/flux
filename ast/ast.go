@@ -29,7 +29,7 @@ func (p Position) Less(o Position) bool {
 type SourceLocation struct {
 	Start  Position `json:"start"`            // Start is the location in the source the node starts
 	End    Position `json:"end"`              // End is the location in the source the node ends
-	Source *string  `json:"source,omitempty"` // Source is optional raw source
+	Source string   `json:"source,omitempty"` // Source is optional raw source
 }
 
 func (l SourceLocation) String() string {
@@ -89,11 +89,16 @@ func (*UnsignedIntegerLiteral) node() {}
 
 // BaseNode holds the attributes every expression or statement should have
 type BaseNode struct {
-	Loc SourceLocation `json:"location,omitempty"`
+	Loc *SourceLocation `json:"location,omitempty"`
 }
 
 // Location is the source location of the Node
-func (b BaseNode) Location() SourceLocation { return b.Loc }
+func (b BaseNode) Location() SourceLocation {
+	if b.Loc == nil {
+		return SourceLocation{}
+	}
+	return *b.Loc
+}
 
 // Program represents a complete program source tree
 type Program struct {
