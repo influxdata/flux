@@ -2,7 +2,6 @@ package semantic
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/influxdata/flux/ast"
@@ -20,7 +19,7 @@ func GenerateConstraints(node Node, annotator Annotator) (*Constraints, error) {
 		err: new(error),
 	}
 	Walk(NewScopedVisitor(cg), node)
-	log.Println("GenerateConstraints", cg.cs)
+	//log.Println("GenerateConstraints", cg.cs)
 	return cg.cs, *cg.err
 }
 
@@ -55,7 +54,7 @@ func (v ConstraintGenerator) Done(node Node) {
 		}
 	}
 	a.Err = errors.Wrapf(a.Err, "type error %v", node.Location())
-	log.Printf("typeof %T@%v %v %v %v", node, node.Location(), a.Var, a.Type, a.Err)
+	//log.Printf("typeof %T@%v %v %v %v", node, node.Location(), a.Var, a.Type, a.Err)
 	if *v.err == nil && a.Err != nil {
 		*v.err = a.Err
 	}

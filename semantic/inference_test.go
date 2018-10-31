@@ -1559,10 +1559,7 @@ func (v *typeVisitor) Visit(node semantic.Node) semantic.Visitor {
 	if v.solution == nil {
 		v.solution = make(SolutionMap)
 	}
-	t, err := v.typeSolution.PolyTypeOf(node)
-	if err != nil {
-		return nil
-	}
+	t, _ := v.typeSolution.PolyTypeOf(node)
 	if t != nil {
 		v.solution[node] = t
 	}

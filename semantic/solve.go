@@ -2,7 +2,6 @@ package semantic
 
 import (
 	"fmt"
-	"log"
 	"sort"
 	"strings"
 
@@ -82,8 +81,8 @@ func (sol *Solution) solve() error {
 			sol.cs.annotations[n] = ann
 		}
 	}
-	log.Println("subst", subst)
-	log.Println("kinds", sol.kinds)
+	//log.Println("subst", subst)
+	//log.Println("kinds", sol.kinds)
 	return nil
 }
 
@@ -122,7 +121,7 @@ func (s *Solution) AddConstraint(l, r PolyType) error {
 }
 
 func unifyTypes(kinds map[Tvar]KindConstraint, l, r PolyType) (s Substitution, _ error) {
-	log.Printf("unifyTypes %v == %v", l, r)
+	//log.Printf("unifyTypes %v == %v", l, r)
 	return l.UnifyType(kinds, r)
 }
 
@@ -131,12 +130,11 @@ func unifyKinds(kinds map[Tvar]KindConstraint, tvl, tvr Tvar, l, r KindConstrain
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("unifyKinds %v = %v == %v = %v ==> %v :: %v", tvl, l, tvr, r, k, s)
+	//log.Printf("unifyKinds %v = %v == %v = %v ==> %v :: %v", tvl, l, tvr, r, k, s)
 	kinds[tvr] = k
 	if tvl != tvr {
 		// The substituion now knows that tvl = tvr
 		// No need to keep the kind constraints around for tvl
-		log.Println("unifyKinds.deleting", tvl)
 		delete(kinds, tvl)
 	}
 	return s, nil
@@ -158,7 +156,6 @@ func unifyKindsByVar(kinds map[Tvar]KindConstraint, l, r Tvar) (Substitution, er
 		return unifyKinds(kinds, l, r, kl, kr)
 	case okl && !okr:
 		kinds[r] = kl
-		log.Println("unifyKindsByVar.deleting", l)
 		delete(kinds, l)
 	}
 	return nil, nil

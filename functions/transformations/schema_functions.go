@@ -70,20 +70,18 @@ func (m MutationRegistrar) Register() {
 
 // A list of all MutationRegistrars to register.
 // To register a new mutation, add an entry to this list.
-var predicateType = semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-	Parameters: map[string]semantic.PolyType{
-		"col": semantic.String,
-	},
-	Required: semantic.LabelSet{"col"},
-	Return:   semantic.Bool,
-})
-
 var Registrars = []MutationRegistrar{
 	{
 		Kind: RenameKind,
 		Args: map[string]semantic.PolyType{
 			"columns": semantic.Object,
-			"fn":      predicateType,
+			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{
+					"col": semantic.String,
+				},
+				Required: semantic.LabelSet{"col"},
+				Return:   semantic.String,
+			}),
 		},
 		Create: createRenameOpSpec,
 		New:    newRenameOp,
@@ -92,7 +90,13 @@ var Registrars = []MutationRegistrar{
 		Kind: DropKind,
 		Args: map[string]semantic.PolyType{
 			"columns": semantic.NewArrayPolyType(semantic.String),
-			"fn":      predicateType,
+			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{
+					"col": semantic.String,
+				},
+				Required: semantic.LabelSet{"col"},
+				Return:   semantic.Bool,
+			}),
 		},
 		Create: createDropOpSpec,
 		New:    newDropOp,
@@ -101,7 +105,13 @@ var Registrars = []MutationRegistrar{
 		Kind: KeepKind,
 		Args: map[string]semantic.PolyType{
 			"columns": semantic.NewArrayPolyType(semantic.String),
-			"fn":      predicateType,
+			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{
+					"col": semantic.String,
+				},
+				Required: semantic.LabelSet{"col"},
+				Return:   semantic.Bool,
+			}),
 		},
 		Create: createKeepOpSpec,
 		New:    newKeepOp,

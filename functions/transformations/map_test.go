@@ -1,8 +1,9 @@
 package transformations_test
 
 import (
-	"github.com/influxdata/flux/functions/inputs"
 	"testing"
+
+	"github.com/influxdata/flux/functions/inputs"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
@@ -31,6 +32,7 @@ func TestMap_NewQuery(t *testing.T) {
 						Spec: &transformations.MapOpSpec{
 							MergeKey: true,
 							Fn: &semantic.FunctionExpression{
+								Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
 										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -71,6 +73,7 @@ func TestMap_NewQuery(t *testing.T) {
 						Spec: &transformations.MapOpSpec{
 							MergeKey: true,
 							Fn: &semantic.FunctionExpression{
+								Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
 										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -111,22 +114,30 @@ func TestMapOperation_Marshaling(t *testing.T) {
 		"kind":"map",
 		"spec":{
 			"fn":{
-				"type": "ArrowFunctionExpression",
-				"params": [{"type":"FunctionParam","key":{"type":"Identifier","name":"r"}}],
-				"body":{
-					"type":"BinaryExpression",
-					"operator": "-",
-					"left":{
-						"type":"MemberExpression",
-						"object": {
-							"type": "IdentifierExpression",
-							"name":"r"
-						},
-						"property": "_value"
+				"type": "FunctionExpression",
+				"block":{
+					"type":"FunctionBlock",
+					"parameters": {
+						"type":"FunctionParameters",
+						"list": [
+							{"type":"FunctionParam","key":{"type":"Identifier","name":"r"}}
+						]
 					},
-					"right":{
-						"type":"FloatLiteral",
-						"value": 5.6
+					"body":{
+						"type":"BinaryExpression",
+						"operator": "-",
+						"left":{
+							"type":"MemberExpression",
+							"object": {
+								"type": "IdentifierExpression",
+								"name":"r"
+							},
+							"property": "_value"
+						},
+						"right":{
+							"type":"FloatLiteral",
+							"value": 5.6
+						}
 					}
 				}
 			}
@@ -168,6 +179,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
+					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -229,6 +241,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: true,
 				Fn: &semantic.FunctionExpression{
+					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -296,6 +309,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
+					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -360,6 +374,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: true,
 				Fn: &semantic.FunctionExpression{
+					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -440,6 +455,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: true,
 				Fn: &semantic.FunctionExpression{
+					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -543,6 +559,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
+					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -607,6 +624,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
+					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -670,6 +688,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
+					Defaults: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
