@@ -3,6 +3,7 @@ module github.com/influxdata/flux
 require (
 	github.com/Masterminds/semver v1.4.2
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
+	github.com/apache/arrow/go/arrow v0.0.0-20181031164735-a56c009257a7
 	github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973 // indirect
 	github.com/c-bata/go-prompt v0.2.2
 	github.com/cespare/xxhash v1.1.0
