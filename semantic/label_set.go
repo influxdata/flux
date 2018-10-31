@@ -45,7 +45,7 @@ func (s LabelSet) contains(l string) bool {
 	return false
 }
 func (s LabelSet) remove(l string) LabelSet {
-	filtered := s[0:0]
+	filtered := make(LabelSet, 0, len(s))
 	for _, lbl := range s {
 		if l != lbl {
 			filtered = append(filtered, lbl)

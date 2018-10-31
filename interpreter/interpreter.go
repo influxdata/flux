@@ -2,7 +2,6 @@ package interpreter
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 
 	"github.com/influxdata/flux/ast"
@@ -125,7 +124,6 @@ func (itrp *Interpreter) doProgram(program *semantic.Program) error {
 
 // doStatement returns the resolved value of a top-level statement
 func (itrp *Interpreter) doStatement(stmt semantic.Statement, scope *Scope) (values.Value, error) {
-	log.Println("doStatement", stmt)
 	scope.SetReturn(values.InvalidValue)
 	switch s := stmt.(type) {
 	case *semantic.OptionStatement:
@@ -178,7 +176,6 @@ func (itrp *Interpreter) doOptionStatement(declaration *semantic.NativeVariableD
 }
 
 func (itrp *Interpreter) doVariableDeclaration(declaration *semantic.NativeVariableDeclaration, scope *Scope) (values.Value, error) {
-	log.Println("doVariableDeclaration", declaration.Identifier.Name)
 	value, err := itrp.doExpression(declaration.Init, scope)
 	if err != nil {
 		return nil, err
@@ -189,7 +186,6 @@ func (itrp *Interpreter) doVariableDeclaration(declaration *semantic.NativeVaria
 			return nil, fmt.Errorf("cannot redefine %q with different type", declaration.Identifier.Name)
 		}
 	}
-	log.Println("Scope.Set", declaration.Identifier.Name, value)
 	scope.Set(declaration.Identifier.Name, value)
 	return value, nil
 }
