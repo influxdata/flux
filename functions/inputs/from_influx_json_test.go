@@ -8,16 +8,16 @@ import (
 	"github.com/influxdata/flux/querytest"
 )
 
-func TestFromJSON_NewQuery(t *testing.T) {
+func TestFromInfluxJSON_NewQuery(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{
 			Name:    "from no args",
-			Raw:     `fromJSON()`,
+			Raw:     `fromInfluxJSON()`,
 			WantErr: true,
 		},
 		{
 			Name:    "from conflicting args",
-			Raw:     `fromJSON(json:"d", file:"b")`,
+			Raw:     `fromInfluxJSON(json:"d", file:"b")`,
 			WantErr: true,
 		},
 		{
@@ -26,13 +26,13 @@ func TestFromJSON_NewQuery(t *testing.T) {
 			WantErr: true,
 		},
 		{
-			Name: "fromJSON text",
-			Raw:  `fromJSON(json: "{results: []}")`,
+			Name: "fromInfluxJSON text",
+			Raw:  `fromInfluxJSON(json: "{results: []}")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "fromJSON0",
-						Spec: &inputs.FromJSONOpSpec{
+						ID: "fromInfluxJSON0",
+						Spec: &inputs.FromInfluxJSONOpSpec{
 							JSON: "{results: []}",
 						},
 					},

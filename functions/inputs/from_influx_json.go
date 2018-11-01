@@ -17,11 +17,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-const FromJSONKind = "fromJSON"
+const FromInfluxJSONKind = "fromInfluxJSON"
 const bufferSize = 8192
 
 func init() {
-	fromJSONSignature := semantic.FunctionPolySignature{
+	fromInfluxJSONSignature := semantic.FunctionPolySignature{
 		Parameters: map[string]semantic.PolyType{
 			"json": semantic.String,
 			"file": semantic.String,
@@ -29,14 +29,14 @@ func init() {
 		Required: nil,
 		Return:   flux.TableObjectType,
 	}
-	flux.RegisterFunction(FromJSONKind, createFromJSONOpSpec, fromJSONSignature)
-	flux.RegisterOpSpec(FromJSONKind, newFromJSONOp)
-	plan.RegisterProcedureSpec(FromJSONKind, newFromJSONProcedure, FromJSONKind)
-	execute.RegisterSource(FromJSONKind, createFromJSONSource)
+	flux.RegisterFunction(FromInfluxJSONKind, createFromInfluxJSONOpSpec, fromInfluxJSONSignature)
+	flux.RegisterOpSpec(FromInfluxJSONKind, newFromInfluxJSONOp)
+	plan.RegisterProcedureSpec(FromInfluxJSONKind, newFromInfluxJSONProcedure, FromInfluxJSONKind)
+	execute.RegisterSource(FromInfluxJSONKind, createFromInfluxJSONSource)
 }
 
-func createFromJSONOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
-	var spec = new(FromJSONOpSpec)
+func createFromInfluxJSONOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+	var spec = new(FromInfluxJSONOpSpec)
 
 	if json, ok, err := args.GetString("json"); err != nil {
 		return nil, err
@@ -67,51 +67,51 @@ func createFromJSONOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 	return spec, nil
 }
 
-// FromJSONOpSpec defines the `fromJSON` function signature
-type FromJSONOpSpec struct {
+// FromInfluxJSONOpSpec defines the `fromInfluxJSON` function signature
+type FromInfluxJSONOpSpec struct {
 	JSON string `json:"json"`
 	File string `json:"file"`
 }
 
-func newFromJSONOp() flux.OperationSpec {
-	return new(FromJSONOpSpec)
+func newFromInfluxJSONOp() flux.OperationSpec {
+	return new(FromInfluxJSONOpSpec)
 }
 
-func (s *FromJSONOpSpec) Kind() flux.OperationKind {
-	return FromJSONKind
+func (s *FromInfluxJSONOpSpec) Kind() flux.OperationKind {
+	return FromInfluxJSONKind
 }
 
-// FromJSONProcedureSpec describes the `fromJSON` prodecure
-type FromJSONProcedureSpec struct {
+// FromInfluxJSONProcedureSpec describes the `fromInfluxJSON` prodecure
+type FromInfluxJSONProcedureSpec struct {
 	plan.DefaultCost
 	JSON string
 	File string
 }
 
-func newFromJSONProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	spec, ok := qs.(*FromJSONOpSpec)
+func newFromInfluxJSONProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+	spec, ok := qs.(*FromInfluxJSONOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
 	}
-	return &FromJSONProcedureSpec{
+	return &FromInfluxJSONProcedureSpec{
 		JSON: spec.JSON,
 		File: spec.File,
 	}, nil
 }
 
-func (s *FromJSONProcedureSpec) Kind() plan.ProcedureKind {
-	return FromJSONKind
+func (s *FromInfluxJSONProcedureSpec) Kind() plan.ProcedureKind {
+	return FromInfluxJSONKind
 }
 
-func (s *FromJSONProcedureSpec) Copy() plan.ProcedureSpec {
-	ns := new(FromJSONProcedureSpec)
+func (s *FromInfluxJSONProcedureSpec) Copy() plan.ProcedureSpec {
+	ns := new(FromInfluxJSONProcedureSpec)
 	ns.JSON = s.JSON
 	ns.File = s.File
 	return ns
 }
 
-func createFromJSONSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a execute.Administration) (execute.Source, error) {
-	spec, ok := prSpec.(*FromJSONProcedureSpec)
+func createFromInfluxJSONSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a execute.Administration) (execute.Source, error) {
+	spec, ok := prSpec.(*FromInfluxJSONProcedureSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", prSpec)
 	}
@@ -183,7 +183,7 @@ func (c *JSONSource) Run(ctx context.Context) {
 
 	if c.results.More() {
 		// It doesn't make sense to read multiple results
-		err = errors.Wrap(err, "'fromJSON' supports only single results")
+		err = errors.Wrap(err, "'fromInfluxJSON' supports only single results")
 	}
 
 FINISH:

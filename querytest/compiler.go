@@ -32,6 +32,6 @@ func (c FromJSONCompiler) Compile(ctx context.Context) (*flux.Spec, error) {
 	if err != nil {
 		return nil, err
 	}
-	ReplaceFromWithFromJSONSpec(spec, c.InputFile)
+	ReplaceFromWithFromInfluxJSONSpec(spec, c.InputFile)
 	return spec, nil
 }
