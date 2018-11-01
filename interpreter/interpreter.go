@@ -593,29 +593,10 @@ type Value interface {
 	Property(name string) (values.Value, error)
 }
 
-type value struct {
-	t semantic.Type
-	v interface{}
-}
-
-func (v value) Type() semantic.Type {
-	return v.t
-}
-func (v value) Value() interface{} {
-	return v.v
-}
-func (v value) Property(name string) (values.Value, error) {
-	return nil, fmt.Errorf("property %q does not exist", name)
-}
-func (v value) String() string {
-	return fmt.Sprintf("%v", v.v)
-}
-
 type function struct {
 	sol   semantic.TypeSolution
 	e     *semantic.FunctionExpression
 	scope *Scope
-	call  func(Arguments) (values.Value, error)
 
 	itrp *Interpreter
 }

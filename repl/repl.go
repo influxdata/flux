@@ -21,7 +21,6 @@ import (
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 type REPL struct {
@@ -34,22 +33,6 @@ type REPL struct {
 
 type Querier interface {
 	Query(ctx context.Context, compiler flux.Compiler) (flux.ResultIterator, error)
-}
-
-func addBuiltIn(script string, itrp *interpreter.Interpreter) error {
-	astProg, err := parser.NewAST(script)
-	if err != nil {
-		return errors.Wrap(err, "failed to parse builtin")
-	}
-	semProg, err := semantic.New(astProg)
-	if err != nil {
-		return errors.Wrap(err, "failed to create semantic graph for builtin")
-	}
-
-	if err := itrp.Eval(semProg); err != nil {
-		return errors.Wrap(err, "failed to evaluate builtin")
-	}
-	return nil
 }
 
 func New(q Querier) *REPL {

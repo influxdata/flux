@@ -258,8 +258,6 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	// They must be added to the table
 	startAdded, stopAdded := false, false
 	if startColIdx < 0 {
-		startColIdx = builder.NCols()
-
 		c := flux.ColMeta{
 			Label: t.startCol,
 			Type:  flux.TTime,
@@ -271,7 +269,6 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	}
 
 	if stopColIdx < 0 {
-		stopColIdx = builder.NCols()
 		c := flux.ColMeta{
 			Label: t.stopCol,
 			Type:  flux.TTime,

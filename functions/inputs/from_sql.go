@@ -121,8 +121,6 @@ func createFromSQLSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 
 type SQLIterator struct {
 	id             execute.DatasetID
-	data           flux.Result
-	ts             []execute.Transformation
 	administration execute.Administration
 	spec           *FromSQLProcedureSpec
 	db             *sql.DB

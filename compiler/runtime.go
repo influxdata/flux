@@ -488,13 +488,6 @@ func (e *logicalEvaluator) EvalFunction(scope Scope) values.Function {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Function))
 }
 
-type binaryFunc func(scope Scope, left, right Evaluator) values.Value
-
-type binarySignature struct {
-	Operator    ast.OperatorKind
-	Left, Right semantic.Type
-}
-
 type binaryEvaluator struct {
 	t           semantic.Type
 	left, right Evaluator

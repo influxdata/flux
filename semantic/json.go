@@ -864,20 +864,6 @@ func unmarshalVariableDeclaration(msg json.RawMessage) (Node, error) {
 		return nil, fmt.Errorf("node %q is not a variable declaration", n.NodeType())
 	}
 }
-func unmarshalLiteral(msg json.RawMessage) (Literal, error) {
-	if checkNullMsg(msg) {
-		return nil, nil
-	}
-	n, err := unmarshalNode(msg)
-	if err != nil {
-		return nil, err
-	}
-	e, ok := n.(Literal)
-	if !ok {
-		return nil, fmt.Errorf("node %q is not a literal", n.NodeType())
-	}
-	return e, nil
-}
 func unmarshalNode(msg json.RawMessage) (Node, error) {
 	if checkNullMsg(msg) {
 		return nil, nil

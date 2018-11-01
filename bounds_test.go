@@ -7,11 +7,6 @@ import (
 	"github.com/influxdata/flux"
 )
 
-var EmptyBounds = flux.Bounds{
-	Start: flux.Now,
-	Stop:  flux.Now,
-}
-
 func TestBounds_HasZero(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -67,7 +62,6 @@ func TestBounds_HasZero(t *testing.T) {
 func TestBounds_IsEmpty(t *testing.T) {
 	tests := []struct {
 		name   string
-		now    time.Time
 		bounds flux.Bounds
 		want   bool
 	}{

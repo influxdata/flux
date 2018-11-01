@@ -83,10 +83,6 @@ func (s *result) UpdateProcessingTime(id DatasetID, t Time) error {
 	return nil
 }
 
-func (s *result) setTrigger(Trigger) {
-	//TODO: Change interfaces so that resultSink, does not need to implement this method.
-}
-
 func (s *result) Finish(id DatasetID, err error) {
 	if err != nil {
 		select {

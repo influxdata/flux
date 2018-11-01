@@ -38,12 +38,6 @@ type streamContext struct {
 	bounds *Bounds
 }
 
-func newStreamContext(b *Bounds) streamContext {
-	return streamContext{
-		bounds: b,
-	}
-}
-
 func (ctx streamContext) Bounds() *Bounds {
 	return ctx.bounds
 }

@@ -222,8 +222,6 @@ func createMergeJoinTransformation(id execute.DatasetID, mode execute.Accumulati
 }
 
 type mergeJoinTransformation struct {
-	parents []execute.DatasetID
-
 	mu sync.Mutex
 
 	d     execute.Dataset
@@ -674,9 +672,7 @@ func (c *MergeJoinCache) insertIntoBuffer(id execute.DatasetID, tbl flux.Table) 
 			columns: make([]flux.ColMeta, len(tbl.Cols())),
 		}
 
-		for j, column := range tbl.Cols() {
-			c.schemas[id].columns[j] = column
-		}
+		copy(c.schemas[id].columns, tbl.Cols())
 
 		intersection := make(map[string]bool, len(c.intersection))
 

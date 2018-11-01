@@ -98,8 +98,7 @@ func returnstmt(argument interface{}, text []byte, pos position) (*ast.ReturnSta
 }
 
 func pipeExprs(head, tail interface{}, text []byte, pos position) (*ast.PipeExpression, error) {
-	var arg ast.Expression
-	arg = head.(ast.Expression)
+	var arg ast.Expression = head.(ast.Expression)
 
 	var pe *ast.PipeExpression
 	for _, t := range toIfaceSlice(tail) {
