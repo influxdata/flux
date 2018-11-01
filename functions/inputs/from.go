@@ -99,6 +99,63 @@ type FromProcedureSpec struct {
 	AggregateMethod string
 }
 
+func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+	spec, ok := qs.(*FromOpSpec)
+	if !ok {
+		return nil, fmt.Errorf("invalid spec type %T", qs)
+	}
+
+	return &FromProcedureSpec{
+		Bucket:   spec.Bucket,
+		BucketID: spec.BucketID,
+	}, nil
+}
+
+func (s *FromProcedureSpec) Kind() plan.ProcedureKind {
+	return FromKind
+}
+
+func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
+	ns := new(FromProcedureSpec)
+
+	ns.Bucket = s.Bucket
+	ns.BucketID = s.BucketID
+
+	ns.BoundsSet = s.BoundsSet
+	ns.Bounds = s.Bounds
+
+	ns.FilterSet = s.FilterSet
+	ns.Filter = s.Filter.Copy().(*semantic.FunctionExpression)
+
+	ns.DescendingSet = s.DescendingSet
+	ns.Descending = s.Descending
+
+	ns.LimitSet = s.LimitSet
+	ns.PointsLimit = s.PointsLimit
+	ns.SeriesLimit = s.SeriesLimit
+	ns.SeriesOffset = s.SeriesOffset
+
+	ns.WindowSet = s.WindowSet
+	ns.Window = s.Window
+
+	ns.AggregateSet = s.AggregateSet
+	ns.AggregateMethod = s.AggregateMethod
+
+	return ns
+}
+
+// TimeBounds implements plan.BoundsAwareProcedureSpec
+func (s *FromProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bounds {
+	if s.BoundsSet {
+		bounds := &plan.Bounds{
+			Start: values.ConvertTime(s.Bounds.Start.Time(s.Bounds.Now)),
+			Stop:  values.ConvertTime(s.Bounds.Stop.Time(s.Bounds.Now)),
+		}
+		return bounds
+	}
+	return nil
+}
+
 func (s FromProcedureSpec) PostPhysicalValidate(id plan.NodeID) error {
 	if !s.BoundsSet || (s.Bounds.Start.IsZero() && s.Bounds.Stop.IsZero()) {
 		return fmt.Errorf(`result '%s' is unbounded. Add a 'range' call to bound the query`, id)
@@ -377,61 +434,4 @@ func isPushableFieldOperator(kind ast.OperatorKind) bool {
 	}
 
 	return false
-}
-
-func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	spec, ok := qs.(*FromOpSpec)
-	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
-	}
-
-	return &FromProcedureSpec{
-		Bucket:   spec.Bucket,
-		BucketID: spec.BucketID,
-	}, nil
-}
-
-func (s *FromProcedureSpec) Kind() plan.ProcedureKind {
-	return FromKind
-}
-
-func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
-	ns := new(FromProcedureSpec)
-
-	ns.Bucket = s.Bucket
-	ns.BucketID = s.BucketID
-
-	ns.BoundsSet = s.BoundsSet
-	ns.Bounds = s.Bounds
-
-	ns.FilterSet = s.FilterSet
-	ns.Filter = s.Filter.Copy().(*semantic.FunctionExpression)
-
-	ns.DescendingSet = s.DescendingSet
-	ns.Descending = s.Descending
-
-	ns.LimitSet = s.LimitSet
-	ns.PointsLimit = s.PointsLimit
-	ns.SeriesLimit = s.SeriesLimit
-	ns.SeriesOffset = s.SeriesOffset
-
-	ns.WindowSet = s.WindowSet
-	ns.Window = s.Window
-
-	ns.AggregateSet = s.AggregateSet
-	ns.AggregateMethod = s.AggregateMethod
-
-	return ns
-}
-
-// TimeBounds implements plan.BoundsAwareProcedureSpec
-func (s *FromProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bounds {
-	if s.BoundsSet {
-		bounds := &plan.Bounds{
-			Start: values.ConvertTime(s.Bounds.Start.Time(s.Bounds.Now)),
-			Stop:  values.ConvertTime(s.Bounds.Stop.Time(s.Bounds.Now)),
-		}
-		return bounds
-	}
-	return nil
 }
