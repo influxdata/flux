@@ -380,9 +380,7 @@ func (c *Constraints) Copy() *Constraints {
 	for k, v := range c.annotations {
 		n.annotations[k] = v
 	}
-	for k, v := range c.typeConst {
-		n.typeConst[k] = v
-	}
+	copy(n.typeConst, c.typeConst)
 	for k, v := range c.kindConst {
 		kinds := make([]Kind, len(v))
 		copy(kinds, v)

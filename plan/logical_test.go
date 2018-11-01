@@ -560,6 +560,9 @@ func TestLogicalPlanner(t *testing.T) {
 
 			logicalPlanner := plan.NewLogicalPlanner(plan.OnlyLogicalRules(MergeFiltersRule{}, PushFilterThroughMapRule{}))
 			logicalPlan, err := logicalPlanner.Plan(fluxSpec)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			wantPlan := plantest.CreatePlanSpec(&tc.wantPlan)
 			if err := plantest.ComparePlans(wantPlan, logicalPlan, plantest.CompareLogicalPlanNodes); err != nil {

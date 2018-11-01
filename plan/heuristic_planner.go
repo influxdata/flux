@@ -62,9 +62,7 @@ func (p *heuristicPlanner) matchRules(node PlanNode) (PlanNode, bool, error) {
 // Plan may change its argument and/or return a new instance of PlanSpec, so the correct way to call Plan is:
 //     plan, err = plan.Plan(plan)
 func (p *heuristicPlanner) Plan(inputPlan *PlanSpec) (*PlanSpec, error) {
-
-	for anyChanged := true; anyChanged == true; {
-
+	for anyChanged := true; anyChanged; {
 		visited := make(map[PlanNode]struct{})
 
 		nodeStack := make([]PlanNode, 0, len(inputPlan.Roots))

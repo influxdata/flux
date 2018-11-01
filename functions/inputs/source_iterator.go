@@ -69,9 +69,7 @@ func (c *sourceIterator) AddTransformation(t execute.Transformation) {
 }
 
 func (c *sourceIterator) Run(ctx context.Context) {
-	var err error
-
-	err = c.Do(func(tbl flux.Table) error {
+	err := c.Do(func(tbl flux.Table) error {
 		for _, t := range c.ts {
 			err := t.Process(c.id, tbl)
 			if err != nil {

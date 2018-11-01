@@ -354,9 +354,7 @@ func (s *RenameOpSpec) Copy() SchemaMutation {
 
 func (s *DropOpSpec) Copy() SchemaMutation {
 	newCols := make([]string, len(s.Cols))
-	for i, c := range s.Cols {
-		newCols[i] = c
-	}
+	copy(newCols, s.Cols)
 
 	return &DropOpSpec{
 		Cols:      newCols,
@@ -366,9 +364,7 @@ func (s *DropOpSpec) Copy() SchemaMutation {
 
 func (s *KeepOpSpec) Copy() SchemaMutation {
 	newCols := make([]string, len(s.Cols))
-	for i, c := range s.Cols {
-		newCols[i] = c
-	}
+	copy(newCols, s.Cols)
 
 	return &KeepOpSpec{
 		Cols:      newCols,

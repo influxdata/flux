@@ -118,12 +118,9 @@ func (s *CovarianceProcedureSpec) Copy() plan.ProcedureSpec {
 }
 
 type CovarianceTransformation struct {
-	d      execute.Dataset
-	cache  execute.TableBuilderCache
-	bounds execute.Bounds
-	spec   CovarianceProcedureSpec
-
-	yIdx int
+	d     execute.Dataset
+	cache execute.TableBuilderCache
+	spec  CovarianceProcedureSpec
 
 	n,
 	xm1,

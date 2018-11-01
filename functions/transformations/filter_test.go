@@ -346,7 +346,7 @@ func TestFilter_NewQuery(t *testing.T) {
 			Name: "from with database filter with no parens including regex and field",
 			Raw: `from(bucket:"mybucket")
 						|> filter(fn: (r) =>
-							r["t1"]==/val1/
+							r["t1"]==/^val1/
 							and
 							r["_field"] == 10.5
 						)
@@ -376,7 +376,7 @@ func TestFilter_NewQuery(t *testing.T) {
 												Object:   &semantic.IdentifierExpression{Name: "r"},
 												Property: "t1",
 											},
-											Right: &semantic.RegexpLiteral{Value: regexp.MustCompile("val1")},
+											Right: &semantic.RegexpLiteral{Value: regexp.MustCompile("^val1")},
 										},
 										Right: &semantic.BinaryExpression{
 											Operator: ast.EqualOperator,
@@ -425,7 +425,7 @@ func TestFilter_NewQuery(t *testing.T) {
 			Name: "from with database regex with escape",
 			Raw: `from(bucket:"mybucket")
 						|> filter(fn: (r) =>
-							r["t1"]==/va\/l1/
+							r["t1"]==/^va\/l1/
 						)`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
@@ -449,7 +449,7 @@ func TestFilter_NewQuery(t *testing.T) {
 											Object:   &semantic.IdentifierExpression{Name: "r"},
 											Property: "t1",
 										},
-										Right: &semantic.RegexpLiteral{Value: regexp.MustCompile(`va/l1`)},
+										Right: &semantic.RegexpLiteral{Value: regexp.MustCompile(`^va/l1`)},
 									},
 								},
 							},
@@ -465,9 +465,9 @@ func TestFilter_NewQuery(t *testing.T) {
 			Name: "from with database with two regex",
 			Raw: `from(bucket:"mybucket")
 						|> filter(fn: (r) =>
-							r["t1"]==/va\/l1/
+							r["t1"]==/^va\/l1/
 							and
-							r["t2"] != /val2/
+							r["t2"] != /^val2/
 						)`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
@@ -493,7 +493,7 @@ func TestFilter_NewQuery(t *testing.T) {
 												Object:   &semantic.IdentifierExpression{Name: "r"},
 												Property: "t1",
 											},
-											Right: &semantic.RegexpLiteral{Value: regexp.MustCompile(`va/l1`)},
+											Right: &semantic.RegexpLiteral{Value: regexp.MustCompile(`^va/l1`)},
 										},
 										Right: &semantic.BinaryExpression{
 											Operator: ast.NotEqualOperator,
@@ -501,7 +501,7 @@ func TestFilter_NewQuery(t *testing.T) {
 												Object:   &semantic.IdentifierExpression{Name: "r"},
 												Property: "t2",
 											},
-											Right: &semantic.RegexpLiteral{Value: regexp.MustCompile(`val2`)},
+											Right: &semantic.RegexpLiteral{Value: regexp.MustCompile(`^val2`)},
 										},
 									},
 								},

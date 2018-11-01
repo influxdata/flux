@@ -34,7 +34,6 @@ const (
 
 	resultLabel = "result"
 	tableLabel  = "table"
-	errorLabel  = "error"
 
 	commentPrefix = "#"
 
@@ -80,7 +79,6 @@ func (d *ResultDecoder) Decode(r io.Reader) (flux.Result, error) {
 // Results are delimited by an empty line.
 type MultiResultDecoder struct {
 	c ResultDecoderConfig
-	r io.ReadCloser
 }
 
 // NewMultiResultDecoder creates a new MultiResultDecoder.
@@ -404,14 +402,10 @@ type tableDecoder struct {
 	r *csv.Reader
 	c ResultDecoderConfig
 
-	defaults []interface{}
-
 	meta tableMetadata
 
 	initialized bool
 	id          string
-	key         flux.GroupKey
-	cols        []colMeta
 
 	builder *execute.ColListTableBuilder
 

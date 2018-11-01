@@ -255,6 +255,7 @@ var TableObjectType = semantic.NewObjectPolyType(
 	//semantic.LabelSet{tableKindKey, tableSpecKey, tableParentsKey},
 	semantic.LabelSet{tableKindKey},
 )
+var _ = tableSpecKey // So that linter doesn't think tableSpecKey is unused, considering above TODO.
 
 var TableObjectMonoType semantic.Type
 
@@ -619,22 +620,6 @@ func (f *function) call(args interpreter.Arguments) (values.Value, error) {
 		Parents: a.parents,
 	}
 	return t, nil
-}
-
-type specValue struct {
-	spec OperationSpec
-}
-
-func (v specValue) Type() semantic.Type {
-	return semantic.EmptyObject
-}
-
-func (v specValue) Value() interface{} {
-	return v.spec
-}
-
-func (v specValue) Property(name string) (interpreter.Value, error) {
-	return nil, errors.New("spec does not have properties")
 }
 
 type Arguments struct {

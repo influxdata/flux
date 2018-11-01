@@ -1,6 +1,6 @@
 package semantic
 
-// Tvarset is a set of type variables.
+// TvarSet is a set of type variables.
 type TvarSet []Tvar
 
 func (s TvarSet) contains(tv Tvar) bool {
@@ -23,15 +23,6 @@ func (a TvarSet) union(b TvarSet) TvarSet {
 	return union
 }
 
-func (a TvarSet) intersect(b TvarSet) TvarSet {
-	intersect := make(TvarSet, 0, len(a)+len(b))
-	for _, tva := range a {
-		if b.contains(tva) {
-			intersect = append(intersect, tva)
-		}
-	}
-	return intersect
-}
 func (a TvarSet) hasIntersect(b TvarSet) bool {
 	for _, tva := range a {
 		if b.contains(tva) {

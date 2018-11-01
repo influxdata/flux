@@ -271,7 +271,7 @@ func NewObjectType(propertyTypes map[string]Type) Type {
 
 		// track hash of property names and kinds
 		sum.Write([]byte(p))
-		binary.Write(sum, binary.LittleEndian, t.Nature())
+		binary.Write(sum, binary.LittleEndian, int64(t.Nature()))
 	}
 
 	// Create new object type

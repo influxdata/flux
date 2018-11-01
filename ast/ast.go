@@ -677,12 +677,12 @@ func (i *Identifier) Copy() Node {
 	return ni
 }
 
-// Literal are thelexical forms for literal expressions which define
-// boolean, string, integer, number, duration, datetime and field values.
+// Literal is the lexical form for a literal expression which defines
+// boolean, string, integer, number, duration, datetime or field values.
 // Literals must be coerced explicitly.
 type Literal interface {
 	Expression
-	literal()
+	literal() //lint:ignore U1000 Yes, this function is unused, but it's here to limit the implementers of the Literal interface.
 }
 
 func (*BooleanLiteral) literal()         {}

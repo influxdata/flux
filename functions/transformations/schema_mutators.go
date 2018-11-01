@@ -51,31 +51,6 @@ type SchemaMutation interface {
 	Copy() SchemaMutation
 }
 
-// Utility function for compiling an `fn` parameter for rename or drop/keep. In addition
-// to the function expression, it takes two types to verify the result against:
-// a single argument type, and a single return type.
-func compileFnParam(fn *semantic.FunctionExpression, paramType, returnType semantic.Type) (compiler.Func, string, error) {
-	scope := flux.BuiltIns()
-	compileCache := compiler.NewCompilationCache(fn, scope)
-	if fn.Block.Parameters != nil && len(fn.Block.Parameters.List) != 1 {
-		return nil, "", errors.New("function should only have a single parameter")
-	}
-	paramName := fn.Block.Parameters.List[0].Key.Name
-
-	compiled, err := compileCache.Compile(semantic.NewObjectType(map[string]semantic.Type{
-		paramName: paramType,
-	}))
-	if err != nil {
-		return nil, "", err
-	}
-
-	if compiled.Type() != returnType {
-		return nil, "", fmt.Errorf("provided function does not evaluate to type %s", returnType.Nature())
-	}
-
-	return compiled, paramName, nil
-}
-
 func toStringSet(arr []string) map[string]bool {
 	if arr == nil {
 		return nil

@@ -12,7 +12,6 @@ import (
 )
 
 type rowFn struct {
-	fn               *semantic.FunctionExpression
 	compilationCache *compiler.CompilationCache
 	inRecord         values.Object
 
