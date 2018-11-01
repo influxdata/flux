@@ -12,8 +12,8 @@ type FromCSVCompiler struct {
 	InputFile string
 }
 
-// FromJSONCompiler wraps a compiler and replaces all From operations with FromJSON
-type FromJSONCompiler struct {
+// FromInfluxJSONCompiler wraps a compiler and replaces all From operations with FromJSON
+type FromInfluxJSONCompiler struct {
 	flux.Compiler
 	InputFile string
 }
@@ -27,7 +27,7 @@ func (c FromCSVCompiler) Compile(ctx context.Context) (*flux.Spec, error) {
 	return spec, nil
 }
 
-func (c FromJSONCompiler) Compile(ctx context.Context) (*flux.Spec, error) {
+func (c FromInfluxJSONCompiler) Compile(ctx context.Context) (*flux.Spec, error) {
 	spec, err := c.Compiler.Compile(ctx)
 	if err != nil {
 		return nil, err
