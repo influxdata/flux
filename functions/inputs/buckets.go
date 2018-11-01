@@ -5,6 +5,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 const BucketsKind = "buckets"
@@ -13,7 +14,9 @@ type BucketsOpSpec struct {
 }
 
 func init() {
-	bucketsSignature := flux.FunctionSignature(nil, nil)
+	bucketsSignature := semantic.FunctionPolySignature{
+		Return: flux.TableObjectType,
+	}
 
 	flux.RegisterFunction(BucketsKind, createBucketsOpSpec, bucketsSignature)
 	flux.RegisterOpSpec(BucketsKind, newBucketsOp)
