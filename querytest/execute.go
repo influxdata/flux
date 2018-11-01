@@ -48,3 +48,13 @@ func ReplaceFromSpec(q *flux.Spec, csvSrc string) {
 		}
 	}
 }
+
+func ReplaceFromWithFromInfluxJSONSpec(q *flux.Spec, jsonSrc string) {
+	for _, op := range q.Operations {
+		if op.Spec.Kind() == inputs.FromKind {
+			op.Spec = &inputs.FromInfluxJSONOpSpec{
+				File: jsonSrc,
+			}
+		}
+	}
+}
