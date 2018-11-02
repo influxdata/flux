@@ -2,9 +2,9 @@ package inputs
 
 import (
 	"fmt"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/functions"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
@@ -137,6 +137,11 @@ func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
 
 	ns.WindowSet = s.WindowSet
 	ns.Window = s.Window
+
+	ns.GroupingSet = s.GroupingSet
+	ns.OrderByTime = s.OrderByTime
+	ns.GroupMode = s.GroupMode
+	ns.GroupKeys = s.GroupKeys
 
 	ns.AggregateSet = s.AggregateSet
 	ns.AggregateMethod = s.AggregateMethod
@@ -434,4 +439,69 @@ func isPushableFieldOperator(kind ast.OperatorKind) bool {
 	}
 
 	return false
+}
+
+type MergeFromDistinctRule struct {
+}
+
+func (MergeFromDistinctRule) Name() string {
+	return "MergeFromDistinctRule"
+}
+
+func (MergeFromDistinctRule) Pattern() plan.Pattern {
+	return plan.Pat(transformations.DistinctKind, plan.Pat(FromKind))
+}
+
+func (MergeFromDistinctRule) Rewrite(distinctNode plan.PlanNode) (plan.PlanNode, bool, error) {
+	fromNode := distinctNode.Predecessors()[0]
+	distinctSpec := distinctNode.ProcedureSpec().(*transformations.DistinctProcedureSpec)
+	fromSpec := fromNode.ProcedureSpec().(*FromProcedureSpec)
+
+	groupStar := !fromSpec.GroupingSet && distinctSpec.Column != execute.DefaultValueColLabel && distinctSpec.Column != execute.DefaultTimeColLabel
+	groupByColumn := fromSpec.GroupingSet && len(fromSpec.GroupKeys) > 0 &&
+		((fromSpec.GroupMode == functions.GroupModeBy && execute.ContainsStr(fromSpec.GroupKeys, distinctSpec.Column)) ||
+			(fromSpec.GroupMode == functions.GroupModeExcept && !execute.ContainsStr(fromSpec.GroupKeys, distinctSpec.Column)))
+	if groupStar || groupByColumn {
+		newFromSpec := fromSpec.Copy().(*FromProcedureSpec)
+		newFromSpec.LimitSet = true
+		newFromSpec.PointsLimit = -1
+		merged, err := plan.MergePhysicalPlanNodes(distinctNode, fromNode, newFromSpec)
+		if err != nil {
+			return nil, false, err
+		}
+		return merged, true, nil
+	}
+
+	return distinctNode, false, nil
+}
+
+type MergeFromGroupRule struct {
+}
+
+func (MergeFromGroupRule) Name() string {
+	return "MergeFromGroupRule"
+}
+
+func (MergeFromGroupRule) Pattern() plan.Pattern {
+	return plan.Pat(transformations.GroupKind, plan.Pat(FromKind))
+}
+
+func (MergeFromGroupRule) Rewrite(groupNode plan.PlanNode) (plan.PlanNode, bool, error) {
+	fromNode := groupNode.Predecessors()[0]
+	groupSpec := groupNode.ProcedureSpec().(*transformations.GroupProcedureSpec)
+	fromSpec := fromNode.ProcedureSpec().(*FromProcedureSpec)
+
+	if !fromSpec.GroupingSet {
+		newFromSpec := fromSpec.Copy().(*FromProcedureSpec)
+		newFromSpec.GroupingSet = true
+		newFromSpec.GroupMode = groupSpec.GroupMode
+		newFromSpec.GroupKeys = groupSpec.GroupKeys
+		merged, err := plan.MergePhysicalPlanNodes(groupNode, fromNode, newFromSpec)
+		if err != nil {
+			return nil, false, err
+		}
+		return merged, true, nil
+	}
+
+	return groupNode, false, nil
 }
