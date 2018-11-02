@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -35,6 +36,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // Controller provides a central location to manage all incoming queries.
@@ -277,6 +279,10 @@ func (c *Controller) processQuery(q *Query) (pop bool, err error) {
 				err = errors.Wrap(e, "panic")
 			default:
 				err = fmt.Errorf("panic: %s", e)
+			}
+			if entry := c.logger.Check(zapcore.InfoLevel, "Controller panic"); entry != nil {
+				entry.Stack = string(debug.Stack())
+				entry.Write(zap.Error(err))
 			}
 		}
 	}()
