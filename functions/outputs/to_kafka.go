@@ -322,6 +322,13 @@ func (t *ToKafkaTransformation) Process(id execute.DatasetID, tbl flux.Table) (e
 	}
 	m.name = t.spec.Spec.Name
 
+	builder, new := t.cache.TableBuilder(tbl.Key())
+	if new {
+		if err := execute.AddTableCols(tbl, builder); err != nil {
+			return err
+		}
+	}
+
 	var wg syncutil.WaitGroup
 	wg.Do(func() error {
 		if err := tbl.Do(func(er flux.ColReader) error {
@@ -363,6 +370,9 @@ func (t *ToKafkaTransformation) Process(id execute.DatasetID, tbl flux.Table) (e
 				}
 				_, err := e.Encode(m)
 				if err != nil {
+					return err
+				}
+				if err := execute.AppendRecord(i, er, builder); err != nil {
 					return err
 				}
 			}

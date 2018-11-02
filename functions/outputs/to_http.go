@@ -354,6 +354,13 @@ func (t *ToHTTPTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		isTag[i] = sort.SearchStrings(t.spec.Spec.TagColumns, col.Label) < len(t.spec.Spec.TagColumns) && t.spec.Spec.TagColumns[sort.SearchStrings(t.spec.Spec.TagColumns, col.Label)] == col.Label
 	}
 
+	builder, new := t.cache.TableBuilder(tbl.Key())
+	if new {
+		if err := execute.AddTableCols(tbl, builder); err != nil {
+			return err
+		}
+	}
+
 	var wg syncutil.WaitGroup
 	wg.Do(func() error {
 		m.name = t.spec.Spec.Name
@@ -397,6 +404,10 @@ func (t *ToHTTPTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 				}
 				_, err := e.Encode(m)
 				if err != nil {
+					return err
+				}
+
+				if err := execute.AppendRecord(i, er, builder); err != nil {
 					return err
 				}
 			}

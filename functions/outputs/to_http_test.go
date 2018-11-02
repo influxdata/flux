@@ -180,7 +180,21 @@ func TestToHTTP_Process(t *testing.T) {
 				},
 			})},
 			want: wanted{
-				Table:  []*executetest.Table(nil),
+				Table: []*executetest.Table{{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "fred", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(11), "a", 2.0, "one"},
+						{execute.Time(21), "a", 2.0, "one"},
+						{execute.Time(21), "b", 1.0, "seven"},
+						{execute.Time(31), "a", 3.0, "nine"},
+						{execute.Time(41), "c", 4.0, "elevendyone"},
+					},
+				}},
 				Result: []byte("a _value=2 11\na _value=2 21\nb _value=1 21\na _value=3 31\nc _value=4 41\n")},
 		},
 		{
@@ -211,7 +225,21 @@ func TestToHTTP_Process(t *testing.T) {
 				},
 			}},
 			want: wanted{
-				Table:  []*executetest.Table(nil),
+				Table: []*executetest.Table{{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "fred", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(11), "a", 2.0, "one"},
+						{execute.Time(21), "a", 2.0, "one"},
+						{execute.Time(21), "b", 1.0, "seven"},
+						{execute.Time(31), "a", 3.0, "nine"},
+						{execute.Time(41), "c", 4.0, "elevendyone"},
+					},
+				}},
 				Result: []byte("a _value=2 11\na _value=2 21\nb _value=1 21\na _value=3 31\nc _value=4 41\n")},
 		},
 		{
@@ -243,7 +271,21 @@ func TestToHTTP_Process(t *testing.T) {
 				},
 			}},
 			want: wanted{
-				Table:  []*executetest.Table(nil),
+				Table: []*executetest.Table{{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "fred", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(11), "a", 2.0, "one"},
+						{execute.Time(21), "a", 2.0, "one"},
+						{execute.Time(21), "b", 1.0, "seven"},
+						{execute.Time(31), "a", 3.0, "nine"},
+						{execute.Time(41), "c", 4.0, "elevendyone"},
+					},
+				}},
 				Result: []byte("a,fred=one _value=2 11\na,fred=one _value=2 21\nb,fred=seven _value=1 21\na,fred=nine _value=3 31\nc,fred=elevendyone _value=4 41\n")},
 		},
 		{
@@ -271,7 +313,18 @@ func TestToHTTP_Process(t *testing.T) {
 				},
 			}},
 			want: wanted{
-				Table:  []*executetest.Table(nil),
+				Table: []*executetest.Table{{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(11), 2.0},
+						{execute.Time(21), 1.0},
+						{execute.Time(31), 3.0},
+						{execute.Time(41), 4.0},
+					},
+				}},
 				Result: []byte("one_table _value=2 11\none_table _value=1 21\none_table _value=3 31\none_table _value=4 41\n"),
 			},
 		},
@@ -301,7 +354,19 @@ func TestToHTTP_Process(t *testing.T) {
 				},
 			}},
 			want: wanted{
-				Table: []*executetest.Table(nil),
+				Table: []*executetest.Table{{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "fred", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(11), 2.0, "one"},
+						{execute.Time(21), 1.0, "seven"},
+						{execute.Time(31), 3.0, "nine"},
+						{execute.Time(41), 4.0, "elevendyone"},
+					},
+				}},
 				Result: []byte(`one_table_w_unused_tag _value=2 11
 one_table_w_unused_tag _value=1 21
 one_table_w_unused_tag _value=3 31
@@ -336,7 +401,19 @@ one_table_w_unused_tag _value=4 41
 				},
 			}},
 			want: wanted{
-				Table: []*executetest.Table(nil),
+				Table: []*executetest.Table{{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "fred", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(11), 2.0, "one"},
+						{execute.Time(21), 1.0, "seven"},
+						{execute.Time(31), 3.0, "nine"},
+						{execute.Time(41), 4.0, "elevendyone"},
+					},
+				}},
 				Result: []byte(`one_table_w_tag,fred=one _value=2 11
 one_table_w_tag,fred=seven _value=1 21
 one_table_w_tag,fred=nine _value=3 31
@@ -384,7 +461,23 @@ one_table_w_tag,fred=elevendyone _value=4 41
 				},
 			},
 			want: wanted{
-				Table: []*executetest.Table(nil),
+				Table: []*executetest.Table{
+					&executetest.Table{
+						ColMeta: []flux.ColMeta{
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
+							{Label: "fred", Type: flux.TString},
+						},
+						Data: [][]interface{}{
+							{execute.Time(11), 2.0, "one"},
+							{execute.Time(21), 1.0, "seven"},
+							{execute.Time(31), 3.0, "nine"},
+							{execute.Time(51), 2.0, "one"},
+							{execute.Time(61), 1.0, "seven"},
+							{execute.Time(71), 3.0, "nine"},
+						},
+					},
+				},
 				Result: []byte("multi_table,fred=one _value=2 11\nmulti_table,fred=seven _value=1 21\nmulti_table,fred=nine _value=3 31\n" +
 					"multi_table,fred=one _value=2 51\nmulti_table,fred=seven _value=1 61\nmulti_table,fred=nine _value=3 71\n"),
 			},
@@ -430,7 +523,23 @@ one_table_w_tag,fred=elevendyone _value=4 41
 				},
 			},
 			want: wanted{
-				Table: []*executetest.Table(nil),
+				Table: []*executetest.Table{
+					&executetest.Table{
+						ColMeta: []flux.ColMeta{
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
+							{Label: "fred", Type: flux.TString},
+						},
+						Data: [][]interface{}{
+							{execute.Time(11), 2.0, "one"},
+							{execute.Time(21), 1.0, "seven"},
+							{execute.Time(31), 3.0, "nine"},
+							{execute.Time(51), 2.0, "one"},
+							{execute.Time(61), 1.0, "seven"},
+							{execute.Time(71), 3.0, "nine"},
+						},
+					},
+				},
 				Result: []byte("multi_collist_tables,fred=one _value=2 11\nmulti_collist_tables,fred=seven _value=1 21\nmulti_collist_tables,fred=nine _value=3 31\n" +
 					"multi_collist_tables,fred=one _value=2 51\nmulti_collist_tables,fred=seven _value=1 61\nmulti_collist_tables,fred=nine _value=3 71\n"),
 			},
