@@ -1301,6 +1301,39 @@ All aggregate operations have the following properties:
 * `columns` list of string
     columns specifies a list of columns to aggregate.
 
+##### AggregateWindow
+
+AggregateWindow is a function that simplifies aggregating data over fixed windows of time.
+AggregateWindow windows the data, performs an aggregate operation, and then undoes the windowing to produce
+an output table for every input table.
+
+AggregateWindow has the following properties:
+
+
+* `every` duration
+    Every specifies the window size to aggregate.
+* `fn` aggregate function
+    Fn specifies the aggregate operation to perform. Any of the functions in this Aggregate section can be provided.
+* `columns` list of string
+    Columns specifies a list of columns to aggregate.
+    Defaults to ["_value"]
+* `timeSrc` string
+    TimeSrc is the name of a column from the group key to use as the source for the aggregated time.
+    Defaults to "_stop".
+* `timeDst` string
+    TimeDst is the name of a new column in which the aggregated time is placed.
+    Defaults to "_time".
+
+Example:
+
+```
+// Compute the mean over 1m intervals for the last 1h.
+from(bucket: "telegraf/autogen")
+  |> range(start: -1h)
+  |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
+  |> aggregateWindow(every: 1m, fn:mean)
+```
+
 ##### Covariance
 
 Covariance is an aggregate operation.
