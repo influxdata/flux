@@ -418,7 +418,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			},
 		},
 		{
-			name:  "from incompatible-group distinct",
+			name: "from incompatible-group distinct",
 			// If there is an incompatible grouping, don't do the no points optimization.
 			rules: []plan.Rule{inputs.FromDistinctRule{}, inputs.MergeFromGroupRule{}},
 			before: &plantest.PlanSpec{
@@ -439,8 +439,8 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("merged_from_group", &inputs.FromProcedureSpec{
 						GroupingSet: true,
-						GroupMode: functions.GroupModeBy,
-						GroupKeys: []string{"_measurement"},
+						GroupMode:   functions.GroupModeBy,
+						GroupKeys:   []string{"_measurement"},
 					}),
 					plan.CreatePhysicalNode("distinct", &transformations.DistinctProcedureSpec{Column: "_field"}),
 				},
@@ -481,7 +481,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			},
 		},
 		{
-			name:  "from group group",
+			name: "from group group",
 			// Only push down one call to group()
 			rules: []plan.Rule{inputs.MergeFromGroupRule{}},
 			before: &plantest.PlanSpec{
