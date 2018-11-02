@@ -394,7 +394,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 		},
 		{
 			name:  "from distinct",
-			rules: []plan.Rule{inputs.MergeFromDistinctRule{}},
+			rules: []plan.Rule{inputs.FromDistinctRule{}},
 			before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
@@ -406,10 +406,14 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			},
 			after: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("merged_from_distinct", &inputs.FromProcedureSpec{
+					plan.CreatePhysicalNode("from", &inputs.FromProcedureSpec{
 						LimitSet:    true,
 						PointsLimit: -1,
 					}),
+					plan.CreatePhysicalNode("distinct", &transformations.DistinctProcedureSpec{Column: "_measurement"}),
+				},
+				Edges: [][2]int{
+					{0, 1},
 				},
 			},
 		},
@@ -440,7 +444,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 		},
 		{
 			name:  "from range group distinct group",
-			rules: []plan.Rule{inputs.MergeFromGroupRule{}, inputs.MergeFromDistinctRule{}, inputs.MergeFromRangeRule{}},
+			rules: []plan.Rule{inputs.MergeFromGroupRule{}, inputs.FromDistinctRule{}, inputs.MergeFromRangeRule{}},
 			before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from", from),
@@ -461,7 +465,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			},
 			after: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("merged_merged_merged_from_range_group1_distinct", &inputs.FromProcedureSpec{
+					plan.CreatePhysicalNode("merged_merged_from_range_group1", &inputs.FromProcedureSpec{
 						BoundsSet:   true,
 						Bounds:      flux.Bounds{Start: fluxTime(5), Stop: fluxTime(10)},
 						GroupingSet: true,
@@ -470,10 +474,12 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 						LimitSet:    true,
 						PointsLimit: -1,
 					}),
+					plan.CreatePhysicalNode("distinct", &transformations.DistinctProcedureSpec{Column: "_measurement"}),
 					plan.CreatePhysicalNode("group2", &transformations.GroupProcedureSpec{GroupMode: functions.GroupModeNone}),
 				},
 				Edges: [][2]int{
 					{0, 1},
+					{1, 2},
 				},
 			},
 		},

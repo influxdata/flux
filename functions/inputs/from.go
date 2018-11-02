@@ -36,7 +36,7 @@ func init() {
 	plan.RegisterPhysicalRules(
 		MergeFromRangeRule{},
 		MergeFromFilterRule{},
-		MergeFromDistinctRule{},
+		FromDistinctRule{},
 		MergeFromGroupRule{},
 	)
 }
@@ -452,21 +452,25 @@ func isPushableFieldOperator(kind ast.OperatorKind) bool {
 	return false
 }
 
-type MergeFromDistinctRule struct {
+type FromDistinctRule struct {
 }
 
-func (MergeFromDistinctRule) Name() string {
-	return "MergeFromDistinctRule"
+func (FromDistinctRule) Name() string {
+	return "FromDistinctRule"
 }
 
-func (MergeFromDistinctRule) Pattern() plan.Pattern {
+func (FromDistinctRule) Pattern() plan.Pattern {
 	return plan.Pat(transformations.DistinctKind, plan.Pat(FromKind))
 }
 
-func (MergeFromDistinctRule) Rewrite(distinctNode plan.PlanNode) (plan.PlanNode, bool, error) {
+func (FromDistinctRule) Rewrite(distinctNode plan.PlanNode) (plan.PlanNode, bool, error) {
 	fromNode := distinctNode.Predecessors()[0]
 	distinctSpec := distinctNode.ProcedureSpec().(*transformations.DistinctProcedureSpec)
 	fromSpec := fromNode.ProcedureSpec().(*FromProcedureSpec)
+
+	if fromSpec.LimitSet && fromSpec.PointsLimit == -1 {
+		return distinctNode, false, nil
+	}
 
 	groupStar := !fromSpec.GroupingSet && distinctSpec.Column != execute.DefaultValueColLabel && distinctSpec.Column != execute.DefaultTimeColLabel
 	groupByColumn := fromSpec.GroupingSet && len(fromSpec.GroupKeys) > 0 &&
@@ -476,11 +480,10 @@ func (MergeFromDistinctRule) Rewrite(distinctNode plan.PlanNode) (plan.PlanNode,
 		newFromSpec := fromSpec.Copy().(*FromProcedureSpec)
 		newFromSpec.LimitSet = true
 		newFromSpec.PointsLimit = -1
-		merged, err := plan.MergePhysicalPlanNodes(distinctNode, fromNode, newFromSpec)
-		if err != nil {
+		if err := fromNode.ReplaceSpec(newFromSpec); err != nil {
 			return nil, false, err
 		}
-		return merged, true, nil
+		return distinctNode, true, nil
 	}
 
 	return distinctNode, false, nil
