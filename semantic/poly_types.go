@@ -753,8 +753,9 @@ func (l ObjectKind) unifyKind(kinds map[Tvar]Kind, k Kind) (Kind, Substitution, 
 	upper := l.upper.intersect(r.upper)
 	lower := l.lower.union(r.lower)
 
-	if !upper.isSuperSet(lower) {
-		return nil, nil, fmt.Errorf("unknown record accces l: %v, u: %v", lower, upper)
+	diff := lower.diff(upper)
+	if len(diff) > 0 {
+		return nil, nil, fmt.Errorf("missing object properties %v", diff)
 	}
 
 	kr := ObjectKind{
