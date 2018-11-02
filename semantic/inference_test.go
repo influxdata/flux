@@ -1189,6 +1189,19 @@ name(p:device)
 			},
 		},
 		{
+			name: "structural polymorphism error",
+			script: `
+john = {name: "John", age: 30, weight: 100.0}
+jane = {name: "Jane", lastName: "Smith"}
+
+fullName = (p) => p.name + " " + p.lastName
+
+fullName(p:jane)
+fullName(p:john)
+`,
+			wantErr: errors.New(`type error 8:1-8:17: missing object properties (lastName)`),
+		},
+		{
 			name: "function with polymorphic object parameter",
 			script: `
 foo = (r) => ({
