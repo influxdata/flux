@@ -1376,6 +1376,26 @@ from(bucket:"telegraf/autogen")
     |> mean()
 ```
 
+##### Median (aggregate)
+
+Median is defined as:
+
+    median = (method="estimate_tdigest", compression=0.0, table=<-) =>
+    	table
+    		|> percentile(percentile:0.5, method:method, compression:compression)
+
+Is it simply a `percentile` with the `percentile` paramter always set to `0.5`.
+It therefore shares all the same properties as the percentile function.
+
+Example:
+```
+// Determine median cpu system usage:
+from(bucket: "telegraf/autogen")
+	|> range(start: -5m)
+	|> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
+	|> median()
+```
+
 ##### Percentile (aggregate)
 
 Percentile is both an aggregate operation and a selector operation depending on selected options.
@@ -1403,7 +1423,7 @@ Example:
 from(bucket: "telegraf/autogen")
 	|> range(start: -5m)
 	|> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
-	|> percentile(p: 0.99, method: "estimate_tdigest", compression: 1000)
+	|> percentile(percentile: 0.99, method: "estimate_tdigest", compression: 1000)
 ```
 
 ##### Skew
@@ -1570,8 +1590,29 @@ Example:
 from(bucket: "telegraf/autogen")
 	|> range(start: -5m)
 	|> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
-	|> percentile(p: 0.99, method: "exact_selector")
+	|> percentile(percentile: 0.99, method: "exact_selector")
 ```
+
+##### Median (selector)
+
+Median is defined as:
+
+    median = (method="estimate_tdigest", compression=0.0, table=<-) =>
+    	table
+    		|> percentile(percentile:0.5, method:method, compression:compression)
+
+Is it simply a `percentile` with the `percentile` paramter always set to `0.5`.
+It therefore shares all the same properties as the percentile function.
+
+Example:
+```
+// Determine median cpu system usage:
+from(bucket: "telegraf/autogen")
+	|> range(start: -5m)
+	|> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
+	|> median(method: "exact_selector")
+```
+
 
 
 ##### Sample
