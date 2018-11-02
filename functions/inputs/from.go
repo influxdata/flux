@@ -33,7 +33,12 @@ func init() {
 	flux.RegisterFunction(FromKind, createFromOpSpec, fromSignature)
 	flux.RegisterOpSpec(FromKind, newFromOp)
 	plan.RegisterProcedureSpec(FromKind, newFromProcedure, FromKind)
-	plan.RegisterPhysicalRules(MergeFromRangeRule{}, MergeFromFilterRule{})
+	plan.RegisterPhysicalRules(
+		MergeFromRangeRule{},
+		MergeFromFilterRule{},
+		MergeFromDistinctRule{},
+		MergeFromGroupRule{},
+	)
 }
 
 func createFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
@@ -250,6 +255,13 @@ func (MergeFromFilterRule) Pattern() plan.Pattern {
 
 func (MergeFromFilterRule) Rewrite(filterNode plan.PlanNode) (plan.PlanNode, bool, error) {
 	filterSpec := filterNode.ProcedureSpec().(*transformations.FilterProcedureSpec)
+	fromNode := filterNode.Predecessors()[0]
+	fromSpec := fromNode.ProcedureSpec().(*FromProcedureSpec)
+
+	if fromSpec.AggregateSet || fromSpec.GroupingSet {
+		return filterNode, false, nil
+	}
+
 	bodyExpr, ok := filterSpec.Fn.Block.Body.(semantic.Expression)
 	if !ok {
 		return filterNode, false, nil
@@ -274,8 +286,7 @@ func (MergeFromFilterRule) Rewrite(filterNode plan.PlanNode) (plan.PlanNode, boo
 		return filterNode, false, nil
 	}
 
-	fromNode := filterNode.Predecessors()[0]
-	newFromSpec := fromNode.ProcedureSpec().Copy().(*FromProcedureSpec)
+	newFromSpec := fromSpec.Copy().(*FromProcedureSpec)
 	if newFromSpec.FilterSet {
 		newBody := semantic.ExprsToConjunction(newFromSpec.Filter.Block.Body.(semantic.Expression), pushable)
 		newFromSpec.Filter.Block.Body = newBody
@@ -491,7 +502,7 @@ func (MergeFromGroupRule) Rewrite(groupNode plan.PlanNode) (plan.PlanNode, bool,
 	groupSpec := groupNode.ProcedureSpec().(*transformations.GroupProcedureSpec)
 	fromSpec := fromNode.ProcedureSpec().(*FromProcedureSpec)
 
-	if !fromSpec.GroupingSet {
+	if !fromSpec.GroupingSet && !fromSpec.LimitSet {
 		newFromSpec := fromSpec.Copy().(*FromProcedureSpec)
 		newFromSpec.GroupingSet = true
 		newFromSpec.GroupMode = groupSpec.GroupMode
