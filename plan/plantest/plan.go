@@ -1,6 +1,7 @@
 package plantest
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -47,6 +48,10 @@ func createPlanSpec(nodes []plan.PlanNode, edges [][2]int, resources flux.Resour
 
 		if len(successors[node]) == 0 {
 			roots = append(roots, node)
+		}
+
+		if len(nodes) > 1 && len(predecessors[node]) == 0 && len(successors[node]) == 0 {
+			panic(fmt.Errorf("found disconnected node: %v", node.ID()))
 		}
 
 		node.AddPredecessors(predecessors[node]...)

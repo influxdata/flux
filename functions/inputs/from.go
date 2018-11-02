@@ -2,9 +2,9 @@ package inputs
 
 import (
 	"fmt"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/functions"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
@@ -33,7 +33,12 @@ func init() {
 	flux.RegisterFunction(FromKind, createFromOpSpec, fromSignature)
 	flux.RegisterOpSpec(FromKind, newFromOp)
 	plan.RegisterProcedureSpec(FromKind, newFromProcedure, FromKind)
-	plan.RegisterPhysicalRules(MergeFromRangeRule{}, MergeFromFilterRule{})
+	plan.RegisterPhysicalRules(
+		MergeFromRangeRule{},
+		MergeFromFilterRule{},
+		FromDistinctRule{},
+		MergeFromGroupRule{},
+	)
 }
 
 func createFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
@@ -97,6 +102,68 @@ type FromProcedureSpec struct {
 
 	AggregateSet    bool
 	AggregateMethod string
+}
+
+func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+	spec, ok := qs.(*FromOpSpec)
+	if !ok {
+		return nil, fmt.Errorf("invalid spec type %T", qs)
+	}
+
+	return &FromProcedureSpec{
+		Bucket:   spec.Bucket,
+		BucketID: spec.BucketID,
+	}, nil
+}
+
+func (s *FromProcedureSpec) Kind() plan.ProcedureKind {
+	return FromKind
+}
+
+func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
+	ns := new(FromProcedureSpec)
+
+	ns.Bucket = s.Bucket
+	ns.BucketID = s.BucketID
+
+	ns.BoundsSet = s.BoundsSet
+	ns.Bounds = s.Bounds
+
+	ns.FilterSet = s.FilterSet
+	ns.Filter = s.Filter.Copy().(*semantic.FunctionExpression)
+
+	ns.DescendingSet = s.DescendingSet
+	ns.Descending = s.Descending
+
+	ns.LimitSet = s.LimitSet
+	ns.PointsLimit = s.PointsLimit
+	ns.SeriesLimit = s.SeriesLimit
+	ns.SeriesOffset = s.SeriesOffset
+
+	ns.WindowSet = s.WindowSet
+	ns.Window = s.Window
+
+	ns.GroupingSet = s.GroupingSet
+	ns.OrderByTime = s.OrderByTime
+	ns.GroupMode = s.GroupMode
+	ns.GroupKeys = s.GroupKeys
+
+	ns.AggregateSet = s.AggregateSet
+	ns.AggregateMethod = s.AggregateMethod
+
+	return ns
+}
+
+// TimeBounds implements plan.BoundsAwareProcedureSpec
+func (s *FromProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bounds {
+	if s.BoundsSet {
+		bounds := &plan.Bounds{
+			Start: values.ConvertTime(s.Bounds.Start.Time(s.Bounds.Now)),
+			Stop:  values.ConvertTime(s.Bounds.Stop.Time(s.Bounds.Now)),
+		}
+		return bounds
+	}
+	return nil
 }
 
 func (s FromProcedureSpec) PostPhysicalValidate(id plan.NodeID) error {
@@ -188,6 +255,13 @@ func (MergeFromFilterRule) Pattern() plan.Pattern {
 
 func (MergeFromFilterRule) Rewrite(filterNode plan.PlanNode) (plan.PlanNode, bool, error) {
 	filterSpec := filterNode.ProcedureSpec().(*transformations.FilterProcedureSpec)
+	fromNode := filterNode.Predecessors()[0]
+	fromSpec := fromNode.ProcedureSpec().(*FromProcedureSpec)
+
+	if fromSpec.AggregateSet || fromSpec.GroupingSet {
+		return filterNode, false, nil
+	}
+
 	bodyExpr, ok := filterSpec.Fn.Block.Body.(semantic.Expression)
 	if !ok {
 		return filterNode, false, nil
@@ -212,8 +286,7 @@ func (MergeFromFilterRule) Rewrite(filterNode plan.PlanNode) (plan.PlanNode, boo
 		return filterNode, false, nil
 	}
 
-	fromNode := filterNode.Predecessors()[0]
-	newFromSpec := fromNode.ProcedureSpec().Copy().(*FromProcedureSpec)
+	newFromSpec := fromSpec.Copy().(*FromProcedureSpec)
 	if newFromSpec.FilterSet {
 		newBody := semantic.ExprsToConjunction(newFromSpec.Filter.Block.Body.(semantic.Expression), pushable)
 		newFromSpec.Filter.Block.Body = newBody
@@ -379,59 +452,70 @@ func isPushableFieldOperator(kind ast.OperatorKind) bool {
 	return false
 }
 
-func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	spec, ok := qs.(*FromOpSpec)
-	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+type FromDistinctRule struct {
+}
+
+func (FromDistinctRule) Name() string {
+	return "FromDistinctRule"
+}
+
+func (FromDistinctRule) Pattern() plan.Pattern {
+	return plan.Pat(transformations.DistinctKind, plan.Pat(FromKind))
+}
+
+func (FromDistinctRule) Rewrite(distinctNode plan.PlanNode) (plan.PlanNode, bool, error) {
+	fromNode := distinctNode.Predecessors()[0]
+	distinctSpec := distinctNode.ProcedureSpec().(*transformations.DistinctProcedureSpec)
+	fromSpec := fromNode.ProcedureSpec().(*FromProcedureSpec)
+
+	if fromSpec.LimitSet && fromSpec.PointsLimit == -1 {
+		return distinctNode, false, nil
 	}
 
-	return &FromProcedureSpec{
-		Bucket:   spec.Bucket,
-		BucketID: spec.BucketID,
-	}, nil
-}
-
-func (s *FromProcedureSpec) Kind() plan.ProcedureKind {
-	return FromKind
-}
-
-func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
-	ns := new(FromProcedureSpec)
-
-	ns.Bucket = s.Bucket
-	ns.BucketID = s.BucketID
-
-	ns.BoundsSet = s.BoundsSet
-	ns.Bounds = s.Bounds
-
-	ns.FilterSet = s.FilterSet
-	ns.Filter = s.Filter.Copy().(*semantic.FunctionExpression)
-
-	ns.DescendingSet = s.DescendingSet
-	ns.Descending = s.Descending
-
-	ns.LimitSet = s.LimitSet
-	ns.PointsLimit = s.PointsLimit
-	ns.SeriesLimit = s.SeriesLimit
-	ns.SeriesOffset = s.SeriesOffset
-
-	ns.WindowSet = s.WindowSet
-	ns.Window = s.Window
-
-	ns.AggregateSet = s.AggregateSet
-	ns.AggregateMethod = s.AggregateMethod
-
-	return ns
-}
-
-// TimeBounds implements plan.BoundsAwareProcedureSpec
-func (s *FromProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bounds {
-	if s.BoundsSet {
-		bounds := &plan.Bounds{
-			Start: values.ConvertTime(s.Bounds.Start.Time(s.Bounds.Now)),
-			Stop:  values.ConvertTime(s.Bounds.Stop.Time(s.Bounds.Now)),
+	groupStar := !fromSpec.GroupingSet && distinctSpec.Column != execute.DefaultValueColLabel && distinctSpec.Column != execute.DefaultTimeColLabel
+	groupByColumn := fromSpec.GroupingSet && len(fromSpec.GroupKeys) > 0 &&
+		((fromSpec.GroupMode == functions.GroupModeBy && execute.ContainsStr(fromSpec.GroupKeys, distinctSpec.Column)) ||
+			(fromSpec.GroupMode == functions.GroupModeExcept && !execute.ContainsStr(fromSpec.GroupKeys, distinctSpec.Column)))
+	if groupStar || groupByColumn {
+		newFromSpec := fromSpec.Copy().(*FromProcedureSpec)
+		newFromSpec.LimitSet = true
+		newFromSpec.PointsLimit = -1
+		if err := fromNode.ReplaceSpec(newFromSpec); err != nil {
+			return nil, false, err
 		}
-		return bounds
+		return distinctNode, true, nil
 	}
-	return nil
+
+	return distinctNode, false, nil
+}
+
+type MergeFromGroupRule struct {
+}
+
+func (MergeFromGroupRule) Name() string {
+	return "MergeFromGroupRule"
+}
+
+func (MergeFromGroupRule) Pattern() plan.Pattern {
+	return plan.Pat(transformations.GroupKind, plan.Pat(FromKind))
+}
+
+func (MergeFromGroupRule) Rewrite(groupNode plan.PlanNode) (plan.PlanNode, bool, error) {
+	fromNode := groupNode.Predecessors()[0]
+	groupSpec := groupNode.ProcedureSpec().(*transformations.GroupProcedureSpec)
+	fromSpec := fromNode.ProcedureSpec().(*FromProcedureSpec)
+
+	if !fromSpec.GroupingSet && !fromSpec.LimitSet {
+		newFromSpec := fromSpec.Copy().(*FromProcedureSpec)
+		newFromSpec.GroupingSet = true
+		newFromSpec.GroupMode = groupSpec.GroupMode
+		newFromSpec.GroupKeys = groupSpec.GroupKeys
+		merged, err := plan.MergePhysicalPlanNodes(groupNode, fromNode, newFromSpec)
+		if err != nil {
+			return nil, false, err
+		}
+		return merged, true, nil
+	}
+
+	return groupNode, false, nil
 }

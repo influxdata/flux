@@ -8,6 +8,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/functions"
 	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
@@ -388,6 +389,173 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 				},
 				Edges: [][2]int{
 					{0, 1},
+				},
+			},
+		},
+		{
+			name:  "from distinct",
+			rules: []plan.Rule{inputs.FromDistinctRule{}},
+			before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("distinct", &transformations.DistinctProcedureSpec{Column: "_measurement"}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+			after: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", &inputs.FromProcedureSpec{
+						LimitSet:    true,
+						PointsLimit: -1,
+					}),
+					plan.CreatePhysicalNode("distinct", &transformations.DistinctProcedureSpec{Column: "_measurement"}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+		},
+		{
+			name: "from incompatible-group distinct",
+			// If there is an incompatible grouping, don't do the no points optimization.
+			rules: []plan.Rule{inputs.FromDistinctRule{}, inputs.MergeFromGroupRule{}},
+			before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("group", &transformations.GroupProcedureSpec{
+						GroupMode: functions.GroupModeBy,
+						GroupKeys: []string{"_measurement"},
+					}),
+					plan.CreatePhysicalNode("distinct", &transformations.DistinctProcedureSpec{Column: "_field"}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+			after: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("merged_from_group", &inputs.FromProcedureSpec{
+						GroupingSet: true,
+						GroupMode:   functions.GroupModeBy,
+						GroupKeys:   []string{"_measurement"},
+					}),
+					plan.CreatePhysicalNode("distinct", &transformations.DistinctProcedureSpec{Column: "_field"}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+		},
+		{
+			name:  "from group",
+			rules: []plan.Rule{inputs.MergeFromGroupRule{}},
+			before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("group", &transformations.GroupProcedureSpec{
+						GroupMode: functions.GroupModeBy,
+						GroupKeys: []string{"_measurement"},
+					}),
+					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: makeFilterFn(pushableExpr1)}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+			after: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("merged_from_group", &inputs.FromProcedureSpec{
+						GroupingSet: true,
+						GroupMode:   functions.GroupModeBy,
+						GroupKeys:   []string{"_measurement"},
+					}),
+					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: makeFilterFn(pushableExpr1)}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+		},
+		{
+			name: "from group group",
+			// Only push down one call to group()
+			rules: []plan.Rule{inputs.MergeFromGroupRule{}},
+			before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("group", &transformations.GroupProcedureSpec{
+						GroupMode: functions.GroupModeBy,
+						GroupKeys: []string{"_measurement"},
+					}),
+					plan.CreatePhysicalNode("group", &transformations.GroupProcedureSpec{
+						GroupMode: functions.GroupModeBy,
+						GroupKeys: []string{"_field"},
+					}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+			after: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("merged_from_group", &inputs.FromProcedureSpec{
+						GroupingSet: true,
+						GroupMode:   functions.GroupModeBy,
+						GroupKeys:   []string{"_measurement"},
+					}),
+					plan.CreatePhysicalNode("group", &transformations.GroupProcedureSpec{
+						GroupMode: functions.GroupModeBy,
+						GroupKeys: []string{"_field"},
+					}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+		},
+		{
+			name:  "from range group distinct group",
+			rules: []plan.Rule{inputs.MergeFromGroupRule{}, inputs.FromDistinctRule{}, inputs.MergeFromRangeRule{}},
+			before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("range", rangeWithBounds),
+					plan.CreatePhysicalNode("group1", &transformations.GroupProcedureSpec{
+						GroupMode: functions.GroupModeBy,
+						GroupKeys: []string{"_measurement"},
+					}),
+					plan.CreatePhysicalNode("distinct", &transformations.DistinctProcedureSpec{Column: "_measurement"}),
+					plan.CreatePhysicalNode("group2", &transformations.GroupProcedureSpec{GroupMode: functions.GroupModeNone}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+					{3, 4},
+				},
+			},
+			after: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("merged_merged_from_range_group1", &inputs.FromProcedureSpec{
+						BoundsSet:   true,
+						Bounds:      flux.Bounds{Start: fluxTime(5), Stop: fluxTime(10)},
+						GroupingSet: true,
+						GroupMode:   functions.GroupModeBy,
+						GroupKeys:   []string{"_measurement"},
+						LimitSet:    true,
+						PointsLimit: -1,
+					}),
+					plan.CreatePhysicalNode("distinct", &transformations.DistinctProcedureSpec{Column: "_measurement"}),
+					plan.CreatePhysicalNode("group2", &transformations.GroupProcedureSpec{GroupMode: functions.GroupModeNone}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
 				},
 			},
 		},
