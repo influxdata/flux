@@ -50,7 +50,7 @@ type JoinOpSpec struct {
 	// interface (used by the transpiler).  It should not be assumed to be populated
 	// outside of the codepath that creates a flux.Spec from Flux text.
 	// TODO(cwolff): find a way to avoiding using a non-exported field here.
-	params     *joinParams
+	params *joinParams
 }
 
 // joinParams implements the Sort interface in order
@@ -177,7 +177,6 @@ func newMergeJoinProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.
 	if spec, ok = qs.(*JoinOpSpec); !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
 	}
-
 
 	tableNames := make([]string, len(spec.TableNames))
 	i := 0
