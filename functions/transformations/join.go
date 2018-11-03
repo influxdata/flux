@@ -45,6 +45,11 @@ type JoinOpSpec struct {
 	TableNames map[flux.OperationID]string `json:"tableNames"`
 	On         []string                    `json:"on"`
 	Method     string                      `json:"method"`
+
+	// Note: this field below is non-exported and is not part of the public Flux.Spec
+	// interface (used by the transpiler).  It should not be assumed to be populated
+	// outside of the codepath that creates a flux.Spec from Flux text.
+	// TODO(cwolff): find a way to avoiding using a non-exported field here.
 	params     *joinParams
 }
 
@@ -173,8 +178,14 @@ func newMergeJoinProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.
 		return nil, fmt.Errorf("invalid spec type %T", qs)
 	}
 
-	tableNames := make([]string, spec.params.Len())
-	copy(tableNames, spec.params.names)
+
+	tableNames := make([]string, len(spec.TableNames))
+	i := 0
+	for _, name := range spec.TableNames {
+		tableNames[i] = name
+		i++
+	}
+	sort.Strings(tableNames)
 
 	on := make([]string, len(spec.On))
 	copy(on, spec.On)
