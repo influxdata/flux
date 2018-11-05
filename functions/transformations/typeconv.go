@@ -19,13 +19,13 @@ func init() {
 	flux.RegisterBuiltInValue("time", &timeConv{})
 	flux.RegisterBuiltInValue("duration", &durationConv{})
 	flux.RegisterBuiltIn("typeconv", `
-	toString = (table=<-) => table |> map(fn:(r) => string(v:r._value))
-	toInt = (table=<-) => table |> map(fn:(r) => int(v:r._value))
-	toUInt = (table=<-) => table |> map(fn:(r) => uint(v:r._value))
-	toFloat = (table=<-) => table |> map(fn:(r) => float(v:r._value))
-	toBool = (table=<-) => table |> map(fn:(r) => bool(v:r._value))
-	toTime = (table=<-) => table |> map(fn:(r) => time(v:r._value))
-	toDuration = (table=<-) => table |> map(fn:(r) => duration(v:r._value))
+    toString = (tables=<-) => tables |> map(fn:(r) => string(v:r._value))
+    toInt = (tables=<-) => tables |> map(fn:(r) => int(v:r._value))
+    toUInt = (tables=<-) => tables |> map(fn:(r) => uint(v:r._value))
+    toFloat = (tables=<-) => tables |> map(fn:(r) => float(v:r._value))
+    toBool = (tables=<-) => tables |> map(fn:(r) => bool(v:r._value))
+    toTime = (tables=<-) => tables |> map(fn:(r) => time(v:r._value))
+    toDuration = (tables=<-) => tables |> map(fn:(r) => duration(v:r._value))
 `)
 }
 

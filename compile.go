@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	TableParameter  = "table"
+	TablesParameter = "tables"
 	tableKindKey    = "kind"
 	tableParentsKey = "parents"
 	nowOption       = "now"
@@ -480,12 +480,12 @@ func FunctionSignature(parameters map[string]semantic.PolyType, required []strin
 	if parameters == nil {
 		parameters = make(map[string]semantic.PolyType)
 	}
-	parameters[TableParameter] = TableObjectType
+	parameters[TablesParameter] = TableObjectType
 	return semantic.FunctionPolySignature{
 		Parameters:   parameters,
 		Required:     semantic.LabelSet(required),
 		Return:       TableObjectType,
-		PipeArgument: TableParameter,
+		PipeArgument: TablesParameter,
 	}
 }
 
@@ -515,7 +515,7 @@ func newAdministration() *Administration {
 
 // AddParentFromArgs reads the args for the `table` argument and adds the value as a parent.
 func (a *Administration) AddParentFromArgs(args Arguments) error {
-	parent, err := args.GetRequiredObject(TableParameter)
+	parent, err := args.GetRequiredObject(TablesParameter)
 	if err != nil {
 		return err
 	}

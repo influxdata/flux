@@ -57,9 +57,9 @@ var medianBuiltin = `
 // median returns the 50th percentile.
 // By default an approximate percentile is computed, this can be disabled by passing exact:true.
 // Using the exact method requires that the entire data set can fit in memory.
-median = (method="estimate_tdigest", compression=0.0, table=<-) =>
-	table
-		|> percentile(percentile:0.5, method:method, compression:compression)
+median = (method="estimate_tdigest", compression=0.0, tables=<-) =>
+    tables
+        |> percentile(percentile:0.5, method:method, compression:compression)
 `
 
 func createPercentileOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
