@@ -161,7 +161,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			},
 			after: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("merged_merged_from_range0_range1", fromWithIntersectedBounds),
+					plan.CreatePhysicalNode("merged_from_range0_range1", fromWithIntersectedBounds),
 				},
 			},
 		},
@@ -282,7 +282,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			},
 			after: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("merged_merged_from_filter1_filter2",
+					plan.CreatePhysicalNode("merged_from_filter1_filter2",
 						&inputs.FromProcedureSpec{
 							FilterSet: true,
 							Filter:    makeFilterFn(pushableExpr1, pushableExpr2),
@@ -334,7 +334,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			},
 			after: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("merged_merged_from_range_filter", &inputs.FromProcedureSpec{
+					plan.CreatePhysicalNode("merged_from_range_filter", &inputs.FromProcedureSpec{
 						FilterSet: true,
 						Filter:    makeFilterFn(pushableExpr1),
 						BoundsSet: true,
@@ -541,7 +541,7 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 			},
 			after: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("merged_merged_from_range_group1", &inputs.FromProcedureSpec{
+					plan.CreatePhysicalNode("merged_from_range_group1", &inputs.FromProcedureSpec{
 						BoundsSet:   true,
 						Bounds:      flux.Bounds{Start: fluxTime(5), Stop: fluxTime(10)},
 						GroupingSet: true,

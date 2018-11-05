@@ -446,7 +446,7 @@ func TestLogicalPlanner(t *testing.T) {
 		wantPlan: plantest.PlanSpec{
 			Nodes: []plan.PlanNode{
 				plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{Bucket: "telegraf"}),
-				plan.CreateLogicalNode("merged_filter1_merged_filter2_filter3", &transformations.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
+				plan.CreateLogicalNode("merged_filter1_filter2_filter3", &transformations.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},

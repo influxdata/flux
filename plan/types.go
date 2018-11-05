@@ -2,6 +2,7 @@ package plan
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -139,7 +140,7 @@ func (e *edges) shallowCopy() edges {
 // the plan to attach the merged node to its successors.
 func MergeLogicalPlanNodes(top, bottom PlanNode, procSpec ProcedureSpec) (PlanNode, error) {
 	merged := &LogicalPlanNode{
-		id:   "merged_" + bottom.ID() + "_" + top.ID(),
+		id:   mergeIDs(top.ID(), bottom.ID()),
 		Spec: procSpec,
 	}
 
@@ -148,11 +149,23 @@ func MergeLogicalPlanNodes(top, bottom PlanNode, procSpec ProcedureSpec) (PlanNo
 
 func MergePhysicalPlanNodes(top, bottom PlanNode, procSpec PhysicalProcedureSpec) (PlanNode, error) {
 	merged := &PhysicalPlanNode{
-		id:   "merged_" + bottom.ID() + "_" + top.ID(),
+		id:   mergeIDs(top.ID(), bottom.ID()),
 		Spec: procSpec,
 	}
 
 	return mergePlanNodes(top, bottom, merged)
+}
+
+func mergeIDs(top, bottom NodeID) NodeID {
+	if strings.HasPrefix(string(top), "merged_") {
+		top = top[7:]
+	}
+	if strings.HasPrefix(string(bottom), "merged_") {
+		bottom = bottom[7:]
+	}
+
+	return "merged_" + bottom + "_" + top
+
 }
 
 func mergePlanNodes(top, bottom, merged PlanNode) (PlanNode, error) {
