@@ -621,6 +621,9 @@ func (q *Query) tryRequeue() bool {
 
 		q.state = Requeueing
 		return true
+	} else if q.state == Requeueing {
+		// Already in the correct state.
+		return true
 	}
 	return false
 }
