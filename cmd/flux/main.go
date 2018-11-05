@@ -21,17 +21,32 @@ import (
 	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/lang"
 	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 )
 
 var (
-	q     = flag.String("q", "", "flux script")
-	httpd = flag.String("http", "", "run http server on specified port")
+	q      = flag.String("q", "", "flux script")
+	httpd  = flag.String("http", "", "run http server on specified port")
+	config = flag.String("config", "", "config file")
 )
 
 func main() {
+	viper.SetEnvPrefix("flux")
+	viper.AutomaticEnv()
 	flag.Parse()
 
-	if *httpd != "" {
+	viper.SetDefault("http", *httpd)
+
+	// Load user defined config
+	if *config != "" {
+		viper.SetConfigFile(*config)
+		err := viper.ReadInConfig()
+		if err != nil {
+			log.Fatalf("Fatal error in config file: %v \n", err)
+		}
+	}
+
+	if viper.GetString("http") != "" {
 		runHttp()
 		return
 	}
@@ -124,9 +139,11 @@ func runHttp() {
 		}
 	})
 
-	log.Printf("http server listening %s\n", *httpd)
+	log.Printf("http server listening %s\n", viper.GetString("http"))
 
-	http.ListenAndServe(*httpd, nil)
+	if err := http.ListenAndServe(viper.GetString("http"), nil); err != nil {
+		log.Fatalf(err.Error())
+	}
 }
 
 type Querier struct {
