@@ -18,7 +18,7 @@ type DerivativeOpSpec struct {
 	Unit        flux.Duration `json:"unit"`
 	NonNegative bool          `json:"nonNegative"`
 	Columns     []string      `json:"columns"`
-	TimeSrc     string        `json:"timeSrc"`
+	TimeColumn  string        `json:"timeColumn"`
 }
 
 func init() {
@@ -27,7 +27,7 @@ func init() {
 			"unit":        semantic.Duration,
 			"nonNegative": semantic.Bool,
 			"columns":     semantic.NewArrayPolyType(semantic.String),
-			"timeSrc":     semantic.String,
+			"timeColumn":  semantic.String,
 		},
 		nil,
 	)
@@ -59,12 +59,12 @@ func createDerivativeOpSpec(args flux.Arguments, a *flux.Administration) (flux.O
 	} else if ok {
 		spec.NonNegative = nn
 	}
-	if timeCol, ok, err := args.GetString("timeSrc"); err != nil {
+	if timeCol, ok, err := args.GetString("timeColumn"); err != nil {
 		return nil, err
 	} else if ok {
-		spec.TimeSrc = timeCol
+		spec.TimeColumn = timeCol
 	} else {
-		spec.TimeSrc = execute.DefaultTimeColLabel
+		spec.TimeColumn = execute.DefaultTimeColLabel
 	}
 
 	if cols, ok, err := args.GetArray("columns", semantic.String); err != nil {
@@ -94,7 +94,7 @@ type DerivativeProcedureSpec struct {
 	Unit        flux.Duration `json:"unit"`
 	NonNegative bool          `json:"non_negative"`
 	Columns     []string      `json:"columns"`
-	TimeCol     string        `json:"time_col"`
+	TimeColumn  string        `json:"timeColumn"`
 }
 
 func newDerivativeProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -107,7 +107,7 @@ func newDerivativeProcedure(qs flux.OperationSpec, pa plan.Administration) (plan
 		Unit:        spec.Unit,
 		NonNegative: spec.NonNegative,
 		Columns:     spec.Columns,
-		TimeCol:     spec.TimeSrc,
+		TimeColumn:  spec.TimeColumn,
 	}, nil
 }
 
@@ -152,7 +152,7 @@ func NewDerivativeTransformation(d execute.Dataset, cache execute.TableBuilderCa
 		unit:        time.Duration(spec.Unit),
 		nonNegative: spec.NonNegative,
 		columns:     spec.Columns,
-		timeCol:     spec.TimeCol,
+		timeCol:     spec.TimeColumn,
 	}
 }
 

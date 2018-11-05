@@ -14,22 +14,22 @@ import (
 const RangeKind = "range"
 
 type RangeOpSpec struct {
-	Start    flux.Time `json:"start"`
-	Stop     flux.Time `json:"stop"`
-	TimeCol  string    `json:"timeCol"`
-	StartCol string    `json:"startCol"`
-	StopCol  string    `json:"stopCol"`
+	Start       flux.Time `json:"start"`
+	Stop        flux.Time `json:"stop"`
+	TimeColumn  string    `json:"timeColumn"`
+	StartColumn string    `json:"startColumn"`
+	StopColumn  string    `json:"stopColumn"`
 }
 
 func init() {
 	rangeSignature := flux.FunctionSignature(
 		map[string]semantic.PolyType{
 			// TODO(nathanielc): Add polymorphic constants and a type class for time/durations
-			"start":    semantic.Tvar(1),
-			"stop":     semantic.Tvar(2),
-			"timeCol":  semantic.String,
-			"startCol": semantic.String,
-			"stopCol":  semantic.String,
+			"start":       semantic.Tvar(1),
+			"stop":        semantic.Tvar(2),
+			"timeColumn":  semantic.String,
+			"startColumn": semantic.String,
+			"stopColumn":  semantic.String,
 		},
 		[]string{"start"},
 	)
@@ -62,28 +62,28 @@ func createRangeOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 		spec.Stop = flux.Now
 	}
 
-	if col, ok, err := args.GetString("timeCol"); err != nil {
+	if col, ok, err := args.GetString("timeColumn"); err != nil {
 		return nil, err
 	} else if ok {
-		spec.TimeCol = col
+		spec.TimeColumn = col
 	} else {
-		spec.TimeCol = execute.DefaultTimeColLabel
+		spec.TimeColumn = execute.DefaultTimeColLabel
 	}
 
-	if label, ok, err := args.GetString("startCol"); err != nil {
+	if label, ok, err := args.GetString("startColumn"); err != nil {
 		return nil, err
 	} else if ok {
-		spec.StartCol = label
+		spec.StartColumn = label
 	} else {
-		spec.StartCol = execute.DefaultStartColLabel
+		spec.StartColumn = execute.DefaultStartColLabel
 	}
 
-	if label, ok, err := args.GetString("stopCol"); err != nil {
+	if label, ok, err := args.GetString("stopColumn"); err != nil {
 		return nil, err
 	} else if ok {
-		spec.StopCol = label
+		spec.StopColumn = label
 	} else {
-		spec.StopCol = execute.DefaultStopColLabel
+		spec.StopColumn = execute.DefaultStopColLabel
 	}
 
 	return spec, nil
@@ -99,10 +99,10 @@ func (s *RangeOpSpec) Kind() flux.OperationKind {
 
 type RangeProcedureSpec struct {
 	plan.DefaultCost
-	Bounds   flux.Bounds
-	TimeCol  string
-	StartCol string
-	StopCol  string
+	Bounds      flux.Bounds
+	TimeColumn  string
+	StartColumn string
+	StopColumn  string
 }
 
 // TimeBounds implements plan.BoundsAwareProcedureSpec
@@ -124,8 +124,8 @@ func newRangeProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proc
 		return nil, fmt.Errorf("invalid spec type %T", qs)
 	}
 
-	if spec.TimeCol == "" {
-		spec.TimeCol = execute.DefaultTimeColLabel
+	if spec.TimeColumn == "" {
+		spec.TimeColumn = execute.DefaultTimeColLabel
 	}
 
 	bounds := flux.Bounds{
@@ -142,10 +142,10 @@ func newRangeProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proc
 	}
 
 	return &RangeProcedureSpec{
-		Bounds:   bounds,
-		TimeCol:  spec.TimeCol,
-		StartCol: spec.StartCol,
-		StopCol:  spec.StopCol,
+		Bounds:      bounds,
+		TimeColumn:  spec.TimeColumn,
+		StartColumn: spec.StartColumn,
+		StopColumn:  spec.StopColumn,
 	}, nil
 }
 
@@ -155,9 +155,9 @@ func (s *RangeProcedureSpec) Kind() plan.ProcedureKind {
 func (s *RangeProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(RangeProcedureSpec)
 	ns.Bounds = s.Bounds
-	ns.TimeCol = s.TimeCol
-	ns.StartCol = s.StartCol
-	ns.StopCol = s.StopCol
+	ns.TimeColumn = s.TimeColumn
+	ns.StartColumn = s.StartColumn
+	ns.StopColumn = s.StopColumn
 	return ns
 }
 
@@ -192,9 +192,9 @@ func NewRangeTransformation(d execute.Dataset, cache execute.TableBuilderCache, 
 		d:        d,
 		cache:    cache,
 		bounds:   absolute,
-		timeCol:  spec.TimeCol,
-		startCol: spec.StartCol,
-		stopCol:  spec.StopCol,
+		timeCol:  spec.TimeColumn,
+		startCol: spec.StartColumn,
+		stopCol:  spec.StopColumn,
 	}, nil
 }
 

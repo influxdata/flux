@@ -78,9 +78,9 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 				},
 				Now: now,
 			},
-			TimeCol:  "_time",
-			StartCol: "_start",
-			StopCol:  "_stop",
+			TimeColumn:  "_time",
+			StartColumn: "_start",
+			StopColumn:  "_stop",
 		}
 		filterSpec = &transformations.FilterProcedureSpec{
 			Fn: &semantic.FunctionExpression{

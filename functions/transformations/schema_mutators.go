@@ -71,7 +71,7 @@ func checkCol(label string, cols []flux.ColMeta) error {
 }
 
 type RenameMutator struct {
-	Cols      map[string]string
+	Columns   map[string]string
 	Fn        compiler.Func
 	Input     values.Object
 	ParamName string
@@ -85,8 +85,8 @@ func NewRenameMutator(qs flux.OperationSpec) (*RenameMutator, error) {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
 	}
 
-	if s.Cols != nil {
-		m.Cols = s.Cols
+	if s.Columns != nil {
+		m.Columns = s.Columns
 	}
 
 	if s.Fn != nil {
@@ -106,8 +106,8 @@ func (m *RenameMutator) renameCol(col *flux.ColMeta) error {
 	if col == nil {
 		return errors.New("rename error: cannot rename nil column")
 	}
-	if m.Cols != nil {
-		if newName, ok := m.Cols[col.Label]; ok {
+	if m.Columns != nil {
+		if newName, ok := m.Columns[col.Label]; ok {
 			col.Label = newName
 		}
 	} else if m.Fn != nil {
@@ -122,7 +122,7 @@ func (m *RenameMutator) renameCol(col *flux.ColMeta) error {
 }
 
 func (m *RenameMutator) checkColumns(tableCols []flux.ColMeta) error {
-	for c := range m.Cols {
+	for c := range m.Columns {
 		if err := checkCol(c, tableCols); err != nil {
 			return errors.Wrap(err, "rename error")
 		}
@@ -171,8 +171,8 @@ func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
 
 	switch s := qs.(type) {
 	case *DropOpSpec:
-		if s.Cols != nil {
-			m.DropCols = toStringSet(s.Cols)
+		if s.Columns != nil {
+			m.DropCols = toStringSet(s.Columns)
 		}
 		if s.Predicate != nil {
 			compiledFn, param, err := compiler.CompileFnParam(s.Predicate, semantic.String, semantic.Bool)
@@ -184,8 +184,8 @@ func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
 			m.Input = values.NewObject()
 		}
 	case *KeepOpSpec:
-		if s.Cols != nil {
-			m.KeepCols = toStringSet(s.Cols)
+		if s.Columns != nil {
+			m.KeepCols = toStringSet(s.Columns)
 		}
 		if s.Predicate != nil {
 			compiledFn, param, err := compiler.CompileFnParam(s.Predicate, semantic.String, semantic.Bool)
@@ -301,8 +301,8 @@ func (m *DropKeepMutator) Mutate(ctx *BuilderContext) error {
 }
 
 type DuplicateMutator struct {
-	Col string
-	As  string
+	Column string
+	As     string
 }
 
 func NewDuplicateMutator(qs flux.OperationSpec) (*DuplicateMutator, error) {
@@ -312,13 +312,13 @@ func NewDuplicateMutator(qs flux.OperationSpec) (*DuplicateMutator, error) {
 	}
 
 	return &DuplicateMutator{
-		Col: s.Col,
-		As:  s.As,
+		Column: s.Column,
+		As:     s.As,
 	}, nil
 }
 
 func (m *DuplicateMutator) Mutate(ctx *BuilderContext) error {
-	if err := checkCol(m.Col, ctx.Cols()); err != nil {
+	if err := checkCol(m.Column, ctx.Cols()); err != nil {
 		return errors.Wrap(err, "duplicate error")
 	}
 
@@ -330,7 +330,7 @@ func (m *DuplicateMutator) Mutate(ctx *BuilderContext) error {
 		newCols = append(newCols, c)
 		newColMap = append(newColMap, oldColMap[i])
 
-		if c.Label == m.Col {
+		if c.Label == m.Column {
 			newCols = append(newCols, duplicate(c, m.As))
 			newColMap = append(newColMap, oldColMap[i])
 		}

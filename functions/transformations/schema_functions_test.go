@@ -35,7 +35,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "rename1",
 						Spec: &transformations.RenameOpSpec{
-							Cols: map[string]string{
+							Columns: map[string]string{
 								"old": "new",
 							},
 						},
@@ -67,7 +67,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "drop1",
 						Spec: &transformations.DropOpSpec{
-							Cols: []string{"col1", "col2", "col3"},
+							Columns: []string{"col1", "col2", "col3"},
 						},
 					},
 					{
@@ -97,7 +97,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "keep1",
 						Spec: &transformations.KeepOpSpec{
-							Cols: []string{"col1", "col2", "col3"},
+							Columns: []string{"col1", "col2", "col3"},
 						},
 					},
 					{
@@ -127,8 +127,8 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "duplicate1",
 						Spec: &transformations.DuplicateOpSpec{
-							Col: "col1",
-							As:  "col1_new",
+							Column: "col1",
+							As:     "col1_new",
 						},
 					},
 					{
@@ -321,7 +321,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			spec: &transformations.SchemaMutationProcedureSpec{
 				Mutations: []transformations.SchemaMutation{
 					&transformations.RenameOpSpec{
-						Cols: map[string]string{
+						Columns: map[string]string{
 							"1a": "1b",
 							"2a": "2b",
 							"3a": "3b",
@@ -360,7 +360,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			spec: &transformations.SchemaMutationProcedureSpec{
 				Mutations: []transformations.SchemaMutation{
 					&transformations.DropOpSpec{
-						Cols: []string{"a", "b"},
+						Columns: []string{"a", "b"},
 					},
 				},
 			},
@@ -392,7 +392,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			spec: &transformations.SchemaMutationProcedureSpec{
 				Mutations: []transformations.SchemaMutation{
 					&transformations.KeepOpSpec{
-						Cols: []string{"a"},
+						Columns: []string{"a"},
 					},
 				},
 			},
@@ -424,8 +424,8 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			spec: &transformations.SchemaMutationProcedureSpec{
 				Mutations: []transformations.SchemaMutation{
 					&transformations.DuplicateOpSpec{
-						Col: "a",
-						As:  "a_1",
+						Column: "a",
+						As:     "a_1",
 					},
 				},
 			},
@@ -587,10 +587,10 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			spec: &transformations.SchemaMutationProcedureSpec{
 				Mutations: []transformations.SchemaMutation{
 					&transformations.DropOpSpec{
-						Cols: []string{"server1", "server2"},
+						Columns: []string{"server1", "server2"},
 					},
 					&transformations.RenameOpSpec{
-						Cols: map[string]string{
+						Columns: map[string]string{
 							"local": "localhost",
 						},
 					},
@@ -624,7 +624,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			spec: &transformations.SchemaMutationProcedureSpec{
 				Mutations: []transformations.SchemaMutation{
 					&transformations.DropOpSpec{
-						Cols: []string{"no_exist"},
+						Columns: []string{"no_exist"},
 					},
 				},
 			},
@@ -648,7 +648,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			spec: &transformations.SchemaMutationProcedureSpec{
 				Mutations: []transformations.SchemaMutation{
 					&transformations.RenameOpSpec{
-						Cols: map[string]string{
+						Columns: map[string]string{
 							"no_exist": "noexist",
 						},
 					},
@@ -674,7 +674,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			spec: &transformations.SchemaMutationProcedureSpec{
 				Mutations: []transformations.SchemaMutation{
 					&transformations.KeepOpSpec{
-						Cols: []string{"no_exist"},
+						Columns: []string{"no_exist"},
 					},
 				},
 			},
@@ -698,8 +698,8 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			spec: &transformations.SchemaMutationProcedureSpec{
 				Mutations: []transformations.SchemaMutation{
 					&transformations.DuplicateOpSpec{
-						Col: "no_exist",
-						As:  "no_exist_2",
+						Column: "no_exist",
+						As:     "no_exist_2",
 					},
 				},
 			},
@@ -723,7 +723,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			spec: &transformations.SchemaMutationProcedureSpec{
 				Mutations: []transformations.SchemaMutation{
 					&transformations.RenameOpSpec{
-						Cols: map[string]string{
+						Columns: map[string]string{
 							"1a": "1b",
 							"2a": "2b",
 							"3a": "3b",
@@ -779,7 +779,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			spec: &transformations.SchemaMutationProcedureSpec{
 				Mutations: []transformations.SchemaMutation{
 					&transformations.DropOpSpec{
-						Cols: []string{"2a"},
+						Columns: []string{"2a"},
 					},
 				},
 			},
@@ -824,7 +824,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			spec: &transformations.SchemaMutationProcedureSpec{
 				Mutations: []transformations.SchemaMutation{
 					&transformations.KeepOpSpec{
-						Cols: []string{"1a"},
+						Columns: []string{"1a"},
 					},
 				},
 			},

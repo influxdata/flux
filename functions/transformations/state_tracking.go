@@ -20,7 +20,7 @@ type StateTrackingOpSpec struct {
 	CountLabel    string                       `json:"countLabel"`
 	DurationLabel string                       `json:"durationLabel"`
 	DurationUnit  flux.Duration                `json:"durationUnit"`
-	TimeCol       string                       `json:"timeCol"`
+	TimeColumn    string                       `json:"timeColumn"`
 }
 
 func init() {
@@ -36,7 +36,7 @@ func init() {
 			"countLabel":    semantic.String,
 			"durationLabel": semantic.String,
 			"durationUnit":  semantic.Duration,
-			"timeCol":       semantic.String,
+			"timeColumn":    semantic.String,
 		},
 		[]string{"fn"},
 	)
@@ -117,12 +117,12 @@ func createStateTrackingOpSpec(args flux.Arguments, a *flux.Administration) (flu
 	} else if ok {
 		spec.DurationUnit = unit
 	}
-	if label, ok, err := args.GetString("timeCol"); err != nil {
+	if label, ok, err := args.GetString("timeColumn"); err != nil {
 		return nil, err
 	} else if ok {
-		spec.TimeCol = label
+		spec.TimeColumn = label
 	} else {
-		spec.TimeCol = execute.DefaultTimeColLabel
+		spec.TimeColumn = execute.DefaultTimeColLabel
 	}
 
 	if spec.DurationLabel != "" && spec.DurationUnit <= 0 {
@@ -159,7 +159,7 @@ func newStateTrackingProcedure(qs flux.OperationSpec, pa plan.Administration) (p
 		CountLabel:    spec.CountLabel,
 		DurationLabel: spec.DurationLabel,
 		DurationUnit:  spec.DurationUnit,
-		TimeCol:       spec.TimeCol,
+		TimeCol:       spec.TimeColumn,
 	}, nil
 }
 

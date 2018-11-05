@@ -18,23 +18,23 @@ const KeepKind = "keep"
 const DuplicateKind = "duplicate"
 
 type RenameOpSpec struct {
-	Cols map[string]string            `json:"columns"`
-	Fn   *semantic.FunctionExpression `json:"fn"`
+	Columns map[string]string            `json:"columns"`
+	Fn      *semantic.FunctionExpression `json:"fn"`
 }
 
 type DropOpSpec struct {
-	Cols      []string                     `json:"columns"`
+	Columns   []string                     `json:"columns"`
 	Predicate *semantic.FunctionExpression `json:"fn"`
 }
 
 type KeepOpSpec struct {
-	Cols      []string                     `json:"columns"`
+	Columns   []string                     `json:"columns"`
 	Predicate *semantic.FunctionExpression `json:"fn"`
 }
 
 type DuplicateOpSpec struct {
-	Col string `json:"columns"`
-	As  string `json:"as"`
+	Column string `json:"columns"`
+	As     string `json:"as"`
 }
 
 // The base kind for SchemaMutations
@@ -187,7 +187,7 @@ func createRenameOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		if err != nil {
 			return nil, err
 		}
-		spec.Cols = renameCols
+		spec.Columns = renameCols
 	}
 
 	return spec, nil
@@ -235,7 +235,7 @@ func createDropOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	}
 
 	return &DropOpSpec{
-		Cols:      dropCols,
+		Columns:   dropCols,
 		Predicate: dropPredicate,
 	}, nil
 }
@@ -282,7 +282,7 @@ func createKeepOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	}
 
 	return &KeepOpSpec{
-		Cols:      keepCols,
+		Columns:   keepCols,
 		Predicate: keepPredicate,
 	}, nil
 }
@@ -303,8 +303,8 @@ func createDuplicateOpSpec(args flux.Arguments, a *flux.Administration) (flux.Op
 	}
 
 	return &DuplicateOpSpec{
-		Col: col,
-		As:  newName,
+		Column: col,
+		As:     newName,
 	}, nil
 }
 
@@ -341,41 +341,41 @@ func (s *DuplicateOpSpec) Kind() flux.OperationKind {
 }
 
 func (s *RenameOpSpec) Copy() SchemaMutation {
-	newCols := make(map[string]string, len(s.Cols))
-	for k, v := range s.Cols {
+	newCols := make(map[string]string, len(s.Columns))
+	for k, v := range s.Columns {
 		newCols[k] = v
 	}
 
 	return &RenameOpSpec{
-		Cols: newCols,
-		Fn:   s.Fn.Copy().(*semantic.FunctionExpression),
+		Columns: newCols,
+		Fn:      s.Fn.Copy().(*semantic.FunctionExpression),
 	}
 }
 
 func (s *DropOpSpec) Copy() SchemaMutation {
-	newCols := make([]string, len(s.Cols))
-	copy(newCols, s.Cols)
+	newCols := make([]string, len(s.Columns))
+	copy(newCols, s.Columns)
 
 	return &DropOpSpec{
-		Cols:      newCols,
+		Columns:   newCols,
 		Predicate: s.Predicate.Copy().(*semantic.FunctionExpression),
 	}
 }
 
 func (s *KeepOpSpec) Copy() SchemaMutation {
-	newCols := make([]string, len(s.Cols))
-	copy(newCols, s.Cols)
+	newCols := make([]string, len(s.Columns))
+	copy(newCols, s.Columns)
 
 	return &KeepOpSpec{
-		Cols:      newCols,
+		Columns:   newCols,
 		Predicate: s.Predicate.Copy().(*semantic.FunctionExpression),
 	}
 }
 
 func (s *DuplicateOpSpec) Copy() SchemaMutation {
 	return &DuplicateOpSpec{
-		Col: s.Col,
-		As:  s.As,
+		Column: s.Column,
+		As:     s.As,
 	}
 }
 

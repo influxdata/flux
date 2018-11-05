@@ -1379,6 +1379,9 @@ Integral has the following properties:
     columns specifies a list of columns to aggregate. Defaults to `["_value"]`
 * `unit` duration
     unit is the time duration to use when computing the integral
+* `timeColumn` string
+    timeColumn is the name of the column containing the time value.
+    Defaults to `_time`.
 
 Example: 
 
@@ -1881,6 +1884,15 @@ Range has the following properties:
 * `stop` duration or timestamp
     Specifies the exclusive newest time to be included in the results.
     Defaults to the value of the `now` option time.
+* `timeColumn` string
+    Name of the time column to use.
+    Defaults to `_time`.
+* `startColumn` string
+    Name of the column containing the start time.
+    Defaults to `_start`.
+* `stopColumn` string
+    Name of the column containing the stop time.
+    Defaults to `_stop`.
 
 Example:
 ```
@@ -2424,8 +2436,8 @@ Derivative has the following properties:
     If a value is encountered which is less than the previous value then it is assumed the previous value should have been a zero.
 * `columns` list strings
     columns is a list of columns on which to compute the derivative
-* `timeSrc` string
-    timeSrc is the source column for the time values.
+* `timeColumn` string
+    timeColumn is the column name for the time values.
     Defaults to `_time`.
 
 ```
