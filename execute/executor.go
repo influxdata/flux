@@ -218,7 +218,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.PlanNode) error {
 
 		for _, p := range nonYieldPredecessors(node) {
 			executionNode := v.nodes[p]
-			transport := newConescutiveTransport(v.es.dispatcher, tr)
+			transport := newConsecutiveTransport(v.es.dispatcher, tr)
 			v.es.transports = append(v.es.transports, transport)
 			executionNode.AddTransformation(transport)
 		}
