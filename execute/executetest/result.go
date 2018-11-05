@@ -5,9 +5,10 @@ import (
 )
 
 type Result struct {
-	Nm   string
-	Tbls []*Table
-	Err  error
+	Nm    string
+	Tbls  []*Table
+	Err   error
+	Stats flux.Statistics
 }
 
 func NewResult(tables []*Table) *Result {
@@ -27,6 +28,10 @@ func (r *Result) Tables() flux.TableIterator {
 
 func (r *Result) Normalize() {
 	NormalizeTables(r.Tbls)
+}
+
+func (r *Result) Statistics() flux.Statistics {
+	return r.Stats
 }
 
 type TableIterator struct {

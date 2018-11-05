@@ -996,3 +996,7 @@ func (r errorResultIterator) Release() {
 func (r errorResultIterator) Err() error {
 	return r.Error
 }
+
+func (r errorResultIterator) Statistics() flux.Statistics {
+	return flux.Statistics{}
+}

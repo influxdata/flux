@@ -24,6 +24,9 @@ type ResultIterator interface {
 	// Err will not report anything unless More has returned false,
 	// or the query has been cancelled.
 	Err() error
+
+	// Statistics returns any statistics computed by the resultset.
+	Statistics() Statistics
 }
 
 // queryResultIterator implements a ResultIterator while consuming a Query
@@ -71,7 +74,7 @@ func (r *queryResultIterator) Err() error {
 }
 
 func (r *queryResultIterator) Statistics() Statistics {
-	return r.query.Statistics()
+	return r.query.Statistics().Add(r.results.Statistics())
 }
 
 type mapResultIterator struct {
@@ -110,7 +113,16 @@ func (r *mapResultIterator) Err() error {
 	return nil
 }
 
+func (r *mapResultIterator) Statistics() Statistics {
+	var stats Statistics
+	for _, result := range r.results {
+		stats = stats.Add(result.Statistics())
+	}
+	return stats
+}
+
 type sliceResultIterator struct {
+	i       int
 	results []Result
 }
 
@@ -121,19 +133,27 @@ func NewSliceResultIterator(results []Result) ResultIterator {
 }
 
 func (r *sliceResultIterator) More() bool {
-	return len(r.results) > 0
+	return r.i < len(r.results)
 }
 
 func (r *sliceResultIterator) Next() Result {
-	next := r.results[0]
-	r.results = r.results[1:]
+	next := r.results[r.i]
+	r.i++
 	return next
 }
 
 func (r *sliceResultIterator) Release() {
-	r.results = nil
+	r.results, r.i = nil, 0
 }
 
 func (r *sliceResultIterator) Err() error {
 	return nil
+}
+
+func (r *sliceResultIterator) Statistics() Statistics {
+	var stats Statistics
+	for _, result := range r.results {
+		stats = stats.Add(result.Statistics())
+	}
+	return stats
 }
