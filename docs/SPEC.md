@@ -1379,6 +1379,9 @@ Integral has the following properties:
     columns specifies a list of columns to aggregate. Defaults to `["_value"]`
 * `unit` duration
     unit is the time duration to use when computing the integral
+* `timeColumn` string
+    timeColumn is the name of the column containing the time value.
+    Defaults to `_time`.
 
 Example: 
 
@@ -1413,8 +1416,8 @@ from(bucket:"telegraf/autogen")
 
 Median is defined as:
 
-    median = (method="estimate_tdigest", compression=0.0, table=<-) =>
-    	table
+    median = (method="estimate_tdigest", compression=0.0, tables=<-) =>
+    	tables
     		|> percentile(percentile:0.5, method:method, compression:compression)
 
 Is it simply a `percentile` with the `percentile` paramter always set to `0.5`.
@@ -1630,8 +1633,8 @@ from(bucket: "telegraf/autogen")
 
 Median is defined as:
 
-    median = (method="estimate_tdigest", compression=0.0, table=<-) =>
-    	table
+    median = (method="estimate_tdigest", compression=0.0, tables=<-) =>
+    	tables
     		|> percentile(percentile:0.5, method:method, compression:compression)
 
 Is it simply a `percentile` with the `percentile` paramter always set to `0.5`.
@@ -1881,6 +1884,15 @@ Range has the following properties:
 * `stop` duration or timestamp
     Specifies the exclusive newest time to be included in the results.
     Defaults to the value of the `now` option time.
+* `timeColumn` string
+    Name of the time column to use.
+    Defaults to `_time`.
+* `startColumn` string
+    Name of the column containing the start time.
+    Defaults to `_start`.
+* `stopColumn` string
+    Name of the column containing the stop time.
+    Defaults to `_stop`.
 
 Example:
 ```
@@ -1907,7 +1919,7 @@ Rename has the following properties:
 * `columns` object
 	A map of columns to rename and their corresponding new names. Cannot be used with `fn`. 
 * `fn` function 
-    A function which takes a single string parameter (the old column name) and returns a string representing 
+    A function which takes a single string parameter `column` (the old column name) and returns a string representing 
     the new column name. Cannot be used with `columns`.
 
 Example usage:
@@ -1922,7 +1934,7 @@ Rename all columns using `fn` parameter:
 ```
 from(bucket: "telegraf/autogen")
     |> range(start: -5m)
-    |> rename(fn: (col) => "{col}_new")
+    |> rename(fn: (column) => "{column}_new")
 ```
 
 #### Drop 
@@ -1935,7 +1947,7 @@ Drop has the following properties:
 * `columns` array of strings 
     An array of columns which should be excluded from the resulting table. Cannot be used with `fn`.
 * `fn` function 
-    A function which takes a column name as a parameter and returns a boolean indicating whether
+    A function which takes a column name as a parameter `column` and returns a boolean indicating whether
     or not the column should be excluded from the resulting table. Cannot be used with `columns`.  
 
 Example Usage:
@@ -1950,7 +1962,7 @@ Drop columns matching a predicate:
 ```
 from(bucket: "telegraf/autogen")
     |> range(start: -5m)
-    |> drop(fn: (col) => col =~ /usage*/)
+    |> drop(fn: (column) => column =~ /usage*/)
 ```
 
 #### Keep 
@@ -1963,14 +1975,14 @@ Keep has the following properties:
 * `columns` array of strings
     An array of columns that should be included in the resulting table. Cannot be used with `fn`.
 * `fn` function
-    A function which takes a column name as a parameter and returns a boolean indicating whether or not
+    A function which takes a column name as a parameter `column` and returns a boolean indicating whether or not
     the column should be included in the resulting table. Cannot be used with `columns`. 
 
 Example Usage:
 
 Keep a list of columns: `keep(columns: ["_time", "_value"])`
 
-Keep all columns matching a predicate: `keep(fn: (col) => col =~ /inodes*/)`
+Keep all columns matching a predicate: `keep(fn: (column) => column =~ /inodes*/)`
 
 Keep a list of columns:
 ```
@@ -1982,7 +1994,7 @@ Keep all columns matching a predicate:
 ```
 from(bucket: "telegraf/autogen")
     |> range(start: -5m)
-    |> keep(fn: (col) => col =~ /inodes*/) 
+    |> keep(fn: (column) => column =~ /inodes*/) 
 ```
 
 #### Duplicate 
@@ -2045,7 +2057,7 @@ from(bucket:"telegraf/autogen")
     |> filter(fn: (r) => r._measurement == "system" AND
                r._field == "uptime")
     |> range(start:-12h)
-    |> sort(cols:["region", "host", "value"])
+    |> sort(columns:["region", "host", "value"])
 ```
 #### Group
 
@@ -2101,19 +2113,19 @@ KeyValues outputs a table with the input table's group key, plus two columns  `_
 (column, value) pairs from the input table.  
 
 KeyValues has the following properties: 
-*  `keyCols` list of strings
+*  `keyColumns` list of strings
    A list of columns from which values are extracted
-*  `fn` schema function that may by used instead of `keyCols` to identify the set of columns.  
+*  `fn` schema function that may by used instead of `keyColumns` to identify the set of columns.  
 
 Additional requirements: 
-*  Only one of `keyCols` or `fn` may be used in a single call.  
+*  Only one of `keyColumns` or `fn` may be used in a single call.  
 *  All columns indicated must be of the same type. 
 
 ```
 from(bucket: "telegraf/autogen")
     |> range(start: -30m)
     |> filter(fn: (r) => r._measurement == "cpu")
-    |> keyValues(keyCols: ["usage_idle", "usage_user"])
+    |> keyValues(keyColumns: ["usage_idle", "usage_user"])
 ```
 
 ```
@@ -2124,12 +2136,12 @@ from(bucket: "telegraf/autogen")
 ```
 
 ```
-filterCols = (fn) => (schema) => schema.columns |> filter(fn:(v) => fn(col:v))
+filterColumns = (fn) => (schema) => schema.columns |> filter(fn:(v) => fn(column:v))
 
 from(bucket: "telegraf/autogen")
     |> range(start: -30m)
     |> filter(fn: (r) => r._measurement == "cpu")
-    |> keyValues(fn: filterCols(fn: (col) => col.label =~ /usage_.*/))
+    |> keyValues(fn: filterColumns(fn: (column) => column.label =~ /usage_.*/))
 ```
 
 
@@ -2160,13 +2172,13 @@ Window has the following properties:
     A set of intervals to be used as the windows.
     One of `every`, `period` or `intervals` must be provided.
     When `intervals` is provided, `every`, `period`, and `offset` must be zero.
-* `timeCol` string
+* `timeColumn` string
     Name of the time column to use.
     Defaults to `_time`.
-* `startCol` string
+* `startColumn` string
     Name of the column containing the window start time.
     Defaults to `_start`.
-* `stopCol` string
+* `stopColumn` string
     Name of the column containing the window stop time.
     Defaults to `_stop`.
 
@@ -2192,16 +2204,16 @@ Pivot has the following properties:
 
 * `rowKey` array of strings
     List of columns used to uniquely identify a row for the output.
-* `colKey` array of strings
+* `columnKey` array of strings
     List of columns used to pivot values onto each row identified by the rowKey. 
-* `valueCol` string
+* `valueColumn` string
     Identifies the single column that contains the value to be moved around the pivot
     
 
-The group key of the resulting table will be the same as the input tables, excluding the columns found in the colKey and valueCol. 
+The group key of the resulting table will be the same as the input tables, excluding the columns found in the columnKey and valueColumn. 
 This is because these columns are not part of the resulting output table.  
 
-Every input row should have a 1:1 mapping to a particular row + column in the output table, determined by its values for the rowKey and colKey.   
+Every input row should have a 1:1 mapping to a particular row + column in the output table, determined by its values for the rowKey and columnKey.   
 In the case where more than one value is identified for the same row+column pair in the output, the last value 
 encountered in the set of table rows is taken as the result.
 
@@ -2211,10 +2223,10 @@ Any columns in the original table that are not referenced in the rowKey or the o
 
 The output is constructed as follows:
 1. A new row is created for each unique value identified in the input by the rowKey parameter.
-2. The initial set of columns for the new row is the row key unioned with the group key, but excluding the columns indicated by the colKey and the valueCol.
+2. The initial set of columns for the new row is the row key unioned with the group key, but excluding the columns indicated by the columnKey and the valueColumn.
 3. A set of value columns are added to the row for each unique value identified in the input by the columnKey parameter. 
-The label is a concatenation of the valueCol string and the colKey values using '_' as a separator. 
-4. For each rowKey, columnKey pair, the appropriate value is determined from the input table by the valueCol. 
+The label is a concatenation of the valueColumn string and the columnKey values using '_' as a separator. 
+4. For each rowKey, columnKey pair, the appropriate value is determined from the input table by the valueColumn. 
 If no value is found, the value is set to `null`.
 
 [IMPL#353](https://github.com/influxdata/platform/issues/353) Null defined in spec but not implemented.  
@@ -2225,7 +2237,7 @@ FromRows is a special application of pivot that will automatically align fields 
 Its definition is: 
 
 ```
-  fromRows = (bucket) => from(bucket:bucket) |> pivot(rowKey:["_time"], colKey: ["_field"], valueCol: "_value")
+  fromRows = (bucket) => from(bucket:bucket) |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
 ```
 
 Example: 
@@ -2424,8 +2436,8 @@ Derivative has the following properties:
     If a value is encountered which is less than the previous value then it is assumed the previous value should have been a zero.
 * `columns` list strings
     columns is a list of columns on which to compute the derivative
-* `timeSrc` string
-    timeSrc is the source column for the time values.
+* `timeColumn` string
+    timeColumn is the column name for the time values.
     Defaults to `_time`.
 
 ```
@@ -2567,7 +2579,7 @@ Convert a value to a bool.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toBool()`
 
-The function `toBool` is defined as `toBool = (table=<-) => table |> map(fn:(r) => bool(v:r._value))`.
+The function `toBool` is defined as `toBool = (tables=<-) => tables |> map(fn:(r) => bool(v:r._value))`.
 If you need to convert other columns use the `map` function directly with the `bool` function.
 
 ##### toInt
@@ -2576,7 +2588,7 @@ Convert a value to a int.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toInt()`
 
-The function `toInt` is defined as `toInt = (table=<-) => table |> map(fn:(r) => int(v:r._value))`.
+The function `toInt` is defined as `toInt = (tables=<-) => tables |> map(fn:(r) => int(v:r._value))`.
 If you need to convert other columns use the `map` function directly with the `int` function.
 
 ##### toFloat
@@ -2585,7 +2597,7 @@ Convert a value to a float.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toFloat()`
 
-The function `toFloat` is defined as `toFloat = (table=<-) => table |> map(fn:(r) => float(v:r._value))`.
+The function `toFloat` is defined as `toFloat = (tables=<-) => tables |> map(fn:(r) => float(v:r._value))`.
 If you need to convert other columns use the `map` function directly with the `float` function.
 
 ##### toDuration
@@ -2594,7 +2606,7 @@ Convert a value to a duration.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toDuration()`
 
-The function `toDuration` is defined as `toDuration = (table=<-) => table |> map(fn:(r) => duration(v:r._value))`.
+The function `toDuration` is defined as `toDuration = (tables=<-) => tables |> map(fn:(r) => duration(v:r._value))`.
 If you need to convert other columns use the `map` function directly with the `duration` function.
 
 ##### toString
@@ -2603,7 +2615,7 @@ Convert a value to a string.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toString()`
 
-The function `toString` is defined as `toString = (table=<-) => table |> map(fn:(r) => string(v:r._value))`.
+The function `toString` is defined as `toString = (tables=<-) => tables |> map(fn:(r) => string(v:r._value))`.
 If you need to convert other columns use the `map` function directly with the `string` function.
 
 ##### toTime
@@ -2612,7 +2624,7 @@ Convert a value to a time.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toTime()`
 
-The function `toTime` is defined as `toTime = (table=<-) => table |> map(fn:(r) => time(v:r._value))`.
+The function `toTime` is defined as `toTime = (tables=<-) => tables |> map(fn:(r) => time(v:r._value))`.
 If you need to convert other columns use the `map` function directly with the `time` function.
 
 ##### toUInt
@@ -2621,7 +2633,7 @@ Convert a value to a uint.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toUInt()`
 
-The function `toUInt` is defined as `toUInt = (table=<-) => table |> map(fn:(r) => uint(v:r._value))`.
+The function `toUInt` is defined as `toUInt = (tables=<-) => tables |> map(fn:(r) => uint(v:r._value))`.
 If you need to convert other columns use the `map` function directly with the `uint` function.
 
 

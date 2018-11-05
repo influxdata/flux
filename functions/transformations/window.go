@@ -15,15 +15,15 @@ import (
 const WindowKind = "window"
 
 type WindowOpSpec struct {
-	Every         flux.Duration    `json:"every"`
-	Period        flux.Duration    `json:"period"`
-	Start         flux.Time        `json:"start"`
-	Round         flux.Duration    `json:"round"`
-	Triggering    flux.TriggerSpec `json:"triggering"`
-	TimeCol       string           `json:"time_col"`
-	StopColLabel  string           `json:"stop_col_label"`
-	StartColLabel string           `json:"start_col_label"`
-	CreateEmpty   bool             `json:"createEmpty"`
+	Every       flux.Duration    `json:"every"`
+	Period      flux.Duration    `json:"period"`
+	Start       flux.Time        `json:"start"`
+	Round       flux.Duration    `json:"round"`
+	Triggering  flux.TriggerSpec `json:"triggering"`
+	TimeColumn  string           `json:"timeColumn"`
+	StopColumn  string           `json:"stopColumn"`
+	StartColumn string           `json:"startColumn"`
+	CreateEmpty bool             `json:"createEmpty"`
 }
 
 var infinityVar = values.NewDuration(math.MaxInt64)
@@ -31,14 +31,14 @@ var infinityVar = values.NewDuration(math.MaxInt64)
 func init() {
 	windowSignature := flux.FunctionSignature(
 		map[string]semantic.PolyType{
-			"every":         semantic.Duration,
-			"period":        semantic.Duration,
-			"round":         semantic.Duration,
-			"start":         semantic.Tvar(1), // See similar TODO on range
-			"timeCol":       semantic.String,
-			"startColLabel": semantic.String,
-			"stopColLabel":  semantic.String,
-			"createEmpty":   semantic.Bool,
+			"every":       semantic.Duration,
+			"period":      semantic.Duration,
+			"round":       semantic.Duration,
+			"start":       semantic.Tvar(1), // See similar TODO on range about type classes
+			"timeColumn":  semantic.String,
+			"startColumn": semantic.String,
+			"stopColumn":  semantic.String,
+			"createEmpty": semantic.Bool,
 		},
 		nil,
 	)
@@ -85,26 +85,26 @@ func createWindowOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		return nil, errors.New(`window function requires at least one of "every" or "period" to be set`)
 	}
 
-	if label, ok, err := args.GetString("timeCol"); err != nil {
+	if label, ok, err := args.GetString("timeColumn"); err != nil {
 		return nil, err
 	} else if ok {
-		spec.TimeCol = label
+		spec.TimeColumn = label
 	} else {
-		spec.TimeCol = execute.DefaultTimeColLabel
+		spec.TimeColumn = execute.DefaultTimeColLabel
 	}
-	if label, ok, err := args.GetString("startColLabel"); err != nil {
+	if label, ok, err := args.GetString("startColumn"); err != nil {
 		return nil, err
 	} else if ok {
-		spec.StartColLabel = label
+		spec.StartColumn = label
 	} else {
-		spec.StartColLabel = execute.DefaultStartColLabel
+		spec.StartColumn = execute.DefaultStartColLabel
 	}
-	if label, ok, err := args.GetString("stopColLabel"); err != nil {
+	if label, ok, err := args.GetString("stopColumn"); err != nil {
 		return nil, err
 	} else if ok {
-		spec.StopColLabel = label
+		spec.StopColumn = label
 	} else {
-		spec.StopColLabel = execute.DefaultStopColLabel
+		spec.StopColumn = execute.DefaultStopColLabel
 	}
 	if createEmpty, ok, err := args.GetBool("createEmpty"); err != nil {
 		return nil, err
@@ -136,9 +136,9 @@ type WindowProcedureSpec struct {
 	plan.DefaultCost
 	Window     plan.WindowSpec
 	Triggering flux.TriggerSpec
-	TimeCol,
-	StartColLabel,
-	StopColLabel string
+	TimeColumn,
+	StartColumn,
+	StopColumn string
 	CreateEmpty bool
 }
 
@@ -154,11 +154,11 @@ func newWindowProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Pro
 			Round:  s.Round,
 			Start:  s.Start,
 		},
-		Triggering:    s.Triggering,
-		TimeCol:       s.TimeCol,
-		StartColLabel: s.StartColLabel,
-		StopColLabel:  s.StopColLabel,
-		CreateEmpty:   s.CreateEmpty,
+		Triggering:  s.Triggering,
+		TimeColumn:  s.TimeColumn,
+		StartColumn: s.StartColumn,
+		StopColumn:  s.StopColumn,
+		CreateEmpty: s.CreateEmpty,
 	}
 	if p.Triggering == nil {
 		p.Triggering = flux.DefaultTrigger
@@ -209,9 +209,9 @@ func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationM
 			Round:  execute.Duration(s.Window.Round),
 			Start:  start,
 		},
-		s.TimeCol,
-		s.StartColLabel,
-		s.StopColLabel,
+		s.TimeColumn,
+		s.StartColumn,
+		s.StopColumn,
 		s.CreateEmpty,
 	)
 	return t, d, nil
@@ -227,8 +227,8 @@ type fixedWindowTransformation struct {
 	offset execute.Duration
 
 	timeCol,
-	startColLabel,
-	stopColLabel string
+	startCol,
+	stopCol string
 	createEmpty bool
 }
 
@@ -238,21 +238,21 @@ func NewFixedWindowTransformation(
 	bounds execute.Bounds,
 	w execute.Window,
 	timeCol,
-	startColLabel,
-	stopColLabel string,
+	startCol,
+	stopCol string,
 	createEmpty bool,
 ) execute.Transformation {
 	offset := execute.Duration(w.Start - w.Start.Truncate(w.Every))
 	t := &fixedWindowTransformation{
-		d:             d,
-		cache:         cache,
-		w:             w,
-		bounds:        bounds,
-		offset:        offset,
-		timeCol:       timeCol,
-		startColLabel: startColLabel,
-		stopColLabel:  stopColLabel,
-		createEmpty:   createEmpty,
+		d:           d,
+		cache:       cache,
+		w:           w,
+		bounds:      bounds,
+		offset:      offset,
+		timeCol:     timeCol,
+		startCol:    startCol,
+		stopCol:     stopCol,
+		createEmpty: createEmpty,
 	}
 
 	if createEmpty {
@@ -280,11 +280,11 @@ func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl flux.Table
 	for j, c := range tbl.Cols() {
 		keyIdx := execute.ColIdx(c.Label, tbl.Key().Cols())
 		keyed := keyIdx >= 0
-		if c.Label == t.startColLabel {
+		if c.Label == t.startCol {
 			startColIdx = j
 			keyed = true
 		}
-		if c.Label == t.stopColLabel {
+		if c.Label == t.stopCol {
 			stopColIdx = j
 			keyed = true
 		}
@@ -297,7 +297,7 @@ func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl flux.Table
 	if startColIdx == -1 {
 		startColIdx = len(newCols)
 		c := flux.ColMeta{
-			Label: t.startColLabel,
+			Label: t.startCol,
 			Type:  flux.TTime,
 		}
 		newCols = append(newCols, c)
@@ -307,7 +307,7 @@ func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl flux.Table
 	if stopColIdx == -1 {
 		stopColIdx = len(newCols)
 		c := flux.ColMeta{
-			Label: t.stopColLabel,
+			Label: t.stopCol,
 			Type:  flux.TTime,
 		}
 		newCols = append(newCols, c)
@@ -353,11 +353,11 @@ func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl flux.Table
 
 				for j, c := range builder.Cols() {
 					switch c.Label {
-					case t.startColLabel:
+					case t.startCol:
 						if err := builder.AppendTime(startColIdx, bnds.Start); err != nil {
 							return err
 						}
-					case t.stopColLabel:
+					case t.stopCol:
 						if err := builder.AppendTime(stopColIdx, bnds.Stop); err != nil {
 							return err
 						}
@@ -379,9 +379,9 @@ func (t *fixedWindowTransformation) newWindowGroupKey(tbl flux.Table, keyCols []
 	for j, c := range keyCols {
 		cols[j] = c
 		switch c.Label {
-		case t.startColLabel:
+		case t.startCol:
 			vs[j] = values.NewTime(bnds.Start)
-		case t.stopColLabel:
+		case t.stopCol:
 			vs[j] = values.NewTime(bnds.Stop)
 		default:
 			vs[j] = tbl.Key().Value(keyColMap[j])

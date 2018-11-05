@@ -15,26 +15,26 @@ import (
 const PivotKind = "pivot"
 
 type PivotOpSpec struct {
-	RowKey   []string `json:"rowKey"`
-	ColKey   []string `json:"colKey"`
-	ValueCol string   `json:"valueCol"`
+	RowKey      []string `json:"rowKey"`
+	ColumnKey   []string `json:"columnKey"`
+	ValueColumn string   `json:"valueColumn"`
 }
 
 var fromRowsBuiltin = `
 // fromRows will access a database and retrieve data aligned into time-aligned tuples, grouped by measurement.
 fromRows = (bucket="",bucketID="") =>
     from(bucket:bucket,bucketID:bucketID)
-        |> pivot(rowKey:["_time"], colKey: ["_field"], valueCol: "_value")
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
 `
 
 func init() {
 	pivotSignature := flux.FunctionSignature(
 		map[string]semantic.PolyType{
-			"rowKey":   semantic.NewArrayPolyType(semantic.String),
-			"colKey":   semantic.NewArrayPolyType(semantic.String),
-			"valueCol": semantic.String,
+			"rowKey":      semantic.NewArrayPolyType(semantic.String),
+			"columnKey":   semantic.NewArrayPolyType(semantic.String),
+			"valueColumn": semantic.String,
 		},
-		[]string{"rowKey", "colKey", "valueCol"},
+		[]string{"rowKey", "columnKey", "valueColumn"},
 	)
 
 	flux.RegisterFunction(PivotKind, createPivotOpSpec, pivotSignature)
@@ -62,12 +62,12 @@ func createPivotOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 		return nil, err
 	}
 
-	array, err = args.GetRequiredArray("colKey", semantic.String)
+	array, err = args.GetRequiredArray("columnKey", semantic.String)
 	if err != nil {
 		return nil, err
 	}
 
-	spec.ColKey, err = interpreter.ToStringArray(array)
+	spec.ColumnKey, err = interpreter.ToStringArray(array)
 	if err != nil {
 		return nil, err
 	}
@@ -77,17 +77,17 @@ func createPivotOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 		rowKeys[v] = true
 	}
 
-	for _, v := range spec.ColKey {
+	for _, v := range spec.ColumnKey {
 		if _, ok := rowKeys[v]; ok {
 			return nil, fmt.Errorf("column name found in both rowKey and colKey: %s", v)
 		}
 	}
 
-	valueCol, err := args.GetRequiredString("valueCol")
+	valueCol, err := args.GetRequiredString("valueColumn")
 	if err != nil {
 		return nil, err
 	}
-	spec.ValueCol = valueCol
+	spec.ValueColumn = valueCol
 
 	return spec, nil
 }
@@ -102,9 +102,9 @@ func (s *PivotOpSpec) Kind() flux.OperationKind {
 
 type PivotProcedureSpec struct {
 	plan.DefaultCost
-	RowKey   []string
-	ColKey   []string
-	ValueCol string
+	RowKey      []string
+	ColumnKey   []string
+	ValueColumn string
 }
 
 func newPivotProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -114,9 +114,9 @@ func newPivotProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proc
 	}
 
 	p := &PivotProcedureSpec{
-		RowKey:   spec.RowKey,
-		ColKey:   spec.ColKey,
-		ValueCol: spec.ValueCol,
+		RowKey:      spec.RowKey,
+		ColumnKey:   spec.ColumnKey,
+		ValueColumn: spec.ValueColumn,
 	}
 
 	return p, nil
@@ -129,9 +129,9 @@ func (s *PivotProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(PivotProcedureSpec)
 	ns.RowKey = make([]string, len(s.RowKey))
 	copy(ns.RowKey, s.RowKey)
-	ns.ColKey = make([]string, len(s.ColKey))
-	copy(ns.ColKey, s.ColKey)
-	ns.ValueCol = s.ValueCol
+	ns.ColumnKey = make([]string, len(s.ColumnKey))
+	copy(ns.ColumnKey, s.ColumnKey)
+	ns.ValueColumn = s.ValueColumn
 	return ns
 }
 
@@ -194,7 +194,7 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	colKeyIndex := make(map[string]int)
 	valueColIndex := -1
 	var valueColType flux.ColType
-	for _, v := range t.spec.ColKey {
+	for _, v := range t.spec.ColumnKey {
 		colKeyIndex[v] = -1
 	}
 
@@ -205,7 +205,7 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	colMap := make([]int, len(tbl.Cols()))
 
 	for colIDX, v := range tbl.Cols() {
-		if _, ok := colKeyIndex[v.Label]; !ok && v.Label != t.spec.ValueCol {
+		if _, ok := colKeyIndex[v.Label]; !ok && v.Label != t.spec.ValueColumn {
 			// the columns we keep are: group key columns not in the column key and row key columns
 			if tbl.Key().HasCol(v.Label) {
 				colMap[newIDX] = colIDX
@@ -218,7 +218,7 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 				colMap[newIDX] = colIDX
 				newIDX++
 			}
-		} else if v.Label == t.spec.ValueCol {
+		} else if v.Label == t.spec.ValueColumn {
 			valueColIndex = colIDX
 			valueColType = tbl.Cols()[colIDX].Type
 		} else {

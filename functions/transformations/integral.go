@@ -13,16 +13,16 @@ import (
 const IntegralKind = "integral"
 
 type IntegralOpSpec struct {
-	Unit    flux.Duration `json:"unit"`
-	TimeCol string        `json:"timeCol"`
+	Unit       flux.Duration `json:"unit"`
+	TimeColumn string        `json:"timeColumn"`
 	execute.AggregateConfig
 }
 
 func init() {
 	integralSignature := execute.AggregateSignature(
 		map[string]semantic.PolyType{
-			"unit":    semantic.Duration,
-			"timeCol": semantic.String,
+			"unit":       semantic.Duration,
+			"timeColumn": semantic.String,
 		},
 		nil,
 	)
@@ -49,12 +49,12 @@ func createIntegralOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 		spec.Unit = flux.Duration(time.Second)
 	}
 
-	if timeValue, ok, err := args.GetString("timeCol"); err != nil {
+	if timeValue, ok, err := args.GetString("timeColumn"); err != nil {
 		return nil, err
 	} else if ok {
-		spec.TimeCol = timeValue
+		spec.TimeColumn = timeValue
 	} else {
-		spec.TimeCol = execute.DefaultTimeColLabel
+		spec.TimeColumn = execute.DefaultTimeColLabel
 	}
 
 	if err := spec.AggregateConfig.ReadArgs(args); err != nil {
@@ -72,8 +72,8 @@ func (s *IntegralOpSpec) Kind() flux.OperationKind {
 }
 
 type IntegralProcedureSpec struct {
-	Unit    flux.Duration `json:"unit"`
-	TimeCol string        `json:"timeCol"`
+	Unit       flux.Duration `json:"unit"`
+	TimeColumn string        `json:"timeColumn"`
 	execute.AggregateConfig
 }
 
@@ -85,7 +85,7 @@ func newIntegralProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.P
 
 	return &IntegralProcedureSpec{
 		Unit:            spec.Unit,
-		TimeCol:         spec.TimeCol,
+		TimeColumn:      spec.TimeColumn,
 		AggregateConfig: spec.AggregateConfig,
 	}, nil
 }
@@ -161,9 +161,9 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 		}
 	}
 
-	timeIdx := execute.ColIdx(t.spec.TimeCol, cols)
+	timeIdx := execute.ColIdx(t.spec.TimeColumn, cols)
 	if timeIdx < 0 {
-		return fmt.Errorf("no column %q exists", t.spec.TimeCol)
+		return fmt.Errorf("no column %q exists", t.spec.TimeColumn)
 	}
 	if err := tbl.Do(func(cr flux.ColReader) error {
 		for j, in := range integrals {

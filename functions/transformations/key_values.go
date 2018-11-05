@@ -14,15 +14,15 @@ import (
 const KeyValuesKind = "keyValues"
 
 type KeyValuesOpSpec struct {
-	KeyCols     []string                     `json:"keyCols"`
+	KeyColumns  []string                     `json:"keyColumns"`
 	PredicateFn *semantic.FunctionExpression `json:"fn"`
 }
 
 func init() {
 	keyValuesSignature := flux.FunctionSignature(
 		map[string]semantic.PolyType{
-			"keyCols": semantic.NewArrayPolyType(semantic.String),
-			"fn":      semantic.Function,
+			"keyColumns": semantic.NewArrayPolyType(semantic.String),
+			"fn":         semantic.Function,
 		},
 		nil,
 	)
@@ -40,10 +40,10 @@ func createKeyValuesOpSpec(args flux.Arguments, a *flux.Administration) (flux.Op
 
 	spec := new(KeyValuesOpSpec)
 
-	if c, ok, err := args.GetArray("keyCols", semantic.String); err != nil {
+	if c, ok, err := args.GetArray("keyColumns", semantic.String); err != nil {
 		return nil, err
 	} else if ok {
-		spec.KeyCols, err = interpreter.ToStringArray(c)
+		spec.KeyColumns, err = interpreter.ToStringArray(c)
 		if err != nil {
 			return nil, err
 		}
@@ -59,12 +59,12 @@ func createKeyValuesOpSpec(args flux.Arguments, a *flux.Administration) (flux.Op
 		spec.PredicateFn = fn
 	}
 
-	if spec.KeyCols == nil && spec.PredicateFn == nil {
+	if spec.KeyColumns == nil && spec.PredicateFn == nil {
 		return nil, errors.New("neither column list nor predicate function provided")
 	}
 
-	if spec.KeyCols != nil && spec.PredicateFn != nil {
-		return nil, errors.New("must provide exactly one of keyCol list or predicate function")
+	if spec.KeyColumns != nil && spec.PredicateFn != nil {
+		return nil, errors.New("must provide exactly one of keyColumns list or predicate function")
 	}
 
 	return spec, nil
@@ -80,8 +80,8 @@ func (s *KeyValuesOpSpec) Kind() flux.OperationKind {
 
 type KeyValuesProcedureSpec struct {
 	plan.DefaultCost
-	KeyCols   []string                     `json:"keyCols"`
-	Predicate *semantic.FunctionExpression `json:"fn"`
+	KeyColumns []string                     `json:"keyColumns"`
+	Predicate  *semantic.FunctionExpression `json:"fn"`
 }
 
 func newKeyValuesProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -91,8 +91,8 @@ func newKeyValuesProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.
 	}
 
 	return &KeyValuesProcedureSpec{
-		KeyCols:   spec.KeyCols,
-		Predicate: spec.PredicateFn,
+		KeyColumns: spec.KeyColumns,
+		Predicate:  spec.PredicateFn,
 	}, nil
 }
 
@@ -102,8 +102,8 @@ func (s *KeyValuesProcedureSpec) Kind() plan.ProcedureKind {
 
 func (s *KeyValuesProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(KeyValuesProcedureSpec)
-	ns.KeyCols = make([]string, len(s.KeyCols))
-	copy(ns.KeyCols, s.KeyCols)
+	ns.KeyColumns = make([]string, len(s.KeyColumns))
+	copy(ns.KeyColumns, s.KeyColumns)
 	ns.Predicate = s.Predicate.Copy().(*semantic.FunctionExpression)
 	return ns
 }
@@ -145,31 +145,31 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 		return fmt.Errorf("distinct found duplicate table with key: %v", tbl.Key())
 	}
 
-	// TODO: use fn to populate t.spec.keyCols
+	// TODO: use fn to populate t.spec.keyColumns
 
 	// we'll ignore keyCol values that just don't exist in the table.
 	cols := tbl.Cols()
 	i := 0
 	keyColIndex := -1
-	for keyColIndex < 0 && i < len(t.spec.KeyCols) {
-		keyColIndex = execute.ColIdx(t.spec.KeyCols[i], cols)
+	for keyColIndex < 0 && i < len(t.spec.KeyColumns) {
+		keyColIndex = execute.ColIdx(t.spec.KeyColumns[i], cols)
 		i++
 	}
 	if keyColIndex < 1 {
-		return errors.New("no columns matched by keyCols parameter")
+		return errors.New("no columns matched by keyColumns parameter")
 	}
 
-	keyColIndices := make([]int, len(t.spec.KeyCols))
+	keyColIndices := make([]int, len(t.spec.KeyColumns))
 	keyColIndices[i-1] = keyColIndex
 	keyColType := cols[keyColIndex].Type
-	for j, v := range t.spec.KeyCols[i:] {
+	for j, v := range t.spec.KeyColumns[i:] {
 		keyColIndex = execute.ColIdx(v, cols)
 		keyColIndices[i+j] = keyColIndex
 		if keyColIndex < 0 {
 			continue
 		}
 		if cols[keyColIndex].Type != keyColType {
-			return errors.New("keyCols must all be the same type")
+			return errors.New("keyColumns must all be the same type")
 		}
 	}
 
@@ -236,7 +236,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 						}
 						boolDistinct[v] = true
 					}
-					if err := builder.AppendString(keyColIdx, t.spec.KeyCols[j]); err != nil {
+					if err := builder.AppendString(keyColIdx, t.spec.KeyColumns[j]); err != nil {
 						return err
 					}
 					if err := builder.AppendBool(valueColIdx, v); err != nil {
@@ -250,7 +250,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 						}
 						intDistinct[v] = true
 					}
-					if err := builder.AppendString(keyColIdx, t.spec.KeyCols[j]); err != nil {
+					if err := builder.AppendString(keyColIdx, t.spec.KeyColumns[j]); err != nil {
 						return err
 					}
 					if err := builder.AppendInt(valueColIdx, v); err != nil {
@@ -264,7 +264,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 						}
 						uintDistinct[v] = true
 					}
-					if err := builder.AppendString(keyColIdx, t.spec.KeyCols[j]); err != nil {
+					if err := builder.AppendString(keyColIdx, t.spec.KeyColumns[j]); err != nil {
 						return err
 					}
 					if err := builder.AppendUInt(valueColIdx, v); err != nil {
@@ -278,7 +278,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 						}
 						floatDistinct[v] = true
 					}
-					if err := builder.AppendString(keyColIdx, t.spec.KeyCols[j]); err != nil {
+					if err := builder.AppendString(keyColIdx, t.spec.KeyColumns[j]); err != nil {
 						return err
 					}
 					if err := builder.AppendFloat(valueColIdx, v); err != nil {
@@ -292,7 +292,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 						}
 						stringDistinct[v] = true
 					}
-					if err := builder.AppendString(keyColIdx, t.spec.KeyCols[j]); err != nil {
+					if err := builder.AppendString(keyColIdx, t.spec.KeyColumns[j]); err != nil {
 						return err
 					}
 					if err := builder.AppendString(valueColIdx, v); err != nil {
@@ -306,7 +306,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 						}
 						timeDistinct[v] = true
 					}
-					if err := builder.AppendString(keyColIdx, t.spec.KeyCols[j]); err != nil {
+					if err := builder.AppendString(keyColIdx, t.spec.KeyColumns[j]); err != nil {
 						return err
 					}
 					if err := builder.AppendTime(valueColIdx, v); err != nil {

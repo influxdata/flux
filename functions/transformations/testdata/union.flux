@@ -9,4 +9,4 @@ right = from(bucket: "test")
     |> drop(columns: ["_start", "_stop"])
 
 union(tables: [left, right])
-    |> sort(cols: ["_time"])
+    |> sort(columns: ["_time"])

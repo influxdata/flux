@@ -44,9 +44,9 @@ func TestDerivative_Process(t *testing.T) {
 		{
 			name: "float",
 			spec: &transformations.DerivativeProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				TimeCol: execute.DefaultTimeColLabel,
-				Unit:    1,
+				Columns:    []string{execute.DefaultValueColLabel},
+				TimeColumn: execute.DefaultTimeColLabel,
+				Unit:       1,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -71,9 +71,9 @@ func TestDerivative_Process(t *testing.T) {
 		{
 			name: "float with units",
 			spec: &transformations.DerivativeProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				TimeCol: execute.DefaultTimeColLabel,
-				Unit:    flux.Duration(time.Second),
+				Columns:    []string{execute.DefaultValueColLabel},
+				TimeColumn: execute.DefaultTimeColLabel,
+				Unit:       flux.Duration(time.Second),
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -98,9 +98,9 @@ func TestDerivative_Process(t *testing.T) {
 		{
 			name: "int",
 			spec: &transformations.DerivativeProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				TimeCol: execute.DefaultTimeColLabel,
-				Unit:    1,
+				Columns:    []string{execute.DefaultValueColLabel},
+				TimeColumn: execute.DefaultTimeColLabel,
+				Unit:       1,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -125,9 +125,9 @@ func TestDerivative_Process(t *testing.T) {
 		{
 			name: "int with units",
 			spec: &transformations.DerivativeProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				TimeCol: execute.DefaultTimeColLabel,
-				Unit:    flux.Duration(time.Second),
+				Columns:    []string{execute.DefaultValueColLabel},
+				TimeColumn: execute.DefaultTimeColLabel,
+				Unit:       flux.Duration(time.Second),
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -153,7 +153,7 @@ func TestDerivative_Process(t *testing.T) {
 			name: "int non negative",
 			spec: &transformations.DerivativeProcedureSpec{
 				Columns:     []string{execute.DefaultValueColLabel},
-				TimeCol:     execute.DefaultTimeColLabel,
+				TimeColumn:  execute.DefaultTimeColLabel,
 				Unit:        1,
 				NonNegative: true,
 			},
@@ -182,9 +182,9 @@ func TestDerivative_Process(t *testing.T) {
 		{
 			name: "uint",
 			spec: &transformations.DerivativeProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				TimeCol: execute.DefaultTimeColLabel,
-				Unit:    1,
+				Columns:    []string{execute.DefaultValueColLabel},
+				TimeColumn: execute.DefaultTimeColLabel,
+				Unit:       1,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -209,9 +209,9 @@ func TestDerivative_Process(t *testing.T) {
 		{
 			name: "uint with negative result",
 			spec: &transformations.DerivativeProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				TimeCol: execute.DefaultTimeColLabel,
-				Unit:    1,
+				Columns:    []string{execute.DefaultValueColLabel},
+				TimeColumn: execute.DefaultTimeColLabel,
+				Unit:       1,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -237,7 +237,7 @@ func TestDerivative_Process(t *testing.T) {
 			name: "uint with non negative",
 			spec: &transformations.DerivativeProcedureSpec{
 				Columns:     []string{execute.DefaultValueColLabel},
-				TimeCol:     execute.DefaultTimeColLabel,
+				TimeColumn:  execute.DefaultTimeColLabel,
 				Unit:        1,
 				NonNegative: true,
 			},
@@ -266,9 +266,9 @@ func TestDerivative_Process(t *testing.T) {
 		{
 			name: "uint with units",
 			spec: &transformations.DerivativeProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				TimeCol: execute.DefaultTimeColLabel,
-				Unit:    flux.Duration(time.Second),
+				Columns:    []string{execute.DefaultValueColLabel},
+				TimeColumn: execute.DefaultTimeColLabel,
+				Unit:       flux.Duration(time.Second),
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -294,7 +294,7 @@ func TestDerivative_Process(t *testing.T) {
 			name: "non negative one table",
 			spec: &transformations.DerivativeProcedureSpec{
 				Columns:     []string{execute.DefaultValueColLabel},
-				TimeCol:     execute.DefaultTimeColLabel,
+				TimeColumn:  execute.DefaultTimeColLabel,
 				Unit:        1,
 				NonNegative: true,
 			},
@@ -323,9 +323,9 @@ func TestDerivative_Process(t *testing.T) {
 		{
 			name: "float with tags",
 			spec: &transformations.DerivativeProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				TimeCol: execute.DefaultTimeColLabel,
-				Unit:    1,
+				Columns:    []string{execute.DefaultValueColLabel},
+				TimeColumn: execute.DefaultTimeColLabel,
+				Unit:       1,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -352,9 +352,9 @@ func TestDerivative_Process(t *testing.T) {
 		{
 			name: "float with multiple values",
 			spec: &transformations.DerivativeProcedureSpec{
-				Columns: []string{"x", "y"},
-				TimeCol: execute.DefaultTimeColLabel,
-				Unit:    1,
+				Columns:    []string{"x", "y"},
+				TimeColumn: execute.DefaultTimeColLabel,
+				Unit:       1,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -382,7 +382,7 @@ func TestDerivative_Process(t *testing.T) {
 			name: "float non negative with multiple values",
 			spec: &transformations.DerivativeProcedureSpec{
 				Columns:     []string{"x", "y"},
-				TimeCol:     execute.DefaultTimeColLabel,
+				TimeColumn:  execute.DefaultTimeColLabel,
 				Unit:        1,
 				NonNegative: true,
 			},

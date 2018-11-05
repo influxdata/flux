@@ -14,15 +14,15 @@ import (
 const SortKind = "sort"
 
 type SortOpSpec struct {
-	Cols []string `json:"cols"`
-	Desc bool     `json:"desc"`
+	Columns []string `json:"columns"`
+	Desc    bool     `json:"desc"`
 }
 
 func init() {
 	sortSignature := flux.FunctionSignature(
 		map[string]semantic.PolyType{
-			"cols": semantic.NewArrayPolyType(semantic.String),
-			"desc": semantic.Bool,
+			"columns": semantic.NewArrayPolyType(semantic.String),
+			"desc":    semantic.Bool,
 		},
 		nil,
 	)
@@ -40,16 +40,16 @@ func createSortOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 
 	spec := new(SortOpSpec)
 
-	if array, ok, err := args.GetArray("cols", semantic.String); err != nil {
+	if array, ok, err := args.GetArray("columns", semantic.String); err != nil {
 		return nil, err
 	} else if ok {
-		spec.Cols, err = interpreter.ToStringArray(array)
+		spec.Columns, err = interpreter.ToStringArray(array)
 		if err != nil {
 			return nil, err
 		}
 	} else {
 		//Default behavior to sort by value
-		spec.Cols = []string{execute.DefaultValueColLabel}
+		spec.Columns = []string{execute.DefaultValueColLabel}
 	}
 
 	if desc, ok, err := args.GetBool("desc"); err != nil {
@@ -71,8 +71,8 @@ func (s *SortOpSpec) Kind() flux.OperationKind {
 
 type SortProcedureSpec struct {
 	plan.DefaultCost
-	Cols []string
-	Desc bool
+	Columns []string
+	Desc    bool
 }
 
 func newSortProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -82,8 +82,8 @@ func newSortProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proce
 	}
 
 	return &SortProcedureSpec{
-		Cols: spec.Cols,
-		Desc: spec.Desc,
+		Columns: spec.Columns,
+		Desc:    spec.Desc,
 	}, nil
 }
 
@@ -93,8 +93,8 @@ func (s *SortProcedureSpec) Kind() plan.ProcedureKind {
 func (s *SortProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(SortProcedureSpec)
 
-	ns.Cols = make([]string, len(s.Cols))
-	copy(ns.Cols, s.Cols)
+	ns.Columns = make([]string, len(s.Columns))
+	copy(ns.Columns, s.Columns)
 
 	ns.Desc = s.Desc
 	return ns
@@ -123,7 +123,7 @@ func NewSortTransformation(d execute.Dataset, cache execute.TableBuilderCache, s
 	return &sortTransformation{
 		d:     d,
 		cache: cache,
-		cols:  spec.Cols,
+		cols:  spec.Columns,
 		desc:  spec.Desc,
 	}
 }

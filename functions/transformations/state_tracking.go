@@ -20,7 +20,7 @@ type StateTrackingOpSpec struct {
 	CountLabel    string                       `json:"countLabel"`
 	DurationLabel string                       `json:"durationLabel"`
 	DurationUnit  flux.Duration                `json:"durationUnit"`
-	TimeCol       string                       `json:"timeCol"`
+	TimeColumn    string                       `json:"timeColumn"`
 }
 
 func init() {
@@ -36,7 +36,7 @@ func init() {
 			"countLabel":    semantic.String,
 			"durationLabel": semantic.String,
 			"durationUnit":  semantic.Duration,
-			"timeCol":       semantic.String,
+			"timeColumn":    semantic.String,
 		},
 		[]string{"fn"},
 	)
@@ -58,8 +58,9 @@ var stateTrackingBuiltin = `
 // expression evaluates as false, the value will be -1. If the expression
 // generates an error during evaluation, the point is discarded, and does not
 // affect the state count.
-stateCount = (fn, label="stateCount", table=<-) =>
-	stateTracking(table:table, countLabel:label, fn:fn)
+stateCount = (fn, label="stateCount", tables=<-) =>
+    tables
+        |> stateTracking(countLabel:label, fn:fn)
 
 // stateDuration computes the duration of a given state.
 // The state is defined via the function fn. For each consecutive point for
@@ -76,8 +77,9 @@ stateCount = (fn, label="stateCount", table=<-) =>
 // state duration will be 0.
 //
 // The duration is represented as an integer in the units specified.
-stateDuration = (fn, label="stateDuration", unit=1s, table=<-) =>
-	stateTracking(table:table, durationLabel:label, fn:fn, durationUnit:unit)
+stateDuration = (fn, label="stateDuration", unit=1s, tables=<-) =>
+    tables
+        |> stateTracking(durationLabel:label, fn:fn, durationUnit:unit)
 `
 
 func createStateTrackingOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
@@ -115,12 +117,12 @@ func createStateTrackingOpSpec(args flux.Arguments, a *flux.Administration) (flu
 	} else if ok {
 		spec.DurationUnit = unit
 	}
-	if label, ok, err := args.GetString("timeCol"); err != nil {
+	if label, ok, err := args.GetString("timeColumn"); err != nil {
 		return nil, err
 	} else if ok {
-		spec.TimeCol = label
+		spec.TimeColumn = label
 	} else {
-		spec.TimeCol = execute.DefaultTimeColLabel
+		spec.TimeColumn = execute.DefaultTimeColLabel
 	}
 
 	if spec.DurationLabel != "" && spec.DurationUnit <= 0 {
@@ -157,7 +159,7 @@ func newStateTrackingProcedure(qs flux.OperationSpec, pa plan.Administration) (p
 		CountLabel:    spec.CountLabel,
 		DurationLabel: spec.DurationLabel,
 		DurationUnit:  spec.DurationUnit,
-		TimeCol:       spec.TimeCol,
+		TimeCol:       spec.TimeColumn,
 	}, nil
 }
 

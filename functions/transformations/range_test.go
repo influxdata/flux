@@ -40,9 +40,9 @@ func TestRange_NewQuery(t *testing.T) {
 								Relative:   -2 * time.Hour,
 								IsRelative: true,
 							},
-							TimeCol:  "_time",
-							StartCol: "_start",
-							StopCol:  "_stop",
+							TimeColumn:  "_time",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
 						},
 					},
 					{
@@ -60,7 +60,7 @@ func TestRange_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "from csv with range",
-			Raw:  `fromCSV(csv: "1,2") |> range(start:-4h, stop:-2h, timeCol: "_start") |> sum()`,
+			Raw:  `fromCSV(csv: "1,2") |> range(start:-4h, stop:-2h, timeColumn: "_start") |> sum()`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
@@ -80,9 +80,9 @@ func TestRange_NewQuery(t *testing.T) {
 								Relative:   -2 * time.Hour,
 								IsRelative: true,
 							},
-							TimeCol:  "_start",
-							StartCol: "_start",
-							StopCol:  "_stop",
+							TimeColumn:  "_start",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
 						},
 					},
 					{
@@ -149,9 +149,9 @@ func TestRange_Process(t *testing.T) {
 						Relative:   -2 * time.Minute,
 					},
 				},
-				TimeCol:  "_time",
-				StartCol: "_start",
-				StopCol:  "_stop",
+				TimeColumn:  "_time",
+				StartColumn: "_start",
+				StopColumn:  "_stop",
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -196,9 +196,9 @@ func TestRange_Process(t *testing.T) {
 						Relative:   -2 * time.Minute,
 					},
 				},
-				TimeCol:  "_value",
-				StartCol: "_start",
-				StopCol:  "_stop",
+				TimeColumn:  "_value",
+				StartColumn: "_start",
+				StopColumn:  "_stop",
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -237,9 +237,9 @@ func TestRange_Process(t *testing.T) {
 						IsRelative: true,
 					},
 				},
-				TimeCol:  "_start",
-				StartCol: "_start",
-				StopCol:  "_stop",
+				TimeColumn:  "_start",
+				StartColumn: "_start",
+				StopColumn:  "_stop",
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -280,9 +280,9 @@ func TestRange_Process(t *testing.T) {
 						IsRelative: true,
 					},
 				},
-				TimeCol:  "_start",
-				StartCol: "_start",
-				StopCol:  "_stop",
+				TimeColumn:  "_start",
+				StartColumn: "_start",
+				StopColumn:  "_stop",
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -324,9 +324,9 @@ func TestRange_Process(t *testing.T) {
 						Absolute: time.Unix(14*time.Minute.Nanoseconds(), 0),
 					},
 				},
-				TimeCol:  "_time",
-				StartCol: "_start",
-				StopCol:  "_stop",
+				TimeColumn:  "_time",
+				StartColumn: "_start",
+				StopColumn:  "_stop",
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -384,9 +384,9 @@ func TestRange_Process(t *testing.T) {
 					},
 				},
 
-				TimeCol:  "_time",
-				StartCol: "_start",
-				StopCol:  "_stop",
+				TimeColumn:  "_time",
+				StartColumn: "_start",
+				StopColumn:  "_stop",
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -427,9 +427,9 @@ func TestRange_Process(t *testing.T) {
 						Relative:   -5 * time.Minute,
 					},
 				},
-				TimeCol:  "_time",
-				StartCol: "_start",
-				StopCol:  "_stop",
+				TimeColumn:  "_time",
+				StartColumn: "_start",
+				StopColumn:  "_stop",
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
