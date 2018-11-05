@@ -157,10 +157,10 @@ func MergePhysicalPlanNodes(top, bottom PlanNode, procSpec PhysicalProcedureSpec
 }
 
 func mergeIDs(top, bottom NodeID) NodeID {
-	if strings.HasPrefix(string(top), "merged_", ) {
+	if strings.HasPrefix(string(top), "merged_") {
 		top = top[7:]
 	}
-	if strings.HasPrefix(string(bottom), "merged_", ) {
+	if strings.HasPrefix(string(bottom), "merged_") {
 		bottom = bottom[7:]
 	}
 
