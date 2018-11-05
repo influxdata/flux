@@ -146,7 +146,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		},
 		{
 			Name: "test drop query fn param",
-			Raw:  `from(bucket:"mybucket") |> drop(fn: (col) => col =~ /reg*/) |> sum()`,
+			Raw:  `from(bucket:"mybucket") |> drop(fn: (column) => column =~ /reg*/) |> sum()`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
@@ -161,12 +161,12 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 							Predicate: &semantic.FunctionExpression{
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
-										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "col"}}},
+										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
 									},
 									Body: &semantic.BinaryExpression{
 										Operator: ast.RegexpMatchOperator,
 										Left: &semantic.IdentifierExpression{
-											Name: "col",
+											Name: "column",
 										},
 										Right: &semantic.RegexpLiteral{
 											Value: regexp.MustCompile(`reg*`),
@@ -191,7 +191,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		},
 		{
 			Name: "test keep query fn param",
-			Raw:  `from(bucket:"mybucket") |> keep(fn: (col) => col =~ /reg*/) |> sum()`,
+			Raw:  `from(bucket:"mybucket") |> keep(fn: (column) => column =~ /reg*/) |> sum()`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
@@ -206,12 +206,12 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 							Predicate: &semantic.FunctionExpression{
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
-										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "col"}}},
+										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
 									},
 									Body: &semantic.BinaryExpression{
 										Operator: ast.RegexpMatchOperator,
 										Left: &semantic.IdentifierExpression{
-											Name: "col",
+											Name: "column",
 										},
 										Right: &semantic.RegexpLiteral{
 											Value: regexp.MustCompile(`reg*`),
@@ -236,7 +236,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		},
 		{
 			Name: "test rename query fn param",
-			Raw:  `from(bucket:"mybucket") |> rename(fn: (col) => "new_name") |> sum()`,
+			Raw:  `from(bucket:"mybucket") |> rename(fn: (column) => "new_name") |> sum()`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
@@ -251,7 +251,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 							Fn: &semantic.FunctionExpression{
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
-										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "col"}}},
+										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
 									},
 									Body: &semantic.StringLiteral{
 										Value: "new_name",
@@ -275,19 +275,19 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		},
 		{
 			Name:    "test rename query invalid",
-			Raw:     `from(bucket:"mybucket") |> rename(fn: (col) => "new_name", columns: {a:"b", c:"d"}) |> sum()`,
+			Raw:     `from(bucket:"mybucket") |> rename(fn: (column) => "new_name", columns: {a:"b", c:"d"}) |> sum()`,
 			Want:    nil,
 			WantErr: true,
 		},
 		{
 			Name:    "test drop query invalid",
-			Raw:     `from(bucket:"mybucket") |> drop(fn: (col) => col == target, columns: ["a", "b"]) |> sum()`,
+			Raw:     `from(bucket:"mybucket") |> drop(fn: (column) => column == target, columns: ["a", "b"]) |> sum()`,
 			Want:    nil,
 			WantErr: true,
 		},
 		{
 			Name:    "test keep query invalid",
-			Raw:     `from(bucket:"mybucket") |> keep(fn: (col) => col == target, columns: ["a", "b"]) |> sum()`,
+			Raw:     `from(bucket:"mybucket") |> keep(fn: (column) => column == target, columns: ["a", "b"]) |> sum()`,
 			Want:    nil,
 			WantErr: true,
 		},
@@ -456,14 +456,14 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			}},
 		},
 		{
-			name: "rename map fn (col) => name",
+			name: "rename map fn (column) => name",
 			spec: &transformations.SchemaMutationProcedureSpec{
 				Mutations: []transformations.SchemaMutation{
 					&transformations.RenameOpSpec{
 						Fn: &semantic.FunctionExpression{
 							Block: &semantic.FunctionBlock{
 								Parameters: &semantic.FunctionParameters{
-									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "col"}}},
+									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
 								},
 								Body: &semantic.StringLiteral{
 									Value: "new_name",
@@ -488,19 +488,19 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			wantErr: errors.New("table builder already has column with label new_name"),
 		},
 		{
-			name: "drop predicate (col) => col ~= /reg/",
+			name: "drop predicate (column) => column ~= /reg/",
 			spec: &transformations.SchemaMutationProcedureSpec{
 				Mutations: []transformations.SchemaMutation{
 					&transformations.DropOpSpec{
 						Predicate: &semantic.FunctionExpression{
 							Block: &semantic.FunctionBlock{
 								Parameters: &semantic.FunctionParameters{
-									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "col"}}},
+									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
 								},
 								Body: &semantic.BinaryExpression{
 									Operator: ast.RegexpMatchOperator,
 									Left: &semantic.IdentifierExpression{
-										Name: "col",
+										Name: "column",
 									},
 									Right: &semantic.RegexpLiteral{
 										Value: regexp.MustCompile(`server*`),
@@ -535,19 +535,19 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			}},
 		},
 		{
-			name: "keep predicate (col) => col ~= /reg/",
+			name: "keep predicate (column) => column ~= /reg/",
 			spec: &transformations.SchemaMutationProcedureSpec{
 				Mutations: []transformations.SchemaMutation{
 					&transformations.KeepOpSpec{
 						Predicate: &semantic.FunctionExpression{
 							Block: &semantic.FunctionBlock{
 								Parameters: &semantic.FunctionParameters{
-									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "col"}}},
+									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
 								},
 								Body: &semantic.BinaryExpression{
 									Operator: ast.RegexpMatchOperator,
 									Left: &semantic.IdentifierExpression{
-										Name: "col",
+										Name: "column",
 									},
 									Right: &semantic.RegexpLiteral{
 										Value: regexp.MustCompile(`server*`),

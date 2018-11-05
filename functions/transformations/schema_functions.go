@@ -77,9 +77,9 @@ var Registrars = []MutationRegistrar{
 			"columns": semantic.Object,
 			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 				Parameters: map[string]semantic.PolyType{
-					"col": semantic.String,
+					"column": semantic.String,
 				},
-				Required: semantic.LabelSet{"col"},
+				Required: semantic.LabelSet{"column"},
 				Return:   semantic.String,
 			}),
 		},
@@ -92,9 +92,9 @@ var Registrars = []MutationRegistrar{
 			"columns": semantic.NewArrayPolyType(semantic.String),
 			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 				Parameters: map[string]semantic.PolyType{
-					"col": semantic.String,
+					"column": semantic.String,
 				},
-				Required: semantic.LabelSet{"col"},
+				Required: semantic.LabelSet{"column"},
 				Return:   semantic.Bool,
 			}),
 		},
@@ -107,9 +107,9 @@ var Registrars = []MutationRegistrar{
 			"columns": semantic.NewArrayPolyType(semantic.String),
 			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 				Parameters: map[string]semantic.PolyType{
-					"col": semantic.String,
+					"column": semantic.String,
 				},
-				Required: semantic.LabelSet{"col"},
+				Required: semantic.LabelSet{"column"},
 				Return:   semantic.Bool,
 			}),
 		},

@@ -20,7 +20,7 @@ func TestKeyValues_Process(t *testing.T) {
 	}{
 		{
 			name: "no group key",
-			spec: &transformations.KeyValuesProcedureSpec{KeyCols: []string{"tag1"}},
+			spec: &transformations.KeyValuesProcedureSpec{KeyColumns: []string{"tag1"}},
 			data: []flux.Table{
 				&executetest.Table{
 					ColMeta: []flux.ColMeta{
@@ -51,7 +51,7 @@ func TestKeyValues_Process(t *testing.T) {
 		},
 		{
 			name: "column outside group key",
-			spec: &transformations.KeyValuesProcedureSpec{KeyCols: []string{"tag1"}},
+			spec: &transformations.KeyValuesProcedureSpec{KeyColumns: []string{"tag1"}},
 			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"tag0"},
@@ -85,7 +85,7 @@ func TestKeyValues_Process(t *testing.T) {
 		},
 		{
 			name: "column inside group key",
-			spec: &transformations.KeyValuesProcedureSpec{KeyCols: []string{"tag0"}},
+			spec: &transformations.KeyValuesProcedureSpec{KeyColumns: []string{"tag0"}},
 			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"tag0"},
@@ -117,7 +117,7 @@ func TestKeyValues_Process(t *testing.T) {
 		},
 		{
 			name: "two tables",
-			spec: &transformations.KeyValuesProcedureSpec{KeyCols: []string{"tag1"}},
+			spec: &transformations.KeyValuesProcedureSpec{KeyColumns: []string{"tag1"}},
 			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"tag0"},
@@ -179,7 +179,7 @@ func TestKeyValues_Process(t *testing.T) {
 		},
 		{
 			name: "two columns no group key",
-			spec: &transformations.KeyValuesProcedureSpec{KeyCols: []string{"tag0", "tag1"}},
+			spec: &transformations.KeyValuesProcedureSpec{KeyColumns: []string{"tag0", "tag1"}},
 			data: []flux.Table{
 				&executetest.Table{
 					ColMeta: []flux.ColMeta{
@@ -211,7 +211,7 @@ func TestKeyValues_Process(t *testing.T) {
 		},
 		{
 			name: "two columns with group key",
-			spec: &transformations.KeyValuesProcedureSpec{KeyCols: []string{"tag0", "tag1"}},
+			spec: &transformations.KeyValuesProcedureSpec{KeyColumns: []string{"tag0", "tag1"}},
 			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"tag0"},
@@ -246,7 +246,7 @@ func TestKeyValues_Process(t *testing.T) {
 		},
 		{
 			name: "no matching columns",
-			spec: &transformations.KeyValuesProcedureSpec{KeyCols: []string{"tagX", "tagY"}},
+			spec: &transformations.KeyValuesProcedureSpec{KeyColumns: []string{"tagX", "tagY"}},
 			data: []flux.Table{
 				&executetest.Table{
 					KeyCols: []string{"tag0"},
@@ -264,7 +264,7 @@ func TestKeyValues_Process(t *testing.T) {
 					},
 				},
 			},
-			wantErr: errors.New("no columns matched by keyCols parameter"),
+			wantErr: errors.New("no columns matched by keyColumns parameter"),
 		},
 	}
 	for _, tc := range testCases {

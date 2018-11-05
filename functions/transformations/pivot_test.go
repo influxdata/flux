@@ -2,9 +2,10 @@ package transformations_test
 
 import (
 	"errors"
-	"github.com/influxdata/flux/functions/inputs"
 	"testing"
 	"time"
+
+	"github.com/influxdata/flux/functions/inputs"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
@@ -17,7 +18,7 @@ func TestPivot_NewQuery(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{
 			Name: "pivot [_measurement, _field] around _time",
-			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> pivot(rowKey: ["_time"], colKey: ["_measurement", "_field"], valueCol: "_value")`,
+			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> pivot(rowKey: ["_time"], columnKey: ["_measurement", "_field"], valueColumn: "_value")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
@@ -44,9 +45,9 @@ func TestPivot_NewQuery(t *testing.T) {
 					{
 						ID: "pivot2",
 						Spec: &transformations.PivotOpSpec{
-							RowKey:   []string{"_time"},
-							ColKey:   []string{"_measurement", "_field"},
-							ValueCol: "_value",
+							RowKey:      []string{"_time"},
+							ColumnKey:   []string{"_measurement", "_field"},
+							ValueColumn: "_value",
 						},
 					},
 				},
@@ -72,16 +73,16 @@ func TestPivotOperation_Marshaling(t *testing.T) {
 		"kind":"pivot",
 		"spec":{
 			"rowKey":["_time"],
-			"colKey":["_measurement", "_field"], 
-			"valueCol":"_value"
+			"columnKey":["_measurement", "_field"], 
+			"valueColumn":"_value"
 		}
 	}`)
 	op := &flux.Operation{
 		ID: "pivot",
 		Spec: &transformations.PivotOpSpec{
-			RowKey:   []string{"_time"},
-			ColKey:   []string{"_measurement", "_field"},
-			ValueCol: "_value",
+			RowKey:      []string{"_time"},
+			ColumnKey:   []string{"_measurement", "_field"},
+			ValueColumn: "_value",
 		},
 	}
 	querytest.OperationMarshalingTestHelper(t, data, op)
@@ -96,21 +97,21 @@ func TestPivot_Process(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "overlapping rowKey and colKey",
+			name: "overlapping rowKey and columnKey",
 			spec: &transformations.PivotProcedureSpec{
-				RowKey:   []string{"_time", "a"},
-				ColKey:   []string{"_measurement", "_field", "a"},
-				ValueCol: "_value",
+				RowKey:      []string{"_time", "a"},
+				ColumnKey:   []string{"_measurement", "_field", "a"},
+				ValueColumn: "_value",
 			},
 			data:    nil,
-			wantErr: errors.New("column name found in both rowKey and colKey: a"),
+			wantErr: errors.New("column name found in both rowKey and columnKey: a"),
 		},
 		{
 			name: "_field flatten case one table",
 			spec: &transformations.PivotProcedureSpec{
-				RowKey:   []string{"_time"},
-				ColKey:   []string{"_field"},
-				ValueCol: "_value",
+				RowKey:      []string{"_time"},
+				ColumnKey:   []string{"_field"},
+				ValueColumn: "_value",
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -148,9 +149,9 @@ func TestPivot_Process(t *testing.T) {
 		{
 			name: "_field flatten case two tables",
 			spec: &transformations.PivotProcedureSpec{
-				RowKey:   []string{"_time"},
-				ColKey:   []string{"_field"},
-				ValueCol: "_value",
+				RowKey:      []string{"_time"},
+				ColumnKey:   []string{"_field"},
+				ValueColumn: "_value",
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -214,11 +215,11 @@ func TestPivot_Process(t *testing.T) {
 			},
 		},
 		{
-			name: "duplicate rowKey + colKey",
+			name: "duplicate rowKey + columnKey",
 			spec: &transformations.PivotProcedureSpec{
-				RowKey:   []string{"_time"},
-				ColKey:   []string{"_measurement", "_field"},
-				ValueCol: "_value",
+				RowKey:      []string{"_time"},
+				ColumnKey:   []string{"_measurement", "_field"},
+				ValueColumn: "_value",
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -256,9 +257,9 @@ func TestPivot_Process(t *testing.T) {
 		{
 			name: "dropping a column not in rowKey or groupKey",
 			spec: &transformations.PivotProcedureSpec{
-				RowKey:   []string{"_time"},
-				ColKey:   []string{"_measurement", "_field"},
-				ValueCol: "_value",
+				RowKey:      []string{"_time"},
+				ColumnKey:   []string{"_measurement", "_field"},
+				ValueColumn: "_value",
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -297,9 +298,9 @@ func TestPivot_Process(t *testing.T) {
 		{
 			name: "group key doesn't change",
 			spec: &transformations.PivotProcedureSpec{
-				RowKey:   []string{"_time"},
-				ColKey:   []string{"_measurement", "_field"},
-				ValueCol: "_value",
+				RowKey:      []string{"_time"},
+				ColumnKey:   []string{"_measurement", "_field"},
+				ValueColumn: "_value",
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -339,9 +340,9 @@ func TestPivot_Process(t *testing.T) {
 		{
 			name: "group key loses a member",
 			spec: &transformations.PivotProcedureSpec{
-				RowKey:   []string{"_time"},
-				ColKey:   []string{"_measurement", "_field"},
-				ValueCol: "_value",
+				RowKey:      []string{"_time"},
+				ColumnKey:   []string{"_measurement", "_field"},
+				ValueColumn: "_value",
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -415,9 +416,9 @@ func TestPivot_Process(t *testing.T) {
 		{
 			name: "group key loses all members. drops _value",
 			spec: &transformations.PivotProcedureSpec{
-				RowKey:   []string{"_time"},
-				ColKey:   []string{"_measurement", "_field"},
-				ValueCol: "grouper",
+				RowKey:      []string{"_time"},
+				ColumnKey:   []string{"_measurement", "_field"},
+				ValueColumn: "grouper",
 			},
 			data: []flux.Table{
 				&executetest.Table{

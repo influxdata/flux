@@ -11,12 +11,12 @@ import (
 )
 
 func TestSortOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"sort","kind":"sort","spec":{"cols":["t1","t2"],"desc":true}}`)
+	data := []byte(`{"id":"sort","kind":"sort","spec":{"columns":["t1","t2"],"desc":true}}`)
 	op := &flux.Operation{
 		ID: "sort",
 		Spec: &transformations.SortOpSpec{
-			Cols: []string{"t1", "t2"},
-			Desc: true,
+			Columns: []string{"t1", "t2"},
+			Desc:    true,
 		},
 	}
 	querytest.OperationMarshalingTestHelper(t, data, op)
@@ -28,8 +28,8 @@ func TestSort_PassThrough(t *testing.T) {
 			d,
 			c,
 			&transformations.SortProcedureSpec{
-				Cols: []string{"_value"},
-				Desc: true,
+				Columns: []string{"_value"},
+				Desc:    true,
 			},
 		)
 		return s
@@ -46,8 +46,8 @@ func TestSort_Process(t *testing.T) {
 		{
 			name: "one table",
 			spec: &transformations.SortProcedureSpec{
-				Cols: []string{"_value"},
-				Desc: false,
+				Columns: []string{"_value"},
+				Desc:    false,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -73,8 +73,8 @@ func TestSort_Process(t *testing.T) {
 		{
 			name: "one table descending",
 			spec: &transformations.SortProcedureSpec{
-				Cols: []string{"_value"},
-				Desc: true,
+				Columns: []string{"_value"},
+				Desc:    true,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -100,8 +100,8 @@ func TestSort_Process(t *testing.T) {
 		{
 			name: "one table multiple columns",
 			spec: &transformations.SortProcedureSpec{
-				Cols: []string{"_value", "time"},
-				Desc: false,
+				Columns: []string{"_value", "time"},
+				Desc:    false,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -129,8 +129,8 @@ func TestSort_Process(t *testing.T) {
 		{
 			name: "one table multiple columns descending",
 			spec: &transformations.SortProcedureSpec{
-				Cols: []string{"_value", "time"},
-				Desc: true,
+				Columns: []string{"_value", "time"},
+				Desc:    true,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -158,8 +158,8 @@ func TestSort_Process(t *testing.T) {
 		{
 			name: "one table multiple columns with key",
 			spec: &transformations.SortProcedureSpec{
-				Cols: []string{"_time", "_stop"},
-				Desc: true,
+				Columns: []string{"_time", "_stop"},
+				Desc:    true,
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -193,8 +193,8 @@ func TestSort_Process(t *testing.T) {
 		{
 			name: "multiple tables",
 			spec: &transformations.SortProcedureSpec{
-				Cols: []string{"_value"},
-				Desc: false,
+				Columns: []string{"_value"},
+				Desc:    false,
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -256,8 +256,8 @@ func TestSort_Process(t *testing.T) {
 		{
 			name: "one table multiple columns with tags",
 			spec: &transformations.SortProcedureSpec{
-				Cols: []string{"_field", "_value"},
-				Desc: false,
+				Columns: []string{"_field", "_value"},
+				Desc:    false,
 			},
 			data: []flux.Table{
 				&executetest.Table{
