@@ -57,9 +57,6 @@ func createRangeOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 		return nil, err
 	} else if ok {
 		spec.Stop = stop
-	} else {
-		// Make stop time implicit "now"
-		spec.Stop = flux.Now
 	}
 
 	if col, ok, err := args.GetString("timeColumn"); err != nil {
@@ -132,6 +129,10 @@ func newRangeProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proc
 		Start: spec.Start,
 		Stop:  spec.Stop,
 		Now:   pa.Now(),
+	}
+	if bounds.Stop.IsZero() {
+		// Make stop time implicit "now"
+		spec.Stop = flux.Now
 	}
 
 	if bounds.HasZero() {
