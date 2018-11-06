@@ -11,6 +11,21 @@ type Visitor interface {
 	Done(node Node)
 }
 
+func CreateVisitor(f func(Node)) Visitor {
+	return &visitor{f: f}
+}
+
+type visitor struct {
+	f func(Node)
+}
+
+func (v *visitor) Visit(node Node) Visitor {
+	v.f(node)
+	return v
+}
+
+func (v *visitor) Done(node Node) {}
+
 func walk(v Visitor, n Node) {
 	switch n := n.(type) {
 	case *Program:

@@ -366,7 +366,7 @@ func TestEval(t *testing.T) {
 			}
 
 			// Create new interpreter scope for each test case
-			itrp := interpreter.NewInterpreter(optionScope, testScope)
+			itrp := interpreter.NewInterpreter(optionScope, testScope, interpreter.NewTypeScope())
 
 			err = itrp.Eval(graph)
 			if !tc.wantErr && err != nil {
@@ -381,6 +381,89 @@ func TestEval(t *testing.T) {
 	}
 
 }
+
+func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
+	testCases := []struct {
+		name     string
+		builtins []string
+		program  string
+		wantErr  bool
+	}{
+		{
+			// Evaluate two builtin functions in a single phase
+			name: "2-phase interpretation",
+			builtins: []string{
+				`
+					_highestOrLowest = (table=<-, reducer) => table |> reducer()
+					highestCurrent = (table=<-) => table |> _highestOrLowest(reducer: (table=<-) => table)
+				`,
+			},
+			program: `5 |> highestCurrent()`,
+		},
+		{
+			// Evaluate two builtin functions each in a separate phase
+			name: "3-phase interpretation",
+			builtins: []string{
+				`_highestOrLowest = (table=<-, reducer) => table |> reducer()`,
+				`highestCurrent = (table=<-) => table |> _highestOrLowest(reducer: (table=<-) => table)`,
+			},
+			program: `5 |> highestCurrent()`,
+		},
+		{
+			// Type-check function expression even though it is not called
+			// Program is correctly typed so it should not throw any type errors
+			name:     "builtin not called - no type error",
+			builtins: []string{`_highestOrLowest = (table=<-, reducer) => table |> reducer()`},
+			program:  `f = () => 5 |> _highestOrLowest(reducer: (table=<-) => table)`,
+		},
+		{
+			// Type-check function expression even though it is not called
+			// Program should not type check due to missing pipe parameter
+			name:     "builtin not called - type error",
+			builtins: []string{`_highestOrLowest = (table=<-) => table`},
+			program:  `f = () => _highestOrLowest()`,
+			wantErr:  true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var globals map[string]values.Value
+			var err error
+
+			types := interpreter.NewTypeScope()
+
+			evaluate := func(program string, globals map[string]values.Value) (map[string]values.Value, error) {
+				ast, err := parser.NewAST(program)
+				if err != nil {
+					return nil, err
+				}
+				graph, err := semantic.New(ast)
+				if err != nil {
+					return nil, err
+				}
+				itrp := interpreter.NewInterpreter(nil, globals, types)
+				if err := itrp.Eval(graph); err != nil {
+					return nil, err
+				}
+				types = itrp.TypeScope()
+				return itrp.GlobalScope().Values(), nil
+			}
+
+			for _, builtin := range tc.builtins {
+				if globals, err = evaluate(builtin, globals); err != nil {
+					t.Fatal("evaluation of builtin failed: ", err)
+				}
+			}
+
+			if _, err = evaluate(tc.program, globals); err != nil && !tc.wantErr {
+				t.Fatal("program evaluation failed: ", err)
+			} else if err == nil && tc.wantErr {
+				t.Fatal("expected to error during program evaluation")
+			}
+		})
+	}
+}
+
 func TestResolver(t *testing.T) {
 	var got semantic.Expression
 	f := &function{
@@ -430,7 +513,7 @@ func TestResolver(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	itrp := interpreter.NewInterpreter(nil, scope)
+	itrp := interpreter.NewInterpreter(nil, scope, interpreter.NewTypeScope())
 
 	if err := itrp.Eval(graph); err != nil {
 		t.Fatal(err)

@@ -15,30 +15,31 @@ type Interpreter struct {
 	values  []values.Value
 	options *Scope
 	globals *Scope
-
-	typeSol semantic.TypeSolution
+	types   *TypeScope
 }
 
 // NewInterpreter instantiates a new Flux Interpreter whose builtin values are not mutable.
 // Options are always mutable.
-func NewInterpreter(options, builtins map[string]values.Value) *Interpreter {
+func NewInterpreter(options, builtins map[string]values.Value, types *TypeScope) *Interpreter {
 	optionScope := NewScopeWithValues(options)
 	globalScope := optionScope.NestWithValues(builtins)
 	interpreter := &Interpreter{
 		options: optionScope,
 		globals: globalScope.Nest(),
+		types:   types.Nest(),
 	}
 	return interpreter
 }
 
 // NewMutableInterpreter instantiates a new Flux Interpreter whose builtin values are mutable.
 // Options are always mutable.
-func NewMutableInterpreter(options, builtins map[string]values.Value) *Interpreter {
+func NewMutableInterpreter(options, builtins map[string]values.Value, types *TypeScope) *Interpreter {
 	optionScope := NewScopeWithValues(options)
 	globalScope := optionScope.NestWithValues(builtins)
 	interpreter := &Interpreter{
 		options: optionScope,
 		globals: globalScope,
+		types:   types,
 	}
 	return interpreter
 }
@@ -52,6 +53,11 @@ func (itrp *Interpreter) Return() values.Value {
 // That is the scope nested directly below the options scope.
 func (itrp *Interpreter) GlobalScope() *Scope {
 	return itrp.globals
+}
+
+// TypeScope returns the type scope of the interpreter
+func (itrp *Interpreter) TypeScope() *TypeScope {
+	return itrp.types
 }
 
 // SetVar adds a variable binding to the global scope
@@ -88,7 +94,15 @@ func (itrp *Interpreter) Eval(program semantic.Node) error {
 	if err != nil {
 		return err
 	}
-	itrp.typeSol = sol
+
+	semantic.Walk(semantic.CreateVisitor(func(node semantic.Node) {
+		if typ, err := sol.TypeOf(node); err == nil {
+			itrp.types.SetType(node, typ)
+		}
+		if polyType, err := sol.PolyTypeOf(node); err == nil {
+			itrp.types.SetPolyType(node, polyType)
+		}
+	}), program)
 	return itrp.doRoot(program)
 }
 
@@ -307,9 +321,9 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (v
 		}
 	case *semantic.FunctionExpression:
 		return &function{
-			sol:   itrp.typeSol,
 			e:     e,
 			scope: scope,
+			itrp:  itrp,
 		}, nil
 	default:
 		return nil, fmt.Errorf("unsupported expression %T", expr)
@@ -464,6 +478,55 @@ func (itrp *Interpreter) doArguments(args *semantic.ObjectExpression, scope *Sco
 	return obj, nil
 }
 
+type TypeScope struct {
+	parent    *TypeScope
+	types     map[semantic.Node]semantic.Type
+	polyTypes map[semantic.Node]semantic.PolyType
+}
+
+func NewTypeScope() *TypeScope {
+	return &TypeScope{
+		types:     make(map[semantic.Node]semantic.Type, 8),
+		polyTypes: make(map[semantic.Node]semantic.PolyType, 8),
+	}
+}
+
+func (s *TypeScope) Nest() *TypeScope {
+	c := NewTypeScope()
+	c.parent = s
+	return c
+}
+
+func (s *TypeScope) LookupType(node semantic.Node) (semantic.Type, bool) {
+	if s == nil {
+		return nil, false
+	}
+	typ, ok := s.types[node]
+	if !ok {
+		return s.parent.LookupType(node)
+	}
+	return typ, ok
+}
+
+func (s *TypeScope) LookupPolyType(node semantic.Node) (semantic.PolyType, bool) {
+	if s == nil {
+		return nil, false
+	}
+	polyType, ok := s.polyTypes[node]
+	if !ok {
+		return s.parent.LookupPolyType(node)
+	}
+	return polyType, ok
+}
+
+func (s *TypeScope) SetType(node semantic.Node, typ semantic.Type) {
+	s.types[node] = typ
+}
+
+func (s *TypeScope) SetPolyType(node semantic.Node, typ semantic.PolyType) {
+	s.polyTypes[node] = typ
+}
+
 // TODO(Josh): Scope methods should be private
 type Scope struct {
 	parent      *Scope
@@ -594,7 +657,6 @@ type Value interface {
 }
 
 type function struct {
-	sol   semantic.TypeSolution
 	e     *semantic.FunctionExpression
 	scope *Scope
 
@@ -602,18 +664,18 @@ type function struct {
 }
 
 func (f *function) Type() semantic.Type {
-	typ, err := f.sol.TypeOf(f.e)
-	if err != nil {
+	typ, ok := f.itrp.types.LookupType(f.e)
+	if !ok {
 		return semantic.Invalid
 	}
 	return typ
 }
 func (f *function) PolyType() semantic.PolyType {
-	typ, err := f.sol.PolyTypeOf(f.e)
-	if err != nil {
+	polyType, ok := f.itrp.types.LookupPolyType(f.e)
+	if !ok {
 		return semantic.Invalid
 	}
-	return typ
+	return polyType
 }
 
 func (f *function) Str() string {
