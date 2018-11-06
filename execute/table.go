@@ -131,9 +131,13 @@ func AppendMappedTable(t flux.Table, builder TableBuilder, colMap []int) error {
 		return nil
 	}
 
-	return t.Do(func(cr flux.ColReader) error {
+	if err := t.Do(func(cr flux.ColReader) error {
 		return AppendMappedCols(cr, builder, colMap)
-	})
+	}); err != nil {
+		return err
+	}
+
+	return builder.LevelColumns()
 }
 
 // AppendTable appends data from table t onto builder.
@@ -151,9 +155,14 @@ func AppendTable(t flux.Table, builder TableBuilder) error {
 // AppendMappedCols appends all columns from cr onto builder.
 // The colMap is a map of builder column index to cr column index.
 func AppendMappedCols(cr flux.ColReader, builder TableBuilder, colMap []int) error {
+	if len(colMap) != len(builder.Cols()) {
+		return errors.New("AppendMappedCols: colMap must have an entry for each table builder column")
+	}
 	for j := range builder.Cols() {
-		if err := AppendCol(j, colMap[j], cr, builder); err != nil {
-			return err
+		if colMap[j] >= 0 {
+			if err := AppendCol(j, colMap[j], cr, builder); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -460,6 +469,10 @@ type TableBuilder interface {
 	GrowStrings(j, n int) error
 	GrowTimes(j, n int) error
 
+	// LevelColumns will check for columns that are too short and Grow them
+	// so that each column is of uniform size.
+	LevelColumns() error
+
 	// Sort the rows of the by the values of the columns in the order listed.
 	Sort(cols []string, desc bool)
 
@@ -580,6 +593,83 @@ func (b ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 		PanicUnknownType(c.Type)
 	}
 	return newIdx, nil
+}
+
+func (b ColListTableBuilder) LevelColumns() error {
+
+	for idx, c := range b.table.colMeta {
+		switch c.Type {
+		case flux.TBool:
+			toGrow := b.NRows() - len(b.table.Bools(idx))
+			if toGrow > 0 {
+				if err := b.GrowBools(idx, toGrow); err != nil {
+					return err
+				}
+			}
+
+			if toGrow < 0 {
+				_ = fmt.Errorf("column %s is longer than expected length of table", c.Label)
+			}
+		case flux.TInt:
+			toGrow := b.NRows() - len(b.table.Ints(idx))
+			if toGrow > 0 {
+				if err := b.GrowInts(idx, toGrow); err != nil {
+					return err
+				}
+			}
+
+			if toGrow < 0 {
+				_ = fmt.Errorf("column %s is longer than expected length of table", c.Label)
+			}
+		case flux.TUInt:
+			toGrow := b.NRows() - len(b.table.UInts(idx))
+			if toGrow > 0 {
+				if err := b.GrowUInts(idx, toGrow); err != nil {
+					return err
+				}
+			}
+
+			if toGrow < 0 {
+				_ = fmt.Errorf("column %s is longer than expected length of table", c.Label)
+			}
+		case flux.TFloat:
+			toGrow := b.NRows() - len(b.table.Floats(idx))
+			if toGrow > 0 {
+				if err := b.GrowFloats(idx, toGrow); err != nil {
+					return err
+				}
+			}
+
+			if toGrow < 0 {
+				_ = fmt.Errorf("column %s is longer than expected length of table", c.Label)
+			}
+		case flux.TString:
+			toGrow := b.NRows() - len(b.table.Strings(idx))
+			if toGrow > 0 {
+				if err := b.GrowStrings(idx, toGrow); err != nil {
+					return err
+				}
+			}
+
+			if toGrow < 0 {
+				_ = fmt.Errorf("column %s is longer than expected length of table", c.Label)
+			}
+		case flux.TTime:
+			toGrow := b.NRows() - len(b.table.Times(idx))
+			if toGrow > 0 {
+				if err := b.GrowTimes(idx, toGrow); err != nil {
+					return err
+				}
+			}
+
+			if toGrow < 0 {
+				_ = fmt.Errorf("column %s is longer than expected length of table", c.Label)
+			}
+		default:
+			PanicUnknownType(c.Type)
+		}
+	}
+	return nil
 }
 
 func (b ColListTableBuilder) SetBool(i int, j int, value bool) error {
