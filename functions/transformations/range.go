@@ -134,10 +134,11 @@ func newRangeProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proc
 		Now:   pa.Now(),
 	}
 
-	if bounds.HasZero() {
-		return nil, errors.New(`cannot pass zero time to 'range'`)
-	}
-	if bounds.IsEmpty() {
+	if bounds.Start.IsZero() {
+		return nil, errors.New(`must specify the start time in 'range'`)
+	} else if bounds.Stop.IsZero() {
+		return nil, errors.New(`must specify the stop time in 'range'`)
+	} else if bounds.IsEmpty() {
 		return nil, errors.New("cannot query an empty range")
 	}
 
