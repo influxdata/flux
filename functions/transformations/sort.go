@@ -119,7 +119,7 @@ type sortTransformation struct {
 	desc bool
 }
 
-func NewSortTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *SortProcedureSpec) *sortTransformation {
+func NewSortTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *SortProcedureSpec) execute.Transformation {
 	return &sortTransformation{
 		d:     d,
 		cache: cache,

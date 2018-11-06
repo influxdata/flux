@@ -202,7 +202,7 @@ type stateTrackingTransformation struct {
 	durationUnit int64
 }
 
-func NewStateTrackingTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *StateTrackingProcedureSpec) (*stateTrackingTransformation, error) {
+func NewStateTrackingTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *StateTrackingProcedureSpec) (execute.Transformation, error) {
 	fn, err := execute.NewRowPredicateFn(spec.Fn)
 	if err != nil {
 		return nil, err

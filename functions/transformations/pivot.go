@@ -162,7 +162,7 @@ type pivotTransformation struct {
 	nextRowCol map[string]rowCol
 }
 
-func NewPivotTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *PivotProcedureSpec) *pivotTransformation {
+func NewPivotTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *PivotProcedureSpec) execute.Transformation {
 	t := &pivotTransformation{
 		d:          d,
 		cache:      cache,

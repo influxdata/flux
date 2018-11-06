@@ -109,7 +109,7 @@ type limitTransformation struct {
 	n, offset int
 }
 
-func NewLimitTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *LimitProcedureSpec) *limitTransformation {
+func NewLimitTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *LimitProcedureSpec) execute.Transformation {
 	return &limitTransformation{
 		d:      d,
 		cache:  cache,

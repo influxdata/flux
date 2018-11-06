@@ -145,7 +145,7 @@ type derivativeTransformation struct {
 	timeCol     string
 }
 
-func NewDerivativeTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *DerivativeProcedureSpec) *derivativeTransformation {
+func NewDerivativeTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *DerivativeProcedureSpec) execute.Transformation {
 	return &derivativeTransformation{
 		d:           d,
 		cache:       cache,

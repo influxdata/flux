@@ -6,19 +6,31 @@ import (
 )
 
 // TODO(nathanielc): Add better options for formatting plans as Graphviz dot format.
-type FormatOption func(*formatter)
+type FormatOption interface {
+	apply(*formatter)
+}
+
+type formatOptionFunc func(*formatter)
+
+func (fn formatOptionFunc) apply(f *formatter) {
+	fn(f)
+}
 
 func Formatted(q *Spec, opts ...FormatOption) fmt.Formatter {
 	f := formatter{
 		q: q,
 	}
 	for _, o := range opts {
-		o(&f)
+		o.apply(&f)
 	}
 	return f
 }
 
-func FmtJSON(f *formatter) { f.json = true }
+func FmtJSON() FormatOption {
+	return formatOptionFunc(func(f *formatter) {
+		f.json = true
+	})
+}
 
 type formatter struct {
 	q    *Spec

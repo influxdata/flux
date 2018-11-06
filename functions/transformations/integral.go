@@ -120,7 +120,7 @@ type integralTransformation struct {
 	spec IntegralProcedureSpec
 }
 
-func NewIntegralTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *IntegralProcedureSpec) *integralTransformation {
+func NewIntegralTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *IntegralProcedureSpec) execute.Transformation {
 	return &integralTransformation{
 		d:     d,
 		cache: cache,

@@ -62,7 +62,7 @@ func (c *AggregateConfig) ReadArgs(args flux.Arguments) error {
 	return nil
 }
 
-func NewAggregateTransformation(d Dataset, c TableBuilderCache, agg Aggregate, config AggregateConfig) *aggregateTransformation {
+func NewAggregateTransformation(d Dataset, c TableBuilderCache, agg Aggregate, config AggregateConfig) Transformation {
 	return &aggregateTransformation{
 		d:      d,
 		cache:  c,
@@ -71,7 +71,7 @@ func NewAggregateTransformation(d Dataset, c TableBuilderCache, agg Aggregate, c
 	}
 }
 
-func NewAggregateTransformationAndDataset(id DatasetID, mode AccumulationMode, agg Aggregate, config AggregateConfig, a *memory.Allocator) (*aggregateTransformation, Dataset) {
+func NewAggregateTransformationAndDataset(id DatasetID, mode AccumulationMode, agg Aggregate, config AggregateConfig, a *memory.Allocator) (Transformation, Dataset) {
 	cache := NewTableBuilderCache(a)
 	d := NewDataset(id, mode, cache)
 	return NewAggregateTransformation(d, cache, agg, config), d

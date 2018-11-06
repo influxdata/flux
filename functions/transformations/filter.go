@@ -109,7 +109,7 @@ type filterTransformation struct {
 	fn *execute.RowPredicateFn
 }
 
-func NewFilterTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *FilterProcedureSpec) (*filterTransformation, error) {
+func NewFilterTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *FilterProcedureSpec) (execute.Transformation, error) {
 	fn, err := execute.NewRowPredicateFn(spec.Fn)
 	if err != nil {
 		return nil, err

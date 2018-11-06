@@ -188,7 +188,7 @@ type rangeTransformation struct {
 	stopCol  string
 }
 
-func NewRangeTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *RangeProcedureSpec, absolute execute.Bounds) (*rangeTransformation, error) {
+func NewRangeTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *RangeProcedureSpec, absolute execute.Bounds) (execute.Transformation, error) {
 	return &rangeTransformation{
 		d:        d,
 		cache:    cache,

@@ -134,7 +134,7 @@ type shiftTransformation struct {
 	columns []string
 }
 
-func NewShiftTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ShiftProcedureSpec) *shiftTransformation {
+func NewShiftTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ShiftProcedureSpec) execute.Transformation {
 	return &shiftTransformation{
 		d:       d,
 		cache:   cache,

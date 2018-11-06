@@ -144,7 +144,7 @@ func (c *Controller) createQuery(ctx context.Context, ct flux.CompilerType) *Que
 	compileLabelValues[len(compileLabelValues)-1] = string(ct)
 
 	cctx, cancel := context.WithCancel(ctx)
-	parentSpan, parentCtx := StartSpanFromContext(
+	parentSpan, parentCtx := startSpanFromContext(
 		cctx,
 		"all",
 		c.metrics.allDur.WithLabelValues(labelValues...),
@@ -186,7 +186,7 @@ func (c *Controller) compileQuery(q *Query, compiler flux.Compiler) error {
 
 func (c *Controller) enqueueQuery(q *Query) error {
 	if c.verbose {
-		log.Println("query", flux.Formatted(&q.spec, flux.FmtJSON))
+		log.Println("query", flux.Formatted(&q.spec, flux.FmtJSON()))
 	}
 	if !q.tryQueue() {
 		return errors.New("failed to transition query to queueing state")
@@ -542,7 +542,7 @@ TRANSITION:
 		// This state is not tracked so do not create a new span or context for it.
 		return true
 	}
-	q.currentSpan, q.currentCtx = StartSpanFromContext(
+	q.currentSpan, q.currentCtx = startSpanFromContext(
 		q.parentCtx,
 		newState.String(),
 		dur.WithLabelValues(labelValues...),
@@ -675,7 +675,7 @@ type span struct {
 	gauge    prometheus.Gauge
 }
 
-func StartSpanFromContext(ctx context.Context, operationName string, hist prometheus.Observer, gauge prometheus.Gauge) (*span, context.Context) {
+func startSpanFromContext(ctx context.Context, operationName string, hist prometheus.Observer, gauge prometheus.Gauge) (*span, context.Context) {
 	start := time.Now()
 	s, sctx := opentracing.StartSpanFromContext(ctx, operationName, opentracing.StartTime(start))
 	gauge.Inc()

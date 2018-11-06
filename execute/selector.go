@@ -50,24 +50,24 @@ type indexSelectorTransformation struct {
 	selector IndexSelector
 }
 
-func NewRowSelectorTransformationAndDataset(id DatasetID, mode AccumulationMode, selector RowSelector, config SelectorConfig, a *memory.Allocator) (*rowSelectorTransformation, Dataset) {
+func NewRowSelectorTransformationAndDataset(id DatasetID, mode AccumulationMode, selector RowSelector, config SelectorConfig, a *memory.Allocator) (Transformation, Dataset) {
 	cache := NewTableBuilderCache(a)
 	d := NewDataset(id, mode, cache)
 	return NewRowSelectorTransformation(d, cache, selector, config), d
 }
-func NewRowSelectorTransformation(d Dataset, c TableBuilderCache, selector RowSelector, config SelectorConfig) *rowSelectorTransformation {
+func NewRowSelectorTransformation(d Dataset, c TableBuilderCache, selector RowSelector, config SelectorConfig) Transformation {
 	return &rowSelectorTransformation{
 		selectorTransformation: newSelectorTransformation(d, c, config),
 		selector:               selector,
 	}
 }
 
-func NewIndexSelectorTransformationAndDataset(id DatasetID, mode AccumulationMode, selector IndexSelector, config SelectorConfig, a *memory.Allocator) (*indexSelectorTransformation, Dataset) {
+func NewIndexSelectorTransformationAndDataset(id DatasetID, mode AccumulationMode, selector IndexSelector, config SelectorConfig, a *memory.Allocator) (Transformation, Dataset) {
 	cache := NewTableBuilderCache(a)
 	d := NewDataset(id, mode, cache)
 	return NewIndexSelectorTransformation(d, cache, selector, config), d
 }
-func NewIndexSelectorTransformation(d Dataset, c TableBuilderCache, selector IndexSelector, config SelectorConfig) *indexSelectorTransformation {
+func NewIndexSelectorTransformation(d Dataset, c TableBuilderCache, selector IndexSelector, config SelectorConfig) Transformation {
 	return &indexSelectorTransformation{
 		selectorTransformation: newSelectorTransformation(d, c, config),
 		selector:               selector,

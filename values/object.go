@@ -23,13 +23,13 @@ type object struct {
 	typ           atomic.Value // semantic.Type
 }
 
-func NewObject() *object {
+func NewObject() Object {
 	return &object{
 		values:        make(map[string]Value),
 		propertyTypes: make(map[string]semantic.Type),
 	}
 }
-func NewObjectWithValues(values map[string]Value) *object {
+func NewObjectWithValues(values map[string]Value) Object {
 	propertyTypes := make(map[string]semantic.Type, len(values))
 	for k, v := range values {
 		propertyTypes[k] = v.Type()

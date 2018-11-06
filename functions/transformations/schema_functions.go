@@ -459,7 +459,7 @@ func createSchemaMutationTransformation(id execute.DatasetID, mode execute.Accum
 	return t, d, nil
 }
 
-func NewSchemaMutationTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec plan.ProcedureSpec) (*schemaMutationTransformation, error) {
+func NewSchemaMutationTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec plan.ProcedureSpec) (execute.Transformation, error) {
 	s, ok := spec.(*SchemaMutationProcedureSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", spec)

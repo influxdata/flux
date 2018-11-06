@@ -124,7 +124,7 @@ type differenceTransformation struct {
 	columns     []string
 }
 
-func NewDifferenceTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *DifferenceProcedureSpec) *differenceTransformation {
+func NewDifferenceTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *DifferenceProcedureSpec) execute.Transformation {
 	return &differenceTransformation{
 		d:           d,
 		cache:       cache,

@@ -57,7 +57,7 @@ func Compile(ctx context.Context, q string, now time.Time, opts ...Option) (*Spe
 	spec := toSpecFromSideEffecs(itrp)
 
 	if o.verbose {
-		log.Println("Query Spec: ", Formatted(spec, FmtJSON))
+		log.Println("Query Spec: ", Formatted(spec, FmtJSON()))
 	}
 	return spec, nil
 }

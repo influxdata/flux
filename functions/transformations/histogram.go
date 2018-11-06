@@ -144,7 +144,7 @@ type histogramTransformation struct {
 	spec HistogramProcedureSpec
 }
 
-func NewHistogramTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *HistogramProcedureSpec) *histogramTransformation {
+func NewHistogramTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *HistogramProcedureSpec) execute.Transformation {
 	sort.Float64s(spec.Buckets)
 	return &histogramTransformation{
 		d:     d,

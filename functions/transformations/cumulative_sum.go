@@ -104,7 +104,7 @@ type cumulativeSumTransformation struct {
 	spec  CumulativeSumProcedureSpec
 }
 
-func NewCumulativeSumTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *CumulativeSumProcedureSpec) *cumulativeSumTransformation {
+func NewCumulativeSumTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *CumulativeSumProcedureSpec) execute.Transformation {
 	return &cumulativeSumTransformation{
 		d:     d,
 		cache: cache,

@@ -67,7 +67,7 @@ type dataset struct {
 	cache DataCache
 }
 
-func NewDataset(id DatasetID, accMode AccumulationMode, cache DataCache) *dataset {
+func NewDataset(id DatasetID, accMode AccumulationMode, cache DataCache) Dataset {
 	return &dataset{
 		id:      id,
 		accMode: accMode,

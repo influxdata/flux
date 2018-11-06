@@ -100,7 +100,7 @@ type uniqueTransformation struct {
 	column string
 }
 
-func NewUniqueTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *UniqueProcedureSpec) *uniqueTransformation {
+func NewUniqueTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *UniqueProcedureSpec) execute.Transformation {
 	return &uniqueTransformation{
 		d:      d,
 		cache:  cache,

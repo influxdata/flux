@@ -109,7 +109,7 @@ type keysTransformation struct {
 	except []string
 }
 
-func NewKeysTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *KeysProcedureSpec) *keysTransformation {
+func NewKeysTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *KeysProcedureSpec) execute.Transformation {
 	return &keysTransformation{
 		d:      d,
 		cache:  cache,

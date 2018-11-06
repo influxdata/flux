@@ -1342,7 +1342,12 @@ type tableBuilderCache struct {
 	triggerSpec flux.TriggerSpec
 }
 
-func NewTableBuilderCache(a *memory.Allocator) *tableBuilderCache {
+type TableBuilderDataCache interface {
+	TableBuilderCache
+	DataCache
+}
+
+func NewTableBuilderCache(a *memory.Allocator) TableBuilderDataCache {
 	return &tableBuilderCache{
 		tables: NewGroupLookup(),
 		alloc:  a,

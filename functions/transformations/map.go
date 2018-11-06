@@ -126,7 +126,7 @@ type mapTransformation struct {
 	mergeKey bool
 }
 
-func NewMapTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *MapProcedureSpec) (*mapTransformation, error) {
+func NewMapTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *MapProcedureSpec) (execute.Transformation, error) {
 	fn, err := execute.NewRowMapFn(spec.Fn)
 	if err != nil {
 		return nil, err

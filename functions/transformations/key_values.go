@@ -126,7 +126,7 @@ func createKeyValuesTransformation(id execute.DatasetID, mode execute.Accumulati
 	return t, d, nil
 }
 
-func NewKeyValuesTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *KeyValuesProcedureSpec) *keyValuesTransformation {
+func NewKeyValuesTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *KeyValuesProcedureSpec) execute.Transformation {
 	return &keyValuesTransformation{
 		d:        d,
 		cache:    cache,

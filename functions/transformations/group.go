@@ -182,7 +182,7 @@ type groupTransformation struct {
 	keys []string
 }
 
-func NewGroupTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *GroupProcedureSpec) *groupTransformation {
+func NewGroupTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *GroupProcedureSpec) execute.Transformation {
 	t := &groupTransformation{
 		d:     d,
 		cache: cache,

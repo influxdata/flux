@@ -100,7 +100,7 @@ type distinctTransformation struct {
 	column string
 }
 
-func NewDistinctTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *DistinctProcedureSpec) *distinctTransformation {
+func NewDistinctTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *DistinctProcedureSpec) execute.Transformation {
 	return &distinctTransformation{
 		d:      d,
 		cache:  cache,
