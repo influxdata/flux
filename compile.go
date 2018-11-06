@@ -90,7 +90,7 @@ func NewInterpreter() *interpreter.Interpreter {
 		options[k] = v
 	}
 
-	return interpreter.NewInterpreter(options, builtinValues)
+	return interpreter.NewInterpreter(options, builtinValues, builtinTypeScope)
 }
 
 func nowFunc(now time.Time) values.Function {
@@ -147,6 +147,7 @@ type CreateOperationSpec func(args Arguments, a *Administration) (OperationSpec,
 
 var builtinValues = make(map[string]values.Value)
 var builtinOptions = make(map[string]values.Value)
+var builtinTypeScope = interpreter.NewTypeScope()
 
 // list of builtin scripts
 var builtinScripts = make(map[string]string)
@@ -226,7 +227,7 @@ func FinalizeBuiltIns() {
 }
 
 func evalBuiltInScripts() error {
-	itrp := interpreter.NewMutableInterpreter(builtinOptions, builtinValues)
+	itrp := interpreter.NewMutableInterpreter(builtinOptions, builtinValues, builtinTypeScope)
 	for name, script := range builtinScripts {
 		astProg, err := parser.NewAST(script)
 		if err != nil {
