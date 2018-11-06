@@ -123,15 +123,16 @@ func (t *unionTransformation) RetractTable(id execute.DatasetID, key flux.GroupK
 func (t *unionTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
+	var colMap = make([]int, 0, len(tbl.Cols()))
+	var err error
+	builder, _ := t.cache.TableBuilder(tbl.Key())
 
-	builder, created := t.cache.TableBuilder(tbl.Key())
-	if created {
-		if err := execute.AddTableCols(tbl, builder); err != nil {
-			return err
-		}
+	colMap, err = execute.AddNewTableCols(tbl, builder, colMap)
+	if err != nil {
+		return err
 	}
 
-	if err := execute.AppendTable(tbl, builder); err != nil {
+	if err := execute.AppendMappedTable(tbl, builder, colMap); err != nil {
 		return err
 	}
 
