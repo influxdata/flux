@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -375,7 +376,7 @@ type MergeJoinCache struct {
 	reverseLookup map[flux.GroupKey]preJoinGroupKeys
 
 	tables      map[flux.GroupKey]flux.Table
-	alloc       *execute.Allocator
+	alloc       *memory.Allocator
 	triggerSpec flux.TriggerSpec
 }
 
@@ -385,10 +386,10 @@ type streamBuffer struct {
 	ready    map[values.Value]bool
 	stale    map[flux.GroupKey]bool
 	last     values.Value
-	alloc    *execute.Allocator
+	alloc    *memory.Allocator
 }
 
-func newStreamBuffer(alloc *execute.Allocator) *streamBuffer {
+func newStreamBuffer(alloc *memory.Allocator) *streamBuffer {
 	return &streamBuffer{
 		data:     make(map[flux.GroupKey]*execute.ColListTableBuilder),
 		consumed: make(map[values.Value]int),
@@ -489,7 +490,7 @@ func (s schema) Swap(i int, j int) {
 }
 
 // NewMergeJoinCache constructs a new instance of a MergeJoinCache
-func NewMergeJoinCache(alloc *execute.Allocator, datasetIDs []execute.DatasetID, tableNames map[execute.DatasetID]string, key []string) *MergeJoinCache {
+func NewMergeJoinCache(alloc *memory.Allocator, datasetIDs []execute.DatasetID, tableNames map[execute.DatasetID]string, key []string) *MergeJoinCache {
 	// Join currently only accepts two data sources(streams) as input
 	if len(datasetIDs) != 2 {
 		panic("Join only accepts two data sources")

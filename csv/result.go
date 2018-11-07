@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -15,6 +14,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/iocounter"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 )
@@ -616,8 +616,8 @@ type colMeta struct {
 	fmt string
 }
 
-func newUnlimitedAllocator() *execute.Allocator {
-	return &execute.Allocator{Limit: math.MaxInt64}
+func newUnlimitedAllocator() *memory.Allocator {
+	return &memory.Allocator{}
 }
 
 type ResultEncoder struct {

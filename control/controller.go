@@ -31,6 +31,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
@@ -322,7 +323,7 @@ func (c *Controller) processQuery(q *Query) (pop bool, err error) {
 		if !q.tryExec() {
 			return true, errors.New("failed to transition query into executing state")
 		}
-		q.alloc = new(execute.Allocator)
+		q.alloc = new(memory.Allocator)
 		// TODO: pass the plan to the executor here
 		r, err := c.executor.Execute(q.currentCtx, q.plan, q.alloc)
 		if err != nil {
@@ -391,7 +392,7 @@ type Query struct {
 	concurrency int
 	memory      int64
 
-	alloc *execute.Allocator
+	alloc *memory.Allocator
 }
 
 // ID reports an ephemeral unique ID for the query.
@@ -448,7 +449,7 @@ func (q *Query) Statistics() flux.Statistics {
 	stats.TotalDuration = q.parentSpan.Duration
 	stats.Concurrency = q.concurrency
 	if q.alloc != nil {
-		stats.MaxAllocated = q.alloc.Max()
+		stats.MaxAllocated = q.alloc.MaxAllocated()
 	}
 	return stats
 }
