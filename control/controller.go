@@ -43,12 +43,11 @@ import (
 // Controller provides a central location to manage all incoming queries.
 // The controller is responsible for queueing, planning, and executing queries.
 type Controller struct {
-	newQueries    chan *Query
-	lastID        QueryID
-	queriesMu     sync.RWMutex
-	queries       map[QueryID]*Query
-	queryDone     chan *Query
-	cancelRequest chan QueryID
+	newQueries chan *Query
+	lastID     QueryID
+	queriesMu  sync.RWMutex
+	queries    map[QueryID]*Query
+	queryDone  chan *Query
 
 	metrics   *controllerMetrics
 	labelKeys []string
@@ -90,7 +89,6 @@ func New(c Config) *Controller {
 		newQueries:           make(chan *Query),
 		queries:              make(map[QueryID]*Query),
 		queryDone:            make(chan *Query),
-		cancelRequest:        make(chan QueryID),
 		maxConcurrency:       c.ConcurrencyQuota,
 		availableConcurrency: c.ConcurrencyQuota,
 		availableMemory:      c.MemoryBytesQuota,
@@ -241,12 +239,6 @@ func (c *Controller) run() {
 			c.queriesMu.Lock()
 			c.queries[q.id] = q
 			c.queriesMu.Unlock()
-		// Wait for cancel query requests
-		case id := <-c.cancelRequest:
-			c.queriesMu.RLock()
-			q := c.queries[id]
-			c.queriesMu.RUnlock()
-			q.Cancel()
 		}
 
 		// Peek at head of priority queue
