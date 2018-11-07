@@ -3,6 +3,7 @@ package interpreter_test
 import (
 	"errors"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -418,6 +419,96 @@ func TestEval(t *testing.T) {
 		})
 	}
 
+}
+
+func TestInterpreter_TypeErrors(t *testing.T) {
+	testCases := []struct {
+		name    string
+		program string
+		err     string
+	}{
+		{
+			name: "no pipe arg",
+			program: `
+				f = () => 0
+				g = () => 1 |> f()
+				`,
+			err: `function does not take a pipe argument`,
+		},
+		{
+			name: "called without pipe args",
+			program: `
+				f = (x=<-) => x
+				g = () => f()
+			`,
+			err: `right missing pipe parameter x`,
+		},
+		{
+			name: "unify with different pipe args 1",
+			program: `
+				f = (x) => 0 |> x()
+				f(x: (v=<-) => v)
+				f(x: (w=<-) => w)
+			`,
+		},
+		{
+			// This program should type check.
+			// arg is any function that takes a pipe argument.
+			// arg's pipe parameter can be named anything.
+			name: "unify with different pipe args 2",
+			program: `
+				f = (arg=(x=<-) => x, w) => w |> arg()
+				f(arg: (v=<-) => v, w: 0)
+			`,
+		},
+		{
+			// This program should type check.
+			// x a function that must take a parameter named "arg".
+			name: "unify pipe and non-pipe args with same name",
+			program: `
+				f = (x, y) => x(arg: y)
+				f(x: (arg=<-) => arg, y: 0)
+			`,
+		},
+		{
+			// This program should not type check.
+			// arg is a function that must take a pipe argument. Even
+			// though arg defaults to a function that takes an input
+			// param x, if x is not a pipe param then it cannot type check.
+			name: "pipe and non-pipe parameters with the same name",
+			program: `
+				f = (arg=(x=<-) => x) => 0 |> arg()
+				g = () => f(arg: (x) => 5 + x)
+			`,
+			err: `function does not take a parameter named "x"`,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ast, err := parser.NewAST(tc.program)
+			if err != nil {
+				t.Fatal(err)
+			}
+			graph, err := semantic.New(ast)
+			if err != nil {
+				t.Fatal(err)
+			}
+			itrp := interpreter.NewInterpreter(nil, nil, interpreter.NewTypeScope())
+			if err := itrp.Eval(graph); err == nil {
+				if tc.err != "" {
+					t.Error("expected type error, but program executed successfully")
+				}
+			} else {
+				if tc.err == "" {
+					t.Errorf("expected zero errors, but got %v", err)
+				} else if !strings.Contains(err.Error(), "type error") {
+					t.Errorf("expected type error, but got the following: %v", err)
+				} else if !strings.Contains(err.Error(), tc.err) {
+					t.Errorf("wrong error message\n expected error message to contain: %q\n actual error message: %q\n", tc.err, err.Error())
+				}
+			}
+		})
+	}
 }
 
 func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
