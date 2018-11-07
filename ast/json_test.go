@@ -130,6 +130,14 @@ func TestJSONMarshal(t *testing.T) {
 			want: `{"type":"MemberExpression","object":{"type":"Identifier","name":"a"},"property":{"type":"StringLiteral","value":"hello"}}`,
 		},
 		{
+			name: "array index expression",
+			node: &ast.IndexExpression{
+				Array: &ast.Identifier{Name: "a"},
+				Index: 3,
+			},
+			want: `{"type":"IndexExpression","array":{"type":"Identifier","name":"a"},"index":3}`,
+		},
+		{
 			name: "arrow function expression",
 			node: &ast.ArrowFunctionExpression{
 				Params: []*ast.Property{{Key: &ast.Identifier{Name: "a"}}},

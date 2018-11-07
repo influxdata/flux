@@ -119,10 +119,18 @@ func incompletePipeExpr(call interface{}, text []byte, pos position) (*ast.PipeE
 func memberexprs(head, tail interface{}, text []byte, pos position) (ast.Expression, error) {
 	res := head.(ast.Expression)
 	for _, prop := range toIfaceSlice(tail) {
-		res = &ast.MemberExpression{
-			Object:   res,
-			Property: prop.(ast.Expression),
-			BaseNode: base(text, pos),
+		if integer, ok := prop.(*ast.IntegerLiteral); ok {
+			res = &ast.IndexExpression{
+				Array:    res,
+				Index:    int(integer.Value),
+				BaseNode: base(text, pos),
+			}
+		} else {
+			res = &ast.MemberExpression{
+				Object:   res,
+				Property: prop.(ast.Expression),
+				BaseNode: base(text, pos),
+			}
 		}
 	}
 	return res, nil

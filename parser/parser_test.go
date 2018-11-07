@@ -535,6 +535,37 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
+			name: "array index expression",
+			raw:  `a[3]`,
+			want: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.IndexExpression{
+							Array: &ast.Identifier{Name: "a"},
+							Index: 3,
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "nested array index expression",
+			raw:  `a[3][5]`,
+			want: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.IndexExpression{
+							Array: &ast.IndexExpression{
+								Array: &ast.Identifier{Name: "a"},
+								Index: 3,
+							},
+							Index: 5,
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "var as binary expression of other vars",
 			raw: `a = 1
             b = 2
@@ -1816,6 +1847,11 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 		{
 			name:    "parser error from duration literal with invalid unit",
 			raw:     `from(bucket:"my_bucket") |> range(start: -1s5v)`,
+			wantErr: true,
+		},
+		{
+			name:    "member expression with integer property",
+			raw:     `obj.5`,
 			wantErr: true,
 		},
 	}
