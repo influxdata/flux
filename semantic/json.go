@@ -310,6 +310,40 @@ func (e *MemberExpression) UnmarshalJSON(data []byte) error {
 
 	return nil
 }
+func (e *IndexExpression) MarshalJSON() ([]byte, error) {
+	type Alias IndexExpression
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  e.NodeType(),
+		Alias: (*Alias)(e),
+	}
+	return json.Marshal(raw)
+}
+func (e *IndexExpression) UnmarshalJSON(data []byte) error {
+	type Alias IndexExpression
+	raw := struct {
+		*Alias
+		Array json.RawMessage `json:"array"`
+		Index int             `json:"index"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*e = *(*IndexExpression)(raw.Alias)
+	}
+
+	array, err := unmarshalExpression(raw.Array)
+	if err != nil {
+		return err
+	}
+	e.Array = array
+	e.Index = raw.Index
+
+	return nil
+}
 func (e *FunctionExpression) MarshalJSON() ([]byte, error) {
 	type Alias FunctionExpression
 	raw := struct {
@@ -896,6 +930,8 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 		node = new(CallExpression)
 	case "MemberExpression":
 		node = new(MemberExpression)
+	case "IndexExpression":
+		node = new(IndexExpression)
 	case "BinaryExpression":
 		node = new(BinaryExpression)
 	case "UnaryExpression":

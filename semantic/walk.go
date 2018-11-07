@@ -209,6 +209,14 @@ func walk(v Visitor, n Node) {
 		if w != nil {
 			walk(w, n.Object)
 		}
+	case *IndexExpression:
+		if n == nil {
+			return
+		}
+		w := v.Visit(n)
+		if w != nil {
+			walk(w, n.Array)
+		}
 	case *ObjectExpression:
 		if n == nil {
 			return

@@ -43,6 +43,7 @@ func (*ConditionalExpression) node() {}
 func (*IdentifierExpression) node()  {}
 func (*LogicalExpression) node()     {}
 func (*MemberExpression) node()      {}
+func (*IndexExpression) node()       {}
 func (*ObjectExpression) node()      {}
 func (*UnaryExpression) node()       {}
 
@@ -91,6 +92,7 @@ func (*IdentifierExpression) expression()   {}
 func (*IntegerLiteral) expression()         {}
 func (*LogicalExpression) expression()      {}
 func (*MemberExpression) expression()       {}
+func (*IndexExpression) expression()        {}
 func (*ObjectExpression) expression()       {}
 func (*RegexpLiteral) expression()          {}
 func (*StringLiteral) expression()          {}
@@ -564,6 +566,25 @@ func (e *MemberExpression) Copy() Node {
 
 	ne.Object = e.Object.Copy().(Expression)
 
+	return ne
+}
+
+type IndexExpression struct {
+	loc `json:"-"`
+
+	Array Expression `json:"array"`
+	Index int        `json:"index"`
+}
+
+func (*IndexExpression) NodeType() string { return "IndexExpression" }
+
+func (e *IndexExpression) Copy() Node {
+	if e == nil {
+		return e
+	}
+	ne := new(IndexExpression)
+	*ne = *e
+	ne.Array = e.Array.Copy().(Expression)
 	return ne
 }
 

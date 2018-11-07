@@ -207,6 +207,72 @@ func TestNew(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "array index expression",
+			program: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.IndexExpression{
+							Array: &ast.Identifier{Name: "a"},
+							Index: 3,
+						},
+					},
+				},
+			},
+			want: &semantic.Program{
+				Body: []semantic.Statement{
+					&semantic.ExpressionStatement{
+						Expression: &semantic.IndexExpression{
+							Array: &semantic.IdentifierExpression{Name: "a"},
+							Index: 3,
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "nested array index expression",
+			program: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.IndexExpression{
+							Array: &ast.IndexExpression{
+								Array: &ast.Identifier{Name: "a"},
+								Index: 3,
+							},
+							Index: 5,
+						},
+					},
+				},
+			},
+			want: &semantic.Program{
+				Body: []semantic.Statement{
+					&semantic.ExpressionStatement{
+						Expression: &semantic.IndexExpression{
+							Array: &semantic.IndexExpression{
+								Array: &semantic.IdentifierExpression{Name: "a"},
+								Index: 3,
+							},
+							Index: 5,
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "member expression with integer property",
+			program: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.MemberExpression{
+							Object:   &ast.Identifier{Name: "m"},
+							Property: &ast.IntegerLiteral{Value: 3},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
