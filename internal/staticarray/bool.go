@@ -1,98 +1,138 @@
 package staticarray
 
-import "github.com/influxdata/flux/array"
+import (
+	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/semantic"
+)
 
-var _ array.Boolean = Boolean(nil)
+type booleans struct {
+	data  []bool
+	alloc *memory.Allocator
+}
 
-type Boolean []bool
+func Boolean(data []bool) array.Boolean {
+	return &booleans{data: data}
+}
 
-func (a Boolean) IsNull(i int) bool {
+func (a *booleans) Type() semantic.Type {
+	return semantic.Bool
+}
+
+func (a *booleans) IsNull(i int) bool {
 	return false
 }
 
-func (a Boolean) IsValid(i int) bool {
-	return i >= 0 && i < len(a)
+func (a *booleans) IsValid(i int) bool {
+	return i >= 0 && i < len(a.data)
 }
 
-func (a Boolean) Len() int {
-	return len(a)
+func (a *booleans) Len() int {
+	return len(a.data)
 }
 
-func (a Boolean) NullN() int {
+func (a *booleans) NullN() int {
 	return 0
 }
 
-func (a Boolean) Value(i int) bool {
-	return a[i]
+func (a *booleans) Value(i int) bool {
+	return a.data[i]
 }
 
-func (a Boolean) Slice(start, stop int) array.Base {
+func (a *booleans) Copy() array.Base {
+	panic("implement me")
+}
+
+func (a *booleans) Free() {
+	if a.alloc != nil {
+		a.alloc.Free(cap(a.data) * boolSize)
+	}
+	a.data = nil
+}
+
+func (a *booleans) Slice(start, stop int) array.BaseRef {
 	return a.BooleanSlice(start, stop)
 }
 
-func (a Boolean) BooleanSlice(start, stop int) array.Boolean {
-	return Boolean(a[start:stop])
+func (a *booleans) BooleanSlice(start, stop int) array.BooleanRef {
+	return &booleans{data: a.data[start:stop]}
 }
 
-var _ array.BooleanBuilder = (*BooleanBuilder)(nil)
-
-type BooleanBuilder []bool
-
-func (b *BooleanBuilder) Len() int {
-	if b == nil {
-		return 0
-	}
-	return len(*b)
+func (a *booleans) BoolValues() []bool {
+	return a.data
 }
 
-func (b *BooleanBuilder) Cap() int {
-	if b == nil {
-		return 0
-	}
-	return cap(*b)
+func BooleanBuilder(a *memory.Allocator) array.BooleanBuilder {
+	return &booleanBuilder{alloc: a}
 }
 
-func (b *BooleanBuilder) Reserve(n int) {
-	if b == nil {
-		*b = make([]bool, 0, n)
+type booleanBuilder struct {
+	data  []bool
+	alloc *memory.Allocator
+}
+
+func (b *booleanBuilder) Type() semantic.Type {
+	return semantic.Bool
+}
+
+func (b *booleanBuilder) Len() int {
+	return len(b.data)
+}
+
+func (b *booleanBuilder) Cap() int {
+	return cap(b.data)
+}
+
+func (b *booleanBuilder) Reserve(n int) {
+	newCap := len(b.data) + n
+	if newCap := len(b.data) + n; newCap <= cap(b.data) {
 		return
-	} else if cap(*b) < n {
-		newB := make([]bool, len(*b), n)
-		copy(newB, *b)
-		*b = newB
 	}
+	if err := b.alloc.Allocate(newCap * boolSize); err != nil {
+		panic(err)
+	}
+	data := make([]bool, len(b.data), newCap)
+	copy(data, b.data)
+	b.alloc.Free(cap(b.data) * boolSize)
+	b.data = data
 }
 
-func (b *BooleanBuilder) BuildArray() array.Base {
+func (b *booleanBuilder) BuildArray() array.Base {
 	return b.BuildBooleanArray()
 }
 
-func (b *BooleanBuilder) Append(v bool) {
-	if b == nil {
-		*b = append([]bool{}, v)
-		return
-	}
-	*b = append(*b, v)
+func (b *booleanBuilder) Free() {
+	panic("implement me")
 }
 
-func (b *BooleanBuilder) AppendNull() {
+func (b *booleanBuilder) Append(v bool) {
+	if len(b.data) == cap(b.data) {
+		// Grow the slice in the same way as built-in append.
+		n := len(b.data)
+		if n == 0 {
+			n = 2
+		}
+		b.Reserve(n)
+	}
+	b.data = append(b.data, v)
+}
+
+func (b *booleanBuilder) AppendNull() {
 	// The staticarray does not support nulls so it will do the current behavior of just appending
 	// the zero value.
 	b.Append(false)
 }
 
-func (b *BooleanBuilder) AppendValues(v []bool, valid ...[]bool) {
-	// We ignore the valid array since it does not apply to this implementation type.
-	if b == nil {
-		*b = append([]bool{}, v...)
-		return
+func (b *booleanBuilder) AppendValues(v []bool, valid ...[]bool) {
+	if newCap := len(b.data) + len(v); newCap > cap(b.data) {
+		b.Reserve(newCap - cap(b.data))
 	}
-	*b = append(*b, v...)
+	b.data = append(b.data, v...)
 }
 
-func (b *BooleanBuilder) BuildBooleanArray() array.Boolean {
-	if b == nil {
-		return Boolean(nil)
+func (b *booleanBuilder) BuildBooleanArray() array.Boolean {
+	return &booleans{
+		data:  b.data,
+		alloc: b.alloc,
 	}
-	return Boolean(*b)
 }

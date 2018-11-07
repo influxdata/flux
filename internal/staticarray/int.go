@@ -1,102 +1,138 @@
 package staticarray
 
-import "github.com/influxdata/flux/array"
+import (
+	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/semantic"
+)
 
-var _ array.Int = Int(nil)
+type ints struct {
+	data  []int64
+	alloc *memory.Allocator
+}
 
-type Int []int64
+func Int(data []int64) array.Int {
+	return &ints{data: data}
+}
 
-func (a Int) IsNull(i int) bool {
+func (a *ints) Type() semantic.Type {
+	return semantic.Int
+}
+
+func (a *ints) IsNull(i int) bool {
 	return false
 }
 
-func (a Int) IsValid(i int) bool {
-	return i >= 0 && i < len(a)
+func (a *ints) IsValid(i int) bool {
+	return i >= 0 && i < len(a.data)
 }
 
-func (a Int) Len() int {
-	return len(a)
+func (a *ints) Len() int {
+	return len(a.data)
 }
 
-func (a Int) NullN() int {
+func (a *ints) NullN() int {
 	return 0
 }
 
-func (a Int) Value(i int) int64 {
-	return a[i]
+func (a *ints) Value(i int) int64 {
+	return a.data[i]
 }
 
-func (a Int) Slice(start, stop int) array.Base {
+func (a *ints) Copy() array.Base {
+	panic("implement me")
+}
+
+func (a *ints) Free() {
+	if a.alloc != nil {
+		a.alloc.Free(cap(a.data) * int64Size)
+	}
+	a.data = nil
+}
+
+func (a *ints) Slice(start, stop int) array.BaseRef {
 	return a.IntSlice(start, stop)
 }
 
-func (a Int) IntSlice(start, stop int) array.Int {
-	return Int(a[start:stop])
+func (a *ints) IntSlice(start, stop int) array.IntRef {
+	return &ints{data: a.data[start:stop]}
 }
 
-func (a Int) Int64Values() []int64 {
-	return []int64(a)
+func (a *ints) Int64Values() []int64 {
+	return a.data
 }
 
-var _ array.IntBuilder = (*IntBuilder)(nil)
-
-type IntBuilder []int64
-
-func (b *IntBuilder) Len() int {
-	if b == nil {
-		return 0
-	}
-	return len(*b)
+func IntBuilder(a *memory.Allocator) array.IntBuilder {
+	return &intBuilder{alloc: a}
 }
 
-func (b *IntBuilder) Cap() int {
-	if b == nil {
-		return 0
-	}
-	return cap(*b)
+type intBuilder struct {
+	data  []int64
+	alloc *memory.Allocator
 }
 
-func (b *IntBuilder) Reserve(n int) {
-	if b == nil {
-		*b = make([]int64, 0, n)
+func (b *intBuilder) Type() semantic.Type {
+	return semantic.Int
+}
+
+func (b *intBuilder) Len() int {
+	return len(b.data)
+}
+
+func (b *intBuilder) Cap() int {
+	return cap(b.data)
+}
+
+func (b *intBuilder) Reserve(n int) {
+	newCap := len(b.data) + n
+	if newCap := len(b.data) + n; newCap <= cap(b.data) {
 		return
-	} else if cap(*b) < n {
-		newB := make([]int64, len(*b), n)
-		copy(newB, *b)
-		*b = newB
 	}
+	if err := b.alloc.Allocate(newCap * int64Size); err != nil {
+		panic(err)
+	}
+	data := make([]int64, len(b.data), newCap)
+	copy(data, b.data)
+	b.alloc.Free(cap(b.data) * int64Size)
+	b.data = data
 }
 
-func (b *IntBuilder) BuildArray() array.Base {
+func (b *intBuilder) BuildArray() array.Base {
 	return b.BuildIntArray()
 }
 
-func (b *IntBuilder) Append(v int64) {
-	if b == nil {
-		*b = append([]int64{}, v)
-		return
-	}
-	*b = append(*b, v)
+func (b *intBuilder) Free() {
+	panic("implement me")
 }
 
-func (b *IntBuilder) AppendNull() {
+func (b *intBuilder) Append(v int64) {
+	if len(b.data) == cap(b.data) {
+		// Grow the slice in the same way as built-in append.
+		n := len(b.data)
+		if n == 0 {
+			n = 2
+		}
+		b.Reserve(n)
+	}
+	b.data = append(b.data, v)
+}
+
+func (b *intBuilder) AppendNull() {
 	// The staticarray does not support nulls so it will do the current behavior of just appending
 	// the zero value.
 	b.Append(0)
 }
 
-func (b *IntBuilder) AppendValues(v []int64, valid ...[]bool) {
-	// We ignore the valid array since it does not apply to this implementation type.
-	if b == nil {
-		*b = append([]int64{}, v...)
-		return
+func (b *intBuilder) AppendValues(v []int64, valid ...[]bool) {
+	if newCap := len(b.data) + len(v); newCap > cap(b.data) {
+		b.Reserve(newCap - cap(b.data))
 	}
-	*b = append(*b, v...)
+	b.data = append(b.data, v...)
 }
 
-func (b *IntBuilder) BuildIntArray() array.Int {
-	if b == nil {
-		return Int(nil)
+func (b *intBuilder) BuildIntArray() array.Int {
+	return &ints{
+		data:  b.data,
+		alloc: b.alloc,
 	}
-	return Int(*b)
 }

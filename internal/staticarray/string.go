@@ -1,98 +1,138 @@
 package staticarray
 
-import "github.com/influxdata/flux/array"
+import (
+	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/semantic"
+)
 
-var _ array.String = String(nil)
+type strings struct {
+	data  []string
+	alloc *memory.Allocator
+}
 
-type String []string
+func String(data []string) array.String {
+	return &strings{data: data}
+}
 
-func (a String) IsNull(i int) bool {
+func (a *strings) Type() semantic.Type {
+	return semantic.String
+}
+
+func (a *strings) IsNull(i int) bool {
 	return false
 }
 
-func (a String) IsValid(i int) bool {
-	return i >= 0 && i < len(a)
+func (a *strings) IsValid(i int) bool {
+	return i >= 0 && i < len(a.data)
 }
 
-func (a String) Len() int {
-	return len(a)
+func (a *strings) Len() int {
+	return len(a.data)
 }
 
-func (a String) NullN() int {
+func (a *strings) NullN() int {
 	return 0
 }
 
-func (a String) Value(i int) string {
-	return a[i]
+func (a *strings) Value(i int) string {
+	return a.data[i]
 }
 
-func (a String) Slice(start, stop int) array.Base {
+func (a *strings) Copy() array.Base {
+	panic("implement me")
+}
+
+func (a *strings) Free() {
+	if a.alloc != nil {
+		a.alloc.Free(cap(a.data) * stringSize)
+	}
+	a.data = nil
+}
+
+func (a *strings) Slice(start, stop int) array.BaseRef {
 	return a.StringSlice(start, stop)
 }
 
-func (a String) StringSlice(start, stop int) array.String {
-	return String(a[start:stop])
+func (a *strings) StringSlice(start, stop int) array.StringRef {
+	return &strings{data: a.data[start:stop]}
 }
 
-var _ array.StringBuilder = (*StringBuilder)(nil)
-
-type StringBuilder []string
-
-func (b *StringBuilder) Len() int {
-	if b == nil {
-		return 0
-	}
-	return len(*b)
+func (a *strings) StringValues() []string {
+	return a.data
 }
 
-func (b *StringBuilder) Cap() int {
-	if b == nil {
-		return 0
-	}
-	return cap(*b)
+func StringBuilder(a *memory.Allocator) array.StringBuilder {
+	return &stringBuilder{alloc: a}
 }
 
-func (b *StringBuilder) Reserve(n int) {
-	if b == nil {
-		*b = make([]string, 0, n)
+type stringBuilder struct {
+	data  []string
+	alloc *memory.Allocator
+}
+
+func (b *stringBuilder) Type() semantic.Type {
+	return semantic.String
+}
+
+func (b *stringBuilder) Len() int {
+	return len(b.data)
+}
+
+func (b *stringBuilder) Cap() int {
+	return cap(b.data)
+}
+
+func (b *stringBuilder) Reserve(n int) {
+	newCap := len(b.data) + n
+	if newCap := len(b.data) + n; newCap <= cap(b.data) {
 		return
-	} else if cap(*b) < n {
-		newB := make([]string, len(*b), n)
-		copy(newB, *b)
-		*b = newB
 	}
+	if err := b.alloc.Allocate(newCap * stringSize); err != nil {
+		panic(err)
+	}
+	data := make([]string, len(b.data), newCap)
+	copy(data, b.data)
+	b.alloc.Free(cap(b.data) * stringSize)
+	b.data = data
 }
 
-func (b *StringBuilder) BuildArray() array.Base {
+func (b *stringBuilder) BuildArray() array.Base {
 	return b.BuildStringArray()
 }
 
-func (b *StringBuilder) Append(v string) {
-	if b == nil {
-		*b = append([]string{}, v)
-		return
-	}
-	*b = append(*b, v)
+func (b *stringBuilder) Free() {
+	panic("implement me")
 }
 
-func (b *StringBuilder) AppendNull() {
+func (b *stringBuilder) Append(v string) {
+	if len(b.data) == cap(b.data) {
+		// Grow the slice in the same way as built-in append.
+		n := len(b.data)
+		if n == 0 {
+			n = 2
+		}
+		b.Reserve(n)
+	}
+	b.data = append(b.data, v)
+}
+
+func (b *stringBuilder) AppendNull() {
 	// The staticarray does not support nulls so it will do the current behavior of just appending
 	// the zero value.
 	b.Append("")
 }
 
-func (b *StringBuilder) AppendValues(v []string, valid ...[]bool) {
-	// We ignore the valid array since it does not apply to this implementation type.
-	if b == nil {
-		*b = append([]string{}, v...)
-		return
+func (b *stringBuilder) AppendValues(v []string, valid ...[]bool) {
+	if newCap := len(b.data) + len(v); newCap > cap(b.data) {
+		b.Reserve(newCap - cap(b.data))
 	}
-	*b = append(*b, v...)
+	b.data = append(b.data, v...)
 }
 
-func (b *StringBuilder) BuildStringArray() array.String {
-	if b == nil {
-		return String(nil)
+func (b *stringBuilder) BuildStringArray() array.String {
+	return &strings{
+		data:  b.data,
+		alloc: b.alloc,
 	}
-	return String(*b)
 }

@@ -1,102 +1,138 @@
 package staticarray
 
-import "github.com/influxdata/flux/array"
+import (
+	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/semantic"
+)
 
-var _ array.UInt = UInt(nil)
+type uints struct {
+	data  []uint64
+	alloc *memory.Allocator
+}
 
-type UInt []uint64
+func UInt(data []uint64) array.UInt {
+	return &uints{data: data}
+}
 
-func (a UInt) IsNull(i int) bool {
+func (a *uints) Type() semantic.Type {
+	return semantic.UInt
+}
+
+func (a *uints) IsNull(i int) bool {
 	return false
 }
 
-func (a UInt) IsValid(i int) bool {
-	return i >= 0 && i < len(a)
+func (a *uints) IsValid(i int) bool {
+	return i >= 0 && i < len(a.data)
 }
 
-func (a UInt) Len() int {
-	return len(a)
+func (a *uints) Len() int {
+	return len(a.data)
 }
 
-func (a UInt) NullN() int {
+func (a *uints) NullN() int {
 	return 0
 }
 
-func (a UInt) Value(i int) uint64 {
-	return a[i]
+func (a *uints) Value(i int) uint64 {
+	return a.data[i]
 }
 
-func (a UInt) Slice(start, stop int) array.Base {
+func (a *uints) Copy() array.Base {
+	panic("implement me")
+}
+
+func (a *uints) Free() {
+	if a.alloc != nil {
+		a.alloc.Free(cap(a.data) * uint64Size)
+	}
+	a.data = nil
+}
+
+func (a *uints) Slice(start, stop int) array.BaseRef {
 	return a.UIntSlice(start, stop)
 }
 
-func (a UInt) UIntSlice(start, stop int) array.UInt {
-	return UInt(a[start:stop])
+func (a *uints) UIntSlice(start, stop int) array.UIntRef {
+	return &uints{data: a.data[start:stop]}
 }
 
-func (a UInt) Uint64Values() []uint64 {
-	return []uint64(a)
+func (a *uints) Uint64Values() []uint64 {
+	return a.data
 }
 
-var _ array.UIntBuilder = (*UIntBuilder)(nil)
-
-type UIntBuilder []uint64
-
-func (b *UIntBuilder) Len() int {
-	if b == nil {
-		return 0
-	}
-	return len(*b)
+func UIntBuilder(a *memory.Allocator) array.UIntBuilder {
+	return &uintBuilder{alloc: a}
 }
 
-func (b *UIntBuilder) Cap() int {
-	if b == nil {
-		return 0
-	}
-	return cap(*b)
+type uintBuilder struct {
+	data  []uint64
+	alloc *memory.Allocator
 }
 
-func (b *UIntBuilder) Reserve(n int) {
-	if b == nil {
-		*b = make([]uint64, 0, n)
+func (b *uintBuilder) Type() semantic.Type {
+	return semantic.UInt
+}
+
+func (b *uintBuilder) Len() int {
+	return len(b.data)
+}
+
+func (b *uintBuilder) Cap() int {
+	return cap(b.data)
+}
+
+func (b *uintBuilder) Reserve(n int) {
+	newCap := len(b.data) + n
+	if newCap := len(b.data) + n; newCap <= cap(b.data) {
 		return
-	} else if cap(*b) < n {
-		newB := make([]uint64, len(*b), n)
-		copy(newB, *b)
-		*b = newB
 	}
+	if err := b.alloc.Allocate(newCap * uint64Size); err != nil {
+		panic(err)
+	}
+	data := make([]uint64, len(b.data), newCap)
+	copy(data, b.data)
+	b.alloc.Free(cap(b.data) * uint64Size)
+	b.data = data
 }
 
-func (b *UIntBuilder) BuildArray() array.Base {
+func (b *uintBuilder) BuildArray() array.Base {
 	return b.BuildUIntArray()
 }
 
-func (b *UIntBuilder) Append(v uint64) {
-	if b == nil {
-		*b = append([]uint64{}, v)
-		return
-	}
-	*b = append(*b, v)
+func (b *uintBuilder) Free() {
+	panic("implement me")
 }
 
-func (b *UIntBuilder) AppendNull() {
+func (b *uintBuilder) Append(v uint64) {
+	if len(b.data) == cap(b.data) {
+		// Grow the slice in the same way as built-in append.
+		n := len(b.data)
+		if n == 0 {
+			n = 2
+		}
+		b.Reserve(n)
+	}
+	b.data = append(b.data, v)
+}
+
+func (b *uintBuilder) AppendNull() {
 	// The staticarray does not support nulls so it will do the current behavior of just appending
 	// the zero value.
 	b.Append(0)
 }
 
-func (b *UIntBuilder) AppendValues(v []uint64, valid ...[]bool) {
-	// We ignore the valid array since it does not apply to this implementation type.
-	if b == nil {
-		*b = append([]uint64{}, v...)
-		return
+func (b *uintBuilder) AppendValues(v []uint64, valid ...[]bool) {
+	if newCap := len(b.data) + len(v); newCap > cap(b.data) {
+		b.Reserve(newCap - cap(b.data))
 	}
-	*b = append(*b, v...)
+	b.data = append(b.data, v...)
 }
 
-func (b *UIntBuilder) BuildUIntArray() array.UInt {
-	if b == nil {
-		return UInt(nil)
+func (b *uintBuilder) BuildUIntArray() array.UInt {
+	return &uints{
+		data:  b.data,
+		alloc: b.alloc,
 	}
-	return UInt(*b)
 }

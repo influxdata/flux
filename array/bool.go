@@ -1,10 +1,19 @@
 package array
 
+// BooleanRef is a reference to a Boolean.
+type BooleanRef interface {
+	BaseRef
+	Value(i int) bool
+	BooleanSlice(start, stop int) BooleanRef
+}
+
 // Boolean represents an abstraction over a bool array.
 type Boolean interface {
-	Base
-	Value(i int) bool
-	BooleanSlice(start, stop int) Boolean
+	BooleanRef
+
+	// Free will release the memory for this array. After Free is called,
+	// the array should no longer be used.
+	Free()
 }
 
 // BooleanBuilder represents an abstraction over building a bool array.
