@@ -46,7 +46,7 @@ func (ri *resultIterator) Next() flux.Result {
 	return &result{res: &res, a: ri.a}
 }
 
-func (ri *resultIterator) Cancel() {
+func (ri *resultIterator) Release() {
 	ri.resp.Results = nil
 }
 

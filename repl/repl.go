@@ -182,7 +182,7 @@ func (r *REPL) doQuery(spec *flux.Spec) error {
 	if err != nil {
 		return err
 	}
-	defer results.Cancel()
+	defer results.Release()
 
 	for results.More() {
 		result := results.Next()

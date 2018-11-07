@@ -13,10 +13,11 @@ type Query interface {
 	// in which case the query should be inspected for an error using Err().
 	Ready() <-chan map[string]Result
 
-	// Done must always be called to free resources.
+	// Done must always be called to free resources. It is safe to call Done
+	// multiple times.
 	Done()
 
-	// Cancel will stop the query execution.
+	// Cancel will signal that query execution should stop.
 	// Done must still be called to free resources.
 	// It is safe to call Cancel multiple times.
 	Cancel()

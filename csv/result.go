@@ -127,7 +127,7 @@ func (r *resultIterator) More() bool {
 	}
 
 	// Release the resources for this query.
-	r.Cancel()
+	r.Release()
 	return false
 }
 
@@ -135,7 +135,7 @@ func (r *resultIterator) Next() flux.Result {
 	return r.next
 }
 
-func (r *resultIterator) Cancel() {
+func (r *resultIterator) Release() {
 	if r.canceled {
 		return
 	}

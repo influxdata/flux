@@ -389,6 +389,7 @@ type Query struct {
 
 	plan *plan.PlanSpec
 
+	done        sync.Once
 	concurrency int
 	memory      int64
 
@@ -431,12 +432,22 @@ func (q *Query) Ready() <-chan map[string]flux.Result {
 
 // Done must always be called to free resources.
 func (q *Query) Done() {
-	q.mu.Lock()
-	defer q.mu.Unlock()
+	// TODO(jsternberg): I'm pretty sure this can results in releasing resources that are still
+	// actively being used. This method should indicate to the controller that it no longer has to
+	// keep the queries around, but it shouldn't let the client decide the resources are freed since
+	// the query may have been canceled and is still waiting to hit a cancel point.
+	// This could result in reporting the wrong number for resource usage.
+	q.done.Do(func() {
+		q.mu.Lock()
+		if q.state != Errored {
+			q.transitionTo(Finished)
+		}
+		q.mu.Unlock()
 
-	if q.state != Errored {
-		q.transitionTo(Finished)
-	}
+		// We must send the information that this query is done outside of the lock because
+		// otherwise we can deadlock with the controller.
+		q.c.queryDone <- q
+	})
 }
 
 // Statistics reports the statisitcs for the query.
@@ -506,13 +517,6 @@ TRANSITION:
 			// Close the ready channel on the first time we move to one of these states.
 			// It should signal any queries waiting on the results that no results will come.
 			// Signal to the main loop that this query has completed.
-			// TODO(jsternberg): The existence of this channel here is incorrect and a result of not implementing
-			// the interface correctly. This channel send should be in the Done method, but because it wasn't
-			// placed there originally, many of the implementors don't call Done when they have called Cancel.
-			// This channel send is in the wrong place and can't be done when there is a lock on the query because
-			// it can cause a deadlock with the controller. Fixing that is more involved though so, temporarily,
-			// we spawn a goroutine to send the query to queryDone to avoid a potential deadlock.
-			go func() { q.c.queryDone <- q }()
 			close(q.ready)
 		}
 	}

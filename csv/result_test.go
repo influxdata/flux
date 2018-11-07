@@ -990,7 +990,7 @@ func (r errorResultIterator) Next() flux.Result {
 	panic("no results")
 }
 
-func (r errorResultIterator) Cancel() {
+func (r errorResultIterator) Release() {
 }
 
 func (r errorResultIterator) Err() error {
