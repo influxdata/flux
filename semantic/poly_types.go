@@ -388,6 +388,37 @@ func (f function) freeVars(c *Constraints) TvarSet {
 func (l function) unifyType(kinds map[Tvar]Kind, r PolyType) (Substitution, error) {
 	switch r := r.(type) {
 	case function:
+		// When unifying a constraint between two function types, every parameter
+		// observed in the right function type must be observed in the left as well.
+		// However special care must be taken when pipe arguments are present.
+		required := make([]string, 0, len(r.required)+1)
+		required = append(required, r.required...)
+		if _, ok := r.parameters[pipeLabel]; ok {
+			required = append(required, pipeLabel)
+		}
+		for _, param := range required {
+			if _, ok := l.parameters[param]; !ok {
+				if param != pipeLabel {
+					// If a parameter is observed in the right type, but not in the
+					// left, the constraint could only unify if this parameter were
+					// a named pipe param and the left type had an un-named pipe param.
+					if _, ok := l.parameters[pipeLabel]; param == r.pipeArgument && ok {
+						continue
+					}
+					return nil, fmt.Errorf("function does not take a parameter named %q", param)
+				}
+				if param == pipeLabel && l.pipeArgument == "" {
+					// If a pipe argument is observed in the right type, whether named
+					// or un-named, and no pipe argument is observed in the left type,
+					// then the only way this constraint could unify is if this pipe
+					// param had the same name as a param in the left type.
+					if _, ok := l.parameters[r.pipeArgument]; ok {
+						continue
+					}
+					return nil, fmt.Errorf("function does not take a pipe argument")
+				}
+			}
+		}
 		missing := l.required.diff(r.required)
 		for _, lbl := range missing {
 			if _, ok := r.parameters[lbl]; !ok && lbl != l.pipeArgument {
