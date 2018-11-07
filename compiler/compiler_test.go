@@ -363,6 +363,91 @@ func TestCompileAndEval(t *testing.T) {
 			want:    values.NewInt(5),
 			wantErr: false,
 		},
+		{
+			name: "call filter function with index expression",
+			// f = (r) => r[2] == 3
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "r"}},
+						},
+					},
+					Body: &semantic.BinaryExpression{
+						Operator: ast.EqualOperator,
+						Left: &semantic.IndexExpression{
+							Array: &semantic.IdentifierExpression{Name: "r"},
+							Index: &semantic.IntegerLiteral{Value: 2},
+						},
+						Right: &semantic.IntegerLiteral{Value: 3},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"r": semantic.NewArrayType(semantic.Int),
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewArrayWithBacking(semantic.Int, []values.Value{
+					values.NewInt(5),
+					values.NewInt(6),
+					values.NewInt(3),
+				}),
+			}),
+			want:    values.NewBool(true),
+			wantErr: false,
+		},
+		{
+			name: "call filter function with complex index expression",
+			// f = (r) => r[((x) => 2)(x: "anything")] == 3
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "r"}},
+						},
+					},
+					Body: &semantic.BinaryExpression{
+						Operator: ast.EqualOperator,
+						Left: &semantic.IndexExpression{
+							Array: &semantic.IdentifierExpression{Name: "r"},
+							Index: &semantic.CallExpression{
+								Callee: &semantic.FunctionExpression{
+									Block: &semantic.FunctionBlock{
+										Parameters: &semantic.FunctionParameters{
+											List: []*semantic.FunctionParameter{
+												{Key: &semantic.Identifier{Name: "x"}},
+											},
+										},
+										Body: &semantic.IntegerLiteral{Value: 2},
+									},
+								},
+								Arguments: &semantic.ObjectExpression{
+									Properties: []*semantic.Property{
+										{
+											Key:   &semantic.Identifier{Name: "x"},
+											Value: &semantic.StringLiteral{Value: "anything"},
+										},
+									},
+								},
+							},
+						},
+						Right: &semantic.IntegerLiteral{Value: 3},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"r": semantic.NewArrayType(semantic.Int),
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewArrayWithBacking(semantic.Int, []values.Value{
+					values.NewInt(5),
+					values.NewInt(6),
+					values.NewInt(3),
+				}),
+			}),
+			want:    values.NewBool(true),
+			wantErr: false,
+		},
 	}
 
 	for _, tc := range testCases {

@@ -122,12 +122,28 @@ func TestJSONMarshal(t *testing.T) {
 			want: `{"type":"PipeExpression","argument":{"type":"Identifier","name":"a"},"call":{"type":"CallExpression","callee":{"type":"Identifier","name":"a"},"arguments":[{"type":"StringLiteral","value":"hello"}]}}`,
 		},
 		{
-			name: "member expression",
+			name: "member expression with identifier",
 			node: &ast.MemberExpression{
 				Object:   &ast.Identifier{Name: "a"},
-				Property: &ast.StringLiteral{Value: "hello"},
+				Property: &ast.Identifier{Name: "b"},
 			},
-			want: `{"type":"MemberExpression","object":{"type":"Identifier","name":"a"},"property":{"type":"StringLiteral","value":"hello"}}`,
+			want: `{"type":"MemberExpression","object":{"type":"Identifier","name":"a"},"property":{"type":"Identifier","name":"b"}}`,
+		},
+		{
+			name: "member expression with string literal",
+			node: &ast.MemberExpression{
+				Object:   &ast.Identifier{Name: "a"},
+				Property: &ast.StringLiteral{Value: "b"},
+			},
+			want: `{"type":"MemberExpression","object":{"type":"Identifier","name":"a"},"property":{"type":"StringLiteral","value":"b"}}`,
+		},
+		{
+			name: "index expression",
+			node: &ast.IndexExpression{
+				Array: &ast.Identifier{Name: "a"},
+				Index: &ast.IntegerLiteral{Value: 3},
+			},
+			want: `{"type":"IndexExpression","array":{"type":"Identifier","name":"a"},"index":{"type":"IntegerLiteral","value":"3"}}`,
 		},
 		{
 			name: "arrow function expression",

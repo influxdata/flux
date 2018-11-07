@@ -138,6 +138,8 @@ func analyzeExpression(expr ast.Expression) (Expression, error) {
 		return analyzeCallExpression(expr)
 	case *ast.MemberExpression:
 		return analyzeMemberExpression(expr)
+	case *ast.IndexExpression:
+		return analyzeIndexExpression(expr)
 	case *ast.PipeExpression:
 		return analyzePipeExpression(expr)
 	case *ast.BinaryExpression:
@@ -295,23 +297,33 @@ func analyzeMemberExpression(member *ast.MemberExpression) (*MemberExpression, e
 	if err != nil {
 		return nil, err
 	}
-
-	var propertyName string
-	switch p := member.Property.(type) {
+	var prop string
+	switch n := member.Property.(type) {
 	case *ast.Identifier:
-		propertyName = p.Name
+		prop = n.Name
 	case *ast.StringLiteral:
-		propertyName = p.Value
-	case *ast.IntegerLiteral:
-		propertyName = strconv.FormatInt(p.Value, 10)
-	default:
-		return nil, fmt.Errorf("unsupported member property expression of type %T", member.Property)
+		prop = n.Value
 	}
-
 	return &MemberExpression{
 		loc:      loc(member.Location()),
 		Object:   obj,
-		Property: propertyName,
+		Property: prop,
+	}, nil
+}
+
+func analyzeIndexExpression(e *ast.IndexExpression) (Expression, error) {
+	array, err := analyzeExpression(e.Array)
+	if err != nil {
+		return nil, err
+	}
+	index, err := analyzeExpression(e.Index)
+	if err != nil {
+		return nil, err
+	}
+	return &IndexExpression{
+		loc:   loc(e.Location()),
+		Array: array,
+		Index: index,
 	}, nil
 }
 

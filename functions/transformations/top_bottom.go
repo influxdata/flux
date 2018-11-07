@@ -67,7 +67,7 @@ highestCurrent = (n, columns=["_value"], by=[], tables=<-) =>
                 n:n,
                 columns:columns,
                 by:by,
-                reducer: (tables=<-) => tables |> mean(columns:columns),
+                reducer: (tables=<-) => tables |> last(column:columns[0]),
                 _sortLimit: top,
             )
 
@@ -90,7 +90,7 @@ lowestAverage = (n, columns=["_value"], by=[], tables=<-) =>
                 n:n,
                 columns:columns,
                 by:by,
-                reducer: (tables=<-) => tables |> mean(columns:columns),
+                reducer: (tables=<-) => tables |> mean(columns:[columns[0]]),
                 _sortLimit: bottom,
             )
 

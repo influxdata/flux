@@ -207,6 +207,149 @@ func TestNew(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "index expression",
+			program: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.IndexExpression{
+							Array: &ast.Identifier{Name: "a"},
+							Index: &ast.IntegerLiteral{Value: 3},
+						},
+					},
+				},
+			},
+			want: &semantic.Program{
+				Body: []semantic.Statement{
+					&semantic.ExpressionStatement{
+						Expression: &semantic.IndexExpression{
+							Array: &semantic.IdentifierExpression{Name: "a"},
+							Index: &semantic.IntegerLiteral{Value: 3},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "nested index expression",
+			program: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.IndexExpression{
+							Array: &ast.IndexExpression{
+								Array: &ast.Identifier{Name: "a"},
+								Index: &ast.IntegerLiteral{Value: 3},
+							},
+							Index: &ast.IntegerLiteral{Value: 5},
+						},
+					},
+				},
+			},
+			want: &semantic.Program{
+				Body: []semantic.Statement{
+					&semantic.ExpressionStatement{
+						Expression: &semantic.IndexExpression{
+							Array: &semantic.IndexExpression{
+								Array: &semantic.IdentifierExpression{Name: "a"},
+								Index: &semantic.IntegerLiteral{Value: 3},
+							},
+							Index: &semantic.IntegerLiteral{Value: 5},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "access indexed object returned from function call",
+			program: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.IndexExpression{
+							Array: &ast.CallExpression{
+								Callee: &ast.Identifier{Name: "f"},
+							},
+							Index: &ast.IntegerLiteral{Value: 3},
+						},
+					},
+				},
+			},
+			want: &semantic.Program{
+				Body: []semantic.Statement{
+					&semantic.ExpressionStatement{
+						Expression: &semantic.IndexExpression{
+							Array: &semantic.CallExpression{
+								Callee:    &semantic.IdentifierExpression{Name: "f"},
+								Arguments: &semantic.ObjectExpression{},
+							},
+							Index: &semantic.IntegerLiteral{Value: 3},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "nested member expressions",
+			program: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.MemberExpression{
+							Object: &ast.MemberExpression{
+								Object:   &ast.Identifier{Name: "a"},
+								Property: &ast.Identifier{Name: "b"},
+							},
+							Property: &ast.Identifier{Name: "c"},
+						},
+					},
+				},
+			},
+			want: &semantic.Program{
+				Body: []semantic.Statement{
+					&semantic.ExpressionStatement{
+						Expression: &semantic.MemberExpression{
+							Object: &semantic.MemberExpression{
+								Object:   &semantic.IdentifierExpression{Name: "a"},
+								Property: "b",
+							},
+							Property: "c",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "member with call expression",
+			program: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.MemberExpression{
+							Object: &ast.CallExpression{
+								Callee: &ast.MemberExpression{
+									Object:   &ast.Identifier{Name: "a"},
+									Property: &ast.Identifier{Name: "b"},
+								},
+							},
+							Property: &ast.Identifier{Name: "c"},
+						},
+					},
+				},
+			},
+			want: &semantic.Program{
+				Body: []semantic.Statement{
+					&semantic.ExpressionStatement{
+						Expression: &semantic.MemberExpression{
+							Object: &semantic.CallExpression{
+								Callee: &semantic.MemberExpression{
+									Object:   &semantic.IdentifierExpression{Name: "a"},
+									Property: "b",
+								},
+								Arguments: &semantic.ObjectExpression{},
+							},
+							Property: "c",
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc

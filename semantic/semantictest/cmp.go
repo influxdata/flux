@@ -30,6 +30,7 @@ var CmpOptions = []cmp.Option{
 	cmpopts.IgnoreUnexported(semantic.ConditionalExpression{}),
 	cmpopts.IgnoreUnexported(semantic.LogicalExpression{}),
 	cmpopts.IgnoreUnexported(semantic.MemberExpression{}),
+	cmpopts.IgnoreUnexported(semantic.IndexExpression{}),
 	cmpopts.IgnoreUnexported(semantic.ObjectExpression{}),
 	cmpopts.IgnoreUnexported(semantic.UnaryExpression{}),
 	cmpopts.IgnoreUnexported(semantic.Property{}),

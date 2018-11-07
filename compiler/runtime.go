@@ -981,6 +981,61 @@ func (e *memberEvaluator) EvalFunction(scope Scope) values.Function {
 	return v.Function()
 }
 
+type arrayEvaluator struct {
+	t     semantic.Type
+	array Evaluator
+	index Evaluator
+}
+
+func (e *arrayEvaluator) Type() semantic.Type {
+	return e.t
+}
+
+func (e *arrayEvaluator) EvalString(scope Scope) string {
+	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
+	return v.Str()
+}
+func (e *arrayEvaluator) EvalInt(scope Scope) int64 {
+	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
+	return v.Int()
+}
+func (e *arrayEvaluator) EvalUInt(scope Scope) uint64 {
+	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
+	return v.UInt()
+}
+func (e *arrayEvaluator) EvalFloat(scope Scope) float64 {
+	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
+	return v.Float()
+}
+func (e *arrayEvaluator) EvalBool(scope Scope) bool {
+	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
+	return v.Bool()
+}
+func (e *arrayEvaluator) EvalTime(scope Scope) values.Time {
+	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
+	return v.Time()
+}
+func (e *arrayEvaluator) EvalDuration(scope Scope) values.Duration {
+	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
+	return v.Duration()
+}
+func (e *arrayEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
+	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
+	return v.Regexp()
+}
+func (e *arrayEvaluator) EvalArray(scope Scope) values.Array {
+	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
+	return v.Array()
+}
+func (e *arrayEvaluator) EvalObject(scope Scope) values.Object {
+	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
+	return v.Object()
+}
+func (e *arrayEvaluator) EvalFunction(scope Scope) values.Function {
+	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
+	return v.Function()
+}
+
 type callEvaluator struct {
 	t      semantic.Type
 	callee Evaluator
