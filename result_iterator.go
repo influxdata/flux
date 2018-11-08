@@ -1,7 +1,6 @@
 package flux
 
 import (
-	"context"
 	"sort"
 )
 
@@ -29,34 +28,28 @@ type ResultIterator interface {
 
 // queryResultIterator implements a ResultIterator while consuming a Query
 type queryResultIterator struct {
-	ctx     context.Context
-	query   Query
-	done    bool
-	results ResultIterator
+	query    Query
+	released bool
+	results  ResultIterator
 }
 
-func NewResultIteratorFromQuery(ctx context.Context, q Query) ResultIterator {
+func NewResultIteratorFromQuery(q Query) ResultIterator {
 	return &queryResultIterator{
-		ctx:   ctx,
 		query: q,
 	}
 }
 
 func (r *queryResultIterator) More() bool {
-	if r.done {
+	if r.released {
 		return false
 	}
 
 	if r.results == nil {
-		select {
-		case <-r.ctx.Done():
+		results, ok := <-r.query.Ready()
+		if !ok {
 			return false
-		case results, ok := <-r.query.Ready():
-			if !ok {
-				return false
-			}
-			r.results = NewMapResultIterator(results)
 		}
+		r.results = NewMapResultIterator(results)
 	}
 	return r.results.More()
 }
@@ -67,7 +60,7 @@ func (r *queryResultIterator) Next() Result {
 
 func (r *queryResultIterator) Release() {
 	r.query.Done()
-	r.done = true
+	r.released = true
 	if r.results != nil {
 		r.results.Release()
 	}
