@@ -107,6 +107,7 @@ func (n Nature) typ() {}
 
 type arrayType struct {
 	elementType Type
+	size        int64
 }
 
 func (t *arrayType) String() string {
@@ -168,9 +169,7 @@ func NewArrayType(elementType Type) Type {
 	}
 
 	// Still no cache entry, add it.
-	at := &arrayType{
-		elementType: elementType,
-	}
+	at := &arrayType{elementType: elementType}
 	arrayTypeCache.m.Store(elementType, at)
 
 	return at

@@ -201,9 +201,7 @@ func (a array) occurs(tv Tvar) bool {
 	return a.typ.occurs(tv)
 }
 func (a array) substituteType(tv Tvar, t PolyType) PolyType {
-	return array{
-		typ: a.typ.substituteType(tv, t),
-	}
+	return array{typ: a.typ.substituteType(tv, t)}
 }
 func (a array) freeVars(c *Constraints) TvarSet {
 	return a.typ.freeVars(c)
@@ -237,17 +235,57 @@ func (a array) resolvePolyType(kinds map[Tvar]Kind) (PolyType, error) {
 	if err != nil {
 		return nil, err
 	}
-	return array{
-		typ: t,
-	}, nil
+	return array{typ: t}, nil
 }
 func (a array) Equal(t PolyType) bool {
-	switch t := t.(type) {
-	case array:
-		return a.typ.Equal(t.typ)
-	default:
-		return false
+	if arr, ok := t.(array); ok {
+		return a.typ.Equal(arr.typ)
 	}
+	return false
+}
+
+type ArrayKind struct {
+	typ PolyType
+}
+
+func (k ArrayKind) substituteKind(tv Tvar, t PolyType) Kind {
+	return ArrayKind{typ: k.typ.substituteType(tv, t)}
+}
+func (k ArrayKind) freeVars(c *Constraints) TvarSet {
+	return k.typ.freeVars(c)
+}
+func (l ArrayKind) unifyKind(kinds map[Tvar]Kind, k Kind) (kind Kind, _ Substitution, _ error) {
+	r, ok := k.(ArrayKind)
+	if !ok {
+		return nil, nil, fmt.Errorf("cannot unify array with %T", k)
+	}
+	s, err := unifyTypes(kinds, l.typ, r.typ)
+	if err != nil {
+		return nil, nil, err
+	}
+	return ArrayKind{typ: l.typ}, s, nil
+}
+
+func (k ArrayKind) resolveType(kinds map[Tvar]Kind) (Type, error) {
+	elementType, err := k.typ.resolveType(kinds)
+	if err != nil {
+		return nil, err
+	}
+	return NewArrayType(elementType), nil
+}
+func (k ArrayKind) MonoType() (Type, bool) {
+	monoType, ok := k.typ.MonoType()
+	if !ok {
+		return nil, false
+	}
+	return NewArrayType(monoType), true
+}
+func (k ArrayKind) resolvePolyType(kinds map[Tvar]Kind) (PolyType, error) {
+	polyType, err := k.typ.resolvePolyType(kinds)
+	if err != nil {
+		return nil, err
+	}
+	return NewArrayPolyType(polyType), nil
 }
 
 // pipeLabel is a hidden label on which all pipe arguments are passed according to type inference.

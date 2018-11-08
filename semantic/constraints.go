@@ -312,6 +312,18 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			upper:      AllLabels(),
 		})
 		return ptv, nil
+	case *IndexExpression:
+		ptv := v.cs.f.Fresh()
+		t, err := v.lookup(n.Array)
+		if err != nil {
+			return nil, err
+		}
+		tv, ok := t.(Tvar)
+		if !ok {
+			return nil, errors.New("array must be a type variable")
+		}
+		v.cs.AddKindConst(tv, ArrayKind{typ: ptv})
+		return ptv, nil
 	case *ArrayExpression:
 		at := array{typ: NewObjectPolyType(nil, nil, AllLabels())}
 		if len(n.Elements) > 0 {
@@ -327,8 +339,10 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 				}
 				v.cs.AddTypeConst(et, elt, el.Location())
 			}
+			v.cs.AddKindConst(nodeVar, ArrayKind{typ: at})
 		}
-		return at, nil
+		v.cs.AddTypeConst(nodeVar, at, n.Location())
+		return nodeVar, nil
 	case *StringLiteral:
 		return String, nil
 	case *IntegerLiteral:
