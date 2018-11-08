@@ -112,7 +112,7 @@ func runHttp() {
 			}
 			encoder := pr.Dialect.Encoder()
 			n, err := func() (int64, error) {
-				results := flux.NewResultIteratorFromQuery(ctx, q)
+				results := flux.NewResultIteratorFromQuery(q)
 				defer results.Release()
 				return encoder.Encode(w, results)
 			}()
@@ -140,7 +140,7 @@ func (q *Querier) Query(ctx context.Context, w io.Writer, c flux.Compiler, d flu
 	if err != nil {
 		return 0, err
 	}
-	results := flux.NewResultIteratorFromQuery(ctx, qry)
+	results := flux.NewResultIteratorFromQuery(qry)
 	defer results.Release()
 
 	encoder := d.Encoder()

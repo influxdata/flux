@@ -19,7 +19,7 @@ func (q *Querier) Query(ctx context.Context, w io.Writer, c flux.Compiler, d flu
 	if err != nil {
 		return 0, err
 	}
-	results := flux.NewResultIteratorFromQuery(ctx, query)
+	results := flux.NewResultIteratorFromQuery(query)
 	defer results.Release()
 
 	encoder := d.Encoder()
