@@ -50,6 +50,10 @@ type Controller struct {
 	queryDone     chan *Query
 	cancelRequest chan QueryID
 
+	shutdownCtx context.Context
+	shutdown    func()
+	done        chan struct{}
+
 	metrics   *controllerMetrics
 	labelKeys []string
 
@@ -91,6 +95,7 @@ func New(c Config) *Controller {
 		queries:              make(map[QueryID]*Query),
 		queryDone:            make(chan *Query),
 		cancelRequest:        make(chan QueryID),
+		done:                 make(chan struct{}),
 		maxConcurrency:       c.ConcurrencyQuota,
 		availableConcurrency: c.ConcurrencyQuota,
 		availableMemory:      c.MemoryBytesQuota,
@@ -102,6 +107,7 @@ func New(c Config) *Controller {
 		metrics:              newControllerMetrics(c.MetricLabelKeys),
 		labelKeys:            c.MetricLabelKeys,
 	}
+	ctrl.shutdownCtx, ctrl.shutdown = context.WithCancel(context.Background())
 	go ctrl.run()
 	return ctrl
 }
@@ -194,10 +200,13 @@ func (c *Controller) enqueueQuery(q *Query) error {
 	if err := q.spec.Validate(); err != nil {
 		return errors.Wrap(err, "invalid query")
 	}
+
 	// Add query to the queue
 	select {
 	case c.newQueries <- q:
 		return nil
+	case <-c.shutdownCtx.Done():
+		return fmt.Errorf("query controller shutdown")
 	case <-q.parentCtx.Done():
 		return q.parentCtx.Err()
 	}
@@ -225,7 +234,26 @@ func (c *Controller) Queries() []*Query {
 	return queries
 }
 
+// Shutdown will signal to the Controller that it should not accept any
+// new queries and that it should finish executing any existing queries.
+// This will return once the Controller's run loop has been exited and all
+// queries have been finished or until the Context has been canceled.
+func (c *Controller) Shutdown(ctx context.Context) error {
+	// Initiate the shutdown procedure by signaling to the run thread.
+	c.shutdown()
+
+	// Wait for the run loop to exit.
+	select {
+	case <-c.done:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
 func (c *Controller) run() {
+	defer close(c.done)
+
 	pq := newPriorityQueue()
 	for {
 		select {
@@ -247,6 +275,46 @@ func (c *Controller) run() {
 			q := c.queries[id]
 			c.queriesMu.RUnlock()
 			q.Cancel()
+		// Check if we have been signaled to shutdown.
+		case <-c.shutdownCtx.Done():
+			// We have been signaled to shutdown so drain the queues
+			// and exit the for loop.
+			c.drain(pq)
+			return
+		}
+
+		// Peek at head of priority queue
+		q := pq.Peek()
+		if q != nil {
+			pop, err := c.processQuery(q)
+			if pop {
+				pq.Pop()
+			}
+			if err != nil {
+				go q.setErr(err)
+			}
+		}
+	}
+}
+
+// drain will continue processing queries from the priority queue and
+// processing done queries.
+func (c *Controller) drain(pq *PriorityQueue) {
+	for {
+		c.queriesMu.RLock()
+		if len(c.queries) == 0 {
+			c.queriesMu.RUnlock()
+			return
+		}
+		c.queriesMu.RUnlock()
+
+		select {
+		// Wait for resources to free
+		case q := <-c.queryDone:
+			c.free(q)
+			c.queriesMu.Lock()
+			delete(c.queries, q.id)
+			c.queriesMu.Unlock()
 		}
 
 		// Peek at head of priority queue
