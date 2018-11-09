@@ -351,6 +351,14 @@ func TestEval(t *testing.T) {
 				values.NewBool(true),
 			},
 		},
+		{
+			name: "array index expression",
+			query: `
+				a = [1, 2, 3]
+				x = a[1]
+				x == 2 or fail()
+			`,
+		},
 	}
 
 	for _, tc := range testCases {

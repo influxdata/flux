@@ -162,6 +162,16 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, fun
 			object:   object,
 			property: n.Property,
 		}, nil
+	case *semantic.IndexExpression:
+		array, err := compile(n.Array, typeSol, builtIns, funcExprs)
+		if err != nil {
+			return nil, err
+		}
+		return &arrayIndexEvaluator{
+			t:     monoType(typeSol.TypeOf(n)),
+			array: array,
+			index: n.Index,
+		}, nil
 	case *semantic.BooleanLiteral:
 		return &booleanEvaluator{
 			t: monoType(typeSol.TypeOf(n)),
