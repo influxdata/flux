@@ -312,3 +312,37 @@ func TestController_Shutdown(t *testing.T) {
 		t.Fatalf("unexpected query count -want/+got\n\t- %d\n\t+ %d", want, got)
 	}
 }
+
+func TestController_Statistics(t *testing.T) {
+	ctrl := New(Config{})
+	ctrl.executor = mock.NewExecutor()
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer func() {
+		if err := ctrl.Shutdown(ctx); err != nil {
+			t.Fatal(err)
+		}
+		cancel()
+	}()
+
+	// Run the query. It should return an error.
+	q, err := ctrl.Query(context.Background(), mockCompiler)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	<-q.Ready()
+	time.Sleep(time.Millisecond)
+	q.Done()
+
+	statser, ok := q.(flux.Statisticser)
+	if !ok {
+		t.Fatal("query does not implement flux.Statisticser")
+	}
+
+	// Ensure this works without
+	stats := statser.Statistics()
+	if stats.TotalDuration == 0 {
+		t.Fatal("total duration should be greater than zero")
+	}
+}
