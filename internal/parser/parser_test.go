@@ -29,16 +29,6 @@ type Scanner struct {
 }
 
 func (s *Scanner) Scan() (token.Pos, token.Token, string) {
-	if s.i >= len(s.Tokens) {
-		return 0, token.EOF, ""
-	}
-	tok := s.Tokens[s.i]
-	s.i++
-	s.buffered = false
-	return tok.Pos, tok.Token, tok.Lit
-}
-
-func (s *Scanner) ScanNoRegex() (token.Pos, token.Token, string) {
 	pos, tok, lit := s.Scan()
 	if tok == token.REGEX {
 		// The parser was asking for a non regex token and our static
@@ -48,6 +38,16 @@ func (s *Scanner) ScanNoRegex() (token.Pos, token.Token, string) {
 		return 0, token.ILLEGAL, ""
 	}
 	return pos, tok, lit
+}
+
+func (s *Scanner) ScanWithRegex() (token.Pos, token.Token, string) {
+	if s.i >= len(s.Tokens) {
+		return 0, token.EOF, ""
+	}
+	tok := s.Tokens[s.i]
+	s.i++
+	s.buffered = false
+	return tok.Pos, tok.Token, tok.Lit
 }
 
 func (s *Scanner) Unread() {
