@@ -11,7 +11,7 @@
 #    * All recursive Makefiles must support the targets: all and clean.
 #
 
-SUBDIRS = ast parser
+SUBDIRS = ast parser internal/scanner
 
 GO_ARGS=-tags '$(GO_TAGS)'
 

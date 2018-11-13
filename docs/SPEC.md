@@ -332,7 +332,8 @@ Regular expression literals support only the following escape sequences:
     \\   U+005c backslash
 
 
-    regexp_lit         = "/" { unicode_char | byte_value | regexp_escape_char } "/" .
+    regexp_lit         = "/" regexp_char { regexp_char } "/" .
+    regexp_char        = unicode_char | byte_value | regexp_escape_char .
     regexp_escape_char = `\` (`/` | `\`)
 
 Examples:
@@ -342,6 +343,7 @@ Examples:
     /^\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e(ZZ)?$/
     /^日本語(ZZ)?$/ // the above two lines are equivalent
     /\\xZZ/ // this becomes the literal pattern "\xZZ"
+    /(?:)/ // the empty regular expression
 
 The regular expression syntax is defined by [RE2](https://github.com/google/re2/wiki/Syntax).
 
