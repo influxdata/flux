@@ -525,7 +525,6 @@ func (q *Query) Statistics() flux.Statistics {
 	defer q.mu.Unlock()
 
 	stats := q.stats
-	stats.TotalDuration = q.parentSpan.Duration
 	stats.Concurrency = q.concurrency
 	if q.alloc != nil {
 		stats.MaxAllocated = q.alloc.MaxAllocated()
@@ -580,6 +579,7 @@ TRANSITION:
 	case Errored, Canceled, Finished:
 		if q.parentSpan != nil {
 			q.parentSpan.Finish()
+			q.stats.TotalDuration = q.parentSpan.Duration
 			q.parentSpan = nil
 
 			// Close the ready channel on the first time we move to one of these states.
