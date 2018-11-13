@@ -1706,9 +1706,9 @@ from(bucket:"telegraf/autogen")
 
 #### Histogram
 
-Histogram approximates the cumulative distribution function of a dataset by counting data frequencies for a list of buckets.
-A bucket is defined by an upper bound where all data points that are less than or equal to the bound are counted in the bucket.
-The bucket counts are cumulative.
+Histogram approximates the cumulative distribution function of a dataset by counting data frequencies for a list of bins.
+A bin is defined by an upper bound where all data points that are less than or equal to the bound are counted in the bin.
+The bin counts are cumulative.
 
 Each input table is converted into a single output table representing a single histogram.
 The output table will have a the same group key as the input table.
@@ -1726,9 +1726,9 @@ Histogram has the following properties:
 * `countColumn` string
     CountColumn is the name of the column in which to store the histogram counts.
     Defaults to `_value`.
-* `buckets` array of floats
-    Buckets is a list of upper bounds to use when computing the histogram frequencies.
-    Buckets should contain a bucket whose bound is the maximum value of the data set, this value can be set to positive infinity if no maximum is known.
+* `bins` array of floats
+    Bins is a list of upper bounds to use when computing the histogram frequencies.
+    Each element in the array should contain a float value that represents the maximum value for a bin.
 * `normalize` bool
     Normalize when true will convert the counts into frequencies values between 0 and 1.
     Normalized histograms cannot be aggregated by summing their counts.
@@ -1737,7 +1737,7 @@ Histogram has the following properties:
 
 Example:
 
-    histogram(buckets:linearBuckets(start:0.0,width:10.0,count:10))  // compute the histogram of the data using 10 buckets from 0,10,20,...,100
+    histogram(bins:linearBins(start:0.0,width:10.0,count:10))  // compute the histogram of the data using 10 bins from 0,10,20,...,100
 
 #### HistogramQuantile
 
@@ -1782,36 +1782,36 @@ Example:
 
     histogramQuantile(quantile:0.9)  // compute the 90th quantile using histogram data.
 
-#### LinearBuckets
+#### LinearBins
 
-LinearBuckets produces a list of linearly separated floats.
+LinearBins produces a list of linearly separated floats.
 
-LinearBuckets has the following properties:
+LinearBins has the following properties:
 
 * `start` float
     Start is the first value in the returned list.
 * `width` float
-    Width is the distance between subsequent bucket values.
+    Width is the distance between subsequent bin values.
 * `count` int
-    Count is the number of buckets to create.
+    Count is the number of bins to create.
 * `inifinity` bool
-    Infinity when true adds an additional bucket with a value of positive infinity.
+    Infinity when true adds an additional bin with a value of positive infinity.
     Defaults to `true`.
 
-#### LogrithmicBuckets
+#### LogarithmicBins
 
-LogrithmicBuckets produces a list of exponentially separated floats.
+LogarithmicBins produces a list of exponentially separated floats.
 
-LogrithmicBuckets has the following properties:
+LogarithmicBins has the following properties:
 
 * `start` float
-    Start is the first value in the returned bucket list.
+    Start is the first value in the returned bin list.
 * `factor` float
-    Factor is the multiplier applied to each subsequent bucket.
+    Factor is the multiplier applied to each subsequent bin.
 * `count` int
-    Count is the number of buckets to create.
+    Count is the number of bins to create.
 * `inifinity` bool
-    Infinity when true adds an additional bucket with a value of positive infinity.
+    Infinity when true adds an additional bin with a value of positive infinity.
     Defaults to `true`.
 
 #### Limit
