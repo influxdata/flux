@@ -10,7 +10,7 @@ require (
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/gonum/blas v0.0.0-20180125090452-e7c5890b24cf // indirect
 	github.com/gonum/diff v0.0.0-20180125090814-f0137a19aa16 // indirect
-	github.com/gonum/floats v0.0.0-20180125090339-7de1f4ea7ab5 // indirect
+	github.com/gonum/floats v0.0.0-20180125090339-7de1f4ea7ab5
 	github.com/gonum/integrate v0.0.0-20180125090255-09c2f478329f // indirect
 	github.com/gonum/internal v0.0.0-20180125090855-fda53f8d2571 // indirect
 	github.com/gonum/lapack v0.0.0-20180125091020-f0b8b25edece // indirect
