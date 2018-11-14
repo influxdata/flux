@@ -351,6 +351,44 @@ func TestEval(t *testing.T) {
 				values.NewBool(true),
 			},
 		},
+		{
+			name: "array index expression",
+			query: `
+				a = [1, 2, 3]
+				x = a[1]
+				x == 2 or fail()
+			`,
+		},
+		{
+			name: "array with complex index expression",
+			query: `
+				f = () => ({l: 0, m: 1, n: 2})
+				a = [1, 2, 3]
+				x = a[f().l]
+				y = a[f().m]
+				z = a[f().n]
+				x == 1 or fail()
+				y == 2 or fail()
+				z == 3 or fail()
+			`,
+		},
+		{
+			name: "invalid array index expression 1",
+			query: `
+				a = [1, 2, 3]
+				a["b"]
+			`,
+			wantErr: true,
+		},
+		{
+			name: "invalid array index expression 2",
+			query: `
+				a = [1, 2, 3]
+				f = () => "1"
+				a[f()]
+			`,
+			wantErr: true,
+		},
 	}
 
 	for _, tc := range testCases {

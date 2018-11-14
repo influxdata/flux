@@ -535,6 +535,89 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
+			name: "index expression",
+			raw:  `a[3]`,
+			want: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.IndexExpression{
+							Array: &ast.Identifier{Name: "a"},
+							Index: &ast.IntegerLiteral{Value: 3},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "nested index expression",
+			raw:  `a[3][5]`,
+			want: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.IndexExpression{
+							Array: &ast.IndexExpression{
+								Array: &ast.Identifier{Name: "a"},
+								Index: &ast.IntegerLiteral{Value: 3},
+							},
+							Index: &ast.IntegerLiteral{Value: 5},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "access indexed object returned from function call",
+			raw:  `f()[3]`,
+			want: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.IndexExpression{
+							Array: &ast.CallExpression{
+								Callee: &ast.Identifier{Name: "f"},
+							},
+							Index: &ast.IntegerLiteral{Value: 3},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "index with member expressions",
+			raw:  `a.b["c"]`,
+			want: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.MemberExpression{
+							Object: &ast.MemberExpression{
+								Object:   &ast.Identifier{Name: "a"},
+								Property: &ast.Identifier{Name: "b"},
+							},
+							Property: &ast.StringLiteral{Value: "c"},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "index with member with call expression",
+			raw:  `a.b()["c"]`,
+			want: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.MemberExpression{
+							Object: &ast.CallExpression{
+								Callee: &ast.MemberExpression{
+									Object:   &ast.Identifier{Name: "a"},
+									Property: &ast.Identifier{Name: "b"},
+								},
+							},
+							Property: &ast.StringLiteral{Value: "c"},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "var as binary expression of other vars",
 			raw: `a = 1
             b = 2
@@ -1816,6 +1899,11 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 		{
 			name:    "parser error from duration literal with invalid unit",
 			raw:     `from(bucket:"my_bucket") |> range(start: -1s5v)`,
+			wantErr: true,
+		},
+		{
+			name:    "member expression with integer property",
+			raw:     `obj.5`,
 			wantErr: true,
 		},
 	}

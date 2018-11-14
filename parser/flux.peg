@@ -74,11 +74,14 @@ MemberExpressions
     }
 
 MemberExpressionProperty
-  = "." __ property:Identifier {
-      return property, nil
+  = "." property:Identifier {
+      return memberExprFromIdentifier(property)
     }
-    / "[" __ property:Primary __ "]" __ {
-      return property, nil
+    / "[" __ property:StringLiteral __ "]" {
+      return memberExprFromStringLiteral(property)
+    }
+    / "[" __ property:Primary __ "]" {
+      return indexExpr(property)
     }
 
 CallExpression
@@ -92,7 +95,7 @@ CallExpression
           return callexpr(nil, args, c.text, c.pos)
         }
       /  __ property:MemberExpressionProperty {
-          return memberexpr(nil, property, c.text, c.pos)
+          return property, nil
         }
     )*
     {

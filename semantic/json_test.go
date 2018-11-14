@@ -113,6 +113,14 @@ func TestJSONMarshal(t *testing.T) {
 			want: `{"type":"MemberExpression","object":{"type":"IdentifierExpression","name":"a"},"property":"hello"}`,
 		},
 		{
+			name: "index expression",
+			node: &semantic.IndexExpression{
+				Array: &semantic.IdentifierExpression{Name: "a"},
+				Index: &semantic.IntegerLiteral{Value: 3},
+			},
+			want: `{"type":"IndexExpression","array":{"type":"IdentifierExpression","name":"a"},"index":{"type":"IntegerLiteral","value":"3"}}`,
+		},
+		{
 			name: "function expression",
 			node: &semantic.FunctionExpression{
 				Defaults: &semantic.ObjectExpression{

@@ -201,9 +201,7 @@ func (a array) occurs(tv Tvar) bool {
 	return a.typ.occurs(tv)
 }
 func (a array) substituteType(tv Tvar, t PolyType) PolyType {
-	return array{
-		typ: a.typ.substituteType(tv, t),
-	}
+	return array{typ: a.typ.substituteType(tv, t)}
 }
 func (a array) freeVars(c *Constraints) TvarSet {
 	return a.typ.freeVars(c)
@@ -237,17 +235,59 @@ func (a array) resolvePolyType(kinds map[Tvar]Kind) (PolyType, error) {
 	if err != nil {
 		return nil, err
 	}
-	return array{
-		typ: t,
-	}, nil
+	return array{typ: t}, nil
 }
 func (a array) Equal(t PolyType) bool {
-	switch t := t.(type) {
-	case array:
-		return a.typ.Equal(t.typ)
-	default:
-		return false
+	if arr, ok := t.(array); ok {
+		return a.typ.Equal(arr.typ)
 	}
+	return false
+}
+
+type ArrayKind struct {
+	elementType PolyType
+}
+
+func (k ArrayKind) String() string {
+	return fmt.Sprintf("ArrayKind: [%v]", k.elementType)
+}
+func (k ArrayKind) substituteKind(tv Tvar, t PolyType) Kind {
+	return ArrayKind{elementType: k.elementType.substituteType(tv, t)}
+}
+func (k ArrayKind) freeVars(c *Constraints) TvarSet {
+	return k.elementType.freeVars(c)
+}
+func (k ArrayKind) unifyKind(kinds map[Tvar]Kind, r Kind) (Kind, Substitution, error) {
+	if r, ok := r.(ArrayKind); ok {
+		sub, err := unifyTypes(kinds, k.elementType, r.elementType)
+		if err != nil {
+			return nil, nil, err
+		}
+		return k, sub, nil
+	}
+	return nil, nil, fmt.Errorf("cannot unify array with %T", k)
+}
+
+func (k ArrayKind) resolveType(kinds map[Tvar]Kind) (Type, error) {
+	typ, err := k.elementType.resolveType(kinds)
+	if err != nil {
+		return nil, err
+	}
+	return NewArrayType(typ), nil
+}
+func (k ArrayKind) MonoType() (Type, bool) {
+	m, ok := k.elementType.MonoType()
+	if !ok {
+		return nil, false
+	}
+	return NewArrayType(m), true
+}
+func (k ArrayKind) resolvePolyType(kinds map[Tvar]Kind) (PolyType, error) {
+	typ, err := k.elementType.resolvePolyType(kinds)
+	if err != nil {
+		return nil, err
+	}
+	return NewArrayPolyType(typ), nil
 }
 
 // pipeLabel is a hidden label on which all pipe arguments are passed according to type inference.
@@ -508,7 +548,7 @@ func (f function) Equal(t PolyType) bool {
 }
 
 type object struct {
-	krecord KRecord
+	krecord ObjectKind
 }
 
 func NewEmptyObjectPolyType() PolyType {
@@ -516,7 +556,7 @@ func NewEmptyObjectPolyType() PolyType {
 }
 func NewObjectPolyType(properties map[string]PolyType, lower, upper LabelSet) PolyType {
 	return object{
-		krecord: KRecord{
+		krecord: ObjectKind{
 			properties: properties,
 			lower:      lower,
 			upper:      upper,
@@ -547,7 +587,7 @@ func (o object) substituteType(tv Tvar, typ PolyType) PolyType {
 		properties[k] = t.substituteType(tv, typ)
 	}
 	return object{
-		krecord: KRecord{
+		krecord: ObjectKind{
 			properties: properties,
 			lower:      o.krecord.lower.copy(),
 			upper:      o.krecord.upper.copy(),
@@ -630,28 +670,28 @@ func (k KClass) resolvePolyType(map[Tvar]Kind) (PolyType, error) {
 	return nil, errors.New("KClass has no poly type")
 }
 
-type KRecord struct {
+type ObjectKind struct {
 	properties map[string]PolyType
 	lower      LabelSet
 	upper      LabelSet
 }
 
-func (k KRecord) String() string {
+func (k ObjectKind) String() string {
 	return fmt.Sprintf("{%v %v %v}", k.properties, k.lower, k.upper)
 }
 
-func (k KRecord) substituteKind(tv Tvar, t PolyType) Kind {
+func (k ObjectKind) substituteKind(tv Tvar, t PolyType) Kind {
 	properties := make(map[string]PolyType)
 	for k, f := range k.properties {
 		properties[k] = f.substituteType(tv, t)
 	}
-	return KRecord{
+	return ObjectKind{
 		properties: properties,
 		upper:      k.upper.copy(),
 		lower:      k.lower.copy(),
 	}
 }
-func (k KRecord) freeVars(c *Constraints) TvarSet {
+func (k ObjectKind) freeVars(c *Constraints) TvarSet {
 	var fvs TvarSet
 	for _, f := range k.properties {
 		fvs = fvs.union(f.freeVars(c))
@@ -659,8 +699,8 @@ func (k KRecord) freeVars(c *Constraints) TvarSet {
 	return fvs
 }
 
-func (l KRecord) unifyKind(kinds map[Tvar]Kind, k Kind) (kind Kind, _ Substitution, _ error) {
-	r, ok := k.(KRecord)
+func (l ObjectKind) unifyKind(kinds map[Tvar]Kind, k Kind) (Kind, Substitution, error) {
+	r, ok := k.(ObjectKind)
 	if !ok {
 		return nil, nil, fmt.Errorf("cannot unify record with %T", k)
 	}
@@ -697,7 +737,7 @@ func (l KRecord) unifyKind(kinds map[Tvar]Kind, k Kind) (kind Kind, _ Substituti
 		return nil, nil, fmt.Errorf("unknown record accces l: %v, u: %v", lower, upper)
 	}
 
-	kr := KRecord{
+	kr := ObjectKind{
 		properties: properties,
 		lower:      lower,
 		upper:      upper,
@@ -713,7 +753,7 @@ func (l KRecord) unifyKind(kinds map[Tvar]Kind, k Kind) (kind Kind, _ Substituti
 	return kr, subst, nil
 }
 
-func (k KRecord) resolveType(kinds map[Tvar]Kind) (Type, error) {
+func (k ObjectKind) resolveType(kinds map[Tvar]Kind) (Type, error) {
 	properties := make(map[string]Type, len(k.properties))
 	for l, ft := range k.properties {
 		if _, ok := ft.(invalid); !ok {
@@ -726,7 +766,7 @@ func (k KRecord) resolveType(kinds map[Tvar]Kind) (Type, error) {
 	}
 	return NewObjectType(properties), nil
 }
-func (k KRecord) MonoType() (Type, bool) {
+func (k ObjectKind) MonoType() (Type, bool) {
 	properties := make(map[string]Type, len(k.properties))
 	for l, ft := range k.properties {
 		if _, ok := ft.(invalid); !ok {
@@ -739,7 +779,7 @@ func (k KRecord) MonoType() (Type, bool) {
 	}
 	return NewObjectType(properties), false
 }
-func (k KRecord) resolvePolyType(kinds map[Tvar]Kind) (PolyType, error) {
+func (k ObjectKind) resolvePolyType(kinds map[Tvar]Kind) (PolyType, error) {
 	properties := make(map[string]PolyType, len(k.upper))
 	for l, ft := range k.properties {
 		if _, ok := ft.(invalid); !ok {

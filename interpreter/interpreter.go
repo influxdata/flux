@@ -236,6 +236,16 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (v
 			return nil, fmt.Errorf("object has no property %q", e.Property)
 		}
 		return v, nil
+	case *semantic.IndexExpression:
+		arr, err := itrp.doExpression(e.Array, scope)
+		if err != nil {
+			return nil, err
+		}
+		idx, err := itrp.doExpression(e.Index, scope)
+		if err != nil {
+			return nil, err
+		}
+		return arr.Array().Get(int(idx.Int())), nil
 	case *semantic.ObjectExpression:
 		return itrp.doObject(e, scope)
 	case *semantic.UnaryExpression:

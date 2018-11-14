@@ -288,7 +288,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			properties[field.Key.Name] = t
 			upper = append(upper, field.Key.Name)
 		}
-		v.cs.AddKindConst(nodeVar, KRecord{
+		v.cs.AddKindConst(nodeVar, ObjectKind{
 			properties: properties,
 			lower:      nil,
 			upper:      upper,
@@ -306,29 +306,42 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		if !ok {
 			return nil, errors.New("member object must be a type variable")
 		}
-		v.cs.AddKindConst(tv, KRecord{
+		v.cs.AddKindConst(tv, ObjectKind{
 			properties: map[string]PolyType{n.Property: ptv},
 			lower:      LabelSet{n.Property},
 			upper:      AllLabels(),
 		})
 		return ptv, nil
+	case *IndexExpression:
+		ptv := v.cs.f.Fresh()
+		t, err := v.lookup(n.Array)
+		if err != nil {
+			return nil, err
+		}
+		tv, ok := t.(Tvar)
+		if !ok {
+			return nil, errors.New("array must be a type variable")
+		}
+		idx, err := v.lookup(n.Index)
+		if err != nil {
+			return nil, err
+		}
+		v.cs.AddKindConst(tv, ArrayKind{ptv})
+		v.cs.AddTypeConst(idx, Int, n.Index.Location())
+		return ptv, nil
 	case *ArrayExpression:
-		at := array{typ: NewObjectPolyType(nil, nil, AllLabels())}
-		if len(n.Elements) > 0 {
-			et, err := v.lookup(n.Elements[0])
+		elt := v.cs.f.Fresh()
+		at := array{elt}
+		for _, el := range n.Elements {
+			t, err := v.lookup(el)
 			if err != nil {
 				return nil, err
 			}
-			at.typ = et
-			for _, el := range n.Elements[1:] {
-				elt, err := v.lookup(n.Elements[0])
-				if err != nil {
-					return nil, err
-				}
-				v.cs.AddTypeConst(et, elt, el.Location())
-			}
+			v.cs.AddTypeConst(t, elt, el.Location())
 		}
-		return at, nil
+		v.cs.AddKindConst(nodeVar, ArrayKind{at.typ})
+		v.cs.AddTypeConst(nodeVar, at, n.Location())
+		return nodeVar, nil
 	case *StringLiteral:
 		return String, nil
 	case *IntegerLiteral:

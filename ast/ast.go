@@ -70,6 +70,7 @@ func (*CallExpression) node()          {}
 func (*ConditionalExpression) node()   {}
 func (*LogicalExpression) node()       {}
 func (*MemberExpression) node()        {}
+func (*IndexExpression) node()         {}
 func (*PipeExpression) node()          {}
 func (*ObjectExpression) node()        {}
 func (*UnaryExpression) node()         {}
@@ -285,6 +286,7 @@ func (*Identifier) expression()              {}
 func (*IntegerLiteral) expression()          {}
 func (*LogicalExpression) expression()       {}
 func (*MemberExpression) expression()        {}
+func (*IndexExpression) expression()         {}
 func (*ObjectExpression) expression()        {}
 func (*PipeExpression) expression()          {}
 func (*PipeLiteral) expression()             {}
@@ -364,6 +366,26 @@ func (e *MemberExpression) Copy() Node {
 	ne.Object = e.Object.Copy().(Expression)
 	ne.Property = e.Property.Copy().(Expression)
 
+	return ne
+}
+
+// IndexExpression represents indexing into an array
+type IndexExpression struct {
+	BaseNode
+	Array Expression `json:"array"`
+	Index Expression `json:"index"`
+}
+
+func (*IndexExpression) Type() string { return "IndexExpression" }
+
+func (e *IndexExpression) Copy() Node {
+	if e == nil {
+		return e
+	}
+	ne := new(IndexExpression)
+	*ne = *e
+	ne.Array = e.Array.Copy().(Expression)
+	ne.Index = e.Index.Copy().(Expression)
 	return ne
 }
 
