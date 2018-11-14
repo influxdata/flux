@@ -10,7 +10,26 @@ import (
 	"github.com/influxdata/flux/parser"
 )
 
-func TestParse(t *testing.T) {
+func TestParser(t *testing.T) {
+	testParser(func(name string, fn func(t testing.TB)) {
+		t.Run(name, func(t *testing.T) {
+			fn(t)
+		})
+	})
+}
+
+func BenchmarkParser(b *testing.B) {
+	testParser(func(name string, fn func(t testing.TB)) {
+		b.Run(name, func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				fn(b)
+			}
+		})
+	})
+}
+
+func testParser(runFn func(name string, fn func(t testing.TB))) {
 	tests := []struct {
 		name    string
 		raw     string
@@ -1908,21 +1927,19 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+		runFn(tt.name, func(tb testing.TB) {
 			// Set the env var`GO_TAGS=parser_debug` in order
 			// to turn on parser debugging as it is turned off by default.
 			got, err := parser.NewAST(tt.raw)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("parser.NewAST() error = %v, wantErr %v", err, tt.wantErr)
+				tb.Errorf("parser.NewAST() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if tt.wantErr {
 				return
 			}
 			if !cmp.Equal(tt.want, got, asttest.CompareOptions...) {
-				t.Errorf("parser.NewAST() = -want/+got %s", cmp.Diff(tt.want, got, asttest.CompareOptions...))
+				tb.Errorf("parser.NewAST() = -want/+got %s", cmp.Diff(tt.want, got, asttest.CompareOptions...))
 			}
 		})
 	}
@@ -1951,7 +1968,7 @@ join(
 
 var benchmarkProgram interface{}
 
-func BenchmarkParse(b *testing.B) {
+func BenchmarkParseQuery(b *testing.B) {
 	b.ReportAllocs()
 	var err error
 	for n := 0; n < b.N; n++ {
