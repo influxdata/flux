@@ -1,16 +1,11 @@
 package transformations_test
 
 import (
-	"bytes"
-	"context"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
-	"github.com/andreyvit/diff"
-	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/lang"
@@ -106,22 +101,5 @@ func testFlux(t testing.TB, querier *querytest.Querier, prefix, queryExt string)
 	}
 	d := csv.DefaultDialect()
 
-	QueryTestCheckSpec(t, querier, c, d, string(csvOut))
-}
-
-func QueryTestCheckSpec(t testing.TB, querier *querytest.Querier, c flux.Compiler, d flux.Dialect, want string) {
-	t.Helper()
-
-	var buf bytes.Buffer
-	_, err := querier.Query(context.Background(), &buf, c, d)
-	if err != nil {
-		t.Errorf("failed to run query: %v", err)
-		return
-	}
-
-	got := buf.String()
-
-	if g, w := strings.TrimSpace(got), strings.TrimSpace(want); g != w {
-		t.Errorf("result not as expected want(-) got (+):\n%v", diff.LineDiff(w, g))
-	}
+	querytest.RunAndCheckResult(t, querier, c, d, string(csvOut))
 }
