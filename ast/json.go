@@ -7,6 +7,17 @@ import (
 	"strconv"
 )
 
+func (e *Error) MarshalJSON() ([]byte, error) {
+	type Alias Error
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  e.Type(),
+		Alias: (*Alias)(e),
+	}
+	return json.Marshal(raw)
+}
 func (p *Program) MarshalJSON() ([]byte, error) {
 	type Alias Program
 	raw := struct {

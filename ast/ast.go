@@ -55,6 +55,7 @@ type Node interface {
 }
 
 func (*Program) node() {}
+func (*Error) node()   {}
 
 func (*BlockStatement) node()      {}
 func (*ExpressionStatement) node() {}
@@ -100,6 +101,25 @@ func (b BaseNode) Location() SourceLocation {
 	return *b.Loc
 }
 
+// Error represents an error within the AST. It is created
+// by the parser when the parser gets an invalid sequence.
+type Error struct {
+	BaseNode
+	Message string `json:"message"`
+}
+
+// Type is the abstract type.
+func (*Error) Type() string { return "Error" }
+
+func (e *Error) Copy() Node {
+	ne := *e
+	return &ne
+}
+
+func (e *Error) Error() string {
+	return e.Message
+}
+
 // Program represents a complete program source tree
 type Program struct {
 	BaseNode
@@ -127,6 +147,7 @@ type Statement interface {
 	stmt()
 }
 
+func (*Error) stmt()               {}
 func (*BlockStatement) stmt()      {}
 func (*ExpressionStatement) stmt() {}
 func (*ReturnStatement) stmt()     {}
@@ -272,6 +293,7 @@ type Expression interface {
 	expression()
 }
 
+func (*Error) expression()                   {}
 func (*ArrayExpression) expression()         {}
 func (*ArrowFunctionExpression) expression() {}
 func (*BinaryExpression) expression()        {}
@@ -685,6 +707,7 @@ type Literal interface {
 	literal() //lint:ignore U1000 Yes, this function is unused, but it's here to limit the implementers of the Literal interface.
 }
 
+func (*Error) literal()                  {}
 func (*BooleanLiteral) literal()         {}
 func (*DateTimeLiteral) literal()        {}
 func (*DurationLiteral) literal()        {}

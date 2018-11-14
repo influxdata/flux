@@ -1844,6 +1844,20 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 			},
 			skip: true,
 		},
+		{
+			name: "invalid token",
+			raw:  `@ ident`,
+			want: &ast.Program{
+				Body: []ast.Statement{
+					&ast.Error{
+						Message: "illegal token: @",
+					},
+					&ast.ExpressionStatement{
+						Expression: &ast.Identifier{Name: "ident"},
+					},
+				},
+			},
+		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			fatalf := t.Fatalf
@@ -1852,11 +1866,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 			}
 
 			s := scanner.New([]byte(tt.raw))
-			result, err := parser.NewAST(s)
-			if err != nil {
-				fatalf("unexpected error: %s", err)
-			}
-
+			result := parser.NewAST(s)
 			if got, want := result, tt.want; !cmp.Equal(want, got, CompareOptions...) {
 				fatalf("unexpected statement -want/+got\n%s", cmp.Diff(want, got, CompareOptions...))
 			}
