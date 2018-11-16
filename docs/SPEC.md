@@ -343,6 +343,7 @@ Examples:
     /^\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e(ZZ)?$/
     /^日本語(ZZ)?$/ // the above two lines are equivalent
     /\\xZZ/ // this becomes the literal pattern "\xZZ"
+    /a\/b\\c\d/ // escape sequences and character class shortcuts are supported
     /(?:)/ // the empty regular expression
 
 The regular expression syntax is defined by [RE2](https://github.com/google/re2/wiki/Syntax).
