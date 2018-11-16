@@ -92,6 +92,8 @@ var regex = []TokenPattern{
 	{s: `/^\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e(ZZ)?$/`, tok: token.REGEX, lit: `/^\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e(ZZ)?$/`},
 	{s: `/^日本語(ZZ)?$/`, tok: token.REGEX, lit: `/^日本語(ZZ)?$/`},
 	{s: `/\\xZZ/`, tok: token.REGEX, lit: `/\\xZZ/`},
+	{s: `/a\/b\\c\d/`, tok: token.REGEX, lit: `/a\/b\\c\d/`},
+	{s: `/(?:)/`, tok: token.REGEX, lit: `/(?:)/`},
 }
 
 // noRegex contains the patterns to test when excluding regexes.
