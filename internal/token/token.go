@@ -51,7 +51,8 @@ const (
 	COMMA
 	DOT
 	COLON
-	PIPE
+	PIPE_FORWARD
+	PIPE_RECEIVE
 )
 
 type Pos int

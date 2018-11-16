@@ -71,7 +71,8 @@ var common = []TokenPattern{
 	{s: `=~`, tok: token.REGEXEQ, lit: `=~`},
 	{s: `!~`, tok: token.REGEXNEQ, lit: `!~`},
 	{s: `=`, tok: token.ASSIGN, lit: `=`},
-	{s: `<-`, tok: token.ARROW, lit: `<-`},
+	{s: `=>`, tok: token.ARROW, lit: `=>`},
+	{s: `<-`, tok: token.PIPE_RECEIVE, lit: `<-`},
 	{s: `(`, tok: token.LPAREN, lit: `(`},
 	{s: `)`, tok: token.RPAREN, lit: `)`},
 	{s: `[`, tok: token.LBRACK, lit: `[`},
@@ -81,7 +82,7 @@ var common = []TokenPattern{
 	{s: `,`, tok: token.COMMA, lit: `,`},
 	{s: `.`, tok: token.DOT, lit: `.`},
 	{s: `:`, tok: token.COLON, lit: `:`},
-	{s: `|>`, tok: token.PIPE, lit: `|>`},
+	{s: `|>`, tok: token.PIPE_FORWARD, lit: `|>`},
 }
 
 // regex contains the regex patterns for the normal scan method.
@@ -259,7 +260,7 @@ func TestScanner_MultipleTokens(t *testing.T) {
 				token.COLON,
 				token.STRING,
 				token.RPAREN,
-				token.PIPE,
+				token.PIPE_FORWARD,
 				token.IDENT,
 				token.LPAREN,
 				token.IDENT,
@@ -267,7 +268,7 @@ func TestScanner_MultipleTokens(t *testing.T) {
 				token.SUB,
 				token.DURATION,
 				token.RPAREN,
-				token.PIPE,
+				token.PIPE_FORWARD,
 				token.IDENT,
 				token.LPAREN,
 				token.RPAREN,
