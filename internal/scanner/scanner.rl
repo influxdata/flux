@@ -32,7 +32,8 @@ import "github.com/influxdata/flux/internal/token"
 	string_lit = '"' ( unicode_value | byte_value )* :> '"';
 
 	regex_escaped_char = "\\" ( "/" | "\\");
-	regex_lit = "/" ( any_count_line | byte_value | regex_escaped_char )+ "/";
+	regex_unicode_value = (any_count_line - ("\\" | "/")) | regex_escaped_char;
+	regex_lit = "/" ( regex_unicode_value | byte_value )+ "/";
 
 	# The newline is optional so that a comment at the end of a file is considered valid.
 	single_line_comment = "//" [^\n]* newline?;

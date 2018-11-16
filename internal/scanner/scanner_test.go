@@ -273,6 +273,31 @@ func TestScanner_MultipleTokens(t *testing.T) {
 				token.RPAREN,
 			},
 		},
+		{
+			name: "multiple regexes",
+			s:    `/.*/ /c$/`,
+			want: []token.Token{
+				token.REGEX,
+				token.REGEX,
+			},
+		},
+		{
+			name: "two comments",
+			s: `// first line
+// second line`,
+			want: []token.Token{
+				token.COMMENT,
+				token.COMMENT,
+			},
+		},
+		{
+			name: "two string literals",
+			s:    `"hello" "world"`,
+			want: []token.Token{
+				token.STRING,
+				token.STRING,
+			},
+		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			s := scanner.New([]byte(tt.s))
