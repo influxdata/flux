@@ -93,7 +93,8 @@ import "github.com/influxdata/flux/internal/token"
 		"=~" => { s.token = token.REGEXEQ; fbreak; };
 		"!~" => { s.token = token.REGEXNEQ; fbreak; };
 		"=" => { s.token = token.ASSIGN; fbreak; };
-		"<-" => { s.token = token.ARROW; fbreak; };
+		"=>" => { s.token = token.ARROW; fbreak; };
+		"<-" => { s.token = token.PIPE_RECEIVE; fbreak; };
 		"(" => { s.token = token.LPAREN; fbreak; };
 		")" => { s.token = token.RPAREN; fbreak; };
 		"[" => { s.token = token.LBRACK; fbreak; };
@@ -101,7 +102,7 @@ import "github.com/influxdata/flux/internal/token"
 		"{" => { s.token = token.LBRACE; fbreak; };
 		"}" => { s.token = token.RBRACE; fbreak; };
 		":" => { s.token = token.COLON; fbreak; };
-		"|>" => { s.token = token.PIPE; fbreak; };
+		"|>" => { s.token = token.PIPE_FORWARD; fbreak; };
 		"," => { s.token = token.COMMA; fbreak; };
 		"." => { s.token = token.DOT; fbreak; };
 
