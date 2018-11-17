@@ -505,7 +505,7 @@ func (MergeFromGroupRule) Rewrite(groupNode plan.PlanNode) (plan.PlanNode, bool,
 	groupSpec := groupNode.ProcedureSpec().(*transformations.GroupProcedureSpec)
 	fromSpec := fromNode.ProcedureSpec().(*FromProcedureSpec)
 
-	if !fromSpec.GroupingSet && !fromSpec.LimitSet {
+	if !fromSpec.GroupingSet && !fromSpec.LimitSet && groupSpec.GroupMode != functions.GroupModeExcept {
 		newFromSpec := fromSpec.Copy().(*FromProcedureSpec)
 		newFromSpec.GroupingSet = true
 		newFromSpec.GroupMode = groupSpec.GroupMode

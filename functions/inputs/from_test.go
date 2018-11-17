@@ -559,6 +559,35 @@ func TestFrom_PlannerTransformationRules(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "from group except",
+			// We should not push down group() with GroupModeExcept, storage does not yet support it.
+			rules: []plan.Rule{inputs.MergeFromGroupRule{}},
+			before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("group", &transformations.GroupProcedureSpec{
+						GroupMode: functions.GroupModeExcept,
+						GroupKeys: []string{"_time", "_value"},
+					}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+			after: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("group", &transformations.GroupProcedureSpec{
+						GroupMode: functions.GroupModeExcept,
+						GroupKeys: []string{"_time", "_value"},
+					}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
