@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/internal/parser"
 	"github.com/influxdata/flux/internal/scanner"
+	"github.com/influxdata/flux/internal/token"
 )
 
 var CompareOptions = []cmp.Option{
@@ -1851,7 +1852,9 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 				fatalf = t.Skipf
 			}
 
-			s := scanner.New([]byte(tt.raw))
+			fset := token.NewFileSet()
+			f := fset.AddFile("query.flux", -1, len(tt.raw))
+			s := scanner.New(f, []byte(tt.raw))
 			result, err := parser.NewAST(s)
 			if err != nil {
 				fatalf("unexpected error: %s", err)

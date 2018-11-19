@@ -7,7 +7,7 @@ import "github.com/influxdata/flux/internal/token"
 
 	include WChar "unicode.rl";
 
-	newline = '\n' @{ s.curline++ };
+	newline = '\n' @{ s.f.AddLine(s.f.Base() + fpc) };
 	any_count_line = any | newline;
 
 	identifier = ( ualpha | "_" ) ( ualnum | "_")*;
