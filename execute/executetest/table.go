@@ -85,6 +85,8 @@ func (t *Table) Do(f func(flux.ColReader) error) error {
 	return nil
 }
 
+func (t *Table) Statistics() flux.Statistics { return flux.Statistics{} }
+
 type ColReader struct {
 	key  flux.GroupKey
 	cols []flux.ColMeta

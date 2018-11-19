@@ -59,6 +59,8 @@ func (ri *resultIterator) Err() error {
 	return nil
 }
 
+func (ri *resultIterator) Statistics() flux.Statistics { return flux.Statistics{} }
+
 type result struct {
 	res *Result
 	a   *memory.Allocator
@@ -194,3 +196,5 @@ func (r *result) Do(f func(tbl flux.Table) error) error {
 	}
 	return nil
 }
+
+func (ri *result) Statistics() flux.Statistics { return flux.Statistics{} }
