@@ -801,9 +801,7 @@ func (e *ResultEncoder) Encode(w io.Writer, result flux.Result) (int64, error) {
 			}
 		}
 
-		fmt.Printf("dbg/tbl\n")
 		err := tbl.Do(func(cr flux.ColReader) error {
-			fmt.Printf("dbg/tbl.col %d\n", recordStartIdx)
 			record := row[recordStartIdx:]
 			l := cr.Len()
 			for i := 0; i < l; i++ {
