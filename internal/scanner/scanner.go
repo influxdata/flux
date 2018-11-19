@@ -13,9 +13,9 @@ import (
 
 // Scanner is used to tokenize a flux program.
 type Scanner struct {
+	f           *token.File
 	p, pe, eof  int
 	ts, te, act int
-	curline     int
 	token       token.Token
 	data        []byte
 	checkpoint  int
@@ -23,17 +23,17 @@ type Scanner struct {
 }
 
 // New will construct and initialize a new Scanner.
-func New(data []byte) *Scanner {
+func New(f *token.File, data []byte) *Scanner {
 	s := &Scanner{}
-	s.Init(data)
+	s.Init(f, data)
 	return s
 }
 
 // Init initializes the Scanner to scan the data in the byte array.
-func (s *Scanner) Init(data []byte) {
+func (s *Scanner) Init(f *token.File, data []byte) {
+	s.f = f
 	s.p, s.pe, s.eof = 0, len(data), len(data)
 	s.data = data
-	s.curline = 1
 	s.init()
 }
 
@@ -76,13 +76,13 @@ func (s *Scanner) scan(cs int) (pos token.Pos, tok token.Token, lit string) {
 			// This should be impossible as we would have produced an EOF token
 			// instead, but going to handle this anyway as in this impossible scenario
 			// we would enter an infinite loop if we continued scanning past the token.
-			return 0, token.EOF, ""
+			return s.f.Pos(s.ts), token.EOF, ""
 		}
 		// Advance the data pointer to after the character we just emitted.
 		s.p = s.ts + size
-		return 0, token.ILLEGAL, fmt.Sprintf("%c", ch)
+		return s.f.Pos(s.ts), token.ILLEGAL, fmt.Sprintf("%c", ch)
 	} else if s.token == token.ILLEGAL && s.p == s.eof {
-		return 0, token.EOF, ""
+		return s.f.Pos(s.ts), token.EOF, ""
 	}
-	return 0, s.token, string(s.data[s.ts:s.te])
+	return s.f.Pos(s.ts), s.token, string(s.data[s.ts:s.te])
 }

@@ -117,7 +117,9 @@ func patterns(patterns ...[]TokenPattern) []TokenPattern {
 func TestScanner_Scan(t *testing.T) {
 	for _, tt := range patterns(common, noRegex) {
 		t.Run(tt.s, func(t *testing.T) {
-			s := scanner.New([]byte(tt.s))
+			fset := token.NewFileSet()
+			f := fset.AddFile("query.flux", -1, len(tt.s))
+			s := scanner.New(f, []byte(tt.s))
 			_, tok, lit := s.Scan()
 			if want, got := tt.tok, tok; want != got {
 				t.Errorf("unexpected token -want/+got\n\t- %d\n\t+ %d", want, got)
@@ -137,7 +139,9 @@ func TestScanner_Scan(t *testing.T) {
 func TestScanner_ScanWithRegex(t *testing.T) {
 	for _, tt := range patterns(common, regex) {
 		t.Run(tt.s, func(t *testing.T) {
-			s := scanner.New([]byte(tt.s))
+			fset := token.NewFileSet()
+			f := fset.AddFile("query.flux", -1, len(tt.s))
+			s := scanner.New(f, []byte(tt.s))
 			_, tok, lit := s.ScanWithRegex()
 			if want, got := tt.tok, tok; want != got {
 				t.Errorf("unexpected token -want/+got\n\t- %d\n\t+ %d", want, got)
@@ -155,7 +159,9 @@ func TestScanner_ScanWithRegex(t *testing.T) {
 }
 
 func TestScanner_Unread(t *testing.T) {
-	s := scanner.New([]byte(`a /hello/`))
+	fset := token.NewFileSet()
+	f := fset.AddFile("query.flux", -1, 9)
+	s := scanner.New(f, []byte(`a /hello/`))
 	_, tok, _ := s.ScanWithRegex()
 	if want, got := token.IDENT, tok; want != got {
 		t.Fatalf("unexpected first token: %d", tok)
@@ -195,7 +201,9 @@ func TestScanner_Unread(t *testing.T) {
 func TestScanner_UnreadEOF(t *testing.T) {
 	// Trailing whitespace should cause unread to not reset to the last token
 	// as the token is considered "complete".
-	s := scanner.New([]byte(`a `))
+	fset := token.NewFileSet()
+	f := fset.AddFile("query.flux", -1, 2)
+	s := scanner.New(f, []byte(`a `))
 	_, tok, _ := s.ScanWithRegex()
 	if want, got := token.IDENT, tok; want != got {
 		t.Fatalf("unexpected first token: %d", tok)
@@ -303,7 +311,9 @@ func TestScanner_MultipleTokens(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			s := scanner.New([]byte(tt.s))
+			fset := token.NewFileSet()
+			f := fset.AddFile("query.flux", -1, len(tt.s))
+			s := scanner.New(f, []byte(tt.s))
 
 			var got []token.Token
 			for {
@@ -330,7 +340,10 @@ func TestScanner_IllegalToken(t *testing.T) {
 		{name: "Multibyte", ch: '£'},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			s := scanner.New([]byte(fmt.Sprintf(`%c x = 5`, tt.ch)))
+			src := []byte(fmt.Sprintf(`%c x = 5`, tt.ch))
+			fset := token.NewFileSet()
+			f := fset.AddFile("query.flux", -1, len(src))
+			s := scanner.New(f, src)
 			_, tok, lit := s.ScanWithRegex()
 			if want, got := token.ILLEGAL, tok; want != got {
 				t.Errorf("unexpected token -want/+got\n\t- %d\n\t+ %d", want, got)
@@ -367,6 +380,98 @@ func TestScanner_IllegalToken(t *testing.T) {
 			// Expect an EOF token.
 			if _, tok, _ := s.ScanWithRegex(); tok != token.EOF {
 				t.Errorf("expected eof token, got %d", tok)
+			}
+		})
+	}
+}
+
+type Position struct {
+	Token  token.Token
+	Line   int
+	Column int
+}
+
+func TestScanner_Position(t *testing.T) {
+	for _, tt := range []struct {
+		name string
+		s    string
+		want []Position
+	}{
+		{
+			name: "two idents",
+			s: `a
+b`,
+			want: []Position{
+				{Token: token.IDENT, Line: 1, Column: 1},
+				{Token: token.IDENT, Line: 2, Column: 1},
+			},
+		},
+		{
+			name: "comment",
+			s: `hello
+// world
+"how are you?"`,
+			want: []Position{
+				{Token: token.IDENT, Line: 1, Column: 1},
+				{Token: token.COMMENT, Line: 2, Column: 1},
+				{Token: token.STRING, Line: 3, Column: 1},
+			},
+		},
+		{
+			name: "multiline string",
+			s: `"hello
+world"
+line3`,
+			want: []Position{
+				{Token: token.STRING, Line: 1, Column: 1},
+				{Token: token.IDENT, Line: 3, Column: 1},
+			},
+		},
+		{
+			name: "simple program",
+			s: `from(bucket: "telegraf") |>
+    range(start: -5m)
+`,
+			want: []Position{
+				{Token: token.IDENT, Line: 1, Column: 1},
+				{Token: token.LPAREN, Line: 1, Column: 5},
+				{Token: token.IDENT, Line: 1, Column: 6},
+				{Token: token.COLON, Line: 1, Column: 12},
+				{Token: token.STRING, Line: 1, Column: 14},
+				{Token: token.RPAREN, Line: 1, Column: 24},
+				{Token: token.PIPE_FORWARD, Line: 1, Column: 26},
+				{Token: token.IDENT, Line: 2, Column: 5},
+				{Token: token.LPAREN, Line: 2, Column: 10},
+				{Token: token.IDENT, Line: 2, Column: 11},
+				{Token: token.COLON, Line: 2, Column: 16},
+				{Token: token.SUB, Line: 2, Column: 18},
+				{Token: token.DURATION, Line: 2, Column: 19},
+				{Token: token.RPAREN, Line: 2, Column: 21},
+			},
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			fset := token.NewFileSet()
+			f := fset.AddFile("query.flux", -1, len(tt.s))
+			s := scanner.New(f, []byte(tt.s))
+
+			var got []Position
+			for {
+				pos, tok, _ := s.Scan()
+				if tok == token.EOF {
+					break
+				}
+
+				p := f.Position(pos)
+				got = append(got, Position{
+					Token:  tok,
+					Line:   p.Line,
+					Column: p.Column,
+				})
+			}
+
+			if !cmp.Equal(tt.want, got) {
+				t.Fatalf("unexpected token stream -want/+got:\n%s", cmp.Diff(tt.want, got))
 			}
 		})
 	}
