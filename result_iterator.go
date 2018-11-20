@@ -6,7 +6,10 @@ import (
 
 // ResultIterator allows iterating through all results synchronously.
 // A ResultIterator is not thread-safe and all of the methods are expected to be
-// called within the same goroutine. A ResultIterator may implement Statisticser.
+// called within the same goroutine with the exception of the Release method.
+// Release is the only method that is thread-safe and may be called from a
+// goroutine different than that of the other methods. A ResultIterator may
+// implement Statisticser.
 type ResultIterator interface {
 	// More indicates if there are more results.
 	More() bool
@@ -17,7 +20,7 @@ type ResultIterator interface {
 
 	// Release discards the remaining results and frees the currently used resources.
 	// It must always be called to free resources. It can be called even if there are
-	// more results. It is safe to call Release multiple times.
+	// more results. It is safe to call Release multiple times. Release is thread-safe.
 	Release()
 
 	// Err reports the first error encountered.
