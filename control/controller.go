@@ -492,8 +492,11 @@ func (q *Query) Cancel() {
 }
 
 // Ready returns a channel that will deliver the query results.
-// Its possible that the channel is closed before any results arrive, in which case the query should be
-// inspected for an error using Err().
+// It's possible that the channel is closed before any results arrive.
+// In particular, if a query's context is cancelled during execution,
+// the channel will be closed immediately and an error will be exposed
+// via Err(). For this reason, a query should always be inspected for
+// an error using Err().
 func (q *Query) Ready() <-chan map[string]flux.Result {
 	return q.ready
 }
