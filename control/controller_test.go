@@ -261,6 +261,66 @@ func TestController_BlockedExecutor(t *testing.T) {
 	}
 }
 
+func TestController_CancelledContextPropagatesToExecutor(t *testing.T) {
+	t.Parallel()
+
+	executor := mock.NewExecutor()
+	executor.ExecuteFn = func(ctx context.Context, _ *plan.PlanSpec, _ *memory.Allocator) (map[string]flux.Result, error) {
+		<-ctx.Done() // Unblock only when context has been cancelled
+		return nil, nil
+	}
+
+	ctrl := New(Config{})
+	ctrl.executor = executor
+
+	cctx, ccancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer func() {
+		if err := ctrl.Shutdown(cctx); err != nil {
+			t.Fatal(err)
+		}
+		ccancel()
+	}()
+
+	// Parent query context
+	pctx, pcancel := context.WithCancel(context.Background())
+
+	// done signals that ExecuteFn returned
+	done := make(chan struct{})
+
+	go func() {
+		q, err := ctrl.Query(pctx, mockCompiler)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+		}
+		// Ready will unblock when executor unblocks
+		<-q.Ready()
+		// TODO(jlapacik): query should expose error if cancelled during execution
+		// if q.Err() == nil {
+		//     t.Errorf("expected error; cancelled query context before execution finished")
+		// }
+		q.Done()
+		close(done)
+	}()
+
+	waitCheckDelay := 500 * time.Millisecond
+
+	select {
+	case <-done:
+		t.Fatalf("ExecuteFn returned before parent context was cancelled")
+	case <-time.After(waitCheckDelay):
+		// Okay.
+	}
+
+	pcancel()
+
+	select {
+	case <-done:
+		// Okay.
+	case <-time.After(waitCheckDelay):
+		t.Fatalf("ExecuteFn didn't return after parent context canceled")
+	}
+}
+
 func TestController_Shutdown(t *testing.T) {
 	executor := mock.NewExecutor()
 	ctrl := New(Config{})
