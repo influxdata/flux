@@ -5,13 +5,11 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/gonum/floats"
-
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"gonum.org/v1/gonum/floats"
 )
 
 // Two floating point values are considered

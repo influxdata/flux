@@ -101,13 +101,13 @@ func TestPercentile_Process(t *testing.T) {
 			data:       NormalData,
 			percentile: 0.5,
 			exact:      true,
-			want:       9.997645059676595,
+			want:       10.000736834856248,
 		},
 		{
 			name:       "normal",
 			data:       NormalData,
 			percentile: 0.9,
-			want:       13.843815760607427,
+			want:       13.842132136909889,
 		},
 		{
 			name: "NaN",
