@@ -8,18 +8,9 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-sql-driver/mysql v1.4.0
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
-	github.com/gonum/blas v0.0.0-20180125090452-e7c5890b24cf // indirect
-	github.com/gonum/diff v0.0.0-20180125090814-f0137a19aa16 // indirect
-	github.com/gonum/floats v0.0.0-20180125090339-7de1f4ea7ab5
-	github.com/gonum/integrate v0.0.0-20180125090255-09c2f478329f // indirect
-	github.com/gonum/internal v0.0.0-20180125090855-fda53f8d2571 // indirect
-	github.com/gonum/lapack v0.0.0-20180125091020-f0b8b25edece // indirect
-	github.com/gonum/mathext v0.0.0-20180126232648-3ffefb3e36fc // indirect
-	github.com/gonum/matrix v0.0.0-20180124231301-a41cc49d4c29 // indirect
-	github.com/gonum/stat v0.0.0-20180125090729-ec9c8a1062f4
 	github.com/google/go-cmp v0.2.0
 	github.com/influxdata/line-protocol v0.0.0-20180522152040-32c6aa80de5e
-	github.com/influxdata/tdigest v0.0.0-20180711151920-a7d76c6f093a
+	github.com/influxdata/tdigest v0.0.0-20181121200506-bf2b5ad3c0a9
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v1.0.0
 	github.com/mattn/go-colorable v0.0.9 // indirect
@@ -44,10 +35,12 @@ require (
 	go.uber.org/atomic v1.3.2 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
 	go.uber.org/zap v1.9.1
+	golang.org/x/exp v0.0.0-20181112044915-a3060d491354
 	golang.org/x/net v0.0.0-20181011144130-49bb7cea24b1 // indirect
 	golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f // indirect
 	golang.org/x/sys v0.0.0-20181011152604-fa43e7bc11ba // indirect
-	golang.org/x/tools v0.0.0-20181012181339-19e2aca3fdf9 // indirect
+	golang.org/x/tools v0.0.0-20181121193951-91f80e683c10 // indirect
+	gonum.org/v1/gonum v0.0.0-20181121035319-3f7ecaa7e8ca
 	google.golang.org/appengine v1.2.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 )
