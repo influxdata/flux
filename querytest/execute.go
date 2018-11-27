@@ -7,11 +7,12 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/control"
+	"github.com/influxdata/flux/control/controltest"
 	"github.com/influxdata/flux/functions/inputs"
 )
 
 type Querier struct {
-	c *control.Controller
+	c *controltest.Controller
 }
 
 func (q *Querier) Query(ctx context.Context, w io.Writer, c flux.Compiler, d flux.Dialect) (int64, error) {
@@ -32,7 +33,8 @@ func NewQuerier() *Querier {
 		MemoryBytesQuota: math.MaxInt64,
 	}
 
-	c := control.New(config)
+	// Because this is for use in test, ensure that consumers properly clean up queries.
+	c := controltest.New(control.New(config))
 
 	return &Querier{
 		c: c,
