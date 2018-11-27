@@ -441,7 +441,7 @@ func TestInterpreter_TypeErrors(t *testing.T) {
 				f = (x=<-) => x
 				g = () => f()
 			`,
-			err: `right missing pipe parameter x`,
+			err: `function requires a pipe argument`,
 		},
 		{
 			name: "unify with different pipe args 1",
@@ -462,13 +462,15 @@ func TestInterpreter_TypeErrors(t *testing.T) {
 			`,
 		},
 		{
-			// This program should type check.
-			// x a function that must take a parameter named "arg".
+			// This program should not type check.
+			// A function that requires a parameter named "arg" cannot unify
+			// with a function whose "arg" parameter is also a pipe parameter.
 			name: "unify pipe and non-pipe args with same name",
 			program: `
 				f = (x, y) => x(arg: y)
 				f(x: (arg=<-) => arg, y: 0)
 			`,
+			err: "function does not take a pipe argument",
 		},
 		{
 			// This program should not type check.
@@ -480,7 +482,7 @@ func TestInterpreter_TypeErrors(t *testing.T) {
 				f = (arg=(x=<-) => x) => 0 |> arg()
 				g = () => f(arg: (x) => 5 + x)
 			`,
-			err: `function does not take a parameter named "x"`,
+			err: `function does not take a parameter "x"`,
 		},
 	}
 	for _, tc := range testCases {

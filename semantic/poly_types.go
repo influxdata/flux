@@ -388,37 +388,16 @@ func (f function) freeVars(c *Constraints) TvarSet {
 func (l function) unifyType(kinds map[Tvar]Kind, r PolyType) (Substitution, error) {
 	switch r := r.(type) {
 	case function:
-		// When unifying a constraint between two function types, every parameter
-		// observed in the right function type must be observed in the left as well.
-		// However special care must be taken when pipe arguments are present.
-		required := make([]string, 0, len(r.required)+1)
-		required = append(required, r.required...)
-		if _, ok := r.parameters[pipeLabel]; ok {
-			required = append(required, pipeLabel)
-		}
-		for _, param := range required {
-			if _, ok := l.parameters[param]; !ok {
-				if param != pipeLabel {
-					// If a parameter is observed in the right type, but not in the
-					// left, the constraint could only unify if this parameter were
-					// a named pipe param and the left type had an un-named pipe param.
-					if _, ok := l.parameters[pipeLabel]; param == r.pipeArgument && ok {
-						continue
-					}
-					return nil, fmt.Errorf("function does not take a parameter named %q", param)
-				}
-				if param == pipeLabel && l.pipeArgument == "" {
-					// If a pipe argument is observed in the right type, whether named
-					// or un-named, and no pipe argument is observed in the left type,
-					// then the only way this constraint could unify is if this pipe
-					// param had the same name as a param in the left type.
-					if _, ok := l.parameters[r.pipeArgument]; ok {
-						continue
-					}
-					return nil, fmt.Errorf("function does not take a pipe argument")
-				}
+		// Validate every required parameter observed in the right function
+		// is observed in the left as well, excluding pipe parameters.
+		for _, param := range r.required {
+			if _, ok := l.parameters[param]; !ok && param != r.pipeArgument {
+				// Pipe paramenters are validated below
+				return nil, fmt.Errorf("function does not take a parameter %q", param)
 			}
 		}
+		// Validate that every required parameter of the left function
+		// is observed in the right function, excluding pipe parameters.
 		missing := l.required.diff(r.required)
 		for _, lbl := range missing {
 			if _, ok := r.parameters[lbl]; !ok && lbl != l.pipeArgument {
@@ -430,7 +409,8 @@ func (l function) unifyType(kinds map[Tvar]Kind, r PolyType) (Substitution, erro
 		for f, tl := range l.parameters {
 			tr, ok := r.parameters[f]
 			if !ok {
-				// We already validated missing parameters, this must be the pipe parameter.
+				// Already validated missing parameters,
+				// this must be the pipe parameter.
 				continue
 			}
 			typl := subst.ApplyType(tl)
@@ -441,17 +421,26 @@ func (l function) unifyType(kinds map[Tvar]Kind, r PolyType) (Substitution, erro
 			}
 			subst.Merge(s)
 		}
-		// Check for valid pipe parameter
-		if l.pipeArgument != "" {
-			pipel, okl := l.lookupPipe(l.pipeArgument)
-			if !okl {
-				return nil, fmt.Errorf("left missing pipe parameter %v %v", l.pipeArgument, l)
+		if leftPipeType, ok := l.lookupPipe(l.pipeArgument); !ok {
+			// If the left function does not take a pipe argument,
+			// the right function must not take one either.
+			if _, ok := r.lookupPipe(r.pipeArgument); ok {
+				return nil, fmt.Errorf("function does not take a pipe argument")
 			}
-			piper, okr := r.lookupPipe(l.pipeArgument)
-			if !okr {
-				return nil, fmt.Errorf("right missing pipe parameter %v %v", l.pipeArgument, r)
+		} else {
+			var pipeArgument string
+			if l.pipeArgument != "" {
+				pipeArgument = l.pipeArgument
+			} else {
+				pipeArgument = r.pipeArgument
 			}
-			s, err := unifyTypes(kinds, pipel, piper)
+			// If the left function takes a pipe argument, the
+			// the right must as well, and the types must unify.
+			rightPipeType, ok := r.lookupPipe(pipeArgument)
+			if !ok {
+				return nil, fmt.Errorf("function requires a pipe argument")
+			}
+			s, err := unifyTypes(kinds, leftPipeType, rightPipeType)
 			if err != nil {
 				return nil, err
 			}
@@ -466,7 +455,7 @@ func (l function) unifyType(kinds map[Tvar]Kind, r PolyType) (Substitution, erro
 	case Tvar:
 		return r.unifyType(kinds, l)
 	default:
-		return nil, fmt.Errorf("cannot unify list with %T", r)
+		return nil, fmt.Errorf("cannot unify function with %T", r)
 	}
 }
 
