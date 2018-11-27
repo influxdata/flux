@@ -23,7 +23,6 @@ package control
 import (
 	"context"
 	"fmt"
-	"log"
 	"math"
 	"runtime/debug"
 	"sync"
@@ -33,7 +32,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
@@ -57,8 +56,6 @@ type Controller struct {
 	metrics   *controllerMetrics
 	labelKeys []string
 
-	verbose bool
-
 	lplanner plan.LogicalPlanner
 	pplanner plan.PhysicalPlanner
 	executor execute.Executor
@@ -76,7 +73,6 @@ type Config struct {
 	PPlannerOptions      []plan.PhysicalOption
 	LPlannerOptions      []plan.LogicalOption
 	Logger               *zap.Logger
-	Verbose              bool
 	// MetricLabelKeys is a list of labels to add to the metrics produced by the controller.
 	// The value for a given key will be read off the context.
 	// The context value must be a string or an implementation of the Stringer interface.
@@ -103,7 +99,6 @@ func New(c Config) *Controller {
 		pplanner:             plan.NewPhysicalPlanner(c.PPlannerOptions...),
 		executor:             execute.NewExecutor(c.ExecutorDependencies, logger),
 		logger:               logger,
-		verbose:              c.Verbose,
 		metrics:              newControllerMetrics(c.MetricLabelKeys),
 		labelKeys:            c.MetricLabelKeys,
 	}
@@ -191,9 +186,10 @@ func (c *Controller) compileQuery(q *Query, compiler flux.Compiler) error {
 }
 
 func (c *Controller) enqueueQuery(q *Query) error {
-	if c.verbose {
-		log.Println("query", flux.Formatted(&q.spec, flux.FmtJSON))
+	if entry := c.logger.Check(zapcore.DebugLevel, "queueing query"); entry != nil {
+		entry.Write(zap.String("spec", fmt.Sprint(flux.Formatted(&q.spec, flux.FmtJSON))))
 	}
+
 	if !q.tryQueue() {
 		return errors.New("failed to transition query to queueing state")
 	}
@@ -360,8 +356,8 @@ func (c *Controller) processQuery(q *Query) (pop bool, err error) {
 		if err != nil {
 			return true, errors.Wrap(err, "failed to create logical plan")
 		}
-		if c.verbose {
-			log.Println("logical plan", plan.Formatted(lp))
+		if entry := c.logger.Check(zapcore.DebugLevel, "logical plan"); entry != nil {
+			entry.Write(zap.String("plan", fmt.Sprint(plan.Formatted(lp))))
 		}
 
 		p, err := c.pplanner.Plan(lp)
@@ -374,8 +370,8 @@ func (c *Controller) processQuery(q *Query) (pop bool, err error) {
 			q.concurrency = c.maxConcurrency
 		}
 		q.memory = p.Resources.MemoryBytesQuota
-		if c.verbose {
-			log.Println("physical plan", plan.Formatted(q.plan))
+		if entry := c.logger.Check(zapcore.DebugLevel, "physical plan"); entry != nil {
+			entry.Write(zap.String("plan", fmt.Sprint(plan.Formatted(q.plan))))
 		}
 	}
 
