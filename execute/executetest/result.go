@@ -42,6 +42,8 @@ type TableIterator struct {
 	err    error
 }
 
+func (ti *TableIterator) Statistics() flux.Statistics { return flux.Statistics{} }
+
 func (ti *TableIterator) Do(f func(flux.Table) error) error {
 	if ti.err != nil {
 		return ti.err
