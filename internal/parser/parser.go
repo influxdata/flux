@@ -380,10 +380,11 @@ func (p *parser) parsePipeExpressionSuffix(expr *ast.Expression) func() bool {
 		if ok := p.parsePipeOperator(); !ok {
 			return false
 		}
-		rhs := p.parsePostfixExpression()
+		// todo(jsternberg): this is not correct.
+		call, _ := p.parsePostfixExpression().(*ast.CallExpression)
 		*expr = &ast.PipeExpression{
 			Argument: *expr,
-			Call:     rhs.(*ast.CallExpression),
+			Call:     call,
 		}
 		return true
 	}
@@ -512,16 +513,13 @@ func (p *parser) parsePrimaryExpression() ast.Expression {
 		}
 		return &ast.FloatLiteral{Value: value}
 	case token.STRING:
-		value, err := strconv.Unquote(lit)
+		value, err := parseString(lit)
 		if err != nil {
 			panic(err)
 		}
 		return &ast.StringLiteral{Value: value}
 	case token.REGEX:
-		value, err := parseRegexp(lit)
-		if err != nil {
-			panic(err)
-		}
+		value, _ := parseRegexp(lit)
 		return &ast.RegexpLiteral{Value: value}
 	case token.DURATION:
 		values, err := parseDuration(lit)
@@ -754,10 +752,9 @@ func (p *parser) unread(pos token.Pos, tok token.Token, lit string) {
 func (p *parser) expect(exp token.Token) (token.Pos, string) {
 	if p.buffered {
 		p.buffered = false
-		if p.tok != exp {
-			panic(fmt.Sprintf("unexpected token: %s != %s", exp, p.tok))
+		if p.tok == exp || p.tok == token.EOF {
+			return p.pos, p.lit
 		}
-		return p.pos, p.lit
 	}
 
 	for {
@@ -822,6 +819,22 @@ func parseDuration(lit string) ([]ast.Duration, error) {
 		lit = lit[n:]
 	}
 	return values, nil
+}
+
+var stringEscapeReplacer = strings.NewReplacer(
+	`\n`, "\n",
+	`\r`, "\r",
+	`\t`, "\t",
+	`\\`, "\\",
+	`\"`, "\"",
+)
+
+func parseString(lit string) (string, error) {
+	if len(lit) < 2 || lit[0] != '"' || lit[len(lit)-1] != '"' {
+		return "", fmt.Errorf("invalid syntax")
+	}
+	lit = lit[1 : len(lit)-1]
+	return stringEscapeReplacer.Replace(lit), nil
 }
 
 func parseRegexp(lit string) (*regexp.Regexp, error) {
