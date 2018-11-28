@@ -19,6 +19,7 @@ type Result interface {
 
 type TableIterator interface {
 	Do(f func(Table) error) error
+	Statistics() Statistics
 }
 
 type Table interface {
