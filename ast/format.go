@@ -6,296 +6,603 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
-func Format(n Node) string {
-	return formatNode(n)
+//Produces a valid string query from a AST. Use:
+func Format(node Node) string {
+	fmtV := NewFormatVisitor()
+	Walk(fmtV, node)
+	return fmtV.Get()
 }
 
-func formatChildren(children interface{}, sep string) string {
-	s := reflect.ValueOf(children)
-	if s.Kind() != reflect.Slice {
-		panic("children must be a slice type")
+// Delimiters express the pieces of string that must be appended by leaf nodes once the visiting recursion is over.
+// As such, they are pushed down to leaf visitors that are responsible for writing the output.
+type delimiters struct {
+	l *strings.Builder
+	r *strings.Builder
+}
+
+func emptyDelimiters() *delimiters {
+	return &delimiters{new(strings.Builder), new(strings.Builder)}
+}
+
+func (d *delimiters) extendL(left string) *delimiters {
+	d.l.WriteString(left)
+	return d
+}
+
+func (d *delimiters) extendR(right string) *delimiters {
+	d.r.WriteString(reverse(right))
+	return d
+}
+
+func (d *delimiters) resetR() *delimiters {
+	return &delimiters{l: d.l, r: new(strings.Builder)}
+}
+
+func (d *delimiters) resetL() *delimiters {
+	return &delimiters{l: new(strings.Builder), r: d.r}
+}
+
+func (d *delimiters) getL() string {
+	return d.l.String()
+}
+
+func (d *delimiters) getR() string {
+	return reverse(d.r.String())
+}
+
+func reverse(s string) string {
+	if utf8.RuneCountInString(s) == 1 {
+		return s
 	}
 
-	schildren := make([]string, s.Len())
-	for i := 0; i < s.Len(); i++ {
-		child := formatNode(s.Index(i).Interface().(Node))
-		schildren[i] = child
+	runes := []rune(s)
+	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
 	}
-
-	return strings.Join(schildren, sep)
+	return string(runes)
 }
 
-func formatProgram(n *Program) string {
-	return formatChildren(n.Body, "\n")
+type FormatVisitor struct {
+	sb *strings.Builder // used to accumulate the resulting query
 }
 
-func formatBlockStatement(n *BlockStatement) string {
-	return formatChildren(n.Body, "\n")
+func NewFormatVisitor() *FormatVisitor {
+	return &FormatVisitor{sb: new(strings.Builder)}
 }
 
-func formatExpressionStatement(n *ExpressionStatement) string {
-	return formatNode(n.Expression)
+func (fv *FormatVisitor) Visit(node Node) Visitor {
+	return fv.createVisitor(node, emptyDelimiters())
 }
 
-func formatReturnStatement(n *ReturnStatement) string {
-	return formatNode(n.Argument)
+func (fv *FormatVisitor) Done(node Node) {}
+
+func (fv *FormatVisitor) Get() string {
+	return fv.sb.String()
 }
 
-func formatOptionStatement(n *OptionStatement) string {
-	format := "option %s"
-	decl := formatNode(n.Declaration)
-	return fmt.Sprintf(format, decl)
+func (fv *FormatVisitor) write(s string) {
+	fv.sb.WriteString(s)
 }
 
-func formatVariableDeclaration(n *VariableDeclaration) string {
-	return formatChildren(n.Declarations, " ")
-}
-
-func formatVariableDeclarator(n *VariableDeclarator) string {
-	format := "%s=%s"
-	id := formatNode(n.ID)
-	init := formatNode(n.Init)
-	return fmt.Sprintf(format, id, init)
-}
-
-func formatArrayExpression(n *ArrayExpression) string {
-	format := "[%s]"
-	s := formatChildren(n.Elements, ",")
-	return fmt.Sprintf(format, s)
-}
-
-func formatArrowFunctionExpression(n *ArrowFunctionExpression) string {
-	format := "(%s)=>%s"
-
-	// must treat properties differently than in general case
-	// must specify the separator used in properties ("=" instead of ":")
-	// cannot use formatChildren
-	props := make([]string, len(n.Params))
-	for i := 0; i < len(n.Params); i++ {
-		child := formatPropertyWSeparator(n.Params[i], "=")
-		props[i] = child
-	}
-
-	params := strings.Join(props, ",")
-	body := formatNode(n.Body)
-	return fmt.Sprintf(format, params, body)
-}
-
-func formatBinaryExpression(n *BinaryExpression) string {
-	format := "%s%s%s"
-	left := formatNode(n.Left)
-	op := n.Operator.String()
-	right := formatNode(n.Right)
-	return fmt.Sprintf(format, left, op, right)
-}
-
-func formatCallExpression(n *CallExpression) string {
-	format := "%s(%s)"
-	callee := formatNode(n.Callee)
-	args := formatChildren(n.Arguments, ",")
-
-	// remove braces to arguments because it is a special
-	// case for an ObjectExpression, if so
-	l := len(args)
-	if l > 1 && args[0] == '{' && args[l-1] == '}' {
-		args = args[1 : l-1]
-	}
-
-	return fmt.Sprintf(format, callee, args)
-}
-
-func formatConditionalExpression(n *ConditionalExpression) string {
-	format := "%s?%s:%s"
-	test := formatNode(n.Test)
-	cons := formatNode(n.Consequent)
-	alt := formatNode(n.Alternate)
-	return fmt.Sprintf(format, test, cons, alt)
-}
-
-func formatMemberExpression(n *MemberExpression) string {
-	format := "%s.%s"
-	o := formatNode(n.Object)
-	p := formatNode(n.Property)
-	return fmt.Sprintf(format, o, p)
-}
-
-func formatIndexExpression(n *IndexExpression) string {
-	format := "%s[%s]"
-	array := formatNode(n.Array)
-	i := formatNode(n.Index)
-	return fmt.Sprintf(format, array, i)
-}
-
-func formatObjectExpression(n *ObjectExpression) string {
-	format := "{%s}"
-	properties := formatChildren(n.Properties, ",")
-	return fmt.Sprintf(format, properties)
-}
-
-func formatPipeExpression(n *PipeExpression) string {
-	format := "%s|>%s"
-	arg := formatNode(n.Argument)
-	call := formatNode(n.Call)
-	return fmt.Sprintf(format, arg, call)
-}
-
-func formatUnaryExpression(n *UnaryExpression) string {
-	format := "%s%s"
-	op := n.Operator.String()
-	exp := formatNode(n.Argument)
-	return fmt.Sprintf(format, op, exp)
-}
-
-func formatLogicalExpression(n *LogicalExpression) string {
-	format := "%s%s%s"
-	left := formatNode(n.Left)
-	op := n.Operator.String()
-	right := formatNode(n.Right)
-	return fmt.Sprintf(format, left, op, right)
-}
-
-func formatIdentifier(n *Identifier) string {
-	return n.Name
-}
-
-func formatBooleanLiteral(n *BooleanLiteral) string {
-	return strconv.FormatBool(n.Value)
-}
-
-func formatDateTimeLiteral(n *DateTimeLiteral) string {
-	return n.Value.Format(time.RFC3339Nano)
-}
-
-func formatDurationLiteral(n *DurationLiteral) string {
-	formatDuration := func(d Duration) string {
-		format := "%s%s"
-		mag := strconv.FormatInt(d.Magnitude, 10)
-		return fmt.Sprintf(format, mag, d.Unit)
-	}
-
-	ds := make([]string, len(n.Values))
-	for _, d := range n.Values {
-		child := formatDuration(d)
-		ds = append(ds, child)
-	}
-
-	return strings.Join(ds, "")
-}
-
-func formatFloatLiteral(n *FloatLiteral) string {
-	conv := strconv.FormatFloat(n.Value, 'f', -1, 64)
-
-	if !strings.Contains(conv, ".") {
-		conv += ".0" // force to make it a float
-	}
-
-	return conv
-}
-
-func formatIntegerLiteral(n *IntegerLiteral) string {
-	return strconv.FormatInt(n.Value, 10)
-}
-
-func formatPipeLiteral(_ *PipeLiteral) string {
-	return "<-"
-}
-
-func formatRegexpLiteral(n *RegexpLiteral) string {
-	format := "/%s/"
-	return fmt.Sprintf(format, n.Value.String())
-}
-
-func formatStringLiteral(n *StringLiteral) string {
-	format := "\"%s\""
-	return fmt.Sprintf(format, n.Value)
-}
-
-func formatUnsignedIntegerLiteral(n *UnsignedIntegerLiteral) string {
-	return strconv.FormatUint(n.Value, 10)
-}
-
-func formatProperty(n *Property) string {
-	return formatPropertyWSeparator(n, ":")
-}
-
-func formatPropertyWSeparator(n *Property, sep string) string {
-	if n.Value == nil {
-		return formatNode(n.Key)
-	}
-
-	format := "%s%s%s"
-	k := formatNode(n.Key)
-	v := formatNode(n.Value)
-	return fmt.Sprintf(format, k, sep, v)
-}
-
-func formatNode(n Node) string {
-	var result string
-	switch n := n.(type) {
+/*
+A node is visited by its parent's visitor.
+For example, the Key of a property is visited by a propertyVisitor.
+This means it is useless to specify visitors for leaf nodes given that they have no children,
+and so their Visit method won't be called.
+That's why leaf nodes shouldn't return a visitor, but directly write to the builder.
+*/
+func (fv *FormatVisitor) createVisitor(child Node, d *delimiters) Visitor {
+	var v Visitor
+	switch n := child.(type) {
 	case *Program:
-		result = formatProgram(n)
+		v = &programVisitor{FormatVisitor: fv, node: n, dels: d}
 	case *BlockStatement:
-		result = formatBlockStatement(n)
+		v = &blockStatementVisitor{FormatVisitor: fv, node: n, dels: d}
 	case *OptionStatement:
-		result = formatOptionStatement(n)
+		v = &optionStatementVisitor{FormatVisitor: fv, node: n, dels: d}
 	case *ExpressionStatement:
-		result = formatExpressionStatement(n)
+		v = &expressionStatementVisitor{FormatVisitor: fv, node: n, dels: d}
 	case *ReturnStatement:
-		result = formatReturnStatement(n)
+		v = &returnStatementVisitor{FormatVisitor: fv, node: n, dels: d}
 	case *VariableDeclaration:
-		result = formatVariableDeclaration(n)
+		v = &variableDeclarationVisitor{FormatVisitor: fv, node: n, dels: d}
 	case *VariableDeclarator:
-		result = formatVariableDeclarator(n)
+		v = &variableDeclaratorVisitor{FormatVisitor: fv, node: n, dels: d}
 	case *CallExpression:
-		result = formatCallExpression(n)
+		v = &callExpressionVisitor{FormatVisitor: fv, node: n, dels: d}
 	case *PipeExpression:
-		result = formatPipeExpression(n)
+		v = &pipeExpressionVisitor{FormatVisitor: fv, node: n, dels: d}
 	case *MemberExpression:
-		result = formatMemberExpression(n)
+		v = &memberExpressionVisitor{FormatVisitor: fv, node: n, dels: d}
 	case *IndexExpression:
-		result = formatIndexExpression(n)
+		v = &indexExpressionVisitor{FormatVisitor: fv, node: n, dels: d}
 	case *BinaryExpression:
-		result = formatBinaryExpression(n)
-	case *UnaryExpression:
-		result = formatUnaryExpression(n)
+		v = &binaryExpressionVisitor{FormatVisitor: fv, node: n, dels: d}
 	case *LogicalExpression:
-		result = formatLogicalExpression(n)
+		v = &logicalExpressionVisitor{FormatVisitor: fv, node: n, dels: d}
+	case *UnaryExpression:
+		v = &unaryExpressionVisitor{FormatVisitor: fv, node: n, dels: d}
 	case *ObjectExpression:
-		result = formatObjectExpression(n)
+		v = &objectExpressionVisitor{FormatVisitor: fv, node: n, dels: d}
 	case *ConditionalExpression:
-		result = formatConditionalExpression(n)
+		v = &conditionalExpressionVisitor{FormatVisitor: fv, node: n, dels: d}
 	case *ArrayExpression:
-		result = formatArrayExpression(n)
-	case *Identifier:
-		result = formatIdentifier(n)
-	case *PipeLiteral:
-		result = formatPipeLiteral(n)
-	case *StringLiteral:
-		result = formatStringLiteral(n)
-	case *BooleanLiteral:
-		result = formatBooleanLiteral(n)
-	case *FloatLiteral:
-		result = formatFloatLiteral(n)
-	case *IntegerLiteral:
-		result = formatIntegerLiteral(n)
-	case *UnsignedIntegerLiteral:
-		result = formatUnsignedIntegerLiteral(n)
-	case *RegexpLiteral:
-		result = formatRegexpLiteral(n)
-	case *DurationLiteral:
-		result = formatDurationLiteral(n)
-	case *DateTimeLiteral:
-		result = formatDateTimeLiteral(n)
+		v = &arrayExpressionVisitor{FormatVisitor: fv, node: n, dels: d}
 	case *ArrowFunctionExpression:
-		result = formatArrowFunctionExpression(n)
+		v = &arrowFunctionExpressionVisitor{FormatVisitor: fv, node: n, dels: d}
 	case *Property:
-		result = formatProperty(n)
+		v = &propertyVisitor{FormatVisitor: fv, node: n, dels: d}
+
+		// ---- leaf nodes
+	case *Identifier:
+		writeIdentifier(n, d, fv)
+	case *PipeLiteral:
+		writePipeLiteral(n, d, fv)
+	case *StringLiteral:
+		writeStringLiteral(n, d, fv)
+	case *BooleanLiteral:
+		writeBooleanLiteral(n, d, fv)
+	case *FloatLiteral:
+		writeFloatLiteral(n, d, fv)
+	case *IntegerLiteral:
+		writeIntegerLiteral(n, d, fv)
+	case *UnsignedIntegerLiteral:
+		writeUnsignedIntegerLiteral(n, d, fv)
+	case *RegexpLiteral:
+		writeRegexpLiteral(n, d, fv)
+	case *DurationLiteral:
+		writeDurationLiteral(n, d, fv)
+	case *DateTimeLiteral:
+		writeDateTimeLiteral(n, d, fv)
 	default:
 		// If we were able not to find the type, than this switch is wrong
 		panic(fmt.Errorf("unknown type %q", n.Type()))
 	}
 
-	return result
+	return v
+}
+
+/*
+This utility function returns proper delimiters for a child from a slice of children.
+It calculates the delimiters from the current delimiters, a prefix, a suffix, and a separator, by
+considering the position of the child among children.
+ */
+func getDelimitersForSlice(children interface{}, child interface{}, cur *delimiters, pref, suf, sep string) *delimiters {
+	s := reflect.ValueOf(children)
+	if s.Kind() != reflect.Slice {
+		panic("children must be a slice type")
+	}
+
+	l := s.Len()
+
+	// don't worry about empty slices, they won't be visited
+
+	first := s.Index(0).Interface()
+	last := s.Index(l - 1).Interface()
+
+	if first == last {
+		return cur.extendL(pref).extendR(suf)
+	}
+
+	var dels *delimiters
+
+	if child == first {
+		dels = cur.resetR().extendL(pref).extendR(sep)
+	} else if child == last {
+		dels = cur.resetL().extendR(suf)
+	} else {
+		dels = emptyDelimiters().extendR(sep)
+	}
+
+	return dels
+}
+
+/*
+Every type below corresponds to a Node type in the AST.
+
+A visitor visits its children, and not the parent node. So, for example,
+the `arrowFunctionVisitor`'s `Visit` method is called once for every child of an `ArrowFunctionExpressions`,
+and so for every piece of argument and for the body.
+The visitor returns new specific visitors for every children and pushes down delimiters, in order to make
+the leaf nodes write them to the global string builder at the right moment.
+*/
+
+type programVisitor struct {
+	*FormatVisitor
+	node *Program
+	dels *delimiters
+}
+
+func (v *programVisitor) Visit(node Node) Visitor {
+	dels := getDelimitersForSlice(v.node.Body, node, v.dels, "", "\n", "\n")
+	return v.createVisitor(node, dels)
+}
+
+type blockStatementVisitor struct {
+	*FormatVisitor
+	node *BlockStatement
+	dels *delimiters
+}
+
+func (v *blockStatementVisitor) Visit(node Node) Visitor {
+	dels := getDelimitersForSlice(v.node.Body, node, v.dels, "", "", "\n")
+	return v.createVisitor(node, dels)
+}
+
+type optionStatementVisitor struct {
+	*FormatVisitor
+	node *OptionStatement
+	dels *delimiters
+}
+
+func (v *optionStatementVisitor) Visit(node Node) Visitor {
+	return v.createVisitor(node, v.dels.extendL("option "))
+}
+
+type expressionStatementVisitor struct {
+	*FormatVisitor
+	node *ExpressionStatement
+	dels *delimiters
+}
+
+func (v *expressionStatementVisitor) Visit(node Node) Visitor {
+	return v.createVisitor(node, v.dels)
+}
+
+type returnStatementVisitor struct {
+	*FormatVisitor
+	node *ReturnStatement
+	dels *delimiters
+}
+
+func (v *returnStatementVisitor) Visit(node Node) Visitor {
+	return v.createVisitor(node, v.dels.extendL("return "))
+}
+
+type variableDeclarationVisitor struct {
+	*FormatVisitor
+	node *VariableDeclaration
+	dels *delimiters
+}
+
+func (v *variableDeclarationVisitor) Visit(node Node) Visitor {
+	dels := getDelimitersForSlice(v.node.Declarations, node, v.dels, "", "", "\n")
+	return v.createVisitor(node, dels)
+}
+
+type variableDeclaratorVisitor struct {
+	*FormatVisitor
+	node *VariableDeclarator
+	dels *delimiters
+}
+
+func (v *variableDeclaratorVisitor) Visit(node Node) Visitor {
+	var dels *delimiters
+
+	if node == v.node.ID {
+		dels = v.dels.resetR().extendR("=")
+	} else {
+		dels = v.dels.resetL()
+	}
+
+	return v.createVisitor(node, dels)
+}
+
+type callExpressionVisitor struct {
+	*FormatVisitor
+	node *CallExpression
+	dels *delimiters
+}
+
+func (v *callExpressionVisitor) Visit(node Node) Visitor {
+	args := v.node.Arguments
+	var dels *delimiters
+
+	if node == v.node.Callee {
+		// if there are no arguments, `Visit` won't be invoked by `Walk`,
+		// so, we have to account for that.
+		if len(args) > 0 {
+			dels = v.dels.resetR()
+		} else {
+			dels = v.dels.extendR("()")
+		}
+	} else {
+		dels = v.dels.resetL()
+		dels = getDelimitersForSlice(args, node, dels, "(", ")", ",")
+
+		// if the argument is an object expression, we must skip braces
+		// when encoding it, so we have to create the visitor manually
+		if node, ok := node.(*ObjectExpression); ok {
+			return &objectExpressionVisitor{FormatVisitor: v.FormatVisitor, node: node, dels: dels, skipEnclosing: true}
+		}
+	}
+
+	return v.createVisitor(node, dels)
+}
+
+type pipeExpressionVisitor struct {
+	*FormatVisitor
+	node *PipeExpression
+	dels *delimiters
+}
+
+func (v *pipeExpressionVisitor) Visit(node Node) Visitor {
+	var dels *delimiters
+
+	if node == v.node.Argument {
+		dels = v.dels.resetR().extendR("|>")
+	} else {
+		dels = v.dels.resetL()
+	}
+
+	return v.createVisitor(node, dels)
+}
+
+type memberExpressionVisitor struct {
+	*FormatVisitor
+	node *MemberExpression
+	dels *delimiters
+}
+
+func (v *memberExpressionVisitor) Visit(node Node) Visitor {
+	var dels *delimiters
+
+	if node == v.node.Object {
+		dels = v.dels.resetR().extendR(".")
+	} else {
+		dels = v.dels.resetL()
+	}
+
+	return v.createVisitor(node, dels)
+}
+
+type indexExpressionVisitor struct {
+	*FormatVisitor
+	node *IndexExpression
+	dels *delimiters
+}
+
+func (v *indexExpressionVisitor) Visit(node Node) Visitor {
+	var dels *delimiters
+
+	if node == v.node.Array {
+		dels = v.dels.resetR().extendR("[")
+	} else {
+		dels = v.dels.resetL().extendR("]")
+	}
+
+	return v.createVisitor(node, dels)
+}
+
+type binaryExpressionVisitor struct {
+	*FormatVisitor
+	node *BinaryExpression
+	dels *delimiters
+}
+
+func (v *binaryExpressionVisitor) Visit(node Node) Visitor {
+	var dels *delimiters
+
+	if node == v.node.Left {
+		dels = v.dels.resetR().extendR(v.node.Operator.String())
+	} else {
+		dels = v.dels.resetL()
+	}
+
+	return v.createVisitor(node, dels)
+}
+
+type logicalExpressionVisitor struct {
+	*FormatVisitor
+	node *LogicalExpression
+	dels *delimiters
+}
+
+func (v *logicalExpressionVisitor) Visit(node Node) Visitor {
+	var dels *delimiters
+
+	if node == v.node.Left {
+		dels = v.dels.resetR().extendR(v.node.Operator.String())
+	} else {
+		dels = v.dels.resetL()
+	}
+
+	return v.createVisitor(node, dels)
+}
+
+type unaryExpressionVisitor struct {
+	*FormatVisitor
+	node *UnaryExpression
+	dels *delimiters
+}
+
+func (v *unaryExpressionVisitor) Visit(node Node) Visitor {
+	return v.createVisitor(node, v.dels.extendL(v.node.Operator.String()))
+}
+
+type objectExpressionVisitor struct {
+	*FormatVisitor
+	node          *ObjectExpression
+	dels          *delimiters
+	skipEnclosing bool
+}
+
+func (v *objectExpressionVisitor) Visit(node Node) Visitor {
+	var p, s string
+	if !v.skipEnclosing {
+		p = "{"
+		s = "}"
+	}
+
+	dels := getDelimitersForSlice(v.node.Properties, node, v.dels, p, s, ",")
+	return v.createVisitor(node, dels)
+}
+
+type conditionalExpressionVisitor struct {
+	*FormatVisitor
+	node *ConditionalExpression
+	dels *delimiters
+}
+
+func (v *conditionalExpressionVisitor) Visit(node Node) Visitor {
+	var dels *delimiters
+
+	if node == v.node.Test {
+		dels = v.dels.resetR().extendR("?")
+	} else if node == v.node.Consequent {
+		dels = emptyDelimiters().extendR(":")
+	} else {
+		dels = v.dels.resetL()
+	}
+
+	return v.createVisitor(node, dels)
+}
+
+type arrayExpressionVisitor struct {
+	*FormatVisitor
+	node *ArrayExpression
+	dels *delimiters
+}
+
+func (v *arrayExpressionVisitor) Visit(node Node) Visitor {
+	dels := getDelimitersForSlice(v.node.Elements, node, v.dels, "[", "]", ",")
+	return v.createVisitor(node, dels)
+}
+
+type arrowFunctionExpressionVisitor struct {
+	*FormatVisitor
+	node *ArrowFunctionExpression
+	dels *delimiters
+}
+
+func (v *arrowFunctionExpressionVisitor) Visit(node Node) Visitor {
+	var dels *delimiters
+
+	if node != v.node.Body {
+		dels = v.dels.resetR()
+		dels = getDelimitersForSlice(v.node.Params, node, dels, "(", ")=>", ",")
+
+		// if the argument is a property, we must use "=" as separator
+		// when encoding it, so we have to create the visitor manually
+		if node, ok := node.(*Property); ok {
+			return &propertyVisitor{FormatVisitor: v.FormatVisitor, node: node, dels: dels, useEqual: true}
+		}
+	} else {
+		// if there are no params, `Visit` won't be invoked by `Walk`,
+		// so, we have to account for that.
+		if len(v.node.Params) > 0 {
+			dels = v.dels.resetL()
+		} else {
+			dels = v.dels.extendL("()=>")
+		}
+	}
+
+	return v.createVisitor(node, dels)
+}
+
+type propertyVisitor struct {
+	*FormatVisitor
+	node     *Property
+	dels     *delimiters
+	useEqual bool
+}
+
+func (v *propertyVisitor) Visit(node Node) Visitor {
+	var dels *delimiters
+
+	sep := ":"
+	if v.useEqual {
+		sep = "="
+	}
+
+	if node == v.node.Key {
+		if v.node.Value == nil {
+			// keep same delimiters
+			dels = v.dels
+		} else {
+			dels = v.dels.resetR().extendR(sep)
+		}
+	} else if node == v.node.Value {
+		dels = v.dels.resetL()
+	}
+
+	return v.createVisitor(node, dels)
+}
+
+// --------- Write functions for leaf nodes
+
+func writeStringLiteral(node *StringLiteral, dels *delimiters, fv *FormatVisitor) {
+	fv.write(dels.getL())
+	fv.write("\"")
+	fv.write(node.Value)
+	fv.write("\"")
+	fv.write(dels.getR())
+}
+
+func writePipeLiteral(_ *PipeLiteral, dels *delimiters, fv *FormatVisitor) {
+	fv.write(dels.getL())
+	fv.write("<-")
+	fv.write(dels.getR())
+}
+
+func writeBooleanLiteral(node *BooleanLiteral, dels *delimiters, fv *FormatVisitor) {
+	fv.write(dels.getL())
+	fv.write(strconv.FormatBool(node.Value))
+	fv.write(dels.getR())
+}
+
+func writeFloatLiteral(node *FloatLiteral, dels *delimiters, fv *FormatVisitor) {
+	fv.write(dels.getL())
+	conv := strconv.FormatFloat(node.Value, 'f', -1, 64)
+
+	if !strings.Contains(conv, ".") {
+		conv += ".0" // force to make it a float
+	}
+
+	fv.write(conv)
+	fv.write(dels.getR())
+}
+
+func writeIntegerLiteral(node *IntegerLiteral, dels *delimiters, fv *FormatVisitor) {
+	fv.write(dels.getL())
+	fv.write(strconv.FormatInt(node.Value, 10))
+	fv.write(dels.getR())
+}
+
+func writeUnsignedIntegerLiteral(node *UnsignedIntegerLiteral, dels *delimiters, fv *FormatVisitor) {
+	fv.write(dels.getL())
+	fv.write(strconv.FormatUint(node.Value, 10))
+	fv.write(dels.getR())
+}
+
+func writeRegexpLiteral(node *RegexpLiteral, dels *delimiters, fv *FormatVisitor) {
+	fv.write(dels.getL())
+	fv.write("/")
+	fv.write(node.Value.String())
+	fv.write("/")
+	fv.write(dels.getR())
+}
+
+func writeDurationLiteral(node *DurationLiteral, dels *delimiters, fv *FormatVisitor) {
+	fv.write(dels.getL())
+	for _, d := range node.Values {
+		fv.write(strconv.FormatInt(d.Magnitude, 10))
+		fv.write(d.Unit)
+	}
+	fv.write(dels.getR())
+}
+
+func writeDateTimeLiteral(node *DateTimeLiteral, dels *delimiters, fv *FormatVisitor) {
+	fv.write(dels.getL())
+	fv.write(node.Value.Format(time.RFC3339Nano))
+	fv.write(dels.getR())
+}
+
+func writeIdentifier(node *Identifier, dels *delimiters, fv *FormatVisitor) {
+	fv.write(dels.getL())
+	fv.write(node.Name)
+	fv.write(dels.getR())
 }
