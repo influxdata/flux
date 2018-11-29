@@ -20,7 +20,6 @@ const GroupKind = "group"
 type GroupOpSpec struct {
 	By     []string `json:"by"`
 	Except []string `json:"except"`
-	All    bool     `json:"all"`
 	None   bool     `json:"none"`
 }
 
@@ -30,7 +29,6 @@ func init() {
 			"by":     semantic.NewArrayPolyType(semantic.String),
 			"except": semantic.NewArrayPolyType(semantic.String),
 			"none":   semantic.Bool,
-			"all":    semantic.Bool,
 		},
 		nil,
 	)
@@ -53,11 +51,6 @@ func createGroupOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 	} else if ok && val {
 		spec.None = true
 	}
-	if val, ok, err := args.GetBool("all"); err != nil {
-		return nil, err
-	} else if ok && val {
-		spec.All = true
-	}
 
 	if array, ok, err := args.GetArray("by", semantic.String); err != nil {
 		return nil, err
@@ -76,14 +69,8 @@ func createGroupOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 		}
 	}
 
-	switch bits.OnesCount(uint(groupModeFromSpec(spec))) {
-	case 0:
-		// empty args
-		spec.All = true
-	case 1:
-		// all good
-	default:
-		return nil, errors.New(`specify one of "by", "except", "none" or "all" keyword arguments`)
+	if bits.OnesCount(uint(groupModeFromSpec(spec))) != 1 {
+		return nil, errors.New(`must specify exactly one of "by", "except" or "none"`)
 	}
 
 	return spec, nil
@@ -99,9 +86,6 @@ func (s *GroupOpSpec) Kind() flux.OperationKind {
 
 func groupModeFromSpec(spec *GroupOpSpec) functions.GroupMode {
 	var mode functions.GroupMode
-	if spec.All {
-		mode |= functions.GroupModeAll
-	}
 	if spec.None {
 		mode |= functions.GroupModeNone
 	}
@@ -110,9 +94,6 @@ func groupModeFromSpec(spec *GroupOpSpec) functions.GroupMode {
 	}
 	if len(spec.Except) > 0 {
 		mode |= functions.GroupModeExcept
-	}
-	if mode == functions.GroupModeDefault {
-		mode = functions.GroupModeAll
 	}
 	return mode
 }
@@ -132,14 +113,14 @@ func newGroupProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proc
 	mode := groupModeFromSpec(spec)
 	var keys []string
 	switch mode {
-	case functions.GroupModeAll:
 	case functions.GroupModeNone:
+		// No keys
 	case functions.GroupModeBy:
 		keys = spec.By
 	case functions.GroupModeExcept:
 		keys = spec.Except
 	default:
-		return nil, fmt.Errorf("invalid GroupOpSpec; multiple modes detected")
+		return nil, fmt.Errorf(`invalid GroupOpSpec; exactly one of "By", "Except", or "None" must be specified`)
 	}
 
 	p := &GroupProcedureSpec{
@@ -200,11 +181,14 @@ func (t *groupTransformation) RetractTable(id execute.DatasetID, key flux.GroupK
 func (t *groupTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	cols := tbl.Cols()
 	on := make(map[string]bool, len(cols))
-	if t.mode == functions.GroupModeBy && len(t.keys) > 0 {
+	switch t.mode {
+	case functions.GroupModeNone:
+		// do nothing, leave the map empty
+	case functions.GroupModeBy:
 		for _, k := range t.keys {
 			on[k] = true
 		}
-	} else if t.mode == functions.GroupModeExcept && len(t.keys) > 0 {
+	case functions.GroupModeExcept:
 	COLS:
 		for _, c := range cols {
 			for _, label := range t.keys {
@@ -214,7 +198,10 @@ func (t *groupTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 			}
 			on[c.Label] = true
 		}
+	default:
+		panic("unimplemented group mode")
 	}
+
 	colMap := make([]int, 0, len(tbl.Cols()))
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
