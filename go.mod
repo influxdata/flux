@@ -18,7 +18,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.3 // indirect
 	github.com/mattn/go-tty v0.0.0-20180907095812-13ff1204f104 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
-	github.com/mna/pigeon v1.0.1-0.20180808201053-bb0192cfc2ae
 	github.com/opentracing/opentracing-go v1.0.2
 	github.com/pierrec/lz4 v2.0.5+incompatible // indirect
 	github.com/pkg/errors v0.8.0
@@ -39,7 +38,6 @@ require (
 	golang.org/x/net v0.0.0-20181011144130-49bb7cea24b1 // indirect
 	golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f // indirect
 	golang.org/x/sys v0.0.0-20181011152604-fa43e7bc11ba // indirect
-	golang.org/x/tools v0.0.0-20181121193951-91f80e683c10 // indirect
 	gonum.org/v1/gonum v0.0.0-20181121035319-3f7ecaa7e8ca
 	google.golang.org/appengine v1.2.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
