@@ -499,14 +499,15 @@ func (p *parser) parsePipeExpressionSuffix(expr *ast.Expression) func() bool {
 			return false
 		}
 		// todo(jsternberg): this is not correct.
-		call, _ := p.parsePostfixExpression().(*ast.CallExpression)
+		rhs := p.parsePostfixExpression()
+		call, _ := rhs.(*ast.CallExpression)
 		*expr = &ast.PipeExpression{
 			Argument: *expr,
 			Call:     call,
 			BaseNode: ast.BaseNode{
 				Loc: &ast.SourceLocation{
 					Start:  locStart(*expr),
-					End:    locEnd(call),
+					End:    locEnd(rhs),
 					Source: p.s.File().Name(),
 				},
 			},
