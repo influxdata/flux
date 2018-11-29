@@ -79,7 +79,7 @@ var _flux_trans_keys []byte = []byte{
 	115, 117, 119, 121, 194, 100, 104, 109,
 	110, 115, 117, 119, 121, 194, 48, 57,
 	115, 181, 170, 181, 186, 128, 150, 152,
-	182, 184, 255, 192, 255, 0, 127, 173,
+	182, 184, 255, 192, 255, 128, 255, 173,
 	130, 133, 146, 159, 165, 171, 175, 255,
 	133, 176, 180, 182, 183, 186, 189, 134,
 	140, 136, 138, 142, 161, 163, 255, 182,
@@ -516,7 +516,7 @@ var _flux_indicies []int16 = []int16{
 	34, 35, 35, 36, 37, 35, 37, 35,
 	35, 38, 39, 34, 35, 40, 37, 40,
 	41, 41, 41, 40, 41, 41, 41, 40,
-	41, 40, 41, 40, 41, 40, 40, 40,
+	41, 40, 41, 41, 40, 40, 40, 40,
 	40, 40, 41, 41, 41, 41, 41, 40,
 	41, 41, 41, 41, 41, 40, 40, 41,
 	40, 41, 40, 41, 40, 40, 41, 40,
@@ -995,7 +995,7 @@ const flux_en_main int = 226
 
 //line scanner.rl:114
 
-func (s *Scanner) init() {
+func (s *Scanner) exec(cs int) int {
 
 //line scanner.rl:117
 
@@ -1008,20 +1008,18 @@ func (s *Scanner) init() {
 //line scanner.rl:121
 
 //line scanner.rl:122
+	var act int
 
-//line scanner.gen.go:1018
+//line scanner.gen.go:1019
 	{
-		s.ts = 0
-		s.te = 0
-		s.act = 0
+		(s.ts) = 0
+		(s.te) = 0
+		act = 0
 	}
 
-//line scanner.rl:123
-}
+//line scanner.rl:124
 
-func (s *Scanner) exec(cs int) int {
-
-//line scanner.gen.go:1030
+//line scanner.gen.go:1028
 	{
 		var _klen int
 		var _trans int
@@ -1031,11 +1029,11 @@ func (s *Scanner) exec(cs int) int {
 		if (s.p) == (s.pe) {
 			goto _test_eof
 		}
-		if (cs) == 0 {
+		if cs == 0 {
 			goto _out
 		}
 	_resume:
-		_acts = int(_flux_from_state_actions[(cs)])
+		_acts = int(_flux_from_state_actions[cs])
 		_nacts = uint(_flux_actions[_acts])
 		_acts++
 		for ; _nacts > 0; _nacts-- {
@@ -1043,16 +1041,16 @@ func (s *Scanner) exec(cs int) int {
 			switch _flux_actions[_acts-1] {
 			case 4:
 //line NONE:1
-				s.ts = (s.p)
+				(s.ts) = (s.p)
 
-//line scanner.gen.go:1053
+//line scanner.gen.go:1051
 			}
 		}
 
-		_keys = int(_flux_key_offsets[(cs)])
-		_trans = int(_flux_index_offsets[(cs)])
+		_keys = int(_flux_key_offsets[cs])
+		_trans = int(_flux_index_offsets[cs])
 
-		_klen = int(_flux_single_lengths[(cs)])
+		_klen = int(_flux_single_lengths[cs])
 		if _klen > 0 {
 			_lower := int(_keys)
 			var _mid int
@@ -1077,7 +1075,7 @@ func (s *Scanner) exec(cs int) int {
 			_trans += _klen
 		}
 
-		_klen = int(_flux_range_lengths[(cs)])
+		_klen = int(_flux_range_lengths[cs])
 		if _klen > 0 {
 			_lower := int(_keys)
 			var _mid int
@@ -1104,7 +1102,7 @@ func (s *Scanner) exec(cs int) int {
 	_match:
 		_trans = int(_flux_indicies[_trans])
 	_eof_trans:
-		(cs) = int(_flux_trans_targs[_trans])
+		cs = int(_flux_trans_targs[_trans])
 
 		if _flux_trans_actions[_trans] == 0 {
 			goto _again
@@ -1126,17 +1124,17 @@ func (s *Scanner) exec(cs int) int {
 
 			case 5:
 //line NONE:1
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 
 			case 6:
 //line scanner.rl:53
-				s.act = 1
+				act = 1
 			case 7:
 //line scanner.rl:59
-				s.act = 3
+				act = 3
 			case 8:
 //line scanner.rl:53
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.REGEX
 					(s.p)++
@@ -1144,15 +1142,15 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 9:
 //line scanner.rl:59
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					(s.p)--
-					(cs) = 226
+					cs = 226
 					goto _again
 				}
 			case 10:
 //line scanner.rl:53
-				s.te = (s.p)
+				(s.te) = (s.p)
 				(s.p)--
 				{
 					s.token = token.REGEX
@@ -1161,16 +1159,16 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 11:
 //line scanner.rl:56
-				s.te = (s.p)
+				(s.te) = (s.p)
 				(s.p)--
 
 			case 12:
 //line scanner.rl:59
-				s.te = (s.p)
+				(s.te) = (s.p)
 				(s.p)--
 				{
 					(s.p)--
-					(cs) = 226
+					cs = 226
 					goto _again
 				}
 			case 13:
@@ -1178,12 +1176,12 @@ func (s *Scanner) exec(cs int) int {
 				(s.p) = (s.te) - 1
 				{
 					(s.p)--
-					(cs) = 226
+					cs = 226
 					goto _again
 				}
 			case 14:
 //line NONE:1
-				switch s.act {
+				switch act {
 				case 1:
 					{
 						(s.p) = (s.te) - 1
@@ -1195,53 +1193,53 @@ func (s *Scanner) exec(cs int) int {
 					{
 						(s.p) = (s.te) - 1
 						(s.p)--
-						(cs) = 226
+						cs = 226
 						goto _again
 					}
 				}
 
 			case 15:
 //line scanner.rl:66
-				s.act = 5
+				act = 5
 			case 16:
 //line scanner.rl:67
-				s.act = 6
+				act = 6
 			case 17:
 //line scanner.rl:68
-				s.act = 7
+				act = 7
 			case 18:
 //line scanner.rl:69
-				s.act = 8
+				act = 8
 			case 19:
 //line scanner.rl:70
-				s.act = 9
+				act = 9
 			case 20:
 //line scanner.rl:71
-				s.act = 10
+				act = 10
 			case 21:
 //line scanner.rl:72
-				s.act = 11
+				act = 11
 			case 22:
 //line scanner.rl:73
-				s.act = 12
+				act = 12
 			case 23:
 //line scanner.rl:75
-				s.act = 13
+				act = 13
 			case 24:
 //line scanner.rl:76
-				s.act = 14
+				act = 14
 			case 25:
 //line scanner.rl:77
-				s.act = 15
+				act = 15
 			case 26:
 //line scanner.rl:78
-				s.act = 16
+				act = 16
 			case 27:
 //line scanner.rl:107
-				s.act = 44
+				act = 44
 			case 28:
 //line scanner.rl:64
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.COMMENT
 					(s.p)++
@@ -1249,7 +1247,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 29:
 //line scanner.rl:79
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.TIME
 					(s.p)++
@@ -1257,7 +1255,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 30:
 //line scanner.rl:80
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.STRING
 					(s.p)++
@@ -1265,7 +1263,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 31:
 //line scanner.rl:82
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.ADD
 					(s.p)++
@@ -1273,7 +1271,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 32:
 //line scanner.rl:83
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.SUB
 					(s.p)++
@@ -1281,7 +1279,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 33:
 //line scanner.rl:84
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.MUL
 					(s.p)++
@@ -1289,7 +1287,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 34:
 //line scanner.rl:86
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.MOD
 					(s.p)++
@@ -1297,7 +1295,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 35:
 //line scanner.rl:87
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.EQ
 					(s.p)++
@@ -1305,7 +1303,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 36:
 //line scanner.rl:90
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.LTE
 					(s.p)++
@@ -1313,7 +1311,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 37:
 //line scanner.rl:91
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.GTE
 					(s.p)++
@@ -1321,7 +1319,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 38:
 //line scanner.rl:92
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.NEQ
 					(s.p)++
@@ -1329,7 +1327,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 39:
 //line scanner.rl:93
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.REGEXEQ
 					(s.p)++
@@ -1337,7 +1335,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 40:
 //line scanner.rl:94
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.REGEXNEQ
 					(s.p)++
@@ -1345,7 +1343,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 41:
 //line scanner.rl:96
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.ARROW
 					(s.p)++
@@ -1353,7 +1351,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 42:
 //line scanner.rl:97
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.PIPE_RECEIVE
 					(s.p)++
@@ -1361,7 +1359,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 43:
 //line scanner.rl:98
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.LPAREN
 					(s.p)++
@@ -1369,7 +1367,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 44:
 //line scanner.rl:99
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.RPAREN
 					(s.p)++
@@ -1377,7 +1375,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 45:
 //line scanner.rl:100
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.LBRACK
 					(s.p)++
@@ -1385,7 +1383,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 46:
 //line scanner.rl:101
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.RBRACK
 					(s.p)++
@@ -1393,7 +1391,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 47:
 //line scanner.rl:102
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.LBRACE
 					(s.p)++
@@ -1401,7 +1399,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 48:
 //line scanner.rl:103
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.RBRACE
 					(s.p)++
@@ -1409,7 +1407,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 49:
 //line scanner.rl:104
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.COLON
 					(s.p)++
@@ -1417,7 +1415,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 50:
 //line scanner.rl:105
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.PIPE_FORWARD
 					(s.p)++
@@ -1425,7 +1423,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 51:
 //line scanner.rl:106
-				s.te = (s.p) + 1
+				(s.te) = (s.p) + 1
 				{
 					s.token = token.COMMA
 					(s.p)++
@@ -1433,7 +1431,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 52:
 //line scanner.rl:64
-				s.te = (s.p)
+				(s.te) = (s.p)
 				(s.p)--
 				{
 					s.token = token.COMMENT
@@ -1442,7 +1440,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 53:
 //line scanner.rl:75
-				s.te = (s.p)
+				(s.te) = (s.p)
 				(s.p)--
 				{
 					s.token = token.IDENT
@@ -1451,7 +1449,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 54:
 //line scanner.rl:76
-				s.te = (s.p)
+				(s.te) = (s.p)
 				(s.p)--
 				{
 					s.token = token.INT
@@ -1460,7 +1458,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 55:
 //line scanner.rl:78
-				s.te = (s.p)
+				(s.te) = (s.p)
 				(s.p)--
 				{
 					s.token = token.DURATION
@@ -1469,7 +1467,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 56:
 //line scanner.rl:79
-				s.te = (s.p)
+				(s.te) = (s.p)
 				(s.p)--
 				{
 					s.token = token.TIME
@@ -1478,7 +1476,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 57:
 //line scanner.rl:85
-				s.te = (s.p)
+				(s.te) = (s.p)
 				(s.p)--
 				{
 					s.token = token.DIV
@@ -1487,7 +1485,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 58:
 //line scanner.rl:88
-				s.te = (s.p)
+				(s.te) = (s.p)
 				(s.p)--
 				{
 					s.token = token.LT
@@ -1496,7 +1494,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 59:
 //line scanner.rl:89
-				s.te = (s.p)
+				(s.te) = (s.p)
 				(s.p)--
 				{
 					s.token = token.GT
@@ -1505,7 +1503,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 60:
 //line scanner.rl:95
-				s.te = (s.p)
+				(s.te) = (s.p)
 				(s.p)--
 				{
 					s.token = token.ASSIGN
@@ -1514,7 +1512,7 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 61:
 //line scanner.rl:109
-				s.te = (s.p)
+				(s.te) = (s.p)
 				(s.p)--
 
 			case 62:
@@ -1543,10 +1541,10 @@ func (s *Scanner) exec(cs int) int {
 				}
 			case 65:
 //line NONE:1
-				switch s.act {
+				switch act {
 				case 0:
 					{
-						(cs) = 0
+						cs = 0
 						goto _again
 					}
 				case 5:
@@ -1642,12 +1640,12 @@ func (s *Scanner) exec(cs int) int {
 					}
 				}
 
-//line scanner.gen.go:1488
+//line scanner.gen.go:1486
 			}
 		}
 
 	_again:
-		_acts = int(_flux_to_state_actions[(cs)])
+		_acts = int(_flux_to_state_actions[cs])
 		_nacts = uint(_flux_actions[_acts])
 		_acts++
 		for ; _nacts > 0; _nacts-- {
@@ -1655,17 +1653,17 @@ func (s *Scanner) exec(cs int) int {
 			switch _flux_actions[_acts-1] {
 			case 2:
 //line NONE:1
-				s.ts = 0
+				(s.ts) = 0
 
 			case 3:
 //line NONE:1
-				s.act = 0
+				act = 0
 
-//line scanner.gen.go:1506
+//line scanner.gen.go:1504
 			}
 		}
 
-		if (cs) == 0 {
+		if cs == 0 {
 			goto _out
 		}
 		(s.p)++
@@ -1676,8 +1674,8 @@ func (s *Scanner) exec(cs int) int {
 		{
 		}
 		if (s.p) == (s.eof) {
-			if _flux_eof_trans[(cs)] > 0 {
-				_trans = int(_flux_eof_trans[(cs)] - 1)
+			if _flux_eof_trans[cs] > 0 {
+				_trans = int(_flux_eof_trans[cs] - 1)
 				goto _eof_trans
 			}
 		}
@@ -1687,6 +1685,6 @@ func (s *Scanner) exec(cs int) int {
 		}
 	}
 
-//line scanner.rl:127
+//line scanner.rl:125
 	return cs
 }

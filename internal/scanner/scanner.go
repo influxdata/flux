@@ -34,7 +34,6 @@ func (s *Scanner) Init(f *token.File, data []byte) {
 	s.f = f
 	s.p, s.pe, s.eof = 0, len(data), len(data)
 	s.data = data
-	s.init()
 }
 
 // File returns the file being processed by the Scanner.
