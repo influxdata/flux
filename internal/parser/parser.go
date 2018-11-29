@@ -673,43 +673,36 @@ func (p *parser) parsePrimaryExpression() ast.Expression {
 			BaseNode: p.posRange(pos, len(lit)),
 		}
 	case token.INT:
-		value, err := strconv.ParseInt(lit, 10, 64)
-		if err != nil {
-			panic(err)
-		}
+		// todo(jsternberg): handle errors.
+		value, _ := strconv.ParseInt(lit, 10, 64)
 		return &ast.IntegerLiteral{
 			Value:    value,
 			BaseNode: p.posRange(pos, len(lit)),
 		}
 	case token.FLOAT:
-		value, err := strconv.ParseFloat(lit, 64)
-		if err != nil {
-			panic(err)
-		}
+		// todo(jsternberg): handle errors.
+		value, _ := strconv.ParseFloat(lit, 64)
 		return &ast.FloatLiteral{
 			Value:    value,
 			BaseNode: p.posRange(pos, len(lit)),
 		}
 	case token.STRING:
-		value, err := parseString(lit)
-		if err != nil {
-			panic(err)
-		}
+		// todo(jsternberg): handle errors.
+		value, _ := parseString(lit)
 		return &ast.StringLiteral{
 			Value:    value,
 			BaseNode: p.posRange(pos, len(lit)),
 		}
 	case token.REGEX:
+		// todo(jsternberg): handle errors.
 		value, _ := parseRegexp(lit)
 		return &ast.RegexpLiteral{
 			Value:    value,
 			BaseNode: p.posRange(pos, len(lit)),
 		}
 	case token.DURATION:
-		values, err := parseDuration(lit)
-		if err != nil {
-			panic(err)
-		}
+		// todo(jsternberg): handle errors.
+		values, _ := parseDuration(lit)
 		return &ast.DurationLiteral{
 			Values:   values,
 			BaseNode: p.posRange(pos, len(lit)),
