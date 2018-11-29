@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
@@ -3100,6 +3101,66 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 				}},
 			},
 		},
+		{
+			name: "date literal in the default location",
+			raw:  `now = 2018-11-29`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "1:17"),
+				Body: []ast.Statement{&ast.VariableDeclaration{
+					BaseNode: base("1:1", "1:17"),
+					Declarations: []*ast.VariableDeclarator{{
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:4"),
+							Name:     "now",
+						},
+						Init: &ast.DateTimeLiteral{
+							BaseNode: base("1:7", "1:17"),
+							Value:    mustParseTime("2018-11-29T00:00:00Z"),
+						},
+					}},
+				}},
+			},
+		},
+		{
+			name: "date time literal",
+			raw:  `now = 2018-11-29T09:00:00Z`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "1:27"),
+				Body: []ast.Statement{&ast.VariableDeclaration{
+					BaseNode: base("1:1", "1:27"),
+					Declarations: []*ast.VariableDeclarator{{
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:4"),
+							Name:     "now",
+						},
+						Init: &ast.DateTimeLiteral{
+							BaseNode: base("1:7", "1:27"),
+							Value:    mustParseTime("2018-11-29T09:00:00Z"),
+						},
+					}},
+				}},
+			},
+		},
+		{
+			name: "date time literal with fractional seconds",
+			raw:  `now = 2018-11-29T09:00:00.100000000Z`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "1:37"),
+				Body: []ast.Statement{&ast.VariableDeclaration{
+					BaseNode: base("1:1", "1:37"),
+					Declarations: []*ast.VariableDeclarator{{
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:4"),
+							Name:     "now",
+						},
+						Init: &ast.DateTimeLiteral{
+							BaseNode: base("1:7", "1:37"),
+							Value:    mustParseTime("2018-11-29T09:00:00.100000000Z"),
+						},
+					}},
+				}},
+			},
+		},
 	} {
 		runFn(tt.name, func(tb testing.TB) {
 			fset := token.NewFileSet()
@@ -3130,4 +3191,12 @@ func base(start, end string) ast.BaseNode {
 			Source: "query.flux",
 		},
 	}
+}
+
+func mustParseTime(s string) time.Time {
+	ts, err := time.Parse(time.RFC3339Nano, s)
+	if err != nil {
+		panic(err)
+	}
+	return ts
 }
