@@ -515,6 +515,7 @@ func (d *tableDecoder) advance(extraLine []string) (bool, error) {
 			}
 			line = l
 		}
+		// whatever this line is, it's not part of this table so goto DONE
 		if len(line) != d.meta.NumFields {
 			if len(line) > annotationIdx && line[annotationIdx] == "" {
 				return false, csv.ErrFieldCount
@@ -551,7 +552,15 @@ DONE:
 	// table is done
 	d.extraLine = line
 	if !d.initialized {
-		return false, errors.New("table was not initialized, missing group key data")
+		// if we found a new annotation without any data rows, then the table is empty and we
+		// init using the meta.Default column values.
+		if d.empty {
+			if err := d.init(nil); err != nil {
+				return false, err
+			}
+		} else {
+			return false, errors.New("table was not initialized, missing group key data")
+		}
 	}
 	return false, nil
 }
