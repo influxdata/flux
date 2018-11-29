@@ -18,6 +18,14 @@ func (f *File) Base() int {
 	return f.file.Base()
 }
 
+func (f *File) Name() string {
+	return f.file.Name()
+}
+
+func (f *File) Size() int {
+	return f.file.Size()
+}
+
 func (f *File) Pos(offset int) Pos {
 	return Pos(f.file.Pos(offset))
 }

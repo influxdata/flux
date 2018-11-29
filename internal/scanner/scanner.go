@@ -37,6 +37,11 @@ func (s *Scanner) Init(f *token.File, data []byte) {
 	s.init()
 }
 
+// File returns the file being processed by the Scanner.
+func (s *Scanner) File() *token.File {
+	return s.f
+}
+
 // ScanWithRegex will scan the next token for the entire grammar.
 func (s *Scanner) ScanWithRegex() (pos token.Pos, tok token.Token, lit string) {
 	return s.scan(flux_en_main_with_regex)
