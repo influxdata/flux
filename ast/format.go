@@ -169,7 +169,7 @@ func (fv *FormatVisitor) createVisitor(child Node, d *delimiters) Visitor {
 This utility function returns proper delimiters for a child from a slice of children.
 It calculates the delimiters from the current delimiters, a prefix, a suffix, and a separator, by
 considering the position of the child among children.
-*/
+ */
 func getDelimitersForSlice(children interface{}, child interface{}, cur *delimiters, pref, suf, sep string) *delimiters {
 	s := reflect.ValueOf(children)
 	if s.Kind() != reflect.Slice {
