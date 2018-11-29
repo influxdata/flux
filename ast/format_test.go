@@ -1,16 +1,17 @@
 package ast_test
 
 import (
+	"github.com/google/go-cmp/cmp"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/semantic/semantictest"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/ast/asttest"
 	"github.com/influxdata/flux/parser"
-	"github.com/pkg/errors"
 )
 
 func withEachFluxFile(t *testing.T, fn func(caseName, fileContent string)) {
@@ -48,6 +49,11 @@ func TestFormat(t *testing.T) {
 				t.Fatal(errors.Wrapf(err, "original program has bad syntax:\n%s", content))
 			}
 
+			want, err := semantic.New(originalProgram)
+			if err != nil {
+				t.Fatal(errors.Wrapf(err, "original program is not a valid flux query: %s", content))
+			}
+
 			stringResult := ast.Format(originalProgram)
 
 			newProgram, err := parser.NewAST(stringResult)
@@ -55,7 +61,12 @@ func TestFormat(t *testing.T) {
 				t.Fatal(errors.Wrapf(err, "new program has bad syntax:\n%s", stringResult))
 			}
 
-			if !cmp.Equal(originalProgram, newProgram, asttest.CompareOptions...) {
+			got, err := semantic.New(newProgram)
+			if err != nil {
+				t.Fatal(errors.Wrapf(err, "original program is not a valid flux query: %s", stringResult))
+			}
+
+			if !cmp.Equal(want, got, semantictest.CmpOptions...) {
 				t.Errorf("to string conversion error:\nin:\t\t%s\nout:\t\t%s\n", content, stringResult)
 			}
 		})
