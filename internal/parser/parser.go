@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 	"unicode/utf8"
 
@@ -108,7 +109,8 @@ func (p *parser) parseStatement() ast.Statement {
 	case token.RETURN:
 		return p.parseReturnStatement()
 	case token.INT, token.FLOAT, token.STRING, token.DIV,
-		token.DURATION, token.PIPE_RECEIVE, token.LPAREN, token.LBRACK, token.LBRACE,
+		token.TIME, token.DURATION, token.PIPE_RECEIVE,
+		token.LPAREN, token.LBRACK, token.LBRACE,
 		token.ADD, token.SUB, token.NOT:
 		return p.parseExpressionStatement()
 	default:
@@ -299,7 +301,8 @@ func (p *parser) parseExpressionList() []ast.Expression {
 	for {
 		switch _, tok, _ := p.peek(); tok {
 		case token.IDENT, token.INT, token.FLOAT, token.STRING, token.DIV,
-			token.DURATION, token.PIPE_RECEIVE, token.LPAREN, token.LBRACK, token.LBRACE,
+			token.TIME, token.DURATION, token.PIPE_RECEIVE,
+			token.LPAREN, token.LBRACK, token.LBRACE,
 			token.ADD, token.SUB, token.NOT:
 			exprs = append(exprs, p.parseExpression())
 		default:
@@ -701,6 +704,12 @@ func (p *parser) parsePrimaryExpression() ast.Expression {
 			Value:    value,
 			BaseNode: p.posRange(pos, len(lit)),
 		}
+	case token.TIME:
+		value, _ := parseTime(lit)
+		return &ast.DateTimeLiteral{
+			Value:    value,
+			BaseNode: p.posRange(pos, len(lit)),
+		}
 	case token.DURATION:
 		// todo(jsternberg): handle errors.
 		values, _ := parseDuration(lit)
@@ -1031,6 +1040,15 @@ func (p *parser) position(start, end token.Pos) ast.BaseNode {
 // literal.
 func (p *parser) posRange(start token.Pos, sz int) ast.BaseNode {
 	return p.position(start, start+token.Pos(sz))
+}
+
+func parseTime(lit string) (time.Time, error) {
+	if strings.Index(lit, "T") == -1 {
+		// This is a date.
+		return time.Parse("2006-01-02", lit)
+	}
+	// todo(jsternberg): need to also parse when there is no time offset.
+	return time.Parse(time.RFC3339Nano, lit)
 }
 
 func parseDuration(lit string) ([]ast.Duration, error) {
