@@ -2,300 +2,355 @@ package ast
 
 import (
 	"fmt"
-	"reflect"
 	"strconv"
 	"strings"
 	"time"
 )
 
+// Returns a valid query for a given AST rooted at node `n`.
 func Format(n Node) string {
-	return formatNode(n)
+	f := &formatter{new(strings.Builder)}
+	f.formatNode(n)
+	return f.get()
 }
 
-func formatChildren(children interface{}, sep string) string {
-	s := reflect.ValueOf(children)
-	if s.Kind() != reflect.Slice {
-		panic("children must be a slice type")
+type formatter struct {
+	*strings.Builder
+}
+
+func (f *formatter) get() string {
+	return f.String()
+}
+
+// strings.Builder's methods never returns a non-nil error.
+func (f *formatter) writeString(s string) {
+	_, err := f.WriteString(s)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (f *formatter) writeRune(r rune) {
+	_, err := f.WriteRune(r)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (f *formatter) formatProgram(n *Program) {
+	sep := '\n'
+	for i, c := range n.Body {
+		f.formatNode(c)
+		if i < len(n.Body)-1 {
+			f.writeRune(sep)
+		}
+	}
+}
+
+func (f *formatter) formatBlockStatement(n *BlockStatement) {
+	sep := '\n'
+	for i, c := range n.Body {
+		f.formatNode(c)
+		if i < len(n.Body)-1 {
+			f.writeRune(sep)
+		}
+	}
+}
+
+func (f *formatter) formatExpressionStatement(n *ExpressionStatement) {
+	f.formatNode(n.Expression)
+}
+
+func (f *formatter) formatReturnStatement(n *ReturnStatement) {
+	f.writeString("return ")
+	f.formatNode(n.Argument)
+}
+
+func (f *formatter) formatOptionStatement(n *OptionStatement) {
+	f.writeString("option ")
+	f.formatNode(n.Declaration)
+}
+
+func (f *formatter) formatVariableDeclaration(n *VariableDeclaration) {
+	sep := ' '
+	for i, c := range n.Declarations {
+		f.formatNode(c)
+		if i < len(n.Declarations)-1 {
+			f.writeRune(sep)
+		}
+	}
+}
+
+func (f *formatter) formatVariableDeclarator(n *VariableDeclarator) {
+	f.formatNode(n.ID)
+	f.writeRune('=')
+	f.formatNode(n.Init)
+}
+
+func (f *formatter) formatArrayExpression(n *ArrayExpression) {
+	f.writeRune('[')
+
+	sep := ','
+	for i, c := range n.Elements {
+		f.formatNode(c)
+		if i < len(n.Elements)-1 {
+			f.writeRune(sep)
+		}
 	}
 
-	schildren := make([]string, s.Len())
-	for i := 0; i < s.Len(); i++ {
-		child := formatNode(s.Index(i).Interface().(Node))
-		schildren[i] = child
+	f.writeRune(']')
+}
+
+func (f *formatter) formatArrowFunctionExpression(n *ArrowFunctionExpression) {
+	f.writeRune('(')
+
+	sep := ','
+	for i, c := range n.Params {
+		// treat properties differently than in general case
+		f.formatArrowFunctionArgument(c)
+		if i < len(n.Params)-1 {
+			f.writeRune(sep)
+		}
 	}
 
-	return strings.Join(schildren, sep)
+	f.writeString(")=>")
+	f.formatNode(n.Body)
 }
 
-func formatProgram(n *Program) string {
-	return formatChildren(n.Body, "\n")
+func (f *formatter) formatUnaryExpression(n *UnaryExpression) {
+	f.writeString(n.Operator.String())
+	f.formatNode(n.Argument)
 }
 
-func formatBlockStatement(n *BlockStatement) string {
-	return formatChildren(n.Body, "\n")
+func (f *formatter) formatBinaryExpression(n *BinaryExpression) {
+	f.formatNode(n.Left)
+	f.writeString(n.Operator.String())
+	f.formatNode(n.Right)
 }
 
-func formatExpressionStatement(n *ExpressionStatement) string {
-	return formatNode(n.Expression)
+func (f *formatter) formatLogicalExpression(n *LogicalExpression) {
+	f.formatNode(n.Left)
+	f.writeString(n.Operator.String())
+	f.formatNode(n.Right)
 }
 
-func formatReturnStatement(n *ReturnStatement) string {
-	return formatNode(n.Argument)
-}
+func (f *formatter) formatCallExpression(n *CallExpression) {
+	f.formatNode(n.Callee)
+	f.writeRune('(')
 
-func formatOptionStatement(n *OptionStatement) string {
-	format := "option %s"
-	decl := formatNode(n.Declaration)
-	return fmt.Sprintf(format, decl)
-}
+	sep := ','
+	for i, c := range n.Arguments {
+		// treat ObjectExpression as argument in a special way
+		// (an object as argument doesn't need braces)
+		if oe, ok := c.(*ObjectExpression); ok {
+			f.formatObjectExpressionAsFunctionArgument(oe)
+		} else {
+			f.formatNode(c)
+		}
 
-func formatVariableDeclaration(n *VariableDeclaration) string {
-	return formatChildren(n.Declarations, " ")
-}
-
-func formatVariableDeclarator(n *VariableDeclarator) string {
-	format := "%s=%s"
-	id := formatNode(n.ID)
-	init := formatNode(n.Init)
-	return fmt.Sprintf(format, id, init)
-}
-
-func formatArrayExpression(n *ArrayExpression) string {
-	format := "[%s]"
-	s := formatChildren(n.Elements, ",")
-	return fmt.Sprintf(format, s)
-}
-
-func formatArrowFunctionExpression(n *ArrowFunctionExpression) string {
-	format := "(%s)=>%s"
-
-	// must treat properties differently than in general case
-	// must specify the separator used in properties ("=" instead of ":")
-	// cannot use formatChildren
-	props := make([]string, len(n.Params))
-	for i := 0; i < len(n.Params); i++ {
-		child := formatPropertyWSeparator(n.Params[i], "=")
-		props[i] = child
+		if i < len(n.Arguments)-1 {
+			f.writeRune(sep)
+		}
 	}
 
-	params := strings.Join(props, ",")
-	body := formatNode(n.Body)
-	return fmt.Sprintf(format, params, body)
+	f.writeRune(')')
 }
 
-func formatBinaryExpression(n *BinaryExpression) string {
-	format := "%s%s%s"
-	left := formatNode(n.Left)
-	op := n.Operator.String()
-	right := formatNode(n.Right)
-	return fmt.Sprintf(format, left, op, right)
+func (f *formatter) formatPipeExpression(n *PipeExpression) {
+	f.formatNode(n.Argument)
+	f.writeString("|>")
+	f.formatNode(n.Call)
 }
 
-func formatCallExpression(n *CallExpression) string {
-	format := "%s(%s)"
-	callee := formatNode(n.Callee)
-	args := formatChildren(n.Arguments, ",")
+func (f *formatter) formatConditionalExpression(n *ConditionalExpression) {
+	f.formatNode(n.Test)
+	f.writeRune('?')
+	f.formatNode(n.Consequent)
+	f.writeRune(':')
+	f.formatNode(n.Alternate)
+}
 
-	// remove braces to arguments because it is a special
-	// case for an ObjectExpression, if so
-	l := len(args)
-	if l > 1 && args[0] == '{' && args[l-1] == '}' {
-		args = args[1 : l-1]
+func (f *formatter) formatMemberExpression(n *MemberExpression) {
+	f.formatNode(n.Object)
+	f.writeRune('.')
+	f.formatNode(n.Property)
+}
+
+func (f *formatter) formatIndexExpression(n *IndexExpression) {
+	f.formatNode(n.Array)
+	f.writeRune('[')
+	f.formatNode(n.Index)
+	f.writeRune(']')
+}
+
+func (f *formatter) formatObjectExpression(n *ObjectExpression) {
+	f.formatObjectExpressionBraces(n, true)
+}
+
+func (f *formatter) formatObjectExpressionAsFunctionArgument(n *ObjectExpression) {
+	f.formatObjectExpressionBraces(n, false)
+}
+
+func (f *formatter) formatObjectExpressionBraces(n *ObjectExpression, braces bool) {
+	if braces {
+		f.writeRune('{')
 	}
 
-	return fmt.Sprintf(format, callee, args)
-}
-
-func formatConditionalExpression(n *ConditionalExpression) string {
-	format := "%s?%s:%s"
-	test := formatNode(n.Test)
-	cons := formatNode(n.Consequent)
-	alt := formatNode(n.Alternate)
-	return fmt.Sprintf(format, test, cons, alt)
-}
-
-func formatMemberExpression(n *MemberExpression) string {
-	format := "%s.%s"
-	o := formatNode(n.Object)
-	p := formatNode(n.Property)
-	return fmt.Sprintf(format, o, p)
-}
-
-func formatIndexExpression(n *IndexExpression) string {
-	format := "%s[%s]"
-	array := formatNode(n.Array)
-	i := formatNode(n.Index)
-	return fmt.Sprintf(format, array, i)
-}
-
-func formatObjectExpression(n *ObjectExpression) string {
-	format := "{%s}"
-	properties := formatChildren(n.Properties, ",")
-	return fmt.Sprintf(format, properties)
-}
-
-func formatPipeExpression(n *PipeExpression) string {
-	format := "%s|>%s"
-	arg := formatNode(n.Argument)
-	call := formatNode(n.Call)
-	return fmt.Sprintf(format, arg, call)
-}
-
-func formatUnaryExpression(n *UnaryExpression) string {
-	format := "%s%s"
-	op := n.Operator.String()
-	exp := formatNode(n.Argument)
-	return fmt.Sprintf(format, op, exp)
-}
-
-func formatLogicalExpression(n *LogicalExpression) string {
-	format := "%s%s%s"
-	left := formatNode(n.Left)
-	op := n.Operator.String()
-	right := formatNode(n.Right)
-	return fmt.Sprintf(format, left, op, right)
-}
-
-func formatIdentifier(n *Identifier) string {
-	return n.Name
-}
-
-func formatBooleanLiteral(n *BooleanLiteral) string {
-	return strconv.FormatBool(n.Value)
-}
-
-func formatDateTimeLiteral(n *DateTimeLiteral) string {
-	return n.Value.Format(time.RFC3339Nano)
-}
-
-func formatDurationLiteral(n *DurationLiteral) string {
-	formatDuration := func(d Duration) string {
-		format := "%s%s"
-		mag := strconv.FormatInt(d.Magnitude, 10)
-		return fmt.Sprintf(format, mag, d.Unit)
+	sep := ','
+	for i, c := range n.Properties {
+		f.formatNode(c)
+		if i < len(n.Properties)-1 {
+			f.writeRune(sep)
+		}
 	}
 
-	ds := make([]string, len(n.Values))
-	for _, d := range n.Values {
-		child := formatDuration(d)
-		ds = append(ds, child)
+	if braces {
+		f.writeRune('}')
 	}
-
-	return strings.Join(ds, "")
 }
 
-func formatFloatLiteral(n *FloatLiteral) string {
-	conv := strconv.FormatFloat(n.Value, 'f', -1, 64)
-
-	if !strings.Contains(conv, ".") {
-		conv += ".0" // force to make it a float
-	}
-
-	return conv
+func (f *formatter) formatProperty(n *Property) {
+	f.formatNode(n.Key)
+	f.writeRune(':')
+	f.formatNode(n.Value)
 }
 
-func formatIntegerLiteral(n *IntegerLiteral) string {
-	return strconv.FormatInt(n.Value, 10)
-}
-
-func formatPipeLiteral(_ *PipeLiteral) string {
-	return "<-"
-}
-
-func formatRegexpLiteral(n *RegexpLiteral) string {
-	format := "/%s/"
-	return fmt.Sprintf(format, n.Value.String())
-}
-
-func formatStringLiteral(n *StringLiteral) string {
-	format := "\"%s\""
-	return fmt.Sprintf(format, n.Value)
-}
-
-func formatUnsignedIntegerLiteral(n *UnsignedIntegerLiteral) string {
-	return strconv.FormatUint(n.Value, 10)
-}
-
-func formatProperty(n *Property) string {
-	return formatPropertyWSeparator(n, ":")
-}
-
-func formatPropertyWSeparator(n *Property, sep string) string {
+func (f *formatter) formatArrowFunctionArgument(n *Property) {
+	// in this case we are not in a function declaration
 	if n.Value == nil {
-		return formatNode(n.Key)
+		f.formatNode(n.Key)
+		return
 	}
 
-	format := "%s%s%s"
-	k := formatNode(n.Key)
-	v := formatNode(n.Value)
-	return fmt.Sprintf(format, k, sep, v)
+	// in a function declaration
+	f.formatNode(n.Key)
+	f.writeRune('=')
+	f.formatNode(n.Value)
 }
 
-func formatNode(n Node) string {
-	var result string
+func (f *formatter) formatIdentifier(n *Identifier) {
+	f.writeString(n.Name)
+}
+
+func (f *formatter) formatStringLiteral(n *StringLiteral) {
+	f.writeRune('"')
+	f.writeString(n.Value)
+	f.writeRune('"')
+}
+
+func (f *formatter) formatBooleanLiteral(n *BooleanLiteral) {
+	f.writeString(strconv.FormatBool(n.Value))
+}
+
+func (f *formatter) formatDateTimeLiteral(n *DateTimeLiteral) {
+	f.writeString(n.Value.Format(time.RFC3339Nano))
+}
+
+func (f *formatter) formatDurationLiteral(n *DurationLiteral) {
+	formatDuration := func(d Duration) {
+		f.writeString(strconv.FormatInt(d.Magnitude, 10))
+		f.writeString(d.Unit)
+	}
+
+	sep := ' '
+	for i, d := range n.Values {
+		formatDuration(d)
+		if i < len(n.Values)-1 {
+			f.writeRune(sep)
+		}
+	}
+}
+
+func (f *formatter) formatFloatLiteral(n *FloatLiteral) {
+	sf := strconv.FormatFloat(n.Value, 'f', -1, 64)
+
+	if !strings.Contains(sf, ".") {
+		sf += ".0" // force to make it a float
+	}
+
+	f.writeString(sf)
+}
+
+func (f *formatter) formatIntegerLiteral(n *IntegerLiteral) {
+	f.writeString(strconv.FormatInt(n.Value, 10))
+}
+
+func (f *formatter) formatUnsignedIntegerLiteral(n *UnsignedIntegerLiteral) {
+	f.writeString(strconv.FormatUint(n.Value, 10))
+}
+
+func (f *formatter) formatPipeLiteral(_ *PipeLiteral) {
+	f.writeString("<-")
+}
+
+func (f *formatter) formatRegexpLiteral(n *RegexpLiteral) {
+	f.writeRune('/')
+	f.writeString(n.Value.String())
+	f.writeRune('/')
+}
+
+func (f *formatter) formatNode(n Node) {
 	switch n := n.(type) {
 	case *Program:
-		result = formatProgram(n)
+		f.formatProgram(n)
 	case *BlockStatement:
-		result = formatBlockStatement(n)
+		f.formatBlockStatement(n)
 	case *OptionStatement:
-		result = formatOptionStatement(n)
+		f.formatOptionStatement(n)
 	case *ExpressionStatement:
-		result = formatExpressionStatement(n)
+		f.formatExpressionStatement(n)
 	case *ReturnStatement:
-		result = formatReturnStatement(n)
+		f.formatReturnStatement(n)
 	case *VariableDeclaration:
-		result = formatVariableDeclaration(n)
+		f.formatVariableDeclaration(n)
 	case *VariableDeclarator:
-		result = formatVariableDeclarator(n)
+		f.formatVariableDeclarator(n)
 	case *CallExpression:
-		result = formatCallExpression(n)
+		f.formatCallExpression(n)
 	case *PipeExpression:
-		result = formatPipeExpression(n)
+		f.formatPipeExpression(n)
 	case *MemberExpression:
-		result = formatMemberExpression(n)
+		f.formatMemberExpression(n)
 	case *IndexExpression:
-		result = formatIndexExpression(n)
+		f.formatIndexExpression(n)
 	case *BinaryExpression:
-		result = formatBinaryExpression(n)
+		f.formatBinaryExpression(n)
 	case *UnaryExpression:
-		result = formatUnaryExpression(n)
+		f.formatUnaryExpression(n)
 	case *LogicalExpression:
-		result = formatLogicalExpression(n)
+		f.formatLogicalExpression(n)
 	case *ObjectExpression:
-		result = formatObjectExpression(n)
+		f.formatObjectExpression(n)
 	case *ConditionalExpression:
-		result = formatConditionalExpression(n)
+		f.formatConditionalExpression(n)
 	case *ArrayExpression:
-		result = formatArrayExpression(n)
+		f.formatArrayExpression(n)
 	case *Identifier:
-		result = formatIdentifier(n)
+		f.formatIdentifier(n)
 	case *PipeLiteral:
-		result = formatPipeLiteral(n)
+		f.formatPipeLiteral(n)
 	case *StringLiteral:
-		result = formatStringLiteral(n)
+		f.formatStringLiteral(n)
 	case *BooleanLiteral:
-		result = formatBooleanLiteral(n)
+		f.formatBooleanLiteral(n)
 	case *FloatLiteral:
-		result = formatFloatLiteral(n)
+		f.formatFloatLiteral(n)
 	case *IntegerLiteral:
-		result = formatIntegerLiteral(n)
+		f.formatIntegerLiteral(n)
 	case *UnsignedIntegerLiteral:
-		result = formatUnsignedIntegerLiteral(n)
+		f.formatUnsignedIntegerLiteral(n)
 	case *RegexpLiteral:
-		result = formatRegexpLiteral(n)
+		f.formatRegexpLiteral(n)
 	case *DurationLiteral:
-		result = formatDurationLiteral(n)
+		f.formatDurationLiteral(n)
 	case *DateTimeLiteral:
-		result = formatDateTimeLiteral(n)
+		f.formatDateTimeLiteral(n)
 	case *ArrowFunctionExpression:
-		result = formatArrowFunctionExpression(n)
+		f.formatArrowFunctionExpression(n)
 	case *Property:
-		result = formatProperty(n)
+		f.formatProperty(n)
 	default:
 		// If we were able not to find the type, than this switch is wrong
 		panic(fmt.Errorf("unknown type %q", n.Type()))
 	}
-
-	return result
 }
