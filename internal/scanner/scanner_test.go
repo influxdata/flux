@@ -309,6 +309,17 @@ func TestScanner_MultipleTokens(t *testing.T) {
 				token.STRING,
 			},
 		},
+		{
+			name: "illegal unicode point",
+			s: string([]byte{
+				byte('r'), byte('['), 240, 157, 128, 128,
+			}),
+			want: []token.Token{
+				token.IDENT,
+				token.LBRACK,
+				token.ILLEGAL,
+			},
+		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			fset := token.NewFileSet()

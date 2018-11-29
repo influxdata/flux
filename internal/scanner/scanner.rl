@@ -10,7 +10,7 @@ import "github.com/influxdata/flux/internal/token"
 	newline = '\n' @{ s.f.AddLine(s.f.Base() + fpc) };
 	any_count_line = any | newline;
 
-	identifier = ( ualpha | "_" ) ( ualnum | "_")*;
+	identifier = ( ualpha | "_" ) ( ualnum | "_" )*;
 
 	decimal_lit = (digit - "0") digit*;
 	int_lit = "0" | decimal_lit;
@@ -112,17 +112,15 @@ import "github.com/influxdata/flux/internal/token"
 
 %% write data;
 
-func (s *Scanner) init() {
-  %% access s.;
-  %% variable p s.p;
-  %% variable pe s.pe;
-  %% variable eof s.eof;
-  %% variable data s.data;
-  %% variable cs cs;
-  %% write init nocs;
-}
-
 func (s *Scanner) exec(cs int) int {
-  %% write exec;
-  return cs
+	%% variable p s.p;
+	%% variable pe s.pe;
+	%% variable eof s.eof;
+	%% variable data s.data;
+	%% variable ts s.ts;
+	%% variable te s.te;
+	var act int
+	%% write init nocs;
+	%% write exec;
+	return cs
 }
