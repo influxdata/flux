@@ -342,17 +342,15 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (v
 
 func (itrp *Interpreter) doArray(a *semantic.ArrayExpression, scope *Scope) (values.Value, error) {
 	elements := make([]values.Value, len(a.Elements))
-	elementType := semantic.EmptyArrayType.ElementType()
+	arrayType, ok := itrp.types.LookupType(a)
+	if !ok {
+		return nil, fmt.Errorf("expecting array type")
+	}
+	elementType := arrayType.ElementType()
 	for i, el := range a.Elements {
 		v, err := itrp.doExpression(el, scope)
 		if err != nil {
 			return nil, err
-		}
-		if i == 0 {
-			elementType = v.Type()
-		}
-		if elementType != v.Type() {
-			return nil, fmt.Errorf("cannot mix types in an array, found both %v and %v", elementType, v.Type())
 		}
 		elements[i] = v
 	}
