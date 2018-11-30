@@ -286,6 +286,9 @@ Parens
 
 Array
   = "[" __ elements:ArrayElements? __ "]" {
+      if elements == nil {
+          elements = emptyArray(c.text, c.pos)
+      }
       return elements, nil
     }
 
