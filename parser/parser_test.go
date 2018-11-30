@@ -288,6 +288,20 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 			},
 		},
 		{
+			name: "declare variable as an empty array",
+			raw:  `howdy = []`,
+			want: &ast.Program{
+				Body: []ast.Statement{
+					&ast.VariableDeclaration{
+						Declarations: []*ast.VariableDeclarator{{
+							ID:   &ast.Identifier{Name: "howdy"},
+							Init: &ast.ArrayExpression{},
+						}},
+					},
+				},
+			},
+		},
+		{
 			name: "use variable to declare something",
 			raw: `howdy = 1
 			from()`,
