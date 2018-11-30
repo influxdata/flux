@@ -48,6 +48,7 @@ func (a *Allocator) AppendBools(slice []bool, vs ...bool) []bool {
 	return s
 }
 
+// GrowBools increases the size of the input slice by n
 func (a *Allocator) GrowBools(slice []bool, n int) []bool {
 	newCap := len(slice) + n
 	if newCap < cap(slice) {
@@ -60,6 +61,14 @@ func (a *Allocator) GrowBools(slice []bool, n int) []bool {
 	diff := cap(s) - cap(slice)
 	a.account(diff, boolSize)
 	return s
+}
+
+// SliceBools reduces the input slice to slice[start:stop]
+func (a *Allocator) SliceBools(slice []bool, start, stop int) []bool {
+	origLen := len(slice)
+	slice = slice[start:stop]
+	a.Free(origLen-len(slice), boolSize)
+	return slice
 }
 
 // Ints makes a slice of int64 values.
@@ -79,6 +88,7 @@ func (a *Allocator) AppendInts(slice []int64, vs ...int64) []int64 {
 	return s
 }
 
+// GrowInts increases the size of the input slice by n
 func (a *Allocator) GrowInts(slice []int64, n int) []int64 {
 	newCap := len(slice) + n
 	if newCap < cap(slice) {
@@ -91,6 +101,14 @@ func (a *Allocator) GrowInts(slice []int64, n int) []int64 {
 	diff := cap(s) - cap(slice)
 	a.account(diff, int64Size)
 	return s
+}
+
+// SliceInts reduces the input slice to slice[start:stop]
+func (a *Allocator) SliceInts(slice []int64, start, stop int) []int64 {
+	origLen := len(slice)
+	slice = slice[start:stop]
+	a.Free(origLen-len(slice), int64Size)
+	return slice
 }
 
 // UInts makes a slice of uint64 values.
@@ -110,6 +128,7 @@ func (a *Allocator) AppendUInts(slice []uint64, vs ...uint64) []uint64 {
 	return s
 }
 
+// GrowUInts increases the size of the input slice by n
 func (a *Allocator) GrowUInts(slice []uint64, n int) []uint64 {
 	newCap := len(slice) + n
 	if newCap < cap(slice) {
@@ -122,6 +141,14 @@ func (a *Allocator) GrowUInts(slice []uint64, n int) []uint64 {
 	diff := cap(s) - cap(slice)
 	a.account(diff, uint64Size)
 	return s
+}
+
+// SliceUInts reduces the input slice to slice[start:stop]
+func (a *Allocator) SliceUInts(slice []uint64, start, stop int) []uint64 {
+	origLen := len(slice)
+	slice = slice[start:stop]
+	a.Free(origLen-len(slice), uint64Size)
+	return slice
 }
 
 // Floats makes a slice of float64 values.
@@ -141,6 +168,7 @@ func (a *Allocator) AppendFloats(slice []float64, vs ...float64) []float64 {
 	return s
 }
 
+// GrowFloats increases the size of the input slice by n
 func (a *Allocator) GrowFloats(slice []float64, n int) []float64 {
 	newCap := len(slice) + n
 	if newCap < cap(slice) {
@@ -153,6 +181,14 @@ func (a *Allocator) GrowFloats(slice []float64, n int) []float64 {
 	diff := cap(s) - cap(slice)
 	a.account(diff, float64Size)
 	return s
+}
+
+// SliceFloats reduces the input slice to slice[start:stop]
+func (a *Allocator) SliceFloats(slice []float64, start, stop int) []float64 {
+	origLen := len(slice)
+	slice = slice[start:stop]
+	a.Free(origLen-len(slice), float64Size)
+	return slice
 }
 
 // Strings makes a slice of string values.
@@ -175,6 +211,7 @@ func (a *Allocator) AppendStrings(slice []string, vs ...string) []string {
 	return s
 }
 
+// GrowStrings increases the size of the input slice by n
 func (a *Allocator) GrowStrings(slice []string, n int) []string {
 	newCap := len(slice) + n
 	if newCap < cap(slice) {
@@ -187,6 +224,14 @@ func (a *Allocator) GrowStrings(slice []string, n int) []string {
 	diff := cap(s) - cap(slice)
 	a.account(diff, stringSize)
 	return s
+}
+
+// SliceStrings reduces the input slice to slice[start:stop]
+func (a *Allocator) SliceStrings(slice []string, start, stop int) []string {
+	origLen := len(slice)
+	slice = slice[start:stop]
+	a.Free(origLen-len(slice), stringSize)
+	return slice
 }
 
 // Times makes a slice of Time values.
@@ -206,6 +251,7 @@ func (a *Allocator) AppendTimes(slice []Time, vs ...Time) []Time {
 	return s
 }
 
+// GrowTimes increases the size of the input slice by n
 func (a *Allocator) GrowTimes(slice []Time, n int) []Time {
 	newCap := len(slice) + n
 	if newCap < cap(slice) {
@@ -218,4 +264,12 @@ func (a *Allocator) GrowTimes(slice []Time, n int) []Time {
 	diff := cap(s) - cap(slice)
 	a.account(diff, timeSize)
 	return s
+}
+
+// SliceTimes reduces the input slice to slice[start:stop]
+func (a *Allocator) SliceTimes(slice []Time, start, stop int) []Time {
+	origLen := len(slice)
+	slice = slice[start:stop]
+	a.Free(origLen-len(slice), timeSize)
+	return slice
 }

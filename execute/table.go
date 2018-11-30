@@ -3,6 +3,7 @@ package execute
 import (
 	"errors"
 	"fmt"
+	"github.com/google/go-cmp/cmp"
 	"sort"
 	"sync/atomic"
 
@@ -213,7 +214,7 @@ func AppendCol(bj, cj int, cr flux.ColReader, builder TableBuilder) error {
 // AppendRecord appends the record from cr onto builder assuming matching columns.
 func AppendRecord(i int, cr flux.ColReader, builder TableBuilder) error {
 
-	if !ColsMatch(builder, cr) {
+	if !BuilderColsMatchReader(builder, cr) {
 		return errors.New("AppendRecord column schema mismatch")
 	}
 	for j := range builder.Cols() {
@@ -312,15 +313,79 @@ func AppendMappedRecordExplicit(i int, cr flux.ColReader, builder TableBuilder, 
 	return nil
 }
 
-// ColsMatch returns true if builder and cr have identical column sets (order dependent)
-func ColsMatch(builder TableBuilder, cr flux.ColReader) bool {
-	bCols := builder.Cols()
-	crCols := cr.Cols()
-	if len(bCols) != len(crCols) {
+// BuilderColsMatchReader returns true if builder and cr have identical column sets (order dependent)
+func BuilderColsMatchReader(builder TableBuilder, cr flux.ColReader) bool {
+	return colsMatch(builder.Cols(), cr.Cols())
+}
+
+// TablesEqual takes two flux tables and compares them.  Returns false if the tables have different keys, different
+// columns, or if the data in any column does not match.  Returns true otherwise.  This function will consume the
+// ColumnReader so if you are calling this from the a Process method, you may need to copy the table if you need to
+// iterate over the data for other calculations.
+func TablesEqual(left, right flux.Table) (bool, error) {
+	eq := false
+	// rbuffer will buffer out rows from the right table, always holding just enough to do a comparison with the left
+	// table's ColReader
+	rowBuffer := NewColListTableBuilder(right.Key(), &memory.Allocator{})
+	if err := AddTableCols(right, rowBuffer); err != nil {
+		return false, err
+	}
+	if colsMatch(left.Key().Cols(), right.Key().Cols()) && colsMatch(left.Cols(), right.Cols()) {
+		eq = true
+		if err := left.Do(func(lcr flux.ColReader) error {
+			if err := right.Do(func(rcr flux.ColReader) error {
+				// 1.  copy data from rcr into the colListTable
+				if err := AppendCols(rcr, rowBuffer); err != nil {
+					return err
+				}
+				// 2.  If there's enough in the buffer to compare, then we compare as much as we can.
+				leftLen := lcr.Len()
+				if rowBuffer.NRows() >= leftLen {
+					for j, c := range lcr.Cols() {
+						var err error
+						switch c.Type {
+						case flux.TBool:
+							eq = cmp.Equal(lcr.Bools(j), rowBuffer.RawTable().cols[j].(*boolColumn).data[:leftLen])
+						case flux.TInt:
+							eq = cmp.Equal(lcr.Ints(j), rowBuffer.RawTable().cols[j].(*intColumn).data[:leftLen])
+						case flux.TUInt:
+							eq = cmp.Equal(lcr.UInts(j), rowBuffer.RawTable().cols[j].(*uintColumn).data[:leftLen])
+						case flux.TFloat:
+							eq = cmp.Equal(lcr.Floats(j), rowBuffer.RawTable().cols[j].(*floatColumn).data[:leftLen])
+						case flux.TString:
+							eq = cmp.Equal(lcr.Strings(j), rowBuffer.RawTable().cols[j].(*stringColumn).data[:leftLen])
+						case flux.TTime:
+							eq = cmp.Equal(lcr.Times(j), rowBuffer.RawTable().cols[j].(*timeColumn).data[:leftLen])
+						default:
+							PanicUnknownType(c.Type)
+						}
+						if err != nil {
+							return err
+						}
+						if !eq {
+							return nil
+						}
+					}
+					return rowBuffer.SliceColumns(leftLen, rowBuffer.NRows())
+				}
+				return nil
+			}); err != nil {
+				return err
+			}
+			return nil
+		}); err != nil {
+			return false, err
+		}
+	}
+	return eq, nil
+}
+
+func colsMatch(left, right []flux.ColMeta) bool {
+	if len(left) != len(right) {
 		return false
 	}
-	for j, bc := range builder.Cols() {
-		if bc != crCols[j] {
+	for j, l := range left {
+		if l != right[j] {
 			return false
 		}
 	}
@@ -951,6 +1016,45 @@ func (b ColListTableBuilder) Table() (flux.Table, error) {
 func (b ColListTableBuilder) RawTable() *ColListTable {
 	// Create copy in mutable state
 	return b.table
+}
+
+// SliceColumns iterates over each column of b and re-slices them to the range
+// [start:stop].
+func (b ColListTableBuilder) SliceColumns(start, stop int) error {
+	if start < 0 || start > stop {
+		return fmt.Errorf("invalid start/stop parameters: %d/%d", start, stop)
+	}
+
+	if stop < start || stop > b.table.nrows {
+		return fmt.Errorf("invalid start/stop parameters: %d/%d", start, stop)
+	}
+
+	for i, col := range b.table.cols {
+		switch col.Meta().Type {
+		case flux.TBool:
+			col := b.table.cols[i].(*boolColumn)
+			col.data = b.alloc.SliceBools(col.data, start, stop)
+		case flux.TInt:
+			col := b.table.cols[i].(*intColumn)
+			col.data = b.alloc.SliceInts(col.data, start, stop)
+		case flux.TUInt:
+			col := b.table.cols[i].(*uintColumn)
+			col.data = b.alloc.SliceUInts(col.data, start, stop)
+		case flux.TFloat:
+			col := b.table.cols[i].(*floatColumn)
+			col.data = b.alloc.SliceFloats(col.data, start, stop)
+		case flux.TString:
+			col := b.table.cols[i].(*stringColumn)
+			col.data = b.alloc.SliceStrings(col.data, start, stop)
+		case flux.TTime:
+			col := b.table.cols[i].(*timeColumn)
+			col.data = b.alloc.SliceTimes(col.data, start, stop)
+		default:
+			panic(fmt.Errorf("unexpected column type %v", col.Meta().Type))
+		}
+	}
+
+	return nil
 }
 
 func (b ColListTableBuilder) ClearData() {
