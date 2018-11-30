@@ -242,6 +242,10 @@ func array(first, rest interface{}, text []byte, pos position) *ast.ArrayExpress
 	}
 }
 
+func emptyArray(text []byte, pos position) *ast.ArrayExpression {
+	return &ast.ArrayExpression{BaseNode: base(text, pos)}
+}
+
 func logicalExpression(head, tails interface{}, text []byte, pos position) (ast.Expression, error) {
 	res := head.(ast.Expression)
 	for _, tail := range toIfaceSlice(tails) {
