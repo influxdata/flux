@@ -986,6 +986,57 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 			},
 		},
 		{
+			name: "binary expression",
+			raw:  `_value < 10.0`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "1:14"),
+				Body: []ast.Statement{&ast.ExpressionStatement{
+					BaseNode: base("1:1", "1:14"),
+					Expression: &ast.BinaryExpression{
+						BaseNode: base("1:1", "1:14"),
+						Operator: ast.LessThanOperator,
+						Left: &ast.Identifier{
+							BaseNode: base("1:1", "1:7"),
+							Name:     "_value",
+						},
+						Right: &ast.FloatLiteral{
+							BaseNode: base("1:10", "1:14"),
+							Value:    10.0,
+						},
+					},
+				}},
+			},
+		},
+		{
+			name: "member expression binary expression",
+			raw:  `r._value < 10.0`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "1:16"),
+				Body: []ast.Statement{&ast.ExpressionStatement{
+					BaseNode: base("1:1", "1:16"),
+					Expression: &ast.BinaryExpression{
+						BaseNode: base("1:1", "1:16"),
+						Operator: ast.LessThanOperator,
+						Left: &ast.MemberExpression{
+							BaseNode: base("1:1", "1:9"),
+							Object: &ast.Identifier{
+								BaseNode: base("1:1", "1:2"),
+								Name:     "r",
+							},
+							Property: &ast.Identifier{
+								BaseNode: base("1:3", "1:9"),
+								Name:     "_value",
+							},
+						},
+						Right: &ast.FloatLiteral{
+							BaseNode: base("1:12", "1:16"),
+							Value:    10.0,
+						},
+					},
+				}},
+			},
+		},
+		{
 			name: "var as binary expression of other vars",
 			raw: `a = 1
             b = 2

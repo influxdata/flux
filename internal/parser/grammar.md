@@ -88,7 +88,7 @@ For the parser, the above grammar undergoes a process to have the left-recursion
     LogicalOperator = and | or .
     ComparisonExpression = MultiplicativeExpression { ComparisonExpressionSuffix } .
     ComparisonExpressionSuffix = ComparisonOperator MultiplicativeExpr .
-    ComparisonOperator = eq | neq | regexeq | regexneq .
+    ComparisonOperator = eq | neq | lt | lte | gt | gte | regexeq | regexneq .
     MultiplicativeExpression = AdditiveExpression { MultiplicativeOperator AdditiveExpression } .
     MultiplicativeOperator = mul | div .
     AdditiveExpression = PipeExpression { AdditiveExpressionSuffix } .

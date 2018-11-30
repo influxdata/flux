@@ -225,6 +225,7 @@ func (p *parser) parseIdentStatement() ast.Statement {
 			},
 		}
 	default:
+		expr = p.parseExpressionSuffix(expr)
 		return &ast.ExpressionStatement{
 			Expression: expr,
 			BaseNode: ast.BaseNode{
@@ -365,7 +366,7 @@ func (p *parser) parseComparisonExpression() ast.Expression {
 }
 
 func (p *parser) parseComparisonExpressionSuffix(expr *ast.Expression) func() bool {
-	return func() bool {
+	return func() (b bool) {
 		op, ok := p.parseComparisonOperator()
 		if !ok {
 			return false
@@ -395,6 +396,18 @@ func (p *parser) parseComparisonOperator() (ast.OperatorKind, bool) {
 	case token.NEQ:
 		p.consume()
 		return ast.NotEqualOperator, true
+	case token.LTE:
+		p.consume()
+		return ast.LessThanEqualOperator, true
+	case token.LT:
+		p.consume()
+		return ast.LessThanOperator, true
+	case token.GTE:
+		p.consume()
+		return ast.GreaterThanEqualOperator, true
+	case token.GT:
+		p.consume()
+		return ast.GreaterThanOperator, true
 	case token.REGEXEQ:
 		p.consume()
 		return ast.RegexpMatchOperator, true

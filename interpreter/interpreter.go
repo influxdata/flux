@@ -10,6 +10,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+var topScope = NewScopeWithValues(map[string]values.Value{
+	"true":  values.NewBool(true),
+	"false": values.NewBool(false),
+})
+
 // Interpreter used to interpret a Flux program
 type Interpreter struct {
 	values  []values.Value
@@ -21,7 +26,7 @@ type Interpreter struct {
 // NewInterpreter instantiates a new Flux Interpreter whose builtin values are not mutable.
 // Options are always mutable.
 func NewInterpreter(options, builtins map[string]values.Value, types *TypeScope) *Interpreter {
-	optionScope := NewScopeWithValues(options)
+	optionScope := topScope.NestWithValues(options)
 	globalScope := optionScope.NestWithValues(builtins)
 	interpreter := &Interpreter{
 		options: optionScope,
@@ -34,7 +39,7 @@ func NewInterpreter(options, builtins map[string]values.Value, types *TypeScope)
 // NewMutableInterpreter instantiates a new Flux Interpreter whose builtin values are mutable.
 // Options are always mutable.
 func NewMutableInterpreter(options, builtins map[string]values.Value, types *TypeScope) *Interpreter {
-	optionScope := NewScopeWithValues(options)
+	optionScope := topScope.NestWithValues(options)
 	globalScope := optionScope.NestWithValues(builtins)
 	interpreter := &Interpreter{
 		options: optionScope,

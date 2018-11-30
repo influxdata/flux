@@ -688,8 +688,3 @@ func ToQueryTime(value values.Value) (Time, error) {
 		return Time{}, fmt.Errorf("value is not a time, got %v", value.Type())
 	}
 }
-
-func init() {
-	RegisterBuiltInValue("true", values.NewBool(true))
-	RegisterBuiltInValue("false", values.NewBool(false))
-}
