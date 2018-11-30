@@ -16,9 +16,10 @@ func TestEditor(t *testing.T) {
 		editor *ast.OptionEditor
 	}{
 		{
-			name:   "leaves_unchanged",
-			in:     `from(bucket:"testdb") |> range(start: 2018-05-23T13:09:22.885021542Z)`,
-			edited: `from(bucket:"testdb")|>range(start:2018-05-23T13:09:22.885021542Z)`,
+			name: "leaves_unchanged",
+			in:   `from(bucket:"testdb") |> range(start: 2018-05-23T13:09:22.885021542Z)`,
+			edited: `from(bucket: "testdb")
+	|> range(start: 2018-05-23T13:09:22.885021542Z)`,
 			editor: ast.NewOptionEditor(map[string]interface{}{
 				"bucket": "foo",
 				"start":  "yesterday", // should ignore this
@@ -29,8 +30,16 @@ func TestEditor(t *testing.T) {
 			name: "edits",
 			in: `option task = {name: "foo",every: 1h,delay: 10m,cron: "0 2 * * *",retry: 5}
 from(bucket:"testdb") |> range(start: 2018-05-23T13:09:22.885021542Z)`,
-			edited: `option task={name:"bar",every:2d,delay:42m,cron:"buz",retry:10}
-from(bucket:"testdb")|>range(start:2018-05-23T13:09:22.885021542Z)`,
+			edited: `option task = {
+	name: "bar",
+	every: 2d,
+	delay: 42m,
+	cron: "buz",
+	retry: 10,
+}
+
+from(bucket: "testdb")
+	|> range(start: 2018-05-23T13:09:22.885021542Z)`,
 			editor: ast.NewOptionEditor(map[string]interface{}{
 				"bucket": "foo",       // should ignore this
 				"start":  "yesterday", // should ignore this
