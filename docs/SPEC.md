@@ -2123,6 +2123,7 @@ KeyValues has the following properties:
 Additional requirements: 
 *  Only one of `keyColumns` or `fn` may be used in a single call.  
 *  All columns indicated must be of the same type. 
+*  Each input table must have all of the columns listed by the `keyColumns` parameter.
 
 ```
 from(bucket: "telegraf/autogen")
@@ -2146,6 +2147,29 @@ from(bucket: "telegraf/autogen")
     |> filter(fn: (r) => r._measurement == "cpu")
     |> keyValues(fn: filterColumns(fn: (column) => column.label =~ /usage_.*/))
 ```
+
+Examples:
+
+Given the following input table with group key `["_measurement"]`:
+
+    | _time | _measurement | _value | tagA |
+    | ----- | ------------ | ------ | ---- |
+    | 00001 | "m1"         | 1      | "a"  |
+    | 00002 | "m1"         | 2      | "b"  |
+    | 00003 | "m1"         | 3      | "c"  |
+    | 00004 | "m1"         | 4      | "b"  |
+
+`keyValues(keyColumns: ["tagA"])` produces the following table with group key ["_measurement"]:
+
+    | _measurement | _key   | _value |
+    | ------------ | ------ | ------ |
+    | "m1"         | "tagA" | "a"    |
+    | "m1"         | "tagA" | "b"    |
+    | "m1"         | "tagA" | "c"    |
+
+`keyColumns(keyColumns: ["tagB"])` produces the following error message:
+
+    received table with columns [_time, _measurement, _value, tagA] not having key columns [tagB]
 
 
 #### Window
