@@ -49,6 +49,163 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 		want *ast.Program
 	}{
 		{
+			name: "package clause",
+			raw:  `package foo`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "1:12"),
+				Package: &ast.PackageClause{
+					BaseNode: base("1:1", "1:12"),
+					Name: &ast.Identifier{
+						BaseNode: base("1:9", "1:12"),
+						Name:     "foo",
+					},
+				},
+			},
+		},
+		{
+			name: "import",
+			raw:  `import "path/foo"`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "1:18"),
+				Imports: []*ast.ImportDeclaration{{
+					BaseNode: base("1:1", "1:18"),
+					Path: &ast.StringLiteral{
+						BaseNode: base("1:8", "1:18"),
+						Value:    "path/foo",
+					},
+				}},
+			},
+		},
+		{
+			name: "import as",
+			raw:  `import bar "path/foo"`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "1:22"),
+				Imports: []*ast.ImportDeclaration{{
+					BaseNode: base("1:1", "1:22"),
+					As: &ast.Identifier{
+						BaseNode: base("1:8", "1:11"),
+						Name:     "bar",
+					},
+					Path: &ast.StringLiteral{
+						BaseNode: base("1:12", "1:22"),
+						Value:    "path/foo",
+					},
+				}},
+			},
+		},
+		{
+			name: "imports",
+			raw: `import "path/foo"
+import "path/bar"`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "2:18"),
+				Imports: []*ast.ImportDeclaration{
+					{
+						BaseNode: base("1:1", "1:18"),
+						Path: &ast.StringLiteral{
+							BaseNode: base("1:8", "1:18"),
+							Value:    "path/foo",
+						},
+					},
+					{
+						BaseNode: base("2:1", "2:18"),
+						Path: &ast.StringLiteral{
+							BaseNode: base("2:8", "2:18"),
+							Value:    "path/bar",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "package and imports",
+			raw: `
+package baz
+
+import "path/foo"
+import "path/bar"`,
+			want: &ast.Program{
+				BaseNode: base("2:1", "5:18"),
+				Package: &ast.PackageClause{
+					BaseNode: base("2:1", "2:12"),
+					Name: &ast.Identifier{
+						BaseNode: base("2:9", "2:12"),
+						Name:     "baz",
+					},
+				},
+				Imports: []*ast.ImportDeclaration{
+					{
+						BaseNode: base("4:1", "4:18"),
+						Path: &ast.StringLiteral{
+							BaseNode: base("4:8", "4:18"),
+							Value:    "path/foo",
+						},
+					},
+					{
+						BaseNode: base("5:1", "5:18"),
+						Path: &ast.StringLiteral{
+							BaseNode: base("5:8", "5:18"),
+							Value:    "path/bar",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "package and imports and body",
+			raw: `
+package baz
+
+import "path/foo"
+import "path/bar"
+
+1 + 1`,
+			want: &ast.Program{
+				BaseNode: base("2:1", "7:6"),
+				Package: &ast.PackageClause{
+					BaseNode: base("2:1", "2:12"),
+					Name: &ast.Identifier{
+						BaseNode: base("2:9", "2:12"),
+						Name:     "baz",
+					},
+				},
+				Imports: []*ast.ImportDeclaration{
+					{
+						BaseNode: base("4:1", "4:18"),
+						Path: &ast.StringLiteral{
+							BaseNode: base("4:8", "4:18"),
+							Value:    "path/foo",
+						},
+					},
+					{
+						BaseNode: base("5:1", "5:18"),
+						Path: &ast.StringLiteral{
+							BaseNode: base("5:8", "5:18"),
+							Value:    "path/bar",
+						},
+					},
+				},
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("7:1", "7:6"),
+						Expression: &ast.BinaryExpression{
+							BaseNode: base("7:1", "7:6"),
+							Operator: ast.AdditionOperator,
+							Left: &ast.IntegerLiteral{
+								BaseNode: base("7:1", "7:2"),
+								Value:    1,
+							},
+							Right: &ast.IntegerLiteral{
+								BaseNode: base("7:5", "7:6"),
+								Value:    1,
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "optional query metadata",
 			raw: `option task = {
 				name: "foo",
@@ -1410,7 +1567,7 @@ a = 5.0
 			raw: `
             (not (f() == 6.0 * x) or fail())`,
 			want: &ast.Program{
-				BaseNode: base("2:14", "2:44"),
+				BaseNode: base("2:13", "2:44"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
 						BaseNode: base("2:14", "2:44"),

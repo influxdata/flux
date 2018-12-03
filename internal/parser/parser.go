@@ -74,19 +74,75 @@ type parser struct {
 }
 
 func (p *parser) parseProgram() *ast.Program {
+	pos, _, _ := p.peek()
 	program := &ast.Program{
 		BaseNode: ast.BaseNode{
 			Loc: &ast.SourceLocation{
+				Start:  p.s.File().Position(pos),
 				Source: p.s.File().Name(),
 			},
 		},
 	}
+	program.Package = p.parsePackageClause()
+	if program.Package != nil {
+		program.Loc.End = locEnd(program.Package)
+	}
+	program.Imports = p.parseImportList()
+	if len(program.Imports) > 0 {
+		program.Loc.End = locEnd(program.Imports[len(program.Imports)-1])
+	}
 	program.Body = p.parseStatementList(token.EOF)
 	if len(program.Body) > 0 {
-		program.Loc.Start = locStart(program.Body[0])
 		program.Loc.End = locEnd(program.Body[len(program.Body)-1])
 	}
 	return program
+}
+
+func (p *parser) parsePackageClause() *ast.PackageClause {
+	pos, tok, _ := p.peek()
+	if tok == token.PACKAGE {
+		p.consume()
+		ident := p.parseIdentifier()
+		return &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Loc: &ast.SourceLocation{
+					Start:  p.s.File().Position(pos),
+					End:    locEnd(ident),
+					Source: p.s.File().Name(),
+				},
+			},
+			Name: ident,
+		}
+	}
+	return nil
+}
+
+func (p *parser) parseImportList() (imports []*ast.ImportDeclaration) {
+	for {
+		if _, tok, _ := p.peek(); tok != token.IMPORT {
+			return
+		}
+		imports = append(imports, p.parseImportDeclaration())
+	}
+}
+func (p *parser) parseImportDeclaration() *ast.ImportDeclaration {
+	start, _ := p.expect(token.IMPORT)
+	var as *ast.Identifier
+	if _, tok, _ := p.peek(); tok == token.IDENT {
+		as = p.parseIdentifier()
+	}
+	path := p.parseStringLiteral()
+	return &ast.ImportDeclaration{
+		BaseNode: ast.BaseNode{
+			Loc: &ast.SourceLocation{
+				Start:  p.s.File().Position(start),
+				End:    locEnd(path),
+				Source: p.s.File().Name(),
+			},
+		},
+		As:   as,
+		Path: path,
+	}
 }
 
 func (p *parser) parseStatementList(eof token.Token) []ast.Statement {
@@ -691,65 +747,28 @@ func (p *parser) parseIndexExpression(callee ast.Expression) ast.Expression {
 }
 
 func (p *parser) parsePrimaryExpression() ast.Expression {
-	switch pos, tok, lit := p.scanWithRegex(); tok {
+	switch _, tok, _ := p.peekWithRegex(); tok {
 	case token.IDENT:
-		return &ast.Identifier{
-			Name:     lit,
-			BaseNode: p.posRange(pos, len(lit)),
-		}
+		return p.parseIdentifier()
 	case token.INT:
-		// todo(jsternberg): handle errors.
-		value, _ := strconv.ParseInt(lit, 10, 64)
-		return &ast.IntegerLiteral{
-			Value:    value,
-			BaseNode: p.posRange(pos, len(lit)),
-		}
+		return p.parseIntLiteral()
 	case token.FLOAT:
-		// todo(jsternberg): handle errors.
-		value, _ := strconv.ParseFloat(lit, 64)
-		return &ast.FloatLiteral{
-			Value:    value,
-			BaseNode: p.posRange(pos, len(lit)),
-		}
+		return p.parseFloatLiteral()
 	case token.STRING:
-		// todo(jsternberg): handle errors.
-		value, _ := parseString(lit)
-		return &ast.StringLiteral{
-			Value:    value,
-			BaseNode: p.posRange(pos, len(lit)),
-		}
+		return p.parseStringLiteral()
 	case token.REGEX:
-		// todo(jsternberg): handle errors.
-		value, _ := parseRegexp(lit)
-		return &ast.RegexpLiteral{
-			Value:    value,
-			BaseNode: p.posRange(pos, len(lit)),
-		}
+		return p.parseRegexpLiteral()
 	case token.TIME:
-		value, _ := parseTime(lit)
-		return &ast.DateTimeLiteral{
-			Value:    value,
-			BaseNode: p.posRange(pos, len(lit)),
-		}
+		return p.parseTimeLiteral()
 	case token.DURATION:
-		// todo(jsternberg): handle errors.
-		values, _ := parseDuration(lit)
-		return &ast.DurationLiteral{
-			Values:   values,
-			BaseNode: p.posRange(pos, len(lit)),
-		}
+		return p.parseDurationLiteral()
 	case token.PIPE_RECEIVE:
-		return &ast.PipeLiteral{
-			BaseNode: p.posRange(pos, len(lit)),
-		}
+		return p.parsePipeLiteral()
 	case token.LBRACK:
-		p.unread(pos, tok, lit)
 		return p.parseArrayLiteral()
 	case token.LBRACE:
-		p.unread(pos, tok, lit)
 		return p.parseObjectLiteral()
 	case token.LPAREN:
-		p.unread(pos, tok, lit)
 		return p.parseParenExpression()
 	default:
 		return nil
@@ -760,6 +779,71 @@ func (p *parser) parseIdentifier() *ast.Identifier {
 	pos, lit := p.expect(token.IDENT)
 	return &ast.Identifier{
 		Name:     lit,
+		BaseNode: p.posRange(pos, len(lit)),
+	}
+}
+
+func (p *parser) parseIntLiteral() *ast.IntegerLiteral {
+	pos, lit := p.expect(token.INT)
+	// todo(jsternberg): handle errors.
+	value, _ := strconv.ParseInt(lit, 10, 64)
+	return &ast.IntegerLiteral{
+		Value:    value,
+		BaseNode: p.posRange(pos, len(lit)),
+	}
+}
+
+func (p *parser) parseFloatLiteral() *ast.FloatLiteral {
+	pos, lit := p.expect(token.FLOAT)
+	// todo(jsternberg): handle errors.
+	value, _ := strconv.ParseFloat(lit, 64)
+	return &ast.FloatLiteral{
+		Value:    value,
+		BaseNode: p.posRange(pos, len(lit)),
+	}
+}
+
+func (p *parser) parseStringLiteral() *ast.StringLiteral {
+	pos, lit := p.expect(token.STRING)
+	value, _ := parseString(lit)
+	return &ast.StringLiteral{
+		Value:    value,
+		BaseNode: p.posRange(pos, len(lit)),
+	}
+}
+
+func (p *parser) parseRegexpLiteral() *ast.RegexpLiteral {
+	pos, lit := p.expect(token.REGEX)
+	// todo(jsternberg): handle errors.
+	value, _ := parseRegexp(lit)
+	return &ast.RegexpLiteral{
+		Value:    value,
+		BaseNode: p.posRange(pos, len(lit)),
+	}
+}
+
+func (p *parser) parseTimeLiteral() *ast.DateTimeLiteral {
+	pos, lit := p.expect(token.TIME)
+	value, _ := parseTime(lit)
+	return &ast.DateTimeLiteral{
+		Value:    value,
+		BaseNode: p.posRange(pos, len(lit)),
+	}
+}
+
+func (p *parser) parseDurationLiteral() *ast.DurationLiteral {
+	pos, lit := p.expect(token.DURATION)
+	// todo(jsternberg): handle errors.
+	values, _ := parseDuration(lit)
+	return &ast.DurationLiteral{
+		Values:   values,
+		BaseNode: p.posRange(pos, len(lit)),
+	}
+}
+
+func (p *parser) parsePipeLiteral() *ast.PipeLiteral {
+	pos, lit := p.expect(token.PIPE_RECEIVE)
+	return &ast.PipeLiteral{
 		BaseNode: p.posRange(pos, len(lit)),
 	}
 }
@@ -989,6 +1073,19 @@ func (p *parser) peek() (token.Pos, token.Token, string) {
 		p.pos, p.tok, p.lit = p.s.Scan()
 		p.buffered = true
 	}
+	return p.pos, p.tok, p.lit
+}
+
+// peekWithRegex is the same as peek, except that the scan step will allow scanning regexp tokens.
+func (p *parser) peekWithRegex() (token.Pos, token.Token, string) {
+	if p.buffered {
+		if p.tok != token.DIV {
+			return p.pos, p.tok, p.lit
+		}
+		p.s.Unread()
+	}
+	p.pos, p.tok, p.lit = p.s.ScanWithRegex()
+	p.buffered = true
 	return p.pos, p.tok, p.lit
 }
 
