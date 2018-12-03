@@ -1,6 +1,6 @@
 from(bucket:"testdb")
   |> range(start:2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-  |> group(by: ["_measurement"])
+  |> group(columns: ["_measurement"])
   |> window(every: 1s)
   |> mean()
   |> duplicate(column: "_start", as: "_time")
