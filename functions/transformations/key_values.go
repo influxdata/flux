@@ -147,7 +147,6 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 
 	// TODO: use fn to populate t.spec.keyColumns
 
-	// we'll ignore keyCol values that just don't exist in the table.
 	cols := tbl.Cols()
 	i := 0
 	keyColIndex := -1
@@ -156,7 +155,11 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 		i++
 	}
 	if keyColIndex < 1 {
-		return errors.New("no columns matched by keyColumns parameter")
+		columnNames := make([]string, len(cols))
+		for i, column := range cols {
+			columnNames[i] = column.Label
+		}
+		return fmt.Errorf("received table with columns %v not having key columns %v", columnNames, t.spec.KeyColumns)
 	}
 
 	keyColIndices := make([]int, len(t.spec.KeyColumns))
