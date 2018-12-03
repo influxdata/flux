@@ -54,7 +54,9 @@ type Node interface {
 	json.Marshaler
 }
 
-func (*Program) node() {}
+func (*Program) node()           {}
+func (*PackageClause) node()     {}
+func (*ImportDeclaration) node() {}
 
 func (*Block) node()               {}
 func (*ExpressionStatement) node() {}
@@ -103,7 +105,9 @@ func (b BaseNode) Location() SourceLocation {
 // Program represents a complete program source tree
 type Program struct {
 	BaseNode
-	Body []Statement `json:"body"`
+	Package *PackageClause       `json:"package"`
+	Imports []*ImportDeclaration `json:"imports"`
+	Body    []Statement          `json:"body"`
 }
 
 // Type is the abstract type
@@ -121,16 +125,39 @@ func (p *Program) Copy() Node {
 	return np
 }
 
-// Statement Perhaps we don't even want statements nor expression statements
-type Statement interface {
-	Node
-	stmt()
+// PackageClause defines the current package identifier.
+type PackageClause struct {
+	BaseNode
+	Name *Identifier `json:"name"`
 }
 
-func (*VariableAssignment) stmt()  {}
-func (*ExpressionStatement) stmt() {}
-func (*ReturnStatement) stmt()     {}
-func (*OptionStatement) stmt()     {}
+// Type is the abstract type
+func (*PackageClause) Type() string { return "PackageClause" }
+
+func (c *PackageClause) Copy() Node {
+	nc := new(PackageClause)
+	*nc = *c
+
+	nc.Name = c.Name.Copy().(*Identifier)
+	return nc
+}
+
+// ImportDeclaration declares a single import
+type ImportDeclaration struct {
+	BaseNode
+	As   *Identifier    `json:"as"`
+	Path *StringLiteral `json:"path"`
+}
+
+// Type is the abstract type
+func (*ImportDeclaration) Type() string { return "ImportDeclaration" }
+
+func (d *ImportDeclaration) Copy() Node {
+	nd := new(ImportDeclaration)
+	*nd = *d
+
+	return nd
+}
 
 // Block is a set of statements
 type Block struct {
@@ -153,6 +180,17 @@ func (s *Block) Copy() Node {
 	}
 	return ns
 }
+
+// Statement Perhaps we don't even want statements nor expression statements
+type Statement interface {
+	Node
+	stmt()
+}
+
+func (*VariableAssignment) stmt()  {}
+func (*ExpressionStatement) stmt() {}
+func (*ReturnStatement) stmt()     {}
+func (*OptionStatement) stmt()     {}
 
 // ExpressionStatement may consist of an expression that does not return a value and is executed solely for its side-effects.
 type ExpressionStatement struct {

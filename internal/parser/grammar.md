@@ -6,7 +6,10 @@ For the parser, the SPEC grammar undergoes a process to have the left-recursion 
 
 The parser directly implements the following grammar.
 
-    Program                    = StatementList .
+    Program                    = [ PackageClause ] [ ImportList ] StatementList .
+    PackageClause              = "package" identifier .
+    ImportList                 = { ImportDeclaration } .
+    ImportDeclaration          = "import" [identifier] string_lit
     StatementList              = { Statement } .
     Statement                  = OptionStatement
                                | IdentStatement

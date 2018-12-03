@@ -27,10 +27,28 @@ func TestJSONMarshal(t *testing.T) {
 					},
 				},
 			},
-			want: `{"type":"Program","body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
+			want: `{"type":"Program","package":null,"imports":null,"body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
 		},
 		{
-			name: "block statement",
+			name: "program",
+			node: &ast.Program{
+				Package: &ast.PackageClause{
+					Name: &ast.Identifier{Name: "foo"},
+				},
+				Imports: []*ast.ImportDeclaration{{
+					As:   &ast.Identifier{Name: "b"},
+					Path: &ast.StringLiteral{Value: "path/bar"},
+				}},
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.StringLiteral{Value: "hello"},
+					},
+				},
+			},
+			want: `{"type":"Program","package":{"type":"PackageClause","name":{"type":"Identifier","name":"foo"}},"imports":[{"type":"ImportDeclaration","as":{"type":"Identifier","name":"b"},"path":{"type":"StringLiteral","value":"path/bar"}}],"body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
+		},
+		{
+			name: "block",
 			node: &ast.Block{
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{

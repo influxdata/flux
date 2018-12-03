@@ -689,10 +689,10 @@ Operator precedence is encoded directly into the grammar.
                              | IndexExpression .
 ### Program
 
-A Flux program is a sequence of statements defined by
+A Flux program is a sequence of statements and optionally a package clause and import declarations.
 
-    Program    = [PackageStatement] [ImportList] StatementList .
-    ImportList = { ImportStatement } .
+    Program = [ PackageClause ] [ ImportList ] StatementList .
+    ImportList = { ImportDeclaration } .
 
 ### Statements
 
@@ -703,14 +703,15 @@ A statement controls execution.
               | ReturnStatement
               | ExpressionStatement .
 
-#### Package statement
+#### Package clause
 
-    PackageStatement = "package" identifier .
-
-A package statement defines a package block.
+A package clause defines the name for the current package.
 Package names must be valid Flux identifiers.
-The package statement must be the first statement of every Flux source file.
-If a file does not declare a package statement, all identifiers in that file will belong to the special _main_ package.
+The package clause must at the begining of any Flux source file.
+When a file does not declare a package clause, all identifiers in that file will belong to the special _main_ package.
+
+    PackageClause = "package" identifier .
+
 
 [IMPL#247](https://github.com/influxdata/platform/issues/247) Add package/namespace support
 
@@ -722,13 +723,13 @@ The _main_ package is special for a few reasons:
 2. It cannot be imported
 3. All query specifications produced after evaluating the _main_ package are coerced into producing side effects
 
-#### Import statement
+#### Import declaration
 
-    ImportStatement = "import" [identifier] `"` unicode_char { unicode_char } `"`.
+    ImportDeclaration = "import" [identifier] string_lit
 
 Associated with every package is a package name and an import path.
-The import statement takes a package's import path and brings all of the identifiers defined in that package into the current scope.
-The import statment defines a namespace through which to access the imported identifiers.
+The import statement takes a package's import path and brings all of the identifiers defined in that package into the current scope under a namespace.
+The import statment defines the namespace through which to access the imported identifiers.
 By default the identifier of this namespace is the package name unless otherwise specified.
 For example, given a variable `x` declared in package `foo`, importing `foo` and referencing `x` would look like this:
 
@@ -747,7 +748,6 @@ bar.x
 ```
 
 A package's import path is always absolute.
-Flux does not support relative imports.
 Assigment into the namespace of an imported package is not allowed.
 A package cannot access nor modify the identifiers belonging to the imported packages of its imported packages.
 Every statement contained in an imported package is evaluated.
