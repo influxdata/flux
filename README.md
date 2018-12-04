@@ -162,7 +162,7 @@ Since flux will group each series into its own table, we sometimes need to modif
 ```
 from(bucket: "telegraf/autogen") |> range(start: -5m)
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_user")
-    |> group(by: ["region"])
+    |> group(columns: ["region"])
     |> mean()
 ```
 
@@ -173,7 +173,7 @@ Similarly, if we wanted to group points into buckets of time, the `window` funct
 ```
 from(bucket: "telegraf/autogen") |> range(start: -5m)
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_user")
-    |> group(by: ["region"])
+    |> group(columns: ["region"])
     |> window(every: 1m)
     |> mean()
 ```

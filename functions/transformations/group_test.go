@@ -1,7 +1,9 @@
 package transformations_test
 
 import (
+	"github.com/influxdata/flux/functions/inputs"
 	"testing"
+	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
@@ -12,14 +14,199 @@ import (
 )
 
 func TestGroupOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"group","kind":"group","spec":{"by":["t1","t2"]}}`)
+	data := []byte(`{"id":"group","kind":"group","spec":{"mode":"by","columns":["t1","t2"]}}`)
 	op := &flux.Operation{
 		ID: "group",
 		Spec: &transformations.GroupOpSpec{
-			By: []string{"t1", "t2"},
+			Mode:    "by",
+			Columns: []string{"t1", "t2"},
 		},
 	}
 	querytest.OperationMarshalingTestHelper(t, data, op)
+}
+
+func TestGroup_NewQuery(t *testing.T) {
+	tests := []querytest.NewQueryTestCase{
+		{
+			Name: "group with no arguments",
+			// group() defaults to group(columns: [], mode: "by")
+			Raw: `from(bucket: "telegraf") |> range(start: -1m) |> group()`,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID:   "from0",
+						Spec: &inputs.FromOpSpec{Bucket: "telegraf"},
+					},
+					{
+						ID: "range1",
+						Spec: &transformations.RangeOpSpec{
+							Start: flux.Time{
+								Relative:   -1 * time.Minute,
+								IsRelative: true,
+							},
+							Stop:        flux.Time{IsRelative: true},
+							TimeColumn:  "_time",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
+						},
+					},
+					{
+						ID:   "group2",
+						Spec: &transformations.GroupOpSpec{Mode: "by", Columns: []string{}},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "range1"},
+					{Parent: "range1", Child: "group2"},
+				},
+			},
+		},
+		{
+			Name: "group all",
+			Raw:  `from(bucket: "telegraf") |> range(start: -1m) |> group(columns:[], mode: "except")`,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID:   "from0",
+						Spec: &inputs.FromOpSpec{Bucket: "telegraf"},
+					},
+					{
+						ID: "range1",
+						Spec: &transformations.RangeOpSpec{
+							Start: flux.Time{
+								Relative:   -1 * time.Minute,
+								IsRelative: true,
+							},
+							Stop:        flux.Time{IsRelative: true},
+							TimeColumn:  "_time",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
+						},
+					},
+					{
+						ID:   "group2",
+						Spec: &transformations.GroupOpSpec{Mode: "except", Columns: []string{}},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "range1"},
+					{Parent: "range1", Child: "group2"},
+				},
+			},
+		},
+		{
+			Name: "group none",
+			Raw:  `from(bucket: "telegraf") |> range(start: -1m) |> group(columns: [], mode: "by")`,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID:   "from0",
+						Spec: &inputs.FromOpSpec{Bucket: "telegraf"},
+					},
+					{
+						ID: "range1",
+						Spec: &transformations.RangeOpSpec{
+							Start: flux.Time{
+								Relative:   -1 * time.Minute,
+								IsRelative: true,
+							},
+							Stop:        flux.Time{IsRelative: true},
+							TimeColumn:  "_time",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
+						},
+					},
+					{
+						ID:   "group2",
+						Spec: &transformations.GroupOpSpec{Mode: "by", Columns: []string{}},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "range1"},
+					{Parent: "range1", Child: "group2"},
+				},
+			},
+		},
+		{
+			Name: "group by",
+			Raw:  `from(bucket: "telegraf") |> range(start: -1m) |> group(columns: ["host"], mode: "by")`,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID:   "from0",
+						Spec: &inputs.FromOpSpec{Bucket: "telegraf"},
+					},
+					{
+						ID: "range1",
+						Spec: &transformations.RangeOpSpec{
+							Start: flux.Time{
+								Relative:   -1 * time.Minute,
+								IsRelative: true,
+							},
+							Stop:        flux.Time{IsRelative: true},
+							TimeColumn:  "_time",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
+						},
+					},
+					{
+						ID: "group2",
+						Spec: &transformations.GroupOpSpec{
+							Columns: []string{"host"},
+							Mode:    "by",
+						},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "range1"},
+					{Parent: "range1", Child: "group2"},
+				},
+			},
+		},
+		{
+			Name: "group except",
+			Raw:  `from(bucket: "telegraf") |> range(start: -1m) |> group(columns: ["host"], mode: "except")`,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID:   "from0",
+						Spec: &inputs.FromOpSpec{Bucket: "telegraf"},
+					},
+					{
+						ID: "range1",
+						Spec: &transformations.RangeOpSpec{
+							Start: flux.Time{
+								Relative:   -1 * time.Minute,
+								IsRelative: true,
+							},
+							Stop:        flux.Time{IsRelative: true},
+							TimeColumn:  "_time",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
+						},
+					},
+					{
+						ID: "group2",
+						Spec: &transformations.GroupOpSpec{
+							Columns: []string{"host"},
+							Mode:    "except",
+						},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "range1"},
+					{Parent: "range1", Child: "group2"},
+				},
+			},
+		},
+	}
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			querytest.NewQueryTestHelper(t, tc)
+		})
+	}
 }
 
 func TestGroup_Process(t *testing.T) {

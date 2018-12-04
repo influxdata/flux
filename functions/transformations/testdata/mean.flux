@@ -1,6 +1,6 @@
 from(bucket: "test")
     |> range(start:2018-05-22T19:53:26Z)
-    |> group(by:["_measurement", "_start"])
+    |> group(columns:["_measurement", "_start"])
     |> mean()
     |> map(fn: (r) => ({mean: r._value}))
     |> duplicate(column:"_start", as: "_time")
