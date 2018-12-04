@@ -144,8 +144,8 @@ It has an integer part, a decimal point, and a fractional part.
 The integer and fractional part comprise decimal digits.
 One of the integer part or the fractional part may be elided.
 
-    float_lit = decimals "." [ decimals ] |
-        "." decimals .
+    float_lit = decimals "." [ decimals ]
+              | "." decimals .
     decimals  = decimal_digit { decimal_digit } .
 
 Examples:
@@ -475,12 +475,12 @@ This form of polymorphism means that these checks are performed during type infe
 
 A _block_ is a possibly empty sequence of statements within matching brace brackets.
 
-    Block = "{" StatementList "} .
+    Block         = "{" StatementList "} .
     StatementList = { Statement } .
 
 In addition to explicit blocks in the source code, there are implicit blocks:
 
-1. The _options block_ is the top-level block for all Flux programs. All option declarations are contained in this block.
+1. The _options block_ is the top-level block for all Flux programs. All option assignments are contained in this block.
 2. The _universe block_ encompasses all Flux source text aside from option statements. It is nested directly inside of the _options block_.
 3. Each package has a _package block_ containing all Flux source text for that package.
 4. Each file has a _file block_ containing all Flux source text in that file.
@@ -522,7 +522,7 @@ A variable assignment creates a variable bound to the identifier and gives it a 
 When the identifier was previously assigned within the same block the identifier now holds the new value.
 An identifier cannot change type within the same block.
 
-    VarAssignment = identifier "=" Expression
+    VariableAssignment = identifier "=" Expression
 
 Examples:
 
@@ -536,30 +536,54 @@ Examples:
 
 An expression specifies the computation of a value by applying the operators and functions to operands.
 
-#### Operands
+#### Operands and primary expressions
 
 Operands denote the elementary values in an expression.
-An operand may be a literal, identifier denoting a variable, or a parenthesized expression.
 
+Primary expressions are the operands for unary and binary expressions. 
+A primary expressions may be a literal, an identifier denoting a variable, or a parenthesized expression.
 
-TODO(nathanielc): Fill out expression details...
-PEG parsers don't understand operators precedence so it difficult to express operators in expressions with the grammar.
-We should simplify it and use the EBNF grammar.
-This requires redoing the parser in something besides PEG.
+    PrimaryExpression = identifier | Literal | "(" Expression ")" .
 
+#### Literals
 
-[IMPL#246](https://github.com/influxdata/platform/issues/246) Update parser to use formal EBNF grammar.
+Literals construct a value.
 
-#### Function literals
+    Literal = int_lit
+            | float_lit
+            | string_lit
+            | regex_lit
+            | duration_lit
+            | pipe_receive_lit
+            | ObjectLiteral
+            | ArrayLiteral
+            | FunctionLiteral .
+
+##### Object literals
+
+Object literals construct a value with the object type.
+
+    ObjectLiteral = "{" PropertyList "}" .
+    PropertyList  = [ Property { "," Property } ] .
+    Property      = identifier ":" Expression .
+
+##### Array literals
+
+Array literals construct a value with the array type.
+
+    ArrayLiteral   = "[" ExpressionList "]" .
+    ExpressionList = [ Expression { "," Expression } ] .
+
+##### Function literals
 
 A function literal defines a new function with a body and parameters.
 The function body may be a block or a single expression.
 The function body must have a return statement if it is an explicit block, otherwise the expression is the return value.
 
-    FunctionLit        = FunctionParameters "=>" FunctionBody .
+    FunctionLiteral    = FunctionParameters "=>" FunctionBody .
     FunctionParameters = "(" [ ParameterList [ "," ] ] ")" .
-    ParameterList      = ParameterDecl { "," ParameterDecl } .
-    ParameterDecl      = identifier [ "=" Expression ] .
+    ParameterList      = Parameter { "," Parameter } .
+    Parameter          = identifier [ "=" Expression ] .
     FunctionBody       = Expression | Block .
 
 Examples:
@@ -588,6 +612,8 @@ Arguments must be specified using the argument name, positional arguments not su
 Argument order does not matter.
 When an argument has a default value, it is not required to be specified.
 
+    CallExpression = "(" PropertyList ")" .
+
 Examples:
 
     f(a:1, b:9.6)
@@ -602,7 +628,7 @@ Pipe expressions pass the result of the left hand expression as the _pipe argume
 Function literals specify which if any argument is the pipe argument using the _pipe literal_ as the argument's default value.
 It is an error to use a pipe expression if the function does not declare a pipe argument.
 
-    pipe_lit = "<-" .
+    pipe_receive_lit = "<-" .
 
 Examples:
 
@@ -611,19 +637,71 @@ Examples:
     baz = (y=<-) => // function body elided
     foo() |> bar() |> baz() // equivalent to baz(x:bar(y:foo()))
 
+
+#### Index expressions
+
+Index expressions access a value from an array based on a numeric index.
+
+    IndexExpression = "[" Expression "]" .
+
+#### Member expressions
+
+Member expressions access a property of an object.
+The property being accessed must be either an identifer or a string literal.
+In either case the literal value is the name of the property being accessed, the identifer is not evaluated.
+It is not possible to access an object's property using an arbitrary expression.
+
+    MemberExpression        = DotExpression  | MemberBracketExpression
+    DotExpression           = "." identifer
+    MemberBracketExpression = "[" string_lit "]" .
+
+#### Operators
+
+Operators combine operands into expressions.
+Operator precedence is encoded directly into the grammar.
+
+    Expression               = LogicalExpression .
+    LogicalExpression        = UnaryLogicalExpression
+                             | LogicalExpression LogicalOperator UnaryLogicalExpression .
+    LogicalOperator          = "and" | "or" .
+    UnaryLogicalExpression   = ComparisonExpression
+                             | UnaryLogicalOperator UnaryLogicalExpression .
+    UnaryLogicalOperator     = "not" .
+    ComparisonExpression     = MultiplicativeExpression
+                             | ComparisonExpression ComparisonOperator MultiplicativeExpression .
+    ComparisonOperator       = "==" | "!=" | "<" | "<=" | ">" | ">=" | "=~" | "!~" .
+    MultiplicativeExpression = AdditiveExpression
+                             | MultiplicativeExpression MultiplicativeOperator AdditiveExpression .
+    MultiplicativeOperator   = "*" | "/" .
+    AdditiveExpression       = PipeExpression
+                             | AdditiveExpression AdditiveOperator PipeExpression .
+    AdditiveOperator         = "+" | "-" .
+    PipeExpression           = PostfixExpression
+                             | PipeExpression PipeOperator UnaryExpression .
+    PipeOperator             = "|>" .
+    UnaryExpression          = PostfixExpression
+                             | PrefixOperator UnaryExpression .
+    PrefixOperator           = "+" | "-" .
+    PostfixExpression        = PrimaryExpression
+                             | PostfixExpression PostfixOperator .
+    PostfixOperator          = MemberExpression
+                             | CallExpression
+                             | IndexExpression .
 ### Program
 
 A Flux program is a sequence of statements defined by
 
-    Program = [PackageStatement] [ImportList] StatementList .
+    Program    = [PackageStatement] [ImportList] StatementList .
     ImportList = { ImportStatement } .
 
 ### Statements
 
 A statement controls execution.
 
-    Statement = OptionStatement | VarAssignment |
-                ReturnStatement | ExpressionStatement | BlockStatment .
+    Statement = OptionStatement
+              | VariableAssignment
+              | ReturnStatement
+              | ExpressionStatement .
 
 #### Package statement
 
@@ -651,7 +729,7 @@ The _main_ package is special for a few reasons:
 Associated with every package is a package name and an import path.
 The import statement takes a package's import path and brings all of the identifiers defined in that package into the current scope.
 The import statment defines a namespace through which to access the imported identifiers.
-By default the identifer of this namespace is the package name unless otherwise specified.
+By default the identifier of this namespace is the package name unless otherwise specified.
 For example, given a variable `x` declared in package `foo`, importing `foo` and referencing `x` would look like this:
 
 ```
@@ -694,7 +772,7 @@ the `task` option to schedule a query to run periodically every hour:
 All options are designed to be completely optional and have default values to be used when not specified.
 Grammatically, an option statement is just a variable assignment preceded by the "option" keyword.
 
-    OptionStatement = "option" VarAssignment
+    OptionStatement = "option" VariableAssignment
 
 Below is a list of all options that are currently implemented in the Flux language:
 
