@@ -193,21 +193,7 @@ func (p *parser) parseVariableDeclaration() *ast.VariableDeclarator {
 }
 
 func (p *parser) parseIdentStatement() ast.Statement {
-	expr := p.parseExpression()
-	id, ok := expr.(*ast.Identifier)
-	if !ok {
-		return &ast.ExpressionStatement{
-			Expression: expr,
-			BaseNode: ast.BaseNode{
-				Loc: &ast.SourceLocation{
-					Start:  locStart(expr),
-					End:    locEnd(expr),
-					Source: p.s.File().Name(),
-				},
-			},
-		}
-	}
-
+	id := p.parseIdentifier()
 	switch _, tok, _ := p.peek(); tok {
 	case token.ASSIGN:
 		expr := p.parseAssignStatement()
@@ -225,6 +211,7 @@ func (p *parser) parseIdentStatement() ast.Statement {
 			},
 		}
 	default:
+		expr := p.parseExpressionSuffix(id)
 		return &ast.ExpressionStatement{
 			Expression: expr,
 			BaseNode: ast.BaseNode{
