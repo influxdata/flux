@@ -62,17 +62,17 @@ func (*ReturnStatement) node()     {}
 func (*OptionStatement) node()     {}
 func (*VariableAssignment) node()  {}
 
-func (*ArrayExpression) node()         {}
-func (*ArrowFunctionExpression) node() {}
-func (*BinaryExpression) node()        {}
-func (*CallExpression) node()          {}
-func (*ConditionalExpression) node()   {}
-func (*LogicalExpression) node()       {}
-func (*MemberExpression) node()        {}
-func (*IndexExpression) node()         {}
-func (*PipeExpression) node()          {}
-func (*ObjectExpression) node()        {}
-func (*UnaryExpression) node()         {}
+func (*ArrayExpression) node()       {}
+func (*FunctionExpression) node()    {}
+func (*BinaryExpression) node()      {}
+func (*CallExpression) node()        {}
+func (*ConditionalExpression) node() {}
+func (*LogicalExpression) node()     {}
+func (*MemberExpression) node()      {}
+func (*IndexExpression) node()       {}
+func (*PipeExpression) node()        {}
+func (*ObjectExpression) node()      {}
+func (*UnaryExpression) node()       {}
 
 func (*Property) node()   {}
 func (*Identifier) node() {}
@@ -245,27 +245,27 @@ type Expression interface {
 	expression()
 }
 
-func (*ArrayExpression) expression()         {}
-func (*ArrowFunctionExpression) expression() {}
-func (*BinaryExpression) expression()        {}
-func (*BooleanLiteral) expression()          {}
-func (*CallExpression) expression()          {}
-func (*ConditionalExpression) expression()   {}
-func (*DateTimeLiteral) expression()         {}
-func (*DurationLiteral) expression()         {}
-func (*FloatLiteral) expression()            {}
-func (*Identifier) expression()              {}
-func (*IntegerLiteral) expression()          {}
-func (*LogicalExpression) expression()       {}
-func (*MemberExpression) expression()        {}
-func (*IndexExpression) expression()         {}
-func (*ObjectExpression) expression()        {}
-func (*PipeExpression) expression()          {}
-func (*PipeLiteral) expression()             {}
-func (*RegexpLiteral) expression()           {}
-func (*StringLiteral) expression()           {}
-func (*UnaryExpression) expression()         {}
-func (*UnsignedIntegerLiteral) expression()  {}
+func (*ArrayExpression) expression()        {}
+func (*FunctionExpression) expression()     {}
+func (*BinaryExpression) expression()       {}
+func (*BooleanLiteral) expression()         {}
+func (*CallExpression) expression()         {}
+func (*ConditionalExpression) expression()  {}
+func (*DateTimeLiteral) expression()        {}
+func (*DurationLiteral) expression()        {}
+func (*FloatLiteral) expression()           {}
+func (*Identifier) expression()             {}
+func (*IntegerLiteral) expression()         {}
+func (*LogicalExpression) expression()      {}
+func (*MemberExpression) expression()       {}
+func (*IndexExpression) expression()        {}
+func (*ObjectExpression) expression()       {}
+func (*PipeExpression) expression()         {}
+func (*PipeLiteral) expression()            {}
+func (*RegexpLiteral) expression()          {}
+func (*StringLiteral) expression()          {}
+func (*UnaryExpression) expression()        {}
+func (*UnsignedIntegerLiteral) expression() {}
 
 // CallExpression represents a function all whose callee may be an Identifier or MemberExpression
 type CallExpression struct {
@@ -361,20 +361,20 @@ func (e *IndexExpression) Copy() Node {
 	return ne
 }
 
-type ArrowFunctionExpression struct {
+type FunctionExpression struct {
 	BaseNode
 	Params []*Property `json:"params"`
 	Body   Node        `json:"body"`
 }
 
 // Type is the abstract type
-func (*ArrowFunctionExpression) Type() string { return "ArrowFunctionExpression" }
+func (*FunctionExpression) Type() string { return "FunctionExpression" }
 
-func (e *ArrowFunctionExpression) Copy() Node {
+func (e *FunctionExpression) Copy() Node {
 	if e == nil {
 		return e
 	}
-	ne := new(ArrowFunctionExpression)
+	ne := new(FunctionExpression)
 	*ne = *e
 
 	if len(e.Params) > 0 {

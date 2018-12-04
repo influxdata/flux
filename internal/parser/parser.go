@@ -793,7 +793,7 @@ func (p *parser) parseParenBodyExpression(lparen token.Pos) ast.Expression {
 	switch _, tok, _ := p.peek(); tok {
 	case token.RPAREN:
 		p.consume()
-		return p.parseArrowExpression(lparen, nil)
+		return p.parseFunctionExpression(lparen, nil)
 	case token.IDENT:
 		ident := p.parseIdentifier()
 		return p.parseParenIdentExpression(lparen, ident)
@@ -809,7 +809,7 @@ func (p *parser) parseParenIdentExpression(lparen token.Pos, key *ast.Identifier
 	case token.RPAREN:
 		p.consume()
 		if _, tok, _ := p.peek(); tok == token.ARROW {
-			return p.parseArrowExpression(lparen, []*ast.Property{{
+			return p.parseFunctionExpression(lparen, []*ast.Property{{
 				Key: key,
 				BaseNode: ast.BaseNode{
 					Loc: &ast.SourceLocation{
@@ -840,7 +840,7 @@ func (p *parser) parseParenIdentExpression(lparen token.Pos, key *ast.Identifier
 			params = append(params, p.parseParameterList()...)
 		}
 		p.expect(token.RPAREN)
-		return p.parseArrowExpression(lparen, params)
+		return p.parseFunctionExpression(lparen, params)
 	case token.COMMA:
 		p.consume()
 		params := []*ast.Property{{
@@ -855,7 +855,7 @@ func (p *parser) parseParenIdentExpression(lparen token.Pos, key *ast.Identifier
 		}}
 		params = append(params, p.parseParameterList()...)
 		p.expect(token.RPAREN)
-		return p.parseArrowExpression(lparen, params)
+		return p.parseFunctionExpression(lparen, params)
 	default:
 		expr := p.parseExpressionSuffix(key)
 		p.expect(token.RPAREN)
@@ -933,14 +933,14 @@ func (p *parser) parseParameter() *ast.Property {
 	return param
 }
 
-func (p *parser) parseArrowExpression(lparen token.Pos, params []*ast.Property) ast.Expression {
+func (p *parser) parseFunctionExpression(lparen token.Pos, params []*ast.Property) ast.Expression {
 	p.expect(token.ARROW)
-	return p.parseArrowBodyExpression(lparen, params)
+	return p.parseFunctionBodyExpression(lparen, params)
 }
 
-func (p *parser) parseArrowBodyExpression(lparen token.Pos, params []*ast.Property) ast.Expression {
+func (p *parser) parseFunctionBodyExpression(lparen token.Pos, params []*ast.Property) ast.Expression {
 	_, tok, _ := p.peek()
-	fn := &ast.ArrowFunctionExpression{
+	fn := &ast.FunctionExpression{
 		Params: params,
 		Body: func() ast.Node {
 			switch tok {
