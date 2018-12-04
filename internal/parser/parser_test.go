@@ -3161,6 +3161,27 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 				}},
 			},
 		},
+		{
+			name: "unary expression with member expression",
+			raw:  `not m.b`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "1:8"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:8"),
+						Expression: &ast.UnaryExpression{
+							BaseNode: base("1:1", "1:8"),
+							Operator: ast.NotOperator,
+							Argument: &ast.MemberExpression{
+								BaseNode: base("1:5", "1:8"),
+								Object:   &ast.Identifier{BaseNode: base("1:5", "1:6"), Name: "m"},
+								Property: &ast.Identifier{BaseNode: base("1:7", "1:8"), Name: "b"},
+							},
+						},
+					},
+				},
+			},
+		},
 	} {
 		runFn(tt.name, func(tb testing.TB) {
 			fset := token.NewFileSet()

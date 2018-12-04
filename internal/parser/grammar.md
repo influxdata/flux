@@ -28,9 +28,12 @@ TODO(jsternberg): Move this to the spec. This information is in the spec, but it
                        | AdditiveExpression AdditiveOperator PipeExpression .
     AdditiveOperator = add | sub .
     PipeExpression = PostfixExpression
-                   | PipeExpression PipeOperator PostfixExpression .
+                   | PipeExpression PipeOperator UnaryExpression .
     PipeOperator = pipe_forward .
-    PostfixExpression = UnaryExpression
+    UnaryExpression = PostfixExpression
+                    | PrefixOperator UnaryExpression .
+    PrefixOperator = add | sub | not .
+    PostfixExpression = PrimaryExpression
                       | PostfixExpression PostfixOperator .
     PostfixOperator = DotExpression
                     | CallExpression
@@ -38,9 +41,6 @@ TODO(jsternberg): Move this to the spec. This information is in the spec, but it
     DotExpression = dot ident .
     CallExpression = lparen ParameterList rparen .
     IndexExpression = lbrack Expression rbrack .
-    UnaryExpression = PrimaryExpression
-                    | PrefixOperator PrimaryExpression .
-    PrefixOperator = add | sub | not .
     PrimaryExpression = ident
                       | int
                       | float
@@ -94,19 +94,19 @@ For the parser, the above grammar undergoes a process to have the left-recursion
     AdditiveExpression = PipeExpression { AdditiveExpressionSuffix } .
     AdditiveExpressionSuffix = AdditiveOperator PipeExpression .
     AdditiveOperator = add | sub .
-    PipeExpression = PostfixExpression { PipeExpressionSuffix } .
-    PipeExpressionSuffix = PipeOperator PostfixExpression .
+    PipeExpression = UnaryExpression { PipeExpressionSuffix } .
+    PipeExpressionSuffix = PipeOperator UnaryExpression .
     PipeOperator = pipe_forward .
-    PostfixExpression = UnaryExpression { PostfixOperator } .
+    UnaryExpression = PostfixExpression
+                    | PrefixOperator UnaryExpression .
+    PrefixOperator = add | sub | not .
+    PostfixExpression = PrimaryExpression { PostfixOperator } .
     PostfixOperator = DotExpression
                     | CallExpression
                     | IndexExpression .
     DotExpression = dot ident .
     CallExpression = lparen ParameterList rparen .
     IndexExpression = lbrack Expression rbrack .
-    UnaryExpression = PrimaryExpression
-                    | PrefixOperator PrimaryExpression .
-    PrefixOperator = add | sub | not .
     PrimaryExpression = ident
                       | int
                       | float
