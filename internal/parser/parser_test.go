@@ -1816,7 +1816,7 @@ a = 5.0
 									},
 								},
 							},
-							Body: &ast.BlockStatement{
+							Body: &ast.Block{
 								BaseNode: base("1:12", "4:14"),
 								Body: []ast.Statement{
 									&ast.VariableAssignment{

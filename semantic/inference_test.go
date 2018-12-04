@@ -526,7 +526,7 @@ identity(x:identity)(x:2)
 						return outInt
 					case *semantic.BinaryExpression:
 						return out
-					case *semantic.BlockStatement,
+					case *semantic.Block,
 						*semantic.ReturnStatement,
 						*semantic.CallExpression:
 						return outInt
@@ -1429,7 +1429,7 @@ plus1(r:{_value: 2.0})
 					switch node.(type) {
 					case *semantic.FunctionBlock,
 						*semantic.FunctionParameter,
-						*semantic.BlockStatement,
+						*semantic.Block,
 						*semantic.IdentifierExpression,
 						*semantic.ReturnStatement:
 						return tv

@@ -13,7 +13,7 @@ var CmpOptions = []cmp.Option{
 
 	cmpopts.IgnoreUnexported(semantic.ArrayExpression{}),
 	cmpopts.IgnoreUnexported(semantic.Program{}),
-	cmpopts.IgnoreUnexported(semantic.BlockStatement{}),
+	cmpopts.IgnoreUnexported(semantic.Block{}),
 	cmpopts.IgnoreUnexported(semantic.OptionStatement{}),
 	cmpopts.IgnoreUnexported(semantic.ExpressionStatement{}),
 	cmpopts.IgnoreUnexported(semantic.ReturnStatement{}),

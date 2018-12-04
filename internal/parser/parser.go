@@ -255,11 +255,11 @@ func (p *parser) parseExpressionStatement() *ast.ExpressionStatement {
 	}
 }
 
-func (p *parser) parseBlockStatement() *ast.BlockStatement {
+func (p *parser) parseBlock() *ast.Block {
 	start, _ := p.expect(token.LBRACE)
 	stmts := p.parseStatementList(token.RBRACE)
 	end, _ := p.expect(token.RBRACE)
-	return &ast.BlockStatement{
+	return &ast.Block{
 		Body:     stmts,
 		BaseNode: p.position(start, end+1),
 	}
@@ -945,7 +945,7 @@ func (p *parser) parseArrowBodyExpression(lparen token.Pos, params []*ast.Proper
 		Body: func() ast.Node {
 			switch tok {
 			case token.LBRACE:
-				return p.parseBlockStatement()
+				return p.parseBlock()
 			default:
 				return p.parseExpression()
 			}

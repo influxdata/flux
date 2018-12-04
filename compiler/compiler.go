@@ -65,7 +65,7 @@ func monoType(t semantic.Type, err error) semantic.Type {
 // compile recursively compiles semantic nodes into evaluators.
 func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, funcExprs map[string]*semantic.FunctionExpression) (Evaluator, error) {
 	switch n := n.(type) {
-	case *semantic.BlockStatement:
+	case *semantic.Block:
 		body := make([]Evaluator, len(n.Body))
 		for i, s := range n.Body {
 			node, err := compile(s, typeSol, builtIns, funcExprs)

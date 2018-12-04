@@ -41,8 +41,8 @@ func (p *Program) UnmarshalJSON(data []byte) error {
 	}
 	return nil
 }
-func (s *BlockStatement) MarshalJSON() ([]byte, error) {
-	type Alias BlockStatement
+func (s *Block) MarshalJSON() ([]byte, error) {
+	type Alias Block
 	raw := struct {
 		Type string `json:"type"`
 		*Alias
@@ -52,8 +52,8 @@ func (s *BlockStatement) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(raw)
 }
-func (s *BlockStatement) UnmarshalJSON(data []byte) error {
-	type Alias BlockStatement
+func (s *Block) UnmarshalJSON(data []byte) error {
+	type Alias Block
 	raw := struct {
 		*Alias
 		Body []json.RawMessage `json:"body"`
@@ -62,7 +62,7 @@ func (s *BlockStatement) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if raw.Alias != nil {
-		*s = *(*BlockStatement)(raw.Alias)
+		*s = *(*Block)(raw.Alias)
 	}
 
 	s.Body = make([]Statement, len(raw.Body))
@@ -830,8 +830,8 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 	switch typ.Type {
 	case "Program":
 		node = new(Program)
-	case "BlockStatement":
-		node = new(BlockStatement)
+	case "Block":
+		node = new(Block)
 	case "OptionStatement":
 		node = new(OptionStatement)
 	case "ExpressionStatement":

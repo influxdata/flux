@@ -156,23 +156,6 @@ func (itrp *Interpreter) doStatement(stmt semantic.Statement, scope *Scope) (val
 		}
 		scope.SetReturn(v)
 		return v, nil
-	case *semantic.BlockStatement:
-		nested := scope.Nest()
-		for i, stmt := range s.Body {
-			_, err := itrp.doStatement(stmt, nested)
-			if err != nil {
-				return nil, err
-			}
-			// Validate a return statement is the last statement
-			if _, ok := stmt.(*semantic.ReturnStatement); ok {
-				if i != len(s.Body)-1 {
-					return nil, errors.New("return statement is not the last statement in the block")
-				}
-			}
-		}
-		// Propgate any return value from the nested scope out. Since a return statement is
-		// always last we do not have to worry about overriding an existing return value.
-		scope.SetReturn(nested.Return())
 	case *semantic.ReturnStatement:
 		v, err := itrp.doExpression(s.Argument, scope)
 		if err != nil {
@@ -781,12 +764,21 @@ func (f *function) doCall(args Arguments) (values.Value, error) {
 	switch n := f.e.Block.Body.(type) {
 	case semantic.Expression:
 		return f.itrp.doExpression(n, blockScope)
-	case semantic.Statement:
-		_, err := f.itrp.doStatement(n, blockScope)
-		if err != nil {
-			return nil, err
+	case *semantic.Block:
+		nested := blockScope.Nest()
+		for i, stmt := range n.Body {
+			_, err := f.itrp.doStatement(stmt, nested)
+			if err != nil {
+				return nil, err
+			}
+			// Validate a return statement is the last statement
+			if _, ok := stmt.(*semantic.ReturnStatement); ok {
+				if i != len(n.Body)-1 {
+					return nil, errors.New("return statement is not the last statement in the block")
+				}
+			}
 		}
-		v := blockScope.Return()
+		v := nested.Return()
 		if v.PolyType().Nature() == semantic.Invalid {
 			return nil, errors.New("function has no return value")
 		}
@@ -843,7 +835,7 @@ func (f function) resolveIdentifiers(n semantic.Node) (semantic.Node, error) {
 			return nil, fmt.Errorf("name %q does not exist in scope", n.Name)
 		}
 		return resolveValue(v)
-	case *semantic.BlockStatement:
+	case *semantic.Block:
 		for i, s := range n.Body {
 			node, err := f.resolveIdentifiers(s)
 			if err != nil {

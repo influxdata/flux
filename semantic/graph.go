@@ -27,8 +27,8 @@ func (l loc) Location() ast.SourceLocation {
 func (*Program) node()     {}
 func (*Extern) node()      {}
 func (*ExternBlock) node() {}
+func (*Block) node()       {}
 
-func (*BlockStatement) node()             {}
 func (*OptionStatement) node()            {}
 func (*ExpressionStatement) node()        {}
 func (*ReturnStatement) node()            {}
@@ -68,7 +68,6 @@ type Statement interface {
 	stmt()
 }
 
-func (*BlockStatement) stmt()           {}
 func (*OptionStatement) stmt()          {}
 func (*ExpressionStatement) stmt()      {}
 func (*ReturnStatement) stmt()          {}
@@ -138,23 +137,23 @@ func (p *Program) Copy() Node {
 	return np
 }
 
-type BlockStatement struct {
+type Block struct {
 	loc `json:"-"`
 
 	Body []Statement `json:"body"`
 }
 
-func (*BlockStatement) NodeType() string { return "BlockStatement" }
+func (*Block) NodeType() string { return "BlockStatement" }
 
-func (s *BlockStatement) ReturnStatement() *ReturnStatement {
+func (s *Block) ReturnStatement() *ReturnStatement {
 	return s.Body[len(s.Body)-1].(*ReturnStatement)
 }
 
-func (s *BlockStatement) Copy() Node {
+func (s *Block) Copy() Node {
 	if s == nil {
 		return s
 	}
-	ns := new(BlockStatement)
+	ns := new(Block)
 	*ns = *s
 
 	if len(s.Body) > 0 {

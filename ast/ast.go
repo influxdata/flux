@@ -56,7 +56,7 @@ type Node interface {
 
 func (*Program) node() {}
 
-func (*BlockStatement) node()      {}
+func (*Block) node()               {}
 func (*ExpressionStatement) node() {}
 func (*ReturnStatement) node()     {}
 func (*OptionStatement) node()     {}
@@ -127,23 +127,22 @@ type Statement interface {
 	stmt()
 }
 
-func (*BlockStatement) stmt()      {}
 func (*VariableAssignment) stmt()  {}
 func (*ExpressionStatement) stmt() {}
 func (*ReturnStatement) stmt()     {}
 func (*OptionStatement) stmt()     {}
 
-// BlockStatement is a set of statements
-type BlockStatement struct {
+// Block is a set of statements
+type Block struct {
 	BaseNode
 	Body []Statement `json:"body"`
 }
 
 // Type is the abstract type
-func (*BlockStatement) Type() string { return "BlockStatement" }
+func (*Block) Type() string { return "Block" }
 
-func (s *BlockStatement) Copy() Node {
-	ns := new(BlockStatement)
+func (s *Block) Copy() Node {
+	ns := new(Block)
 	*ns = *s
 
 	if len(s.Body) > 0 {

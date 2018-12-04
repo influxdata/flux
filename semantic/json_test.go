@@ -32,7 +32,7 @@ func TestJSONMarshal(t *testing.T) {
 		},
 		{
 			name: "block statement",
-			node: &semantic.BlockStatement{
+			node: &semantic.Block{
 				Body: []semantic.Statement{
 					&semantic.ExpressionStatement{
 						Expression: &semantic.StringLiteral{Value: "hello"},
