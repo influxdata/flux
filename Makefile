@@ -11,7 +11,7 @@
 #    * All recursive Makefiles must support the targets: all and clean.
 #
 
-SUBDIRS = ast parser internal/scanner
+SUBDIRS = ast internal/scanner
 
 GO_ARGS=-tags '$(GO_TAGS)'
 
@@ -25,7 +25,6 @@ export GO_VET=env GO111MODULE=on go vet $(GO_ARGS)
 
 # List of utilities to build as part of the build process
 UTILS := \
-	bin/$(GOOS)/pigeon \
 	bin/$(GOOS)/cmpgen
 
 all: $(UTILS) $(SUBDIRS)
@@ -35,9 +34,6 @@ $(SUBDIRS): $(UTILS)
 
 clean: $(SUBDIRS)
 	rm -rf bin
-
-bin/$(GOOS)/pigeon: go.mod go.sum
-	$(GO_BUILD) -o $@ github.com/mna/pigeon
 
 bin/$(GOOS)/cmpgen: ./ast/asttest/cmpgen/main.go
 	$(GO_BUILD) -o $@ ./ast/asttest/cmpgen

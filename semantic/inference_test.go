@@ -332,10 +332,10 @@ identity(x:identity)(x:2)
 					})
 					switch n := node.(type) {
 					case *semantic.CallExpression:
-						switch n.Location().Start.Column {
-						case 1:
-							return outF
+						switch n.Location().End.Column {
 						case 21:
+							return outF
+						case 26:
 							return outInt
 						}
 					case *semantic.IdentifierExpression:
@@ -1308,9 +1308,9 @@ foo(r:{a:1.1,b:42.0})
 						return fooOut
 					case *semantic.ObjectExpression:
 						switch l, c := n.Location().Start.Line, n.Location().Start.Column; {
-						case l == 2:
+						case l == 2 && c == 8:
 							return semantic.NewEmptyObjectPolyType()
-						case l == 3:
+						case l == 2 && c == 15:
 							return fooOut
 						case l == 7 && c == 5:
 							return semantic.NewObjectPolyType(
@@ -1318,7 +1318,7 @@ foo(r:{a:1.1,b:42.0})
 								nil,
 								requiredR,
 							)
-						case l == 7 && c == 8:
+						case l == 7 && c == 7:
 							return obj1
 						case l == 8 && c == 5:
 							return semantic.NewObjectPolyType(
@@ -1326,7 +1326,7 @@ foo(r:{a:1.1,b:42.0})
 								nil,
 								requiredR,
 							)
-						case l == 8 && c == 8:
+						case l == 8 && c == 7:
 							return obj2
 						}
 					case *semantic.Property:
@@ -1455,6 +1455,24 @@ plus1(r:{_value: 2.0})
 				}
 				tc.node = node
 			}
+
+			// Add the true and false identifiers.
+			tc.node = &semantic.Extern{
+				Declarations: []*semantic.ExternalVariableDeclaration{
+					{
+						Identifier: &semantic.Identifier{Name: "true"},
+						ExternType: semantic.Bool,
+					},
+					{
+						Identifier: &semantic.Identifier{Name: "false"},
+						ExternType: semantic.Bool,
+					},
+				},
+				Block: &semantic.ExternBlock{
+					Node: tc.node,
+				},
+			}
+
 			var wantSolution SolutionMap
 			if tc.solution != nil {
 				semantic.Walk(tc.solution, tc.node)
