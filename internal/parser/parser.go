@@ -491,7 +491,7 @@ func (p *parser) parseAdditiveOperator() (ast.OperatorKind, bool) {
 }
 
 func (p *parser) parsePipeExpression() ast.Expression {
-	expr := p.parsePostfixExpression()
+	expr := p.parseUnaryExpression()
 	p.repeat(p.parsePipeExpressionSuffix(&expr))
 	return expr
 }
@@ -502,7 +502,7 @@ func (p *parser) parsePipeExpressionSuffix(expr *ast.Expression) func() bool {
 			return false
 		}
 		// todo(jsternberg): this is not correct.
-		rhs := p.parsePostfixExpression()
+		rhs := p.parseUnaryExpression()
 		call, _ := rhs.(*ast.CallExpression)
 		*expr = &ast.PipeExpression{
 			Argument: *expr,
@@ -527,8 +527,43 @@ func (p *parser) parsePipeOperator() bool {
 	return false
 }
 
+func (p *parser) parseUnaryExpression() ast.Expression {
+	pos, op, ok := p.parsePrefixOperator()
+	if ok {
+		expr := p.parseUnaryExpression()
+		return &ast.UnaryExpression{
+			Operator: op,
+			Argument: expr,
+			BaseNode: ast.BaseNode{
+				Loc: &ast.SourceLocation{
+					Start:  p.s.File().Position(pos),
+					End:    locEnd(expr),
+					Source: p.s.File().Name(),
+				},
+			},
+		}
+	}
+	return p.parsePostfixExpression()
+}
+
+func (p *parser) parsePrefixOperator() (token.Pos, ast.OperatorKind, bool) {
+	switch pos, tok, _ := p.peek(); tok {
+	case token.ADD:
+		p.consume()
+		return pos, ast.AdditionOperator, true
+	case token.SUB:
+		p.consume()
+		return pos, ast.SubtractionOperator, true
+	case token.NOT:
+		p.consume()
+		return pos, ast.NotOperator, true
+	default:
+		return 0, 0, false
+	}
+}
+
 func (p *parser) parsePostfixExpression() ast.Expression {
-	expr := p.parseUnaryExpression()
+	expr := p.parsePrimaryExpression()
 	for {
 		if ok := p.parsePostfixOperator(&expr); !ok {
 			return expr
@@ -631,41 +666,6 @@ func (p *parser) parseIndexExpression(callee ast.Expression) ast.Expression {
 				Source: p.s.File().Name(),
 			},
 		},
-	}
-}
-
-func (p *parser) parseUnaryExpression() ast.Expression {
-	pos, op, ok := p.parsePrefixOperator()
-	expr := p.parsePrimaryExpression()
-	if ok {
-		expr = &ast.UnaryExpression{
-			Operator: op,
-			Argument: expr,
-			BaseNode: ast.BaseNode{
-				Loc: &ast.SourceLocation{
-					Start:  p.s.File().Position(pos),
-					End:    locEnd(expr),
-					Source: p.s.File().Name(),
-				},
-			},
-		}
-	}
-	return expr
-}
-
-func (p *parser) parsePrefixOperator() (token.Pos, ast.OperatorKind, bool) {
-	switch pos, tok, _ := p.peek(); tok {
-	case token.ADD:
-		p.consume()
-		return pos, ast.AdditionOperator, true
-	case token.SUB:
-		p.consume()
-		return pos, ast.SubtractionOperator, true
-	case token.NOT:
-		p.consume()
-		return pos, ast.NotOperator, true
-	default:
-		return 0, 0, false
 	}
 }
 
