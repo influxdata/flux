@@ -382,6 +382,18 @@ func (p *parser) parseComparisonOperator() (ast.OperatorKind, bool) {
 	case token.NEQ:
 		p.consume()
 		return ast.NotEqualOperator, true
+	case token.LTE:
+		p.consume()
+		return ast.LessThanEqualOperator, true
+	case token.LT:
+		p.consume()
+		return ast.LessThanOperator, true
+	case token.GTE:
+		p.consume()
+		return ast.GreaterThanEqualOperator, true
+	case token.GT:
+		p.consume()
+		return ast.GreaterThanOperator, true
 	case token.REGEXEQ:
 		p.consume()
 		return ast.RegexpMatchOperator, true
