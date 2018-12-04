@@ -1495,6 +1495,38 @@ a = 5.0
 			},
 		},
 		{
+			name: "logical unary operator precedence",
+			raw:  `not -1 == a`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "1:12"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:12"),
+						Expression: &ast.UnaryExpression{
+							BaseNode: base("1:1", "1:12"),
+							Operator: ast.NotOperator,
+							Argument: &ast.BinaryExpression{
+								BaseNode: base("1:5", "1:12"),
+								Operator: ast.EqualOperator,
+								Left: &ast.UnaryExpression{
+									BaseNode: base("1:5", "1:7"),
+									Operator: ast.SubtractionOperator,
+									Argument: &ast.IntegerLiteral{
+										BaseNode: base("1:6", "1:7"),
+										Value:    1,
+									},
+								},
+								Right: &ast.Identifier{
+									BaseNode: base("1:11", "1:12"),
+									Name:     "a",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "arrow function called",
 			raw: `plusOne = (r) => r + 1
 			plusOne(r:5)
