@@ -62,7 +62,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 				Body: []ast.Statement{
 					&ast.OptionStatement{
 						BaseNode: base("1:1", "7:7"),
-						Declaration: &ast.VariableDeclarator{
+						Assignment: &ast.VariableAssignment{
 							BaseNode: base("1:8", "7:7"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:8", "1:12"),
@@ -157,7 +157,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 				Body: []ast.Statement{
 					&ast.OptionStatement{
 						BaseNode: base("1:1", "4:6"),
-						Declaration: &ast.VariableDeclarator{
+						Assignment: &ast.VariableAssignment{
 							BaseNode: base("1:8", "4:6"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:8", "1:12"),
@@ -358,19 +358,16 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 			want: &ast.Program{
 				BaseNode: base("1:1", "1:10"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:10"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("1:1", "1:10"),
-							ID: &ast.Identifier{
-								BaseNode: base("1:1", "1:6"),
-								Name:     "howdy",
-							},
-							Init: &ast.IntegerLiteral{
-								BaseNode: base("1:9", "1:10"),
-								Value:    1,
-							},
-						}},
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:6"),
+							Name:     "howdy",
+						},
+						Init: &ast.IntegerLiteral{
+							BaseNode: base("1:9", "1:10"),
+							Value:    1,
+						},
 					},
 				},
 			},
@@ -381,19 +378,16 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 			want: &ast.Program{
 				BaseNode: base("1:1", "1:12"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:12"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("1:1", "1:12"),
-							ID: &ast.Identifier{
-								BaseNode: base("1:1", "1:6"),
-								Name:     "howdy",
-							},
-							Init: &ast.FloatLiteral{
-								BaseNode: base("1:9", "1:12"),
-								Value:    1.1,
-							},
-						}},
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:6"),
+							Name:     "howdy",
+						},
+						Init: &ast.FloatLiteral{
+							BaseNode: base("1:9", "1:12"),
+							Value:    1.1,
+						},
 					},
 				},
 			},
@@ -404,36 +398,33 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 			want: &ast.Program{
 				BaseNode: base("1:1", "1:21"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:21"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("1:1", "1:21"),
-							ID: &ast.Identifier{
-								BaseNode: base("1:1", "1:6"),
-								Name:     "howdy",
-							},
-							Init: &ast.ArrayExpression{
-								BaseNode: base("1:9", "1:21"),
-								Elements: []ast.Expression{
-									&ast.IntegerLiteral{
-										BaseNode: base("1:10", "1:11"),
-										Value:    1,
-									},
-									&ast.IntegerLiteral{
-										BaseNode: base("1:13", "1:14"),
-										Value:    2,
-									},
-									&ast.IntegerLiteral{
-										BaseNode: base("1:16", "1:17"),
-										Value:    3,
-									},
-									&ast.IntegerLiteral{
-										BaseNode: base("1:19", "1:20"),
-										Value:    4,
-									},
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:6"),
+							Name:     "howdy",
+						},
+						Init: &ast.ArrayExpression{
+							BaseNode: base("1:9", "1:21"),
+							Elements: []ast.Expression{
+								&ast.IntegerLiteral{
+									BaseNode: base("1:10", "1:11"),
+									Value:    1,
+								},
+								&ast.IntegerLiteral{
+									BaseNode: base("1:13", "1:14"),
+									Value:    2,
+								},
+								&ast.IntegerLiteral{
+									BaseNode: base("1:16", "1:17"),
+									Value:    3,
+								},
+								&ast.IntegerLiteral{
+									BaseNode: base("1:19", "1:20"),
+									Value:    4,
 								},
 							},
-						}},
+						},
 					},
 				},
 			},
@@ -444,18 +435,15 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 			want: &ast.Program{
 				BaseNode: base("1:1", "1:11"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:11"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("1:1", "1:11"),
-							ID: &ast.Identifier{
-								BaseNode: base("1:1", "1:6"),
-								Name:     "howdy",
-							},
-							Init: &ast.ArrayExpression{
-								BaseNode: base("1:9", "1:11"),
-							},
-						}},
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:6"),
+							Name:     "howdy",
+						},
+						Init: &ast.ArrayExpression{
+							BaseNode: base("1:9", "1:11"),
+						},
 					},
 				},
 			},
@@ -467,19 +455,16 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 			want: &ast.Program{
 				BaseNode: base("1:1", "2:10"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:10"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("1:1", "1:10"),
-							ID: &ast.Identifier{
-								BaseNode: base("1:1", "1:6"),
-								Name:     "howdy",
-							},
-							Init: &ast.IntegerLiteral{
-								BaseNode: base("1:9", "1:10"),
-								Value:    1,
-							},
-						}},
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:6"),
+							Name:     "howdy",
+						},
+						Init: &ast.IntegerLiteral{
+							BaseNode: base("1:9", "1:10"),
+							Value:    1,
+						},
 					},
 					&ast.ExpressionStatement{
 						BaseNode: base("2:4", "2:10"),
@@ -501,22 +486,19 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 			want: &ast.Program{
 				BaseNode: base("1:1", "2:17"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:15"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("1:1", "1:15"),
-							ID: &ast.Identifier{
-								BaseNode: base("1:1", "1:6"),
-								Name:     "howdy",
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:6"),
+							Name:     "howdy",
+						},
+						Init: &ast.CallExpression{
+							BaseNode: base("1:9", "1:15"),
+							Callee: &ast.Identifier{
+								BaseNode: base("1:9", "1:13"),
+								Name:     "from",
 							},
-							Init: &ast.CallExpression{
-								BaseNode: base("1:9", "1:15"),
-								Callee: &ast.Identifier{
-									BaseNode: base("1:9", "1:13"),
-									Name:     "from",
-								},
-							},
-						}},
+						},
 					},
 					&ast.ExpressionStatement{
 						BaseNode: base("2:4", "2:17"),
@@ -688,39 +670,33 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 			want: &ast.Program{
 				BaseNode: base("1:1", "4:16"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:15"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("1:1", "1:15"),
-							ID: &ast.Identifier{
-								BaseNode: base("1:1", "1:6"),
-								Name:     "howdy",
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:6"),
+							Name:     "howdy",
+						},
+						Init: &ast.CallExpression{
+							BaseNode: base("1:9", "1:15"),
+							Callee: &ast.Identifier{
+								BaseNode: base("1:9", "1:13"),
+								Name:     "from",
 							},
-							Init: &ast.CallExpression{
-								BaseNode: base("1:9", "1:15"),
-								Callee: &ast.Identifier{
-									BaseNode: base("1:9", "1:13"),
-									Name:     "from",
-								},
-							},
-						}},
+						},
 					},
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("2:4", "2:18"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("2:4", "2:18"),
-							ID: &ast.Identifier{
-								BaseNode: base("2:4", "2:9"),
-								Name:     "doody",
+						ID: &ast.Identifier{
+							BaseNode: base("2:4", "2:9"),
+							Name:     "doody",
+						},
+						Init: &ast.CallExpression{
+							BaseNode: base("2:12", "2:18"),
+							Callee: &ast.Identifier{
+								BaseNode: base("2:12", "2:16"),
+								Name:     "from",
 							},
-							Init: &ast.CallExpression{
-								BaseNode: base("2:12", "2:18"),
-								Callee: &ast.Identifier{
-									BaseNode: base("2:12", "2:16"),
-									Name:     "from",
-								},
-							},
-						}},
+						},
 					},
 					&ast.ExpressionStatement{
 						BaseNode: base("3:4", "3:18"),
@@ -805,42 +781,39 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 			want: &ast.Program{
 				BaseNode: base("1:1", "3:13"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:29"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("1:1", "1:29"),
-							ID: &ast.Identifier{
-								BaseNode: base("1:1", "1:2"),
-								Name:     "m",
-							},
-							Init: &ast.ObjectExpression{
-								BaseNode: base("1:5", "1:29"),
-								Properties: []*ast.Property{
-									{
-										BaseNode: base("1:6", "1:13"),
-										Key: &ast.Identifier{
-											BaseNode: base("1:6", "1:10"),
-											Name:     "key1",
-										},
-										Value: &ast.IntegerLiteral{
-											BaseNode: base("1:12", "1:13"),
-											Value:    1,
-										},
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "m",
+						},
+						Init: &ast.ObjectExpression{
+							BaseNode: base("1:5", "1:29"),
+							Properties: []*ast.Property{
+								{
+									BaseNode: base("1:6", "1:13"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:6", "1:10"),
+										Name:     "key1",
 									},
-									{
-										BaseNode: base("1:15", "1:28"),
-										Key: &ast.Identifier{
-											BaseNode: base("1:15", "1:19"),
-											Name:     "key2",
-										},
-										Value: &ast.StringLiteral{
-											BaseNode: base("1:20", "1:28"),
-											Value:    "value2",
-										},
+									Value: &ast.IntegerLiteral{
+										BaseNode: base("1:12", "1:13"),
+										Value:    1,
+									},
+								},
+								{
+									BaseNode: base("1:15", "1:28"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:15", "1:19"),
+										Name:     "key2",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: base("1:20", "1:28"),
+										Value:    "value2",
 									},
 								},
 							},
-						}},
+						},
 					},
 					&ast.ExpressionStatement{
 						BaseNode: base("2:4", "2:10"),
@@ -1075,69 +1048,57 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 			want: &ast.Program{
 				BaseNode: base("1:1", "4:18"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:6"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("1:1", "1:6"),
-							ID: &ast.Identifier{
-								BaseNode: base("1:1", "1:2"),
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "a",
+						},
+						Init: &ast.IntegerLiteral{
+							BaseNode: base("1:5", "1:6"),
+							Value:    1,
+						},
+					},
+					&ast.VariableAssignment{
+						BaseNode: base("2:13", "2:18"),
+						ID: &ast.Identifier{
+							BaseNode: base("2:13", "2:14"),
+							Name:     "b",
+						},
+						Init: &ast.IntegerLiteral{
+							BaseNode: base("2:17", "2:18"),
+							Value:    2,
+						},
+					},
+					&ast.VariableAssignment{
+						BaseNode: base("3:13", "3:22"),
+						ID: &ast.Identifier{
+							BaseNode: base("3:13", "3:14"),
+							Name:     "c",
+						},
+						Init: &ast.BinaryExpression{
+							BaseNode: base("3:17", "3:22"),
+							Operator: ast.AdditionOperator,
+							Left: &ast.Identifier{
+								BaseNode: base("3:17", "3:18"),
 								Name:     "a",
 							},
-							Init: &ast.IntegerLiteral{
-								BaseNode: base("1:5", "1:6"),
-								Value:    1,
-							},
-						}},
-					},
-					&ast.VariableDeclaration{
-						BaseNode: base("2:13", "2:18"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("2:13", "2:18"),
-							ID: &ast.Identifier{
-								BaseNode: base("2:13", "2:14"),
+							Right: &ast.Identifier{
+								BaseNode: base("3:21", "3:22"),
 								Name:     "b",
 							},
-							Init: &ast.IntegerLiteral{
-								BaseNode: base("2:17", "2:18"),
-								Value:    2,
-							},
-						}},
+						},
 					},
-					&ast.VariableDeclaration{
-						BaseNode: base("3:13", "3:22"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("3:13", "3:22"),
-							ID: &ast.Identifier{
-								BaseNode: base("3:13", "3:14"),
-								Name:     "c",
-							},
-							Init: &ast.BinaryExpression{
-								BaseNode: base("3:17", "3:22"),
-								Operator: ast.AdditionOperator,
-								Left: &ast.Identifier{
-									BaseNode: base("3:17", "3:18"),
-									Name:     "a",
-								},
-								Right: &ast.Identifier{
-									BaseNode: base("3:21", "3:22"),
-									Name:     "b",
-								},
-							},
-						}},
-					},
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("4:13", "4:18"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("4:13", "4:18"),
-							ID: &ast.Identifier{
-								BaseNode: base("4:13", "4:14"),
-								Name:     "d",
-							},
-							Init: &ast.Identifier{
-								BaseNode: base("4:17", "4:18"),
-								Name:     "a",
-							},
-						}},
+						ID: &ast.Identifier{
+							BaseNode: base("4:13", "4:14"),
+							Name:     "d",
+						},
+						Init: &ast.Identifier{
+							BaseNode: base("4:17", "4:18"),
+							Name:     "a",
+						},
 					},
 				},
 			},
@@ -1149,37 +1110,31 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 			want: &ast.Program{
 				BaseNode: base("1:1", "2:19"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:6"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("1:1", "1:6"),
-							ID: &ast.Identifier{
-								BaseNode: base("1:1", "1:2"),
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "a",
+						},
+						Init: &ast.IntegerLiteral{
+							BaseNode: base("1:5", "1:6"),
+							Value:    5,
+						},
+					},
+					&ast.VariableAssignment{
+						BaseNode: base("2:13", "2:19"),
+						ID: &ast.Identifier{
+							BaseNode: base("2:13", "2:14"),
+							Name:     "c",
+						},
+						Init: &ast.UnaryExpression{
+							BaseNode: base("2:17", "2:19"),
+							Operator: ast.SubtractionOperator,
+							Argument: &ast.Identifier{
+								BaseNode: base("2:18", "2:19"),
 								Name:     "a",
 							},
-							Init: &ast.IntegerLiteral{
-								BaseNode: base("1:5", "1:6"),
-								Value:    5,
-							},
-						}},
-					},
-					&ast.VariableDeclaration{
-						BaseNode: base("2:13", "2:19"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("2:13", "2:19"),
-							ID: &ast.Identifier{
-								BaseNode: base("2:13", "2:14"),
-								Name:     "c",
-							},
-							Init: &ast.UnaryExpression{
-								BaseNode: base("2:17", "2:19"),
-								Operator: ast.SubtractionOperator,
-								Argument: &ast.Identifier{
-									BaseNode: base("2:18", "2:19"),
-									Name:     "a",
-								},
-							},
-						}},
+						},
 					},
 				},
 			},
@@ -1191,45 +1146,39 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 			want: &ast.Program{
 				BaseNode: base("1:1", "2:24"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:6"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("1:1", "1:6"),
-							ID: &ast.Identifier{
-								BaseNode: base("1:1", "1:2"),
-								Name:     "a",
-							},
-							Init: &ast.IntegerLiteral{
-								BaseNode: base("1:5", "1:6"),
-								Value:    5,
-							},
-						}},
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "a",
+						},
+						Init: &ast.IntegerLiteral{
+							BaseNode: base("1:5", "1:6"),
+							Value:    5,
+						},
 					},
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("2:13", "2:24"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("2:13", "2:24"),
-							ID: &ast.Identifier{
-								BaseNode: base("2:13", "2:14"),
-								Name:     "c",
+						ID: &ast.Identifier{
+							BaseNode: base("2:13", "2:14"),
+							Name:     "c",
+						},
+						Init: &ast.BinaryExpression{
+							BaseNode: base("2:17", "2:24"),
+							Operator: ast.MultiplicationOperator,
+							Left: &ast.IntegerLiteral{
+								BaseNode: base("2:17", "2:19"),
+								Value:    10,
 							},
-							Init: &ast.BinaryExpression{
-								BaseNode: base("2:17", "2:24"),
-								Operator: ast.MultiplicationOperator,
-								Left: &ast.IntegerLiteral{
-									BaseNode: base("2:17", "2:19"),
-									Value:    10,
-								},
-								Right: &ast.UnaryExpression{
-									BaseNode: base("2:22", "2:24"),
-									Operator: ast.SubtractionOperator,
-									Argument: &ast.Identifier{
-										BaseNode: base("2:23", "2:24"),
-										Name:     "a",
-									},
+							Right: &ast.UnaryExpression{
+								BaseNode: base("2:22", "2:24"),
+								Operator: ast.SubtractionOperator,
+								Argument: &ast.Identifier{
+									BaseNode: base("2:23", "2:24"),
+									Name:     "a",
 								},
 							},
-						}},
+						},
 					},
 				},
 			},
@@ -1241,19 +1190,16 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 			want: &ast.Program{
 				BaseNode: base("1:1", "2:42"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:8"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("1:1", "1:8"),
-							ID: &ast.Identifier{
-								BaseNode: base("1:1", "1:2"),
-								Name:     "a",
-							},
-							Init: &ast.FloatLiteral{
-								BaseNode: base("1:5", "1:8"),
-								Value:    5,
-							},
-						}},
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "a",
+						},
+						Init: &ast.FloatLiteral{
+							BaseNode: base("1:5", "1:8"),
+							Value:    5,
+						},
 					},
 					&ast.ExpressionStatement{
 						BaseNode: base("2:13", "2:42"),
@@ -1316,19 +1262,16 @@ a = 5.0
 			want: &ast.Program{
 				BaseNode: base("2:1", "6:13"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("2:1", "2:8"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("2:1", "2:8"),
-							ID: &ast.Identifier{
-								BaseNode: base("2:1", "2:2"),
-								Name:     "a",
-							},
-							Init: &ast.FloatLiteral{
-								BaseNode: base("2:5", "2:8"),
-								Value:    5,
-							},
-						}},
+						ID: &ast.Identifier{
+							BaseNode: base("2:1", "2:2"),
+							Name:     "a",
+						},
+						Init: &ast.FloatLiteral{
+							BaseNode: base("2:5", "2:8"),
+							Value:    5,
+						},
 					},
 					&ast.ExpressionStatement{
 						BaseNode: base("4:1", "6:13"),
@@ -1386,30 +1329,27 @@ a = 5.0
 			want: &ast.Program{
 				BaseNode: base("1:1", "1:16"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:16"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("1:1", "1:16"),
-							ID: &ast.Identifier{
-								BaseNode: base("1:1", "1:2"),
-								Name:     "a",
-							},
-							Init: &ast.BinaryExpression{
-								BaseNode: base("1:5", "1:16"),
-								Operator: ast.EqualOperator,
-								Left: &ast.CallExpression{
-									BaseNode: base("1:5", "1:10"),
-									Callee: &ast.Identifier{
-										BaseNode: base("1:5", "1:8"),
-										Name:     "foo",
-									},
-								},
-								Right: &ast.IntegerLiteral{
-									BaseNode: base("1:14", "1:16"),
-									Value:    10,
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "a",
+						},
+						Init: &ast.BinaryExpression{
+							BaseNode: base("1:5", "1:16"),
+							Operator: ast.EqualOperator,
+							Left: &ast.CallExpression{
+								BaseNode: base("1:5", "1:10"),
+								Callee: &ast.Identifier{
+									BaseNode: base("1:5", "1:8"),
+									Name:     "foo",
 								},
 							},
-						}},
+							Right: &ast.IntegerLiteral{
+								BaseNode: base("1:14", "1:16"),
+								Value:    10,
+							},
+						},
 					},
 				},
 			},
@@ -1556,39 +1496,36 @@ a = 5.0
 			want: &ast.Program{
 				BaseNode: base("1:1", "2:16"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:23"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("1:1", "1:23"),
-							ID: &ast.Identifier{
-								BaseNode: base("1:1", "1:8"),
-								Name:     "plusOne",
-							},
-							Init: &ast.ArrowFunctionExpression{
-								BaseNode: base("1:11", "1:23"),
-								Params: []*ast.Property{
-									{
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:8"),
+							Name:     "plusOne",
+						},
+						Init: &ast.ArrowFunctionExpression{
+							BaseNode: base("1:11", "1:23"),
+							Params: []*ast.Property{
+								{
+									BaseNode: base("1:12", "1:13"),
+									Key: &ast.Identifier{
 										BaseNode: base("1:12", "1:13"),
-										Key: &ast.Identifier{
-											BaseNode: base("1:12", "1:13"),
-											Name:     "r",
-										},
-									},
-								},
-								Body: &ast.BinaryExpression{
-									BaseNode: base("1:18", "1:23"),
-									Operator: ast.AdditionOperator,
-									Left: &ast.Identifier{
-										BaseNode: base("1:18", "1:19"),
 										Name:     "r",
 									},
-									Right: &ast.IntegerLiteral{
-										BaseNode: base("1:22", "1:23"),
-										Value:    1,
-									},
 								},
 							},
-						}},
+							Body: &ast.BinaryExpression{
+								BaseNode: base("1:18", "1:23"),
+								Operator: ast.AdditionOperator,
+								Left: &ast.Identifier{
+									BaseNode: base("1:18", "1:19"),
+									Name:     "r",
+								},
+								Right: &ast.IntegerLiteral{
+									BaseNode: base("1:22", "1:23"),
+									Value:    1,
+								},
+							},
+						},
 					},
 					&ast.ExpressionStatement{
 						BaseNode: base("2:4", "2:16"),
@@ -1627,43 +1564,40 @@ a = 5.0
 			want: &ast.Program{
 				BaseNode: base("1:1", "1:21"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:21"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("1:1", "1:21"),
-							ID: &ast.Identifier{
-								BaseNode: base("1:1", "1:6"),
-								Name:     "toMap",
-							},
-							Init: &ast.ArrowFunctionExpression{
-								BaseNode: base("1:9", "1:21"),
-								Params: []*ast.Property{
-									{
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:6"),
+							Name:     "toMap",
+						},
+						Init: &ast.ArrowFunctionExpression{
+							BaseNode: base("1:9", "1:21"),
+							Params: []*ast.Property{
+								{
+									BaseNode: base("1:10", "1:11"),
+									Key: &ast.Identifier{
 										BaseNode: base("1:10", "1:11"),
+										Name:     "r",
+									},
+								},
+							},
+							Body: &ast.ObjectExpression{
+								BaseNode: base("1:16", "1:21"),
+								Properties: []*ast.Property{
+									{
+										BaseNode: base("1:17", "1:20"),
 										Key: &ast.Identifier{
-											BaseNode: base("1:10", "1:11"),
+											BaseNode: base("1:17", "1:18"),
+											Name:     "r",
+										},
+										Value: &ast.Identifier{
+											BaseNode: base("1:19", "1:20"),
 											Name:     "r",
 										},
 									},
 								},
-								Body: &ast.ObjectExpression{
-									BaseNode: base("1:16", "1:21"),
-									Properties: []*ast.Property{
-										{
-											BaseNode: base("1:17", "1:20"),
-											Key: &ast.Identifier{
-												BaseNode: base("1:17", "1:18"),
-												Name:     "r",
-											},
-											Value: &ast.Identifier{
-												BaseNode: base("1:19", "1:20"),
-												Name:     "r",
-											},
-										},
-									},
-								},
 							},
-						}},
+						},
 					},
 				},
 			},
@@ -1674,50 +1608,47 @@ a = 5.0
 			want: &ast.Program{
 				BaseNode: base("1:1", "1:25"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:25"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("1:1", "1:25"),
-							ID: &ast.Identifier{
-								BaseNode: base("1:1", "1:5"),
-								Name:     "addN",
-							},
-							Init: &ast.ArrowFunctionExpression{
-								BaseNode: base("1:8", "1:25"),
-								Params: []*ast.Property{
-									{
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:5"),
+							Name:     "addN",
+						},
+						Init: &ast.ArrowFunctionExpression{
+							BaseNode: base("1:8", "1:25"),
+							Params: []*ast.Property{
+								{
+									BaseNode: base("1:9", "1:10"),
+									Key: &ast.Identifier{
 										BaseNode: base("1:9", "1:10"),
-										Key: &ast.Identifier{
-											BaseNode: base("1:9", "1:10"),
-											Name:     "r",
-										},
-									},
-									{
-										BaseNode: base("1:12", "1:15"),
-										Key: &ast.Identifier{
-											BaseNode: base("1:12", "1:13"),
-											Name:     "n",
-										},
-										Value: &ast.IntegerLiteral{
-											BaseNode: base("1:14", "1:15"),
-											Value:    5,
-										},
-									},
-								},
-								Body: &ast.BinaryExpression{
-									BaseNode: base("1:20", "1:25"),
-									Operator: ast.AdditionOperator,
-									Left: &ast.Identifier{
-										BaseNode: base("1:20", "1:21"),
 										Name:     "r",
 									},
-									Right: &ast.Identifier{
-										BaseNode: base("1:24", "1:25"),
+								},
+								{
+									BaseNode: base("1:12", "1:15"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:12", "1:13"),
 										Name:     "n",
+									},
+									Value: &ast.IntegerLiteral{
+										BaseNode: base("1:14", "1:15"),
+										Value:    5,
 									},
 								},
 							},
-						}},
+							Body: &ast.BinaryExpression{
+								BaseNode: base("1:20", "1:25"),
+								Operator: ast.AdditionOperator,
+								Left: &ast.Identifier{
+									BaseNode: base("1:20", "1:21"),
+									Name:     "r",
+								},
+								Right: &ast.Identifier{
+									BaseNode: base("1:24", "1:25"),
+									Name:     "n",
+								},
+							},
+						},
 					},
 				},
 			},
@@ -1731,39 +1662,36 @@ a = 5.0
 			want: &ast.Program{
 				BaseNode: base("2:13", "3:39"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("2:13", "2:35"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("2:13", "2:35"),
-							ID: &ast.Identifier{
-								BaseNode: base("2:13", "2:20"),
-								Name:     "plusOne",
-							},
-							Init: &ast.ArrowFunctionExpression{
-								BaseNode: base("2:23", "2:35"),
-								Params: []*ast.Property{
-									{
+						ID: &ast.Identifier{
+							BaseNode: base("2:13", "2:20"),
+							Name:     "plusOne",
+						},
+						Init: &ast.ArrowFunctionExpression{
+							BaseNode: base("2:23", "2:35"),
+							Params: []*ast.Property{
+								{
+									BaseNode: base("2:24", "2:25"),
+									Key: &ast.Identifier{
 										BaseNode: base("2:24", "2:25"),
-										Key: &ast.Identifier{
-											BaseNode: base("2:24", "2:25"),
-											Name:     "r",
-										},
-									},
-								},
-								Body: &ast.BinaryExpression{
-									BaseNode: base("2:30", "2:35"),
-									Operator: ast.AdditionOperator,
-									Left: &ast.Identifier{
-										BaseNode: base("2:30", "2:31"),
 										Name:     "r",
 									},
-									Right: &ast.IntegerLiteral{
-										BaseNode: base("2:34", "2:35"),
-										Value:    1,
-									},
 								},
 							},
-						}},
+							Body: &ast.BinaryExpression{
+								BaseNode: base("2:30", "2:35"),
+								Operator: ast.AdditionOperator,
+								Left: &ast.Identifier{
+									BaseNode: base("2:30", "2:31"),
+									Name:     "r",
+								},
+								Right: &ast.IntegerLiteral{
+									BaseNode: base("2:34", "2:35"),
+									Value:    1,
+								},
+							},
+						},
 					},
 					&ast.ExpressionStatement{
 						BaseNode: base("3:13", "3:39"),
@@ -1821,46 +1749,43 @@ a = 5.0
 			want: &ast.Program{
 				BaseNode: base("1:1", "1:38"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:38"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("1:1", "1:38"),
-							ID: &ast.Identifier{
-								BaseNode: base("1:1", "1:2"),
-								Name:     "f",
-							},
-							Init: &ast.ArrowFunctionExpression{
-								BaseNode: base("1:5", "1:38"),
-								Params: []*ast.Property{
-									{
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "f",
+						},
+						Init: &ast.ArrowFunctionExpression{
+							BaseNode: base("1:5", "1:38"),
+							Params: []*ast.Property{
+								{
+									BaseNode: base("1:6", "1:7"),
+									Key: &ast.Identifier{
 										BaseNode: base("1:6", "1:7"),
-										Key: &ast.Identifier{
-											BaseNode: base("1:6", "1:7"),
-											Name:     "r",
-										},
-									},
-								},
-								Body: &ast.BinaryExpression{
-									BaseNode: base("1:12", "1:38"),
-									Operator: ast.EqualOperator,
-									Left: &ast.MemberExpression{
-										BaseNode: base("1:12", "1:29"),
-										Object: &ast.Identifier{
-											BaseNode: base("1:12", "1:13"),
-											Name:     "r",
-										},
-										Property: &ast.StringLiteral{
-											BaseNode: base("1:14", "1:28"),
-											Value:    "_measurement",
-										},
-									},
-									Right: &ast.StringLiteral{
-										BaseNode: base("1:33", "1:38"),
-										Value:    "cpu",
+										Name:     "r",
 									},
 								},
 							},
-						}},
+							Body: &ast.BinaryExpression{
+								BaseNode: base("1:12", "1:38"),
+								Operator: ast.EqualOperator,
+								Left: &ast.MemberExpression{
+									BaseNode: base("1:12", "1:29"),
+									Object: &ast.Identifier{
+										BaseNode: base("1:12", "1:13"),
+										Name:     "r",
+									},
+									Property: &ast.StringLiteral{
+										BaseNode: base("1:14", "1:28"),
+										Value:    "_measurement",
+									},
+								},
+								Right: &ast.StringLiteral{
+									BaseNode: base("1:33", "1:38"),
+									Value:    "cpu",
+								},
+							},
+						},
 					},
 				},
 			},
@@ -1874,68 +1799,62 @@ a = 5.0
 			want: &ast.Program{
 				BaseNode: base("1:1", "4:14"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "4:14"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("1:1", "4:14"),
-							ID: &ast.Identifier{
-								BaseNode: base("1:1", "1:2"),
-								Name:     "f",
-							},
-							Init: &ast.ArrowFunctionExpression{
-								BaseNode: base("1:5", "4:14"),
-								Params: []*ast.Property{
-									{
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "f",
+						},
+						Init: &ast.ArrowFunctionExpression{
+							BaseNode: base("1:5", "4:14"),
+							Params: []*ast.Property{
+								{
+									BaseNode: base("1:6", "1:7"),
+									Key: &ast.Identifier{
 										BaseNode: base("1:6", "1:7"),
-										Key: &ast.Identifier{
-											BaseNode: base("1:6", "1:7"),
-											Name:     "r",
-										},
+										Name:     "r",
 									},
 								},
-								Body: &ast.BlockStatement{
-									BaseNode: base("1:12", "4:14"),
-									Body: []ast.Statement{
-										&ast.VariableDeclaration{
-											BaseNode: base("2:17", "2:38"),
-											Declarations: []*ast.VariableDeclarator{{
-												BaseNode: base("2:17", "2:38"),
-												ID: &ast.Identifier{
-													BaseNode: base("2:17", "2:18"),
-													Name:     "m",
-												},
-												Init: &ast.MemberExpression{
-													BaseNode: base("2:21", "2:38"),
-													Object: &ast.Identifier{
-														BaseNode: base("2:21", "2:22"),
-														Name:     "r",
-													},
-													Property: &ast.StringLiteral{
-														BaseNode: base("2:23", "2:37"),
-														Value:    "_measurement",
-													},
-												},
-											}},
+							},
+							Body: &ast.BlockStatement{
+								BaseNode: base("1:12", "4:14"),
+								Body: []ast.Statement{
+									&ast.VariableAssignment{
+										BaseNode: base("2:17", "2:38"),
+										ID: &ast.Identifier{
+											BaseNode: base("2:17", "2:18"),
+											Name:     "m",
 										},
-										&ast.ReturnStatement{
-											BaseNode: base("3:17", "3:34"),
-											Argument: &ast.BinaryExpression{
-												BaseNode: base("3:24", "3:34"),
-												Operator: ast.EqualOperator,
-												Left: &ast.Identifier{
-													BaseNode: base("3:24", "3:25"),
-													Name:     "m",
-												},
-												Right: &ast.StringLiteral{
-													BaseNode: base("3:29", "3:34"),
-													Value:    "cpu",
-												},
+										Init: &ast.MemberExpression{
+											BaseNode: base("2:21", "2:38"),
+											Object: &ast.Identifier{
+												BaseNode: base("2:21", "2:22"),
+												Name:     "r",
+											},
+											Property: &ast.StringLiteral{
+												BaseNode: base("2:23", "2:37"),
+												Value:    "_measurement",
+											},
+										},
+									},
+									&ast.ReturnStatement{
+										BaseNode: base("3:17", "3:34"),
+										Argument: &ast.BinaryExpression{
+											BaseNode: base("3:24", "3:34"),
+											Operator: ast.EqualOperator,
+											Left: &ast.Identifier{
+												BaseNode: base("3:24", "3:25"),
+												Name:     "m",
+											},
+											Right: &ast.StringLiteral{
+												BaseNode: base("3:29", "3:34"),
+												Value:    "cpu",
 											},
 										},
 									},
 								},
 							},
-						}},
+						},
 					},
 				},
 			},
@@ -2494,67 +2413,64 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])`,
 			want: &ast.Program{
 				BaseNode: base("2:1", "4:72"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("2:1", "2:51"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("2:1", "2:51"),
-							ID: &ast.Identifier{
-								BaseNode: base("2:1", "2:2"),
-								Name:     "a",
-							},
-							Init: &ast.PipeExpression{
-								BaseNode: base("2:5", "2:51"),
-								Argument: &ast.CallExpression{
-									BaseNode: base("2:5", "2:31"),
-									Callee: &ast.Identifier{
-										BaseNode: base("2:5", "2:9"),
-										Name:     "from",
-									},
-									Arguments: []ast.Expression{
-										&ast.ObjectExpression{
-											BaseNode: base("2:10", "2:30"),
-											Properties: []*ast.Property{
-												{
-													BaseNode: base("2:10", "2:30"),
-													Key: &ast.Identifier{
-														BaseNode: base("2:10", "2:16"),
-														Name:     "bucket",
-													},
-													Value: &ast.StringLiteral{
-														BaseNode: base("2:17", "2:30"),
-														Value:    "dbA/autogen",
-													},
+						ID: &ast.Identifier{
+							BaseNode: base("2:1", "2:2"),
+							Name:     "a",
+						},
+						Init: &ast.PipeExpression{
+							BaseNode: base("2:5", "2:51"),
+							Argument: &ast.CallExpression{
+								BaseNode: base("2:5", "2:31"),
+								Callee: &ast.Identifier{
+									BaseNode: base("2:5", "2:9"),
+									Name:     "from",
+								},
+								Arguments: []ast.Expression{
+									&ast.ObjectExpression{
+										BaseNode: base("2:10", "2:30"),
+										Properties: []*ast.Property{
+											{
+												BaseNode: base("2:10", "2:30"),
+												Key: &ast.Identifier{
+													BaseNode: base("2:10", "2:16"),
+													Name:     "bucket",
+												},
+												Value: &ast.StringLiteral{
+													BaseNode: base("2:17", "2:30"),
+													Value:    "dbA/autogen",
 												},
 											},
 										},
 									},
 								},
-								Call: &ast.CallExpression{
-									BaseNode: base("2:35", "2:51"),
-									Callee: &ast.Identifier{
-										BaseNode: base("2:35", "2:40"),
-										Name:     "range",
-									},
-									Arguments: []ast.Expression{
-										&ast.ObjectExpression{
-											BaseNode: base("2:41", "2:50"),
-											Properties: []*ast.Property{
-												{
-													BaseNode: base("2:41", "2:50"),
-													Key: &ast.Identifier{
-														BaseNode: base("2:41", "2:46"),
-														Name:     "start",
-													},
-													Value: &ast.UnaryExpression{
-														BaseNode: base("2:47", "2:50"),
-														Operator: ast.SubtractionOperator,
-														Argument: &ast.DurationLiteral{
-															BaseNode: base("2:48", "2:50"),
-															Values: []ast.Duration{
-																{
-																	Magnitude: 1,
-																	Unit:      "h",
-																},
+							},
+							Call: &ast.CallExpression{
+								BaseNode: base("2:35", "2:51"),
+								Callee: &ast.Identifier{
+									BaseNode: base("2:35", "2:40"),
+									Name:     "range",
+								},
+								Arguments: []ast.Expression{
+									&ast.ObjectExpression{
+										BaseNode: base("2:41", "2:50"),
+										Properties: []*ast.Property{
+											{
+												BaseNode: base("2:41", "2:50"),
+												Key: &ast.Identifier{
+													BaseNode: base("2:41", "2:46"),
+													Name:     "start",
+												},
+												Value: &ast.UnaryExpression{
+													BaseNode: base("2:47", "2:50"),
+													Operator: ast.SubtractionOperator,
+													Argument: &ast.DurationLiteral{
+														BaseNode: base("2:48", "2:50"),
+														Values: []ast.Duration{
+															{
+																Magnitude: 1,
+																Unit:      "h",
 															},
 														},
 													},
@@ -2564,69 +2480,66 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])`,
 									},
 								},
 							},
-						}},
+						},
 					},
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("3:1", "3:51"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("3:1", "3:51"),
-							ID: &ast.Identifier{
-								BaseNode: base("3:1", "3:2"),
-								Name:     "b",
-							},
-							Init: &ast.PipeExpression{
-								BaseNode: base("3:5", "3:51"),
-								Argument: &ast.CallExpression{
-									BaseNode: base("3:5", "3:31"),
-									Callee: &ast.Identifier{
-										BaseNode: base("3:5", "3:9"),
-										Name:     "from",
-									},
-									Arguments: []ast.Expression{
-										&ast.ObjectExpression{
-											BaseNode: base("3:10", "3:30"),
-											Properties: []*ast.Property{
-												{
-													BaseNode: base("3:10", "3:30"),
-													Key: &ast.Identifier{
-														BaseNode: base("3:10", "3:16"),
-														Name:     "bucket",
-													},
-													Value: &ast.StringLiteral{
-														BaseNode: base("3:17", "3:30"),
-														Value:    "dbB/autogen",
-													},
+						ID: &ast.Identifier{
+							BaseNode: base("3:1", "3:2"),
+							Name:     "b",
+						},
+						Init: &ast.PipeExpression{
+							BaseNode: base("3:5", "3:51"),
+							Argument: &ast.CallExpression{
+								BaseNode: base("3:5", "3:31"),
+								Callee: &ast.Identifier{
+									BaseNode: base("3:5", "3:9"),
+									Name:     "from",
+								},
+								Arguments: []ast.Expression{
+									&ast.ObjectExpression{
+										BaseNode: base("3:10", "3:30"),
+										Properties: []*ast.Property{
+											{
+												BaseNode: base("3:10", "3:30"),
+												Key: &ast.Identifier{
+													BaseNode: base("3:10", "3:16"),
+													Name:     "bucket",
+												},
+												Value: &ast.StringLiteral{
+													BaseNode: base("3:17", "3:30"),
+													Value:    "dbB/autogen",
 												},
 											},
 										},
 									},
 								},
-								Call: &ast.CallExpression{
-									BaseNode: base("3:35", "3:51"),
-									Callee: &ast.Identifier{
-										BaseNode: base("3:35", "3:40"),
-										Name:     "range",
-									},
-									Arguments: []ast.Expression{
-										&ast.ObjectExpression{
-											BaseNode: base("3:41", "3:50"),
-											Properties: []*ast.Property{
-												{
-													BaseNode: base("3:41", "3:50"),
-													Key: &ast.Identifier{
-														BaseNode: base("3:41", "3:46"),
-														Name:     "start",
-													},
-													Value: &ast.UnaryExpression{
-														BaseNode: base("3:47", "3:50"),
-														Operator: ast.SubtractionOperator,
-														Argument: &ast.DurationLiteral{
-															BaseNode: base("3:48", "3:50"),
-															Values: []ast.Duration{
-																{
-																	Magnitude: 1,
-																	Unit:      "h",
-																},
+							},
+							Call: &ast.CallExpression{
+								BaseNode: base("3:35", "3:51"),
+								Callee: &ast.Identifier{
+									BaseNode: base("3:35", "3:40"),
+									Name:     "range",
+								},
+								Arguments: []ast.Expression{
+									&ast.ObjectExpression{
+										BaseNode: base("3:41", "3:50"),
+										Properties: []*ast.Property{
+											{
+												BaseNode: base("3:41", "3:50"),
+												Key: &ast.Identifier{
+													BaseNode: base("3:41", "3:46"),
+													Name:     "start",
+												},
+												Value: &ast.UnaryExpression{
+													BaseNode: base("3:47", "3:50"),
+													Operator: ast.SubtractionOperator,
+													Argument: &ast.DurationLiteral{
+														BaseNode: base("3:48", "3:50"),
+														Values: []ast.Duration{
+															{
+																Magnitude: 1,
+																Unit:      "h",
 															},
 														},
 													},
@@ -2636,7 +2549,7 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])`,
 									},
 								},
 							},
-						}},
+						},
 					},
 					&ast.ExpressionStatement{
 						BaseNode: base("4:1", "4:72"),
@@ -2760,122 +2673,85 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 			want: &ast.Program{
 				BaseNode: base("2:1", "10:86"),
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("2:1", "4:21"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("2:1", "4:21"),
-							ID: &ast.Identifier{
-								BaseNode: base("2:1", "2:2"),
-								Name:     "a",
-							},
-							Init: &ast.PipeExpression{
-								BaseNode: base("2:5", "4:21"),
-								Argument: &ast.PipeExpression{
-									BaseNode: base("2:5", "3:48"),
-									Argument: &ast.CallExpression{
-										BaseNode: base("2:5", "2:32"),
-										Callee: &ast.Identifier{
-											BaseNode: base("2:5", "2:9"),
-											Name:     "from",
-										},
-										Arguments: []ast.Expression{
-											&ast.ObjectExpression{
-												BaseNode: base("2:10", "2:31"),
-												Properties: []*ast.Property{
-													{
-														BaseNode: base("2:10", "2:31"),
-														Key: &ast.Identifier{
-															BaseNode: base("2:10", "2:16"),
-															Name:     "bucket",
-														},
-														Value: &ast.StringLiteral{
-															BaseNode: base("2:17", "2:31"),
-															Value:    "Flux/autogen",
-														},
+						ID: &ast.Identifier{
+							BaseNode: base("2:1", "2:2"),
+							Name:     "a",
+						},
+						Init: &ast.PipeExpression{
+							BaseNode: base("2:5", "4:21"),
+							Argument: &ast.PipeExpression{
+								BaseNode: base("2:5", "3:48"),
+								Argument: &ast.CallExpression{
+									BaseNode: base("2:5", "2:32"),
+									Callee: &ast.Identifier{
+										BaseNode: base("2:5", "2:9"),
+										Name:     "from",
+									},
+									Arguments: []ast.Expression{
+										&ast.ObjectExpression{
+											BaseNode: base("2:10", "2:31"),
+											Properties: []*ast.Property{
+												{
+													BaseNode: base("2:10", "2:31"),
+													Key: &ast.Identifier{
+														BaseNode: base("2:10", "2:16"),
+														Name:     "bucket",
+													},
+													Value: &ast.StringLiteral{
+														BaseNode: base("2:17", "2:31"),
+														Value:    "Flux/autogen",
 													},
 												},
 											},
 										},
 									},
-									Call: &ast.CallExpression{
-										BaseNode: base("3:5", "3:48"),
-										Callee: &ast.Identifier{
-											BaseNode: base("3:5", "3:11"),
-											Name:     "filter",
-										},
-										Arguments: []ast.Expression{
-											&ast.ObjectExpression{
-												BaseNode: base("3:12", "3:47"),
-												Properties: []*ast.Property{
-													{
-														BaseNode: base("3:12", "3:47"),
-														Key: &ast.Identifier{
-															BaseNode: base("3:12", "3:14"),
-															Name:     "fn",
-														},
-														Value: &ast.ArrowFunctionExpression{
-															BaseNode: base("3:16", "3:47"),
-															Params: []*ast.Property{
-																{
+								},
+								Call: &ast.CallExpression{
+									BaseNode: base("3:5", "3:48"),
+									Callee: &ast.Identifier{
+										BaseNode: base("3:5", "3:11"),
+										Name:     "filter",
+									},
+									Arguments: []ast.Expression{
+										&ast.ObjectExpression{
+											BaseNode: base("3:12", "3:47"),
+											Properties: []*ast.Property{
+												{
+													BaseNode: base("3:12", "3:47"),
+													Key: &ast.Identifier{
+														BaseNode: base("3:12", "3:14"),
+														Name:     "fn",
+													},
+													Value: &ast.ArrowFunctionExpression{
+														BaseNode: base("3:16", "3:47"),
+														Params: []*ast.Property{
+															{
+																BaseNode: base("3:17", "3:18"),
+																Key: &ast.Identifier{
 																	BaseNode: base("3:17", "3:18"),
-																	Key: &ast.Identifier{
-																		BaseNode: base("3:17", "3:18"),
-																		Name:     "r",
-																	},
-																},
-															},
-															Body: &ast.BinaryExpression{
-																BaseNode: base("3:23", "3:47"),
-																Operator: ast.EqualOperator,
-																Left: &ast.MemberExpression{
-																	BaseNode: base("3:23", "3:40"),
-																	Object: &ast.Identifier{
-																		BaseNode: base("3:23", "3:24"),
-																		Name:     "r",
-																	},
-																	Property: &ast.StringLiteral{
-																		BaseNode: base("3:25", "3:39"),
-																		Value:    "_measurement",
-																	},
-																},
-																Right: &ast.StringLiteral{
-																	BaseNode: base("3:44", "3:47"),
-																	Value:    "a",
+																	Name:     "r",
 																},
 															},
 														},
-													},
-												},
-											},
-										},
-									},
-								},
-								Call: &ast.CallExpression{
-									BaseNode: base("4:5", "4:21"),
-									Callee: &ast.Identifier{
-										BaseNode: base("4:5", "4:10"),
-										Name:     "range",
-									},
-									Arguments: []ast.Expression{
-										&ast.ObjectExpression{
-											BaseNode: base("4:11", "4:20"),
-											Properties: []*ast.Property{
-												{
-													BaseNode: base("4:11", "4:20"),
-													Key: &ast.Identifier{
-														BaseNode: base("4:11", "4:16"),
-														Name:     "start",
-													},
-													Value: &ast.UnaryExpression{
-														BaseNode: base("4:17", "4:20"),
-														Operator: ast.SubtractionOperator,
-														Argument: &ast.DurationLiteral{
-															BaseNode: base("4:18", "4:20"),
-															Values: []ast.Duration{
-																{
-																	Magnitude: 1,
-																	Unit:      "h",
+														Body: &ast.BinaryExpression{
+															BaseNode: base("3:23", "3:47"),
+															Operator: ast.EqualOperator,
+															Left: &ast.MemberExpression{
+																BaseNode: base("3:23", "3:40"),
+																Object: &ast.Identifier{
+																	BaseNode: base("3:23", "3:24"),
+																	Name:     "r",
 																},
+																Property: &ast.StringLiteral{
+																	BaseNode: base("3:25", "3:39"),
+																	Value:    "_measurement",
+																},
+															},
+															Right: &ast.StringLiteral{
+																BaseNode: base("3:44", "3:47"),
+																Value:    "a",
 															},
 														},
 													},
@@ -2885,92 +2761,71 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 									},
 								},
 							},
-						}},
+							Call: &ast.CallExpression{
+								BaseNode: base("4:5", "4:21"),
+								Callee: &ast.Identifier{
+									BaseNode: base("4:5", "4:10"),
+									Name:     "range",
+								},
+								Arguments: []ast.Expression{
+									&ast.ObjectExpression{
+										BaseNode: base("4:11", "4:20"),
+										Properties: []*ast.Property{
+											{
+												BaseNode: base("4:11", "4:20"),
+												Key: &ast.Identifier{
+													BaseNode: base("4:11", "4:16"),
+													Name:     "start",
+												},
+												Value: &ast.UnaryExpression{
+													BaseNode: base("4:17", "4:20"),
+													Operator: ast.SubtractionOperator,
+													Argument: &ast.DurationLiteral{
+														BaseNode: base("4:18", "4:20"),
+														Values: []ast.Duration{
+															{
+																Magnitude: 1,
+																Unit:      "h",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 					},
-					&ast.VariableDeclaration{
+					&ast.VariableAssignment{
 						BaseNode: base("6:1", "8:21"),
-						Declarations: []*ast.VariableDeclarator{{
-							BaseNode: base("6:1", "8:21"),
-							ID: &ast.Identifier{
-								BaseNode: base("6:1", "6:2"),
-								Name:     "b",
-							},
-							Init: &ast.PipeExpression{
-								BaseNode: base("6:5", "8:21"),
-								Argument: &ast.PipeExpression{
-									BaseNode: base("6:5", "7:48"),
-									Argument: &ast.CallExpression{
-										BaseNode: base("6:5", "6:32"),
-										Callee: &ast.Identifier{
-											BaseNode: base("6:5", "6:9"),
-											Name:     "from",
-										},
-										Arguments: []ast.Expression{
-											&ast.ObjectExpression{
-												BaseNode: base("6:10", "6:31"),
-												Properties: []*ast.Property{
-													{
-														BaseNode: base("6:10", "6:31"),
-														Key: &ast.Identifier{
-															BaseNode: base("6:10", "6:16"),
-															Name:     "bucket",
-														},
-														Value: &ast.StringLiteral{
-															BaseNode: base("6:17", "6:31"),
-															Value:    "Flux/autogen",
-														},
-													},
-												},
-											},
-										},
+						ID: &ast.Identifier{
+							BaseNode: base("6:1", "6:2"),
+							Name:     "b",
+						},
+						Init: &ast.PipeExpression{
+							BaseNode: base("6:5", "8:21"),
+							Argument: &ast.PipeExpression{
+								BaseNode: base("6:5", "7:48"),
+								Argument: &ast.CallExpression{
+									BaseNode: base("6:5", "6:32"),
+									Callee: &ast.Identifier{
+										BaseNode: base("6:5", "6:9"),
+										Name:     "from",
 									},
-									Call: &ast.CallExpression{
-										BaseNode: base("7:5", "7:48"),
-										Callee: &ast.Identifier{
-											BaseNode: base("7:5", "7:11"),
-											Name:     "filter",
-										},
-										Arguments: []ast.Expression{
-											&ast.ObjectExpression{
-												BaseNode: base("7:12", "7:47"),
-												Properties: []*ast.Property{
-													{
-														BaseNode: base("7:12", "7:47"),
-														Key: &ast.Identifier{
-															BaseNode: base("7:12", "7:14"),
-															Name:     "fn",
-														},
-														Value: &ast.ArrowFunctionExpression{
-															BaseNode: base("7:16", "7:47"),
-															Params: []*ast.Property{
-																{
-																	BaseNode: base("7:17", "7:18"),
-																	Key: &ast.Identifier{
-																		BaseNode: base("7:17", "7:18"),
-																		Name:     "r",
-																	},
-																},
-															},
-															Body: &ast.BinaryExpression{
-																BaseNode: base("7:23", "7:47"),
-																Operator: ast.EqualOperator,
-																Left: &ast.MemberExpression{
-																	BaseNode: base("7:23", "7:40"),
-																	Object: &ast.Identifier{
-																		BaseNode: base("7:23", "7:24"),
-																		Name:     "r",
-																	},
-																	Property: &ast.StringLiteral{
-																		BaseNode: base("7:25", "7:39"),
-																		Value:    "_measurement",
-																	},
-																},
-																Right: &ast.StringLiteral{
-																	BaseNode: base("7:44", "7:47"),
-																	Value:    "b",
-																},
-															},
-														},
+									Arguments: []ast.Expression{
+										&ast.ObjectExpression{
+											BaseNode: base("6:10", "6:31"),
+											Properties: []*ast.Property{
+												{
+													BaseNode: base("6:10", "6:31"),
+													Key: &ast.Identifier{
+														BaseNode: base("6:10", "6:16"),
+														Name:     "bucket",
+													},
+													Value: &ast.StringLiteral{
+														BaseNode: base("6:17", "6:31"),
+														Value:    "Flux/autogen",
 													},
 												},
 											},
@@ -2978,31 +2833,49 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 									},
 								},
 								Call: &ast.CallExpression{
-									BaseNode: base("8:5", "8:21"),
+									BaseNode: base("7:5", "7:48"),
 									Callee: &ast.Identifier{
-										BaseNode: base("8:5", "8:10"),
-										Name:     "range",
+										BaseNode: base("7:5", "7:11"),
+										Name:     "filter",
 									},
 									Arguments: []ast.Expression{
 										&ast.ObjectExpression{
-											BaseNode: base("8:11", "8:20"),
+											BaseNode: base("7:12", "7:47"),
 											Properties: []*ast.Property{
 												{
-													BaseNode: base("8:11", "8:20"),
+													BaseNode: base("7:12", "7:47"),
 													Key: &ast.Identifier{
-														BaseNode: base("8:11", "8:16"),
-														Name:     "start",
+														BaseNode: base("7:12", "7:14"),
+														Name:     "fn",
 													},
-													Value: &ast.UnaryExpression{
-														BaseNode: base("8:17", "8:20"),
-														Operator: ast.SubtractionOperator,
-														Argument: &ast.DurationLiteral{
-															BaseNode: base("8:18", "8:20"),
-															Values: []ast.Duration{
-																{
-																	Magnitude: 1,
-																	Unit:      "h",
+													Value: &ast.ArrowFunctionExpression{
+														BaseNode: base("7:16", "7:47"),
+														Params: []*ast.Property{
+															{
+																BaseNode: base("7:17", "7:18"),
+																Key: &ast.Identifier{
+																	BaseNode: base("7:17", "7:18"),
+																	Name:     "r",
 																},
+															},
+														},
+														Body: &ast.BinaryExpression{
+															BaseNode: base("7:23", "7:47"),
+															Operator: ast.EqualOperator,
+															Left: &ast.MemberExpression{
+																BaseNode: base("7:23", "7:40"),
+																Object: &ast.Identifier{
+																	BaseNode: base("7:23", "7:24"),
+																	Name:     "r",
+																},
+																Property: &ast.StringLiteral{
+																	BaseNode: base("7:25", "7:39"),
+																	Value:    "_measurement",
+																},
+															},
+															Right: &ast.StringLiteral{
+																BaseNode: base("7:44", "7:47"),
+																Value:    "b",
 															},
 														},
 													},
@@ -3012,7 +2885,41 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 									},
 								},
 							},
-						}},
+							Call: &ast.CallExpression{
+								BaseNode: base("8:5", "8:21"),
+								Callee: &ast.Identifier{
+									BaseNode: base("8:5", "8:10"),
+									Name:     "range",
+								},
+								Arguments: []ast.Expression{
+									&ast.ObjectExpression{
+										BaseNode: base("8:11", "8:20"),
+										Properties: []*ast.Property{
+											{
+												BaseNode: base("8:11", "8:20"),
+												Key: &ast.Identifier{
+													BaseNode: base("8:11", "8:16"),
+													Name:     "start",
+												},
+												Value: &ast.UnaryExpression{
+													BaseNode: base("8:17", "8:20"),
+													Operator: ast.SubtractionOperator,
+													Argument: &ast.DurationLiteral{
+														BaseNode: base("8:18", "8:20"),
+														Values: []ast.Duration{
+															{
+																Magnitude: 1,
+																Unit:      "h",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 					},
 					&ast.ExpressionStatement{
 						BaseNode: base("10:1", "10:86"),
@@ -3142,9 +3049,8 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 			raw:  `dur = 1y3mo2w1d4h1m30s1ms2µs70ns`,
 			want: &ast.Program{
 				BaseNode: base("1:1", "1:34"),
-				Body: []ast.Statement{&ast.VariableDeclaration{
-					BaseNode: base("1:1", "1:34"),
-					Declarations: []*ast.VariableDeclarator{{
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:34"),
 						ID: &ast.Identifier{
 							BaseNode: base("1:1", "1:4"),
@@ -3165,8 +3071,8 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 								{Magnitude: 70, Unit: "ns"},
 							},
 						},
-					}},
-				}},
+					},
+				},
 			},
 		},
 		{
@@ -3174,9 +3080,8 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 			raw:  `dur = 6mo`,
 			want: &ast.Program{
 				BaseNode: base("1:1", "1:10"),
-				Body: []ast.Statement{&ast.VariableDeclaration{
-					BaseNode: base("1:1", "1:10"),
-					Declarations: []*ast.VariableDeclarator{{
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:10"),
 						ID: &ast.Identifier{
 							BaseNode: base("1:1", "1:4"),
@@ -3188,8 +3093,8 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 								{Magnitude: 6, Unit: "mo"},
 							},
 						},
-					}},
-				}},
+					},
+				},
 			},
 		},
 		{
@@ -3197,22 +3102,20 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 			raw:  `dur = 500ms`,
 			want: &ast.Program{
 				BaseNode: base("1:1", "1:12"),
-				Body: []ast.Statement{&ast.VariableDeclaration{
+				Body: []ast.Statement{&ast.VariableAssignment{
 					BaseNode: base("1:1", "1:12"),
-					Declarations: []*ast.VariableDeclarator{{
-						BaseNode: base("1:1", "1:12"),
-						ID: &ast.Identifier{
-							BaseNode: base("1:1", "1:4"),
-							Name:     "dur",
+					ID: &ast.Identifier{
+						BaseNode: base("1:1", "1:4"),
+						Name:     "dur",
+					},
+					Init: &ast.DurationLiteral{
+						BaseNode: base("1:7", "1:12"),
+						Values: []ast.Duration{
+							{Magnitude: 500, Unit: "ms"},
 						},
-						Init: &ast.DurationLiteral{
-							BaseNode: base("1:7", "1:12"),
-							Values: []ast.Duration{
-								{Magnitude: 500, Unit: "ms"},
-							},
-						},
-					}},
-				}},
+					},
+				},
+				},
 			},
 		},
 		{
@@ -3220,9 +3123,8 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 			raw:  `dur = 6mo30m500ms`,
 			want: &ast.Program{
 				BaseNode: base("1:1", "1:18"),
-				Body: []ast.Statement{&ast.VariableDeclaration{
-					BaseNode: base("1:1", "1:18"),
-					Declarations: []*ast.VariableDeclarator{{
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:18"),
 						ID: &ast.Identifier{
 							BaseNode: base("1:1", "1:4"),
@@ -3236,8 +3138,8 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 								{Magnitude: 500, Unit: "ms"},
 							},
 						},
-					}},
-				}},
+					},
+				},
 			},
 		},
 		{
@@ -3245,9 +3147,8 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 			raw:  `now = 2018-11-29`,
 			want: &ast.Program{
 				BaseNode: base("1:1", "1:17"),
-				Body: []ast.Statement{&ast.VariableDeclaration{
-					BaseNode: base("1:1", "1:17"),
-					Declarations: []*ast.VariableDeclarator{{
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:17"),
 						ID: &ast.Identifier{
 							BaseNode: base("1:1", "1:4"),
@@ -3257,8 +3158,8 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 							BaseNode: base("1:7", "1:17"),
 							Value:    mustParseTime("2018-11-29T00:00:00Z"),
 						},
-					}},
-				}},
+					},
+				},
 			},
 		},
 		{
@@ -3266,9 +3167,8 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 			raw:  `now = 2018-11-29T09:00:00Z`,
 			want: &ast.Program{
 				BaseNode: base("1:1", "1:27"),
-				Body: []ast.Statement{&ast.VariableDeclaration{
-					BaseNode: base("1:1", "1:27"),
-					Declarations: []*ast.VariableDeclarator{{
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:27"),
 						ID: &ast.Identifier{
 							BaseNode: base("1:1", "1:4"),
@@ -3278,8 +3178,8 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 							BaseNode: base("1:7", "1:27"),
 							Value:    mustParseTime("2018-11-29T09:00:00Z"),
 						},
-					}},
-				}},
+					},
+				},
 			},
 		},
 		{
@@ -3287,9 +3187,8 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 			raw:  `now = 2018-11-29T09:00:00.100000000Z`,
 			want: &ast.Program{
 				BaseNode: base("1:1", "1:37"),
-				Body: []ast.Statement{&ast.VariableDeclaration{
-					BaseNode: base("1:1", "1:37"),
-					Declarations: []*ast.VariableDeclarator{{
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
 						BaseNode: base("1:1", "1:37"),
 						ID: &ast.Identifier{
 							BaseNode: base("1:1", "1:4"),
@@ -3299,8 +3198,8 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 							BaseNode: base("1:7", "1:37"),
 							Value:    mustParseTime("2018-11-29T09:00:00.100000000Z"),
 						},
-					}},
-				}},
+					},
+				},
 			},
 		},
 		{

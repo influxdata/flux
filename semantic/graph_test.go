@@ -28,11 +28,9 @@ func TestNew(t *testing.T) {
 			name: "var declaration",
 			program: &ast.Program{
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
-						Declarations: []*ast.VariableDeclarator{{
-							ID:   &ast.Identifier{Name: "a"},
-							Init: &ast.BooleanLiteral{Value: true},
-						}},
+					&ast.VariableAssignment{
+						ID:   &ast.Identifier{Name: "a"},
+						Init: &ast.BooleanLiteral{Value: true},
 					},
 					&ast.ExpressionStatement{
 						Expression: &ast.Identifier{Name: "a"},
@@ -41,7 +39,7 @@ func TestNew(t *testing.T) {
 			},
 			want: &semantic.Program{
 				Body: []semantic.Statement{
-					&semantic.NativeVariableDeclaration{
+					&semantic.NativeVariableAssignment{
 						Identifier: &semantic.Identifier{Name: "a"},
 						Init:       &semantic.BooleanLiteral{Value: true},
 					},
@@ -56,7 +54,7 @@ func TestNew(t *testing.T) {
 			program: &ast.Program{
 				Body: []ast.Statement{
 					&ast.OptionStatement{
-						Declaration: &ast.VariableDeclarator{
+						Assignment: &ast.VariableAssignment{
 							ID: &ast.Identifier{Name: "task"},
 							Init: &ast.ObjectExpression{
 								Properties: []*ast.Property{
@@ -103,7 +101,7 @@ func TestNew(t *testing.T) {
 			want: &semantic.Program{
 				Body: []semantic.Statement{
 					&semantic.OptionStatement{
-						Declaration: &semantic.NativeVariableDeclaration{
+						Assignment: &semantic.NativeVariableAssignment{
 							Identifier: &semantic.Identifier{Name: "task"},
 							Init: &semantic.ObjectExpression{
 								Properties: []*semantic.Property{
@@ -138,21 +136,19 @@ func TestNew(t *testing.T) {
 			name: "function",
 			program: &ast.Program{
 				Body: []ast.Statement{
-					&ast.VariableDeclaration{
-						Declarations: []*ast.VariableDeclarator{{
-							ID: &ast.Identifier{Name: "f"},
-							Init: &ast.ArrowFunctionExpression{
-								Params: []*ast.Property{
-									{Key: &ast.Identifier{Name: "a"}},
-									{Key: &ast.Identifier{Name: "b"}},
-								},
-								Body: &ast.BinaryExpression{
-									Operator: ast.AdditionOperator,
-									Left:     &ast.Identifier{Name: "a"},
-									Right:    &ast.Identifier{Name: "b"},
-								},
+					&ast.VariableAssignment{
+						ID: &ast.Identifier{Name: "f"},
+						Init: &ast.ArrowFunctionExpression{
+							Params: []*ast.Property{
+								{Key: &ast.Identifier{Name: "a"}},
+								{Key: &ast.Identifier{Name: "b"}},
 							},
-						}},
+							Body: &ast.BinaryExpression{
+								Operator: ast.AdditionOperator,
+								Left:     &ast.Identifier{Name: "a"},
+								Right:    &ast.Identifier{Name: "b"},
+							},
+						},
 					},
 					&ast.ExpressionStatement{
 						Expression: &ast.CallExpression{
@@ -169,7 +165,7 @@ func TestNew(t *testing.T) {
 			},
 			want: &semantic.Program{
 				Body: []semantic.Statement{
-					&semantic.NativeVariableDeclaration{
+					&semantic.NativeVariableAssignment{
 						Identifier: &semantic.Identifier{Name: "f"},
 						Init: &semantic.FunctionExpression{
 							Block: &semantic.FunctionBlock{

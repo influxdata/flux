@@ -44,7 +44,7 @@ func TestJSONMarshal(t *testing.T) {
 		{
 			name: "option statement",
 			node: &semantic.OptionStatement{
-				Declaration: &semantic.NativeVariableDeclaration{
+				Assignment: &semantic.NativeVariableAssignment{
 					Identifier: &semantic.Identifier{Name: "task"},
 					Init: &semantic.ObjectExpression{
 						Properties: []*semantic.Property{
@@ -72,7 +72,7 @@ func TestJSONMarshal(t *testing.T) {
 					},
 				},
 			},
-			want: `{"type":"OptionStatement","declaration":{"type":"NativeVariableDeclaration","identifier":{"type":"Identifier","name":"task"},"init":{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"name"},"value":{"type":"StringLiteral","value":"foo"}},{"type":"Property","key":{"type":"Identifier","name":"every"},"value":{"type":"DurationLiteral","value":"1h0m0s"}},{"type":"Property","key":{"type":"Identifier","name":"delay"},"value":{"type":"DurationLiteral","value":"10m0s"}},{"type":"Property","key":{"type":"Identifier","name":"cron"},"value":{"type":"StringLiteral","value":"0 2 * * *"}},{"type":"Property","key":{"type":"Identifier","name":"retry"},"value":{"type":"IntegerLiteral","value":"5"}}]}}}`,
+			want: `{"type":"OptionStatement","assignment":{"type":"NativeVariableAssignment","identifier":{"type":"Identifier","name":"task"},"init":{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"name"},"value":{"type":"StringLiteral","value":"foo"}},{"type":"Property","key":{"type":"Identifier","name":"every"},"value":{"type":"DurationLiteral","value":"1h0m0s"}},{"type":"Property","key":{"type":"Identifier","name":"delay"},"value":{"type":"DurationLiteral","value":"10m0s"}},{"type":"Property","key":{"type":"Identifier","name":"cron"},"value":{"type":"StringLiteral","value":"0 2 * * *"}},{"type":"Property","key":{"type":"Identifier","name":"retry"},"value":{"type":"IntegerLiteral","value":"5"}}]}}}`,
 		},
 		{
 			name: "expression statement",
@@ -89,12 +89,12 @@ func TestJSONMarshal(t *testing.T) {
 			want: `{"type":"ReturnStatement","argument":{"type":"StringLiteral","value":"hello"}}`,
 		},
 		{
-			name: "variable declaration",
-			node: &semantic.NativeVariableDeclaration{
+			name: "variable assignment",
+			node: &semantic.NativeVariableAssignment{
 				Identifier: &semantic.Identifier{Name: "a"},
 				Init:       &semantic.StringLiteral{Value: "hello"},
 			},
-			want: `{"type":"NativeVariableDeclaration","identifier":{"type":"Identifier","name":"a"},"init":{"type":"StringLiteral","value":"hello"}}`,
+			want: `{"type":"NativeVariableAssignment","identifier":{"type":"Identifier","name":"a"},"init":{"type":"StringLiteral","value":"hello"}}`,
 		},
 		{
 			name: "call expression",

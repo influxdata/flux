@@ -44,7 +44,7 @@ func walk(v Visitor, n Node) {
 		}
 		w := v.Visit(n)
 		if w != nil {
-			for _, d := range n.Declarations {
+			for _, d := range n.Assignments {
 				walk(w, d)
 			}
 			walk(w, n.Block)
@@ -72,8 +72,8 @@ func walk(v Visitor, n Node) {
 			return
 		}
 		w := v.Visit(n)
-		if w != nil && n.Declaration != nil {
-			walk(w, n.Declaration)
+		if w != nil && n.Assignment != nil {
+			walk(w, n.Assignment)
 		}
 	case *ExpressionStatement:
 		if n == nil {
@@ -91,7 +91,7 @@ func walk(v Visitor, n Node) {
 		if w != nil {
 			walk(w, n.Argument)
 		}
-	case *NativeVariableDeclaration:
+	case *NativeVariableAssignment:
 		if n == nil {
 			return
 		}
@@ -100,7 +100,7 @@ func walk(v Visitor, n Node) {
 			walk(w, n.Identifier)
 			walk(w, n.Init)
 		}
-	case *ExternalVariableDeclaration:
+	case *ExternalVariableAssignment:
 		if n == nil {
 			return
 		}

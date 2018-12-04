@@ -60,8 +60,7 @@ func (*BlockStatement) node()      {}
 func (*ExpressionStatement) node() {}
 func (*ReturnStatement) node()     {}
 func (*OptionStatement) node()     {}
-func (*VariableDeclaration) node() {}
-func (*VariableDeclarator) node()  {}
+func (*VariableAssignment) node()  {}
 
 func (*ArrayExpression) node()         {}
 func (*ArrowFunctionExpression) node() {}
@@ -129,9 +128,9 @@ type Statement interface {
 }
 
 func (*BlockStatement) stmt()      {}
+func (*VariableAssignment) stmt()  {}
 func (*ExpressionStatement) stmt() {}
 func (*ReturnStatement) stmt()     {}
-func (*VariableDeclaration) stmt() {}
 func (*OptionStatement) stmt()     {}
 
 // BlockStatement is a set of statements
@@ -200,7 +199,7 @@ func (s *ReturnStatement) Copy() Node {
 // OptionStatement syntactically is a single variable declaration
 type OptionStatement struct {
 	BaseNode
-	Declaration *VariableDeclarator `json:"declaration"`
+	Assignment *VariableAssignment `json:"assignment"`
 }
 
 // Type is the abstract type
@@ -214,52 +213,26 @@ func (s *OptionStatement) Copy() Node {
 	ns := new(OptionStatement)
 	*ns = *s
 
-	ns.Declaration = s.Declaration.Copy().(*VariableDeclarator)
+	ns.Assignment = s.Assignment.Copy().(*VariableAssignment)
 
 	return ns
 }
 
-// VariableDeclaration declares one or more variables using assignment
-type VariableDeclaration struct {
-	BaseNode
-	Declarations []*VariableDeclarator `json:"declarations"`
-}
-
-// Type is the abstract type
-func (*VariableDeclaration) Type() string { return "VariableDeclaration" }
-
-func (d *VariableDeclaration) Copy() Node {
-	if d == nil {
-		return d
-	}
-	nd := new(VariableDeclaration)
-	*nd = *d
-
-	if len(d.Declarations) > 0 {
-		nd.Declarations = make([]*VariableDeclarator, len(d.Declarations))
-		for i, decl := range d.Declarations {
-			nd.Declarations[i] = decl.Copy().(*VariableDeclarator)
-		}
-	}
-
-	return nd
-}
-
-// VariableDeclarator represents the declaration of a variable
-type VariableDeclarator struct {
+// VariableAssignment represents the declaration of a variable
+type VariableAssignment struct {
 	BaseNode
 	ID   *Identifier `json:"id"`
 	Init Expression  `json:"init"`
 }
 
 // Type is the abstract type
-func (*VariableDeclarator) Type() string { return "VariableDeclarator" }
+func (*VariableAssignment) Type() string { return "VariableAssignment" }
 
-func (d *VariableDeclarator) Copy() Node {
+func (d *VariableAssignment) Copy() Node {
 	if d == nil {
 		return d
 	}
-	nd := new(VariableDeclarator)
+	nd := new(VariableAssignment)
 	*nd = *d
 
 	nd.Init = d.Init.Copy().(Expression)

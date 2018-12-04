@@ -31,7 +31,7 @@ func TestInferTypes(t *testing.T) {
 		},
 		{
 			name: "bool decl",
-			node: &semantic.NativeVariableDeclaration{
+			node: &semantic.NativeVariableAssignment{
 				Identifier: &semantic.Identifier{Name: "b"},
 				Init:       &semantic.BooleanLiteral{Value: false},
 			},
@@ -45,15 +45,15 @@ func TestInferTypes(t *testing.T) {
 			name: "redeclaration",
 			node: &semantic.Program{
 				Body: []semantic.Statement{
-					&semantic.NativeVariableDeclaration{
+					&semantic.NativeVariableAssignment{
 						Identifier: &semantic.Identifier{Name: "a"},
 						Init:       &semantic.BooleanLiteral{Value: true},
 					},
-					&semantic.NativeVariableDeclaration{
+					&semantic.NativeVariableAssignment{
 						Identifier: &semantic.Identifier{Name: "a"},
 						Init:       &semantic.BooleanLiteral{Value: false},
 					},
-					&semantic.NativeVariableDeclaration{
+					&semantic.NativeVariableAssignment{
 						Identifier: &semantic.Identifier{Name: "a"},
 						Init:       &semantic.BooleanLiteral{Value: false},
 					},
@@ -178,7 +178,7 @@ f = (a,b=0) => a + b
 			name: "call function",
 			node: &semantic.Program{
 				Body: []semantic.Statement{
-					&semantic.NativeVariableDeclaration{
+					&semantic.NativeVariableAssignment{
 						Identifier: &semantic.Identifier{Name: "two"},
 						Init: &semantic.CallExpression{
 							Callee: &semantic.FunctionExpression{
@@ -396,7 +396,7 @@ identity(x:identity)(x:2)
 		{
 			name: "extern",
 			node: &semantic.Extern{
-				Declarations: []*semantic.ExternalVariableDeclaration{{
+				Assignments: []*semantic.ExternalVariableAssignment{{
 					Identifier: &semantic.Identifier{Name: "foo"},
 					ExternType: semantic.Int,
 				}},
@@ -417,7 +417,7 @@ identity(x:identity)(x:2)
 		{
 			name: "extern object",
 			node: &semantic.Extern{
-				Declarations: []*semantic.ExternalVariableDeclaration{{
+				Assignments: []*semantic.ExternalVariableAssignment{{
 					Identifier: &semantic.Identifier{Name: "foo"},
 					ExternType: semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{
@@ -1458,7 +1458,7 @@ plus1(r:{_value: 2.0})
 
 			// Add the true and false identifiers.
 			tc.node = &semantic.Extern{
-				Declarations: []*semantic.ExternalVariableDeclaration{
+				Assignments: []*semantic.ExternalVariableAssignment{
 					{
 						Identifier: &semantic.Identifier{Name: "true"},
 						ExternType: semantic.Bool,

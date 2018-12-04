@@ -90,7 +90,7 @@ func (v ConstraintGenerator) scheme(t PolyType) Scheme {
 func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 	nodeVar := v.cs.annotations[n].Var
 	switch n := n.(type) {
-	case *ExternalVariableDeclaration:
+	case *ExternalVariableAssignment:
 		// Do not trust external type variables,
 		// substitute them with fresh vars.
 		ftv := n.ExternType.freeVars(nil)
@@ -112,7 +112,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		scheme := v.scheme(t)
 		v.env.Set(n.Identifier.Name, scheme)
 		return nil, nil
-	case *NativeVariableDeclaration:
+	case *NativeVariableAssignment:
 		t, err := v.lookup(n.Init)
 		if err != nil {
 			return nil, err

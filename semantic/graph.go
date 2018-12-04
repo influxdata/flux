@@ -28,12 +28,12 @@ func (*Program) node()     {}
 func (*Extern) node()      {}
 func (*ExternBlock) node() {}
 
-func (*BlockStatement) node()              {}
-func (*OptionStatement) node()             {}
-func (*ExpressionStatement) node()         {}
-func (*ReturnStatement) node()             {}
-func (*NativeVariableDeclaration) node()   {}
-func (*ExternalVariableDeclaration) node() {}
+func (*BlockStatement) node()             {}
+func (*OptionStatement) node()            {}
+func (*ExpressionStatement) node()        {}
+func (*ReturnStatement) node()            {}
+func (*NativeVariableAssignment) node()   {}
+func (*ExternalVariableAssignment) node() {}
 
 func (*ArrayExpression) node()       {}
 func (*FunctionExpression) node()    {}
@@ -68,11 +68,11 @@ type Statement interface {
 	stmt()
 }
 
-func (*BlockStatement) stmt()            {}
-func (*OptionStatement) stmt()           {}
-func (*ExpressionStatement) stmt()       {}
-func (*ReturnStatement) stmt()           {}
-func (*NativeVariableDeclaration) stmt() {}
+func (*BlockStatement) stmt()           {}
+func (*OptionStatement) stmt()          {}
+func (*ExpressionStatement) stmt()      {}
+func (*ReturnStatement) stmt()          {}
+func (*NativeVariableAssignment) stmt() {}
 
 type Expression interface {
 	Node
@@ -170,9 +170,9 @@ func (s *BlockStatement) Copy() Node {
 type OptionStatement struct {
 	loc `json:"-"`
 
-	// Declaration represents the declaration of the option.
-	// Must be one of *ExternalVariableDeclaration or *NativeVariableDeclaration.
-	Declaration Node `json:"declaration"`
+	// Assignment represents the assignment of the option.
+	// Must be one of *ExternalVariableAssignment or *NativeVariableAssignment.
+	Assignment Node `json:"assignment"`
 }
 
 func (s *OptionStatement) NodeType() string { return "OptionStatement" }
@@ -184,7 +184,7 @@ func (s *OptionStatement) Copy() Node {
 	ns := new(OptionStatement)
 	*ns = *s
 
-	ns.Declaration = s.Declaration.Copy()
+	ns.Assignment = s.Assignment.Copy()
 
 	return ns
 }
@@ -229,24 +229,24 @@ func (s *ReturnStatement) Copy() Node {
 	return ns
 }
 
-type NativeVariableDeclaration struct {
+type NativeVariableAssignment struct {
 	loc `json:"-"`
 
 	Identifier *Identifier `json:"identifier"`
 	Init       Expression  `json:"init"`
 }
 
-func (d *NativeVariableDeclaration) ID() *Identifier {
+func (d *NativeVariableAssignment) ID() *Identifier {
 	return d.Identifier
 }
 
-func (*NativeVariableDeclaration) NodeType() string { return "NativeVariableDeclaration" }
+func (*NativeVariableAssignment) NodeType() string { return "NativeVariableAssignment" }
 
-func (s *NativeVariableDeclaration) Copy() Node {
+func (s *NativeVariableAssignment) Copy() Node {
 	if s == nil {
 		return s
 	}
-	ns := new(NativeVariableDeclaration)
+	ns := new(NativeVariableAssignment)
 	*ns = *s
 
 	ns.Identifier = s.Identifier.Copy().(*Identifier)
@@ -258,12 +258,12 @@ func (s *NativeVariableDeclaration) Copy() Node {
 	return ns
 }
 
-// Extern is a node that represents a node with a set of external declarations defined.
+// Extern is a node that represents a node with a set of external assignments defined.
 type Extern struct {
 	loc `json:"-"`
 
-	Declarations []*ExternalVariableDeclaration `json:"declarations"`
-	Block        *ExternBlock                   `json:"block"`
+	Assignments []*ExternalVariableAssignment `json:"assignments"`
+	Block       *ExternBlock                  `json:"block"`
 }
 
 func (*Extern) NodeType() string { return "Extern" }
@@ -275,10 +275,10 @@ func (e *Extern) Copy() Node {
 	ne := new(Extern)
 	*ne = *e
 
-	if len(e.Declarations) > 0 {
-		ne.Declarations = make([]*ExternalVariableDeclaration, len(e.Declarations))
-		for i, d := range e.Declarations {
-			ne.Declarations[i] = d.Copy().(*ExternalVariableDeclaration)
+	if len(e.Assignments) > 0 {
+		ne.Assignments = make([]*ExternalVariableAssignment, len(e.Assignments))
+		for i, d := range e.Assignments {
+			ne.Assignments[i] = d.Copy().(*ExternalVariableAssignment)
 		}
 	}
 
@@ -287,21 +287,21 @@ func (e *Extern) Copy() Node {
 	return ne
 }
 
-// ExternalVariableDeclaration represents an externaly defined identifier and its type.
-type ExternalVariableDeclaration struct {
+// ExternalVariableAssignment represents an externaly defined identifier and its type.
+type ExternalVariableAssignment struct {
 	loc `json:"-"`
 
 	Identifier *Identifier `json:"identifier"`
 	ExternType PolyType    `json:""`
 }
 
-func (*ExternalVariableDeclaration) NodeType() string { return "ExternalVariableDeclaration" }
+func (*ExternalVariableAssignment) NodeType() string { return "ExternalVariableAssignment" }
 
-func (s *ExternalVariableDeclaration) Copy() Node {
+func (s *ExternalVariableAssignment) Copy() Node {
 	if s == nil {
 		return s
 	}
-	ns := new(ExternalVariableDeclaration)
+	ns := new(ExternalVariableAssignment)
 	*ns = *s
 
 	ns.Identifier = s.Identifier.Copy().(*Identifier)

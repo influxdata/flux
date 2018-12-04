@@ -50,12 +50,8 @@ func analyzeStatment(s ast.Statement) (Statement, error) {
 		return analyzeExpressionStatement(s)
 	case *ast.ReturnStatement:
 		return analyzeReturnStatement(s)
-	case *ast.VariableDeclaration:
-		// Expect a single declaration
-		if len(s.Declarations) != 1 {
-			return nil, fmt.Errorf("only single variable declarations are supported, found %d declarations", len(s.Declarations))
-		}
-		return analyzeVariableDeclaration(s.Declarations[0])
+	case *ast.VariableAssignment:
+		return analyzeVariableAssignment(s)
 	default:
 		return nil, fmt.Errorf("unsupported statement %T", s)
 	}
@@ -81,13 +77,13 @@ func analyzeBlockStatement(block *ast.BlockStatement) (*BlockStatement, error) {
 }
 
 func analyzeOptionStatement(option *ast.OptionStatement) (*OptionStatement, error) {
-	declaration, err := analyzeVariableDeclaration(option.Declaration)
+	declaration, err := analyzeVariableAssignment(option.Assignment)
 	if err != nil {
 		return nil, err
 	}
 	return &OptionStatement{
-		loc:         loc(option.Location()),
-		Declaration: declaration,
+		loc:        loc(option.Location()),
+		Assignment: declaration,
 	}, nil
 }
 
@@ -113,7 +109,7 @@ func analyzeReturnStatement(ret *ast.ReturnStatement) (*ReturnStatement, error) 
 	}, nil
 }
 
-func analyzeVariableDeclaration(decl *ast.VariableDeclarator) (*NativeVariableDeclaration, error) {
+func analyzeVariableAssignment(decl *ast.VariableAssignment) (*NativeVariableAssignment, error) {
 	id, err := analyzeIdentifier(decl.ID)
 	if err != nil {
 		return nil, err
@@ -122,7 +118,7 @@ func analyzeVariableDeclaration(decl *ast.VariableDeclarator) (*NativeVariableDe
 	if err != nil {
 		return nil, err
 	}
-	vd := &NativeVariableDeclaration{
+	vd := &NativeVariableAssignment{
 		loc:        loc(decl.Location()),
 		Identifier: id,
 		Init:       init,
