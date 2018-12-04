@@ -143,6 +143,13 @@ func (p *parser) parseOptionDeclaration(pos token.Pos) ast.Statement {
 		expr := p.parseAssignStatement()
 		return &ast.VariableDeclaration{
 			Declarations: []*ast.VariableDeclarator{{
+				BaseNode: ast.BaseNode{
+					Loc: &ast.SourceLocation{
+						Start:  p.s.File().Position(pos),
+						End:    locEnd(expr),
+						Source: p.s.File().Name(),
+					},
+				},
 				ID: &ast.Identifier{
 					Name:     "option",
 					BaseNode: p.posRange(pos, 6),
@@ -199,6 +206,13 @@ func (p *parser) parseIdentStatement() ast.Statement {
 		expr := p.parseAssignStatement()
 		return &ast.VariableDeclaration{
 			Declarations: []*ast.VariableDeclarator{{
+				BaseNode: ast.BaseNode{
+					Loc: &ast.SourceLocation{
+						Start:  locStart(id),
+						End:    locEnd(expr),
+						Source: p.s.File().Name(),
+					},
+				},
 				ID:   id,
 				Init: expr,
 			}},
