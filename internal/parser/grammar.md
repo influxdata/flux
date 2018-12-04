@@ -1,147 +1,84 @@
 # Parser Grammar
 
-The following is the EBNF grammar definition of Flux.
+The SPEC contains an EBNF grammar definition of Flux.
 
-TODO(jsternberg): Move this to the spec. This information is in the spec, but it is spread out into different locations.
+For the parser, the SPEC grammar undergoes a process to have the left-recursion removed and is then left-factored to turn it into an LL(1) compliant grammar. For simplicity, an alternation operation will choose the first production that will accept the token type. This is because an existing production may be factored out for one token type, but may still exist in its current form for other token types when the first token in the production is an alternation over multiple terminals. To avoid creating more production rules that impact readability just to remove the now factored terminal, these are ignored.
 
-    Program = StatementList .
-    StatementList = { Statement } .
-    Statement = OptionStatement
-              | VariableDeclaration
-              | ReturnStatement
-              | ExpressionStatement .
-    OptionStatement = "option" VariableDeclaration .
-    VariableDeclaration = ident assign Expression .
-    ReturnStatement = return Expression .
-    ExpressionStatement = Expression .
-    Expression = LogicalExpression .
-    LogicalExpression = UnaryLogicalExpression
-                      | LogicalExpression LogicalOperator UnaryLogicalExpression .
-    LogicalOperator = and | or .
-    UnaryLogicalExpression = ComparisonExpression
-                           | UnaryLogicalOperator UnaryLogicalExpression .
-    UnaryLogicalOperator = not .
-    ComparisonExpression = MultiplicativeExpression
-                         | ComparisonExpression ComparisonOperator MultiplicativeExpression .
-    ComparisonOperator = eq | neq | regexeq | regexneq .
-    MultiplicativeExpression = AdditiveExpression
-                             | MultiplicativeExpression MultiplicativeOperator AdditiveExpression .
-    MultiplicativeOperator = mul | div .
-    AdditiveExpression = PipeExpression
-                       | AdditiveExpression AdditiveOperator PipeExpression .
-    AdditiveOperator = add | sub .
-    PipeExpression = PostfixExpression
-                   | PipeExpression PipeOperator UnaryExpression .
-    PipeOperator = pipe_forward .
-    UnaryExpression = PostfixExpression
-                    | PrefixOperator UnaryExpression .
-    PrefixOperator = add | sub .
-    PostfixExpression = PrimaryExpression
-                      | PostfixExpression PostfixOperator .
-    PostfixOperator = DotExpression
-                    | CallExpression
-                    | IndexExpression .
-    DotExpression = dot ident .
-    CallExpression = lparen ParameterList rparen .
-    IndexExpression = lbrack Expression rbrack .
-    PrimaryExpression = ident
-                      | int
-                      | float
-                      | string
-                      | regex
-                      | duration
-                      | pipe_receive
-                      | ObjectLiteral
-                      | ArrayLiteral
-                      | ParenExpression
-                      | ArrowExpression .
-    ObjectLiteral = lbrace PropertyList rbrace .
-    ArrayLiteral = lbrack ExpressionList rbrack .
-    ParenExpression = lparen Expression rparen .
-    ArrowExpression = lparen ParameterList rparen arrow ArrowBodyExpression .
-    ArrowBodyExpression = BlockStatement | Expression .
-    BlockStatement = lbrace StatementList rbrace .
-    ExpressionList = [ Expression { comma Expression } ] .
-    PropertyList = [ Property { comma Property } ] .
-    Property = ident colon Expression .
-    ParameterList = [ Parameter { comma Parameter } ] .
-    Parameter = ident [ eq Expression ] .
+The parser directly implements the following grammar.
 
-Note: The "option" is an identifier with the literal "option". It will have the `ident` token type, but must contain that exact literal to follow that branch. It is possible for the "option" identifier to also be interpreted as a normal identifier as it is not a reserved keyword.
-
-For the parser, the above grammar undergoes a process to have the left-recursion removed and is then left-factored to turn it into an LL(1) compliant grammar. For simplicity, an alternation operation will choose the first production that will accept the token type. This is because an existing production may be factored out for one token type, but may still exist in its current form for other token types when the first token in the production is an alternation over multiple terminals. To avoid creating more production rules that impact readability just to remove the now factored terminal, these are ignored.
-
-    Program = StatementList .
-    StatementList = { Statement } .
-    Statement = OptionStatement
-              | IdentStatement
-              | ReturnStatement
-              | ExpressionStatement .
-    IdentStatement = ident ( AssignStatement | ExpressionSuffix ) .
-    OptionStatement = "option" OptionDeclaration .
-    OptionDeclaration = AssignStatement | VariableDeclaration | ExpressionSuffix
-    VariableDeclaration = ident AssignStatement .
-    AssignStatement = assign Expression .
-    ReturnStatement = return Expression .
-    ExpressionStatement = Expression .
-    Expression = LogicalExpression .
-    ExpressionSuffix = { PostfixOperator } { PipeExpressionSuffix } { AdditiveExpressionSuffix } { MultiplicativeExpressionSuffix } { ComparisonExpressionSuffix } { LogicalExpressionSuffix } .
-    LogicalExpression = UnaryLogicalExpression { LogicalExpressionSuffix } .
-    LogicalExpressionSuffix = LogicalOperator UnaryLogicalExpression .
-    LogicalOperator = and | or .
-    UnaryLogicalExpression = ComparisonExpression
-                           | UnaryLogicalOperator UnaryLogicalExpression .
-    UnaryLogicalOperator = not .
-    ComparisonExpression = MultiplicativeExpression { ComparisonExpressionSuffix } .
+    Program                    = StatementList .
+    StatementList              = { Statement } .
+    Statement                  = OptionStatement
+                               | IdentStatement
+                               | ReturnStatement
+                               | ExpressionStatement .
+    IdentStatement             = identifer ( AssignStatement | ExpressionSuffix ) .
+    OptionStatement            = "option" OptionStatementSuffix .
+    OptionStatementSuffix      = AssignStatement | VariableAssignment | ExpressionSuffix
+    VariableAssignment         = identifer AssignStatement .
+    AssignStatement            = "=" Expression .
+    ReturnStatement            = "return" Expression .
+    ExpressionStatement        = Expression .
+    Expression                 = LogicalExpression .
+    ExpressionSuffix           = { PostfixOperator } { PipeExpressionSuffix } { AdditiveExpressionSuffix } { MultiplicativeExpressionSuffix } { ComparisonExpressionSuffix } { LogicalExpressionSuffix } .
+    LogicalExpression          = UnaryLogicalExpression { LogicalExpressionSuffix } .
+    LogicalExpressionSuffix    = LogicalOperator UnaryLogicalExpression .
+    LogicalOperator            = "and" | "or" .
+    UnaryLogicalExpression     = ComparisonExpression
+                               | UnaryLogicalOperator UnaryLogicalExpression .
+    UnaryLogicalOperator       = "not" .
+    ComparisonExpression       = MultiplicativeExpression { ComparisonExpressionSuffix } .
     ComparisonExpressionSuffix = ComparisonOperator MultiplicativeExpr .
-    ComparisonOperator = eq | neq | lt | lte | gt | gte | regexeq | regexneq .
-    MultiplicativeExpression = AdditiveExpression { MultiplicativeOperator AdditiveExpression } .
-    MultiplicativeOperator = mul | div .
-    AdditiveExpression = PipeExpression { AdditiveExpressionSuffix } .
-    AdditiveExpressionSuffix = AdditiveOperator PipeExpression .
-    AdditiveOperator = add | sub .
-    PipeExpression = UnaryExpression { PipeExpressionSuffix } .
-    PipeExpressionSuffix = PipeOperator UnaryExpression .
-    PipeOperator = pipe_forward .
-    UnaryExpression = PostfixExpression
-                    | PrefixOperator UnaryExpression .
-    PrefixOperator = add | sub .
-    PostfixExpression = PrimaryExpression { PostfixOperator } .
-    PostfixOperator = DotExpression
-                    | CallExpression
-                    | IndexExpression .
-    DotExpression = dot ident .
-    CallExpression = lparen ParameterList rparen .
-    IndexExpression = lbrack Expression rbrack .
-    PrimaryExpression = ident
-                      | int
-                      | float
-                      | string
-                      | regex
-                      | duration
-                      | pipe_receive
-                      | ObjectLiteral
-                      | ArrayLiteral
-                      | ParenExpression .
-    ObjectLiteral = lbrace PropertyList rbrace .
-    ArrayLiteral = lbrack ExpressionList rbrack .
-    ParenExpression = lparen ParenExpressionBody .
-    ParenExpressionBody = rparen ArrowExpression
-                        | ident ParenIdentExpression
-                        | Expression rparen .
-    ParenIdentExpression = rparen [ ArrowExpression ]
-                         | eq Expression [ comma ParameterList ] rparen ArrowExpression .
-                         | comma ParameterList rparen ArrowExpression
-                         | ExpressionSuffix rparen .
-    ParenExpression = lparen Expression rparen .
-    ArrowExpression = arrow ArrowBodyExpression .
-    ArrowBodyExpression = BlockStatement | Expression .
-    BlockStatement = lbrace StatementList rbrace .
-    ExpressionList = [ Expression { comma Expression } ] .
-    PropertyList = [ Property { comma Property } ] .
-    Property = ident colon Expression .
-    ParameterList = [ Parameter { comma Parameter } ] .
-    Parameter = ident [ eq Expression ] .
+    ComparisonOperator         = "==" | "!=" | "<" | "<=" | ">" | ">=" | "=~" | "!~" .
+    MultiplicativeExpression   = AdditiveExpression { MultiplicativeOperator AdditiveExpression } .
+    MultiplicativeOperator     = "*"| "/".
+    AdditiveExpression         = PipeExpression { AdditiveExpressionSuffix } .
+    AdditiveExpressionSuffix   = AdditiveOperator PipeExpression .
+    AdditiveOperator           = "+" | "-" .
+    PipeExpression             = UnaryExpression { PipeExpressionSuffix } .
+    PipeExpressionSuffix       = PipeOperator UnaryExpression .
+    PipeOperator               = pipe_forward .
+    UnaryExpression            = PostfixExpression
+                               | PrefixOperator UnaryExpression .
+    PrefixOperator             = "+" | "-" .
+    PostfixExpression          = PrimaryExpression { PostfixOperator } .
+    PostfixOperator            = MemberExpression
+                               | CallExpression
+                               | IndexExpression .
+    MemberExpression           = DotExpression  | MemberBracketExpression
+    DotExpression              = "." identifer
+    MemberBracketExpression    = "[" string "]" .
+    CallExpression             = "(" ParameterList ")" .
+    IndexExpression            = "[" Expression "]" .
+    PrimaryExpression          = identifer
+                               | int_lit
+                               | float_lit
+                               | string_lit
+                               | regex_lit
+                               | duration_lit
+                               | pipe_receive_lit
+                               | ObjectLiteral
+                               | ArrayLiteral
+                               | ParenExpression .
+    ObjectLiteral              = "{" PropertyList "}" .
+    ArrayLiteral               = "[" ExpressionList "]" .
+    ParenExpression            = "(" ParenExpressionBody .
+    ParenExpressionBody        = ")" FunctionExpressionSuffix
+                               | identifer ParenIdentExpression
+                               | Expression ")" .
+    ParenIdentExpression       = ")" [ FunctionExpressionSuffix ]
+                               | "=" Expression [ "," ParameterList ] ")" FunctionExpressionSuffix .
+                               | "," ParameterList ")" FunctionExpressionSuffix
+                               | ExpressionSuffix ")" .
+    ParenExpression            = "(" Expression ")" .
+    FunctionExpressionSuffix   = "=>" FunctionBodyExpression .
+    FunctionBodyExpression     = Block | Expression .
+    Block                      = "{" StatementList "}" .
+    ExpressionList             = [ Expression { "," Expression } ] .
+    PropertyList               = [ Property { "," Property } ] .
+    Property                   = identifer ":" Expression .
+    ParameterList              = [ Parameter { "," Parameter } ] .
+    Parameter                  = identifer [ "=" Expression ] .
 
 When processing the grammar, the parser follows a few simple rules.
 
