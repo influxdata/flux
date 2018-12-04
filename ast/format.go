@@ -118,22 +118,10 @@ func (f *formatter) formatReturnStatement(n *ReturnStatement) {
 
 func (f *formatter) formatOptionStatement(n *OptionStatement) {
 	f.writeString("option ")
-	f.formatNode(n.Declaration)
+	f.formatNode(n.Assignment)
 }
 
-func (f *formatter) formatVariableDeclaration(n *VariableDeclaration) {
-	sep := '\n'
-	for i, c := range n.Declarations {
-		if i != 0 {
-			f.writeRune(sep)
-		}
-
-		f.writeIndent()
-		f.formatNode(c)
-	}
-}
-
-func (f *formatter) formatVariableDeclarator(n *VariableDeclarator) {
+func (f *formatter) formatVariableAssignment(n *VariableAssignment) {
 	f.formatNode(n.ID)
 	f.writeString(" = ")
 	f.formatNode(n.Init)
@@ -414,10 +402,8 @@ func (f *formatter) formatNode(n Node) {
 		f.formatExpressionStatement(n)
 	case *ReturnStatement:
 		f.formatReturnStatement(n)
-	case *VariableDeclaration:
-		f.formatVariableDeclaration(n)
-	case *VariableDeclarator:
-		f.formatVariableDeclarator(n)
+	case *VariableAssignment:
+		f.formatVariableAssignment(n)
 	case *CallExpression:
 		f.formatCallExpression(n)
 	case *PipeExpression:

@@ -134,7 +134,7 @@ func (s *OptionStatement) UnmarshalJSON(data []byte) error {
 	type Alias OptionStatement
 	raw := struct {
 		*Alias
-		Declaration json.RawMessage `json:"declaration"`
+		Assignment json.RawMessage `json:"assignment"`
 	}{}
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
@@ -143,11 +143,11 @@ func (s *OptionStatement) UnmarshalJSON(data []byte) error {
 		*s = *(*OptionStatement)(raw.Alias)
 	}
 
-	e, err := unmarshalVariableDeclaration(raw.Declaration)
+	e, err := unmarshalVariableAssignment(raw.Assignment)
 	if err != nil {
 		return err
 	}
-	s.Declaration = e
+	s.Assignment = e
 	return nil
 }
 func (s *ExpressionStatement) MarshalJSON() ([]byte, error) {
@@ -212,8 +212,8 @@ func (s *ReturnStatement) UnmarshalJSON(data []byte) error {
 	s.Argument = e
 	return nil
 }
-func (d *NativeVariableDeclaration) MarshalJSON() ([]byte, error) {
-	type Alias NativeVariableDeclaration
+func (d *NativeVariableAssignment) MarshalJSON() ([]byte, error) {
+	type Alias NativeVariableAssignment
 	raw := struct {
 		Type string `json:"type"`
 		*Alias
@@ -223,8 +223,8 @@ func (d *NativeVariableDeclaration) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(raw)
 }
-func (d *NativeVariableDeclaration) UnmarshalJSON(data []byte) error {
-	type Alias NativeVariableDeclaration
+func (d *NativeVariableAssignment) UnmarshalJSON(data []byte) error {
+	type Alias NativeVariableAssignment
 	raw := struct {
 		*Alias
 		Init json.RawMessage `json:"init"`
@@ -233,7 +233,7 @@ func (d *NativeVariableDeclaration) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if raw.Alias != nil {
-		*d = *(*NativeVariableDeclaration)(raw.Alias)
+		*d = *(*NativeVariableAssignment)(raw.Alias)
 	}
 
 	e, err := unmarshalExpression(raw.Init)
@@ -243,8 +243,8 @@ func (d *NativeVariableDeclaration) UnmarshalJSON(data []byte) error {
 	d.Init = e
 	return nil
 }
-func (d *ExternalVariableDeclaration) MarshalJSON() ([]byte, error) {
-	return nil, errors.New("cannot marshal ExternalVariableDeclaration")
+func (d *ExternalVariableAssignment) MarshalJSON() ([]byte, error) {
+	return nil, errors.New("cannot marshal ExternalVariableAssignment")
 }
 func (e *CallExpression) MarshalJSON() ([]byte, error) {
 	type Alias CallExpression
@@ -886,7 +886,7 @@ func unmarshalExpression(msg json.RawMessage) (Expression, error) {
 	}
 	return e, nil
 }
-func unmarshalVariableDeclaration(msg json.RawMessage) (Node, error) {
+func unmarshalVariableAssignment(msg json.RawMessage) (Node, error) {
 	if checkNullMsg(msg) {
 		return nil, nil
 	}
@@ -895,8 +895,8 @@ func unmarshalVariableDeclaration(msg json.RawMessage) (Node, error) {
 		return nil, err
 	}
 	switch n.(type) {
-	case *ExternalVariableDeclaration,
-		*NativeVariableDeclaration:
+	case *ExternalVariableAssignment,
+		*NativeVariableAssignment:
 		return n, nil
 	default:
 		return nil, fmt.Errorf("node %q is not a variable declaration", n.NodeType())
@@ -928,8 +928,8 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 		node = new(ExpressionStatement)
 	case "ReturnStatement":
 		node = new(ReturnStatement)
-	case "NativeVariableDeclaration":
-		node = new(NativeVariableDeclaration)
+	case "NativeVariableAssignment":
+		node = new(NativeVariableAssignment)
 	case "CallExpression":
 		node = new(CallExpression)
 	case "MemberExpression":

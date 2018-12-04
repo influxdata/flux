@@ -88,12 +88,12 @@ func (itrp *Interpreter) SetOption(name string, val values.Value) {
 // Eval evaluates the expressions composing a Flux program.
 func (itrp *Interpreter) Eval(program semantic.Node) error {
 	extern := &semantic.Extern{
-		Block:        &semantic.ExternBlock{Node: program},
-		Declarations: make([]*semantic.ExternalVariableDeclaration, 0, itrp.globals.Len()+itrp.options.Len()),
+		Block:       &semantic.ExternBlock{Node: program},
+		Assignments: make([]*semantic.ExternalVariableAssignment, 0, itrp.globals.Len()+itrp.options.Len()),
 	}
 	// Add declarations for values in scope
-	addExternalDeclarations(extern, itrp.options)
-	addExternalDeclarations(extern, itrp.globals)
+	addExternalAssignments(extern, itrp.options)
+	addExternalAssignments(extern, itrp.globals)
 
 	sol, err := semantic.InferTypes(extern)
 	if err != nil {
@@ -146,9 +146,9 @@ func (itrp *Interpreter) doStatement(stmt semantic.Statement, scope *Scope) (val
 	scope.SetReturn(values.InvalidValue)
 	switch s := stmt.(type) {
 	case *semantic.OptionStatement:
-		return itrp.doOptionStatement(s.Declaration.(*semantic.NativeVariableDeclaration), scope)
-	case *semantic.NativeVariableDeclaration:
-		return itrp.doVariableDeclaration(s, scope)
+		return itrp.doOptionStatement(s.Assignment.(*semantic.NativeVariableAssignment), scope)
+	case *semantic.NativeVariableAssignment:
+		return itrp.doVariableAssignment(s, scope)
 	case *semantic.ExpressionStatement:
 		v, err := itrp.doExpression(s.Expression, scope)
 		if err != nil {
@@ -185,7 +185,7 @@ func (itrp *Interpreter) doStatement(stmt semantic.Statement, scope *Scope) (val
 	return nil, nil
 }
 
-func (itrp *Interpreter) doOptionStatement(declaration *semantic.NativeVariableDeclaration, scope *Scope) (values.Value, error) {
+func (itrp *Interpreter) doOptionStatement(declaration *semantic.NativeVariableAssignment, scope *Scope) (values.Value, error) {
 	value, err := itrp.doExpression(declaration.Init, scope)
 	if err != nil {
 		return nil, err
@@ -194,7 +194,7 @@ func (itrp *Interpreter) doOptionStatement(declaration *semantic.NativeVariableD
 	return value, nil
 }
 
-func (itrp *Interpreter) doVariableDeclaration(declaration *semantic.NativeVariableDeclaration, scope *Scope) (values.Value, error) {
+func (itrp *Interpreter) doVariableAssignment(declaration *semantic.NativeVariableAssignment, scope *Scope) (values.Value, error) {
 	value, err := itrp.doExpression(declaration.Init, scope)
 	if err != nil {
 		return nil, err
@@ -852,11 +852,11 @@ func (f function) resolveIdentifiers(n semantic.Node) (semantic.Node, error) {
 			n.Body[i] = node.(semantic.Statement)
 		}
 	case *semantic.OptionStatement:
-		node, err := f.resolveIdentifiers(n.Declaration)
+		node, err := f.resolveIdentifiers(n.Assignment)
 		if err != nil {
 			return nil, err
 		}
-		n.Declaration = node
+		n.Assignment = node
 	case *semantic.ExpressionStatement:
 		node, err := f.resolveIdentifiers(n.Expression)
 		if err != nil {
@@ -869,7 +869,7 @@ func (f function) resolveIdentifiers(n semantic.Node) (semantic.Node, error) {
 			return nil, err
 		}
 		n.Argument = node.(semantic.Expression)
-	case *semantic.NativeVariableDeclaration:
+	case *semantic.NativeVariableAssignment:
 		node, err := f.resolveIdentifiers(n.Init)
 		if err != nil {
 			return nil, err
@@ -1275,9 +1275,9 @@ func (a *arguments) listUnused() []string {
 	return unused
 }
 
-func addExternalDeclarations(extern *semantic.Extern, scope *Scope) {
+func addExternalAssignments(extern *semantic.Extern, scope *Scope) {
 	scope.Range(func(k string, v values.Value) {
-		extern.Declarations = append(extern.Declarations, &semantic.ExternalVariableDeclaration{
+		extern.Assignments = append(extern.Assignments, &semantic.ExternalVariableAssignment{
 			Identifier: &semantic.Identifier{Name: k},
 			ExternType: v.PolyType(),
 		})

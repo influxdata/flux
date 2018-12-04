@@ -13,10 +13,10 @@ func Compile(f *semantic.FunctionExpression, in semantic.Type, builtins Scope) (
 	if in.Nature() != semantic.Object {
 		return nil, errors.New("function input must be an object")
 	}
-	declarations := externDeclarations(builtins)
+	declarations := externAssignments(builtins)
 	extern := &semantic.Extern{
-		Declarations: declarations,
-		Block:        &semantic.ExternBlock{Node: f},
+		Assignments: declarations,
+		Block:       &semantic.ExternBlock{Node: f},
 	}
 
 	typeSol, err := semantic.InferTypes(extern)
@@ -88,7 +88,7 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, fun
 		return returnEvaluator{
 			Evaluator: node,
 		}, nil
-	case *semantic.NativeVariableDeclaration:
+	case *semantic.NativeVariableAssignment:
 		if fe, ok := n.Init.(*semantic.FunctionExpression); ok {
 			funcExprs[n.Identifier.Name] = fe
 			return &blockEvaluator{
@@ -367,11 +367,11 @@ func CompileFnParam(fn *semantic.FunctionExpression, paramType, returnType seman
 	return compiled, paramName, nil
 }
 
-// externDeclarations produces a list of external declarations from a scope
-func externDeclarations(scope Scope) []*semantic.ExternalVariableDeclaration {
-	declarations := make([]*semantic.ExternalVariableDeclaration, 0, len(scope))
+// externAssignments produces a list of external declarations from a scope
+func externAssignments(scope Scope) []*semantic.ExternalVariableAssignment {
+	declarations := make([]*semantic.ExternalVariableAssignment, 0, len(scope))
 	for k, v := range scope {
-		declarations = append(declarations, &semantic.ExternalVariableDeclaration{
+		declarations = append(declarations, &semantic.ExternalVariableAssignment{
 			Identifier: &semantic.Identifier{Name: k},
 			ExternType: v.PolyType(),
 		})

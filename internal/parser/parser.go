@@ -122,15 +122,15 @@ func (p *parser) parseStatement() ast.Statement {
 
 func (p *parser) parseOptionStatement() ast.Statement {
 	pos, _ := p.expect(token.IDENT)
-	return p.parseOptionDeclaration(pos)
+	return p.parseOptionStatementSuffix(pos)
 }
 
-func (p *parser) parseOptionDeclaration(pos token.Pos) ast.Statement {
+func (p *parser) parseOptionStatementSuffix(pos token.Pos) ast.Statement {
 	switch _, tok, _ := p.peek(); tok {
 	case token.IDENT:
-		decl := p.parseVariableDeclaration()
+		decl := p.parseVariableAssignment()
 		return &ast.OptionStatement{
-			Declaration: decl,
+			Assignment: decl,
 			BaseNode: ast.BaseNode{
 				Loc: &ast.SourceLocation{
 					Start:  p.s.File().Position(pos),
@@ -141,21 +141,7 @@ func (p *parser) parseOptionDeclaration(pos token.Pos) ast.Statement {
 		}
 	case token.ASSIGN:
 		expr := p.parseAssignStatement()
-		return &ast.VariableDeclaration{
-			Declarations: []*ast.VariableDeclarator{{
-				BaseNode: ast.BaseNode{
-					Loc: &ast.SourceLocation{
-						Start:  p.s.File().Position(pos),
-						End:    locEnd(expr),
-						Source: p.s.File().Name(),
-					},
-				},
-				ID: &ast.Identifier{
-					Name:     "option",
-					BaseNode: p.posRange(pos, 6),
-				},
-				Init: expr,
-			}},
+		return &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
 				Loc: &ast.SourceLocation{
 					Start:  p.s.File().Position(pos),
@@ -163,6 +149,11 @@ func (p *parser) parseOptionDeclaration(pos token.Pos) ast.Statement {
 					Source: p.s.File().Name(),
 				},
 			},
+			ID: &ast.Identifier{
+				Name:     "option",
+				BaseNode: p.posRange(pos, 6),
+			},
+			Init: expr,
 		}
 	default:
 		ident := &ast.Identifier{
@@ -183,10 +174,10 @@ func (p *parser) parseOptionDeclaration(pos token.Pos) ast.Statement {
 	}
 }
 
-func (p *parser) parseVariableDeclaration() *ast.VariableDeclarator {
+func (p *parser) parseVariableAssignment() *ast.VariableAssignment {
 	id := p.parseIdentifier()
 	expr := p.parseAssignStatement()
-	return &ast.VariableDeclarator{
+	return &ast.VariableAssignment{
 		ID:   id,
 		Init: expr,
 		BaseNode: ast.BaseNode{
@@ -204,18 +195,7 @@ func (p *parser) parseIdentStatement() ast.Statement {
 	switch _, tok, _ := p.peek(); tok {
 	case token.ASSIGN:
 		expr := p.parseAssignStatement()
-		return &ast.VariableDeclaration{
-			Declarations: []*ast.VariableDeclarator{{
-				BaseNode: ast.BaseNode{
-					Loc: &ast.SourceLocation{
-						Start:  locStart(id),
-						End:    locEnd(expr),
-						Source: p.s.File().Name(),
-					},
-				},
-				ID:   id,
-				Init: expr,
-			}},
+		return &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
 				Loc: &ast.SourceLocation{
 					Start:  locStart(id),
@@ -223,6 +203,8 @@ func (p *parser) parseIdentStatement() ast.Statement {
 					Source: p.s.File().Name(),
 				},
 			},
+			ID:   id,
+			Init: expr,
 		}
 	default:
 		expr := p.parseExpressionSuffix(id)

@@ -57,7 +57,7 @@ func TestJSONMarshal(t *testing.T) {
 		{
 			name: "option statement",
 			node: &ast.OptionStatement{
-				Declaration: &ast.VariableDeclarator{
+				Assignment: &ast.VariableAssignment{
 					ID: &ast.Identifier{Name: "task"},
 					Init: &ast.ObjectExpression{
 						Properties: []*ast.Property{
@@ -80,27 +80,15 @@ func TestJSONMarshal(t *testing.T) {
 					},
 				},
 			},
-			want: `{"type":"OptionStatement","declaration":{"type":"VariableDeclarator","id":{"type":"Identifier","name":"task"},"init":{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"name"},"value":{"type":"StringLiteral","value":"foo"}},{"type":"Property","key":{"type":"Identifier","name":"every"},"value":{"type":"DurationLiteral","values":[{"magnitude":1,"unit":"h"}]}}]}}}`,
+			want: `{"type":"OptionStatement","assignment":{"type":"VariableAssignment","id":{"type":"Identifier","name":"task"},"init":{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"name"},"value":{"type":"StringLiteral","value":"foo"}},{"type":"Property","key":{"type":"Identifier","name":"every"},"value":{"type":"DurationLiteral","values":[{"magnitude":1,"unit":"h"}]}}]}}}`,
 		},
 		{
-			name: "variable declaration",
-			node: &ast.VariableDeclaration{
-				Declarations: []*ast.VariableDeclarator{
-					{
-						ID:   &ast.Identifier{Name: "a"},
-						Init: &ast.StringLiteral{Value: "hello"},
-					},
-				},
-			},
-			want: `{"type":"VariableDeclaration","declarations":[{"type":"VariableDeclarator","id":{"type":"Identifier","name":"a"},"init":{"type":"StringLiteral","value":"hello"}}]}`,
-		},
-		{
-			name: "variable declarator",
-			node: &ast.VariableDeclarator{
+			name: "variable assignment",
+			node: &ast.VariableAssignment{
 				ID:   &ast.Identifier{Name: "a"},
 				Init: &ast.StringLiteral{Value: "hello"},
 			},
-			want: `{"type":"VariableDeclarator","id":{"type":"Identifier","name":"a"},"init":{"type":"StringLiteral","value":"hello"}}`,
+			want: `{"type":"VariableAssignment","id":{"type":"Identifier","name":"a"},"init":{"type":"StringLiteral","value":"hello"}}`,
 		},
 		{
 			name: "call expression",

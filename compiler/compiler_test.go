@@ -261,7 +261,7 @@ func TestCompileAndEval(t *testing.T) {
 					},
 					Body: &semantic.BlockStatement{
 						Body: []semantic.Statement{
-							&semantic.NativeVariableDeclaration{
+							&semantic.NativeVariableAssignment{
 								Identifier: &semantic.Identifier{Name: "f"},
 								Init: &semantic.FunctionExpression{
 									Block: &semantic.FunctionBlock{
@@ -315,7 +315,7 @@ func TestCompileAndEval(t *testing.T) {
 					},
 					Body: &semantic.BlockStatement{
 						Body: []semantic.Statement{
-							&semantic.NativeVariableDeclaration{
+							&semantic.NativeVariableAssignment{
 								Identifier: &semantic.Identifier{Name: "i"},
 								Init: &semantic.FunctionExpression{
 									Block: &semantic.FunctionBlock{

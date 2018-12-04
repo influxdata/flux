@@ -150,8 +150,8 @@ func (s *OptionStatement) MarshalJSON() ([]byte, error) {
 	return json.Marshal(raw)
 }
 
-func (d *VariableDeclaration) MarshalJSON() ([]byte, error) {
-	type Alias VariableDeclaration
+func (d *VariableAssignment) MarshalJSON() ([]byte, error) {
+	type Alias VariableAssignment
 	raw := struct {
 		Type string `json:"type"`
 		*Alias
@@ -161,19 +161,8 @@ func (d *VariableDeclaration) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(raw)
 }
-func (d *VariableDeclarator) MarshalJSON() ([]byte, error) {
-	type Alias VariableDeclarator
-	raw := struct {
-		Type string `json:"type"`
-		*Alias
-	}{
-		Type:  d.Type(),
-		Alias: (*Alias)(d),
-	}
-	return json.Marshal(raw)
-}
-func (d *VariableDeclarator) UnmarshalJSON(data []byte) error {
-	type Alias VariableDeclarator
+func (d *VariableAssignment) UnmarshalJSON(data []byte) error {
+	type Alias VariableAssignment
 	raw := struct {
 		*Alias
 		Init json.RawMessage `json:"init"`
@@ -182,7 +171,7 @@ func (d *VariableDeclarator) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if raw.Alias != nil {
-		*d = *(*VariableDeclarator)(raw.Alias)
+		*d = *(*VariableAssignment)(raw.Alias)
 	}
 
 	e, err := unmarshalExpression(raw.Init)
@@ -849,10 +838,8 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 		node = new(ExpressionStatement)
 	case "ReturnStatement":
 		node = new(ReturnStatement)
-	case "VariableDeclaration":
-		node = new(VariableDeclaration)
-	case "VariableDeclarator":
-		node = new(VariableDeclarator)
+	case "VariableAssignment":
+		node = new(VariableAssignment)
 	case "CallExpression":
 		node = new(CallExpression)
 	case "PipeExpression":
