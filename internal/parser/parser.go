@@ -318,7 +318,7 @@ func (p *parser) parseExpressionList() []ast.Expression {
 }
 
 func (p *parser) parseLogicalExpression() ast.Expression {
-	expr := p.parseComparisonExpression()
+	expr := p.parseUnaryLogicalExpression()
 	p.repeat(p.parseLogicalExpressionSuffix(&expr))
 	return expr
 }
@@ -329,7 +329,7 @@ func (p *parser) parseLogicalExpressionSuffix(expr *ast.Expression) func() bool 
 		if !ok {
 			return false
 		}
-		rhs := p.parseComparisonExpression()
+		rhs := p.parseUnaryLogicalExpression()
 		*expr = &ast.LogicalExpression{
 			Operator: op,
 			Left:     *expr,
@@ -356,6 +356,35 @@ func (p *parser) parseLogicalOperator() (ast.LogicalOperatorKind, bool) {
 		return ast.OrOperator, true
 	default:
 		return 0, false
+	}
+}
+
+func (p *parser) parseUnaryLogicalExpression() ast.Expression {
+	pos, op, ok := p.parseUnaryLogicalOperator()
+	if ok {
+		expr := p.parseUnaryLogicalExpression()
+		return &ast.UnaryExpression{
+			Operator: op,
+			Argument: expr,
+			BaseNode: ast.BaseNode{
+				Loc: &ast.SourceLocation{
+					Start:  p.s.File().Position(pos),
+					End:    locEnd(expr),
+					Source: p.s.File().Name(),
+				},
+			},
+		}
+	}
+	return p.parseComparisonExpression()
+}
+
+func (p *parser) parseUnaryLogicalOperator() (token.Pos, ast.OperatorKind, bool) {
+	switch pos, tok, _ := p.peek(); tok {
+	case token.NOT:
+		p.consume()
+		return pos, ast.NotOperator, true
+	default:
+		return 0, 0, false
 	}
 }
 
@@ -567,9 +596,6 @@ func (p *parser) parsePrefixOperator() (token.Pos, ast.OperatorKind, bool) {
 	case token.SUB:
 		p.consume()
 		return pos, ast.SubtractionOperator, true
-	case token.NOT:
-		p.consume()
-		return pos, ast.NotOperator, true
 	default:
 		return 0, 0, false
 	}

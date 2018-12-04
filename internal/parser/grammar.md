@@ -15,9 +15,12 @@ TODO(jsternberg): Move this to the spec. This information is in the spec, but it
     ReturnStatement = return Expression .
     ExpressionStatement = Expression .
     Expression = LogicalExpression .
-    LogicalExpression = ComparisonExpression
-                      | LogicalExpression LogicalOperator ComparisonExpression .
+    LogicalExpression = UnaryLogicalExpression
+                      | LogicalExpression LogicalOperator UnaryLogicalExpression .
     LogicalOperator = and | or .
+    UnaryLogicalExpression = ComparisonExpression
+                           | UnaryLogicalOperator UnaryLogicalExpression .
+    UnaryLogicalOperator = not .
     ComparisonExpression = MultiplicativeExpression
                          | ComparisonExpression ComparisonOperator MultiplicativeExpression .
     ComparisonOperator = eq | neq | regexeq | regexneq .
@@ -32,7 +35,7 @@ TODO(jsternberg): Move this to the spec. This information is in the spec, but it
     PipeOperator = pipe_forward .
     UnaryExpression = PostfixExpression
                     | PrefixOperator UnaryExpression .
-    PrefixOperator = add | sub | not .
+    PrefixOperator = add | sub .
     PostfixExpression = PrimaryExpression
                       | PostfixExpression PostfixOperator .
     PostfixOperator = DotExpression
@@ -83,9 +86,12 @@ For the parser, the above grammar undergoes a process to have the left-recursion
     ExpressionStatement = Expression .
     Expression = LogicalExpression .
     ExpressionSuffix = { PostfixOperator } { PipeExpressionSuffix } { AdditiveExpressionSuffix } { MultiplicativeExpressionSuffix } { ComparisonExpressionSuffix } { LogicalExpressionSuffix } .
-    LogicalExpression = ComparisonExpression { LogicalExpressionSuffix } .
-    LogicalExpressionSuffix = LogicalOperator ComparisonExpression .
+    LogicalExpression = UnaryLogicalExpression { LogicalExpressionSuffix } .
+    LogicalExpressionSuffix = LogicalOperator UnaryLogicalExpression .
     LogicalOperator = and | or .
+    UnaryLogicalExpression = ComparisonExpression
+                           | UnaryLogicalOperator UnaryLogicalExpression .
+    UnaryLogicalOperator = not .
     ComparisonExpression = MultiplicativeExpression { ComparisonExpressionSuffix } .
     ComparisonExpressionSuffix = ComparisonOperator MultiplicativeExpr .
     ComparisonOperator = eq | neq | lt | lte | gt | gte | regexeq | regexneq .
@@ -99,7 +105,7 @@ For the parser, the above grammar undergoes a process to have the left-recursion
     PipeOperator = pipe_forward .
     UnaryExpression = PostfixExpression
                     | PrefixOperator UnaryExpression .
-    PrefixOperator = add | sub | not .
+    PrefixOperator = add | sub .
     PostfixExpression = PrimaryExpression { PostfixOperator } .
     PostfixOperator = DotExpression
                     | CallExpression
