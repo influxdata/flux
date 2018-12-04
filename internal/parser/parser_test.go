@@ -1502,7 +1502,7 @@ a = 5.0
 							BaseNode: base("1:1", "1:8"),
 							Name:     "plusOne",
 						},
-						Init: &ast.ArrowFunctionExpression{
+						Init: &ast.FunctionExpression{
 							BaseNode: base("1:11", "1:23"),
 							Params: []*ast.Property{
 								{
@@ -1570,7 +1570,7 @@ a = 5.0
 							BaseNode: base("1:1", "1:6"),
 							Name:     "toMap",
 						},
-						Init: &ast.ArrowFunctionExpression{
+						Init: &ast.FunctionExpression{
 							BaseNode: base("1:9", "1:21"),
 							Params: []*ast.Property{
 								{
@@ -1614,7 +1614,7 @@ a = 5.0
 							BaseNode: base("1:1", "1:5"),
 							Name:     "addN",
 						},
-						Init: &ast.ArrowFunctionExpression{
+						Init: &ast.FunctionExpression{
 							BaseNode: base("1:8", "1:25"),
 							Params: []*ast.Property{
 								{
@@ -1668,7 +1668,7 @@ a = 5.0
 							BaseNode: base("2:13", "2:20"),
 							Name:     "plusOne",
 						},
-						Init: &ast.ArrowFunctionExpression{
+						Init: &ast.FunctionExpression{
 							BaseNode: base("2:23", "2:35"),
 							Params: []*ast.Property{
 								{
@@ -1755,7 +1755,7 @@ a = 5.0
 							BaseNode: base("1:1", "1:2"),
 							Name:     "f",
 						},
-						Init: &ast.ArrowFunctionExpression{
+						Init: &ast.FunctionExpression{
 							BaseNode: base("1:5", "1:38"),
 							Params: []*ast.Property{
 								{
@@ -1805,7 +1805,7 @@ a = 5.0
 							BaseNode: base("1:1", "1:2"),
 							Name:     "f",
 						},
-						Init: &ast.ArrowFunctionExpression{
+						Init: &ast.FunctionExpression{
 							BaseNode: base("1:5", "4:14"),
 							Params: []*ast.Property{
 								{
@@ -1911,7 +1911,7 @@ a = 5.0
 												BaseNode: base("1:40", "1:42"),
 												Name:     "fn",
 											},
-											Value: &ast.ArrowFunctionExpression{
+											Value: &ast.FunctionExpression{
 												BaseNode: base("1:44", "1:113"),
 												Params: []*ast.Property{
 													{
@@ -2603,7 +2603,7 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])`,
 												BaseNode: base("4:33", "4:35"),
 												Name:     "fn",
 											},
-											Value: &ast.ArrowFunctionExpression{
+											Value: &ast.FunctionExpression{
 												BaseNode: base("4:37", "4:71"),
 												Params: []*ast.Property{
 													{
@@ -2724,7 +2724,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 														BaseNode: base("3:12", "3:14"),
 														Name:     "fn",
 													},
-													Value: &ast.ArrowFunctionExpression{
+													Value: &ast.FunctionExpression{
 														BaseNode: base("3:16", "3:47"),
 														Params: []*ast.Property{
 															{
@@ -2848,7 +2848,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 														BaseNode: base("7:12", "7:14"),
 														Name:     "fn",
 													},
-													Value: &ast.ArrowFunctionExpression{
+													Value: &ast.FunctionExpression{
 														BaseNode: base("7:16", "7:47"),
 														Params: []*ast.Property{
 															{
@@ -2975,7 +2975,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 												BaseNode: base("10:31", "10:33"),
 												Name:     "fn",
 											},
-											Value: &ast.ArrowFunctionExpression{
+											Value: &ast.FunctionExpression{
 												BaseNode: base("10:35", "10:85"),
 												Params: []*ast.Property{
 													{

@@ -332,8 +332,8 @@ func (e *IndexExpression) UnmarshalJSON(data []byte) error {
 
 	return nil
 }
-func (e *ArrowFunctionExpression) MarshalJSON() ([]byte, error) {
-	type Alias ArrowFunctionExpression
+func (e *FunctionExpression) MarshalJSON() ([]byte, error) {
+	type Alias FunctionExpression
 	raw := struct {
 		Type string `json:"type"`
 		*Alias
@@ -343,8 +343,8 @@ func (e *ArrowFunctionExpression) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(raw)
 }
-func (e *ArrowFunctionExpression) UnmarshalJSON(data []byte) error {
-	type Alias ArrowFunctionExpression
+func (e *FunctionExpression) UnmarshalJSON(data []byte) error {
+	type Alias FunctionExpression
 	raw := struct {
 		*Alias
 		Body json.RawMessage `json:"body"`
@@ -353,7 +353,7 @@ func (e *ArrowFunctionExpression) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if raw.Alias != nil {
-		*e = *(*ArrowFunctionExpression)(raw.Alias)
+		*e = *(*FunctionExpression)(raw.Alias)
 	}
 
 	body, err := unmarshalNode(raw.Body)
@@ -880,8 +880,8 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 		node = new(DurationLiteral)
 	case "DateTimeLiteral":
 		node = new(DateTimeLiteral)
-	case "ArrowFunctionExpression":
-		node = new(ArrowFunctionExpression)
+	case "FunctionExpression":
+		node = new(FunctionExpression)
 	case "Property":
 		node = new(Property)
 	default:

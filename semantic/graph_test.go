@@ -138,7 +138,7 @@ func TestNew(t *testing.T) {
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
 						ID: &ast.Identifier{Name: "f"},
-						Init: &ast.ArrowFunctionExpression{
+						Init: &ast.FunctionExpression{
 							Params: []*ast.Property{
 								{Key: &ast.Identifier{Name: "a"}},
 								{Key: &ast.Identifier{Name: "b"}},

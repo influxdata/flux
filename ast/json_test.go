@@ -135,11 +135,11 @@ func TestJSONMarshal(t *testing.T) {
 		},
 		{
 			name: "arrow function expression",
-			node: &ast.ArrowFunctionExpression{
+			node: &ast.FunctionExpression{
 				Params: []*ast.Property{{Key: &ast.Identifier{Name: "a"}}},
 				Body:   &ast.StringLiteral{Value: "hello"},
 			},
-			want: `{"type":"ArrowFunctionExpression","params":[{"type":"Property","key":{"type":"Identifier","name":"a"},"value":null}],"body":{"type":"StringLiteral","value":"hello"}}`,
+			want: `{"type":"FunctionExpression","params":[{"type":"Property","key":{"type":"Identifier","name":"a"},"value":null}],"body":{"type":"StringLiteral","value":"hello"}}`,
 		},
 		{
 			name: "binary expression",

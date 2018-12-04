@@ -128,8 +128,8 @@ func analyzeVariableAssignment(decl *ast.VariableAssignment) (*NativeVariableAss
 
 func analyzeExpression(expr ast.Expression) (Expression, error) {
 	switch expr := expr.(type) {
-	case *ast.ArrowFunctionExpression:
-		return analyzeArrowFunctionExpression(expr)
+	case *ast.FunctionExpression:
+		return analyzeFunctionExpression(expr)
 	case *ast.CallExpression:
 		return analyzeCallExpression(expr)
 	case *ast.MemberExpression:
@@ -182,7 +182,7 @@ func analyzeLiteral(lit ast.Literal) (Literal, error) {
 	}
 }
 
-func analyzeArrowFunctionExpression(arrow *ast.ArrowFunctionExpression) (*FunctionExpression, error) {
+func analyzeFunctionExpression(arrow *ast.FunctionExpression) (*FunctionExpression, error) {
 	var parameters *FunctionParameters
 	var defaults *ObjectExpression
 	if len(arrow.Params) > 0 {

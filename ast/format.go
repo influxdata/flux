@@ -142,7 +142,7 @@ func (f *formatter) formatArrayExpression(n *ArrayExpression) {
 	f.writeRune(']')
 }
 
-func (f *formatter) formatArrowFunctionExpression(n *ArrowFunctionExpression) {
+func (f *formatter) formatFunctionExpression(n *FunctionExpression) {
 	f.writeRune('(')
 
 	sep := ", "
@@ -152,7 +152,7 @@ func (f *formatter) formatArrowFunctionExpression(n *ArrowFunctionExpression) {
 		}
 
 		// treat properties differently than in general case
-		f.formatArrowFunctionArgument(c)
+		f.formatFunctionArgument(c)
 	}
 
 	f.writeString(") =>")
@@ -319,7 +319,7 @@ func (f *formatter) formatProperty(n *Property) {
 	f.formatNode(n.Value)
 }
 
-func (f *formatter) formatArrowFunctionArgument(n *Property) {
+func (f *formatter) formatFunctionArgument(n *Property) {
 	if n.Value == nil {
 		f.formatNode(n.Key)
 		return
@@ -444,8 +444,8 @@ func (f *formatter) formatNode(n Node) {
 		f.formatDurationLiteral(n)
 	case *DateTimeLiteral:
 		f.formatDateTimeLiteral(n)
-	case *ArrowFunctionExpression:
-		f.formatArrowFunctionExpression(n)
+	case *FunctionExpression:
+		f.formatFunctionExpression(n)
 	case *Property:
 		f.formatProperty(n)
 	default:

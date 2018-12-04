@@ -144,7 +144,7 @@ func walk(v Visitor, n Node) {
 				walk(w, e)
 			}
 		}
-	case *ArrowFunctionExpression:
+	case *FunctionExpression:
 		w := v.Visit(n)
 		if w != nil {
 			for _, e := range n.Params {
