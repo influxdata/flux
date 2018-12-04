@@ -31,14 +31,14 @@ func TestJSONMarshal(t *testing.T) {
 		},
 		{
 			name: "block statement",
-			node: &ast.BlockStatement{
+			node: &ast.Block{
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
 						Expression: &ast.StringLiteral{Value: "hello"},
 					},
 				},
 			},
-			want: `{"type":"BlockStatement","body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
+			want: `{"type":"Block","body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
 		},
 		{
 			name: "expression statement",

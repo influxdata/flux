@@ -57,7 +57,7 @@ func walk(v Visitor, n Node) {
 		if w != nil {
 			walk(w, n.Node)
 		}
-	case *BlockStatement:
+	case *Block:
 		if n == nil {
 			return
 		}
@@ -320,7 +320,7 @@ func (v ScopedVisitor) Visit(node Node) Visitor {
 	v.v = visitor.(NestingVisitor)
 	switch node.(type) {
 	case *ExternBlock,
-		*BlockStatement,
+		*Block,
 		*FunctionBlock:
 		return ScopedVisitor{
 			v: v.v.Nest(),

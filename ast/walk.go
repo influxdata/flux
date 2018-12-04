@@ -52,7 +52,7 @@ func walk(v Visitor, n Node) {
 				walk(w, s)
 			}
 		}
-	case *BlockStatement:
+	case *Block:
 		w := v.Visit(n)
 		if w != nil {
 			for _, s := range n.Body {

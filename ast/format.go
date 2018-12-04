@@ -76,7 +76,7 @@ func (f *formatter) formatProgram(n *Program) {
 	}
 }
 
-func (f *formatter) formatBlockStatement(n *BlockStatement) {
+func (f *formatter) formatBlock(n *Block) {
 	f.writeRune('{')
 
 	sep := '\n'
@@ -163,7 +163,7 @@ func (f *formatter) formatArrowFunctionExpression(n *ArrowFunctionExpression) {
 	//		(x) => {
 	//			return x + 1
 	//		}
-	_, block := n.Body.(*BlockStatement)
+	_, block := n.Body.(*Block)
 	if !block {
 		f.writeRune('\n')
 		f.indent()
@@ -394,8 +394,8 @@ func (f *formatter) formatNode(n Node) {
 	switch n := n.(type) {
 	case *Program:
 		f.formatProgram(n)
-	case *BlockStatement:
-		f.formatBlockStatement(n)
+	case *Block:
+		f.formatBlock(n)
 	case *OptionStatement:
 		f.formatOptionStatement(n)
 	case *ExpressionStatement:

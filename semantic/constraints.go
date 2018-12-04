@@ -133,7 +133,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		return t, nil
 	case *ReturnStatement:
 		return v.lookup(n.Argument)
-	case *BlockStatement:
+	case *Block:
 		return v.lookup(n.ReturnStatement())
 	case *BinaryExpression:
 		l, err := v.lookup(n.Left)

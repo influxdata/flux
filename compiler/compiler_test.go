@@ -259,7 +259,7 @@ func TestCompileAndEval(t *testing.T) {
 							{Key: &semantic.Identifier{Name: "r"}},
 						},
 					},
-					Body: &semantic.BlockStatement{
+					Body: &semantic.Block{
 						Body: []semantic.Statement{
 							&semantic.NativeVariableAssignment{
 								Identifier: &semantic.Identifier{Name: "f"},
@@ -313,7 +313,7 @@ func TestCompileAndEval(t *testing.T) {
 							{Key: &semantic.Identifier{Name: "r"}},
 						},
 					},
-					Body: &semantic.BlockStatement{
+					Body: &semantic.Block{
 						Body: []semantic.Statement{
 							&semantic.NativeVariableAssignment{
 								Identifier: &semantic.Identifier{Name: "i"},

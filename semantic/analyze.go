@@ -35,6 +35,8 @@ func analyzeNode(n ast.Node) (Node, error) {
 		return analyzeStatment(n)
 	case ast.Expression:
 		return analyzeExpression(n)
+	case *ast.Block:
+		return analyzeBlock(n)
 	default:
 		return nil, fmt.Errorf("unsupported node %T", n)
 	}
@@ -42,8 +44,6 @@ func analyzeNode(n ast.Node) (Node, error) {
 
 func analyzeStatment(s ast.Statement) (Statement, error) {
 	switch s := s.(type) {
-	case *ast.BlockStatement:
-		return analyzeBlockStatement(s)
 	case *ast.OptionStatement:
 		return analyzeOptionStatement(s)
 	case *ast.ExpressionStatement:
@@ -57,8 +57,8 @@ func analyzeStatment(s ast.Statement) (Statement, error) {
 	}
 }
 
-func analyzeBlockStatement(block *ast.BlockStatement) (*BlockStatement, error) {
-	b := &BlockStatement{
+func analyzeBlock(block *ast.Block) (*Block, error) {
+	b := &Block{
 		loc:  loc(block.Location()),
 		Body: make([]Statement, len(block.Body)),
 	}
