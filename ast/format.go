@@ -334,12 +334,7 @@ func (f *formatter) formatDurationLiteral(n *DurationLiteral) {
 		f.writeString(d.Unit)
 	}
 
-	sep := ' '
-	for i, d := range n.Values {
-		if i != 0 {
-			f.writeRune(sep)
-		}
-
+	for _, d := range n.Values {
 		formatDuration(d)
 	}
 }

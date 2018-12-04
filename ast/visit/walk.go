@@ -1,93 +1,97 @@
-package ast
+package visit
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/influxdata/flux/ast"
+)
 
 /*
-`Walk` recursively visits every children of a given `Node` given a `Visitor`.
+`Walk` recursively visits every children of a given `ast.Node` given a `Visitor`.
 It performs a pre-order visit of the AST (visit parent node, then visit children from left to right).
 If a call to `Visit` for a node returns a nil visitor, walk stops and doesn't visit the AST rooted at that node,
 otherwise it uses the returned visitor to continue walking.
 Once Walk has finished visiting a node (the node itself and its children), it invokes `Done` on the node's visitor.
 NOTE: `Walk` doesn't visit `nil` nodes.
 */
-func Walk(v Visitor, node Node) {
+func Walk(v Visitor, node ast.Node) {
 	walk(v, node)
 }
 
 /*
-A `Visitor` extracts information from a `Node` to build a result and/or have side-effects on it.
+A `Visitor` extracts information from a `ast.Node` to build a result and/or have side-effects on it.
 The result of `Visit` is a `Visitor` that, in turn, is used by `Walk` to visit the children of the node under exam.
 To stop walking, `Visit` must return `nil`.
 */
 type Visitor interface {
-	Visit(node Node) Visitor
-	Done(node Node)
+	Visit(node ast.Node) Visitor
+	Done(node ast.Node)
 }
 
-func CreateVisitor(f func(Node)) Visitor {
+func CreateVisitor(f func(ast.Node)) Visitor {
 	return &visitor{f: f}
 }
 
 type visitor struct {
-	f func(Node)
+	f func(ast.Node)
 }
 
-func (v *visitor) Visit(node Node) Visitor {
+func (v *visitor) Visit(node ast.Node) Visitor {
 	v.f(node)
 	return v
 }
 
-func (v *visitor) Done(node Node) {}
+func (v *visitor) Done(node ast.Node) {}
 
-func walk(v Visitor, n Node) {
+func walk(v Visitor, n ast.Node) {
 	if n == nil {
 		return
 	}
 
 	switch n := n.(type) {
-	case *Program:
+	case *ast.Program:
 		w := v.Visit(n)
 		if w != nil {
 			for _, s := range n.Body {
 				walk(w, s)
 			}
 		}
-	case *BlockStatement:
+	case *ast.BlockStatement:
 		w := v.Visit(n)
 		if w != nil {
 			for _, s := range n.Body {
 				walk(w, s)
 			}
 		}
-	case *OptionStatement:
+	case *ast.OptionStatement:
 		w := v.Visit(n)
 		if w != nil && n.Declaration != nil {
 			walk(w, n.Declaration)
 		}
-	case *ExpressionStatement:
+	case *ast.ExpressionStatement:
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Expression)
 		}
-	case *ReturnStatement:
+	case *ast.ReturnStatement:
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Argument)
 		}
-	case *VariableDeclaration:
+	case *ast.VariableDeclaration:
 		w := v.Visit(n)
 		if w != nil {
 			for _, s := range n.Declarations {
 				walk(w, s)
 			}
 		}
-	case *VariableDeclarator:
+	case *ast.VariableDeclarator:
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.ID)
 			walk(w, n.Init)
 		}
-	case *CallExpression:
+	case *ast.CallExpression:
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Callee)
@@ -95,63 +99,63 @@ func walk(v Visitor, n Node) {
 				walk(w, s)
 			}
 		}
-	case *PipeExpression:
+	case *ast.PipeExpression:
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Argument)
 			walk(w, n.Call)
 		}
-	case *MemberExpression:
+	case *ast.MemberExpression:
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Object)
 			walk(w, n.Property)
 		}
-	case *IndexExpression:
+	case *ast.IndexExpression:
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Array)
 			walk(w, n.Index)
 		}
-	case *BinaryExpression:
+	case *ast.BinaryExpression:
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Left)
 			walk(w, n.Right)
 		}
-	case *UnaryExpression:
+	case *ast.UnaryExpression:
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Argument)
 		}
-	case *LogicalExpression:
+	case *ast.LogicalExpression:
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Left)
 			walk(w, n.Right)
 		}
-	case *ObjectExpression:
+	case *ast.ObjectExpression:
 		w := v.Visit(n)
 		if w != nil {
 			for _, p := range n.Properties {
 				walk(w, p)
 			}
 		}
-	case *ConditionalExpression:
+	case *ast.ConditionalExpression:
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Test)
 			walk(w, n.Alternate)
 			walk(w, n.Consequent)
 		}
-	case *ArrayExpression:
+	case *ast.ArrayExpression:
 		w := v.Visit(n)
 		if w != nil {
 			for _, e := range n.Elements {
 				walk(w, e)
 			}
 		}
-	case *ArrowFunctionExpression:
+	case *ast.ArrowFunctionExpression:
 		w := v.Visit(n)
 		if w != nil {
 			for _, e := range n.Params {
@@ -159,31 +163,31 @@ func walk(v Visitor, n Node) {
 			}
 			walk(w, n.Body)
 		}
-	case *Property:
+	case *ast.Property:
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.Key)
 			walk(w, n.Value)
 		}
-	case *Identifier:
+	case *ast.Identifier:
 		v.Visit(n)
-	case *PipeLiteral:
+	case *ast.PipeLiteral:
 		v.Visit(n)
-	case *StringLiteral:
+	case *ast.StringLiteral:
 		v.Visit(n)
-	case *BooleanLiteral:
+	case *ast.BooleanLiteral:
 		v.Visit(n)
-	case *FloatLiteral:
+	case *ast.FloatLiteral:
 		v.Visit(n)
-	case *IntegerLiteral:
+	case *ast.IntegerLiteral:
 		v.Visit(n)
-	case *UnsignedIntegerLiteral:
+	case *ast.UnsignedIntegerLiteral:
 		v.Visit(n)
-	case *RegexpLiteral:
+	case *ast.RegexpLiteral:
 		v.Visit(n)
-	case *DurationLiteral:
+	case *ast.DurationLiteral:
 		v.Visit(n)
-	case *DateTimeLiteral:
+	case *ast.DateTimeLiteral:
 		v.Visit(n)
 	default:
 		panic(fmt.Errorf("walk not defined for node %T", n))

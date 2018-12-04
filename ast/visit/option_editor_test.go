@@ -1,10 +1,12 @@
-package ast_test
+package visit_test
 
 import (
 	"testing"
 
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/ast/visit"
 	"github.com/influxdata/flux/parser"
+	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 )
 
@@ -13,17 +15,17 @@ func TestEditor(t *testing.T) {
 		name   string
 		in     string
 		edited string
-		editor *ast.OptionEditor
+		editor *visit.OptionEditor
 	}{
 		{
 			name: "leaves_unchanged",
 			in:   `from(bucket:"testdb") |> range(start: 2018-05-23T13:09:22.885021542Z)`,
 			edited: `from(bucket: "testdb")
 	|> range(start: 2018-05-23T13:09:22.885021542Z)`,
-			editor: ast.NewOptionEditor(map[string]interface{}{
-				"bucket": "foo",
-				"start":  "yesterday", // should ignore this
-				"stop":   "tomorrow",  // should ignore this
+			editor: visit.NewOptionEditor(map[string]values.Value{
+				"bucket": values.New("foo"),       // should ignore this
+				"start":  values.New("yesterday"), // should ignore this
+				"stop":   values.New("tomorrow"),  // should ignore this
 			}),
 		},
 		{
@@ -32,22 +34,22 @@ func TestEditor(t *testing.T) {
 from(bucket:"testdb") |> range(start: 2018-05-23T13:09:22.885021542Z)`,
 			edited: `option task = {
 	name: "bar",
-	every: 2d,
-	delay: 42m,
+	every: 7200000000000ns,
+	delay: 2520000000000ns,
 	cron: "buz",
 	retry: 10,
 }
 
 from(bucket: "testdb")
 	|> range(start: 2018-05-23T13:09:22.885021542Z)`,
-			editor: ast.NewOptionEditor(map[string]interface{}{
-				"bucket": "foo",       // should ignore this
-				"start":  "yesterday", // should ignore this
-				"name":   "bar",
-				"every":  ast.Duration{Magnitude: 2, Unit: "d"},
-				"delay":  ast.Duration{Magnitude: 42, Unit: "m"},
-				"cron":   "buz",
-				"retry":  10,
+			editor: visit.NewOptionEditor(map[string]values.Value{
+				"bucket": values.New("foo"),       // should ignore this
+				"start":  values.New("yesterday"), // should ignore this
+				"name":   values.New("bar"),
+				"every":  values.New(duration("2h")),
+				"delay":  values.New(duration("42m")),
+				"cron":   values.New("buz"),
+				"retry":  values.New(int64(10)),
 			}),
 		},
 	}
@@ -60,7 +62,7 @@ from(bucket: "testdb")
 				t.Fatal(errors.Wrapf(err, "input program has bad syntax:\n%s", tc.in))
 			}
 
-			ast.Walk(tc.editor, p)
+			visit.Walk(tc.editor, p)
 			out := ast.Format(p)
 
 			if tc.edited != out {
@@ -68,4 +70,13 @@ from(bucket: "testdb")
 			}
 		})
 	}
+}
+
+func duration(sd string) values.Duration {
+	d, err := values.ParseDuration(sd)
+	if err != nil {
+		panic(err)
+	}
+
+	return values.New(d).Duration()
 }

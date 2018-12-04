@@ -9,11 +9,9 @@ import (
 )
 
 var skip = map[string]string{
-	"array_expr":           "without pars -> bad syntax, with pars formatting removes them",
-	"conditional":          "how is a conditional expression defined in spec?",
-	"duration_multiple":    "how are multiple duration values meant to be used?",
-	"nil_value_as_default": "cannot distinguish nil values from default values in function definition",
-	"multi_var_decl":       "how is a variable declaration with multiple declarations represented?",
+	"array_expr":     "without pars -> bad syntax, with pars formatting removes them",
+	"conditional":    "how is a conditional expression defined in spec?",
+	"multi_var_decl": "how is a variable declaration with multiple declarations represented?",
 }
 
 func TestFormat(t *testing.T) {
@@ -71,7 +69,7 @@ a[i]`,
 		},
 		{
 			name:   "duration_multiple",
-			script: `1m1d1s`,
+			script: `1d1m1s`,
 		},
 		{
 			name:   "time",
