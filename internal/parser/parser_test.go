@@ -361,6 +361,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 					&ast.VariableDeclaration{
 						BaseNode: base("1:1", "1:10"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("1:1", "1:10"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:1", "1:6"),
 								Name:     "howdy",
@@ -383,6 +384,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 					&ast.VariableDeclaration{
 						BaseNode: base("1:1", "1:12"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("1:1", "1:12"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:1", "1:6"),
 								Name:     "howdy",
@@ -405,6 +407,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 					&ast.VariableDeclaration{
 						BaseNode: base("1:1", "1:21"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("1:1", "1:21"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:1", "1:6"),
 								Name:     "howdy",
@@ -445,6 +448,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 					&ast.VariableDeclaration{
 						BaseNode: base("1:1", "1:10"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("1:1", "1:10"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:1", "1:6"),
 								Name:     "howdy",
@@ -478,6 +482,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 					&ast.VariableDeclaration{
 						BaseNode: base("1:1", "1:15"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("1:1", "1:15"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:1", "1:6"),
 								Name:     "howdy",
@@ -664,6 +669,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 					&ast.VariableDeclaration{
 						BaseNode: base("1:1", "1:15"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("1:1", "1:15"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:1", "1:6"),
 								Name:     "howdy",
@@ -680,6 +686,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 					&ast.VariableDeclaration{
 						BaseNode: base("2:4", "2:18"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("2:4", "2:18"),
 							ID: &ast.Identifier{
 								BaseNode: base("2:4", "2:9"),
 								Name:     "doody",
@@ -779,6 +786,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 					&ast.VariableDeclaration{
 						BaseNode: base("1:1", "1:29"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("1:1", "1:29"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:1", "1:2"),
 								Name:     "m",
@@ -997,6 +1005,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 					&ast.VariableDeclaration{
 						BaseNode: base("1:1", "1:6"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("1:1", "1:6"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:1", "1:2"),
 								Name:     "a",
@@ -1010,6 +1019,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 					&ast.VariableDeclaration{
 						BaseNode: base("2:13", "2:18"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("2:13", "2:18"),
 							ID: &ast.Identifier{
 								BaseNode: base("2:13", "2:14"),
 								Name:     "b",
@@ -1023,6 +1033,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 					&ast.VariableDeclaration{
 						BaseNode: base("3:13", "3:22"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("3:13", "3:22"),
 							ID: &ast.Identifier{
 								BaseNode: base("3:13", "3:14"),
 								Name:     "c",
@@ -1044,6 +1055,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 					&ast.VariableDeclaration{
 						BaseNode: base("4:13", "4:18"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("4:13", "4:18"),
 							ID: &ast.Identifier{
 								BaseNode: base("4:13", "4:14"),
 								Name:     "d",
@@ -1067,6 +1079,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 					&ast.VariableDeclaration{
 						BaseNode: base("1:1", "1:6"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("1:1", "1:6"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:1", "1:2"),
 								Name:     "a",
@@ -1080,6 +1093,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 					&ast.VariableDeclaration{
 						BaseNode: base("2:13", "2:19"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("2:13", "2:19"),
 							ID: &ast.Identifier{
 								BaseNode: base("2:13", "2:14"),
 								Name:     "c",
@@ -1107,6 +1121,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 					&ast.VariableDeclaration{
 						BaseNode: base("1:1", "1:6"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("1:1", "1:6"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:1", "1:2"),
 								Name:     "a",
@@ -1120,6 +1135,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 					&ast.VariableDeclaration{
 						BaseNode: base("2:13", "2:24"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("2:13", "2:24"),
 							ID: &ast.Identifier{
 								BaseNode: base("2:13", "2:14"),
 								Name:     "c",
@@ -1155,6 +1171,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 					&ast.VariableDeclaration{
 						BaseNode: base("1:1", "1:8"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("1:1", "1:8"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:1", "1:2"),
 								Name:     "a",
@@ -1229,6 +1246,7 @@ a = 5.0
 					&ast.VariableDeclaration{
 						BaseNode: base("2:1", "2:8"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("2:1", "2:8"),
 							ID: &ast.Identifier{
 								BaseNode: base("2:1", "2:2"),
 								Name:     "a",
@@ -1298,6 +1316,7 @@ a = 5.0
 					&ast.VariableDeclaration{
 						BaseNode: base("1:1", "1:16"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("1:1", "1:16"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:1", "1:2"),
 								Name:     "a",
@@ -1435,6 +1454,7 @@ a = 5.0
 					&ast.VariableDeclaration{
 						BaseNode: base("1:1", "1:23"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("1:1", "1:23"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:1", "1:8"),
 								Name:     "plusOne",
@@ -1505,6 +1525,7 @@ a = 5.0
 					&ast.VariableDeclaration{
 						BaseNode: base("1:1", "1:21"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("1:1", "1:21"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:1", "1:6"),
 								Name:     "toMap",
@@ -1551,6 +1572,7 @@ a = 5.0
 					&ast.VariableDeclaration{
 						BaseNode: base("1:1", "1:25"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("1:1", "1:25"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:1", "1:5"),
 								Name:     "addN",
@@ -1607,6 +1629,7 @@ a = 5.0
 					&ast.VariableDeclaration{
 						BaseNode: base("2:13", "2:35"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("2:13", "2:35"),
 							ID: &ast.Identifier{
 								BaseNode: base("2:13", "2:20"),
 								Name:     "plusOne",
@@ -1696,6 +1719,7 @@ a = 5.0
 					&ast.VariableDeclaration{
 						BaseNode: base("1:1", "1:38"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("1:1", "1:38"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:1", "1:2"),
 								Name:     "f",
@@ -1748,6 +1772,7 @@ a = 5.0
 					&ast.VariableDeclaration{
 						BaseNode: base("1:1", "4:14"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("1:1", "4:14"),
 							ID: &ast.Identifier{
 								BaseNode: base("1:1", "1:2"),
 								Name:     "f",
@@ -1769,6 +1794,7 @@ a = 5.0
 										&ast.VariableDeclaration{
 											BaseNode: base("2:17", "2:38"),
 											Declarations: []*ast.VariableDeclarator{{
+												BaseNode: base("2:17", "2:38"),
 												ID: &ast.Identifier{
 													BaseNode: base("2:17", "2:18"),
 													Name:     "m",
@@ -2366,6 +2392,7 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])`,
 					&ast.VariableDeclaration{
 						BaseNode: base("2:1", "2:51"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("2:1", "2:51"),
 							ID: &ast.Identifier{
 								BaseNode: base("2:1", "2:2"),
 								Name:     "a",
@@ -2437,6 +2464,7 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])`,
 					&ast.VariableDeclaration{
 						BaseNode: base("3:1", "3:51"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("3:1", "3:51"),
 							ID: &ast.Identifier{
 								BaseNode: base("3:1", "3:2"),
 								Name:     "b",
@@ -2630,6 +2658,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 					&ast.VariableDeclaration{
 						BaseNode: base("2:1", "4:21"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("2:1", "4:21"),
 							ID: &ast.Identifier{
 								BaseNode: base("2:1", "2:2"),
 								Name:     "a",
@@ -2756,6 +2785,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 					&ast.VariableDeclaration{
 						BaseNode: base("6:1", "8:21"),
 						Declarations: []*ast.VariableDeclarator{{
+							BaseNode: base("6:1", "8:21"),
 							ID: &ast.Identifier{
 								BaseNode: base("6:1", "6:2"),
 								Name:     "b",
@@ -3010,6 +3040,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 				Body: []ast.Statement{&ast.VariableDeclaration{
 					BaseNode: base("1:1", "1:34"),
 					Declarations: []*ast.VariableDeclarator{{
+						BaseNode: base("1:1", "1:34"),
 						ID: &ast.Identifier{
 							BaseNode: base("1:1", "1:4"),
 							Name:     "dur",
@@ -3041,6 +3072,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 				Body: []ast.Statement{&ast.VariableDeclaration{
 					BaseNode: base("1:1", "1:10"),
 					Declarations: []*ast.VariableDeclarator{{
+						BaseNode: base("1:1", "1:10"),
 						ID: &ast.Identifier{
 							BaseNode: base("1:1", "1:4"),
 							Name:     "dur",
@@ -3063,6 +3095,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 				Body: []ast.Statement{&ast.VariableDeclaration{
 					BaseNode: base("1:1", "1:12"),
 					Declarations: []*ast.VariableDeclarator{{
+						BaseNode: base("1:1", "1:12"),
 						ID: &ast.Identifier{
 							BaseNode: base("1:1", "1:4"),
 							Name:     "dur",
@@ -3085,6 +3118,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 				Body: []ast.Statement{&ast.VariableDeclaration{
 					BaseNode: base("1:1", "1:18"),
 					Declarations: []*ast.VariableDeclarator{{
+						BaseNode: base("1:1", "1:18"),
 						ID: &ast.Identifier{
 							BaseNode: base("1:1", "1:4"),
 							Name:     "dur",
@@ -3109,6 +3143,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 				Body: []ast.Statement{&ast.VariableDeclaration{
 					BaseNode: base("1:1", "1:17"),
 					Declarations: []*ast.VariableDeclarator{{
+						BaseNode: base("1:1", "1:17"),
 						ID: &ast.Identifier{
 							BaseNode: base("1:1", "1:4"),
 							Name:     "now",
@@ -3129,6 +3164,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 				Body: []ast.Statement{&ast.VariableDeclaration{
 					BaseNode: base("1:1", "1:27"),
 					Declarations: []*ast.VariableDeclarator{{
+						BaseNode: base("1:1", "1:27"),
 						ID: &ast.Identifier{
 							BaseNode: base("1:1", "1:4"),
 							Name:     "now",
@@ -3149,6 +3185,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 				Body: []ast.Statement{&ast.VariableDeclaration{
 					BaseNode: base("1:1", "1:37"),
 					Declarations: []*ast.VariableDeclarator{{
+						BaseNode: base("1:1", "1:37"),
 						ID: &ast.Identifier{
 							BaseNode: base("1:1", "1:4"),
 							Name:     "now",
