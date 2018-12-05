@@ -318,7 +318,7 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (v
 			return nil, fmt.Errorf("invalid logical operator %v", e.Operator)
 		}
 	case *semantic.FunctionExpression:
-		return &function{
+		return function{
 			e:     e,
 			scope: scope,
 			itrp:  itrp,
@@ -659,14 +659,14 @@ type function struct {
 	itrp *Interpreter
 }
 
-func (f *function) Type() semantic.Type {
+func (f function) Type() semantic.Type {
 	typ, ok := f.itrp.types.LookupType(f.e)
 	if !ok {
 		return semantic.Invalid
 	}
 	return typ
 }
-func (f *function) PolyType() semantic.PolyType {
+func (f function) PolyType() semantic.PolyType {
 	polyType, ok := f.itrp.types.LookupPolyType(f.e)
 	if !ok {
 		return semantic.Invalid
@@ -674,53 +674,53 @@ func (f *function) PolyType() semantic.PolyType {
 	return polyType
 }
 
-func (f *function) Str() string {
+func (f function) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
 }
-func (f *function) Int() int64 {
+func (f function) Int() int64 {
 	panic(values.UnexpectedKind(semantic.Function, semantic.Int))
 }
-func (f *function) UInt() uint64 {
+func (f function) UInt() uint64 {
 	panic(values.UnexpectedKind(semantic.Function, semantic.UInt))
 }
-func (f *function) Float() float64 {
+func (f function) Float() float64 {
 	panic(values.UnexpectedKind(semantic.Function, semantic.Float))
 }
-func (f *function) Bool() bool {
+func (f function) Bool() bool {
 	panic(values.UnexpectedKind(semantic.Function, semantic.Bool))
 }
-func (f *function) Time() values.Time {
+func (f function) Time() values.Time {
 	panic(values.UnexpectedKind(semantic.Function, semantic.Time))
 }
-func (f *function) Duration() values.Duration {
+func (f function) Duration() values.Duration {
 	panic(values.UnexpectedKind(semantic.Function, semantic.Duration))
 }
-func (f *function) Regexp() *regexp.Regexp {
+func (f function) Regexp() *regexp.Regexp {
 	panic(values.UnexpectedKind(semantic.Function, semantic.Regexp))
 }
-func (f *function) Array() values.Array {
+func (f function) Array() values.Array {
 	panic(values.UnexpectedKind(semantic.Function, semantic.Array))
 }
-func (f *function) Object() values.Object {
+func (f function) Object() values.Object {
 	panic(values.UnexpectedKind(semantic.Function, semantic.Object))
 }
-func (f *function) Function() values.Function {
+func (f function) Function() values.Function {
 	return f
 }
-func (f *function) Equal(rhs values.Value) bool {
+func (f function) Equal(rhs values.Value) bool {
 	if f.Type() != rhs.Type() {
 		return false
 	}
-	v, ok := rhs.(*function)
-	return ok && (f == v)
+	v, ok := rhs.(function)
+	return ok && f.e == v.e && f.scope == v.scope
 }
-func (f *function) HasSideEffect() bool {
+func (f function) HasSideEffect() bool {
 	// Function definitions do not produce side effects.
 	// Only a function call expression can produce side effects.
 	return false
 }
 
-func (f *function) Call(argsObj values.Object) (values.Value, error) {
+func (f function) Call(argsObj values.Object) (values.Value, error) {
 	args := newArguments(argsObj)
 	v, err := f.doCall(args)
 	if err != nil {
@@ -731,7 +731,7 @@ func (f *function) Call(argsObj values.Object) (values.Value, error) {
 	}
 	return v, nil
 }
-func (f *function) doCall(args Arguments) (values.Value, error) {
+func (f function) doCall(args Arguments) (values.Value, error) {
 	blockScope := f.scope.Nest()
 	if f.e.Block.Parameters != nil {
 	PARAMETERS:
@@ -810,7 +810,7 @@ func ResolveFunction(f values.Function) (*semantic.FunctionExpression, error) {
 }
 
 // Resolve rewrites the function resolving any identifiers not listed in the function params.
-func (f *function) Resolve() (semantic.Node, error) {
+func (f function) Resolve() (semantic.Node, error) {
 	n := f.e.Copy()
 	node, err := f.resolveIdentifiers(n)
 	if err != nil {
