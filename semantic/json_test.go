@@ -28,10 +28,24 @@ func TestJSONMarshal(t *testing.T) {
 					},
 				},
 			},
-			want: `{"type":"Program","body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
+			want: `{"type":"Program","package":null,"imports":null,"body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
 		},
 		{
-			name: "block statement",
+			name: "program",
+			node: &semantic.Program{
+				Package: &semantic.PackageClause{
+					Name: &semantic.Identifier{Name: "foo"},
+				},
+				Body: []semantic.Statement{
+					&semantic.ExpressionStatement{
+						Expression: &semantic.StringLiteral{Value: "hello"},
+					},
+				},
+			},
+			want: `{"type":"Program","package":{"type":"PackageClause","name":{"type":"Identifier","name":"foo"}},"imports":null,"body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
+		},
+		{
+			name: "block",
 			node: &semantic.Block{
 				Body: []semantic.Statement{
 					&semantic.ExpressionStatement{
@@ -39,7 +53,7 @@ func TestJSONMarshal(t *testing.T) {
 					},
 				},
 			},
-			want: `{"type":"BlockStatement","body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
+			want: `{"type":"Block","body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
 		},
 		{
 			name: "option statement",

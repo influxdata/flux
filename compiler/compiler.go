@@ -19,7 +19,7 @@ func Compile(f *semantic.FunctionExpression, in semantic.Type, builtins Scope) (
 		Block:       &semantic.ExternBlock{Node: f},
 	}
 
-	typeSol, err := semantic.InferTypes(extern)
+	typeSol, err := semantic.InferTypes(extern, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -25,7 +25,47 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{
-			name: "var declaration",
+			name: "package",
+			program: &ast.Program{
+				Package: &ast.PackageClause{
+					Name: &ast.Identifier{Name: "foo"},
+				},
+			},
+			want: &semantic.Program{
+				Package: &semantic.PackageClause{
+					Name: &semantic.Identifier{Name: "foo"},
+				},
+				Body: []semantic.Statement{},
+			},
+		},
+		{
+			name: "imports",
+			program: &ast.Program{
+				Imports: []*ast.ImportDeclaration{
+					{
+						Path: &ast.StringLiteral{Value: "path/foo"},
+					},
+					{
+						Path: &ast.StringLiteral{Value: "path/bar"},
+						As:   &ast.Identifier{Name: "b"},
+					},
+				},
+			},
+			want: &semantic.Program{
+				Imports: []*semantic.ImportDeclaration{
+					{
+						Path: &semantic.StringLiteral{Value: "path/foo"},
+					},
+					{
+						Path: &semantic.StringLiteral{Value: "path/bar"},
+						As:   &semantic.Identifier{Name: "b"},
+					},
+				},
+				Body: []semantic.Statement{},
+			},
+		},
+		{
+			name: "var assignment",
 			program: &ast.Program{
 				Body: []ast.Statement{
 					&ast.VariableAssignment{

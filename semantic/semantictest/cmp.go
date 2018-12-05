@@ -13,6 +13,8 @@ var CmpOptions = []cmp.Option{
 
 	cmpopts.IgnoreUnexported(semantic.ArrayExpression{}),
 	cmpopts.IgnoreUnexported(semantic.Program{}),
+	cmpopts.IgnoreUnexported(semantic.PackageClause{}),
+	cmpopts.IgnoreUnexported(semantic.ImportDeclaration{}),
 	cmpopts.IgnoreUnexported(semantic.Block{}),
 	cmpopts.IgnoreUnexported(semantic.OptionStatement{}),
 	cmpopts.IgnoreUnexported(semantic.ExpressionStatement{}),
