@@ -223,7 +223,7 @@ func (v *fluxSpecVisitor) visitOperation(o *flux.Operation) error {
 
 	// no children => no successors => root node
 	if len(v.spec.Children(o.ID)) == 0 {
-		if isYield || hasSideEffects(procedureSpec) {
+		if isYield || HasSideEffect(procedureSpec) {
 			v.plan.Roots[logicalNode] = struct{}{}
 		} else {
 			// Generate a yield node

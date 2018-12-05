@@ -223,6 +223,13 @@ func (v *createExecutionNodeVisitor) Visit(node plan.PlanNode) error {
 			v.es.transports = append(v.es.transports, transport)
 			executionNode.AddTransformation(transport)
 		}
+
+		if plan.HasSideEffect(spec) && len(node.Successors()) == 0 {
+			name := string(node.ID())
+			r := newResult(name)
+			v.es.results[name] = r
+			v.nodes[skipYields(node)].AddTransformation(r)
+		}
 	}
 
 	return nil
