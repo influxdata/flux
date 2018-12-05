@@ -2289,20 +2289,25 @@ If no value is found, the value is set to `null`.
 
 [IMPL#353](https://github.com/influxdata/platform/issues/353) Null defined in spec but not implemented.  
 
-#### FromRows
+#### InfluxFieldsAsCols
 
-FromRows is a special application of pivot that will automatically align fields within each measurement that have the same time stamp.
+InfluxFieldsAsCols is a special application of pivot that will automatically align fields within each measurement that have the same time stamp.
 Its definition is: 
 
 ```
-  fromRows = (bucket) => from(bucket:bucket) |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+ influxFieldsAsCols = (tables=<-) =>
+     tables
+         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
 ```
 
 Example: 
 
 ```
-fromRows(bucket:"telegraf/autogen")
-  |> range(start: 2018-05-22T19:53:26Z)
+from(bucket:"telegraf/autogen")
+  |> filter(fn: (r) => r._measurement == "cpu")
+  |> range(start: -1h)
+  |> influxFieldsAsCols()
+  |> keep(columns: ["_time", "cpu", "usage_idle", "usage_user"])
 ```
 
 #### Join
