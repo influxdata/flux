@@ -1237,6 +1237,7 @@ The tables schema will include the following columns:
     the exclusive upper time bound of all records
 
 Additionally any tags on the series will be added as columns.
+The default group key for the tables is every column except `_time` and `_value`.
 
 
 From has the following properties:
@@ -2069,32 +2070,62 @@ It produces tables with new group keys based on the provided properties.
 
 Group has the following properties:
 
-*  `by` list of strings
-    Group by these specific columns.
-    Cannot be used with `except`.
-*  `except` list of strings
-    Group by all other columns except this list.
-    Cannot be used with `by`.
+*  `columns` list of strings
+    List of columns used to calculate the new group key.
+    The default is `[]`.
+*  `mode` string
+    The grouping mode, can be one of `"by"` or `"except"`.
+    The default is `"by"`.
+    
+When using `"by"` mode, the specified `columns` are the new group key.  
+When using `"except"` mode, the new group key is the difference between the columns of the table under exam
+and `columns`.  
 
-Examples:
-    group(by:["host"]) // group records by their "host" value
-    group(except:["_time", "region", "_value"]) // group records by all other columns except for _time, region, and _value
-    group(by:[]) // group all records into a single group
-    group(except:[]) // group records into all unique groups
+__Examples__
+
+_By_
 
 ```
 from(bucket: "telegraf/autogen") 
     |> range(start: -30m) 
-    |> group(by: ["host", "_measurement"])
+    |> group(columns: ["host", "_measurement"])
 ```
-All records are grouped by the "host" and "_measurement" columns. The resulting group key would be ["host, "_measurement"]
+
+Or:
+
+```
+...
+    |> group(columns: ["host", "_measurement"], mode: "by")
+```
+
+Records are grouped by the `"host"` and `"_measurement"` columns.  
+The resulting group key is `["host", "_measurement"]`, so a new table for every different `["host", "_measurement"]`
+value is created.  
+Every table in the result contains every record for some `["host", "_measurement"]` value.  
+Every record in some resulting table has the same value for the columns `"host"` and `"_measurement"`.
+
+_Except_
 
 ```
 from(bucket: "telegraf/autogen")
     |> range(start: -30m)
-    |> group(except: ["_time"])
+    |> group(columns: ["_time"], mode: "except")
 ```
-All records are grouped by the set of all columns in the table, excluding "_time". For example, if the table has columns ["_time", "host", "_measurement", "_field", "_value"] then the group key would be ["host", "_measurement", "_field", "_value"]
+
+Records are grouped by the set of all columns in the table, excluding `"_time"`.  
+For example, if the table has columns `["_time", "host", "_measurement", "_field", "_value"]` then the group key would be
+`["host", "_measurement", "_field", "_value"]`.
+
+_Single-table grouping_
+
+```
+from(bucket: "telegraf/autogen")
+    |> range(start: -30m)
+    |> group()
+```
+
+Records are grouped into a single table.  
+The group key of the resulting table is empty.
 
 #### Keys
 
