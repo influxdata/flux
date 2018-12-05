@@ -34,9 +34,30 @@ func walk(v Visitor, n Node) {
 		}
 		w := v.Visit(n)
 		if w != nil {
+			walk(w, n.Package)
+			for _, i := range n.Imports {
+				walk(w, i)
+			}
 			for _, s := range n.Body {
 				walk(w, s)
 			}
+		}
+	case *PackageClause:
+		if n == nil {
+			return
+		}
+		w := v.Visit(n)
+		if w != nil {
+			walk(w, n.Name)
+		}
+	case *ImportDeclaration:
+		if n == nil {
+			return
+		}
+		w := v.Visit(n)
+		if w != nil {
+			walk(w, n.As)
+			walk(w, n.Path)
 		}
 	case *Extern:
 		if n == nil {

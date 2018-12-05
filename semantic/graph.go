@@ -24,10 +24,12 @@ func (l loc) Location() ast.SourceLocation {
 	return ast.SourceLocation(l)
 }
 
-func (*Program) node()     {}
-func (*Extern) node()      {}
-func (*ExternBlock) node() {}
-func (*Block) node()       {}
+func (*Program) node()           {}
+func (*Extern) node()            {}
+func (*ExternBlock) node()       {}
+func (*Block) node()             {}
+func (*PackageClause) node()     {}
+func (*ImportDeclaration) node() {}
 
 func (*OptionStatement) node()            {}
 func (*ExpressionStatement) node()        {}
@@ -115,7 +117,9 @@ func (*UnsignedIntegerLiteral) literal() {}
 type Program struct {
 	loc `json:"-"`
 
-	Body []Statement `json:"body"`
+	Package *PackageClause       `json:"package"`
+	Imports []*ImportDeclaration `json:"imports"`
+	Body    []Statement          `json:"body"`
 }
 
 func (*Program) NodeType() string { return "Program" }
@@ -137,13 +141,55 @@ func (p *Program) Copy() Node {
 	return np
 }
 
+type PackageClause struct {
+	loc `json:"-"`
+
+	Name *Identifier `json:"name"`
+}
+
+func (*PackageClause) NodeType() string { return "PackageClause" }
+
+func (p *PackageClause) Copy() Node {
+	if p == nil {
+		return p
+	}
+	np := new(PackageClause)
+	*np = *p
+
+	np.Name = p.Name.Copy().(*Identifier)
+
+	return np
+}
+
+type ImportDeclaration struct {
+	loc `json:"-"`
+
+	As   *Identifier    `json:"as"`
+	Path *StringLiteral `json:"path"`
+}
+
+func (*ImportDeclaration) NodeType() string { return "ImportDeclaration" }
+
+func (d *ImportDeclaration) Copy() Node {
+	if d == nil {
+		return d
+	}
+	nd := new(ImportDeclaration)
+	*nd = *d
+
+	nd.As = d.As.Copy().(*Identifier)
+	nd.Path = d.Path.Copy().(*StringLiteral)
+
+	return nd
+}
+
 type Block struct {
 	loc `json:"-"`
 
 	Body []Statement `json:"body"`
 }
 
-func (*Block) NodeType() string { return "BlockStatement" }
+func (*Block) NodeType() string { return "Block" }
 
 func (s *Block) ReturnStatement() *ReturnStatement {
 	return s.Body[len(s.Body)-1].(*ReturnStatement)

@@ -19,6 +19,23 @@ func analyzeProgram(prog *ast.Program) (*Program, error) {
 		loc:  loc(prog.Location()),
 		Body: make([]Statement, len(prog.Body)),
 	}
+	pkg, err := analyzePackageClause(prog.Package)
+	if err != nil {
+		return nil, err
+	}
+	p.Package = pkg
+
+	if len(prog.Imports) > 0 {
+		p.Imports = make([]*ImportDeclaration, len(prog.Imports))
+		for i, imp := range prog.Imports {
+			n, err := analyzeImportDeclaration(imp)
+			if err != nil {
+				return nil, err
+			}
+			p.Imports[i] = n
+		}
+	}
+
 	for i, s := range prog.Body {
 		n, err := analyzeStatment(s)
 		if err != nil {
@@ -27,6 +44,40 @@ func analyzeProgram(prog *ast.Program) (*Program, error) {
 		p.Body[i] = n
 	}
 	return p, nil
+}
+
+func analyzePackageClause(pkg *ast.PackageClause) (*PackageClause, error) {
+	if pkg == nil {
+		return nil, nil
+	}
+	name, err := analyzeIdentifier(pkg.Name)
+	if err != nil {
+		return nil, err
+	}
+	return &PackageClause{
+		loc:  loc(pkg.Location()),
+		Name: name,
+	}, nil
+}
+
+func analyzeImportDeclaration(imp *ast.ImportDeclaration) (*ImportDeclaration, error) {
+	n := &ImportDeclaration{
+		loc: loc(imp.Location()),
+	}
+	if imp.As != nil {
+		as, err := analyzeIdentifier(imp.As)
+		if err != nil {
+			return nil, err
+		}
+		n.As = as
+	}
+
+	path, err := analyzeStringLiteral(imp.Path)
+	if err != nil {
+		return nil, err
+	}
+	n.Path = path
+	return n, nil
 }
 
 func analyzeNode(n ast.Node) (Node, error) {

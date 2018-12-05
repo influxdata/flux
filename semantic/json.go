@@ -43,6 +43,28 @@ func (p *Program) UnmarshalJSON(data []byte) error {
 	}
 	return nil
 }
+func (p *PackageClause) MarshalJSON() ([]byte, error) {
+	type Alias PackageClause
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  p.NodeType(),
+		Alias: (*Alias)(p),
+	}
+	return json.Marshal(raw)
+}
+func (p *ImportDeclaration) MarshalJSON() ([]byte, error) {
+	type Alias ImportDeclaration
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  p.NodeType(),
+		Alias: (*Alias)(p),
+	}
+	return json.Marshal(raw)
+}
 func (e *Extern) MarshalJSON() ([]byte, error) {
 	type Alias Extern
 	raw := struct {
@@ -920,7 +942,11 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 	switch typ.Type {
 	case "Program":
 		node = new(Program)
-	case "BlockStatement":
+	case "PackageClause":
+		node = new(PackageClause)
+	case "ImportDeclaration":
+		node = new(ImportDeclaration)
+	case "Block":
 		node = new(Block)
 	case "OptionStatement":
 		node = new(OptionStatement)

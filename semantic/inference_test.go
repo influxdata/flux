@@ -19,6 +19,7 @@ func TestInferTypes(t *testing.T) {
 		script   string
 		solution SolutionVisitor
 		wantErr  error
+		importer semantic.Importer
 	}{
 		{
 			name: "bool",
@@ -1512,6 +1513,61 @@ plus1(r:{_value: 2.0})
 `,
 			wantErr: errors.New(`type error 2:17-2:23: type var t3 occurs in (^a: t3) -> t11 creating a cycle`),
 		},
+		{
+			name: "imports",
+			script: `
+import "foo"
+
+foo.a
+foo.b
+`,
+			importer: importer{packages: map[string]semantic.Package{
+				"foo": semantic.Package{
+					Name: "foo",
+					Type: semantic.NewObjectPolyType(
+						map[string]semantic.PolyType{
+							"a": semantic.Int,
+							"b": semantic.Int,
+							"c": semantic.String,
+						},
+						nil,
+						semantic.LabelSet{"a", "b", "c"},
+					),
+				},
+			}},
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					switch n := node.(type) {
+					case *semantic.IdentifierExpression:
+						switch n.Location().Start.Line {
+						case 4:
+							return semantic.NewObjectPolyType(
+								map[string]semantic.PolyType{
+									"a": semantic.Int,
+									"b": semantic.Int,
+									"c": semantic.String,
+								},
+								semantic.LabelSet{"a"},
+								semantic.LabelSet{"a", "b", "c"},
+							)
+						case 5:
+							return semantic.NewObjectPolyType(
+								map[string]semantic.PolyType{
+									"a": semantic.Int,
+									"b": semantic.Int,
+									"c": semantic.String,
+								},
+								semantic.LabelSet{"b"},
+								semantic.LabelSet{"a", "b", "c"},
+							)
+						}
+					case *semantic.MemberExpression:
+						return semantic.Int
+					}
+					return nil
+				},
+			},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
@@ -1551,7 +1607,7 @@ plus1(r:{_value: 2.0})
 				wantSolution = tc.solution.Solution()
 			}
 
-			ts, err := semantic.InferTypes(tc.node)
+			ts, err := semantic.InferTypes(tc.node, tc.importer)
 			if err != nil {
 				if tc.wantErr != nil {
 					if got, want := err.Error(), tc.wantErr.Error(); got != want {
@@ -1700,4 +1756,13 @@ func sortNodes(nodes []semantic.Node) {
 	sort.Slice(nodes, func(i, j int) bool {
 		return nodes[i].Location().Less(nodes[j].Location())
 	})
+}
+
+type importer struct {
+	packages map[string]semantic.Package
+}
+
+func (imp importer) Import(path string) (semantic.Package, bool) {
+	pkg, ok := imp.packages[path]
+	return pkg, ok
 }

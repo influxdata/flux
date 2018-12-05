@@ -95,7 +95,7 @@ func (itrp *Interpreter) Eval(program semantic.Node) error {
 	addExternalAssignments(extern, itrp.options)
 	addExternalAssignments(extern, itrp.globals)
 
-	sol, err := semantic.InferTypes(extern)
+	sol, err := semantic.InferTypes(extern, nil)
 	if err != nil {
 		return err
 	}
