@@ -61,8 +61,8 @@ func walk(v Visitor, n Node) {
 		}
 	case *OptionStatement:
 		w := v.Visit(n)
-		if w != nil && n.Declaration != nil {
-			walk(w, n.Declaration)
+		if w != nil && n.Assignment != nil {
+			walk(w, n.Assignment)
 		}
 	case *ExpressionStatement:
 		w := v.Visit(n)
@@ -74,14 +74,7 @@ func walk(v Visitor, n Node) {
 		if w != nil {
 			walk(w, n.Argument)
 		}
-	case *VariableDeclaration:
-		w := v.Visit(n)
-		if w != nil {
-			for _, s := range n.Declarations {
-				walk(w, s)
-			}
-		}
-	case *VariableDeclarator:
+	case *VariableAssignment:
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.ID)
