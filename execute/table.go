@@ -933,7 +933,7 @@ func (b ColListTableBuilder) checkCol(j int, typ flux.ColType) error {
 
 func CheckColType(col flux.ColMeta, typ flux.ColType) {
 	if col.Type != typ {
-		panic(fmt.Errorf("column %s is not of type %v", col.Label, typ))
+		panic(fmt.Errorf("column %s:%s is not of type %v", col.Label, col.Type, typ))
 	}
 }
 
