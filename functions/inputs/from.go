@@ -505,17 +505,27 @@ func (MergeFromGroupRule) Rewrite(groupNode plan.PlanNode) (plan.PlanNode, bool,
 	groupSpec := groupNode.ProcedureSpec().(*transformations.GroupProcedureSpec)
 	fromSpec := fromNode.ProcedureSpec().(*FromProcedureSpec)
 
-	if !fromSpec.GroupingSet && !fromSpec.LimitSet && groupSpec.GroupMode != functions.GroupModeExcept {
-		newFromSpec := fromSpec.Copy().(*FromProcedureSpec)
-		newFromSpec.GroupingSet = true
-		newFromSpec.GroupMode = groupSpec.GroupMode
-		newFromSpec.GroupKeys = groupSpec.GroupKeys
-		merged, err := plan.MergePhysicalPlanNodes(groupNode, fromNode, newFromSpec)
-		if err != nil {
-			return nil, false, err
-		}
-		return merged, true, nil
+	if fromSpec.GroupingSet ||
+		fromSpec.LimitSet ||
+		groupSpec.GroupMode != functions.GroupModeBy {
+		return groupNode, false, nil
 	}
 
-	return groupNode, false, nil
+	for _, c := range groupSpec.GroupKeys {
+		// Storage can only do grouping over tag keys.
+		// Note: _start and _stop are okay, since storage is always implicitly grouping by them anyway.
+		if c == execute.DefaultTimeColLabel || c == execute.DefaultValueColLabel {
+			return groupNode, false, nil
+		}
+	}
+
+	newFromSpec := fromSpec.Copy().(*FromProcedureSpec)
+	newFromSpec.GroupingSet = true
+	newFromSpec.GroupMode = groupSpec.GroupMode
+	newFromSpec.GroupKeys = groupSpec.GroupKeys
+	merged, err := plan.MergePhysicalPlanNodes(groupNode, fromNode, newFromSpec)
+	if err != nil {
+		return nil, false, err
+	}
+	return merged, true, nil
 }

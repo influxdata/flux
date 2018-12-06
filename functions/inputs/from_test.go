@@ -598,6 +598,42 @@ func TestFromGroupRule(t *testing.T) {
 			},
 			NoChange: true,
 		},
+		{
+			Name: "from group _time",
+			// We should not push down group(columns: ["_time"])
+			Rules: []plan.Rule{inputs.MergeFromGroupRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("group", &transformations.GroupProcedureSpec{
+						GroupMode: functions.GroupModeExcept,
+						GroupKeys: []string{"_time"},
+					}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+			NoChange: true,
+		},
+		{
+			Name: "from group _value",
+			// We should not push down group(columns: ["_value"])
+			Rules: []plan.Rule{inputs.MergeFromGroupRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("group", &transformations.GroupProcedureSpec{
+						GroupMode: functions.GroupModeExcept,
+						GroupKeys: []string{"_value"},
+					}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+			NoChange: true,
+		},
 	}
 
 	for _, tc := range tests {
