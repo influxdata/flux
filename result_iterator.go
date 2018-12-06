@@ -74,7 +74,11 @@ func (r *queryResultIterator) Err() error {
 }
 
 func (r *queryResultIterator) Statistics() Statistics {
-	return r.query.Statistics().Add(r.results.Statistics())
+	stats := r.query.Statistics()
+	if r.results != nil {
+		stats = stats.Add(r.results.Statistics())
+	}
+	return stats
 }
 
 type mapResultIterator struct {
