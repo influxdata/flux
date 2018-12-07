@@ -3,11 +3,11 @@ package transformations
 import (
 	"errors"
 	"fmt"
-	"github.com/influxdata/flux/memory"
 	"sync"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 )

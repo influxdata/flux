@@ -3,10 +3,10 @@ package execute
 import (
 	"errors"
 	"fmt"
-	"github.com/google/go-cmp/cmp"
 	"sort"
 	"sync/atomic"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
