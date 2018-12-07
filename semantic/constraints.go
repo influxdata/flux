@@ -96,7 +96,11 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		ftv := n.ExternType.freeVars(nil)
 		subst := make(Substitution, len(ftv))
 		for _, tv := range ftv {
-			subst[tv] = v.cs.f.Fresh()
+			f := v.cs.f.Fresh()
+			for ftv.contains(f) {
+				f = v.cs.f.Fresh()
+			}
+			subst[tv] = f
 		}
 		t := subst.ApplyType(n.ExternType)
 		// Check if this type knows about its kind constraints
