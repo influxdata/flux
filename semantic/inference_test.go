@@ -448,6 +448,65 @@ identity(x:identity)(x:2)
 			},
 		},
 		{
+			name: "extern type variables",
+			node: &semantic.Extern{
+				Assignments: []*semantic.ExternalVariableAssignment{
+					{
+						Identifier: &semantic.Identifier{Name: "f"},
+						ExternType: semantic.NewFunctionPolyType(
+							semantic.FunctionPolySignature{
+								Return: semantic.Tvar(3),
+							},
+						),
+					},
+					{
+						Identifier: &semantic.Identifier{Name: "g"},
+						ExternType: semantic.NewFunctionPolyType(
+							semantic.FunctionPolySignature{
+								Return: semantic.Tvar(5),
+							},
+						),
+					},
+				},
+				Block: &semantic.ExternBlock{
+					Node: &semantic.Program{
+						Body: []semantic.Statement{
+							&semantic.NativeVariableAssignment{
+								Identifier: &semantic.Identifier{Name: "a"},
+								Init:       &semantic.IdentifierExpression{Name: "f"},
+							},
+							&semantic.NativeVariableAssignment{
+								Identifier: &semantic.Identifier{Name: "b"},
+								Init:       &semantic.IdentifierExpression{Name: "g"},
+							},
+						},
+					},
+				},
+			},
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					f := semantic.NewFunctionPolyType(
+						semantic.FunctionPolySignature{
+							Return: semantic.Tvar(7),
+						})
+					g := semantic.NewFunctionPolyType(
+						semantic.FunctionPolySignature{
+							Return: semantic.Tvar(8),
+						})
+					switch n := node.(type) {
+					case *semantic.IdentifierExpression:
+						switch n.Name {
+						case "f":
+							return f
+						case "g":
+							return g
+						}
+					}
+					return nil
+				},
+			},
+		},
+		{
 			name: "nested functions",
 			script: `
 (r) => {
