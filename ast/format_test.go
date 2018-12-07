@@ -109,6 +109,39 @@ a[i]`,
 }`,
 		},
 		{
+			name:   "package",
+			script: `package foo`,
+		},
+		{
+			name: "imports",
+			script: `import "path/foo"
+import bar "path/bar"`,
+		},
+		{
+			name: "program_no_package",
+			script: `import foo "path/foo"
+
+foo.from(bucket: "testdb")
+	|> range(start: 2018-05-20T19:53:26Z)`,
+		},
+		{
+			name: "program_no_import",
+			script: `package foo
+
+from(bucket: "testdb")
+	|> range(start: 2018-05-20T19:53:26Z)`,
+		},
+		{
+			name: "program_package_import",
+			script: `package foo
+
+import "path/foo"
+import bar "path/bar"
+
+from(bucket: "testdb")
+	|> range(start: 2018-05-20T19:53:26Z)`,
+		},
+		{
 			name: "simple",
 			script: `from(bucket: "testdb")
 	|> range(start: 2018-05-20T19:53:26Z)

@@ -61,6 +61,31 @@ func (f *formatter) setIndent(i int) {
 
 func (f *formatter) formatProgram(n *Program) {
 	sep := '\n'
+
+	if n.Package != nil && len(n.Package.Name.Name) > 0 {
+		f.writeIndent()
+		f.formatNode(n.Package)
+
+		if len(n.Imports) > 0 || len(n.Body) > 0 {
+			f.writeRune(sep)
+			f.writeRune(sep)
+		}
+	}
+
+	for i, imp := range n.Imports {
+		if i != 0 {
+			f.writeRune(sep)
+		}
+
+		f.writeIndent()
+		f.formatNode(imp)
+	}
+
+	if len(n.Imports) > 0 && len(n.Body) > 0 {
+		f.writeRune(sep)
+		f.writeRune(sep)
+	}
+
 	for i, c := range n.Body {
 		if i != 0 {
 			f.writeRune(sep)
@@ -105,6 +130,22 @@ func (f *formatter) formatBlock(n *Block) {
 	}
 
 	f.writeRune('}')
+}
+
+func (f *formatter) formatPackageClause(n *PackageClause) {
+	f.writeString("package ")
+	f.formatNode(n.Name)
+}
+
+func (f *formatter) formatImportDeclaration(n *ImportDeclaration) {
+	f.writeString("import ")
+
+	if n.As != nil && len(n.As.Name) > 0 {
+		f.formatNode(n.As)
+		f.writeRune(' ')
+	}
+
+	f.formatNode(n.Path)
 }
 
 func (f *formatter) formatExpressionStatement(n *ExpressionStatement) {
@@ -396,6 +437,10 @@ func (f *formatter) formatNode(n Node) {
 		f.formatProgram(n)
 	case *Block:
 		f.formatBlock(n)
+	case *PackageClause:
+		f.formatPackageClause(n)
+	case *ImportDeclaration:
+		f.formatImportDeclaration(n)
 	case *OptionStatement:
 		f.formatOptionStatement(n)
 	case *ExpressionStatement:
