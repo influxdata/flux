@@ -134,6 +134,60 @@ The IR is not a language to describe how to process the data with tables.
 In other words the IR is not used to describe the implementation of the transformations themselves rather it is used to describe the data flow between transformations.
 The implementations of the transformations is left to the virtual machine runtime.
 
+
+### Instructions
+
+The IR will consist of the following instructions organized by their semantics.
+Sets of instructions are organized into blocks.
+A basic block represents a series of instructions that are executed in order.
+
+Certain instructions can jump between different blocks creating a larger program.
+
+### Control flow
+
+These instructions control the flow of the program between blocks.
+
+| Instruction | Description                                           |
+| ----------- | -----------                                           |
+| Branch      | Conditionaly jump to a new block                      |
+| Call        | Jump to a function block with the provided parameters |
+| Retrun      | Return a value to the calling block                   |
+
+### Binary operations
+
+These instructions all take two operands.
+
+| Instruction | Description                                        |
+| ----------- | -----------                                        |
+| Add         | Perform addition between the two operands          |
+| Sub         | Perform subtraction between the two operands       |
+| Mul         | Perform multiplication between the two operands    |
+| Div         | Perform division between the two operands          |
+| And         | Perform a logical "and" between two operands       |
+| Or          | Perform a logical "and" between two operands       |
+| Eq          | Perform an equality check between the two operands |
+
+There are many more of these which are left out for now until we write up a complete IR.
+
+### Message bus
+
+These instructions interact with a message bus.
+
+| Instruction | Description                                                |
+| ----------- | -----------                                                |
+| MsgSend     | Send a message into the bus                                |
+| MsgRecv     | Recieve a message from the bus                             |
+| MsgRange     | Call function for each message on the bus |
+
+### Coroutine
+
+These instructions create new corotinues
+
+| Instruction | Description            |
+| ----------- | -----------            |
+| Spawn       | Create a new coroutine |
+
+
 ## Virtual Machine
 
 The virtual machine will consume a list of IR instructions and execute them.
@@ -149,6 +203,9 @@ The following operations will be implemented in the runtime.
 * Data cache
 * Message bus
 
+### Concurrency
+
+The virtual machine will support some form of concurrency likely in the form of coorperative coroutines.
 
 ## Debugger
 
@@ -157,4 +214,56 @@ The compiler can be instructed to generate debug IR.
 This IR will allow a debugger to step through the function calls of a Flux program and inspect the data being passed.
 Since the IR describes data flow and conditional logic it is the correct abstract to debug a Flux program since the details of how a transformation is implemented should not be the concern of a user.
 Large amounts of data can be passed between functions, the debugger will expose ways to page through the data in a streaming manner.
+
+
+
+## Example
+
+Given the following Flux script, this set of instructions would be produced.
+
+    from(bucket:"telegraf/autogen")
+        |> range(start:-1m)
+        |> filter(fn:(r) => r._measurement == "cpu" and r._field == "usage_idle")
+        |> mean()
+
+Assuming that no optmizations are performed the IR would like this (using a psuedo language):
+
+
+    main:
+        fromMB   = $0 # first arg to main is the message bus produced by the `from` source.
+        rangeMB  = Spawn rangeLoop fromMB
+        filterMB = Spawn filterLoop rangeMB
+        meanMB   = Spawn meanLoop filterMB
+        Return meanMB
+
+
+    rangeLoop: # Range function that consumes a message bus and produces a message bus
+        mbr = MsgRange $0 range # Call out to the intrinsic "range" function for each table on the message bus
+        Return mbr
+
+    filterLoop: # Filter function that consumes a message bus and produces a message bus
+        mbr = MsgRange $0 filter predicate # Call out to the intrinsic "range" function for each table on the message bus
+        Return mbr
+
+    predicate: # Predicate function passed to the filter function
+        row  = $0
+        tmp0 = Eq row._measurement "cpu" # handwaving how object property access happens
+        tmp1 = Eq row._field "usage_idle" # handwaving how object property access happens
+        tmp2 = And tmp0 tmp1
+        Return tmp2
+
+    meanLoop:
+        mbr = MsgRange $0 mean # Call out to intrinsic "mean" function for each table on the message bus
+        Return mbr
+
+
+A lot of details are glossed over but this is a start to make things more concrete.
+There is no mention of data cache in this example.
+In a real IR instead of hand waving the message busses there would be explicit calls to data cache operations and message bus Send,  Recv operations.
+Since the IR directly controls how data flows between different transformations, the planner can optimize this, removing extra calls to data caches etc when they are not needed.
+
+We can also incrementally extend this IR deeper into the data processing as needed.
+For example, we could have instructions for iterating through streams, tables and rows.
+Then the filter function would not need to be an intrinsic but could be represented in vanilla IR with a jump to the predicate function.
+Map could do something similar.
 
