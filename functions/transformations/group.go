@@ -37,6 +37,7 @@ func init() {
 	flux.RegisterFunction(GroupKind, createGroupOpSpec, groupSignature)
 	flux.RegisterOpSpec(GroupKind, newGroupOp)
 	plan.RegisterProcedureSpec(GroupKind, newGroupProcedure, GroupKind)
+	plan.RegisterLogicalRules(MergeGroupRule{})
 	execute.RegisterTransformation(GroupKind, createGroupTransformation)
 }
 
@@ -215,4 +216,33 @@ func (t *groupTransformation) UpdateProcessingTime(id execute.DatasetID, pt exec
 }
 func (t *groupTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
+}
+
+// `MergeGroupRule` merges two group operations and keeps only the last one
+type MergeGroupRule struct{}
+
+func (r MergeGroupRule) Name() string {
+	return "MergeGroupRule"
+}
+
+// returns the pattern that matches `group |> group`
+func (r MergeGroupRule) Pattern() plan.Pattern {
+	return plan.Pat(GroupKind, plan.Pat(GroupKind, plan.Any()))
+}
+
+func (r MergeGroupRule) Rewrite(lastGroup plan.PlanNode) (plan.PlanNode, bool, error) {
+	firstGroup := lastGroup.Predecessors()[0]
+	lastSpec := lastGroup.ProcedureSpec().(*GroupProcedureSpec)
+
+	if lastSpec.GroupMode != functions.GroupModeBy &&
+		lastSpec.GroupMode != functions.GroupModeExcept {
+		return lastGroup, false, nil
+	}
+
+	merged, err := plan.MergeLogicalPlanNodes(lastGroup, firstGroup, lastSpec.Copy())
+	if err != nil {
+		return nil, false, err
+	}
+
+	return merged, true, nil
 }
