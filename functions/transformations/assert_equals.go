@@ -3,6 +3,7 @@ package transformations
 import (
 	"errors"
 	"fmt"
+	"github.com/influxdata/flux/memory"
 	"sync"
 
 	"github.com/influxdata/flux"
@@ -28,8 +29,9 @@ func init() {
 			"got":  flux.TableObjectType,
 			"want": flux.TableObjectType,
 		},
-		Required: semantic.LabelSet{"name", "got", "want"},
-		Return:   flux.TableObjectType,
+		Required:     semantic.LabelSet{"name", "got", "want"},
+		Return:       flux.TableObjectType,
+		PipeArgument: "got",
 	}
 
 	flux.RegisterFunction(AssertEqualsKind, createAssertEqualsOpSpec, assertEqualsSignature)
@@ -104,6 +106,7 @@ type AssertEqualsTransformation struct {
 
 	d     execute.Dataset
 	cache execute.TableBuilderCache
+	a     *memory.Allocator
 
 	name string
 }
@@ -112,6 +115,7 @@ type assertEqualsParentState struct {
 	id         execute.DatasetID
 	mark       execute.Time
 	processing execute.Time
+	ntables    int
 	finished   bool
 }
 
@@ -127,18 +131,19 @@ func createAssertEqualsTransformation(id execute.DatasetID, mode execute.Accumul
 		return nil, nil, fmt.Errorf("invalid spec type %T", pspec)
 	}
 
-	transform := NewAssertEqualsTransformation(dataset, cache, pspec, a.Parents()[0], a.Parents()[1])
+	transform := NewAssertEqualsTransformation(dataset, cache, pspec, a.Parents()[0], a.Parents()[1], a.Allocator())
 
 	return transform, dataset, nil
 }
 
-func NewAssertEqualsTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *AssertEqualsProcedureSpec, gotID, wantID execute.DatasetID) *AssertEqualsTransformation {
+func NewAssertEqualsTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *AssertEqualsProcedureSpec, gotID, wantID execute.DatasetID, a *memory.Allocator) *AssertEqualsTransformation {
 	return &AssertEqualsTransformation{
 		gotParent:  &assertEqualsParentState{id: gotID},
 		wantParent: &assertEqualsParentState{id: wantID},
 		d:          d,
 		cache:      cache,
 		name:       spec.Name,
+		a:          a,
 	}
 }
 
@@ -152,6 +157,13 @@ func (t *AssertEqualsTransformation) Process(id execute.DatasetID, tbl flux.Tabl
 	var colMap = make([]int, 0, len(tbl.Cols()))
 	var err error
 	builder, created := t.cache.TableBuilder(tbl.Key())
+	if id == t.wantParent.id {
+		t.wantParent.ntables++
+	} else if id == t.gotParent.id {
+		t.gotParent.ntables++
+	} else {
+		return fmt.Errorf("unexpected dataset id: %v", id)
+	}
 	if created {
 		colMap, err = execute.AddNewTableCols(tbl, builder, colMap)
 		if err != nil {
@@ -165,10 +177,10 @@ func (t *AssertEqualsTransformation) Process(id execute.DatasetID, tbl flux.Tabl
 		if err != nil {
 			return err
 		}
-		if ok, err := execute.TablesEqual(cacheTable, tbl); !ok {
-			return fmt.Errorf("test %s: tables not equal", t.name)
-		} else if err != nil {
+		if ok, err := execute.TablesEqual(cacheTable, tbl, t.a); err != nil {
 			return err
+		} else if !ok {
+			return fmt.Errorf("test %s: tables not equal", t.name)
 		}
 	}
 
@@ -234,6 +246,9 @@ func (t *AssertEqualsTransformation) Finish(id execute.DatasetID, err error) {
 	}
 
 	if t.gotParent.finished && t.wantParent.finished {
+		if t.wantParent.ntables != t.gotParent.ntables {
+			t.d.Finish(errors.New("assertEquals streams had unequal table counts"))
+		}
 		t.d.Finish(nil)
 	}
 }

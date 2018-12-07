@@ -322,62 +322,72 @@ func BuilderColsMatchReader(builder TableBuilder, cr flux.ColReader) bool {
 // columns, or if the data in any column does not match.  Returns true otherwise.  This function will consume the
 // ColumnReader so if you are calling this from the a Process method, you may need to copy the table if you need to
 // iterate over the data for other calculations.
-func TablesEqual(left, right flux.Table) (bool, error) {
-	eq := false
-	// rbuffer will buffer out rows from the right table, always holding just enough to do a comparison with the left
-	// table's ColReader
-	rowBuffer := NewColListTableBuilder(right.Key(), &memory.Allocator{})
-	if err := AddTableCols(right, rowBuffer); err != nil {
-		return false, err
-	}
+func TablesEqual(left, right flux.Table, alloc *memory.Allocator) (bool, error) {
 	if colsMatch(left.Key().Cols(), right.Key().Cols()) && colsMatch(left.Cols(), right.Cols()) {
-		eq = true
-		if err := left.Do(func(lcr flux.ColReader) error {
-			if err := right.Do(func(rcr flux.ColReader) error {
-				// 1.  copy data from rcr into the colListTable
-				if err := AppendCols(rcr, rowBuffer); err != nil {
-					return err
-				}
-				// 2.  If there's enough in the buffer to compare, then we compare as much as we can.
-				leftLen := lcr.Len()
-				if rowBuffer.NRows() >= leftLen {
-					for j, c := range lcr.Cols() {
-						var err error
-						switch c.Type {
-						case flux.TBool:
-							eq = cmp.Equal(lcr.Bools(j), rowBuffer.RawTable().cols[j].(*boolColumn).data[:leftLen])
-						case flux.TInt:
-							eq = cmp.Equal(lcr.Ints(j), rowBuffer.RawTable().cols[j].(*intColumn).data[:leftLen])
-						case flux.TUInt:
-							eq = cmp.Equal(lcr.UInts(j), rowBuffer.RawTable().cols[j].(*uintColumn).data[:leftLen])
-						case flux.TFloat:
-							eq = cmp.Equal(lcr.Floats(j), rowBuffer.RawTable().cols[j].(*floatColumn).data[:leftLen])
-						case flux.TString:
-							eq = cmp.Equal(lcr.Strings(j), rowBuffer.RawTable().cols[j].(*stringColumn).data[:leftLen])
-						case flux.TTime:
-							eq = cmp.Equal(lcr.Times(j), rowBuffer.RawTable().cols[j].(*timeColumn).data[:leftLen])
-						default:
-							PanicUnknownType(c.Type)
-						}
-						if err != nil {
-							return err
-						}
-						if !eq {
-							return nil
-						}
-					}
-					return rowBuffer.SliceColumns(leftLen, rowBuffer.NRows())
-				}
-				return nil
-			}); err != nil {
-				return err
+		eq := true
+		// rbuffer will buffer out rows from the right table, always holding just enough to do a comparison with the left
+		// table's ColReader
+		var leftBuffer, rightBuffer *ColListTableBuilder
+		leftTbl, ok := left.(*ColListTable)
+		if ok {
+			leftBuffer = &ColListTableBuilder{
+				table: leftTbl,
+				alloc: &Allocator{Allocator: alloc},
 			}
-			return nil
-		}); err != nil {
-			return false, err
+		} else {
+			leftBuffer = NewColListTableBuilder(left.Key(), alloc)
+			if err := AddTableCols(left, leftBuffer); err != nil {
+				return false, err
+			}
 		}
+
+		rightTbl, ok := right.(*ColListTable)
+		if ok {
+			rightBuffer = &ColListTableBuilder{
+				table: rightTbl,
+				alloc: &Allocator{Allocator: alloc},
+			}
+		} else {
+			rightBuffer = NewColListTableBuilder(right.Key(), alloc)
+			if err := AddTableCols(right, rightBuffer); err != nil {
+				return false, err
+			}
+		}
+
+		if leftBuffer.NRows() != rightBuffer.NRows() {
+			return false, nil
+		}
+
+		for j, c := range leftBuffer.Cols() {
+			switch c.Type {
+			case flux.TBool:
+				eq = cmp.Equal(leftBuffer.RawTable().cols[j].(*boolColumn).data,
+					rightBuffer.RawTable().cols[j].(*boolColumn).data)
+			case flux.TInt:
+				eq = cmp.Equal(leftBuffer.RawTable().cols[j].(*intColumn).data,
+					rightBuffer.RawTable().cols[j].(*intColumn).data)
+			case flux.TUInt:
+				eq = cmp.Equal(leftBuffer.RawTable().cols[j].(*uintColumn).data,
+					rightBuffer.RawTable().cols[j].(*uintColumn).data)
+			case flux.TFloat:
+				eq = cmp.Equal(leftBuffer.RawTable().cols[j].(*floatColumn).data,
+					rightBuffer.RawTable().cols[j].(*floatColumn).data)
+			case flux.TString:
+				eq = cmp.Equal(leftBuffer.RawTable().cols[j].(*stringColumn).data,
+					rightBuffer.RawTable().cols[j].(*stringColumn).data)
+			case flux.TTime:
+				eq = cmp.Equal(rightBuffer.RawTable().cols[j].(*timeColumn).data,
+					rightBuffer.RawTable().cols[j].(*timeColumn).data)
+			default:
+				PanicUnknownType(c.Type)
+			}
+			if !eq {
+				return false, nil
+			}
+		}
+		return eq, nil
 	}
-	return eq, nil
+	return false, nil
 }
 
 func colsMatch(left, right []flux.ColMeta) bool {
@@ -1029,29 +1039,31 @@ func (b ColListTableBuilder) SliceColumns(start, stop int) error {
 		return fmt.Errorf("invalid start/stop parameters: %d/%d", start, stop)
 	}
 
-	for i, col := range b.table.cols {
-		switch col.Meta().Type {
+	for i, c := range b.table.cols {
+		switch c.Meta().Type {
+
 		case flux.TBool:
 			col := b.table.cols[i].(*boolColumn)
-			col.data = b.alloc.SliceBools(col.data, start, stop)
+			col.data = col.data[start:stop]
 		case flux.TInt:
 			col := b.table.cols[i].(*intColumn)
-			col.data = b.alloc.SliceInts(col.data, start, stop)
+			col.data = col.data[start:stop]
 		case flux.TUInt:
 			col := b.table.cols[i].(*uintColumn)
-			col.data = b.alloc.SliceUInts(col.data, start, stop)
+			col.data = col.data[start:stop]
 		case flux.TFloat:
 			col := b.table.cols[i].(*floatColumn)
-			col.data = b.alloc.SliceFloats(col.data, start, stop)
+			col.data = col.data[start:stop]
 		case flux.TString:
 			col := b.table.cols[i].(*stringColumn)
-			col.data = b.alloc.SliceStrings(col.data, start, stop)
+			col.data = col.data[start:stop]
 		case flux.TTime:
 			col := b.table.cols[i].(*timeColumn)
-			col.data = b.alloc.SliceTimes(col.data, start, stop)
+			col.data = col.data[start:stop]
 		default:
-			panic(fmt.Errorf("unexpected column type %v", col.Meta().Type))
+			panic(fmt.Errorf("unexpected column type %v", c.Meta().Type))
 		}
+		b.table.nrows = stop - start
 	}
 
 	return nil
