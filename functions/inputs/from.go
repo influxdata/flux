@@ -168,7 +168,13 @@ func (s *FromProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bou
 
 func (s FromProcedureSpec) PostPhysicalValidate(id plan.NodeID) error {
 	if !s.BoundsSet || (s.Bounds.Start.IsZero() && s.Bounds.Stop.IsZero()) {
-		return fmt.Errorf(`result '%s' is unbounded. Add a 'range' call to bound the query`, id)
+		var bucket string
+		if len(s.Bucket) > 0 {
+			bucket = s.Bucket
+		} else {
+			bucket = s.BucketID
+		}
+		return fmt.Errorf(`%s: results from "%s" must be bounded`, id, bucket)
 	}
 
 	return nil
