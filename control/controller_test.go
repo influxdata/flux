@@ -7,6 +7,7 @@ import (
 
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
+	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/internal/pkg/syncutil"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/mock"
@@ -29,6 +30,51 @@ func TestController_CompileQuery_Failure(t *testing.T) {
 	compiler := &mock.Compiler{
 		CompileFn: func(ctx context.Context) (*flux.Spec, error) {
 			return nil, errors.New("expected")
+		},
+	}
+
+	ctrl := New(Config{})
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer func() {
+		if err := ctrl.Shutdown(ctx); err != nil {
+			t.Fatal(err)
+		}
+		cancel()
+	}()
+
+	// Run the query. It should return an error.
+	if _, err := ctrl.Query(context.Background(), compiler); err == nil {
+		t.Fatal("expected error")
+	}
+
+	// Verify the metrics say there are no queries.
+	gauge, err := ctrl.metrics.all.GetMetricWithLabelValues()
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	metric := &dto.Metric{}
+	if err := gauge.Write(metric); err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	if got, exp := int(metric.Gauge.GetValue()), 0; got != exp {
+		t.Fatalf("unexpected metric value: exp=%d got=%d", exp, got)
+	}
+}
+
+func TestController_PlanQuery_Failure(t *testing.T) {
+	// this compiler returns a spec that cannot be planned
+	// (no range to push into from)
+	compiler := &mock.Compiler{
+		CompileFn: func(ctx context.Context) (*flux.Spec, error) {
+			return &flux.Spec{
+				Operations: []*flux.Operation{{
+					ID:   "from",
+					Spec: &inputs.FromOpSpec{Bucket: "telegraf"},
+				}},
+			}, nil
 		},
 	}
 

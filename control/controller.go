@@ -182,6 +182,31 @@ func (c *Controller) compileQuery(q *Query, compiler flux.Compiler) error {
 	}
 
 	q.spec = *spec
+
+	if q.tryPlan() {
+		// Plan query to determine needed resources
+		lp, err := c.lplanner.Plan(&q.spec)
+		if err != nil {
+			return errors.Wrap(err, "failed to create logical plan")
+		}
+		if entry := c.logger.Check(zapcore.DebugLevel, "logical plan"); entry != nil {
+			entry.Write(zap.String("plan", fmt.Sprint(plan.Formatted(lp))))
+		}
+
+		p, err := c.pplanner.Plan(lp)
+		if err != nil {
+			return errors.Wrap(err, "failed to create physical plan")
+		}
+		q.plan = p
+		q.concurrency = p.Resources.ConcurrencyQuota
+		if q.concurrency > c.maxConcurrency {
+			q.concurrency = c.maxConcurrency
+		}
+		q.memory = p.Resources.MemoryBytesQuota
+		if entry := c.logger.Check(zapcore.DebugLevel, "physical plan"); entry != nil {
+			entry.Write(zap.String("plan", fmt.Sprint(plan.Formatted(q.plan))))
+		}
+	}
 	return nil
 }
 
@@ -349,31 +374,6 @@ func (c *Controller) processQuery(q *Query) (pop bool, err error) {
 			}
 		}
 	}()
-
-	if q.tryPlan() {
-		// Plan query to determine needed resources
-		lp, err := c.lplanner.Plan(&q.spec)
-		if err != nil {
-			return true, errors.Wrap(err, "failed to create logical plan")
-		}
-		if entry := c.logger.Check(zapcore.DebugLevel, "logical plan"); entry != nil {
-			entry.Write(zap.String("plan", fmt.Sprint(plan.Formatted(lp))))
-		}
-
-		p, err := c.pplanner.Plan(lp)
-		if err != nil {
-			return true, errors.Wrap(err, "failed to create physical plan")
-		}
-		q.plan = p
-		q.concurrency = p.Resources.ConcurrencyQuota
-		if q.concurrency > c.maxConcurrency {
-			q.concurrency = c.maxConcurrency
-		}
-		q.memory = p.Resources.MemoryBytesQuota
-		if entry := c.logger.Check(zapcore.DebugLevel, "physical plan"); entry != nil {
-			entry.Write(zap.String("plan", fmt.Sprint(plan.Formatted(q.plan))))
-		}
-	}
 
 	// Check if we have enough resources
 	if c.check(q) {
@@ -660,12 +660,20 @@ func (q *Query) tryCompile() bool {
 	return q.transitionTo(Compiling, Created)
 }
 
+// tryPlan attempts to transition the query into the Planning state.
+func (q *Query) tryPlan() bool {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
+	return q.transitionTo(Planning, Compiling)
+}
+
 // tryQueue attempts to transition the query into the Queueing state.
 func (q *Query) tryQueue() bool {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
-	return q.transitionTo(Queueing, Compiling)
+	return q.transitionTo(Queueing, Planning)
 }
 
 // tryRequeue attempts to transition the query into the Requeueing state.
@@ -677,15 +685,7 @@ func (q *Query) tryRequeue() bool {
 		// Already in the correct state.
 		return true
 	}
-	return q.transitionTo(Requeueing, Planning)
-}
-
-// tryPlan attempts to transition the query into the Planning state.
-func (q *Query) tryPlan() bool {
-	q.mu.Lock()
-	defer q.mu.Unlock()
-
-	return q.transitionTo(Planning, Queueing)
+	return q.transitionTo(Requeueing, Queueing)
 }
 
 // tryExec attempts to transition the query into the Executing state.
@@ -693,7 +693,7 @@ func (q *Query) tryExec() bool {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
-	return q.transitionTo(Executing, Requeueing, Planning)
+	return q.transitionTo(Executing, Requeueing, Queueing)
 }
 
 // State is the query state.
