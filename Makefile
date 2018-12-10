@@ -65,6 +65,10 @@ vet:
 bench:
 	$(GO_TEST) -bench=. -run=^$$ ./...
 
+release:
+	./release.sh
 
-.PHONY: all clean fmt test test-race vet bench checkfmt $(SUBDIRS)
+
+
+.PHONY: all clean fmt test test-race vet bench checkfmt release $(SUBDIRS)
 
