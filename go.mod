@@ -9,12 +9,11 @@ require (
 	github.com/go-sql-driver/mysql v1.4.0
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/google/go-cmp v0.2.0
+	github.com/goreleaser/goreleaser v0.94.0
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/influxdata/line-protocol v0.0.0-20180522152040-32c6aa80de5e
 	github.com/influxdata/tdigest v0.0.0-20181121200506-bf2b5ad3c0a9
 	github.com/lib/pq v1.0.0
-	github.com/mattn/go-colorable v0.0.9 // indirect
-	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mattn/go-runewidth v0.0.3 // indirect
 	github.com/mattn/go-tty v0.0.0-20180907095812-13ff1204f104 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
@@ -35,10 +34,7 @@ require (
 	go.uber.org/zap v1.9.1
 	golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9 // indirect
 	golang.org/x/exp v0.0.0-20181112044915-a3060d491354
-	golang.org/x/net v0.0.0-20181011144130-49bb7cea24b1 // indirect
-	golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f // indirect
 	golang.org/x/sys v0.0.0-20181205085412-a5c9d58dba9a // indirect
 	gonum.org/v1/gonum v0.0.0-20181121035319-3f7ecaa7e8ca
-	google.golang.org/appengine v1.2.0 // indirect
 	gopkg.in/src-d/go-git.v4 v4.8.1
 )
