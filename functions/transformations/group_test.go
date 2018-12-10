@@ -1,7 +1,6 @@
 package transformations_test
 
 import (
-	"github.com/influxdata/flux/functions/inputs"
 	"testing"
 	"time"
 
@@ -9,7 +8,10 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/functions/transformations"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/querytest"
 )
 
@@ -587,6 +589,205 @@ func TestGroup_Process(t *testing.T) {
 					return transformations.NewGroupTransformation(d, c, tc.spec)
 				},
 			)
+		})
+	}
+}
+
+func TestMergeGroupRule(t *testing.T) {
+	var (
+		from      = &inputs.FromProcedureSpec{}
+		groupNone = &transformations.GroupProcedureSpec{
+			GroupMode: functions.GroupModeBy,
+			GroupKeys: []string{},
+		}
+		groupBy = &transformations.GroupProcedureSpec{
+			GroupMode: functions.GroupModeBy,
+			GroupKeys: []string{"foo", "bar", "buz"},
+		}
+		groupExcept = &transformations.GroupProcedureSpec{
+			GroupMode: functions.GroupModeExcept,
+			GroupKeys: []string{"foo", "bar", "buz"},
+		}
+		groupNotByNorExcept = &transformations.GroupProcedureSpec{
+			GroupMode: functions.GroupModeNone,
+			GroupKeys: []string{},
+		}
+		filter = &transformations.FilterProcedureSpec{}
+	)
+
+	tests := []plantest.RuleTestCase{
+		{
+			Name:  "single group",
+			Rules: []plan.Rule{&transformations.MergeGroupRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreateLogicalNode("from", from),
+					plan.CreateLogicalNode("group", groupBy),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+			NoChange: true,
+		},
+		{
+			Name:  "double group",
+			Rules: []plan.Rule{&transformations.MergeGroupRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreateLogicalNode("from", from),
+					plan.CreateLogicalNode("group0", groupNone),
+					plan.CreateLogicalNode("group1", groupBy),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreateLogicalNode("from", from),
+					plan.CreateLogicalNode("merged_group0_group1", groupBy),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+		},
+		{
+			Name:  "triple group",
+			Rules: []plan.Rule{&transformations.MergeGroupRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreateLogicalNode("from", from),
+					plan.CreateLogicalNode("group0", groupNone),
+					plan.CreateLogicalNode("group1", groupBy),
+					plan.CreateLogicalNode("group2", groupExcept),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+				},
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreateLogicalNode("from", from),
+					plan.CreateLogicalNode("merged_group0_group1_group2", groupExcept),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+		},
+		{
+			Name:  "double group not by nor except",
+			Rules: []plan.Rule{&transformations.MergeGroupRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreateLogicalNode("from", from),
+					plan.CreateLogicalNode("group0", groupNone),
+					plan.CreateLogicalNode("group1", groupNotByNorExcept),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+			NoChange: true,
+		},
+		{
+			// the last group by/except always overrides the group key
+			Name:  "triple group not by nor except",
+			Rules: []plan.Rule{&transformations.MergeGroupRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreateLogicalNode("from", from),
+					plan.CreateLogicalNode("group0", groupNone),
+					plan.CreateLogicalNode("group1", groupNotByNorExcept),
+					plan.CreateLogicalNode("group2", groupExcept),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+				},
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreateLogicalNode("from", from),
+					plan.CreateLogicalNode("merged_group0_group1_group2", groupExcept),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+		},
+		{
+			Name:  "quad group not by nor except",
+			Rules: []plan.Rule{&transformations.MergeGroupRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreateLogicalNode("from", from),
+					plan.CreateLogicalNode("group0", groupNone),
+					plan.CreateLogicalNode("group1", groupNotByNorExcept),
+					plan.CreateLogicalNode("group2", groupExcept),
+					plan.CreateLogicalNode("group3", groupNotByNorExcept),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+					{3, 4},
+				},
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreateLogicalNode("from", from),
+					plan.CreateLogicalNode("merged_group0_group1_group2", groupExcept),
+					plan.CreateLogicalNode("group3", groupNotByNorExcept),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+		},
+		{
+			Name:  "from group group filter",
+			Rules: []plan.Rule{transformations.MergeGroupRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreateLogicalNode("from", from),
+					plan.CreateLogicalNode("group0", groupExcept),
+					plan.CreateLogicalNode("group1", groupBy),
+					plan.CreateLogicalNode("filter", filter),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+				},
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreateLogicalNode("from", from),
+					plan.CreateLogicalNode("merged_group0_group1", groupBy),
+					plan.CreateLogicalNode("filter", filter),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			plantest.RuleTestHelper(t, &tc)
 		})
 	}
 }
