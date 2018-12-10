@@ -2020,6 +2020,7 @@ Rename will rename specified columns in a table.
 There are two variants: one which takes a map of old column names to new column names,
 and one which takes a mapping function. 
 If a column is renamed and is part of the group key, the column name in the group key will be updated.
+If a specified column is not present in a table an error will be thrown.
 
 Rename has the following properties: 
 * `columns` object
@@ -2076,6 +2077,7 @@ from(bucket: "telegraf/autogen")
 Keep is the inverse of drop. It will return a table containing only columns that are specified,
 ignoring all others. 
 Only columns in the group key that are also specified in `keep` will be kept in the resulting group key.
+If a specified column is not present in a table an error will be thrown.
 
 Keep has the following properties: 
 * `columns` array of strings
@@ -2104,7 +2106,8 @@ from(bucket: "telegraf/autogen")
 ```
 
 #### Duplicate 
-Duplicate will duplicate a specified column in a table
+Duplicate will duplicate a specified column in a table.
+If the specified column is not present in a table an error will be thrown.
 
 Duplicate has the following properties:
 
