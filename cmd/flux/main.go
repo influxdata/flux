@@ -77,7 +77,7 @@ func runHttp() {
 		q, err := querier.c.Query(ctx, pr.Compiler)
 		if err != nil {
 			log.Println("error executing query:", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		defer func() {
