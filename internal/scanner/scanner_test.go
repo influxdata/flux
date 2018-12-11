@@ -117,8 +117,7 @@ func patterns(patterns ...[]TokenPattern) []TokenPattern {
 func TestScanner_Scan(t *testing.T) {
 	for _, tt := range patterns(common, noRegex) {
 		t.Run(tt.s, func(t *testing.T) {
-			fset := token.NewFileSet()
-			f := fset.AddFile("query.flux", -1, len(tt.s))
+			f := token.NewFile("query.flux", len(tt.s))
 			s := scanner.New(f, []byte(tt.s))
 			_, tok, lit := s.Scan()
 			if want, got := tt.tok, tok; want != got {
@@ -139,8 +138,7 @@ func TestScanner_Scan(t *testing.T) {
 func TestScanner_ScanWithRegex(t *testing.T) {
 	for _, tt := range patterns(common, regex) {
 		t.Run(tt.s, func(t *testing.T) {
-			fset := token.NewFileSet()
-			f := fset.AddFile("query.flux", -1, len(tt.s))
+			f := token.NewFile("query.flux", len(tt.s))
 			s := scanner.New(f, []byte(tt.s))
 			_, tok, lit := s.ScanWithRegex()
 			if want, got := tt.tok, tok; want != got {
@@ -159,8 +157,7 @@ func TestScanner_ScanWithRegex(t *testing.T) {
 }
 
 func TestScanner_Unread(t *testing.T) {
-	fset := token.NewFileSet()
-	f := fset.AddFile("query.flux", -1, 9)
+	f := token.NewFile("query.flux", 9)
 	s := scanner.New(f, []byte(`a /hello/`))
 	_, tok, _ := s.ScanWithRegex()
 	if want, got := token.IDENT, tok; want != got {
@@ -201,8 +198,7 @@ func TestScanner_Unread(t *testing.T) {
 func TestScanner_UnreadEOF(t *testing.T) {
 	// Trailing whitespace should cause unread to not reset to the last token
 	// as the token is considered "complete".
-	fset := token.NewFileSet()
-	f := fset.AddFile("query.flux", -1, 2)
+	f := token.NewFile("query.flux", 2)
 	s := scanner.New(f, []byte(`a `))
 	_, tok, _ := s.ScanWithRegex()
 	if want, got := token.IDENT, tok; want != got {
@@ -322,8 +318,7 @@ func TestScanner_MultipleTokens(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			fset := token.NewFileSet()
-			f := fset.AddFile("query.flux", -1, len(tt.s))
+			f := token.NewFile("query.flux", len(tt.s))
 			s := scanner.New(f, []byte(tt.s))
 
 			var got []token.Token
@@ -352,8 +347,7 @@ func TestScanner_IllegalToken(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			src := []byte(fmt.Sprintf(`%c x = 5`, tt.ch))
-			fset := token.NewFileSet()
-			f := fset.AddFile("query.flux", -1, len(src))
+			f := token.NewFile("query.flux", len(src))
 			s := scanner.New(f, src)
 			_, tok, lit := s.ScanWithRegex()
 			if want, got := token.ILLEGAL, tok; want != got {
@@ -462,8 +456,7 @@ line3`,
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			fset := token.NewFileSet()
-			f := fset.AddFile("query.flux", -1, len(tt.s))
+			f := token.NewFile("query.flux", len(tt.s))
 			s := scanner.New(f, []byte(tt.s))
 
 			var got []Position

@@ -1,6 +1,7 @@
 package parser_test
 
 import (
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -10,8 +11,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/internal/parser"
-	"github.com/influxdata/flux/internal/scanner"
-	"github.com/influxdata/flux/internal/token"
 )
 
 var CompareOptions = []cmp.Option{
@@ -3382,10 +3381,19 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 		},
 	} {
 		runFn(tt.name, func(tb testing.TB) {
-			fset := token.NewFileSet()
-			f := fset.AddFile("query.flux", -1, len(tt.raw))
-			s := scanner.New(f, []byte(tt.raw))
-			result := parser.NewAST(s)
+			want := tt.want.Copy()
+			ast.Walk(ast.CreateVisitor(func(node ast.Node) {
+				v := reflect.ValueOf(node)
+				loc := v.Elem().FieldByName("Loc")
+				if !loc.IsValid() {
+					return
+				}
+
+				l := loc.Interface().(*ast.SourceLocation)
+				l.Source = source(tt.raw, l)
+			}), want)
+
+			result := parser.NewAST([]byte(tt.raw))
 			if got, want := result, tt.want; !cmp.Equal(want, got, CompareOptions...) {
 				tb.Fatalf("unexpected statement -want/+got\n%s", cmp.Diff(want, got, CompareOptions...))
 			}
@@ -3405,11 +3413,39 @@ func base(start, end string) ast.BaseNode {
 	}
 	return ast.BaseNode{
 		Loc: &ast.SourceLocation{
-			Start:  toloc(start),
-			End:    toloc(end),
-			Source: "query.flux",
+			Start: toloc(start),
+			End:   toloc(end),
 		},
 	}
+}
+
+func source(src string, loc *ast.SourceLocation) string {
+	if loc == nil ||
+		loc.Start.Line == 0 || loc.Start.Column == 0 ||
+		loc.End.Line == 0 || loc.End.Column == 0 {
+		return ""
+	}
+
+	soffset := 0
+	for i := loc.Start.Line - 1; i > 0; i-- {
+		o := strings.Index(src[soffset:], "\n")
+		if o == -1 {
+			return ""
+		}
+		soffset += o + 1
+	}
+	soffset += loc.Start.Column - 1
+
+	eoffset := 0
+	for i := loc.End.Line - 1; i > 0; i-- {
+		o := strings.Index(src[eoffset:], "\n")
+		if o == -1 {
+			return ""
+		}
+		eoffset += o + 1
+	}
+	eoffset += loc.End.Column - 1
+	return src[soffset:eoffset]
 }
 
 func mustParseTime(s string) time.Time {

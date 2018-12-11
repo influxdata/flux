@@ -40,9 +40,13 @@ func (v *visitor) Visit(node Node) Visitor {
 func (v *visitor) Done(node Node) {}
 
 func walk(v Visitor, node Node) {
-	// We need to check if node is nil,
-	// because of Go's type system we need to compare against the concrete type of n,
-	// which means we need to check in each case statement.
+	// We need to check if node is nil.
+	// We perform an initial check here, but because of Go's type system,
+	// we also need to compare against the concrete type of n within each case statement.
+	if node == nil {
+		return
+	}
+
 	switch n := node.(type) {
 	case *Program:
 		if n == nil {
