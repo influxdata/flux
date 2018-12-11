@@ -838,103 +838,14 @@ Side effects can occur in two ways.
 
 A function produces side effects when it is explicitly declared to have side effects or when it calls a function that itself produces side effects.
 
-### Built-in functions
 
-The following functions are preassigned in the universe block.
+## Built-ins
 
-#### Functions and Operations
+Flux contains many preassigned values in the universe block.
 
-Many function's purpose is to construct an operation that will be part of a query specification.
-As a result these functions return an object that represents the specific operation being defined.
-The object is then passed into the next function and added as a parent, constructing a directed acyclic graph of operations.
-The yield function then traverses the graph of operations and produces a query specification that can be executed.
+### Time constants
 
-The following is a list of functions whose main purpose is to construct an operation.
-Details about their arguments and behavior can be found in the Operations section of this document.
-
-* count
-* covariance
-* cumulativeSum
-* derivative
-* difference
-* distinct
-* filter
-* first
-* from
-* group
-* integral
-* join
-* last
-* limit
-* map
-* max
-* mean
-* min
-* percentile
-* range
-* to
-* sample
-* set
-* shift
-* skew
-* sort
-* spread
-* stateTracking
-* stddev
-* sum
-* window
-* yield
-
-Other functions make use of existing operations to create composite operations.
-
-##### Cov
-
-Cov computes the covariance between two streams by first joining the streams and then performing the covariance operation.
-
-##### HighestMax
-
-HighestMax computes the top N records from all tables using the maximum of each table.
-
-##### HighestAverage
-
-HighestAverage computes the top N records from all tables using the average of each table.
-
-##### HighestCurrent
-
-HighestCurrent computes the top N records from all tables using the last value of each table.
-
-##### LowestMin
-
-LowestMin computes the bottom N records from all tables using the minimum of each table.
-
-##### LowestAverage
-
-LowestAverage computes the bottom N records from all tables using the average of each table.
-
-##### LowestCurrent
-
-LowestCurrent computes the bottom N records from all tables using the last value of each table.
-
-##### Pearsonr
-
-Pearsonr computes the Pearson R correlation coefficient between two streams by first joining the streams and then performing the covariance operation normalized to compute R.
-
-##### StateCount
-
-StateCount computes the number of consecutive records in a given state.
-
-##### StateDuration
-
-StateDuration computes the duration of a given state.
-
-
-##### Top/Bottom
-
-Top and Bottom sort a table and limits the table to only n records.
-
-##### Time constants
-
-###### Days of the week
+#### Days of the week
 
 Days of the week are represented as integers in the range `[0-6]`.
 The following builtin values are defined:
@@ -952,7 +863,7 @@ Saturday  = 6
 
 [IMPL#153](https://github.com/influxdata/flux/issues/153) Add Days of the Week constants
 
-###### Months of the year
+### Months of the year
 
 Months are represented as integers in the range `[1-12]`.
 The following builtin values are defined:
@@ -974,7 +885,7 @@ December  = 12
 
 [IMPL#154](https://github.com/influxdata/flux/issues/154) Add Months of the Year constants
 
-##### Time and date functions
+### Time and date functions
 
 These are builtin functions that all take a single `time` argument and return an integer.
 
@@ -995,12 +906,12 @@ These are builtin functions that all take a single `time` argument and return an
 
 [IMPL#155](https://github.com/influxdata/flux/issues/155) Implement Time and date functions 
 
-##### System Time
+### System Time
 
 The builtin function `systemTime` returns the current system time.
 All calls to `systemTime` within a single evaluation of a Flux script return the same time.
 
-#### Intervals
+### Intervals
 
 Intervals is a function that produces a set of time intervals over a range of time.
 An interval is an object with `start` and `stop` properties that correspond to the inclusive start and exclusive stop times of the time interval.
@@ -1102,7 +1013,7 @@ Examples using known start and stop dates:
 [IMPL#659](https://github.com/influxdata/platform/query/issues/659) Implement intervals function
 
 
-##### Builtin Intervals
+### Builtin Intervals
 
 The following builtin intervals exist:
 
@@ -1128,7 +1039,7 @@ The following builtin intervals exist:
     years = intervals(every:1y)
 
 
-#### FixedZone
+### FixedZone
 
 FixedZone creates a location based on a fixed time offset from UTC.
 
@@ -1166,82 +1077,16 @@ Examples:
 
 [IMPL#157](https://github.com/influxdata/flux/issues/157) Implement LoadLoacation function
 
-## Query engine
+## Data model
 
-The execution of a query is separate and distinct from the execution of Flux the language.
-The input into the query engine is a query specification.
+Flux employs a basic data model built from basic data types.
+The data model consists of tables, records, columns and streams.
 
-The output of a Flux program is a query specification, which then may be passed into the query execution engine.
+### Record
 
-### Query specification
+A record is a tuple of named values and is represented using an object type.
 
-A query specification consists of a set of operations and a set of edges between those operations.
-The operations and edges must form a directed acyclic graph (DAG).
-A query specification produces side effects when at least one of its operations produces side effects.
-
-#### Encoding
-
-The query specification may be encoded in different formats.
-An encoding must consist of three properties:
-
-* operations -  a list of operations and their specification.
-* edges - a list of edges declaring a parent child relation between operations.
-* resources - an optional set of constraints on the resources the query can consume.
-
-Each operation has three properties:
-
-* kind - kind is the name of the operation to perform.
-* id - an identifier for this operation, it must be unique per query specification.
-* spec - a set of properties that specify details of the operation.
-    These vary by the kind of operation.
-
-JSON encoding is supported and the following is an example encoding of a query:
-
-```
-from(bucket:"mydatabase/autogen") |> last()
-```
-
-```
-{
-  "operations": [
-    {
-      "kind": "from",
-      "id": "from0",
-      "spec": {
-        "db": "mydatabase"
-      }
-    },
-    {
-      "kind": "last",
-      "id": "last1",
-      "spec": {
-        "column": ""
-      }
-    }
-  ],
-  "edges": [
-    {
-      "parent": "from0",
-      "child": "last1"
-    }
-  ],
-  "resources": {
-    "priority": "high",
-    "concurrency_quota": 0,
-    "memory_bytes_quota": 0
-  }
-}
-```
-
-### Data model
-
-The data model for the query engine consists of tables, records, columns and streams.
-
-#### Record
-
-A record is a tuple of values.
-
-#### Column
+### Column
 
 A column has a label and a data type.
 
@@ -1257,7 +1102,7 @@ The available data types for a column are:
     duration a nanosecond precision duration of time
 
 
-#### Table
+### Table
 
 A table is set of records, with a common set of columns and a group key.
 
@@ -1268,34 +1113,39 @@ These common values are referred to as the group key value, and can be represent
 
 A tables schema consists of its group key, and its column's labels and types.
 
+[IMPL#463](https://github.com/influxdata/flux/issues/463) Specify the primitive types that make up stream and table types
 
-#### Stream
+### Stream of tables
 
-A stream represents a potentially unbounded dataset.
-A stream grouped into individual tables.
+A stream represents a potentially unbounded set of tables.
+A stream is grouped into individual tables using the group key.
 Within a stream each table's group key value is unique.
 
-#### Missing values
+[IMPL#463](https://github.com/influxdata/flux/issues/463) Specify the primitive types that make up stream and table types
+
+### Missing values
 
 A record may be missing a value for a specific column.
 Missing values are represented with a special _null_ value.
 The _null_ value can be of any data type.
 
-
 [IMPL#300](https://github.com/influxdata/platform/issues/300) Design how nulls behave
 
-#### Operations
+### Transformations
 
-An operation defines a transformation on a stream.
-All operations may consume a stream and always produce a new stream.
+Transformations define a change to a stream.
+Transformations may consume an input stream and always produce a new output stream.
 
-Most operations output one table for every table they receive from the input stream.
+Most transformations output one table for every table they receive from the input stream.
+Transformations that modify the group keys or values will need to regroup the tables in the output stream.
+A transformation produces side effects when it is constructed from a function that produces side effects.
 
-Operations that modify the group keys or values will need to regroup the tables in the output stream.
+Transformations are repsented using function types.
 
-An operation produces side effects when it is constructed from a function that produces side effects.
+### Built-in transformations
 
-### Built-in operations
+The following functions are preassigned in the universe block.
+These functions each define a transformation.
 
 #### From
 
@@ -1458,7 +1308,38 @@ Covariance has the following properties:
 Additionally exactly two columns must be provided to the `columns` property.
 
 Example:
-`from(bucket: "telegraf) |> range(start:-5m) |> covariance(columns: [/autogen"x", "y"])`
+`from(bucket: "telegraf/autogen") |> range(start:-5m) |> covariance(columns: ["x", "y"])`
+
+#### Cov
+
+Cov computes the covariance between two streams by first joining the streams and then performing the covariance operation per joined table.
+
+Cov has the following properties:
+
+* `x` stream
+    X is one of the input streams
+* `y` stream
+    Y is one of the input streams
+* `on` list of strings
+    On is the list of columns on which to join.
+* `pearsonr` bool
+    pearsonr indicates whether the result should be normalized to be the Pearson R coefficient.
+* `valueDst` string
+    valueDst is the column into which the result will be placed.
+    Defaults to `_value`.
+
+Example:
+    
+    cpu = from(bucket: "telegraf/autogen") |> range(start:-5m) |> filter(fn:(r) => r._measurement == "cpu")
+    cpu = from(bucket: "telegraf/autogen") |> range(start:-5m) |> filter(fn:(r) => r._measurement == "mem")
+    cov(x: cpu, y: mem)
+
+#### Pearsonr
+
+Pearsonr computes the Pearson R correlation coefficient bewteen two streams.
+It is defined in terms of the `cov` function:
+
+    pearsonr = (x,y,on) => cov(x:x, y:y, on:on, pearsonr:true)
 
 ##### Count
 
@@ -1472,6 +1353,7 @@ Count has the following property:
 
 Example:
 `from(bucket: "telegraf/autogen") |> range(start: -5m) |> count()`
+
 
 ##### Integral
 
@@ -1808,6 +1690,27 @@ from(bucket:"telegraf/autogen")
                 r.service == "app-server")
 ```
 
+#### Highest/Lowest
+
+There are six highest/lowest functions that compute the top or bottom N records from all tables in a stream based on a specific aggregation method.
+
+* highestMax - computes the top N records from all tables using the maximum of each table.
+* highestAverage  - computes the top N records from all tables using the average of each table.
+* highestCurrent - computes the top N records from all tables using the last value of each table.
+* lowestMin - computes the bottom N records from all tables using the minimum of each table.
+* lowestAverage - computes the bottom N records from all tables using the average of each table.
+* lowestCurrent - computes the bottom N records from all tables using the last value of each table.
+
+All of the highest/lowest functions take the following parameters:
+
+* `n` int
+    N is the number of records to select.
+* `columns` list of strings
+    Columns is the list of columns to use when aggregating.
+    Defaults to `["_value"]`.
+* `groupColumns` list of strings
+    GroupColumns are the columns on which to group to perform the aggregation.
+
 #### Histogram
 
 Histogram approximates the cumulative distribution function of a dataset by counting data frequencies for a list of bins.
@@ -1886,7 +1789,7 @@ Example:
 
     histogramQuantile(quantile:0.9)  // compute the 90th quantile using histogram data.
 
-#### LinearBins
+##### LinearBins
 
 LinearBins produces a list of linearly separated floats.
 
@@ -1902,7 +1805,7 @@ LinearBins has the following properties:
     Infinity when true adds an additional bin with a value of positive infinity.
     Defaults to `true`.
 
-#### LogarithmicBins
+##### LogarithmicBins
 
 LogarithmicBins produces a list of exponentially separated floats.
 
@@ -2014,6 +1917,7 @@ from(bucket:"telegraf/autogen")
     |> filter(fn: (r) => r._measurement == "cpu" AND
                r._field == "usage_system")
 ```
+
 #### Rename 
 
 Rename will rename specified columns in a table. 
@@ -2106,6 +2010,7 @@ from(bucket: "telegraf/autogen")
 ```
 
 #### Duplicate 
+
 Duplicate will duplicate a specified column in a table.
 If the specified column is not present in a table an error will be thrown.
 
@@ -2670,6 +2575,32 @@ from(bucket: "telegraf/autogen")
 	|> shift(shift: 1000h)
 ```
 
+#### StateCount
+
+StateCount computes the number of consecutive records in a given state.
+
+StateCount has the following parameters:
+
+* `fn` function bool
+    Fn is a function that returns true when the record is in the desired state.
+* `column` string
+    Column is the name of the column to use to output the state count.
+    Defaults to `stateCount`.
+
+#### StateDuration
+
+StateDuration computes the duration of a given state.
+
+StateDuration has the following parameters:
+
+* `fn` function bool
+    Fn is a function that returns true when the record is in the desired state.
+* `column` string
+    Column is the name of the column to use to output the state value.
+    Defaults to `stateDuration`.
+* `unit` duration
+    The output duration will be a multiple of this duration.
+    Defaults to `1s`.
 
 #### To
 
@@ -2738,6 +2669,25 @@ _tag1=a hum=55.5,temp=99.9 0007
 ```
 
 **Note:** The `to` function produces side effects.
+
+#### Top/Bottom
+
+Top and Bottom sort a table and limits the table to only n records.
+
+Top and Bottom have the following parameters:
+
+* `n` int
+    N is the number of records to keep.
+* `columns` list of strings
+    Columns provides the sort order for the tables.
+
+Example:
+
+    from(bucket:"telegraf/autogen")
+        |> range(start: -5m)
+        |> filter(fn:(r) => r._measurement == "net" and r._field == "bytes_sent")
+        |> top(n:10, columns:["_value"])
+
 
 #### Type conversion operations
 
