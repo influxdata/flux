@@ -268,8 +268,18 @@ func (c *Controller) Shutdown(ctx context.Context) error {
 	case <-c.done:
 		return nil
 	case <-ctx.Done():
+		c.CancelAll()
 		return ctx.Err()
 	}
+}
+
+// CancelAll cancels all executing queries.
+func (c *Controller) CancelAll() {
+	c.queriesMu.RLock()
+	for _, q := range c.queries {
+		q.Cancel()
+	}
+	c.queriesMu.RUnlock()
 }
 
 func (c *Controller) run() {
