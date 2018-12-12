@@ -1,3 +1,5 @@
-from(bucket:"test")
-    |> range(start: 2018-11-07T00:00:00Z)
+t_highestAverage = (table=<-) =>
+  table
     |> highestAverage(n: 3, groupColumns: ["_measurement", "host"])
+
+testingTest(name: "highestAverage", load: fromCSV, infile: "highestAverage.in.csv", outfile: "highestAverage.out.csv", test: t_highestAverage)

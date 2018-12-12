@@ -1,3 +1,6 @@
-from(bucket:"testdb")
-  |> range(start: 2018-05-23T13:09:22.885021542Z)
+t_derivative = (table=<-) =>
+  table
+  |> range(start: 2018-05-22T19:53:26Z)
   |> derivative(unit:100ms)
+
+testingTest(name: "derivative", load: fromCSV, infile: "derivative.in.csv", outfile: "derivative.out.csv", test: t_derivative)
