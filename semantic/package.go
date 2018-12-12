@@ -4,6 +4,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+const PackageMain = "main"
+
 // Package represents the type and name of a package.
 type Package struct {
 	Name string
