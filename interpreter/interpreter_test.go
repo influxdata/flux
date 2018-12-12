@@ -407,14 +407,14 @@ func TestEval(t *testing.T) {
 			// Create new interpreter scope for each test case
 			itrp := interpreter.NewInterpreter(optionScope, testScope, interpreter.NewTypeScope())
 
-			err = itrp.Eval(graph)
+			err = itrp.Eval(graph, nil)
 			if !tc.wantErr && err != nil {
 				t.Fatal(err)
 			} else if tc.wantErr && err == nil {
 				t.Fatal("expected error")
 			}
-			if tc.want != nil && !cmp.Equal(tc.want, itrp.SideEffects(), semantictest.CmpOptions...) {
-				t.Fatalf("unexpected side effect values -want/+got: \n%s", cmp.Diff(tc.want, itrp.SideEffects(), semantictest.CmpOptions...))
+			if tc.want != nil && !cmp.Equal(tc.want, itrp.Package().SideEffects(), semantictest.CmpOptions...) {
+				t.Fatalf("unexpected side effect values -want/+got: \n%s", cmp.Diff(tc.want, itrp.Package().SideEffects(), semantictest.CmpOptions...))
 			}
 		})
 	}
@@ -496,7 +496,7 @@ func TestInterpreter_TypeErrors(t *testing.T) {
 				t.Fatal(err)
 			}
 			itrp := interpreter.NewInterpreter(nil, nil, interpreter.NewTypeScope())
-			if err := itrp.Eval(graph); err == nil {
+			if err := itrp.Eval(graph, nil); err == nil {
 				if tc.err != "" {
 					t.Error("expected type error, but program executed successfully")
 				}
@@ -557,36 +557,21 @@ func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			var globals map[string]values.Value
-			var err error
-
+			globals := make(map[string]values.Value)
 			types := interpreter.NewTypeScope()
-
-			evaluate := func(program string, globals map[string]values.Value) (map[string]values.Value, error) {
-				ast, err := parser.NewAST(program)
-				if err != nil {
-					return nil, err
-				}
-				graph, err := semantic.New(ast)
-				if err != nil {
-					return nil, err
-				}
-				itrp := interpreter.NewInterpreter(nil, globals, types)
-				if err := itrp.Eval(graph); err != nil {
-					return nil, err
-				}
-				types = itrp.TypeScope()
-				return itrp.GlobalScope().Values(), nil
-			}
+			itrp := interpreter.NewMutableInterpreter(nil, globals, types)
 
 			for _, builtin := range tc.builtins {
-				if globals, err = evaluate(builtin, globals); err != nil {
+				if err := eval(itrp, nil, builtin); err != nil {
 					t.Fatal("evaluation of builtin failed: ", err)
 				}
 			}
 
-			if _, err = evaluate(tc.program, globals); err != nil && !tc.wantErr {
+			itrp = interpreter.NewInterpreter(nil, globals, types)
+
+			if err := eval(itrp, nil, tc.program); err != nil && !tc.wantErr {
 				t.Fatal("program evaluation failed: ", err)
 			} else if err == nil && tc.wantErr {
 				t.Fatal("expected to error during program evaluation")
@@ -646,7 +631,7 @@ func TestResolver(t *testing.T) {
 
 	itrp := interpreter.NewInterpreter(nil, scope, interpreter.NewTypeScope())
 
-	if err := itrp.Eval(graph); err != nil {
+	if err := itrp.Eval(graph, nil); err != nil {
 		t.Fatal(err)
 	}
 
@@ -683,34 +668,34 @@ func (f *function) PolyType() semantic.PolyType {
 }
 
 func (f *function) Str() string {
-	panic(values.UnexpectedKind(semantic.Object, semantic.String))
+	panic(values.UnexpectedKind(semantic.Function, semantic.String))
 }
 func (f *function) Int() int64 {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Int))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Int))
 }
 func (f *function) UInt() uint64 {
-	panic(values.UnexpectedKind(semantic.Object, semantic.UInt))
+	panic(values.UnexpectedKind(semantic.Function, semantic.UInt))
 }
 func (f *function) Float() float64 {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Float))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Float))
 }
 func (f *function) Bool() bool {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Bool))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Bool))
 }
 func (f *function) Time() values.Time {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Time))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Time))
 }
 func (f *function) Duration() values.Duration {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Duration))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Duration))
 }
 func (f *function) Regexp() *regexp.Regexp {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Regexp))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Regexp))
 }
 func (f *function) Array() values.Array {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Function))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Array))
 }
 func (f *function) Object() values.Object {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Object))
+	panic(values.UnexpectedKind(semantic.Function, semantic.Object))
 }
 func (f *function) Function() values.Function {
 	return f

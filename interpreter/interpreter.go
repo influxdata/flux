@@ -15,12 +15,129 @@ var topScope = NewScopeWithValues(map[string]values.Value{
 	"false": values.NewBool(false),
 })
 
+// Package implementation
+type packageObject struct {
+	name        string
+	scope       *Scope
+	private     map[string]bool
+	sideEffects []values.Value
+}
+
+func (p *packageObject) Name() string {
+	return p.name
+}
+
+func (p *packageObject) SideEffects() []values.Value {
+	return p.sideEffects
+}
+
+func (p *packageObject) Type() semantic.Type {
+	vals := p.scope.Values()
+	size := len(vals) - len(p.private)
+	typs := make(map[string]semantic.Type, size)
+	for k, v := range vals {
+		if !p.private[k] {
+			typs[k] = v.Type()
+		}
+	}
+	return semantic.NewObjectType(typs)
+}
+
+func (p *packageObject) PolyType() semantic.PolyType {
+	vals := p.scope.Values()
+	size := len(vals) - len(p.private)
+	typs := make(map[string]semantic.PolyType, size)
+	names := make(semantic.LabelSet, 0, size)
+	for k, v := range vals {
+		if !p.private[k] {
+			names = append(names, k)
+			typs[k] = v.PolyType()
+		}
+	}
+	return semantic.NewObjectPolyType(typs, nil, names)
+}
+
+func (p *packageObject) Get(name string) (values.Value, bool) {
+	if !p.private[name] && p.scope.Get(name) != nil {
+		return p.scope.Get(name), true
+	}
+	return nil, false
+}
+
+func (p *packageObject) Set(name string, v values.Value) {
+	p.scope.Set(name, v)
+}
+
+func (p *packageObject) Len() int {
+	return len(p.scope.Values()) - len(p.private)
+}
+
+func (p *packageObject) Range(f func(name string, v values.Value)) {
+	for k, v := range p.scope.Values() {
+		if !p.private[k] {
+			f(k, v)
+		}
+	}
+}
+
+func (p *packageObject) Str() string {
+	panic(values.UnexpectedKind(semantic.Object, semantic.String))
+}
+func (p *packageObject) Int() int64 {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Int))
+}
+func (p *packageObject) UInt() uint64 {
+	panic(values.UnexpectedKind(semantic.Object, semantic.UInt))
+}
+func (p *packageObject) Float() float64 {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Float))
+}
+func (p *packageObject) Bool() bool {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Bool))
+}
+func (p *packageObject) Time() values.Time {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Time))
+}
+func (p *packageObject) Duration() values.Duration {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Duration))
+}
+func (p *packageObject) Regexp() *regexp.Regexp {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Regexp))
+}
+func (p *packageObject) Array() values.Array {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Array))
+}
+func (p *packageObject) Object() values.Object {
+	return p
+}
+func (p *packageObject) Function() values.Function {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Function))
+}
+func (p *packageObject) Equal(rhs values.Value) bool {
+	if p.Type() != rhs.Type() {
+		return false
+	}
+	r := rhs.Object()
+	if p.Len() != r.Len() {
+		return false
+	}
+	equal := true
+	p.Range(func(k string, v values.Value) {
+		val, ok := r.Get(k)
+		if !ok || !v.Equal(val) {
+			equal = false
+			return
+		}
+	})
+	return equal
+}
+
 // Interpreter used to interpret a Flux program
 type Interpreter struct {
-	values  []values.Value
 	options *Scope
 	globals *Scope
 	types   *TypeScope
+	pkg     *packageObject
 }
 
 // NewInterpreter instantiates a new Flux Interpreter whose builtin values are not mutable.
@@ -28,10 +145,15 @@ type Interpreter struct {
 func NewInterpreter(options, builtins map[string]values.Value, types *TypeScope) *Interpreter {
 	optionScope := topScope.NestWithValues(options)
 	globalScope := optionScope.NestWithValues(builtins)
+	scriptScope := globalScope.Nest()
 	interpreter := &Interpreter{
 		options: optionScope,
-		globals: globalScope.Nest(),
+		globals: scriptScope,
 		types:   types.Nest(),
+		pkg: &packageObject{
+			scope:   scriptScope,
+			private: make(map[string]bool),
+		},
 	}
 	return interpreter
 }
@@ -45,6 +167,10 @@ func NewMutableInterpreter(options, builtins map[string]values.Value, types *Typ
 		options: optionScope,
 		globals: globalScope,
 		types:   types,
+		pkg: &packageObject{
+			scope:   globalScope,
+			private: make(map[string]bool),
+		},
 	}
 	return interpreter
 }
@@ -60,21 +186,6 @@ func (itrp *Interpreter) GlobalScope() *Scope {
 	return itrp.globals
 }
 
-// TypeScope returns the type scope of the interpreter
-func (itrp *Interpreter) TypeScope() *TypeScope {
-	return itrp.types
-}
-
-// SetVar adds a variable binding to the global scope
-func (itrp *Interpreter) SetVar(name string, val values.Value) {
-	itrp.globals.Set(name, val)
-}
-
-// SideEffects returns the evaluated expressions of a Flux program
-func (itrp *Interpreter) SideEffects() []values.Value {
-	return itrp.values
-}
-
 // Option returns a Flux option by name
 func (itrp *Interpreter) Option(name string) values.Value {
 	return itrp.options.Get(name)
@@ -85,8 +196,18 @@ func (itrp *Interpreter) SetOption(name string, val values.Value) {
 	itrp.options.Set(name, val)
 }
 
+// SideEffects returns the evaluated expressions of a Flux program
+func (itrp *Interpreter) SideEffects() []values.Value {
+	return itrp.pkg.SideEffects()
+}
+
+// Package returns the current package object
+func (itrp *Interpreter) Package() Package {
+	return itrp.pkg
+}
+
 // Eval evaluates the expressions composing a Flux program.
-func (itrp *Interpreter) Eval(program semantic.Node) error {
+func (itrp *Interpreter) Eval(program semantic.Node, importer Importer) error {
 	extern := &semantic.Extern{
 		Block:       &semantic.ExternBlock{Node: program},
 		Assignments: make([]*semantic.ExternalVariableAssignment, 0, itrp.globals.Len()+itrp.options.Len()),
@@ -95,7 +216,7 @@ func (itrp *Interpreter) Eval(program semantic.Node) error {
 	addExternalAssignments(extern, itrp.options)
 	addExternalAssignments(extern, itrp.globals)
 
-	sol, err := semantic.InferTypes(extern, nil)
+	sol, err := semantic.InferTypes(extern, importer)
 	if err != nil {
 		return err
 	}
@@ -108,36 +229,76 @@ func (itrp *Interpreter) Eval(program semantic.Node) error {
 			itrp.types.SetPolyType(node, polyType)
 		}
 	}), program)
-	return itrp.doRoot(program)
+	return itrp.doRoot(program, importer)
 }
 
-func (itrp *Interpreter) doRoot(node semantic.Node) error {
+func (itrp *Interpreter) doRoot(node semantic.Node, importer Importer) error {
 	switch n := node.(type) {
 	case *semantic.Program:
-		return itrp.doProgram(n)
+		return itrp.doProgram(n, importer)
 	case *semantic.Extern:
-		return itrp.doExtern(n)
+		return itrp.doExtern(n, importer)
 	default:
 		return fmt.Errorf("unsupported root node %T", node)
 	}
 }
 
-func (itrp *Interpreter) doExtern(extern *semantic.Extern) error {
+func (itrp *Interpreter) doExtern(extern *semantic.Extern, importer Importer) error {
 	// We do not care about the type declarations, they were only important for type inference.
-	return itrp.doRoot(extern.Block.Node)
+	return itrp.doRoot(extern.Block.Node, importer)
 }
 
-func (itrp *Interpreter) doProgram(program *semantic.Program) error {
-	topLevelScope := itrp.globals
+func (itrp *Interpreter) doProgram(program *semantic.Program, importer Importer) error {
+	if err := itrp.doPackage(program.Package); err != nil {
+		return err
+	}
+	for _, imp := range program.Imports {
+		if err := itrp.doImport(imp, itrp.globals, importer); err != nil {
+			return err
+		}
+	}
 	for _, stmt := range program.Body {
-		val, err := itrp.doStatement(stmt, topLevelScope)
+		val, err := itrp.doStatement(stmt, itrp.globals)
 		if err != nil {
 			return err
 		}
-		if val != nil {
-			itrp.values = append(itrp.values, val)
+		// Only in the main package are all query objects
+		// coerced into producing side effects.
+		if itrp.pkg.name == semantic.PackageMain && val != nil {
+			itrp.pkg.sideEffects = append(itrp.pkg.sideEffects, val)
 		}
 	}
+	return nil
+}
+
+func (itrp *Interpreter) doPackage(pkg *semantic.PackageClause) error {
+	packageName := semantic.PackageMain
+	if pkg != nil {
+		packageName = pkg.Name.Name
+	}
+	if itrp.pkg.name == "" {
+		itrp.pkg.name = packageName
+	}
+	if itrp.pkg.name != packageName {
+		return fmt.Errorf("unexpected package statement %s", packageName)
+	}
+	return nil
+}
+
+func (itrp *Interpreter) doImport(imp *semantic.ImportDeclaration, scope *Scope, importer Importer) error {
+	path := imp.Path.Value
+	pkg, ok := importer.ImportPackageObject(path)
+	if !ok {
+		return fmt.Errorf("invalid import path %s", path)
+	}
+	name := pkg.Name()
+	if imp.As != nil {
+		name = imp.As.Name
+	}
+	itrp.pkg.private[name] = true
+	scope.Set(name, pkg)
+	// Packages can import side effects
+	itrp.pkg.sideEffects = append(itrp.pkg.sideEffects, pkg.SideEffects()...)
 	return nil
 }
 
@@ -439,7 +600,7 @@ func (itrp *Interpreter) doCall(call *semantic.CallExpression, scope *Scope) (va
 	}
 
 	if f.HasSideEffect() {
-		itrp.values = append(itrp.values, value)
+		itrp.pkg.sideEffects = append(itrp.pkg.sideEffects, value)
 	}
 
 	return value, nil
