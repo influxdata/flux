@@ -67,13 +67,13 @@ func createRelease(r *git.Repository, verTag string) (*Release, error) {
 			return nil, err
 		}
 	}
-	prevVer, prevRef, err := findPreviousRelease(r, version)
+	prevVer, prevHash, err := findPreviousRelease(r, version)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find previous git release tag for %v", verTag)
 	}
-	commits, err := findNewCommits(r, prevRef.Hash(), currHash)
+	commits, err := findNewCommits(r, prevHash, currHash)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find commits between %v and %v", prevRef.Hash(), currHash)
+		return nil, errors.Wrapf(err, "failed to find commits between %v and %v", prevHash, currHash)
 	}
 
 	breaking, features, fixes := organizeCommits(commits)
@@ -113,10 +113,10 @@ func findVersionHash(r *git.Repository, verTag string) (plumbing.Hash, error) {
 }
 
 // findPreviousRelease searches for the highest semantic version tag.
-func findPreviousRelease(r *git.Repository, v *semver.Version) (*semver.Version, *plumbing.Reference, error) {
+func findPreviousRelease(r *git.Repository, v *semver.Version) (*semver.Version, plumbing.Hash, error) {
 	tags, err := r.Tags()
 	if err != nil {
-		return nil, nil, err
+		return nil, plumbing.ZeroHash, err
 	}
 	defer tags.Close()
 	var maxVersion *semver.Version
@@ -127,7 +127,7 @@ func findPreviousRelease(r *git.Repository, v *semver.Version) (*semver.Version,
 			if err == io.EOF {
 				break
 			}
-			return nil, nil, err
+			return nil, plumbing.ZeroHash, err
 		}
 		ver, err := semver.NewVersion(tag.Name().Short())
 		if err == nil &&
@@ -137,7 +137,11 @@ func findPreviousRelease(r *git.Repository, v *semver.Version) (*semver.Version,
 			maxRef = tag
 		}
 	}
-	return maxVersion, maxRef, nil
+	tag, err := r.TagObject(maxRef.Hash())
+	if err != nil {
+		return nil, plumbing.ZeroHash, err
+	}
+	return maxVersion, tag.Target, nil
 }
 
 // findNewCommits queries the git repository for new commits since the last tagged release.
