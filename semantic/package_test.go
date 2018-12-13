@@ -14,6 +14,8 @@ func TestCreatePackage(t *testing.T) {
 		script   string
 		importer semantic.Importer
 		want     semantic.Package
+		wantErr  bool
+		skip     bool
 	}{
 		{
 			name: "simple",
@@ -119,10 +121,39 @@ a = internal.a
 				),
 			},
 		},
+		{
+			name: "modify exported identifier",
+			script: `
+package foo
+
+import "bar"
+
+bar.x = 10
+`,
+			importer: importer{
+				packages: map[string]semantic.Package{
+					"bar": semantic.Package{
+						Name: "bar",
+						Type: semantic.NewObjectPolyType(
+							map[string]semantic.PolyType{
+								"x": semantic.Int,
+							},
+							nil,
+							semantic.LabelSet{"x"},
+						),
+					},
+				},
+			},
+			wantErr: true,
+			skip:    true,
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.skip {
+				t.Skip()
+			}
 			program, err := parser.NewAST(tc.script)
 			if err != nil {
 				t.Fatal(err)
@@ -132,11 +163,15 @@ a = internal.a
 				t.Fatal(err)
 			}
 			got, err := semantic.CreatePackage(node, tc.importer)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if !cmp.Equal(tc.want, got) {
-				t.Errorf("unexpected package -want/+got\n%s", cmp.Diff(tc.want, got))
+			if !tc.wantErr {
+				if err != nil {
+					t.Errorf("unexpected error %v", err)
+				}
+				if !cmp.Equal(tc.want, got) {
+					t.Errorf("unexpected package -want/+got\n%s", cmp.Diff(tc.want, got))
+				}
+			} else if err == nil {
+				t.Errorf("expected error")
 			}
 		})
 	}
