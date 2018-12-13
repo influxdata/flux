@@ -296,10 +296,10 @@ func (p *parser) parseExpressionStatement() *ast.ExpressionStatement {
 func (p *parser) parseBlock() *ast.Block {
 	start, _ := p.expect(token.LBRACE)
 	stmts := p.parseStatementList(token.RBRACE)
-	end, _ := p.expect(token.RBRACE)
+	end, rbrace := p.expect(token.RBRACE)
 	return &ast.Block{
 		Body:     stmts,
-		BaseNode: p.position(start, end+1),
+		BaseNode: p.position(start, end+token.Pos(len(rbrace))),
 	}
 }
 
@@ -644,13 +644,13 @@ func (p *parser) parseDotExpression(expr ast.Expression) ast.Expression {
 func (p *parser) parseCallExpression(callee ast.Expression) ast.Expression {
 	p.expect(token.LPAREN)
 	params := p.parsePropertyList()
-	end, _ := p.expect(token.RPAREN)
+	end, rparen := p.expect(token.RPAREN)
 	expr := &ast.CallExpression{
 		Callee: callee,
 		BaseNode: ast.BaseNode{
 			Loc: p.sourceLocation(
 				locStart(callee),
-				p.s.File().Position(end+1),
+				p.s.File().Position(end+token.Pos(len(rparen))),
 			),
 		},
 	}
@@ -673,7 +673,7 @@ func (p *parser) parseCallExpression(callee ast.Expression) ast.Expression {
 func (p *parser) parseIndexExpression(callee ast.Expression) ast.Expression {
 	p.expect(token.LBRACK)
 	expr := p.parseExpression()
-	end, _ := p.expect(token.RBRACK)
+	end, rbrack := p.expect(token.RBRACK)
 	if lit, ok := expr.(*ast.StringLiteral); ok {
 		return &ast.MemberExpression{
 			Object:   callee,
@@ -681,7 +681,7 @@ func (p *parser) parseIndexExpression(callee ast.Expression) ast.Expression {
 			BaseNode: ast.BaseNode{
 				Loc: p.sourceLocation(
 					locStart(callee),
-					p.s.File().Position(end+1),
+					p.s.File().Position(end+token.Pos(len(rbrack))),
 				),
 			},
 		}
@@ -692,7 +692,7 @@ func (p *parser) parseIndexExpression(callee ast.Expression) ast.Expression {
 		BaseNode: ast.BaseNode{
 			Loc: p.sourceLocation(
 				locStart(callee),
-				p.s.File().Position(end+1),
+				p.s.File().Position(end+token.Pos(len(rbrack))),
 			),
 		},
 	}
@@ -803,20 +803,20 @@ func (p *parser) parsePipeLiteral() *ast.PipeLiteral {
 func (p *parser) parseArrayLiteral() ast.Expression {
 	start, _ := p.expect(token.LBRACK)
 	exprs := p.parseExpressionList()
-	end, _ := p.expect(token.RBRACK)
+	end, rbrack := p.expect(token.RBRACK)
 	return &ast.ArrayExpression{
 		Elements: exprs,
-		BaseNode: p.position(start, end+1),
+		BaseNode: p.position(start, end+token.Pos(len(rbrack))),
 	}
 }
 
 func (p *parser) parseObjectLiteral() ast.Expression {
 	start, _ := p.expect(token.LBRACE)
 	properties := p.parsePropertyList()
-	end, _ := p.expect(token.RBRACE)
+	end, rbrace := p.expect(token.RBRACE)
 	return &ast.ObjectExpression{
 		Properties: properties,
-		BaseNode:   p.position(start, end+1),
+		BaseNode:   p.position(start, end+token.Pos(len(rbrace))),
 	}
 }
 
