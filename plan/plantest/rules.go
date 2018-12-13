@@ -27,6 +27,81 @@ func (sr *SimpleRule) Name() string {
 	return "simple"
 }
 
+// SmashPlanRule adds an `Intruder` as predecessor of the given `Node` without
+// marking it as successor of it. It breaks the integrity of the plan.
+// If `Kind` is specified, it takes precedence over `Node`, and the rule will use it
+// to match.
+type SmashPlanRule struct {
+	Node     plan.PlanNode
+	Intruder plan.PlanNode
+	Kind     plan.ProcedureKind
+}
+
+func (SmashPlanRule) Name() string {
+	return "SmashPlanRule"
+}
+
+func (spp SmashPlanRule) Pattern() plan.Pattern {
+	var k plan.ProcedureKind
+	if len(spp.Kind) > 0 {
+		k = spp.Kind
+	} else {
+		k = spp.Node.Kind()
+	}
+
+	return plan.Pat(k, plan.Any())
+}
+
+func (spp SmashPlanRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool, error) {
+	var changed bool
+	if len(spp.Kind) > 0 || node == spp.Node {
+		node.AddPredecessors(spp.Intruder)
+		changed = true
+	}
+
+	// it is not necessary to return a copy of the node, because the rule changes the number
+	// of predecessors and it won't be re-triggered again.
+	return node, changed, nil
+}
+
+// CreateCycleRule creates a cycle between the given `Node` and its predecessor.
+// It creates exactly one cycle. After the rule is triggered once, it won't have any effect later.
+// This rule breaks the integrity of the plan.
+// If `Kind` is specified, it takes precedence over `Node`, and the rule will use it
+// to match.
+type CreateCycleRule struct {
+	Node plan.PlanNode
+	Kind plan.ProcedureKind
+}
+
+func (CreateCycleRule) Name() string {
+	return "CreateCycleRule"
+}
+
+func (ccr CreateCycleRule) Pattern() plan.Pattern {
+	var k plan.ProcedureKind
+	if len(ccr.Kind) > 0 {
+		k = ccr.Kind
+	} else {
+		k = ccr.Node.Kind()
+	}
+
+	return plan.Pat(k, plan.Any())
+}
+
+func (ccr CreateCycleRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool, error) {
+	var changed bool
+	if len(ccr.Kind) > 0 || node == ccr.Node {
+		node.Predecessors()[0].AddPredecessors(node)
+		node.AddSuccessors(node.Predecessors()[0])
+		changed = true
+	}
+
+	// just return a copy of the node, otherwise the rule will be triggered an infinite number of times
+	// (it doesn't change the number of predecessors, indeed).
+	return node.ShallowCopy(), changed, nil
+}
+
 // RuleTestCase allows for concise creation of test cases that exercise rules
 type RuleTestCase struct {
 	Name     string

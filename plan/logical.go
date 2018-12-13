@@ -56,6 +56,7 @@ func (opt logicalOption) apply(lp *logicalPlanner) {
 
 type logicalPlanner struct {
 	*heuristicPlanner
+	disableIntegrityChecks bool
 }
 
 // OnlyLogicalRules produces a logical plan option that forces only a set of particular rules to be
@@ -64,6 +65,13 @@ func OnlyLogicalRules(rules ...Rule) LogicalOption {
 	return logicalOption(func(lp *logicalPlanner) {
 		lp.clearRules()
 		lp.addRules(rules...)
+	})
+}
+
+// Disables integrity checks in the logical planner
+func DisableIntegrityChecks() LogicalOption {
+	return logicalOption(func(lp *logicalPlanner) {
+		lp.disableIntegrityChecks = true
 	})
 }
 
@@ -77,6 +85,14 @@ func (l *logicalPlanner) Plan(spec *flux.Spec) (*PlanSpec, error) {
 	newLogicalPlan, err := l.heuristicPlanner.Plan(logicalPlan)
 	if err != nil {
 		return nil, err
+	}
+
+	// check integrity after planning is complete
+	if !l.disableIntegrityChecks {
+		err := newLogicalPlan.CheckIntegrity()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return newLogicalPlan, nil

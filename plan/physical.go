@@ -54,6 +54,11 @@ func (pp *physicalPlanner) Plan(spec *PlanSpec) (*PlanSpec, error) {
 
 	// Ensure that the plan is valid
 	if !pp.disableValidation {
+		err := transformedSpec.CheckIntegrity()
+		if err != nil {
+			return nil, err
+		}
+
 		err = validatePhysicalPlan(transformedSpec)
 		if err != nil {
 			return nil, err
@@ -121,6 +126,7 @@ func OnlyPhysicalRules(rules ...Rule) PhysicalOption {
 	})
 }
 
+// Disables validation in the physical planner
 func DisableValidation() PhysicalOption {
 	return physicalOption(func(p *physicalPlanner) {
 		p.disableValidation = true
