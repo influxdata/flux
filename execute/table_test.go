@@ -160,9 +160,14 @@ func TestTablesEqual(t *testing.T) {
 				} else {
 					return
 				}
-
-			} else if !equal {
-				t.Errorf("%s: expected equal tables, got false", tc.name)
+			} else if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			} else if want, got := tc.want, equal; want != got {
+				if tc.want {
+					t.Errorf("%s: expected equal tables, got false", tc.name)
+				} else {
+					t.Errorf("%s: expected unequal tables, got true", tc.name)
+				}
 			}
 		})
 	}

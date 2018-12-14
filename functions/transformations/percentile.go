@@ -366,9 +366,9 @@ func (t *ExactPercentileSelectorTransformation) Process(id execute.DatasetID, tb
 	}
 	copyTable.Sort([]string{t.spec.Column}, false)
 
-	n := copyTable.RawTable().NRows()
+	n := copyTable.NRows()
 	index := getQuantileIndex(t.spec.Percentile, n)
-	row := copyTable.RawTable().GetRow(index)
+	row := copyTable.GetRow(index)
 
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
