@@ -172,12 +172,10 @@ func (t *CovarianceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 	}
 	xIdx := execute.ColIdx(t.spec.Columns[0], cols)
 	if xIdx < 0 {
-		panic("Covariance check 1")
 		return fmt.Errorf("specified column does not exist in table: %v", t.spec.Columns[0])
 	}
 	yIdx := execute.ColIdx(t.spec.Columns[1], cols)
 	if yIdx < 0 {
-		panic("Covariance check 2")
 		return fmt.Errorf("specified column does not exist in table: %v", t.spec.Columns[1])
 	}
 
