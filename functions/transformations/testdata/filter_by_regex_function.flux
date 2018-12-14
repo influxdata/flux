@@ -1,7 +1,12 @@
-regexFunc = (regLiteral) =>
-   from(bucket:"testdb")
+regexFunc = (table=<-, regLiteral) =>
+   table
      |>  range(start:2018-05-20T19:53:26Z)
      |>  filter(fn: (r) => r._field =~ regLiteral)
      |>  max()
 
-regexFunc(regLiteral: /io.*/)
+
+t_filter_by_regex_function = (table=<-) =>
+  table
+  |> regexFunc(regLiteral: /io.*/)
+testingTest(name: "filter_by_regex_function", load: fromCSV, infile: "filter_by_regex_function.in.csv", outfile: "filter_by_regex_function.out.csv", test: t_filter_by_regex_function)
+

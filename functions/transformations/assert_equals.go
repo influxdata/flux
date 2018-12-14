@@ -111,6 +111,18 @@ type AssertEqualsTransformation struct {
 	name string
 }
 
+type AssertEqualsError struct {
+	msg string
+}
+
+func (e *AssertEqualsError) Error() string {
+	return e.msg
+}
+
+func (e *AssertEqualsError) Assertion() bool {
+	return true
+}
+
 type assertEqualsParentState struct {
 	id         execute.DatasetID
 	mark       execute.Time
@@ -180,7 +192,7 @@ func (t *AssertEqualsTransformation) Process(id execute.DatasetID, tbl flux.Tabl
 		if ok, err := execute.TablesEqual(cacheTable, tbl, t.a); err != nil {
 			return err
 		} else if !ok {
-			return fmt.Errorf("test %s: tables not equal", t.name)
+			return &AssertEqualsError{fmt.Sprintf("test %s: tables not equal", t.name)}
 		}
 	}
 

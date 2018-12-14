@@ -8,15 +8,14 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/control"
 	"github.com/influxdata/flux/control/controltest"
-	"github.com/influxdata/flux/functions/inputs"
 )
 
 type Querier struct {
-	c *controltest.Controller
+	C *controltest.Controller
 }
 
 func (q *Querier) Query(ctx context.Context, w io.Writer, c flux.Compiler, d flux.Dialect) (int64, error) {
-	query, err := q.c.Query(ctx, c)
+	query, err := q.C.Query(ctx, c)
 	if err != nil {
 		return 0, err
 	}
@@ -37,26 +36,6 @@ func NewQuerier() *Querier {
 	c := controltest.New(control.New(config))
 
 	return &Querier{
-		c: c,
-	}
-}
-
-func ReplaceFromSpec(q *flux.Spec, csvSrc string) {
-	for _, op := range q.Operations {
-		if op.Spec.Kind() == inputs.FromKind {
-			op.Spec = &inputs.FromCSVOpSpec{
-				File: csvSrc,
-			}
-		}
-	}
-}
-
-func ReplaceFromWithFromInfluxJSONSpec(q *flux.Spec, jsonSrc string) {
-	for _, op := range q.Operations {
-		if op.Spec.Kind() == inputs.FromKind {
-			op.Spec = &inputs.FromInfluxJSONOpSpec{
-				File: jsonSrc,
-			}
-		}
+		C: c,
 	}
 }

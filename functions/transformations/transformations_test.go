@@ -1,30 +1,47 @@
 package transformations_test
 
 import (
+	"context"
+	"github.com/influxdata/flux"
+	_ "github.com/influxdata/flux/functions/inputs"          // Import the built-in inputs
+	_ "github.com/influxdata/flux/functions/outputs"         // Import the built-in outputs
+	_ "github.com/influxdata/flux/functions/transformations" // Import the built-in functions
+	"github.com/influxdata/flux/lang"
+	_ "github.com/influxdata/flux/options" // Import the built-in options
+	"github.com/influxdata/flux/querytest"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
-
-	_ "github.com/influxdata/flux/builtin"
-	"github.com/influxdata/flux/csv"
-	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/querytest"
 )
 
+func init() {
+	flux.RegisterBuiltIn("loadTest", loadTestBuiltin)
+	flux.FinalizeBuiltIns()
+}
+
+var loadTestBuiltin = `
+// loadData is a function that's referenced in all the transformation tests.  
+// it's registered here so that we can register a different loadData function for 
+// each platform/binary.  
+testLoadData = (file) => fromCSV(file:file)`
+
 var skipTests = map[string]string{
-	"derivative":                "derivative not supported by influxql (https://github.com/influxdata/platform/issues/93)",
-	"filter_by_tags":            "arbitrary filtering not supported by influxql (https://github.com/influxdata/platform/issues/94)",
-	"window_group_mean_ungroup": "error in influxql: failed to run query: timeValue column \"_start\" does not exist (https://github.com/influxdata/platform/issues/97)",
-	"string_max":                "error: invalid use of function: *functions.MaxSelector has no implementation for type string (https://github.com/influxdata/platform/issues/224)",
-	"null_as_value":             "null not supported as value in influxql (https://github.com/influxdata/platform/issues/353)",
-	"difference_panic":          "difference() panics when no table is supplied",
-	"string_interp":             "string interpolation not working as expected in flux (https://github.com/influxdata/platform/issues/404)",
-	"to":                        "to functions are not supported in the testing framework (https://github.com/influxdata/flux/issues/77)",
-	"task_per_line":             "bug in group by caused by heterogeneous table schemas (https://github.com/influxdata/flux/issues/100)",
+	"string_max":                  "error: invalid use of function: *functions.MaxSelector has no implementation for type string (https://github.com/influxdata/platform/issues/224)",
+	"null_as_value":               "null not supported as value in influxql (https://github.com/influxdata/platform/issues/353)",
+	"string_interp":               "string interpolation not working as expected in flux (https://github.com/influxdata/platform/issues/404)",
+	"to":                          "to functions are not supported in the testing framework (https://github.com/influxdata/flux/issues/77)",
+	"covariance_missing_column_1": "need to support known errors in new test framework",
+	"covariance_missing_column_2": "need to support known errors in new test framework",
+	"drop_before_rename":          "need to support known errors in new test framework",
+	"drop_referenced":             "need to support known errors in new test framework",
 }
 
 var querier = querytest.NewQuerier()
+
+type AssertionError interface {
+	Assertion() bool
+}
 
 func withEachFluxFile(t testing.TB, fn func(prefix, caseName string)) {
 	dir, err := os.Getwd()
@@ -32,8 +49,9 @@ func withEachFluxFile(t testing.TB, fn func(prefix, caseName string)) {
 		t.Fatal(err)
 	}
 	path := filepath.Join(dir, "testdata")
+	os.Chdir(path)
 
-	fluxFiles, err := filepath.Glob(filepath.Join(path, "*.flux"))
+	fluxFiles, err := filepath.Glob("*.flux")
 	if err != nil {
 		t.Fatalf("error searching for Flux files: %s", err)
 	}
@@ -87,19 +105,33 @@ func testFlux(t testing.TB, querier *querytest.Querier, prefix, queryExt string)
 		t.Fatal(err)
 	}
 
-	csvInFilename := prefix + ".in.csv"
-	csvOut, err := ioutil.ReadFile(prefix + ".out.csv")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	c := querytest.FromCSVCompiler{
-		Compiler: lang.FluxCompiler{
-			Query: string(q),
-		},
-		InputFile: csvInFilename,
+	c := lang.FluxCompiler{
+		Query: string(q),
 	}
-	d := csv.DefaultDialect()
 
-	querytest.RunAndCheckResult(t, querier, c, d, string(csvOut))
+	r, err := querier.C.Query(context.Background(), c)
+	if err != nil {
+		t.Fatalf("test error %s", err)
+	}
+	defer r.Done()
+	result, ok := <-r.Ready()
+	if !ok {
+		t.Fatalf("TEST error retrieving query result: %s", r.Err())
+	}
+	for _, v := range result {
+		err := v.Tables().Do(func(tbl flux.Table) error {
+			return nil
+		})
+		if err != nil {
+			if assertionErr, ok := err.(AssertionError); ok {
+				t.Error(assertionErr)
+			} else {
+				t.Fatal(err)
+			}
+		}
+	}
 }
