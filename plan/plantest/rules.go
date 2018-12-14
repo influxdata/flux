@@ -51,7 +51,7 @@ func RuleTestHelper(t *testing.T, tc *RuleTestCase) {
 	// Disable validation so that we can avoid having to push a range into every from
 	physicalPlanner := plan.NewPhysicalPlanner(
 		plan.OnlyPhysicalRules(tc.Rules...),
-		plan.DisableValidatation(),
+		plan.DisableValidation(),
 	)
 
 	pp, err := physicalPlanner.Plan(before)
