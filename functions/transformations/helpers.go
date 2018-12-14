@@ -18,11 +18,4 @@ aggregateWindow = (every, fn, columns=["_value"], timeSrc="_stop",timeDst="_time
         |> fn(columns:columns)
         |> duplicate(column:timeSrc,as:timeDst)
         |> window(every:inf, timeColumn:timeDst)
-
-testingTest = (name, load, infile, outfile, test) => {
-  input = load(file: infile)
-  got = input |> test()
-  want = load(file: outfile)
-  return assertEquals(name: name, want: want, got: got)
-}
 `
