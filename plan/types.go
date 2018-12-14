@@ -8,8 +8,6 @@ import (
 	"github.com/influxdata/flux"
 )
 
-const DefaultYieldName = "_result"
-
 // PlanNode defines the common interface for interacting with
 // logical and physical plan nodes.
 type PlanNode interface {
@@ -224,6 +222,33 @@ func SwapPlanNodes(top, bottom PlanNode) (PlanNode, error) {
 	bottom.AddPredecessors(newBottom)
 	bottom.ClearSuccessors()
 	return bottom, nil
+}
+
+// ReplaceNode accepts two nodes and attaches
+// all the predecessors of the old node to the new node.
+//
+//     S1   S2        S1   S2
+//       \ /
+//     oldNode   =>   newNode
+//       / \            / \
+//     P1   P2        P1   P2
+//
+// As is convention, newNode will not have any successors attached.
+// The planner will take care of this.
+func ReplaceNode(oldNode, newNode PlanNode) {
+	newNode.ClearPredecessors()
+	newNode.ClearSuccessors()
+
+	newNode.AddPredecessors(oldNode.Predecessors()...)
+	for _, pred := range newNode.Predecessors() {
+		for i, predSucc := range pred.Successors() {
+			if predSucc == oldNode {
+				pred.Successors()[i] = newNode
+			}
+		}
+	}
+
+	oldNode.ClearPredecessors()
 }
 
 type WindowSpec struct {

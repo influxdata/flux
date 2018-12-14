@@ -3,6 +3,8 @@ package plan
 import (
 	"fmt"
 	"math"
+
+	"github.com/pkg/errors"
 )
 
 // PhysicalPlanner performs transforms a logical plan to a physical plan,
@@ -27,6 +29,8 @@ func NewPhysicalPlanner(options ...PhysicalOption) PhysicalPlanner {
 	}
 
 	pp.addRules(rules...)
+
+	pp.addRules(physicalConverterRule{})
 
 	// Options may add or remove rules, so process them after we've
 	// added registered rules.
@@ -74,6 +78,11 @@ func validatePhysicalPlan(plan *PlanSpec) error {
 		if validator, ok := pn.ProcedureSpec().(PostPhysicalValidator); ok {
 			return validator.PostPhysicalValidate(pn.ID())
 		}
+
+		if _, ok := pn.(*PhysicalPlanNode); !ok {
+			return errors.Errorf("logical node \"%v\" could not be converted to a physical node", pn.ID())
+		}
+
 		return nil
 	})
 	return err
@@ -112,10 +121,48 @@ func OnlyPhysicalRules(rules ...Rule) PhysicalOption {
 	})
 }
 
-func DisableValidatation() PhysicalOption {
+func DisableValidation() PhysicalOption {
 	return physicalOption(func(p *physicalPlanner) {
 		p.disableValidation = true
 	})
+}
+
+// physicalConverterRule rewrites logical nodes that have a ProcedureSpec that implements
+// PhysicalProcedureSpec as a physical node.  For operations that have a 1:1 relationship
+// between their physical and logical operations, this is the default behavior.
+type physicalConverterRule struct {
+}
+
+func (physicalConverterRule) Name() string {
+	return "physicalConverterRule"
+}
+
+func (physicalConverterRule) Pattern() Pattern {
+	return Any()
+}
+
+func (physicalConverterRule) Rewrite(pn PlanNode) (PlanNode, bool, error) {
+	if _, ok := pn.(*PhysicalPlanNode); ok {
+		// Already converted
+		return pn, false, nil
+	}
+
+	ln := pn.(*LogicalPlanNode)
+	pspec, ok := ln.Spec.(PhysicalProcedureSpec)
+	if !ok {
+		// A different rule will do the conversion
+		return pn, false, nil
+	}
+
+	newNode := PhysicalPlanNode{
+		bounds: ln.bounds,
+		id:     ln.id,
+		Spec:   pspec,
+	}
+
+	ReplaceNode(pn, &newNode)
+
+	return &newNode, true, nil
 }
 
 // PhysicalProcedureSpec is similar to its logical counterpart but must provide a method to determine cost.
