@@ -34,6 +34,7 @@ func init() {
 	flux.RegisterOpSpec(FromKind, newFromOp)
 	plan.RegisterProcedureSpec(FromKind, newFromProcedure, FromKind)
 	plan.RegisterPhysicalRules(
+		FromConversionRule{},
 		MergeFromRangeRule{},
 		MergeFromFilterRule{},
 		FromDistinctRule{},
@@ -74,9 +75,52 @@ func (s *FromOpSpec) Kind() flux.OperationKind {
 }
 
 type FromProcedureSpec struct {
-	plan.DefaultCost
 	Bucket   string
 	BucketID string
+}
+
+func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+	spec, ok := qs.(*FromOpSpec)
+	if !ok {
+		return nil, fmt.Errorf("invalid spec type %T", qs)
+	}
+
+	return &FromProcedureSpec{
+		Bucket:   spec.Bucket,
+		BucketID: spec.BucketID,
+	}, nil
+}
+
+func (s *FromProcedureSpec) Kind() plan.ProcedureKind {
+	return FromKind
+}
+
+func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
+	ns := new(FromProcedureSpec)
+
+	ns.Bucket = s.Bucket
+	ns.BucketID = s.BucketID
+
+	return ns
+}
+
+func (s FromProcedureSpec) PostPhysicalValidate(id plan.NodeID) error {
+	// FromProcedureSpec has no bounds, so must be invalid.
+	var bucket string
+	if len(s.Bucket) > 0 {
+		bucket = s.Bucket
+	} else {
+		bucket = s.BucketID
+	}
+	return fmt.Errorf(`%s: results from "%s" must be bounded`, id, bucket)
+}
+
+const physicalFromKind = "physFrom"
+
+type PhysicalFromProcedureSpec struct {
+	*FromProcedureSpec
+
+	plan.DefaultCost
 
 	BoundsSet bool
 	Bounds    flux.Bounds
@@ -104,27 +148,14 @@ type FromProcedureSpec struct {
 	AggregateMethod string
 }
 
-func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	spec, ok := qs.(*FromOpSpec)
-	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
-	}
-
-	return &FromProcedureSpec{
-		Bucket:   spec.Bucket,
-		BucketID: spec.BucketID,
-	}, nil
+func (PhysicalFromProcedureSpec) Kind() plan.ProcedureKind {
+	return physicalFromKind
 }
 
-func (s *FromProcedureSpec) Kind() plan.ProcedureKind {
-	return FromKind
-}
+func (s *PhysicalFromProcedureSpec) Copy() plan.ProcedureSpec {
+	ns := new(PhysicalFromProcedureSpec)
 
-func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
-	ns := new(FromProcedureSpec)
-
-	ns.Bucket = s.Bucket
-	ns.BucketID = s.BucketID
+	ns.FromProcedureSpec = s.FromProcedureSpec.Copy().(*FromProcedureSpec)
 
 	ns.BoundsSet = s.BoundsSet
 	ns.Bounds = s.Bounds
@@ -155,7 +186,7 @@ func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
 }
 
 // TimeBounds implements plan.BoundsAwareProcedureSpec
-func (s *FromProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bounds {
+func (s *PhysicalFromProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bounds {
 	if s.BoundsSet {
 		bounds := &plan.Bounds{
 			Start: values.ConvertTime(s.Bounds.Start.Time(s.Bounds.Now)),
@@ -166,7 +197,7 @@ func (s *FromProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bou
 	return nil
 }
 
-func (s FromProcedureSpec) PostPhysicalValidate(id plan.NodeID) error {
+func (s PhysicalFromProcedureSpec) PostPhysicalValidate(id plan.NodeID) error {
 	if !s.BoundsSet || (s.Bounds.Start.IsZero() && s.Bounds.Stop.IsZero()) {
 		var bucket string
 		if len(s.Bucket) > 0 {
@@ -176,8 +207,31 @@ func (s FromProcedureSpec) PostPhysicalValidate(id plan.NodeID) error {
 		}
 		return fmt.Errorf(`%s: results from "%s" must be bounded`, id, bucket)
 	}
-
 	return nil
+}
+
+// FromConversionRule converts a logical `from` node into a physical `from` node.
+// TODO(cwolff): this rule can go away when we require a `range`
+//  to be pushed into a logical `from` to create a physical `from.`
+type FromConversionRule struct {
+}
+
+func (FromConversionRule) Name() string {
+	return "FromConversionRule"
+}
+
+func (FromConversionRule) Pattern() plan.Pattern {
+	return plan.Pat(FromKind)
+}
+
+func (FromConversionRule) Rewrite(pn plan.PlanNode) (plan.PlanNode, bool, error) {
+	logicalFromSpec := pn.ProcedureSpec().(*FromProcedureSpec)
+	newNode := plan.CreatePhysicalNode(pn.ID(), &PhysicalFromProcedureSpec{
+		FromProcedureSpec: logicalFromSpec.Copy().(*FromProcedureSpec),
+	})
+
+	plan.ReplaceNode(pn, newNode)
+	return newNode, true, nil
 }
 
 // MergeFromRangeRule pushes a `range` into a `from`
@@ -190,15 +244,15 @@ func (rule MergeFromRangeRule) Name() string {
 
 // Pattern returns the pattern that matches `from -> range`
 func (rule MergeFromRangeRule) Pattern() plan.Pattern {
-	return plan.Pat(transformations.RangeKind, plan.Pat(FromKind))
+	return plan.Pat(transformations.RangeKind, plan.Pat(physicalFromKind))
 }
 
 // Rewrite attempts to rewrite a `from -> range` into a `FromRange`
 func (rule MergeFromRangeRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool, error) {
 	from := node.Predecessors()[0]
-	fromSpec := from.ProcedureSpec().(*FromProcedureSpec)
+	fromSpec := from.ProcedureSpec().(*PhysicalFromProcedureSpec)
 	rangeSpec := node.ProcedureSpec().(*transformations.RangeProcedureSpec)
-	fromRange := fromSpec.Copy().(*FromProcedureSpec)
+	fromRange := fromSpec.Copy().(*PhysicalFromProcedureSpec)
 
 	// Set new bounds to `range` bounds initially
 	fromRange.Bounds = rangeSpec.Bounds
@@ -235,7 +289,7 @@ func (rule MergeFromRangeRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool,
 	fromRange.BoundsSet = true
 
 	// Finally merge nodes into single operation
-	merged, err := plan.MergePhysicalPlanNodes(node, from, fromRange)
+	merged, err := plan.MergeToPhysicalPlanNode(node, from, fromRange)
 	if err != nil {
 		return nil, false, err
 	}
@@ -256,13 +310,13 @@ func (MergeFromFilterRule) Name() string {
 }
 
 func (MergeFromFilterRule) Pattern() plan.Pattern {
-	return plan.Pat(transformations.FilterKind, plan.Pat(FromKind))
+	return plan.Pat(transformations.FilterKind, plan.Pat(physicalFromKind))
 }
 
 func (MergeFromFilterRule) Rewrite(filterNode plan.PlanNode) (plan.PlanNode, bool, error) {
 	filterSpec := filterNode.ProcedureSpec().(*transformations.FilterProcedureSpec)
 	fromNode := filterNode.Predecessors()[0]
-	fromSpec := fromNode.ProcedureSpec().(*FromProcedureSpec)
+	fromSpec := fromNode.ProcedureSpec().(*PhysicalFromProcedureSpec)
 
 	if fromSpec.AggregateSet || fromSpec.GroupingSet {
 		return filterNode, false, nil
@@ -292,7 +346,7 @@ func (MergeFromFilterRule) Rewrite(filterNode plan.PlanNode) (plan.PlanNode, boo
 		return filterNode, false, nil
 	}
 
-	newFromSpec := fromSpec.Copy().(*FromProcedureSpec)
+	newFromSpec := fromSpec.Copy().(*PhysicalFromProcedureSpec)
 	if newFromSpec.FilterSet {
 		newBody := semantic.ExprsToConjunction(newFromSpec.Filter.Block.Body.(semantic.Expression), pushable)
 		newFromSpec.Filter.Block.Body = newBody
@@ -304,7 +358,7 @@ func (MergeFromFilterRule) Rewrite(filterNode plan.PlanNode) (plan.PlanNode, boo
 
 	if notPushable == nil {
 		// All predicates could be pushed down, so eliminate the filter
-		mergedNode, err := plan.MergePhysicalPlanNodes(filterNode, fromNode, newFromSpec)
+		mergedNode, err := plan.MergeToPhysicalPlanNode(filterNode, fromNode, newFromSpec)
 		if err != nil {
 			return nil, false, err
 		}
@@ -466,13 +520,13 @@ func (FromDistinctRule) Name() string {
 }
 
 func (FromDistinctRule) Pattern() plan.Pattern {
-	return plan.Pat(transformations.DistinctKind, plan.Pat(FromKind))
+	return plan.Pat(transformations.DistinctKind, plan.Pat(physicalFromKind))
 }
 
 func (FromDistinctRule) Rewrite(distinctNode plan.PlanNode) (plan.PlanNode, bool, error) {
 	fromNode := distinctNode.Predecessors()[0]
 	distinctSpec := distinctNode.ProcedureSpec().(*transformations.DistinctProcedureSpec)
-	fromSpec := fromNode.ProcedureSpec().(*FromProcedureSpec)
+	fromSpec := fromNode.ProcedureSpec().(*PhysicalFromProcedureSpec)
 
 	if fromSpec.LimitSet && fromSpec.PointsLimit == -1 {
 		return distinctNode, false, nil
@@ -483,7 +537,7 @@ func (FromDistinctRule) Rewrite(distinctNode plan.PlanNode) (plan.PlanNode, bool
 		((fromSpec.GroupMode == functions.GroupModeBy && execute.ContainsStr(fromSpec.GroupKeys, distinctSpec.Column)) ||
 			(fromSpec.GroupMode == functions.GroupModeExcept && !execute.ContainsStr(fromSpec.GroupKeys, distinctSpec.Column)))
 	if groupStar || groupByColumn {
-		newFromSpec := fromSpec.Copy().(*FromProcedureSpec)
+		newFromSpec := fromSpec.Copy().(*PhysicalFromProcedureSpec)
 		newFromSpec.LimitSet = true
 		newFromSpec.PointsLimit = -1
 		if err := fromNode.ReplaceSpec(newFromSpec); err != nil {
@@ -503,13 +557,13 @@ func (MergeFromGroupRule) Name() string {
 }
 
 func (MergeFromGroupRule) Pattern() plan.Pattern {
-	return plan.Pat(transformations.GroupKind, plan.Pat(FromKind))
+	return plan.Pat(transformations.GroupKind, plan.Pat(physicalFromKind))
 }
 
 func (MergeFromGroupRule) Rewrite(groupNode plan.PlanNode) (plan.PlanNode, bool, error) {
 	fromNode := groupNode.Predecessors()[0]
 	groupSpec := groupNode.ProcedureSpec().(*transformations.GroupProcedureSpec)
-	fromSpec := fromNode.ProcedureSpec().(*FromProcedureSpec)
+	fromSpec := fromNode.ProcedureSpec().(*PhysicalFromProcedureSpec)
 
 	if fromSpec.GroupingSet ||
 		fromSpec.LimitSet ||
@@ -525,11 +579,11 @@ func (MergeFromGroupRule) Rewrite(groupNode plan.PlanNode) (plan.PlanNode, bool,
 		}
 	}
 
-	newFromSpec := fromSpec.Copy().(*FromProcedureSpec)
+	newFromSpec := fromSpec.Copy().(*PhysicalFromProcedureSpec)
 	newFromSpec.GroupingSet = true
 	newFromSpec.GroupMode = groupSpec.GroupMode
 	newFromSpec.GroupKeys = groupSpec.GroupKeys
-	merged, err := plan.MergePhysicalPlanNodes(groupNode, fromNode, newFromSpec)
+	merged, err := plan.MergeToPhysicalPlanNode(groupNode, fromNode, newFromSpec)
 	if err != nil {
 		return nil, false, err
 	}

@@ -787,7 +787,7 @@ func TestMergeGroupRule(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			plantest.RuleTestHelper(t, &tc)
+			plantest.LogicalRuleTestHelper(t, &tc)
 		})
 	}
 }

@@ -38,15 +38,18 @@ func makeFilterFn(exprs ...semantic.Expression) *semantic.FunctionExpression {
 
 func TestFromRangeRule(t *testing.T) {
 	var (
-		fromWithBounds = &inputs.FromProcedureSpec{
-			BoundsSet: true,
+		from           = &inputs.FromProcedureSpec{}
+		fromWithBounds = &inputs.PhysicalFromProcedureSpec{
+			FromProcedureSpec: from,
+			BoundsSet:         true,
 			Bounds: flux.Bounds{
 				Start: fluxTime(5),
 				Stop:  fluxTime(10),
 			},
 		}
-		fromWithIntersectedBounds = &inputs.FromProcedureSpec{
-			BoundsSet: true,
+		fromWithIntersectedBounds = &inputs.PhysicalFromProcedureSpec{
+			FromProcedureSpec: from,
+			BoundsSet:         true,
 			Bounds: flux.Bounds{
 				Start: fluxTime(9),
 				Stop:  fluxTime(10),
@@ -64,7 +67,6 @@ func TestFromRangeRule(t *testing.T) {
 				Stop:  fluxTime(14),
 			},
 		}
-		from  = &inputs.FromProcedureSpec{}
 		mean  = &transformations.MeanProcedureSpec{}
 		count = &transformations.CountProcedureSpec{}
 	)
@@ -73,10 +75,10 @@ func TestFromRangeRule(t *testing.T) {
 		{
 			Name: "from range",
 			// from -> range  =>  from
-			Rules: []plan.Rule{&inputs.MergeFromRangeRule{}},
+			Rules: []plan.Rule{&inputs.FromConversionRule{}, &inputs.MergeFromRangeRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreateLogicalNode("from", from),
 					plan.CreatePhysicalNode("range", rangeWithBounds),
 				},
 				Edges: [][2]int{{0, 1}},
@@ -90,10 +92,10 @@ func TestFromRangeRule(t *testing.T) {
 		{
 			Name: "from range with successor node",
 			// from -> range -> count  =>  from -> count
-			Rules: []plan.Rule{&inputs.MergeFromRangeRule{}},
+			Rules: []plan.Rule{&inputs.FromConversionRule{}, &inputs.MergeFromRangeRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreateLogicalNode("from", from),
 					plan.CreatePhysicalNode("range", rangeWithBounds),
 					plan.CreatePhysicalNode("count", count),
 				},
@@ -113,10 +115,10 @@ func TestFromRangeRule(t *testing.T) {
 		{
 			Name: "from with multiple ranges",
 			// from -> range -> range  =>  from
-			Rules: []plan.Rule{&inputs.MergeFromRangeRule{}},
+			Rules: []plan.Rule{&inputs.FromConversionRule{}, &inputs.MergeFromRangeRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreateLogicalNode("from", from),
 					plan.CreatePhysicalNode("range0", rangeWithBounds),
 					plan.CreatePhysicalNode("range1", rangeWithDifferentBounds),
 				},
@@ -138,10 +140,10 @@ func TestFromRangeRule(t *testing.T) {
 			//      range       =>      \    /
 			//        |                  from
 			//       from
-			Rules: []plan.Rule{&inputs.MergeFromRangeRule{}},
+			Rules: []plan.Rule{&inputs.FromConversionRule{}, &inputs.MergeFromRangeRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreateLogicalNode("from", from),
 					plan.CreatePhysicalNode("range", rangeWithBounds),
 					plan.CreatePhysicalNode("count", count),
 					plan.CreatePhysicalNode("yield0", yield("count")),
@@ -180,7 +182,9 @@ func TestFromRangeRule(t *testing.T) {
 			Rules: []plan.Rule{&inputs.MergeFromRangeRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("from", &inputs.PhysicalFromProcedureSpec{
+						FromProcedureSpec: from,
+					}),
 					plan.CreatePhysicalNode("range", rangeWithBounds),
 					plan.CreatePhysicalNode("yield0", yield("range")),
 					plan.CreatePhysicalNode("count", count),
@@ -201,20 +205,29 @@ func TestFromRangeRule(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			plantest.RuleTestHelper(t, &tc)
+			plantest.PhysicalRuleTestHelper(t, &tc)
 		})
 	}
 }
 
 func TestFromFilterRule(t *testing.T) {
 	var (
-		rangeWithBounds = &transformations.RangeProcedureSpec{
-			Bounds: flux.Bounds{
-				Start: fluxTime(5),
-				Stop:  fluxTime(10),
-			},
+		bounds = flux.Bounds{
+			Start: fluxTime(5),
+			Stop:  fluxTime(10),
 		}
+
 		from = &inputs.FromProcedureSpec{}
+
+		physFrom = &inputs.PhysicalFromProcedureSpec{
+			FromProcedureSpec: from,
+			BoundsSet:         true,
+			Bounds:            bounds,
+		}
+
+		rangeWithBounds = &transformations.RangeProcedureSpec{
+			Bounds: bounds,
+		}
 
 		pushableExpr1 = &semantic.BinaryExpression{Operator: ast.EqualOperator,
 			Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_measurement"},
@@ -242,10 +255,10 @@ func TestFromFilterRule(t *testing.T) {
 		{
 			Name: "from filter",
 			// from -> filter  =>  from
-			Rules: []plan.Rule{inputs.MergeFromFilterRule{}},
+			Rules: []plan.Rule{inputs.MergeFromFilterRule{}, inputs.MergeFromRangeRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("from", physFrom),
 					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: makeFilterFn(pushableExpr1)}),
 				},
 				Edges: [][2]int{
@@ -254,9 +267,12 @@ func TestFromFilterRule(t *testing.T) {
 			},
 			After: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("merged_from_filter", &inputs.FromProcedureSpec{
-						FilterSet: true,
-						Filter:    makeFilterFn(pushableExpr1),
+					plan.CreatePhysicalNode("merged_from_filter", &inputs.PhysicalFromProcedureSpec{
+						FromProcedureSpec: from,
+						BoundsSet:         true,
+						Bounds:            bounds,
+						FilterSet:         true,
+						Filter:            makeFilterFn(pushableExpr1),
 					}),
 				},
 			},
@@ -267,7 +283,7 @@ func TestFromFilterRule(t *testing.T) {
 			Rules: []plan.Rule{inputs.MergeFromFilterRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("from", physFrom),
 					plan.CreatePhysicalNode("filter1", &transformations.FilterProcedureSpec{Fn: makeFilterFn(pushableExpr1)}),
 					plan.CreatePhysicalNode("filter2", &transformations.FilterProcedureSpec{Fn: makeFilterFn(pushableExpr2)}),
 				},
@@ -279,9 +295,12 @@ func TestFromFilterRule(t *testing.T) {
 			After: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("merged_from_filter1_filter2",
-						&inputs.FromProcedureSpec{
-							FilterSet: true,
-							Filter:    makeFilterFn(pushableExpr1, pushableExpr2),
+						&inputs.PhysicalFromProcedureSpec{
+							FromProcedureSpec: from,
+							BoundsSet:         true,
+							Bounds:            bounds,
+							FilterSet:         true,
+							Filter:            makeFilterFn(pushableExpr1, pushableExpr2),
 						}),
 				},
 			},
@@ -292,7 +311,7 @@ func TestFromFilterRule(t *testing.T) {
 			Rules: []plan.Rule{inputs.MergeFromFilterRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("from", physFrom),
 					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: makeFilterFn(pushableExpr1, unpushableExpr)}),
 				},
 				Edges: [][2]int{
@@ -302,9 +321,12 @@ func TestFromFilterRule(t *testing.T) {
 			After: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreatePhysicalNode("from",
-						&inputs.FromProcedureSpec{
-							FilterSet: true,
-							Filter:    makeFilterFn(pushableExpr1),
+						&inputs.PhysicalFromProcedureSpec{
+							FromProcedureSpec: from,
+							BoundsSet:         true,
+							Bounds:            bounds,
+							FilterSet:         true,
+							Filter:            makeFilterFn(pushableExpr1),
 						}),
 					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: makeFilterFn(unpushableExpr)}),
 				},
@@ -316,10 +338,10 @@ func TestFromFilterRule(t *testing.T) {
 		{
 			Name: "from range filter",
 			// from -> range -> filter  =>  from
-			Rules: []plan.Rule{inputs.MergeFromFilterRule{}, inputs.MergeFromRangeRule{}},
+			Rules: []plan.Rule{inputs.FromConversionRule{}, inputs.MergeFromFilterRule{}, inputs.MergeFromRangeRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreateLogicalNode("from", from),
 					plan.CreatePhysicalNode("range", rangeWithBounds),
 					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: makeFilterFn(pushableExpr1)}),
 				},
@@ -330,14 +352,15 @@ func TestFromFilterRule(t *testing.T) {
 			},
 			After: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("merged_from_range_filter", &inputs.FromProcedureSpec{
-						FilterSet: true,
-						Filter:    makeFilterFn(pushableExpr1),
-						BoundsSet: true,
+					plan.CreatePhysicalNode("merged_from_range_filter", &inputs.PhysicalFromProcedureSpec{
+						FromProcedureSpec: from,
+						BoundsSet:         true,
 						Bounds: flux.Bounds{
 							Start: fluxTime(5),
 							Stop:  fluxTime(10),
 						},
+						FilterSet: true,
+						Filter:    makeFilterFn(pushableExpr1),
 					}),
 				},
 			},
@@ -348,7 +371,7 @@ func TestFromFilterRule(t *testing.T) {
 			Rules: []plan.Rule{inputs.MergeFromFilterRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreateLogicalNode("from", physFrom),
 					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: makeFilterFn(unpushableExpr)}),
 				},
 				Edges: [][2]int{
@@ -363,7 +386,7 @@ func TestFromFilterRule(t *testing.T) {
 			Rules: []plan.Rule{inputs.MergeFromFilterRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreateLogicalNode("from", physFrom),
 					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: statementFn}),
 				},
 				Edges: [][2]int{
@@ -378,20 +401,27 @@ func TestFromFilterRule(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			plantest.RuleTestHelper(t, &tc)
+			plantest.PhysicalRuleTestHelper(t, &tc)
 		})
 	}
 }
 
 func TestFromDistinctRule(t *testing.T) {
-	var from = &inputs.FromProcedureSpec{}
+
+	var (
+		from     = &inputs.FromProcedureSpec{}
+		physFrom = &inputs.PhysicalFromProcedureSpec{
+			FromProcedureSpec: from,
+		}
+	)
+
 	tests := []plantest.RuleTestCase{
 		{
 			Name:  "from distinct",
 			Rules: []plan.Rule{inputs.FromDistinctRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("from", physFrom),
 					plan.CreatePhysicalNode("distinct", &transformations.DistinctProcedureSpec{Column: "_measurement"}),
 				},
 				Edges: [][2]int{
@@ -400,9 +430,10 @@ func TestFromDistinctRule(t *testing.T) {
 			},
 			After: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", &inputs.FromProcedureSpec{
-						LimitSet:    true,
-						PointsLimit: -1,
+					plan.CreatePhysicalNode("from", &inputs.PhysicalFromProcedureSpec{
+						FromProcedureSpec: from,
+						LimitSet:          true,
+						PointsLimit:       -1,
 					}),
 					plan.CreatePhysicalNode("distinct", &transformations.DistinctProcedureSpec{Column: "_measurement"}),
 				},
@@ -417,7 +448,7 @@ func TestFromDistinctRule(t *testing.T) {
 			Rules: []plan.Rule{inputs.FromDistinctRule{}, inputs.MergeFromGroupRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("from", physFrom),
 					plan.CreatePhysicalNode("group", &transformations.GroupProcedureSpec{
 						GroupMode: functions.GroupModeBy,
 						GroupKeys: []string{"_measurement"},
@@ -431,10 +462,11 @@ func TestFromDistinctRule(t *testing.T) {
 			},
 			After: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("merged_from_group", &inputs.FromProcedureSpec{
-						GroupingSet: true,
-						GroupMode:   functions.GroupModeBy,
-						GroupKeys:   []string{"_measurement"},
+					plan.CreatePhysicalNode("merged_from_group", &inputs.PhysicalFromProcedureSpec{
+						FromProcedureSpec: from,
+						GroupingSet:       true,
+						GroupMode:         functions.GroupModeBy,
+						GroupKeys:         []string{"_measurement"},
 					}),
 					plan.CreatePhysicalNode("distinct", &transformations.DistinctProcedureSpec{Column: "_field"}),
 				},
@@ -449,7 +481,7 @@ func TestFromDistinctRule(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			plantest.RuleTestHelper(t, &tc)
+			plantest.PhysicalRuleTestHelper(t, &tc)
 		})
 	}
 }
@@ -462,7 +494,10 @@ func TestFromGroupRule(t *testing.T) {
 				Stop:  fluxTime(10),
 			},
 		}
-		from = &inputs.FromProcedureSpec{}
+		from     = &inputs.FromProcedureSpec{}
+		physFrom = &inputs.PhysicalFromProcedureSpec{
+			FromProcedureSpec: from,
+		}
 
 		pushableExpr1 = &semantic.BinaryExpression{Operator: ast.EqualOperator,
 			Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_measurement"},
@@ -475,7 +510,7 @@ func TestFromGroupRule(t *testing.T) {
 			Rules: []plan.Rule{inputs.MergeFromGroupRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("from", physFrom),
 					plan.CreatePhysicalNode("group", &transformations.GroupProcedureSpec{
 						GroupMode: functions.GroupModeBy,
 						GroupKeys: []string{"_measurement"},
@@ -489,10 +524,11 @@ func TestFromGroupRule(t *testing.T) {
 			},
 			After: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("merged_from_group", &inputs.FromProcedureSpec{
-						GroupingSet: true,
-						GroupMode:   functions.GroupModeBy,
-						GroupKeys:   []string{"_measurement"},
+					plan.CreatePhysicalNode("merged_from_group", &inputs.PhysicalFromProcedureSpec{
+						FromProcedureSpec: from,
+						GroupingSet:       true,
+						GroupMode:         functions.GroupModeBy,
+						GroupKeys:         []string{"_measurement"},
 					}),
 					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{Fn: makeFilterFn(pushableExpr1)}),
 				},
@@ -507,7 +543,7 @@ func TestFromGroupRule(t *testing.T) {
 			Rules: []plan.Rule{inputs.MergeFromGroupRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("from", physFrom),
 					plan.CreatePhysicalNode("group", &transformations.GroupProcedureSpec{
 						GroupMode: functions.GroupModeBy,
 						GroupKeys: []string{"_measurement"},
@@ -524,10 +560,11 @@ func TestFromGroupRule(t *testing.T) {
 			},
 			After: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("merged_from_group", &inputs.FromProcedureSpec{
-						GroupingSet: true,
-						GroupMode:   functions.GroupModeBy,
-						GroupKeys:   []string{"_measurement"},
+					plan.CreatePhysicalNode("merged_from_group", &inputs.PhysicalFromProcedureSpec{
+						FromProcedureSpec: from,
+						GroupingSet:       true,
+						GroupMode:         functions.GroupModeBy,
+						GroupKeys:         []string{"_measurement"},
 					}),
 					plan.CreatePhysicalNode("group", &transformations.GroupProcedureSpec{
 						GroupMode: functions.GroupModeBy,
@@ -540,11 +577,12 @@ func TestFromGroupRule(t *testing.T) {
 			},
 		},
 		{
-			Name:  "from range group distinct group",
-			Rules: []plan.Rule{inputs.MergeFromGroupRule{}, inputs.FromDistinctRule{}, inputs.MergeFromRangeRule{}},
+			Name: "from range group distinct group",
+			Rules: []plan.Rule{inputs.FromConversionRule{}, inputs.MergeFromGroupRule{},
+				inputs.FromDistinctRule{}, inputs.MergeFromRangeRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreateLogicalNode("from", from),
 					plan.CreatePhysicalNode("range", rangeWithBounds),
 					plan.CreatePhysicalNode("group1", &transformations.GroupProcedureSpec{
 						GroupMode: functions.GroupModeBy,
@@ -562,14 +600,15 @@ func TestFromGroupRule(t *testing.T) {
 			},
 			After: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("merged_from_range_group1", &inputs.FromProcedureSpec{
-						BoundsSet:   true,
-						Bounds:      flux.Bounds{Start: fluxTime(5), Stop: fluxTime(10)},
-						GroupingSet: true,
-						GroupMode:   functions.GroupModeBy,
-						GroupKeys:   []string{"_measurement"},
-						LimitSet:    true,
-						PointsLimit: -1,
+					plan.CreatePhysicalNode("merged_from_range_group1", &inputs.PhysicalFromProcedureSpec{
+						FromProcedureSpec: from,
+						BoundsSet:         true,
+						Bounds:            flux.Bounds{Start: fluxTime(5), Stop: fluxTime(10)},
+						GroupingSet:       true,
+						GroupMode:         functions.GroupModeBy,
+						GroupKeys:         []string{"_measurement"},
+						LimitSet:          true,
+						PointsLimit:       -1,
 					}),
 					plan.CreatePhysicalNode("distinct", &transformations.DistinctProcedureSpec{Column: "_measurement"}),
 					plan.CreatePhysicalNode("group2", &transformations.GroupProcedureSpec{GroupMode: functions.GroupModeNone}),
@@ -586,7 +625,7 @@ func TestFromGroupRule(t *testing.T) {
 			Rules: []plan.Rule{inputs.MergeFromGroupRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreateLogicalNode("from", physFrom),
 					plan.CreatePhysicalNode("group", &transformations.GroupProcedureSpec{
 						GroupMode: functions.GroupModeExcept,
 						GroupKeys: []string{"_time", "_value"},
@@ -604,7 +643,7 @@ func TestFromGroupRule(t *testing.T) {
 			Rules: []plan.Rule{inputs.MergeFromGroupRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("from", physFrom),
 					plan.CreatePhysicalNode("group", &transformations.GroupProcedureSpec{
 						GroupMode: functions.GroupModeExcept,
 						GroupKeys: []string{"_time"},
@@ -622,7 +661,7 @@ func TestFromGroupRule(t *testing.T) {
 			Rules: []plan.Rule{inputs.MergeFromGroupRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("from", physFrom),
 					plan.CreatePhysicalNode("group", &transformations.GroupProcedureSpec{
 						GroupMode: functions.GroupModeExcept,
 						GroupKeys: []string{"_value"},
@@ -640,7 +679,7 @@ func TestFromGroupRule(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			plantest.RuleTestHelper(t, &tc)
+			plantest.PhysicalRuleTestHelper(t, &tc)
 		})
 	}
 }
@@ -654,7 +693,7 @@ func TestFromRangeValidation(t *testing.T) {
 		//    \    /
 		//     from
 		Nodes: []plan.PlanNode{
-			plan.CreatePhysicalNode("from", &inputs.FromProcedureSpec{}),
+			plan.CreateLogicalNode("from", &inputs.FromProcedureSpec{}),
 			plantest.CreatePhysicalMockNode("1"),
 			plantest.CreatePhysicalMockNode("2"),
 			plantest.CreatePhysicalMockNode("3"),

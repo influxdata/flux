@@ -239,7 +239,7 @@ func (r MergeGroupRule) Rewrite(lastGroup plan.PlanNode) (plan.PlanNode, bool, e
 		return lastGroup, false, nil
 	}
 
-	merged, err := plan.MergeLogicalPlanNodes(lastGroup, firstGroup, lastSpec.Copy())
+	merged, err := plan.MergeToLogicalPlanNode(lastGroup, firstGroup, lastSpec.Copy())
 	if err != nil {
 		return nil, false, err
 	}

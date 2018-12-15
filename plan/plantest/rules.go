@@ -111,8 +111,8 @@ type RuleTestCase struct {
 	NoChange bool
 }
 
-// RuleTestHelper will run a rule test case.
-func RuleTestHelper(t *testing.T, tc *RuleTestCase) {
+// PhysicalRuleTestHelper will run a rule test case.
+func PhysicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
 	t.Helper()
 
 	before := CreatePlanSpec(tc.Before)
@@ -130,6 +130,55 @@ func RuleTestHelper(t *testing.T, tc *RuleTestCase) {
 	)
 
 	pp, err := physicalPlanner.Plan(before)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	type testAttrs struct {
+		ID   plan.NodeID
+		Spec plan.PhysicalProcedureSpec
+	}
+	want := make([]testAttrs, 0)
+	after.BottomUpWalk(func(node plan.PlanNode) error {
+		want = append(want, testAttrs{
+			ID:   node.ID(),
+			Spec: node.ProcedureSpec().(plan.PhysicalProcedureSpec),
+		})
+		return nil
+	})
+
+	got := make([]testAttrs, 0)
+	pp.BottomUpWalk(func(node plan.PlanNode) error {
+		got = append(got, testAttrs{
+			ID:   node.ID(),
+			Spec: node.ProcedureSpec().(plan.PhysicalProcedureSpec),
+		})
+		return nil
+	})
+
+	if !cmp.Equal(want, got, semantictest.CmpOptions...) {
+		t.Errorf("transformed plan not as expected, -want/+got:\n%v",
+			cmp.Diff(want, got, semantictest.CmpOptions...))
+	}
+}
+
+// LogicalRuleTestHelper will run a rule test case.
+func LogicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
+	t.Helper()
+
+	before := CreatePlanSpec(tc.Before)
+	var after *plan.PlanSpec
+	if tc.NoChange {
+		after = CreatePlanSpec(tc.Before.Copy())
+	} else {
+		after = CreatePlanSpec(tc.After)
+	}
+
+	logicalPlanner := plan.NewLogicalPlanner(
+		plan.OnlyLogicalRules(tc.Rules...),
+	)
+
+	pp, err := logicalPlanner.Plan(before)
 	if err != nil {
 		t.Fatal(err)
 	}

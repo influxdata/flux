@@ -316,15 +316,24 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 			thePlanner := plan.NewLogicalPlanner()
 
 			// Convert flux spec to initial logical plan
-			gotPlan, err := thePlanner.Plan(spec)
-			if !tc.wantErr && err != nil {
-				t.Fatal(err)
-			}
+			initPlan, err := thePlanner.CreateInitialPlan(spec)
+
 			if tc.wantErr {
+				if err == nil {
+					_, err = thePlanner.Plan(initPlan)
+				}
 				if err == nil {
 					t.Fatal("expected error, but got none")
 				}
 			} else {
+				if err != nil {
+					t.Fatal(err)
+				}
+				gotPlan, err := thePlanner.Plan(initPlan)
+				if err != nil {
+					t.Fatal(err)
+				}
+
 				wantPlan := plantest.CreatePlanSpec(tc.plan)
 
 				gotAttrs := make([]testAttrs, 0, 10)
@@ -376,7 +385,7 @@ func (MergeFiltersRule) Rewrite(pn plan.PlanNode) (plan.PlanNode, bool, error) {
 	filterSpecBottom := pn.Predecessors()[0].ProcedureSpec().(*transformations.FilterProcedureSpec)
 	mergedFilterSpec := mergeFilterSpecs(filterSpecTop, filterSpecBottom)
 
-	newNode, err := plan.MergeLogicalPlanNodes(pn, pn.Predecessors()[0], mergedFilterSpec)
+	newNode, err := plan.MergeToLogicalPlanNode(pn, pn.Predecessors()[0], mergedFilterSpec)
 	if err != nil {
 		return pn, false, err
 	}
@@ -559,7 +568,11 @@ func TestLogicalPlanner(t *testing.T) {
 			}
 
 			logicalPlanner := plan.NewLogicalPlanner(plan.OnlyLogicalRules(MergeFiltersRule{}, PushFilterThroughMapRule{}))
-			logicalPlan, err := logicalPlanner.Plan(fluxSpec)
+			initPlan, err := logicalPlanner.CreateInitialPlan(fluxSpec)
+			if err != nil {
+				t.Fatal(err)
+			}
+			logicalPlan, err := logicalPlanner.Plan(initPlan)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -594,7 +607,11 @@ from(bucket: "telegraf")
 		),
 		plan.DisableIntegrityChecks(),
 	)
-	_, err = planner.Plan(spec)
+	initPlan, err := planner.CreateInitialPlan(spec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = planner.Plan(initPlan)
 	if err != nil {
 		t.Fatalf("unexpected fail: %v", err)
 	}
@@ -602,7 +619,11 @@ from(bucket: "telegraf")
 	// let's smash the plan
 	planner = plan.NewLogicalPlanner(
 		plan.OnlyLogicalRules(plantest.SmashPlanRule{Intruder: intruder, Kind: k}))
-	_, err = planner.Plan(spec)
+	initPlan, err = planner.CreateInitialPlan(spec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = planner.Plan(initPlan)
 	if err == nil {
 		t.Fatal("unexpected pass")
 	}
@@ -610,7 +631,11 @@ from(bucket: "telegraf")
 	// let's introduce a cycle
 	planner = plan.NewLogicalPlanner(
 		plan.OnlyLogicalRules(plantest.CreateCycleRule{Kind: k}))
-	_, err = planner.Plan(spec)
+	initPlan, err = planner.CreateInitialPlan(spec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = planner.Plan(initPlan)
 	if err == nil {
 		t.Fatal("unexpected pass")
 	}
