@@ -75,7 +75,7 @@ func Eval(itrp *interpreter.Interpreter, q string) error {
 		return err
 	}
 
-	if err := itrp.Eval(semProg, nil); err != nil {
+	if err := itrp.Eval(semProg, standardLib); err != nil {
 		return err
 	}
 	return nil
@@ -153,6 +153,68 @@ var builtinTypeScope = interpreter.NewTypeScope()
 var builtinScripts = make(map[string]string)
 var finalized bool
 
+// importer for the Flux standard library
+var standardLib importer = map[string]*standardLibPkg{
+	"testing": newPackage("testing"),
+	"strings": newPackage("strings"),
+	"math":    newPackage("math"),
+	"exp":     newPackage("exp"),
+}
+
+type standardLibPkg struct {
+	values.Value
+	name        string
+	sideEffects []values.Value
+}
+
+func newPackage(name string) *standardLibPkg {
+	return &standardLibPkg{
+		Value: values.NewObject(),
+		name:  name,
+	}
+}
+
+func (pkg *standardLibPkg) Name() string {
+	return pkg.name
+}
+
+func (pkg *standardLibPkg) SideEffects() []values.Value {
+	return pkg.sideEffects
+}
+
+func (pkg *standardLibPkg) Get(name string) (values.Value, bool) {
+	return pkg.Value.(values.Object).Get(name)
+}
+
+func (pkg *standardLibPkg) Set(k string, v values.Value) {
+	pkg.Value.(values.Object).Set(k, v)
+}
+
+func (pkg *standardLibPkg) Len() int {
+	return pkg.Value.(values.Object).Len()
+}
+
+func (pkg *standardLibPkg) Range(f func(k string, v values.Value)) {
+	pkg.Value.(values.Object).Range(f)
+}
+
+type importer map[string]*standardLibPkg
+
+func (imp importer) Import(path string) (semantic.Package, bool) {
+	var pkg semantic.Package
+	if p, ok := imp[path]; ok {
+		pkg.Name = p.Name()
+		pkg.Type = p.PolyType()
+		return pkg, ok
+	}
+	return pkg, false
+}
+
+func (imp importer) ImportPackageObject(path string) (interpreter.Package, bool) {
+	pkg, ok := imp[path]
+	return pkg, ok
+}
+
 // RegisterBuiltIn adds any variable declarations written in Flux script to the builtin scope.
 func RegisterBuiltIn(name, script string) {
 	if finalized {
@@ -173,6 +235,17 @@ func RegisterFunction(name string, c CreateOperationSpec, sig semantic.FunctionP
 		hasSideEffect: false,
 	}
 	RegisterBuiltInValue(name, &f)
+}
+
+// RegisterFunctionWithPackage adds a new function to the standard library package denoted by its path
+func RegisterFunctionWithPackage(name, path string, c CreateOperationSpec, sig semantic.FunctionPolySignature, hasSideEffect bool) {
+	f := function{
+		t:             semantic.NewFunctionPolyType(sig),
+		name:          name,
+		createOpSpec:  c,
+		hasSideEffect: hasSideEffect,
+	}
+	RegisterBuiltInValueWithPackage(name, path, &f, hasSideEffect)
 }
 
 // RegisterFunctionWithSideEffect adds a new builtin top level function that produces side effects.
@@ -199,6 +272,24 @@ func RegisterBuiltInValue(name string, v values.Value) {
 		panic(fmt.Errorf("duplicate registration for builtin %q", name))
 	}
 	builtinValues[name] = v
+}
+
+// RegisterBuiltInValueWithPackage adds v the to the standard library package denoted by its path
+func RegisterBuiltInValueWithPackage(name, path string, v values.Value, hasSideEffect bool) {
+	if finalized {
+		panic(errors.New("already finalized, cannot register builtin"))
+	}
+	pkg, ok := standardLib[path]
+	if !ok {
+		panic(fmt.Errorf("invalid std lib import path %s", path))
+	}
+	if _, ok := pkg.Get(name); ok {
+		panic(fmt.Errorf("duplicate reg for %q in package %q", name, pkg.Name()))
+	}
+	if hasSideEffect {
+		pkg.sideEffects = append(pkg.sideEffects, v)
+	}
+	pkg.Set(name, v)
 }
 
 // RegisterBuiltInOption adds the value to the builtin scope.
@@ -238,7 +329,7 @@ func evalBuiltInScripts() error {
 			return errors.Wrapf(err, "failed to create semantic graph for builtin %q", name)
 		}
 
-		if err := itrp.Eval(semProg, nil); err != nil {
+		if err := itrp.Eval(semProg, standardLib); err != nil {
 			return errors.Wrapf(err, "failed to evaluate builtin %q", name)
 		}
 	}
