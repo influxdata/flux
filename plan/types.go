@@ -195,7 +195,7 @@ func (e *edges) shallowCopy() edges {
 	return *newEdges
 }
 
-// MergeLogicalPlanNodes merges top and bottom plan nodes into a new plan node, with the
+// MergeToLogicalPlanNode merges top and bottom plan nodes into a new plan node, with the
 // given procedure spec.
 //
 //     V1     V2       V1            V2       <-- successors
@@ -209,7 +209,7 @@ func (e *edges) shallowCopy() edges {
 // The returned node will have its predecessors set to the predecessors
 // of "bottom", however, it's successors will not be set---it will be the responsibility of
 // the plan to attach the merged node to its successors.
-func MergeLogicalPlanNodes(top, bottom PlanNode, procSpec ProcedureSpec) (PlanNode, error) {
+func MergeToLogicalPlanNode(top, bottom PlanNode, procSpec ProcedureSpec) (PlanNode, error) {
 	merged := &LogicalPlanNode{
 		id:   mergeIDs(top.ID(), bottom.ID()),
 		Spec: procSpec,
@@ -218,7 +218,7 @@ func MergeLogicalPlanNodes(top, bottom PlanNode, procSpec ProcedureSpec) (PlanNo
 	return mergePlanNodes(top, bottom, merged)
 }
 
-func MergePhysicalPlanNodes(top, bottom PlanNode, procSpec PhysicalProcedureSpec) (PlanNode, error) {
+func MergeToPhysicalPlanNode(top, bottom PlanNode, procSpec PhysicalProcedureSpec) (PlanNode, error) {
 	merged := &PhysicalPlanNode{
 		id:   mergeIDs(top.ID(), bottom.ID()),
 		Spec: procSpec,

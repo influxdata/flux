@@ -14,7 +14,8 @@ import (
 // actual physical algorithms used to implement operations, and independent of
 // the actual data being processed.
 type LogicalPlanner interface {
-	Plan(spec *flux.Spec) (*PlanSpec, error)
+	CreateInitialPlan(spec *flux.Spec) (*PlanSpec, error)
+	Plan(*PlanSpec) (*PlanSpec, error)
 }
 
 // NewLogicalPlanner returns a new logical plan with the given options.
@@ -75,13 +76,13 @@ func DisableIntegrityChecks() LogicalOption {
 	})
 }
 
-// Plan translates the given flux.Spec to a plan and transforms it by applying rules.
-func (l *logicalPlanner) Plan(spec *flux.Spec) (*PlanSpec, error) {
-	logicalPlan, err := createLogicalPlan(spec)
-	if err != nil {
-		return nil, err
-	}
+// CreateInitialPlan translates the flux.Spec into an unoptimized, naive plan.
+func (l *logicalPlanner) CreateInitialPlan(spec *flux.Spec) (*PlanSpec, error) {
+	return createLogicalPlan(spec)
+}
 
+// Plan transforms the given naive plan by applying rules.
+func (l *logicalPlanner) Plan(logicalPlan *PlanSpec) (*PlanSpec, error) {
 	newLogicalPlan, err := l.heuristicPlanner.Plan(logicalPlan)
 	if err != nil {
 		return nil, err
