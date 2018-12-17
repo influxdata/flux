@@ -1340,16 +1340,11 @@ func (c *boolColumnBuilder) Clear() {
 	c.data = c.data[0:0]
 }
 func (c *boolColumnBuilder) Copy() column {
-	b := arrow.NewBoolBuilder(c.alloc.Allocator)
-	b.Reserve(len(c.data))
-	for _, v := range c.data {
-		b.UnsafeAppend(v)
-	}
+	data := arrow.NewBool(c.data, c.alloc.Allocator)
 	col := &boolColumn{
 		ColMeta: c.ColMeta,
-		data:    b.NewBooleanArray(),
+		data:    data,
 	}
-	b.Release()
 	return col
 }
 func (c *boolColumnBuilder) Len() int {
@@ -1406,16 +1401,11 @@ func (c *intColumnBuilder) Clear() {
 	c.data = c.data[0:0]
 }
 func (c *intColumnBuilder) Copy() column {
-	b := arrow.NewIntBuilder(c.alloc.Allocator)
-	b.Reserve(len(c.data))
-	for _, v := range c.data {
-		b.UnsafeAppend(v)
-	}
+	data := arrow.NewInt(c.data, c.alloc.Allocator)
 	col := &intColumn{
 		ColMeta: c.ColMeta,
-		data:    b.NewInt64Array(),
+		data:    data,
 	}
-	b.Release()
 	return col
 }
 func (c *intColumnBuilder) Len() int {
@@ -1469,16 +1459,11 @@ func (c *uintColumnBuilder) Clear() {
 	c.data = c.data[0:0]
 }
 func (c *uintColumnBuilder) Copy() column {
-	b := arrow.NewUintBuilder(c.alloc.Allocator)
-	b.Reserve(len(c.data))
-	for _, v := range c.data {
-		b.UnsafeAppend(v)
-	}
+	data := arrow.NewUint(c.data, c.alloc.Allocator)
 	col := &uintColumn{
 		ColMeta: c.ColMeta,
-		data:    b.NewUint64Array(),
+		data:    data,
 	}
-	b.Release()
 	return col
 }
 func (c *uintColumnBuilder) Len() int {
@@ -1532,16 +1517,11 @@ func (c *floatColumnBuilder) Clear() {
 	c.data = c.data[0:0]
 }
 func (c *floatColumnBuilder) Copy() column {
-	b := arrow.NewFloatBuilder(c.alloc.Allocator)
-	b.Reserve(len(c.data))
-	for _, v := range c.data {
-		b.UnsafeAppend(v)
-	}
+	data := arrow.NewFloat(c.data, c.alloc.Allocator)
 	col := &floatColumn{
 		ColMeta: c.ColMeta,
-		data:    b.NewFloat64Array(),
+		data:    data,
 	}
-	b.Release()
 	return col
 }
 func (c *floatColumnBuilder) Len() int {
@@ -1595,16 +1575,11 @@ func (c *stringColumnBuilder) Clear() {
 	c.data = c.data[0:0]
 }
 func (c *stringColumnBuilder) Copy() column {
-	b := arrow.NewStringBuilder(c.alloc.Allocator)
-	b.Reserve(len(c.data))
-	for _, v := range c.data {
-		b.AppendString(v)
-	}
+	data := arrow.NewString(c.data, c.alloc.Allocator)
 	col := &stringColumn{
 		ColMeta: c.ColMeta,
-		data:    b.NewBinaryArray(),
+		data:    data,
 	}
-	b.Release()
 	return col
 }
 func (c *stringColumnBuilder) Len() int {
