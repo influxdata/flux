@@ -84,7 +84,7 @@ func createRelease(r *git.Repository, verTag string) (*Release, error) {
 	return &Release{
 		Version:         ver,
 		PreviousVersion: prevVer,
-		Date:            time.Now().Format("2006-01-30"),
+		Date:            time.Now().Format("2006-01-02"),
 		Breaking:        breaking,
 		Features:        features,
 		Fixes:           fixes,
