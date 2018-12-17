@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"log"
 	"os"
 	"regexp"
 	"strings"
@@ -167,10 +168,11 @@ func findNewCommits(r *git.Repository, prevHash, currHash plumbing.Hash) ([]Comm
 			break
 		}
 		c, err := parseCommit(commit)
-		if err != nil {
-			return nil, err
+		if err == nil {
+			commits = append(commits, c)
+		} else {
+			log.Printf("invalid commit message %v: %v", commit.Hash, err)
 		}
-		commits = append(commits, c)
 	}
 	return commits, nil
 }
