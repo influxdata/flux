@@ -574,6 +574,14 @@ type object struct {
 func NewEmptyObjectPolyType() PolyType {
 	return NewObjectPolyType(nil, LabelSet{}, LabelSet{})
 }
+
+// NewObjectPolyType creates a PolyType representing an object.
+// A map of properties and their types may be provided.
+// Lower is a set of labels that must exist on the object,
+// and upper is a set of labels that may exist on the object.
+// Upper must be a superset of lower.
+// The map must contain an entry for all lables in the lower set.
+// Use AllLabels() to represent the infinite set of all possible labels.
 func NewObjectPolyType(properties map[string]PolyType, lower, upper LabelSet) PolyType {
 	return object{
 		krecord: ObjectKind{
