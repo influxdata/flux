@@ -1,4 +1,4 @@
-package arrowutil
+package arrow
 
 import (
 	"github.com/influxdata/flux"
@@ -81,6 +81,12 @@ func (cr *colReader) Times(j int) []values.Time {
 	return c
 }
 
+// ColReader creates a wrapper around an ArrowColReader that will implement the
+// flux.ColReader interface. If the relevant type cannot be returned directly from
+// the arrow array, this reader will lazily memoize a copy of the array as a slice.
+//
+// This method will be removed when the flux.ColReader interface is replaced by the
+// flux.ArrowColReader interface.
 func ColReader(cr flux.ArrowColReader) flux.ColReader {
 	return &colReader{
 		cr:   cr,

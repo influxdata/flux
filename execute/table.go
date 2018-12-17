@@ -10,7 +10,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
-	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -1183,7 +1182,7 @@ func (t *ColListTable) Len() int {
 
 func (t *ColListTable) Do(f func(flux.ColReader) error) error {
 	return t.DoArrow(func(cr flux.ArrowColReader) error {
-		return f(arrowutil.ColReader(cr))
+		return f(arrow.ColReader(cr))
 	})
 }
 
