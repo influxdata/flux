@@ -79,7 +79,8 @@ The parser directly implements the following grammar.
     Block                      = "{" StatementList "}" .
     ExpressionList             = [ Expression { "," Expression } ] .
     PropertyList               = [ Property { "," Property } ] .
-    Property                   = identifer ":" Expression .
+    Property                   = identifier [ ":" Expression ]
+                               | string_lit ":" Expression .
     ParameterList              = [ Parameter { "," Parameter } ] .
     Parameter                  = identifer [ "=" Expression ] .
 
