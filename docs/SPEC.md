@@ -565,7 +565,8 @@ Object literals construct a value with the object type.
 
     ObjectLiteral = "{" PropertyList "}" .
     PropertyList  = [ Property { "," Property } ] .
-    Property      = identifier ":" Expression .
+    Property      = identifier [ ":" Expression ]
+                  | string_lit ":" Expression .
 
 ##### Array literals
 
