@@ -1193,7 +1193,7 @@ Examples:
 
 #### LoadLocation
 
-LoadLoacation loads a locations from a time zone database.
+LoadLocation loads a locations from a time zone database.
 
 LoadLocation has the following parameters:
 
@@ -1207,7 +1207,7 @@ Examples:
     loadLocation(name:"America/Chicago")
     loadLocation(name:"Africa/Tunis")
 
-[IMPL#157](https://github.com/influxdata/flux/issues/157) Implement LoadLoacation function
+[IMPL#157](https://github.com/influxdata/flux/issues/157) Implement LoadLocation function
 
 ## Data model
 
@@ -1236,7 +1236,7 @@ The available data types for a column are:
 
 ### Table
 
-A table is set of records, with a common set of columns and a group key.
+A table is a set of records, with a common set of columns and a group key.
 
 The group key is a list of columns.
 A table's group key denotes which subset of the entire dataset is assigned to the table.
@@ -1249,9 +1249,101 @@ A tables schema consists of its group key, and its column's labels and types.
 
 ### Stream of tables
 
-A stream represents a potentially unbounded set of tables.
-A stream is grouped into individual tables using the group key.
-Within a stream each table's group key value is unique.
+A stream represents a potentially unbounded set of tables. It is produced and/or consumed by one, or more, transformations.
+Records in streams are grouped into tables according to their group key value and their data types values.
+
+As an example, take a stream of logs that contains the table A. Its group key is `host`:
+
+__A__:
+
+|            time:time           | field:string | value:int | host:string |
+|:------------------------------:|:------------:|:---------:|:-----------:|
+| 1970-01-01T00:00:00.000000001Z |   severity   |     3     |    local    |
+| 1970-01-01T00:00:00.000000002Z |   severity   |     4     |    local    |
+| 1970-01-01T00:00:00.000000003Z |   severity   |     5     |    local    |
+| 1970-01-01T00:00:00.000000001Z |    appname   |   influxdb   |    local    |
+| 1970-01-01T00:00:00.000000002Z |    appname   |    syslog    |    local    |
+| 1970-01-01T00:00:00.000000003Z |    appname   |    syslog    |    local    |
+
+As you can see, it has a unique value for its group key.  
+Now, suppose that the stream gets re-grouped by some transformation by `field` and `host`. The result is:
+
+__A_1__:
+
+|            time:time           | field:string | value:int | host:string |
+|:------------------------------:|:------------:|:---------:|:-----------:|
+| 1970-01-01T00:00:00.000000001Z |   severity   |     3     |    local    |
+| 1970-01-01T00:00:00.000000002Z |   severity   |     4     |    local    |
+| 1970-01-01T00:00:00.000000003Z |   severity   |     5     |    local    |
+
+__A_2__:
+
+|            time:time           | field:string | value:string | host:string |
+|:------------------------------:|:------------:|:------------:|:-----------:|
+| 1970-01-01T00:00:00.000000001Z |    appname   |   influxdb   |    local    |
+| 1970-01-01T00:00:00.000000002Z |    appname   |    syslog    |    local    |
+| 1970-01-01T00:00:00.000000003Z |    appname   |    syslog    |    local    |
+
+The table has been split in two, because records have a different value for `field` column, which is now part of the group key.
+
+As a further example, take another stream that contains tables A, B, and C. Their group key is `field` and `host`:
+
+__A__:
+
+|            time:time           | field:string | value:int | host:string |
+|:------------------------------:|:------------:|:---------:|:-----------:|
+| 1970-01-01T00:00:00.000000001Z |   severity   |     3     |    local    |
+| 1970-01-01T00:00:00.000000002Z |   severity   |     4     |    local    |
+| 1970-01-01T00:00:00.000000003Z |   severity   |     5     |    local    |
+
+__B__:
+
+|            time:time           | field:string | value:string | host:string |
+|:------------------------------:|:------------:|:------------:|:-----------:|
+| 1970-01-01T00:00:00.000000001Z |    appname   |   influxdb   |    local    |
+| 1970-01-01T00:00:00.000000002Z |    appname   |    syslog    |    local    |
+| 1970-01-01T00:00:00.000000003Z |    appname   |    syslog    |    local    |
+
+__C__:
+
+|            time:time           | field:string | value:string | host:string |
+|:------------------------------:|:------------:|:------------:|:-----------:|
+| 1970-01-01T00:00:00.000000001Z |    message   |     argh     |    local    |
+| 1970-01-01T00:00:00.000000002Z |    message   |   watch out  |    local    |
+| 1970-01-01T00:00:00.000000003Z |    message   | hey, it's me |    local    |
+
+
+As you can see, as above, every table have unique values for its group key.  
+Now, suppose that the stream gets re-grouped by some transformation by `host`. The result is:
+
+__A_1__:
+
+|            time:time           | field:string | value:int | host:string |
+|:------------------------------:|:------------:|:---------:|:-----------:|
+| 1970-01-01T00:00:00.000000001Z |   severity   |     3     |    local    |
+| 1970-01-01T00:00:00.000000002Z |   severity   |     4     |    local    |
+| 1970-01-01T00:00:00.000000003Z |   severity   |     5     |    local    |
+
+__B_C_1__:
+
+|            time:time           | field:string | value:string | host:string |
+|:------------------------------:|:------------:|:------------:|:-----------:|
+| 1970-01-01T00:00:00.000000001Z |    appname   |   influxdb   |    local    |
+| 1970-01-01T00:00:00.000000002Z |    appname   |    syslog    |    local    |
+| 1970-01-01T00:00:00.000000003Z |    appname   |    syslog    |    local    |
+| 1970-01-01T00:00:00.000000001Z |    message   |     argh     |    local    |
+| 1970-01-01T00:00:00.000000002Z |    message   |   watch out  |    local    |
+| 1970-01-01T00:00:00.000000003Z |    message   | hey, it's me |    local    |
+
+
+As you can see, table B and C are grouped together because they have the same values for the new group key.
+Even if the same holds for table A, it has a different type for column `value` (`int` VS `string`), and so, it cannot
+be grouped together with them (i.e., the resulting table would have an undefined schema).
+
+When more then one table has a column with the same label and different data type, we say that their schemas _collide_.
+
+Note that, even if, as stated above, all the records in a table have the same group key value, _the opposite does not necessary hold_.  
+Two records with the same group key value _can_ stay in different tables in the case of _schema collision_.
 
 [IMPL#463](https://github.com/influxdata/flux/issues/463) Specify the primitive types that make up stream and table types
 
@@ -1272,7 +1364,7 @@ Most transformations output one table for every table they receive from the inpu
 Transformations that modify the group keys or values will need to regroup the tables in the output stream.
 A transformation produces side effects when it is constructed from a function that produces side effects.
 
-Transformations are repsented using function types.
+Transformations are represented using function types.
 
 ### Built-in transformations
 
@@ -2283,7 +2375,7 @@ Records are grouped by the set of all columns in the table, excluding `"_time"`.
 For example, if the table has columns `["_time", "host", "_measurement", "_field", "_value"]` then the group key would be
 `["host", "_measurement", "_field", "_value"]`.
 
-_Single-table grouping_
+_Disable grouping_
 
 ```
 from(bucket: "telegraf/autogen")
@@ -2291,8 +2383,8 @@ from(bucket: "telegraf/autogen")
     |> group()
 ```
 
-Records are grouped into a single table.  
-The group key of the resulting table is empty.
+Records are re-organized with an empty group key.  
+In the case that input tables schema does not collide, the result is a single table, otherwise, more.
 
 #### Columns
 
