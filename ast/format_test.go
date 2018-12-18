@@ -42,6 +42,18 @@ func TestFormat(t *testing.T) {
 			script: `{a: 1, b: {c: 11, d: 12}}`,
 		},
 		{
+			name:   "implicit key object literal",
+			script: `{a, b, c}`,
+		},
+		{
+			name:   "object with string literal keys",
+			script: `{"a": 1, "b": 2}`,
+		},
+		{
+			name:   "object with mixed keys",
+			script: `{"a": 1, b: 2}`,
+		},
+		{
 			name:   "member",
 			script: `object.property`,
 		},

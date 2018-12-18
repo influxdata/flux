@@ -356,8 +356,10 @@ func (f *formatter) formatObjectExpressionBraces(n *ObjectExpression, braces boo
 
 func (f *formatter) formatProperty(n *Property) {
 	f.formatNode(n.Key)
-	f.writeString(": ")
-	f.formatNode(n.Value)
+	if n.Value != nil {
+		f.writeString(": ")
+		f.formatNode(n.Value)
+	}
 }
 
 func (f *formatter) formatFunctionArgument(n *Property) {

@@ -52,7 +52,7 @@ func OptionObjectFn(keyMap map[string]values.Value) OptionFn {
 		// check that every specified property exists in the object
 		keys := make(map[string]bool, len(obj.Properties))
 		for _, p := range obj.Properties {
-			keys[p.Key.Name] = true
+			keys[p.Key.Key()] = true
 		}
 
 		for k := range keyMap {
@@ -62,7 +62,7 @@ func OptionObjectFn(keyMap map[string]values.Value) OptionFn {
 		}
 
 		for _, p := range obj.Properties {
-			value, found := keyMap[p.Key.Name]
+			value, found := keyMap[p.Key.Key()]
 			if found {
 				p.Value = CreateLiteral(value)
 			}

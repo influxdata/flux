@@ -1007,6 +1007,116 @@ import "path/bar"
 			},
 		},
 		{
+			name: "object with string literal key",
+			raw:  `x = {"a": 10}`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "1:14"),
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
+						BaseNode: base("1:1", "1:14"),
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "x",
+						},
+						Init: &ast.ObjectExpression{
+							BaseNode: base("1:5", "1:14"),
+							Properties: []*ast.Property{
+								&ast.Property{
+									BaseNode: base("1:6", "1:13"),
+									Key: &ast.StringLiteral{
+										BaseNode: base("1:6", "1:9"),
+										Value:    "a",
+									},
+									Value: &ast.IntegerLiteral{
+										BaseNode: base("1:11", "1:13"),
+										Value:    10,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "object with mixed keys",
+			raw:  `x = {"a": 10, b: 11}`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "1:21"),
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
+						BaseNode: base("1:1", "1:21"),
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "x",
+						},
+						Init: &ast.ObjectExpression{
+							BaseNode: base("1:5", "1:21"),
+							Properties: []*ast.Property{
+								&ast.Property{
+									BaseNode: base("1:6", "1:13"),
+									Key: &ast.StringLiteral{
+										BaseNode: base("1:6", "1:9"),
+										Value:    "a",
+									},
+									Value: &ast.IntegerLiteral{
+										BaseNode: base("1:11", "1:13"),
+										Value:    10,
+									},
+								},
+								&ast.Property{
+									BaseNode: base("1:15", "1:20"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:15", "1:16"),
+										Name:     "b",
+									},
+									Value: &ast.IntegerLiteral{
+										BaseNode: base("1:18", "1:20"),
+										Value:    11,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "implicit key object literal",
+			raw:  `x = {a, b}`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "1:11"),
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
+						BaseNode: base("1:1", "1:11"),
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "x",
+						},
+						Init: &ast.ObjectExpression{
+							BaseNode: base("1:5", "1:11"),
+							Properties: []*ast.Property{
+								&ast.Property{
+									BaseNode: base("1:6", "1:7"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:6", "1:7"),
+										Name:     "a",
+									},
+								},
+								&ast.Property{
+									BaseNode: base("1:9", "1:10"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:9", "1:10"),
+										Name:     "b",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "index expression",
 			raw:  `a[3]`,
 			want: &ast.Program{
