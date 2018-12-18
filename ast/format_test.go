@@ -3,6 +3,7 @@ package ast_test
 import (
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/parser"
 	"github.com/pkg/errors"
@@ -107,6 +108,24 @@ a[i]`,
 	foo(f: 1)
 	1 + 1
 }`,
+		},
+		{
+			name:   "string",
+			script: `"foo"`,
+		},
+		{
+			name: "string multiline",
+			script: `"this is
+a string
+with multiple lines"`,
+		},
+		{
+			name:   "string with escape",
+			script: `"foo \\ \" \r\n"`,
+		},
+		{
+			name:   "string with byte value",
+			script: `"\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e"`,
 		},
 		{
 			name:   "package",
@@ -253,7 +272,31 @@ highestAverage = (n, columns=["_value"], by, tables=<-) =>
 			stringResult := ast.Format(originalProgram)
 
 			if tc.script != stringResult {
-				t.Errorf("\nin:\n%s\nout:\n%s\n", tc.script, stringResult)
+				t.Errorf("unexpected output: -want/+got:\n %s", cmp.Diff(tc.script, stringResult))
+			}
+		})
+	}
+}
+func TestFormat_Raw(t *testing.T) {
+	testCases := []struct {
+		name   string
+		node   ast.Node
+		script string
+	}{
+		{
+			name: "string escape",
+			node: &ast.StringLiteral{
+				Value: "foo \\ \" \r\n",
+			},
+			script: "\"foo \\\\ \\\" \r\n\"",
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			got := ast.Format(tc.node)
+			if tc.script != got {
+				t.Errorf("unexpected output: -want/+got:\n %s", cmp.Diff(tc.script, got))
 			}
 		})
 	}

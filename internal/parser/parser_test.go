@@ -3390,6 +3390,79 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 			raw:       `from() |> range() |> map(fn: (r) => { return r._value )`,
 			parseOnly: true,
 		},
+		{
+			name: "string with utf-8",
+			raw:  `"日本語"`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "1:12"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:12"),
+						Expression: &ast.StringLiteral{
+							BaseNode: base("1:1", "1:12"),
+							Value:    "日本語",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "string with byte values",
+			raw:  `"\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e"`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "1:39"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:39"),
+						Expression: &ast.StringLiteral{
+							BaseNode: base("1:1", "1:39"),
+							Value:    "日本語",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "string with escapes",
+			raw: `"newline \n
+carriage return \r
+horizontal tab \t
+double quote \"
+backslash \\
+"`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "6:2"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "6:2"),
+						Expression: &ast.StringLiteral{
+							BaseNode: base("1:1", "6:2"),
+							Value:    "newline \n\ncarriage return \r\nhorizontal tab \t\ndouble quote \"\nbackslash \\\n",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "multiline string",
+			raw: `"
+ this is a
+multiline
+string"
+`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "4:8"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "4:8"),
+						Expression: &ast.StringLiteral{
+							BaseNode: base("1:1", "4:8"),
+							Value:    "\n this is a\nmultiline\nstring",
+						},
+					},
+				},
+			},
+		},
 	} {
 		runFn(tt.name, func(tb testing.TB) {
 			defer func() {
