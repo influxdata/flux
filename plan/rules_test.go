@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
+	_ "github.com/influxdata/flux/querytest/builtin"
 )
 
 func TestRuleRegistration(t *testing.T) {
