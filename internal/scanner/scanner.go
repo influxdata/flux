@@ -86,7 +86,7 @@ func (s *Scanner) scan(cs int) (pos token.Pos, tok token.Token, lit string) {
 		s.p = s.ts + size
 		return s.f.Pos(s.ts), token.ILLEGAL, fmt.Sprintf("%c", ch)
 	} else if s.token == token.ILLEGAL && s.p == s.eof {
-		return s.f.Pos(s.ts), token.EOF, ""
+		return s.f.Pos(len(s.data)), token.EOF, ""
 	}
 	return s.f.Pos(s.ts), s.token, string(s.data[s.ts:s.te])
 }

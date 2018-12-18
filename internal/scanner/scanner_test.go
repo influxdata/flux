@@ -480,3 +480,42 @@ line3`,
 		})
 	}
 }
+
+func TestScanner_EOF_Position(t *testing.T) {
+	f := token.NewFile("query.flux", 1)
+	s := scanner.New(f, []byte(`a`))
+
+	pos, tok, lit := s.Scan()
+	if want, got := token.Pos(1), pos; want != got {
+		t.Errorf("unexpected position -want/+got:\n\t- %v\n\t+ %v", want, got)
+	}
+	if want, got := token.IDENT, tok; want != got {
+		t.Errorf("unexpected token -want/+got:\n\t- %v\n\t+ %v", want, got)
+	}
+	if want, got := "a", lit; want != got {
+		t.Errorf("unexpected literal -want/+got:\n\t- %v\n\t+ %v", want, got)
+	}
+
+	pos, tok, lit = s.Scan()
+	if want, got := token.Pos(2), pos; want != got {
+		t.Errorf("unexpected position -want/+got:\n\t- %v\n\t+ %v", want, got)
+	}
+	if want, got := token.EOF, tok; want != got {
+		t.Errorf("unexpected token -want/+got:\n\t- %v\n\t+ %v", want, got)
+	}
+	if want, got := "", lit; want != got {
+		t.Errorf("unexpected literal -want/+got:\n\t- %v\n\t+ %v", want, got)
+	}
+
+	// Multiple scans of the EOF token should continue producing the same value.
+	pos, tok, lit = s.Scan()
+	if want, got := token.Pos(2), pos; want != got {
+		t.Errorf("unexpected position -want/+got:\n\t- %v\n\t+ %v", want, got)
+	}
+	if want, got := token.EOF, tok; want != got {
+		t.Errorf("unexpected token -want/+got:\n\t- %v\n\t+ %v", want, got)
+	}
+	if want, got := "", lit; want != got {
+		t.Errorf("unexpected literal -want/+got:\n\t- %v\n\t+ %v", want, got)
+	}
+}

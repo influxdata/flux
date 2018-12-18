@@ -46,6 +46,10 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 		name string
 		raw  string
 		want *ast.Program
+		// If parseOnly is set to true, then the test will verify
+		// that parsing works and will not verify the contents of
+		// the AST.
+		parseOnly bool
 	}{
 		{
 			name: "package clause",
@@ -3379,8 +3383,26 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 				},
 			},
 		},
+		// todo(jsternberg): fix this once we start handling errors. For now, make sure it parses
+		// correctly without panicking.
+		{
+			name:      "function call with unbalanced braces",
+			raw:       `from() |> range() |> map(fn: (r) => { return r._value )`,
+			parseOnly: true,
+		},
 	} {
 		runFn(tt.name, func(tb testing.TB) {
+			defer func() {
+				if err := recover(); err != nil {
+					tb.Fatalf("unexpected panic: %s", err)
+				}
+			}()
+
+			result := parser.NewAST([]byte(tt.raw))
+			if tt.parseOnly {
+				return
+			}
+
 			want := tt.want.Copy()
 			ast.Walk(ast.CreateVisitor(func(node ast.Node) {
 				v := reflect.ValueOf(node)
@@ -3390,10 +3412,10 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 				}
 
 				l := loc.Interface().(*ast.SourceLocation)
-				l.Source = source(tt.raw, l)
+				if l != nil {
+					l.Source = source(tt.raw, l)
+				}
 			}), want)
-
-			result := parser.NewAST([]byte(tt.raw))
 			if got, want := result, tt.want; !cmp.Equal(want, got, CompareOptions...) {
 				tb.Fatalf("unexpected statement -want/+got\n%s", cmp.Diff(want, got, CompareOptions...))
 			}
