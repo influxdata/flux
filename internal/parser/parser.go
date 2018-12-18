@@ -1177,20 +1177,81 @@ func parseDuration(lit string) ([]ast.Duration, error) {
 	return values, nil
 }
 
-var stringEscapeReplacer = strings.NewReplacer(
-	`\n`, "\n",
-	`\r`, "\r",
-	`\t`, "\t",
-	`\\`, "\\",
-	`\"`, "\"",
-)
-
+// parseString removes quotes and unescapes the string literal.
 func parseString(lit string) (string, error) {
 	if len(lit) < 2 || lit[0] != '"' || lit[len(lit)-1] != '"' {
 		return "", fmt.Errorf("invalid syntax")
 	}
 	lit = lit[1 : len(lit)-1]
-	return stringEscapeReplacer.Replace(lit), nil
+	var (
+		builder    strings.Builder
+		width, pos int
+		err        error
+	)
+	builder.Grow(len(lit))
+	for pos < len(lit) {
+		width, err = writeNextUnescapedRune(lit[pos:], &builder)
+		if err != nil {
+			return "", err
+		}
+		pos += width
+	}
+	return builder.String(), nil
+}
+
+// writeNextUnescapedRune writes a rune to builder from s.
+// The rune is the next decoded UTF-8 rune with escaping rules applied.
+func writeNextUnescapedRune(s string, builder *strings.Builder) (width int, err error) {
+	var r rune
+	r, width = utf8.DecodeRuneInString(s)
+	if r == '\\' {
+		next, w := utf8.DecodeRuneInString(s[width:])
+		width += w
+		switch next {
+		case 'n':
+			r = '\n'
+		case 'r':
+			r = '\r'
+		case 't':
+			r = '\t'
+		case '\\':
+			r = '\\'
+		case '"':
+			r = '"'
+		case 'x':
+			// Decode two hex chars as a single byte
+			if len(s[width:]) < 2 {
+				return 0, fmt.Errorf("invalid byte value %q", s[width:])
+			}
+			ch1, ok1 := fromHexChar(s[width])
+			ch2, ok2 := fromHexChar(s[width+1])
+			if !ok1 || !ok2 {
+				return 0, fmt.Errorf("invalid byte value %q", s[width:])
+			}
+			builder.WriteByte((ch1 << 4) | ch2)
+			return width + 2, nil
+		default:
+			return 0, fmt.Errorf("invalid escape character %q", next)
+		}
+	}
+	// sanity check before writing the rune
+	if width > 0 {
+		builder.WriteRune(r)
+	}
+	return
+}
+
+// fromHexChar converts a hex character into its value and a success flag.
+func fromHexChar(c byte) (byte, bool) {
+	switch {
+	case '0' <= c && c <= '9':
+		return c - '0', true
+	case 'a' <= c && c <= 'f':
+		return c - 'a' + 10, true
+	case 'A' <= c && c <= 'F':
+		return c - 'A' + 10, true
+	}
+	return 0, false
 }
 
 func parseRegexp(lit string) (*regexp.Regexp, error) {

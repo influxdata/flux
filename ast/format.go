@@ -376,9 +376,32 @@ func (f *formatter) formatIdentifier(n *Identifier) {
 }
 
 func (f *formatter) formatStringLiteral(n *StringLiteral) {
+	if n.Loc != nil && n.Loc.Source != "" {
+		// Preserve the exact literal if we have it
+		f.writeString(n.Loc.Source)
+		return
+	}
+	// Write out escaped string value
 	f.writeRune('"')
-	f.writeString(n.Value)
+	f.writeString(escapeStr(n.Value))
 	f.writeRune('"')
+}
+
+func escapeStr(s string) string {
+	if !strings.ContainsAny(s, `"\`) {
+		return s
+	}
+	var builder strings.Builder
+	// Allocate for worst case where every rune needs to be escaped.
+	builder.Grow(len(s) * 2)
+	for _, r := range s {
+		switch r {
+		case '"', '\\':
+			builder.WriteRune('\\')
+		}
+		builder.WriteRune(r)
+	}
+	return builder.String()
 }
 
 func (f *formatter) formatBooleanLiteral(n *BooleanLiteral) {

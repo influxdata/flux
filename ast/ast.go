@@ -747,6 +747,7 @@ func (i *PipeLiteral) Copy() Node {
 // StringLiteral expressions begin and end with double quote marks.
 type StringLiteral struct {
 	BaseNode
+	// Value is the unescaped value of the string literal
 	Value string `json:"value"`
 }
 
