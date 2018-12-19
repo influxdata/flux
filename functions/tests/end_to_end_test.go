@@ -2,6 +2,11 @@ package tests_test
 
 import (
 	"context"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"testing"
+
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/functions/inputs"          // Import the built-in inputs
 	_ "github.com/influxdata/flux/functions/outputs"         // Import the built-in outputs
@@ -10,10 +15,6 @@ import (
 	"github.com/influxdata/flux/lang"
 	_ "github.com/influxdata/flux/options" // Import the built-in options
 	"github.com/influxdata/flux/querytest"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"testing"
 )
 
 func init() {
@@ -83,9 +84,6 @@ func Test_QueryEndToEnd(t *testing.T) {
 func Benchmark_QueryEndToEnd(b *testing.B) {
 	withEachFluxFile(b, func(prefix, caseName string) {
 		reason, skip := skipTests[caseName]
-		if skip {
-			b.Skip(reason)
-		}
 
 		fluxName := caseName + ".flux"
 		b.Run(fluxName, func(b *testing.B) {

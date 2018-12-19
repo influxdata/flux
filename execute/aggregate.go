@@ -3,6 +3,7 @@ package execute
 import (
 	"fmt"
 
+	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
@@ -140,7 +141,7 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 		tableColMap[j] = idx
 	}
 
-	if err := tbl.Do(func(cr flux.ColReader) error {
+	if err := tbl.DoArrow(func(cr flux.ArrowColReader) error {
 		for j := range t.config.Columns {
 			vf := aggregates[j]
 
@@ -219,23 +220,23 @@ type ValueFunc interface {
 }
 type DoBoolAgg interface {
 	ValueFunc
-	DoBool([]bool)
+	DoBool(*array.Boolean)
 }
 type DoFloatAgg interface {
 	ValueFunc
-	DoFloat([]float64)
+	DoFloat(*array.Float64)
 }
 type DoIntAgg interface {
 	ValueFunc
-	DoInt([]int64)
+	DoInt(*array.Int64)
 }
 type DoUIntAgg interface {
 	ValueFunc
-	DoUInt([]uint64)
+	DoUInt(*array.Uint64)
 }
 type DoStringAgg interface {
 	ValueFunc
-	DoString([]string)
+	DoString(*array.Binary)
 }
 
 type BoolValueFunc interface {

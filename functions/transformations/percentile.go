@@ -5,6 +5,7 @@ import (
 	"math"
 	"sort"
 
+	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/memory"
@@ -234,8 +235,8 @@ func (a *PercentileAgg) NewStringAgg() execute.DoStringAgg {
 	return nil
 }
 
-func (a *PercentileAgg) DoFloat(vs []float64) {
-	for _, v := range vs {
+func (a *PercentileAgg) DoFloat(vs *array.Float64) {
+	for _, v := range vs.Float64Values() {
 		a.digest.Add(v, 1)
 	}
 }
@@ -290,8 +291,8 @@ func (a *ExactPercentileAgg) NewStringAgg() execute.DoStringAgg {
 	return nil
 }
 
-func (a *ExactPercentileAgg) DoFloat(vs []float64) {
-	a.data = append(a.data, vs...)
+func (a *ExactPercentileAgg) DoFloat(vs *array.Float64) {
+	a.data = append(a.data, vs.Float64Values()...)
 }
 
 func (a *ExactPercentileAgg) Type() flux.ColType {
