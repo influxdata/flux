@@ -61,7 +61,9 @@ func TestFirst_Process(t *testing.T) {
 			executetest.IndexSelectorFuncTestHelper(
 				t,
 				new(transformations.FirstSelector),
-				tc.data,
+				&executetest.RowWiseArrowTable{
+					Table:tc.data,
+				},
 				tc.want,
 			)
 		})

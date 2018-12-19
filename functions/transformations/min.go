@@ -3,6 +3,7 @@ package transformations
 import (
 	"fmt"
 
+	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
@@ -121,16 +122,16 @@ func (s *MinSelector) Rows() []execute.Row {
 	return s.rows
 }
 
-func (s *MinSelector) selectRow(idx int, cr flux.ColReader) {
+func (s *MinSelector) selectRow(idx int, cr flux.ArrowColReader) {
 	// Capture row
 	if idx >= 0 {
 		s.rows = []execute.Row{execute.ReadRow(idx, cr)}
 	}
 }
 
-func (s *MinIntSelector) DoInt(vs []int64, cr flux.ColReader) {
+func (s *MinIntSelector) DoInt(vs *array.Int64, cr flux.ArrowColReader) {
 	minIdx := -1
-	for i, v := range vs {
+	for i, v := range vs.Int64Values() {
 		if !s.set || v < s.min {
 			s.set = true
 			s.min = v
@@ -139,9 +140,9 @@ func (s *MinIntSelector) DoInt(vs []int64, cr flux.ColReader) {
 	}
 	s.selectRow(minIdx, cr)
 }
-func (s *MinUIntSelector) DoUInt(vs []uint64, cr flux.ColReader) {
+func (s *MinUIntSelector) DoUInt(vs *array.Uint64, cr flux.ArrowColReader) {
 	minIdx := -1
-	for i, v := range vs {
+	for i, v := range vs.Uint64Values() {
 		if !s.set || v < s.min {
 			s.set = true
 			s.min = v
@@ -150,9 +151,9 @@ func (s *MinUIntSelector) DoUInt(vs []uint64, cr flux.ColReader) {
 	}
 	s.selectRow(minIdx, cr)
 }
-func (s *MinFloatSelector) DoFloat(vs []float64, cr flux.ColReader) {
+func (s *MinFloatSelector) DoFloat(vs *array.Float64, cr flux.ArrowColReader) {
 	minIdx := -1
-	for i, v := range vs {
+	for i, v := range vs.Float64Values() {
 		if !s.set || v < s.min {
 			s.set = true
 			s.min = v

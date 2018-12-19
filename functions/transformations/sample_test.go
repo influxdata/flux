@@ -36,25 +36,27 @@ func TestSample_Process(t *testing.T) {
 				Pos: 0,
 			},
 			name: "everything in separate Do calls",
-			data: &executetest.Table{
-				KeyCols: []string{"t1"},
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TFloat},
-					{Label: "t1", Type: flux.TString},
-					{Label: "t2", Type: flux.TString},
-				},
-				Data: [][]interface{}{
-					{execute.Time(0), 7.0, "a", "y"},
-					{execute.Time(10), 5.0, "a", "x"},
-					{execute.Time(20), 9.0, "a", "y"},
-					{execute.Time(30), 4.0, "a", "x"},
-					{execute.Time(40), 6.0, "a", "y"},
-					{execute.Time(50), 8.0, "a", "x"},
-					{execute.Time(60), 1.0, "a", "y"},
-					{execute.Time(70), 2.0, "a", "x"},
-					{execute.Time(80), 3.0, "a", "y"},
-					{execute.Time(90), 10.0, "a", "x"},
+			data: &executetest.RowWiseArrowTable{
+				Table: &executetest.Table{
+					KeyCols: []string{"t1"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), 7.0, "a", "y"},
+						{execute.Time(10), 5.0, "a", "x"},
+						{execute.Time(20), 9.0, "a", "y"},
+						{execute.Time(30), 4.0, "a", "x"},
+						{execute.Time(40), 6.0, "a", "y"},
+						{execute.Time(50), 8.0, "a", "x"},
+						{execute.Time(60), 1.0, "a", "y"},
+						{execute.Time(70), 2.0, "a", "x"},
+						{execute.Time(80), 3.0, "a", "y"},
+						{execute.Time(90), 10.0, "a", "x"},
+					},
 				},
 			},
 			want: [][]int{
@@ -286,25 +288,27 @@ func TestSample_Process(t *testing.T) {
 				Pos: 2,
 			},
 			name: "every-third-2 in separate Do calls",
-			data: &executetest.Table{
-				KeyCols: []string{"t1"},
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TFloat},
-					{Label: "t1", Type: flux.TString},
-					{Label: "t2", Type: flux.TString},
-				},
-				Data: [][]interface{}{
-					{execute.Time(0), 7.0, "a", "y"},
-					{execute.Time(10), 5.0, "a", "x"},
-					{execute.Time(20), 9.0, "a", "y"},
-					{execute.Time(30), 4.0, "a", "x"},
-					{execute.Time(40), 6.0, "a", "y"},
-					{execute.Time(50), 8.0, "a", "x"},
-					{execute.Time(60), 1.0, "a", "y"},
-					{execute.Time(70), 2.0, "a", "x"},
-					{execute.Time(80), 3.0, "a", "y"},
-					{execute.Time(90), 10.0, "a", "x"},
+			data: &executetest.RowWiseArrowTable{
+				Table: &executetest.Table{
+					KeyCols: []string{"t1"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), 7.0, "a", "y"},
+						{execute.Time(10), 5.0, "a", "x"},
+						{execute.Time(20), 9.0, "a", "y"},
+						{execute.Time(30), 4.0, "a", "x"},
+						{execute.Time(40), 6.0, "a", "y"},
+						{execute.Time(50), 8.0, "a", "x"},
+						{execute.Time(60), 1.0, "a", "y"},
+						{execute.Time(70), 2.0, "a", "x"},
+						{execute.Time(80), 3.0, "a", "y"},
+						{execute.Time(90), 10.0, "a", "x"},
+					},
 				},
 			},
 			want: [][]int{

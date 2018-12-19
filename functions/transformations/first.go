@@ -3,6 +3,7 @@ package transformations
 import (
 	"fmt"
 
+	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
@@ -114,18 +115,18 @@ func (s *FirstSelector) selectFirst(l int) []int {
 	}
 	return nil
 }
-func (s *FirstSelector) DoBool(vs []bool) []int {
-	return s.selectFirst(len(vs))
+func (s *FirstSelector) DoBool(vs *array.Boolean) []int {
+	return s.selectFirst(vs.Len())
 }
-func (s *FirstSelector) DoInt(vs []int64) []int {
-	return s.selectFirst(len(vs))
+func (s *FirstSelector) DoInt(vs *array.Int64) []int {
+	return s.selectFirst(vs.Len())
 }
-func (s *FirstSelector) DoUInt(vs []uint64) []int {
-	return s.selectFirst(len(vs))
+func (s *FirstSelector) DoUInt(vs *array.Uint64) []int {
+	return s.selectFirst(vs.Len())
 }
-func (s *FirstSelector) DoFloat(vs []float64) []int {
-	return s.selectFirst(len(vs))
+func (s *FirstSelector) DoFloat(vs *array.Float64) []int {
+	return s.selectFirst(vs.Len())
 }
-func (s *FirstSelector) DoString(vs []string) []int {
-	return s.selectFirst(len(vs))
+func (s *FirstSelector) DoString(vs *array.Binary) []int {
+	return s.selectFirst(vs.Len())
 }
