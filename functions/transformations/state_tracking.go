@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 )
 
@@ -274,10 +275,10 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Tab
 		return fmt.Errorf("no column %q exists", t.timeCol)
 	}
 	// Append modified rows
-	return tbl.Do(func(cr flux.ColReader) error {
+	return tbl.DoArrow(func(cr flux.ArrowColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
-			tm := cr.Times(timeIdx)[i]
+			tm := values.Time(cr.Times(timeIdx).Value(i))
 			match, err := t.fn.Eval(i, cr)
 			if err != nil {
 				log.Printf("failed to evaluate state count expression: %v", err)
@@ -300,8 +301,8 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Tab
 				count++
 			}
 			colMap := make([]int, len(cr.Cols()))
-			colMap = execute.ColMap(colMap, builder, cr)
-			err = execute.AppendMappedRecordExplicit(i, cr, builder, colMap)
+			colMap = execute.ColMapArrow(colMap, builder, cr)
+			err = execute.AppendMappedRecordExplicitArrow(i, cr, builder, colMap)
 			if err != nil {
 				return err
 			}
