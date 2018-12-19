@@ -892,10 +892,16 @@ func (p *parser) parseParenIdentExpression(lparen token.Pos, key *ast.Identifier
 func (p *parser) parsePropertyList() []*ast.Property {
 	var params []*ast.Property
 	for {
-		if _, tok, _ := p.peek(); tok != token.IDENT {
+		var param *ast.Property
+		_, tok, _ := p.peek()
+		switch tok {
+		case token.IDENT:
+			param = p.parseIdentProperty()
+		case token.STRING:
+			param = p.parseStringProperty()
+		default:
 			return params
 		}
-		param := p.parseProperty()
 		params = append(params, param)
 		if _, tok, _ := p.peek(); tok != token.COMMA {
 			return params
@@ -904,7 +910,23 @@ func (p *parser) parsePropertyList() []*ast.Property {
 	}
 }
 
-func (p *parser) parseProperty() *ast.Property {
+func (p *parser) parseStringProperty() *ast.Property {
+	key := p.parseStringLiteral()
+	p.expect(token.COLON)
+	val := p.parseExpression()
+	return &ast.Property{
+		Key:   key,
+		Value: val,
+		BaseNode: ast.BaseNode{
+			Loc: p.sourceLocation(
+				locStart(key),
+				locEnd(val),
+			),
+		},
+	}
+}
+
+func (p *parser) parseIdentProperty() *ast.Property {
 	key := p.parseIdentifier()
 	loc := key.Location()
 	property := &ast.Property{

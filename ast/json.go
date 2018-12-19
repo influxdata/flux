@@ -598,6 +598,7 @@ func (p *Property) UnmarshalJSON(data []byte) error {
 	type Alias Property
 	raw := struct {
 		*Alias
+		Key   json.RawMessage `json:"key"`
 		Value json.RawMessage `json:"value"`
 	}{}
 	if err := json.Unmarshal(data, &raw); err != nil {
@@ -606,6 +607,12 @@ func (p *Property) UnmarshalJSON(data []byte) error {
 	if raw.Alias != nil {
 		*p = *(*Property)(raw.Alias)
 	}
+
+	key, err := unmarshalPropertyKey(raw.Key)
+	if err != nil {
+		return err
+	}
+	p.Key = key
 
 	if raw.Value != nil {
 		value, err := unmarshalExpression(raw.Value)
@@ -833,6 +840,20 @@ func unmarshalExpression(msg json.RawMessage) (Expression, error) {
 		return nil, fmt.Errorf("node %q is not an expression", n.Type())
 	}
 	return e, nil
+}
+func unmarshalPropertyKey(msg json.RawMessage) (PropertyKey, error) {
+	if checkNullMsg(msg) {
+		return nil, nil
+	}
+	n, err := unmarshalNode(msg)
+	if err != nil {
+		return nil, err
+	}
+	k, ok := n.(PropertyKey)
+	if !ok {
+		return nil, fmt.Errorf("node %q is not a property key", n.Type())
+	}
+	return k, nil
 }
 func unmarshalNode(msg json.RawMessage) (Node, error) {
 	if checkNullMsg(msg) {

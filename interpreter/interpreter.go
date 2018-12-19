@@ -513,10 +513,10 @@ func (itrp *Interpreter) doObject(m *semantic.ObjectExpression, scope *Scope) (v
 		if err != nil {
 			return nil, err
 		}
-		if _, ok := obj.Get(p.Key.Name); ok {
-			return nil, fmt.Errorf("duplicate key in object: %q", p.Key.Name)
+		if _, ok := obj.Get(p.Key.Key()); ok {
+			return nil, fmt.Errorf("duplicate key in object: %q", p.Key.Key())
 		}
-		obj.Set(p.Key.Name, v)
+		obj.Set(p.Key.Key(), v)
 	}
 	return obj, nil
 }
@@ -616,11 +616,11 @@ func (itrp *Interpreter) doArguments(args *semantic.ObjectExpression, scope *Sco
 		if err != nil {
 			return nil, err
 		}
-		if _, ok := obj.Get(p.Key.Name); ok {
-			return nil, fmt.Errorf("duplicate keyword parameter specified: %q", p.Key.Name)
+		if _, ok := obj.Get(p.Key.Key()); ok {
+			return nil, fmt.Errorf("duplicate keyword parameter specified: %q", p.Key.Key())
 		}
 
-		obj.Set(p.Key.Name, value)
+		obj.Set(p.Key.Key(), value)
 	}
 	if pipe != nil && pipeArgument == "" {
 		return nil, errors.New("pipe parameter value provided to function with no pipe parameter defined")
@@ -899,7 +899,7 @@ func (f function) doCall(args Arguments) (values.Value, error) {
 		for _, p := range f.e.Block.Parameters.List {
 			if f.e.Defaults != nil {
 				for _, d := range f.e.Defaults.Properties {
-					if d.Key.Name == p.Key.Name {
+					if d.Key.Key() == p.Key.Name {
 						v, ok := args.Get(p.Key.Name)
 						if !ok {
 							// Use default value

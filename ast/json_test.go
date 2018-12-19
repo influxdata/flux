@@ -203,6 +203,25 @@ func TestJSONMarshal(t *testing.T) {
 			want: `{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"a"},"value":{"type":"StringLiteral","value":"hello"}}]}`,
 		},
 		{
+			name: "object expression with string literal key",
+			node: &ast.ObjectExpression{
+				Properties: []*ast.Property{{
+					Key:   &ast.StringLiteral{Value: "a"},
+					Value: &ast.StringLiteral{Value: "hello"},
+				}},
+			},
+			want: `{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"StringLiteral","value":"a"},"value":{"type":"StringLiteral","value":"hello"}}]}`,
+		},
+		{
+			name: "object expression implicit keys",
+			node: &ast.ObjectExpression{
+				Properties: []*ast.Property{{
+					Key: &ast.Identifier{Name: "a"},
+				}},
+			},
+			want: `{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"a"},"value":null}]}`,
+		},
+		{
 			name: "conditional expression",
 			node: &ast.ConditionalExpression{
 				Test:       &ast.BooleanLiteral{Value: true},

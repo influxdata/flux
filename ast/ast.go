@@ -667,10 +667,17 @@ func (e *ConditionalExpression) Copy() Node {
 	return ne
 }
 
-// Property is the value associated with a key
+// PropertyKey represents an object key
+type PropertyKey interface {
+	Node
+	Key() string
+}
+
+// Property is the value associated with a key.
+// A property's key can be either an identifier or string literal.
 type Property struct {
 	BaseNode
-	Key   *Identifier `json:"key"`
+	Key   PropertyKey `json:"key"`
 	Value Expression  `json:"value"`
 }
 
@@ -695,6 +702,11 @@ func (*Property) Type() string { return "Property" }
 type Identifier struct {
 	BaseNode
 	Name string `json:"name"`
+}
+
+// Identifiers are valid object keys
+func (i *Identifier) Key() string {
+	return i.Name
 }
 
 // Type is the abstract type
@@ -749,6 +761,11 @@ type StringLiteral struct {
 	BaseNode
 	// Value is the unescaped value of the string literal
 	Value string `json:"value"`
+}
+
+// StringLiterals are valid object keys
+func (l *StringLiteral) Key() string {
+	return l.Value
 }
 
 func (*StringLiteral) Type() string { return "StringLiteral" }

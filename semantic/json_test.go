@@ -208,6 +208,14 @@ func TestJSONMarshal(t *testing.T) {
 			want: `{"type":"Property","key":{"type":"Identifier","name":"a"},"value":{"type":"StringLiteral","value":"hello"}}`,
 		},
 		{
+			name: "string key property",
+			node: &semantic.Property{
+				Key:   &semantic.StringLiteral{Value: "a"},
+				Value: &semantic.StringLiteral{Value: "hello"},
+			},
+			want: `{"type":"Property","key":{"type":"StringLiteral","value":"a"},"value":{"type":"StringLiteral","value":"hello"}}`,
+		},
+		{
 			name: "identifier",
 			node: &semantic.Identifier{
 				Name: "a",

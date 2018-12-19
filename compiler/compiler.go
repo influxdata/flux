@@ -112,8 +112,8 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, fun
 			if err != nil {
 				return nil, err
 			}
-			properties[p.Key.Name] = node
-			propertyTypes[p.Key.Name] = node.Type()
+			properties[p.Key.Key()] = node
+			propertyTypes[p.Key.Key()] = node.Type()
 		}
 		return &objEvaluator{
 			t:          semantic.NewObjectType(propertyTypes),
@@ -285,7 +285,7 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, fun
 			if n.Defaults != nil {
 				// Search for default value
 				for _, d := range n.Defaults.Properties {
-					if d.Key.Name == k {
+					if d.Key.Key() == k {
 						d, err := compile(d.Value, typeSol, builtIns, funcExprs)
 						if err != nil {
 							return nil, err

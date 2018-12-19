@@ -242,7 +242,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 				hasDefault := false
 				if n.Defaults != nil {
 					for _, p := range n.Defaults.Properties {
-						if p.Key.Name == param.Key.Name {
+						if p.Key.Key() == param.Key.Name {
 							hasDefault = true
 							dt, err := v.lookup(p)
 							if err != nil {
@@ -285,8 +285,8 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			if err != nil {
 				return nil, err
 			}
-			parameters[arg.Key.Name] = t
-			required = append(required, arg.Key.Name)
+			parameters[arg.Key.Key()] = t
+			required = append(required, arg.Key.Key())
 		}
 		if n.Pipe != nil {
 			t, err := v.lookup(n.Pipe)
@@ -310,8 +310,8 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			if err != nil {
 				return nil, err
 			}
-			properties[field.Key.Name] = t
-			upper = append(upper, field.Key.Name)
+			properties[field.Key.Key()] = t
+			upper = append(upper, field.Key.Key())
 		}
 		v.cs.AddKindConst(nodeVar, ObjectKind{
 			properties: properties,
