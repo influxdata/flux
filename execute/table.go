@@ -480,6 +480,28 @@ func ValueForRow(cr flux.ColReader, i, j int) values.Value {
 	}
 }
 
+// ValueForRowArrow retrieves a value from an arrow column reader at the given index.
+func ValueForRowArrow(cr flux.ArrowColReader, i, j int) values.Value {
+	t := cr.Cols()[j].Type
+	switch t {
+	case flux.TString:
+		return values.NewString(cr.Strings(j).ValueString(i))
+	case flux.TInt:
+		return values.NewInt(cr.Ints(j).Value(i))
+	case flux.TUInt:
+		return values.NewUInt(cr.UInts(j).Value(i))
+	case flux.TFloat:
+		return values.NewFloat(cr.Floats(j).Value(i))
+	case flux.TBool:
+		return values.NewBool(cr.Bools(j).Value(i))
+	case flux.TTime:
+		return values.NewTime(values.Time(cr.Times(j).Value(i)))
+	default:
+		PanicUnknownType(t)
+		return values.InvalidValue
+	}
+}
+
 // TableBuilder builds tables that can be used multiple times
 type TableBuilder interface {
 	Key() flux.GroupKey
