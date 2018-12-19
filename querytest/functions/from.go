@@ -7,12 +7,45 @@ import (
 	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 // Registers testing-specific procedure spec and rules.
 func init() {
+	// This signature is just for compatibility with FromOpSpec.
+	// Conceptually, the mock from could have no parameter.
+	mockFromSignature := semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{
+			"bucket":   semantic.String,
+			"bucketID": semantic.String,
+		},
+		Required: nil,
+		Return:   flux.TableObjectType,
+	}
+
+	flux.RegisterFunction(inputs.FromKind, createMockFromOpSpec, mockFromSignature)
 	plan.RegisterProcedureSpec(inputs.FromKind, newMockFromProcedure, inputs.FromKind)
 	plan.RegisterPhysicalRules(MergeMockFromRangeRule{})
+}
+
+func createMockFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+	spec := new(inputs.FromOpSpec)
+
+	if bucket, ok, err := args.GetString("bucket"); err != nil {
+		return nil, err
+	} else if ok {
+		spec.Bucket = bucket
+	} else {
+		spec.Bucket = "testBucket"
+	}
+
+	if bucketID, ok, err := args.GetString("bucketID"); err != nil {
+		return nil, err
+	} else if ok {
+		spec.BucketID = bucketID
+	}
+
+	return spec, nil
 }
 
 // This procedure spec is used in flux tests to represent the physical
