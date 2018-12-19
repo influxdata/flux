@@ -1347,13 +1347,15 @@ It is defined in terms of the `cov` function:
 Count is an aggregate operation.
 For each aggregated column, it outputs the number of non null records as an integer.
 
-Count has the following property: 
+Count has the following property:
 
 * `columns` list of string
     columns specifies a list of columns to aggregate. Defaults to `["_value"]`
 
 Example:
-`from(bucket: "telegraf/autogen") |> range(start: -5m) |> count()`
+```
+from(bucket: "telegraf/autogen") |> range(start: -5m) |> count()
+```
 
 
 ##### Integral
@@ -1386,12 +1388,12 @@ from(bucket: "telegraf/autogen")
 Mean is an aggregate operation.
 For each aggregated column, it outputs the mean of the non null records as a float.
 
-Mean has the following property: 
+Mean has the following property:
 
 * `columns` list of string
     columns specifies a list of columns to aggregate. Defaults to `["_value"]`
 
-Example: 
+Example:
 ```
 from(bucket:"telegraf/autogen")
     |> filter(fn: (r) => r._measurement == "mem" AND
@@ -1456,14 +1458,14 @@ from(bucket: "telegraf/autogen")
 Skew is an aggregate operation.
 For each aggregated column, it outputs the skew of the non null record as a float.
 
-Skew has the following parameter: 
+Skew has the following parameter:
 
 * `columns` list of string
     columns specifies a list of columns to aggregate. Defaults to `["_value"]`
 
 Example:
 ```
-from(bucket: "telegraf/autogen") 
+from(bucket: "telegraf/autogen")
     |> range(start: -5m)
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
     |> skew()
@@ -1476,14 +1478,14 @@ For each aggregated column, it outputs the difference between the min and max va
 The type of the output column depends on the type of input column: for input columns with type `uint` or `int`, the output is an `int`; for `float` input columns the output is a `float`.
 All other input types are invalid.
 
-Spread has the following parameter: 
+Spread has the following parameter:
 
 * `columns` list of string
     columns specifies a list of columns to aggregate. Defaults to `["_value"]`
 
 Example:
 ```
-from(bucket: "telegraf/autogen") 
+from(bucket: "telegraf/autogen")
     |> range(start: -5m)
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
     |> spread()
@@ -1493,14 +1495,14 @@ from(bucket: "telegraf/autogen")
 Stddev is an aggregate operation.
 For each aggregated column, it outputs the standard deviation of the non null record as a float.
 
-Stddev has the following parameter: 
+Stddev has the following parameter:
 
 * `columns` list of string
     columns specifies a list of columns to aggregate. Defaults to `["_value"]`
 
 Example:
 ```
-from(bucket: "telegraf/autogen") 
+from(bucket: "telegraf/autogen")
     |> range(start: -5m)
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
     |> stddev()
@@ -1512,14 +1514,14 @@ Stddev is an aggregate operation.
 For each aggregated column, it outputs the sum of the non null record.
 The output column type is the same as the input column type.
 
-Sum has the following parameter: 
+Sum has the following parameter:
 
 * `columns` list of string
     columns specifies a list of columns to aggregate. Defaults to `["_value"]`
 
 Example:
 ```
-from(bucket: "telegraf/autogen") 
+from(bucket: "telegraf/autogen")
     |> range(start: -5m)
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
     |> sum()
@@ -1604,10 +1606,10 @@ Percentile has the following properties:
 * `percentile` float
     A value between 0 and 1 indicating the desired percentile.
 * `method` string
-    percentile provides 3 methods for computation: 
-    * `estimate_tdigest`: See Percentile (Aggregate) 
-    * `exact_mean`: See Percentile (Aggregate) 
-    * `exact_selector`: a selector result that returns the data point for which at least `percentile` points are less than. 
+    percentile provides 3 methods for computation:
+    * `estimate_tdigest`: See Percentile (Aggregate).
+    * `exact_mean`: See Percentile (Aggregate).
+    * `exact_selector`: a selector result that returns the data point for which at least `percentile` points are less than.
 
 Example:
 ```
