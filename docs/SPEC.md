@@ -2479,6 +2479,17 @@ And this stream, `NY_Weather`, also with group key `"_field"` on both tables:
    | 0001  | "pressure" | 29.82 |
    | 0002  | "pressure" | 30.01 |
 
+#### Unique
+
+Unique returns a table with unique values in a specified column.
+In the case there are multiple rows taking on the same value in the provided column, the first row is kept and the remaining rows are discarded.
+
+Unique has the following properties:
+
+* `column` string  
+    Column that is to have unique values.  
+    Defaults to `_value`.  
+
 #### Cumulative sum
 
 Cumulative sum computes a running sum for non null records in the table.
