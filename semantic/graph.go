@@ -114,6 +114,18 @@ func (*RegexpLiteral) literal()          {}
 func (*StringLiteral) literal()          {}
 func (*UnsignedIntegerLiteral) literal() {}
 
+type PropertyKey interface {
+	Node
+	Key() string
+}
+
+func (n *Identifier) Key() string {
+	return n.Name
+}
+func (n *StringLiteral) Key() string {
+	return n.Value
+}
+
 type Program struct {
 	loc `json:"-"`
 
@@ -683,7 +695,7 @@ func (e *UnaryExpression) Copy() Node {
 type Property struct {
 	loc `json:"-"`
 
-	Key   *Identifier `json:"key"`
+	Key   PropertyKey `json:"key"`
 	Value Expression  `json:"value"`
 }
 

@@ -233,6 +233,17 @@ func analyzeLiteral(lit ast.Literal) (Literal, error) {
 	}
 }
 
+func analyzePropertyKey(key ast.PropertyKey) (PropertyKey, error) {
+	switch key := key.(type) {
+	case *ast.Identifier:
+		return analyzeIdentifier(key)
+	case *ast.StringLiteral:
+		return analyzeStringLiteral(key)
+	default:
+		return nil, fmt.Errorf("unsupported key %T", key)
+	}
+}
+
 func analyzeFunctionExpression(arrow *ast.FunctionExpression) (*FunctionExpression, error) {
 	var parameters *FunctionParameters
 	var defaults *ObjectExpression
@@ -243,7 +254,11 @@ func analyzeFunctionExpression(arrow *ast.FunctionExpression) (*FunctionExpressi
 		}
 		parameters.List = make([]*FunctionParameter, len(arrow.Params))
 		for i, p := range arrow.Params {
-			key, err := analyzeIdentifier(p.Key)
+			ident, ok := p.Key.(*ast.Identifier)
+			if !ok {
+				return nil, fmt.Errorf("function params must be identifiers")
+			}
+			key, err := analyzeIdentifier(ident)
 			if err != nil {
 				return nil, err
 			}
@@ -477,9 +492,19 @@ func analyzeIdentifierExpression(ident *ast.Identifier) (*IdentifierExpression, 
 }
 
 func analyzeProperty(property *ast.Property) (*Property, error) {
-	key, err := analyzeIdentifier(property.Key)
+	key, err := analyzePropertyKey(property.Key)
 	if err != nil {
 		return nil, err
+	}
+	if property.Value == nil {
+		return &Property{
+			loc: loc(property.Location()),
+			Key: key,
+			Value: &IdentifierExpression{
+				loc:  loc(key.Location()),
+				Name: key.Key(),
+			},
+		}, nil
 	}
 	value, err := analyzeExpression(property.Value)
 	if err != nil {

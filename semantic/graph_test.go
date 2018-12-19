@@ -90,6 +90,188 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{
+			name: "object",
+			program: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.ObjectExpression{
+							Properties: []*ast.Property{
+								&ast.Property{
+									Key: &ast.Identifier{
+										Name: "a",
+									},
+									Value: &ast.IntegerLiteral{
+										Value: 10,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &semantic.Program{
+				Body: []semantic.Statement{
+					&semantic.ExpressionStatement{
+						Expression: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								&semantic.Property{
+									Key: &semantic.Identifier{
+										Name: "a",
+									},
+									Value: &semantic.IntegerLiteral{
+										Value: 10,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "object with string key",
+			program: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.ObjectExpression{
+							Properties: []*ast.Property{
+								&ast.Property{
+									Key: &ast.StringLiteral{
+										Value: "a",
+									},
+									Value: &ast.IntegerLiteral{
+										Value: 10,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &semantic.Program{
+				Body: []semantic.Statement{
+					&semantic.ExpressionStatement{
+						Expression: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								&semantic.Property{
+									Key: &semantic.StringLiteral{
+										Value: "a",
+									},
+									Value: &semantic.IntegerLiteral{
+										Value: 10,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "object with mixed keys",
+			program: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.ObjectExpression{
+							Properties: []*ast.Property{
+								&ast.Property{
+									Key: &ast.StringLiteral{
+										Value: "a",
+									},
+									Value: &ast.IntegerLiteral{
+										Value: 10,
+									},
+								},
+								&ast.Property{
+									Key: &ast.Identifier{
+										Name: "b",
+									},
+									Value: &ast.IntegerLiteral{
+										Value: 11,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &semantic.Program{
+				Body: []semantic.Statement{
+					&semantic.ExpressionStatement{
+						Expression: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								&semantic.Property{
+									Key: &semantic.StringLiteral{
+										Value: "a",
+									},
+									Value: &semantic.IntegerLiteral{
+										Value: 10,
+									},
+								},
+								&semantic.Property{
+									Key: &semantic.Identifier{
+										Name: "b",
+									},
+									Value: &semantic.IntegerLiteral{
+										Value: 11,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "object with implicit keys",
+			program: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.ObjectExpression{
+							Properties: []*ast.Property{
+								&ast.Property{
+									Key: &ast.Identifier{
+										Name: "a",
+									},
+								},
+								&ast.Property{
+									Key: &ast.Identifier{
+										Name: "b",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &semantic.Program{
+				Body: []semantic.Statement{
+					&semantic.ExpressionStatement{
+						Expression: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								&semantic.Property{
+									Key: &semantic.Identifier{
+										Name: "a",
+									},
+									Value: &semantic.IdentifierExpression{
+										Name: "a",
+									},
+								},
+								&semantic.Property{
+									Key: &semantic.Identifier{
+										Name: "b",
+									},
+									Value: &semantic.IdentifierExpression{
+										Name: "b",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "options declaration",
 			program: &ast.Program{
 				Body: []ast.Statement{
