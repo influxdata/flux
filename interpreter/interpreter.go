@@ -588,7 +588,7 @@ func (itrp *Interpreter) doCall(call *semantic.CallExpression, scope *Scope) (va
 	}
 
 	// Check if the function is an interpFunction and rebind it.
-	if af, ok := f.(*function); ok {
+	if af, ok := f.(function); ok {
 		af.itrp = itrp
 		f = af
 	}

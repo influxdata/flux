@@ -413,6 +413,7 @@ func TestEval(t *testing.T) {
 			} else if tc.wantErr && err == nil {
 				t.Fatal("expected error")
 			}
+
 			if tc.want != nil && !cmp.Equal(tc.want, itrp.Package().SideEffects(), semantictest.CmpOptions...) {
 				t.Fatalf("unexpected side effect values -want/+got: \n%s", cmp.Diff(tc.want, itrp.Package().SideEffects(), semantictest.CmpOptions...))
 			}
@@ -519,6 +520,7 @@ func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
 		builtins []string
 		program  string
 		wantErr  bool
+		want     []values.Value
 	}{
 		{
 			// Evaluate two builtin functions in a single phase
@@ -555,13 +557,23 @@ func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
 			program:  `f = () => _highestOrLowest()`,
 			wantErr:  true,
 		},
+		{
+			name:     "query function with side effects",
+			builtins: []string{`foo = () => {sideEffect() return 1}`},
+			program:  `foo()`,
+			want: []values.Value{
+				values.NewInt(0),
+				values.NewInt(1),
+			},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			globals := make(map[string]values.Value)
+			optionCopy := copyScope(optionScope)
+			testScopeCopy := copyScope(testScope)
 			types := interpreter.NewTypeScope()
-			itrp := interpreter.NewMutableInterpreter(nil, globals, types)
+			itrp := interpreter.NewMutableInterpreter(optionCopy, testScopeCopy, types)
 
 			for _, builtin := range tc.builtins {
 				if err := eval(itrp, nil, builtin); err != nil {
@@ -569,15 +581,28 @@ func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
 				}
 			}
 
-			itrp = interpreter.NewInterpreter(nil, globals, types)
+			itrp = interpreter.NewInterpreter(optionCopy, testScopeCopy, types)
 
 			if err := eval(itrp, nil, tc.program); err != nil && !tc.wantErr {
 				t.Fatal("program evaluation failed: ", err)
 			} else if err == nil && tc.wantErr {
 				t.Fatal("expected to error during program evaluation")
 			}
+
+			if tc.want != nil && !cmp.Equal(tc.want, itrp.Package().SideEffects(), semantictest.CmpOptions...) {
+				t.Fatalf("unexpected side effect values -want/+got: \n%s", cmp.Diff(tc.want, itrp.Package().SideEffects(), semantictest.CmpOptions...))
+			}
+
 		})
 	}
+}
+
+func copyScope(scope map[string]values.Value) map[string]values.Value {
+	cpy := make(map[string]values.Value)
+	for k, v := range scope {
+		cpy[k] = v
+	}
+	return cpy
 }
 
 func TestResolver(t *testing.T) {
