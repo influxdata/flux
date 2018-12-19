@@ -231,7 +231,7 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 
 	forwardTable := false
 	if startKeyColIdx > 0 && stopKeyColIdx > 0 {
-		// Check group key for start and stop vaues.
+		// Check group key for start and stop values.
 
 		keyStart := tbl.Key().Value(startKeyColIdx).Time()
 		keyStop := tbl.Key().Value(stopKeyColIdx).Time()
@@ -280,10 +280,10 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		stopAdded = true
 	}
 
-	return tbl.Do(func(cr flux.ColReader) error {
+	return tbl.DoArrow(func(cr flux.ArrowColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
-			tVal := cr.Times(timeIdx)[i]
+			tVal := values.Time(cr.Times(timeIdx).Value(i))
 			if !t.bounds.Contains(tVal) {
 				continue
 			}
@@ -295,7 +295,7 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 					if startAdded {
 						start = t.bounds.Start
 					} else {
-						start = cr.Times(j)[i]
+						start = values.Time(cr.Times(j).Value(i))
 					}
 
 					if start < t.bounds.Start {
@@ -310,7 +310,7 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 					if stopAdded {
 						stop = t.bounds.Stop
 					} else {
-						stop = cr.Times(j)[i]
+						stop = values.Time(cr.Times(j).Value(i))
 					}
 
 					if stop > t.bounds.Stop {
@@ -320,7 +320,7 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 						return err
 					}
 				default:
-					if err := builder.AppendValue(j, execute.ValueForRow(cr, i, j)); err != nil {
+					if err := builder.AppendValue(j, execute.ValueForRowArrow(cr, i, j)); err != nil {
 						return err
 					}
 				}
