@@ -1,10 +1,7 @@
 package inputs
 
 import (
-	"fmt"
-
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/pkg/errors"
 )
@@ -28,7 +25,6 @@ func init() {
 
 	flux.RegisterFunction(FromKind, createFromOpSpec, fromSignature)
 	flux.RegisterOpSpec(FromKind, newFromOp)
-	plan.RegisterProcedureSpec(FromKind, newFromProcedure, FromKind)
 }
 
 func createFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
@@ -61,45 +57,4 @@ func newFromOp() flux.OperationSpec {
 
 func (s *FromOpSpec) Kind() flux.OperationKind {
 	return FromKind
-}
-
-type FromProcedureSpec struct {
-	Bucket   string
-	BucketID string
-}
-
-func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	spec, ok := qs.(*FromOpSpec)
-	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
-	}
-
-	return &FromProcedureSpec{
-		Bucket:   spec.Bucket,
-		BucketID: spec.BucketID,
-	}, nil
-}
-
-func (s *FromProcedureSpec) Kind() plan.ProcedureKind {
-	return FromKind
-}
-
-func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
-	ns := new(FromProcedureSpec)
-
-	ns.Bucket = s.Bucket
-	ns.BucketID = s.BucketID
-
-	return ns
-}
-
-func (s FromProcedureSpec) PostPhysicalValidate(id plan.NodeID) error {
-	// FromProcedureSpec has no bounds, so must be invalid.
-	var bucket string
-	if len(s.Bucket) > 0 {
-		bucket = s.Bucket
-	} else {
-		bucket = s.BucketID
-	}
-	return fmt.Errorf(`%s: results from "%s" must be bounded`, id, bucket)
 }

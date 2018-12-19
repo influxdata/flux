@@ -11,11 +11,11 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/functions/outputs"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/querytest/functions"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/semantic/semantictest"
 )
@@ -64,9 +64,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 	)
 
 	var (
-		fromSpec = &inputs.FromProcedureSpec{
-			Bucket: "my-bucket",
-		}
+		fromSpec  = &functions.MockFromProcedureSpec{}
 		rangeSpec = &transformations.RangeProcedureSpec{
 			Bounds: flux.Bounds{
 				Start: flux.Time{
@@ -454,7 +452,7 @@ func TestLogicalPlanner(t *testing.T) {
 				yield(name: "result")`,
 		wantPlan: plantest.PlanSpec{
 			Nodes: []plan.PlanNode{
-				plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{Bucket: "telegraf"}),
+				plan.CreateLogicalNode("from0", &functions.MockFromProcedureSpec{}),
 				plan.CreateLogicalNode("merged_filter1_filter2_filter3", &transformations.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
@@ -485,7 +483,7 @@ func TestLogicalPlanner(t *testing.T) {
 			flux: `from(bucket: "telegraf") |> map(fn: (r) => r._value * 2.0) |> filter(fn: (r) => r._value < 10.0) |> yield(name: "result")`,
 			wantPlan: plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{Bucket: "telegraf"}),
+					plan.CreateLogicalNode("from0", &functions.MockFromProcedureSpec{}),
 					plan.CreateLogicalNode("filter2_copy", &transformations.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
 						Block: &semantic.FunctionBlock{
 							Parameters: &semantic.FunctionParameters{
@@ -524,7 +522,7 @@ func TestLogicalPlanner(t *testing.T) {
 					yield(name: "result")`,
 			wantPlan: plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{Bucket: "telegraf"}),
+					plan.CreateLogicalNode("from0", &functions.MockFromProcedureSpec{}),
 					plan.CreateLogicalNode("merged_filter1_filter3_copy", &transformations.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
 						Block: &semantic.FunctionBlock{
 							Parameters: &semantic.FunctionParameters{

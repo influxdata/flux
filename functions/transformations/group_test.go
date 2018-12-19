@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/querytest"
+	tFunctions "github.com/influxdata/flux/querytest/functions"
 )
 
 func TestGroupOperation_Marshaling(t *testing.T) {
@@ -595,7 +596,7 @@ func TestGroup_Process(t *testing.T) {
 
 func TestMergeGroupRule(t *testing.T) {
 	var (
-		from      = &inputs.FromProcedureSpec{}
+		from      = &tFunctions.MockFromProcedureSpec{}
 		groupNone = &transformations.GroupProcedureSpec{
 			GroupMode: functions.GroupModeBy,
 			GroupKeys: []string{},

@@ -6,13 +6,14 @@ import (
 	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/querytest/functions"
 )
 
 func TestAny(t *testing.T) {
 	pat := plan.Any()
 
 	node := &plan.LogicalPlanNode{
-		Spec: &inputs.FromProcedureSpec{},
+		Spec: &functions.MockFromProcedureSpec{},
 	}
 
 	if !pat.Match(node) {
@@ -36,7 +37,7 @@ func TestPat(t *testing.T) {
 	filterFromPat := plan.Pat(transformations.FilterKind, plan.Pat(inputs.FromKind))
 
 	from := &plan.LogicalPlanNode{
-		Spec: &inputs.FromProcedureSpec{},
+		Spec: &functions.MockFromProcedureSpec{},
 	}
 
 	filter1 := &plan.LogicalPlanNode{

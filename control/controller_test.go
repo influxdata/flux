@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/internal/pkg/syncutil"
 	"github.com/influxdata/flux/memory"
