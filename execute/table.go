@@ -215,12 +215,24 @@ func AppendCol(bj, cj int, cr flux.ColReader, builder TableBuilder) error {
 
 // AppendRecord appends the record from cr onto builder assuming matching columns.
 func AppendRecord(i int, cr flux.ColReader, builder TableBuilder) error {
-
 	if !BuilderColsMatchReader(builder, cr) {
 		return errors.New("AppendRecord column schema mismatch")
 	}
 	for j := range builder.Cols() {
 		if err := builder.AppendValue(j, ValueForRow(cr, i, j)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// AppendRecordArrow appends the record from cr onto builder assuming matching columns.
+func AppendRecordArrow(i int, cr flux.ArrowColReader, builder TableBuilder) error {
+	if !BuilderColsMatchReaderArrow(builder, cr) {
+		return errors.New("AppendRecord column schema mismatch")
+	}
+	for j := range builder.Cols() {
+		if err := builder.AppendValue(j, ValueForRowArrow(cr, i, j)); err != nil {
 			return err
 		}
 	}
@@ -315,8 +327,28 @@ func AppendMappedRecordExplicit(i int, cr flux.ColReader, builder TableBuilder, 
 	return nil
 }
 
+// AppendMappedRecordWExplicitArrow appends the records from cr onto builder, using colMap as a map of builder index to cr index.
+// if an entry in the colMap indicates a mismatched column, no value is appended.
+func AppendMappedRecordExplicitArrow(i int, cr flux.ArrowColReader, builder TableBuilder, colMap []int) error {
+	// TODO(adam): these zero values should be set to null when we have null support
+	for j := range builder.Cols() {
+		if colMap[j] < 0 {
+			continue
+		}
+		if err := builder.AppendValue(j, ValueForRowArrow(cr, i, j)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // BuilderColsMatchReader returns true if builder and cr have identical column sets (order dependent)
 func BuilderColsMatchReader(builder TableBuilder, cr flux.ColReader) bool {
+	return colsMatch(builder.Cols(), cr.Cols())
+}
+
+// BuilderColsMatchReaderArrow returns true if builder and cr have identical column sets (order dependent)
+func BuilderColsMatchReaderArrow(builder TableBuilder, cr flux.ArrowColReader) bool {
 	return colsMatch(builder.Cols(), cr.Cols())
 }
 
@@ -397,6 +429,23 @@ func colsMatch(left, right []flux.ColMeta) bool {
 // When colMap does not have enough capacity a new colMap is allocated.
 // The colMap is always returned
 func ColMap(colMap []int, builder TableBuilder, cr flux.ColReader) []int {
+	l := len(builder.Cols())
+	if cap(colMap) < l {
+		colMap = make([]int, len(builder.Cols()))
+	} else {
+		colMap = colMap[:l]
+	}
+	cols := cr.Cols()
+	for j, c := range builder.Cols() {
+		colMap[j] = ColIdx(c.Label, cols)
+	}
+	return colMap
+}
+
+// ColMapArrow writes a mapping of builder index to column reader index into colMap.
+// When colMap does not have enough capacity a new colMap is allocated.
+// The colMap is always returned
+func ColMapArrow(colMap []int, builder TableBuilder, cr flux.ArrowColReader) []int {
 	l := len(builder.Cols())
 	if cap(colMap) < l {
 		colMap = make([]int, len(builder.Cols()))
