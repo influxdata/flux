@@ -18,8 +18,8 @@ func NewString(vs []string, alloc *memory.Allocator) *array.Binary {
 	return a
 }
 
-func StringSlice(arr *array.Binary, i, j int64) *array.Binary {
-	data := array.NewSliceData(arr.Data(), i, j)
+func StringSlice(arr *array.Binary, i, j int) *array.Binary {
+	data := array.NewSliceData(arr.Data(), int64(i), int64(j))
 	defer data.Release()
 	return array.NewBinaryData(data)
 }
