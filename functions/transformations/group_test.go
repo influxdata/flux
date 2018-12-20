@@ -8,7 +8,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions"
-	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
@@ -33,12 +32,12 @@ func TestGroup_NewQuery(t *testing.T) {
 		{
 			Name: "group with no arguments",
 			// group() defaults to group(columns: [], mode: "by")
-			Raw: `from(bucket: "telegraf") |> range(start: -1m) |> group()`,
+			Raw: `from() |> range(start: -1m) |> group()`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
 						ID:   "from0",
-						Spec: &inputs.FromOpSpec{Bucket: "telegraf"},
+						Spec: &tFunctions.MockFromOpSpec{},
 					},
 					{
 						ID: "range1",
@@ -66,12 +65,12 @@ func TestGroup_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "group all",
-			Raw:  `from(bucket: "telegraf") |> range(start: -1m) |> group(columns:[], mode: "except")`,
+			Raw:  `from() |> range(start: -1m) |> group(columns:[], mode: "except")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
 						ID:   "from0",
-						Spec: &inputs.FromOpSpec{Bucket: "telegraf"},
+						Spec: &tFunctions.MockFromOpSpec{},
 					},
 					{
 						ID: "range1",
@@ -99,12 +98,12 @@ func TestGroup_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "group none",
-			Raw:  `from(bucket: "telegraf") |> range(start: -1m) |> group(columns: [], mode: "by")`,
+			Raw:  `from() |> range(start: -1m) |> group(columns: [], mode: "by")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
 						ID:   "from0",
-						Spec: &inputs.FromOpSpec{Bucket: "telegraf"},
+						Spec: &tFunctions.MockFromOpSpec{},
 					},
 					{
 						ID: "range1",
@@ -132,12 +131,12 @@ func TestGroup_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "group by",
-			Raw:  `from(bucket: "telegraf") |> range(start: -1m) |> group(columns: ["host"], mode: "by")`,
+			Raw:  `from() |> range(start: -1m) |> group(columns: ["host"], mode: "by")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
 						ID:   "from0",
-						Spec: &inputs.FromOpSpec{Bucket: "telegraf"},
+						Spec: &tFunctions.MockFromOpSpec{},
 					},
 					{
 						ID: "range1",
@@ -168,12 +167,12 @@ func TestGroup_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "group except",
-			Raw:  `from(bucket: "telegraf") |> range(start: -1m) |> group(columns: ["host"], mode: "except")`,
+			Raw:  `from() |> range(start: -1m) |> group(columns: ["host"], mode: "except")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
 						ID:   "from0",
-						Spec: &inputs.FromOpSpec{Bucket: "telegraf"},
+						Spec: &tFunctions.MockFromOpSpec{},
 					},
 					{
 						ID: "range1",

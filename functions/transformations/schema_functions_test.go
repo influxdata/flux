@@ -4,8 +4,6 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/influxdata/flux/functions/inputs"
-
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/plan"
@@ -17,20 +15,19 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/querytest/functions"
 )
 
 func TestSchemaMutions_NewQueries(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{
 			Name: "test rename query",
-			Raw:  `from(bucket:"mybucket") |> rename(columns:{old:"new"}) |> sum()`,
+			Raw:  `from() |> rename(columns:{old:"new"}) |> sum()`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "rename1",
@@ -55,14 +52,12 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		},
 		{
 			Name: "test drop query",
-			Raw:  `from(bucket:"mybucket") |> drop(columns:["col1", "col2", "col3"]) |> sum()`,
+			Raw:  `from() |> drop(columns:["col1", "col2", "col3"]) |> sum()`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "drop1",
@@ -85,14 +80,12 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		},
 		{
 			Name: "test keep query",
-			Raw:  `from(bucket:"mybucket") |> keep(columns:["col1", "col2", "col3"]) |> sum()`,
+			Raw:  `from() |> keep(columns:["col1", "col2", "col3"]) |> sum()`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "keep1",
@@ -115,14 +108,12 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		},
 		{
 			Name: "test duplicate query",
-			Raw:  `from(bucket:"mybucket") |> duplicate(column: "col1", as: "col1_new") |> sum()`,
+			Raw:  `from() |> duplicate(column: "col1", as: "col1_new") |> sum()`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "duplicate1",
@@ -146,14 +137,12 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		},
 		{
 			Name: "test drop query fn param",
-			Raw:  `from(bucket:"mybucket") |> drop(fn: (column) => column =~ /reg*/) |> sum()`,
+			Raw:  `from() |> drop(fn: (column) => column =~ /reg*/) |> sum()`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "drop1",
@@ -191,14 +180,12 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		},
 		{
 			Name: "test keep query fn param",
-			Raw:  `from(bucket:"mybucket") |> keep(fn: (column) => column =~ /reg*/) |> sum()`,
+			Raw:  `from() |> keep(fn: (column) => column =~ /reg*/) |> sum()`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "keep1",
@@ -236,14 +223,12 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		},
 		{
 			Name: "test rename query fn param",
-			Raw:  `from(bucket:"mybucket") |> rename(fn: (column) => "new_name") |> sum()`,
+			Raw:  `from() |> rename(fn: (column) => "new_name")  |> sum()`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "rename1",
@@ -275,25 +260,25 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		},
 		{
 			Name:    "test rename query invalid",
-			Raw:     `from(bucket:"mybucket") |> rename(fn: (column) => "new_name", columns: {a:"b", c:"d"}) |> sum()`,
+			Raw:     `from() |> rename(fn: (column) => "new_name", columns: {a:"b", c:"d"}) |> sum()`,
 			Want:    nil,
 			WantErr: true,
 		},
 		{
 			Name:    "test drop query invalid",
-			Raw:     `from(bucket:"mybucket") |> drop(fn: (column) => column == target, columns: ["a", "b"]) |> sum()`,
+			Raw:     `from() |> drop(fn: (column) => column == target, columns: ["a", "b"]) |> sum()`,
 			Want:    nil,
 			WantErr: true,
 		},
 		{
 			Name:    "test keep query invalid",
-			Raw:     `from(bucket:"mybucket") |> keep(fn: (column) => column == target, columns: ["a", "b"]) |> sum()`,
+			Raw:     `from() |> keep(fn: (column) => column == target, columns: ["a", "b"]) |> sum()`,
 			Want:    nil,
 			WantErr: true,
 		},
 		{
 			Name:    "test duplicate query invalid",
-			Raw:     `from(bucket:"mybucket") |> duplicate(columns: ["a", "b"], n: -1) |> sum()`,
+			Raw:     `from() |> duplicate(columns: ["a", "b"], n: -1) |> sum()`,
 			Want:    nil,
 			WantErr: true,
 		},

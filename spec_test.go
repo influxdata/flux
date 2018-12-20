@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux/functions/inputs"
+	"github.com/influxdata/flux/querytest/functions"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -34,9 +34,7 @@ func TestSpec_JSON(t *testing.T) {
 		{
 			"id": "from",
 			"kind": "from",
-			"spec": {
-				"bucket":"mybucket"
-			}
+			"spec": {}
 		},
 		{
 			"id": "range",
@@ -66,10 +64,8 @@ func TestSpec_JSON(t *testing.T) {
 	expQ := flux.Spec{
 		Operations: []*flux.Operation{
 			{
-				ID: "from",
-				Spec: &inputs.FromOpSpec{
-					Bucket: "mybucket",
-				},
+				ID:   "from",
+				Spec: &functions.MockFromOpSpec{},
 			},
 			{
 				ID: "range",

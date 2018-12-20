@@ -6,12 +6,12 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/internal/pkg/syncutil"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/plan"
 	_ "github.com/influxdata/flux/querytest/builtin"
+	"github.com/influxdata/flux/querytest/functions"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
@@ -22,7 +22,7 @@ var mockCompiler *mock.Compiler
 func init() {
 	mockCompiler = new(mock.Compiler)
 	mockCompiler.CompileFn = func(ctx context.Context) (*flux.Spec, error) {
-		return flux.Compile(ctx, `from(bucket: "telegraf") |> range(start: -5m) |> mean()`, time.Now())
+		return flux.Compile(ctx, `from() |> range(start: -5m) |> mean()`, time.Now())
 	}
 }
 
@@ -72,7 +72,7 @@ func TestController_PlanQuery_Failure(t *testing.T) {
 			return &flux.Spec{
 				Operations: []*flux.Operation{{
 					ID:   "from",
-					Spec: &inputs.FromOpSpec{Bucket: "telegraf"},
+					Spec: &functions.MockFromOpSpec{},
 				}},
 			}, nil
 		},

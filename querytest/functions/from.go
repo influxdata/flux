@@ -1,3 +1,4 @@
+// Contains the specification of a mock `from` operation for testing
 package functions
 
 import (
@@ -10,42 +11,31 @@ import (
 	"github.com/influxdata/flux/semantic"
 )
 
-// Registers testing-specific procedure spec and rules.
+type MockFromOpSpec struct{}
+
 func init() {
-	// This signature is just for compatibility with FromOpSpec.
-	// Conceptually, the mock from could have no parameter.
 	mockFromSignature := semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"bucket":   semantic.String,
-			"bucketID": semantic.String,
-		},
-		Required: nil,
-		Return:   flux.TableObjectType,
+		Parameters: nil,
+		Required:   nil,
+		Return:     flux.TableObjectType,
 	}
 
+	flux.RegisterOpSpec(inputs.FromKind, newFromOp)
 	flux.RegisterFunction(inputs.FromKind, createMockFromOpSpec, mockFromSignature)
 	plan.RegisterProcedureSpec(inputs.FromKind, newMockFromProcedure, inputs.FromKind)
 	plan.RegisterPhysicalRules(MergeMockFromRangeRule{})
 }
 
+func newFromOp() flux.OperationSpec {
+	return new(MockFromOpSpec)
+}
+
+func (s *MockFromOpSpec) Kind() flux.OperationKind {
+	return inputs.FromKind
+}
+
 func createMockFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
-	spec := new(inputs.FromOpSpec)
-
-	if bucket, ok, err := args.GetString("bucket"); err != nil {
-		return nil, err
-	} else if ok {
-		spec.Bucket = bucket
-	} else {
-		spec.Bucket = "testBucket"
-	}
-
-	if bucketID, ok, err := args.GetString("bucketID"); err != nil {
-		return nil, err
-	} else if ok {
-		spec.BucketID = bucketID
-	}
-
-	return spec, nil
+	return new(MockFromOpSpec), nil
 }
 
 // This procedure spec is used in flux tests to represent the physical
@@ -59,7 +49,7 @@ type MockFromProcedureSpec struct {
 }
 
 func newMockFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	_, ok := qs.(*inputs.FromOpSpec)
+	_, ok := qs.(*MockFromOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
 	}

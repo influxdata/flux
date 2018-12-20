@@ -11,23 +11,21 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/functions/outputs"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/querytest/functions"
 )
 
 func TestToHTTP_NewQuery(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{
 			Name: "from with database with range",
-			Raw:  `from(bucket:"mybucket") |> toHTTP(url: "https://localhost:8081", name:"series1", method:"POST",  timeout: 50s)`,
+			Raw:  `from() |> toHTTP(url: "https://localhost:8081", name:"series1", method:"POST",  timeout: 50s)`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "toHTTP1",

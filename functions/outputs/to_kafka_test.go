@@ -10,10 +10,10 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/functions/outputs"
 	"github.com/influxdata/flux/querytest"
-	kafka "github.com/segmentio/kafka-go"
+	"github.com/influxdata/flux/querytest/functions"
+	"github.com/segmentio/kafka-go"
 )
 
 // type kafkaClientMock = func
@@ -22,14 +22,12 @@ func TestToKafka_NewQuery(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{
 			Name: "from with database",
-			Raw:  `from(bucket:"mybucket") |> toKafka(brokers:["brokerurl:8989"], name:"series1", topic:"totallynotfaketopic")`,
+			Raw:  `from() |> toKafka(brokers:["brokerurl:8989"], name:"series1", topic:"totallynotfaketopic")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "toKafka1",

@@ -6,9 +6,9 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/querytest/functions"
 )
 
 func init() {
@@ -19,14 +19,12 @@ func TestCovariance_NewQuery(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{
 			Name: "simple covariance",
-			Raw:  `from(bucket:"mybucket") |> covariance(columns:["a","b"],)`,
+			Raw:  `from() |> covariance(columns:["a","b"],)`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "covariance1",
@@ -45,14 +43,12 @@ func TestCovariance_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "pearsonr",
-			Raw:  `from(bucket:"mybucket")|>covariance(columns:["a","b"],pearsonr:true)`,
+			Raw:  `from()|>covariance(columns:["a","b"],pearsonr:true)`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "covariance1",
@@ -72,20 +68,16 @@ func TestCovariance_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "global covariance",
-			Raw:  `cov(x: from(bucket:"mybucket"), y:from(bucket:"mybucket"), on:["host"], pearsonr:true)`,
+			Raw:  `cov(x: from(), y:from(), on:["host"], pearsonr:true)`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
-						ID: "from1",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from1",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "join2",

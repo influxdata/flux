@@ -21,7 +21,7 @@ func TestRuleRegistration(t *testing.T) {
 	plan.RegisterLogicalRules(&simpleRule)
 
 	now := time.Now().UTC()
-	fluxSpec, err := flux.Compile(context.Background(), `from(bucket: "telegraf") |> range(start: -5m)`, now)
+	fluxSpec, err := flux.Compile(context.Background(), `from() |> range(start: -5m)`, now)
 	if err != nil {
 		t.Fatalf("could not compile very simple Flux query: %v", err)
 	}

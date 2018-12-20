@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/querytest/functions"
 )
 
 func TestUnion_NewQuery(t *testing.T) {
@@ -15,13 +15,13 @@ func TestUnion_NewQuery(t *testing.T) {
 		{
 			Name: "basic two-way union",
 			Raw: `
-				a = from(bucket:"dbA") |> range(start:-1h)
-				b = from(bucket:"dbB") |> range(start:-1h)
+				a = from() |> range(start:-1h)
+				b = from() |> range(start:-1h)
 				union(tables: [a, b])`,
 			Want: &flux.Spec{Operations: []*flux.Operation{
 				{
 					ID:   "from0",
-					Spec: &inputs.FromOpSpec{Bucket: "dbA"},
+					Spec: &functions.MockFromOpSpec{},
 				},
 				{
 					ID: "range1",
@@ -40,7 +40,7 @@ func TestUnion_NewQuery(t *testing.T) {
 				},
 				{
 					ID:   "from2",
-					Spec: &inputs.FromOpSpec{Bucket: "dbB"},
+					Spec: &functions.MockFromOpSpec{},
 				},
 				{
 					ID: "range3",
@@ -73,14 +73,14 @@ func TestUnion_NewQuery(t *testing.T) {
 		{
 			Name: "basic three-way union",
 			Raw: `
-				a = from(bucket:"dbA") |> range(start:-1h)
-				b = from(bucket:"dbB") |> range(start:-1h)
-				c = from(bucket:"dbC") |> range(start:-1h)
+				a = from() |> range(start:-1h)
+				b = from() |> range(start:-1h)
+				c = from() |> range(start:-1h)
 				union(tables: [a, b, c])`,
 			Want: &flux.Spec{Operations: []*flux.Operation{
 				{
 					ID:   "from0",
-					Spec: &inputs.FromOpSpec{Bucket: "dbA"},
+					Spec: &functions.MockFromOpSpec{},
 				},
 				{
 					ID: "range1",
@@ -99,7 +99,7 @@ func TestUnion_NewQuery(t *testing.T) {
 				},
 				{
 					ID:   "from2",
-					Spec: &inputs.FromOpSpec{Bucket: "dbB"},
+					Spec: &functions.MockFromOpSpec{},
 				},
 				{
 					ID: "range3",
@@ -118,7 +118,7 @@ func TestUnion_NewQuery(t *testing.T) {
 				},
 				{
 					ID:   "from4",
-					Spec: &inputs.FromOpSpec{Bucket: "dbC"},
+					Spec: &functions.MockFromOpSpec{},
 				},
 				{
 					ID: "range5",
@@ -159,7 +159,7 @@ func TestUnion_NewQuery(t *testing.T) {
 		{
 			Name: "one-way union",
 			Raw: `
-				b = from(bucket:"dbB") |> range(start:-1h)
+				b = from() |> range(start:-1h)
 				union(tables: [b])`,
 			WantErr: true,
 		},

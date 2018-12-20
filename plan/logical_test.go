@@ -131,7 +131,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 	}{
 		{
 			name:  `from range with yield`,
-			query: `from(bucket: "my-bucket") |> range(start:-1h) |> yield()`,
+			query: `from() |> range(start:-1h) |> yield()`,
 			plan: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreateLogicalNode("from0", fromSpec),
@@ -147,7 +147,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 		},
 		{
 			name:  `from range without yield`,
-			query: `from(bucket: "my-bucket") |> range(start:-1h)`,
+			query: `from() |> range(start:-1h)`,
 			plan: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreateLogicalNode("from0", fromSpec),
@@ -162,7 +162,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 		},
 		{
 			name:  `from range filter`,
-			query: `from(bucket: "my-bucket") |> range(start:-1h) |> filter(fn: (r) => true)`,
+			query: `from() |> range(start:-1h) |> filter(fn: (r) => true)`,
 			plan: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreateLogicalNode("from0", fromSpec),
@@ -179,7 +179,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 		},
 		{
 			name:  `Non-yield side effect`,
-			query: `from(bucket: "my-bucket") |> range(start:-1h) |> toHTTP(url: "/my/url")`,
+			query: `from() |> range(start:-1h) |> toHTTP(url: "/my/url")`,
 			plan: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreateLogicalNode("from0", fromSpec),
@@ -197,8 +197,8 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 			// from() |> range() |> toKafka()
 			name: `Multiple non-yield side effect`,
 			query: `
-				from(bucket: "my-bucket") |> range(start:-1h) |> toHTTP(url: "/my/url")
-				from(bucket: "my-bucket") |> range(start:-1h) |> toKafka(brokers: ["broker"], topic: "topic")`,
+				from() |> range(start:-1h) |> toHTTP(url: "/my/url")
+				from() |> range(start:-1h) |> toKafka(brokers: ["broker"], topic: "topic")`,
 			plan: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					// First plan
@@ -223,8 +223,8 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 		{
 			name: `side effect and a generated yield`,
 			query: `
-				from(bucket: "my-bucket") |> range(start:-1h) |> toHTTP(url: "/my/url")
-				from(bucket: "my-bucket") |> range(start:-1h)`,
+				from() |> range(start:-1h) |> toHTTP(url: "/my/url")
+				from() |> range(start:-1h)`,
 			plan: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					// First plan
@@ -258,8 +258,8 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 			// from      from
 			name: `diamond join`,
 			query: `
-				A = from(bucket: "my-bucket") |> range(start:-1h)
-				B = from(bucket: "my-bucket") |> range(start:-1h)
+				A = from() |> range(start:-1h)
+				B = from() |> range(start:-1h)
 				C = join(tables: {a: A, b: B}, on: ["_time"])
 				C |> sum() |> yield(name: "sum")
 				C |> mean() |> yield(name: "mean")`,
@@ -290,8 +290,8 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 		{
 			name: "multi-generated yields",
 			query: `
-				from(bucket: "my-bucket") |> sum()
-				from(bucket: "my-bucket") |> mean()`,
+				from() |> sum()
+				from() |> mean()`,
 			wantErr: true,
 		},
 	}
@@ -445,7 +445,7 @@ func TestLogicalPlanner(t *testing.T) {
 	}{{
 		name: "with merge-able filters",
 		flux: `
-			from(bucket: "telegraf") |>
+			from() |>
 				filter(fn: (r) => r._measurement == "cpu") |>
 				filter(fn: (r) => r._value > 0.5) |>
 				filter(fn: (r) => r._value < 0.9) |>
@@ -480,7 +480,7 @@ func TestLogicalPlanner(t *testing.T) {
 	},
 		{
 			name: "with swappable map and filter",
-			flux: `from(bucket: "telegraf") |> map(fn: (r) => r._value * 2.0) |> filter(fn: (r) => r._value < 10.0) |> yield(name: "result")`,
+			flux: `from() |> map(fn: (r) => r._value * 2.0) |> filter(fn: (r) => r._value < 10.0) |> yield(name: "result")`,
 			wantPlan: plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreateLogicalNode("from0", &functions.MockFromProcedureSpec{}),
@@ -515,7 +515,7 @@ func TestLogicalPlanner(t *testing.T) {
 		{
 			name: "rules working together",
 			flux: `
-				from(bucket: "telegraf") |>
+				from() |>
 					filter(fn: (r) => r._value != 0) |>
 					map(fn: (r) => r._value * 10) |>
 					filter(fn: (r) => r._value < 100) |>
@@ -585,7 +585,7 @@ func TestLogicalPlanner(t *testing.T) {
 
 func TestLogicalIntegrityCheckOption(t *testing.T) {
 	script := `
-from(bucket: "telegraf")
+from()
 	|> filter(fn: (r) => r._measurement == "cpu")
 	|> yield(name: "result")
 `

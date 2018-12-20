@@ -9,9 +9,9 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/querytest/functions"
 )
 
 func TestJoin_NewQuery(t *testing.T) {
@@ -19,16 +19,14 @@ func TestJoin_NewQuery(t *testing.T) {
 		{
 			Name: "basic two-way join",
 			Raw: `
-				a = from(bucket:"dbA") |> range(start:-1h)
-				b = from(bucket:"dbB") |> range(start:-1h)
+				a = from() |> range(start:-1h)
+				b = from() |> range(start:-1h)
 				join(tables:{a:a,b:b}, on:["host"])`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "dbA",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "range1",
@@ -46,10 +44,8 @@ func TestJoin_NewQuery(t *testing.T) {
 						},
 					},
 					{
-						ID: "from2",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "dbB",
-						},
+						ID:   "from2",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "range3",
@@ -86,17 +82,15 @@ func TestJoin_NewQuery(t *testing.T) {
 		{
 			Name: "from with join with complex ast",
 			Raw: `
-				a = from(bucket:"flux") |> range(start:-1h)
-				b = from(bucket:"flux") |> range(start:-1h)
+				a = from() |> range(start:-1h)
+				b = from() |> range(start:-1h)
 				join(tables:{a:a,b:b}, on:["t1"])
 			`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "flux",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "range1",
@@ -114,10 +108,8 @@ func TestJoin_NewQuery(t *testing.T) {
 						},
 					},
 					{
-						ID: "from2",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "flux",
-						},
+						ID:   "from2",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "range3",

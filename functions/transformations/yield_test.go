@@ -6,26 +6,24 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/querytest/functions"
 )
 
 func TestYield_NewQuery(t *testing.T) {
 	testcases := []querytest.NewQueryTestCase{
 		{
-			Name: "mutliple yields",
+			Name: "multiple yields",
 			Raw: `
-				from(bucket: "foo") |> range(start:-1h) |> yield(name: "1")
-				from(bucket: "foo") |> range(start:-2h) |> yield(name: "2")
+				from() |> range(start:-1h) |> yield(name: "1")
+				from() |> range(start:-2h) |> yield(name: "2")
 			`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "foo",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "range1",
@@ -49,10 +47,8 @@ func TestYield_NewQuery(t *testing.T) {
 						},
 					},
 					{
-						ID: "from3",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "foo",
-						},
+						ID:   "from3",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "range4",
@@ -100,7 +96,7 @@ func TestYield_NewQuery(t *testing.T) {
 			Name: "yield in sub-block",
 			Raw: `
 				f = () => {
-					g = () => from(bucket: "foo") |> range(start:-1h) |> yield()
+					g = () => from() |> range(start:-1h) |> yield()
 					return g
 				}
 				f()()
@@ -108,10 +104,8 @@ func TestYield_NewQuery(t *testing.T) {
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "foo",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "range1",
@@ -150,15 +144,13 @@ func TestYield_NewQuery(t *testing.T) {
 		{
 			Name: "sub-yield",
 			Raw: `
-				from(bucket: "foo") |> range(start:-1h) |> yield(name: "1") |> sum() |> yield(name: "2")
+				from() |> range(start:-1h) |> yield(name: "1") |> sum() |> yield(name: "2")
 			`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "foo",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "range1",

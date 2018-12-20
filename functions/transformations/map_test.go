@@ -3,14 +3,13 @@ package transformations_test
 import (
 	"testing"
 
-	"github.com/influxdata/flux/functions/inputs"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/querytest/functions"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -18,14 +17,12 @@ func TestMap_NewQuery(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{
 			Name: "simple static map",
-			Raw:  `from(bucket:"mybucket") |> map(fn: (r) => r._value + 1)`,
+			Raw:  `from() |> map(fn: (r) => r._value + 1)`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "map1",
@@ -58,14 +55,12 @@ func TestMap_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "resolve map",
-			Raw:  `x = 2 from(bucket:"mybucket") |> map(fn: (r) => r._value + x)`,
+			Raw:  `x = 2 from() |> map(fn: (r) => r._value + x)`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "map1",

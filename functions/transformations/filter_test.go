@@ -5,14 +5,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux/functions/inputs"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/querytest/functions"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -20,14 +19,12 @@ func TestFilter_NewQuery(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{
 			Name: "from with database filter and range",
-			Raw:  `from(bucket:"mybucket") |> filter(fn: (r) => r["t1"]=="val1" and r["t2"]=="val2") |> range(start:-4h, stop:-2h) |> count()`,
+			Raw:  `from() |> filter(fn: (r) => r["t1"]=="val1" and r["t2"]=="val2") |> range(start:-4h, stop:-2h) |> count()`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "filter1",
@@ -92,7 +89,7 @@ func TestFilter_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "from with database filter (and with or) and range",
-			Raw: `from(bucket:"mybucket")
+			Raw: `from()
 						|> filter(fn: (r) =>
 								(
 									(r["t1"]=="val1")
@@ -107,10 +104,8 @@ func TestFilter_NewQuery(t *testing.T) {
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "filter1",
@@ -186,7 +181,7 @@ func TestFilter_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "from with database filter including fields",
-			Raw: `from(bucket:"mybucket")
+			Raw: `from()
 						|> filter(fn: (r) =>
 							(r["t1"] =="val1")
 							and
@@ -197,10 +192,8 @@ func TestFilter_NewQuery(t *testing.T) {
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "filter1",
@@ -265,7 +258,7 @@ func TestFilter_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "from with database filter with no parens including fields",
-			Raw: `from(bucket:"mybucket")
+			Raw: `from()
 						|> filter(fn: (r) =>
 							r["t1"]=="val1"
 							and
@@ -276,10 +269,8 @@ func TestFilter_NewQuery(t *testing.T) {
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "filter1",
@@ -344,7 +335,7 @@ func TestFilter_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "from with database filter with no parens including regex and field",
-			Raw: `from(bucket:"mybucket")
+			Raw: `from()
 						|> filter(fn: (r) =>
 							r["t1"]==/^val1/
 							and
@@ -355,10 +346,8 @@ func TestFilter_NewQuery(t *testing.T) {
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "filter1",
@@ -423,17 +412,15 @@ func TestFilter_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "from with database regex with escape",
-			Raw: `from(bucket:"mybucket")
+			Raw: `from()
 						|> filter(fn: (r) =>
 							r["t1"]==/^va\/l1/
 						)`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "filter1",
@@ -463,7 +450,7 @@ func TestFilter_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "from with database with two regex",
-			Raw: `from(bucket:"mybucket")
+			Raw: `from()
 						|> filter(fn: (r) =>
 							r["t1"]==/^va\/l1/
 							and
@@ -472,10 +459,8 @@ func TestFilter_NewQuery(t *testing.T) {
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "from0",
-						Spec: &inputs.FromOpSpec{
-							Bucket: "mybucket",
-						},
+						ID:   "from0",
+						Spec: &functions.MockFromOpSpec{},
 					},
 					{
 						ID: "filter1",
