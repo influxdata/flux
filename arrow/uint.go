@@ -17,8 +17,8 @@ func NewUint(vs []uint64, alloc *memory.Allocator) *array.Uint64 {
 	return a
 }
 
-func UintSlice(arr *array.Uint64, i, j int64) *array.Uint64 {
-	data := array.NewSliceData(arr.Data(), i, j)
+func UintSlice(arr *array.Uint64, i, j int) *array.Uint64 {
+	data := array.NewSliceData(arr.Data(), int64(i), int64(j))
 	defer data.Release()
 	return array.NewUint64Data(data)
 }

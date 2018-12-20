@@ -17,8 +17,8 @@ func NewFloat(vs []float64, alloc *memory.Allocator) *array.Float64 {
 	return a
 }
 
-func FloatSlice(arr *array.Float64, i, j int64) *array.Float64 {
-	data := array.NewSliceData(arr.Data(), i, j)
+func FloatSlice(arr *array.Float64, i, j int) *array.Float64 {
+	data := array.NewSliceData(arr.Data(), int64(i), int64(j))
 	defer data.Release()
 	return array.NewFloat64Data(data)
 }
