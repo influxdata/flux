@@ -18,6 +18,12 @@ func NewString(vs []string, alloc *memory.Allocator) *array.Binary {
 	return a
 }
 
+func StringSlice(arr *array.Binary, i, j int64) *array.Binary {
+	data := array.NewSliceData(arr.Data(), i, j)
+	defer data.Release()
+	return array.NewBinaryData(data)
+}
+
 func NewStringBuilder(a *memory.Allocator) *array.BinaryBuilder {
 	return array.NewBinaryBuilder(&allocator{
 		Allocator: arrowmemory.NewGoAllocator(),

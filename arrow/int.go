@@ -17,6 +17,12 @@ func NewInt(vs []int64, alloc *memory.Allocator) *array.Int64 {
 	return a
 }
 
+func IntSlice(arr *array.Int64, i, j int64) *array.Int64 {
+	data := array.NewSliceData(arr.Data(), i, j)
+	defer data.Release()
+	return array.NewInt64Data(data)
+}
+
 func NewIntBuilder(a *memory.Allocator) *array.Int64Builder {
 	return array.NewInt64Builder(&allocator{
 		Allocator: arrowmemory.NewGoAllocator(),
