@@ -213,6 +213,54 @@ func AppendCol(bj, cj int, cr flux.ColReader, builder TableBuilder) error {
 	return nil
 }
 
+// AppendColArrow append a column from cr onto builder
+// The indexes bj and cj are builder and col reader indexes respectively.
+func AppendColArrow(bj, cj int, cr flux.ArrowColReader, builder TableBuilder) error {
+	if cj < 0 || cj > len(cr.Cols()) {
+		return errors.New("AppendCol column reader index out of bounds")
+	}
+	if bj < 0 || bj > len(builder.Cols()) {
+		return errors.New("AppendCol builder index out of bounds")
+	}
+	c := cr.Cols()[cj]
+
+	switch c.Type {
+	case flux.TBool:
+		vs := cr.Bools(cj)
+		for i := 0; i < vs.Len(); i++ {
+			if err := builder.AppendBool(bj, vs.Value(i)); err != nil {
+				return err
+			}
+		}
+		return nil
+	case flux.TInt:
+		return builder.AppendInts(bj, cr.Ints(cj).Int64Values())
+	case flux.TUInt:
+		return builder.AppendUInts(bj, cr.UInts(cj).Uint64Values())
+	case flux.TFloat:
+		return builder.AppendFloats(bj, cr.Floats(cj).Float64Values())
+	case flux.TString:
+		vs := cr.Strings(cj)
+		for i := 0; i < vs.Len(); i++ {
+			if err := builder.AppendString(bj, vs.ValueString(i)); err != nil {
+				return err
+			}
+		}
+		return nil
+	case flux.TTime:
+		vs := cr.Times(cj)
+		for i := 0; i < vs.Len(); i++ {
+			if err := builder.AppendTime(bj, values.Time(vs.Value(i))); err != nil {
+				return err
+			}
+		}
+		return nil
+	default:
+		PanicUnknownType(c.Type)
+	}
+	return nil
+}
+
 // AppendRecord appends the record from cr onto builder assuming matching columns.
 func AppendRecord(i int, cr flux.ColReader, builder TableBuilder) error {
 	if !BuilderColsMatchReader(builder, cr) {

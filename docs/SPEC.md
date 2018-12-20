@@ -2039,8 +2039,7 @@ from(bucket: "telegraf/autogen")
 
 Set assigns a static value to each record.
 The key may modify and existing column or it may add a new column to the tables.
-If the column that is modified is part of the group key, then the output tables will be regroup as needed.
-
+If the column that is modified is part of the group key, then the output tables will be regrouped as needed.
 
 Set has the following properties:
 
