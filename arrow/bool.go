@@ -17,6 +17,12 @@ func NewBool(vs []bool, alloc *memory.Allocator) *array.Boolean {
 	return a
 }
 
+func BoolSlice(arr *array.Boolean, i, j int64) *array.Boolean {
+	data := array.NewSliceData(arr.Data(), i, j)
+	defer data.Release()
+	return array.NewBooleanData(data)
+}
+
 func NewBoolBuilder(a *memory.Allocator) *array.BooleanBuilder {
 	return array.NewBooleanBuilder(&allocator{
 		Allocator: arrowmemory.NewGoAllocator(),
