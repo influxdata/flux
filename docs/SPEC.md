@@ -2498,8 +2498,9 @@ The output table schema will be the same as the input table.
 
 Cumulative sum has the following properties:
 
-* `columns` list string
-    columns is a list of columns on which to operate.
+* `columns` list of strings  
+    Columns on which to operate.  
+    Defaults to `_value`.  
 
 Example:
 ```
