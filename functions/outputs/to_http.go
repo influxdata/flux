@@ -209,6 +209,7 @@ func (ToHTTPOpSpec) Kind() flux.OperationKind {
 }
 
 type ToHTTPProcedureSpec struct {
+	plan.DefaultCost
 	Spec *ToHTTPOpSpec
 }
 
