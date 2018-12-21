@@ -1,6 +1,7 @@
 module github.com/influxdata/flux
 
 require (
+	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/Masterminds/semver v1.4.2
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/apache/arrow/go/arrow v0.0.0-20181031164735-a56c009257a7
@@ -36,6 +37,8 @@ require (
 	golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9 // indirect
 	golang.org/x/exp v0.0.0-20181112044915-a3060d491354
 	golang.org/x/sys v0.0.0-20181205085412-a5c9d58dba9a // indirect
+	golang.org/x/tools v0.0.0-20181221154417-3ad2d988d5e2 // indirect
 	gonum.org/v1/gonum v0.0.0-20181121035319-3f7ecaa7e8ca
 	gopkg.in/src-d/go-git.v4 v4.8.1
+	honnef.co/go/tools v0.0.0-20181108184350-ae8f1f9103cc
 )

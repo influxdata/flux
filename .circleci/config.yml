@@ -25,7 +25,9 @@ jobs:
             - flux-gomod-                              # Matches a new branch.
       # Run tests
       - run: make checkfmt
+      - run: make checktidy
       - run: make vet
+      - run: make staticcheck
       - run: make test
       - save_cache:
           name: Saving GOCACHE

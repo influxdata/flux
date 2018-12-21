@@ -4,6 +4,7 @@ package flux
 
 import (
 	_ "github.com/goreleaser/goreleaser"
+	_ "honnef.co/go/tools/cmd/staticcheck"
 )
 
 // This package is a workaround for adding additional paths to the go.mod file
