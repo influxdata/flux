@@ -9,10 +9,8 @@ func init() {
 }
 
 var helpersBuiltIn = `
-testingTest = (name, load, infile, outfile, test) => {
-  input = load(file: infile)
+testingTest = (name, input, want, test) => {
   got = input |> test()
-  want = load(file: outfile)
   return assertEquals(name: name, want: want, got: got)
 }
 `
