@@ -2284,31 +2284,28 @@ Pivot has the following properties:
 * `valueColumn` string
     Identifies the single column that contains the value to be moved around the pivot
     
+The group key of the resulting table will be the same as the input tables, excluding the columns found in the `columnKey` and `valueColumn`.
+This is because these columns are not part of the resulting output table.
 
-The group key of the resulting table will be the same as the input tables, excluding the columns found in the columnKey and valueColumn. 
-This is because these columns are not part of the resulting output table.  
+Any columns in the original table that are not referenced in the `rowKey` or the original table's group key will be dropped.
 
-Every input row should have a 1:1 mapping to a particular row + column in the output table, determined by its values for the rowKey and columnKey.   
-In the case where more than one value is identified for the same row+column pair in the output, the last value 
+Every input row should have a 1:1 mapping to a particular row, column pair in the output table, determined by its values for the `rowKey` and `columnKey`.
+In the case where more than one value is identified for the same row, column pair in the output, the last value
 encountered in the set of table rows is taken as the result.
 
-The output table will have columns based on the row key, plus the group key (minus any group key colums in the column key) 
-plus new columns for each unique tuple of values identified by the column key.  
-Any columns in the original table that are not referenced in the rowKey or the original table's group key will be dropped.  
-
 The output is constructed as follows:
-1. A new row is created for each unique value identified in the input by the rowKey parameter.
-2. The initial set of columns for the new row is the row key unioned with the group key, but excluding the columns indicated by the columnKey and the valueColumn.
-3. A set of value columns are added to the row for each unique value identified in the input by the columnKey parameter. 
-The label is a concatenation of the valueColumn string and the columnKey values using '_' as a separator. 
-4. For each rowKey, columnKey pair, the appropriate value is determined from the input table by the valueColumn. 
-If no value is found, the value is set to `null`.
+ - The set of columns for the new table is the `rowKey` unioned with the group key, but excluding the columns indicated by the `columnKey` and the `valueColumn`.
+ A new column is added to the set of columns for each unique value identified in the input by the `columnKey` parameter.
+ The label of a new column is the concatenation of the values at `columnKey` using `_` as a separator. 
+ - A new row is created for each unique value identified in the input by the `rowKey` parameter.
+ - For each new row, values for group key columns stay the same, while values for new columns are determined from the input tables by the value in `valueColumn` at the row identified by the `rowKey` values and the new column's label.
+ If no value is found, the value is set to `null`.
 
 [IMPL#353](https://github.com/influxdata/platform/issues/353) Null defined in spec but not implemented.  
 
 #### InfluxFieldsAsCols
 
-InfluxFieldsAsCols is a special application of pivot that will automatically align fields within each measurement that have the same time stamp.
+InfluxFieldsAsCols is a special application of pivot that will automatically align fields within each measurement that have the same timestamp.
 Its definition is: 
 
 ```
