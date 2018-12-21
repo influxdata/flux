@@ -7,10 +7,6 @@ import (
 	"github.com/influxdata/flux/internal/token"
 )
 
-//go:generate ruby unicode2ragel.rb -e utf8 -o unicode.rl
-//go:generate ragel -I. -Z scanner.rl -o scanner.gen.go
-//go:generate sh -c "go fmt scanner.gen.go > /dev/null"
-
 // Scanner is used to tokenize a flux program.
 type Scanner struct {
 	f           *token.File

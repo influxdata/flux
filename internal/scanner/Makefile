@@ -1,11 +1,26 @@
-GO_GENERATE := go generate $(GO_ARGS)
+# List any generated files here
+TARGETS = scanner.gen.go unicode.rl
+# List any source files used to generate the targets here
+SOURCES = gen.go scanner.rl unicode2ragel.rb
+# List any directories that have their own Makefile here
+SUBDIRS =
 
-all: scanner.gen.go
+# Default target
+all: $(SUBDIRS) $(TARGETS)
 
-scanner.gen.go: scanner.rl unicode2ragel.rb
+# Recurse into subdirs for same make goal
+$(SUBDIRS):
+	$(MAKE) -C $@ $(MAKECMDGOALS)
+
+# Clean all targets recursively
+clean: $(SUBDIRS)
+	rm -f $(TARGETS)
+
+# Define go generate if not already defined
+GO_GENERATE := go generate
+
+# Run go generate for the targets
+$(TARGETS): $(SOURCES)
 	$(GO_GENERATE) -x
 
-clean:
-	rm -f scanner.gen.go unicode.rl
-
-.PHONY: all clean
+.PHONY: all clean $(SUBDIRS)
