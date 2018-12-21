@@ -1,0 +1,6 @@
+#datatype,string,long,string,double
+#group,false,false,true,false
+#default,_result,,,
+,result,table,_measurement,_value
+,,0,CPU,8
+,,1,RAM,-1.83333333333333333
