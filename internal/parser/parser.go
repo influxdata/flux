@@ -1017,18 +1017,6 @@ func (p *parser) scan() (token.Pos, token.Token, string) {
 	return pos, tok, lit
 }
 
-// scanWithRegex will switch to scanning for a regex if it is appropriate.
-func (p *parser) scanWithRegex() (token.Pos, token.Token, string) {
-	if p.buffered {
-		p.buffered = false
-		if p.tok != token.DIV {
-			return p.pos, p.tok, p.lit
-		}
-		p.s.Unread()
-	}
-	return p.s.ScanWithRegex()
-}
-
 // peek will read the next token from the Scanner and then buffer it.
 // It will return information about the token.
 func (p *parser) peek() (token.Pos, token.Token, string) {
@@ -1059,15 +1047,6 @@ func (p *parser) consume() {
 		panic("called consume on an unbuffered input")
 	}
 	p.buffered = false
-}
-
-// unread will explicitly buffer a scanned token.
-func (p *parser) unread(pos token.Pos, tok token.Token, lit string) {
-	if p.buffered {
-		panic("token already buffered")
-	}
-	p.pos, p.tok, p.lit = pos, tok, lit
-	p.buffered = true
 }
 
 // expect will continuously scan the input until it reads the requested
@@ -1144,7 +1123,7 @@ func (p *parser) sourceLocation(start, end ast.Position) *ast.SourceLocation {
 }
 
 func parseTime(lit string) (time.Time, error) {
-	if strings.Index(lit, "T") == -1 {
+	if !strings.Contains(lit, "T") {
 		// This is a date.
 		return time.Parse("2006-01-02", lit)
 	}

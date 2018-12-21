@@ -533,24 +533,24 @@ func (c *MergeJoinCache) Table(key flux.GroupKey) (flux.Table, error) {
 	preJoinGroupKeys, ok := c.reverseLookup[key]
 
 	if !ok {
-		return nil, fmt.Errorf("No table exists with group key: %v", key)
+		return nil, fmt.Errorf("no table exists with group key: %v", key)
 	}
 
 	if _, ok := c.tables[key]; !ok {
 
 		left := c.buffers[c.leftID].table(preJoinGroupKeys.left)
 		if left == nil {
-			return nil, fmt.Errorf("No table in left join buffer with key: %v", key)
+			return nil, fmt.Errorf("no table in left join buffer with key: %v", key)
 		}
 
 		right := c.buffers[c.rightID].table(preJoinGroupKeys.right)
 		if left == nil {
-			return nil, fmt.Errorf("No table in right join buffer with key: %v", key)
+			return nil, fmt.Errorf("no table in right join buffer with key: %v", key)
 		}
 
 		table, err := c.join(left, right)
 		if err != nil {
-			return nil, fmt.Errorf("Table with group key (%v) could not be fetched", key)
+			return nil, fmt.Errorf("table with group key (%v) could not be fetched", key)
 		}
 
 		c.tables[key] = table

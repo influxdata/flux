@@ -199,7 +199,7 @@ func (o *ToHTTPOpSpec) UnmarshalJSON(b []byte) (err error) {
 		return err
 	}
 	if !(u.Scheme == "https" || u.Scheme == "http" || u.Scheme == "") {
-		return fmt.Errorf("Scheme must be http or https but was %s", u.Scheme)
+		return fmt.Errorf("scheme must be http or https but was %s", u.Scheme)
 	}
 	return nil
 }

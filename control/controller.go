@@ -339,17 +339,15 @@ func (c *Controller) drain(pq *PriorityQueue) {
 		}
 		c.queriesMu.RUnlock()
 
-		select {
 		// Wait for resources to free
-		case q := <-c.queryDone:
-			c.free(q)
-			c.queriesMu.Lock()
-			delete(c.queries, q.id)
-			c.queriesMu.Unlock()
-		}
+		q := <-c.queryDone
+		c.free(q)
+		c.queriesMu.Lock()
+		delete(c.queries, q.id)
+		c.queriesMu.Unlock()
 
 		// Peek at head of priority queue
-		q := pq.Peek()
+		q = pq.Peek()
 		if q != nil {
 			pop, err := c.processQuery(q)
 			if pop {

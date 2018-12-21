@@ -47,7 +47,7 @@ func createAssertEqualsOpSpec(args flux.Arguments, a *flux.Administration) (flux
 	}
 	p, ok := t.(*flux.TableObject)
 	if !ok {
-		err = errors.New("got input to assertEquals is not a table object")
+		return nil, errors.New("got input to assertEquals is not a table object")
 	}
 	a.AddParent(p)
 
@@ -57,13 +57,9 @@ func createAssertEqualsOpSpec(args flux.Arguments, a *flux.Administration) (flux
 	}
 	p, ok = t.(*flux.TableObject)
 	if !ok {
-		err = errors.New("want input to assertEquals is not a table object")
+		return nil, errors.New("want input to assertEquals is not a table object")
 	}
 	a.AddParent(p)
-
-	if err != nil {
-		return nil, err
-	}
 
 	var name string
 	if name, err = args.GetRequiredString("name"); err != nil {
