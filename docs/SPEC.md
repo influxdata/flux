@@ -93,8 +93,8 @@ Examples:
 
 The following keywords are reserved and may not be used as identifiers:
 
-    and    import  not  return
-    empty  in      or   package
+    and    import  not  return  option
+    empty  in      or   package builtin
 
 [IMPL#256](https://github.com/influxdata/platform/issues/256) Add in and empty operator support  
 [IMPL#334](https://github.com/influxdata/platform/issues/334) Add "import" support  
@@ -785,6 +785,7 @@ The _main_ package is special for a few reasons:
 A statement controls execution.
 
     Statement = OptionStatement
+              | BuiltinStatement
               | VariableAssignment
               | ReturnStatement
               | ExpressionStatement .
@@ -941,7 +942,19 @@ When a set of imports modify the same option, they must be ordered by placing th
 
 ## Built-ins
 
-Flux contains many preassigned values in the universe block.
+Flux contains many preassigned values.
+These preassigned values are defined in the source files for the various built-in packages.
+
+### System built-ins
+
+When a built-in value is not expressible in Flux its value may be defined by the hosting environment.
+All such values must have a corresponding "builtin" statement to declare the existence and type of the built-in value.
+
+    BuiltinStatement = "builtin" identifer ":" TypeExpression
+
+Example
+
+    builtin from : (bucket: string, bucketID: string) -> stream
 
 ### Time constants
 
