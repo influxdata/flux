@@ -97,7 +97,7 @@ aggregateWindow = (every, fn, columns=["_value"], timeSrc="_stop",timeDst="_time
 increase = (tables=<-, columns=["_value"]) =>
     tables
         |> difference(nonNegative: true, columns:columns)
-        |> cumulativeSum()
+        |> cumulativeSum(columns: columns)
 
 // median returns the 50th percentile.
 // By default an approximate percentile is computed, this can be disabled by passing exact:true.

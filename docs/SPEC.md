@@ -2705,9 +2705,9 @@ The output table schema will be the same as the input table.
 
 Cumulative sum has the following properties:
 
-| Name    | Type     | Description                                       |
-| ----    | ----     | -----------                                       |
-| columns | []string | Columns is a list of columns on which to operate. |
+| Name    | Type     | Description                                                                  |
+| ----    | ----     | -----------                                                                  |
+| columns | []string | Columns is a list of columns on which to operate.  Defaults to `["_value"]`. |
 
 Example:
 
@@ -2801,14 +2801,31 @@ A main usage case is tracking changes in counter values which may wrap over time
 a threshold or are reset. In the case of a wrap/reset,
 we can assume that the absolute delta between two points will be at least their non-negative difference.
 
-Example:
-
 ```
 increase = (tables=<-, columns=["_value"]) =>
     tables
         |> difference(nonNegative: true, columns:columns)
         |> cumulativeSum()
 ```
+
+Example:
+
+Given the following input table.
+
+    | _time | _value |
+    | ----- | ------ |
+    | 00001 | 1      |
+    | 00002 | 5      |
+    | 00003 | 3      |
+    | 00004 | 4      |
+
+`increase()` produces the following table.
+
+    | _time | _value |
+    | ----- | ------ |
+    | 00002 | 4      |
+    | 00003 | 7      |
+    | 00004 | 8      |
 
 #### Distinct
 
@@ -2828,6 +2845,7 @@ from(bucket: "telegraf/autogen")
 	|> filter(fn: (r) => r._measurement == "cpu")
 	|> distinct(column: "host")
 ```
+
 
 #### Shift
 
