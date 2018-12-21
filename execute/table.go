@@ -35,6 +35,19 @@ func GroupKeyForRowOn(i int, cr flux.ColReader, on map[string]bool) flux.GroupKe
 	return NewGroupKey(cols, vs)
 }
 
+func GroupKeyForRowOnArrow(i int, cr flux.ArrowColReader, on map[string]bool) flux.GroupKey {
+	cols := make([]flux.ColMeta, 0, len(on))
+	vs := make([]values.Value, 0, len(on))
+	for j, c := range cr.Cols() {
+		if !on[c.Label] {
+			continue
+		}
+		cols = append(cols, c)
+		vs = append(vs, ValueForRowArrow(cr, i, j))
+	}
+	return NewGroupKey(cols, vs)
+}
+
 // OneTimeTable is a Table that permits reading data only once.
 // Specifically the ValueIterator may only be consumed once from any of the columns.
 type OneTimeTable interface {
@@ -342,6 +355,62 @@ func AppendMappedRecordWithDefaults(i int, cr flux.ColReader, builder TableBuild
 			var val Time
 			if colMap[j] >= 0 {
 				val = cr.Times(colMap[j])[i]
+			}
+			err = builder.AppendTime(j, val)
+		default:
+			PanicUnknownType(c.Type)
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// AppendMappedRecordWithDefaultsArrow appends the records from cr onto builder, using colMap as a map of builder index to cr index.
+// if an entry in the colMap indicates a mismatched column, a default value is assigned to the builder's column
+func AppendMappedRecordWithDefaultsArrow(i int, cr flux.ArrowColReader, builder TableBuilder, colMap []int) error {
+	if len(colMap) != len(builder.Cols()) {
+		return errors.New("AppendMappedRecordWithDefaultsArrow: colMap must have an entry for each table builder column")
+	}
+	// TODO(adam): these zero values should be set to null when we have null support
+	for j, c := range builder.Cols() {
+		var err error
+		switch c.Type {
+		case flux.TBool:
+			var val bool
+			if colMap[j] >= 0 {
+				val = cr.Bools(colMap[j]).Value(i)
+			}
+			err = builder.AppendBool(j, val)
+		case flux.TInt:
+			var val int64
+			if colMap[j] >= 0 {
+				val = cr.Ints(colMap[j]).Value(i)
+			}
+			err = builder.AppendInt(j, val)
+		case flux.TUInt:
+			var val uint64
+			if colMap[j] >= 0 {
+				val = cr.UInts(colMap[j]).Value(i)
+			}
+			err = builder.AppendUInt(j, val)
+		case flux.TFloat:
+			var val float64
+			if colMap[j] >= 0 {
+				val = cr.Floats(colMap[j]).Value(i)
+			}
+			err = builder.AppendFloat(j, val)
+		case flux.TString:
+			var val string
+			if colMap[j] >= 0 {
+				val = cr.Strings(colMap[j]).ValueString(i)
+			}
+			err = builder.AppendString(j, val)
+		case flux.TTime:
+			var val Time
+			if colMap[j] >= 0 {
+				val = values.Time(cr.Times(colMap[j]).Value(i))
 			}
 			err = builder.AppendTime(j, val)
 		default:
