@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
@@ -184,7 +185,7 @@ func (t *CovarianceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 	}
 
 	t.reset()
-	err = tbl.Do(func(cr flux.ColReader) error {
+	err = tbl.DoArrow(func(cr flux.ArrowColReader) error {
 		switch typ := cols[xIdx].Type; typ {
 		case flux.TFloat:
 			t.DoFloat(cr.Floats(xIdx), cr.Floats(yIdx))
@@ -211,10 +212,10 @@ func (t *CovarianceTransformation) reset() {
 	t.ym2 = 0
 	t.xym2 = 0
 }
-func (t *CovarianceTransformation) DoFloat(xs, ys []float64) {
+func (t *CovarianceTransformation) DoFloat(xs, ys *array.Float64) {
 	var xdelta, ydelta, xdelta2, ydelta2 float64
-	for i, x := range xs {
-		y := ys[i]
+	for i, x := range xs.Float64Values() {
+		y := ys.Value(i)
 
 		t.n++
 
