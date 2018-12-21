@@ -7,15 +7,19 @@ import (
 	"github.com/influxdata/flux/internal/token"
 )
 
+// use uneeded generated constants to satisify staticcheck
+var _ = flux_start
+var _ = flux_first_final
+
 // Scanner is used to tokenize a flux program.
 type Scanner struct {
-	f           *token.File
-	p, pe, eof  int
-	ts, te, act int
-	token       token.Token
-	data        []byte
-	checkpoint  int
-	reset       int
+	f          *token.File
+	p, pe, eof int
+	ts, te     int
+	token      token.Token
+	data       []byte
+	checkpoint int
+	reset      int
 }
 
 // New will construct and initialize a new Scanner.

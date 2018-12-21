@@ -55,7 +55,7 @@ func (c compiledFn) validate(input values.Object) error {
 	}
 	for k, v := range sig.Parameters {
 		if properties[k] != v {
-			return fmt.Errorf("parameter %q has the wrong type, expected %v got %v.", k, v, properties[k])
+			return fmt.Errorf("parameter %q has the wrong type, expected %v got %v", k, v, properties[k])
 		}
 	}
 	return nil

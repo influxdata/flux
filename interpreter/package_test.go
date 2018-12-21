@@ -10,21 +10,6 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-// Implementation of interpreter.Package
-type packageObject struct {
-	values.Object
-	name    string
-	effects []values.Value
-}
-
-func (p *packageObject) Name() string {
-	return p.name
-}
-
-func (p *packageObject) SideEffects() []values.Value {
-	return p.effects
-}
-
 // Implementation of interpreter.Importer
 type importer struct {
 	packages map[string]interpreter.Package
