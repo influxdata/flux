@@ -45,7 +45,7 @@ outData = "
 ,,2,2018-05-22T19:54:06Z,68.304576144036,usage_idle,cpu,cpu-total,host.local
 "
 
-t_rename_fn = (table=<-) =>
+t_rename = (table=<-) =>
   table
 	|> range(start:2018-05-22T19:53:26Z)
 	|> rename(fn: (column) => column)
@@ -54,4 +54,4 @@ t_rename_fn = (table=<-) =>
 testingTest(name: "rename_fn",
             input: testLoadStorage(csv: inData),
             want: testLoadMem(csv: outData),
-            test: t_rename_fn)
+            test: t_rename)

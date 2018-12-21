@@ -1936,56 +1936,63 @@ from(bucket:"telegraf/autogen")
 
 #### Rename 
 
-Rename will rename specified columns in a table. 
+Rename renames specified columns in a table.
 There are two variants: one which takes a map of old column names to new column names,
-and one which takes a mapping function. 
+and one which takes a mapping function.
 If a column is renamed and is part of the group key, the column name in the group key will be updated.
 If a specified column is not present in a table an error will be thrown.
 
 Rename has the following properties: 
 * `columns` object
-	A map of columns to rename and their corresponding new names. Cannot be used with `fn`. 
-* `fn` function 
+	A map of columns to rename and their corresponding new names. Cannot be used with `fn`.
+* `fn` function
     A function which takes a single string parameter `column` (the old column name) and returns a string representing 
     the new column name. Cannot be used with `columns`.
 
 Example usage:
 
-Rename a single column: 
+Rename a single column:
+
 ```
 from(bucket: "telegraf/autogen")
     |> range(start: -5m)
-    |> rename(columns:{host: "server"})
+    |> rename(columns: {host: "server"})
 ```
-Rename all columns using `fn` parameter: 
+
+Rename all columns using `fn` parameter:
+
 ```
 from(bucket: "telegraf/autogen")
     |> range(start: -5m)
-    |> rename(fn: (column) => "{column}_new")
+    |> rename(fn: (column) => column + "_new")
 ```
 
 #### Drop 
 
-Drop will exclude specified columns from a table. Columns to exclude can be specified either through a 
-list, or a predicate function. 
+Drop excludes specified columns from a table. Columns to exclude can be specified either through a 
+list, or a predicate function.
 When a dropped column is part of the group key it will also be dropped from the key.
+If a specified column is not present in a table an error will be thrown.
 
 Drop has the following properties:
-* `columns` array of strings 
+* `columns` array of strings
     An array of columns which should be excluded from the resulting table. Cannot be used with `fn`.
-* `fn` function 
+* `fn` function
     A function which takes a column name as a parameter `column` and returns a boolean indicating whether
-    or not the column should be excluded from the resulting table. Cannot be used with `columns`.  
+    or not the column should be excluded from the resulting table. Cannot be used with `columns`.
 
 Example Usage:
 
-Drop a list of columns
+Drop a list of columns:
+
 ```
 from(bucket: "telegraf/autogen")
 	|> range(start: -5m)
 	|> drop(columns: ["host", "_measurement"])
 ```
+
 Drop columns matching a predicate:
+
 ```
 from(bucket: "telegraf/autogen")
     |> range(start: -5m)
@@ -1994,31 +2001,30 @@ from(bucket: "telegraf/autogen")
 
 #### Keep 
 
-Keep is the inverse of drop. It will return a table containing only columns that are specified,
-ignoring all others. 
+Keep is the inverse of drop. It returns a table containing only columns that are specified,
+ignoring all others.
 Only columns in the group key that are also specified in `keep` will be kept in the resulting group key.
 If a specified column is not present in a table an error will be thrown.
 
-Keep has the following properties: 
+Keep has the following properties:
 * `columns` array of strings
     An array of columns that should be included in the resulting table. Cannot be used with `fn`.
 * `fn` function
     A function which takes a column name as a parameter `column` and returns a boolean indicating whether or not
-    the column should be included in the resulting table. Cannot be used with `columns`. 
+    the column should be included in the resulting table. Cannot be used with `columns`.
 
 Example Usage:
 
-Keep a list of columns: `keep(columns: ["_time", "_value"])`
-
-Keep all columns matching a predicate: `keep(fn: (column) => column =~ /inodes*/)`
-
 Keep a list of columns:
+
 ```
 from(bucket: "telegraf/autogen")
     |> range(start: -5m)
     |> keep(columns: ["_time", "_value"])
 ```
+
 Keep all columns matching a predicate:
+
 ```
 from(bucket: "telegraf/autogen")
     |> range(start: -5m)
@@ -2027,26 +2033,26 @@ from(bucket: "telegraf/autogen")
 
 #### Duplicate 
 
-Duplicate will duplicate a specified column in a table.
+Duplicate duplicates a specified column in a table.
 If the specified column is not present in a table an error will be thrown.
 
 Duplicate has the following properties:
 
 * `column` string
-	The column to duplicate
+	The column to duplicate.
 * `as` string
-	The name that should be assigned to the duplicate column
+	The name that should be assigned to the duplicate column.
 
 Example usage:
 
 Duplicate column `server` under the name `host`:
+
 ```
 from(bucket: "telegraf/autogen")
 	|> range(start:-5m)
 	|> filter(fn: (r) => r._measurement == "cpu")
 	|> duplicate(column: "host", as: "server")
 ```
-
 
 #### Set
 
