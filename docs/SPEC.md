@@ -2517,12 +2517,14 @@ Derivative computes the time based difference between subsequent non null record
 Derivative has the following properties:
 
 * `unit` duration
-    unit is the time duration to use for the result
+    unit is the time duration to use for the result.
+    Defaults to `1s`.
 * `nonNegative` bool
     nonNegative indicates if the derivative is allowed to be negative.
     If a value is encountered which is less than the previous value then it is assumed the previous value should have been a zero.
 * `columns` list strings
-    columns is a list of columns on which to compute the derivative
+    columns is a list of columns on which to compute the derivative.
+    Defaults to `["_value"]`.
 * `timeColumn` string
     timeColumn is the column name for the time values.
     Defaults to `_time`.
@@ -2545,6 +2547,7 @@ Difference has the following properties:
     If a value is encountered which is less than the previous value then it is assumed the previous value should have been a zero.
 * `columns` list strings
     columns is a list of columns on which to compute the difference.
+    Defaults to `["_value"]`.
 
 ```
 from(bucket: "telegraf/autogen")
@@ -2560,6 +2563,7 @@ Distinct has the following properties:
 
 * `column` string
     column the column on which to track unique values.
+    Defaults to `_value`.
 
 Example: 
 ```
