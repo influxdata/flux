@@ -135,8 +135,8 @@ func AppendMappedTable(t flux.Table, builder TableBuilder, colMap []int) error {
 		return nil
 	}
 
-	if err := t.Do(func(cr flux.ColReader) error {
-		return AppendMappedCols(cr, builder, colMap)
+	if err := t.DoArrow(func(cr flux.ArrowColReader) error {
+		return AppendMappedColsArrow(cr, builder, colMap)
 	}); err != nil {
 		return err
 	}
@@ -151,20 +151,20 @@ func AppendTable(t flux.Table, builder TableBuilder) error {
 		return nil
 	}
 
-	return t.Do(func(cr flux.ColReader) error {
-		return AppendCols(cr, builder)
+	return t.DoArrow(func(cr flux.ArrowColReader) error {
+		return AppendColsArrow(cr, builder)
 	})
 }
 
-// AppendMappedCols appends all columns from cr onto builder.
+// AppendMappedColsArrow appends all columns from cr onto builder.
 // The colMap is a map of builder column index to cr column index.
-func AppendMappedCols(cr flux.ColReader, builder TableBuilder, colMap []int) error {
+func AppendMappedColsArrow(cr flux.ArrowColReader, builder TableBuilder, colMap []int) error {
 	if len(colMap) != len(builder.Cols()) {
 		return errors.New("AppendMappedCols: colMap must have an entry for each table builder column")
 	}
 	for j := range builder.Cols() {
 		if colMap[j] >= 0 {
-			if err := AppendCol(j, colMap[j], cr, builder); err != nil {
+			if err := AppendColArrow(j, colMap[j], cr, builder); err != nil {
 				return err
 			}
 		}
@@ -177,6 +177,17 @@ func AppendMappedCols(cr flux.ColReader, builder TableBuilder, colMap []int) err
 func AppendCols(cr flux.ColReader, builder TableBuilder) error {
 	for j := range builder.Cols() {
 		if err := AppendCol(j, j, cr, builder); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// AppendColsArrow appends all columns from cr onto builder.
+// This function assumes that builder and cr have the same column schema.
+func AppendColsArrow(cr flux.ArrowColReader, builder TableBuilder) error {
+	for j := range builder.Cols() {
+		if err := AppendColArrow(j, j, cr, builder); err != nil {
 			return err
 		}
 	}
