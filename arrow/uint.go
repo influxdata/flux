@@ -24,8 +24,12 @@ func UintSlice(arr *array.Uint64, i, j int) *array.Uint64 {
 }
 
 func NewUintBuilder(a *memory.Allocator) *array.Uint64Builder {
-	return array.NewUint64Builder(&allocator{
-		Allocator: arrowmemory.NewGoAllocator(),
-		alloc:     a,
-	})
+	var alloc arrowmemory.Allocator = arrowmemory.NewGoAllocator()
+	if a != nil {
+		alloc = &allocator{
+			Allocator: alloc,
+			alloc:     a,
+		}
+	}
+	return array.NewUint64Builder(alloc)
 }

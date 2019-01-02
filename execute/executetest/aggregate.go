@@ -9,7 +9,6 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/memory"
 )
 
 // AggFuncTestHelper splits the data in half, runs Do over each split and compares
@@ -20,9 +19,9 @@ func AggFuncTestHelper(t *testing.T, agg execute.Aggregate, data []float64, want
 	// Call Do twice, since this is possible according to the interface.
 	h := len(data) / 2
 	vf := agg.NewFloatAgg()
-	vf.DoFloat(arrow.NewFloat(data[:h], &memory.Allocator{}))
+	vf.DoFloat(arrow.NewFloat(data[:h], nil))
 	if h < len(data) {
-		vf.DoFloat(arrow.NewFloat(data[h:], &memory.Allocator{}))
+		vf.DoFloat(arrow.NewFloat(data[h:], nil))
 	}
 
 	var got interface{}

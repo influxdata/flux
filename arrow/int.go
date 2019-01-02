@@ -24,8 +24,12 @@ func IntSlice(arr *array.Int64, i, j int) *array.Int64 {
 }
 
 func NewIntBuilder(a *memory.Allocator) *array.Int64Builder {
-	return array.NewInt64Builder(&allocator{
-		Allocator: arrowmemory.NewGoAllocator(),
-		alloc:     a,
-	})
+	var alloc arrowmemory.Allocator = arrowmemory.NewGoAllocator()
+	if a != nil {
+		alloc = &allocator{
+			Allocator: alloc,
+			alloc:     a,
+		}
+	}
+	return array.NewInt64Builder(alloc)
 }

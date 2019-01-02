@@ -25,8 +25,12 @@ func StringSlice(arr *array.Binary, i, j int) *array.Binary {
 }
 
 func NewStringBuilder(a *memory.Allocator) *array.BinaryBuilder {
-	return array.NewBinaryBuilder(&allocator{
-		Allocator: arrowmemory.NewGoAllocator(),
-		alloc:     a,
-	}, arrow.BinaryTypes.String)
+	var alloc arrowmemory.Allocator = arrowmemory.NewGoAllocator()
+	if a != nil {
+		alloc = &allocator{
+			Allocator: alloc,
+			alloc:     a,
+		}
+	}
+	return array.NewBinaryBuilder(alloc, arrow.BinaryTypes.String)
 }

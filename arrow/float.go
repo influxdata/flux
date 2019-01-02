@@ -24,8 +24,12 @@ func FloatSlice(arr *array.Float64, i, j int) *array.Float64 {
 }
 
 func NewFloatBuilder(a *memory.Allocator) *array.Float64Builder {
-	return array.NewFloat64Builder(&allocator{
-		Allocator: arrowmemory.NewGoAllocator(),
-		alloc:     a,
-	})
+	var alloc arrowmemory.Allocator = arrowmemory.NewGoAllocator()
+	if a != nil {
+		alloc = &allocator{
+			Allocator: alloc,
+			alloc:     a,
+		}
+	}
+	return array.NewFloat64Builder(alloc)
 }

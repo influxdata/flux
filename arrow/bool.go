@@ -24,8 +24,12 @@ func BoolSlice(arr *array.Boolean, i, j int) *array.Boolean {
 }
 
 func NewBoolBuilder(a *memory.Allocator) *array.BooleanBuilder {
-	return array.NewBooleanBuilder(&allocator{
-		Allocator: arrowmemory.NewGoAllocator(),
-		alloc:     a,
-	})
+	var alloc arrowmemory.Allocator = arrowmemory.NewGoAllocator()
+	if a != nil {
+		alloc = &allocator{
+			Allocator: alloc,
+			alloc:     a,
+		}
+	}
+	return array.NewBooleanBuilder(alloc)
 }
