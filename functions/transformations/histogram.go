@@ -30,6 +30,7 @@ func init() {
 		map[string]semantic.PolyType{
 			"column":           semantic.String,
 			"upperBoundColumn": semantic.String,
+			"countColumn":      semantic.String,
 			"bins":             semantic.NewArrayPolyType(semantic.Float),
 			"normalize":        semantic.Bool,
 		},
@@ -190,9 +191,9 @@ func (t *histogramTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 	}
 	totalRows := 0.0
 	counts := make([]float64, len(t.spec.Bins))
-	err = tbl.Do(func(cr flux.ColReader) error {
+	err = tbl.DoArrow(func(cr flux.ArrowColReader) error {
 		totalRows += float64(cr.Len())
-		for _, v := range cr.Floats(valueIdx) {
+		for _, v := range cr.Floats(valueIdx).Float64Values() {
 			idx := sort.Search(len(t.spec.Bins), func(i int) bool {
 				return v <= t.spec.Bins[i]
 			})

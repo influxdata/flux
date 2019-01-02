@@ -58,6 +58,11 @@ func main() {
 		if err != nil {
 			return
 		}
+
+		if len(fnames) == 0 {
+			fmt.Printf("could not find any .flux files in directory \"%s\"", path)
+			return
+		}
 	} else {
 		printUsage()
 		return
@@ -69,7 +74,7 @@ func main() {
 		incsv := testName + ".in.csv"
 		indata, err := ioutil.ReadFile(incsv)
 		if err != nil {
-			fmt.Printf("could not open file %s", fname)
+			fmt.Printf("could not open file %s", incsv)
 			return
 		}
 
