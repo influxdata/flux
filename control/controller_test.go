@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 
@@ -368,12 +369,20 @@ func TestController_CancelledContextPropagatesToExecutor(t *testing.T) {
 }
 
 func TestController_Shutdown(t *testing.T) {
+	// Create a wait group that finishes when it attempts to execute.
+	// This is used to ensure that it is in the list of queries.
+	var executeGroup sync.WaitGroup
+	executeGroup.Add(10)
 	executor := mock.NewExecutor()
+	executor.ExecuteFn = func(ctx context.Context, p *plan.PlanSpec, a *memory.Allocator) (results map[string]flux.Result, e error) {
+		executeGroup.Done()
+		return nil, nil
+	}
 	ctrl := New(Config{})
 	ctrl.executor = executor
 
 	// Create a bunch of queries and never call Ready which should leave them in the controller.
-	queries := make([]flux.Query, 0, 10)
+	queries := make([]flux.Query, 0, 15)
 	for i := 0; i < 10; i++ {
 		q, err := ctrl.Query(context.Background(), mockCompiler)
 		if err != nil {
@@ -383,20 +392,46 @@ func TestController_Shutdown(t *testing.T) {
 		queries = append(queries, q)
 	}
 
+	if len(queries) != 10 {
+		// Exit now since not all of the queries executed.
+		return
+	}
+
 	// Run shutdown which should wait until the queries are finished.
 	var wg syncutil.WaitGroup
 	wg.Do(func() error {
 		return ctrl.Shutdown(context.Background())
 	})
 
-	// A new query should be rejected.
-	if _, err := ctrl.Query(context.Background(), mockCompiler); err == nil {
-		t.Error("expected error")
+	// Attempt to create new queries until one is rejected.
+	// An initial query may not be rejected because the controller
+	// has not yet started to shutdown.
+	rejected := false
+	for i := 0; i < 5; i++ {
+		if q, err := ctrl.Query(context.Background(), mockCompiler); err != nil {
+			rejected = true
+			break
+		} else {
+			// It was not rejected, so add it to our expected queries.
+			queries = append(queries, q)
+			executeGroup.Add(1)
+		}
+
+		// Wait for 200 microseconds to allow the controller to shutdown.
+		<-time.After(200 * time.Microsecond)
 	}
 
-	// There should be 10 active queries.
-	if want, got := 10, len(ctrl.Queries()); want != got {
-		t.Fatalf("unexpected query count -want/+got\n\t- %d\n\t+ %d", want, got)
+	// A new query should be rejected.
+	if !rejected {
+		t.Error("expected a query to be rejected after controller shutdown")
+	}
+
+	// Ensure that all of the started queries have been executed.
+	executeGroup.Wait()
+
+	// There should be at least 10 active queries.
+	if want, got := len(queries), len(ctrl.Queries()); want != got {
+		t.Errorf("unexpected query count -want/+got\n\t- %d\n\t+ %d", want, got)
 	}
 
 	// Mark each of the queries as done.
