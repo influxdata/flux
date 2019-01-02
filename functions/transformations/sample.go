@@ -5,6 +5,7 @@ import (
 
 	"math/rand"
 
+	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
@@ -164,18 +165,18 @@ func (s *SampleSelector) selectSample(l int) []int {
 	return s.selected
 }
 
-func (s *SampleSelector) DoBool(vs []bool) []int {
-	return s.selectSample(len(vs))
+func (s *SampleSelector) DoBool(vs *array.Boolean) []int {
+	return s.selectSample(vs.Len())
 }
-func (s *SampleSelector) DoInt(vs []int64) []int {
-	return s.selectSample(len(vs))
+func (s *SampleSelector) DoInt(vs *array.Int64) []int {
+	return s.selectSample(vs.Len())
 }
-func (s *SampleSelector) DoUInt(vs []uint64) []int {
-	return s.selectSample(len(vs))
+func (s *SampleSelector) DoUInt(vs *array.Uint64) []int {
+	return s.selectSample(vs.Len())
 }
-func (s *SampleSelector) DoFloat(vs []float64) []int {
-	return s.selectSample(len(vs))
+func (s *SampleSelector) DoFloat(vs *array.Float64) []int {
+	return s.selectSample(vs.Len())
 }
-func (s *SampleSelector) DoString(vs []string) []int {
-	return s.selectSample(len(vs))
+func (s *SampleSelector) DoString(vs *array.Binary) []int {
+	return s.selectSample(vs.Len())
 }

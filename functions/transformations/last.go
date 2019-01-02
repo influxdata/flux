@@ -3,6 +3,7 @@ package transformations
 import (
 	"fmt"
 
+	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
@@ -112,24 +113,24 @@ func (s *LastSelector) Rows() []execute.Row {
 	return s.rows
 }
 
-func (s *LastSelector) selectLast(l int, cr flux.ColReader) {
+func (s *LastSelector) selectLast(l int, cr flux.ArrowColReader) {
 	if l > 0 {
 		s.rows = []execute.Row{execute.ReadRow(l-1, cr)}
 	}
 }
 
-func (s *LastSelector) DoBool(vs []bool, cr flux.ColReader) {
-	s.selectLast(len(vs), cr)
+func (s *LastSelector) DoBool(vs *array.Boolean, cr flux.ArrowColReader) {
+	s.selectLast(vs.Len(), cr)
 }
-func (s *LastSelector) DoInt(vs []int64, cr flux.ColReader) {
-	s.selectLast(len(vs), cr)
+func (s *LastSelector) DoInt(vs *array.Int64, cr flux.ArrowColReader) {
+	s.selectLast(vs.Len(), cr)
 }
-func (s *LastSelector) DoUInt(vs []uint64, cr flux.ColReader) {
-	s.selectLast(len(vs), cr)
+func (s *LastSelector) DoUInt(vs *array.Uint64, cr flux.ArrowColReader) {
+	s.selectLast(vs.Len(), cr)
 }
-func (s *LastSelector) DoFloat(vs []float64, cr flux.ColReader) {
-	s.selectLast(len(vs), cr)
+func (s *LastSelector) DoFloat(vs *array.Float64, cr flux.ArrowColReader) {
+	s.selectLast(vs.Len(), cr)
 }
-func (s *LastSelector) DoString(vs []string, cr flux.ColReader) {
-	s.selectLast(len(vs), cr)
+func (s *LastSelector) DoString(vs *array.Binary, cr flux.ArrowColReader) {
+	s.selectLast(vs.Len(), cr)
 }
