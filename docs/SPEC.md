@@ -360,7 +360,7 @@ An option represents a storage location for any value of a specified type.
 Options are mutable.
 An option can hold different values during its lifetime.
 
-Below is a list of all options that are currently implemented in the Flux language:
+Below is a list of some built-in options that are currently implemented in the Flux language:
 
 * now
 * task
@@ -571,7 +571,7 @@ Examples:
 
 #### Option assignment
 
-    OptionAssignment = "option" identifier "=" Expression
+    OptionAssignment = "option" [ identifier "." ] identifier "=" Expression
 
 An option assignment creates an option bound to an identifier and gives it a type and a value.
 Options may only be assigned in a package block.
@@ -846,23 +846,20 @@ If a package has imports, all imported packages are initialized before any optio
 
 ### Variable initialization
 
-Variables are initialized in declaration order but only after all of the variables they depend on have been initialized.
-For packages consisting of multiple source files, declaration order depends on the order in which the files are presented to an interpreter.
-However package variables are initialized with the same value regardless of said file order.
+Variables are initialized and assigned the same value regardless of the order they are declared in the source.
 A variable cannot have a direct or indirect dependency on itself.
 
 ### Option initialization
 
-Options are initialized in declaration order.
 An option cannot have dependencies on any other options assigned in the same package block.
 
 ### Package imports
 
-Imported packages are initialized in declaration order.
+Packages imported in the same file block are initialized in declaration order.
 A package cannot be imported twice in the same file block.
-A package will only be initialized once even if it is imported multiple times in a package.
-A package may be imported purely for its side effects however any such package cannot be imported twice within the same package.
-A package cannot import two separate packages that modify the same option.
+A package will only be initialized once even if it is imported multiple times (across file blocks) in a package.
+Initializing imported packages must be deterministic.
+To be more precise, after all imported packages are initialized, each imported option must be assigned the same value regardless of the order in which package files are presented to an interpreter.
 
 ## Built-ins
 
