@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/influxdata/flux/ast"
+
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
@@ -64,9 +66,9 @@ func Compile(ctx context.Context, q string, now time.Time, opts ...Option) (*Spe
 
 // Eval evaluates the flux string q and update the given interpreter
 func Eval(itrp *interpreter.Interpreter, q string) error {
-	astProg, err := parser.NewAST(q)
-	if err != nil {
-		return err
+	astProg := parser.NewAST(q)
+	if ast.Check(astProg) > 0 {
+		return ast.GetError(astProg)
 	}
 
 	// Convert AST program to a semantic program
@@ -229,8 +231,9 @@ func FinalizeBuiltIns() {
 func evalBuiltInScripts() error {
 	itrp := interpreter.NewMutableInterpreter(builtinOptions, builtinValues, builtinTypeScope)
 	for name, script := range builtinScripts {
-		astProg, err := parser.NewAST(script)
-		if err != nil {
+		astProg := parser.NewAST(script)
+		if ast.Check(astProg) > 0 {
+			err := ast.GetError(astProg)
 			return errors.Wrapf(err, "failed to parse builtin %q", name)
 		}
 		semProg, err := semantic.New(astProg)

@@ -3,6 +3,8 @@ package semantic_test
 import (
 	"testing"
 
+	"github.com/influxdata/flux/ast"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
@@ -154,9 +156,9 @@ bar.x = 10
 			if tc.skip {
 				t.Skip()
 			}
-			program, err := parser.NewAST(tc.script)
-			if err != nil {
-				t.Fatal(err)
+			program := parser.NewAST(tc.script)
+			if ast.Check(program) > 0 {
+				t.Fatal(ast.GetError(program))
 			}
 			node, err := semantic.New(program)
 			if err != nil {

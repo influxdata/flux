@@ -13,6 +13,8 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/influxdata/flux/ast"
+
 	prompt "github.com/c-bata/go-prompt"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
@@ -137,9 +139,9 @@ func (r *REPL) executeLine(t string) (values.Value, error) {
 		t = q
 	}
 
-	astProg, err := parser.NewAST(t)
-	if err != nil {
-		return nil, err
+	astProg := parser.NewAST(t)
+	if ast.Check(astProg) > 0 {
+		return nil, ast.GetError(astProg)
 	}
 
 	semProg, err := semantic.New(astProg)

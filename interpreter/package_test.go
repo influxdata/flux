@@ -3,6 +3,8 @@ package interpreter_test
 import (
 	"testing"
 
+	"github.com/influxdata/flux/ast"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/parser"
@@ -301,11 +303,11 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 }
 
 func eval(itrp *interpreter.Interpreter, importer interpreter.Importer, program string) error {
-	ast, err := parser.NewAST(program)
-	if err != nil {
-		return err
+	programAST := parser.NewAST(program)
+	if ast.Check(programAST) > 0 {
+		return ast.GetError(programAST)
 	}
-	node, err := semantic.New(ast)
+	node, err := semantic.New(programAST)
 	if err != nil {
 		return err
 	}

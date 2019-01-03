@@ -316,7 +316,7 @@ func Example_overrideDefaultOptionExternally() {
 
 	itrp := flux.NewInterpreter()
 
-	ast, _ := parser.NewAST(queryString)
+	ast := parser.NewAST(queryString)
 	semanticProgram, _ := semantic.New(ast)
 
 	// Evaluate program
@@ -340,7 +340,7 @@ func Example_overrideDefaultOptionInternally() {
 
 	itrp := flux.NewInterpreter()
 
-	ast, _ := parser.NewAST(queryString)
+	ast := parser.NewAST(queryString)
 	semanticProgram, _ := semantic.New(ast)
 
 	// Define a new now function which returns a static time value of 2018-07-13T00:00:00.000000000Z

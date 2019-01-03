@@ -10,6 +10,7 @@ import (
 
 var IgnoreBaseNodeOptions = []cmp.Option{
 	cmpopts.IgnoreFields(ast.ArrayExpression{}, "BaseNode"),
+	cmpopts.IgnoreFields(ast.BadStatement{}, "BaseNode"),
 	cmpopts.IgnoreFields(ast.BinaryExpression{}, "BaseNode"),
 	cmpopts.IgnoreFields(ast.Block{}, "BaseNode"),
 	cmpopts.IgnoreFields(ast.BooleanLiteral{}, "BaseNode"),
