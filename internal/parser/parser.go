@@ -1051,32 +1051,6 @@ func (p *parser) consume() {
 	p.buffered = false
 }
 
-// expect will continuously scan the input until it reads the requested
-// token. If a token has been buffered by peek, then the token type
-// must match expect or it will panic. This is to catch errors in the
-// parser since the peek/expect combination should never result in
-// an invalid token.
-// todo(jsternberg): Find a way to let this method handle errors.
-// There are also parts of the code that use expect to get the tail
-// of an expression. These locations should pass the expected token
-// to the non-terminal so the non-terminal knows the token that is
-// being expected, but they don't use that yet.
-func (p *parser) expect(exp token.Token) (token.Pos, string) {
-	if p.buffered {
-		p.buffered = false
-		if p.tok == exp || p.tok == token.EOF {
-			return p.pos, p.lit
-		}
-	}
-
-	for {
-		pos, tok, lit := p.scan()
-		if tok == token.EOF || tok == exp {
-			return pos, lit
-		}
-	}
-}
-
 // repeat will repeatedly call the function until it returns false.
 func (p *parser) repeat(fn func() bool) {
 	for {
