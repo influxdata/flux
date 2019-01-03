@@ -44,7 +44,7 @@ func TestInferTypes(t *testing.T) {
 		},
 		{
 			name: "redeclaration",
-			node: &semantic.Program{
+			node: &semantic.File{
 				Body: []semantic.Statement{
 					&semantic.NativeVariableAssignment{
 						Identifier: &semantic.Identifier{Name: "a"},
@@ -177,7 +177,7 @@ f = (a,b=0) => a + b
 		},
 		{
 			name: "call function",
-			node: &semantic.Program{
+			node: &semantic.File{
 				Body: []semantic.Statement{
 					&semantic.NativeVariableAssignment{
 						Identifier: &semantic.Identifier{Name: "two"},
@@ -470,7 +470,7 @@ identity(x:identity)(x:2)
 					},
 				},
 				Block: &semantic.ExternBlock{
-					Node: &semantic.Program{
+					Node: &semantic.File{
 						Body: []semantic.Statement{
 							&semantic.NativeVariableAssignment{
 								Identifier: &semantic.Identifier{Name: "a"},
@@ -1521,8 +1521,8 @@ import "foo"
 foo.a
 foo.b
 `,
-			importer: importer{packages: map[string]semantic.Package{
-				"foo": semantic.Package{
+			importer: importer{packages: map[string]semantic.PackageType{
+				"foo": semantic.PackageType{
 					Name: "foo",
 					Type: semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{
@@ -1573,11 +1573,11 @@ foo.b
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.script != "" {
-				program := parser.NewAST(tc.script)
-				if ast.Check(program) > 0 {
-					t.Fatal(ast.GetError(program))
+				pkg := parser.ParseSource(tc.script)
+				if ast.Check(pkg) > 0 {
+					t.Fatal(ast.GetError(pkg))
 				}
-				node, err := semantic.New(program)
+				node, err := semantic.New(pkg)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -1759,10 +1759,10 @@ func sortNodes(nodes []semantic.Node) {
 }
 
 type importer struct {
-	packages map[string]semantic.Package
+	packages map[string]semantic.PackageType
 }
 
-func (imp importer) Import(path string) (semantic.Package, bool) {
+func (imp importer) Import(path string) (semantic.PackageType, bool) {
 	pkg, ok := imp.packages[path]
 	return pkg, ok
 }

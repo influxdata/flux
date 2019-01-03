@@ -30,16 +30,15 @@ type Scanner interface {
 	Unread()
 }
 
-// NewAST parses Flux query and produces an ast.Program.
-func NewAST(src []byte) *ast.Program {
-	f := token.NewFile("", len(src))
+// ParseFile parses Flux source and produces an ast.File.
+func ParseFile(f *token.File, src []byte) *ast.File {
 	p := &parser{
 		s: &scannerSkipComments{
 			Scanner: scanner.New(f, src),
 		},
 		src: src,
 	}
-	return p.parseProgram()
+	return p.parseFile(f.Name())
 }
 
 // scannerSkipComments is a temporary Scanner used for stripping comments
@@ -77,29 +76,30 @@ type parser struct {
 	buffered bool
 }
 
-func (p *parser) parseProgram() *ast.Program {
+func (p *parser) parseFile(fname string) *ast.File {
 	pos, _, _ := p.peek()
-	program := &ast.Program{
+	file := &ast.File{
 		BaseNode: ast.BaseNode{
 			Loc: &ast.SourceLocation{
 				Start: p.s.File().Position(pos),
 			},
 		},
+		Name: fname,
 	}
-	program.Package = p.parsePackageClause()
-	if program.Package != nil {
-		program.Loc.End = locEnd(program.Package)
+	file.Package = p.parsePackageClause()
+	if file.Package != nil {
+		file.Loc.End = locEnd(file.Package)
 	}
-	program.Imports = p.parseImportList()
-	if len(program.Imports) > 0 {
-		program.Loc.End = locEnd(program.Imports[len(program.Imports)-1])
+	file.Imports = p.parseImportList()
+	if len(file.Imports) > 0 {
+		file.Loc.End = locEnd(file.Imports[len(file.Imports)-1])
 	}
-	program.Body = p.parseStatementList(token.EOF)
-	if len(program.Body) > 0 {
-		program.Loc.End = locEnd(program.Body[len(program.Body)-1])
+	file.Body = p.parseStatementList(token.EOF)
+	if len(file.Body) > 0 {
+		file.Loc.End = locEnd(file.Body[len(file.Body)-1])
 	}
-	program.Loc = p.sourceLocation(program.Loc.Start, program.Loc.End)
-	return program
+	file.Loc = p.sourceLocation(file.Loc.Start, file.Loc.End)
+	return file
 }
 
 func (p *parser) parsePackageClause() *ast.PackageClause {

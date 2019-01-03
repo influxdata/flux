@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/internal/parser"
+	"github.com/influxdata/flux/internal/token"
 )
 
 var CompareOptions = []cmp.Option{
@@ -45,7 +46,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 	for _, tt := range []struct {
 		name string
 		raw  string
-		want *ast.Program
+		want *ast.File
 		// If parseOnly is set to true, then the test will verify
 		// that parsing works and will not verify the contents of
 		// the AST.
@@ -54,7 +55,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 		{
 			name: "package clause",
 			raw:  `package foo`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:12"),
 				Package: &ast.PackageClause{
 					BaseNode: base("1:1", "1:12"),
@@ -68,7 +69,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 		{
 			name: "import",
 			raw:  `import "path/foo"`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:18"),
 				Imports: []*ast.ImportDeclaration{{
 					BaseNode: base("1:1", "1:18"),
@@ -82,7 +83,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 		{
 			name: "import as",
 			raw:  `import bar "path/foo"`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:22"),
 				Imports: []*ast.ImportDeclaration{{
 					BaseNode: base("1:1", "1:22"),
@@ -101,7 +102,7 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 			name: "imports",
 			raw: `import "path/foo"
 import "path/bar"`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "2:18"),
 				Imports: []*ast.ImportDeclaration{
 					{
@@ -128,7 +129,7 @@ package baz
 
 import "path/foo"
 import "path/bar"`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("2:1", "5:18"),
 				Package: &ast.PackageClause{
 					BaseNode: base("2:1", "2:12"),
@@ -164,7 +165,7 @@ import "path/foo"
 import "path/bar"
 
 1 + 1`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("2:1", "7:6"),
 				Package: &ast.PackageClause{
 					BaseNode: base("2:1", "2:12"),
@@ -217,7 +218,7 @@ import "path/bar"
 				cron: "0 2 * * *",
 				retry: 5,
 			  }`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "7:7"),
 				Body: []ast.Statement{
 					&ast.OptionStatement{
@@ -312,7 +313,7 @@ import "path/bar"
 
 				// Task will execute the following query
 				from() |> count()`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "7:22"),
 				Body: []ast.Statement{
 					&ast.OptionStatement{
@@ -385,7 +386,7 @@ import "path/bar"
 		{
 			name: "from",
 			raw:  `from()`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:7"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -405,7 +406,7 @@ import "path/bar"
 			name: "comment",
 			raw: `// Comment
 			from()`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("2:4", "2:10"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -424,7 +425,7 @@ import "path/bar"
 		{
 			name: "identifier with number",
 			raw:  `tan2()`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:7"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -443,7 +444,7 @@ import "path/bar"
 		{
 			name: "regex literal",
 			raw:  `/.*/`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:5"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -459,7 +460,7 @@ import "path/bar"
 		{
 			name: "regex literal with escape sequence",
 			raw:  `/a\/b\\c\d/`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:12"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -475,7 +476,7 @@ import "path/bar"
 		{
 			name: "regex match operators",
 			raw:  `"a" =~ /.*/ and "b" !~ /c$/`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:28"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -515,7 +516,7 @@ import "path/bar"
 		{
 			name: "declare variable as an int",
 			raw:  `howdy = 1`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:10"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -535,7 +536,7 @@ import "path/bar"
 		{
 			name: "declare variable as a float",
 			raw:  `howdy = 1.1`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:12"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -555,7 +556,7 @@ import "path/bar"
 		{
 			name: "declare variable as an array",
 			raw:  `howdy = [1, 2, 3, 4]`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:21"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -592,7 +593,7 @@ import "path/bar"
 		{
 			name: "declare variable as an empty array",
 			raw:  `howdy = []`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:11"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -612,7 +613,7 @@ import "path/bar"
 			name: "use variable to declare something",
 			raw: `howdy = 1
 			from()`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "2:10"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -643,7 +644,7 @@ import "path/bar"
 			name: "variable is from statement",
 			raw: `howdy = from()
 			howdy.count()`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "2:17"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -683,7 +684,7 @@ import "path/bar"
 		{
 			name: "pipe expression",
 			raw:  `from() |> count()`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:18"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -714,7 +715,7 @@ import "path/bar"
 		{
 			name: "literal pipe expression",
 			raw:  `5 |> pow2()`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:12"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -741,7 +742,7 @@ import "path/bar"
 		{
 			name: "member expression pipe expression",
 			raw:  `foo.bar |> baz()`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:17"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -775,7 +776,7 @@ import "path/bar"
 		{
 			name: "multiple pipe expressions",
 			raw:  `from() |> range() |> filter() |> count()`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:41"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -827,7 +828,7 @@ import "path/bar"
 			doody = from()
 			howdy|>count()
 			doody|>sum()`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "4:16"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -898,7 +899,7 @@ import "path/bar"
 		{
 			name: "from with database",
 			raw:  `from(bucket:"telegraf/autogen")`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:32"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -938,7 +939,7 @@ import "path/bar"
 			m.key1
 			m["key2"]
 			`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "3:13"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -1009,7 +1010,7 @@ import "path/bar"
 		{
 			name: "object with string literal key",
 			raw:  `x = {"a": 10}`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:14"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -1041,7 +1042,7 @@ import "path/bar"
 		{
 			name: "object with mixed keys",
 			raw:  `x = {"a": 10, b: 11}`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:21"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -1084,7 +1085,7 @@ import "path/bar"
 		{
 			name: "implicit key object literal",
 			raw:  `x = {a, b}`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:11"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -1119,7 +1120,7 @@ import "path/bar"
 		{
 			name: "index expression",
 			raw:  `a[3]`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:5"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -1142,7 +1143,7 @@ import "path/bar"
 		{
 			name: "nested index expression",
 			raw:  `a[3][5]`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:8"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -1172,7 +1173,7 @@ import "path/bar"
 		{
 			name: "access indexed object returned from function call",
 			raw:  `f()[3]`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:7"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -1198,7 +1199,7 @@ import "path/bar"
 		{
 			name: "index with member expressions",
 			raw:  `a.b["c"]`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:9"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -1228,7 +1229,7 @@ import "path/bar"
 		{
 			name: "index with member with call expression",
 			raw:  `a.b()["c"]`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:11"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -1261,7 +1262,7 @@ import "path/bar"
 		{
 			name: "binary expression",
 			raw:  `_value < 10.0`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:14"),
 				Body: []ast.Statement{&ast.ExpressionStatement{
 					BaseNode: base("1:1", "1:14"),
@@ -1283,7 +1284,7 @@ import "path/bar"
 		{
 			name: "member expression binary expression",
 			raw:  `r._value < 10.0`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:16"),
 				Body: []ast.Statement{&ast.ExpressionStatement{
 					BaseNode: base("1:1", "1:16"),
@@ -1315,7 +1316,7 @@ import "path/bar"
             b = 2
             c = a + b
             d = a`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "4:18"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -1377,7 +1378,7 @@ import "path/bar"
 			name: "var as unary expression of other vars",
 			raw: `a = 5
             c = -a`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "2:19"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -1413,7 +1414,7 @@ import "path/bar"
 			name: "var as both binary and unary expressions",
 			raw: `a = 5
             c = 10 * -a`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "2:24"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -1457,7 +1458,7 @@ import "path/bar"
 			name: "unary expressions within logical expression",
 			raw: `a = 5.0
             10.0 * -a == -0.5 or a == 6.0`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "2:42"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -1529,7 +1530,7 @@ a = 5.0
 10.0 * -a == -0.5
 	// or this
 	or a == 6.0`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("2:1", "6:13"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -1596,7 +1597,7 @@ a = 5.0
 		{
 			name: "expressions with function calls",
 			raw:  `a = foo() == 10`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:16"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -1628,7 +1629,7 @@ a = 5.0
 			name: "mix unary logical and binary expressions",
 			raw: `
             not (f() == 6.0 * x) or fail()`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("2:13", "2:43"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -1679,7 +1680,7 @@ a = 5.0
 			name: "mix unary logical and binary expressions with extra parens",
 			raw: `
             (not (f() == 6.0 * x) or fail())`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("2:13", "2:44"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -1729,7 +1730,7 @@ a = 5.0
 		{
 			name: "logical unary operator precedence",
 			raw:  `not -1 == a`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:12"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -1763,7 +1764,7 @@ a = 5.0
 			raw: `plusOne = (r) => r + 1
 			plusOne(r:5)
 			`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "2:16"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -1831,7 +1832,7 @@ a = 5.0
 		{
 			name: "arrow function return map",
 			raw:  `toMap = (r) =>({r:r})`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:21"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -1875,7 +1876,7 @@ a = 5.0
 		{
 			name: "arrow function with default arg",
 			raw:  `addN = (r, n=5) => r + n`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:25"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -1929,7 +1930,7 @@ a = 5.0
             plusOne = (r) => r + 1
             plusOne(r:5) == 6 or die()
 			`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("2:13", "3:39"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -2016,7 +2017,7 @@ a = 5.0
 		{
 			name: "arrow function as single expression",
 			raw:  `f = (r) => r["_measurement"] == "cpu"`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:38"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -2066,7 +2067,7 @@ a = 5.0
                 m = r["_measurement"]
                 return m == "cpu"
             }`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "4:14"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -2132,7 +2133,7 @@ a = 5.0
 		{
 			name: "from with filter with no parens",
 			raw:  `from(bucket:"telegraf/autogen").filter(fn: (r) => r["other"]=="mem" and r["this"]=="that" or r["these"]!="those")`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:114"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -2270,7 +2271,7 @@ a = 5.0
 		{
 			name: "from with range",
 			raw:  `from(bucket:"telegraf/autogen")|>range(start:-1h, end:10m)`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:59"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -2360,7 +2361,7 @@ a = 5.0
 		{
 			name: "from with limit",
 			raw:  `from(bucket:"telegraf/autogen")|>limit(limit:100, offset:10)`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:61"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -2438,7 +2439,7 @@ a = 5.0
 			raw: `from(bucket:"mydb/autogen")
 						|> range(start:-4h, stop:-2h)
 						|> count()`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "3:17"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -2545,7 +2546,7 @@ a = 5.0
 						|> range(start:-4h, stop:-2h)
 						|> limit(n:10)
 						|> count()`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "4:17"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -2680,7 +2681,7 @@ a = 5.0
 a = from(bucket:"dbA/autogen") |> range(start:-1h)
 b = from(bucket:"dbB/autogen") |> range(start:-1h)
 join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("2:1", "4:72"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -2940,7 +2941,7 @@ b = from(bucket:"Flux/autogen")
 
 join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_field"])
 `,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("2:1", "10:86"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -3317,7 +3318,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 		{
 			name: "duration literal, all units",
 			raw:  `dur = 1y3mo2w1d4h1m30s1ms2µs70ns`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:34"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -3348,7 +3349,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 		{
 			name: "duration literal, months",
 			raw:  `dur = 6mo`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:10"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -3370,7 +3371,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 		{
 			name: "duration literal, milliseconds",
 			raw:  `dur = 500ms`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:12"),
 				Body: []ast.Statement{&ast.VariableAssignment{
 					BaseNode: base("1:1", "1:12"),
@@ -3391,7 +3392,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 		{
 			name: "duration literal, months, minutes, milliseconds",
 			raw:  `dur = 6mo30m500ms`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:18"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -3415,7 +3416,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 		{
 			name: "date literal in the default location",
 			raw:  `now = 2018-11-29`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:17"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -3435,7 +3436,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 		{
 			name: "date time literal",
 			raw:  `now = 2018-11-29T09:00:00Z`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:27"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -3455,7 +3456,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 		{
 			name: "date time literal with fractional seconds",
 			raw:  `now = 2018-11-29T09:00:00.100000000Z`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:37"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
@@ -3475,7 +3476,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 		{
 			name: "unary expression with member expression",
 			raw:  `not m.b`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:8"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -3503,7 +3504,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 		{
 			name: "string with utf-8",
 			raw:  `"日本語"`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:12"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -3519,7 +3520,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 		{
 			name: "string with byte values",
 			raw:  `"\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e"`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:39"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -3540,7 +3541,7 @@ horizontal tab \t
 double quote \"
 backslash \\
 "`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "6:2"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -3560,7 +3561,7 @@ backslash \\
 multiline
 string"
 `,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "4:8"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -3576,7 +3577,7 @@ string"
 		{
 			name: "illegal statement token",
 			raw:  `@ ident`,
-			want: &ast.Program{
+			want: &ast.File{
 				BaseNode: base("1:1", "1:8"),
 				Body: []ast.Statement{
 					&ast.BadStatement{
@@ -3606,7 +3607,8 @@ string"
 				}
 			}()
 
-			result := parser.NewAST([]byte(tt.raw))
+			f := token.NewFile("", len(tt.raw))
+			result := parser.ParseFile(f, []byte(tt.raw))
 			if tt.parseOnly {
 				return
 			}
@@ -3625,7 +3627,7 @@ string"
 				}
 			}), want)
 			ast.Check(result)
-			if got, want := result, tt.want; !cmp.Equal(want, got, CompareOptions...) {
+			if got, want := result, want; !cmp.Equal(want, got, CompareOptions...) {
 				tb.Errorf("unexpected statement -want/+got\n%s", cmp.Diff(want, got, CompareOptions...))
 			}
 		})

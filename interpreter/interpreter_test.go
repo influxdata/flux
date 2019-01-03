@@ -395,11 +395,11 @@ func TestEval(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			program := parser.NewAST(tc.query)
-			if ast.Check(program) > 0 {
-				t.Fatal(ast.GetError(program))
+			pkg := parser.ParseSource(tc.query)
+			if ast.Check(pkg) > 0 {
+				t.Fatal(ast.GetError(pkg))
 			}
-			graph, err := semantic.New(program)
+			graph, err := semantic.New(pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -488,11 +488,11 @@ func TestInterpreter_TypeErrors(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			program := parser.NewAST(tc.program)
-			if ast.Check(program) > 0 {
-				t.Fatal(ast.GetError(program))
+			pkg := parser.ParseSource(tc.program)
+			if ast.Check(pkg) > 0 {
+				t.Fatal(ast.GetError(pkg))
 			}
-			graph, err := semantic.New(program)
+			graph, err := semantic.New(pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -641,15 +641,15 @@ func TestResolver(t *testing.T) {
 	scope := make(map[string]values.Value)
 	scope[f.name] = f
 
-	program := parser.NewAST(`
+	pkg := parser.ParseSource(`
 	x = 42
 	resolver(f: (r) => r + x)
 `)
-	if ast.Check(program) > 0 {
-		t.Fatal(ast.GetError(program))
+	if ast.Check(pkg) > 0 {
+		t.Fatal(ast.GetError(pkg))
 	}
 
-	graph, err := semantic.New(program)
+	graph, err := semantic.New(pkg)
 	if err != nil {
 		t.Fatal(err)
 	}

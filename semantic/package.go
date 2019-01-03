@@ -6,23 +6,23 @@ import (
 
 const PackageMain = "main"
 
-// Package represents the type and name of a package.
-type Package struct {
+// PackageType represents the type and name of a package.
+type PackageType struct {
 	Name string
 	Type PolyType
 }
 
 // CreatePackage constructs a Package from the node. The node must contain a Program node
 // with a valid PackageClause
-func CreatePackage(n Node, importer Importer) (Package, error) {
+func CreatePackage(n Node, importer Importer) (PackageType, error) {
 	v := new(packageCreateVisitor)
 	Walk(v, n)
 	if v.name == "" {
-		return Package{}, errors.New("no package clause found")
+		return PackageType{}, errors.New("no package clause found")
 	}
 	ts, err := InferTypes(n, importer)
 	if err != nil {
-		return Package{}, err
+		return PackageType{}, err
 	}
 
 	// Create object type from all top level identifiers
@@ -35,13 +35,13 @@ func CreatePackage(n Node, importer Importer) (Package, error) {
 		}
 		typ, err := ts.PolyTypeOf(assignment.Init)
 		if err != nil {
-			return Package{}, err
+			return PackageType{}, err
 		}
 		name := assignment.Identifier.Name
 		types[name] = typ
 		names = append(names, name)
 	}
-	return Package{
+	return PackageType{
 		Name: v.name,
 		Type: NewObjectPolyType(
 			types,
@@ -58,7 +58,7 @@ type packageCreateVisitor struct {
 
 func (p *packageCreateVisitor) Visit(node Node) Visitor {
 	switch n := node.(type) {
-	case *Program:
+	case *File:
 		p.body = n.Body
 	case *PackageClause:
 		if n.Name != nil {

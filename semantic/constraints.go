@@ -30,13 +30,13 @@ func GenerateConstraints(node Node, annotator Annotator, importer Importer) (*Co
 
 // Importer produces a package given an import path.
 type Importer interface {
-	Import(path string) (Package, bool)
+	Import(path string) (PackageType, bool)
 }
 
 type noImporter struct{}
 
-func (noImporter) Import(string) (Package, bool) {
-	return Package{}, false
+func (noImporter) Import(string) (PackageType, bool) {
+	return PackageType{}, false
 }
 
 // ConstraintGenerator implements NestingVisitor and generates constraints as it walks the graph.
@@ -385,7 +385,8 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		return Regexp, nil
 
 	// Explictly list nodes that do not produce constraints
-	case *Program,
+	case *Package,
+		*File,
 		*PackageClause,
 		*Extern,
 		*ExternBlock,

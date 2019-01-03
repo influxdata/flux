@@ -15,7 +15,7 @@ func TestCreatePackage(t *testing.T) {
 		name     string
 		script   string
 		importer semantic.Importer
-		want     semantic.Package
+		want     semantic.PackageType
 		wantErr  bool
 		skip     bool
 	}{
@@ -29,7 +29,7 @@ b = 2.0
 
 1 + 1
 `,
-			want: semantic.Package{
+			want: semantic.PackageType{
 				Name: "foo",
 				Type: semantic.NewObjectPolyType(
 					map[string]semantic.PolyType{
@@ -48,7 +48,7 @@ package foo
 
 identity = (x) => x
 `,
-			want: semantic.Package{
+			want: semantic.PackageType{
 				Name: "foo",
 				Type: semantic.NewObjectPolyType(
 					map[string]semantic.PolyType{
@@ -75,7 +75,7 @@ a = () => {
 	return b
 }
 `,
-			want: semantic.Package{
+			want: semantic.PackageType{
 				Name: "bar",
 				Type: semantic.NewObjectPolyType(
 					map[string]semantic.PolyType{
@@ -98,8 +98,8 @@ import "internal"
 a = internal.a
 `,
 			importer: importer{
-				packages: map[string]semantic.Package{
-					"internal": semantic.Package{
+				packages: map[string]semantic.PackageType{
+					"internal": semantic.PackageType{
 						Name: "internal",
 						Type: semantic.NewObjectPolyType(
 							map[string]semantic.PolyType{
@@ -112,7 +112,7 @@ a = internal.a
 					},
 				},
 			},
-			want: semantic.Package{
+			want: semantic.PackageType{
 				Name: "baz",
 				Type: semantic.NewObjectPolyType(
 					map[string]semantic.PolyType{
@@ -133,8 +133,8 @@ import "bar"
 bar.x = 10
 `,
 			importer: importer{
-				packages: map[string]semantic.Package{
-					"bar": semantic.Package{
+				packages: map[string]semantic.PackageType{
+					"bar": semantic.PackageType{
 						Name: "bar",
 						Type: semantic.NewObjectPolyType(
 							map[string]semantic.PolyType{
@@ -156,11 +156,11 @@ bar.x = 10
 			if tc.skip {
 				t.Skip()
 			}
-			program := parser.NewAST(tc.script)
-			if ast.Check(program) > 0 {
-				t.Fatal(ast.GetError(program))
+			pkg := parser.ParseSource(tc.script)
+			if ast.Check(pkg) > 0 {
+				t.Fatal(ast.GetError(pkg))
 			}
-			node, err := semantic.New(program)
+			node, err := semantic.New(pkg)
 			if err != nil {
 				t.Fatal(err)
 			}

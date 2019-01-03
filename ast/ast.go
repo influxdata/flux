@@ -55,7 +55,8 @@ type Node interface {
 	json.Marshaler
 }
 
-func (*Program) node()           {}
+func (*Package) node()           {}
+func (*File) node()              {}
 func (*PackageClause) node()     {}
 func (*ImportDeclaration) node() {}
 
@@ -119,27 +120,60 @@ func (e Error) Error() string {
 	return e.Msg
 }
 
-// Program represents a complete program source tree
-type Program struct {
+// Package represents a complete package source tree
+type Package struct {
 	BaseNode
+	Package string  `json:"package"`
+	Files   []*File `json:"files"`
+}
+
+// Type is the abstract type
+func (*Package) Type() string { return "Package" }
+
+func (p *Package) Copy() Node {
+	np := new(Package)
+	*np = *p
+	if len(p.Files) > 0 {
+		np.Files = make([]*File, len(p.Files))
+		for i, f := range p.Files {
+			np.Files[i] = f.Copy().(*File)
+		}
+	}
+	return np
+}
+
+// File represents a source from a single file
+type File struct {
+	BaseNode
+	Name    string               `json:"name,omitempty"` // name of the file
 	Package *PackageClause       `json:"package"`
 	Imports []*ImportDeclaration `json:"imports"`
 	Body    []Statement          `json:"body"`
 }
 
 // Type is the abstract type
-func (*Program) Type() string { return "Program" }
+func (*File) Type() string { return "File" }
 
-func (p *Program) Copy() Node {
-	np := new(Program)
-	*np = *p
-	if len(p.Body) > 0 {
-		np.Body = make([]Statement, len(p.Body))
-		for i, s := range p.Body {
-			np.Body[i] = s.Copy().(Statement)
+func (f *File) Copy() Node {
+	nf := new(File)
+	*nf = *f
+
+	nf.Package = f.Package.Copy().(*PackageClause)
+
+	if len(f.Imports) > 0 {
+		nf.Imports = make([]*ImportDeclaration, len(f.Imports))
+		for i, s := range f.Imports {
+			nf.Imports[i] = s.Copy().(*ImportDeclaration)
 		}
 	}
-	return np
+
+	if len(f.Body) > 0 {
+		nf.Body = make([]Statement, len(f.Body))
+		for i, s := range f.Body {
+			nf.Body[i] = s.Copy().(Statement)
+		}
+	}
+	return nf
 }
 
 // PackageClause defines the current package identifier.

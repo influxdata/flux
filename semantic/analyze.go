@@ -10,40 +10,54 @@ import (
 )
 
 // New creates a semantic graph from the provided AST
-func New(prog *ast.Program) (*Program, error) {
-	return analyzeProgram(prog)
+func New(pkg *ast.Package) (*Package, error) {
+	return analyzePackage(pkg)
 }
 
-func analyzeProgram(prog *ast.Program) (*Program, error) {
-	p := &Program{
-		loc:  loc(prog.Location()),
-		Body: make([]Statement, len(prog.Body)),
+func analyzePackage(pkg *ast.Package) (*Package, error) {
+	p := &Package{
+		Package: pkg.Package,
+		Files:   make([]*File, len(pkg.Files)),
 	}
-	pkg, err := analyzePackageClause(prog.Package)
+	for i, file := range pkg.Files {
+		f, err := analyzeFile(file)
+		if err != nil {
+			return nil, err
+		}
+		p.Files[i] = f
+	}
+	return p, nil
+}
+func analyzeFile(file *ast.File) (*File, error) {
+	f := &File{
+		loc:  loc(file.Location()),
+		Body: make([]Statement, len(file.Body)),
+	}
+	pkg, err := analyzePackageClause(file.Package)
 	if err != nil {
 		return nil, err
 	}
-	p.Package = pkg
+	f.Package = pkg
 
-	if len(prog.Imports) > 0 {
-		p.Imports = make([]*ImportDeclaration, len(prog.Imports))
-		for i, imp := range prog.Imports {
+	if len(file.Imports) > 0 {
+		f.Imports = make([]*ImportDeclaration, len(file.Imports))
+		for i, imp := range file.Imports {
 			n, err := analyzeImportDeclaration(imp)
 			if err != nil {
 				return nil, err
 			}
-			p.Imports[i] = n
+			f.Imports[i] = n
 		}
 	}
 
-	for i, s := range prog.Body {
+	for i, s := range file.Body {
 		n, err := analyzeStatment(s)
 		if err != nil {
 			return nil, err
 		}
-		p.Body[i] = n
+		f.Body[i] = n
 	}
-	return p, nil
+	return f, nil
 }
 
 func analyzePackageClause(pkg *ast.PackageClause) (*PackageClause, error) {

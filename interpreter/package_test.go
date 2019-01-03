@@ -17,12 +17,12 @@ type importer struct {
 	packages map[string]interpreter.Package
 }
 
-func (imp *importer) Import(path string) (semantic.Package, bool) {
+func (imp *importer) Import(path string) (semantic.PackageType, bool) {
 	pkg, ok := imp.packages[path]
 	if !ok {
-		return semantic.Package{}, false
+		return semantic.PackageType{}, false
 	}
-	return semantic.Package{
+	return semantic.PackageType{
 		Name: pkg.Name(),
 		Type: pkg.PolyType(),
 	}, true
@@ -37,13 +37,13 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 	testcases := []struct {
 		name        string
 		imports     [](map[string]string)
-		program     string
+		pkg         string
 		want        values.Object
 		sideEffects []values.Value
 	}{
 		{
 			name: "simple",
-			program: `
+			pkg: `
 				package foo
 				a = 1
 				b = 2.0
@@ -65,7 +65,7 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 `,
 				},
 			},
-			program: ` 
+			pkg: ` 
 				package foo
 				import baz "path/to/bar"
 				a = baz.x
@@ -89,7 +89,7 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 `,
 				},
 			},
-			program: ` 
+			pkg: ` 
 				package foo
 				import "path/to/bar"
 				a = bar.f()
@@ -109,7 +109,7 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 `,
 				},
 			},
-			program: `
+			pkg: `
 				package foo
 				import baz "path/to/bar"
 				a = baz.f(x: 10)
@@ -135,7 +135,7 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 `,
 				},
 			},
-			program: `
+			pkg: `
 				package foo
 				import "path/to/a"
 				import "path/to/b"
@@ -174,7 +174,7 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 `,
 				},
 			},
-			program: `
+			pkg: `
 				package foo
 				import "path/to/c"
 
@@ -189,7 +189,7 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 		},
 		{
 			name: "main package",
-			program: `
+			pkg: `
 				package main
 				x = 10
 `,
@@ -203,7 +203,7 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 		},
 		{
 			name: "side effect",
-			program: `
+			pkg: `
 				package foo
 				sideEffect()
 `,
@@ -212,8 +212,8 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 			},
 		},
 		{
-			name:    "implicit main",
-			program: `x = 10`,
+			name: "implicit main",
+			pkg:  `x = 10`,
 			want: values.NewObjectWithValues(
 				map[string]values.Value{
 					"x": values.NewInt(10),
@@ -224,7 +224,7 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 		},
 		{
 			name: "explicit side effect",
-			program: `
+			pkg: `
 				package foo
 				sideEffect()
 `,
@@ -242,7 +242,7 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 `,
 				},
 			},
-			program: `
+			pkg: `
 				package main
 				import "path/to/foo"
 				x = 10
@@ -275,19 +275,19 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 				packages: make(map[string]interpreter.Package),
 			}
 			for _, imp := range tc.imports {
-				var path, program string
+				var path, pkg string
 				for k, v := range imp {
 					path = k
-					program = v
+					pkg = v
 				}
 				itrp := interpreter.NewInterpreter(nil, builtins, nil)
-				if err := eval(itrp, importer, program); err != nil {
+				if err := eval(itrp, importer, pkg); err != nil {
 					t.Fatal(err)
 				}
 				importer.packages[path] = itrp.Package()
 			}
 			itrp := interpreter.NewInterpreter(nil, builtins, nil)
-			if err := eval(itrp, importer, tc.program); err != nil {
+			if err := eval(itrp, importer, tc.pkg); err != nil {
 				t.Fatal(err)
 			}
 			got := itrp.Package()
@@ -302,12 +302,12 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 	}
 }
 
-func eval(itrp *interpreter.Interpreter, importer interpreter.Importer, program string) error {
-	programAST := parser.NewAST(program)
-	if ast.Check(programAST) > 0 {
-		return ast.GetError(programAST)
+func eval(itrp *interpreter.Interpreter, importer interpreter.Importer, src string) error {
+	pkg := parser.ParseSource(src)
+	if ast.Check(pkg) > 0 {
+		return ast.GetError(pkg)
 	}
-	node, err := semantic.New(programAST)
+	node, err := semantic.New(pkg)
 	if err != nil {
 		return err
 	}

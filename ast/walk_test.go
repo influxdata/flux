@@ -16,23 +16,23 @@ func TestWalk(t *testing.T) {
 	}{
 		{
 			name: "package",
-			node: &ast.Program{
+			node: &ast.File{
 				Package: &ast.PackageClause{
 					Name: &ast.Identifier{Name: "foo"},
 				},
 			},
 			order: func(node ast.Node) []ast.Node {
-				prog := node.(*ast.Program)
+				file := node.(*ast.File)
 				return []ast.Node{
-					prog,
-					prog.Package,
-					prog.Package.Name,
+					file,
+					file.Package,
+					file.Package.Name,
 				}
 			},
 		},
 		{
 			name: "imports",
-			node: &ast.Program{
+			node: &ast.File{
 				Imports: []*ast.ImportDeclaration{
 					{
 						As:   &ast.Identifier{Name: "foo"},
@@ -44,20 +44,20 @@ func TestWalk(t *testing.T) {
 				},
 			},
 			order: func(node ast.Node) []ast.Node {
-				prog := node.(*ast.Program)
+				file := node.(*ast.File)
 				return []ast.Node{
-					prog,
-					prog.Imports[0],
-					prog.Imports[0].As,
-					prog.Imports[0].Path,
-					prog.Imports[1],
-					prog.Imports[1].Path,
+					file,
+					file.Imports[0],
+					file.Imports[0].As,
+					file.Imports[0].Path,
+					file.Imports[1],
+					file.Imports[1].Path,
 				}
 			},
 		},
 		{
 			name: "body",
-			node: &ast.Program{
+			node: &ast.File{
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
 						Expression: &ast.Identifier{Name: "foo"},
@@ -65,17 +65,17 @@ func TestWalk(t *testing.T) {
 				},
 			},
 			order: func(node ast.Node) []ast.Node {
-				prog := node.(*ast.Program)
+				file := node.(*ast.File)
 				return []ast.Node{
-					prog,
-					prog.Body[0],
-					prog.Body[0].(*ast.ExpressionStatement).Expression,
+					file,
+					file.Body[0],
+					file.Body[0].(*ast.ExpressionStatement).Expression,
 				}
 			},
 		},
 		{
 			name: "package imports body",
-			node: &ast.Program{
+			node: &ast.File{
 				Package: &ast.PackageClause{
 					Name: &ast.Identifier{Name: "foo"},
 				},
@@ -95,18 +95,18 @@ func TestWalk(t *testing.T) {
 				},
 			},
 			order: func(node ast.Node) []ast.Node {
-				prog := node.(*ast.Program)
+				file := node.(*ast.File)
 				return []ast.Node{
-					prog,
-					prog.Package,
-					prog.Package.Name,
-					prog.Imports[0],
-					prog.Imports[0].As,
-					prog.Imports[0].Path,
-					prog.Imports[1],
-					prog.Imports[1].Path,
-					prog.Body[0],
-					prog.Body[0].(*ast.ExpressionStatement).Expression,
+					file,
+					file.Package,
+					file.Package.Name,
+					file.Imports[0],
+					file.Imports[0].As,
+					file.Imports[0].Path,
+					file.Imports[1],
+					file.Imports[1].Path,
+					file.Body[0],
+					file.Body[0].(*ast.ExpressionStatement).Expression,
 				}
 			},
 		},

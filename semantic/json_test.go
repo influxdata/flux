@@ -20,19 +20,26 @@ func TestJSONMarshal(t *testing.T) {
 		want string
 	}{
 		{
-			name: "simple program",
-			node: &semantic.Program{
+			name: "simple package",
+			node: &semantic.Package{
+				Package: "main",
+			},
+			want: `{"type":"Package","package":"main","files":null}`,
+		},
+		{
+			name: "simple file",
+			node: &semantic.File{
 				Body: []semantic.Statement{
 					&semantic.ExpressionStatement{
 						Expression: &semantic.StringLiteral{Value: "hello"},
 					},
 				},
 			},
-			want: `{"type":"Program","package":null,"imports":null,"body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
+			want: `{"type":"File","package":null,"imports":null,"body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
 		},
 		{
-			name: "program",
-			node: &semantic.Program{
+			name: "file",
+			node: &semantic.File{
 				Package: &semantic.PackageClause{
 					Name: &semantic.Identifier{Name: "foo"},
 				},
@@ -42,7 +49,7 @@ func TestJSONMarshal(t *testing.T) {
 					},
 				},
 			},
-			want: `{"type":"Program","package":{"type":"PackageClause","name":{"type":"Identifier","name":"foo"}},"imports":null,"body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
+			want: `{"type":"File","package":{"type":"PackageClause","name":{"type":"Identifier","name":"foo"}},"imports":null,"body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
 		},
 		{
 			name: "block",

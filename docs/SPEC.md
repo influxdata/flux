@@ -688,21 +688,14 @@ Operator precedence is encoded directly into the grammar.
     PostfixOperator          = MemberExpression
                              | CallExpression
                              | IndexExpression .
-### Program
+### Packages
 
-A Flux program is a sequence of statements and optionally a package clause and import declarations.
+Flux source is organized into packages.
+A package consists of one or more source files.
+Each source file is parsed individually and composed into a single package.
 
-    Program = [ PackageClause ] [ ImportList ] StatementList .
+    File = [ PackageClause ] [ ImportList ] StatementList .
     ImportList = { ImportDeclaration } .
-
-### Statements
-
-A statement controls execution.
-
-    Statement = OptionStatement
-              | VariableAssignment
-              | ReturnStatement
-              | ExpressionStatement .
 
 #### Package clause
 
@@ -713,6 +706,7 @@ When a file does not declare a package clause, all identifiers in that file will
 
     PackageClause = "package" identifier .
 
+All files in the same package must declare the same package name.
 
 [IMPL#247](https://github.com/influxdata/platform/issues/247) Add package/namespace support
 
@@ -722,7 +716,17 @@ The _main_ package is special for a few reasons:
 
 1. It defines the entrypoint of a Flux program
 2. It cannot be imported
-3. All query specifications produced after evaluating the _main_ package are coerced into producing side effects
+3. All statements are marked as producing side effects
+
+### Statements
+
+A statement controls execution.
+
+    Statement = OptionStatement
+              | VariableAssignment
+              | ReturnStatement
+              | ExpressionStatement .
+
 
 #### Import declaration
 
