@@ -1573,9 +1573,9 @@ foo.b
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.script != "" {
-				program, err := parser.NewAST(tc.script)
-				if err != nil {
-					t.Fatal(err)
+				program := parser.NewAST(tc.script)
+				if ast.Check(program) > 0 {
+					t.Fatal(ast.GetError(program))
 				}
 				node, err := semantic.New(program)
 				if err != nil {

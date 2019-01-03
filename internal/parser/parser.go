@@ -158,7 +158,7 @@ func (p *parser) parseStatementList(eof token.Token) []ast.Statement {
 }
 
 func (p *parser) parseStatement() ast.Statement {
-	switch _, tok, lit := p.peek(); tok {
+	switch pos, tok, lit := p.peek(); tok {
 	case token.IDENT:
 		if lit == "option" {
 			return p.parseOptionStatement()
@@ -172,9 +172,11 @@ func (p *parser) parseStatement() ast.Statement {
 		token.ADD, token.SUB, token.NOT:
 		return p.parseExpressionStatement()
 	default:
-		// todo(jsternberg): error handling.
 		p.consume()
-		return nil
+		return &ast.BadStatement{
+			Text:     lit,
+			BaseNode: p.posRange(pos, len(lit)),
+		}
 	}
 }
 

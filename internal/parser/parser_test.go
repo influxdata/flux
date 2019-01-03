@@ -3573,6 +3573,31 @@ string"
 				},
 			},
 		},
+		{
+			name: "illegal statement token",
+			raw:  `@ ident`,
+			want: &ast.Program{
+				BaseNode: base("1:1", "1:8"),
+				Body: []ast.Statement{
+					&ast.BadStatement{
+						BaseNode: ast.BaseNode{
+							Loc: loc("1:1", "1:2"),
+							Errors: []ast.Error{
+								{Msg: "invalid statement: @"},
+							},
+						},
+						Text: "@",
+					},
+					&ast.ExpressionStatement{
+						BaseNode: base("1:3", "1:8"),
+						Expression: &ast.Identifier{
+							BaseNode: base("1:3", "1:8"),
+							Name:     "ident",
+						},
+					},
+				},
+			},
+		},
 	} {
 		runFn(tt.name, func(tb testing.TB) {
 			defer func() {
@@ -3599,14 +3624,15 @@ string"
 					l.Source = source(tt.raw, l)
 				}
 			}), want)
+			ast.Check(result)
 			if got, want := result, tt.want; !cmp.Equal(want, got, CompareOptions...) {
-				tb.Fatalf("unexpected statement -want/+got\n%s", cmp.Diff(want, got, CompareOptions...))
+				tb.Errorf("unexpected statement -want/+got\n%s", cmp.Diff(want, got, CompareOptions...))
 			}
 		})
 	}
 }
 
-func base(start, end string) ast.BaseNode {
+func loc(start, end string) *ast.SourceLocation {
 	toloc := func(s string) ast.Position {
 		parts := strings.SplitN(s, ":", 2)
 		line, _ := strconv.Atoi(parts[0])
@@ -3616,11 +3642,15 @@ func base(start, end string) ast.BaseNode {
 			Column: column,
 		}
 	}
+	return &ast.SourceLocation{
+		Start: toloc(start),
+		End:   toloc(end),
+	}
+}
+
+func base(start, end string) ast.BaseNode {
 	return ast.BaseNode{
-		Loc: &ast.SourceLocation{
-			Start: toloc(start),
-			End:   toloc(end),
-		},
+		Loc: loc(start, end),
 	}
 }
 

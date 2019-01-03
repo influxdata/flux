@@ -2,26 +2,31 @@ package ast
 
 import "fmt"
 
-/*
-`Walk` recursively visits every children of a given `Node` given a `Visitor`.
-It performs a pre-order visit of the AST (visit parent node, then visit children from left to right).
-If a call to `Visit` for a node returns a nil visitor, walk stops and doesn't visit the AST rooted at that node,
-otherwise it uses the returned visitor to continue walking.
-Once Walk has finished visiting a node (the node itself and its children), it invokes `Done` on the node's visitor.
-NOTE: `Walk` doesn't visit `nil` nodes.
-*/
+// Walk recursively visits every children of a given `Node` given a `Visitor`.
+// It performs a pre-order visit of the AST (visit parent node, then visit children from left to right).
+// If a call to `Visit` for a node returns a nil visitor, walk stops and doesn't visit the AST rooted at that node,
+// otherwise it uses the returned visitor to continue walking.
+// Once Walk has finished visiting a node (the node itself and its children), it invokes `Done` on the node's visitor.
+// NOTE: `Walk` doesn't visit `nil` nodes.
 func Walk(v Visitor, node Node) {
 	walk(v, node)
 }
 
-/*
-A `Visitor` extracts information from a `Node` to build a result and/or have side-effects on it.
-The result of `Visit` is a `Visitor` that, in turn, is used by `Walk` to visit the children of the node under exam.
-To stop walking, `Visit` must return `nil`.
-*/
+// Visitor implements the visitor pattern.
+//
+// When used with the Walk function, Visit will be called for every node
+// in depth-first order. After all children for a Node have been visted,
+// Done is called on that Node to signal that we are done with that Node.
+//
+// If Visit returns nil, Walk will not recurse on the children.
+// Neither Visit nor Done will be invoked on nil nodes.
 type Visitor interface {
 	Visit(node Node) Visitor
 	Done(node Node)
+}
+
+func Visit(node Node, f func(Node)) {
+	Walk(CreateVisitor(f), node)
 }
 
 func CreateVisitor(f func(Node)) Visitor {
@@ -79,6 +84,11 @@ func walk(v Visitor, node Node) {
 			walk(w, n.As)
 			walk(w, n.Path)
 		}
+	case *BadStatement:
+		if n == nil {
+			return
+		}
+		v.Visit(n)
 	case *Block:
 		if n == nil {
 			return

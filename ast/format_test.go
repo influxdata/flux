@@ -276,8 +276,9 @@ highestAverage = (n, columns=["_value"], by, tables=<-) =>
 				t.Skip(reason)
 			}
 
-			originalProgram, err := parser.NewAST(tc.script)
-			if err != nil {
+			originalProgram := parser.NewAST(tc.script)
+			if ast.Check(originalProgram) > 0 {
+				err := ast.GetError(originalProgram)
 				t.Fatal(errors.Wrapf(err, "original program has bad syntax:\n%s", tc.script))
 			}
 

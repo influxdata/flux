@@ -48,6 +48,7 @@ type Node interface {
 	node()
 	Type() string // Type property is a string that contains the variant type of the node
 	Location() SourceLocation
+	Errs() []Error
 	Copy() Node
 
 	// All node must support json marshalling
@@ -58,6 +59,7 @@ func (*Program) node()           {}
 func (*PackageClause) node()     {}
 func (*ImportDeclaration) node() {}
 
+func (*BadStatement) node()        {}
 func (*Block) node()               {}
 func (*ExpressionStatement) node() {}
 func (*ReturnStatement) node()     {}
@@ -91,7 +93,8 @@ func (*UnsignedIntegerLiteral) node() {}
 
 // BaseNode holds the attributes every expression or statement should have
 type BaseNode struct {
-	Loc *SourceLocation `json:"location,omitempty"`
+	Loc    *SourceLocation `json:"location,omitempty"`
+	Errors []Error         `json:"errors,omitempty"`
 }
 
 // Location is the source location of the Node
@@ -100,6 +103,20 @@ func (b BaseNode) Location() SourceLocation {
 		return SourceLocation{}
 	}
 	return *b.Loc
+}
+
+func (b BaseNode) Errs() []Error {
+	return b.Errors
+}
+
+// Error represents an error in the AST construction.
+// The node that this is attached to is not valid.
+type Error struct {
+	Msg string `json:"msg"`
+}
+
+func (e Error) Error() string {
+	return e.Msg
 }
 
 // Program represents a complete program source tree
@@ -159,6 +176,21 @@ func (d *ImportDeclaration) Copy() Node {
 	return nd
 }
 
+// BadStatement is a placeholder for statements for which no correct statement nodes
+// can be created.
+type BadStatement struct {
+	BaseNode
+	Text string `json:"text"`
+}
+
+// Type is the abstract type.
+func (*BadStatement) Type() string { return "BadStatement" }
+
+func (s *BadStatement) Copy() Node {
+	ns := *s
+	return &ns
+}
+
 // Block is a set of statements
 type Block struct {
 	BaseNode
@@ -187,6 +219,7 @@ type Statement interface {
 	stmt()
 }
 
+func (*BadStatement) stmt()        {}
 func (*VariableAssignment) stmt()  {}
 func (*ExpressionStatement) stmt() {}
 func (*ReturnStatement) stmt()     {}

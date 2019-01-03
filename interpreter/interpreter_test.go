@@ -395,9 +395,9 @@ func TestEval(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			program, err := parser.NewAST(tc.query)
-			if err != nil {
-				t.Fatal(err)
+			program := parser.NewAST(tc.query)
+			if ast.Check(program) > 0 {
+				t.Fatal(ast.GetError(program))
 			}
 			graph, err := semantic.New(program)
 			if err != nil {
@@ -488,11 +488,11 @@ func TestInterpreter_TypeErrors(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			ast, err := parser.NewAST(tc.program)
-			if err != nil {
-				t.Fatal(err)
+			program := parser.NewAST(tc.program)
+			if ast.Check(program) > 0 {
+				t.Fatal(ast.GetError(program))
 			}
-			graph, err := semantic.New(ast)
+			graph, err := semantic.New(program)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -641,12 +641,12 @@ func TestResolver(t *testing.T) {
 	scope := make(map[string]values.Value)
 	scope[f.name] = f
 
-	program, err := parser.NewAST(`
+	program := parser.NewAST(`
 	x = 42
 	resolver(f: (r) => r + x)
 `)
-	if err != nil {
-		t.Fatal(err)
+	if ast.Check(program) > 0 {
+		t.Fatal(ast.GetError(program))
 	}
 
 	graph, err := semantic.New(program)

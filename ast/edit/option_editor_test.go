@@ -202,8 +202,9 @@ option task = {
 		}
 
 		t.Run(tc.name, func(t *testing.T) {
-			p, err := parser.NewAST(tc.in)
-			if err != nil {
+			p := parser.NewAST(tc.in)
+			if ast.Check(p) > 0 {
+				err := ast.GetError(p)
 				t.Fatal(errors.Wrapf(err, "input program has bad syntax:\n%s", tc.in))
 			}
 
