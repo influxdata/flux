@@ -433,7 +433,7 @@ line3`,
 			},
 		},
 		{
-			name: "simple program",
+			name: "simple",
 			s: `from(bucket: "telegraf") |>
     range(start: -5m)
 `,

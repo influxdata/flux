@@ -53,7 +53,18 @@ func walk(v Visitor, node Node) {
 	}
 
 	switch n := node.(type) {
-	case *Program:
+	case *Package:
+		if n == nil {
+			return
+		}
+		w := v.Visit(n)
+		if w != nil {
+			for _, f := range n.Files {
+				walk(w, f)
+			}
+		}
+
+	case *File:
 		if n == nil {
 			return
 		}

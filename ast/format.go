@@ -58,11 +58,25 @@ func (f *formatter) unIndent() {
 func (f *formatter) setIndent(i int) {
 	f.indentation = i
 }
+func (f *formatter) writeComment(comment string) {
+	f.writeString("// ")
+	f.writeString(comment)
+}
 
-func (f *formatter) formatProgram(n *Program) {
+func (f *formatter) formatPackage(n *Package) {
+	f.formatPackageClause(&PackageClause{
+		Name: &Identifier{Name: n.Package},
+	})
+	for _, file := range n.Files {
+		f.writeComment(file.Name)
+		f.formatFile(file, false)
+	}
+}
+
+func (f *formatter) formatFile(n *File, includePkg bool) {
 	sep := '\n'
 
-	if n.Package != nil && len(n.Package.Name.Name) > 0 {
+	if includePkg && n.Package != nil && n.Package.Name != nil && n.Package.Name.Name != "" {
 		f.writeIndent()
 		f.formatNode(n.Package)
 
@@ -458,8 +472,10 @@ func (f *formatter) formatNode(n Node) {
 	currInd := f.indentation
 
 	switch n := n.(type) {
-	case *Program:
-		f.formatProgram(n)
+	case *Package:
+		f.formatPackage(n)
+	case *File:
+		f.formatFile(n, true)
 	case *Block:
 		f.formatBlock(n)
 	case *PackageClause:

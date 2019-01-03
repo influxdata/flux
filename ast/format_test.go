@@ -149,21 +149,21 @@ with multiple lines"`,
 import bar "path/bar"`,
 		},
 		{
-			name: "program_no_package",
+			name: "no_package",
 			script: `import foo "path/foo"
 
 foo.from(bucket: "testdb")
 	|> range(start: 2018-05-20T19:53:26Z)`,
 		},
 		{
-			name: "program_no_import",
+			name: "no_import",
 			script: `package foo
 
 from(bucket: "testdb")
 	|> range(start: 2018-05-20T19:53:26Z)`,
 		},
 		{
-			name: "program_package_import",
+			name: "package_import",
 			script: `package foo
 
 import "path/foo"
@@ -276,13 +276,13 @@ highestAverage = (n, columns=["_value"], by, tables=<-) =>
 				t.Skip(reason)
 			}
 
-			originalProgram := parser.NewAST(tc.script)
-			if ast.Check(originalProgram) > 0 {
-				err := ast.GetError(originalProgram)
-				t.Fatal(errors.Wrapf(err, "original program has bad syntax:\n%s", tc.script))
+			pkg := parser.ParseSource(tc.script)
+			if ast.Check(pkg) > 0 {
+				err := ast.GetError(pkg)
+				t.Fatal(errors.Wrapf(err, "source has bad syntax:\n%s", tc.script))
 			}
 
-			stringResult := ast.Format(originalProgram)
+			stringResult := ast.Format(pkg.Files[0])
 
 			if tc.script != stringResult {
 				t.Errorf("unexpected output: -want/+got:\n %s", cmp.Diff(tc.script, stringResult))

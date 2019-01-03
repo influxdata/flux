@@ -202,10 +202,10 @@ option task = {
 		}
 
 		t.Run(tc.name, func(t *testing.T) {
-			p := parser.NewAST(tc.in)
+			p := parser.ParseSource(tc.in)
 			if ast.Check(p) > 0 {
 				err := ast.GetError(p)
-				t.Fatal(errors.Wrapf(err, "input program has bad syntax:\n%s", tc.in))
+				t.Fatal(errors.Wrapf(err, "input source has bad syntax:\n%s", tc.in))
 			}
 
 			edited, err := tc.edit(p)
@@ -221,7 +221,7 @@ option task = {
 				t.Fatal("unexpected option edit")
 			}
 
-			out := ast.Format(p)
+			out := ast.Format(p.Files[0])
 
 			if out != tc.edited {
 				t.Errorf("\nexpected:\n%s\nedited:\n%s\n", tc.edited, out)

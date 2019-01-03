@@ -13,34 +13,34 @@ import (
 func TestNew(t *testing.T) {
 	testCases := []struct {
 		name    string
-		program *ast.Program
-		want    *semantic.Program
+		pkg     *ast.Package
+		want    *semantic.Package
 		wantErr bool
 	}{
 		{
-			name:    "empty",
-			program: &ast.Program{},
-			want: &semantic.Program{
+			name: "empty",
+			pkg:  &ast.Package{Files: []*ast.File{&ast.File{}}},
+			want: &semantic.Package{Files: []*semantic.File{&semantic.File{
 				Body: []semantic.Statement{},
-			},
+			}}},
 		},
 		{
 			name: "package",
-			program: &ast.Program{
+			pkg: &ast.Package{Files: []*ast.File{&ast.File{
 				Package: &ast.PackageClause{
 					Name: &ast.Identifier{Name: "foo"},
 				},
-			},
-			want: &semantic.Program{
+			}}},
+			want: &semantic.Package{Files: []*semantic.File{&semantic.File{
 				Package: &semantic.PackageClause{
 					Name: &semantic.Identifier{Name: "foo"},
 				},
 				Body: []semantic.Statement{},
-			},
+			}}},
 		},
 		{
 			name: "imports",
-			program: &ast.Program{
+			pkg: &ast.Package{Files: []*ast.File{&ast.File{
 				Imports: []*ast.ImportDeclaration{
 					{
 						Path: &ast.StringLiteral{Value: "path/foo"},
@@ -50,8 +50,8 @@ func TestNew(t *testing.T) {
 						As:   &ast.Identifier{Name: "b"},
 					},
 				},
-			},
-			want: &semantic.Program{
+			}}},
+			want: &semantic.Package{Files: []*semantic.File{&semantic.File{
 				Imports: []*semantic.ImportDeclaration{
 					{
 						Path: &semantic.StringLiteral{Value: "path/foo"},
@@ -62,11 +62,11 @@ func TestNew(t *testing.T) {
 					},
 				},
 				Body: []semantic.Statement{},
-			},
+			}}},
 		},
 		{
 			name: "var assignment",
-			program: &ast.Program{
+			pkg: &ast.Package{Files: []*ast.File{&ast.File{
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
 						ID:   &ast.Identifier{Name: "a"},
@@ -76,8 +76,8 @@ func TestNew(t *testing.T) {
 						Expression: &ast.Identifier{Name: "a"},
 					},
 				},
-			},
-			want: &semantic.Program{
+			}}},
+			want: &semantic.Package{Files: []*semantic.File{&semantic.File{
 				Body: []semantic.Statement{
 					&semantic.NativeVariableAssignment{
 						Identifier: &semantic.Identifier{Name: "a"},
@@ -87,11 +87,11 @@ func TestNew(t *testing.T) {
 						Expression: &semantic.IdentifierExpression{Name: "a"},
 					},
 				},
-			},
+			}}},
 		},
 		{
 			name: "object",
-			program: &ast.Program{
+			pkg: &ast.Package{Files: []*ast.File{&ast.File{
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
 						Expression: &ast.ObjectExpression{
@@ -108,8 +108,8 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
-			want: &semantic.Program{
+			}}},
+			want: &semantic.Package{Files: []*semantic.File{&semantic.File{
 				Body: []semantic.Statement{
 					&semantic.ExpressionStatement{
 						Expression: &semantic.ObjectExpression{
@@ -126,11 +126,11 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
+			}}},
 		},
 		{
 			name: "object with string key",
-			program: &ast.Program{
+			pkg: &ast.Package{Files: []*ast.File{&ast.File{
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
 						Expression: &ast.ObjectExpression{
@@ -147,8 +147,8 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
-			want: &semantic.Program{
+			}}},
+			want: &semantic.Package{Files: []*semantic.File{&semantic.File{
 				Body: []semantic.Statement{
 					&semantic.ExpressionStatement{
 						Expression: &semantic.ObjectExpression{
@@ -165,11 +165,11 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
+			}}},
 		},
 		{
 			name: "object with mixed keys",
-			program: &ast.Program{
+			pkg: &ast.Package{Files: []*ast.File{&ast.File{
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
 						Expression: &ast.ObjectExpression{
@@ -194,8 +194,8 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
-			want: &semantic.Program{
+			}}},
+			want: &semantic.Package{Files: []*semantic.File{&semantic.File{
 				Body: []semantic.Statement{
 					&semantic.ExpressionStatement{
 						Expression: &semantic.ObjectExpression{
@@ -220,11 +220,11 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
+			}}},
 		},
 		{
 			name: "object with implicit keys",
-			program: &ast.Program{
+			pkg: &ast.Package{Files: []*ast.File{&ast.File{
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
 						Expression: &ast.ObjectExpression{
@@ -243,8 +243,8 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
-			want: &semantic.Program{
+			}}},
+			want: &semantic.Package{Files: []*semantic.File{&semantic.File{
 				Body: []semantic.Statement{
 					&semantic.ExpressionStatement{
 						Expression: &semantic.ObjectExpression{
@@ -269,11 +269,11 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
+			}}},
 		},
 		{
 			name: "options declaration",
-			program: &ast.Program{
+			pkg: &ast.Package{Files: []*ast.File{&ast.File{
 				Body: []ast.Statement{
 					&ast.OptionStatement{
 						Assignment: &ast.VariableAssignment{
@@ -319,8 +319,8 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
-			want: &semantic.Program{
+			}}},
+			want: &semantic.Package{Files: []*semantic.File{&semantic.File{
 				Body: []semantic.Statement{
 					&semantic.OptionStatement{
 						Assignment: &semantic.NativeVariableAssignment{
@@ -352,11 +352,11 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
+			}}},
 		},
 		{
 			name: "function",
-			program: &ast.Program{
+			pkg: &ast.Package{Files: []*ast.File{&ast.File{
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
 						ID: &ast.Identifier{Name: "f"},
@@ -384,8 +384,8 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
-			want: &semantic.Program{
+			}}},
+			want: &semantic.Package{Files: []*semantic.File{&semantic.File{
 				Body: []semantic.Statement{
 					&semantic.NativeVariableAssignment{
 						Identifier: &semantic.Identifier{Name: "f"},
@@ -423,11 +423,11 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
+			}}},
 		},
 		{
 			name: "index expression",
-			program: &ast.Program{
+			pkg: &ast.Package{Files: []*ast.File{&ast.File{
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
 						Expression: &ast.IndexExpression{
@@ -436,8 +436,8 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
-			want: &semantic.Program{
+			}}},
+			want: &semantic.Package{Files: []*semantic.File{&semantic.File{
 				Body: []semantic.Statement{
 					&semantic.ExpressionStatement{
 						Expression: &semantic.IndexExpression{
@@ -446,11 +446,11 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
+			}}},
 		},
 		{
 			name: "nested index expression",
-			program: &ast.Program{
+			pkg: &ast.Package{Files: []*ast.File{&ast.File{
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
 						Expression: &ast.IndexExpression{
@@ -462,8 +462,8 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
-			want: &semantic.Program{
+			}}},
+			want: &semantic.Package{Files: []*semantic.File{&semantic.File{
 				Body: []semantic.Statement{
 					&semantic.ExpressionStatement{
 						Expression: &semantic.IndexExpression{
@@ -475,11 +475,11 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
+			}}},
 		},
 		{
 			name: "access indexed object returned from function call",
-			program: &ast.Program{
+			pkg: &ast.Package{Files: []*ast.File{&ast.File{
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
 						Expression: &ast.IndexExpression{
@@ -490,8 +490,8 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
-			want: &semantic.Program{
+			}}},
+			want: &semantic.Package{Files: []*semantic.File{&semantic.File{
 				Body: []semantic.Statement{
 					&semantic.ExpressionStatement{
 						Expression: &semantic.IndexExpression{
@@ -503,11 +503,11 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
+			}}},
 		},
 		{
 			name: "nested member expressions",
-			program: &ast.Program{
+			pkg: &ast.Package{Files: []*ast.File{&ast.File{
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
 						Expression: &ast.MemberExpression{
@@ -519,8 +519,8 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
-			want: &semantic.Program{
+			}}},
+			want: &semantic.Package{Files: []*semantic.File{&semantic.File{
 				Body: []semantic.Statement{
 					&semantic.ExpressionStatement{
 						Expression: &semantic.MemberExpression{
@@ -532,11 +532,11 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
+			}}},
 		},
 		{
 			name: "member with call expression",
-			program: &ast.Program{
+			pkg: &ast.Package{Files: []*ast.File{&ast.File{
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
 						Expression: &ast.MemberExpression{
@@ -550,8 +550,8 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
-			want: &semantic.Program{
+			}}},
+			want: &semantic.Package{Files: []*semantic.File{&semantic.File{
 				Body: []semantic.Statement{
 					&semantic.ExpressionStatement{
 						Expression: &semantic.MemberExpression{
@@ -566,13 +566,13 @@ func TestNew(t *testing.T) {
 						},
 					},
 				},
-			},
+			}}},
 		},
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := semantic.New(tc.program)
+			got, err := semantic.New(tc.pkg)
 			if !tc.wantErr && err != nil {
 				t.Fatal(err)
 			} else if tc.wantErr && err == nil {
@@ -580,66 +580,8 @@ func TestNew(t *testing.T) {
 			}
 
 			if !cmp.Equal(tc.want, got, semantictest.CmpOptions...) {
-				t.Errorf("unexpected semantic program: -want/+got:\n%s", cmp.Diff(tc.want, got, semantictest.CmpOptions...))
+				t.Errorf("unexpected semantic graph: -want/+got:\n%s", cmp.Diff(tc.want, got, semantictest.CmpOptions...))
 			}
 		})
 	}
 }
-
-//func TestExpression_Kind(t *testing.T) {
-//	testCases := []struct {
-//		name string
-//		expr semantic.Expression
-//		want semantic.Kind
-//	}{
-//		{
-//			name: "string",
-//			expr: &semantic.StringLiteral{},
-//			want: semantic.String,
-//		},
-//		{
-//			name: "int",
-//			expr: &semantic.IntegerLiteral{},
-//			want: semantic.Int,
-//		},
-//		{
-//			name: "uint",
-//			expr: &semantic.UnsignedIntegerLiteral{},
-//			want: semantic.UInt,
-//		},
-//		{
-//			name: "float",
-//			expr: &semantic.FloatLiteral{},
-//			want: semantic.Float,
-//		},
-//		{
-//			name: "bool",
-//			expr: &semantic.BooleanLiteral{},
-//			want: semantic.Bool,
-//		},
-//		{
-//			name: "time",
-//			expr: &semantic.DateTimeLiteral{},
-//			want: semantic.Time,
-//		},
-//		{
-//			name: "duration",
-//			expr: &semantic.DurationLiteral{},
-//			want: semantic.Duration,
-//		},
-//	}
-//	for _, tc := range testCases {
-//		tc := tc
-//		t.Run(tc.name, func(t *testing.T) {
-//			typ, mono := tc.expr.TypeScheme().MonoType()
-//			if !mono {
-//				t.Fatal("unexpected polymorphic expression type")
-//			}
-//			got := typ.Kind()
-//
-//			if !cmp.Equal(tc.want, got) {
-//				t.Errorf("unexpected expression type: -want/+got:\n%s", cmp.Diff(tc.want, got))
-//			}
-//		})
-//	}
-//}

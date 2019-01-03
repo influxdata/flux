@@ -8,7 +8,7 @@ import (
 )
 
 func TestPrintErrors(t *testing.T) {
-	program := &ast.Program{
+	file := &ast.File{
 		Body: []ast.Statement{
 			&ast.BadStatement{
 				BaseNode: ast.BaseNode{
@@ -40,7 +40,7 @@ func TestPrintErrors(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	ast.PrintErrors(&buf, program)
+	ast.PrintErrors(&buf, file)
 
 	if got, want := buf.String(), `error:1:1: invalid statement: @
 error:2:7: invalid statement: &

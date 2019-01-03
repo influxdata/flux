@@ -139,17 +139,17 @@ func (r *REPL) executeLine(t string) (values.Value, error) {
 		t = q
 	}
 
-	astProg := parser.NewAST(t)
-	if ast.Check(astProg) > 0 {
-		return nil, ast.GetError(astProg)
+	astPkg := parser.ParseSource(t)
+	if ast.Check(astPkg) > 0 {
+		return nil, ast.GetError(astPkg)
 	}
 
-	semProg, err := semantic.New(astProg)
+	semPkg, err := semantic.New(astPkg)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := r.interpreter.Eval(semProg, nil); err != nil {
+	if err := r.interpreter.Eval(semPkg, nil); err != nil {
 		return nil, err
 	}
 

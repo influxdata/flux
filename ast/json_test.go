@@ -19,19 +19,26 @@ func TestJSONMarshal(t *testing.T) {
 		want string
 	}{
 		{
-			name: "simple program",
-			node: &ast.Program{
+			name: "simple package",
+			node: &ast.Package{
+				Package: "foo",
+			},
+			want: `{"type":"Package","package":"foo","files":null}`,
+		},
+		{
+			name: "simple file",
+			node: &ast.File{
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
 						Expression: &ast.StringLiteral{Value: "hello"},
 					},
 				},
 			},
-			want: `{"type":"Program","package":null,"imports":null,"body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
+			want: `{"type":"File","package":null,"imports":null,"body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
 		},
 		{
-			name: "program",
-			node: &ast.Program{
+			name: "file",
+			node: &ast.File{
 				Package: &ast.PackageClause{
 					Name: &ast.Identifier{Name: "foo"},
 				},
@@ -45,7 +52,7 @@ func TestJSONMarshal(t *testing.T) {
 					},
 				},
 			},
-			want: `{"type":"Program","package":{"type":"PackageClause","name":{"type":"Identifier","name":"foo"}},"imports":[{"type":"ImportDeclaration","as":{"type":"Identifier","name":"b"},"path":{"type":"StringLiteral","value":"path/bar"}}],"body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
+			want: `{"type":"File","package":{"type":"PackageClause","name":{"type":"Identifier","name":"foo"}},"imports":[{"type":"ImportDeclaration","as":{"type":"Identifier","name":"b"},"path":{"type":"StringLiteral","value":"path/bar"}}],"body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
 		},
 		{
 			name: "block",

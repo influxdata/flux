@@ -11,7 +11,7 @@ import (
 var _ = flux_start
 var _ = flux_first_final
 
-// Scanner is used to tokenize a flux program.
+// Scanner is used to tokenize Flux source.
 type Scanner struct {
 	f          *token.File
 	p, pe, eof int

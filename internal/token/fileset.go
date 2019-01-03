@@ -4,6 +4,16 @@ import (
 	"github.com/influxdata/flux/ast"
 )
 
+type FileSet struct {
+	files []*File
+}
+
+func (f *FileSet) AddFile(filename string, size int) *File {
+	file := NewFile(filename, size)
+	f.files = append(f.files, file)
+	return file
+}
+
 type File struct {
 	name  string
 	lines []int // lines contains the offset of the first character for each line (the first entry is always 0)

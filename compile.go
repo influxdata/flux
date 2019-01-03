@@ -66,18 +66,18 @@ func Compile(ctx context.Context, q string, now time.Time, opts ...Option) (*Spe
 
 // Eval evaluates the flux string q and update the given interpreter
 func Eval(itrp *interpreter.Interpreter, q string) error {
-	astProg := parser.NewAST(q)
-	if ast.Check(astProg) > 0 {
-		return ast.GetError(astProg)
+	astPkg := parser.ParseSource(q)
+	if ast.Check(astPkg) > 0 {
+		return ast.GetError(astPkg)
 	}
 
-	// Convert AST program to a semantic program
-	semProg, err := semantic.New(astProg)
+	// Convert AST package to a semantic package
+	semPkg, err := semantic.New(astPkg)
 	if err != nil {
 		return err
 	}
 
-	if err := itrp.Eval(semProg, nil); err != nil {
+	if err := itrp.Eval(semPkg, nil); err != nil {
 		return err
 	}
 	return nil
@@ -231,17 +231,17 @@ func FinalizeBuiltIns() {
 func evalBuiltInScripts() error {
 	itrp := interpreter.NewMutableInterpreter(builtinOptions, builtinValues, builtinTypeScope)
 	for name, script := range builtinScripts {
-		astProg := parser.NewAST(script)
-		if ast.Check(astProg) > 0 {
-			err := ast.GetError(astProg)
+		astPkg := parser.ParseSource(script)
+		if ast.Check(astPkg) > 0 {
+			err := ast.GetError(astPkg)
 			return errors.Wrapf(err, "failed to parse builtin %q", name)
 		}
-		semProg, err := semantic.New(astProg)
+		semPkg, err := semantic.New(astPkg)
 		if err != nil {
 			return errors.Wrapf(err, "failed to create semantic graph for builtin %q", name)
 		}
 
-		if err := itrp.Eval(semProg, nil); err != nil {
+		if err := itrp.Eval(semPkg, nil); err != nil {
 			return errors.Wrapf(err, "failed to evaluate builtin %q", name)
 		}
 	}

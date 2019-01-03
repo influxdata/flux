@@ -24,7 +24,8 @@ func (l loc) Location() ast.SourceLocation {
 	return ast.SourceLocation(l)
 }
 
-func (*Program) node()           {}
+func (*Package) node()           {}
+func (*File) node()              {}
 func (*Extern) node()            {}
 func (*ExternBlock) node()       {}
 func (*Block) node()             {}
@@ -126,7 +127,33 @@ func (n *StringLiteral) Key() string {
 	return n.Value
 }
 
-type Program struct {
+type Package struct {
+	loc `json:"-"`
+
+	Package string  `json:"package"`
+	Files   []*File `json:"files"`
+}
+
+func (*Package) NodeType() string { return "Package" }
+
+func (p *Package) Copy() Node {
+	if p == nil {
+		return p
+	}
+	np := new(Package)
+	*np = *p
+
+	if len(p.Files) > 0 {
+		np.Files = make([]*File, len(p.Files))
+		for i, f := range p.Files {
+			np.Files[i] = f.Copy().(*File)
+		}
+	}
+
+	return np
+}
+
+type File struct {
 	loc `json:"-"`
 
 	Package *PackageClause       `json:"package"`
@@ -134,13 +161,13 @@ type Program struct {
 	Body    []Statement          `json:"body"`
 }
 
-func (*Program) NodeType() string { return "Program" }
+func (*File) NodeType() string { return "File" }
 
-func (p *Program) Copy() Node {
+func (p *File) Copy() Node {
 	if p == nil {
 		return p
 	}
-	np := new(Program)
+	np := new(File)
 	*np = *p
 
 	if len(p.Body) > 0 {

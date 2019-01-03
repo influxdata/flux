@@ -28,7 +28,17 @@ func (v *visitor) Done(node Node) {}
 
 func walk(v Visitor, n Node) {
 	switch n := n.(type) {
-	case *Program:
+	case *Package:
+		if n == nil {
+			return
+		}
+		w := v.Visit(n)
+		if w != nil {
+			for _, f := range n.Files {
+				walk(w, f)
+			}
+		}
+	case *File:
 		if n == nil {
 			return
 		}

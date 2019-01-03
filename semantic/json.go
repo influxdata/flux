@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-func (p *Program) MarshalJSON() ([]byte, error) {
-	type Alias Program
+func (p *Package) MarshalJSON() ([]byte, error) {
+	type Alias Package
 	raw := struct {
 		Type string `json:"type"`
 		*Alias
@@ -20,8 +20,19 @@ func (p *Program) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(raw)
 }
-func (p *Program) UnmarshalJSON(data []byte) error {
-	type Alias Program
+func (p *File) MarshalJSON() ([]byte, error) {
+	type Alias File
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  p.NodeType(),
+		Alias: (*Alias)(p),
+	}
+	return json.Marshal(raw)
+}
+func (p *File) UnmarshalJSON(data []byte) error {
+	type Alias File
 	raw := struct {
 		*Alias
 		Body []json.RawMessage `json:"body"`
@@ -30,7 +41,7 @@ func (p *Program) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if raw.Alias != nil {
-		*p = *(*Program)(raw.Alias)
+		*p = *(*File)(raw.Alias)
 	}
 
 	p.Body = make([]Statement, len(raw.Body))
@@ -961,8 +972,10 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 
 	var node Node
 	switch typ.Type {
-	case "Program":
-		node = new(Program)
+	case "Package":
+		node = new(Package)
+	case "File":
+		node = new(File)
 	case "PackageClause":
 		node = new(PackageClause)
 	case "ImportDeclaration":

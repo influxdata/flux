@@ -132,7 +132,7 @@ func (p *packageObject) Equal(rhs values.Value) bool {
 	return equal
 }
 
-// Interpreter used to interpret a Flux program
+// Interpreter used to interpret a Flux package
 type Interpreter struct {
 	options *Scope
 	globals *Scope
@@ -180,7 +180,7 @@ func (itrp *Interpreter) Return() values.Value {
 	return itrp.globals.Return()
 }
 
-// GlobalScope returns a pointer to the global scope of the program.
+// GlobalScope returns a pointer to the global scope of the package.
 // That is the scope nested directly below the options scope.
 func (itrp *Interpreter) GlobalScope() *Scope {
 	return itrp.globals
@@ -196,7 +196,7 @@ func (itrp *Interpreter) SetOption(name string, val values.Value) {
 	itrp.options.Set(name, val)
 }
 
-// SideEffects returns the evaluated expressions of a Flux program
+// SideEffects returns the evaluated expressions of a Flux package
 func (itrp *Interpreter) SideEffects() []values.Value {
 	return itrp.pkg.SideEffects()
 }
@@ -206,10 +206,10 @@ func (itrp *Interpreter) Package() Package {
 	return itrp.pkg
 }
 
-// Eval evaluates the expressions composing a Flux program.
-func (itrp *Interpreter) Eval(program semantic.Node, importer Importer) error {
+// Eval evaluates the expressions composing a Flux package.
+func (itrp *Interpreter) Eval(pkg semantic.Node, importer Importer) error {
 	extern := &semantic.Extern{
-		Block:       &semantic.ExternBlock{Node: program},
+		Block:       &semantic.ExternBlock{Node: pkg},
 		Assignments: make([]*semantic.ExternalVariableAssignment, 0, itrp.globals.Len()+itrp.options.Len()),
 	}
 	// Add declarations for values in scope
@@ -228,14 +228,16 @@ func (itrp *Interpreter) Eval(program semantic.Node, importer Importer) error {
 		if polyType, err := sol.PolyTypeOf(node); err == nil {
 			itrp.types.SetPolyType(node, polyType)
 		}
-	}), program)
-	return itrp.doRoot(program, importer)
+	}), pkg)
+	return itrp.doRoot(pkg, importer)
 }
 
 func (itrp *Interpreter) doRoot(node semantic.Node, importer Importer) error {
 	switch n := node.(type) {
-	case *semantic.Program:
-		return itrp.doProgram(n, importer)
+	case *semantic.Package:
+		return itrp.doPackage(n, importer)
+	case *semantic.File:
+		return itrp.doFile(n, importer)
 	case *semantic.Extern:
 		return itrp.doExtern(n, importer)
 	default:
@@ -248,16 +250,24 @@ func (itrp *Interpreter) doExtern(extern *semantic.Extern, importer Importer) er
 	return itrp.doRoot(extern.Block.Node, importer)
 }
 
-func (itrp *Interpreter) doProgram(program *semantic.Program, importer Importer) error {
-	if err := itrp.doPackage(program.Package); err != nil {
+func (itrp *Interpreter) doPackage(pkg *semantic.Package, importer Importer) error {
+	for _, file := range pkg.Files {
+		if err := itrp.doFile(file, importer); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+func (itrp *Interpreter) doFile(file *semantic.File, importer Importer) error {
+	if err := itrp.doPackageClause(file.Package); err != nil {
 		return err
 	}
-	for _, imp := range program.Imports {
+	for _, imp := range file.Imports {
 		if err := itrp.doImport(imp, itrp.globals, importer); err != nil {
 			return err
 		}
 	}
-	for _, stmt := range program.Body {
+	for _, stmt := range file.Body {
 		val, err := itrp.doStatement(stmt, itrp.globals)
 		if err != nil {
 			return err
@@ -271,7 +281,7 @@ func (itrp *Interpreter) doProgram(program *semantic.Program, importer Importer)
 	return nil
 }
 
-func (itrp *Interpreter) doPackage(pkg *semantic.PackageClause) error {
+func (itrp *Interpreter) doPackageClause(pkg *semantic.PackageClause) error {
 	packageName := semantic.PackageMain
 	if pkg != nil {
 		packageName = pkg.Name.Name
