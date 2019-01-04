@@ -38,6 +38,7 @@ func init() {
 		MergeFromFilterRule{},
 		FromDistinctRule{},
 		MergeFromGroupRule{},
+		FromKeysRule{},
 	)
 }
 
@@ -534,4 +535,34 @@ func (MergeFromGroupRule) Rewrite(groupNode plan.PlanNode) (plan.PlanNode, bool,
 		return nil, false, err
 	}
 	return merged, true, nil
+}
+
+type FromKeysRule struct {
+}
+
+func (FromKeysRule) Name() string {
+	return "FromKeysRule"
+}
+
+func (FromKeysRule) Pattern() plan.Pattern {
+	return plan.Pat(transformations.KeysKind, plan.Pat(FromKind))
+}
+
+func (FromKeysRule) Rewrite(keysNode plan.PlanNode) (plan.PlanNode, bool, error) {
+	fromNode := keysNode.Predecessors()[0]
+	fromSpec := fromNode.ProcedureSpec().(*FromProcedureSpec)
+
+	if fromSpec.LimitSet && fromSpec.PointsLimit == -1 {
+		return keysNode, false, nil
+	}
+
+	newFromSpec := fromSpec.Copy().(*FromProcedureSpec)
+	newFromSpec.LimitSet = true
+	newFromSpec.PointsLimit = -1
+
+	if err := fromNode.ReplaceSpec(newFromSpec); err != nil {
+		return nil, false, err
+	}
+
+	return keysNode, true, nil
 }

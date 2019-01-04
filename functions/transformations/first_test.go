@@ -62,7 +62,7 @@ func TestFirst_Process(t *testing.T) {
 				t,
 				new(transformations.FirstSelector),
 				&executetest.RowWiseArrowTable{
-					Table:tc.data,
+					Table: tc.data,
 				},
 				tc.want,
 			)
