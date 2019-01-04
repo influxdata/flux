@@ -82,6 +82,7 @@ func (*ExpressionStatement) node() {}
 func (*ReturnStatement) node()     {}
 func (*OptionStatement) node()     {}
 func (*VariableAssignment) node()  {}
+func (*MemberAssignment) node()    {}
 
 func (*ArrayExpression) node()       {}
 func (*FunctionExpression) node()    {}
@@ -288,9 +289,18 @@ type Statement interface {
 
 func (*BadStatement) stmt()        {}
 func (*VariableAssignment) stmt()  {}
+func (*MemberAssignment) stmt()    {}
 func (*ExpressionStatement) stmt() {}
 func (*ReturnStatement) stmt()     {}
 func (*OptionStatement) stmt()     {}
+
+type Assignment interface {
+	Statement
+	assignment()
+}
+
+func (*VariableAssignment) assignment() {}
+func (*MemberAssignment) assignment()   {}
 
 // BadStatement is a placeholder for statements for which no correct statement nodes
 // can be created.
@@ -361,7 +371,7 @@ func (s *ReturnStatement) Copy() Node {
 // OptionStatement syntactically is a single variable declaration
 type OptionStatement struct {
 	BaseNode
-	Assignment *VariableAssignment `json:"assignment"`
+	Assignment Assignment `json:"assignment"`
 }
 
 // Type is the abstract type
@@ -376,7 +386,9 @@ func (s *OptionStatement) Copy() Node {
 	*ns = *s
 	ns.BaseNode = s.BaseNode.Copy()
 
-	ns.Assignment = s.Assignment.Copy().(*VariableAssignment)
+	if s.Assignment != nil {
+		ns.Assignment = s.Assignment.Copy().(Assignment)
+	}
 
 	return ns
 }
@@ -404,6 +416,32 @@ func (d *VariableAssignment) Copy() Node {
 	}
 
 	return nd
+}
+
+type MemberAssignment struct {
+	BaseNode
+	Member *MemberExpression `json:"member"`
+	Init   Expression        `json:"init"`
+}
+
+func (*MemberAssignment) Type() string { return "MemberAssignment" }
+
+func (a *MemberAssignment) Copy() Node {
+	if a == nil {
+		return a
+	}
+	na := new(MemberAssignment)
+	*na = *a
+	na.BaseNode = a.BaseNode.Copy()
+
+	if a.Member != nil {
+		na.Member = a.Member.Copy().(*MemberExpression)
+	}
+	if a.Init != nil {
+		na.Init = a.Init.Copy().(Expression)
+	}
+
+	return na
 }
 
 // Expression represents an action that can be performed by InfluxDB that can be evaluated to a value.

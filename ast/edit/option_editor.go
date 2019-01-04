@@ -44,9 +44,13 @@ func OptionValueFn(expr ast.Expression) OptionFn {
 // an object expression, or if some key in the provided map is not a property of the object.
 func OptionObjectFn(keyMap map[string]values.Value) OptionFn {
 	return func(opt *ast.OptionStatement) (ast.Expression, error) {
-		obj, ok := opt.Assignment.Init.(*ast.ObjectExpression)
+		a, ok := opt.Assignment.(*ast.VariableAssignment)
 		if !ok {
-			return nil, fmt.Errorf("value is is %s, not an object expression", opt.Assignment.Init.Type())
+			return nil, fmt.Errorf("option assignment must be variable assignment")
+		}
+		obj, ok := a.Init.(*ast.ObjectExpression)
+		if !ok {
+			return nil, fmt.Errorf("value is is %s, not an object expression", a.Init.Type())
 		}
 
 		// check that every specified property exists in the object
@@ -152,18 +156,39 @@ type optionEditor struct {
 
 func (v *optionEditor) Visit(node ast.Node) ast.Visitor {
 	if os, ok := node.(*ast.OptionStatement); ok {
-		if os.Assignment.ID.Name == v.identifier {
-			v.found = true
+		switch a := os.Assignment.(type) {
+		case *ast.VariableAssignment:
+			if a.ID.Name == v.identifier {
+				v.found = true
 
-			newInit, err := v.optionFn(os)
+				newInit, err := v.optionFn(os)
 
-			if err != nil {
-				v.err = err
-			} else if newInit != nil {
-				os.Assignment.Init = newInit
+				if err != nil {
+					v.err = err
+				} else if newInit != nil {
+					a.Init = newInit
+				}
+
+				return nil
 			}
+		case *ast.MemberAssignment:
+			id, ok := a.Member.Object.(*ast.Identifier)
+			if ok {
+				name := id.Name + "." + a.Member.Property.Key()
+				if name == v.identifier {
+					v.found = true
 
-			return nil
+					newInit, err := v.optionFn(os)
+
+					if err != nil {
+						v.err = err
+					} else if newInit != nil {
+						a.Init = newInit
+					}
+
+					return nil
+				}
+			}
 		}
 	}
 

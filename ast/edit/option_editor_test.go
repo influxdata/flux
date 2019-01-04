@@ -39,6 +39,15 @@ func TestEditor(t *testing.T) {
 			},
 		},
 		{
+			name:   "qualified_option",
+			in:     `option alert.state = 0`,
+			edited: `option alert.state = 1`,
+			edit: func(node ast.Node) (bool, error) {
+				literal := edit.CreateLiteral(values.NewInt(int64(1)))
+				return edit.Option(node, "alert.state", edit.OptionValueFn(literal))
+			},
+		},
+		{
 			name: "sets_option",
 			in: `option foo = 1
 option bar = 1`,
