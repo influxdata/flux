@@ -329,7 +329,7 @@ func (e *MemberExpression) UnmarshalJSON(data []byte) error {
 	}
 	e.Object = object
 
-	property, err := unmarshalExpression(raw.Property)
+	property, err := unmarshalPropertyKey(raw.Property)
 	if err != nil {
 		return err
 	}

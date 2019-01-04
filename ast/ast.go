@@ -43,6 +43,14 @@ func (l SourceLocation) Less(o SourceLocation) bool {
 	return l.Start.Less(o.Start)
 }
 
+func (l *SourceLocation) Copy() *SourceLocation {
+	if l == nil {
+		return nil
+	}
+	nl := *l
+	return &nl
+}
+
 // Node represents a node in the InfluxDB abstract syntax tree.
 type Node interface {
 	node()
@@ -59,9 +67,9 @@ func (*Package) node()           {}
 func (*File) node()              {}
 func (*PackageClause) node()     {}
 func (*ImportDeclaration) node() {}
+func (*Block) node()             {}
 
 func (*BadStatement) node()        {}
-func (*Block) node()               {}
 func (*ExpressionStatement) node() {}
 func (*ReturnStatement) node()     {}
 func (*OptionStatement) node()     {}
@@ -110,6 +118,17 @@ func (b BaseNode) Errs() []Error {
 	return b.Errors
 }
 
+func (b BaseNode) Copy() BaseNode {
+	// Note b is already shallow copy because of the non pointer receiver
+	b.Loc = b.Loc.Copy()
+	if len(b.Errors) > 0 {
+		cpy := make([]Error, len(b.Errors))
+		copy(cpy, b.Errors)
+		b.Errors = cpy
+	}
+	return b
+}
+
 // Error represents an error in the AST construction.
 // The node that this is attached to is not valid.
 type Error struct {
@@ -131,8 +150,13 @@ type Package struct {
 func (*Package) Type() string { return "Package" }
 
 func (p *Package) Copy() Node {
+	if p == nil {
+		return p
+	}
 	np := new(Package)
 	*np = *p
+	np.BaseNode = p.BaseNode.Copy()
+
 	if len(p.Files) > 0 {
 		np.Files = make([]*File, len(p.Files))
 		for i, f := range p.Files {
@@ -155,8 +179,12 @@ type File struct {
 func (*File) Type() string { return "File" }
 
 func (f *File) Copy() Node {
+	if f == nil {
+		return f
+	}
 	nf := new(File)
 	*nf = *f
+	nf.BaseNode = f.BaseNode.Copy()
 
 	nf.Package = f.Package.Copy().(*PackageClause)
 
@@ -186,8 +214,12 @@ type PackageClause struct {
 func (*PackageClause) Type() string { return "PackageClause" }
 
 func (c *PackageClause) Copy() Node {
+	if c == nil {
+		return c
+	}
 	nc := new(PackageClause)
 	*nc = *c
+	nc.BaseNode = c.BaseNode.Copy()
 
 	nc.Name = c.Name.Copy().(*Identifier)
 	return nc
@@ -204,25 +236,14 @@ type ImportDeclaration struct {
 func (*ImportDeclaration) Type() string { return "ImportDeclaration" }
 
 func (d *ImportDeclaration) Copy() Node {
+	if d == nil {
+		return d
+	}
 	nd := new(ImportDeclaration)
 	*nd = *d
+	nd.BaseNode = d.BaseNode.Copy()
 
 	return nd
-}
-
-// BadStatement is a placeholder for statements for which no correct statement nodes
-// can be created.
-type BadStatement struct {
-	BaseNode
-	Text string `json:"text"`
-}
-
-// Type is the abstract type.
-func (*BadStatement) Type() string { return "BadStatement" }
-
-func (s *BadStatement) Copy() Node {
-	ns := *s
-	return &ns
 }
 
 // Block is a set of statements
@@ -235,8 +256,12 @@ type Block struct {
 func (*Block) Type() string { return "Block" }
 
 func (s *Block) Copy() Node {
+	if s == nil {
+		return s
+	}
 	ns := new(Block)
 	*ns = *s
+	ns.BaseNode = s.BaseNode.Copy()
 
 	if len(s.Body) > 0 {
 		ns.Body = make([]Statement, len(s.Body))
@@ -259,6 +284,25 @@ func (*ExpressionStatement) stmt() {}
 func (*ReturnStatement) stmt()     {}
 func (*OptionStatement) stmt()     {}
 
+// BadStatement is a placeholder for statements for which no correct statement nodes
+// can be created.
+type BadStatement struct {
+	BaseNode
+	Text string `json:"text"`
+}
+
+// Type is the abstract type.
+func (*BadStatement) Type() string { return "BadStatement" }
+
+func (s *BadStatement) Copy() Node {
+	if s == nil {
+		return s
+	}
+	ns := *s
+	ns.BaseNode = s.BaseNode.Copy()
+	return &ns
+}
+
 // ExpressionStatement may consist of an expression that does not return a value and is executed solely for its side-effects.
 type ExpressionStatement struct {
 	BaseNode
@@ -274,8 +318,11 @@ func (s *ExpressionStatement) Copy() Node {
 	}
 	ns := new(ExpressionStatement)
 	*ns = *s
+	ns.BaseNode = s.BaseNode.Copy()
 
-	ns.Expression = s.Expression.Copy().(Expression)
+	if s.Expression != nil {
+		ns.Expression = s.Expression.Copy().(Expression)
+	}
 
 	return ns
 }
@@ -294,8 +341,11 @@ func (s *ReturnStatement) Copy() Node {
 	}
 	ns := new(ReturnStatement)
 	*ns = *s
+	ns.BaseNode = s.BaseNode.Copy()
 
-	ns.Argument = s.Argument.Copy().(Expression)
+	if s.Argument != nil {
+		ns.Argument = s.Argument.Copy().(Expression)
+	}
 
 	return ns
 }
@@ -316,6 +366,7 @@ func (s *OptionStatement) Copy() Node {
 	}
 	ns := new(OptionStatement)
 	*ns = *s
+	ns.BaseNode = s.BaseNode.Copy()
 
 	ns.Assignment = s.Assignment.Copy().(*VariableAssignment)
 
@@ -338,8 +389,11 @@ func (d *VariableAssignment) Copy() Node {
 	}
 	nd := new(VariableAssignment)
 	*nd = *d
+	nd.BaseNode = d.BaseNode.Copy()
 
-	nd.Init = d.Init.Copy().(Expression)
+	if d.Init != nil {
+		nd.Init = d.Init.Copy().(Expression)
+	}
 
 	return nd
 }
@@ -372,7 +426,7 @@ func (*StringLiteral) expression()          {}
 func (*UnaryExpression) expression()        {}
 func (*UnsignedIntegerLiteral) expression() {}
 
-// CallExpression represents a function all whose callee may be an Identifier or MemberExpression
+// CallExpression represents a function call
 type CallExpression struct {
 	BaseNode
 	Callee    Expression   `json:"callee"`
@@ -388,8 +442,11 @@ func (e *CallExpression) Copy() Node {
 	}
 	ne := new(CallExpression)
 	*ne = *e
+	ne.BaseNode = e.BaseNode.Copy()
 
-	ne.Callee = e.Callee.Copy().(Expression)
+	if e.Callee != nil {
+		ne.Callee = e.Callee.Copy().(Expression)
+	}
 
 	if len(e.Arguments) > 0 {
 		ne.Arguments = make([]Expression, len(e.Arguments))
@@ -416,8 +473,11 @@ func (e *PipeExpression) Copy() Node {
 	}
 	ne := new(PipeExpression)
 	*ne = *e
+	ne.BaseNode = e.BaseNode.Copy()
 
-	ne.Argument = e.Argument.Copy().(Expression)
+	if e.Argument != nil {
+		ne.Argument = e.Argument.Copy().(Expression)
+	}
 	ne.Call = e.Call.Copy().(*CallExpression)
 
 	return ne
@@ -426,8 +486,8 @@ func (e *PipeExpression) Copy() Node {
 // MemberExpression represents calling a property of a CallExpression
 type MemberExpression struct {
 	BaseNode
-	Object   Expression `json:"object"`
-	Property Expression `json:"property"`
+	Object   Expression  `json:"object"`
+	Property PropertyKey `json:"property"`
 }
 
 // Type is the abstract type
@@ -439,9 +499,14 @@ func (e *MemberExpression) Copy() Node {
 	}
 	ne := new(MemberExpression)
 	*ne = *e
+	ne.BaseNode = e.BaseNode.Copy()
 
-	ne.Object = e.Object.Copy().(Expression)
-	ne.Property = e.Property.Copy().(Expression)
+	if e.Object != nil {
+		ne.Object = e.Object.Copy().(Expression)
+	}
+	if e.Property != nil {
+		ne.Property = e.Property.Copy().(PropertyKey)
+	}
 
 	return ne
 }
@@ -461,8 +526,14 @@ func (e *IndexExpression) Copy() Node {
 	}
 	ne := new(IndexExpression)
 	*ne = *e
-	ne.Array = e.Array.Copy().(Expression)
-	ne.Index = e.Index.Copy().(Expression)
+	ne.BaseNode = e.BaseNode.Copy()
+
+	if e.Array != nil {
+		ne.Array = e.Array.Copy().(Expression)
+	}
+	if e.Index != nil {
+		ne.Index = e.Index.Copy().(Expression)
+	}
 	return ne
 }
 
@@ -481,6 +552,7 @@ func (e *FunctionExpression) Copy() Node {
 	}
 	ne := new(FunctionExpression)
 	*ne = *e
+	ne.BaseNode = e.BaseNode.Copy()
 
 	if len(e.Params) > 0 {
 		ne.Params = make([]*Property, len(e.Params))
@@ -489,7 +561,9 @@ func (e *FunctionExpression) Copy() Node {
 		}
 	}
 
-	ne.Body = e.Body.Copy()
+	if e.Body != nil {
+		ne.Body = e.Body.Copy()
+	}
 
 	return ne
 }
@@ -566,9 +640,14 @@ func (e *BinaryExpression) Copy() Node {
 	}
 	ne := new(BinaryExpression)
 	*ne = *e
+	ne.BaseNode = e.BaseNode.Copy()
 
-	ne.Left = e.Left.Copy().(Expression)
-	ne.Right = e.Right.Copy().(Expression)
+	if e.Left != nil {
+		ne.Left = e.Left.Copy().(Expression)
+	}
+	if e.Right != nil {
+		ne.Right = e.Right.Copy().(Expression)
+	}
 
 	return ne
 }
@@ -589,8 +668,11 @@ func (e *UnaryExpression) Copy() Node {
 	}
 	ne := new(UnaryExpression)
 	*ne = *e
+	ne.BaseNode = e.BaseNode.Copy()
 
-	ne.Argument = e.Argument.Copy().(Expression)
+	if e.Argument != nil {
+		ne.Argument = e.Argument.Copy().(Expression)
+	}
 
 	return ne
 }
@@ -649,9 +731,14 @@ func (e *LogicalExpression) Copy() Node {
 	}
 	ne := new(LogicalExpression)
 	*ne = *e
+	ne.BaseNode = e.BaseNode.Copy()
 
-	ne.Left = e.Left.Copy().(Expression)
-	ne.Right = e.Right.Copy().(Expression)
+	if e.Left != nil {
+		ne.Left = e.Left.Copy().(Expression)
+	}
+	if e.Right != nil {
+		ne.Right = e.Right.Copy().(Expression)
+	}
 
 	return ne
 }
@@ -671,6 +758,7 @@ func (e *ArrayExpression) Copy() Node {
 	}
 	ne := new(ArrayExpression)
 	*ne = *e
+	ne.BaseNode = e.BaseNode.Copy()
 
 	if len(e.Elements) > 0 {
 		ne.Elements = make([]Expression, len(e.Elements))
@@ -697,6 +785,7 @@ func (e *ObjectExpression) Copy() Node {
 	}
 	ne := new(ObjectExpression)
 	*ne = *e
+	ne.BaseNode = e.BaseNode.Copy()
 
 	if len(e.Properties) > 0 {
 		ne.Properties = make([]*Property, len(e.Properties))
@@ -726,11 +815,17 @@ func (e *ConditionalExpression) Copy() Node {
 	}
 	ne := new(ConditionalExpression)
 	*ne = *e
+	ne.BaseNode = e.BaseNode.Copy()
 
-	ne.Test = e.Test.Copy().(Expression)
-	ne.Alternate = e.Alternate.Copy().(Expression)
-	ne.Consequent = e.Consequent.Copy().(Expression)
-
+	if e.Test != nil {
+		ne.Test = e.Test.Copy().(Expression)
+	}
+	if e.Alternate != nil {
+		ne.Alternate = e.Alternate.Copy().(Expression)
+	}
+	if e.Consequent != nil {
+		ne.Consequent = e.Consequent.Copy().(Expression)
+	}
 	return ne
 }
 
@@ -754,6 +849,7 @@ func (p *Property) Copy() Node {
 	}
 	np := new(Property)
 	*np = *p
+	np.BaseNode = p.BaseNode.Copy()
 
 	if p.Value != nil {
 		np.Value = p.Value.Copy().(Expression)
@@ -785,6 +881,8 @@ func (i *Identifier) Copy() Node {
 	}
 	ni := new(Identifier)
 	*ni = *i
+	ni.BaseNode = i.BaseNode.Copy()
+
 	return ni
 }
 
@@ -820,6 +918,7 @@ func (i *PipeLiteral) Copy() Node {
 	}
 	ni := new(PipeLiteral)
 	*ni = *i
+	ni.BaseNode = i.BaseNode.Copy()
 	return ni
 }
 
@@ -843,6 +942,7 @@ func (l *StringLiteral) Copy() Node {
 	}
 	nl := new(StringLiteral)
 	*nl = *l
+	nl.BaseNode = l.BaseNode.Copy()
 	return nl
 }
 
@@ -861,6 +961,7 @@ func (l *BooleanLiteral) Copy() Node {
 	}
 	nl := new(BooleanLiteral)
 	*nl = *l
+	nl.BaseNode = l.BaseNode.Copy()
 	return nl
 }
 
@@ -879,6 +980,7 @@ func (l *FloatLiteral) Copy() Node {
 	}
 	nl := new(FloatLiteral)
 	*nl = *l
+	nl.BaseNode = l.BaseNode.Copy()
 	return nl
 }
 
@@ -897,6 +999,7 @@ func (l *IntegerLiteral) Copy() Node {
 	}
 	nl := new(IntegerLiteral)
 	*nl = *l
+	nl.BaseNode = l.BaseNode.Copy()
 	return nl
 }
 
@@ -915,6 +1018,7 @@ func (l *UnsignedIntegerLiteral) Copy() Node {
 	}
 	nl := new(UnsignedIntegerLiteral)
 	*nl = *l
+	nl.BaseNode = l.BaseNode.Copy()
 	return nl
 }
 
@@ -933,6 +1037,11 @@ func (l *RegexpLiteral) Copy() Node {
 	}
 	nl := new(RegexpLiteral)
 	*nl = *l
+	nl.BaseNode = l.BaseNode.Copy()
+
+	if l.Value != nil {
+		nl.Value = l.Value.Copy()
+	}
 	return nl
 }
 
@@ -960,6 +1069,12 @@ func (l *DurationLiteral) Copy() Node {
 	}
 	nl := new(DurationLiteral)
 	*nl = *l
+	nl.BaseNode = l.BaseNode.Copy()
+
+	if len(l.Values) > 0 {
+		nl.Values = make([]Duration, len(l.Values))
+		copy(nl.Values, l.Values)
+	}
 	return nl
 }
 
@@ -980,6 +1095,7 @@ func (l *DateTimeLiteral) Copy() Node {
 	}
 	nl := new(DateTimeLiteral)
 	*nl = *l
+	nl.BaseNode = l.BaseNode.Copy()
 	return nl
 }
 
