@@ -380,6 +380,36 @@ import "path/bar"
 			},
 		},
 		{
+			name: "qualified option",
+			raw:  `option alert.state = "Warning"`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:31"),
+				Body: []ast.Statement{
+					&ast.OptionStatement{
+						BaseNode: base("1:1", "1:31"),
+						Assignment: &ast.MemberAssignment{
+							BaseNode: base("1:8", "1:31"),
+							Member: &ast.MemberExpression{
+								BaseNode: base("1:8", "1:19"),
+								Object: &ast.Identifier{
+									BaseNode: base("1:8", "1:13"),
+									Name:     "alert",
+								},
+								Property: &ast.Identifier{
+									BaseNode: base("1:14", "1:19"),
+									Name:     "state",
+								},
+							},
+							Init: &ast.StringLiteral{
+								BaseNode: base("1:22", "1:31"),
+								Value:    "Warning",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "from",
 			raw:  `from()`,
 			want: &ast.File{
