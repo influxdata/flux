@@ -6,6 +6,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/csv"
+	"github.com/influxdata/flux/lang"
+	"github.com/influxdata/flux/querytest"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -16,9 +19,6 @@ import (
 	_ "github.com/influxdata/flux/functions/outputs"         // Import the built-in outputs
 	_ "github.com/influxdata/flux/functions/transformations" // Import the built-in functions
 
-	"github.com/influxdata/flux/csv"
-	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/querytest"
 	"golang.org/x/text/unicode/norm"
 )
 
@@ -31,8 +31,9 @@ var loadTestBuiltin = `
 // loadData is a function that's referenced in all the transformation tests.  
 // it's registered here so that we can register a different loadData function for 
 // each platform/binary.  
-testLoadData = (file) => fromCSV(file:file)
-testingTest = (name, load, infile, outfile, test) => testLoadData(file:infile) |> test()
+testLoadStorage = (csv) => fromCSV(csv:csv)
+testLoadMem = (csv) => fromCSV(csv: csv)
+testingTest = (name, loadIn, loadOut, inData, outData, test) => loadIn(csv:inData) |> test()
 `
 
 func normalizeString(s string) []byte {
@@ -49,11 +50,17 @@ func main() {
 	fnames := make([]string, 0)
 	path := ""
 	var err error
-	if len(os.Args) == 3 {
-		path = os.Args[1]
+	args := os.Args[1:]
+	embed := false
+	if args[0] == "embed" {
+		embed = true
+		args = args[1:]
+	}
+	if len(args) == 2 {
+		path = args[1]
 		fnames = append(fnames, filepath.Join(path, os.Args[2])+".flux")
-	} else if len(os.Args) == 2 {
-		path = os.Args[1]
+	} else if len(args) == 1 {
+		path = args[0]
 		fnames, err = filepath.Glob(filepath.Join(path, "*.flux"))
 		if err != nil {
 			return
@@ -68,6 +75,15 @@ func main() {
 		return
 	}
 
+	if embed {
+		embedCSV(fnames)
+	} else {
+
+		generateOutput(fnames)
+	}
+}
+
+func generateOutput(fnames []string) {
 	for _, fname := range fnames {
 		ext := ".flux"
 		testName := fname[0 : len(fname)-len(ext)]
@@ -112,6 +128,55 @@ func main() {
 		if text == "y\n" {
 			fmt.Printf("writing output file: %s", testName+".out.csv")
 			ioutil.WriteFile(testName+".out.csv", buf.Bytes(), 0644)
+		}
+	}
+}
+
+func embedCSV(fnames []string) {
+
+	for _, fname := range fnames {
+		ext := ".flux"
+		testName := fname[0 : len(fname)-len(ext)]
+		incsv := testName + ".in.csv"
+		indata, err := ioutil.ReadFile(incsv)
+		if err != nil {
+			fmt.Printf("could not open file %s", incsv)
+			return
+		}
+
+		inDataStr := string(normalizeString(string(indata)))
+
+		outcsv := testName + ".out.csv"
+		outdata, err := ioutil.ReadFile(outcsv)
+		if err != nil {
+			fmt.Printf("could not open file %s", outcsv)
+			return
+		}
+
+		outDataStr := string(normalizeString(string(outdata)))
+
+		querytext, err := ioutil.ReadFile(fname)
+		if err != nil {
+			fmt.Printf("error reading query text: %s", err)
+			return
+		}
+
+		querystr := strings.Replace(string(querytext), `"`+incsv+`"`, "inData", -1)
+		querystr = strings.Replace(querystr, `"`+outcsv+`"`, "outData", -1)
+
+		if querystr == string(querytext) {
+			fmt.Printf("file %s does not reference corresponding data files.\n", fname)
+			continue
+		}
+
+		newQueryText := "inData = \n\"\n" + inDataStr + "\n\"\noutData = \n\"" + outDataStr + "\n\"\n\n" + querystr
+		fmt.Println(newQueryText)
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Printf("Embed CSV in %s (y/n)?: ", fname)
+		text, _ := reader.ReadString('\n')
+		if text == "y\n" {
+			fmt.Printf("writing output file: %s\n", testName+".out.csv")
+			ioutil.WriteFile(testName+".flux", []byte(newQueryText), 0644)
 		}
 	}
 }

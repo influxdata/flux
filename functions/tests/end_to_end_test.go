@@ -26,7 +26,8 @@ var loadTestBuiltin = `
 // loadData is a function that's referenced in all the transformation tests.  
 // it's registered here so that we can register a different loadData function for 
 // each platform/binary.  
-testLoadData = (file) => fromCSV(file:file)`
+testLoadStorage = (csv) => fromCSV(csv:csv)
+testLoadMem = (csv) => fromCSV(csv: csv)`
 
 var skipTests = map[string]string{
 	"string_max":                  "error: invalid use of function: *functions.MaxSelector has no implementation for type string (https://github.com/influxdata/platform/issues/224)",
