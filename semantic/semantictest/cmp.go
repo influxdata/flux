@@ -21,6 +21,7 @@ var CmpOptions = []cmp.Option{
 	cmpopts.IgnoreUnexported(semantic.ExpressionStatement{}),
 	cmpopts.IgnoreUnexported(semantic.ReturnStatement{}),
 	cmpopts.IgnoreUnexported(semantic.NativeVariableAssignment{}),
+	cmpopts.IgnoreUnexported(semantic.MemberAssignment{}),
 	cmpopts.IgnoreUnexported(semantic.Extern{}),
 	cmpopts.IgnoreUnexported(semantic.ExternalVariableAssignment{}),
 	cmpopts.IgnoreUnexported(semantic.ArrayExpression{}),

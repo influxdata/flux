@@ -176,11 +176,11 @@ func (s *OptionStatement) UnmarshalJSON(data []byte) error {
 		*s = *(*OptionStatement)(raw.Alias)
 	}
 
-	e, err := unmarshalVariableAssignment(raw.Assignment)
+	a, err := unmarshalAssignment(raw.Assignment)
 	if err != nil {
 		return err
 	}
-	s.Assignment = e
+	s.Assignment = a
 	return nil
 }
 func (s *ExpressionStatement) MarshalJSON() ([]byte, error) {
@@ -243,6 +243,38 @@ func (s *ReturnStatement) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	s.Argument = e
+	return nil
+}
+func (s *MemberAssignment) MarshalJSON() ([]byte, error) {
+	type Alias MemberAssignment
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  s.NodeType(),
+		Alias: (*Alias)(s),
+	}
+	return json.Marshal(raw)
+}
+func (s *MemberAssignment) UnmarshalJSON(data []byte) error {
+	type Alias MemberAssignment
+	raw := struct {
+		*Alias
+		Init json.RawMessage `json:"init"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*s = *(*MemberAssignment)(raw.Alias)
+	}
+
+	init, err := unmarshalExpression(raw.Init)
+	if err != nil {
+		return err
+	}
+	s.Init = init
+
 	return nil
 }
 func (d *NativeVariableAssignment) MarshalJSON() ([]byte, error) {
@@ -940,21 +972,19 @@ func unmarshalPropertyKey(msg json.RawMessage) (PropertyKey, error) {
 	}
 	return k, nil
 }
-func unmarshalVariableAssignment(msg json.RawMessage) (Node, error) {
+func unmarshalAssignment(msg json.RawMessage) (Assignment, error) {
 	if checkNullMsg(msg) {
 		return nil, nil
 	}
-	n, err := unmarshalNode(msg)
+	n, err := UnmarshalNode(msg)
 	if err != nil {
 		return nil, err
 	}
-	switch n.(type) {
-	case *ExternalVariableAssignment,
-		*NativeVariableAssignment:
-		return n, nil
-	default:
-		return nil, fmt.Errorf("node %q is not a variable declaration", n.NodeType())
+	a, ok := n.(Assignment)
+	if !ok {
+		return nil, fmt.Errorf("node %q is not an assignment", n.NodeType())
 	}
+	return a, nil
 }
 func unmarshalNode(msg json.RawMessage) (Node, error) {
 	if checkNullMsg(msg) {
@@ -990,6 +1020,8 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 		node = new(ReturnStatement)
 	case "NativeVariableAssignment":
 		node = new(NativeVariableAssignment)
+	case "MemberAssignment":
+		node = new(MemberAssignment)
 	case "CallExpression":
 		node = new(CallExpression)
 	case "MemberExpression":

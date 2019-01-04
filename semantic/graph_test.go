@@ -355,6 +355,45 @@ func TestNew(t *testing.T) {
 			}}},
 		},
 		{
+			name: "qualified option statement",
+			pkg: &ast.Package{Files: []*ast.File{&ast.File{
+				Body: []ast.Statement{
+					&ast.OptionStatement{
+						Assignment: &ast.MemberAssignment{
+							Member: &ast.MemberExpression{
+								Object: &ast.Identifier{
+									Name: "alert",
+								},
+								Property: &ast.Identifier{
+									Name: "state",
+								},
+							},
+							Init: &ast.StringLiteral{
+								Value: "Warning",
+							},
+						},
+					},
+				}}},
+			},
+			want: &semantic.Package{Files: []*semantic.File{&semantic.File{
+				Body: []semantic.Statement{
+					&semantic.OptionStatement{
+						Assignment: &semantic.MemberAssignment{
+							Member: &semantic.MemberExpression{
+								Object: &semantic.IdentifierExpression{
+									Name: "alert",
+								},
+								Property: "state",
+							},
+							Init: &semantic.StringLiteral{
+								Value: "Warning",
+							},
+						},
+					},
+				},
+			}}},
+		},
+		{
 			name: "function",
 			pkg: &ast.Package{Files: []*ast.File{&ast.File{
 				Body: []ast.Statement{
