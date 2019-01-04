@@ -645,6 +645,44 @@ func TestFromGroupRule(t *testing.T) {
 	}
 }
 
+func TestFromKeysRule(t *testing.T) {
+	tests := []plantest.RuleTestCase{
+		{
+			Name:  "from keys",
+			Rules: []plan.Rule{inputs.FromKeysRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", &inputs.FromProcedureSpec{}),
+					plan.CreatePhysicalNode("keys", &transformations.KeysProcedureSpec{}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", &inputs.FromProcedureSpec{
+						LimitSet:    true,
+						PointsLimit: -1,
+					}),
+					plan.CreatePhysicalNode("keys", &transformations.KeysProcedureSpec{}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			plantest.RuleTestHelper(t, &tc)
+		})
+	}
+}
+
 func TestFromRangeValidation(t *testing.T) {
 	testSpec := plantest.PlanSpec{
 		//       3
