@@ -317,9 +317,11 @@ func (itrp *Interpreter) doStatement(stmt semantic.Statement, scope *Scope) (val
 	scope.SetReturn(values.InvalidValue)
 	switch s := stmt.(type) {
 	case *semantic.OptionStatement:
-		return itrp.doOptionStatement(s.Assignment.(*semantic.NativeVariableAssignment), scope)
+		return itrp.doOptionStatement(s, scope)
 	case *semantic.NativeVariableAssignment:
 		return itrp.doVariableAssignment(s, scope)
+	case *semantic.MemberAssignment:
+		return itrp.doMemberAssignment(s, scope)
 	case *semantic.ExpressionStatement:
 		v, err := itrp.doExpression(s.Expression, scope)
 		if err != nil {
@@ -339,12 +341,15 @@ func (itrp *Interpreter) doStatement(stmt semantic.Statement, scope *Scope) (val
 	return nil, nil
 }
 
-func (itrp *Interpreter) doOptionStatement(declaration *semantic.NativeVariableAssignment, scope *Scope) (values.Value, error) {
-	value, err := itrp.doExpression(declaration.Init, scope)
+func (itrp *Interpreter) doOptionStatement(s *semantic.OptionStatement, scope *Scope) (values.Value, error) {
+	value, err := itrp.doAssignment(s.Assignment, scope)
 	if err != nil {
 		return nil, err
 	}
-	itrp.options.Set(declaration.Identifier.Name, value)
+	// TODO(jlapacik): Remove this hack when there is no more separate options scope
+	if vd, ok := s.Assignment.(*semantic.NativeVariableAssignment); ok {
+		itrp.options.Set(vd.Identifier.Name, value)
+	}
 	return value, nil
 }
 
@@ -361,6 +366,30 @@ func (itrp *Interpreter) doVariableAssignment(declaration *semantic.NativeVariab
 	}
 	scope.Set(declaration.Identifier.Name, value)
 	return value, nil
+}
+
+func (itrp *Interpreter) doMemberAssignment(a *semantic.MemberAssignment, scope *Scope) (values.Value, error) {
+	object, err := itrp.doExpression(a.Member.Object, scope)
+	if err != nil {
+		return nil, err
+	}
+	init, err := itrp.doExpression(a.Init, scope)
+	if err != nil {
+		return nil, err
+	}
+	object.Object().Set(a.Member.Property, init)
+	return object, nil
+}
+
+func (itrp *Interpreter) doAssignment(a semantic.Assignment, scope *Scope) (values.Value, error) {
+	switch a := a.(type) {
+	case *semantic.NativeVariableAssignment:
+		return itrp.doVariableAssignment(a, scope)
+	case *semantic.MemberAssignment:
+		return itrp.doMemberAssignment(a, scope)
+	default:
+		return nil, fmt.Errorf("unsupported assignment %T", a)
+	}
 }
 
 func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (values.Value, error) {
@@ -1019,7 +1048,7 @@ func (f function) resolveIdentifiers(n semantic.Node) (semantic.Node, error) {
 		if err != nil {
 			return nil, err
 		}
-		n.Assignment = node
+		n.Assignment = node.(semantic.Assignment)
 	case *semantic.ExpressionStatement:
 		node, err := f.resolveIdentifiers(n.Expression)
 		if err != nil {
