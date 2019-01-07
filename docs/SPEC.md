@@ -2955,6 +2955,7 @@ Columns support the following annotations:
 * datatype - a description of the type of data contained within the column.
 * group - a boolean flag indicating if the column is part of the table's group key.
 * default - a default value to be used for rows whose string value is the empty string.
+* null - a value indicating that data is missing.
 
 ##### Multiple tables
 
@@ -3001,6 +3002,12 @@ Possible values are `true` or `false`.
 The `default` annotation specifies a default value, if it exists, for each column.
 
 In order to fully encode a table with its group key the `datatype`, `group` and `default` annotations must be used.
+
+The `null` annotation specifies the string value that indicates a missing value.
+When the `null` annotation is not specified the empty string value is the `null` value for the column.
+It is not possible to encode/decode a non-null string value that is the same as the `null` annotation value for columns of type string.
+
+When the `default` annotation value of a column is the same as the `null` annotation value of a column, it is interpreted as the column's default value is null.
 
 ##### Errors
 
