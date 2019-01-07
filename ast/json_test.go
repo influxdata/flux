@@ -23,7 +23,7 @@ func TestJSONMarshal(t *testing.T) {
 			node: &ast.Package{
 				Package: "foo",
 			},
-			want: `{"type":"Package","package":"foo","files":null}`,
+			want: `{"type":"Package","path":"","package":"foo","files":null}`,
 		},
 		{
 			name: "simple file",

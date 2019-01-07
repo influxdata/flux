@@ -61,6 +61,7 @@ func (f *formatter) setIndent(i int) {
 func (f *formatter) writeComment(comment string) {
 	f.writeString("// ")
 	f.writeString(comment)
+	f.writeRune('\n')
 }
 
 func (f *formatter) formatPackage(n *Package) {
@@ -149,6 +150,7 @@ func (f *formatter) formatBlock(n *Block) {
 func (f *formatter) formatPackageClause(n *PackageClause) {
 	f.writeString("package ")
 	f.formatNode(n.Name)
+	f.writeRune('\n')
 }
 
 func (f *formatter) formatImportDeclaration(n *ImportDeclaration) {

@@ -3605,7 +3605,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 																BaseNode: ast.BaseNode{
 																	Loc: loc("1:55", "1:56"),
 																	Errors: []ast.Error{
-																		{Msg: "invalid statement: )"},
+																		{Msg: "invalid statement @1:55-1:56: )"},
 																	},
 																},
 																Text: ")",
@@ -3706,7 +3706,7 @@ string"
 						BaseNode: ast.BaseNode{
 							Loc: loc("1:1", "1:2"),
 							Errors: []ast.Error{
-								{Msg: "invalid statement: @"},
+								{Msg: "invalid statement @1:1-1:2: @"},
 							},
 						},
 						Text: "@",

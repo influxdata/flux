@@ -23,6 +23,20 @@ type packageObject struct {
 	sideEffects []values.Value
 }
 
+func (p *packageObject) Copy() Package {
+	c := &packageObject{
+		name:  p.name,
+		scope: p.scope.LocalCopy(),
+	}
+	c.private = make(map[string]bool, len(p.private))
+	for k, v := range p.private {
+		c.private[k] = v
+	}
+	c.sideEffects = make([]values.Value, len(p.sideEffects))
+	copy(c.sideEffects, p.sideEffects)
+	return c
+}
+
 func (p *packageObject) Name() string {
 	return p.name
 }
@@ -290,7 +304,7 @@ func (itrp *Interpreter) doPackageClause(pkg *semantic.PackageClause) error {
 		itrp.pkg.name = packageName
 	}
 	if itrp.pkg.name != packageName {
-		return fmt.Errorf("unexpected package statement %s", packageName)
+		return fmt.Errorf("package name mismatch %q != %q", itrp.pkg.name, packageName)
 	}
 	return nil
 }
@@ -518,10 +532,20 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope *Scope) (v
 			return nil, fmt.Errorf("invalid logical operator %v", e.Operator)
 		}
 	case *semantic.FunctionExpression:
+		// Capture type information
+		typ, ok := itrp.types.LookupType(e)
+		if !ok {
+			typ = semantic.Invalid
+		}
+		polyType, ok := itrp.types.LookupPolyType(e)
+		if !ok {
+			polyType = semantic.Invalid
+		}
 		return function{
-			e:     e,
-			scope: scope,
-			itrp:  itrp,
+			e:        e,
+			scope:    scope,
+			typ:      typ,
+			polyType: polyType,
 		}, nil
 	default:
 		return nil, fmt.Errorf("unsupported expression %T", expr)
@@ -827,6 +851,18 @@ func (s *Scope) Copy() *Scope {
 	return c
 }
 
+// LocalCopy returns a copy of the scope without its parents.
+func (s *Scope) LocalCopy() *Scope {
+	c := &Scope{
+		values: make(map[string]values.Value, len(s.values)),
+	}
+	// copy values
+	for k, v := range s.values {
+		c.values[k] = v
+	}
+	return c
+}
+
 func (s *Scope) Range(f func(k string, v values.Value)) {
 	for k, v := range s.values {
 		f(k, v)
@@ -856,22 +892,17 @@ type function struct {
 	e     *semantic.FunctionExpression
 	scope *Scope
 
+	typ      semantic.Type
+	polyType semantic.PolyType
+
 	itrp *Interpreter
 }
 
 func (f function) Type() semantic.Type {
-	typ, ok := f.itrp.types.LookupType(f.e)
-	if !ok {
-		return semantic.Invalid
-	}
-	return typ
+	return f.typ
 }
 func (f function) PolyType() semantic.PolyType {
-	polyType, ok := f.itrp.types.LookupPolyType(f.e)
-	if !ok {
-		return semantic.Invalid
-	}
-	return polyType
+	return f.polyType
 }
 
 func (f function) Str() string {
