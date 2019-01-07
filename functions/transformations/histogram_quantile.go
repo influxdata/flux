@@ -198,7 +198,7 @@ func (t histogramQuantileTransformation) Process(id execute.DatasetID, tbl flux.
 	// Read buckets
 	var cdf []bucket
 	sorted := true //track if the cdf was naturally sorted
-	err = tbl.Do(func(cr flux.ColReader) error {
+	err = tbl.DoArrow(func(cr flux.ArrowColReader) error {
 		offset := len(cdf)
 		// Grow cdf by number of rows
 		l := offset + cr.Len()
@@ -214,8 +214,8 @@ func (t histogramQuantileTransformation) Process(id execute.DatasetID, tbl flux.
 			curr := i + offset
 			prev := curr - 1
 			cdf[curr] = bucket{
-				count:      cr.Floats(countIdx)[i],
-				upperBound: cr.Floats(upperBoundIdx)[i],
+				count:      cr.Floats(countIdx).Value(i),
+				upperBound: cr.Floats(upperBoundIdx).Value(i),
 			}
 			if prev >= 0 {
 				sorted = sorted && cdf[prev].upperBound <= cdf[curr].upperBound

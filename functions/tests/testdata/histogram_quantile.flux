@@ -2,7 +2,7 @@ inData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double,double
 #group,false,false,true,true,true,true,false,false
 #default,_result,,,,,,,
-,result,table,_start,_stop,_time,_field,_value,le
+,result,table,_start,_stop,_time,_field,count,upperBound
 ,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:00Z,2018-05-22T19:53:00Z,x_duration_seconds,1,0.1
 ,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:00Z,2018-05-22T19:53:00Z,x_duration_seconds,2,0.2
 ,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:00Z,2018-05-22T19:53:00Z,x_duration_seconds,2,0.3
@@ -25,7 +25,7 @@ outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double
 #group,false,false,true,true,true,true,false
 #default,_result,,,,,,
-,result,table,_start,_stop,_time,_field,_value
+,result,table,_start,_stop,_time,_field,quant
 ,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:00Z,2018-05-22T19:53:00Z,x_duration_seconds,0.8500000000000001
 ,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:00Z,2018-05-22T19:53:00Z,y_duration_seconds,0.91
 "
@@ -33,7 +33,10 @@ outData = "
 t_histogram_quantile = (table=<-) =>
   table
     |> range(start: 2018-05-22T19:53:00Z)
-    |> histogramQuantile(quantile:0.90,upperBoundColumn:"le")
+    |> histogramQuantile(quantile:0.90,
+           upperBoundColumn:"upperBound",
+           countColumn:"count",
+           valueColumn:"quant")
 
 testingTest(name: "histogram_quantile",
             input: testLoadStorage(csv: inData),
