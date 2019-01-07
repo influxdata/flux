@@ -700,6 +700,7 @@ type TableBuilder interface {
 	SetString(i, j int, value string) error
 	SetTime(i, j int, value Time) error
 	SetValue(i, j int, value values.Value) error
+	SetNil(i, j int) error
 
 	// Append will add a single value to the end of a column.  Will set the number of
 	// rows in the table to the size of the new column. It's the caller's job to make sure
@@ -711,6 +712,7 @@ type TableBuilder interface {
 	AppendString(j int, value string) error
 	AppendTime(j int, value Time) error
 	AppendValue(j int, value values.Value) error
+	AppendNil(j int) error
 
 	// AppendBools and similar functions will append multiple values to column j.  As above,
 	// it will set the numer of rows in the table to the size of the new column.  It's the
@@ -721,6 +723,7 @@ type TableBuilder interface {
 	AppendFloats(j int, values []float64) error
 	AppendStrings(j int, values []string) error
 	AppendTimes(j int, values []Time) error
+
 	// TODO(adam): determine if there's a useful API for AppendValues
 	// AppendValues(j int, values []values.Value)
 
@@ -793,6 +796,7 @@ func (b *ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 		col = &boolColumnBuilder{
 			ColMeta: c,
 			alloc:   b.alloc,
+			nils:    make(map[int]bool),
 		}
 		b.colMeta = append(b.colMeta, c)
 		b.cols = append(b.cols, col)
@@ -805,6 +809,7 @@ func (b *ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 		col = &intColumnBuilder{
 			ColMeta: c,
 			alloc:   b.alloc,
+			nils:    make(map[int]bool),
 		}
 		b.colMeta = append(b.colMeta, c)
 		b.cols = append(b.cols, col)
@@ -817,6 +822,7 @@ func (b *ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 		col = &uintColumnBuilder{
 			ColMeta: c,
 			alloc:   b.alloc,
+			nils:    make(map[int]bool),
 		}
 		b.colMeta = append(b.colMeta, c)
 		b.cols = append(b.cols, col)
@@ -829,6 +835,7 @@ func (b *ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 		col = &floatColumnBuilder{
 			ColMeta: c,
 			alloc:   b.alloc,
+			nils:    make(map[int]bool),
 		}
 		b.colMeta = append(b.colMeta, c)
 		b.cols = append(b.cols, col)
@@ -841,6 +848,7 @@ func (b *ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 		col = &stringColumnBuilder{
 			ColMeta: c,
 			alloc:   b.alloc,
+			nils:    make(map[int]bool),
 		}
 		b.colMeta = append(b.colMeta, c)
 		b.cols = append(b.cols, col)
@@ -853,6 +861,7 @@ func (b *ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 		col = &timeColumnBuilder{
 			ColMeta: c,
 			alloc:   b.alloc,
+			nils:    make(map[int]bool),
 		}
 		b.colMeta = append(b.colMeta, c)
 		b.cols = append(b.cols, col)
@@ -864,6 +873,7 @@ func (b *ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 	default:
 		PanicUnknownType(c.Type)
 	}
+
 	return newIdx, nil
 }
 
@@ -949,6 +959,7 @@ func (b *ColListTableBuilder) SetBool(i int, j int, value bool) error {
 		return err
 	}
 	b.cols[j].(*boolColumnBuilder).data[i] = value
+	b.cols[j].SetNil(i, false)
 	return nil
 }
 func (b *ColListTableBuilder) AppendBool(j int, value bool) error {
@@ -984,6 +995,7 @@ func (b *ColListTableBuilder) SetInt(i int, j int, value int64) error {
 		return err
 	}
 	b.cols[j].(*intColumnBuilder).data[i] = value
+	b.cols[j].SetNil(i, false)
 	return nil
 }
 func (b *ColListTableBuilder) AppendInt(j int, value int64) error {
@@ -1019,6 +1031,7 @@ func (b *ColListTableBuilder) SetUInt(i int, j int, value uint64) error {
 		return err
 	}
 	b.cols[j].(*uintColumnBuilder).data[i] = value
+	b.cols[j].SetNil(i, false)
 	return nil
 }
 func (b *ColListTableBuilder) AppendUInt(j int, value uint64) error {
@@ -1054,6 +1067,7 @@ func (b *ColListTableBuilder) SetFloat(i int, j int, value float64) error {
 		return err
 	}
 	b.cols[j].(*floatColumnBuilder).data[i] = value
+	b.cols[j].SetNil(i, false)
 	return nil
 }
 func (b *ColListTableBuilder) AppendFloat(j int, value float64) error {
@@ -1089,6 +1103,7 @@ func (b *ColListTableBuilder) SetString(i int, j int, value string) error {
 		return err
 	}
 	b.cols[j].(*stringColumnBuilder).data[i] = value
+	b.cols[j].SetNil(i, false)
 	return nil
 }
 func (b *ColListTableBuilder) AppendString(j int, value string) error {
@@ -1124,6 +1139,7 @@ func (b *ColListTableBuilder) SetTime(i int, j int, value Time) error {
 		return err
 	}
 	b.cols[j].(*timeColumnBuilder).data[i] = value
+	b.cols[j].SetNil(i, false)
 	return nil
 }
 func (b *ColListTableBuilder) AppendTime(j int, value Time) error {
@@ -1192,6 +1208,55 @@ func (b *ColListTableBuilder) AppendValue(j int, v values.Value) error {
 	default:
 		panic(fmt.Errorf("unexpected value type %v", v.Type()))
 	}
+}
+
+func (b *ColListTableBuilder) SetNil(i, j int) error {
+	if j < 0 || j > len(b.cols) {
+		return fmt.Errorf("set nil: column does not exist, index out of bounds: %d", j)
+	}
+	if i < 0 || i > b.cols[j].Len() {
+		return fmt.Errorf("set nil: row  does not exist, index out of bounds: %d", i)
+	}
+
+	b.cols[j].SetNil(i, true)
+	return nil
+}
+
+func (b *ColListTableBuilder) AppendNil(j int) error {
+	if j < 0 || j > len(b.cols) {
+		return fmt.Errorf("set nil: column does not exist, index out of bounds: %d", j)
+	}
+	typ := b.colMeta[j].Type
+	switch typ {
+	case flux.TBool:
+		if err := b.AppendBool(j, false); err != nil {
+			return err
+		}
+	case flux.TInt:
+		if err := b.AppendInt(j, 0); err != nil {
+			return err
+		}
+	case flux.TUInt:
+		if err := b.AppendUInt(j, 0); err != nil {
+			return err
+		}
+	case flux.TFloat:
+		if err := b.AppendFloat(j, 0.0); err != nil {
+			return err
+		}
+	case flux.TString:
+		if err := b.AppendString(j, ""); err != nil {
+			return err
+		}
+	case flux.TTime:
+		if err := b.AppendTime(j, 0); err != nil {
+			return err
+		}
+	default:
+		panic(fmt.Errorf("unexpected value type %v", typ))
+	}
+
+	return b.SetNil(b.nrows-1, j)
 }
 
 func (b *ColListTableBuilder) checkCol(j int, typ flux.ColType) error {
@@ -1495,6 +1560,7 @@ type columnBuilder interface {
 	Clear()
 	Copy() column
 	Len() int
+	SetNil(i int, isNil bool)
 	Equal(i, j int) bool
 	Less(i, j int) bool
 	Swap(i, j int)
@@ -1526,7 +1592,16 @@ func (c *boolColumn) Copy() column {
 type boolColumnBuilder struct {
 	flux.ColMeta
 	data  []bool
+	nils  map[int]bool
 	alloc *Allocator
+}
+
+func (c *boolColumnBuilder) SetNil(i int, isNil bool) {
+	if isNil {
+		c.nils[i] = isNil
+	} else {
+		delete(c.nils, i)
+	}
 }
 
 func (c *boolColumnBuilder) Meta() flux.ColMeta {
@@ -1587,7 +1662,16 @@ func (c *intColumn) Copy() column {
 type intColumnBuilder struct {
 	flux.ColMeta
 	data  []int64
+	nils  map[int]bool
 	alloc *Allocator
+}
+
+func (c *intColumnBuilder) SetNil(i int, isNil bool) {
+	if isNil {
+		c.nils[i] = isNil
+	} else {
+		delete(c.nils, i)
+	}
 }
 
 func (c *intColumnBuilder) Meta() flux.ColMeta {
@@ -1645,7 +1729,16 @@ func (c *uintColumn) Copy() column {
 type uintColumnBuilder struct {
 	flux.ColMeta
 	data  []uint64
+	nils  map[int]bool
 	alloc *Allocator
+}
+
+func (c *uintColumnBuilder) SetNil(i int, isNil bool) {
+	if isNil {
+		c.nils[i] = isNil
+	} else {
+		delete(c.nils, i)
+	}
 }
 
 func (c *uintColumnBuilder) Meta() flux.ColMeta {
@@ -1703,7 +1796,16 @@ func (c *floatColumn) Copy() column {
 type floatColumnBuilder struct {
 	flux.ColMeta
 	data  []float64
+	nils  map[int]bool
 	alloc *Allocator
+}
+
+func (c *floatColumnBuilder) SetNil(i int, isNil bool) {
+	if isNil {
+		c.nils[i] = isNil
+	} else {
+		delete(c.nils, i)
+	}
 }
 
 func (c *floatColumnBuilder) Meta() flux.ColMeta {
@@ -1761,7 +1863,16 @@ func (c *stringColumn) Copy() column {
 type stringColumnBuilder struct {
 	flux.ColMeta
 	data  []string
+	nils  map[int]bool
 	alloc *Allocator
+}
+
+func (c *stringColumnBuilder) SetNil(i int, isNil bool) {
+	if isNil {
+		c.nils[i] = isNil
+	} else {
+		delete(c.nils, i)
+	}
 }
 
 func (c *stringColumnBuilder) Meta() flux.ColMeta {
@@ -1819,7 +1930,16 @@ func (c *timeColumn) Copy() column {
 type timeColumnBuilder struct {
 	flux.ColMeta
 	data  []Time
+	nils  map[int]bool
 	alloc *Allocator
+}
+
+func (c *timeColumnBuilder) SetNil(i int, isNil bool) {
+	if isNil {
+		c.nils[i] = isNil
+	} else {
+		delete(c.nils, i)
+	}
 }
 
 func (c *timeColumnBuilder) Meta() flux.ColMeta {
