@@ -74,6 +74,7 @@ type parser struct {
 	tok      token.Token
 	lit      string
 	buffered bool
+	errs     []ast.Error
 }
 
 func (p *parser) parseFile(fname string) *ast.File {
@@ -108,12 +109,10 @@ func (p *parser) parsePackageClause() *ast.PackageClause {
 		p.consume()
 		ident := p.parseIdentifier()
 		return &ast.PackageClause{
-			BaseNode: ast.BaseNode{
-				Loc: p.sourceLocation(
-					p.s.File().Position(pos),
-					locEnd(ident),
-				),
-			},
+			BaseNode: p.baseNode(p.sourceLocation(
+				p.s.File().Position(pos),
+				locEnd(ident),
+			)),
 			Name: ident,
 		}
 	}
@@ -136,12 +135,10 @@ func (p *parser) parseImportDeclaration() *ast.ImportDeclaration {
 	}
 	path := p.parseStringLiteral()
 	return &ast.ImportDeclaration{
-		BaseNode: ast.BaseNode{
-			Loc: p.sourceLocation(
-				p.s.File().Position(start),
-				locEnd(path),
-			),
-		},
+		BaseNode: p.baseNode(p.sourceLocation(
+			p.s.File().Position(start),
+			locEnd(path),
+		)),
 		As:   as,
 		Path: path,
 	}
@@ -191,22 +188,18 @@ func (p *parser) parseOptionStatementSuffix(pos token.Pos) ast.Statement {
 		decl := p.parseVariableAssignment()
 		return &ast.OptionStatement{
 			Assignment: decl,
-			BaseNode: ast.BaseNode{
-				Loc: p.sourceLocation(
-					p.s.File().Position(pos),
-					locEnd(decl),
-				),
-			},
+			BaseNode: p.baseNode(p.sourceLocation(
+				p.s.File().Position(pos),
+				locEnd(decl),
+			)),
 		}
 	case token.ASSIGN:
 		expr := p.parseAssignStatement()
 		return &ast.VariableAssignment{
-			BaseNode: ast.BaseNode{
-				Loc: p.sourceLocation(
-					p.s.File().Position(pos),
-					locEnd(expr),
-				),
-			},
+			BaseNode: p.baseNode(p.sourceLocation(
+				p.s.File().Position(pos),
+				locEnd(expr),
+			)),
 			ID: &ast.Identifier{
 				Name:     "option",
 				BaseNode: p.posRange(pos, 6),
@@ -222,9 +215,7 @@ func (p *parser) parseOptionStatementSuffix(pos token.Pos) ast.Statement {
 		loc := expr.Location()
 		return &ast.ExpressionStatement{
 			Expression: expr,
-			BaseNode: ast.BaseNode{
-				Loc: &loc,
-			},
+			BaseNode:   p.baseNode(&loc),
 		}
 	}
 }
@@ -235,9 +226,10 @@ func (p *parser) parseVariableAssignment() *ast.VariableAssignment {
 	return &ast.VariableAssignment{
 		ID:   id,
 		Init: expr,
-		BaseNode: ast.BaseNode{
-			Loc: p.sourceLocation(locStart(id), locEnd(expr)),
-		},
+		BaseNode: p.baseNode(p.sourceLocation(
+			locStart(id),
+			locEnd(expr),
+		)),
 	}
 }
 
@@ -247,9 +239,10 @@ func (p *parser) parseIdentStatement() ast.Statement {
 	case token.ASSIGN:
 		expr := p.parseAssignStatement()
 		return &ast.VariableAssignment{
-			BaseNode: ast.BaseNode{
-				Loc: p.sourceLocation(locStart(id), locEnd(expr)),
-			},
+			BaseNode: p.baseNode(p.sourceLocation(
+				locStart(id),
+				locEnd(expr),
+			)),
 			ID:   id,
 			Init: expr,
 		}
@@ -258,9 +251,7 @@ func (p *parser) parseIdentStatement() ast.Statement {
 		loc := expr.Location()
 		return &ast.ExpressionStatement{
 			Expression: expr,
-			BaseNode: ast.BaseNode{
-				Loc: &loc,
-			},
+			BaseNode:   p.baseNode(&loc),
 		}
 	}
 }
@@ -275,12 +266,10 @@ func (p *parser) parseReturnStatement() *ast.ReturnStatement {
 	expr := p.parseExpression()
 	return &ast.ReturnStatement{
 		Argument: expr,
-		BaseNode: ast.BaseNode{
-			Loc: p.sourceLocation(
-				p.s.File().Position(pos),
-				locEnd(expr),
-			),
-		},
+		BaseNode: p.baseNode(p.sourceLocation(
+			p.s.File().Position(pos),
+			locEnd(expr),
+		)),
 	}
 }
 
@@ -289,9 +278,7 @@ func (p *parser) parseExpressionStatement() *ast.ExpressionStatement {
 	loc := expr.Location()
 	return &ast.ExpressionStatement{
 		Expression: expr,
-		BaseNode: ast.BaseNode{
-			Loc: &loc,
-		},
+		BaseNode:   p.baseNode(&loc),
 	}
 }
 
@@ -356,9 +343,10 @@ func (p *parser) parseLogicalExpressionSuffix(expr *ast.Expression) func() bool 
 			Operator: op,
 			Left:     *expr,
 			Right:    rhs,
-			BaseNode: ast.BaseNode{
-				Loc: p.sourceLocation(locStart(*expr), locEnd(rhs)),
-			},
+			BaseNode: p.baseNode(p.sourceLocation(
+				locStart(*expr),
+				locEnd(rhs),
+			)),
 		}
 		return true
 	}
@@ -384,12 +372,10 @@ func (p *parser) parseUnaryLogicalExpression() ast.Expression {
 		return &ast.UnaryExpression{
 			Operator: op,
 			Argument: expr,
-			BaseNode: ast.BaseNode{
-				Loc: p.sourceLocation(
-					p.s.File().Position(pos),
-					locEnd(expr),
-				),
-			},
+			BaseNode: p.baseNode(p.sourceLocation(
+				p.s.File().Position(pos),
+				locEnd(expr),
+			)),
 		}
 	}
 	return p.parseComparisonExpression()
@@ -422,9 +408,10 @@ func (p *parser) parseComparisonExpressionSuffix(expr *ast.Expression) func() bo
 			Operator: op,
 			Left:     *expr,
 			Right:    rhs,
-			BaseNode: ast.BaseNode{
-				Loc: p.sourceLocation(locStart(*expr), locEnd(rhs)),
-			},
+			BaseNode: p.baseNode(p.sourceLocation(
+				locStart(*expr),
+				locEnd(rhs),
+			)),
 		}
 		return true
 	}
@@ -478,9 +465,10 @@ func (p *parser) parseMultiplicativeExpressionSuffix(expr *ast.Expression) func(
 			Operator: op,
 			Left:     *expr,
 			Right:    rhs,
-			BaseNode: ast.BaseNode{
-				Loc: p.sourceLocation(locStart(*expr), locEnd(rhs)),
-			},
+			BaseNode: p.baseNode(p.sourceLocation(
+				locStart(*expr),
+				locEnd(rhs),
+			)),
 		}
 		return true
 	}
@@ -516,9 +504,10 @@ func (p *parser) parseAdditiveExpressionSuffix(expr *ast.Expression) func() bool
 			Operator: op,
 			Left:     *expr,
 			Right:    rhs,
-			BaseNode: ast.BaseNode{
-				Loc: p.sourceLocation(locStart(*expr), locEnd(rhs)),
-			},
+			BaseNode: p.baseNode(p.sourceLocation(
+				locStart(*expr),
+				locEnd(rhs),
+			)),
 		}
 		return true
 	}
@@ -554,9 +543,10 @@ func (p *parser) parsePipeExpressionSuffix(expr *ast.Expression) func() bool {
 		*expr = &ast.PipeExpression{
 			Argument: *expr,
 			Call:     call,
-			BaseNode: ast.BaseNode{
-				Loc: p.sourceLocation(locStart(*expr), locEnd(rhs)),
-			},
+			BaseNode: p.baseNode(p.sourceLocation(
+				locStart(*expr),
+				locEnd(rhs),
+			)),
 		}
 		return true
 	}
@@ -577,12 +567,10 @@ func (p *parser) parseUnaryExpression() ast.Expression {
 		return &ast.UnaryExpression{
 			Operator: op,
 			Argument: expr,
-			BaseNode: ast.BaseNode{
-				Loc: p.sourceLocation(
-					p.s.File().Position(pos),
-					locEnd(expr),
-				),
-			},
+			BaseNode: p.baseNode(p.sourceLocation(
+				p.s.File().Position(pos),
+				locEnd(expr),
+			)),
 		}
 	}
 	return p.parsePostfixExpression()
@@ -637,9 +625,10 @@ func (p *parser) parseDotExpression(expr ast.Expression) ast.Expression {
 	return &ast.MemberExpression{
 		Object:   expr,
 		Property: ident,
-		BaseNode: ast.BaseNode{
-			Loc: p.sourceLocation(locStart(expr), locEnd(ident)),
-		},
+		BaseNode: p.baseNode(p.sourceLocation(
+			locStart(expr),
+			locEnd(ident),
+		)),
 	}
 }
 
@@ -649,23 +638,19 @@ func (p *parser) parseCallExpression(callee ast.Expression) ast.Expression {
 	end, rparen := p.expect(token.RPAREN)
 	expr := &ast.CallExpression{
 		Callee: callee,
-		BaseNode: ast.BaseNode{
-			Loc: p.sourceLocation(
-				locStart(callee),
-				p.s.File().Position(end+token.Pos(len(rparen))),
-			),
-		},
+		BaseNode: p.baseNode(p.sourceLocation(
+			locStart(callee),
+			p.s.File().Position(end+token.Pos(len(rparen))),
+		)),
 	}
 	if len(params) > 0 {
 		expr.Arguments = []ast.Expression{
 			&ast.ObjectExpression{
 				Properties: params,
-				BaseNode: ast.BaseNode{
-					Loc: p.sourceLocation(
-						locStart(params[0]),
-						locEnd(params[len(params)-1]),
-					),
-				},
+				BaseNode: p.baseNode(p.sourceLocation(
+					locStart(params[0]),
+					locEnd(params[len(params)-1]),
+				)),
 			},
 		}
 	}
@@ -680,23 +665,19 @@ func (p *parser) parseIndexExpression(callee ast.Expression) ast.Expression {
 		return &ast.MemberExpression{
 			Object:   callee,
 			Property: lit,
-			BaseNode: ast.BaseNode{
-				Loc: p.sourceLocation(
-					locStart(callee),
-					p.s.File().Position(end+token.Pos(len(rbrack))),
-				),
-			},
+			BaseNode: p.baseNode(p.sourceLocation(
+				locStart(callee),
+				p.s.File().Position(end+token.Pos(len(rbrack))),
+			)),
 		}
 	}
 	return &ast.IndexExpression{
 		Array: callee,
 		Index: expr,
-		BaseNode: ast.BaseNode{
-			Loc: p.sourceLocation(
-				locStart(callee),
-				p.s.File().Position(end+token.Pos(len(rbrack))),
-			),
-		},
+		BaseNode: p.baseNode(p.sourceLocation(
+			locStart(callee),
+			p.s.File().Position(end+token.Pos(len(rbrack))),
+		)),
 	}
 }
 
@@ -849,10 +830,8 @@ func (p *parser) parseParenIdentExpression(lparen token.Pos, key *ast.Identifier
 		if _, tok, _ := p.peek(); tok == token.ARROW {
 			loc := key.Location()
 			return p.parseFunctionExpression(lparen, []*ast.Property{{
-				Key: key,
-				BaseNode: ast.BaseNode{
-					Loc: &loc,
-				},
+				Key:      key,
+				BaseNode: p.baseNode(&loc),
 			}})
 		}
 		return key
@@ -862,9 +841,10 @@ func (p *parser) parseParenIdentExpression(lparen token.Pos, key *ast.Identifier
 		params := []*ast.Property{{
 			Key:   key,
 			Value: value,
-			BaseNode: ast.BaseNode{
-				Loc: p.sourceLocation(locStart(key), locEnd(value)),
-			},
+			BaseNode: p.baseNode(p.sourceLocation(
+				locStart(key),
+				locEnd(value),
+			)),
 		}}
 		if _, tok, _ := p.peek(); tok == token.COMMA {
 			p.consume()
@@ -876,10 +856,8 @@ func (p *parser) parseParenIdentExpression(lparen token.Pos, key *ast.Identifier
 		p.consume()
 		loc := key.Location()
 		params := []*ast.Property{{
-			Key: key,
-			BaseNode: ast.BaseNode{
-				Loc: &loc,
-			},
+			Key:      key,
+			BaseNode: p.baseNode(&loc),
 		}}
 		params = append(params, p.parseParameterList()...)
 		p.expect(token.RPAREN)
@@ -919,12 +897,10 @@ func (p *parser) parseStringProperty() *ast.Property {
 	return &ast.Property{
 		Key:   key,
 		Value: val,
-		BaseNode: ast.BaseNode{
-			Loc: p.sourceLocation(
-				locStart(key),
-				locEnd(val),
-			),
-		},
+		BaseNode: p.baseNode(p.sourceLocation(
+			locStart(key),
+			locEnd(val),
+		)),
 	}
 }
 
@@ -932,10 +908,8 @@ func (p *parser) parseIdentProperty() *ast.Property {
 	key := p.parseIdentifier()
 	loc := key.Location()
 	property := &ast.Property{
-		Key: key,
-		BaseNode: ast.BaseNode{
-			Loc: &loc,
-		},
+		Key:      key,
+		BaseNode: p.baseNode(&loc),
 	}
 	if _, tok, _ := p.peek(); tok == token.COLON {
 		p.consume()
@@ -967,10 +941,8 @@ func (p *parser) parseParameter() *ast.Property {
 	key := p.parseIdentifier()
 	loc := key.Location()
 	param := &ast.Property{
-		Key: key,
-		BaseNode: ast.BaseNode{
-			Loc: &loc,
-		},
+		Key:      key,
+		BaseNode: p.baseNode(&loc),
 	}
 	if _, tok, _ := p.peek(); tok == token.ASSIGN {
 		p.consume()
@@ -1001,10 +973,10 @@ func (p *parser) parseFunctionBodyExpression(lparen token.Pos, params []*ast.Pro
 			}
 		}(),
 	}
-	fn.Loc = p.sourceLocation(
+	fn.BaseNode = p.baseNode(p.sourceLocation(
 		p.s.File().Position(lparen),
 		locEnd(fn.Body),
-	)
+	))
 	return fn
 }
 
@@ -1065,13 +1037,11 @@ func (p *parser) repeat(fn func() bool) {
 func (p *parser) position(start, end token.Pos) ast.BaseNode {
 	soffset := int(start) - p.s.File().Base()
 	eoffset := int(end) - p.s.File().Base()
-	return ast.BaseNode{
-		Loc: &ast.SourceLocation{
-			Start:  p.s.File().Position(start),
-			End:    p.s.File().Position(end),
-			Source: string(p.src[soffset:eoffset]),
-		},
-	}
+	return p.baseNode(&ast.SourceLocation{
+		Start:  p.s.File().Position(start),
+		End:    p.s.File().Position(end),
+		Source: string(p.src[soffset:eoffset]),
+	})
 }
 
 // posRange will posRange the position cursor to the end of the given
@@ -1096,6 +1066,17 @@ func (p *parser) sourceLocation(start, end ast.Position) *ast.SourceLocation {
 		End:    end,
 		Source: string(p.src[soffset:eoffset]),
 	}
+}
+
+func (p *parser) baseNode(loc *ast.SourceLocation) ast.BaseNode {
+	bnode := ast.BaseNode{
+		Errors: p.errs,
+	}
+	if loc != nil && loc.IsValid() {
+		bnode.Loc = loc
+	}
+	p.errs = nil
+	return bnode
 }
 
 func parseTime(lit string) (time.Time, error) {

@@ -25,6 +25,10 @@ func (p Position) Less(o Position) bool {
 	return p.Line < o.Line
 }
 
+func (p Position) IsValid() bool {
+	return p.Line > 0 && p.Column > 0
+}
+
 // SourceLocation represents the location of a node in the AST
 type SourceLocation struct {
 	Start  Position `json:"start"`            // Start is the location in the source the node starts
@@ -41,6 +45,10 @@ func (l SourceLocation) Less(o SourceLocation) bool {
 		return l.End.Less(o.End)
 	}
 	return l.Start.Less(o.Start)
+}
+
+func (l SourceLocation) IsValid() bool {
+	return l.Start.IsValid() && l.End.IsValid()
 }
 
 func (l *SourceLocation) Copy() *SourceLocation {
