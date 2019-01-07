@@ -108,6 +108,25 @@ func TestJSONMarshal(t *testing.T) {
 			want: `{"type":"OptionStatement","assignment":{"type":"VariableAssignment","id":{"type":"Identifier","name":"task"},"init":{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"name"},"value":{"type":"StringLiteral","value":"foo"}},{"type":"Property","key":{"type":"Identifier","name":"every"},"value":{"type":"DurationLiteral","values":[{"magnitude":1,"unit":"h"}]}}]}}}`,
 		},
 		{
+			name: "qualified option statement",
+			node: &ast.OptionStatement{
+				Assignment: &ast.MemberAssignment{
+					Member: &ast.MemberExpression{
+						Object: &ast.Identifier{
+							Name: "alert",
+						},
+						Property: &ast.Identifier{
+							Name: "state",
+						},
+					},
+					Init: &ast.StringLiteral{
+						Value: "Warning",
+					},
+				},
+			},
+			want: `{"type":"OptionStatement","assignment":{"type":"MemberAssignment","member":{"type":"MemberExpression","object":{"type":"Identifier","name":"alert"},"property":{"type":"Identifier","name":"state"}},"init":{"type":"StringLiteral","value":"Warning"}}}`,
+		},
+		{
 			name: "variable assignment",
 			node: &ast.VariableAssignment{
 				ID:   &ast.Identifier{Name: "a"},

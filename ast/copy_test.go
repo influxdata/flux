@@ -111,6 +111,23 @@ func TestCopy(t *testing.T) {
 			},
 		},
 		{
+			node: &ast.OptionStatement{
+				Assignment: &ast.MemberAssignment{
+					Member: &ast.MemberExpression{
+						Object: &ast.Identifier{
+							Name: "alert",
+						},
+						Property: &ast.Identifier{
+							Name: "state",
+						},
+					},
+					Init: &ast.StringLiteral{
+						Value: "Warning",
+					},
+				},
+			},
+		},
+		{
 			node: &ast.VariableAssignment{},
 		},
 		{

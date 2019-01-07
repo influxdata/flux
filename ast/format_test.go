@@ -105,6 +105,10 @@ a[i]`,
 			script: `option foo = {a: 1}`,
 		},
 		{
+			name:   "qualified option",
+			script: `option alert.state = "Warning"`,
+		},
+		{
 			name: "nil_value_as_default",
 			script: `foo = (arg=[]) =>
 	(1)`,

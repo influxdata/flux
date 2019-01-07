@@ -117,8 +117,21 @@ func analyzeStatment(s ast.Statement) (Statement, error) {
 		return analyzeReturnStatement(s)
 	case *ast.VariableAssignment:
 		return analyzeVariableAssignment(s)
+	case *ast.MemberAssignment:
+		return analyzeMemberAssignment(s)
 	default:
 		return nil, fmt.Errorf("unsupported statement %T", s)
+	}
+}
+
+func analyzeAssignment(a ast.Assignment) (Assignment, error) {
+	switch a := a.(type) {
+	case *ast.VariableAssignment:
+		return analyzeVariableAssignment(a)
+	case *ast.MemberAssignment:
+		return analyzeMemberAssignment(a)
+	default:
+		return nil, fmt.Errorf("unsupported assignment %T", a)
 	}
 }
 
@@ -142,13 +155,13 @@ func analyzeBlock(block *ast.Block) (*Block, error) {
 }
 
 func analyzeOptionStatement(option *ast.OptionStatement) (*OptionStatement, error) {
-	declaration, err := analyzeVariableAssignment(option.Assignment)
+	assignment, err := analyzeAssignment(option.Assignment)
 	if err != nil {
 		return nil, err
 	}
 	return &OptionStatement{
 		loc:        loc(option.Location()),
-		Assignment: declaration,
+		Assignment: assignment,
 	}, nil
 }
 
@@ -189,6 +202,22 @@ func analyzeVariableAssignment(decl *ast.VariableAssignment) (*NativeVariableAss
 		Init:       init,
 	}
 	return vd, nil
+}
+
+func analyzeMemberAssignment(a *ast.MemberAssignment) (*MemberAssignment, error) {
+	member, err := analyzeMemberExpression(a.Member)
+	if err != nil {
+		return nil, err
+	}
+	init, err := analyzeExpression(a.Init)
+	if err != nil {
+		return nil, err
+	}
+	return &MemberAssignment{
+		loc:    loc(a.Location()),
+		Member: member,
+		Init:   init,
+	}, nil
 }
 
 func analyzeExpression(expr ast.Expression) (Expression, error) {

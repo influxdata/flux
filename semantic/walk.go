@@ -131,6 +131,15 @@ func walk(v Visitor, n Node) {
 			walk(w, n.Identifier)
 			walk(w, n.Init)
 		}
+	case *MemberAssignment:
+		if n == nil {
+			return
+		}
+		w := v.Visit(n)
+		if w != nil {
+			walk(w, n.Member)
+			walk(w, n.Init)
+		}
 	case *ExternalVariableAssignment:
 		if n == nil {
 			return

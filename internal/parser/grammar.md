@@ -17,7 +17,10 @@ The parser directly implements the following grammar.
                                | ExpressionStatement .
     IdentStatement             = identifer ( AssignStatement | ExpressionSuffix ) .
     OptionStatement            = "option" OptionStatementSuffix .
-    OptionStatementSuffix      = AssignStatement | VariableAssignment | ExpressionSuffix
+    OptionStatementSuffix      = OptionAssignment | AssignStatement | ExpressionSuffix .
+    OptionAssignment           = identifier OptionAssignmentSuffix .
+    OptionAssignmentSuffix     = Assignment
+                               | "." identifier Assignment .
     VariableAssignment         = identifer AssignStatement .
     AssignStatement            = "=" Expression .
     ReturnStatement            = "return" Expression .

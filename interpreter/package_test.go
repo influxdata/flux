@@ -1,6 +1,7 @@
 package interpreter_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/influxdata/flux/ast"
@@ -31,6 +32,96 @@ func (imp *importer) Import(path string) (semantic.PackageType, bool) {
 func (imp *importer) ImportPackageObject(path string) (interpreter.Package, bool) {
 	pkg, ok := imp.packages[path]
 	return pkg, ok
+}
+
+type packageObject struct {
+	object      values.Object
+	name        string
+	sideEffects []values.Value
+}
+
+func (p *packageObject) Name() string {
+	return p.name
+}
+
+func (p *packageObject) SideEffects() []values.Value {
+	return p.sideEffects
+}
+
+func (p *packageObject) Type() semantic.Type {
+	return p.object.Type()
+}
+
+func (p *packageObject) PolyType() semantic.PolyType {
+	return p.object.PolyType()
+}
+
+func (p *packageObject) Get(name string) (values.Value, bool) {
+	return p.object.Get(name)
+}
+
+func (p *packageObject) Set(name string, v values.Value) {
+	p.object.Set(name, v)
+}
+
+func (p *packageObject) Len() int {
+	return p.object.Len()
+}
+
+func (p *packageObject) Range(f func(name string, v values.Value)) {
+	p.object.Range(f)
+}
+
+func (p *packageObject) Str() string {
+	panic(values.UnexpectedKind(semantic.Object, semantic.String))
+}
+func (p *packageObject) Int() int64 {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Int))
+}
+func (p *packageObject) UInt() uint64 {
+	panic(values.UnexpectedKind(semantic.Object, semantic.UInt))
+}
+func (p *packageObject) Float() float64 {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Float))
+}
+func (p *packageObject) Bool() bool {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Bool))
+}
+func (p *packageObject) Time() values.Time {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Time))
+}
+func (p *packageObject) Duration() values.Duration {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Duration))
+}
+func (p *packageObject) Regexp() *regexp.Regexp {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Regexp))
+}
+func (p *packageObject) Array() values.Array {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Array))
+}
+func (p *packageObject) Object() values.Object {
+	return p
+}
+func (p *packageObject) Function() values.Function {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Function))
+}
+func (p *packageObject) Equal(rhs values.Value) bool {
+	if p.Type() != rhs.Type() {
+		return false
+	}
+	r := rhs.Object()
+	if p.Len() != r.Len() {
+		return false
+	}
+	equal := true
+	p.Range(func(k string, v values.Value) {
+		val, ok := r.Get(k)
+		if !ok || !v.Equal(val) {
+			equal = false
+			return
+		}
+	})
+	return equal
 }
 
 func TestInterpreter_EvalPackage(t *testing.T) {
@@ -299,6 +390,39 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 				t.Errorf("unexpected side effects -want/+got\n%s", cmp.Diff(tc.sideEffects, sideEffects))
 			}
 		})
+	}
+}
+
+func TestInterpreter_QualifiedOption(t *testing.T) {
+	externalPackage := &packageObject{
+		name: "alert",
+		object: values.NewObjectWithValues(
+			map[string]values.Value{
+				"state": values.NewString("Warning"),
+			},
+		),
+	}
+	importer := &importer{
+		packages: map[string]interpreter.Package{
+			"alert": externalPackage,
+		},
+	}
+	itrp := interpreter.NewInterpreter(nil, nil, nil)
+	pkg := `
+		package foo
+		import "alert"
+		option alert.state = "Error"
+`
+	if err := eval(itrp, importer, pkg); err != nil {
+		t.Fatalf("failed to evaluate package: %v", err)
+	}
+	option, ok := externalPackage.Get("state")
+	if !ok {
+		t.Errorf("missing option %q in package %s", "state", "alert")
+	}
+	optionValue := option.Str()
+	if option.Str() != "Error" {
+		t.Errorf("unexpected option value; want=%s got=%s", "Error", optionValue)
 	}
 }
 

@@ -35,6 +35,7 @@ func (*ImportDeclaration) node() {}
 func (*OptionStatement) node()            {}
 func (*ExpressionStatement) node()        {}
 func (*ReturnStatement) node()            {}
+func (*MemberAssignment) node()           {}
 func (*NativeVariableAssignment) node()   {}
 func (*ExternalVariableAssignment) node() {}
 
@@ -75,6 +76,15 @@ func (*OptionStatement) stmt()          {}
 func (*ExpressionStatement) stmt()      {}
 func (*ReturnStatement) stmt()          {}
 func (*NativeVariableAssignment) stmt() {}
+func (*MemberAssignment) stmt()         {}
+
+type Assignment interface {
+	Statement
+	assignment()
+}
+
+func (*MemberAssignment) assignment()         {}
+func (*NativeVariableAssignment) assignment() {}
 
 type Expression interface {
 	Node
@@ -254,9 +264,7 @@ func (s *Block) Copy() Node {
 type OptionStatement struct {
 	loc `json:"-"`
 
-	// Assignment represents the assignment of the option.
-	// Must be one of *ExternalVariableAssignment or *NativeVariableAssignment.
-	Assignment Node `json:"assignment"`
+	Assignment Assignment `json:"assignment"`
 }
 
 func (s *OptionStatement) NodeType() string { return "OptionStatement" }
@@ -268,7 +276,7 @@ func (s *OptionStatement) Copy() Node {
 	ns := new(OptionStatement)
 	*ns = *s
 
-	ns.Assignment = s.Assignment.Copy()
+	ns.Assignment = s.Assignment.Copy().(Assignment)
 
 	return ns
 }
@@ -320,10 +328,6 @@ type NativeVariableAssignment struct {
 	Init       Expression  `json:"init"`
 }
 
-func (d *NativeVariableAssignment) ID() *Identifier {
-	return d.Identifier
-}
-
 func (*NativeVariableAssignment) NodeType() string { return "NativeVariableAssignment" }
 
 func (s *NativeVariableAssignment) Copy() Node {
@@ -335,6 +339,32 @@ func (s *NativeVariableAssignment) Copy() Node {
 
 	ns.Identifier = s.Identifier.Copy().(*Identifier)
 
+	if s.Init != nil {
+		ns.Init = s.Init.Copy().(Expression)
+	}
+
+	return ns
+}
+
+type MemberAssignment struct {
+	loc `json:"-"`
+
+	Member *MemberExpression `json:"member"`
+	Init   Expression        `json:"init"`
+}
+
+func (*MemberAssignment) NodeType() string { return "MemberAssignment" }
+
+func (s *MemberAssignment) Copy() Node {
+	if s == nil {
+		return s
+	}
+	ns := new(MemberAssignment)
+	*ns = *s
+
+	if s.Member != nil {
+		ns.Member = s.Member.Copy().(*MemberExpression)
+	}
 	if s.Init != nil {
 		ns.Init = s.Init.Copy().(Expression)
 	}

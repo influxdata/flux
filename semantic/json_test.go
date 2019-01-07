@@ -96,6 +96,23 @@ func TestJSONMarshal(t *testing.T) {
 			want: `{"type":"OptionStatement","assignment":{"type":"NativeVariableAssignment","identifier":{"type":"Identifier","name":"task"},"init":{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"name"},"value":{"type":"StringLiteral","value":"foo"}},{"type":"Property","key":{"type":"Identifier","name":"every"},"value":{"type":"DurationLiteral","value":"1h0m0s"}},{"type":"Property","key":{"type":"Identifier","name":"delay"},"value":{"type":"DurationLiteral","value":"10m0s"}},{"type":"Property","key":{"type":"Identifier","name":"cron"},"value":{"type":"StringLiteral","value":"0 2 * * *"}},{"type":"Property","key":{"type":"Identifier","name":"retry"},"value":{"type":"IntegerLiteral","value":"5"}}]}}}`,
 		},
 		{
+			name: "qualified option statement",
+			node: &semantic.OptionStatement{
+				Assignment: &semantic.MemberAssignment{
+					Member: &semantic.MemberExpression{
+						Object: &semantic.IdentifierExpression{
+							Name: "alert",
+						},
+						Property: "state",
+					},
+					Init: &semantic.StringLiteral{
+						Value: "Warning",
+					},
+				},
+			},
+			want: `{"type":"OptionStatement","assignment":{"type":"MemberAssignment","member":{"type":"MemberExpression","object":{"type":"IdentifierExpression","name":"alert"},"property":"state"},"init":{"type":"StringLiteral","value":"Warning"}}}`,
+		},
+		{
 			name: "expression statement",
 			node: &semantic.ExpressionStatement{
 				Expression: &semantic.StringLiteral{Value: "hello"},

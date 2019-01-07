@@ -185,13 +185,15 @@ func (p *parser) parseOptionStatement() ast.Statement {
 func (p *parser) parseOptionStatementSuffix(pos token.Pos) ast.Statement {
 	switch _, tok, _ := p.peek(); tok {
 	case token.IDENT:
-		decl := p.parseVariableAssignment()
+		assignment := p.parseOptionAssignment()
 		return &ast.OptionStatement{
-			Assignment: decl,
-			BaseNode: p.baseNode(p.sourceLocation(
-				p.s.File().Position(pos),
-				locEnd(decl),
-			)),
+			Assignment: assignment,
+			BaseNode: ast.BaseNode{
+				Loc: p.sourceLocation(
+					p.s.File().Position(pos),
+					locEnd(assignment),
+				),
+			},
 		}
 	case token.ASSIGN:
 		expr := p.parseAssignStatement()
@@ -220,17 +222,50 @@ func (p *parser) parseOptionStatementSuffix(pos token.Pos) ast.Statement {
 	}
 }
 
-func (p *parser) parseVariableAssignment() *ast.VariableAssignment {
+func (p *parser) parseOptionAssignment() ast.Assignment {
 	id := p.parseIdentifier()
-	expr := p.parseAssignStatement()
-	return &ast.VariableAssignment{
-		ID:   id,
-		Init: expr,
-		BaseNode: p.baseNode(p.sourceLocation(
-			locStart(id),
-			locEnd(expr),
-		)),
+	return p.parseOptionAssignmentSuffix(id)
+}
+
+func (p *parser) parseOptionAssignmentSuffix(id *ast.Identifier) ast.Assignment {
+	switch _, tok, _ := p.peek(); tok {
+	case token.DOT:
+		p.consume()
+		property := p.parseIdentifier()
+		expr := p.parseAssignStatement()
+		return &ast.MemberAssignment{
+			BaseNode: ast.BaseNode{
+				Loc: p.sourceLocation(
+					locStart(id),
+					locEnd(expr),
+				),
+			},
+			Member: &ast.MemberExpression{
+				BaseNode: ast.BaseNode{
+					Loc: p.sourceLocation(
+						locStart(id),
+						locEnd(property),
+					),
+				},
+				Object:   id,
+				Property: property,
+			},
+			Init: expr,
+		}
+	case token.ASSIGN:
+		expr := p.parseAssignStatement()
+		return &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Loc: p.sourceLocation(
+					locStart(id),
+					locEnd(expr),
+				),
+			},
+			ID:   id,
+			Init: expr,
+		}
 	}
+	return nil
 }
 
 func (p *parser) parseIdentStatement() ast.Statement {

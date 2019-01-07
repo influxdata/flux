@@ -182,6 +182,12 @@ func (f *formatter) formatVariableAssignment(n *VariableAssignment) {
 	f.formatNode(n.Init)
 }
 
+func (f *formatter) formatMemberAssignment(n *MemberAssignment) {
+	f.formatNode(n.Member)
+	f.writeString(" = ")
+	f.formatNode(n.Init)
+}
+
 func (f *formatter) formatArrayExpression(n *ArrayExpression) {
 	f.writeRune('[')
 
@@ -490,6 +496,8 @@ func (f *formatter) formatNode(n Node) {
 		f.formatReturnStatement(n)
 	case *VariableAssignment:
 		f.formatVariableAssignment(n)
+	case *MemberAssignment:
+		f.formatMemberAssignment(n)
 	case *CallExpression:
 		f.formatCallExpression(n)
 	case *PipeExpression:

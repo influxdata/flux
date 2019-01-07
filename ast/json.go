@@ -193,7 +193,26 @@ func (s *OptionStatement) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(raw)
 }
+func (s *OptionStatement) UnmarshalJSON(data []byte) error {
+	type Alias OptionStatement
+	raw := struct {
+		*Alias
+		Assignment json.RawMessage `json:"assignment"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*s = *(*OptionStatement)(raw.Alias)
+	}
 
+	a, err := unmarshalAssignment(raw.Assignment)
+	if err != nil {
+		return err
+	}
+	s.Assignment = a
+	return nil
+}
 func (d *VariableAssignment) MarshalJSON() ([]byte, error) {
 	type Alias VariableAssignment
 	raw := struct {
@@ -223,6 +242,37 @@ func (d *VariableAssignment) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	d.Init = e
+	return nil
+}
+func (s *MemberAssignment) MarshalJSON() ([]byte, error) {
+	type Alias MemberAssignment
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  s.Type(),
+		Alias: (*Alias)(s),
+	}
+	return json.Marshal(raw)
+}
+func (s *MemberAssignment) UnmarshalJSON(data []byte) error {
+	type Alias MemberAssignment
+	raw := struct {
+		*Alias
+		Init json.RawMessage `json:"init"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*s = *(*MemberAssignment)(raw.Alias)
+	}
+
+	e, err := unmarshalExpression(raw.Init)
+	if err != nil {
+		return err
+	}
+	s.Init = e
 	return nil
 }
 func (e *CallExpression) MarshalJSON() ([]byte, error) {
@@ -863,6 +913,20 @@ func unmarshalExpression(msg json.RawMessage) (Expression, error) {
 	}
 	return e, nil
 }
+func unmarshalAssignment(msg json.RawMessage) (Assignment, error) {
+	if checkNullMsg(msg) {
+		return nil, nil
+	}
+	n, err := unmarshalNode(msg)
+	if err != nil {
+		return nil, err
+	}
+	a, ok := n.(Assignment)
+	if !ok {
+		return nil, fmt.Errorf("node %q is not an assignment", n.Type())
+	}
+	return a, nil
+}
 func unmarshalPropertyKey(msg json.RawMessage) (PropertyKey, error) {
 	if checkNullMsg(msg) {
 		return nil, nil
@@ -913,6 +977,8 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 		node = new(ReturnStatement)
 	case "VariableAssignment":
 		node = new(VariableAssignment)
+	case "MemberAssignment":
+		node = new(MemberAssignment)
 	case "CallExpression":
 		node = new(CallExpression)
 	case "PipeExpression":

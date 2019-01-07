@@ -127,6 +127,17 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		scheme := v.scheme(t)
 		v.env.Set(pkg.Name, scheme)
 		return nil, nil
+	case *MemberAssignment:
+		t, err := v.lookup(n.Init)
+		if err != nil {
+			return nil, err
+		}
+		propType, err := v.lookup(n.Member)
+		if err != nil {
+			return nil, err
+		}
+		v.cs.AddTypeConst(propType, t, n.Location())
+		return nil, nil
 	case *ExternalVariableAssignment:
 		// Do not trust external type variables,
 		// substitute them with fresh vars.
@@ -143,9 +154,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		if err != nil {
 			return nil, err
 		}
-
 		v.constrainExistingIdent(n.Identifier.Name, t, n.Location())
-
 		scheme := v.scheme(t)
 		v.env.Set(n.Identifier.Name, scheme)
 		return nil, nil

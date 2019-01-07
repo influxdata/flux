@@ -124,6 +124,59 @@ a = internal.a
 			},
 		},
 		{
+			name: "qualified option",
+			script: `
+package foo
+
+import "alert"
+
+option alert.state = "Warning"
+`,
+			importer: importer{
+				packages: map[string]semantic.PackageType{
+					"alert": semantic.PackageType{
+						Name: "alert",
+						Type: semantic.NewObjectPolyType(
+							map[string]semantic.PolyType{
+								"state": semantic.String,
+							},
+							nil,
+							semantic.LabelSet{"state"},
+						),
+					},
+				},
+			},
+			want: semantic.PackageType{
+				Name: "foo",
+				Type: semantic.NewEmptyObjectPolyType(),
+			},
+		},
+		{
+			name: "assign qualified option new type",
+			script: `
+package foo
+
+import "alert"
+
+option alert.state = 0
+`,
+			importer: importer{
+				packages: map[string]semantic.PackageType{
+					"alert": semantic.PackageType{
+						Name: "alert",
+						Type: semantic.NewObjectPolyType(
+							map[string]semantic.PolyType{
+								"state": semantic.String,
+							},
+							nil,
+							semantic.LabelSet{"state"},
+						),
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
 			name: "modify exported identifier",
 			script: `
 package foo
