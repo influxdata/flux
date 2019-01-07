@@ -47,10 +47,6 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 		name string
 		raw  string
 		want *ast.File
-		// If parseOnly is set to true, then the test will verify
-		// that parsing works and will not verify the contents of
-		// the AST.
-		parseOnly bool
 	}{
 		{
 			name: "package clause",
@@ -3494,12 +3490,108 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 				},
 			},
 		},
-		// todo(jsternberg): fix this once we start handling errors. For now, make sure it parses
-		// correctly without panicking.
 		{
-			name:      "function call with unbalanced braces",
-			raw:       `from() |> range() |> map(fn: (r) => { return r._value )`,
-			parseOnly: true,
+			name: "function call with unbalanced braces",
+			raw:  `from() |> range() |> map(fn: (r) => { return r._value )`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:56"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:56"),
+						Expression: &ast.PipeExpression{
+							BaseNode: base("1:1", "1:56"),
+							Argument: &ast.PipeExpression{
+								BaseNode: base("1:1", "1:18"),
+								Argument: &ast.CallExpression{
+									BaseNode: base("1:1", "1:7"),
+									Callee: &ast.Identifier{
+										BaseNode: base("1:1", "1:5"),
+										Name:     "from",
+									},
+								},
+								Call: &ast.CallExpression{
+									BaseNode: base("1:11", "1:18"),
+									Callee: &ast.Identifier{
+										BaseNode: base("1:11", "1:16"),
+										Name:     "range",
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								BaseNode: ast.BaseNode{
+									Loc: loc("1:22", "1:56"),
+									Errors: []ast.Error{
+										{Msg: "expected RPAREN, got EOF"},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: base("1:22", "1:25"),
+									Name:     "map",
+								},
+								Arguments: []ast.Expression{
+									&ast.ObjectExpression{
+										BaseNode: base("1:26", "1:56"),
+										Properties: []*ast.Property{
+											{
+												BaseNode: base("1:26", "1:56"),
+												Key: &ast.Identifier{
+													BaseNode: base("1:26", "1:28"),
+													Name:     "fn",
+												},
+												Value: &ast.FunctionExpression{
+													BaseNode: base("1:30", "1:56"),
+													Params: []*ast.Property{
+														{
+															BaseNode: base("1:31", "1:32"),
+															Key: &ast.Identifier{
+																BaseNode: base("1:31", "1:32"),
+																Name:     "r",
+															},
+														},
+													},
+													Body: &ast.Block{
+														BaseNode: ast.BaseNode{
+															Loc: loc("1:37", "1:56"),
+															Errors: []ast.Error{
+																{Msg: "expected RBRACE, got EOF"},
+															},
+														},
+														Body: []ast.Statement{
+															&ast.ReturnStatement{
+																BaseNode: base("1:39", "1:54"),
+																Argument: &ast.MemberExpression{
+																	BaseNode: base("1:46", "1:54"),
+																	Object: &ast.Identifier{
+																		BaseNode: base("1:46", "1:47"),
+																		Name:     "r",
+																	},
+																	Property: &ast.Identifier{
+																		BaseNode: base("1:48", "1:54"),
+																		Name:     "_value",
+																	},
+																},
+															},
+															&ast.BadStatement{
+																BaseNode: ast.BaseNode{
+																	Loc: loc("1:55", "1:56"),
+																	Errors: []ast.Error{
+																		{Msg: "invalid statement: )"},
+																	},
+																},
+																Text: ")",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 		{
 			name: "string with utf-8",
@@ -3599,6 +3691,42 @@ string"
 				},
 			},
 		},
+		{
+			name: "missing arrow in function expression",
+			raw:  `(a, b) a + b`,
+			want: &ast.File{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.FunctionExpression{
+							BaseNode: ast.BaseNode{
+								Errors: []ast.Error{
+									{Msg: `expected ARROW, got IDENT ("a") at 1:8`},
+									{Msg: `expected ARROW, got ADD ("+") at 1:10`},
+									{Msg: `expected ARROW, got IDENT ("b") at 1:12`},
+									{Msg: `expected ARROW, got EOF`},
+								},
+							},
+							Params: []*ast.Property{
+								{
+									BaseNode: base("1:2", "1:3"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:2", "1:3"),
+										Name:     "a",
+									},
+								},
+								{
+									BaseNode: base("1:5", "1:6"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:5", "1:6"),
+										Name:     "b",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	} {
 		runFn(tt.name, func(tb testing.TB) {
 			defer func() {
@@ -3609,9 +3737,6 @@ string"
 
 			f := token.NewFile("", len(tt.raw))
 			result := parser.ParseFile(f, []byte(tt.raw))
-			if tt.parseOnly {
-				return
-			}
 
 			want := tt.want.Copy()
 			ast.Walk(ast.CreateVisitor(func(node ast.Node) {
