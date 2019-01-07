@@ -925,15 +925,19 @@ func (c *MergeJoinCache) postJoinGroupKey(keys map[execute.DatasetID]flux.GroupK
 }
 
 // advance advances the row pointer of a sorted table that is being joined
-func (c *MergeJoinCache) advance(offset int, table flux.ColReader) (subset, flux.GroupKey) {
-	if n := table.Len(); n == offset {
+func (c *MergeJoinCache) advance(offset int, table *execute.ColListTableBuilder) (subset, flux.GroupKey) {
+	// TODO(jlapacik): this is a temporary hack
+	// remove when ColListTableBuilder implements ArrowColReader
+	tbl, _ := table.Table()
+	cr := tbl.(flux.ArrowColReader)
+	if n := cr.Len(); n == offset {
 		return subset{Start: n, Stop: n}, nil
 	}
 	start := offset
-	key := execute.GroupKeyForRowOn(start, table, c.on)
+	key := execute.GroupKeyForRowOnArrow(start, cr, c.on)
 	sequence := subset{Start: start}
 	offset++
-	for offset < table.Len() && equalRowKeys(start, offset, table, c.on) {
+	for offset < cr.Len() && equalRowKeys(start, offset, cr, c.on) {
 		offset++
 	}
 	sequence.Stop = offset
@@ -950,34 +954,34 @@ func (s subset) Empty() bool {
 }
 
 // equalRowKeys determines whether two rows of a table are equal on the set of columns defined by on
-func equalRowKeys(x, y int, table flux.ColReader, on map[string]bool) bool {
-	for j, c := range table.Cols() {
+func equalRowKeys(x, y int, cr flux.ArrowColReader, on map[string]bool) bool {
+	for j, c := range cr.Cols() {
 		if !on[c.Label] {
 			continue
 		}
 		switch c.Type {
 		case flux.TBool:
-			if xv, yv := table.Bools(j)[x], table.Bools(j)[y]; xv != yv {
+			if xv, yv := cr.Bools(j).Value(x), cr.Bools(j).Value(y); xv != yv {
 				return false
 			}
 		case flux.TInt:
-			if xv, yv := table.Ints(j)[x], table.Ints(j)[y]; xv != yv {
+			if xv, yv := cr.Ints(j).Value(x), cr.Ints(j).Value(y); xv != yv {
 				return false
 			}
 		case flux.TUInt:
-			if xv, yv := table.UInts(j)[x], table.UInts(j)[y]; xv != yv {
+			if xv, yv := cr.UInts(j).Value(x), cr.UInts(j).Value(y); xv != yv {
 				return false
 			}
 		case flux.TFloat:
-			if xv, yv := table.Floats(j)[x], table.Floats(j)[y]; xv != yv {
+			if xv, yv := cr.Floats(j).Value(x), cr.Floats(j).Value(y); xv != yv {
 				return false
 			}
 		case flux.TString:
-			if xv, yv := table.Strings(j)[x], table.Strings(j)[y]; xv != yv {
+			if xv, yv := cr.Strings(j).ValueString(x), cr.Strings(j).ValueString(y); xv != yv {
 				return false
 			}
 		case flux.TTime:
-			if xv, yv := table.Times(j)[x], table.Times(j)[y]; xv != yv {
+			if xv, yv := cr.Times(j).Value(x), cr.Times(j).Value(y); xv != yv {
 				return false
 			}
 		default:
