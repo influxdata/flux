@@ -77,7 +77,7 @@ func Eval(itrp *interpreter.Interpreter, q string) error {
 		return err
 	}
 
-	if err := itrp.Eval(semPkg, nil); err != nil {
+	if err := itrp.Eval(semPkg, BuiltinImporter()); err != nil {
 		return err
 	}
 	return nil
@@ -151,16 +151,48 @@ var builtinValues = make(map[string]values.Value)
 var builtinOptions = make(map[string]values.Value)
 var builtinTypeScope = interpreter.NewTypeScope()
 
-// list of builtin scripts
+// set of builtins
 var builtinScripts = make(map[string]string)
+var builtinPackages = make(map[string]*ast.Package)
+var builtinPackageValues = make(map[string]map[string]values.Value)
 var finalized bool
 
 // RegisterBuiltIn adds any variable declarations written in Flux script to the builtin scope.
 func RegisterBuiltIn(name, script string) {
 	if finalized {
-		panic(errors.New("already finalized, cannot register builtin"))
+		panic(errors.New("already finalized, cannot register builtin script"))
+	}
+	if _, ok := builtinScripts[name]; ok {
+		panic(fmt.Errorf("duplicate builtin script %q", name))
 	}
 	builtinScripts[name] = script
+}
+
+// RegisterPackage adds a builtin package
+func RegisterPackage(pkg *ast.Package) {
+	if finalized {
+		panic(errors.New("already finalized, cannot register builtin package"))
+	}
+	if _, ok := builtinPackages[pkg.Path]; ok {
+		panic(fmt.Errorf("duplicate builtin package %q", pkg.Path))
+	}
+	builtinPackages[pkg.Path] = pkg
+}
+
+// RegisterPackageValue adds a value for an identifier in a builtin package
+func RegisterPackageValue(path, name string, value values.Value) {
+	if finalized {
+		panic(errors.New("already finalized, cannot register builtin package value"))
+	}
+	packageValues, ok := builtinPackageValues[path]
+	if !ok {
+		packageValues = make(map[string]values.Value)
+		builtinPackageValues[path] = packageValues
+	}
+	if _, ok := packageValues[name]; ok {
+		panic(fmt.Errorf("duplicate builtin package value %q %q", path, name))
+	}
+	packageValues[name] = value
 }
 
 // RegisterFunction adds a new builtin top level function.
@@ -175,6 +207,19 @@ func RegisterFunction(name string, c CreateOperationSpec, sig semantic.FunctionP
 		hasSideEffect: false,
 	}
 	RegisterBuiltInValue(name, &f)
+}
+
+// FunctionValue creates a values.Value from the operation spec and signature.
+// Name is the name of the function as it would be called.
+// c is a function reference of type CreateOperationSpec
+// sig is a function signature type that specifies the names and types of each argument for the function.
+func FunctionValue(name string, c CreateOperationSpec, sig semantic.FunctionPolySignature) values.Value {
+	return &function{
+		t:             semantic.NewFunctionPolyType(sig),
+		name:          name,
+		createOpSpec:  c,
+		hasSideEffect: false,
+	}
 }
 
 // RegisterFunctionWithSideEffect adds a new builtin top level function that produces side effects.
@@ -222,8 +267,10 @@ func FinalizeBuiltIns() {
 	}
 	finalized = true
 
-	err := evalBuiltInScripts()
-	if err != nil {
+	if err := evalBuiltInScripts(); err != nil {
+		panic(err)
+	}
+	if err := evalBuiltInPackages(); err != nil {
 		panic(err)
 	}
 }
@@ -241,10 +288,52 @@ func evalBuiltInScripts() error {
 			return errors.Wrapf(err, "failed to create semantic graph for builtin %q", name)
 		}
 
-		if err := itrp.Eval(semPkg, nil); err != nil {
+		if err := itrp.Eval(semPkg, builtinImporter); err != nil {
 			return errors.Wrapf(err, "failed to evaluate builtin %q", name)
 		}
 	}
+	return nil
+}
+
+func evalBuiltInPackages() error {
+	order, err := packageOrder(builtinPackages)
+	if err != nil {
+		return err
+	}
+	for _, astPkg := range order {
+		if ast.Check(astPkg) > 0 {
+			err := ast.GetError(astPkg)
+			return errors.Wrapf(err, "failed to parse builtin package %q", astPkg.Package)
+		}
+		semPkg, err := semantic.New(astPkg)
+		if err != nil {
+			return errors.Wrapf(err, "failed to create semantic graph for builtin package %q", astPkg.Package)
+		}
+
+		// Make a copy of the global builtin values and add any builtin package values
+		packageValues := builtinPackageValues[astPkg.Path]
+		vals := make(map[string]values.Value, len(builtinValues)+len(packageValues))
+		for k, v := range builtinValues {
+			vals[k] = v
+		}
+		for k, v := range packageValues {
+			vals[k] = v
+		}
+
+		// Make a copy of the builtin options since they can be modified
+		options := make(map[string]values.Value, len(builtinOptions))
+		for k, v := range builtinOptions {
+			options[k] = v
+		}
+
+		itrp := interpreter.NewMutableInterpreter(options, vals, builtinTypeScope)
+		if err := itrp.Eval(semPkg, builtinImporter); err != nil {
+			return errors.Wrapf(err, "failed to evaluate builtin package %q", astPkg.Package)
+		}
+		builtinImporter.Packages[astPkg.Path] = itrp.Package()
+	}
+	// We no longer needs the package values
+	builtinPackageValues = nil
 	return nil
 }
 
@@ -696,4 +785,95 @@ func ToQueryTime(value values.Value) (Time, error) {
 	default:
 		return Time{}, fmt.Errorf("value is not a time, got %v", value.Type())
 	}
+}
+
+var builtinImporter = &importer{
+	Packages: make(map[string]interpreter.Package),
+}
+
+// BuiltinImporter returns an importer for the builtin packages.
+func BuiltinImporter() interpreter.Importer {
+	return builtinImporter.Copy()
+}
+
+type importer struct {
+	Packages map[string]interpreter.Package
+}
+
+func (imp *importer) Copy() *importer {
+	packages := make(map[string]interpreter.Package, len(imp.Packages))
+	for k, v := range imp.Packages {
+		packages[k] = v.Copy()
+	}
+	return &importer{
+		Packages: packages,
+	}
+}
+
+func (imp *importer) Import(path string) (semantic.PackageType, bool) {
+	p, ok := imp.Packages[path]
+	if !ok {
+		return semantic.PackageType{}, false
+	}
+	return semantic.PackageType{
+		Name: p.Name(),
+		Type: p.PolyType(),
+	}, true
+}
+
+func (imp *importer) ImportPackageObject(path string) (interpreter.Package, bool) {
+	p, ok := imp.Packages[path]
+	return p, ok
+}
+
+// packageOrder determines a safe order to process builtin packages such that all dependent packages are previously processed.
+func packageOrder(pkgs map[string]*ast.Package) (order []*ast.Package, err error) {
+	//TODO(nathanielc): Add import cycle detection, this is not needed until this code is promoted to work with third party imports
+	for _, pkg := range pkgs {
+		order, err = insertPkg(pkg, pkgs, order)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
+func insertPkg(pkg *ast.Package, pkgs map[string]*ast.Package, order []*ast.Package) (_ []*ast.Package, err error) {
+	imports := findImports(pkg)
+	for _, path := range imports {
+		dep, ok := pkgs[path]
+		if !ok {
+			return nil, fmt.Errorf("unknown builtin package %q", path)
+		}
+		order, err = insertPkg(dep, pkgs, order)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return appendPkg(pkg, order), nil
+}
+
+func appendPkg(pkg *ast.Package, pkgs []*ast.Package) []*ast.Package {
+	if containsPkg(pkg.Path, pkgs) {
+		return pkgs
+	}
+	return append(pkgs, pkg)
+}
+
+func containsPkg(path string, pkgs []*ast.Package) bool {
+	for _, pkg := range pkgs {
+		if pkg.Path == path {
+			return true
+		}
+	}
+	return false
+}
+
+func findImports(pkg *ast.Package) (imports []string) {
+	for _, f := range pkg.Files {
+		for _, i := range f.Imports {
+			imports = append(imports, i.Path.Value)
+		}
+	}
+	return
 }

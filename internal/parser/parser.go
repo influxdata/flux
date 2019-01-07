@@ -82,6 +82,7 @@ func (p *parser) parseFile(fname string) *ast.File {
 	file := &ast.File{
 		BaseNode: ast.BaseNode{
 			Loc: &ast.SourceLocation{
+				File:  p.s.File().Name(),
 				Start: p.s.File().Position(pos),
 			},
 		},
@@ -1073,6 +1074,7 @@ func (p *parser) position(start, end token.Pos) ast.BaseNode {
 	soffset := int(start) - p.s.File().Base()
 	eoffset := int(end) - p.s.File().Base()
 	return p.baseNode(&ast.SourceLocation{
+		File:   p.s.File().Name(),
 		Start:  p.s.File().Position(start),
 		End:    p.s.File().Position(end),
 		Source: string(p.src[soffset:eoffset]),
@@ -1097,6 +1099,7 @@ func (p *parser) sourceLocation(start, end ast.Position) *ast.SourceLocation {
 		return nil
 	}
 	return &ast.SourceLocation{
+		File:   p.s.File().Name(),
 		Start:  start,
 		End:    end,
 		Source: string(p.src[soffset:eoffset]),

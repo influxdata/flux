@@ -149,11 +149,16 @@ func (r *REPL) executeLine(t string) (values.Value, error) {
 		return nil, err
 	}
 
-	if err := r.interpreter.Eval(semPkg, nil); err != nil {
+	if err := r.interpreter.Eval(semPkg, flux.BuiltinImporter()); err != nil {
 		return nil, err
 	}
 
 	v := r.interpreter.Return()
+
+	// Ignore statements that do not return a value
+	if v == nil {
+		return nil, nil
+	}
 
 	// Check for yield and execute query
 	if v.Type() == flux.TableObjectMonoType {

@@ -40,6 +40,16 @@ type packageObject struct {
 	sideEffects []values.Value
 }
 
+func (p *packageObject) Copy() interpreter.Package {
+	c := &packageObject{
+		object:      p.object,
+		name:        p.name,
+		sideEffects: make([]values.Value, len(p.sideEffects)),
+	}
+	copy(c.sideEffects, p.sideEffects)
+	return c
+}
+
 func (p *packageObject) Name() string {
 	return p.name
 }
