@@ -7,7 +7,6 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -186,42 +185,42 @@ func (t *Table) DoArrow(f func(flux.ArrowColReader) error) error {
 	for j, col := range t.ColMeta {
 		switch col.Type {
 		case flux.TBool:
-			b := arrow.NewBoolBuilder(&memory.Allocator{})
+			b := arrow.NewBoolBuilder(nil)
 			for i := range t.Data {
 				b.Append(t.Data[i][j].(bool))
 			}
 			cols[j] = b.NewBooleanArray()
 			b.Release()
 		case flux.TFloat:
-			b := arrow.NewFloatBuilder(&memory.Allocator{})
+			b := arrow.NewFloatBuilder(nil)
 			for i := range t.Data {
 				b.Append(t.Data[i][j].(float64))
 			}
 			cols[j] = b.NewFloat64Array()
 			b.Release()
 		case flux.TInt:
-			b := arrow.NewIntBuilder(&memory.Allocator{})
+			b := arrow.NewIntBuilder(nil)
 			for i := range t.Data {
 				b.Append(t.Data[i][j].(int64))
 			}
 			cols[j] = b.NewInt64Array()
 			b.Release()
 		case flux.TString:
-			b := arrow.NewStringBuilder(&memory.Allocator{})
+			b := arrow.NewStringBuilder(nil)
 			for i := range t.Data {
 				b.AppendString(t.Data[i][j].(string))
 			}
 			cols[j] = b.NewBinaryArray()
 			b.Release()
 		case flux.TTime:
-			b := arrow.NewIntBuilder(&memory.Allocator{})
+			b := arrow.NewIntBuilder(nil)
 			for i := range t.Data {
 				b.Append(int64(t.Data[i][j].(values.Time)))
 			}
 			cols[j] = b.NewInt64Array()
 			b.Release()
 		case flux.TUInt:
-			b := arrow.NewUintBuilder(&memory.Allocator{})
+			b := arrow.NewUintBuilder(nil)
 			for i := range t.Data {
 				b.Append(t.Data[i][j].(uint64))
 			}

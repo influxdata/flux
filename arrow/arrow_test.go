@@ -8,7 +8,6 @@ import (
 	arrowmemory "github.com/apache/arrow/go/arrow/memory"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/arrow"
-	"github.com/influxdata/flux/memory"
 )
 
 func TestSum_Float64_Empty(t *testing.T) {
@@ -67,8 +66,7 @@ func TestSum_Uint64_Empty(t *testing.T) {
 
 func TestSlice_Int64(t *testing.T) {
 	values := []int64{-5, -4, -3, -2, -1, 0, 1, 2, 3, 4}
-	alloc := &memory.Allocator{}
-	arr := arrow.NewInt(values, alloc)
+	arr := arrow.NewInt(values, nil)
 	defer arr.Release()
 
 	if got, want := arr.Len(), len(values); got != want {
@@ -149,8 +147,7 @@ func TestSlice_Int64(t *testing.T) {
 
 func TestSlice_OutOfBounds_Int64(t *testing.T) {
 	values := []int64{-5, -4, -3, -2, -1, 0, 1, 2, 3, 4}
-	alloc := &memory.Allocator{}
-	arr := arrow.NewInt(values, alloc)
+	arr := arrow.NewInt(values, nil)
 	defer arr.Release()
 
 	slice := arrow.IntSlice(arr, 3, 8)
@@ -202,8 +199,7 @@ func TestSlice_OutOfBounds_Int64(t *testing.T) {
 
 func TestSlice_Uint64(t *testing.T) {
 	values := []uint64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	alloc := &memory.Allocator{}
-	arr := arrow.NewUint(values, alloc)
+	arr := arrow.NewUint(values, nil)
 	defer arr.Release()
 
 	if got, want := arr.Len(), len(values); got != want {
@@ -284,8 +280,7 @@ func TestSlice_Uint64(t *testing.T) {
 
 func TestSlice_OutOfBounds_Uint64(t *testing.T) {
 	values := []uint64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	alloc := &memory.Allocator{}
-	arr := arrow.NewUint(values, alloc)
+	arr := arrow.NewUint(values, nil)
 	defer arr.Release()
 
 	slice := arrow.UintSlice(arr, 3, 8)
@@ -337,8 +332,7 @@ func TestSlice_OutOfBounds_Uint64(t *testing.T) {
 
 func TestSlice_Float64(t *testing.T) {
 	values := []float64{0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9}
-	alloc := &memory.Allocator{}
-	arr := arrow.NewFloat(values, alloc)
+	arr := arrow.NewFloat(values, nil)
 	defer arr.Release()
 
 	if got, want := arr.Len(), len(values); got != want {
@@ -419,8 +413,7 @@ func TestSlice_Float64(t *testing.T) {
 
 func TestSlice_OutOfBounds_Float64(t *testing.T) {
 	values := []float64{0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9}
-	alloc := &memory.Allocator{}
-	arr := arrow.NewFloat(values, alloc)
+	arr := arrow.NewFloat(values, nil)
 	defer arr.Release()
 
 	slice := arrow.FloatSlice(arr, 3, 8)
@@ -474,8 +467,7 @@ func TestSlice_String(t *testing.T) {
 	t.Skip("https://github.com/apache/arrow/issues/3270")
 
 	values := []string{"a", "bc", "def", "g", "hijk", "lm", "n", "opq", "rs", "tu"}
-	alloc := &memory.Allocator{}
-	arr := arrow.NewString(values, alloc)
+	arr := arrow.NewString(values, nil)
 	defer arr.Release()
 
 	l := arr.Len()
@@ -568,8 +560,7 @@ func TestSlice_OutOfBounds_String(t *testing.T) {
 	t.Skip("https://github.com/apache/arrow/issues/3270")
 
 	values := []string{"a", "bc", "def", "g", "hijk", "lm", "n", "opq", "rs", "tu"}
-	alloc := &memory.Allocator{}
-	arr := arrow.NewString(values, alloc)
+	arr := arrow.NewString(values, nil)
 	defer arr.Release()
 
 	slice := arrow.StringSlice(arr, 3, 8)
@@ -623,8 +614,7 @@ func TestSlice_Bool(t *testing.T) {
 	t.Skip("https://issues.apache.org/jira/browse/ARROW-4126")
 
 	values := []bool{true, false, true, false, true, false, true, false, true, false}
-	alloc := &memory.Allocator{}
-	arr := arrow.NewBool(values, alloc)
+	arr := arrow.NewBool(values, nil)
 	defer arr.Release()
 
 	l := arr.Len()
@@ -717,8 +707,7 @@ func TestSlice_OutOfBounds_Bool(t *testing.T) {
 	t.Skip("https://issues.apache.org/jira/browse/ARROW-4126")
 
 	values := []bool{true, false, true, false, true, false, true, false, true, false}
-	alloc := &memory.Allocator{}
-	arr := arrow.NewBool(values, alloc)
+	arr := arrow.NewBool(values, nil)
 	defer arr.Release()
 
 	slice := arrow.BoolSlice(arr, 3, 8)
