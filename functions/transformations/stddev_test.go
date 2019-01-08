@@ -50,7 +50,7 @@ func TestStddev_Process(t *testing.T) {
 			executetest.AggFuncTestHelper(
 				t,
 				new(transformations.StddevAgg),
-				tc.data,
+				arrow.NewFloat(tc.data, nil),
 				tc.want,
 			)
 		})

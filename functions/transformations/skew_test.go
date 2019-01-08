@@ -60,7 +60,7 @@ func TestSkew_Process(t *testing.T) {
 			executetest.AggFuncTestHelper(
 				t,
 				new(transformations.SkewAgg),
-				tc.data,
+				arrow.NewFloat(tc.data, nil),
 				tc.want,
 			)
 		})
