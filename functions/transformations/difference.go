@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
@@ -178,7 +179,7 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 
 	// We need to drop the first row since its derivative is undefined
 	firstIdx := 1
-	return tbl.Do(func(cr flux.ColReader) error {
+	return tbl.DoArrow(func(cr flux.ArrowColReader) error {
 		l := cr.Len()
 
 		if l != 0 {
@@ -186,13 +187,13 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 				d := differences[j]
 				switch c.Type {
 				case flux.TBool:
-					if err := builder.AppendBools(j, cr.Bools(j)[firstIdx:]); err != nil {
+					if err := arrow.AppendBools(builder, j, arrow.BoolSlice(cr.Bools(j), firstIdx, l)); err != nil {
 						return err
 					}
 				case flux.TInt:
 					if d != nil {
 						for i := 0; i < l; i++ {
-							v := d.updateInt(cr.Ints(j)[i])
+							v := d.updateInt(cr.Ints(j).Int64Values()[i])
 							if i != 0 || firstIdx == 0 {
 								if err := builder.AppendInt(j, v); err != nil {
 									return err
@@ -200,14 +201,14 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 							}
 						}
 					} else {
-						if err := builder.AppendInts(j, cr.Ints(j)[firstIdx:]); err != nil {
+						if err := arrow.AppendInts(builder, j, arrow.IntSlice(cr.Ints(j), firstIdx, l)); err != nil {
 							return err
 						}
 					}
 				case flux.TUInt:
 					if d != nil {
 						for i := 0; i < l; i++ {
-							v := d.updateUInt(cr.UInts(j)[i])
+							v := d.updateUInt(cr.UInts(j).Uint64Values()[i])
 							if i != 0 || firstIdx == 0 {
 								if err := builder.AppendInt(j, v); err != nil {
 									return err
@@ -215,14 +216,14 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 							}
 						}
 					} else {
-						if err := builder.AppendUInts(j, cr.UInts(j)[firstIdx:]); err != nil {
+						if err := arrow.AppendUInts(builder, j, arrow.UintSlice(cr.UInts(j), firstIdx, l)); err != nil {
 							return err
 						}
 					}
 				case flux.TFloat:
 					if d != nil {
 						for i := 0; i < l; i++ {
-							v := d.updateFloat(cr.Floats(j)[i])
+							v := d.updateFloat(cr.Floats(j).Float64Values()[i])
 							if i != 0 || firstIdx == 0 {
 								if err := builder.AppendFloat(j, v); err != nil {
 									return err
@@ -230,16 +231,16 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 							}
 						}
 					} else {
-						if err := builder.AppendFloats(j, cr.Floats(j)[firstIdx:]); err != nil {
+						if err := arrow.AppendFloats(builder, j, arrow.FloatSlice(cr.Floats(j), firstIdx, l)); err != nil {
 							return err
 						}
 					}
 				case flux.TString:
-					if err := builder.AppendStrings(j, cr.Strings(j)[firstIdx:]); err != nil {
+					if err := arrow.AppendStrings(builder, j, arrow.StringSlice(cr.Strings(j), firstIdx, l)); err != nil {
 						return err
 					}
 				case flux.TTime:
-					if err := builder.AppendTimes(j, cr.Times(j)[firstIdx:]); err != nil {
+					if err := arrow.AppendTimes(builder, j, arrow.IntSlice(cr.Times(j), firstIdx, l)); err != nil {
 						return err
 					}
 				}
