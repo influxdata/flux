@@ -1215,7 +1215,7 @@ func (b *ColListTableBuilder) SetNil(i, j int) error {
 		return fmt.Errorf("set nil: column does not exist, index out of bounds: %d", j)
 	}
 	if i < 0 || i > b.cols[j].Len() {
-		return fmt.Errorf("set nil: row  does not exist, index out of bounds: %d", i)
+		return fmt.Errorf("set nil: row does not exist, index out of bounds: %d", i)
 	}
 
 	b.cols[j].SetNil(i, true)
@@ -1613,7 +1613,22 @@ func (c *boolColumnBuilder) Clear() {
 	c.data = c.data[0:0]
 }
 func (c *boolColumnBuilder) Copy() column {
-	data := arrow.NewBool(c.data, c.alloc.Allocator)
+	var data *array.Boolean
+	if len(c.nils) > 0 {
+		b := arrow.NewBoolBuilder(c.alloc.Allocator)
+		b.Reserve(len(c.data))
+		for i, v := range c.data {
+			if c.nils[i] {
+				b.UnsafeAppendBoolToBitmap(false)
+				continue
+			}
+			b.UnsafeAppend(v)
+		}
+		data = b.NewBooleanArray()
+		b.Release()
+	} else {
+		data = arrow.NewBool(c.data, c.alloc.Allocator)
+	}
 	col := &boolColumn{
 		ColMeta: c.ColMeta,
 		data:    data,
@@ -1683,7 +1698,22 @@ func (c *intColumnBuilder) Clear() {
 	c.data = c.data[0:0]
 }
 func (c *intColumnBuilder) Copy() column {
-	data := arrow.NewInt(c.data, c.alloc.Allocator)
+	var data *array.Int64
+	if len(c.nils) > 0 {
+		b := arrow.NewIntBuilder(c.alloc.Allocator)
+		b.Reserve(len(c.data))
+		for i, v := range c.data {
+			if c.nils[i] {
+				b.UnsafeAppendBoolToBitmap(false)
+				continue
+			}
+			b.UnsafeAppend(v)
+		}
+		data = b.NewInt64Array()
+		b.Release()
+	} else {
+		data = arrow.NewInt(c.data, c.alloc.Allocator)
+	}
 	col := &intColumn{
 		ColMeta: c.ColMeta,
 		data:    data,
@@ -1750,7 +1780,22 @@ func (c *uintColumnBuilder) Clear() {
 	c.data = c.data[0:0]
 }
 func (c *uintColumnBuilder) Copy() column {
-	data := arrow.NewUint(c.data, c.alloc.Allocator)
+	var data *array.Uint64
+	if len(c.nils) > 0 {
+		b := arrow.NewUintBuilder(c.alloc.Allocator)
+		b.Reserve(len(c.data))
+		for i, v := range c.data {
+			if c.nils[i] {
+				b.UnsafeAppendBoolToBitmap(false)
+				continue
+			}
+			b.UnsafeAppend(v)
+		}
+		data = b.NewUint64Array()
+		b.Release()
+	} else {
+		data = arrow.NewUint(c.data, c.alloc.Allocator)
+	}
 	col := &uintColumn{
 		ColMeta: c.ColMeta,
 		data:    data,
@@ -1817,7 +1862,22 @@ func (c *floatColumnBuilder) Clear() {
 	c.data = c.data[0:0]
 }
 func (c *floatColumnBuilder) Copy() column {
-	data := arrow.NewFloat(c.data, c.alloc.Allocator)
+	var data *array.Float64
+	if len(c.nils) > 0 {
+		b := arrow.NewFloatBuilder(c.alloc.Allocator)
+		b.Reserve(len(c.data))
+		for i, v := range c.data {
+			if c.nils[i] {
+				b.UnsafeAppendBoolToBitmap(false)
+				continue
+			}
+			b.UnsafeAppend(v)
+		}
+		data = b.NewFloat64Array()
+		b.Release()
+	} else {
+		data = arrow.NewFloat(c.data, c.alloc.Allocator)
+	}
 	col := &floatColumn{
 		ColMeta: c.ColMeta,
 		data:    data,
@@ -1884,7 +1944,22 @@ func (c *stringColumnBuilder) Clear() {
 	c.data = c.data[0:0]
 }
 func (c *stringColumnBuilder) Copy() column {
-	data := arrow.NewString(c.data, c.alloc.Allocator)
+	var data *array.Binary
+	if len(c.nils) > 0 {
+		b := arrow.NewStringBuilder(c.alloc.Allocator)
+		b.Reserve(len(c.data))
+		for i, v := range c.data {
+			if c.nils[i] {
+				b.UnsafeAppendBoolToBitmap(false)
+				continue
+			}
+			b.AppendString(v)
+		}
+		data = b.NewBinaryArray()
+		b.Release()
+	} else {
+		data = arrow.NewString(c.data, c.alloc.Allocator)
+	}
 	col := &stringColumn{
 		ColMeta: c.ColMeta,
 		data:    data,
@@ -1953,7 +2028,11 @@ func (c *timeColumnBuilder) Clear() {
 func (c *timeColumnBuilder) Copy() column {
 	b := arrow.NewIntBuilder(c.alloc.Allocator)
 	b.Reserve(len(c.data))
-	for _, v := range c.data {
+	for i, v := range c.data {
+		if c.nils[i] {
+			b.UnsafeAppendBoolToBitmap(false)
+			continue
+		}
 		b.UnsafeAppend(int64(v))
 	}
 	col := &timeColumn{

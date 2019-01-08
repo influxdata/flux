@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/memory"
 )
 
 func TestTablesEqual(t *testing.T) {
@@ -170,5 +171,83 @@ func TestTablesEqual(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestColListTable_AppendNil(t *testing.T) {
+	key := execute.NewGroupKey(nil, nil)
+	tb := execute.NewColListTableBuilder(key, &memory.Allocator{})
+
+	// Add a column for the value.
+	idx, _ := tb.AddCol(flux.ColMeta{
+		Label: execute.DefaultValueColLabel,
+		Type:  flux.TFloat,
+	})
+
+	// Add one normal value and add one nil value.
+	_ = tb.AppendFloat(idx, 1.0)
+	_ = tb.AppendNil(idx)
+
+	// Build the table and then verify the arrow table.
+	tbl, err := tb.Table()
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	if err := tbl.DoArrow(func(cr flux.ArrowColReader) error {
+		vs := cr.Floats(idx)
+		if got, want := vs.Len(), 2; got != want {
+			t.Errorf("unexpected length -want/+got\n\t- %d\n\t+ %d", want, got)
+			return nil
+		}
+
+		if vs.IsNull(0) {
+			t.Error("first value should not be null")
+		}
+		if !vs.IsNull(1) {
+			t.Error("second value should be null")
+		}
+		return nil
+	}); err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+}
+
+func TestColListTable_SetNil(t *testing.T) {
+	key := execute.NewGroupKey(nil, nil)
+	tb := execute.NewColListTableBuilder(key, &memory.Allocator{})
+
+	// Add a column for the value.
+	idx, _ := tb.AddCol(flux.ColMeta{
+		Label: execute.DefaultValueColLabel,
+		Type:  flux.TFloat,
+	})
+
+	// Grow by two values and then set the second to nil.
+	_ = tb.GrowFloats(idx, 2)
+	_ = tb.SetNil(1, idx)
+
+	// Build the table and then verify the arrow table.
+	tbl, err := tb.Table()
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	if err := tbl.DoArrow(func(cr flux.ArrowColReader) error {
+		vs := cr.Floats(idx)
+		if got, want := vs.Len(), 2; got != want {
+			t.Errorf("unexpected length -want/+got\n\t- %d\n\t+ %d", want, got)
+			return nil
+		}
+
+		if vs.IsNull(0) {
+			t.Error("first value should not be null")
+		}
+		if !vs.IsNull(1) {
+			t.Error("second value should be null")
+		}
+		return nil
+	}); err != nil {
+		t.Fatalf("unexpected error: %s", err)
 	}
 }
