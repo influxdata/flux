@@ -131,33 +131,39 @@ func (s *MaxSelector) selectRow(idx int, cr flux.ArrowColReader) {
 
 func (s *MaxIntSelector) DoInt(vs *array.Int64, cr flux.ArrowColReader) {
 	maxIdx := -1
-	for i, v := range vs.Int64Values() {
-		if !s.set || v > s.max {
-			s.set = true
-			s.max = v
-			maxIdx = i
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsValid(i) {
+			if v := vs.Value(i); !s.set || v > s.max {
+				s.set = true
+				s.max = v
+				maxIdx = i
+			}
 		}
 	}
 	s.selectRow(maxIdx, cr)
 }
 func (s *MaxUIntSelector) DoUInt(vs *array.Uint64, cr flux.ArrowColReader) {
 	maxIdx := -1
-	for i, v := range vs.Uint64Values() {
-		if !s.set || v > s.max {
-			s.set = true
-			s.max = v
-			maxIdx = i
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsValid(i) {
+			if v := vs.Value(i); !s.set || v > s.max {
+				s.set = true
+				s.max = v
+				maxIdx = i
+			}
 		}
 	}
 	s.selectRow(maxIdx, cr)
 }
 func (s *MaxFloatSelector) DoFloat(vs *array.Float64, cr flux.ArrowColReader) {
 	maxIdx := -1
-	for i, v := range vs.Float64Values() {
-		if !s.set || v > s.max {
-			s.set = true
-			s.max = v
-			maxIdx = i
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsValid(i) {
+			if v := vs.Value(i); !s.set || v > s.max {
+				s.set = true
+				s.max = v
+				maxIdx = i
+			}
 		}
 	}
 	s.selectRow(maxIdx, cr)
