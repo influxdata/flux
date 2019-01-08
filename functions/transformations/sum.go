@@ -109,8 +109,16 @@ type SumIntAgg struct {
 
 func (a *SumIntAgg) DoInt(vs *array.Int64) {
 	// https://issues.apache.org/jira/browse/ARROW-4081
-	if vs.Len() > 0 {
-		a.sum += math.Int64.Sum(vs)
+	if l := vs.Len() - vs.NullN(); l > 0 {
+		if vs.NullN() == 0 {
+			a.sum += math.Int64.Sum(vs)
+		} else {
+			for i := 0; i < vs.Len(); i++ {
+				if vs.IsValid(i) {
+					a.sum += vs.Value(i)
+				}
+			}
+		}
 	}
 }
 func (a *SumIntAgg) Type() flux.ColType {
@@ -126,8 +134,16 @@ type SumUIntAgg struct {
 
 func (a *SumUIntAgg) DoUInt(vs *array.Uint64) {
 	// https://issues.apache.org/jira/browse/ARROW-4081
-	if vs.Len() > 0 {
-		a.sum += math.Uint64.Sum(vs)
+	if l := vs.Len() - vs.NullN(); l > 0 {
+		if vs.NullN() == 0 {
+			a.sum += math.Uint64.Sum(vs)
+		} else {
+			for i := 0; i < vs.Len(); i++ {
+				if vs.IsValid(i) {
+					a.sum += vs.Value(i)
+				}
+			}
+		}
 	}
 }
 func (a *SumUIntAgg) Type() flux.ColType {
@@ -143,8 +159,16 @@ type SumFloatAgg struct {
 
 func (a *SumFloatAgg) DoFloat(vs *array.Float64) {
 	// https://issues.apache.org/jira/browse/ARROW-4081
-	if vs.Len() > 0 {
-		a.sum += math.Float64.Sum(vs)
+	if l := vs.Len() - vs.NullN(); l > 0 {
+		if vs.NullN() == 0 {
+			a.sum += math.Float64.Sum(vs)
+		} else {
+			for i := 0; i < vs.Len(); i++ {
+				if vs.IsValid(i) {
+					a.sum += vs.Value(i)
+				}
+			}
+		}
 	}
 }
 func (a *SumFloatAgg) Type() flux.ColType {
