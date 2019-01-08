@@ -1255,6 +1255,7 @@ Any output table will have the following properties:
 * It will contain a column for each provided aggregate column.
     The column label will be the same as the input table.
     The type of the column depends on the specific aggregate operation.
+    The value of the column will be null if the input table is empty or the input column has only null values.
 * It will not have a _time column
 
 All aggregate operations have the following properties:

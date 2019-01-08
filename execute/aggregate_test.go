@@ -172,6 +172,116 @@ func TestAggregate_Process(t *testing.T) {
 			},
 		},
 		{
+			name:   "empty table",
+			config: execute.DefaultAggregateConfig,
+			agg:    sumAgg,
+			data: []*executetest.Table{
+				{
+					KeyCols: []string{"_start", "_stop"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					KeyValues: []interface{}{
+						execute.Time(100),
+						execute.Time(200),
+					},
+					Data: [][]interface{}{},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					KeyCols: []string{"_start", "_stop"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(100), execute.Time(200), nil},
+					},
+				},
+			},
+		},
+		{
+			name:   "table all null",
+			config: execute.DefaultAggregateConfig,
+			agg:    sumAgg,
+			data: []*executetest.Table{
+				{
+					KeyCols: []string{"_start", "_stop"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					KeyValues: []interface{}{
+						execute.Time(100),
+						execute.Time(200),
+					},
+					Data: [][]interface{}{
+						{execute.Time(100), execute.Time(200), execute.Time(70), nil},
+						{execute.Time(100), execute.Time(200), execute.Time(80), nil},
+						{execute.Time(100), execute.Time(200), execute.Time(90), nil},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					KeyCols: []string{"_start", "_stop"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(100), execute.Time(200), nil},
+					},
+				},
+			},
+		},
+		{
+			name:   "table some null",
+			config: execute.DefaultAggregateConfig,
+			agg:    sumAgg,
+			data: []*executetest.Table{
+				{
+					KeyCols: []string{"_start", "_stop"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					KeyValues: []interface{}{
+						execute.Time(100),
+						execute.Time(200),
+					},
+					Data: [][]interface{}{
+						{execute.Time(100), execute.Time(200), execute.Time(70), 10.0},
+						{execute.Time(100), execute.Time(200), execute.Time(80), 20.0},
+						{execute.Time(100), execute.Time(200), execute.Time(90), nil},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					KeyCols: []string{"_start", "_stop"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(100), execute.Time(200), 30.0},
+					},
+				},
+			},
+		},
+		{
 			name:   "multiple tables with keyed columns",
 			config: execute.DefaultAggregateConfig,
 			agg:    sumAgg,
