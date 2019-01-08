@@ -100,42 +100,66 @@ func (t *RowWiseArrowTable) DoArrow(f func(flux.ArrowColReader) error) error {
 		case flux.TBool:
 			b := arrow.NewBoolBuilder(nil)
 			for i := range t.Data {
-				b.Append(t.Data[i][j].(bool))
+				if v := t.Data[i][j]; v != nil {
+					b.Append(v.(bool))
+				} else {
+					b.AppendNull()
+				}
 			}
 			cols[j] = b.NewBooleanArray()
 			b.Release()
 		case flux.TFloat:
 			b := arrow.NewFloatBuilder(nil)
 			for i := range t.Data {
-				b.Append(t.Data[i][j].(float64))
+				if v := t.Data[i][j]; v != nil {
+					b.Append(v.(float64))
+				} else {
+					b.AppendNull()
+				}
 			}
 			cols[j] = b.NewFloat64Array()
 			b.Release()
 		case flux.TInt:
 			b := arrow.NewIntBuilder(nil)
 			for i := range t.Data {
-				b.Append(t.Data[i][j].(int64))
+				if v := t.Data[i][j]; v != nil {
+					b.Append(v.(int64))
+				} else {
+					b.AppendNull()
+				}
 			}
 			cols[j] = b.NewInt64Array()
 			b.Release()
 		case flux.TString:
 			b := arrow.NewStringBuilder(nil)
 			for i := range t.Data {
-				b.AppendString(t.Data[i][j].(string))
+				if v := t.Data[i][j]; v != nil {
+					b.AppendString(v.(string))
+				} else {
+					b.AppendNull()
+				}
 			}
 			cols[j] = b.NewBinaryArray()
 			b.Release()
 		case flux.TTime:
 			b := arrow.NewIntBuilder(nil)
 			for i := range t.Data {
-				b.Append(int64(t.Data[i][j].(values.Time)))
+				if v := t.Data[i][j]; v != nil {
+					b.Append(int64(v.(values.Time)))
+				} else {
+					b.AppendNull()
+				}
 			}
 			cols[j] = b.NewInt64Array()
 			b.Release()
 		case flux.TUInt:
 			b := arrow.NewUintBuilder(nil)
 			for i := range t.Data {
-				b.Append(t.Data[i][j].(uint64))
+				if v := t.Data[i][j]; v != nil {
+					b.Append(v.(uint64))
+				} else {
+					b.AppendNull()
+				}
 			}
 			cols[j] = b.NewUint64Array()
 			b.Release()
@@ -187,42 +211,66 @@ func (t *Table) DoArrow(f func(flux.ArrowColReader) error) error {
 		case flux.TBool:
 			b := arrow.NewBoolBuilder(nil)
 			for i := range t.Data {
-				b.Append(t.Data[i][j].(bool))
+				if v := t.Data[i][j]; v != nil {
+					b.Append(v.(bool))
+				} else {
+					b.AppendNull()
+				}
 			}
 			cols[j] = b.NewBooleanArray()
 			b.Release()
 		case flux.TFloat:
 			b := arrow.NewFloatBuilder(nil)
 			for i := range t.Data {
-				b.Append(t.Data[i][j].(float64))
+				if v := t.Data[i][j]; v != nil {
+					b.Append(v.(float64))
+				} else {
+					b.AppendNull()
+				}
 			}
 			cols[j] = b.NewFloat64Array()
 			b.Release()
 		case flux.TInt:
 			b := arrow.NewIntBuilder(nil)
 			for i := range t.Data {
-				b.Append(t.Data[i][j].(int64))
+				if v := t.Data[i][j]; v != nil {
+					b.Append(v.(int64))
+				} else {
+					b.AppendNull()
+				}
 			}
 			cols[j] = b.NewInt64Array()
 			b.Release()
 		case flux.TString:
 			b := arrow.NewStringBuilder(nil)
 			for i := range t.Data {
-				b.AppendString(t.Data[i][j].(string))
+				if v := t.Data[i][j]; v != nil {
+					b.AppendString(v.(string))
+				} else {
+					b.AppendNull()
+				}
 			}
 			cols[j] = b.NewBinaryArray()
 			b.Release()
 		case flux.TTime:
 			b := arrow.NewIntBuilder(nil)
 			for i := range t.Data {
-				b.Append(int64(t.Data[i][j].(values.Time)))
+				if v := t.Data[i][j]; v != nil {
+					b.Append(int64(v.(values.Time)))
+				} else {
+					b.AppendNull()
+				}
 			}
 			cols[j] = b.NewInt64Array()
 			b.Release()
 		case flux.TUInt:
 			b := arrow.NewUintBuilder(nil)
 			for i := range t.Data {
-				b.Append(t.Data[i][j].(uint64))
+				if v := t.Data[i][j]; v != nil {
+					b.Append(v.(uint64))
+				} else {
+					b.AppendNull()
+				}
 			}
 			cols[j] = b.NewUint64Array()
 			b.Release()
