@@ -1831,17 +1831,25 @@ LogarithmicBins has the following properties:
 
 #### Limit
 
-Limit caps the number of records in output tables to a fixed size n.
+Limit caps the number of records in output tables to a fixed size `n`.
 One output table is produced for each input table.
-The output table will contain the first n records from the input table.
-If the input table has less than n records all records will be output.
+Each output table will contain the first `n` records after the first `offset` records of the input table.
+If the input table has less than `offset + n` records, all records except the first `offset` ones will be output.
 
 Limit has the following properties:
 
 * `n` int
-    The maximum number of records to output.
+    The maximum number of records per table to output.
+* `offset` int
+    The number of records to skip per table before limiting to `n`. Defaults to 0.
 
-Example: `from(bucket: "telegraf/autogen") |> limit(n: 10)`
+Example:
+
+```
+from(bucket: "telegraf/autogen")
+    |> range(start: -1h)
+    |> limit(n: 10, offset: 1)
+```
 
 #### Map
 
