@@ -54,30 +54,8 @@ func TestFirst_Process(t *testing.T) {
 			},
 			want: [][]int{{0}, nil, nil, nil, nil, nil, nil, nil, nil, nil},
 		},
-	}
-	for _, tc := range testCases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			executetest.IndexSelectorFuncTestHelper(
-				t,
-				new(transformations.FirstSelector),
-				&executetest.RowWiseArrowTable{
-					Table: tc.data,
-				},
-				tc.want,
-			)
-		})
-	}
-}
-
-func TestFirst_Nil(t *testing.T) {
-	testCases := []struct {
-		name string
-		data *executetest.Table
-		want [][]int
-	}{
 		{
-			name: "first",
+			name: "with null",
 			data: &executetest.Table{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},

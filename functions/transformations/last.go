@@ -113,24 +113,27 @@ func (s *LastSelector) Rows() []execute.Row {
 	return s.rows
 }
 
-func (s *LastSelector) selectLast(l int, cr flux.ArrowColReader) {
-	if l > 0 {
-		s.rows = []execute.Row{execute.ReadRow(l-1, cr)}
+func (s *LastSelector) selectLast(vs array.Interface, cr flux.ArrowColReader) {
+	for i := vs.Len() - 1; i >= 0; i-- {
+		if !vs.IsNull(i) {
+			s.rows = []execute.Row{execute.ReadRow(i, cr)}
+			return
+		}
 	}
 }
 
 func (s *LastSelector) DoBool(vs *array.Boolean, cr flux.ArrowColReader) {
-	s.selectLast(vs.Len(), cr)
+	s.selectLast(vs, cr)
 }
 func (s *LastSelector) DoInt(vs *array.Int64, cr flux.ArrowColReader) {
-	s.selectLast(vs.Len(), cr)
+	s.selectLast(vs, cr)
 }
 func (s *LastSelector) DoUInt(vs *array.Uint64, cr flux.ArrowColReader) {
-	s.selectLast(vs.Len(), cr)
+	s.selectLast(vs, cr)
 }
 func (s *LastSelector) DoFloat(vs *array.Float64, cr flux.ArrowColReader) {
-	s.selectLast(vs.Len(), cr)
+	s.selectLast(vs, cr)
 }
 func (s *LastSelector) DoString(vs *array.Binary, cr flux.ArrowColReader) {
-	s.selectLast(vs.Len(), cr)
+	s.selectLast(vs, cr)
 }
