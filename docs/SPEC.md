@@ -2238,6 +2238,38 @@ from(bucket: "telegraf/autogen")
 Records are grouped into a single table.  
 The group key of the resulting table is empty.
 
+#### Columns
+
+Columns lists the column labels of input tables.
+For each input table, it outputs a table with the same group key columns, plus a new column containing the labels of the input table's columns.
+Each row in an output table contains the group key value and the label of one column of the input table.
+So, each output table has the same number of rows as the number of columns of the input table.
+
+Columns has the following properties:
+
+| Name   | Type   | Description                                                        |
+| ----   | ----   | -----------                                                        |
+| column | string | Name of the column used to store the labels. Defaults to `_value`. |
+
+Example:
+
+```
+from(bucket: "telegraf/autogen")
+    |> range(start: -30m)
+    |> columns(column: "labels")
+```
+
+Getting every possible column label in a single table as output:
+
+```
+from(bucket: "telegraf/autogen")
+    |> range(start: -30m)
+    |> columns()
+    |> keep(columns: ["_value"])
+    |> group()
+    |> distinct()
+```
+
 #### Keys
 
 Keys lists the column labels of input tables.
