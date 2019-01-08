@@ -6,6 +6,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -39,6 +40,14 @@ var (
 			values.NewString("Z"),
 		},
 	)
+	key3 = execute.NewGroupKey(
+		cols,
+		[]values.Value{
+			values.NewString("Z"),
+			values.NewNull(semantic.String),
+			values.NewString("A"),
+		},
+	)
 )
 
 func TestGroupLookup(t *testing.T) {
@@ -55,11 +64,16 @@ func TestGroupLookup(t *testing.T) {
 	if v, ok := l.Lookup(key2); !ok || v != 2 {
 		t.Error("failed to lookup key2")
 	}
+	l.Set(key3, 3)
+	if v, ok := l.Lookup(key3); !ok || v != 3 {
+		t.Error("failed to lookup key3")
+	}
 
 	want := []entry{
 		{Key: key0, Value: 0},
 		{Key: key1, Value: 1},
 		{Key: key2, Value: 2},
+		{Key: key3, Value: 3},
 	}
 
 	var got []entry
@@ -90,6 +104,10 @@ func TestGroupLookup(t *testing.T) {
 	l.Delete(key2)
 	if _, ok := l.Lookup(key2); ok {
 		t.Error("failed to delete key2")
+	}
+	l.Delete(key3)
+	if _, ok := l.Lookup(key3); ok {
+		t.Error("failed to delete key3")
 	}
 }
 

@@ -40,6 +40,9 @@ func NewObjectWithValues(values map[string]Value) *object {
 	}
 }
 
+func (o *object) IsNull() bool {
+	return false
+}
 func (o *object) String() string {
 	b := new(strings.Builder)
 	b.WriteString("{")

@@ -79,7 +79,9 @@ func (p *packageObject) Range(f func(name string, v values.Value)) {
 		}
 	}
 }
-
+func (p *packageObject) IsNull() bool {
+	return false
+}
 func (p *packageObject) Str() string {
 	panic(values.UnexpectedKind(semantic.Object, semantic.String))
 }
@@ -874,6 +876,9 @@ func (f function) PolyType() semantic.PolyType {
 	return polyType
 }
 
+func (f function) IsNull() bool {
+	return false
+}
 func (f function) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
 }

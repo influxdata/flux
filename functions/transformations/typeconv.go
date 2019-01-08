@@ -49,6 +49,9 @@ func (c *stringConv) PolyType() semantic.PolyType {
 		Return:     semantic.String,
 	})
 }
+func (c *stringConv) IsNull() bool {
+	return false
+}
 func (c *stringConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
 }
@@ -128,6 +131,9 @@ func (c *intConv) PolyType() semantic.PolyType {
 		Required:   required,
 		Return:     semantic.Int,
 	})
+}
+func (c *intConv) IsNull() bool {
+	return false
 }
 func (c *intConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
@@ -217,6 +223,9 @@ func (c *uintConv) PolyType() semantic.PolyType {
 		Return:     semantic.UInt,
 	})
 }
+func (c *uintConv) IsNull() bool {
+	return false
+}
 func (c *uintConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
 }
@@ -305,6 +314,9 @@ func (c *floatConv) PolyType() semantic.PolyType {
 		Return:     semantic.Float,
 	})
 }
+func (c *floatConv) IsNull() bool {
+	return false
+}
 func (c *floatConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
 }
@@ -388,6 +400,9 @@ func (c *boolConv) PolyType() semantic.PolyType {
 		Required:   required,
 		Return:     semantic.Bool,
 	})
+}
+func (c *boolConv) IsNull() bool {
+	return false
 }
 func (c *boolConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
@@ -493,6 +508,9 @@ func (c *timeConv) PolyType() semantic.PolyType {
 		Return:     semantic.Time,
 	})
 }
+func (c *timeConv) IsNull() bool {
+	return false
+}
 func (c *timeConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
 }
@@ -568,6 +586,9 @@ func (c *durationConv) PolyType() semantic.PolyType {
 		Required:   required,
 		Return:     semantic.Duration,
 	})
+}
+func (c *durationConv) IsNull() bool {
+	return false
 }
 func (c *durationConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))

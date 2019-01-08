@@ -1192,6 +1192,10 @@ func (b *ColListTableBuilder) SetValue(i, j int, v values.Value) error {
 }
 
 func (b *ColListTableBuilder) AppendValue(j int, v values.Value) error {
+	if v.IsNull() {
+		return b.AppendNil(j)
+	}
+
 	switch v.Type() {
 	case semantic.Bool:
 		return b.AppendBool(j, v.Bool())
@@ -1950,7 +1954,7 @@ func (c *stringColumnBuilder) Copy() column {
 		b.Reserve(len(c.data))
 		for i, v := range c.data {
 			if c.nils[i] {
-				b.UnsafeAppendBoolToBitmap(false)
+				b.AppendNull()
 				continue
 			}
 			b.AppendString(v)

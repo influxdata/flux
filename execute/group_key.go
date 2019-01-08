@@ -35,6 +35,9 @@ func (k *groupKey) LabelValue(label string) values.Value {
 	}
 	return k.Value(ColIdx(label, k.cols))
 }
+func (k *groupKey) IsNull(j int) bool {
+	return k.values[j].IsNull()
+}
 func (k *groupKey) Value(j int) values.Value {
 	return k.values[j]
 }
@@ -91,6 +94,14 @@ func groupKeyEqual(a, b flux.GroupKey) bool {
 		if aCols[j] != bCols[j] {
 			return false
 		}
+		if a.IsNull(j) && b.IsNull(j) {
+			// Both key columns are null, consider them equal
+			// So that rows are assigned to the same table.
+			continue
+		} else if a.IsNull(j) || b.IsNull(j) {
+			return false
+		}
+
 		switch c.Type {
 		case flux.TBool:
 			if a.ValueBool(j) != b.ValueBool(j) {
@@ -133,6 +144,14 @@ func groupKeyLess(a, b flux.GroupKey) bool {
 		}
 		if av, bv := aCols[j].Type, bCols[j].Type; av != bv {
 			return av < bv
+		}
+		if av, bv := a.Value(j), b.Value(j); av.IsNull() && bv.IsNull() {
+			return false
+		} else if av.IsNull() {
+			// consider null values to be less than any value
+			return true
+		} else if bv.IsNull() {
+			return false
 		}
 		switch c.Type {
 		case flux.TBool:

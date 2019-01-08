@@ -38,6 +38,9 @@ func NewArrayWithBacking(elementType semantic.Type, elements []Value) Array {
 	}
 }
 
+func (a *array) IsNull() bool {
+	return false
+}
 func (a *array) String() string {
 	b := new(strings.Builder)
 	b.WriteString("[")

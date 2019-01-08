@@ -45,6 +45,8 @@ const (
 	uintDatatype   = "unsignedLong"
 
 	timeDataTypeWithFmt = "dateTime:RFC3339"
+
+	nullValue = ""
 )
 
 // ResultDecoder decodes a csv representation of a result.
@@ -391,7 +393,15 @@ func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tab
 				cols[j].fmt = desc
 			}
 		}
-		if defaults[j] != "" {
+		if defaults[j] == nullValue {
+			defaultValues[j] = values.NewNull(flux.SemanticType(cols[j].ColMeta.Type))
+		} else if defaults[j] == "" {
+			// for now, the null value is always represented with "", so this is
+			// unreachable.
+			// When we support the #null annotation we'll want to distinguish
+			// between "" (for strings) and null here.
+			panic("unreachable")
+		} else {
 			v, err := decodeValue(defaults[j], cols[j])
 			if err != nil {
 				return tableMetadata{}, errors.Wrapf(err, "column %q has invalid default value", label)
@@ -603,16 +613,15 @@ func (d *tableDecoder) init(line []string) error {
 	for j, c := range d.meta.Cols {
 		if d.meta.Groups[j] {
 			var value values.Value
-			if d.meta.Defaults[j] != nil {
-				value = d.meta.Defaults[j]
-			} else if record != nil {
+			if record != nil && record[j] != "" {
+				// TODO: consider treatment of nullValue here
 				v, err := decodeValue(record[j], c)
 				if err != nil {
 					return err
 				}
 				value = v
 			} else {
-				return fmt.Errorf("missing value for group key column %q", c.Label)
+				value = d.meta.Defaults[j]
 			}
 			keyCols = append(keyCols, c.ColMeta)
 			keyValues = append(keyValues, value)
@@ -634,7 +643,7 @@ func (d *tableDecoder) init(line []string) error {
 func (d *tableDecoder) appendRecord(record []string) error {
 	d.empty = false
 	for j, c := range d.meta.Cols {
-		if record[j] == "" && d.meta.Defaults[j] != nil {
+		if record[j] == "" {
 			v := d.meta.Defaults[j]
 			if err := d.builder.AppendValue(j, v); err != nil {
 				return err
@@ -831,7 +840,7 @@ func (e *ResultEncoder) Encode(w io.Writer, result flux.Result) (int64, error) {
 			}
 		}
 
-		err := tbl.Do(func(cr flux.ColReader) error {
+		err := tbl.DoArrow(func(cr flux.ArrowColReader) error {
 			record := row[recordStartIdx:]
 			l := cr.Len()
 			for i := 0; i < l; i++ {
@@ -912,10 +921,10 @@ func writeSchema(writer *csv.Writer, c *ResultEncoderConfig, row []string, cols 
 					}
 					defaults[j] = v
 				} else {
-					defaults[j] = ""
+					defaults[j] = nullValue
 				}
 			} else {
-				defaults[j] = ""
+				defaults[j] = nullValue
 			}
 		}
 	}
@@ -1006,6 +1015,10 @@ func writeDefaults(writer *csv.Writer, row, defaults []string) error {
 }
 
 func decodeValue(value string, c colMeta) (values.Value, error) {
+	if value == nullValue {
+		return values.NewNull(flux.SemanticType(c.Type)), nil
+	}
+
 	var val values.Value
 	switch c.Type {
 	case flux.TBool:
@@ -1086,6 +1099,10 @@ func decodeValueInto(j int, c colMeta, value string, builder execute.TableBuilde
 }
 
 func encodeValue(value values.Value, c colMeta) (string, error) {
+	if value.IsNull() {
+		return nullValue, nil
+	}
+
 	switch c.Type {
 	case flux.TBool:
 		return strconv.FormatBool(value.Bool()), nil
@@ -1104,23 +1121,38 @@ func encodeValue(value values.Value, c colMeta) (string, error) {
 	}
 }
 
-func encodeValueFrom(i, j int, c colMeta, cr flux.ColReader) (string, error) {
+func encodeValueFrom(i, j int, c colMeta, cr flux.ArrowColReader) (string, error) {
+	var v = nullValue
 	switch c.Type {
 	case flux.TBool:
-		return strconv.FormatBool(cr.Bools(j)[i]), nil
+		if cr.Bools(j).IsValid(i) {
+			v = strconv.FormatBool(cr.Bools(j).Value(i))
+		}
 	case flux.TInt:
-		return strconv.FormatInt(cr.Ints(j)[i], 10), nil
+		if cr.Ints(j).IsValid(i) {
+			v = strconv.FormatInt(cr.Ints(j).Value(i), 10)
+		}
 	case flux.TUInt:
-		return strconv.FormatUint(cr.UInts(j)[i], 10), nil
+		if cr.UInts(j).IsValid(i) {
+			v = strconv.FormatUint(cr.UInts(j).Value(i), 10)
+		}
 	case flux.TFloat:
-		return strconv.FormatFloat(cr.Floats(j)[i], 'f', -1, 64), nil
+		if cr.Floats(j).IsValid(i) {
+			v = strconv.FormatFloat(cr.Floats(j).Value(i), 'f', -1, 64)
+		}
 	case flux.TString:
-		return cr.Strings(j)[i], nil
+		if cr.Strings(j).IsValid(i) {
+			v = cr.Strings(j).ValueString(i)
+		}
 	case flux.TTime:
-		return encodeTime(cr.Times(j)[i], c.fmt), nil
+		if cr.Times(j).IsValid(i) {
+			v = encodeTime(execute.Time(cr.Times(j).Value(i)), c.fmt)
+		}
 	default:
 		return "", fmt.Errorf("unknown type %v", c.Type)
 	}
+
+	return v, nil
 }
 
 func decodeTime(t string, fmt string) (execute.Time, error) {

@@ -263,6 +263,9 @@ func (b linearBins) PolyType() semantic.PolyType {
 	return linearBinsPolyType
 }
 
+func (b linearBins) IsNull() bool {
+	return false
+}
 func (b linearBins) Str() string {
 	panic(values.UnexpectedKind(semantic.String, semantic.Function))
 }
@@ -391,6 +394,9 @@ func (b logarithmicBins) PolyType() semantic.PolyType {
 	return logarithmicBinsPolyType
 }
 
+func (b logarithmicBins) IsNull() bool {
+	return false
+}
 func (b logarithmicBins) Str() string {
 	panic(values.UnexpectedKind(semantic.String, semantic.Function))
 }

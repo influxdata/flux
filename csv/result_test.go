@@ -25,7 +25,7 @@ type TestCase struct {
 	encoderConfig csv.ResultEncoderConfig
 }
 
-var symetricalTestCases = []TestCase{
+var symmetricalTestCases = []TestCase{
 	{
 		name:          "single table",
 		encoderConfig: csv.DefaultEncoderConfig(),
@@ -63,6 +63,92 @@ var symetricalTestCases = []TestCase{
 						values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 1, 0, time.UTC)),
 						"cpu",
 						"A",
+						43.0,
+					},
+				},
+			}},
+		},
+	},
+	{
+		name:          "single table with null",
+		encoderConfig: csv.DefaultEncoderConfig(),
+		encoded: toCRLF(`#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
+#group,false,false,true,true,false,true,true,false
+#default,_result,,,,,,,
+,result,table,_start,_stop,_time,_measurement,host,_value
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:00Z,cpu,A,42
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:01Z,cpu,A,
+`),
+		result: &executetest.Result{
+			Nm: "_result",
+			Tbls: []*executetest.Table{{
+				KeyCols: []string{"_start", "_stop", "_measurement", "host"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "host", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{
+						values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+						values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+						values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+						"cpu",
+						"A",
+						42.0,
+					},
+					{
+						values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+						values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+						values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 1, 0, time.UTC)),
+						"cpu",
+						"A",
+						nil,
+					},
+				},
+			}},
+		},
+	},
+	{
+		name:          "single table with null in group key column",
+		encoderConfig: csv.DefaultEncoderConfig(),
+		encoded: toCRLF(`#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
+#group,false,false,true,true,false,true,true,false
+#default,_result,,,,,,,
+,result,table,_start,_stop,_time,_measurement,host,_value
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:00Z,cpu,,42
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:01Z,cpu,,43
+`),
+		result: &executetest.Result{
+			Nm: "_result",
+			Tbls: []*executetest.Table{{
+				KeyCols: []string{"_start", "_stop", "_measurement", "host"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "host", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{
+						values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+						values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+						values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+						"cpu",
+						nil,
+						42.0,
+					},
+					{
+						values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+						values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+						values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 1, 0, time.UTC)),
+						"cpu",
+						nil,
 						43.0,
 					},
 				},
@@ -482,7 +568,7 @@ func TestResultDecoder(t *testing.T) {
 			},
 		},
 	}
-	testCases = append(testCases, symetricalTestCases...)
+	testCases = append(testCases, symmetricalTestCases...)
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
@@ -528,7 +614,7 @@ func TestResultEncoder(t *testing.T) {
 	testCases := []TestCase{
 		// Add tests cases specific to encoding here
 	}
-	testCases = append(testCases, symetricalTestCases...)
+	testCases = append(testCases, symmetricalTestCases...)
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {

@@ -48,9 +48,14 @@ func (t *Table) Normalize() {
 			if len(t.Data) > 0 {
 				t.KeyValues[j] = t.Data[0][idx]
 			}
-			v := values.New(t.KeyValues[j])
-			if v.Type() == semantic.Invalid {
-				panic(fmt.Errorf("invalid value: %s", t.KeyValues[j]))
+			var v values.Value
+			if t.KeyValues[j] == nil {
+				v = values.NewNull(flux.SemanticType(t.ColMeta[idx].Type))
+			} else {
+				v = values.New(t.KeyValues[j])
+				if v.Type() == semantic.Invalid {
+					panic(fmt.Errorf("invalid value: %s", t.KeyValues[j]))
+				}
 			}
 			vs[j] = v
 		}
@@ -408,21 +413,23 @@ func ConvertTable(tbl flux.Table) (*Table, error) {
 		for j, c := range keyCols {
 			blk.KeyCols[j] = c.Label
 			var v interface{}
-			switch c.Type {
-			case flux.TBool:
-				v = key.ValueBool(j)
-			case flux.TUInt:
-				v = key.ValueUInt(j)
-			case flux.TInt:
-				v = key.ValueInt(j)
-			case flux.TFloat:
-				v = key.ValueFloat(j)
-			case flux.TString:
-				v = key.ValueString(j)
-			case flux.TTime:
-				v = key.ValueTime(j)
-			default:
-				return nil, fmt.Errorf("unsupported column type %v", c.Type)
+			if !key.IsNull(j) {
+				switch c.Type {
+				case flux.TBool:
+					v = key.ValueBool(j)
+				case flux.TUInt:
+					v = key.ValueUInt(j)
+				case flux.TInt:
+					v = key.ValueInt(j)
+				case flux.TFloat:
+					v = key.ValueFloat(j)
+				case flux.TString:
+					v = key.ValueString(j)
+				case flux.TTime:
+					v = key.ValueTime(j)
+				default:
+					return nil, fmt.Errorf("unsupported column type %v", c.Type)
+				}
 			}
 			blk.KeyValues[j] = v
 		}
