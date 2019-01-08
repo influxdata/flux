@@ -23,17 +23,20 @@ type FunctionSuggestion struct {
 
 // Completer provides methods for suggestions in Flux queries.
 type Completer struct {
-	scope *interpreter.Scope
+	scope interpreter.Scope
 }
 
 // NewCompleter creates a new completer from scope.
-func NewCompleter(scope *interpreter.Scope) Completer {
+func NewCompleter(scope interpreter.Scope) Completer {
 	return Completer{scope: scope}
 }
 
 // Names returns the slice of names in scope.
 func (c Completer) Names() []string {
-	names := c.scope.Names()
+	names := make([]string, 0, c.scope.Size())
+	c.scope.Range(func(k string, v values.Value) {
+		names = append(names, k)
+	})
 	sort.Strings(names)
 	return names
 }
@@ -98,9 +101,7 @@ func (c Completer) FunctionSuggestion(name string) (FunctionSuggestion, error) {
 
 // DefaultCompleter creates a completer with builtin scope
 func DefaultCompleter() Completer {
-	scope := flux.BuiltIns()
-	interpScope := interpreter.NewScopeWithValues(scope)
-	return NewCompleter(interpScope)
+	return NewCompleter(flux.Prelude())
 }
 
 func isFunction(v values.Value) bool {

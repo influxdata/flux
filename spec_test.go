@@ -14,6 +14,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/functions/transformations"
 	_ "github.com/influxdata/flux/options"
 	"github.com/influxdata/flux/parser"
@@ -279,13 +280,14 @@ func TestSpec_Walk(t *testing.T) {
 	}
 }
 
-// Example_option demonstrates retrieving an option from the Flux interpreter
+// Example_option demonstrates retrieving an option value from a scope object
 func Example_option() {
-	// Instantiate a new Flux interpreter with pre-populated option and global scopes
-	itrp := flux.NewInterpreter()
 
-	// Retrieve the default value for an option
-	nowFunc := itrp.Option("now")
+	// Instantiate a new universe block
+	universe := flux.Prelude()
+
+	// Retrieve the default value for the now option
+	nowFunc, _ := universe.Lookup("now")
 
 	// The now option is a function value whose default behavior is to return
 	// the current system time when called. The function now() doesn't take
@@ -295,38 +297,42 @@ func Example_option() {
 	// Output:
 }
 
-// Example_setOption demonstrates setting an option from the Flux interpreter
+// Example_setOption demonstrates setting an option value on a scope object
 func Example_setOption() {
-	// Instantiate a new Flux interpreter with pre-populated option and global scopes
-	itrp := flux.NewInterpreter()
 
-	// Set a new option from the interpreter
-	itrp.SetOption("dummy_option", values.NewInt(3))
+	// Instantiate a new universe block
+	universe := flux.Prelude()
 
-	fmt.Printf("dummy_option = %d", itrp.Option("dummy_option").Int())
+	// Create a new option binding
+	universe.Set("dummy_option", values.NewInt(3))
+
+	v, _ := universe.Lookup("dummy_option")
+
+	fmt.Printf("dummy_option = %d", v.Int())
 	// Output: dummy_option = 3
 }
 
 // Example_overrideDefaultOptionExternally demonstrates how declaring an option
-// in a Flux script will change that option's binding in the options scope of the interpreter.
+// in a Flux script will change that option's binding globally.
 func Example_overrideDefaultOptionExternally() {
 	queryString := `
-		now = () => 2018-07-13T00:00:00Z
+		option now = () => 2018-07-13T00:00:00Z
 		what_time_is_it = now()`
 
-	itrp := flux.NewInterpreter()
+	itrp := interpreter.NewInterpreter()
+	universe := flux.Prelude()
 
 	astPkg := parser.ParseSource(queryString)
 	semPkg, _ := semantic.New(astPkg)
 
 	// Evaluate package
-	err := itrp.Eval(semPkg, nil)
+	err := itrp.Eval(semPkg, universe, nil)
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	// After evaluating the package, lookup the value of what_time_is_it
-	now, _ := itrp.GlobalScope().Lookup("what_time_is_it")
+	now, _ := universe.Lookup("what_time_is_it")
 
 	// what_time_is_it? Why it's ....
 	fmt.Printf("The new current time (UTC) is: %v", now)
@@ -338,7 +344,8 @@ func Example_overrideDefaultOptionExternally() {
 func Example_overrideDefaultOptionInternally() {
 	queryString := `what_time_is_it = now()`
 
-	itrp := flux.NewInterpreter()
+	itrp := interpreter.NewInterpreter()
+	universe := flux.Prelude()
 
 	astPkg := parser.ParseSource(queryString)
 	semPkg, _ := semantic.New(astPkg)
@@ -357,16 +364,16 @@ func Example_overrideDefaultOptionInternally() {
 	newNowFunc := values.NewFunction(functionName, functionType, functionCall, sideEffect)
 
 	// Override the default now function with the new one
-	itrp.SetOption("now", newNowFunc)
+	universe.Set("now", newNowFunc)
 
 	// Evaluate package
-	err := itrp.Eval(semPkg, nil)
+	err := itrp.Eval(semPkg, universe, nil)
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	// After evaluating the package, lookup the value of what_time_is_it
-	now, _ := itrp.GlobalScope().Lookup("what_time_is_it")
+	now, _ := universe.Lookup("what_time_is_it")
 
 	// what_time_is_it? Why it's ....
 	fmt.Printf("The new current time (UTC) is: %v", now)

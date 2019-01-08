@@ -39,6 +39,12 @@ func NewObjectWithValues(values map[string]Value) *object {
 		propertyTypes: propertyTypes,
 	}
 }
+func NewObjectWithBacking(size int) *object {
+	return &object{
+		values:        make(map[string]Value, size),
+		propertyTypes: make(map[string]semantic.Type, size),
+	}
+}
 
 func (o *object) IsNull() bool {
 	return false

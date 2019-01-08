@@ -4,11 +4,9 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/influxdata/flux/ast"
-
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/parser"
+	"github.com/influxdata/flux/interpreter/interptest"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -301,9 +299,6 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 				map[string]values.Value{
 					"x": values.NewInt(10),
 				}),
-			sideEffects: []values.Value{
-				values.NewInt(10),
-			},
 		},
 		{
 			name: "side effect",
@@ -322,9 +317,6 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 				map[string]values.Value{
 					"x": values.NewInt(10),
 				}),
-			sideEffects: []values.Value{
-				values.NewInt(10),
-			},
 		},
 		{
 			name: "explicit side effect",
@@ -357,7 +349,6 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 				}),
 			sideEffects: []values.Value{
 				values.NewInt(0), // side effect from `sideEffect()`
-				values.NewInt(10),
 			},
 		},
 	}
@@ -378,20 +369,21 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 			importer := &importer{
 				packages: make(map[string]interpreter.Package),
 			}
+			scope := interptest.NewScopeWithValues(builtins)
 			for _, imp := range tc.imports {
 				var path, pkg string
 				for k, v := range imp {
 					path = k
 					pkg = v
 				}
-				itrp := interpreter.NewInterpreter(nil, builtins, nil)
-				if err := eval(itrp, importer, pkg); err != nil {
+				itrp := interpreter.NewInterpreter()
+				if err := interptest.Eval(itrp, scope, importer, pkg); err != nil {
 					t.Fatal(err)
 				}
 				importer.packages[path] = itrp.Package()
 			}
-			itrp := interpreter.NewInterpreter(nil, builtins, nil)
-			if err := eval(itrp, importer, tc.pkg); err != nil {
+			itrp := interpreter.NewInterpreter()
+			if err := interptest.Eval(itrp, scope, importer, tc.pkg); err != nil {
 				t.Fatal(err)
 			}
 			got := itrp.Package()
@@ -420,13 +412,13 @@ func TestInterpreter_QualifiedOption(t *testing.T) {
 			"alert": externalPackage,
 		},
 	}
-	itrp := interpreter.NewInterpreter(nil, nil, nil)
+	itrp := interpreter.NewInterpreter()
 	pkg := `
 		package foo
 		import "alert"
 		option alert.state = "Error"
 `
-	if err := eval(itrp, importer, pkg); err != nil {
+	if err := interptest.Eval(itrp, interptest.NewScope(), importer, pkg); err != nil {
 		t.Fatalf("failed to evaluate package: %v", err)
 	}
 	option, ok := externalPackage.Get("state")
@@ -437,16 +429,4 @@ func TestInterpreter_QualifiedOption(t *testing.T) {
 	if option.Str() != "Error" {
 		t.Errorf("unexpected option value; want=%s got=%s", "Error", optionValue)
 	}
-}
-
-func eval(itrp *interpreter.Interpreter, importer interpreter.Importer, src string) error {
-	pkg := parser.ParseSource(src)
-	if ast.Check(pkg) > 0 {
-		return ast.GetError(pkg)
-	}
-	node, err := semantic.New(pkg)
-	if err != nil {
-		return err
-	}
-	return itrp.Eval(node, importer)
 }

@@ -11,5 +11,4 @@ type Package interface {
 	values.Object
 	Name() string
 	SideEffects() []values.Value
-	Copy() Package
 }

@@ -9,22 +9,26 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/interpreter/interptest"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/semantic/semantictest"
 	"github.com/influxdata/flux/values"
 )
 
-var testScope = make(map[string]values.Value)
-var optionScope = make(map[string]values.Value)
+var testScope = interptest.NewScopeWithValues(map[string]values.Value{
+	"true":  values.NewBool(true),
+	"false": values.NewBool(false),
+})
+
 var optionsObject = values.NewObject()
 
 func addFunc(f *function) {
-	testScope[f.name] = f
+	testScope.Set(f.name, f)
 }
 
 func addOption(name string, opt values.Value) {
-	optionScope[name] = opt
+	testScope.Set(name, opt)
 }
 
 func init() {
@@ -151,11 +155,9 @@ func TestEval(t *testing.T) {
 			six = six()
 			nine = nine()
 
-			answer = fortyTwo() == six * nine
+			fortyTwo() == six * nine
 			`,
 			want: []values.Value{
-				values.NewFloat(6),
-				values.NewFloat(9),
 				values.NewBool(false),
 			},
 		},
@@ -165,11 +167,9 @@ func TestEval(t *testing.T) {
             six = six()
             nine = nine()
 
-            answer = (not (fortyTwo() == six * nine)) or fail()
+            not (fortyTwo() == six * nine) or fail()
 			`,
 			want: []values.Value{
-				values.NewFloat(6.0),
-				values.NewFloat(9.0),
 				values.NewBool(true),
 			},
 		},
@@ -339,7 +339,6 @@ func TestEval(t *testing.T) {
 			task.repeat == 100 or fail()
 			`,
 			want: []values.Value{
-				optionsObject,
 				values.NewBool(true),
 				values.NewBool(true),
 			},
@@ -404,10 +403,10 @@ func TestEval(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// Create new interpreter scope for each test case
-			itrp := interpreter.NewInterpreter(optionScope, testScope, interpreter.NewTypeScope())
+			// Create new interpreter for each test case
+			itrp := interpreter.NewInterpreter()
 
-			err = itrp.Eval(graph, nil)
+			err = itrp.Eval(graph, testScope.Copy(), nil)
 			if !tc.wantErr && err != nil {
 				t.Fatal(err)
 			} else if tc.wantErr && err == nil {
@@ -496,8 +495,8 @@ func TestInterpreter_TypeErrors(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			itrp := interpreter.NewInterpreter(nil, nil, interpreter.NewTypeScope())
-			if err := itrp.Eval(graph, nil); err == nil {
+			itrp := interpreter.NewInterpreter()
+			if err := itrp.Eval(graph, interptest.NewScope(), nil); err == nil {
 				if tc.err != "" {
 					t.Error("expected type error, but program executed successfully")
 				}
@@ -570,20 +569,16 @@ func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			optionCopy := copyScope(optionScope)
-			testScopeCopy := copyScope(testScope)
-			types := interpreter.NewTypeScope()
-			itrp := interpreter.NewMutableInterpreter(optionCopy, testScopeCopy, types)
+			itrp := interpreter.NewInterpreter()
+			scope := testScope.Copy()
 
 			for _, builtin := range tc.builtins {
-				if err := eval(itrp, nil, builtin); err != nil {
+				if err := interptest.Eval(itrp, scope, nil, builtin); err != nil {
 					t.Fatal("evaluation of builtin failed: ", err)
 				}
 			}
 
-			itrp = interpreter.NewInterpreter(optionCopy, testScopeCopy, types)
-
-			if err := eval(itrp, nil, tc.program); err != nil && !tc.wantErr {
+			if err := interptest.Eval(itrp, scope, nil, tc.program); err != nil && !tc.wantErr {
 				t.Fatal("program evaluation failed: ", err)
 			} else if err == nil && tc.wantErr {
 				t.Fatal("expected to error during program evaluation")
@@ -595,14 +590,6 @@ func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
 
 		})
 	}
-}
-
-func copyScope(scope map[string]values.Value) map[string]values.Value {
-	cpy := make(map[string]values.Value)
-	for k, v := range scope {
-		cpy[k] = v
-	}
-	return cpy
 }
 
 func TestResolver(t *testing.T) {
@@ -654,9 +641,9 @@ func TestResolver(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	itrp := interpreter.NewInterpreter(nil, scope, interpreter.NewTypeScope())
+	itrp := interpreter.NewInterpreter()
 
-	if err := itrp.Eval(graph, nil); err != nil {
+	if err := itrp.Eval(graph, interptest.NewScopeWithValues(scope), nil); err != nil {
 		t.Fatal(err)
 	}
 
