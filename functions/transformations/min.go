@@ -131,33 +131,39 @@ func (s *MinSelector) selectRow(idx int, cr flux.ArrowColReader) {
 
 func (s *MinIntSelector) DoInt(vs *array.Int64, cr flux.ArrowColReader) {
 	minIdx := -1
-	for i, v := range vs.Int64Values() {
-		if !s.set || v < s.min {
-			s.set = true
-			s.min = v
-			minIdx = i
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsValid(i) {
+			if v := vs.Value(i); !s.set || v < s.min {
+				s.set = true
+				s.min = v
+				minIdx = i
+			}
 		}
 	}
 	s.selectRow(minIdx, cr)
 }
 func (s *MinUIntSelector) DoUInt(vs *array.Uint64, cr flux.ArrowColReader) {
 	minIdx := -1
-	for i, v := range vs.Uint64Values() {
-		if !s.set || v < s.min {
-			s.set = true
-			s.min = v
-			minIdx = i
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsValid(i) {
+			if v := vs.Value(i); !s.set || v < s.min {
+				s.set = true
+				s.min = v
+				minIdx = i
+			}
 		}
 	}
 	s.selectRow(minIdx, cr)
 }
 func (s *MinFloatSelector) DoFloat(vs *array.Float64, cr flux.ArrowColReader) {
 	minIdx := -1
-	for i, v := range vs.Float64Values() {
-		if !s.set || v < s.min {
-			s.set = true
-			s.min = v
-			minIdx = i
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsValid(i) {
+			if v := vs.Value(i); !s.set || v < s.min {
+				s.set = true
+				s.min = v
+				minIdx = i
+			}
 		}
 	}
 	s.selectRow(minIdx, cr)
