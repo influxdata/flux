@@ -1336,7 +1336,7 @@ Cov has the following properties:
 Example:
     
     cpu = from(bucket: "telegraf/autogen") |> range(start:-5m) |> filter(fn:(r) => r._measurement == "cpu")
-    cpu = from(bucket: "telegraf/autogen") |> range(start:-5m) |> filter(fn:(r) => r._measurement == "mem")
+    mem = from(bucket: "telegraf/autogen") |> range(start:-5m) |> filter(fn:(r) => r._measurement == "mem")
     cov(x: cpu, y: mem)
 
 #### Pearsonr
