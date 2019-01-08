@@ -28,7 +28,7 @@ func TestKeys_Process(t *testing.T) {
 						{Label: "tag1", Type: flux.TString},
 					},
 					Data: [][]interface{}{
-						{execute.Time(1), 2.0},
+						{execute.Time(1), 2.0, "tag0-0", "tag1-0"},
 					},
 				},
 			},
@@ -56,7 +56,7 @@ func TestKeys_Process(t *testing.T) {
 						{Label: "tag1", Type: flux.TString},
 					},
 					Data: [][]interface{}{
-						{execute.Time(1), 2.0},
+						{execute.Time(1), 2.0, "tag0-0", "tag1-0"},
 					},
 				},
 			},

@@ -2154,16 +2154,32 @@ The group key of the resulting table is empty.
 
 #### Keys
 
-Keys outputs a table with the input table's group key columns, plus a `_value` column containing the names of the input table's columns.  
+Keys lists the column labels of input tables.
+For each input table, it outputs a table with the same group key columns, plus a `_value` column containing the labels of the input table's columns.
+Each row in an output table contains the group key value and the label of one column of the input table.
+So, each output table has the same number of rows as the number of columns of the input table.
 
 Keys has the following property: 
 *  `except` list of strings
    Do not include the given names in the output.  Defaults to `["_time", "_value"]`
-   
+
+Example:
+
 ```
 from(bucket: "telegraf/autogen")
     |> range(start: -30m)
     |> keys(except: ["_time", "_start", "_stop", "_field", "_measurement", "_value"])
+```
+
+Getting every possible column label in a single table as output:
+
+```
+from(bucket: "telegraf/autogen")
+    |> range(start: -30m)
+    |> keys(except: [])
+    |> keep(columns: ["_value"])
+    |> group()
+    |> distinct()
 ```
 
 #### KeyValues
