@@ -13,15 +13,20 @@ import (
 
 // AggFuncTestHelper splits the data in half, runs Do over each split and compares
 // the Value to want.
-func AggFuncTestHelper(t *testing.T, agg execute.Aggregate, data []float64, want interface{}) {
+func AggFuncTestHelper(t *testing.T, agg execute.Aggregate, data *array.Float64, want interface{}) {
 	t.Helper()
 
 	// Call Do twice, since this is possible according to the interface.
-	h := len(data) / 2
+	h := data.Len() / 2
 	vf := agg.NewFloatAgg()
-	vf.DoFloat(arrow.NewFloat(data[:h], nil))
-	if h < len(data) {
-		vf.DoFloat(arrow.NewFloat(data[h:], nil))
+
+	d := arrow.FloatSlice(data, 0, h)
+	vf.DoFloat(d)
+	d.Release()
+	if h < data.Len() {
+		d := arrow.FloatSlice(data, h, data.Len())
+		vf.DoFloat(d)
+		d.Release()
 	}
 
 	var got interface{}

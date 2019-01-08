@@ -80,7 +80,7 @@ func TestCount_Process(t *testing.T) {
 	executetest.AggFuncTestHelper(
 		t,
 		new(transformations.CountAgg),
-		[]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		arrow.NewFloat([]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, nil),
 		int64(10),
 	)
 }

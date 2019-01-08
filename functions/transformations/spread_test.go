@@ -25,10 +25,10 @@ func TestSpread_Process(t *testing.T) {
 	agg := new(transformations.SpreadAgg)
 	executetest.AggFuncTestHelper(t,
 		agg,
-		[]float64{
+		arrow.NewFloat([]float64{
 			0, 1, 2, 3, 4,
 			5, 6, 7, 8, 9,
-		},
+		}, nil),
 		float64(9),
 	)
 }

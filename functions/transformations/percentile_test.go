@@ -132,7 +132,7 @@ func TestPercentile_Process(t *testing.T) {
 			executetest.AggFuncTestHelper(
 				t,
 				agg,
-				tc.data,
+				arrow.NewFloat(tc.data, nil),
 				tc.want,
 			)
 		})

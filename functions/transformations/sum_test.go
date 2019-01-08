@@ -24,7 +24,7 @@ func TestSumOperation_Marshaling(t *testing.T) {
 func TestSum_Process(t *testing.T) {
 	executetest.AggFuncTestHelper(t,
 		new(transformations.SumAgg),
-		[]float64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+		arrow.NewFloat([]float64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, nil),
 		float64(45),
 	)
 }
