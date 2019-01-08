@@ -428,29 +428,39 @@ func ConvertTable(tbl flux.Table) (*Table, error) {
 		}
 	}
 
-	err := tbl.Do(func(cr flux.ColReader) error {
+	err := tbl.DoArrow(func(cr flux.ArrowColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			row := make([]interface{}, len(blk.ColMeta))
 			for j, c := range blk.ColMeta {
-				var v interface{}
 				switch c.Type {
 				case flux.TBool:
-					v = cr.Bools(j)[i]
+					if col := cr.Bools(j); col.IsValid(i) {
+						row[j] = col.Value(i)
+					}
 				case flux.TInt:
-					v = cr.Ints(j)[i]
+					if col := cr.Ints(j); col.IsValid(i) {
+						row[j] = col.Value(i)
+					}
 				case flux.TUInt:
-					v = cr.UInts(j)[i]
+					if col := cr.UInts(j); col.IsValid(i) {
+						row[j] = col.Value(i)
+					}
 				case flux.TFloat:
-					v = cr.Floats(j)[i]
+					if col := cr.Floats(j); col.IsValid(i) {
+						row[j] = col.Value(i)
+					}
 				case flux.TString:
-					v = cr.Strings(j)[i]
+					if col := cr.Strings(j); col.IsValid(i) {
+						row[j] = col.ValueString(i)
+					}
 				case flux.TTime:
-					v = cr.Times(j)[i]
+					if col := cr.Times(j); col.IsValid(i) {
+						row[j] = values.Time(col.Value(i))
+					}
 				default:
 					panic(fmt.Errorf("unknown column type %s", c.Type))
 				}
-				row[j] = v
 			}
 			blk.Data = append(blk.Data, row)
 		}
