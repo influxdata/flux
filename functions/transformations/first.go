@@ -108,25 +108,31 @@ func (s *FirstSelector) NewStringSelector() execute.DoStringIndexSelector {
 	return s
 }
 
-func (s *FirstSelector) selectFirst(l int) []int {
-	if !s.selected && l > 0 {
-		s.selected = true
-		return []int{0}
+func (s *FirstSelector) selectFirst(vs array.Interface) []int {
+	if !s.selected {
+		sz := vs.Len()
+		for i := 0; i < sz; i++ {
+			if !vs.IsNull(i) {
+				s.selected = true
+				return []int{i}
+			}
+		}
 	}
 	return nil
 }
+
 func (s *FirstSelector) DoBool(vs *array.Boolean) []int {
-	return s.selectFirst(vs.Len())
+	return s.selectFirst(vs)
 }
 func (s *FirstSelector) DoInt(vs *array.Int64) []int {
-	return s.selectFirst(vs.Len())
+	return s.selectFirst(vs)
 }
 func (s *FirstSelector) DoUInt(vs *array.Uint64) []int {
-	return s.selectFirst(vs.Len())
+	return s.selectFirst(vs)
 }
 func (s *FirstSelector) DoFloat(vs *array.Float64) []int {
-	return s.selectFirst(vs.Len())
+	return s.selectFirst(vs)
 }
 func (s *FirstSelector) DoString(vs *array.Binary) []int {
-	return s.selectFirst(vs.Len())
+	return s.selectFirst(vs)
 }
