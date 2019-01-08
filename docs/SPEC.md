@@ -2247,9 +2247,9 @@ So, each output table has the same number of rows as the number of columns of th
 
 Columns has the following properties:
 
-| Name   | Type   | Description                                                        |
-| ----   | ----   | -----------                                                        |
-| column | string | Name of the column used to store the labels. Defaults to `_value`. |
+| Name   | Type   | Description                                                                               |
+| ----   | ----   | -----------                                                                               |
+| column | string | Column is the name of the output column to store the column labels. Defaults to `_value`. |
 
 Example:
 
@@ -2272,31 +2272,31 @@ from(bucket: "telegraf/autogen")
 
 #### Keys
 
-Keys lists the column labels of input tables.
-For each input table, it outputs a table with the same group key columns, plus a `_value` column containing the labels of the input table's columns.
-Each row in an output table contains the group key value and the label of one column of the input table.
-So, each output table has the same number of rows as the number of columns of the input table.
+Keys outputs the group key of input tables.
+For each input table, it outputs a table with the same group key columns, plus a `_value` column containing the labels of the input table's group key.
+Each row in an output table contains the group key value and the label of one column in the group key of the input table.
+So, each output table has the same number of rows as the size of the group key of the input table.
 
-Keys has the following parameters: 
+Keys has the following properties:
 
-| Name   | Type     | Description                                                                               |
-| ----   | ----     | -----------                                                                               |
-| except | []string | Expect is a list of keys not to include in the output. Defaults to `["_time", "_value"]`. |
+| Name   | Type   | Description                                                                                  |
+| ----   | ----   | -----------                                                                                  |
+| column | string | Column is the name of the output column to store the group key labels. Defaults to `_value`. |
 
 Example:
 
 ```
 from(bucket: "telegraf/autogen")
     |> range(start: -30m)
-    |> keys(except: ["_time", "_start", "_stop", "_field", "_measurement", "_value"])
+    |> keys(column: "keys")
 ```
 
-Getting every possible column label in a single table as output:
+Getting every possible key in a single table as output:
 
 ```
 from(bucket: "telegraf/autogen")
     |> range(start: -30m)
-    |> keys(except: [])
+    |> keys()
     |> keep(columns: ["_value"])
     |> group()
     |> distinct()
@@ -2310,7 +2310,7 @@ KeyValues has the following properties:
 
 | Name       | Type                         | Description                                                                                      |
 | ----       | ----                         | -----------                                                                                      |
-| keyColumns | []string                     | KeyColumns ia a list of columns from which values are extracted.                                 |
+| keyColumns | []string                     | KeyColumns is a list of columns from which values are extracted.                                 |
 | fn         | (schema: schema) -> []string | Fn is a schema function that may by used instead of `keyColumns` to identify the set of columns. |
 
 Additional requirements:

@@ -2,33 +2,24 @@ package universe
 
 import (
 	"fmt"
-	"sort"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 )
 
 const KeysKind = "keys"
 
-var (
-	keysExceptDefaultValue = []string{"_time", "_value"}
-)
-
 type KeysOpSpec struct {
-	Except []string `json:"except"`
+	Column string `json:"column"`
 }
 
 func init() {
-	keysSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"except": semantic.NewArrayPolyType(semantic.String),
-		},
-		nil,
-	)
+	keysSignature := flux.FunctionSignature(map[string]semantic.PolyType{
+		"column": semantic.String,
+	}, nil)
 
 	flux.RegisterPackageValue("universe", KeysKind, flux.FunctionValue(KeysKind, createKeysOpSpec, keysSignature))
 	flux.RegisterOpSpec(KeysKind, newKeysOp)
@@ -42,15 +33,13 @@ func createKeysOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	}
 
 	spec := new(KeysOpSpec)
-	if array, ok, err := args.GetArray("except", semantic.String); err != nil {
+
+	if col, found, err := args.GetString("column"); err != nil {
 		return nil, err
-	} else if ok {
-		spec.Except, err = interpreter.ToStringArray(array)
-		if err != nil {
-			return nil, err
-		}
+	} else if found {
+		spec.Column = col
 	} else {
-		spec.Except = keysExceptDefaultValue
+		spec.Column = execute.DefaultValueColLabel
 	}
 
 	return spec, nil
@@ -66,7 +55,7 @@ func (s *KeysOpSpec) Kind() flux.OperationKind {
 
 type KeysProcedureSpec struct {
 	plan.DefaultCost
-	Except []string
+	Column string
 }
 
 func newKeysProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -76,7 +65,7 @@ func newKeysProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proce
 	}
 
 	return &KeysProcedureSpec{
-		Except: spec.Except,
+		Column: spec.Column,
 	}, nil
 }
 
@@ -86,9 +75,7 @@ func (s *KeysProcedureSpec) Kind() plan.ProcedureKind {
 
 func (s *KeysProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(KeysProcedureSpec)
-
 	*ns = *s
-
 	return ns
 }
 
@@ -107,14 +94,14 @@ type keysTransformation struct {
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 
-	except []string
+	column string
 }
 
 func NewKeysTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *KeysProcedureSpec) *keysTransformation {
 	return &keysTransformation{
 		d:      d,
 		cache:  cache,
-		except: spec.Except,
+		column: spec.Column,
 	}
 }
 
@@ -128,35 +115,17 @@ func (t *keysTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 		return fmt.Errorf("keys found duplicate table with key: %v", tbl.Key())
 	}
 
-	var except map[string]struct{}
-	if len(t.except) > 0 {
-		except = make(map[string]struct{}, len(t.except))
-		for _, name := range t.except {
-			except[name] = struct{}{}
-		}
-	}
-
 	keys := make([]string, 0, len(tbl.Cols()))
-	for _, c := range tbl.Cols() {
-		if _, ok := except[c.Label]; ok {
-			// Skip past this column if it is in the list of except.
-			continue
-		}
+	for _, c := range tbl.Key().Cols() {
 		keys = append(keys, c.Label)
 	}
-	// TODO(jsternberg): Should these keys be sorted?
-	sort.Strings(keys)
 
 	// Add the key to this table.
 	if err := execute.AddTableKeyCols(tbl.Key(), builder); err != nil {
 		return err
 	}
 
-	// Create a new column for the key names and add them.
-	// TODO(jsternberg): The table builder automatically sizes this to
-	// the key size if we do this after appending the key values, so we
-	// have to do this before.
-	colIdx, err := builder.AddCol(flux.ColMeta{Label: execute.DefaultValueColLabel, Type: flux.TString})
+	colIdx, err := builder.AddCol(flux.ColMeta{Label: t.column, Type: flux.TString})
 	if err != nil {
 		return err
 	}
