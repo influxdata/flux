@@ -36,3 +36,10 @@ func TestNew(t *testing.T) {
 		})
 	}
 }
+
+func TestNewNull(t *testing.T) {
+	v := values.NewNull(semantic.String)
+	if want, got := true, v.IsNull(); want != got {
+		t.Fatalf("unexpected value -want/+got\n\t- %v\n\t+ %v", want, got)
+	}
+}

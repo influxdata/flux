@@ -89,6 +89,25 @@ func ColumnType(typ semantic.Type) ColType {
 	}
 }
 
+func SemanticType(typ ColType) semantic.Type {
+	switch typ {
+	case TBool:
+		return semantic.Bool
+	case TInt:
+		return semantic.Int
+	case TUInt:
+		return semantic.UInt
+	case TFloat:
+		return semantic.Float
+	case TString:
+		return semantic.String
+	case TTime:
+		return semantic.Time
+	default:
+		return semantic.Invalid
+	}
+}
+
 // String returns a string representation of the column type.
 func (t ColType) String() string {
 	switch t {
@@ -154,6 +173,7 @@ type GroupKey interface {
 	HasCol(label string) bool
 	LabelValue(label string) values.Value
 
+	IsNull(j int) bool
 	ValueBool(j int) bool
 	ValueUInt(j int) uint64
 	ValueInt(j int) int64

@@ -247,6 +247,9 @@ func (r *Record) PolyType() semantic.PolyType {
 	return r.t.PolyType()
 }
 
+func (r *Record) IsNull() bool {
+	return false
+}
 func (r *Record) Str() string {
 	panic(values.UnexpectedKind(semantic.Object, semantic.String))
 }

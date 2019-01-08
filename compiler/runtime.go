@@ -1157,6 +1157,9 @@ func (f *functionValue) PolyType() semantic.PolyType {
 	return f.t.PolyType()
 }
 
+func (f *functionValue) IsNull() bool {
+	return false
+}
 func (f *functionValue) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
 }

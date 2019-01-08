@@ -15,6 +15,7 @@ type Typer interface {
 
 type Value interface {
 	Typer
+	IsNull() bool
 	Str() string
 	Int() int64
 	UInt() uint64
@@ -39,6 +40,9 @@ func (v value) Type() semantic.Type {
 }
 func (v value) PolyType() semantic.PolyType {
 	return v.t.PolyType()
+}
+func (v value) IsNull() bool {
+	return v.v == nil
 }
 func (v value) Str() string {
 	CheckKind(v.t.Nature(), semantic.String)
@@ -145,6 +149,13 @@ func New(v interface{}) Value {
 		return NewRegexp(v)
 	default:
 		return InvalidValue
+	}
+}
+
+func NewNull(t semantic.Type) Value {
+	return value{
+		t: t,
+		v: nil,
 	}
 }
 

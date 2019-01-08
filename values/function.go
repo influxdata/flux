@@ -32,6 +32,9 @@ type function struct {
 	hasSideEffect bool
 }
 
+func (f *function) IsNull() bool {
+	return false
+}
 func (f *function) String() string {
 	return fmt.Sprintf("%s()", f.name)
 }

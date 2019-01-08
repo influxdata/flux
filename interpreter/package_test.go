@@ -72,6 +72,9 @@ func (p *packageObject) Range(f func(name string, v values.Value)) {
 	p.object.Range(f)
 }
 
+func (p *packageObject) IsNull() bool {
+	return false
+}
 func (p *packageObject) Str() string {
 	panic(values.UnexpectedKind(semantic.Object, semantic.String))
 }

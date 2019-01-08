@@ -297,6 +297,9 @@ func (t *TableObject) Operation(ider IDer) *Operation {
 		Spec: t.Spec,
 	}
 }
+func (t *TableObject) IsNull() bool {
+	return false
+}
 func (t *TableObject) String() string {
 	str := new(strings.Builder)
 	t.str(str, false)
@@ -560,6 +563,9 @@ func (f *function) Type() semantic.Type {
 }
 func (f *function) PolyType() semantic.PolyType {
 	return f.t
+}
+func (f *function) IsNull() bool {
+	return false
 }
 func (f *function) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
