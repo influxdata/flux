@@ -13,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/influxdata/flux/values"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/pkg/syncutil"
@@ -362,39 +364,39 @@ func (t *ToHTTPTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	var wg syncutil.WaitGroup
 	wg.Do(func() error {
 		m.name = t.spec.Spec.Name
-		err := tbl.Do(func(er flux.ColReader) error {
+		err := tbl.DoArrow(func(er flux.ArrowColReader) error {
 			l := er.Len()
 			for i := 0; i < l; i++ {
 				m.truncateTagsAndFields()
 				for j, col := range er.Cols() {
 					switch {
 					case col.Label == timeColLabel:
-						m.t = er.Times(j)[i].Time()
+						m.t = values.Time(er.Times(j).Value(i)).Time()
 					case measurementNameCol != "" && measurementNameCol == col.Label:
 						if col.Type != flux.TString {
 							return errors.New("invalid type for measurement column")
 						}
-						m.name = er.Strings(j)[i]
+						m.name = er.Strings(j).ValueString(i)
 					case isTag[j]:
 						if col.Type != flux.TString {
 							return errors.New("invalid type for tag column")
 						}
-						m.tags = append(m.tags, &protocol.Tag{Key: col.Label, Value: er.Strings(j)[i]})
+						m.tags = append(m.tags, &protocol.Tag{Key: col.Label, Value: er.Strings(j).ValueString(i)})
 
 					case isValue[j]:
 						switch col.Type {
 						case flux.TFloat:
-							m.fields = append(m.fields, &protocol.Field{Key: col.Label, Value: er.Floats(j)[i]})
+							m.fields = append(m.fields, &protocol.Field{Key: col.Label, Value: er.Floats(j).Value(i)})
 						case flux.TInt:
-							m.fields = append(m.fields, &protocol.Field{Key: col.Label, Value: er.Ints(j)[i]})
+							m.fields = append(m.fields, &protocol.Field{Key: col.Label, Value: er.Ints(j).Value(i)})
 						case flux.TUInt:
-							m.fields = append(m.fields, &protocol.Field{Key: col.Label, Value: er.UInts(j)[i]})
+							m.fields = append(m.fields, &protocol.Field{Key: col.Label, Value: er.UInts(j).Value(i)})
 						case flux.TString:
-							m.fields = append(m.fields, &protocol.Field{Key: col.Label, Value: er.Strings(j)[i]})
+							m.fields = append(m.fields, &protocol.Field{Key: col.Label, Value: er.Strings(j).ValueString(i)})
 						case flux.TTime:
-							m.fields = append(m.fields, &protocol.Field{Key: col.Label, Value: er.Times(j)[i]})
+							m.fields = append(m.fields, &protocol.Field{Key: col.Label, Value: values.Time(er.Times(j).Value(i))})
 						case flux.TBool:
-							m.fields = append(m.fields, &protocol.Field{Key: col.Label, Value: er.Bools(j)[i]})
+							m.fields = append(m.fields, &protocol.Field{Key: col.Label, Value: er.Bools(j).Value(i)})
 						default:
 							return fmt.Errorf("invalid type for column %s", col.Label)
 						}
@@ -405,7 +407,7 @@ func (t *ToHTTPTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 					return err
 				}
 
-				if err := execute.AppendRecord(i, er, builder); err != nil {
+				if err := execute.AppendRecordArrow(i, er, builder); err != nil {
 					return err
 				}
 			}
