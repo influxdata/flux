@@ -1,9 +1,0 @@
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,double
-#group,false,false,true,true,true,true,false
-#default,_result,,,,,,
-,result,table,_start,_stop,_measurement,_field,_value
-,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:50Z,_m,FF,5
-,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:50Z,_m,QQ,8
-,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:50Z,_m,RR,3
-,,3,2018-05-22T19:53:00Z,2018-05-22T19:54:50Z,_m,SR,2
-
