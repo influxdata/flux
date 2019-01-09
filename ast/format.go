@@ -68,7 +68,11 @@ func (f *formatter) formatPackage(n *Package) {
 	f.formatPackageClause(&PackageClause{
 		Name: &Identifier{Name: n.Package},
 	})
-	for _, file := range n.Files {
+	for i, file := range n.Files {
+		if i != 0 {
+			f.writeRune('\n')
+			f.writeRune('\n')
+		}
 		f.writeComment(file.Name)
 		f.formatFile(file, false)
 	}
