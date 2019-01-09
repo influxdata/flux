@@ -165,7 +165,7 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 	if timeIdx < 0 {
 		return fmt.Errorf("no column %q exists", t.spec.TimeColumn)
 	}
-	if err := tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	if err := tbl.Do(func(cr flux.ColReader) error {
 		for j, in := range integrals {
 			if in == nil {
 				continue

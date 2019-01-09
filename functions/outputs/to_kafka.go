@@ -334,7 +334,7 @@ func (t *ToKafkaTransformation) Process(id execute.DatasetID, tbl flux.Table) (e
 
 	var wg syncutil.WaitGroup
 	wg.Do(func() error {
-		if err := tbl.DoArrow(func(er flux.ArrowColReader) error {
+		if err := tbl.Do(func(er flux.ColReader) error {
 			l := er.Len()
 			for i := 0; i < l; i++ {
 				m.truncateTagsAndFields()
@@ -375,7 +375,7 @@ func (t *ToKafkaTransformation) Process(id execute.DatasetID, tbl flux.Table) (e
 				if err != nil {
 					return err
 				}
-				if err := execute.AppendRecordArrow(i, er, builder); err != nil {
+				if err := execute.AppendRecord(i, er, builder); err != nil {
 					return err
 				}
 			}

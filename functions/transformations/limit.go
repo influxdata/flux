@@ -135,7 +135,7 @@ func (t *limitTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	n := t.n
 	offset := t.offset
 	var finishedErr error
-	err := tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	err := tbl.Do(func(cr flux.ColReader) error {
 		if n <= 0 {
 			// Returning an error terminates iteration
 			finishedErr = errors.New("finished")
@@ -156,11 +156,11 @@ func (t *limitTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		}
 		n -= count
 		lcr := sliceColReader{
-			ArrowColReader: cr,
-			start:          start,
-			stop:           stop,
+			ColReader: cr,
+			start:     start,
+			stop:      stop,
 		}
-		err := execute.AppendColsArrow(lcr, builder)
+		err := execute.AppendCols(lcr, builder)
 		if err != nil {
 			return err
 		}
@@ -174,7 +174,7 @@ func (t *limitTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 }
 
 type sliceColReader struct {
-	flux.ArrowColReader
+	flux.ColReader
 	start, stop int
 }
 
@@ -183,27 +183,27 @@ func (cr sliceColReader) Len() int {
 }
 
 func (cr sliceColReader) Bools(j int) *array.Boolean {
-	return arrow.BoolSlice(cr.ArrowColReader.Bools(j), cr.start, cr.stop)
+	return arrow.BoolSlice(cr.ColReader.Bools(j), cr.start, cr.stop)
 }
 
 func (cr sliceColReader) Ints(j int) *array.Int64 {
-	return arrow.IntSlice(cr.ArrowColReader.Ints(j), cr.start, cr.stop)
+	return arrow.IntSlice(cr.ColReader.Ints(j), cr.start, cr.stop)
 }
 
 func (cr sliceColReader) UInts(j int) *array.Uint64 {
-	return arrow.UintSlice(cr.ArrowColReader.UInts(j), cr.start, cr.stop)
+	return arrow.UintSlice(cr.ColReader.UInts(j), cr.start, cr.stop)
 }
 
 func (cr sliceColReader) Floats(j int) *array.Float64 {
-	return arrow.FloatSlice(cr.ArrowColReader.Floats(j), cr.start, cr.stop)
+	return arrow.FloatSlice(cr.ColReader.Floats(j), cr.start, cr.stop)
 }
 
 func (cr sliceColReader) Strings(j int) *array.Binary {
-	return arrow.StringSlice(cr.ArrowColReader.Strings(j), cr.start, cr.stop)
+	return arrow.StringSlice(cr.ColReader.Strings(j), cr.start, cr.stop)
 }
 
 func (cr sliceColReader) Times(j int) *array.Int64 {
-	return arrow.IntSlice(cr.ArrowColReader.Times(j), cr.start, cr.stop)
+	return arrow.IntSlice(cr.ColReader.Times(j), cr.start, cr.stop)
 }
 
 func (t *limitTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {

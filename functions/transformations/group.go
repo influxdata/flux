@@ -188,10 +188,10 @@ func (t *groupTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	}
 
 	colMap := make([]int, 0, len(tbl.Cols()))
-	return tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
-			key := execute.GroupKeyForRowOnArrow(i, cr, on)
+			key := execute.GroupKeyForRowOn(i, cr, on)
 			builder, _ := t.cache.TableBuilder(key)
 
 			colMap, err := execute.AddNewTableCols(tbl, builder, colMap)
@@ -199,7 +199,7 @@ func (t *groupTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 				return err
 			}
 
-			err = execute.AppendMappedRecordWithDefaultsArrow(i, cr, builder, colMap)
+			err = execute.AppendMappedRecordWithDefaults(i, cr, builder, colMap)
 			if err != nil {
 				return err
 			}

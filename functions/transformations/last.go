@@ -113,7 +113,7 @@ func (s *LastSelector) Rows() []execute.Row {
 	return s.rows
 }
 
-func (s *LastSelector) selectLast(vs array.Interface, cr flux.ArrowColReader) {
+func (s *LastSelector) selectLast(vs array.Interface, cr flux.ColReader) {
 	for i := vs.Len() - 1; i >= 0; i-- {
 		if !vs.IsNull(i) {
 			s.rows = []execute.Row{execute.ReadRow(i, cr)}
@@ -122,18 +122,18 @@ func (s *LastSelector) selectLast(vs array.Interface, cr flux.ArrowColReader) {
 	}
 }
 
-func (s *LastSelector) DoBool(vs *array.Boolean, cr flux.ArrowColReader) {
+func (s *LastSelector) DoBool(vs *array.Boolean, cr flux.ColReader) {
 	s.selectLast(vs, cr)
 }
-func (s *LastSelector) DoInt(vs *array.Int64, cr flux.ArrowColReader) {
+func (s *LastSelector) DoInt(vs *array.Int64, cr flux.ColReader) {
 	s.selectLast(vs, cr)
 }
-func (s *LastSelector) DoUInt(vs *array.Uint64, cr flux.ArrowColReader) {
+func (s *LastSelector) DoUInt(vs *array.Uint64, cr flux.ColReader) {
 	s.selectLast(vs, cr)
 }
-func (s *LastSelector) DoFloat(vs *array.Float64, cr flux.ArrowColReader) {
+func (s *LastSelector) DoFloat(vs *array.Float64, cr flux.ColReader) {
 	s.selectLast(vs, cr)
 }
-func (s *LastSelector) DoString(vs *array.Binary, cr flux.ArrowColReader) {
+func (s *LastSelector) DoString(vs *array.Binary, cr flux.ColReader) {
 	s.selectLast(vs, cr)
 }

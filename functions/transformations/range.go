@@ -280,7 +280,7 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		stopAdded = true
 	}
 
-	return tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			tVal := values.Time(cr.Times(timeIdx).Value(i))
@@ -320,7 +320,7 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 						return err
 					}
 				default:
-					if err := builder.AppendValue(j, execute.ValueForRowArrow(cr, i, j)); err != nil {
+					if err := builder.AppendValue(j, execute.ValueForRow(cr, i, j)); err != nil {
 						return err
 					}
 				}

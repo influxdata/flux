@@ -174,7 +174,7 @@ func (t *shiftTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		return err
 	}
 
-	return tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		for j, c := range cr.Cols() {
 			if execute.ContainsStr(t.columns, c.Label) {
 				l := cr.Len()
@@ -184,7 +184,7 @@ func (t *shiftTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 					}
 				}
 			} else {
-				if err := execute.AppendColArrow(j, j, cr, builder); err != nil {
+				if err := execute.AppendCol(j, j, cr, builder); err != nil {
 					return err
 				}
 			}

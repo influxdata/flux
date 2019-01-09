@@ -122,14 +122,14 @@ func (s *MaxSelector) Rows() []execute.Row {
 	return s.rows
 }
 
-func (s *MaxSelector) selectRow(idx int, cr flux.ArrowColReader) {
+func (s *MaxSelector) selectRow(idx int, cr flux.ColReader) {
 	// Capture row
 	if idx >= 0 {
 		s.rows = []execute.Row{execute.ReadRow(idx, cr)}
 	}
 }
 
-func (s *MaxIntSelector) DoInt(vs *array.Int64, cr flux.ArrowColReader) {
+func (s *MaxIntSelector) DoInt(vs *array.Int64, cr flux.ColReader) {
 	maxIdx := -1
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsValid(i) {
@@ -142,7 +142,7 @@ func (s *MaxIntSelector) DoInt(vs *array.Int64, cr flux.ArrowColReader) {
 	}
 	s.selectRow(maxIdx, cr)
 }
-func (s *MaxUIntSelector) DoUInt(vs *array.Uint64, cr flux.ArrowColReader) {
+func (s *MaxUIntSelector) DoUInt(vs *array.Uint64, cr flux.ColReader) {
 	maxIdx := -1
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsValid(i) {
@@ -155,7 +155,7 @@ func (s *MaxUIntSelector) DoUInt(vs *array.Uint64, cr flux.ArrowColReader) {
 	}
 	s.selectRow(maxIdx, cr)
 }
-func (s *MaxFloatSelector) DoFloat(vs *array.Float64, cr flux.ArrowColReader) {
+func (s *MaxFloatSelector) DoFloat(vs *array.Float64, cr flux.ColReader) {
 	maxIdx := -1
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsValid(i) {

@@ -927,14 +927,14 @@ func (c *MergeJoinCache) postJoinGroupKey(keys map[execute.DatasetID]flux.GroupK
 // advance advances the row pointer of a sorted table that is being joined
 func (c *MergeJoinCache) advance(offset int, table *execute.ColListTableBuilder) (subset, flux.GroupKey) {
 	// TODO(jlapacik): this is a temporary hack
-	// remove when ColListTableBuilder implements ArrowColReader
+	// remove when ColListTableBuilder implements ColReader
 	tbl, _ := table.Table()
-	cr := tbl.(flux.ArrowColReader)
+	cr := tbl.(flux.ColReader)
 	if n := cr.Len(); n == offset {
 		return subset{Start: n, Stop: n}, nil
 	}
 	start := offset
-	key := execute.GroupKeyForRowOnArrow(start, cr, c.on)
+	key := execute.GroupKeyForRowOn(start, cr, c.on)
 	sequence := subset{Start: start}
 	offset++
 	for offset < cr.Len() && equalRowKeys(start, offset, cr, c.on) {
@@ -954,7 +954,7 @@ func (s subset) Empty() bool {
 }
 
 // equalRowKeys determines whether two rows of a table are equal on the set of columns defined by on
-func equalRowKeys(x, y int, cr flux.ArrowColReader, on map[string]bool) bool {
+func equalRowKeys(x, y int, cr flux.ColReader, on map[string]bool) bool {
 	for j, c := range cr.Cols() {
 		if !on[c.Label] {
 			continue

@@ -173,7 +173,7 @@ func (t *keysTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 	}
 
 	// TODO: this is a hack
-	return tbl.DoArrow(func(flux.ArrowColReader) error {
+	return tbl.Do(func(flux.ColReader) error {
 		return nil
 	})
 }
