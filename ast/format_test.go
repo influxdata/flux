@@ -309,6 +309,44 @@ func TestFormat_Raw(t *testing.T) {
 			},
 			script: "\"foo \\\\ \\\" \r\n\"",
 		},
+		{
+			name: "package multiple files",
+			node: &ast.Package{
+				Package: "foo",
+				Files: []*ast.File{
+					{
+						Name: "a.flux",
+						Package: &ast.PackageClause{
+							Name: &ast.Identifier{Name: "foo"},
+						},
+						Body: []ast.Statement{
+							&ast.VariableAssignment{
+								ID:   &ast.Identifier{Name: "a"},
+								Init: &ast.IntegerLiteral{Value: 1},
+							},
+						},
+					},
+					{
+						Name: "b.flux",
+						Package: &ast.PackageClause{
+							Name: &ast.Identifier{Name: "foo"},
+						},
+						Body: []ast.Statement{
+							&ast.VariableAssignment{
+								ID:   &ast.Identifier{Name: "b"},
+								Init: &ast.IntegerLiteral{Value: 2},
+							},
+						},
+					},
+				},
+			},
+			script: `package foo
+// a.flux
+a = 1
+
+// b.flux
+b = 2`,
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
