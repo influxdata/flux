@@ -80,6 +80,48 @@ func TestCumulativeSum_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "with null",
+			spec: &universe.CumulativeSumProcedureSpec{
+				Columns: []string{execute.DefaultValueColLabel},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), 2.0},
+					{execute.Time(1), 1.0},
+					{execute.Time(2), nil},
+					{execute.Time(3), 4.0},
+					{execute.Time(4), nil},
+					{execute.Time(5), 6.0},
+					{execute.Time(6), 2.0},
+					{execute.Time(7), nil},
+					{execute.Time(8), nil},
+					{execute.Time(9), 8.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), 2.0},
+					{execute.Time(1), 3.0},
+					{execute.Time(2), 3.0},
+					{execute.Time(3), 7.0},
+					{execute.Time(4), 7.0},
+					{execute.Time(5), 13.0},
+					{execute.Time(6), 15.0},
+					{execute.Time(7), 15.0},
+					{execute.Time(8), 15.0},
+					{execute.Time(9), 23.0},
+				},
+			}},
+		},
+		{
 			name: "multiple value columns",
 			spec: &universe.CumulativeSumProcedureSpec{
 				Columns: []string{"int", "uint", "float"},
