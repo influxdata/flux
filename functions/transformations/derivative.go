@@ -6,10 +6,12 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 const DerivativeKind = "derivative"
@@ -202,7 +204,7 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 
 	// We need to drop the first row since its derivative is undefined
 	firstIdx := 1
-	return tbl.Do(func(cr flux.ColReader) error {
+	return tbl.DoArrow(func(cr flux.ArrowColReader) error {
 		l := cr.Len()
 		if l == 0 {
 			return nil
@@ -211,14 +213,17 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 			d := derivatives[j]
 			switch c.Type {
 			case flux.TBool:
-				if err := builder.AppendBools(j, cr.Bools(j)[firstIdx:]); err != nil {
+				data := arrow.BoolSlice(cr.Bools(j), firstIdx, cr.Len())
+				if err := arrow.AppendBools(builder, j, data); err != nil {
+					data.Release()
 					return err
 				}
+				data.Release()
 			case flux.TInt:
 				if d != nil {
 					for i := 0; i < l; i++ {
-						time := cr.Times(timeIdx)[i]
-						v := d.updateInt(time, cr.Ints(j)[i])
+						time := values.Time(cr.Times(timeIdx).Value(i))
+						v := d.updateInt(time, cr.Ints(j).Value(i))
 						if i != 0 || firstIdx == 0 {
 							if err := builder.AppendFloat(j, v); err != nil {
 								return err
@@ -226,15 +231,18 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 						}
 					}
 				} else {
-					if err := builder.AppendInts(j, cr.Ints(j)[firstIdx:]); err != nil {
+					data := arrow.IntSlice(cr.Ints(j), firstIdx, cr.Len())
+					if err := arrow.AppendInts(builder, j, data); err != nil {
+						data.Release()
 						return err
 					}
+					data.Release()
 				}
 			case flux.TUInt:
 				if d != nil {
 					for i := 0; i < l; i++ {
-						time := cr.Times(timeIdx)[i]
-						v := d.updateUInt(time, cr.UInts(j)[i])
+						time := values.Time(cr.Times(timeIdx).Value(i))
+						v := d.updateUInt(time, cr.UInts(j).Value(i))
 						if i != 0 || firstIdx == 0 {
 							if err := builder.AppendFloat(j, v); err != nil {
 								return err
@@ -242,15 +250,18 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 						}
 					}
 				} else {
-					if err := builder.AppendUInts(j, cr.UInts(j)[firstIdx:]); err != nil {
+					data := arrow.UintSlice(cr.UInts(j), firstIdx, cr.Len())
+					if err := arrow.AppendUInts(builder, j, data); err != nil {
+						data.Release()
 						return err
 					}
+					data.Release()
 				}
 			case flux.TFloat:
 				if d != nil {
 					for i := 0; i < l; i++ {
-						time := cr.Times(timeIdx)[i]
-						v := d.updateFloat(time, cr.Floats(j)[i])
+						time := values.Time(cr.Times(timeIdx).Value(i))
+						v := d.updateFloat(time, cr.Floats(j).Value(i))
 						if i != 0 || firstIdx == 0 {
 							if err := builder.AppendFloat(j, v); err != nil {
 								return err
@@ -258,18 +269,27 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 						}
 					}
 				} else {
-					if err := builder.AppendFloats(j, cr.Floats(j)[firstIdx:]); err != nil {
+					data := arrow.FloatSlice(cr.Floats(j), firstIdx, cr.Len())
+					if err := arrow.AppendFloats(builder, j, data); err != nil {
+						data.Release()
 						return err
 					}
+					data.Release()
 				}
 			case flux.TString:
-				if err := builder.AppendStrings(j, cr.Strings(j)[firstIdx:]); err != nil {
+				data := arrow.StringSlice(cr.Strings(j), firstIdx, cr.Len())
+				if err := arrow.AppendStrings(builder, j, data); err != nil {
+					data.Release()
 					return err
 				}
+				data.Release()
 			case flux.TTime:
-				if err := builder.AppendTimes(j, cr.Times(j)[firstIdx:]); err != nil {
+				data := arrow.IntSlice(cr.Times(j), firstIdx, cr.Len())
+				if err := arrow.AppendTimes(builder, j, data); err != nil {
+					data.Release()
 					return err
 				}
+				data.Release()
 			}
 		}
 		// Now that we skipped the first row, start at 0 for the rest of the batches
