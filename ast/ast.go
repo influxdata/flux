@@ -152,7 +152,7 @@ func (e Error) Error() string {
 // Package represents a complete package source tree
 type Package struct {
 	BaseNode
-	Path    string  `json:"path"`
+	Path    string  `json:"path,omitempty"`
 	Package string  `json:"package"`
 	Files   []*File `json:"files"`
 }
