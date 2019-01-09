@@ -2604,22 +2604,75 @@ from(bucket: "telegraf/autogen")
 
 #### Difference
 
-Difference computes the difference between subsequent non null records.
+Difference computes the difference between subsequent records.  
+Every user-specified column of numeric type is subtracted while others are kept intact.
 
 Difference has the following properties:
 
 * `nonNegative` bool
-    nonNegative indicates if the derivative is allowed to be negative.
-    If a value is encountered which is less than the previous value then it is assumed the previous value should have been a zero.
+    nonNegative indicates if the difference is allowed to be negative.
+    If a value is encountered which is less than the previous value then the result is null.
 * `columns` list strings
     columns is a list of columns on which to compute the difference.
     Defaults to `["_value"]`.
+
+Rules for subtracting values for numeric types:
+
+ - the difference between two non-null values is their algebraic difference; or null, if the result is negative and `nonNegative: true`;
+ - null minus some value is always null;
+ - some value `v` minus null is `v` minus the last non-null value seen before `v`; or null if `v` is the first non-null value seen.
+
+Example of difference:
+
+| _time |   A  |   B  |   C  | tag |
+|:-----:|:----:|:----:|:----:|:---:|
+|  0001 | null |   1  |   2  |  tv |
+|  0002 |   6  |   2  | null |  tv |
+|  0003 |   4  |   2  |   4  |  tv |
+|  0004 |  10  |  10  |   2  |  tv |
+|  0005 | null | null |   1  |  tv |
+
+Result (`nonNegative: false`):
+
+| _time |   A  |   B  |   C  | tag |
+|:-----:|:----:|:----:|:----:|:---:|
+|  0002 | null |   1  | null |  tv |
+|  0003 |  -2  |   0  |   2  |  tv |
+|  0004 |   6  |   8  |  -2  |  tv |
+|  0005 | null | null |  -1  |  tv |
+
+Result (`nonNegative: true`):
+
+| _time |   A  |   B  |   C  | tag |
+|:-----:|:----:|:----:|:----:|:---:|
+|  0002 | null |   1  | null |  tv |
+|  0003 | null |   0  |   2  |  tv |
+|  0004 |   6  |   8  | null |  tv |
+|  0005 | null | null | null |  tv |
+
+Example of script:
 
 ```
 from(bucket: "telegraf/autogen")
     |> range(start: -5m)
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_user")
     |> difference()
+```
+
+#### Increase
+
+Increase returns the total non-negative difference between values in a table.
+A main usage case is tracking changes in counter values which may wrap over time when they hit
+a threshold or are reset. In the case of a wrap/reset,
+we can assume that the absolute delta between two points will be at least their non-negative difference.
+
+Example:
+
+```
+increase = (tables=<-, columns=["_value"]) =>
+    tables
+        |> difference(nonNegative: true, columns:columns)
+        |> cumulativeSum()
 ```
 
 #### Distinct

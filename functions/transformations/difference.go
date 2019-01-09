@@ -177,7 +177,7 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 		}
 	}
 
-	// We need to drop the first row since its derivative is undefined
+	// We need to drop the first row since its difference is undefined
 	firstIdx := 1
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
@@ -187,62 +187,107 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 				d := differences[j]
 				switch c.Type {
 				case flux.TBool:
-					if err := builder.AppendBools(j, arrow.BoolSlice(cr.Bools(j), firstIdx, l)); err != nil {
+					s := arrow.BoolSlice(cr.Bools(j), firstIdx, l)
+					if err := builder.AppendBools(j, s); err != nil {
+						s.Release()
 						return err
 					}
+					s.Release()
 				case flux.TInt:
 					if d != nil {
 						for i := 0; i < l; i++ {
-							v := d.updateInt(cr.Ints(j).Int64Values()[i])
-							if i != 0 || firstIdx == 0 {
-								if err := builder.AppendInt(j, v); err != nil {
-									return err
+							if vs := cr.Ints(j); vs.IsValid(i) {
+								if v, first := d.updateInt(vs.Value(i)); !first {
+									if d.nonNegative && v < 0 {
+										if err := builder.AppendNil(j); err != nil {
+											return err
+										}
+									} else {
+										if err := builder.AppendInt(j, v); err != nil {
+											return err
+										}
+									}
 								}
+							} else if err := builder.AppendNil(j); err != nil {
+								return err
 							}
 						}
 					} else {
-						if err := builder.AppendInts(j, arrow.IntSlice(cr.Ints(j), firstIdx, l)); err != nil {
+						s := arrow.IntSlice(cr.Ints(j), firstIdx, l)
+						if err := builder.AppendInts(j, s); err != nil {
+							s.Release()
 							return err
 						}
+						s.Release()
 					}
 				case flux.TUInt:
 					if d != nil {
 						for i := 0; i < l; i++ {
-							v := d.updateUInt(cr.UInts(j).Uint64Values()[i])
-							if i != 0 || firstIdx == 0 {
-								if err := builder.AppendInt(j, v); err != nil {
-									return err
+							if vs := cr.UInts(j); vs.IsValid(i) {
+								if v, first := d.updateUInt(vs.Value(i)); !first {
+									if d.nonNegative && v < 0 {
+										if err := builder.AppendNil(j); err != nil {
+											return err
+										}
+									} else {
+										if err := builder.AppendInt(j, v); err != nil {
+											return err
+										}
+									}
 								}
+							} else if err := builder.AppendNil(j); err != nil {
+								return err
 							}
 						}
 					} else {
-						if err := builder.AppendUInts(j, arrow.UintSlice(cr.UInts(j), firstIdx, l)); err != nil {
+						s := arrow.UintSlice(cr.UInts(j), firstIdx, l)
+						if err := builder.AppendUInts(j, s); err != nil {
+							s.Release()
 							return err
 						}
+						s.Release()
 					}
 				case flux.TFloat:
 					if d != nil {
 						for i := 0; i < l; i++ {
-							v := d.updateFloat(cr.Floats(j).Float64Values()[i])
-							if i != 0 || firstIdx == 0 {
-								if err := builder.AppendFloat(j, v); err != nil {
-									return err
+							if vs := cr.Floats(j); vs.IsValid(i) {
+								if v, first := d.updateFloat(vs.Value(i)); !first {
+									if d.nonNegative && v < 0 {
+										if err := builder.AppendNil(j); err != nil {
+											return err
+										}
+									} else {
+										if err := builder.AppendFloat(j, v); err != nil {
+											return err
+										}
+									}
 								}
+							} else if err := builder.AppendNil(j); err != nil {
+								return err
 							}
 						}
 					} else {
-						if err := builder.AppendFloats(j, arrow.FloatSlice(cr.Floats(j), firstIdx, l)); err != nil {
+						s := arrow.FloatSlice(cr.Floats(j), firstIdx, l)
+						if err := builder.AppendFloats(j, s); err != nil {
+							s.Release()
 							return err
 						}
+						s.Release()
 					}
 				case flux.TString:
-					if err := builder.AppendStrings(j, arrow.StringSlice(cr.Strings(j), firstIdx, l)); err != nil {
+					s := arrow.StringSlice(cr.Strings(j), firstIdx, l)
+					if err := builder.AppendStrings(j, s); err != nil {
+						s.Release()
 						return err
 					}
+					s.Release()
 				case flux.TTime:
-					if err := builder.AppendTimes(j, arrow.IntSlice(cr.Times(j), firstIdx, l)); err != nil {
+					s := arrow.IntSlice(cr.Times(j), firstIdx, l)
+					if err := builder.AppendTimes(j, s); err != nil {
+						s.Release()
 						return err
 					}
+					s.Release()
 				}
 			}
 		}
@@ -281,30 +326,23 @@ type difference struct {
 	pFloatValue float64
 }
 
-func (d *difference) updateInt(v int64) int64 {
+func (d *difference) updateInt(v int64) (int64, bool) {
 	if d.first {
 		d.pIntValue = v
 		d.first = false
-		return 0
+		return 0, true
 	}
 
 	diff := v - d.pIntValue
-
 	d.pIntValue = v
 
-	if d.nonNegative && diff < 0 {
-		//TODO(nathanielc): Return null when we have null support
-		// Also see https://github.com/influxdata/flux/issues/217
-		return v
-	}
-
-	return diff
+	return diff, false
 }
-func (d *difference) updateUInt(v uint64) int64 {
+func (d *difference) updateUInt(v uint64) (int64, bool) {
 	if d.first {
 		d.pUIntValue = v
 		d.first = false
-		return 0
+		return 0, true
 	}
 
 	var diff int64
@@ -317,29 +355,17 @@ func (d *difference) updateUInt(v uint64) int64 {
 
 	d.pUIntValue = v
 
-	if d.nonNegative && diff < 0 {
-		//TODO(nathanielc): Return null when we have null support
-		// Also see https://github.com/influxdata/flux/issues/217
-		return int64(v)
-	}
-
-	return diff
+	return diff, false
 }
-func (d *difference) updateFloat(v float64) float64 {
+func (d *difference) updateFloat(v float64) (float64, bool) {
 	if d.first {
 		d.pFloatValue = v
 		d.first = false
-		return math.NaN()
+		return math.NaN(), true
 	}
 
 	diff := v - d.pFloatValue
 	d.pFloatValue = v
 
-	if d.nonNegative && diff < 0 {
-		//TODO(nathanielc): Return null when we have null support
-		// Also see https://github.com/influxdata/flux/issues/217
-		return v
-	}
-
-	return diff
+	return diff, false
 }
