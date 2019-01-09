@@ -199,7 +199,7 @@ func (t *groupTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 				return err
 			}
 
-			err = execute.AppendMappedRecordWithDefaults(i, cr, builder, colMap)
+			err = execute.AppendMappedRecordWithNulls(i, cr, builder, colMap)
 			if err != nil {
 				return err
 			}

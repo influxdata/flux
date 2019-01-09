@@ -396,7 +396,7 @@ func TestPivot_Process(t *testing.T) {
 						{Label: "m1_f2", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
-						{execute.Time(1), "A", 1.0, 0.0},
+						{execute.Time(1), "A", 1.0, nil},
 						{execute.Time(2), "A", 3.0, 4.0},
 					},
 				},

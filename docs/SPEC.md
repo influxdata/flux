@@ -2332,8 +2332,6 @@ The output is constructed as follows:
  - For each new row, values for group key columns stay the same, while values for new columns are determined from the input tables by the value in `valueColumn` at the row identified by the `rowKey` values and the new column's label.
  If no value is found, the value is set to `null`.
 
-[IMPL#353](https://github.com/influxdata/platform/issues/353) Null defined in spec but not implemented.  
-
 #### InfluxFieldsAsCols
 
 InfluxFieldsAsCols is a special application of pivot that will automatically align fields within each measurement that have the same timestamp.

@@ -302,7 +302,7 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Tab
 			}
 			colMap := make([]int, len(cr.Cols()))
 			colMap = execute.ColMap(colMap, builder, cr)
-			err = execute.AppendMappedRecordWExplicit(i, cr, builder, colMap)
+			err = execute.AppendMappedRecordExplicit(i, cr, builder, colMap)
 			if err != nil {
 				return err
 			}

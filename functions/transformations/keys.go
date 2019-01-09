@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
@@ -167,8 +168,9 @@ func (t *keysTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 		}
 	}
 
-	// Append the keys to the column index.
-	if err := builder.AppendStrings(colIdx, keys); err != nil {
+	keysArrow := arrow.NewString(keys, nil)
+	defer keysArrow.Release()
+	if err := builder.AppendStrings(colIdx, keysArrow); err != nil {
 		return err
 	}
 

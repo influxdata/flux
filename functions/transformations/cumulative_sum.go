@@ -153,7 +153,7 @@ func (t *cumulativeSumTransformation) Process(id execute.DatasetID, tbl flux.Tab
 						}
 					}
 				} else {
-					if err := builder.AppendInts(j, cr.Ints(j).Int64Values()); err != nil {
+					if err := builder.AppendInts(j, cr.Ints(j)); err != nil {
 						return err
 					}
 				}
@@ -165,7 +165,7 @@ func (t *cumulativeSumTransformation) Process(id execute.DatasetID, tbl flux.Tab
 						}
 					}
 				} else {
-					if err := builder.AppendUInts(j, cr.UInts(j).Uint64Values()); err != nil {
+					if err := builder.AppendUInts(j, cr.UInts(j)); err != nil {
 						return err
 					}
 				}
@@ -177,7 +177,7 @@ func (t *cumulativeSumTransformation) Process(id execute.DatasetID, tbl flux.Tab
 						}
 					}
 				} else {
-					if err := builder.AppendFloats(j, cr.Floats(j).Float64Values()); err != nil {
+					if err := builder.AppendFloats(j, cr.Floats(j)); err != nil {
 						return err
 					}
 				}
