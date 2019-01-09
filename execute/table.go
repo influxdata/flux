@@ -1431,7 +1431,7 @@ func (c *boolColumnBuilder) Less(i, j int) bool {
 	if c.data[i] == c.data[j] {
 		return false
 	}
-	return c.data[i]
+	return c.data[j]
 }
 func (c *boolColumnBuilder) Swap(i, j int) {
 	c.data[i], c.data[j] = c.data[j], c.data[i]

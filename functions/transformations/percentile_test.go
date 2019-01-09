@@ -374,6 +374,67 @@ func TestPercentileSelector_Process(t *testing.T) {
 				},
 			}},
 		},
+		{
+			name:     "select_50_nulls",
+			quantile: 0.5,
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"t1"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), 1.0, "a", "y"},
+					{execute.Time(10), nil, "a", "x"},
+					{execute.Time(20), 2.0, "a", "x"},
+					{execute.Time(30), 3.0, "a", "y"},
+					{execute.Time(40), nil, "a", "y"},
+					{execute.Time(50), 4.0, "a", "x"},
+					{execute.Time(60), 5.0, "a", "y"},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"t1"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(30), 3.0, "a", "y"},
+				},
+			}},
+		},
+		{
+			name:     "empty",
+			quantile: 0.5,
+			data: []flux.Table{&executetest.Table{
+				KeyCols:   []string{"t1"},
+				KeyValues: []interface{}{"a"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
+				},
+				Data: [][]interface{}{},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"t1"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{nil, nil, "a", nil},
+				},
+			}},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
