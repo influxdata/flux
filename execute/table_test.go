@@ -194,7 +194,7 @@ func TestColListTable_AppendNil(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 
-	if err := tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	if err := tbl.Do(func(cr flux.ColReader) error {
 		vs := cr.Floats(idx)
 		if got, want := vs.Len(), 2; got != want {
 			t.Errorf("unexpected length -want/+got\n\t- %d\n\t+ %d", want, got)
@@ -233,7 +233,7 @@ func TestColListTable_SetNil(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 
-	if err := tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	if err := tbl.Do(func(cr flux.ColReader) error {
 		vs := cr.Floats(idx)
 		if got, want := vs.Len(), 2; got != want {
 			t.Errorf("unexpected length -want/+got\n\t- %d\n\t+ %d", want, got)

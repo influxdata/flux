@@ -185,7 +185,7 @@ func (t *CovarianceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 	}
 
 	t.reset()
-	err = tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	err = tbl.Do(func(cr flux.ColReader) error {
 		switch typ := cols[xIdx].Type; typ {
 		case flux.TFloat:
 			t.DoFloat(cr.Floats(xIdx), cr.Floats(yIdx))

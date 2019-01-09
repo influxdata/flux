@@ -122,14 +122,14 @@ func (s *MinSelector) Rows() []execute.Row {
 	return s.rows
 }
 
-func (s *MinSelector) selectRow(idx int, cr flux.ArrowColReader) {
+func (s *MinSelector) selectRow(idx int, cr flux.ColReader) {
 	// Capture row
 	if idx >= 0 {
 		s.rows = []execute.Row{execute.ReadRow(idx, cr)}
 	}
 }
 
-func (s *MinIntSelector) DoInt(vs *array.Int64, cr flux.ArrowColReader) {
+func (s *MinIntSelector) DoInt(vs *array.Int64, cr flux.ColReader) {
 	minIdx := -1
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsValid(i) {
@@ -142,7 +142,7 @@ func (s *MinIntSelector) DoInt(vs *array.Int64, cr flux.ArrowColReader) {
 	}
 	s.selectRow(minIdx, cr)
 }
-func (s *MinUIntSelector) DoUInt(vs *array.Uint64, cr flux.ArrowColReader) {
+func (s *MinUIntSelector) DoUInt(vs *array.Uint64, cr flux.ColReader) {
 	minIdx := -1
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsValid(i) {
@@ -155,7 +155,7 @@ func (s *MinUIntSelector) DoUInt(vs *array.Uint64, cr flux.ArrowColReader) {
 	}
 	s.selectRow(minIdx, cr)
 }
-func (s *MinFloatSelector) DoFloat(vs *array.Float64, cr flux.ArrowColReader) {
+func (s *MinFloatSelector) DoFloat(vs *array.Float64, cr flux.ColReader) {
 	minIdx := -1
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsValid(i) {

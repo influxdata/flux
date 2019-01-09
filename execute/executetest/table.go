@@ -79,26 +79,141 @@ func (t *Table) Key() flux.GroupKey {
 }
 
 func (t *Table) Do(f func(flux.ColReader) error) error {
-	for _, r := range t.Data {
-		if err := f(ColReader{
-			key:  t.Key(),
-			cols: t.ColMeta,
-			row:  r,
-		}); err != nil {
-			return err
+	cols := make([]array.Interface, len(t.ColMeta))
+	for j, col := range t.ColMeta {
+		switch col.Type {
+		case flux.TBool:
+			b := arrow.NewBoolBuilder(nil)
+			for i := range t.Data {
+				if v := t.Data[i][j]; v != nil {
+					b.Append(v.(bool))
+				} else {
+					b.AppendNull()
+				}
+			}
+			cols[j] = b.NewBooleanArray()
+			b.Release()
+		case flux.TFloat:
+			b := arrow.NewFloatBuilder(nil)
+			for i := range t.Data {
+				if v := t.Data[i][j]; v != nil {
+					b.Append(v.(float64))
+				} else {
+					b.AppendNull()
+				}
+			}
+			cols[j] = b.NewFloat64Array()
+			b.Release()
+		case flux.TInt:
+			b := arrow.NewIntBuilder(nil)
+			for i := range t.Data {
+				if v := t.Data[i][j]; v != nil {
+					b.Append(v.(int64))
+				} else {
+					b.AppendNull()
+				}
+			}
+			cols[j] = b.NewInt64Array()
+			b.Release()
+		case flux.TString:
+			b := arrow.NewStringBuilder(nil)
+			for i := range t.Data {
+				if v := t.Data[i][j]; v != nil {
+					b.AppendString(v.(string))
+				} else {
+					b.AppendNull()
+				}
+			}
+			cols[j] = b.NewBinaryArray()
+			b.Release()
+		case flux.TTime:
+			b := arrow.NewIntBuilder(nil)
+			for i := range t.Data {
+				if v := t.Data[i][j]; v != nil {
+					b.Append(int64(v.(values.Time)))
+				} else {
+					b.AppendNull()
+				}
+			}
+			cols[j] = b.NewInt64Array()
+			b.Release()
+		case flux.TUInt:
+			b := arrow.NewUintBuilder(nil)
+			for i := range t.Data {
+				if v := t.Data[i][j]; v != nil {
+					b.Append(v.(uint64))
+				} else {
+					b.AppendNull()
+				}
+			}
+			cols[j] = b.NewUint64Array()
+			b.Release()
 		}
 	}
-	return nil
+
+	cr := &ColReader{
+		key:  t.Key(),
+		meta: t.ColMeta,
+		cols: cols,
+	}
+	return f(cr)
 }
 
-// RowWiseArrowTable is a flux Table implementation that
-// calls f once for each row in its DoArrow method.
-type RowWiseArrowTable struct {
+func (t *Table) Statistics() flux.Statistics { return flux.Statistics{} }
+
+type ColReader struct {
+	key  flux.GroupKey
+	meta []flux.ColMeta
+	cols []array.Interface
+}
+
+func (cr *ColReader) Key() flux.GroupKey {
+	return cr.key
+}
+
+func (cr *ColReader) Cols() []flux.ColMeta {
+	return cr.meta
+}
+
+func (cr *ColReader) Len() int {
+	if len(cr.cols) == 0 {
+		return 0
+	}
+	return cr.cols[0].Len()
+}
+
+func (cr *ColReader) Bools(j int) *array.Boolean {
+	return cr.cols[j].(*array.Boolean)
+}
+
+func (cr *ColReader) Ints(j int) *array.Int64 {
+	return cr.cols[j].(*array.Int64)
+}
+
+func (cr *ColReader) UInts(j int) *array.Uint64 {
+	return cr.cols[j].(*array.Uint64)
+}
+
+func (cr *ColReader) Floats(j int) *array.Float64 {
+	return cr.cols[j].(*array.Float64)
+}
+
+func (cr *ColReader) Strings(j int) *array.Binary {
+	return cr.cols[j].(*array.Binary)
+}
+
+func (cr *ColReader) Times(j int) *array.Int64 {
+	return cr.cols[j].(*array.Int64)
+}
+
+// RowWiseTable is a flux Table implementation that
+// calls f once for each row in its Do method.
+type RowWiseTable struct {
 	*Table
 }
 
-// DoArrow calls f once for each row in the table
-func (t *RowWiseArrowTable) DoArrow(f func(flux.ArrowColReader) error) error {
+// Do calls f once for each row in the table
+func (t *RowWiseTable) Do(f func(flux.ColReader) error) error {
 	cols := make([]array.Interface, len(t.ColMeta))
 	for j, col := range t.ColMeta {
 		switch col.Type {
@@ -197,7 +312,7 @@ func (t *RowWiseArrowTable) DoArrow(f func(flux.ArrowColReader) error) error {
 				row[j] = arrow.UintSlice(cols[j].(*array.Uint64), i, i+1)
 			}
 		}
-		if err := f(&ArrowColReader{
+		if err := f(&ColReader{
 			key:  t.Key(),
 			meta: t.ColMeta,
 			cols: row,
@@ -207,175 +322,6 @@ func (t *RowWiseArrowTable) DoArrow(f func(flux.ArrowColReader) error) error {
 		release(row)
 	}
 	return nil
-}
-
-func (t *Table) DoArrow(f func(flux.ArrowColReader) error) error {
-	cols := make([]array.Interface, len(t.ColMeta))
-	for j, col := range t.ColMeta {
-		switch col.Type {
-		case flux.TBool:
-			b := arrow.NewBoolBuilder(nil)
-			for i := range t.Data {
-				if v := t.Data[i][j]; v != nil {
-					b.Append(v.(bool))
-				} else {
-					b.AppendNull()
-				}
-			}
-			cols[j] = b.NewBooleanArray()
-			b.Release()
-		case flux.TFloat:
-			b := arrow.NewFloatBuilder(nil)
-			for i := range t.Data {
-				if v := t.Data[i][j]; v != nil {
-					b.Append(v.(float64))
-				} else {
-					b.AppendNull()
-				}
-			}
-			cols[j] = b.NewFloat64Array()
-			b.Release()
-		case flux.TInt:
-			b := arrow.NewIntBuilder(nil)
-			for i := range t.Data {
-				if v := t.Data[i][j]; v != nil {
-					b.Append(v.(int64))
-				} else {
-					b.AppendNull()
-				}
-			}
-			cols[j] = b.NewInt64Array()
-			b.Release()
-		case flux.TString:
-			b := arrow.NewStringBuilder(nil)
-			for i := range t.Data {
-				if v := t.Data[i][j]; v != nil {
-					b.AppendString(v.(string))
-				} else {
-					b.AppendNull()
-				}
-			}
-			cols[j] = b.NewBinaryArray()
-			b.Release()
-		case flux.TTime:
-			b := arrow.NewIntBuilder(nil)
-			for i := range t.Data {
-				if v := t.Data[i][j]; v != nil {
-					b.Append(int64(v.(values.Time)))
-				} else {
-					b.AppendNull()
-				}
-			}
-			cols[j] = b.NewInt64Array()
-			b.Release()
-		case flux.TUInt:
-			b := arrow.NewUintBuilder(nil)
-			for i := range t.Data {
-				if v := t.Data[i][j]; v != nil {
-					b.Append(v.(uint64))
-				} else {
-					b.AppendNull()
-				}
-			}
-			cols[j] = b.NewUint64Array()
-			b.Release()
-		}
-	}
-
-	cr := &ArrowColReader{
-		key:  t.Key(),
-		meta: t.ColMeta,
-		cols: cols,
-	}
-	return f(cr)
-}
-
-func (t *Table) Statistics() flux.Statistics { return flux.Statistics{} }
-
-type ColReader struct {
-	key  flux.GroupKey
-	cols []flux.ColMeta
-	row  []interface{}
-}
-
-func (cr ColReader) Cols() []flux.ColMeta {
-	return cr.cols
-}
-
-func (cr ColReader) Key() flux.GroupKey {
-	return cr.key
-}
-func (cr ColReader) Len() int {
-	return 1
-}
-
-func (cr ColReader) Bools(j int) []bool {
-	return []bool{cr.row[j].(bool)}
-}
-
-func (cr ColReader) Ints(j int) []int64 {
-	return []int64{cr.row[j].(int64)}
-}
-
-func (cr ColReader) UInts(j int) []uint64 {
-	return []uint64{cr.row[j].(uint64)}
-}
-
-func (cr ColReader) Floats(j int) []float64 {
-	return []float64{cr.row[j].(float64)}
-}
-
-func (cr ColReader) Strings(j int) []string {
-	return []string{cr.row[j].(string)}
-}
-
-func (cr ColReader) Times(j int) []execute.Time {
-	return []execute.Time{cr.row[j].(execute.Time)}
-}
-
-type ArrowColReader struct {
-	key  flux.GroupKey
-	meta []flux.ColMeta
-	cols []array.Interface
-}
-
-func (cr *ArrowColReader) Key() flux.GroupKey {
-	return cr.key
-}
-
-func (cr *ArrowColReader) Cols() []flux.ColMeta {
-	return cr.meta
-}
-
-func (cr *ArrowColReader) Len() int {
-	if len(cr.cols) == 0 {
-		return 0
-	}
-	return cr.cols[0].Len()
-}
-
-func (cr *ArrowColReader) Bools(j int) *array.Boolean {
-	return cr.cols[j].(*array.Boolean)
-}
-
-func (cr *ArrowColReader) Ints(j int) *array.Int64 {
-	return cr.cols[j].(*array.Int64)
-}
-
-func (cr *ArrowColReader) UInts(j int) *array.Uint64 {
-	return cr.cols[j].(*array.Uint64)
-}
-
-func (cr *ArrowColReader) Floats(j int) *array.Float64 {
-	return cr.cols[j].(*array.Float64)
-}
-
-func (cr *ArrowColReader) Strings(j int) *array.Binary {
-	return cr.cols[j].(*array.Binary)
-}
-
-func (cr *ArrowColReader) Times(j int) *array.Int64 {
-	return cr.cols[j].(*array.Int64)
 }
 
 func TablesFromCache(c execute.DataCache) (tables []*Table, err error) {
@@ -435,7 +381,7 @@ func ConvertTable(tbl flux.Table) (*Table, error) {
 		}
 	}
 
-	err := tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	err := tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			row := make([]interface{}, len(blk.ColMeta))

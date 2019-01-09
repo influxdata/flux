@@ -275,7 +275,7 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Tab
 		return fmt.Errorf("no column %q exists", t.timeCol)
 	}
 	// Append modified rows
-	return tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			tm := values.Time(cr.Times(timeIdx).Value(i))
@@ -301,8 +301,8 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Tab
 				count++
 			}
 			colMap := make([]int, len(cr.Cols()))
-			colMap = execute.ColMapArrow(colMap, builder, cr)
-			err = execute.AppendMappedRecordExplicitArrow(i, cr, builder, colMap)
+			colMap = execute.ColMap(colMap, builder, cr)
+			err = execute.AppendMappedRecordWExplicit(i, cr, builder, colMap)
 			if err != nil {
 				return err
 			}

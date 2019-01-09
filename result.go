@@ -29,12 +29,8 @@ type Table interface {
 	Cols() []ColMeta
 
 	// Do calls f to process the data contained within the table.
-	// The function f will be called zero or more times.
-	Do(f func(ColReader) error) error
-
-	// DoArrow calls f to process the data contained within the table.
 	// It uses the arrow buffers.
-	DoArrow(f func(ArrowColReader) error) error
+	Do(f func(ColReader) error) error
 
 	// RefCount modifies the reference count on the table by n.
 	// When the RefCount goes to zero, the table is freed.
@@ -130,28 +126,10 @@ func (t ColType) String() string {
 	}
 }
 
-// ColReader allows access to reading slices of column data.
+// ColReader allows access to reading arrow buffers of column data.
 // All data the ColReader exposes is guaranteed to be in memory.
-// Once a ColReader goes out of scope all slices are considered invalid.
+// Once an ColReader goes out of scope, all slices are considered invalid.
 type ColReader interface {
-	Key() GroupKey
-	// Cols returns a list of column metadata.
-	Cols() []ColMeta
-	// Len returns the length of the slices.
-	// All slices will have the same length.
-	Len() int
-	Bools(j int) []bool
-	Ints(j int) []int64
-	UInts(j int) []uint64
-	Floats(j int) []float64
-	Strings(j int) []string
-	Times(j int) []values.Time
-}
-
-// ArrowColReader allows access to reading arrow buffers of column data.
-// All data the ArrowColReader exposes is guaranteed to be in memory.
-// Once an ArrowColReader goes out of scope, all slices are considered invalid.
-type ArrowColReader interface {
 	Key() GroupKey
 	// Cols returns a list of column metadata.
 	Cols() []ColMeta

@@ -179,7 +179,7 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 
 	// We need to drop the first row since its derivative is undefined
 	firstIdx := 1
-	return tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 
 		if l != 0 {

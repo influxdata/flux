@@ -36,7 +36,7 @@ func TestSample_Process(t *testing.T) {
 				Pos: 0,
 			},
 			name: "everything in separate Do calls",
-			data: &executetest.RowWiseArrowTable{
+			data: &executetest.RowWiseTable{
 				Table: &executetest.Table{
 					KeyCols: []string{"t1"},
 					ColMeta: []flux.ColMeta{
@@ -288,7 +288,7 @@ func TestSample_Process(t *testing.T) {
 				Pos: 2,
 			},
 			name: "every-third-2 in separate Do calls",
-			data: &executetest.RowWiseArrowTable{
+			data: &executetest.RowWiseTable{
 				Table: &executetest.Table{
 					KeyCols: []string{"t1"},
 					ColMeta: []flux.ColMeta{

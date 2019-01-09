@@ -249,7 +249,7 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		t.nextRowCol[groupKeyString] = rowCol{nextCol: len(cols), nextRow: 0}
 	}
 
-	return tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		for row := 0; row < cr.Len(); row++ {
 			rowKey := ""
 			colKey := ""
@@ -339,7 +339,7 @@ func growColumn(builder execute.TableBuilder, colType flux.ColType, colIdx, nRow
 	}
 }
 
-func setBuilderValue(cr flux.ArrowColReader, builder execute.TableBuilder, readerColType flux.ColType, readerRowIndex, readerColIndex, builderRow, builderCol int) error {
+func setBuilderValue(cr flux.ColReader, builder execute.TableBuilder, readerColType flux.ColType, readerRowIndex, readerColIndex, builderRow, builderCol int) error {
 	switch readerColType {
 	case flux.TBool:
 		return builder.SetBool(builderRow, builderCol, cr.Bools(readerColIndex).Value(readerRowIndex))
@@ -359,7 +359,7 @@ func setBuilderValue(cr flux.ArrowColReader, builder execute.TableBuilder, reade
 	}
 }
 
-func appendBuilderValue(cr flux.ArrowColReader, builder execute.TableBuilder, readerColType flux.ColType, readerRowIndex, readerColIndex, builderColIndex int) error {
+func appendBuilderValue(cr flux.ColReader, builder execute.TableBuilder, readerColType flux.ColType, readerRowIndex, readerColIndex, builderColIndex int) error {
 	switch readerColType {
 	case flux.TBool:
 		return builder.AppendBool(builderColIndex, cr.Bools(readerColIndex).Value(readerRowIndex))
@@ -379,7 +379,7 @@ func appendBuilderValue(cr flux.ArrowColReader, builder execute.TableBuilder, re
 	}
 }
 
-func valueToStr(cr flux.ArrowColReader, c flux.ColMeta, row, col int) string {
+func valueToStr(cr flux.ColReader, c flux.ColMeta, row, col int) string {
 	switch c.Type {
 	case flux.TBool:
 		return strconv.FormatBool(cr.Bools(col).Value(row))

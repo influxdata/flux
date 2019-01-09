@@ -121,7 +121,7 @@ func (f *Formatter) WriteTo(out io.Writer) (int64, error) {
 
 	// Write rows
 	r := 0
-	w.err = f.tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	w.err = f.tbl.Do(func(cr flux.ColReader) error {
 		if r == 0 {
 			l := cr.Len()
 			for i := 0; i < l; i++ {
@@ -216,7 +216,7 @@ func (f *Formatter) writeHeaderSeparator(w *writeToHelper) {
 	w.write(eol)
 }
 
-func (f *Formatter) valueBuf(i, j int, typ flux.ColType, cr flux.ArrowColReader) []byte {
+func (f *Formatter) valueBuf(i, j int, typ flux.ColType, cr flux.ColReader) []byte {
 	buf := []byte(f.opts.NullRepresentation)
 	switch typ {
 	case flux.TBool:

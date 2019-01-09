@@ -500,9 +500,9 @@ func (t *schemaMutationTransformation) Process(id execute.DatasetID, tbl flux.Ta
 		}
 	}
 
-	return tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		for i := 0; i < cr.Len(); i++ {
-			if err := execute.AppendMappedRecordWithDefaultsArrow(i, cr, builder, ctx.ColMap()); err != nil {
+			if err := execute.AppendMappedRecordWithDefaults(i, cr, builder, ctx.ColMap()); err != nil {
 				return err
 			}
 		}

@@ -35,19 +35,6 @@ func GroupKeyForRowOn(i int, cr flux.ColReader, on map[string]bool) flux.GroupKe
 	return NewGroupKey(cols, vs)
 }
 
-func GroupKeyForRowOnArrow(i int, cr flux.ArrowColReader, on map[string]bool) flux.GroupKey {
-	cols := make([]flux.ColMeta, 0, len(on))
-	vs := make([]values.Value, 0, len(on))
-	for j, c := range cr.Cols() {
-		if !on[c.Label] {
-			continue
-		}
-		cols = append(cols, c)
-		vs = append(vs, ValueForRowArrow(cr, i, j))
-	}
-	return NewGroupKey(cols, vs)
-}
-
 // OneTimeTable is a Table that permits reading data only once.
 // Specifically the ValueIterator may only be consumed once from any of the columns.
 type OneTimeTable interface {
@@ -148,8 +135,8 @@ func AppendMappedTable(t flux.Table, builder TableBuilder, colMap []int) error {
 		return nil
 	}
 
-	if err := t.DoArrow(func(cr flux.ArrowColReader) error {
-		return AppendMappedColsArrow(cr, builder, colMap)
+	if err := t.Do(func(cr flux.ColReader) error {
+		return AppendMappedCols(cr, builder, colMap)
 	}); err != nil {
 		return err
 	}
@@ -164,20 +151,20 @@ func AppendTable(t flux.Table, builder TableBuilder) error {
 		return nil
 	}
 
-	return t.DoArrow(func(cr flux.ArrowColReader) error {
-		return AppendColsArrow(cr, builder)
+	return t.Do(func(cr flux.ColReader) error {
+		return AppendCols(cr, builder)
 	})
 }
 
-// AppendMappedColsArrow appends all columns from cr onto builder.
+// AppendMappedCols appends all columns from cr onto builder.
 // The colMap is a map of builder column index to cr column index.
-func AppendMappedColsArrow(cr flux.ArrowColReader, builder TableBuilder, colMap []int) error {
+func AppendMappedCols(cr flux.ColReader, builder TableBuilder, colMap []int) error {
 	if len(colMap) != len(builder.Cols()) {
 		return errors.New("AppendMappedCols: colMap must have an entry for each table builder column")
 	}
 	for j := range builder.Cols() {
 		if colMap[j] >= 0 {
-			if err := AppendColArrow(j, colMap[j], cr, builder); err != nil {
+			if err := AppendCol(j, colMap[j], cr, builder); err != nil {
 				return err
 			}
 		}
@@ -196,50 +183,9 @@ func AppendCols(cr flux.ColReader, builder TableBuilder) error {
 	return nil
 }
 
-// AppendColsArrow appends all columns from cr onto builder.
-// This function assumes that builder and cr have the same column schema.
-func AppendColsArrow(cr flux.ArrowColReader, builder TableBuilder) error {
-	for j := range builder.Cols() {
-		if err := AppendColArrow(j, j, cr, builder); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // AppendCol append a column from cr onto builder
 // The indexes bj and cj are builder and col reader indexes respectively.
 func AppendCol(bj, cj int, cr flux.ColReader, builder TableBuilder) error {
-	if cj < 0 || cj > len(cr.Cols()) {
-		return errors.New("AppendCol column reader index out of bounds")
-	}
-	if bj < 0 || bj > len(builder.Cols()) {
-		return errors.New("AppendCol builder index out of bounds")
-	}
-	c := cr.Cols()[cj]
-
-	switch c.Type {
-	case flux.TBool:
-		return builder.AppendBools(bj, cr.Bools(cj))
-	case flux.TInt:
-		return builder.AppendInts(bj, cr.Ints(cj))
-	case flux.TUInt:
-		return builder.AppendUInts(bj, cr.UInts(cj))
-	case flux.TFloat:
-		return builder.AppendFloats(bj, cr.Floats(cj))
-	case flux.TString:
-		return builder.AppendStrings(bj, cr.Strings(cj))
-	case flux.TTime:
-		return builder.AppendTimes(bj, cr.Times(cj))
-	default:
-		PanicUnknownType(c.Type)
-	}
-	return nil
-}
-
-// AppendColArrow append a column from cr onto builder
-// The indexes bj and cj are builder and col reader indexes respectively.
-func AppendColArrow(bj, cj int, cr flux.ArrowColReader, builder TableBuilder) error {
 	if cj < 0 || cj > len(cr.Cols()) {
 		return errors.New("AppendCol column reader index out of bounds")
 	}
@@ -298,80 +244,11 @@ func AppendRecord(i int, cr flux.ColReader, builder TableBuilder) error {
 	return nil
 }
 
-// AppendRecordArrow appends the record from cr onto builder assuming matching columns.
-func AppendRecordArrow(i int, cr flux.ArrowColReader, builder TableBuilder) error {
-	if !BuilderColsMatchReaderArrow(builder, cr) {
-		return errors.New("AppendRecord column schema mismatch")
-	}
-	for j := range builder.Cols() {
-		if err := builder.AppendValue(j, ValueForRowArrow(cr, i, j)); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // AppendMappedRecordWithDefaults appends the records from cr onto builder, using colMap as a map of builder index to cr index.
 // if an entry in the colMap indicates a mismatched column, a default value is assigned to the builder's column
 func AppendMappedRecordWithDefaults(i int, cr flux.ColReader, builder TableBuilder, colMap []int) error {
 	if len(colMap) != len(builder.Cols()) {
 		return errors.New("AppendMappedRecordWithDefaults: colMap must have an entry for each table builder column")
-	}
-	// TODO(adam): these zero values should be set to null when we have null support
-	for j, c := range builder.Cols() {
-		var err error
-		switch c.Type {
-		case flux.TBool:
-			var val bool
-			if colMap[j] >= 0 {
-				val = cr.Bools(colMap[j])[i]
-			}
-			err = builder.AppendBool(j, val)
-		case flux.TInt:
-			var val int64
-			if colMap[j] >= 0 {
-				val = cr.Ints(colMap[j])[i]
-			}
-			err = builder.AppendInt(j, val)
-		case flux.TUInt:
-			var val uint64
-			if colMap[j] >= 0 {
-				val = cr.UInts(colMap[j])[i]
-			}
-			err = builder.AppendUInt(j, val)
-		case flux.TFloat:
-			var val float64
-			if colMap[j] >= 0 {
-				val = cr.Floats(colMap[j])[i]
-			}
-			err = builder.AppendFloat(j, val)
-		case flux.TString:
-			var val string
-			if colMap[j] >= 0 {
-				val = cr.Strings(colMap[j])[i]
-			}
-			err = builder.AppendString(j, val)
-		case flux.TTime:
-			var val Time
-			if colMap[j] >= 0 {
-				val = cr.Times(colMap[j])[i]
-			}
-			err = builder.AppendTime(j, val)
-		default:
-			PanicUnknownType(c.Type)
-		}
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// AppendMappedRecordWithDefaultsArrow appends the records from cr onto builder, using colMap as a map of builder index to cr index.
-// if an entry in the colMap indicates a mismatched column, a default value is assigned to the builder's column
-func AppendMappedRecordWithDefaultsArrow(i int, cr flux.ArrowColReader, builder TableBuilder, colMap []int) error {
-	if len(colMap) != len(builder.Cols()) {
-		return errors.New("AppendMappedRecordWithDefaultsArrow: colMap must have an entry for each table builder column")
 	}
 	// TODO(adam): these zero values should be set to null when we have null support
 	for j, c := range builder.Cols() {
@@ -425,45 +302,13 @@ func AppendMappedRecordWithDefaultsArrow(i int, cr flux.ArrowColReader, builder 
 
 // AppendMappedRecordWExplicit appends the records from cr onto builder, using colMap as a map of builder index to cr index.
 // if an entry in the colMap indicates a mismatched column, no value is appended.
-func AppendMappedRecordExplicit(i int, cr flux.ColReader, builder TableBuilder, colMap []int) error {
-	// TODO(adam): these zero values should be set to null when we have null support
-	for j, c := range builder.Cols() {
-		if colMap[j] < 0 {
-			continue
-		}
-		var err error
-		switch c.Type {
-		case flux.TBool:
-			err = builder.AppendBool(j, cr.Bools(colMap[j])[i])
-		case flux.TInt:
-			err = builder.AppendInt(j, cr.Ints(colMap[j])[i])
-		case flux.TUInt:
-			err = builder.AppendUInt(j, cr.UInts(colMap[j])[i])
-		case flux.TFloat:
-			err = builder.AppendFloat(j, cr.Floats(colMap[j])[i])
-		case flux.TString:
-			err = builder.AppendString(j, cr.Strings(colMap[j])[i])
-		case flux.TTime:
-			err = builder.AppendTime(j, cr.Times(colMap[j])[i])
-		default:
-			PanicUnknownType(c.Type)
-		}
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// AppendMappedRecordWExplicitArrow appends the records from cr onto builder, using colMap as a map of builder index to cr index.
-// if an entry in the colMap indicates a mismatched column, no value is appended.
-func AppendMappedRecordExplicitArrow(i int, cr flux.ArrowColReader, builder TableBuilder, colMap []int) error {
+func AppendMappedRecordWExplicit(i int, cr flux.ColReader, builder TableBuilder, colMap []int) error {
 	// TODO(adam): these zero values should be set to null when we have null support
 	for j := range builder.Cols() {
 		if colMap[j] < 0 {
 			continue
 		}
-		if err := builder.AppendValue(j, ValueForRowArrow(cr, i, j)); err != nil {
+		if err := builder.AppendValue(j, ValueForRow(cr, i, j)); err != nil {
 			return err
 		}
 	}
@@ -472,11 +317,6 @@ func AppendMappedRecordExplicitArrow(i int, cr flux.ArrowColReader, builder Tabl
 
 // BuilderColsMatchReader returns true if builder and cr have identical column sets (order dependent)
 func BuilderColsMatchReader(builder TableBuilder, cr flux.ColReader) bool {
-	return colsMatch(builder.Cols(), cr.Cols())
-}
-
-// BuilderColsMatchReaderArrow returns true if builder and cr have identical column sets (order dependent)
-func BuilderColsMatchReaderArrow(builder TableBuilder, cr flux.ArrowColReader) bool {
 	return colsMatch(builder.Cols(), cr.Cols())
 }
 
@@ -570,36 +410,6 @@ func ColMap(colMap []int, builder TableBuilder, cr flux.ColReader) []int {
 	return colMap
 }
 
-// ColMapArrow writes a mapping of builder index to column reader index into colMap.
-// When colMap does not have enough capacity a new colMap is allocated.
-// The colMap is always returned
-func ColMapArrow(colMap []int, builder TableBuilder, cr flux.ArrowColReader) []int {
-	l := len(builder.Cols())
-	if cap(colMap) < l {
-		colMap = make([]int, len(builder.Cols()))
-	} else {
-		colMap = colMap[:l]
-	}
-	cols := cr.Cols()
-	for j, c := range builder.Cols() {
-		colMap[j] = ColIdx(c.Label, cols)
-	}
-	return colMap
-}
-
-// AppendRecordForCols appends the only the columns provided from cr onto builder.
-func AppendRecordForCols(i int, cr flux.ColReader, builder TableBuilder, cols []flux.ColMeta) error {
-	if len(cr.Cols()) != len(builder.Cols()) || len(cr.Cols()) != len(cols) {
-		return errors.New("appended records must include all columns")
-	}
-	for j := range cols {
-		if err := builder.AppendValue(j, ValueForRow(cr, i, j)); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func AppendKeyValues(key flux.GroupKey, builder TableBuilder) error {
 	for j, c := range key.Cols() {
 		idx := ColIdx(c.Label, builder.Cols())
@@ -635,30 +445,8 @@ func HasCol(label string, cols []flux.ColMeta) bool {
 	return ColIdx(label, cols) >= 0
 }
 
-// ValueForRow retrieves a value from a column reader at the given index.
+// ValueForRow retrieves a value from an arrow column reader at the given index.
 func ValueForRow(cr flux.ColReader, i, j int) values.Value {
-	t := cr.Cols()[j].Type
-	switch t {
-	case flux.TString:
-		return values.NewString(cr.Strings(j)[i])
-	case flux.TInt:
-		return values.NewInt(cr.Ints(j)[i])
-	case flux.TUInt:
-		return values.NewUInt(cr.UInts(j)[i])
-	case flux.TFloat:
-		return values.NewFloat(cr.Floats(j)[i])
-	case flux.TBool:
-		return values.NewBool(cr.Bools(j)[i])
-	case flux.TTime:
-		return values.NewTime(cr.Times(j)[i])
-	default:
-		PanicUnknownType(t)
-		return values.InvalidValue
-	}
-}
-
-// ValueForRowArrow retrieves a value from an arrow column reader at the given index.
-func ValueForRowArrow(cr flux.ArrowColReader, i, j int) values.Value {
 	t := cr.Cols()[j].Type
 	switch t {
 	case flux.TString:
@@ -1449,12 +1237,6 @@ func (t *ColListTable) Len() int {
 }
 
 func (t *ColListTable) Do(f func(flux.ColReader) error) error {
-	return t.DoArrow(func(cr flux.ArrowColReader) error {
-		return f(arrow.ColReader(cr))
-	})
-}
-
-func (t *ColListTable) DoArrow(f func(flux.ArrowColReader) error) error {
 	return f(t)
 }
 

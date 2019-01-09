@@ -140,7 +140,7 @@ func (t *indexSelectorTransformation) Process(id DatasetID, tbl flux.Table) erro
 		return fmt.Errorf("unsupported selector type %v", valueCol.Type)
 	}
 
-	return tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		switch valueCol.Type {
 		case flux.TBool:
 			selected := s.(DoBoolIndexSelector).DoBool(cr.Bools(valueIdx))
@@ -194,7 +194,7 @@ func (t *rowSelectorTransformation) Process(id DatasetID, tbl flux.Table) error 
 		return fmt.Errorf("invalid use of function: %T has no implementation for type %v", t.selector, valueCol.Type)
 	}
 
-	if err := tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	if err := tbl.Do(func(cr flux.ColReader) error {
 		switch valueCol.Type {
 		case flux.TBool:
 			rower.(DoBoolRowSelector).DoBool(cr.Bools(valueIdx), cr)
@@ -217,14 +217,14 @@ func (t *rowSelectorTransformation) Process(id DatasetID, tbl flux.Table) error 
 	return t.appendRows(builder, rows)
 }
 
-func (t *indexSelectorTransformation) appendSelected(selected []int, builder TableBuilder, cr flux.ArrowColReader) error {
+func (t *indexSelectorTransformation) appendSelected(selected []int, builder TableBuilder, cr flux.ColReader) error {
 	if len(selected) == 0 {
 		return nil
 	}
 	cols := builder.Cols()
 	for j := range cols {
 		for _, i := range selected {
-			if err := builder.AppendValue(j, ValueForRowArrow(cr, i, j)); err != nil {
+			if err := builder.AppendValue(j, ValueForRow(cr, i, j)); err != nil {
 				return err
 			}
 		}
@@ -282,30 +282,30 @@ type Rower interface {
 
 type DoBoolRowSelector interface {
 	Rower
-	DoBool(vs *array.Boolean, cr flux.ArrowColReader)
+	DoBool(vs *array.Boolean, cr flux.ColReader)
 }
 type DoIntRowSelector interface {
 	Rower
-	DoInt(vs *array.Int64, cr flux.ArrowColReader)
+	DoInt(vs *array.Int64, cr flux.ColReader)
 }
 type DoUIntRowSelector interface {
 	Rower
-	DoUInt(vs *array.Uint64, cr flux.ArrowColReader)
+	DoUInt(vs *array.Uint64, cr flux.ColReader)
 }
 type DoFloatRowSelector interface {
 	Rower
-	DoFloat(vs *array.Float64, cr flux.ArrowColReader)
+	DoFloat(vs *array.Float64, cr flux.ColReader)
 }
 type DoStringRowSelector interface {
 	Rower
-	DoString(vs *array.Binary, cr flux.ArrowColReader)
+	DoString(vs *array.Binary, cr flux.ColReader)
 }
 
 type Row struct {
 	Values []interface{}
 }
 
-func ReadRow(i int, cr flux.ArrowColReader) (row Row) {
+func ReadRow(i int, cr flux.ColReader) (row Row) {
 	cols := cr.Cols()
 	row.Values = make([]interface{}, len(cols))
 	for j, c := range cols {

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -151,7 +150,7 @@ func (t *uniqueTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		timeUnique = make(map[execute.Time]bool)
 	}
 
-	return tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			// Check unique
@@ -194,7 +193,7 @@ func (t *uniqueTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 				timeUnique[v] = true
 			}
 
-			if err := execute.AppendRecord(i, arrow.ColReader(cr), builder); err != nil {
+			if err := execute.AppendRecord(i, cr, builder); err != nil {
 				return err
 			}
 		}

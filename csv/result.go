@@ -469,29 +469,11 @@ func newTable(
 	return b, nil
 }
 
-func (d *tableDecoder) Do(f func(flux.ColReader) error) (err error) {
-	return d.do(func(table flux.Table) error {
-		return table.Do(func(cr flux.ColReader) error {
-			return f(cr)
-		})
-	})
-}
-
-func (d *tableDecoder) DoArrow(f func(flux.ArrowColReader) error) error {
-	return d.do(func(table flux.Table) error {
-		return table.DoArrow(func(cr flux.ArrowColReader) error {
-			return f(cr)
-		})
-	})
-}
-
-// TODO(jsternberg): This method can be removed and merged with DoArrow when
-// we remove the flux.ColReader and replace Do with DoArrow.
-func (d *tableDecoder) do(f func(table flux.Table) error) error {
+func (d *tableDecoder) Do(f func(flux.ColReader) error) error {
 	// Send off first batch from first advance call.
 	if table, err := d.builder.Table(); err != nil {
 		return err
-	} else if err := f(table); err != nil {
+	} else if err := table.Do(f); err != nil {
 		return err
 	}
 	d.builder.ClearData()
@@ -513,7 +495,7 @@ func (d *tableDecoder) do(f func(table flux.Table) error) error {
 		table, err := d.builder.Table()
 		if err != nil {
 			return err
-		} else if err := f(table); err != nil {
+		} else if err := table.Do(f); err != nil {
 			return err
 		}
 		d.stats = d.stats.Add(table.Statistics())
@@ -840,7 +822,7 @@ func (e *ResultEncoder) Encode(w io.Writer, result flux.Result) (int64, error) {
 			}
 		}
 
-		err := tbl.DoArrow(func(cr flux.ArrowColReader) error {
+		err := tbl.Do(func(cr flux.ColReader) error {
 			record := row[recordStartIdx:]
 			l := cr.Len()
 			for i := 0; i < l; i++ {
@@ -1121,7 +1103,7 @@ func encodeValue(value values.Value, c colMeta) (string, error) {
 	}
 }
 
-func encodeValueFrom(i, j int, c colMeta, cr flux.ArrowColReader) (string, error) {
+func encodeValueFrom(i, j int, c colMeta, cr flux.ColReader) (string, error) {
 	var v = nullValue
 	switch c.Type {
 	case flux.TBool:

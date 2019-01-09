@@ -141,7 +141,7 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 			return err
 		}
 		// TODO: hack required to ensure data flows downstream
-		return tbl.DoArrow(func(flux.ArrowColReader) error {
+		return tbl.Do(func(flux.ColReader) error {
 			return nil
 		})
 	}
@@ -192,7 +192,7 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 			return err
 		}
 		// TODO: hack required to ensure data flows downstream
-		return tbl.DoArrow(func(flux.ArrowColReader) error {
+		return tbl.Do(func(flux.ColReader) error {
 			return nil
 		})
 	}
@@ -221,7 +221,7 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 	}
 
 	j := execute.ColIdx(t.column, tbl.Cols())
-	return tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 
 		for i := 0; i < l; i++ {

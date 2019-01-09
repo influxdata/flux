@@ -191,7 +191,7 @@ func (t *histogramTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 	}
 	totalRows := 0.0
 	counts := make([]float64, len(t.spec.Bins))
-	err = tbl.DoArrow(func(cr flux.ArrowColReader) error {
+	err = tbl.Do(func(cr flux.ColReader) error {
 		totalRows += float64(cr.Len())
 		for _, v := range cr.Floats(valueIdx).Float64Values() {
 			idx := sort.Search(len(t.spec.Bins), func(i int) bool {
