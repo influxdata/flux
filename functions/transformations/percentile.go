@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	"github.com/influxdata/tdigest"
 	"github.com/pkg/errors"
 )
@@ -236,8 +237,10 @@ func (a *PercentileAgg) NewStringAgg() execute.DoStringAgg {
 }
 
 func (a *PercentileAgg) DoFloat(vs *array.Float64) {
-	for _, v := range vs.Float64Values() {
-		a.digest.Add(v, 1)
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsValid(i) {
+			a.digest.Add(vs.Value(i), 1)
+		}
 	}
 }
 
@@ -292,7 +295,27 @@ func (a *ExactPercentileAgg) NewStringAgg() execute.DoStringAgg {
 }
 
 func (a *ExactPercentileAgg) DoFloat(vs *array.Float64) {
-	a.data = append(a.data, vs.Float64Values()...)
+	if vs.NullN() == 0 {
+		a.data = append(a.data, vs.Float64Values()...)
+		return
+	}
+
+	// Check if we have enough space for the floats
+	// inside of the array.
+	l := vs.Len() - vs.NullN()
+	if len(a.data)+l > cap(a.data) {
+		// We do not. Create an array with the needed size and
+		// copy over the existing data.
+		data := make([]float64, len(a.data), len(a.data)+l)
+		copy(data, a.data)
+		a.data = data
+	}
+
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsValid(i) {
+			a.data = append(a.data, vs.Value(i))
+		}
+	}
 }
 
 func (a *ExactPercentileAgg) Type() flux.ColType {
@@ -358,18 +381,188 @@ func (t *ExactPercentileSelectorTransformation) Process(id execute.DatasetID, tb
 		return fmt.Errorf("no column %q exists", t.spec.Column)
 	}
 
-	copyTable := execute.NewColListTableBuilder(tbl.Key(), t.a)
-	if err := execute.AddTableCols(tbl, copyTable); err != nil {
-		return err
-	}
-	if err := execute.AppendTable(tbl, copyTable); err != nil {
-		return err
-	}
-	copyTable.Sort([]string{t.spec.Column}, false)
+	var row execute.Row
+	switch typ := tbl.Cols()[valueIdx].Type; typ {
+	case flux.TFloat:
+		type floatValue struct {
+			value float64
+			row   execute.Row
+		}
 
-	n := copyTable.NRows()
-	index := getQuantileIndex(t.spec.Percentile, n)
-	row := copyTable.GetRow(index)
+		var rows []floatValue
+		if err := tbl.Do(func(cr flux.ColReader) error {
+			vs := cr.Floats(valueIdx)
+			for i := 0; i < vs.Len(); i++ {
+				if vs.IsValid(i) {
+					rows = append(rows, floatValue{
+						value: vs.Value(i),
+						row:   execute.ReadRow(i, cr),
+					})
+				}
+			}
+			return nil
+		}); err != nil {
+			return err
+		}
+
+		if len(rows) > 0 {
+			sort.SliceStable(rows, func(i, j int) bool {
+				return rows[i].value < rows[j].value
+			})
+			index := getQuantileIndex(t.spec.Percentile, len(rows))
+			row = rows[index].row
+		}
+	case flux.TInt:
+		type intValue struct {
+			value int64
+			row   execute.Row
+		}
+
+		var rows []intValue
+		if err := tbl.Do(func(cr flux.ColReader) error {
+			vs := cr.Ints(valueIdx)
+			for i := 0; i < vs.Len(); i++ {
+				if vs.IsValid(i) {
+					rows = append(rows, intValue{
+						value: vs.Value(i),
+						row:   execute.ReadRow(i, cr),
+					})
+				}
+			}
+			return nil
+		}); err != nil {
+			return err
+		}
+
+		if len(rows) > 0 {
+			sort.SliceStable(rows, func(i, j int) bool {
+				return rows[i].value < rows[j].value
+			})
+			index := getQuantileIndex(t.spec.Percentile, len(rows))
+			row = rows[index].row
+		}
+	case flux.TUInt:
+		type uintValue struct {
+			value uint64
+			row   execute.Row
+		}
+
+		var rows []uintValue
+		if err := tbl.Do(func(cr flux.ColReader) error {
+			vs := cr.UInts(valueIdx)
+			for i := 0; i < vs.Len(); i++ {
+				if vs.IsValid(i) {
+					rows = append(rows, uintValue{
+						value: vs.Value(i),
+						row:   execute.ReadRow(i, cr),
+					})
+				}
+			}
+			return nil
+		}); err != nil {
+			return err
+		}
+
+		if len(rows) > 0 {
+			sort.SliceStable(rows, func(i, j int) bool {
+				return rows[i].value < rows[j].value
+			})
+			index := getQuantileIndex(t.spec.Percentile, len(rows))
+			row = rows[index].row
+		}
+	case flux.TString:
+		type stringValue struct {
+			value string
+			row   execute.Row
+		}
+
+		var rows []stringValue
+		if err := tbl.Do(func(cr flux.ColReader) error {
+			vs := cr.Strings(valueIdx)
+			for i := 0; i < vs.Len(); i++ {
+				if vs.IsValid(i) {
+					rows = append(rows, stringValue{
+						value: vs.ValueString(i),
+						row:   execute.ReadRow(i, cr),
+					})
+				}
+			}
+			return nil
+		}); err != nil {
+			return err
+		}
+
+		if len(rows) > 0 {
+			sort.SliceStable(rows, func(i, j int) bool {
+				return rows[i].value < rows[j].value
+			})
+			index := getQuantileIndex(t.spec.Percentile, len(rows))
+			row = rows[index].row
+		}
+	case flux.TTime:
+		type timeValue struct {
+			value values.Time
+			row   execute.Row
+		}
+
+		var rows []timeValue
+		if err := tbl.Do(func(cr flux.ColReader) error {
+			vs := cr.Times(valueIdx)
+			for i := 0; i < vs.Len(); i++ {
+				if vs.IsValid(i) {
+					rows = append(rows, timeValue{
+						value: values.Time(vs.Value(i)),
+						row:   execute.ReadRow(i, cr),
+					})
+				}
+			}
+			return nil
+		}); err != nil {
+			return err
+		}
+
+		if len(rows) > 0 {
+			sort.SliceStable(rows, func(i, j int) bool {
+				return rows[i].value < rows[j].value
+			})
+			index := getQuantileIndex(t.spec.Percentile, len(rows))
+			row = rows[index].row
+		}
+	case flux.TBool:
+		type boolValue struct {
+			value bool
+			row   execute.Row
+		}
+
+		var rows []boolValue
+		if err := tbl.Do(func(cr flux.ColReader) error {
+			vs := cr.Bools(valueIdx)
+			for i := 0; i < vs.Len(); i++ {
+				if vs.IsValid(i) {
+					rows = append(rows, boolValue{
+						value: vs.Value(i),
+						row:   execute.ReadRow(i, cr),
+					})
+				}
+			}
+			return nil
+		}); err != nil {
+			return err
+		}
+
+		if len(rows) > 0 {
+			sort.SliceStable(rows, func(i, j int) bool {
+				if rows[i].value == rows[j].value {
+					return false
+				}
+				return rows[j].value
+			})
+			index := getQuantileIndex(t.spec.Percentile, len(rows))
+			row = rows[index].row
+		}
+	default:
+		execute.PanicUnknownType(typ)
+	}
 
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
@@ -380,10 +573,21 @@ func (t *ExactPercentileSelectorTransformation) Process(id execute.DatasetID, tb
 	}
 
 	for j, col := range builder.Cols() {
-		v, ok := row.Get(col.Label)
-		if !ok {
-			return fmt.Errorf("unexpected column in percentile select")
+		if row.Values == nil {
+			if idx := execute.ColIdx(col.Label, tbl.Key().Cols()); idx != -1 {
+				v := tbl.Key().Value(idx)
+				if err := builder.AppendValue(j, v); err != nil {
+					return err
+				}
+			} else {
+				if err := builder.AppendNil(j); err != nil {
+					return err
+				}
+			}
+			continue
 		}
+
+		v := values.New(row.Values[j])
 		if err := builder.AppendValue(j, v); err != nil {
 			return err
 		}
