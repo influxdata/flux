@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/values"
 )
 
 const fixedWidthTimeFmt = "2006-01-02T15:04:05.000000000Z"
@@ -30,6 +31,8 @@ type FormatOptions struct {
 	// RepeatHeaderCount is the number of rows to print before printing the header again.
 	// If zero then the headers are not repeated.
 	RepeatHeaderCount int
+
+	NullRepresentation string
 }
 
 func DefaultFormatOptions() *FormatOptions {
@@ -118,7 +121,7 @@ func (f *Formatter) WriteTo(out io.Writer) (int64, error) {
 
 	// Write rows
 	r := 0
-	w.err = f.tbl.Do(func(cr flux.ColReader) error {
+	w.err = f.tbl.DoArrow(func(cr flux.ArrowColReader) error {
 		if r == 0 {
 			l := cr.Len()
 			for i := 0; i < l; i++ {
@@ -213,23 +216,36 @@ func (f *Formatter) writeHeaderSeparator(w *writeToHelper) {
 	w.write(eol)
 }
 
-func (f *Formatter) valueBuf(i, j int, typ flux.ColType, cr flux.ColReader) (buf []byte) {
+func (f *Formatter) valueBuf(i, j int, typ flux.ColType, cr flux.ArrowColReader) []byte {
+	buf := []byte(f.opts.NullRepresentation)
 	switch typ {
 	case flux.TBool:
-		buf = strconv.AppendBool(f.fmtBuf[0:0], cr.Bools(j)[i])
+		if cr.Bools(j).IsValid(i) {
+			buf = strconv.AppendBool(f.fmtBuf[0:0], cr.Bools(j).Value(i))
+		}
 	case flux.TInt:
-		buf = strconv.AppendInt(f.fmtBuf[0:0], cr.Ints(j)[i], 10)
+		if cr.Ints(j).IsValid(i) {
+			buf = strconv.AppendInt(f.fmtBuf[0:0], cr.Ints(j).Value(i), 10)
+		}
 	case flux.TUInt:
-		buf = strconv.AppendUint(f.fmtBuf[0:0], cr.UInts(j)[i], 10)
+		if cr.UInts(j).IsValid(i) {
+			buf = strconv.AppendUint(f.fmtBuf[0:0], cr.UInts(j).Value(i), 10)
+		}
 	case flux.TFloat:
-		// TODO allow specifying format and precision
-		buf = strconv.AppendFloat(f.fmtBuf[0:0], cr.Floats(j)[i], 'f', -1, 64)
+		if cr.Floats(j).IsValid(i) {
+			// TODO allow specifying format and precision
+			buf = strconv.AppendFloat(f.fmtBuf[0:0], cr.Floats(j).Value(i), 'f', -1, 64)
+		}
 	case flux.TString:
-		buf = []byte(cr.Strings(j)[i])
+		if cr.Strings(j).IsValid(i) {
+			buf = []byte(cr.Strings(j).ValueString(i))
+		}
 	case flux.TTime:
-		buf = []byte(cr.Times(j)[i].String())
+		if cr.Times(j).IsValid(i) {
+			buf = []byte(values.Time(cr.Times(j).Value(i)).String())
+		}
 	}
-	return
+	return buf
 }
 
 // orderedCols sorts a list of columns:
