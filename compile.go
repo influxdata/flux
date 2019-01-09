@@ -48,17 +48,8 @@ func Compile(ctx context.Context, q string, now time.Time, opts ...Option) (*Spe
 
 	s, _ := opentracing.StartSpanFromContext(ctx, "parse")
 
-	// Instantiate new interpreter
-	itrp := interpreter.NewInterpreter()
-
-	// Instantiate universe block
-	universe := prelude.Copy()
-
-	// Modify the now option
-	universe.Set(nowOption, nowFunc(now))
-
-	// Evaluate Flux source
-	if err := Eval(itrp, universe, q); err != nil {
+	functionCalls, scope, err := Eval(q, SetOption(nowOption, nowFunc(now)))
+	if err != nil {
 		return nil, err
 	}
 
@@ -66,10 +57,17 @@ func Compile(ctx context.Context, q string, now time.Time, opts ...Option) (*Spe
 	s, _ = opentracing.StartSpanFromContext(ctx, "compile")
 	defer s.Finish()
 
-	nowTime, _ := universe.Lookup(nowOption)
-	pkg := itrp.Package()
+	nowOpt, ok := scope.Lookup(nowOption)
+	if !ok {
+		return nil, fmt.Errorf("%q option not set", nowOption)
+	}
 
-	spec, err := ToSpec(nowTime.Function(), pkg.SideEffects()...)
+	nowTime, err := nowOpt.Function().Call(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	spec, err := ToSpec(functionCalls, nowTime.Time().Time())
 	if err != nil {
 		return nil, err
 	}
@@ -80,24 +78,40 @@ func Compile(ctx context.Context, q string, now time.Time, opts ...Option) (*Spe
 	return spec, nil
 }
 
-// Eval evaluates the flux string q and update the given interpreter
-func Eval(itrp *interpreter.Interpreter, scope interpreter.Scope, q string) error {
-	astPkg := parser.ParseSource(q)
+func Eval(flux string, opts ...scopeMutator) ([]values.Value, interpreter.Scope, error) {
+	astPkg := parser.ParseSource(flux)
 	if ast.Check(astPkg) > 0 {
-		return ast.GetError(astPkg)
+		return nil, nil, ast.GetError(astPkg)
 	}
 
-	// Convert AST package to a semantic package
 	semPkg, err := semantic.New(astPkg)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
-	if err := itrp.Eval(semPkg, scope, StdLib()); err != nil {
-		return err
+	itrp := interpreter.NewInterpreter()
+	universe := prelude.Copy()
+
+	for _, opt := range opts {
+		opt(universe)
 	}
-	return nil
+
+	err = itrp.Eval(semPkg, universe, StdLib())
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return itrp.Package().SideEffects(), universe, nil
 }
+
+// SetOption returns a func that adds a var binding to a scope
+func SetOption(name string, v values.Value) scopeMutator {
+	return func(scope interpreter.Scope) {
+		scope.Set(name, v)
+	}
+}
+
+type scopeMutator = func(interpreter.Scope)
 
 func nowFunc(now time.Time) values.Function {
 	timeVal := values.NewTime(values.ConvertTime(now))
@@ -111,38 +125,31 @@ func nowFunc(now time.Time) values.Function {
 	return values.NewFunction(nowOption, ftype, call, sideEffect)
 }
 
-func ToSpec(now values.Function, calls ...values.Value) (*Spec, error) {
+func ToSpec(functionCalls []values.Value, now time.Time) (*Spec, error) {
 	ider := &ider{
 		id:     0,
 		lookup: make(map[*TableObject]OperationID),
 	}
 
-	spec := new(Spec)
-	visited := make(map[*TableObject]bool)
-	nodes := make([]*TableObject, 0, len(calls))
+	spec := &Spec{Now: now}
+	seen := make(map[*TableObject]bool)
+	objs := make([]*TableObject, 0, len(functionCalls))
 
-	for _, call := range calls {
+	for _, call := range functionCalls {
 		if op, ok := call.(*TableObject); ok {
 			dup := false
-			for _, node := range nodes {
-				if op.Equal(node) {
+			for _, tableObject := range objs {
+				if op.Equal(tableObject) {
 					dup = true
 					break
 				}
 			}
 			if !dup {
-				op.buildSpec(ider, spec, visited)
-				nodes = append(nodes, op)
+				op.buildSpec(ider, spec, seen)
+				objs = append(objs, op)
 			}
 		}
 	}
-
-	nowTime, err := now.Call(nil)
-	if err != nil {
-		return nil, err
-	}
-
-	spec.Now = nowTime.Time().Time()
 
 	return spec, nil
 }

@@ -171,7 +171,11 @@ func (r *REPL) executeLine(t string) (values.Value, error) {
 		if !ok {
 			return nil, fmt.Errorf("now option not set")
 		}
-		spec, err := flux.ToSpec(now.Function(), t)
+		nowTime, err := now.Function().Call(nil)
+		if err != nil {
+			return nil, err
+		}
+		spec, err := flux.ToSpec([]values.Value{t}, nowTime.Time().Time())
 		if err != nil {
 			return nil, err
 		}
