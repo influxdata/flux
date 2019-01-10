@@ -12,6 +12,7 @@ type Scope interface {
 	Set(name string, v values.Value)
 
 	// Create a new scope by nesting the current scope
+	// If the passed in object is not nil, its values will be added to the new nested scope.
 	Nest(values.Object) Scope
 
 	// Number of visible names in scope

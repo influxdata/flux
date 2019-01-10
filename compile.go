@@ -48,7 +48,7 @@ func Compile(ctx context.Context, q string, now time.Time, opts ...Option) (*Spe
 
 	s, _ := opentracing.StartSpanFromContext(ctx, "parse")
 
-	functionCalls, scope, err := Eval(q, SetOption(nowOption, nowFunc(now)))
+	sideEffects, scope, err := Eval(q, SetOption(nowOption, nowFunc(now)))
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func Compile(ctx context.Context, q string, now time.Time, opts ...Option) (*Spe
 		return nil, err
 	}
 
-	spec, err := ToSpec(functionCalls, nowTime.Time().Time())
+	spec, err := ToSpec(sideEffects, nowTime.Time().Time())
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func Compile(ctx context.Context, q string, now time.Time, opts ...Option) (*Spe
 	return spec, nil
 }
 
-func Eval(flux string, opts ...scopeMutator) ([]values.Value, interpreter.Scope, error) {
+func Eval(flux string, opts ...ScopeMutator) ([]values.Value, interpreter.Scope, error) {
 	astPkg := parser.ParseSource(flux)
 	if ast.Check(astPkg) > 0 {
 		return nil, nil, ast.GetError(astPkg)
@@ -105,13 +105,14 @@ func Eval(flux string, opts ...scopeMutator) ([]values.Value, interpreter.Scope,
 }
 
 // SetOption returns a func that adds a var binding to a scope
-func SetOption(name string, v values.Value) scopeMutator {
+func SetOption(name string, v values.Value) ScopeMutator {
 	return func(scope interpreter.Scope) {
 		scope.Set(name, v)
 	}
 }
 
-type scopeMutator = func(interpreter.Scope)
+// ScopeMutator is any function that mutates the scope of an identifier
+type ScopeMutator = func(interpreter.Scope)
 
 func nowFunc(now time.Time) values.Function {
 	timeVal := values.NewTime(values.ConvertTime(now))
