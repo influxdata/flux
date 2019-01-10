@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/values"
@@ -71,19 +72,19 @@ func init() {
 		return
 	}
 
-	times := make([]execute.Time, N)
-	startTimes := make([]execute.Time, N)
-	stopTimes := make([]execute.Time, N)
+	times := make([]int64, N)
+	startTimes := make([]int64, N)
+	stopTimes := make([]int64, N)
 	normalValues := NormalData
 	t1 := make([]string, N)
 	t2 := make([]string, N)
 
 	for i, v := range normalValues {
-		startTimes[i] = start
-		stopTimes[i] = stop
+		startTimes[i] = int64(start)
+		stopTimes[i] = int64(stop)
 		t1[i] = t1Value
 		// There are roughly 1 million, 31 second intervals in a year.
-		times[i] = start + execute.Time(time.Duration(i*31)*time.Second)
+		times[i] = int64(start + execute.Time(time.Duration(i*31)*time.Second))
 		// Pick t2 based off the value
 		switch int(v) % 3 {
 		case 0:
@@ -95,12 +96,26 @@ func init() {
 		}
 	}
 
-	_ = normalTableBuilder.AppendTimes(0, times)
-	_ = normalTableBuilder.AppendTimes(1, startTimes)
-	_ = normalTableBuilder.AppendTimes(2, stopTimes)
-	_ = normalTableBuilder.AppendFloats(3, normalValues)
-	_ = normalTableBuilder.AppendStrings(4, t1)
-	_ = normalTableBuilder.AppendStrings(5, t2)
+	timesArrow := arrow.NewInt(times, nil)
+	startTimesArrow := arrow.NewInt(startTimes, nil)
+	stopTimesArrow := arrow.NewInt(stopTimes, nil)
+	normalValuesArrow := arrow.NewFloat(normalValues, nil)
+	t1Arrow := arrow.NewString(t1, nil)
+	t2Arrow := arrow.NewString(t2, nil)
+	defer func() {
+		timesArrow.Release()
+		startTimesArrow.Release()
+		stopTimesArrow.Release()
+		normalValuesArrow.Release()
+		t1Arrow.Release()
+		t2Arrow.Release()
+	}()
+	_ = normalTableBuilder.AppendTimes(0, timesArrow)
+	_ = normalTableBuilder.AppendTimes(1, startTimesArrow)
+	_ = normalTableBuilder.AppendTimes(2, stopTimesArrow)
+	_ = normalTableBuilder.AppendFloats(3, normalValuesArrow)
+	_ = normalTableBuilder.AppendStrings(4, t1Arrow)
+	_ = normalTableBuilder.AppendStrings(5, t2Arrow)
 
 	NormalTable, _ = normalTableBuilder.Table()
 }

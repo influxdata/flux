@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/values"
 )
 
 func TestTablesEqual(t *testing.T) {
@@ -223,8 +224,9 @@ func TestColListTable_SetNil(t *testing.T) {
 		Type:  flux.TFloat,
 	})
 
-	// Grow by two values and then set the second to nil.
+	// Grow by two values, set the first to 1 and set the second to nil.
 	_ = tb.GrowFloats(idx, 2)
+	_ = tb.SetValue(0, idx, values.New(1.0))
 	_ = tb.SetNil(1, idx)
 
 	// Build the table and then verify the arrow table.

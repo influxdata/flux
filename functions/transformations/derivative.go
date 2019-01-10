@@ -214,7 +214,7 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 			switch c.Type {
 			case flux.TBool:
 				data := arrow.BoolSlice(cr.Bools(j), firstIdx, cr.Len())
-				if err := arrow.AppendBools(builder, j, data); err != nil {
+				if err := builder.AppendBools(j, data); err != nil {
 					data.Release()
 					return err
 				}
@@ -232,7 +232,7 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 					}
 				} else {
 					data := arrow.IntSlice(cr.Ints(j), firstIdx, cr.Len())
-					if err := arrow.AppendInts(builder, j, data); err != nil {
+					if err := builder.AppendInts(j, data); err != nil {
 						data.Release()
 						return err
 					}
@@ -251,7 +251,7 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 					}
 				} else {
 					data := arrow.UintSlice(cr.UInts(j), firstIdx, cr.Len())
-					if err := arrow.AppendUInts(builder, j, data); err != nil {
+					if err := builder.AppendUInts(j, data); err != nil {
 						data.Release()
 						return err
 					}
@@ -270,7 +270,7 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 					}
 				} else {
 					data := arrow.FloatSlice(cr.Floats(j), firstIdx, cr.Len())
-					if err := arrow.AppendFloats(builder, j, data); err != nil {
+					if err := builder.AppendFloats(j, data); err != nil {
 						data.Release()
 						return err
 					}
@@ -278,14 +278,14 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 				}
 			case flux.TString:
 				data := arrow.StringSlice(cr.Strings(j), firstIdx, cr.Len())
-				if err := arrow.AppendStrings(builder, j, data); err != nil {
+				if err := builder.AppendStrings(j, data); err != nil {
 					data.Release()
 					return err
 				}
 				data.Release()
 			case flux.TTime:
 				data := arrow.IntSlice(cr.Times(j), firstIdx, cr.Len())
-				if err := arrow.AppendTimes(builder, j, data); err != nil {
+				if err := builder.AppendTimes(j, data); err != nil {
 					data.Release()
 					return err
 				}

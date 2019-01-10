@@ -395,9 +395,6 @@ func TestGroup_Process(t *testing.T) {
 			},
 		},
 		{
-			// TODO(nathanielc): When we have support for null, the missing column
-			// needs to be added with null values for any missing values.
-			// Right now the order of input tables determines whether the column is included.
 			name: "fan in missing columns",
 			spec: &transformations.GroupProcedureSpec{
 				GroupMode: functions.GroupModeBy,
@@ -466,7 +463,7 @@ func TestGroup_Process(t *testing.T) {
 						{Label: "t3", Type: flux.TInt},
 					},
 					Data: [][]interface{}{
-						{execute.Time(2), 1.0, "a", "y", int64(0)},
+						{execute.Time(2), 1.0, "a", "y", nil},
 						{execute.Time(1), 2.0, "a", "x", int64(5)},
 					},
 				},
@@ -480,7 +477,7 @@ func TestGroup_Process(t *testing.T) {
 						{Label: "t3", Type: flux.TInt},
 					},
 					Data: [][]interface{}{
-						{execute.Time(2), 7.0, "b", "y", int64(0)},
+						{execute.Time(2), 7.0, "b", "y", nil},
 						{execute.Time(1), 4.0, "b", "x", int64(7)},
 					},
 				},
