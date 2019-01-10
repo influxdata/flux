@@ -461,6 +461,46 @@ func TestAssertEquals_Process(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "null equality",
+			spec: &tests.AssertEqualsProcedureSpec{
+				DefaultCost: plan.DefaultCost{},
+				Name:        "simple",
+			},
+			data0: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), nil},
+					},
+				},
+			},
+			data1: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), nil},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), nil},
+					},
+				},
+			},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc

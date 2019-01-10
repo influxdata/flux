@@ -1255,24 +1255,24 @@ Fill has the following properties:
 
 #### AssertEquals
 
-AssertEquals is a function that will test whether two streams have identical data.  It also outputs the data from the tested stream unchanged, so that this function can be used to perform in-line tests in a query.  
+AssertEquals is a function that will test whether two streams have identical data.  It also outputs the data from the tested stream unchanged, so that this function can be used to perform in-line tests in a query.
 
-AssertEquals has the following properties: 
+AssertEquals has the following properties:
 * `name` string
-    unique name given to this assertion. 
+    unique name given to this assertion.
 * `got` stream
-    the stream you are testing.  May be piped-forward from another function.  
+    the stream you are testing.  May be piped-forward from another function.
 * `want` stream
-    A copy of the expected stream. 
+    A copy of the expected stream.
 
-Example: 
+Example:
 
 ```
 want = from(bucket: "backup-telegraf/autogen") |> range(start: -5m)
 // in-line assertion
 from(bucket: "telegraf/autogen") |> range(start: -5m) |> assertEquals(want: want)
 
-// equivalent: 
+// equivalent:
 got = from(bucket: "telegraf/autogen") |> range(start: -5m)
 assertEquals(got: got, want: want)
 ```
