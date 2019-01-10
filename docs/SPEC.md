@@ -350,8 +350,51 @@ The regular expression syntax is defined by [RE2](https://github.com/google/re2/
 
 ### Variables
 
-A variable holds a value.
-A variable can only hold values defined by its type.
+A variable represents a storage location for a single value.
+Variables are immutable.
+Once a variable is given a value, it holds that value for the remainder of its lifetime.
+
+### Options
+
+An option represents a storage location for any value of a specified type.
+Options are mutable.
+An option can hold different values during its lifetime.
+
+Below is a list of some built-in options that are currently implemented in the Flux language:
+
+* now
+* task
+* location
+
+##### now
+
+The `now` option is a function that returns a time value to be used as a proxy for the current system time.
+
+    // Query should execute as if the below time is the current system time
+    option now = () => 2006-01-02T15:04:05-07:00
+
+##### task
+
+The `task` option is used by a scheduler to schedule the execution of a Flux query.
+
+    option task = {
+        name: "foo",        // name is required
+        every: 1h,          // task should be run at this interval
+        delay: 10m,         // delay scheduling this task by this duration
+        cron: "0 2 * * *",  // cron is a more sophisticated way to schedule. every and cron are mutually exclusive
+        retry: 5,           // number of times to retry a failed query
+    }
+
+##### location
+
+The `location` option is used to set the default time zone of all times in the script.
+The location maps the UTC offset in use at that location for a given time.
+The default value is set using the time zone of the running process.
+
+    option location = fixedZone(offset:-5h) // set timezone to be 5 hours west of UTC
+    option location = loadLocation(name:"America/Denver") // set location to be America/Denver
+
+[IMPL#660](https://github.com/influxdata/platform/issues/660) Implement Location option
 
 ### Types
 
@@ -480,57 +523,77 @@ A _block_ is a possibly empty sequence of statements within matching brace brack
 
 In addition to explicit blocks in the source code, there are implicit blocks:
 
-1. The _options block_ is the top-level block for all Flux programs. All option assignments are contained in this block.
-2. The _universe block_ encompasses all Flux source text aside from option statements. It is nested directly inside of the _options block_.
-3. Each package has a _package block_ containing all Flux source text for that package.
-4. Each file has a _file block_ containing all Flux source text in that file.
-5. Each function literal has its own _function block_ even if not explicitly declared.
+1. The _universe block_ encompasses all Flux source text.
+2. Each package has a _package block_ containing all Flux source text for that package.
+3. Each file has a _file block_ containing all Flux source text in that file.
+4. Each function literal has its own _function block_ even if not explicitly declared.
 
 Blocks nest and influence scoping.
 
 ### Assignment and scope
 
-An assignment binds an identifier to a variable or function.
+An assignment binds an identifier to a variable, option, or function.
 Every identifier in a program must be assigned.
-An identifier may not change type via assignment within the same block.
-An identifier may change value via assignment within the same block.
 
 Flux is lexically scoped using blocks:
 
-1. The scope of an option identifier is the options block.
-2. The scope of a preassigned (non-option) identifier is in the universe block.
-3. The scope of an identifier denoting a variable or function at the top level (outside any function) is the package block.
-4. The scope of the name of an imported package is the file block of the file containing the import declaration.
-5. The scope of an identifier denoting a function argument is the function body.
-6. The scope of a variable assigned inside a function is the innermost containing block.
+1. The scope of a preassigned identifier is in the universe block.
+2. The scope of an identifier denoting a variable, option, or function at the top level (outside any function) is the package block.
+3. The scope of the name of an imported package is the file block of the file containing the import declaration.
+4. The scope of an identifier denoting a function argument is the function body.
+5. The scope of an identifier assigned inside a function is the innermost containing block.
 
-An identifier assigned in a block may be reassigned in an inner block with the exception of option identifiers.
-While the identifier of the inner assignment is in scope, it denotes the entity assigned by the inner assignment.
-
-Option identifiers have default assignments that are automatically defined in the _options block_.
-Because the _options block_ is the top-level block of a Flux program, options are visible/available to any and all other blocks.
-
-The package clause is not a assignment; the package name does not appear in any scope.
+Note that the package clause is not an assignment.
+The package name does not appear in any scope.
 Its purpose is to identify the files belonging to the same package and to specify the default package name for import declarations.
-
 
 [IMPL#247](https://github.com/influxdata/platform/issues/247) Add package/namespace support
 
 #### Variable assignment
 
-A variable assignment creates a variable bound to the identifier and gives it a type and value.
-When the identifier was previously assigned within the same block the identifier now holds the new value.
-An identifier cannot change type within the same block.
-
     VariableAssignment = identifier "=" Expression
+
+A variable assignment creates a variable bound to an identifier and gives it a type and value.
+A variable keeps the same type and value for the remainder of its lifetime.
+An identifier assigned to a variable in a block cannot be reassigned in the same block.
+An identifier can be reassigned or shadowed in an inner block.
 
 Examples:
 
     n = 1
-    n = 2
-    f = 5.4
-    r = z()
+    m = 2
+    x = 5.4
+    f = () => {
+        n = "a"
+        m = "b"
+        return a + b
+    }
 
+#### Option assignment
+
+    OptionAssignment = "option" [ identifier "." ] identifier "=" Expression
+
+An option assignment creates an option bound to an identifier and gives it a type and a value.
+Options may only be assigned in a package block.
+An identifier assigned to an option may be reassigned a new value but not a new type.
+An option keeps the same type for the remainder of its lifetime.
+
+Examples:
+
+    // alert package
+    option severity = ["low", "moderate", "high"]
+
+    // foo package
+    import "alert"
+
+    option alert.severity = ["low", "critical"]  // qualified option
+
+    option n = 1
+    option n = 2
+
+    f = (a, b) => a + b + n
+
+    x = f(a:1, b:1) // x = 4
 
 ### Expressions
 
@@ -699,14 +762,13 @@ Each source file is parsed individually and composed into a single package.
 
 #### Package clause
 
-A package clause defines the name for the current package.
-Package names must be valid Flux identifiers.
-The package clause must at the begining of any Flux source file.
-When a file does not declare a package clause, all identifiers in that file will belong to the special _main_ package.
-
     PackageClause = "package" identifier .
 
+A package clause defines the name for the current package.
+Package names must be valid Flux identifiers.
+The package clause must be at the begining of any Flux source file.
 All files in the same package must declare the same package name.
+When a file does not declare a package clause, all identifiers in that file will belong to the special _main_ package.
 
 [IMPL#247](https://github.com/influxdata/platform/issues/247) Add package/namespace support
 
@@ -753,67 +815,9 @@ bar.x
 ```
 
 A package's import path is always absolute.
-Assigment into the namespace of an imported package is not allowed.
+A package may reassign a new value to an option identifier declared in one of its imported packages.
 A package cannot access nor modify the identifiers belonging to the imported packages of its imported packages.
 Every statement contained in an imported package is evaluated.
-
-#### Option statements
-
-Options specify a context in which a Flux query is to be run. They define variables
-that describe how to execute a Flux query. For example, the following Flux script sets
-the `task` option to schedule a query to run periodically every hour:
-
-    option task = {
-        name: "mean",
-        every: 1h,
-    }
-
-    from(bucket:"metrics/autogen")
-        |> range(start:-task.every)
-        |> group(by:["level"])
-        |> mean()
-        |> yield(name:"mean")
-
-All options are designed to be completely optional and have default values to be used when not specified.
-Grammatically, an option statement is just a variable assignment preceded by the "option" keyword.
-
-    OptionStatement = "option" VariableAssignment
-
-Below is a list of all options that are currently implemented in the Flux language:
-
-* now
-* task
-* location
-
-##### now
-
-The `now` option is a function that returns a time value to be used as a proxy for the current system time.
-
-    // Query should execute as if the below time is the current system time
-    option now = () => 2006-01-02T15:04:05-07:00
-
-##### task
-
-The `task` option is used by a scheduler to schedule the execution of a Flux query.
-
-    option task = {
-        name: "foo",        // name is required
-        every: 1h,          // task should be run at this interval
-        delay: 10m,         // delay scheduling this task by this duration
-        cron: "0 2 * * *",  // cron is a more sophisticated way to schedule. every and cron are mutually exclusive
-        retry: 5,           // number of times to retry a failed query
-    }
-
-##### location
-
-The `location` option is used to set the default time zone of all times in the script.
-The location maps the UTC offset in use at that location for a given time.
-The default value is set using the time zone of the running process.
-
-    option location = fixedZone(offset:-5h) // set timezone to be 5 hours west of UTC
-    option location = loadLocation(name:"America/Denver") // set location to be America/Denver
-
-[IMPL#660](https://github.com/influxdata/platform/issues/660) Implement Location option
 
 #### Return statements
 
@@ -843,6 +847,22 @@ Side effects can occur in two ways.
 
 A function produces side effects when it is explicitly declared to have side effects or when it calls a function that itself produces side effects.
 
+## Package initialization
+
+Packages are initialized in the following order:
+
+1. All imported packages are initialized and assigned to their package identifier. 
+2. All option declarations are evaluated and assigned regardless of order. An option cannot have dependencies on any other options assigned in the same package block.
+3. All variable declarations are evaluated and assigned regardless of order. A variable cannot have a direct or indirect dependency on itself.
+4. Any package side effects are evaluated.
+
+A package will only be initialized once across all file blocks and across all packages blocks regardless of how many times it is imported.
+
+Initializing imported packages must be deterministic.
+Specifically after all imported packages are initialized, each option must be assigned the same value.
+Packages imported in the same file block are initialized in declaration order.
+Packages imported across different file blocks have no known order.
+When a set of imports modify the same option, they must be ordered by placing them in the same file block.
 
 ## Built-ins
 
