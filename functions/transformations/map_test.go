@@ -548,6 +548,73 @@ func TestMap_Process(t *testing.T) {
 			},
 		},
 		{
+			name: `_value+5 mergeKey=true with nulls`,
+			spec: &transformations.MapProcedureSpec{
+				MergeKey: true,
+				Fn: &semantic.FunctionExpression{
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{
+									Key: &semantic.Identifier{Name: "_time"},
+									Value: &semantic.MemberExpression{
+										Object: &semantic.IdentifierExpression{
+											Name: "r",
+										},
+										Property: "_time",
+									},
+								},
+								{
+									Key: &semantic.Identifier{Name: "_value"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "_value",
+										},
+										Right: &semantic.FloatLiteral{
+											Value: 5,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_measurement", "host"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "host", Type: flux.TString},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{"m", nil, execute.Time(1), 1.0},
+					{"m", nil, execute.Time(2), 6.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"_measurement", "host"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "host", Type: flux.TString},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{"m", nil, execute.Time(1), 6.0},
+					{"m", nil, execute.Time(2), 11.0},
+				},
+			}},
+		},
+		{
 			name: `_value*_value`,
 			spec: &transformations.MapProcedureSpec{
 				MergeKey: false,
