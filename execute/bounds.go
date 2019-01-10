@@ -42,6 +42,32 @@ func (b Bounds) Overlaps(o Bounds) bool {
 	return b.Contains(o.Start) || (b.Contains(o.Stop) && o.Stop > b.Start) || o.Contains(b.Start)
 }
 
+// Intersect returns the intersection of two bounds.
+// It returns empty bounds if one of the input bounds are empty.
+// TODO: there are several places that implement bounds and related utilities.
+//  consider a central place for them?
+func (b *Bounds) Intersect(o Bounds) Bounds {
+	if b.IsEmpty() || o.IsEmpty() || !b.Overlaps(o) {
+		return Bounds{
+			Start: b.Start,
+			Stop:  b.Start,
+		}
+	}
+	i := Bounds{}
+
+	i.Start = b.Start
+	if o.Start > b.Start {
+		i.Start = o.Start
+	}
+
+	i.Stop = b.Stop
+	if o.Stop < b.Stop {
+		i.Stop = o.Stop
+	}
+
+	return i
+}
+
 func (b Bounds) Equal(o Bounds) bool {
 	return b == o
 }

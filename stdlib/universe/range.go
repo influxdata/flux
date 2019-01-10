@@ -204,60 +204,40 @@ func (t *rangeTransformation) RetractTable(id execute.DatasetID, key flux.GroupK
 }
 
 func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	// Determine index of start and stop columns in group key
-	startColIdx := execute.ColIdx(t.startCol, tbl.Cols())
-	stopColIdx := execute.ColIdx(t.stopCol, tbl.Cols())
-
-	// Determine index of start and stop columns in table
-	startKeyColIdx := execute.ColIdx(t.startCol, tbl.Key().Cols())
-	stopKeyColIdx := execute.ColIdx(t.stopCol, tbl.Key().Cols())
-
-	builder, created := t.cache.TableBuilder(tbl.Key())
-	if !created {
-		return fmt.Errorf("range found duplicate table with key: %v", tbl.Key())
-	}
-
-	if err := execute.AddTableCols(tbl, builder); err != nil {
-		return err
-	}
 	timeIdx := execute.ColIdx(t.timeCol, tbl.Cols())
 	if timeIdx < 0 {
 		return fmt.Errorf("range error: supplied time column %s doesn't exist", t.timeCol)
 	}
 
-	if builder.Cols()[timeIdx].Type != flux.TTime {
-		return fmt.Errorf("range error: provided column %s is not of type time", t.timeCol)
+	if tbl.Cols()[timeIdx].Type != flux.TTime {
+		return fmt.Errorf("range error: provided time column %s is not of type time", t.timeCol)
 	}
 
-	forwardTable := false
-	if startKeyColIdx > 0 && stopKeyColIdx > 0 {
-		// Check group key for start and stop values.
-
-		keyStart := tbl.Key().Value(startKeyColIdx).Time()
-		keyStop := tbl.Key().Value(stopKeyColIdx).Time()
-		keyBounds := execute.Bounds{
-			Start: keyStart,
-			Stop:  keyStop,
-		}
-		// If there is no overlap between the bounds in the group key and the bounds in the range transformation,
-		// no further processing is needed.
-		if !t.bounds.Overlaps(keyBounds) {
-			return nil
-		}
-
-		// If [start, stop) (where start <= stop) from the group key is contained in the
-		// range transformation bounds [keyStart, keyStop], we can skip the whole table.
-		// Still want to skip if start >= keyStart and t.bounds.Stop == keyStop
-		forwardTable = t.bounds.Contains(keyStart) && (t.bounds.Contains(keyStop) || t.bounds.Stop == keyStop)
+	// Determine index of start and stop columns in table
+	startColIdx := execute.ColIdx(t.startCol, tbl.Cols())
+	if startColIdx >= 0 && tbl.Cols()[startColIdx].Type != flux.TTime {
+		return fmt.Errorf("range error: provided start column %s is not of type time", t.timeCol)
 	}
 
-	if forwardTable {
-		return execute.AppendTable(tbl, builder)
+	stopColIdx := execute.ColIdx(t.stopCol, tbl.Cols())
+	if stopColIdx >= 0 && tbl.Cols()[stopColIdx].Type != flux.TTime {
+		return fmt.Errorf("range error: provided stop column %s is not of type time", t.timeCol)
+	}
+
+	// Determine index of start and stop columns in group key
+	startKeyColIdx := execute.ColIdx(t.startCol, tbl.Key().Cols())
+	stopKeyColIdx := execute.ColIdx(t.stopCol, tbl.Key().Cols())
+
+	// Compute the group key for the output table
+	outKey := t.createRangeGroupKey(tbl.Key(), startKeyColIdx, stopKeyColIdx)
+
+	builder, created := t.cache.TableBuilder(outKey)
+	if !created {
+		return fmt.Errorf("range found duplicate table with key: %v", tbl.Key())
 	}
 
 	// If the start and/or stop columns don't exist,
 	// They must be added to the table
-	startAdded, stopAdded := false, false
 	if startColIdx < 0 {
 		c := flux.ColMeta{
 			Label: t.startCol,
@@ -266,7 +246,6 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		if _, err := builder.AddCol(c); err != nil {
 			return err
 		}
-		startAdded = true
 	}
 
 	if stopColIdx < 0 {
@@ -277,50 +256,51 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		if _, err := builder.AddCol(c); err != nil {
 			return err
 		}
-		stopAdded = true
 	}
 
+	if err := execute.AddTableCols(tbl, builder); err != nil {
+		return err
+	}
+
+	// map from builder column to input table column
+	tCols := len(tbl.Cols())
+	bCols := builder.NCols()
+	offset := bCols - tCols
+
+	colMap := make([]int, bCols)
+	for i := 0; i < bCols; i++ {
+		if i < offset {
+			colMap[i] = -1
+		} else {
+			colMap[i] = i - offset
+		}
+	}
+
+	startTime := outKey.Value(execute.ColIdx(t.startCol, outKey.Cols()))
+	stopTime := outKey.Value(execute.ColIdx(t.stopCol, outKey.Cols()))
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
-			tVal := values.Time(cr.Times(timeIdx).Value(i))
+			ts := cr.Times(timeIdx)
+			if ts.IsNull(i) {
+				continue
+			}
+			tVal := values.Time(ts.Value(i))
 			if !t.bounds.Contains(tVal) {
 				continue
 			}
 			for j, c := range builder.Cols() {
 				switch c.Label {
 				case t.startCol:
-					var start values.Time
-					// If we just inserted a start column with no values populated
-					if startAdded {
-						start = t.bounds.Start
-					} else {
-						start = values.Time(cr.Times(j).Value(i))
-					}
-
-					if start < t.bounds.Start {
-						start = t.bounds.Start
-					}
-					if err := builder.AppendTime(j, start); err != nil {
+					if err := builder.AppendValue(j, startTime); err != nil {
 						return err
 					}
 				case t.stopCol:
-					var stop values.Time
-					// If we just inserted a stop column with no values populated
-					if stopAdded {
-						stop = t.bounds.Stop
-					} else {
-						stop = values.Time(cr.Times(j).Value(i))
-					}
-
-					if stop > t.bounds.Stop {
-						stop = t.bounds.Stop
-					}
-					if err := builder.AppendTime(j, stop); err != nil {
+					if err := builder.AppendValue(j, stopTime); err != nil {
 						return err
 					}
 				default:
-					if err := builder.AppendValue(j, execute.ValueForRow(cr, i, j)); err != nil {
+					if err := builder.AppendValue(j, execute.ValueForRow(cr, i, colMap[j])); err != nil {
 						return err
 					}
 				}
@@ -328,6 +308,53 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		}
 		return nil
 	})
+}
+
+func (t *rangeTransformation) createRangeGroupKey(inKey flux.GroupKey, startKeyColIdx, stopKeyColIdx int) flux.GroupKey {
+	var outKeyCols []flux.ColMeta
+	var outKeyValues []values.Value
+	if startKeyColIdx >= 0 && stopKeyColIdx >= 0 {
+		// Both start and stop columns exist and they are in the group key.
+		// If start/stop intersects with the range bounds, use the intersection
+		// as start/stop in the group key, otherwise use the range bounds.
+		outKeyCols = inKey.Cols()
+		outKeyValues = make([]values.Value, len(inKey.Values()))
+		copy(outKeyValues, inKey.Values())
+
+		useBounds := t.bounds
+		if !inKey.Value(startKeyColIdx).IsNull() && !inKey.Value(stopKeyColIdx).IsNull() {
+			inBounds := execute.Bounds{
+				Start: inKey.ValueTime(startKeyColIdx),
+				Stop:  inKey.ValueTime(stopKeyColIdx),
+			}
+			if t.bounds.Overlaps(inBounds) {
+				useBounds = t.bounds.Intersect(inBounds)
+			}
+		}
+		outKeyValues[startKeyColIdx] = values.NewTime(useBounds.Start)
+		outKeyValues[stopKeyColIdx] = values.NewTime(useBounds.Stop)
+	} else {
+		// One or both of the start/stop columns is missing or is not in the group key.
+		// Put them both in the group key and set start/stop to the range bounds.
+		outKeyCols = make([]flux.ColMeta, 0, len(inKey.Cols())+2)
+		outKeyValues = make([]values.Value, 0, len(inKey.Cols())+2)
+
+		if startKeyColIdx < 0 {
+			outKeyCols = append(outKeyCols, flux.ColMeta{Label: t.startCol, Type: flux.TTime})
+			outKeyValues = append(outKeyValues, values.New(t.bounds.Start))
+		}
+		if stopKeyColIdx < 0 {
+			outKeyCols = append(outKeyCols, flux.ColMeta{Label: t.stopCol, Type: flux.TTime})
+			outKeyValues = append(outKeyValues, values.New(t.bounds.Stop))
+		}
+
+		for j := 0; j < len(inKey.Cols()); j++ {
+			outKeyCols = append(outKeyCols, inKey.Cols()[j])
+			outKeyValues = append(outKeyValues, inKey.Value(j))
+		}
+	}
+
+	return execute.NewGroupKey(outKeyCols, outKeyValues)
 }
 
 func (t *rangeTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
