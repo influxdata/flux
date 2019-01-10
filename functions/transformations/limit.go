@@ -2,6 +2,7 @@ package transformations
 
 import (
 	"fmt"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
@@ -177,42 +178,42 @@ func appendSlicedCols(reader flux.ColReader, builder execute.TableBuilder, start
 		switch c.Type {
 		case flux.TBool:
 			s := arrow.BoolSlice(reader.Bools(j), start, stop)
-			if err := arrow.AppendBools(builder, j, s); err != nil {
+			if err := builder.AppendBools(j, s); err != nil {
 				s.Release()
 				return err
 			}
 			s.Release()
 		case flux.TInt:
 			s := arrow.IntSlice(reader.Ints(j), start, stop)
-			if err := arrow.AppendInts(builder, j, s); err != nil {
+			if err := builder.AppendInts(j, s); err != nil {
 				s.Release()
 				return err
 			}
 			s.Release()
 		case flux.TUInt:
 			s := arrow.UintSlice(reader.UInts(j), start, stop)
-			if err := arrow.AppendUInts(builder, j, s); err != nil {
+			if err := builder.AppendUInts(j, s); err != nil {
 				s.Release()
 				return err
 			}
 			s.Release()
 		case flux.TFloat:
 			s := arrow.FloatSlice(reader.Floats(j), start, stop)
-			if err := arrow.AppendFloats(builder, j, s); err != nil {
+			if err := builder.AppendFloats(j, s); err != nil {
 				s.Release()
 				return err
 			}
 			s.Release()
 		case flux.TString:
 			s := arrow.StringSlice(reader.Strings(j), start, stop)
-			if err := arrow.AppendStrings(builder, j, s); err != nil {
+			if err := builder.AppendStrings(j, s); err != nil {
 				s.Release()
 				return err
 			}
 			s.Release()
 		case flux.TTime:
 			s := arrow.IntSlice(reader.Times(j), start, stop)
-			if err := arrow.AppendTimes(builder, j, s); err != nil {
+			if err := builder.AppendTimes(j, s); err != nil {
 				s.Release()
 				return err
 			}
