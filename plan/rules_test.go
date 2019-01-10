@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"

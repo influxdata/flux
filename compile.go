@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"path"
 	"regexp"
 	"strings"
 	"time"
@@ -165,7 +166,10 @@ var (
 )
 
 var globals = values.NewObject()
-var prelude = []string{"universe"}
+var prelude = []string{
+	"universe",
+	"influxdata/influxdb",
+}
 var preludeScope = new(scopeSet)
 var stdlib = &importer{make(map[string]*interpreter.Package)}
 
@@ -263,17 +267,28 @@ func RegisterPackage(pkg *ast.Package) {
 }
 
 // RegisterPackageValue adds a value for an identifier in a builtin package
-func RegisterPackageValue(path, name string, value values.Value) {
+func RegisterPackageValue(pkgpath, name string, value values.Value) {
+	registerPackageValue(pkgpath, name, value, false)
+}
+
+// ReplacePackageValue replaces a value for an identifier in a builtin package
+func ReplacePackageValue(pkgpath, name string, value values.Value) {
+	registerPackageValue(pkgpath, name, value, true)
+}
+
+func registerPackageValue(pkgpath, name string, value values.Value, replace bool) {
 	if finalized {
 		panic(errors.New("already finalized, cannot register builtin package value"))
 	}
-	packg, ok := stdlib.pkgs[path]
+	packg, ok := stdlib.pkgs[pkgpath]
 	if !ok {
-		packg = interpreter.NewPackage(name)
-		stdlib.pkgs[path] = packg
+		packg = interpreter.NewPackage(path.Base(pkgpath))
+		stdlib.pkgs[pkgpath] = packg
 	}
-	if _, ok := packg.Get(name); ok {
-		panic(fmt.Errorf("duplicate builtin package value %q %q", path, name))
+	if _, ok := packg.Get(name); ok && !replace {
+		panic(fmt.Errorf("duplicate builtin package value %q %q", pkgpath, name))
+	} else if !ok && replace {
+		panic(fmt.Errorf("missing builtin package value %q %q", pkgpath, name))
 	}
 	packg.Set(name, value)
 }
@@ -302,6 +317,19 @@ func FunctionValue(name string, c CreateOperationSpec, sig semantic.FunctionPoly
 		name:          name,
 		createOpSpec:  c,
 		hasSideEffect: false,
+	}
+}
+
+// FunctionValueWithSideEffect creates a values.Value from the operation spec and signature.
+// Name is the name of the function as it would be called.
+// c is a function reference of type CreateOperationSpec
+// sig is a function signature type that specifies the names and types of each argument for the function.
+func FunctionValueWithSideEffect(name string, c CreateOperationSpec, sig semantic.FunctionPolySignature) values.Value {
+	return &function{
+		t:             semantic.NewFunctionPolyType(sig),
+		name:          name,
+		createOpSpec:  c,
+		hasSideEffect: true,
 	}
 }
 
@@ -393,21 +421,24 @@ func evalBuiltInPackages() error {
 	if err != nil {
 		return err
 	}
-	itrp := interpreter.NewInterpreter()
 	for _, astPkg := range order {
 		if ast.Check(astPkg) > 0 {
 			err := ast.GetError(astPkg)
-			return errors.Wrapf(err, "failed to parse builtin package %q", astPkg.Package)
+			return errors.Wrapf(err, "failed to parse builtin package %q", astPkg.Path)
 		}
 		semPkg, err := semantic.New(astPkg)
 		if err != nil {
-			return errors.Wrapf(err, "failed to create semantic graph for builtin package %q", astPkg.Package)
+			return errors.Wrapf(err, "failed to create semantic graph for builtin package %q", astPkg.Path)
 		}
 
 		pkg := stdlib.pkgs[astPkg.Path]
+		if pkg == nil {
+			return errors.Wrapf(err, "package does not exist %q", astPkg.Path)
+		}
 
+		itrp := interpreter.NewInterpreter()
 		if _, err := itrp.Eval(semPkg, preludeScope.Nest(pkg), stdlib); err != nil {
-			return errors.Wrapf(err, "failed to evaluate builtin package %q", astPkg.Package)
+			return errors.Wrapf(err, "failed to evaluate builtin package %q", astPkg.Path)
 		}
 	}
 	return nil
@@ -795,6 +826,9 @@ func (f *function) call(args interpreter.Arguments) (values.Value, error) {
 		Parents: a.parents,
 	}
 	return t, nil
+}
+func (f *function) String() string {
+	return fmt.Sprintf("%v", f.t)
 }
 
 type Arguments struct {

@@ -739,6 +739,53 @@ import "path/bar"
 			},
 		},
 		{
+			name: "pipe expression to member expression function",
+			raw:  `a |> b.c(d:e)`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:14"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:14"),
+						Expression: &ast.PipeExpression{
+							BaseNode: base("1:1", "1:14"),
+							Argument: &ast.Identifier{
+								BaseNode: base("1:1", "1:2"),
+								Name:     "a",
+							},
+							Call: &ast.CallExpression{
+								BaseNode: base("1:6", "1:14"),
+								Callee: &ast.MemberExpression{
+									BaseNode: base("1:6", "1:9"),
+									Object: &ast.Identifier{
+										BaseNode: base("1:6", "1:7"),
+										Name:     "b",
+									},
+									Property: &ast.Identifier{
+										BaseNode: base("1:8", "1:9"),
+										Name:     "c",
+									},
+								},
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: base("1:10", "1:13"),
+									Properties: []*ast.Property{{
+										BaseNode: base("1:10", "1:13"),
+										Key: &ast.Identifier{
+											BaseNode: base("1:10", "1:11"),
+											Name:     "d",
+										},
+										Value: &ast.Identifier{
+											BaseNode: base("1:12", "1:13"),
+											Name:     "e",
+										},
+									}},
+								}},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "literal pipe expression",
 			raw:  `5 |> pow2()`,
 			want: &ast.File{

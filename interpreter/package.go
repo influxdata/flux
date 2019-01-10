@@ -2,6 +2,7 @@ package interpreter
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -115,4 +116,19 @@ func (p *Package) Equal(rhs values.Value) bool {
 		}
 	})
 	return equal
+}
+
+func (p *Package) String() string {
+	var builder strings.Builder
+	builder.WriteString("pkg{")
+	i := 0
+	p.Range(func(k string, v values.Value) {
+		if i != 0 {
+			builder.WriteString(", ")
+		}
+		builder.WriteString(k)
+		i++
+	})
+	builder.WriteRune('}')
+	return builder.String()
 }

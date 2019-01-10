@@ -8,11 +8,11 @@ import (
 
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
-	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/internal/pkg/syncutil"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
@@ -73,7 +73,7 @@ func TestController_PlanQuery_Failure(t *testing.T) {
 			return &flux.Spec{
 				Operations: []*flux.Operation{{
 					ID:   "from",
-					Spec: &inputs.FromOpSpec{Bucket: "telegraf"},
+					Spec: &influxdb.FromOpSpec{Bucket: "telegraf"},
 				}},
 			}, nil
 		},

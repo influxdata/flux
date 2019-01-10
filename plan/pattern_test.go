@@ -3,16 +3,16 @@ package plan_test
 import (
 	"testing"
 
-	"github.com/influxdata/flux/functions/inputs"
-	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 func TestAny(t *testing.T) {
 	pat := plan.Any()
 
 	node := &plan.LogicalPlanNode{
-		Spec: &inputs.FromProcedureSpec{},
+		Spec: &influxdb.FromProcedureSpec{},
 	}
 
 	if !pat.Match(node) {
@@ -29,18 +29,18 @@ func TestPat(t *testing.T) {
 
 	// Matches
 	//     <anything> |> filter(...) |> filter(...)
-	filterFilterPat := plan.Pat(transformations.FilterKind, plan.Pat(transformations.FilterKind, plan.Any()))
+	filterFilterPat := plan.Pat(universe.FilterKind, plan.Pat(universe.FilterKind, plan.Any()))
 
 	// Matches
 	//   from(...) |> filter(...)
-	filterFromPat := plan.Pat(transformations.FilterKind, plan.Pat(inputs.FromKind))
+	filterFromPat := plan.Pat(universe.FilterKind, plan.Pat(influxdb.FromKind))
 
 	from := &plan.LogicalPlanNode{
-		Spec: &inputs.FromProcedureSpec{},
+		Spec: &influxdb.FromProcedureSpec{},
 	}
 
 	filter1 := &plan.LogicalPlanNode{
-		Spec: &transformations.FilterProcedureSpec{},
+		Spec: &universe.FilterProcedureSpec{},
 	}
 
 	addEdge(from, filter1)
@@ -54,7 +54,7 @@ func TestPat(t *testing.T) {
 	}
 
 	filter2 := &plan.LogicalPlanNode{
-		Spec: &transformations.FilterProcedureSpec{},
+		Spec: &universe.FilterProcedureSpec{},
 	}
 
 	addEdge(filter1, filter2)
@@ -73,7 +73,7 @@ func TestPat(t *testing.T) {
 	// Add another successor to filter1.  Thus should break the filter-filter pattern
 
 	filter3 := &plan.LogicalPlanNode{
-		Spec: &transformations.FilterProcedureSpec{},
+		Spec: &universe.FilterProcedureSpec{},
 	}
 
 	addEdge(filter1, filter3)

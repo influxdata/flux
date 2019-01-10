@@ -806,7 +806,7 @@ func (k ObjectKind) MonoType() (Type, bool) {
 			properties[l] = t
 		}
 	}
-	return NewObjectType(properties), false
+	return NewObjectType(properties), true
 }
 func (k ObjectKind) resolvePolyType(kinds map[Tvar]Kind) (PolyType, error) {
 	properties := make(map[string]PolyType, len(k.upper))
