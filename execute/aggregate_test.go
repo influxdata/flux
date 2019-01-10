@@ -9,12 +9,12 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/functions/transformations"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 func TestAggregate_Process(t *testing.T) {
-	sumAgg := new(transformations.SumAgg)
-	countAgg := new(transformations.CountAgg)
+	sumAgg := new(universe.SumAgg)
+	countAgg := new(universe.CountAgg)
 	testCases := []struct {
 		name   string
 		agg    execute.Aggregate

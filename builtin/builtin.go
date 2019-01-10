@@ -5,12 +5,11 @@ package builtin
 
 import (
 	"github.com/influxdata/flux"
-	_ "github.com/influxdata/flux/functions/inputs"          // Import the built-in inputs
-	_ "github.com/influxdata/flux/functions/outputs"         // Import the built-in outputs
-	_ "github.com/influxdata/flux/functions/tests"           // Import the built-in tests
-	_ "github.com/influxdata/flux/functions/transformations" // Import the built-in functions
-	_ "github.com/influxdata/flux/functions/universe"        // Import the built-in universe
-	_ "github.com/influxdata/flux/options"                   // Import the built-in options
+	_ "github.com/influxdata/flux/options" // Import the built-in options
+	_ "github.com/influxdata/flux/stdlib"  // Import the stdlib
+
+	// TODO(nathanielc): Remove this line once the tests are full fledged package built-ins
+	_ "github.com/influxdata/flux/stdlib/tests" // Import the built-in functions
 )
 
 func init() {

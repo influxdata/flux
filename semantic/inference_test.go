@@ -1568,6 +1568,79 @@ foo.b
 				},
 			},
 		},
+		{
+			name: "imports pipe expression",
+			script: `
+import "foo"
+
+foo.b
+    |> foo.a()
+`,
+			importer: importer{packages: map[string]semantic.PackageType{
+				"foo": semantic.PackageType{
+					Name: "foo",
+					Type: semantic.NewObjectPolyType(
+						map[string]semantic.PolyType{
+							"a": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+								Parameters: map[string]semantic.PolyType{
+									"x": semantic.Int,
+								},
+								Required:     semantic.LabelSet{"x"},
+								Return:       semantic.Int,
+								PipeArgument: "x",
+							}),
+							"b": semantic.Int,
+						},
+						semantic.LabelSet{"a", "b"},
+						semantic.LabelSet{"a", "b"},
+					),
+				},
+			}},
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					switch n := node.(type) {
+					case *semantic.IdentifierExpression:
+						switch n.Location().Start.Line {
+						case 4, 5:
+							return semantic.NewObjectPolyType(
+								map[string]semantic.PolyType{
+									"a": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+										Parameters: map[string]semantic.PolyType{
+											"x": semantic.Int,
+										},
+										Required:     semantic.LabelSet{"x"},
+										Return:       semantic.Int,
+										PipeArgument: "x",
+									}),
+									"b": semantic.Int,
+								},
+								semantic.LabelSet{"a", "b"},
+								semantic.LabelSet{"a", "b"},
+							)
+						}
+					case *semantic.ObjectExpression:
+						return semantic.NewObjectPolyType(nil, nil, nil)
+					case *semantic.CallExpression:
+						return semantic.Int
+					case *semantic.MemberExpression:
+						switch n.Location().Start.Line {
+						case 4:
+							return semantic.Int
+						case 5:
+							return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+								Parameters: map[string]semantic.PolyType{
+									"x": semantic.Int,
+								},
+								Required:     semantic.LabelSet{"x"},
+								Return:       semantic.Int,
+								PipeArgument: "x",
+							})
+						}
+					}
+					return nil
+				},
+			},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc

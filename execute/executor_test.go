@@ -12,10 +12,10 @@ import (
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/stdlib/universe"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -100,7 +100,7 @@ func TestExecutor_Execute(t *testing.T) {
 							},
 						}},
 					)),
-					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{
+					plan.CreatePhysicalNode("filter", &universe.FilterProcedureSpec{
 						Fn: &semantic.FunctionExpression{
 							Block: &semantic.FunctionBlock{
 								Parameters: &semantic.FunctionParameters{
@@ -186,7 +186,7 @@ func TestExecutor_Execute(t *testing.T) {
 							},
 						},
 					)),
-					plan.CreatePhysicalNode("filter", &transformations.FilterProcedureSpec{
+					plan.CreatePhysicalNode("filter", &universe.FilterProcedureSpec{
 						Fn: &semantic.FunctionExpression{
 							Block: &semantic.FunctionBlock{
 								Parameters: &semantic.FunctionParameters{
@@ -291,10 +291,10 @@ func TestExecutor_Execute(t *testing.T) {
 							},
 						},
 					)),
-					plan.CreatePhysicalNode("sum", &transformations.SumProcedureSpec{
+					plan.CreatePhysicalNode("sum", &universe.SumProcedureSpec{
 						AggregateConfig: execute.DefaultAggregateConfig,
 					}),
-					plan.CreatePhysicalNode("mean", &transformations.MeanProcedureSpec{
+					plan.CreatePhysicalNode("mean", &universe.MeanProcedureSpec{
 						AggregateConfig: execute.DefaultAggregateConfig,
 					}),
 					plan.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("sum")),
@@ -414,13 +414,13 @@ func TestExecutor_Execute(t *testing.T) {
 							},
 						},
 					)),
-					plan.CreatePhysicalNode("sum", &transformations.SumProcedureSpec{
+					plan.CreatePhysicalNode("sum", &universe.SumProcedureSpec{
 						AggregateConfig: execute.DefaultAggregateConfig,
 					}),
-					plan.CreatePhysicalNode("count", &transformations.CountProcedureSpec{
+					plan.CreatePhysicalNode("count", &universe.CountProcedureSpec{
 						AggregateConfig: execute.DefaultAggregateConfig,
 					}),
-					plan.CreatePhysicalNode("join", &transformations.MergeJoinProcedureSpec{
+					plan.CreatePhysicalNode("join", &universe.MergeJoinProcedureSpec{
 						On:         []string{"_start", "_stop"},
 						TableNames: []string{"a", "b"},
 					}),
@@ -498,7 +498,7 @@ func TestExecutor_Execute(t *testing.T) {
 						}},
 					)),
 					plan.CreatePhysicalNode("yield0", executetest.NewYieldProcedureSpec("from")),
-					plan.CreatePhysicalNode("sum", &transformations.SumProcedureSpec{
+					plan.CreatePhysicalNode("sum", &universe.SumProcedureSpec{
 						AggregateConfig: execute.DefaultAggregateConfig,
 					}),
 					plan.CreatePhysicalNode("yield1", executetest.NewYieldProcedureSpec("sum")),
@@ -561,7 +561,7 @@ func TestExecutor_Execute(t *testing.T) {
 							},
 						}},
 					)),
-					plan.CreatePhysicalNode("sum", &transformations.SumProcedureSpec{
+					plan.CreatePhysicalNode("sum", &universe.SumProcedureSpec{
 						AggregateConfig: execute.DefaultAggregateConfig,
 					}),
 					plan.CreatePhysicalNode("yield0", executetest.NewYieldProcedureSpec("sum0")),

@@ -337,6 +337,9 @@ func (t *functionType) String() string {
 		if t.required.contains(k) {
 			builder.WriteString("^")
 		}
+		if t.pipeArgument == k {
+			builder.WriteString("<-")
+		}
 		fmt.Fprintf(&builder, "%s: %v", k, t.parameters[k])
 	}
 	fmt.Fprintf(&builder, ") -> %v", t.ret)
@@ -386,9 +389,10 @@ func (t *functionType) PolyType() PolyType {
 		parameters[k] = p.PolyType()
 	}
 	return NewFunctionPolyType(FunctionPolySignature{
-		Parameters: parameters,
-		Required:   t.required.copy(),
-		Return:     t.ret.PolyType(),
+		Parameters:   parameters,
+		Required:     t.required.copy(),
+		Return:       t.ret.PolyType(),
+		PipeArgument: t.pipeArgument,
 	})
 }
 

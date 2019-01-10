@@ -11,7 +11,7 @@
 #    * All recursive Makefiles must support the targets: all and clean.
 #
 
-SUBDIRS = ast/asttest internal/scanner functions
+SUBDIRS = ast/asttest internal/scanner stdlib
 
 GO_ARGS=-tags '$(GO_TAGS)'
 
@@ -64,7 +64,7 @@ test-race:
 	$(GO_TEST) -race -count=1 ./...
 
 vet:
-	$(GO_VET) -v ./...
+	$(GO_VET) ./...
 
 bench:
 	$(GO_TEST) -bench=. -run=^$$ ./...

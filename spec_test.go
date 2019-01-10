@@ -9,17 +9,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux/functions/inputs"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	"github.com/influxdata/flux/stdlib/universe"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/functions/transformations"
-	_ "github.com/influxdata/flux/functions/universe"
 	"github.com/influxdata/flux/interpreter"
 	_ "github.com/influxdata/flux/options"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
+	_ "github.com/influxdata/flux/stdlib" // Import stdlib
 	"github.com/influxdata/flux/values"
 )
 
@@ -69,13 +69,13 @@ func TestSpec_JSON(t *testing.T) {
 		Operations: []*flux.Operation{
 			{
 				ID: "from",
-				Spec: &inputs.FromOpSpec{
+				Spec: &influxdb.FromOpSpec{
 					Bucket: "mybucket",
 				},
 			},
 			{
 				ID: "range",
-				Spec: &transformations.RangeOpSpec{
+				Spec: &universe.RangeOpSpec{
 					Start: flux.Time{
 						Relative:   -4 * time.Hour,
 						IsRelative: true,
@@ -87,7 +87,7 @@ func TestSpec_JSON(t *testing.T) {
 			},
 			{
 				ID:   "sum",
-				Spec: &transformations.SumOpSpec{},
+				Spec: &universe.SumOpSpec{},
 			},
 		},
 		Edges: []flux.Edge{

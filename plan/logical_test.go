@@ -7,17 +7,17 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/functions/inputs"
-	"github.com/influxdata/flux/functions/outputs"
-	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/semantic/semantictest"
+	"github.com/influxdata/flux/stdlib/http"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	"github.com/influxdata/flux/stdlib/kafka"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 func compile(fluxText string, now time.Time) (*flux.Spec, error) {
@@ -32,8 +32,8 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 		Kind plan.ProcedureKind
 	}
 
-	standardYield := func(name string) *transformations.YieldProcedureSpec {
-		return &transformations.YieldProcedureSpec{Name: name}
+	standardYield := func(name string) *universe.YieldProcedureSpec {
+		return &universe.YieldProcedureSpec{Name: name}
 	}
 	generatedYield := func(name string) *plan.GeneratedYieldProcedureSpec {
 		return &plan.GeneratedYieldProcedureSpec{Name: name}
@@ -42,7 +42,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 	now := time.Now().UTC()
 
 	var (
-		toHTTPOpSpec = outputs.ToHTTPOpSpec{
+		toHTTPOpSpec = http.ToHTTPOpSpec{
 			URL:        "/my/url",
 			Method:     "POST",
 			NameColumn: "_measurement",
@@ -54,7 +54,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 			TimeColumn:   "_time",
 			ValueColumns: []string{"_value"},
 		}
-		toKafkaOpSpec = outputs.ToKafkaOpSpec{
+		toKafkaOpSpec = kafka.ToKafkaOpSpec{
 			Brokers:      []string{"broker"},
 			Topic:        "topic",
 			NameColumn:   "_measurement",
@@ -64,10 +64,10 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 	)
 
 	var (
-		fromSpec = &inputs.FromProcedureSpec{
+		fromSpec = &influxdb.FromProcedureSpec{
 			Bucket: "my-bucket",
 		}
-		rangeSpec = &transformations.RangeProcedureSpec{
+		rangeSpec = &universe.RangeProcedureSpec{
 			Bounds: flux.Bounds{
 				Start: flux.Time{
 					IsRelative: true,
@@ -82,7 +82,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 			StartColumn: "_start",
 			StopColumn:  "_stop",
 		}
-		filterSpec = &transformations.FilterProcedureSpec{
+		filterSpec = &universe.FilterProcedureSpec{
 			Fn: &semantic.FunctionExpression{
 				Block: &semantic.FunctionBlock{
 					Parameters: &semantic.FunctionParameters{
@@ -96,22 +96,22 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 				},
 			},
 		}
-		joinSpec = &transformations.MergeJoinProcedureSpec{
+		joinSpec = &universe.MergeJoinProcedureSpec{
 			TableNames: []string{"a", "b"},
 			On:         []string{"_time"},
 		}
-		toHTTPSpec = &outputs.ToHTTPProcedureSpec{
+		toHTTPSpec = &http.ToHTTPProcedureSpec{
 			Spec: &toHTTPOpSpec,
 		}
-		toKafkaSpec = &outputs.ToKafkaProcedureSpec{
+		toKafkaSpec = &kafka.ToKafkaProcedureSpec{
 			Spec: &toKafkaOpSpec,
 		}
-		sumSpec = &transformations.SumProcedureSpec{
+		sumSpec = &universe.SumProcedureSpec{
 			AggregateConfig: execute.AggregateConfig{
 				Columns: []string{"_value"},
 			},
 		}
-		meanSpec = &transformations.MeanProcedureSpec{
+		meanSpec = &universe.MeanProcedureSpec{
 			AggregateConfig: execute.AggregateConfig{
 				Columns: []string{"_value"},
 			},
@@ -181,7 +181,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 		},
 		{
 			name:  `Non-yield side effect`,
-			query: `from(bucket: "my-bucket") |> range(start:-1h) |> toHTTP(url: "/my/url")`,
+			query: `import "http" from(bucket: "my-bucket") |> range(start:-1h) |> http.to(url: "/my/url")`,
 			plan: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					plan.CreateLogicalNode("from0", fromSpec),
@@ -195,12 +195,12 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 			},
 		},
 		{
-			// from() |> range() |> toHTTP()
-			// from() |> range() |> toKafka()
 			name: `Multiple non-yield side effect`,
 			query: `
-				from(bucket: "my-bucket") |> range(start:-1h) |> toHTTP(url: "/my/url")
-				from(bucket: "my-bucket") |> range(start:-1h) |> toKafka(brokers: ["broker"], topic: "topic")`,
+				import "http"
+				import "kafka"
+				from(bucket: "my-bucket") |> range(start:-1h) |> http.to(url: "/my/url")
+				from(bucket: "my-bucket") |> range(start:-1h) |> kafka.to(brokers: ["broker"], topic: "topic")`,
 			plan: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
 					// First plan
@@ -225,7 +225,8 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 		{
 			name: `side effect and a generated yield`,
 			query: `
-				from(bucket: "my-bucket") |> range(start:-1h) |> toHTTP(url: "/my/url")
+				import "http"
+				from(bucket: "my-bucket") |> range(start:-1h) |> http.to(url: "/my/url")
 				from(bucket: "my-bucket") |> range(start:-1h)`,
 			plan: &plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
@@ -300,8 +301,8 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 
 	opts := append(
 		semantictest.CmpOptions,
-		cmp.AllowUnexported(outputs.ToKafkaProcedureSpec{}),
-		cmpopts.IgnoreUnexported(outputs.ToKafkaProcedureSpec{}),
+		cmp.AllowUnexported(kafka.ToKafkaProcedureSpec{}),
+		cmpopts.IgnoreUnexported(kafka.ToKafkaProcedureSpec{}),
 	)
 
 	for _, tc := range testcases {
@@ -364,16 +365,16 @@ func (MergeFiltersRule) Name() string {
 }
 
 func (MergeFiltersRule) Pattern() plan.Pattern {
-	return plan.Pat(transformations.FilterKind,
-		plan.Pat(transformations.FilterKind,
+	return plan.Pat(universe.FilterKind,
+		plan.Pat(universe.FilterKind,
 			plan.Any()))
 }
 
 func (MergeFiltersRule) Rewrite(pn plan.PlanNode) (plan.PlanNode, bool, error) {
 	specTop := pn.ProcedureSpec()
 
-	filterSpecTop := specTop.(*transformations.FilterProcedureSpec)
-	filterSpecBottom := pn.Predecessors()[0].ProcedureSpec().(*transformations.FilterProcedureSpec)
+	filterSpecTop := specTop.(*universe.FilterProcedureSpec)
+	filterSpecBottom := pn.Predecessors()[0].ProcedureSpec().(*universe.FilterProcedureSpec)
 	mergedFilterSpec := mergeFilterSpecs(filterSpecTop, filterSpecBottom)
 
 	newNode, err := plan.MergeLogicalPlanNodes(pn, pn.Predecessors()[0], mergedFilterSpec)
@@ -384,7 +385,7 @@ func (MergeFiltersRule) Rewrite(pn plan.PlanNode) (plan.PlanNode, bool, error) {
 	return newNode, true, nil
 }
 
-func mergeFilterSpecs(a, b *transformations.FilterProcedureSpec) plan.ProcedureSpec {
+func mergeFilterSpecs(a, b *universe.FilterProcedureSpec) plan.ProcedureSpec {
 	fn := a.Fn.Copy().(*semantic.FunctionExpression)
 
 	aExp, aOK := a.Fn.Block.Body.(semantic.Expression)
@@ -401,7 +402,7 @@ func mergeFilterSpecs(a, b *transformations.FilterProcedureSpec) plan.ProcedureS
 		Right:    bExp,
 	}
 
-	return &transformations.FilterProcedureSpec{
+	return &universe.FilterProcedureSpec{
 		Fn: fn,
 	}
 }
@@ -414,8 +415,8 @@ func (PushFilterThroughMapRule) Name() string {
 }
 
 func (PushFilterThroughMapRule) Pattern() plan.Pattern {
-	return plan.Pat(transformations.FilterKind,
-		plan.Pat(transformations.MapKind,
+	return plan.Pat(universe.FilterKind,
+		plan.Pat(universe.MapKind,
 			plan.Any()))
 }
 
@@ -445,8 +446,8 @@ func TestLogicalPlanner(t *testing.T) {
 				yield(name: "result")`,
 		wantPlan: plantest.PlanSpec{
 			Nodes: []plan.PlanNode{
-				plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{Bucket: "telegraf"}),
-				plan.CreateLogicalNode("merged_filter1_filter2_filter3", &transformations.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
+				plan.CreateLogicalNode("from0", &influxdb.FromProcedureSpec{Bucket: "telegraf"}),
+				plan.CreateLogicalNode("merged_filter1_filter2_filter3", &universe.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -463,7 +464,7 @@ func TestLogicalPlanner(t *testing.T) {
 								Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_measurement"},
 								Right: &semantic.StringLiteral{Value: "cpu"}}}}},
 				}),
-				plan.CreateLogicalNode("yield4", &transformations.YieldProcedureSpec{Name: "result"}),
+				plan.CreateLogicalNode("yield4", &universe.YieldProcedureSpec{Name: "result"}),
 			},
 			Edges: [][2]int{
 				{0, 1},
@@ -476,8 +477,8 @@ func TestLogicalPlanner(t *testing.T) {
 			flux: `from(bucket: "telegraf") |> map(fn: (r) => r._value * 2.0) |> filter(fn: (r) => r._value < 10.0) |> yield(name: "result")`,
 			wantPlan: plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{Bucket: "telegraf"}),
-					plan.CreateLogicalNode("filter2_copy", &transformations.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
+					plan.CreateLogicalNode("from0", &influxdb.FromProcedureSpec{Bucket: "telegraf"}),
+					plan.CreateLogicalNode("filter2_copy", &universe.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
 						Block: &semantic.FunctionBlock{
 							Parameters: &semantic.FunctionParameters{
 								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
@@ -487,7 +488,7 @@ func TestLogicalPlanner(t *testing.T) {
 								Right: &semantic.FloatLiteral{Value: 10}},
 						},
 					}}),
-					plan.CreateLogicalNode("map1", &transformations.MapProcedureSpec{
+					plan.CreateLogicalNode("map1", &universe.MapProcedureSpec{
 						Fn: &semantic.FunctionExpression{
 							Block: &semantic.FunctionBlock{
 								Parameters: &semantic.FunctionParameters{
@@ -497,7 +498,7 @@ func TestLogicalPlanner(t *testing.T) {
 									Right: &semantic.FloatLiteral{Value: 2}}}},
 						MergeKey: true,
 					}),
-					plan.CreateLogicalNode("yield3", &transformations.YieldProcedureSpec{Name: "result"}),
+					plan.CreateLogicalNode("yield3", &universe.YieldProcedureSpec{Name: "result"}),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -515,8 +516,8 @@ func TestLogicalPlanner(t *testing.T) {
 					yield(name: "result")`,
 			wantPlan: plantest.PlanSpec{
 				Nodes: []plan.PlanNode{
-					plan.CreateLogicalNode("from0", &inputs.FromProcedureSpec{Bucket: "telegraf"}),
-					plan.CreateLogicalNode("merged_filter1_filter3_copy", &transformations.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
+					plan.CreateLogicalNode("from0", &influxdb.FromProcedureSpec{Bucket: "telegraf"}),
+					plan.CreateLogicalNode("merged_filter1_filter3_copy", &universe.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
 						Block: &semantic.FunctionBlock{
 							Parameters: &semantic.FunctionParameters{
 								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}}},
@@ -528,7 +529,7 @@ func TestLogicalPlanner(t *testing.T) {
 									Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
 									Right: &semantic.IntegerLiteral{}}},
 						}}}),
-					plan.CreateLogicalNode("map2", &transformations.MapProcedureSpec{Fn: &semantic.FunctionExpression{
+					plan.CreateLogicalNode("map2", &universe.MapProcedureSpec{Fn: &semantic.FunctionExpression{
 						Block: &semantic.FunctionBlock{
 							Parameters: &semantic.FunctionParameters{
 								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}}},
@@ -537,7 +538,7 @@ func TestLogicalPlanner(t *testing.T) {
 								Right: &semantic.IntegerLiteral{Value: 10}}}},
 						MergeKey: true,
 					}),
-					plan.CreateLogicalNode("yield4", &transformations.YieldProcedureSpec{Name: "result"}),
+					plan.CreateLogicalNode("yield4", &universe.YieldProcedureSpec{Name: "result"}),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -585,7 +586,7 @@ from(bucket: "telegraf")
 	}
 
 	intruder := plantest.CreateLogicalMockNode("intruder")
-	k := plan.ProcedureKind(transformations.FilterKind)
+	k := plan.ProcedureKind(universe.FilterKind)
 	// no integrity check enabled, everything should go smoothly
 	planner := plan.NewLogicalPlanner(
 		plan.OnlyLogicalRules(

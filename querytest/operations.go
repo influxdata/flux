@@ -7,8 +7,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/semantic/semantictest"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 func OperationMarshalingTestHelper(t *testing.T, data []byte, expOp *flux.Operation) {
@@ -16,8 +16,8 @@ func OperationMarshalingTestHelper(t *testing.T, data []byte, expOp *flux.Operat
 
 	opts := append(
 		semantictest.CmpOptions,
-		cmp.AllowUnexported(transformations.JoinOpSpec{}),
-		cmpopts.IgnoreUnexported(transformations.JoinOpSpec{}),
+		cmp.AllowUnexported(universe.JoinOpSpec{}),
+		cmpopts.IgnoreUnexported(universe.JoinOpSpec{}),
 	)
 
 	// Ensure we can properly unmarshal a spec

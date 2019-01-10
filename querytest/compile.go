@@ -3,16 +3,16 @@ package querytest
 import (
 	"bytes"
 	"context"
-	"github.com/andreyvit/diff"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/andreyvit/diff"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/functions/transformations"
 	"github.com/influxdata/flux/semantic/semantictest"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 type NewQueryTestCase struct {
@@ -25,9 +25,9 @@ type NewQueryTestCase struct {
 var opts = append(
 	semantictest.CmpOptions,
 	cmp.AllowUnexported(flux.Spec{}),
-	cmp.AllowUnexported(transformations.JoinOpSpec{}),
+	cmp.AllowUnexported(universe.JoinOpSpec{}),
 	cmpopts.IgnoreUnexported(flux.Spec{}),
-	cmpopts.IgnoreUnexported(transformations.JoinOpSpec{}),
+	cmpopts.IgnoreUnexported(universe.JoinOpSpec{}),
 )
 
 func NewQueryTestHelper(t *testing.T, tc NewQueryTestCase) {
