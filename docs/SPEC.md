@@ -580,9 +580,19 @@ An option keeps the same type for the remainder of its lifetime.
 
 Examples:
 
+    // alert package
+    option severity = ["low", "moderate", "high"]
+
+    // foo package
+    import "alert"
+
+    option alert.severity = ["low", "critical"]  // qualified option
+
     option n = 1
     option n = 2
+
     f = (a, b) => a + b + n
+
     x = f(a:1, b:1) // x = 4
 
 ### Expressions
@@ -839,27 +849,20 @@ A function produces side effects when it is explicitly declared to have side eff
 
 ## Package initialization
 
-A package with no imports is initialized by first initializing and assigning all declared options and then subsequently initializing and assigning all declared variables.
-In particular all package options are initialized before any variables.
-Options cannot depend on any variables declared in the same package block.
-If a package has imports, all imported packages are initialized before any options or variables.
+Packages are initialized in the following order:
 
-### Variable initialization
+1. All imported packages are initialized and assigned to their package identifier. 
+2. All option declarations are evaluated and assigned regardless of order. An option cannot have dependencies on any other options assigned in the same package block.
+3. All variable declarations are evaluated and assigned regardless of order. A variable cannot have a direct or indirect dependency on itself.
+4. Any package side effects are evaluated.
 
-Variables are initialized and assigned the same value regardless of the order they are declared in the source.
-A variable cannot have a direct or indirect dependency on itself.
+A package will only be initialized once across all file blocks and across all packages blocks regardless of how many times it is imported.
 
-### Option initialization
-
-An option cannot have dependencies on any other options assigned in the same package block.
-
-### Package imports
-
-Packages imported in the same file block are initialized in declaration order.
-A package cannot be imported twice in the same file block.
-A package will only be initialized once even if it is imported multiple times (across file blocks) in a package.
 Initializing imported packages must be deterministic.
-To be more precise, after all imported packages are initialized, each imported option must be assigned the same value regardless of the order in which package files are presented to an interpreter.
+Specifically after all imported packages are initialized, each option must be assigned the same value.
+Packages imported in the same file block are initialized in declaration order.
+Packages imported across different file blocks have no known order.
+When a set of imports modify the same option, they must be ordered by placing them in the same file block.
 
 ## Built-ins
 
