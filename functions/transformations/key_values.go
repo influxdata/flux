@@ -196,6 +196,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 	}
 
 	var (
+		nullDistinct   bool
 		boolDistinct   map[bool]bool
 		intDistinct    map[int64]bool
 		uintDistinct   map[uint64]bool
@@ -232,88 +233,182 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 				}
 				switch keyColType {
 				case flux.TBool:
-					v := cr.Bools(rowIdx).Value(i)
+					vs := cr.Bools(rowIdx)
 					if t.distinct {
-						if boolDistinct[v] {
-							continue
+						if vs.IsNull(i) {
+							if nullDistinct {
+								continue
+							}
+							nullDistinct = true
+						} else {
+							v := vs.Value(i)
+							if boolDistinct[v] {
+								continue
+							}
+							boolDistinct[v] = true
 						}
-						boolDistinct[v] = true
 					}
 					if err := builder.AppendString(keyColIdx, t.spec.KeyColumns[j]); err != nil {
 						return err
 					}
-					if err := builder.AppendBool(valueColIdx, v); err != nil {
-						return err
+
+					if vs.IsValid(i) {
+						v := vs.Value(i)
+						if err := builder.AppendBool(valueColIdx, v); err != nil {
+							return err
+						}
+					} else {
+						if err := builder.AppendNil(valueColIdx); err != nil {
+							return err
+						}
 					}
 				case flux.TInt:
-					v := cr.Ints(rowIdx).Value(i)
+					vs := cr.Ints(rowIdx)
 					if t.distinct {
-						if intDistinct[v] {
-							continue
+						if vs.IsNull(i) {
+							if nullDistinct {
+								continue
+							}
+							nullDistinct = true
+						} else {
+							v := vs.Value(i)
+							if intDistinct[v] {
+								continue
+							}
+							intDistinct[v] = true
 						}
-						intDistinct[v] = true
 					}
 					if err := builder.AppendString(keyColIdx, t.spec.KeyColumns[j]); err != nil {
 						return err
 					}
-					if err := builder.AppendInt(valueColIdx, v); err != nil {
-						return err
+
+					if vs.IsValid(i) {
+						v := vs.Value(i)
+						if err := builder.AppendInt(valueColIdx, v); err != nil {
+							return err
+						}
+					} else {
+						if err := builder.AppendNil(valueColIdx); err != nil {
+							return err
+						}
 					}
 				case flux.TUInt:
-					v := cr.UInts(rowIdx).Value(i)
+					vs := cr.UInts(rowIdx)
 					if t.distinct {
-						if uintDistinct[v] {
-							continue
+						if vs.IsNull(i) {
+							if nullDistinct {
+								continue
+							}
+							nullDistinct = true
+						} else {
+							v := vs.Value(i)
+							if uintDistinct[v] {
+								continue
+							}
+							uintDistinct[v] = true
 						}
-						uintDistinct[v] = true
 					}
 					if err := builder.AppendString(keyColIdx, t.spec.KeyColumns[j]); err != nil {
 						return err
 					}
-					if err := builder.AppendUInt(valueColIdx, v); err != nil {
-						return err
+
+					if vs.IsValid(i) {
+						v := vs.Value(i)
+						if err := builder.AppendUInt(valueColIdx, v); err != nil {
+							return err
+						}
+					} else {
+						if err := builder.AppendNil(valueColIdx); err != nil {
+							return err
+						}
 					}
 				case flux.TFloat:
-					v := cr.Floats(rowIdx).Value(i)
+					vs := cr.Floats(rowIdx)
 					if t.distinct {
-						if floatDistinct[v] {
-							continue
+						if vs.IsNull(i) {
+							if nullDistinct {
+								continue
+							}
+							nullDistinct = true
+						} else {
+							v := vs.Value(i)
+							if floatDistinct[v] {
+								continue
+							}
+							floatDistinct[v] = true
 						}
-						floatDistinct[v] = true
 					}
 					if err := builder.AppendString(keyColIdx, t.spec.KeyColumns[j]); err != nil {
 						return err
 					}
-					if err := builder.AppendFloat(valueColIdx, v); err != nil {
-						return err
+					if vs.IsValid(i) {
+						v := vs.Value(i)
+						if err := builder.AppendFloat(valueColIdx, v); err != nil {
+							return err
+						}
+					} else {
+						if err := builder.AppendNil(valueColIdx); err != nil {
+							return err
+						}
 					}
 				case flux.TString:
-					v := cr.Strings(rowIdx).ValueString(i)
+					vs := cr.Strings(rowIdx)
 					if t.distinct {
-						if stringDistinct[v] {
-							continue
+						if vs.IsNull(i) {
+							if nullDistinct {
+								continue
+							}
+							nullDistinct = true
+						} else {
+							v := vs.ValueString(i)
+							if stringDistinct[v] {
+								continue
+							}
+							stringDistinct[v] = true
 						}
-						stringDistinct[v] = true
 					}
 					if err := builder.AppendString(keyColIdx, t.spec.KeyColumns[j]); err != nil {
 						return err
 					}
-					if err := builder.AppendString(valueColIdx, v); err != nil {
-						return err
+					if vs.IsValid(i) {
+						v := vs.ValueString(i)
+						if err := builder.AppendString(valueColIdx, v); err != nil {
+							return err
+						}
+					} else {
+						if err := builder.AppendNil(valueColIdx); err != nil {
+							return err
+						}
 					}
 				case flux.TTime:
-					v := execute.Time(cr.Times(rowIdx).Value(i))
+					vs := cr.Times(rowIdx)
 					if t.distinct {
-						if timeDistinct[v] {
-							continue
+						if vs.IsNull(i) {
+							if nullDistinct {
+								continue
+							}
+							nullDistinct = true
+						} else {
+							v := execute.Time(vs.Value(i))
+							if timeDistinct[v] {
+								continue
+							}
+							timeDistinct[v] = true
 						}
-						timeDistinct[v] = true
 					}
 					if err := builder.AppendString(keyColIdx, t.spec.KeyColumns[j]); err != nil {
 						return err
 					}
-					if err := builder.AppendTime(valueColIdx, v); err != nil {
-						return err
+
+					if vs.IsValid(i) {
+						v := execute.Time(vs.Value(i))
+						if err := builder.AppendTime(valueColIdx, v); err != nil {
+							return err
+						}
+					} else {
+						if err := builder.AppendNil(valueColIdx); err != nil {
+							return err
+						}
 					}
 				}
 				if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
