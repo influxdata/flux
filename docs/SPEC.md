@@ -2212,16 +2212,16 @@ from(bucket: "telegraf/autogen")
 #### KeyValues
 
 KeyValues outputs a table with the input table's group key, plus two columns  `_key` and `_value` that correspond to unique
-(column, value) pairs from the input table.  
+(column, value) pairs from the input table.
 
-KeyValues has the following properties: 
+KeyValues has the following properties:
 *  `keyColumns` list of strings
    A list of columns from which values are extracted
-*  `fn` schema function that may by used instead of `keyColumns` to identify the set of columns.  
+*  `fn` schema function that may by used instead of `keyColumns` to identify the set of columns.
 
-Additional requirements: 
-*  Only one of `keyColumns` or `fn` may be used in a single call.  
-*  All columns indicated must be of the same type. 
+Additional requirements:
+*  Only one of `keyColumns` or `fn` may be used in a single call.
+*  All columns indicated must be of the same type.
 *  Each input table must have all of the columns listed by the `keyColumns` parameter.
 
 ```

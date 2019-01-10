@@ -266,6 +266,39 @@ func TestKeyValues_Process(t *testing.T) {
 			},
 			wantErr: errors.New("received table with columns [_time _value tag0 tag1] not having key columns [tagX tagY]"),
 		},
+		{
+			name: "nulls",
+			spec: &transformations.KeyValuesProcedureSpec{KeyColumns: []string{"tag1"}},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0, "a", "b"},
+						{execute.Time(2), 2.0, "a", "c"},
+						{execute.Time(3), 2.0, "a", nil},
+						{execute.Time(4), 2.0, "a", "d"},
+						{execute.Time(5), 2.0, "a", "b"},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_key", Type: flux.TString},
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{"tag1", "b"},
+					{"tag1", "c"},
+					{"tag1", nil},
+					{"tag1", "d"},
+				},
+			}},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
