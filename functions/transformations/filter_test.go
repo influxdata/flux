@@ -773,6 +773,50 @@ func TestFilter_Process(t *testing.T) {
 				},
 			}},
 		},
+		{
+			name: `_value>5 with unused nulls`,
+			spec: &transformations.FilterProcedureSpec{
+				Fn: &semantic.FunctionExpression{
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.BinaryExpression{
+							Operator: ast.GreaterThanOperator,
+							Left: &semantic.MemberExpression{
+								Object:   &semantic.IdentifierExpression{Name: "r"},
+								Property: "_value",
+							},
+							Right: &semantic.FloatLiteral{Value: 5},
+						},
+					},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "host", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 1.0, "server01"},
+					{execute.Time(2), 1.0, nil},
+					{execute.Time(3), 6.0, "server02"},
+					{execute.Time(4), 6.0, nil},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "host", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(3), 6.0, "server02"},
+					{execute.Time(4), 6.0, nil},
+				},
+			}},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc

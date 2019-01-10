@@ -1724,7 +1724,7 @@ Filter has the following properties:
     Records which evaluate to true, will be included in the output tables.
     TODO(nathanielc): Do we need a syntax for expressing type signatures?
 
-Example: 
+Example:
 
 ```
 from(bucket:"telegraf/autogen")
