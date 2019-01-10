@@ -168,7 +168,41 @@ func TestDistinct_Process(t *testing.T) {
 						{"x", "c"},
 						{"x", "e"},
 					},
-				}},
+				},
+			},
+		},
+		{
+			name: "nulls",
+			spec: &transformations.DistinctProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), 2.0, "a", nil},
+						{execute.Time(1), 2.0, "a", "b"},
+						{execute.Time(2), 2.0, "a", "c"},
+						{execute.Time(3), 2.0, "a", "b"},
+						{execute.Time(4), 2.0, "a", nil},
+						{execute.Time(5), 2.0, "a", "d"},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{nil},
+					{"b"},
+					{"c"},
+					{"d"},
+				},
+			}},
 		},
 	}
 	for _, tc := range testCases {

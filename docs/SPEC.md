@@ -2608,9 +2608,10 @@ from(bucket: "telegraf/autogen")
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_user")
     |> difference()
 ```
+
 #### Distinct
 
-Distinct produces the unique values for a given column.
+Distinct produces the unique values for a given column. Null is considered its own distinct value if it is present.
 
 Distinct has the following properties:
 
@@ -2618,7 +2619,8 @@ Distinct has the following properties:
     column the column on which to track unique values.
     Defaults to `_value`.
 
-Example: 
+Example:
+
 ```
 from(bucket: "telegraf/autogen")
 	|> range(start: -5m)
