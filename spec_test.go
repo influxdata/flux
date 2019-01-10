@@ -14,8 +14,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/functions/transformations"
+	_ "github.com/influxdata/flux/functions/universe"
+	"github.com/influxdata/flux/interpreter"
 	_ "github.com/influxdata/flux/options"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
@@ -326,7 +327,7 @@ func Example_overrideDefaultOptionExternally() {
 	semPkg, _ := semantic.New(astPkg)
 
 	// Evaluate package
-	err := itrp.Eval(semPkg, universe, nil)
+	_, err := itrp.Eval(semPkg, universe, nil)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -367,7 +368,7 @@ func Example_overrideDefaultOptionInternally() {
 	universe.Set("now", newNowFunc)
 
 	// Evaluate package
-	err := itrp.Eval(semPkg, universe, nil)
+	_, err := itrp.Eval(semPkg, universe, nil)
 	if err != nil {
 		fmt.Println(err)
 	}

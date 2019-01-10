@@ -16,10 +16,11 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-var testScope = interptest.NewScopeWithValues(map[string]values.Value{
-	"true":  values.NewBool(true),
-	"false": values.NewBool(false),
-})
+var testScope = interpreter.NewNestedScope(nil, values.NewObjectWithValues(
+	map[string]values.Value{
+		"true":  values.NewBool(true),
+		"false": values.NewBool(false),
+	}))
 
 var optionsObject = values.NewObject()
 
@@ -406,15 +407,15 @@ func TestEval(t *testing.T) {
 			// Create new interpreter for each test case
 			itrp := interpreter.NewInterpreter()
 
-			err = itrp.Eval(graph, testScope.Copy(), nil)
+			sideEffects, err := itrp.Eval(graph, testScope.Copy(), nil)
 			if !tc.wantErr && err != nil {
 				t.Fatal(err)
 			} else if tc.wantErr && err == nil {
 				t.Fatal("expected error")
 			}
 
-			if tc.want != nil && !cmp.Equal(tc.want, itrp.Package().SideEffects(), semantictest.CmpOptions...) {
-				t.Fatalf("unexpected side effect values -want/+got: \n%s", cmp.Diff(tc.want, itrp.Package().SideEffects(), semantictest.CmpOptions...))
+			if tc.want != nil && !cmp.Equal(tc.want, sideEffects, semantictest.CmpOptions...) {
+				t.Fatalf("unexpected side effect values -want/+got: \n%s", cmp.Diff(tc.want, sideEffects, semantictest.CmpOptions...))
 			}
 		})
 	}
@@ -496,7 +497,7 @@ func TestInterpreter_TypeErrors(t *testing.T) {
 				t.Fatal(err)
 			}
 			itrp := interpreter.NewInterpreter()
-			if err := itrp.Eval(graph, interptest.NewScope(), nil); err == nil {
+			if _, err := itrp.Eval(graph, interpreter.NewScope(), nil); err == nil {
 				if tc.err != "" {
 					t.Error("expected type error, but program executed successfully")
 				}
@@ -573,19 +574,20 @@ func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
 			scope := testScope.Copy()
 
 			for _, builtin := range tc.builtins {
-				if err := interptest.Eval(itrp, scope, nil, builtin); err != nil {
+				if _, err := interptest.Eval(itrp, scope, nil, builtin); err != nil {
 					t.Fatal("evaluation of builtin failed: ", err)
 				}
 			}
 
-			if err := interptest.Eval(itrp, scope, nil, tc.program); err != nil && !tc.wantErr {
+			sideEffects, err := interptest.Eval(itrp, scope, nil, tc.program)
+			if err != nil && !tc.wantErr {
 				t.Fatal("program evaluation failed: ", err)
 			} else if err == nil && tc.wantErr {
 				t.Fatal("expected to error during program evaluation")
 			}
 
-			if tc.want != nil && !cmp.Equal(tc.want, itrp.Package().SideEffects(), semantictest.CmpOptions...) {
-				t.Fatalf("unexpected side effect values -want/+got: \n%s", cmp.Diff(tc.want, itrp.Package().SideEffects(), semantictest.CmpOptions...))
+			if tc.want != nil && !cmp.Equal(tc.want, sideEffects, semantictest.CmpOptions...) {
+				t.Fatalf("unexpected side effect values -want/+got: \n%s", cmp.Diff(tc.want, sideEffects, semantictest.CmpOptions...))
 			}
 
 		})
@@ -642,8 +644,9 @@ func TestResolver(t *testing.T) {
 	}
 
 	itrp := interpreter.NewInterpreter()
+	ns := interpreter.NewNestedScope(nil, values.NewObjectWithValues(scope))
 
-	if err := itrp.Eval(graph, interptest.NewScopeWithValues(scope), nil); err != nil {
+	if _, err := itrp.Eval(graph, ns, nil); err != nil {
 		t.Fatal(err)
 	}
 

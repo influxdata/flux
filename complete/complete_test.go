@@ -5,13 +5,13 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/complete"
-	"github.com/influxdata/flux/interpreter/interptest"
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
 func TestNames(t *testing.T) {
-	s := interptest.NewScope()
+	s := interpreter.NewScope()
 	v := values.NewInt(0)
 	s.Set("boom", v)
 	s.Set("tick", v)
@@ -31,7 +31,7 @@ func TestNames(t *testing.T) {
 
 func TestValue(t *testing.T) {
 	name := "foo"
-	scope := interptest.NewScope()
+	scope := interpreter.NewScope()
 	value := values.NewInt(5)
 	scope.Set(name, value)
 
@@ -49,7 +49,7 @@ func TestFunctionNames(t *testing.T) {
 		func(values.Object) (values.Value, error) { return nil, nil },
 		false,
 	)
-	s := interptest.NewScope()
+	s := interpreter.NewScope()
 	s.Set("boom", boom)
 	c := complete.NewCompleter(s)
 	results := c.FunctionNames()
@@ -76,7 +76,7 @@ func TestFunctionSuggestion(t *testing.T) {
 		func(values.Object) (values.Value, error) { return nil, nil },
 		false,
 	)
-	s := interptest.NewScope()
+	s := interpreter.NewScope()
 	s.Set(name, bar)
 	result, _ := complete.NewCompleter(s).FunctionSuggestion(name)
 

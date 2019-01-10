@@ -10,162 +10,22 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Package implementation
-type packageObject struct {
-	name        string
-	exported    map[string]values.Value
-	types       map[string]semantic.Type
-	polyTypes   map[string]semantic.PolyType
-	sideEffects []values.Value
-}
-
-func (p *packageObject) Name() string {
-	return p.name
-}
-
-func (p *packageObject) SideEffects() []values.Value {
-	return p.sideEffects
-}
-
-func (p *packageObject) Type() semantic.Type {
-	return semantic.NewObjectType(p.types)
-}
-
-func (p *packageObject) PolyType() semantic.PolyType {
-	names := make(semantic.LabelSet, 0, len(p.polyTypes))
-	for k := range p.polyTypes {
-		names = append(names, k)
-	}
-	return semantic.NewObjectPolyType(p.polyTypes, nil, names)
-}
-
-func (p *packageObject) Get(name string) (values.Value, bool) {
-	if v, ok := p.exported[name]; ok {
-		return v, ok
-	}
-	return nil, false
-}
-
-func (p *packageObject) Set(name string, v values.Value) {
-	p.exported[name] = v
-	p.types[name] = v.Type()
-	p.polyTypes[name] = v.PolyType()
-}
-
-func (p *packageObject) Len() int {
-	return len(p.exported)
-}
-
-func (p *packageObject) Range(f func(name string, v values.Value)) {
-	for k, v := range p.exported {
-		f(k, v)
-	}
-}
-func (p *packageObject) IsNull() bool {
-	return false
-}
-func (p *packageObject) Str() string {
-	panic(values.UnexpectedKind(semantic.Object, semantic.String))
-}
-func (p *packageObject) Int() int64 {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Int))
-}
-func (p *packageObject) UInt() uint64 {
-	panic(values.UnexpectedKind(semantic.Object, semantic.UInt))
-}
-func (p *packageObject) Float() float64 {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Float))
-}
-func (p *packageObject) Bool() bool {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Bool))
-}
-func (p *packageObject) Time() values.Time {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Time))
-}
-func (p *packageObject) Duration() values.Duration {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Duration))
-}
-func (p *packageObject) Regexp() *regexp.Regexp {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Regexp))
-}
-func (p *packageObject) Array() values.Array {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Array))
-}
-func (p *packageObject) Object() values.Object {
-	return p
-}
-func (p *packageObject) Function() values.Function {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Function))
-}
-func (p *packageObject) Equal(rhs values.Value) bool {
-	if p.Type() != rhs.Type() {
-		return false
-	}
-	r := rhs.Object()
-	if p.Len() != r.Len() {
-		return false
-	}
-	equal := true
-	p.Range(func(k string, v values.Value) {
-		val, ok := r.Get(k)
-		if !ok || !v.Equal(val) {
-			equal = false
-			return
-		}
-	})
-	return equal
-}
-
 type Interpreter struct {
-	types     map[semantic.Node]semantic.Type
-	polyTypes map[semantic.Node]semantic.PolyType
-	vars      map[string]values.Value
-	vals      []values.Value
-	pkg       string
+	types       map[semantic.Node]semantic.Type
+	polyTypes   map[semantic.Node]semantic.PolyType
+	sideEffects []values.Value
+	pkg         string
 }
 
 func NewInterpreter() *Interpreter {
 	return &Interpreter{
 		types:     make(map[semantic.Node]semantic.Type),
 		polyTypes: make(map[semantic.Node]semantic.PolyType),
-		vars:      make(map[string]values.Value),
 	}
 }
 
-func (itrp *Interpreter) Clear() {
-	itrp.pkg = ""
-	for k := range itrp.vars {
-		delete(itrp.vars, k)
-	}
-	for n := range itrp.types {
-		delete(itrp.types, n)
-		delete(itrp.polyTypes, n)
-	}
-	itrp.vals = itrp.vals[:0]
-}
-
-// Package constructs and returns a Flux package object from
-// an interpreter's global variables.
-func (itrp *Interpreter) Package() Package {
-	exported := make(map[string]values.Value, len(itrp.vars))
-	types := make(map[string]semantic.Type, len(itrp.vars))
-	polyTypes := make(map[string]semantic.PolyType, len(itrp.vars))
-	for k, v := range itrp.vars {
-		exported[k] = v
-		types[k] = v.Type()
-		polyTypes[k] = v.PolyType()
-	}
-	return &packageObject{
-		name:        itrp.pkg,
-		exported:    exported,
-		types:       types,
-		polyTypes:   polyTypes,
-		sideEffects: itrp.vals,
-	}
-}
-
-// Eval evaluates the expressions composing a Flux package.
-func (itrp *Interpreter) Eval(node semantic.Node, scope Scope, importer Importer) error {
+// Eval evaluates the expressions composing a Flux package and returns any side effects that occured.
+func (itrp *Interpreter) Eval(node semantic.Node, scope Scope, importer Importer) ([]values.Value, error) {
 	extern := &semantic.Extern{
 		Block: &semantic.ExternBlock{
 			Node: node,
@@ -184,7 +44,7 @@ func (itrp *Interpreter) Eval(node semantic.Node, scope Scope, importer Importer
 
 	sol, err := semantic.InferTypes(extern, importer)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	semantic.Walk(semantic.CreateVisitor(func(node semantic.Node) {
@@ -196,7 +56,10 @@ func (itrp *Interpreter) Eval(node semantic.Node, scope Scope, importer Importer
 		}
 	}), node)
 
-	return itrp.doRoot(node, scope, importer)
+	if err := itrp.doRoot(node, scope, importer); err != nil {
+		return nil, err
+	}
+	return itrp.sideEffects, nil
 }
 
 func (itrp *Interpreter) doRoot(node semantic.Node, scope Scope, importer Importer) error {
@@ -240,14 +103,11 @@ func (itrp *Interpreter) doFile(file *semantic.File, scope Scope, importer Impor
 		if err != nil {
 			return err
 		}
-		switch n := stmt.(type) {
-		case *semantic.NativeVariableAssignment:
-			itrp.vars[n.Identifier.Name] = val
-		case *semantic.ExpressionStatement:
-			// Only in the main package are all query objects
-			// coerced into producing side effects.
+		if _, ok := stmt.(*semantic.ExpressionStatement); ok {
+			// Only in the main package are all unassigned package
+			// level expressions coerced into producing side effects.
 			if itrp.pkg == semantic.PackageMain {
-				itrp.vals = append(itrp.vals, val)
+				itrp.sideEffects = append(itrp.sideEffects, val)
 			}
 		}
 	}
@@ -280,7 +140,7 @@ func (itrp *Interpreter) doImport(dec *semantic.ImportDeclaration, scope Scope, 
 	}
 	scope.Set(name, pkg)
 	// Packages can import side effects
-	itrp.vals = append(itrp.vals, pkg.SideEffects()...)
+	itrp.sideEffects = append(itrp.sideEffects, pkg.SideEffects()...)
 	return nil
 }
 
@@ -617,7 +477,7 @@ func (itrp *Interpreter) doCall(call *semantic.CallExpression, scope Scope) (val
 	}
 
 	if f.HasSideEffect() {
-		itrp.vals = append(itrp.vals, value)
+		itrp.sideEffects = append(itrp.sideEffects, value)
 	}
 
 	return value, nil
@@ -754,7 +614,7 @@ func (f function) Call(argsObj values.Object) (values.Value, error) {
 	return v, nil
 }
 func (f function) doCall(args Arguments) (values.Value, error) {
-	blockScope := f.scope.Nest()
+	blockScope := f.scope.Nest(nil)
 	if f.e.Block.Parameters != nil {
 	PARAMETERS:
 		for _, p := range f.e.Block.Parameters.List {
@@ -787,7 +647,7 @@ func (f function) doCall(args Arguments) (values.Value, error) {
 	case semantic.Expression:
 		return f.itrp.doExpression(n, blockScope)
 	case *semantic.Block:
-		nested := blockScope.Nest()
+		nested := blockScope.Nest(nil)
 		for i, stmt := range n.Body {
 			_, err := f.itrp.doStatement(stmt, nested)
 			if err != nil {

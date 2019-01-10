@@ -12,6 +12,7 @@ import (
 	_ "github.com/influxdata/flux/functions/outputs"         // Import the built-in outputs
 	_ "github.com/influxdata/flux/functions/tests"           // Import the built-in functions
 	_ "github.com/influxdata/flux/functions/transformations" // Import the built-in functions
+	_ "github.com/influxdata/flux/functions/universe"
 	"github.com/influxdata/flux/lang"
 	_ "github.com/influxdata/flux/options" // Import the built-in options
 	"github.com/influxdata/flux/querytest"

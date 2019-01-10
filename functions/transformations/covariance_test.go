@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions/inputs"
 	"github.com/influxdata/flux/functions/transformations"
+	_ "github.com/influxdata/flux/functions/universe"
 	"github.com/influxdata/flux/querytest"
 )
 
