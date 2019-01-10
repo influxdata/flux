@@ -27,6 +27,7 @@ import (
 
 type REPL struct {
 	interpreter *interpreter.Interpreter
+	scope       interpreter.Scope
 	querier     Querier
 
 	cancelMu   sync.Mutex
@@ -38,9 +39,9 @@ type Querier interface {
 }
 
 func New(q Querier) *REPL {
-	itrp := flux.NewInterpreter()
 	return &REPL{
-		interpreter: itrp,
+		interpreter: interpreter.NewInterpreter(),
+		scope:       flux.Prelude(),
 		querier:     q,
 	}
 }
@@ -81,7 +82,10 @@ func (r *REPL) clearCancel() {
 }
 
 func (r *REPL) completer(d prompt.Document) []prompt.Suggest {
-	names := r.interpreter.GlobalScope().Names()
+	names := make([]string, 0, r.scope.Size())
+	r.scope.Range(func(k string, v values.Value) {
+		names = append(names, k)
+	})
 	sort.Strings(names)
 
 	s := make([]prompt.Suggest, 0, len(names))
@@ -149,11 +153,11 @@ func (r *REPL) executeLine(t string) (values.Value, error) {
 		return nil, err
 	}
 
-	if err := r.interpreter.Eval(semPkg, flux.BuiltinImporter()); err != nil {
+	if _, err := r.interpreter.Eval(semPkg, r.scope, flux.StdLib()); err != nil {
 		return nil, err
 	}
 
-	v := r.interpreter.Return()
+	v := r.scope.Return()
 
 	// Ignore statements that do not return a value
 	if v == nil {
@@ -163,7 +167,18 @@ func (r *REPL) executeLine(t string) (values.Value, error) {
 	// Check for yield and execute query
 	if v.Type() == flux.TableObjectMonoType {
 		t := v.(*flux.TableObject)
-		spec := flux.ToSpec(r.interpreter, t)
+		now, ok := r.scope.Lookup("now")
+		if !ok {
+			return nil, fmt.Errorf("now option not set")
+		}
+		nowTime, err := now.Function().Call(nil)
+		if err != nil {
+			return nil, err
+		}
+		spec, err := flux.ToSpec([]values.Value{t}, nowTime.Time().Time())
+		if err != nil {
+			return nil, err
+		}
 		return nil, r.doQuery(spec)
 	}
 

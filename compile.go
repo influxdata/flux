@@ -47,16 +47,30 @@ func Compile(ctx context.Context, q string, now time.Time, opts ...Option) (*Spe
 	}
 
 	s, _ := opentracing.StartSpanFromContext(ctx, "parse")
-	itrp := NewInterpreter()
-	itrp.SetOption(nowOption, nowFunc(now))
-	if err := Eval(itrp, q); err != nil {
+
+	sideEffects, scope, err := Eval(q, SetOption(nowOption, nowFunc(now)))
+	if err != nil {
 		return nil, err
 	}
+
 	s.Finish()
 	s, _ = opentracing.StartSpanFromContext(ctx, "compile")
 	defer s.Finish()
 
-	spec := toSpecFromSideEffecs(itrp)
+	nowOpt, ok := scope.Lookup(nowOption)
+	if !ok {
+		return nil, fmt.Errorf("%q option not set", nowOption)
+	}
+
+	nowTime, err := nowOpt.Function().Call(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	spec, err := ToSpec(sideEffects, nowTime.Time().Time())
+	if err != nil {
+		return nil, err
+	}
 
 	if o.verbose {
 		log.Println("Query Spec: ", Formatted(spec, FmtJSON))
@@ -64,36 +78,41 @@ func Compile(ctx context.Context, q string, now time.Time, opts ...Option) (*Spe
 	return spec, nil
 }
 
-// Eval evaluates the flux string q and update the given interpreter
-func Eval(itrp *interpreter.Interpreter, q string) error {
-	astPkg := parser.ParseSource(q)
+func Eval(flux string, opts ...ScopeMutator) ([]values.Value, interpreter.Scope, error) {
+	astPkg := parser.ParseSource(flux)
 	if ast.Check(astPkg) > 0 {
-		return ast.GetError(astPkg)
+		return nil, nil, ast.GetError(astPkg)
 	}
 
-	// Convert AST package to a semantic package
 	semPkg, err := semantic.New(astPkg)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
-	if err := itrp.Eval(semPkg, BuiltinImporter()); err != nil {
-		return err
+	itrp := interpreter.NewInterpreter()
+	universe := preludeScope.Copy()
+
+	for _, opt := range opts {
+		opt(universe)
 	}
-	return nil
+
+	sideEffects, err := itrp.Eval(semPkg, universe, StdLib())
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return sideEffects, universe, nil
 }
 
-// NewInterpreter returns an interpreter instance with
-// pre-constructed options and global scopes.
-func NewInterpreter() *interpreter.Interpreter {
-	// Make a copy of the builtin options since they can be modified
-	options := make(map[string]values.Value, len(builtinOptions))
-	for k, v := range builtinOptions {
-		options[k] = v
+// SetOption returns a func that adds a var binding to a scope
+func SetOption(name string, v values.Value) ScopeMutator {
+	return func(scope interpreter.Scope) {
+		scope.Set(name, v)
 	}
-
-	return interpreter.NewInterpreter(options, builtinValues, builtinTypeScope)
 }
+
+// ScopeMutator is any function that mutates the scope of an identifier
+type ScopeMutator = func(interpreter.Scope)
 
 func nowFunc(now time.Time) values.Function {
 	timeVal := values.NewTime(values.ConvertTime(now))
@@ -107,55 +126,119 @@ func nowFunc(now time.Time) values.Function {
 	return values.NewFunction(nowOption, ftype, call, sideEffect)
 }
 
-func toSpecFromSideEffecs(itrp *interpreter.Interpreter) *Spec {
-	return ToSpec(itrp, itrp.SideEffects()...)
-}
-
-// ToSpec creates a query spec from the interpreter and list of values.
-func ToSpec(itrp *interpreter.Interpreter, vals ...values.Value) *Spec {
+func ToSpec(functionCalls []values.Value, now time.Time) (*Spec, error) {
 	ider := &ider{
 		id:     0,
 		lookup: make(map[*TableObject]OperationID),
 	}
 
-	spec := new(Spec)
-	visited := make(map[*TableObject]bool)
-	nodes := make([]*TableObject, 0, len(vals))
+	spec := &Spec{Now: now}
+	seen := make(map[*TableObject]bool)
+	objs := make([]*TableObject, 0, len(functionCalls))
 
-	for _, val := range vals {
-		if op, ok := val.(*TableObject); ok {
+	for _, call := range functionCalls {
+		if op, ok := call.(*TableObject); ok {
 			dup := false
-			for _, node := range nodes {
-				if op.Equal(node) {
+			for _, tableObject := range objs {
+				if op.Equal(tableObject) {
 					dup = true
 					break
 				}
 			}
 			if !dup {
-				op.buildSpec(ider, spec, visited)
-				nodes = append(nodes, op)
+				op.buildSpec(ider, spec, seen)
+				objs = append(objs, op)
 			}
 		}
 	}
 
-	// now option is Time value
-	nowValue, _ := itrp.Option(nowOption).Function().Call(nil)
-	spec.Now = nowValue.Time().Time()
-
-	return spec
+	return spec, nil
 }
 
 type CreateOperationSpec func(args Arguments, a *Administration) (OperationSpec, error)
 
-var builtinValues = make(map[string]values.Value)
-var builtinOptions = make(map[string]values.Value)
-var builtinTypeScope = interpreter.NewTypeScope()
-
 // set of builtins
-var builtinScripts = make(map[string]string)
-var builtinPackages = make(map[string]*ast.Package)
-var builtinPackageValues = make(map[string]map[string]values.Value)
-var finalized bool
+var (
+	builtinScripts  = make(map[string]string)
+	builtinPackages = make(map[string]*ast.Package)
+	finalized       bool
+)
+
+var globals = values.NewObject()
+var prelude = []string{"universe"}
+var preludeScope = new(scopeSet)
+var stdlib = &importer{make(map[string]*interpreter.Package)}
+
+type scopeSet struct {
+	packages    []*interpreter.Package
+	returnValue values.Value
+}
+
+func (s *scopeSet) Lookup(name string) (values.Value, bool) {
+	for _, pkg := range s.packages {
+		if v, ok := pkg.Get(name); ok {
+			return v, ok
+		}
+	}
+	return nil, false
+}
+
+func (s *scopeSet) Set(name string, v values.Value) {
+	for _, pkg := range s.packages {
+		if _, ok := pkg.Get(name); ok {
+			pkg.Set(name, v)
+			return
+		}
+	}
+	s.packages[0].Set(name, v)
+}
+
+func (s *scopeSet) Nest(obj values.Object) interpreter.Scope {
+	return interpreter.NewNestedScope(s, obj)
+}
+
+func (s *scopeSet) Size() int {
+	var size int
+	for _, pkg := range s.packages {
+		size += pkg.Len()
+	}
+	return size
+}
+
+func (s *scopeSet) Range(f func(k string, v values.Value)) {
+	for _, pkg := range s.packages {
+		pkg.Range(f)
+	}
+}
+
+func (s *scopeSet) SetReturn(v values.Value) {
+	s.returnValue = v
+}
+
+func (s *scopeSet) Return() values.Value {
+	return s.returnValue
+}
+
+func (s *scopeSet) Copy() interpreter.Scope {
+	packages := make([]*interpreter.Package, len(s.packages))
+	for i, pkg := range s.packages {
+		packages[i] = pkg.Copy()
+	}
+	return &scopeSet{
+		packages:    packages,
+		returnValue: s.returnValue,
+	}
+}
+
+// StdLib returns an importer for the Flux standard library.
+func StdLib() interpreter.Importer {
+	return stdlib.Copy()
+}
+
+// Prelude returns a scope object representing the Flux universe block
+func Prelude() interpreter.Scope {
+	return preludeScope.Copy()
+}
 
 // RegisterBuiltIn adds any variable declarations written in Flux script to the builtin scope.
 func RegisterBuiltIn(name, script string) {
@@ -184,15 +267,15 @@ func RegisterPackageValue(path, name string, value values.Value) {
 	if finalized {
 		panic(errors.New("already finalized, cannot register builtin package value"))
 	}
-	packageValues, ok := builtinPackageValues[path]
+	packg, ok := stdlib.pkgs[path]
 	if !ok {
-		packageValues = make(map[string]values.Value)
-		builtinPackageValues[path] = packageValues
+		packg = interpreter.NewPackage(name)
+		stdlib.pkgs[path] = packg
 	}
-	if _, ok := packageValues[name]; ok {
+	if _, ok := packg.Get(name); ok {
 		panic(fmt.Errorf("duplicate builtin package value %q %q", path, name))
 	}
-	packageValues[name] = value
+	packg.Set(name, value)
 }
 
 // RegisterFunction adds a new builtin top level function.
@@ -242,10 +325,10 @@ func RegisterBuiltInValue(name string, v values.Value) {
 	if finalized {
 		panic(errors.New("already finalized, cannot register builtin"))
 	}
-	if _, ok := builtinValues[name]; ok {
+	if _, ok := globals.Get(name); ok {
 		panic(fmt.Errorf("duplicate registration for builtin %q", name))
 	}
-	builtinValues[name] = v
+	globals.Set(name, v)
 }
 
 // RegisterBuiltInOption adds the value to the builtin scope.
@@ -253,10 +336,10 @@ func RegisterBuiltInOption(name string, v values.Value) {
 	if finalized {
 		panic(errors.New("already finalized, cannot register builtin option"))
 	}
-	if _, ok := builtinOptions[name]; ok {
+	if _, ok := globals.Get(name); ok {
 		panic(fmt.Errorf("duplicate registration for builtin option %q", name))
 	}
-	builtinOptions[name] = v
+	globals.Set(name, v)
 }
 
 // FinalizeBuiltIns must be called to complete registration.
@@ -267,6 +350,17 @@ func FinalizeBuiltIns() {
 	}
 	finalized = true
 
+	pkg := interpreter.NewPackageWithValues("_", globals)
+	preludeScope.packages = append(preludeScope.packages, pkg)
+
+	for _, path := range prelude {
+		pkg, ok := stdlib.ImportPackageObject(path)
+		if !ok {
+			panic(fmt.Sprintf("missing prelude package %q", path))
+		}
+		preludeScope.packages = append(preludeScope.packages, pkg)
+	}
+
 	if err := evalBuiltInScripts(); err != nil {
 		panic(err)
 	}
@@ -276,7 +370,7 @@ func FinalizeBuiltIns() {
 }
 
 func evalBuiltInScripts() error {
-	itrp := interpreter.NewMutableInterpreter(builtinOptions, builtinValues, builtinTypeScope)
+	itrp := interpreter.NewInterpreter()
 	for name, script := range builtinScripts {
 		astPkg := parser.ParseSource(script)
 		if ast.Check(astPkg) > 0 {
@@ -287,8 +381,7 @@ func evalBuiltInScripts() error {
 		if err != nil {
 			return errors.Wrapf(err, "failed to create semantic graph for builtin %q", name)
 		}
-
-		if err := itrp.Eval(semPkg, builtinImporter); err != nil {
+		if _, err := itrp.Eval(semPkg, preludeScope, stdlib); err != nil {
 			return errors.Wrapf(err, "failed to evaluate builtin %q", name)
 		}
 	}
@@ -300,6 +393,7 @@ func evalBuiltInPackages() error {
 	if err != nil {
 		return err
 	}
+	itrp := interpreter.NewInterpreter()
 	for _, astPkg := range order {
 		if ast.Check(astPkg) > 0 {
 			err := ast.GetError(astPkg)
@@ -310,30 +404,12 @@ func evalBuiltInPackages() error {
 			return errors.Wrapf(err, "failed to create semantic graph for builtin package %q", astPkg.Package)
 		}
 
-		// Make a copy of the global builtin values and add any builtin package values
-		packageValues := builtinPackageValues[astPkg.Path]
-		vals := make(map[string]values.Value, len(builtinValues)+len(packageValues))
-		for k, v := range builtinValues {
-			vals[k] = v
-		}
-		for k, v := range packageValues {
-			vals[k] = v
-		}
+		pkg := stdlib.pkgs[astPkg.Path]
 
-		// Make a copy of the builtin options since they can be modified
-		options := make(map[string]values.Value, len(builtinOptions))
-		for k, v := range builtinOptions {
-			options[k] = v
-		}
-
-		itrp := interpreter.NewMutableInterpreter(options, vals, builtinTypeScope)
-		if err := itrp.Eval(semPkg, builtinImporter); err != nil {
+		if _, err := itrp.Eval(semPkg, preludeScope.Nest(pkg), stdlib); err != nil {
 			return errors.Wrapf(err, "failed to evaluate builtin package %q", astPkg.Package)
 		}
-		builtinImporter.Packages[astPkg.Path] = itrp.Package()
 	}
-	// We no longer needs the package values
-	builtinPackageValues = nil
 	return nil
 }
 
@@ -590,10 +666,10 @@ func BuiltIns() map[string]values.Value {
 	if !finalized {
 		panic("builtins not finalized")
 	}
-	cpy := make(map[string]values.Value, len(builtinValues))
-	for k, v := range builtinValues {
+	cpy := make(map[string]values.Value, preludeScope.Size())
+	preludeScope.Range(func(k string, v values.Value) {
 		cpy[k] = v
-	}
+	})
 	return cpy
 }
 
@@ -787,31 +863,22 @@ func ToQueryTime(value values.Value) (Time, error) {
 	}
 }
 
-var builtinImporter = &importer{
-	Packages: make(map[string]interpreter.Package),
-}
-
-// BuiltinImporter returns an importer for the builtin packages.
-func BuiltinImporter() interpreter.Importer {
-	return builtinImporter.Copy()
-}
-
 type importer struct {
-	Packages map[string]interpreter.Package
+	pkgs map[string]*interpreter.Package
 }
 
 func (imp *importer) Copy() *importer {
-	packages := make(map[string]interpreter.Package, len(imp.Packages))
-	for k, v := range imp.Packages {
-		packages[k] = v.Copy()
+	packages := make(map[string]*interpreter.Package, len(imp.pkgs))
+	for k, v := range imp.pkgs {
+		packages[k] = v
 	}
 	return &importer{
-		Packages: packages,
+		pkgs: packages,
 	}
 }
 
 func (imp *importer) Import(path string) (semantic.PackageType, bool) {
-	p, ok := imp.Packages[path]
+	p, ok := imp.pkgs[path]
 	if !ok {
 		return semantic.PackageType{}, false
 	}
@@ -821,8 +888,8 @@ func (imp *importer) Import(path string) (semantic.PackageType, bool) {
 	}, true
 }
 
-func (imp *importer) ImportPackageObject(path string) (interpreter.Package, bool) {
-	p, ok := imp.Packages[path]
+func (imp *importer) ImportPackageObject(path string) (*interpreter.Package, bool) {
+	p, ok := imp.pkgs[path]
 	return p, ok
 }
 

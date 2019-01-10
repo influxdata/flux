@@ -12,7 +12,7 @@ import (
 
 func TestNames(t *testing.T) {
 	s := interpreter.NewScope()
-	var v values.Value
+	v := values.NewInt(0)
 	s.Set("boom", v)
 	s.Set("tick", v)
 
