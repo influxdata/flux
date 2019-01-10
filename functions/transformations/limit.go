@@ -2,8 +2,6 @@ package transformations
 
 import (
 	"fmt"
-
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
@@ -155,15 +153,12 @@ func (t *limitTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 			stop = start + count
 		}
 		n -= count
-		lcr := sliceColReader{
-			ColReader: cr,
-			start:     start,
-			stop:      stop,
-		}
-		err := execute.AppendCols(lcr, builder)
+
+		err := appendSlicedCols(cr, builder, start, stop)
 		if err != nil {
 			return err
 		}
+
 		return nil
 	})
 
@@ -173,37 +168,61 @@ func (t *limitTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	return nil
 }
 
-type sliceColReader struct {
-	flux.ColReader
-	start, stop int
-}
+func appendSlicedCols(reader flux.ColReader, builder execute.TableBuilder, start, stop int) error {
+	for j, c := range reader.Cols() {
+		if j > len(builder.Cols()) {
+			return errors.New("builder index out of bounds")
+		}
 
-func (cr sliceColReader) Len() int {
-	return cr.stop
-}
+		switch c.Type {
+		case flux.TBool:
+			s := arrow.BoolSlice(reader.Bools(j), start, stop)
+			if err := arrow.AppendBools(builder, j, s); err != nil {
+				s.Release()
+				return err
+			}
+			s.Release()
+		case flux.TInt:
+			s := arrow.IntSlice(reader.Ints(j), start, stop)
+			if err := arrow.AppendInts(builder, j, s); err != nil {
+				s.Release()
+				return err
+			}
+			s.Release()
+		case flux.TUInt:
+			s := arrow.UintSlice(reader.UInts(j), start, stop)
+			if err := arrow.AppendUInts(builder, j, s); err != nil {
+				s.Release()
+				return err
+			}
+			s.Release()
+		case flux.TFloat:
+			s := arrow.FloatSlice(reader.Floats(j), start, stop)
+			if err := arrow.AppendFloats(builder, j, s); err != nil {
+				s.Release()
+				return err
+			}
+			s.Release()
+		case flux.TString:
+			s := arrow.StringSlice(reader.Strings(j), start, stop)
+			if err := arrow.AppendStrings(builder, j, s); err != nil {
+				s.Release()
+				return err
+			}
+			s.Release()
+		case flux.TTime:
+			s := arrow.IntSlice(reader.Times(j), start, stop)
+			if err := arrow.AppendTimes(builder, j, s); err != nil {
+				s.Release()
+				return err
+			}
+			s.Release()
+		default:
+			execute.PanicUnknownType(c.Type)
+		}
+	}
 
-func (cr sliceColReader) Bools(j int) *array.Boolean {
-	return arrow.BoolSlice(cr.ColReader.Bools(j), cr.start, cr.stop)
-}
-
-func (cr sliceColReader) Ints(j int) *array.Int64 {
-	return arrow.IntSlice(cr.ColReader.Ints(j), cr.start, cr.stop)
-}
-
-func (cr sliceColReader) UInts(j int) *array.Uint64 {
-	return arrow.UintSlice(cr.ColReader.UInts(j), cr.start, cr.stop)
-}
-
-func (cr sliceColReader) Floats(j int) *array.Float64 {
-	return arrow.FloatSlice(cr.ColReader.Floats(j), cr.start, cr.stop)
-}
-
-func (cr sliceColReader) Strings(j int) *array.Binary {
-	return arrow.StringSlice(cr.ColReader.Strings(j), cr.start, cr.stop)
-}
-
-func (cr sliceColReader) Times(j int) *array.Int64 {
-	return arrow.IntSlice(cr.ColReader.Times(j), cr.start, cr.stop)
+	return nil
 }
 
 func (t *limitTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
