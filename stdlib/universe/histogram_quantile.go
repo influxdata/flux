@@ -169,8 +169,7 @@ func (t histogramQuantileTransformation) Process(id execute.DatasetID, tbl flux.
 		return fmt.Errorf("histogramQuantile found duplicate table with key: %v", tbl.Key())
 	}
 
-	err := execute.AddTableKeyCols(tbl.Key(), builder)
-	if err != nil {
+	if err := execute.AddTableKeyCols(tbl.Key(), builder); err != nil {
 		return err
 	}
 	valueIdx, err := builder.AddCol(flux.ColMeta{
@@ -198,7 +197,7 @@ func (t histogramQuantileTransformation) Process(id execute.DatasetID, tbl flux.
 	// Read buckets
 	var cdf []bucket
 	sorted := true //track if the cdf was naturally sorted
-	err = tbl.Do(func(cr flux.ColReader) error {
+	if err := tbl.Do(func(cr flux.ColReader) error {
 		offset := len(cdf)
 		// Grow cdf by number of rows
 		l := offset + cr.Len()
@@ -213,17 +212,25 @@ func (t histogramQuantileTransformation) Process(id execute.DatasetID, tbl flux.
 		for i := 0; i < cr.Len(); i++ {
 			curr := i + offset
 			prev := curr - 1
-			cdf[curr] = bucket{
-				count:      cr.Floats(countIdx).Value(i),
-				upperBound: cr.Floats(upperBoundIdx).Value(i),
+
+			b := bucket{}
+			if vs := cr.Floats(countIdx); vs.IsValid(i) {
+				b.count = vs.Value(i)
+			} else {
+				return fmt.Errorf("unexpected null in the countColumn")
 			}
+			if vs := cr.Floats(upperBoundIdx); vs.IsValid(i) {
+				b.upperBound = vs.Value(i)
+			} else {
+				return fmt.Errorf("unexpected null in the upperBoundColumn")
+			}
+			cdf[curr] = b
 			if prev >= 0 {
 				sorted = sorted && cdf[prev].upperBound <= cdf[curr].upperBound
 			}
 		}
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return err
 	}
 
