@@ -11,17 +11,16 @@ The parser directly implements the following grammar.
     ImportList                 = { ImportDeclaration } .
     ImportDeclaration          = "import" [identifier] string_lit
     StatementList              = { Statement } .
-    Statement                  = OptionStatement
+    Statement                  = OptionAssignment
+                               | BuiltinStatement
                                | IdentStatement
                                | ReturnStatement
                                | ExpressionStatement .
     IdentStatement             = identifer ( AssignStatement | ExpressionSuffix ) .
-    OptionStatement            = "option" OptionStatementSuffix .
-    OptionStatementSuffix      = OptionAssignment | AssignStatement | ExpressionSuffix .
-    OptionAssignment           = identifier OptionAssignmentSuffix .
-    OptionAssignmentSuffix     = Assignment
-                               | "." identifier Assignment .
-    VariableAssignment         = identifer AssignStatement .
+    OptionAssignment           = "option" identifier OptionAssignmentSuffix .
+    OptionAssignmentSuffix     = AssignStatement
+                               | "." identifier AssignStatement .
+    BuiltinStatement           = "builtin" identifier .
     AssignStatement            = "=" Expression .
     ReturnStatement            = "return" Expression .
     ExpressionStatement        = Expression .

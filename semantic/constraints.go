@@ -400,6 +400,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		*Extern,
 		*ExternBlock,
 		*OptionStatement,
+		*BuiltinStatement, // TODO(nathanielc): Add constraints once Builtinstatement contains type information
 		*Identifier,
 		*FunctionParameters,
 		*ExpressionStatement:

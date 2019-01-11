@@ -1,7 +1,74 @@
 package universe
 
+import "system"
+
 // now is a function option whose default behaviour is to return the current system time
-option now = systemTime
+option now = system.time
+
+// Booleans
+builtin true
+builtin false
+
+// Transformation functions
+builtin columns
+builtin count
+builtin covariance
+builtin cumulativeSum
+builtin derivative
+builtin difference
+builtin distinct
+builtin drop
+builtin duplicate
+builtin fill
+builtin filter
+builtin first
+builtin group
+builtin histogram
+builtin histogramQuantile
+builtin integral
+builtin join
+builtin keep
+builtin keyValues
+builtin keys
+builtin last
+builtin limit
+builtin map
+builtin max
+builtin mean
+builtin min
+builtin percentile
+builtin pivot
+builtin range
+builtin rename
+builtin sample
+builtin set
+builtin shift
+builtin skew
+builtin spread
+builtin sort
+builtin stateTracking
+builtin stddev
+builtin sum
+builtin union
+builtin unique
+builtin window
+builtin yield
+
+
+// type conversion functions
+builtin bool
+builtin duration
+builtin float
+builtin int
+builtin string
+builtin time
+builtin uint
+
+
+// other builtins
+builtin inf
+builtin linearBins
+builtin logarithmicBins
 
 // covariance function with automatic join
 cov = (x,y,on,pearsonr=false) =>
@@ -23,11 +90,11 @@ aggregateWindow = (every, fn, columns=["_value"], timeSrc="_stop",timeDst="_time
         |> duplicate(column:timeSrc,as:timeDst)
         |> window(every:inf, timeColumn:timeDst)
 
-// Increase returns the total non-negative difference between values in a table. 
-// A main usage case is tracking changes in counter values which may wrap over time when they hit 
+// Increase returns the total non-negative difference between values in a table.
+// A main usage case is tracking changes in counter values which may wrap over time when they hit
 // a threshold or are reset. In the case of a wrap/reset,
 // we can assume that the absolute delta between two points will be at least their non-negative difference.
-increase = (tables=<-, columns=["_value"]) => 
+increase = (tables=<-, columns=["_value"]) =>
     tables
         |> difference(nonNegative: true, columns:columns)
         |> cumulativeSum()

@@ -784,7 +784,7 @@ The _main_ package is special for a few reasons:
 
 A statement controls execution.
 
-    Statement = OptionStatement
+    Statement = OptionAssignment
               | BuiltinStatement
               | VariableAssignment
               | ReturnStatement
@@ -948,7 +948,7 @@ These preassigned values are defined in the source files for the various built-i
 ### System built-ins
 
 When a built-in value is not expressible in Flux its value may be defined by the hosting environment.
-All such values must have a corresponding "builtin" statement to declare the existence and type of the built-in value.
+All such values must have a corresponding builtin statement to declare the existence and type of the built-in value.
 
     BuiltinStatement = "builtin" identifer ":" TypeExpression
 

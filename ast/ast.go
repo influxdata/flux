@@ -82,6 +82,7 @@ func (*BadStatement) node()        {}
 func (*ExpressionStatement) node() {}
 func (*ReturnStatement) node()     {}
 func (*OptionStatement) node()     {}
+func (*BuiltinStatement) node()    {}
 func (*VariableAssignment) node()  {}
 func (*MemberAssignment) node()    {}
 
@@ -295,6 +296,7 @@ func (*MemberAssignment) stmt()    {}
 func (*ExpressionStatement) stmt() {}
 func (*ReturnStatement) stmt()     {}
 func (*OptionStatement) stmt()     {}
+func (*BuiltinStatement) stmt()    {}
 
 type Assignment interface {
 	Statement
@@ -391,6 +393,31 @@ func (s *OptionStatement) Copy() Node {
 	if s.Assignment != nil {
 		ns.Assignment = s.Assignment.Copy().(Assignment)
 	}
+
+	return ns
+}
+
+// BuiltinStatement declares a builtin identifier and its type
+type BuiltinStatement struct {
+	BaseNode
+	ID *Identifier `json:"id"`
+	// TODO(nathanielc): Add type expression here
+	// Type TypeExpression
+}
+
+// Type is the abstract type
+func (*BuiltinStatement) Type() string { return "BuiltinStatement" }
+
+// Copy returns a deep copy of an BuiltinStatement Node
+func (s *BuiltinStatement) Copy() Node {
+	if s == nil {
+		return s
+	}
+	ns := new(BuiltinStatement)
+	*ns = *s
+	ns.BaseNode = s.BaseNode.Copy()
+
+	ns.ID = s.ID.Copy().(*Identifier)
 
 	return ns
 }

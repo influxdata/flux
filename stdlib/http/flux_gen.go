@@ -21,20 +21,54 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 13,
-					Line:   1,
+					Column: 11,
+					Line:   3,
 				},
-				File:   "pkg.flux",
-				Source: "package http",
+				File:   "http.flux",
+				Source: "package http\n\nbuiltin to",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
 				},
 			},
 		},
-		Body:    nil,
+		Body: []ast.Statement{&ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 11,
+						Line:   3,
+					},
+					File:   "http.flux",
+					Source: "builtin to",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 11,
+							Line:   3,
+						},
+						File:   "http.flux",
+						Source: "to",
+						Start: ast.Position{
+							Column: 9,
+							Line:   3,
+						},
+					},
+				},
+				Name: "to",
+			},
+		}},
 		Imports: nil,
-		Name:    "pkg.flux",
+		Name:    "http.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -43,7 +77,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   1,
 					},
-					File:   "pkg.flux",
+					File:   "http.flux",
 					Source: "package http",
 					Start: ast.Position{
 						Column: 1,
@@ -59,7 +93,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   1,
 						},
-						File:   "pkg.flux",
+						File:   "http.flux",
 						Source: "http",
 						Start: ast.Position{
 							Column: 9,

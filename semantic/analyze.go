@@ -111,6 +111,8 @@ func analyzeStatment(s ast.Statement) (Statement, error) {
 	switch s := s.(type) {
 	case *ast.OptionStatement:
 		return analyzeOptionStatement(s)
+	case *ast.BuiltinStatement:
+		return analyzeBuiltinStatement(s)
 	case *ast.ExpressionStatement:
 		return analyzeExpressionStatement(s)
 	case *ast.ReturnStatement:
@@ -165,6 +167,16 @@ func analyzeOptionStatement(option *ast.OptionStatement) (*OptionStatement, erro
 	}, nil
 }
 
+func analyzeBuiltinStatement(builtin *ast.BuiltinStatement) (*BuiltinStatement, error) {
+	ident, err := analyzeIdentifier(builtin.ID)
+	if err != nil {
+		return nil, err
+	}
+	return &BuiltinStatement{
+		loc: loc(builtin.Location()),
+		ID:  ident,
+	}, nil
+}
 func analyzeExpressionStatement(expr *ast.ExpressionStatement) (*ExpressionStatement, error) {
 	e, err := analyzeExpression(expr.Expression)
 	if err != nil {

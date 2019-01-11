@@ -71,6 +71,8 @@ import "github.com/influxdata/flux/internal/token"
 		"import" => { s.token = token.IMPORT; fbreak; };
 		"package" => { s.token = token.PACKAGE; fbreak; };
 		"return" => { s.token = token.RETURN; fbreak; };
+		"option" => { s.token = token.OPTION; fbreak; };
+		"builtin" => { s.token = token.BUILTIN; fbreak; };
 
 		identifier => { s.token = token.IDENT; fbreak; };
 		int_lit => { s.token = token.INT; fbreak; };

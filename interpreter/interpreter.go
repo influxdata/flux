@@ -150,6 +150,9 @@ func (itrp *Interpreter) doStatement(stmt semantic.Statement, scope Scope) (valu
 	switch s := stmt.(type) {
 	case *semantic.OptionStatement:
 		return itrp.doOptionStatement(s, scope)
+	case *semantic.BuiltinStatement:
+		// Nothing to do
+		return nil, nil
 	case *semantic.NativeVariableAssignment:
 		return itrp.doVariableAssignment(s, scope)
 	case *semantic.MemberAssignment:

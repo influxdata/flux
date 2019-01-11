@@ -1,4 +1,4 @@
-package universe
+package system
 
 import (
 	"time"
@@ -8,11 +8,10 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-var systemTimeFuncName = "systemTime"
+var systemTimeFuncName = "time"
 
 func init() {
-	nowFunc := SystemTime()
-	flux.RegisterPackageValue("universe", systemTimeFuncName, nowFunc)
+	flux.RegisterPackageValue("system", systemTimeFuncName, SystemTime())
 }
 
 // SystemTime return a function value that when called will give the current system time

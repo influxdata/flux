@@ -43,9 +43,18 @@ type CreateNewPlannerTransformation func(id DatasetID, mode AccumulationMode, sp
 
 var procedureToTransformation = make(map[plan.ProcedureKind]CreateNewPlannerTransformation)
 
+// RegisterTransformation adds a new registration mapping of procedure kind to transformation.
 func RegisterTransformation(k plan.ProcedureKind, c CreateNewPlannerTransformation) {
 	if procedureToTransformation[k] != nil {
 		panic(fmt.Errorf("duplicate registration for transformation with procedure kind %v", k))
+	}
+	procedureToTransformation[k] = c
+}
+
+// ReplaceTransformation changes an existing transformation registration.
+func ReplaceTransformation(k plan.ProcedureKind, c CreateNewPlannerTransformation) {
+	if procedureToTransformation[k] == nil {
+		panic(fmt.Errorf("missing registration for transformation with procedure kind %v", k))
 	}
 	procedureToTransformation[k] = c
 }

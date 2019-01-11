@@ -21,20 +21,122 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 17,
-					Line:   1,
+					Column: 16,
+					Line:   5,
 				},
-				File:   "pkg.flux",
-				Source: "package influxdb",
+				File:   "influxdb.flux",
+				Source: "package influxdb\n\nbuiltin from\nbuiltin to\nbuiltin buckets",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
 				},
 			},
 		},
-		Body:    nil,
+		Body: []ast.Statement{&ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 13,
+						Line:   3,
+					},
+					File:   "influxdb.flux",
+					Source: "builtin from",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 13,
+							Line:   3,
+						},
+						File:   "influxdb.flux",
+						Source: "from",
+						Start: ast.Position{
+							Column: 9,
+							Line:   3,
+						},
+					},
+				},
+				Name: "from",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 11,
+						Line:   4,
+					},
+					File:   "influxdb.flux",
+					Source: "builtin to",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 11,
+							Line:   4,
+						},
+						File:   "influxdb.flux",
+						Source: "to",
+						Start: ast.Position{
+							Column: 9,
+							Line:   4,
+						},
+					},
+				},
+				Name: "to",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 16,
+						Line:   5,
+					},
+					File:   "influxdb.flux",
+					Source: "builtin buckets",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 16,
+							Line:   5,
+						},
+						File:   "influxdb.flux",
+						Source: "buckets",
+						Start: ast.Position{
+							Column: 9,
+							Line:   5,
+						},
+					},
+				},
+				Name: "buckets",
+			},
+		}},
 		Imports: nil,
-		Name:    "pkg.flux",
+		Name:    "influxdb.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -43,7 +145,7 @@ var pkgAST = &ast.Package{
 						Column: 17,
 						Line:   1,
 					},
-					File:   "pkg.flux",
+					File:   "influxdb.flux",
 					Source: "package influxdb",
 					Start: ast.Position{
 						Column: 1,
@@ -59,7 +161,7 @@ var pkgAST = &ast.Package{
 							Column: 17,
 							Line:   1,
 						},
-						File:   "pkg.flux",
+						File:   "influxdb.flux",
 						Source: "influxdb",
 						Start: ast.Position{
 							Column: 9,

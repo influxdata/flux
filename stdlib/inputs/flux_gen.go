@@ -21,20 +21,88 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 15,
-					Line:   1,
+					Column: 16,
+					Line:   4,
 				},
-				File:   "pkg.flux",
-				Source: "package inputs",
+				File:   "inputs.flux",
+				Source: "package inputs\n\nbuiltin fromGenerator\nbuiltin fromSQL",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
 				},
 			},
 		},
-		Body:    nil,
+		Body: []ast.Statement{&ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 22,
+						Line:   3,
+					},
+					File:   "inputs.flux",
+					Source: "builtin fromGenerator",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 22,
+							Line:   3,
+						},
+						File:   "inputs.flux",
+						Source: "fromGenerator",
+						Start: ast.Position{
+							Column: 9,
+							Line:   3,
+						},
+					},
+				},
+				Name: "fromGenerator",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 16,
+						Line:   4,
+					},
+					File:   "inputs.flux",
+					Source: "builtin fromSQL",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 16,
+							Line:   4,
+						},
+						File:   "inputs.flux",
+						Source: "fromSQL",
+						Start: ast.Position{
+							Column: 9,
+							Line:   4,
+						},
+					},
+				},
+				Name: "fromSQL",
+			},
+		}},
 		Imports: nil,
-		Name:    "pkg.flux",
+		Name:    "inputs.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -43,7 +111,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   1,
 					},
-					File:   "pkg.flux",
+					File:   "inputs.flux",
 					Source: "package inputs",
 					Start: ast.Position{
 						Column: 1,
@@ -59,7 +127,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   1,
 						},
-						File:   "pkg.flux",
+						File:   "inputs.flux",
 						Source: "inputs",
 						Start: ast.Position{
 							Column: 9,

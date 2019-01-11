@@ -410,6 +410,22 @@ import "path/bar"
 			},
 		},
 		{
+			name: "builtin",
+			raw:  "builtin from",
+			want: &ast.File{
+				BaseNode: base("1:1", "1:13"),
+				Body: []ast.Statement{
+					&ast.BuiltinStatement{
+						BaseNode: base("1:1", "1:13"),
+						ID: &ast.Identifier{
+							BaseNode: base("1:9", "1:13"),
+							Name:     "from",
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "from",
 			raw:  `from()`,
 			want: &ast.File{
