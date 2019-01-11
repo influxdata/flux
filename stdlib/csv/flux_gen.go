@@ -21,20 +21,54 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 12,
-					Line:   1,
+					Column: 13,
+					Line:   3,
 				},
-				File:   "pkg.flux",
-				Source: "package csv",
+				File:   "csv.flux",
+				Source: "package csv\n\nbuiltin from",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
 				},
 			},
 		},
-		Body:    nil,
+		Body: []ast.Statement{&ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 13,
+						Line:   3,
+					},
+					File:   "csv.flux",
+					Source: "builtin from",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 13,
+							Line:   3,
+						},
+						File:   "csv.flux",
+						Source: "from",
+						Start: ast.Position{
+							Column: 9,
+							Line:   3,
+						},
+					},
+				},
+				Name: "from",
+			},
+		}},
 		Imports: nil,
-		Name:    "pkg.flux",
+		Name:    "csv.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -43,7 +77,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   1,
 					},
-					File:   "pkg.flux",
+					File:   "csv.flux",
 					Source: "package csv",
 					Start: ast.Position{
 						Column: 1,
@@ -59,7 +93,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   1,
 						},
-						File:   "pkg.flux",
+						File:   "csv.flux",
 						Source: "csv",
 						Start: ast.Position{
 							Column: 9,

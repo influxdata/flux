@@ -2,6 +2,8 @@ package testing
 
 import c "csv"
 
+builtin assertEquals
+
 loadStorage = (csv) => c.from(csv: csv)
 loadMem = (csv) => c.from(csv: csv)
 

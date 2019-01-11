@@ -158,10 +158,11 @@ func (p *parser) parseStatementList(eof token.Token) []ast.Statement {
 func (p *parser) parseStatement() ast.Statement {
 	switch pos, tok, lit := p.peek(); tok {
 	case token.IDENT:
-		if lit == "option" {
-			return p.parseOptionStatement()
-		}
 		return p.parseIdentStatement()
+	case token.OPTION:
+		return p.parseOptionAssignment()
+	case token.BUILTIN:
+		return p.parseBuiltinStatement()
 	case token.RETURN:
 		return p.parseReturnStatement()
 	case token.INT, token.FLOAT, token.STRING, token.DIV,
@@ -178,54 +179,19 @@ func (p *parser) parseStatement() ast.Statement {
 	}
 }
 
-func (p *parser) parseOptionStatement() ast.Statement {
-	pos, _ := p.expect(token.IDENT)
-	return p.parseOptionStatementSuffix(pos)
-}
-
-func (p *parser) parseOptionStatementSuffix(pos token.Pos) ast.Statement {
-	switch _, tok, _ := p.peek(); tok {
-	case token.IDENT:
-		assignment := p.parseOptionAssignment()
-		return &ast.OptionStatement{
-			Assignment: assignment,
-			BaseNode: ast.BaseNode{
-				Loc: p.sourceLocation(
-					p.s.File().Position(pos),
-					locEnd(assignment),
-				),
-			},
-		}
-	case token.ASSIGN:
-		expr := p.parseAssignStatement()
-		return &ast.VariableAssignment{
-			BaseNode: p.baseNode(p.sourceLocation(
+func (p *parser) parseOptionAssignment() ast.Statement {
+	pos, _ := p.expect(token.OPTION)
+	ident := p.parseIdentifier()
+	assignment := p.parseOptionAssignmentSuffix(ident)
+	return &ast.OptionStatement{
+		Assignment: assignment,
+		BaseNode: ast.BaseNode{
+			Loc: p.sourceLocation(
 				p.s.File().Position(pos),
-				locEnd(expr),
-			)),
-			ID: &ast.Identifier{
-				Name:     "option",
-				BaseNode: p.posRange(pos, 6),
-			},
-			Init: expr,
-		}
-	default:
-		ident := &ast.Identifier{
-			Name:     "option",
-			BaseNode: p.posRange(pos, 6),
-		}
-		expr := p.parseExpressionSuffix(ident)
-		loc := expr.Location()
-		return &ast.ExpressionStatement{
-			Expression: expr,
-			BaseNode:   p.baseNode(&loc),
-		}
+				locEnd(assignment),
+			),
+		},
 	}
-}
-
-func (p *parser) parseOptionAssignment() ast.Assignment {
-	id := p.parseIdentifier()
-	return p.parseOptionAssignmentSuffix(id)
 }
 
 func (p *parser) parseOptionAssignmentSuffix(id *ast.Identifier) ast.Assignment {
@@ -267,6 +233,21 @@ func (p *parser) parseOptionAssignmentSuffix(id *ast.Identifier) ast.Assignment 
 		}
 	}
 	return nil
+}
+
+func (p *parser) parseBuiltinStatement() *ast.BuiltinStatement {
+	pos, _ := p.expect(token.BUILTIN)
+	ident := p.parseIdentifier()
+	//TODO(nathanielc): Parse type expression
+	return &ast.BuiltinStatement{
+		ID: ident,
+		BaseNode: ast.BaseNode{
+			Loc: p.sourceLocation(
+				p.s.File().Position(pos),
+				locEnd(ident),
+			),
+		},
+	}
 }
 
 func (p *parser) parseIdentStatement() ast.Statement {

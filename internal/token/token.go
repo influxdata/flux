@@ -16,6 +16,8 @@ const (
 	IMPORT
 	PACKAGE
 	RETURN
+	OPTION
+	BUILTIN
 
 	// Identifiers and literals.
 	IDENT
@@ -74,6 +76,8 @@ var tokenStrings = []string{
 	"IMPORT",
 	"PACKAGE",
 	"RETURN",
+	"OPTION",
+	"BUILTIN",
 	"IDENT",
 	"INT",
 	"FLOAT",

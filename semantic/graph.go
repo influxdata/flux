@@ -33,6 +33,7 @@ func (*PackageClause) node()     {}
 func (*ImportDeclaration) node() {}
 
 func (*OptionStatement) node()            {}
+func (*BuiltinStatement) node()           {}
 func (*ExpressionStatement) node()        {}
 func (*ReturnStatement) node()            {}
 func (*MemberAssignment) node()           {}
@@ -73,6 +74,7 @@ type Statement interface {
 }
 
 func (*OptionStatement) stmt()          {}
+func (*BuiltinStatement) stmt()         {}
 func (*ExpressionStatement) stmt()      {}
 func (*ReturnStatement) stmt()          {}
 func (*NativeVariableAssignment) stmt() {}
@@ -277,6 +279,26 @@ func (s *OptionStatement) Copy() Node {
 	*ns = *s
 
 	ns.Assignment = s.Assignment.Copy().(Assignment)
+
+	return ns
+}
+
+type BuiltinStatement struct {
+	loc `json:"-"`
+
+	ID *Identifier `json:"id"`
+}
+
+func (s *BuiltinStatement) NodeType() string { return "BuiltinStatement" }
+
+func (s *BuiltinStatement) Copy() Node {
+	if s == nil {
+		return s
+	}
+	ns := new(BuiltinStatement)
+	*ns = *s
+
+	ns.ID = s.ID.Copy().(*Identifier)
 
 	return ns
 }

@@ -288,12 +288,7 @@ func registerPackageValue(pkgpath, name string, value values.Value, replace bool
 // c is a function reference of type CreateOperationSpec
 // sig is a function signature type that specifies the names and types of each argument for the function.
 func FunctionValue(name string, c CreateOperationSpec, sig semantic.FunctionPolySignature) values.Value {
-	return &function{
-		t:             semantic.NewFunctionPolyType(sig),
-		name:          name,
-		createOpSpec:  c,
-		hasSideEffect: false,
-	}
+	return functionValue(name, c, sig, false)
 }
 
 // FunctionValueWithSideEffect creates a values.Value from the operation spec and signature.
@@ -301,11 +296,20 @@ func FunctionValue(name string, c CreateOperationSpec, sig semantic.FunctionPoly
 // c is a function reference of type CreateOperationSpec
 // sig is a function signature type that specifies the names and types of each argument for the function.
 func FunctionValueWithSideEffect(name string, c CreateOperationSpec, sig semantic.FunctionPolySignature) values.Value {
+	return functionValue(name, c, sig, true)
+}
+
+func functionValue(name string, c CreateOperationSpec, sig semantic.FunctionPolySignature, sideEffects bool) values.Value {
+	if c == nil {
+		c = func(args Arguments, a *Administration) (OperationSpec, error) {
+			return nil, fmt.Errorf("function %q is not implemented", name)
+		}
+	}
 	return &function{
 		t:             semantic.NewFunctionPolyType(sig),
 		name:          name,
 		createOpSpec:  c,
-		hasSideEffect: true,
+		hasSideEffect: sideEffects,
 	}
 }
 
@@ -350,10 +354,46 @@ func evalBuiltInPackages() error {
 			return errors.Wrapf(err, "package does not exist %q", astPkg.Path)
 		}
 
+		// Validate packages before evaluating them
+		if err := validatePackageBuiltins(pkg, astPkg); err != nil {
+			return errors.Wrapf(err, "package has invalid builtins %q", astPkg.Path)
+		}
+
 		itrp := interpreter.NewInterpreter()
 		if _, err := itrp.Eval(semPkg, preludeScope.Nest(pkg), stdlib); err != nil {
 			return errors.Wrapf(err, "failed to evaluate builtin package %q", astPkg.Path)
 		}
+	}
+	return nil
+}
+
+// validatePackageBuiltins ensures that all package builtins have both an AST builtin statement and a registered value.
+func validatePackageBuiltins(pkg *interpreter.Package, astPkg *ast.Package) error {
+	builtinStmts := make(map[string]*ast.BuiltinStatement)
+	ast.Walk(ast.CreateVisitor(func(n ast.Node) {
+		if bs, ok := n.(*ast.BuiltinStatement); ok {
+			builtinStmts[bs.ID.Name] = bs
+		}
+	}), astPkg)
+
+	missing := make([]string, 0, len(builtinStmts))
+	extra := make([]string, 0, len(builtinStmts))
+
+	for n := range builtinStmts {
+		if _, ok := pkg.Get(n); !ok {
+			missing = append(missing, n)
+			continue
+		}
+		// TODO(nathanielc): Ensure that the value's type matches the type expression
+	}
+	pkg.Range(func(k string, v values.Value) {
+		if _, ok := builtinStmts[k]; !ok {
+			extra = append(extra, k)
+			return
+		}
+	})
+	if len(missing) > 0 || len(extra) > 0 {
+		return fmt.Errorf("missing builtin values %v, extra builtin values %v", missing, extra)
 	}
 	return nil
 }
