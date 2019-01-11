@@ -182,6 +182,55 @@ func TestHistogram_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "linear+nulls",
+			spec: &transformations.HistogramProcedureSpec{HistogramOpSpec: transformations.HistogramOpSpec{
+				Column:           "_value",
+				UpperBoundColumn: "le",
+				CountColumn:      "_value",
+				Bins:             []float64{0, 10, 20, 30, 40},
+			}},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), execute.Time(3), execute.Time(1), 02.0},
+					{execute.Time(1), execute.Time(3), execute.Time(2), 31.0},
+					{execute.Time(1), execute.Time(3), execute.Time(2), 12.0},
+					{execute.Time(1), execute.Time(3), execute.Time(2), nil},
+					{execute.Time(1), execute.Time(3), execute.Time(2), 38.0},
+					{execute.Time(1), execute.Time(3), execute.Time(2), 24.0},
+					{execute.Time(1), execute.Time(3), execute.Time(2), nil},
+					{execute.Time(1), execute.Time(3), execute.Time(2), 40.0},
+					{execute.Time(1), execute.Time(3), execute.Time(2), 30.0},
+					{execute.Time(1), execute.Time(3), execute.Time(2), 28.0},
+					{execute.Time(1), execute.Time(3), execute.Time(2), nil},
+					{execute.Time(1), execute.Time(3), execute.Time(2), 17.0},
+					{execute.Time(1), execute.Time(3), execute.Time(2), 08.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "le", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), execute.Time(3), 0.0, 0.0},
+					{execute.Time(1), execute.Time(3), 10.0, 2.0},
+					{execute.Time(1), execute.Time(3), 20.0, 4.0},
+					{execute.Time(1), execute.Time(3), 30.0, 7.0},
+					{execute.Time(1), execute.Time(3), 40.0, 10.0},
+				},
+			}},
+		},
+		{
 			name: "logarithmic",
 			spec: &transformations.HistogramProcedureSpec{HistogramOpSpec: transformations.HistogramOpSpec{
 				Column:           "_value",
