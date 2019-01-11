@@ -15,11 +15,17 @@ type Scope interface {
 	// If the passed in object is not nil, its values will be added to the new nested scope.
 	Nest(values.Object) Scope
 
+	// Return the parent of the current scope
+	Pop() Scope
+
 	// Number of visible names in scope
 	Size() int
 
 	// Range over all variable bindings in scope applying f
 	Range(f func(k string, v values.Value))
+
+	// Range over all variable bindings only in the current scope
+	LocalRange(f func(k string, v values.Value))
 
 	// Set the return value of the scope
 	SetReturn(values.Value)
@@ -69,6 +75,10 @@ func (s *scope) Nest(obj values.Object) Scope {
 	return NewNestedScope(s, obj)
 }
 
+func (s *scope) Pop() Scope {
+	return s.parent
+}
+
 func (s *scope) Size() int {
 	if s.parent == nil {
 		return s.values.Len()
@@ -81,6 +91,10 @@ func (s *scope) Range(f func(k string, v values.Value)) {
 	if s.parent != nil {
 		s.parent.Range(f)
 	}
+}
+
+func (s *scope) LocalRange(f func(k string, v values.Value)) {
+	s.values.Range(f)
 }
 
 func (s *scope) SetReturn(v values.Value) {

@@ -201,6 +201,10 @@ func (s *scopeSet) Nest(obj values.Object) interpreter.Scope {
 	return interpreter.NewNestedScope(s, obj)
 }
 
+func (s *scopeSet) Pop() interpreter.Scope {
+	return nil
+}
+
 func (s *scopeSet) Size() int {
 	var size int
 	for _, pkg := range s.packages {
@@ -210,6 +214,12 @@ func (s *scopeSet) Size() int {
 }
 
 func (s *scopeSet) Range(f func(k string, v values.Value)) {
+	for _, pkg := range s.packages {
+		pkg.Range(f)
+	}
+}
+
+func (s *scopeSet) LocalRange(f func(k string, v values.Value)) {
 	for _, pkg := range s.packages {
 		pkg.Range(f)
 	}

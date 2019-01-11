@@ -422,6 +422,101 @@ func TestEval(t *testing.T) {
 
 }
 
+func TestNestedExternBlocks(t *testing.T) {
+	testcases := []struct {
+		packageNode *semantic.Package
+		externScope interpreter.Scope
+		wantError   error
+	}{
+		{
+			packageNode: &semantic.Package{
+				Files: []*semantic.File{
+					{
+						Body: []semantic.Statement{
+							&semantic.OptionStatement{
+								Assignment: &semantic.NativeVariableAssignment{
+									Identifier: &semantic.Identifier{Name: "b"},
+									Init:       &semantic.IdentifierExpression{Name: "a"},
+								},
+							},
+							&semantic.OptionStatement{
+								Assignment: &semantic.NativeVariableAssignment{
+									Identifier: &semantic.Identifier{Name: "b"},
+									Init:       &semantic.StringLiteral{Value: "-----"},
+								},
+							},
+							&semantic.NativeVariableAssignment{
+								Identifier: &semantic.Identifier{Name: "a"},
+								Init:       &semantic.FloatLiteral{Value: 0.055},
+							},
+						},
+					},
+				},
+			},
+			externScope: interpreter.NewNestedScope(nil, values.NewObjectWithValues(
+				map[string]values.Value{
+					// initial 'a' value with type int
+					"a": values.NewInt(0),
+				})).Nest(values.NewObjectWithValues(
+				map[string]values.Value{
+					// 'a' shadowed, given new type string
+					"a": values.NewString("0"),
+				})).Nest(nil),
+		},
+		{
+			packageNode: &semantic.Package{
+				Files: []*semantic.File{
+					{
+						Body: []semantic.Statement{
+							&semantic.OptionStatement{
+								// 'b' should be of type int
+								Assignment: &semantic.NativeVariableAssignment{
+									Identifier: &semantic.Identifier{Name: "b"},
+									Init:       &semantic.IdentifierExpression{Name: "a"},
+								},
+							},
+							&semantic.OptionStatement{
+								// Assigning 'b' to value of type string should cause type error
+								Assignment: &semantic.NativeVariableAssignment{
+									Identifier: &semantic.Identifier{Name: "b"},
+									Init:       &semantic.StringLiteral{Value: "-----"},
+								},
+							},
+						},
+					},
+				},
+			},
+			externScope: interpreter.NewNestedScope(nil, values.NewObjectWithValues(
+				map[string]values.Value{
+					// initial 'a' value with type string
+					"a": values.NewString("0"),
+				})).Nest(values.NewObjectWithValues(
+				map[string]values.Value{
+					// 'a' shadowed, given new type int
+					"a": values.NewInt(0),
+				})).Nest(nil),
+			wantError: errors.New("type error 0:0-0:0: string != int"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run("", func(t *testing.T) {
+			itrp := interpreter.NewInterpreter()
+			_, err := itrp.Eval(tc.packageNode, tc.externScope, nil)
+			if tc.wantError != nil {
+				if err == nil {
+					t.Errorf("expected error=(%v) but got nothing", tc.wantError)
+				} else if tc.wantError.Error() != err.Error() {
+					t.Errorf("expected error=(%v) but got error=(%v)", tc.wantError, err)
+				}
+			} else if tc.wantError == nil && err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
 func TestInterpreter_TypeErrors(t *testing.T) {
 	testCases := []struct {
 		name    string

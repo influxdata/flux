@@ -26,23 +26,23 @@ func NewInterpreter() *Interpreter {
 
 // Eval evaluates the expressions composing a Flux package and returns any side effects that occured.
 func (itrp *Interpreter) Eval(node semantic.Node, scope Scope, importer Importer) ([]values.Value, error) {
-	extern := &semantic.Extern{
-		Block: &semantic.ExternBlock{
-			Node: node,
-		},
-		Assignments: make([]*semantic.ExternalVariableAssignment, 0, scope.Size()),
+	var n = node
+	for s := scope; s != nil; s = s.Pop() {
+		extern := &semantic.Extern{
+			Block: &semantic.ExternBlock{
+				Node: n,
+			},
+		}
+		s.LocalRange(func(k string, v values.Value) {
+			extern.Assignments = append(extern.Assignments, &semantic.ExternalVariableAssignment{
+				Identifier: &semantic.Identifier{Name: k},
+				ExternType: v.PolyType(),
+			})
+		})
+		n = extern
 	}
 
-	// TODO(jlapacik): Does it make sense to range over all variables currently in scope?
-	// Perhaps type inference should happen before evaluation as a separate step?
-	scope.Range(func(k string, v values.Value) {
-		extern.Assignments = append(extern.Assignments, &semantic.ExternalVariableAssignment{
-			Identifier: &semantic.Identifier{Name: k},
-			ExternType: v.PolyType(),
-		})
-	})
-
-	sol, err := semantic.InferTypes(extern, importer)
+	sol, err := semantic.InferTypes(n, importer)
 	if err != nil {
 		return nil, err
 	}
