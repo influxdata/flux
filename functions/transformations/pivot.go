@@ -12,7 +12,10 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-const PivotKind = "pivot"
+const (
+	PivotKind      = "pivot"
+	nullValueLabel = "null"
+)
 
 type PivotOpSpec struct {
 	RowKey      []string `json:"rowKey"`
@@ -179,7 +182,6 @@ func (t *pivotTransformation) RetractTable(id execute.DatasetID, key flux.GroupK
 }
 
 func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-
 	rowKeyIndex := make(map[string]int)
 	for _, v := range t.spec.RowKey {
 		idx := execute.ColIdx(v, tbl.Cols())
@@ -278,10 +280,7 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 				if err != nil {
 					return err
 				}
-				//nextRowCol := t.nextRowCol[groupKeyString]
 				t.colKeyMaps[groupKeyString][colKey] = nextCol
-				//nextRowCol.nextCol++
-				//t.nextRowCol[groupKeyString] = nextRowCol
 			}
 			//  1.  if we've not seen rowKey before, then we need to append a new row, with copied values for the
 			//  existing columns, as well as zero values for the pivoted columns.
@@ -339,23 +338,38 @@ func growColumn(builder execute.TableBuilder, colType flux.ColType, colIdx, nRow
 }
 
 func valueToStr(cr flux.ColReader, c flux.ColMeta, row, col int) string {
+	result := nullValueLabel
+
 	switch c.Type {
 	case flux.TBool:
-		return strconv.FormatBool(cr.Bools(col).Value(row))
+		if v := cr.Bools(col); v.IsValid(row) {
+			result = strconv.FormatBool(v.Value(row))
+		}
 	case flux.TInt:
-		return strconv.FormatInt(cr.Ints(col).Value(row), 10)
+		if v := cr.Ints(col); v.IsValid(row) {
+			result = strconv.FormatInt(v.Value(row), 10)
+		}
 	case flux.TUInt:
-		return strconv.FormatUint(cr.UInts(col).Value(row), 10)
+		if v := cr.UInts(col); v.IsValid(row) {
+			result = strconv.FormatUint(v.Value(row), 10)
+		}
 	case flux.TFloat:
-		return strconv.FormatFloat(cr.Floats(col).Value(row), 'E', -1, 64)
+		if v := cr.Floats(col); v.IsValid(row) {
+			result = strconv.FormatFloat(v.Value(row), 'E', -1, 64)
+		}
 	case flux.TString:
-		return cr.Strings(col).ValueString(row)
+		if v := cr.Strings(col); v.IsValid(row) {
+			result = v.ValueString(row)
+		}
 	case flux.TTime:
-		return values.Time(cr.Times(col).Value(row)).String()
+		if v := cr.Times(col); v.IsValid(row) {
+			result = values.Time(v.Value(row)).String()
+		}
 	default:
 		execute.PanicUnknownType(c.Type)
 	}
-	return ""
+
+	return result
 }
 
 func (t *pivotTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {

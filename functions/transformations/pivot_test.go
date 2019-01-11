@@ -477,6 +477,206 @@ func TestPivot_Process(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "_field flatten case one table with null ColumnKey",
+			spec: &transformations.PivotProcedureSpec{
+				RowKey:      []string{"_time"},
+				ColumnKey:   []string{"_field"},
+				ValueColumn: "_value",
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					KeyCols: []string{"_measurement"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, "m1", "f1"},
+						{execute.Time(1), 2.0, "m1", "f2"},
+						{execute.Time(2), 3.0, "m1", "f1"},
+						{execute.Time(2), 4.0, "m1", "f2"},
+						{execute.Time(3), 5.0, "m1", nil},
+						{execute.Time(3), 6.0, "m1", "f2"},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					KeyCols: []string{"_measurement"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "f1", Type: flux.TFloat},
+						{Label: "f2", Type: flux.TFloat},
+						{Label: "null", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), "m1", 1.0, 2.0, nil},
+						{execute.Time(2), "m1", 3.0, 4.0, nil},
+						{execute.Time(3), "m1", nil, 6.0, 5.0},
+					},
+				},
+			},
+		},
+		{
+			name: "_field flatten case one table with null RowKey",
+			spec: &transformations.PivotProcedureSpec{
+				RowKey:      []string{"_time"},
+				ColumnKey:   []string{"_field"},
+				ValueColumn: "_value",
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					KeyCols: []string{"_measurement"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, "m1", "f1"},
+						{execute.Time(1), 2.0, "m1", "f2"},
+						{execute.Time(2), 3.0, "m1", "f1"},
+						{execute.Time(2), 4.0, "m1", "f2"},
+						{nil, 5.0, "m1", "f1"},
+						{nil, 6.0, "m1", "f2"},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					KeyCols: []string{"_measurement"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "f1", Type: flux.TFloat},
+						{Label: "f2", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), "m1", 1.0, 2.0},
+						{execute.Time(2), "m1", 3.0, 4.0},
+						{nil, "m1", 5.0, 6.0},
+					},
+				},
+			},
+		},
+		{
+			name: "_field flatten case one table with nulls",
+			spec: &transformations.PivotProcedureSpec{
+				RowKey:      []string{"_time"},
+				ColumnKey:   []string{"_field"},
+				ValueColumn: "_value",
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					KeyCols: []string{"_measurement"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, "m1", "f1"},
+						{execute.Time(1), 2.0, "m1", "f2"},
+						{execute.Time(1), nil, "m1", "f3"},
+						{execute.Time(1), 3.0, "m1", nil},
+
+						{execute.Time(2), 4.0, "m1", "f1"},
+						{execute.Time(2), 5.0, "m1", "f2"},
+						{nil, 6.0, "m1", "f2"},
+						{execute.Time(2), nil, "m1", "f3"},
+
+						{execute.Time(3), nil, "m1", "f1"},
+						{execute.Time(3), 7.0, "m1", nil},
+
+						{execute.Time(4), 8.0, "m1", "f3"},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					KeyCols: []string{"_measurement"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "f1", Type: flux.TFloat},
+						{Label: "f2", Type: flux.TFloat},
+						{Label: "f3", Type: flux.TFloat},
+						{Label: "null", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), "m1", 1.0, 2.0, nil, 3.0},
+						{execute.Time(2), "m1", 4.0, 5.0, nil, nil},
+						{nil, "m1", nil, 6.0, nil, nil},
+						{execute.Time(3), "m1", nil, nil, nil, 7.0},
+						{execute.Time(4), "m1", nil, nil, 8.0, nil},
+					},
+				},
+			},
+		},
+		{
+			name: "two ColumnKeys with nulls and duplicate value",
+			spec: &transformations.PivotProcedureSpec{
+				RowKey:      []string{"_time"},
+				ColumnKey:   []string{"_measurement", "_field"},
+				ValueColumn: "_value",
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					KeyCols: []string{"_measurement"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, "m1", "f1"},
+						{execute.Time(1), 2.0, "m1", "f2"},
+						{execute.Time(1), 3.0, nil, "f3"},
+						{execute.Time(1), 4.0, nil, nil},
+
+						{execute.Time(2), 5.0, "m1", "f1"},
+						{execute.Time(2), 6.0, "m1", "f2"},
+						{execute.Time(2), 7.0, "m1", "f3"},
+						{execute.Time(2), 8.0, nil, nil},
+						{nil, 9.0, "m1", "f3"},
+
+						{execute.Time(3), 10.0, "m1", nil},
+						{execute.Time(3), 11.0, "m1", nil},
+						{execute.Time(3), 12.0, "m1", "f3"},
+						{execute.Time(3), 13.0, nil, nil},
+						{nil, 14.0, "m1", nil},
+						{nil, 15.0, "m1", nil},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					KeyCols: nil,
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "m1_f1", Type: flux.TFloat},
+						{Label: "m1_f2", Type: flux.TFloat},
+						{Label: "null_f3", Type: flux.TFloat},
+						{Label: "null_null", Type: flux.TFloat},
+						{Label: "m1_f3", Type: flux.TFloat},
+						{Label: "m1_null", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, 2.0, 3.0, 4.0, nil, nil},
+						{execute.Time(2), 5.0, 6.0, nil, 8.0, 7.0, nil},
+						{nil, nil, nil, nil, nil, 9.0, 15.0},
+						{execute.Time(3), nil, nil, nil, 13.0, 12.0, 11.0},
+					},
+				},
+			},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
