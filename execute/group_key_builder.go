@@ -25,6 +25,22 @@ func NewGroupKeyBuilder(key flux.GroupKey) *GroupKeyBuilder {
 	return gkb
 }
 
+// SetKeyValue will set an existing key/value to the given pair, or if key is not found, add a new group key to the existing builder.
+func (gkb *GroupKeyBuilder) SetKeyValue(key string, value values.Value) *GroupKeyBuilder {
+	if gkb.err != nil {
+		return gkb
+	}
+	if idx := ColIdx(key, gkb.cols); idx >= 0 {
+		if gkb.cols[idx].Type != flux.ColumnType(value.Type()) {
+			gkb.err = fmt.Errorf("group key column type mismatch %s: %s/%s", key, gkb.cols[idx].Type.String(), flux.ColumnType(value.Type()).String())
+		}
+		gkb.values[idx] = value
+	} else {
+		gkb.AddKeyValue(key, value)
+	}
+	return gkb
+}
+
 // AddKeyValue will add a new group key to the existing builder.
 func (gkb *GroupKeyBuilder) AddKeyValue(key string, value values.Value) *GroupKeyBuilder {
 	if gkb.err != nil {
