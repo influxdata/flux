@@ -1798,6 +1798,7 @@ The histogram tables must have two columns, a count column and an upper bound co
 The count is the number of values that are less than or equal to the upper bound value.
 The table can have any number of records, each representing an entry in the histogram.
 The counts must be monotonically increasing when sorted by upper bound.
+If any values in the count column or upper bound column are null, an error will be returned.
 
 Linear interpolation between the two closest bounds is used to compute the quantile.
 If the either of the bounds used in interpolation are infinite, then the other finite bound is used and no interpolation is performed.

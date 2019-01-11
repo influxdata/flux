@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/pkg/errors"
 )
 
 var linearHist = []flux.Table{&executetest.Table{
@@ -86,10 +87,11 @@ var nonLinearHist = []flux.Table{&executetest.Table{
 
 func TestHistogramQuantile_Process(t *testing.T) {
 	testCases := []struct {
-		name string
-		spec *universe.HistogramQuantileProcedureSpec
-		data []flux.Table
-		want []*executetest.Table
+		name    string
+		spec    *universe.HistogramQuantileProcedureSpec
+		data    []flux.Table
+		want    []*executetest.Table
+		wantErr error
 	}{
 		{
 			name: "90th linear",
@@ -387,6 +389,72 @@ func TestHistogramQuantile_Process(t *testing.T) {
 				},
 			}},
 		},
+		{
+			name: "null in count column",
+			spec: &universe.HistogramQuantileProcedureSpec{
+				Quantile:         0.9,
+				CountColumn:      "_value",
+				UpperBoundColumn: "le",
+				ValueColumn:      "_value",
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "le", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), execute.Time(3), execute.Time(1), 0.1, 1.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), 0.2, 2.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), 0.3, 3.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), 0.4, 4.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), 0.5, 5.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), 0.6, 6.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), 0.7, nil},
+					{execute.Time(1), execute.Time(3), execute.Time(1), 0.8, 8.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), 0.9, 9.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), 1.0, 10.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), math.Inf(1), 10.0},
+				},
+			}},
+			wantErr: errors.New("unexpected null in the countColumn"),
+		},
+		{
+			name: "null in upperBound column",
+			spec: &universe.HistogramQuantileProcedureSpec{
+				Quantile:         0.9,
+				CountColumn:      "_value",
+				UpperBoundColumn: "le",
+				ValueColumn:      "_value",
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "le", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), execute.Time(3), execute.Time(1), 0.1, 1.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), 0.2, 2.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), 0.3, 3.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), 0.4, 4.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), 0.5, 5.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), 0.6, 6.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), nil, 7.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), 0.8, 8.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), 0.9, 9.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), 1.0, 10.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), math.Inf(1), 10.0},
+				},
+			}},
+			wantErr: errors.New("unexpected null in the upperBoundColumn"),
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
@@ -395,7 +463,7 @@ func TestHistogramQuantile_Process(t *testing.T) {
 				t,
 				tc.data,
 				tc.want,
-				nil,
+				tc.wantErr,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
 					return universe.NewHistorgramQuantileTransformation(d, c, tc.spec)
 				},
