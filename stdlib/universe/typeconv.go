@@ -18,15 +18,6 @@ func init() {
 	flux.RegisterBuiltInValue("bool", &boolConv{})
 	flux.RegisterBuiltInValue("time", &timeConv{})
 	flux.RegisterBuiltInValue("duration", &durationConv{})
-	flux.RegisterBuiltIn("typeconv", `
-    toString = (tables=<-) => tables |> map(fn:(r) => string(v:r._value))
-    toInt = (tables=<-) => tables |> map(fn:(r) => int(v:r._value))
-    toUInt = (tables=<-) => tables |> map(fn:(r) => uint(v:r._value))
-    toFloat = (tables=<-) => tables |> map(fn:(r) => float(v:r._value))
-    toBool = (tables=<-) => tables |> map(fn:(r) => bool(v:r._value))
-    toTime = (tables=<-) => tables |> map(fn:(r) => time(v:r._value))
-    toDuration = (tables=<-) => tables |> map(fn:(r) => duration(v:r._value))
-`)
 }
 
 const (

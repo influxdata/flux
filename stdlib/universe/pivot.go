@@ -23,13 +23,6 @@ type PivotOpSpec struct {
 	ValueColumn string   `json:"valueColumn"`
 }
 
-var fieldsAsColsBuiltin = `
-// influxFieldsAsCols aligns data into time-aligned tuples.
-influxFieldsAsCols = (tables=<-) =>
-    tables
-        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-`
-
 func init() {
 	pivotSignature := flux.FunctionSignature(
 		map[string]semantic.PolyType{
@@ -41,7 +34,6 @@ func init() {
 	)
 
 	flux.RegisterPackageValue("universe", PivotKind, flux.FunctionValue(PivotKind, createPivotOpSpec, pivotSignature))
-	flux.RegisterBuiltIn("influxFieldsAsCols", fieldsAsColsBuiltin)
 	flux.RegisterOpSpec(PivotKind, newPivotOp)
 
 	plan.RegisterProcedureSpec(PivotKind, newPivotProcedure, PivotKind)
