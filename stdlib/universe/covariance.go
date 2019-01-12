@@ -28,24 +28,11 @@ func init() {
 		},
 		nil,
 	)
-	flux.RegisterBuiltIn("covariance", covarianceBuiltIn)
 	flux.RegisterPackageValue("universe", CovarianceKind, flux.FunctionValue(CovarianceKind, createCovarianceOpSpec, covarianceSignature))
 	flux.RegisterOpSpec(CovarianceKind, newCovarianceOp)
 	plan.RegisterProcedureSpec(CovarianceKind, newCovarianceProcedure, CovarianceKind)
 	execute.RegisterTransformation(CovarianceKind, createCovarianceTransformation)
 }
-
-// covarianceBuiltIn defines a `cov` function with an automatic join.
-var covarianceBuiltIn = `
-cov = (x,y,on,pearsonr=false) =>
-    join(
-        tables:{x:x, y:y},
-        on:on,
-    )
-    |> covariance(pearsonr:pearsonr, columns:["_value_x","_value_y"])
-
-pearsonr = (x,y,on) => cov(x:x, y:y, on:on, pearsonr:true)
-`
 
 func createCovarianceOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {

@@ -43,45 +43,10 @@ func init() {
 	)
 
 	flux.RegisterPackageValue("universe", StateTrackingKind, flux.FunctionValue(StateTrackingKind, createStateTrackingOpSpec, stateTrackingSignature))
-	flux.RegisterBuiltIn("state-tracking", stateTrackingBuiltin)
 	flux.RegisterOpSpec(StateTrackingKind, newStateTrackingOp)
 	plan.RegisterProcedureSpec(StateTrackingKind, newStateTrackingProcedure, StateTrackingKind)
 	execute.RegisterTransformation(StateTrackingKind, createStateTrackingTransformation)
 }
-
-var stateTrackingBuiltin = `
-// stateCount computes the number of consecutive records in a given state.
-// The state is defined via the function fn. For each consecutive point for
-// which the expression evaluates as true, the state count will be incremented
-// When a point evaluates as false, the state count is reset.
-//
-// The state count will be added as an additional column to each record. If the
-// expression evaluates as false, the value will be -1. If the expression
-// generates an error during evaluation, the point is discarded, and does not
-// affect the state count.
-stateCount = (fn, column="stateCount", tables=<-) =>
-    tables
-        |> stateTracking(countColumn:column, fn:fn)
-
-// stateDuration computes the duration of a given state.
-// The state is defined via the function fn. For each consecutive point for
-// which the expression evaluates as true, the state duration will be
-// incremented by the duration between points. When a point evaluates as false,
-// the state duration is reset.
-//
-// The state duration will be added as an additional column to each record. If the
-// expression evaluates as false, the value will be -1. If the expression
-// generates an error during evaluation, the point is discarded, and does not
-// affect the state duration.
-//
-// Note that as the first point in the given state has no previous point, its
-// state duration will be 0.
-//
-// The duration is represented as an integer in the units specified.
-stateDuration = (fn, column="stateDuration", unit=1s, tables=<-) =>
-    tables
-        |> stateTracking(durationColumn:column, fn:fn, durationUnit:unit)
-`
 
 func createStateTrackingOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {

@@ -1,16 +1,78 @@
 package universe
 
-import (
-	"github.com/influxdata/flux"
-)
+// covariance function with automatic join
+cov = (x,y,on,pearsonr=false) =>
+    join(
+        tables:{x:x, y:y},
+        on:on,
+    )
+    |> covariance(pearsonr:pearsonr, columns:["_value_x","_value_y"])
 
-func init() {
-	flux.RegisterBuiltIn("top-bottom", topBottomBuiltIn)
-	// TODO(nathanielc): Provide an implementation of top/bottom transformation that can use a more efficient sort based on the limit.
-	// This transformation should be used when ever the planner sees a sort |> limit pair of procedures.
-}
+pearsonr = (x,y,on) => cov(x:x, y:y, on:on, pearsonr:true)
 
-var topBottomBuiltIn = `
+// AggregateWindow applies an aggregate function to fixed windows of time.
+// The procedure is to window the data, perform an aggregate operation,
+// and then undo the windowing to produce an output table for every input table.
+aggregateWindow = (every, fn, columns=["_value"], timeSrc="_stop",timeDst="_time", tables=<-) =>
+    tables
+        |> window(every:every)
+        |> fn(columns:columns)
+        |> duplicate(column:timeSrc,as:timeDst)
+        |> window(every:inf, timeColumn:timeDst)
+
+// Increase returns the total non-negative difference between values in a table. 
+// A main usage case is tracking changes in counter values which may wrap over time when they hit 
+// a threshold or are reset. In the case of a wrap/reset,
+// we can assume that the absolute delta between two points will be at least their non-negative difference.
+increase = (tables=<-, columns=["_value"]) => 
+    tables
+        |> difference(nonNegative: true, columns:columns)
+        |> cumulativeSum()
+
+// median returns the 50th percentile.
+// By default an approximate percentile is computed, this can be disabled by passing exact:true.
+// Using the exact method requires that the entire data set can fit in memory.
+median = (method="estimate_tdigest", compression=0.0, tables=<-) =>
+    tables
+        |> percentile(percentile:0.5, method:method, compression:compression)
+
+// influxFieldsAsCols aligns data into time-aligned tuples.
+influxFieldsAsCols = (tables=<-) =>
+    tables
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+
+// stateCount computes the number of consecutive records in a given state.
+// The state is defined via the function fn. For each consecutive point for
+// which the expression evaluates as true, the state count will be incremented
+// When a point evaluates as false, the state count is reset.
+//
+// The state count will be added as an additional column to each record. If the
+// expression evaluates as false, the value will be -1. If the expression
+// generates an error during evaluation, the point is discarded, and does not
+// affect the state count.
+stateCount = (fn, column="stateCount", tables=<-) =>
+    tables
+        |> stateTracking(countColumn:column, fn:fn)
+
+// stateDuration computes the duration of a given state.
+// The state is defined via the function fn. For each consecutive point for
+// which the expression evaluates as true, the state duration will be
+// incremented by the duration between points. When a point evaluates as false,
+// the state duration is reset.
+//
+// The state duration will be added as an additional column to each record. If the
+// expression evaluates as false, the value will be -1. If the expression
+// generates an error during evaluation, the point is discarded, and does not
+// affect the state duration.
+//
+// Note that as the first point in the given state has no previous point, its
+// state duration will be 0.
+//
+// The duration is represented as an integer in the units specified.
+stateDuration = (fn, column="stateDuration", unit=1s, tables=<-) =>
+    tables
+        |> stateTracking(durationColumn:column, fn:fn, durationUnit:unit)
+
 // _sortLimit is a helper function, which sorts and limits a table.
 _sortLimit = (n, desc, columns=["_value"], tables=<-) =>
     tables
@@ -104,4 +166,11 @@ lowestCurrent = (n, columns=["_value"], groupColumns=[], tables=<-) =>
                 reducer: (tables=<-) => tables |> last(column:columns[0]),
                 _sortLimit: bottom,
             )
-`
+
+toString = (tables=<-) => tables |> map(fn:(r) => string(v:r._value))
+toInt = (tables=<-) => tables |> map(fn:(r) => int(v:r._value))
+toUInt = (tables=<-) => tables |> map(fn:(r) => uint(v:r._value))
+toFloat = (tables=<-) => tables |> map(fn:(r) => float(v:r._value))
+toBool = (tables=<-) => tables |> map(fn:(r) => bool(v:r._value))
+toTime = (tables=<-) => tables |> map(fn:(r) => time(v:r._value))
+toDuration = (tables=<-) => tables |> map(fn:(r) => duration(v:r._value))
