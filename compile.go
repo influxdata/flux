@@ -369,17 +369,6 @@ func RegisterBuiltInValue(name string, v values.Value) {
 	globals.Set(name, v)
 }
 
-// RegisterBuiltInOption adds the value to the builtin scope.
-func RegisterBuiltInOption(name string, v values.Value) {
-	if finalized {
-		panic(errors.New("already finalized, cannot register builtin option"))
-	}
-	if _, ok := globals.Get(name); ok {
-		panic(fmt.Errorf("duplicate registration for builtin option %q", name))
-	}
-	globals.Set(name, v)
-}
-
 // FinalizeBuiltIns must be called to complete registration.
 // Future calls to RegisterFunction, RegisterBuiltIn or RegisterBuiltInValue will panic.
 func FinalizeBuiltIns() {

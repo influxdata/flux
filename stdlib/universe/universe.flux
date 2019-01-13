@@ -1,5 +1,8 @@
 package universe
 
+// now is a function option whose default behaviour is to return the current system time
+option now = systemTime
+
 // covariance function with automatic join
 cov = (x,y,on,pearsonr=false) =>
     join(
