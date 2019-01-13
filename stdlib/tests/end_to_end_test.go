@@ -9,7 +9,6 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/lang"
-	_ "github.com/influxdata/flux/options" // Import the built-in options
 	"github.com/influxdata/flux/querytest"
 	_ "github.com/influxdata/flux/stdlib" // Import the built-ins
 

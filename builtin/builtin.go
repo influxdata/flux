@@ -5,8 +5,7 @@ package builtin
 
 import (
 	"github.com/influxdata/flux"
-	_ "github.com/influxdata/flux/options" // Import the built-in options
-	_ "github.com/influxdata/flux/stdlib"  // Import the stdlib
+	_ "github.com/influxdata/flux/stdlib" // Import the stdlib
 
 	// TODO(nathanielc): Remove this line once the tests are full fledged package built-ins
 	_ "github.com/influxdata/flux/stdlib/tests" // Import the built-in functions
