@@ -100,7 +100,11 @@ func (a *StddevAgg) NewStringAgg() execute.DoStringAgg {
 }
 func (a *StddevAgg) DoInt(vs *array.Int64) {
 	var delta, delta2 float64
-	for _, v := range vs.Int64Values() {
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsNull(i) {
+			continue
+		}
+		v := vs.Value(i)
 		a.n++
 		// TODO handle overflow
 		delta = float64(v) - a.mean
@@ -111,7 +115,11 @@ func (a *StddevAgg) DoInt(vs *array.Int64) {
 }
 func (a *StddevAgg) DoUInt(vs *array.Uint64) {
 	var delta, delta2 float64
-	for _, v := range vs.Uint64Values() {
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsNull(i) {
+			continue
+		}
+		v := vs.Value(i)
 		a.n++
 		// TODO handle overflow
 		delta = float64(v) - a.mean
@@ -122,7 +130,11 @@ func (a *StddevAgg) DoUInt(vs *array.Uint64) {
 }
 func (a *StddevAgg) DoFloat(vs *array.Float64) {
 	var delta, delta2 float64
-	for _, v := range vs.Float64Values() {
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsNull(i) {
+			continue
+		}
+		v := vs.Value(i)
 		a.n++
 		delta = v - a.mean
 		a.mean += delta / a.n
@@ -137,7 +149,7 @@ func (a *StddevAgg) ValueFloat() float64 {
 	if a.n < 2 {
 		return math.NaN()
 	}
-	return math.Sqrt(a.m2 / (a.n - 1))
+	return math.Sqrt(a.m2 / float64(a.n-1))
 }
 func (a *StddevAgg) IsNull() bool {
 	return a.n == 0

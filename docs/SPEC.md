@@ -1625,6 +1625,7 @@ Stddev has the following parameter:
 | columns | []string | Columns specifies a list of columns to aggregate. Defaults to `["_value"]`. |
 
 Example:
+
 ```
 from(bucket: "telegraf/autogen")
     |> range(start: -5m)
