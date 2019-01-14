@@ -572,10 +572,74 @@ func TestGroup_Process(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "heterogeneous typed columns",
+			spec: &universe.GroupProcedureSpec{
+				GroupMode: flux.GroupModeBy,
+				GroupKeys: []string{"t1"},
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					KeyCols: []string{"t1", "t2"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(2), 1.0, "a", "y"},
+					},
+				},
+				&executetest.Table{
+					KeyCols: []string{"t1", "t3", "t2"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TInt},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t3", Type: flux.TInt},
+						{Label: "t2", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), int64(2), "a", int64(5), "x"},
+					},
+				},
+				&executetest.Table{
+					KeyCols: []string{"t1", "t2"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t2", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(2), 7.0, "b", "y"},
+					},
+				},
+				&executetest.Table{
+					KeyCols: []string{"t1", "t3", "t2"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TInt},
+						{Label: "t1", Type: flux.TString},
+						{Label: "t3", Type: flux.TInt},
+						{Label: "t2", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), int64(4), "b", int64(7), "x"},
+					},
+				},
+			},
+			want: []*executetest.Table{}, // TODO What do we want?
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.name == "heterogeneous typed columns" {
+				t.Skip("should pass once we decide the expected behavior: https://github.com/influxdata/flux/issues/439")
+			}
+
 			executetest.ProcessTestHelper(
 				t,
 				tc.data,
