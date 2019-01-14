@@ -1,15 +1,17 @@
 /*
-Package functions is a collection of built-in functions that are callable in the flux query processor.  While flux may
+Package stdlib represents the Flux standard library. The Flux standard library is a collection of built-in packages
+that may be imported by any Flux script. Each package in the standard library exports a collection of values most
+interesting of which are the exported funtion values. These valeus are callable in the flux query processor.  While flux may
 be extended at runtime by writing function expressions, there are some limitations for which a built-in function is
 necessary, such as the need for custom data structures, stateful procedures, complex looping and branching, and
 connection to external services.  Another reason for implementing a built-in function is to provide a function that is
 broadly applicable for many users (e.g., sum() or max()).
 
-The functions package is rarely accessed as a direct API.  Rather, the query processing engine accepts named registrations
-for various interfaces implemented within the functions package and executes them generically using an API that is common to all
-functions.  The registration process is executed by running the init() function in each function file, and is then finalized
-by importing package builtin, which itself imports the functions package and runs a final setup routine that finalizes
-installation of the builtin functions to the query processor.
+The stdlib package is rarely accessed as a direct API.  Rather, the query processing engine accepts named registrations
+for various interfaces implemented within the standard library and in the case of function values, executes them generically
+using an API that is common to all functions.  The registration process is executed by running the init() function in each
+package file, and is then finalized by importing package builtin, which itself imports the standard library and runs a final
+setup routine that finalizes installation of the builtin functions and values to the query processor.
 
 Because of this design, a built-in function implementation consists of a bundle of different interface implementations
 that are required at various phases of query execution.  These phases are query, plan and execute.  The query phase is
@@ -19,12 +21,17 @@ and computing a final result.
 
 The query phase takes each function call in a query and performs a match against the registry to see if
 there are type definitions for a built-in operation.  If matched, it will instantiate the correct flux.OperationSpec
-type for that function, given the runtime parameters.
+type for that function, given the runtime arguments.
 If a builtin OperationSpec is not found, then it will check for functions defined at runtime, and otherwise return an error.
 The following registrations are typically executed in the function's init() for the query phase to execute properly:
 
-	flux.RegisterFunction(name string, c flux.CreateOperationSpec, sig semantic.FunctionSignature)
+	flux.RegisterPackageValue(pkgpath, name string, value values.Value)
 	flux.RegisterOpSpec(k flux.OperationKind, c flux.NewOperationSpec)
+
+Note that to register a function value with a package, the value passed into flux.RegisterPackageValue is computed using the
+followingfunction:
+
+    flux.FunctionValue(name string, c CreateOperationSpec, sig semantic.FunctionPolySignature)
 
 In the plan phase, an operation spec must be converted to a plan.ProcedureSpec.  A query plan must know what operations to
 carry out, including the function names and parameters.    In the trivial case, the OperationSpec

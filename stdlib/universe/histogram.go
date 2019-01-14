@@ -38,8 +38,8 @@ func init() {
 	)
 
 	flux.RegisterPackageValue("universe", HistogramKind, flux.FunctionValue(HistogramKind, createHistogramOpSpec, histogramSignature))
-	flux.RegisterBuiltInValue("linearBins", linearBins{})
-	flux.RegisterBuiltInValue("logarithmicBins", logarithmicBins{})
+	flux.RegisterPackageValue("universe", "linearBins", linearBins{})
+	flux.RegisterPackageValue("universe", "logarithmicBins", logarithmicBins{})
 	flux.RegisterOpSpec(HistogramKind, newHistogramOp)
 	plan.RegisterProcedureSpec(HistogramKind, newHistogramProcedure, HistogramKind)
 	execute.RegisterTransformation(HistogramKind, createHistogramTransformation)

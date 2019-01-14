@@ -38,7 +38,6 @@ require (
 	golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9 // indirect
 	golang.org/x/exp v0.0.0-20181112044915-a3060d491354
 	golang.org/x/sys v0.0.0-20181205085412-a5c9d58dba9a // indirect
-	golang.org/x/text v0.3.0
 	golang.org/x/tools v0.0.0-20181221154417-3ad2d988d5e2 // indirect
 	gonum.org/v1/gonum v0.0.0-20181121035319-3f7ecaa7e8ca
 	gopkg.in/src-d/go-git.v4 v4.8.1

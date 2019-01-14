@@ -91,7 +91,7 @@ func Eval(flux string, opts ...ScopeMutator) ([]values.Value, interpreter.Scope,
 	}
 
 	itrp := interpreter.NewInterpreter()
-	universe := preludeScope.Copy()
+	universe := Prelude()
 
 	for _, opt := range opts {
 		opt(universe)
@@ -160,22 +160,22 @@ type CreateOperationSpec func(args Arguments, a *Administration) (OperationSpec,
 
 // set of builtins
 var (
-	builtinScripts  = make(map[string]string)
+	finalized bool
+
 	builtinPackages = make(map[string]*ast.Package)
-	finalized       bool
+
+	prelude = []string{
+		"universe",
+		"influxdata/influxdb",
+	}
+	preludeScope = &scopeSet{
+		packages: make([]*interpreter.Package, len(prelude)),
+	}
+	stdlib = &importer{make(map[string]*interpreter.Package)}
 )
 
-var globals = values.NewObject()
-var prelude = []string{
-	"universe",
-	"influxdata/influxdb",
-}
-var preludeScope = new(scopeSet)
-var stdlib = &importer{make(map[string]*interpreter.Package)}
-
 type scopeSet struct {
-	packages    []*interpreter.Package
-	returnValue values.Value
+	packages []*interpreter.Package
 }
 
 func (s *scopeSet) Lookup(name string) (values.Value, bool) {
@@ -188,13 +188,7 @@ func (s *scopeSet) Lookup(name string) (values.Value, bool) {
 }
 
 func (s *scopeSet) Set(name string, v values.Value) {
-	for _, pkg := range s.packages {
-		if _, ok := pkg.Get(name); ok {
-			pkg.Set(name, v)
-			return
-		}
-	}
-	s.packages[0].Set(name, v)
+	panic("cannot mutate the universe block")
 }
 
 func (s *scopeSet) Nest(obj values.Object) interpreter.Scope {
@@ -226,11 +220,11 @@ func (s *scopeSet) LocalRange(f func(k string, v values.Value)) {
 }
 
 func (s *scopeSet) SetReturn(v values.Value) {
-	s.returnValue = v
+	panic("cannot set return value on universe block")
 }
 
 func (s *scopeSet) Return() values.Value {
-	return s.returnValue
+	return nil
 }
 
 func (s *scopeSet) Copy() interpreter.Scope {
@@ -238,10 +232,7 @@ func (s *scopeSet) Copy() interpreter.Scope {
 	for i, pkg := range s.packages {
 		packages[i] = pkg.Copy()
 	}
-	return &scopeSet{
-		packages:    packages,
-		returnValue: s.returnValue,
-	}
+	return &scopeSet{packages}
 }
 
 // StdLib returns an importer for the Flux standard library.
@@ -251,18 +242,7 @@ func StdLib() interpreter.Importer {
 
 // Prelude returns a scope object representing the Flux universe block
 func Prelude() interpreter.Scope {
-	return preludeScope.Copy()
-}
-
-// RegisterBuiltIn adds any variable declarations written in Flux script to the builtin scope.
-func RegisterBuiltIn(name, script string) {
-	if finalized {
-		panic(errors.New("already finalized, cannot register builtin script"))
-	}
-	if _, ok := builtinScripts[name]; ok {
-		panic(fmt.Errorf("duplicate builtin script %q", name))
-	}
-	builtinScripts[name] = script
+	return preludeScope.Nest(nil)
 }
 
 // RegisterPackage adds a builtin package
@@ -303,20 +283,6 @@ func registerPackageValue(pkgpath, name string, value values.Value, replace bool
 	packg.Set(name, value)
 }
 
-// RegisterFunction adds a new builtin top level function.
-// Name is the name of the function as it would be called.
-// c is a function reference of type CreateOperationSpec
-// sig is a function signature type that specifies the names and types of each argument for the function.
-func RegisterFunction(name string, c CreateOperationSpec, sig semantic.FunctionPolySignature) {
-	f := function{
-		t:             semantic.NewFunctionPolyType(sig),
-		name:          name,
-		createOpSpec:  c,
-		hasSideEffect: false,
-	}
-	RegisterBuiltInValue(name, &f)
-}
-
 // FunctionValue creates a values.Value from the operation spec and signature.
 // Name is the name of the function as it would be called.
 // c is a function reference of type CreateOperationSpec
@@ -343,76 +309,25 @@ func FunctionValueWithSideEffect(name string, c CreateOperationSpec, sig semanti
 	}
 }
 
-// RegisterFunctionWithSideEffect adds a new builtin top level function that produces side effects.
-// For example, the builtin functions yield(), toKafka(), and toHTTP() all produce side effects.
-// name is the name of the function as it would be called
-// c is a function reference of type CreateOperationSpec
-// sig is a function signature type that specifies the names and types of each argument for the function
-func RegisterFunctionWithSideEffect(name string, c CreateOperationSpec, sig semantic.FunctionPolySignature) {
-	f := function{
-		t:             semantic.NewFunctionPolyType(sig),
-		name:          name,
-		createOpSpec:  c,
-		hasSideEffect: true,
-	}
-	RegisterBuiltInValue(name, &f)
-}
-
-// RegisterBuiltInValue adds the value to the builtin scope.
-func RegisterBuiltInValue(name string, v values.Value) {
-	if finalized {
-		panic(errors.New("already finalized, cannot register builtin"))
-	}
-	if _, ok := globals.Get(name); ok {
-		panic(fmt.Errorf("duplicate registration for builtin %q", name))
-	}
-	globals.Set(name, v)
-}
-
 // FinalizeBuiltIns must be called to complete registration.
-// Future calls to RegisterFunction, RegisterBuiltIn or RegisterBuiltInValue will panic.
+// Future calls to RegisterFunction or RegisterPackageValue will panic.
 func FinalizeBuiltIns() {
 	if finalized {
 		panic("already finalized")
 	}
 	finalized = true
 
-	pkg := interpreter.NewPackageWithValues("_", globals)
-	preludeScope.packages = append(preludeScope.packages, pkg)
-
-	for _, path := range prelude {
+	for i, path := range prelude {
 		pkg, ok := stdlib.ImportPackageObject(path)
 		if !ok {
 			panic(fmt.Sprintf("missing prelude package %q", path))
 		}
-		preludeScope.packages = append(preludeScope.packages, pkg)
+		preludeScope.packages[i] = pkg
 	}
 
-	if err := evalBuiltInScripts(); err != nil {
-		panic(err)
-	}
 	if err := evalBuiltInPackages(); err != nil {
 		panic(err)
 	}
-}
-
-func evalBuiltInScripts() error {
-	itrp := interpreter.NewInterpreter()
-	for name, script := range builtinScripts {
-		astPkg := parser.ParseSource(script)
-		if ast.Check(astPkg) > 0 {
-			err := ast.GetError(astPkg)
-			return errors.Wrapf(err, "failed to parse builtin %q", name)
-		}
-		semPkg, err := semantic.New(astPkg)
-		if err != nil {
-			return errors.Wrapf(err, "failed to create semantic graph for builtin %q", name)
-		}
-		if _, err := itrp.Eval(semPkg, preludeScope, stdlib); err != nil {
-			return errors.Wrapf(err, "failed to evaluate builtin %q", name)
-		}
-	}
-	return nil
 }
 
 func evalBuiltInPackages() error {
