@@ -175,6 +175,40 @@ func TestIntegral_Process(t *testing.T) {
 				},
 			}},
 		},
+		{
+			name: "float with nulls",
+			spec: &universe.IntegralProcedureSpec{
+				Unit:            1,
+				TimeColumn:      execute.DefaultTimeColLabel,
+				AggregateConfig: execute.DefaultAggregateConfig,
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), execute.Time(4), execute.Time(1), 2.0},
+					{execute.Time(1), execute.Time(4), nil, 3.0},
+					{execute.Time(1), execute.Time(4), execute.Time(2), 1.0},
+					{execute.Time(1), execute.Time(4), execute.Time(3), nil},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), execute.Time(4), 1.5},
+				},
+			}},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
