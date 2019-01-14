@@ -1,3 +1,2 @@
-tests
-tests/testdata
-tests/testdata/prepcsvtests
+testing/testdata
+testing/testdata/prepcsvtests
