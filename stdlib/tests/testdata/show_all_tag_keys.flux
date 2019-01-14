@@ -1100,7 +1100,7 @@ outData = "
 t_show_all_tag_keys = (table=<-) =>
   table
   |> range(start:2018-05-22T19:53:26Z)
-  |> keys(except: ["_time","_value","_start","_stop"])
+  |> keys()
   |> group()
   |> distinct()
   |> map(fn:(r) => r._value)

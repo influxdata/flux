@@ -17,22 +17,21 @@ inData = "
 ,,10,2018-05-22T19:53:26Z,2018-05-22T19:54:16Z,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2
 "
 outData = "
-#datatype,string,long,string
-#group,false,false,false
-#default,0,,
-,result,table,_value
-,,0,host
-,,0,name
+#datatype,string,long,string,string,string
+#group,false,false,true,true,false
+#default,,,,,
+,result,table,host,name,_value
+,,0,host.local,disk0,host
+,,0,host.local,disk0,name
+,,1,host.local,disk2,host
+,,1,host.local,disk2,name
 "
 
 t_keys = (table=<-) =>
   table
   |> range(start: 2018-05-20T19:53:26Z)
-  |> filter(fn: (r) => r._measurement == "diskio")
-  |> keys(except:["_time", "_start", "_stop", "_field", "_measurement", "_value"])
-  |> group()
-  |> distinct(column:"_value")
-  |> yield(name:"0")
+  |> keys()
+
 testingTest(name: "keys",
             input: testLoadStorage(csv: inData),
             want: testLoadMem(csv: outData),
