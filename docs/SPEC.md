@@ -1494,12 +1494,12 @@ Integral has the following properties:
 | unit       | duration | Unit is the time duration to use when computing the integral.                         |
 | timeColumn | string   | TimeColumn is the name of the column containing the time value.  Defaults to `_time`. |
 
-Example: 
+Example:
 
 ```
-from(bucket: "telegraf/autogen") 
-    |> range(start: -5m) 
-    |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system") 
+from(bucket: "telegraf/autogen")
+    |> range(start: -5m)
+    |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
     |> integral(unit:10s)
 ```
 

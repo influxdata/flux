@@ -172,6 +172,9 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 			}
 			l := cr.Len()
 			for i := 0; i < l; i++ {
+				if cr.Times(timeIdx).IsNull(i) || cr.Floats(j).IsNull(i) {
+					continue
+				}
 				tm := execute.Time(cr.Times(timeIdx).Value(i))
 				in.updateFloat(tm, cr.Floats(j).Value(i))
 			}
