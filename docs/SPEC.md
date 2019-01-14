@@ -2151,7 +2151,8 @@ Set has the following properties:
 | key   | string | Key is the label for the column to set. |
 | value | string | Value is the string value to set.       |
 
-Example: 
+Example:
+
 ```
 from(bucket: "telegraf/autogen") |> set(key: "mykey", value: "myvalue")
 ```
