@@ -2680,14 +2680,15 @@ from(bucket: "telegraf/autogen")
 
 #### Derivative
 
-Derivative computes the time based difference between subsequent non null records.
+Derivative computes the time based difference between subsequent non-null records.
+This function assumes that rows are ordered by the time column.
 
 Derivative has the following properties:
 
 | Name        | Type     | Description                                                                                                                                                                                       |
 | ----        | ----     | -----------                                                                                                                                                                                       |
 | unit        | duration | Unit is the time duration to use for the result.  Defaults to `1s`.                                                                                                                               |
-| nonNegative | bool     | NonNegative indicates if the derivative is allowed to be negative. If a value is encountered which is less than the previous value then it is assumed the previous value should have been a zero. |
+| nonNegative | bool     | NonNegative indicates if the derivative is allowed to be negative. If a value is encountered which is less than the previous value, then the derivative will be null for that row.                     |
 | columns     | []string | Columns is a list of columns on which to compute the derivative Defaults to `["_value"]`.                                                                                                         |
 | timeColumn  | string   | TimeColumn is the column name for the time values.  Defaults to `_time`.                                                                                                                          |
 

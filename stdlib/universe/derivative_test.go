@@ -174,7 +174,7 @@ func TestDerivative_Process(t *testing.T) {
 					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(2), 10.0},
+					{execute.Time(2), nil},
 					{execute.Time(3), 10.0},
 				},
 			}},
@@ -258,7 +258,7 @@ func TestDerivative_Process(t *testing.T) {
 					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(2), 10.0},
+					{execute.Time(2), nil},
 					{execute.Time(3), 10.0},
 				},
 			}},
@@ -315,7 +315,7 @@ func TestDerivative_Process(t *testing.T) {
 					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(2), 1.0},
+					{execute.Time(2), nil},
 					{execute.Time(3), 1.0},
 				},
 			}},
@@ -405,8 +405,155 @@ func TestDerivative_Process(t *testing.T) {
 					{Label: "y", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(2), 1.0, 10.0},
-					{execute.Time(3), 1.0, 0.0},
+					{execute.Time(2), nil, nil},
+					{execute.Time(3), 1.0, nil},
+				},
+			}},
+		},
+		{
+			name: "float with null values",
+			spec: &universe.DerivativeProcedureSpec{
+				Columns:    []string{"x", "y"},
+				TimeColumn: execute.DefaultTimeColLabel,
+				Unit:       1,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 2.0, nil},
+					{execute.Time(2), nil, 10.0},
+					{execute.Time(3), 8.0, 20.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(2), nil, nil},
+					{execute.Time(3), 3.0, 10.0},
+				},
+			}},
+		},
+		{
+			name: "nulls in time column",
+			spec: &universe.DerivativeProcedureSpec{
+				Columns:    []string{"x", "y"},
+				TimeColumn: execute.DefaultTimeColLabel,
+				Unit:       1,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{nil, 2.0, nil},
+					{execute.Time(2), nil, 10.0},
+					{nil, 8.0, 20.0},
+					{execute.Time(4), 8.0, 20.0},
+					{nil, 8.0, 20.0},
+					{execute.Time(6), 10.0, 25.0},
+					{nil, 8.0, 20.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(4), nil, 5.0},
+					{execute.Time(6), 1.0, 2.5},
+				},
+			}},
+		},
+		{
+			name: "times out of order",
+			spec: &universe.DerivativeProcedureSpec{
+				Columns:    []string{"x", "y"},
+				TimeColumn: execute.DefaultTimeColLabel,
+				Unit:       1,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(2), nil, 10.0},
+					{execute.Time(4), 8.0, 20.0},
+					{execute.Time(6), 10.0, 25.0},
+
+					{execute.Time(3), nil, 10.0},
+					{execute.Time(5), 8.0, 20.0},
+					{execute.Time(7), 10.0, nil},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(4), nil, 5.0},
+					{execute.Time(6), 1.0, 2.5},
+
+					{execute.Time(5), nil, 5.0},
+					{execute.Time(7), 1.0, nil},
+				},
+			}},
+		},
+		{
+			name: "pass through",
+			spec: &universe.DerivativeProcedureSpec{
+				Columns:    []string{"x"},
+				TimeColumn: execute.DefaultTimeColLabel,
+				Unit:       1,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "b", Type: flux.TBool},
+					{Label: "s", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{nil, nil, true, "foo"},
+					{execute.Time(2), nil, false, "bar"},
+					{execute.Time(4), 8.0, false, "dog"},
+					{nil, nil, true, nil},
+					{execute.Time(6), 10.0, nil, nil},
+
+					{execute.Time(3), nil, true, "car"},
+					{execute.Time(5), 8.0, true, "cat"},
+					{execute.Time(7), 10.0, nil, "baz"},
+					{nil, nil, true, "cdr"},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "b", Type: flux.TBool},
+					{Label: "s", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(4), nil, false, "dog"},
+					{execute.Time(6), 1.0, nil, nil},
+
+					{execute.Time(5), nil, true, "cat"},
+					{execute.Time(7), 1.0, nil, "baz"},
 				},
 			}},
 		},
