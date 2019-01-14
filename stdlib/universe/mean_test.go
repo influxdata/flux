@@ -1,7 +1,6 @@
 package universe_test
 
 import (
-	"math"
 	"testing"
 
 	"github.com/apache/arrow/go/arrow/array"
@@ -9,9 +8,9 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 func TestMeanOperation_Marshaling(t *testing.T) {
@@ -28,7 +27,7 @@ func TestMean_Process(t *testing.T) {
 	testCases := []struct {
 		name string
 		data func() *array.Float64
-		want float64
+		want interface{}
 	}{
 		{
 			name: "zero",
@@ -45,11 +44,11 @@ func TestMean_Process(t *testing.T) {
 			want: 4.5,
 		},
 		{
-			name: "NaN",
+			name: "empty",
 			data: func() *array.Float64 {
 				return arrow.NewFloat(nil, nil)
 			},
-			want: math.NaN(),
+			want: nil,
 		},
 		{
 			name: "with nulls",
@@ -64,6 +63,17 @@ func TestMean_Process(t *testing.T) {
 				return b.NewFloat64Array()
 			},
 			want: 4.25,
+		},
+		{
+			name: "only nulls",
+			data: func() *array.Float64 {
+				b := arrow.NewFloatBuilder(nil)
+				defer b.Release()
+				b.AppendNull()
+				b.AppendNull()
+				return b.NewFloat64Array()
+			},
+			want: nil,
 		},
 	}
 	for _, tc := range testCases {

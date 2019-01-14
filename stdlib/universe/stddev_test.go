@@ -7,9 +7,9 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 func TestStddevOperation_Marshaling(t *testing.T) {
@@ -26,7 +26,7 @@ func TestStddev_Process(t *testing.T) {
 	testCases := []struct {
 		name string
 		data []float64
-		want float64
+		want interface{}
 	}{
 		{
 			name: "zero",
@@ -42,6 +42,11 @@ func TestStddev_Process(t *testing.T) {
 			name: "NaN",
 			data: []float64{1},
 			want: math.NaN(),
+		},
+		{
+			name: "empty",
+			data: []float64{},
+			want: nil,
 		},
 	}
 	for _, tc := range testCases {

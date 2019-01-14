@@ -1466,7 +1466,7 @@ It is defined in terms of the `cov` function:
 ##### Count
 
 Count is an aggregate operation.
-For each aggregated column, it outputs the number of non null records as an integer.
+For each aggregated column, it outputs the number of records as an integer. It will count both null and non-null records.
 
 Count has the following property:
 

@@ -88,6 +88,7 @@ func createSpreadTransformation(id execute.DatasetID, mode execute.AccumulationM
 type SpreadAgg struct {
 	minSet bool
 	maxSet bool
+	ok     bool
 }
 type SpreadIntAgg struct {
 	SpreadAgg
@@ -125,8 +126,16 @@ func (a *SpreadAgg) NewStringAgg() execute.DoStringAgg {
 	return nil
 }
 
+func (a *SpreadAgg) IsNull() bool {
+	return !a.ok
+}
+
 // DoInt searches for the min and max value of the array and caches them in the aggregate
 func (a *SpreadIntAgg) DoInt(vs *array.Int64) {
+	if vs.Len() > 0 {
+		a.ok = true
+	}
+
 	for _, v := range vs.Int64Values() {
 		if !a.minSet || v < a.min {
 			a.minSet = true
@@ -150,6 +159,10 @@ func (a *SpreadIntAgg) ValueInt() int64 {
 
 // Do searches for the min and max value of the array and caches them in the aggregate
 func (a *SpreadUIntAgg) DoUInt(vs *array.Uint64) {
+	if vs.Len() > 0 {
+		a.ok = true
+	}
+
 	for _, v := range vs.Uint64Values() {
 		if !a.minSet || v < a.min {
 			a.minSet = true
@@ -173,6 +186,10 @@ func (a *SpreadUIntAgg) ValueUInt() uint64 {
 
 // Do searches for the min and max value of the array and caches them in the aggregate
 func (a *SpreadFloatAgg) DoFloat(vs *array.Float64) {
+	if vs.Len() > 0 {
+		a.ok = true
+	}
+
 	for _, v := range vs.Float64Values() {
 		if !a.minSet || v < a.min {
 			a.minSet = true

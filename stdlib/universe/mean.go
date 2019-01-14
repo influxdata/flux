@@ -69,7 +69,7 @@ func (s *MeanProcedureSpec) Copy() plan.ProcedureSpec {
 }
 
 type MeanAgg struct {
-	count float64
+	count int64
 	sum   float64
 }
 
@@ -105,7 +105,7 @@ func (a *MeanAgg) NewStringAgg() execute.DoStringAgg {
 func (a *MeanAgg) DoInt(vs *array.Int64) {
 	// https://issues.apache.org/jira/browse/ARROW-4081
 	if l := vs.Len() - vs.NullN(); l > 0 {
-		a.count += float64(l)
+		a.count += int64(l)
 		if vs.NullN() == 0 {
 			a.sum += float64(arrowmath.Int64.Sum(vs))
 		} else {
@@ -120,7 +120,7 @@ func (a *MeanAgg) DoInt(vs *array.Int64) {
 func (a *MeanAgg) DoUInt(vs *array.Uint64) {
 	// https://issues.apache.org/jira/browse/ARROW-4081
 	if l := vs.Len() - vs.NullN(); l > 0 {
-		a.count += float64(l)
+		a.count += int64(l)
 		if vs.NullN() == 0 {
 			a.sum += float64(arrowmath.Uint64.Sum(vs))
 		} else {
@@ -135,7 +135,7 @@ func (a *MeanAgg) DoUInt(vs *array.Uint64) {
 func (a *MeanAgg) DoFloat(vs *array.Float64) {
 	// https://issues.apache.org/jira/browse/ARROW-4081
 	if l := vs.Len() - vs.NullN(); l > 0 {
-		a.count += float64(l)
+		a.count += int64(l)
 		if vs.NullN() == 0 {
 			a.sum += arrowmath.Float64.Sum(vs)
 		} else {
@@ -154,5 +154,8 @@ func (a *MeanAgg) ValueFloat() float64 {
 	if a.count < 1 {
 		return math.NaN()
 	}
-	return a.sum / a.count
+	return a.sum / float64(a.count)
+}
+func (a *MeanAgg) IsNull() bool {
+	return a.count == 0
 }

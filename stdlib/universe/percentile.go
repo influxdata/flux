@@ -195,6 +195,7 @@ type PercentileAgg struct {
 	Compression float64
 
 	digest *tdigest.TDigest
+	ok     bool
 }
 
 func createPercentileTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
@@ -240,6 +241,7 @@ func (a *PercentileAgg) DoFloat(vs *array.Float64) {
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsValid(i) {
 			a.digest.Add(vs.Value(i), 1)
+			a.ok = true
 		}
 	}
 }
@@ -247,8 +249,13 @@ func (a *PercentileAgg) DoFloat(vs *array.Float64) {
 func (a *PercentileAgg) Type() flux.ColType {
 	return flux.TFloat
 }
+
 func (a *PercentileAgg) ValueFloat() float64 {
 	return a.digest.Quantile(a.Quantile)
+}
+
+func (a *PercentileAgg) IsNull() bool {
+	return !a.ok
 }
 
 type ExactPercentileAgg struct {
@@ -339,6 +346,10 @@ func (a *ExactPercentileAgg) ValueFloat() float64 {
 	y := y0*(x1-x) + y1*(x-x0)
 
 	return y
+}
+
+func (a *ExactPercentileAgg) IsNull() bool {
+	return len(a.data) == 0
 }
 
 func createExactPercentileSelectTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {

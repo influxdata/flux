@@ -30,17 +30,19 @@ func AggFuncTestHelper(t *testing.T, agg execute.Aggregate, data *array.Float64,
 	}
 
 	var got interface{}
-	switch vf.Type() {
-	case flux.TBool:
-		got = vf.(execute.BoolValueFunc).ValueBool()
-	case flux.TInt:
-		got = vf.(execute.IntValueFunc).ValueInt()
-	case flux.TUInt:
-		got = vf.(execute.UIntValueFunc).ValueUInt()
-	case flux.TFloat:
-		got = vf.(execute.FloatValueFunc).ValueFloat()
-	case flux.TString:
-		got = vf.(execute.StringValueFunc).ValueString()
+	if !vf.IsNull() {
+		switch vf.Type() {
+		case flux.TBool:
+			got = vf.(execute.BoolValueFunc).ValueBool()
+		case flux.TInt:
+			got = vf.(execute.IntValueFunc).ValueInt()
+		case flux.TUInt:
+			got = vf.(execute.UIntValueFunc).ValueUInt()
+		case flux.TFloat:
+			got = vf.(execute.FloatValueFunc).ValueFloat()
+		case flux.TString:
+			got = vf.(execute.StringValueFunc).ValueString()
+		}
 	}
 
 	if !cmp.Equal(want, got, cmpopts.EquateNaNs()) {
