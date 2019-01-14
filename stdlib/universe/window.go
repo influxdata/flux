@@ -45,7 +45,7 @@ func init() {
 
 	flux.RegisterPackageValue("universe", WindowKind, flux.FunctionValue(WindowKind, createWindowOpSpec, windowSignature))
 	flux.RegisterOpSpec(WindowKind, newWindowOp)
-	flux.RegisterBuiltInValue("inf", infinityVar)
+	flux.RegisterPackageValue("universe", "inf", infinityVar)
 	plan.RegisterProcedureSpec(WindowKind, newWindowProcedure, WindowKind)
 	execute.RegisterTransformation(WindowKind, createWindowTransformation)
 }

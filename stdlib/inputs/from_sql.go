@@ -34,7 +34,7 @@ func init() {
 		Required: semantic.LabelSet{"driverName", "dataSourceName", "query"},
 		Return:   flux.TableObjectType,
 	}
-	flux.RegisterFunction(FromSQLKind, createFromSQLOpSpec, fromSQLSignature)
+	flux.RegisterPackageValue("inputs", FromSQLKind, flux.FunctionValue(FromSQLKind, createFromSQLOpSpec, fromSQLSignature))
 	flux.RegisterOpSpec(FromSQLKind, newFromSQLOp)
 	plan.RegisterProcedureSpec(FromSQLKind, newFromSQLProcedure, FromSQLKind)
 	execute.RegisterSource(FromSQLKind, createFromSQLSource)

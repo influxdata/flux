@@ -11,13 +11,13 @@ import (
 )
 
 func init() {
-	flux.RegisterBuiltInValue("string", &stringConv{})
-	flux.RegisterBuiltInValue("int", &intConv{})
-	flux.RegisterBuiltInValue("uint", &uintConv{})
-	flux.RegisterBuiltInValue("float", &floatConv{})
-	flux.RegisterBuiltInValue("bool", &boolConv{})
-	flux.RegisterBuiltInValue("time", &timeConv{})
-	flux.RegisterBuiltInValue("duration", &durationConv{})
+	flux.RegisterPackageValue("universe", "string", &stringConv{})
+	flux.RegisterPackageValue("universe", "int", &intConv{})
+	flux.RegisterPackageValue("universe", "uint", &uintConv{})
+	flux.RegisterPackageValue("universe", "float", &floatConv{})
+	flux.RegisterPackageValue("universe", "bool", &boolConv{})
+	flux.RegisterPackageValue("universe", "time", &timeConv{})
+	flux.RegisterPackageValue("universe", "duration", &durationConv{})
 }
 
 const (

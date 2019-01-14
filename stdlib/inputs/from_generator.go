@@ -40,7 +40,7 @@ func init() {
 		Required: semantic.LabelSet{"start", "stop", "count", "fn"},
 		Return:   flux.TableObjectType,
 	}
-	flux.RegisterFunction(FromGeneratorKind, createFromGeneratorOpSpec, fromGeneratorSignature)
+	flux.RegisterPackageValue("inputs", FromGeneratorKind, flux.FunctionValue(FromGeneratorKind, createFromGeneratorOpSpec, fromGeneratorSignature))
 	flux.RegisterOpSpec(FromGeneratorKind, newFromGeneratorOp)
 	plan.RegisterProcedureSpec(FromGeneratorKind, newFromGeneratorProcedure, FromGeneratorKind)
 	execute.RegisterSource(FromGeneratorKind, createFromGeneratorSource)

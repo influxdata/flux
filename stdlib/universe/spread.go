@@ -15,7 +15,7 @@ const SpreadKind = "spread"
 func init() {
 	spreadSignature := execute.AggregateSignature(nil, nil)
 
-	flux.RegisterFunction(SpreadKind, createSpreadOpSpec, spreadSignature)
+	flux.RegisterPackageValue("universe", SpreadKind, flux.FunctionValue(SpreadKind, createSpreadOpSpec, spreadSignature))
 	flux.RegisterOpSpec(SpreadKind, newSpreadOp)
 	plan.RegisterProcedureSpec(SpreadKind, newSpreadProcedure, SpreadKind)
 	execute.RegisterTransformation(SpreadKind, createSpreadTransformation)
