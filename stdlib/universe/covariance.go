@@ -214,8 +214,11 @@ func (t *CovarianceTransformation) reset() {
 }
 func (t *CovarianceTransformation) DoFloat(xs, ys *array.Float64) {
 	var xdelta, ydelta, xdelta2, ydelta2 float64
-	for i, x := range xs.Float64Values() {
-		y := ys.Value(i)
+	for i := 0; i < xs.Len(); i++ {
+		if xs.IsNull(i) || ys.IsNull(i) {
+			continue
+		}
+		x, y := xs.Value(i), ys.Value(i)
 
 		t.n++
 

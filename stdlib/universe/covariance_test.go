@@ -338,6 +338,47 @@ func TestCovariance_Process(t *testing.T) {
 				},
 			}},
 		},
+		{
+			name: "variance with nulls",
+			spec: &universe.CovarianceProcedureSpec{
+				ValueLabel: execute.DefaultValueColLabel,
+				AggregateConfig: execute.AggregateConfig{
+					Columns: []string{"x", "y"},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), execute.Time(9), execute.Time(0), 1.0, 1.0},
+					{execute.Time(0), execute.Time(9), execute.Time(1), 2.0, 2.0},
+					{execute.Time(0), execute.Time(9), execute.Time(2), nil, 3.0},
+					{execute.Time(0), execute.Time(9), execute.Time(3), 4.0, 4.0},
+					{execute.Time(0), execute.Time(9), execute.Time(4), 5.0, nil},
+					{execute.Time(0), execute.Time(9), execute.Time(5), 6.0, 6.0},
+					{execute.Time(0), execute.Time(9), execute.Time(6), nil, nil},
+					{execute.Time(0), execute.Time(9), execute.Time(7), 8.0, 8.0},
+					{execute.Time(0), execute.Time(9), execute.Time(8), 9.0, 9.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), execute.Time(9), 10.4},
+				},
+			}},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
