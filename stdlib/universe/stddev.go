@@ -139,3 +139,6 @@ func (a *StddevAgg) ValueFloat() float64 {
 	}
 	return math.Sqrt(a.m2 / (a.n - 1))
 }
+func (a *StddevAgg) IsNull() bool {
+	return a.n == 0
+}

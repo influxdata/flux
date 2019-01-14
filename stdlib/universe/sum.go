@@ -105,6 +105,7 @@ func (a *SumAgg) NewStringAgg() execute.DoStringAgg {
 
 type SumIntAgg struct {
 	sum int64
+	ok  bool
 }
 
 func (a *SumIntAgg) DoInt(vs *array.Int64) {
@@ -112,10 +113,12 @@ func (a *SumIntAgg) DoInt(vs *array.Int64) {
 	if l := vs.Len() - vs.NullN(); l > 0 {
 		if vs.NullN() == 0 {
 			a.sum += math.Int64.Sum(vs)
+			a.ok = true
 		} else {
 			for i := 0; i < vs.Len(); i++ {
 				if vs.IsValid(i) {
 					a.sum += vs.Value(i)
+					a.ok = true
 				}
 			}
 		}
@@ -127,9 +130,13 @@ func (a *SumIntAgg) Type() flux.ColType {
 func (a *SumIntAgg) ValueInt() int64 {
 	return a.sum
 }
+func (a *SumIntAgg) IsNull() bool {
+	return !a.ok
+}
 
 type SumUIntAgg struct {
 	sum uint64
+	ok  bool
 }
 
 func (a *SumUIntAgg) DoUInt(vs *array.Uint64) {
@@ -137,10 +144,12 @@ func (a *SumUIntAgg) DoUInt(vs *array.Uint64) {
 	if l := vs.Len() - vs.NullN(); l > 0 {
 		if vs.NullN() == 0 {
 			a.sum += math.Uint64.Sum(vs)
+			a.ok = true
 		} else {
 			for i := 0; i < vs.Len(); i++ {
 				if vs.IsValid(i) {
 					a.sum += vs.Value(i)
+					a.ok = true
 				}
 			}
 		}
@@ -152,9 +161,13 @@ func (a *SumUIntAgg) Type() flux.ColType {
 func (a *SumUIntAgg) ValueUInt() uint64 {
 	return a.sum
 }
+func (a *SumUIntAgg) IsNull() bool {
+	return !a.ok
+}
 
 type SumFloatAgg struct {
 	sum float64
+	ok  bool
 }
 
 func (a *SumFloatAgg) DoFloat(vs *array.Float64) {
@@ -162,10 +175,12 @@ func (a *SumFloatAgg) DoFloat(vs *array.Float64) {
 	if l := vs.Len() - vs.NullN(); l > 0 {
 		if vs.NullN() == 0 {
 			a.sum += math.Float64.Sum(vs)
+			a.ok = true
 		} else {
 			for i := 0; i < vs.Len(); i++ {
 				if vs.IsValid(i) {
 					a.sum += vs.Value(i)
+					a.ok = true
 				}
 			}
 		}
@@ -176,4 +191,7 @@ func (a *SumFloatAgg) Type() flux.ColType {
 }
 func (a *SumFloatAgg) ValueFloat() float64 {
 	return a.sum
+}
+func (a *SumFloatAgg) IsNull() bool {
+	return !a.ok
 }

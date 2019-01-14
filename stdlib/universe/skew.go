@@ -157,3 +157,6 @@ func (a *SkewAgg) ValueFloat() float64 {
 	}
 	return math.Sqrt(a.n) * a.m3 / math.Pow(a.m2, 1.5)
 }
+func (a *SkewAgg) IsNull() bool {
+	return a.n == 0
+}

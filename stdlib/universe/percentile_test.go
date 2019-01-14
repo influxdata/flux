@@ -1,16 +1,16 @@
 package universe_test
 
 import (
-	"math"
 	"testing"
 
+	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 func TestPercentileOperation_Marshaling(t *testing.T) {
@@ -28,93 +28,145 @@ func TestPercentileOperation_Marshaling(t *testing.T) {
 func TestPercentile_Process(t *testing.T) {
 	testCases := []struct {
 		name       string
-		data       []float64
+		data       func() *array.Float64
 		percentile float64
 		exact      bool
-		want       float64
+		want       interface{}
 	}{
 		{
-			name:       "zero",
-			data:       []float64{0, 0, 0},
+			name: "zero",
+			data: func() *array.Float64 {
+				return arrow.NewFloat([]float64{0, 0, 0}, nil)
+			},
 			percentile: 0.5,
 			want:       0.0,
 		},
 		{
-			name:       "50th",
-			data:       []float64{1, 2, 3, 4, 5, 5, 4, 3, 2, 1},
+			name: "50th",
+			data: func() *array.Float64 {
+				return arrow.NewFloat([]float64{1, 2, 3, 4, 5, 5, 4, 3, 2, 1}, nil)
+			},
 			percentile: 0.5,
-			want:       3,
+			want:       3.0,
 		},
 		{
-			name:       "75th",
-			data:       []float64{1, 2, 3, 4, 5, 5, 4, 3, 2, 1},
+			name: "75th",
+			data: func() *array.Float64 {
+				return arrow.NewFloat([]float64{1, 2, 3, 4, 5, 5, 4, 3, 2, 1}, nil)
+			},
 			percentile: 0.75,
-			want:       4,
+			want:       4.0,
 		},
 		{
-			name:       "90th",
-			data:       []float64{1, 2, 3, 4, 5, 5, 4, 3, 2, 1},
+			name: "90th",
+			data: func() *array.Float64 {
+				return arrow.NewFloat([]float64{1, 2, 3, 4, 5, 5, 4, 3, 2, 1}, nil)
+			},
 			percentile: 0.9,
-			want:       5,
+			want:       5.0,
 		},
 		{
-			name:       "99th",
-			data:       []float64{1, 2, 3, 4, 5, 5, 4, 3, 2, 1},
+			name: "99th",
+			data: func() *array.Float64 {
+				return arrow.NewFloat([]float64{1, 2, 3, 4, 5, 5, 4, 3, 2, 1}, nil)
+			},
 			percentile: 0.99,
-			want:       5,
+			want:       5.0,
 		},
 		{
-			name:       "exact 50th",
-			data:       []float64{1, 2, 3, 4, 5},
+			name: "exact 50th",
+			data: func() *array.Float64 {
+				return arrow.NewFloat([]float64{1, 2, 3, 4, 5}, nil)
+			},
 			percentile: 0.5,
 			exact:      true,
-			want:       3,
+			want:       3.0,
 		},
 		{
-			name:       "exact 75th",
-			data:       []float64{1, 2, 3, 4, 5},
+			name: "exact 75th",
+			data: func() *array.Float64 {
+				return arrow.NewFloat([]float64{1, 2, 3, 4, 5}, nil)
+			},
 			percentile: 0.75,
 			exact:      true,
-			want:       4,
+			want:       4.0,
 		},
 		{
-			name:       "exact 90th",
-			data:       []float64{1, 2, 3, 4, 5},
+			name: "exact 90th",
+			data: func() *array.Float64 {
+				return arrow.NewFloat([]float64{1, 2, 3, 4, 5}, nil)
+			},
 			percentile: 0.9,
 			exact:      true,
 			want:       4.6,
 		},
 		{
-			name:       "exact 99th",
-			data:       []float64{1, 2, 3, 4, 5},
+			name: "exact 99th",
+			data: func() *array.Float64 {
+				return arrow.NewFloat([]float64{1, 2, 3, 4, 5}, nil)
+			},
 			percentile: 0.99,
 			exact:      true,
 			want:       4.96,
 		},
 		{
-			name:       "exact 100th",
-			data:       []float64{1, 2, 3, 4, 5},
+			name: "exact 100th",
+			data: func() *array.Float64 {
+				return arrow.NewFloat([]float64{1, 2, 3, 4, 5}, nil)
+			},
 			percentile: 1,
 			exact:      true,
-			want:       5,
+			want:       5.0,
 		},
 		{
-			name:       "exact 50th normal",
-			data:       NormalData,
+			name: "exact 50th normal",
+			data: func() *array.Float64 {
+				return arrow.NewFloat(NormalData, nil)
+			},
 			percentile: 0.5,
 			exact:      true,
 			want:       10.000736834856248,
 		},
 		{
-			name:       "normal",
-			data:       NormalData,
+			name: "normal",
+			data: func() *array.Float64 {
+				return arrow.NewFloat(NormalData, nil)
+			},
 			percentile: 0.9,
 			want:       13.842132136909889,
 		},
 		{
-			name: "NaN",
-			data: []float64{},
-			want: math.NaN(),
+			name: "empty",
+			data: func() *array.Float64 {
+				return arrow.NewFloat(nil, nil)
+			},
+			want: nil,
+		},
+		{
+			name: "with nulls",
+			data: func() *array.Float64 {
+				b := arrow.NewFloatBuilder(nil)
+				defer b.Release()
+				b.AppendValues([]float64{1, 3, 3}, nil)
+				b.AppendNull()
+				b.AppendValues([]float64{5, 5, 4, 3}, nil)
+				b.AppendNull()
+				b.AppendValues([]float64{1}, nil)
+				return b.NewFloat64Array()
+			},
+			percentile: 0.5,
+			want:       3.0,
+		},
+		{
+			name: "only nulls",
+			data: func() *array.Float64 {
+				b := arrow.NewFloatBuilder(nil)
+				defer b.Release()
+				b.AppendNull()
+				b.AppendNull()
+				return b.NewFloat64Array()
+			},
+			want: nil,
 		},
 	}
 	for _, tc := range testCases {
@@ -132,7 +184,7 @@ func TestPercentile_Process(t *testing.T) {
 			executetest.AggFuncTestHelper(
 				t,
 				agg,
-				arrow.NewFloat(tc.data, nil),
+				tc.data(),
 				tc.want,
 			)
 		})

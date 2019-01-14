@@ -206,7 +206,45 @@ func TestAggregate_Process(t *testing.T) {
 			},
 		},
 		{
-			name:   "table all null",
+			name:   "table count all null",
+			config: execute.DefaultAggregateConfig,
+			agg:    countAgg,
+			data: []*executetest.Table{
+				{
+					KeyCols: []string{"_start", "_stop"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					KeyValues: []interface{}{
+						execute.Time(100),
+						execute.Time(200),
+					},
+					Data: [][]interface{}{
+						{execute.Time(100), execute.Time(200), execute.Time(70), nil},
+						{execute.Time(100), execute.Time(200), execute.Time(80), nil},
+						{execute.Time(100), execute.Time(200), execute.Time(90), nil},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					KeyCols: []string{"_start", "_stop"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_value", Type: flux.TInt},
+					},
+					Data: [][]interface{}{
+						{execute.Time(100), execute.Time(200), int64(3)},
+					},
+				},
+			},
+		},
+		{
+			name:   "table sum all null",
 			config: execute.DefaultAggregateConfig,
 			agg:    sumAgg,
 			data: []*executetest.Table{

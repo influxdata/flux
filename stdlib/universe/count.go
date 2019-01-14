@@ -104,19 +104,19 @@ func (a *CountAgg) NewStringAgg() execute.DoStringAgg {
 }
 
 func (a *CountAgg) DoBool(vs *array.Boolean) {
-	a.count += int64(vs.Len() - vs.NullN())
+	a.count += int64(vs.Len())
 }
 func (a *CountAgg) DoUInt(vs *array.Uint64) {
-	a.count += int64(vs.Len() - vs.NullN())
+	a.count += int64(vs.Len())
 }
 func (a *CountAgg) DoInt(vs *array.Int64) {
-	a.count += int64(vs.Len() - vs.NullN())
+	a.count += int64(vs.Len())
 }
 func (a *CountAgg) DoFloat(vs *array.Float64) {
-	a.count += int64(vs.Len() - vs.NullN())
+	a.count += int64(vs.Len())
 }
 func (a *CountAgg) DoString(vs *array.Binary) {
-	a.count += int64(vs.Len() - vs.NullN())
+	a.count += int64(vs.Len())
 }
 
 func (a *CountAgg) Type() flux.ColType {
@@ -124,4 +124,7 @@ func (a *CountAgg) Type() flux.ColType {
 }
 func (a *CountAgg) ValueInt() int64 {
 	return a.count
+}
+func (a *CountAgg) IsNull() bool {
+	return false
 }

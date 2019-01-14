@@ -98,7 +98,7 @@ func TestCount_Process(t *testing.T) {
 			want: 10,
 		},
 		{
-			name: "NaN",
+			name: "empty",
 			data: func() *array.Float64 {
 				return arrow.NewFloat(nil, nil)
 			},
@@ -116,7 +116,18 @@ func TestCount_Process(t *testing.T) {
 				b.AppendValues([]float64{8, 9}, nil)
 				return b.NewFloat64Array()
 			},
-			want: 8,
+			want: 10,
+		},
+		{
+			name: "only nulls",
+			data: func() *array.Float64 {
+				b := arrow.NewFloatBuilder(nil)
+				defer b.Release()
+				b.AppendNull()
+				b.AppendNull()
+				return b.NewFloat64Array()
+			},
+			want: 2,
 		},
 	}
 	for _, tc := range testCases {

@@ -7,9 +7,9 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 func TestSumOperation_Marshaling(t *testing.T) {
@@ -26,7 +26,7 @@ func TestSum_Process(t *testing.T) {
 	testCases := []struct {
 		name string
 		data func() *array.Float64
-		want float64
+		want interface{}
 	}{
 		{
 			name: "zero",
@@ -40,7 +40,14 @@ func TestSum_Process(t *testing.T) {
 			data: func() *array.Float64 {
 				return arrow.NewFloat([]float64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, nil)
 			},
-			want: 45,
+			want: 45.0,
+		},
+		{
+			name: "empty",
+			data: func() *array.Float64 {
+				return arrow.NewFloat(nil, nil)
+			},
+			want: nil,
 		},
 		{
 			name: "with nulls",
@@ -54,7 +61,18 @@ func TestSum_Process(t *testing.T) {
 				b.AppendValues([]float64{8, 9}, nil)
 				return b.NewFloat64Array()
 			},
-			want: 34,
+			want: 34.0,
+		},
+		{
+			name: "only nulls",
+			data: func() *array.Float64 {
+				b := arrow.NewFloatBuilder(nil)
+				defer b.Release()
+				b.AppendNull()
+				b.AppendNull()
+				return b.NewFloat64Array()
+			},
+			want: nil,
 		},
 	}
 	for _, tc := range testCases {

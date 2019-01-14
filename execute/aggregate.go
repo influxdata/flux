@@ -96,7 +96,6 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 	builderColMap := make([]int, len(t.config.Columns))
 	tableColMap := make([]int, len(t.config.Columns))
 	aggregates := make([]ValueFunc, len(t.config.Columns))
-	nonNil := make([]bool, len(t.config.Columns))
 	cols := tbl.Cols()
 	for j, label := range t.config.Columns {
 		idx := -1
@@ -151,35 +150,15 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 
 			switch c.Type {
 			case flux.TBool:
-				col := cr.Bools(tj)
-				if col.NullN() < col.Len() {
-					nonNil[j] = true
-					vf.(DoBoolAgg).DoBool(col)
-				}
+				vf.(DoBoolAgg).DoBool(cr.Bools(tj))
 			case flux.TInt:
-				col := cr.Ints(tj)
-				if col.NullN() < col.Len() {
-					nonNil[j] = true
-					vf.(DoIntAgg).DoInt(col)
-				}
+				vf.(DoIntAgg).DoInt(cr.Ints(tj))
 			case flux.TUInt:
-				col := cr.UInts(tj)
-				if col.NullN() < col.Len() {
-					nonNil[j] = true
-					vf.(DoUIntAgg).DoUInt(col)
-				}
+				vf.(DoUIntAgg).DoUInt(cr.UInts(tj))
 			case flux.TFloat:
-				col := cr.Floats(tj)
-				if col.NullN() < col.Len() {
-					nonNil[j] = true
-					vf.(DoFloatAgg).DoFloat(col)
-				}
+				vf.(DoFloatAgg).DoFloat(cr.Floats(tj))
 			case flux.TString:
-				col := cr.Strings(tj)
-				if col.NullN() < col.Len() {
-					nonNil[j] = true
-					vf.(DoStringAgg).DoString(col)
-				}
+				vf.(DoStringAgg).DoString(cr.Strings(tj))
 			default:
 				return fmt.Errorf("unsupport aggregate type %v", c.Type)
 			}
@@ -190,57 +169,41 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 	}
 	for j, vf := range aggregates {
 		bj := builderColMap[j]
+
+		// If the value is null, append a null to the column.
+		if vf.IsNull() {
+			if err := builder.AppendNil(bj); err != nil {
+				return err
+			}
+			continue
+		}
+
 		// Append aggregated value
 		switch vf.Type() {
 		case flux.TBool:
-			if nonNil[j] {
-				if err := builder.AppendBool(bj, vf.(BoolValueFunc).ValueBool()); err != nil {
-					return err
-				}
-			} else {
-				if err := builder.AppendNil(bj); err != nil {
-					return err
-				}
+			v := vf.(BoolValueFunc).ValueBool()
+			if err := builder.AppendBool(bj, v); err != nil {
+				return err
 			}
 		case flux.TInt:
-			if nonNil[j] {
-				if err := builder.AppendInt(bj, vf.(IntValueFunc).ValueInt()); err != nil {
-					return err
-				}
-			} else {
-				if err := builder.AppendNil(bj); err != nil {
-					return err
-				}
+			v := vf.(IntValueFunc).ValueInt()
+			if err := builder.AppendInt(bj, v); err != nil {
+				return err
 			}
 		case flux.TUInt:
-			if nonNil[j] {
-				if err := builder.AppendUInt(bj, vf.(UIntValueFunc).ValueUInt()); err != nil {
-					return err
-				}
-			} else {
-				if err := builder.AppendNil(bj); err != nil {
-					return err
-				}
+			v := vf.(UIntValueFunc).ValueUInt()
+			if err := builder.AppendUInt(bj, v); err != nil {
+				return err
 			}
 		case flux.TFloat:
-			if nonNil[j] {
-				if err := builder.AppendFloat(bj, vf.(FloatValueFunc).ValueFloat()); err != nil {
-					return err
-				}
-			} else {
-				if err := builder.AppendNil(bj); err != nil {
-					return err
-				}
+			v := vf.(FloatValueFunc).ValueFloat()
+			if err := builder.AppendFloat(bj, v); err != nil {
+				return err
 			}
 		case flux.TString:
-			if nonNil[j] {
-				if err := builder.AppendString(bj, vf.(StringValueFunc).ValueString()); err != nil {
-					return err
-				}
-			} else {
-				if err := builder.AppendNil(bj); err != nil {
-					return err
-				}
+			v := vf.(StringValueFunc).ValueString()
+			if err := builder.AppendString(bj, v); err != nil {
+				return err
 			}
 		}
 	}
@@ -268,6 +231,7 @@ type Aggregate interface {
 
 type ValueFunc interface {
 	Type() flux.ColType
+	IsNull() bool
 }
 type DoBoolAgg interface {
 	ValueFunc
