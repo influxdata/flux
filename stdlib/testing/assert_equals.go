@@ -97,8 +97,10 @@ func newAssertEqualsProcedure(qs flux.OperationSpec, pa plan.Administration) (pl
 type AssertEqualsTransformation struct {
 	mu sync.Mutex
 
-	gotParent  *assertEqualsParentState
-	wantParent *assertEqualsParentState
+	gotParent   *assertEqualsParentState
+	wantParent  *assertEqualsParentState
+	keysMatched int
+	unequal     bool
 
 	d     execute.Dataset
 	cache execute.TableBuilderCache
@@ -146,12 +148,14 @@ func createAssertEqualsTransformation(id execute.DatasetID, mode execute.Accumul
 
 func NewAssertEqualsTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *AssertEqualsProcedureSpec, gotID, wantID execute.DatasetID, a *memory.Allocator) *AssertEqualsTransformation {
 	return &AssertEqualsTransformation{
-		gotParent:  &assertEqualsParentState{id: gotID},
-		wantParent: &assertEqualsParentState{id: wantID},
-		d:          d,
-		cache:      cache,
-		name:       spec.Name,
-		a:          a,
+		gotParent:   &assertEqualsParentState{id: gotID},
+		wantParent:  &assertEqualsParentState{id: wantID},
+		keysMatched: 0,
+		unequal:     false,
+		d:           d,
+		cache:       cache,
+		name:        spec.Name,
+		a:           a,
 	}
 }
 
@@ -180,7 +184,9 @@ func (t *AssertEqualsTransformation) Process(id execute.DatasetID, tbl flux.Tabl
 		if err := execute.AppendMappedTable(tbl, builder, colMap); err != nil {
 			return err
 		}
+		t.keysMatched++
 	} else {
+		t.keysMatched--
 		cacheTable, err := builder.Table()
 		if err != nil {
 			return err
@@ -188,6 +194,7 @@ func (t *AssertEqualsTransformation) Process(id execute.DatasetID, tbl flux.Tabl
 		if ok, err := execute.TablesEqual(cacheTable, tbl, t.a); err != nil {
 			return err
 		} else if !ok {
+			t.unequal = true
 			return &AssertEqualsError{fmt.Sprintf("test %s: tables not equal", t.name)}
 		}
 	}
@@ -254,8 +261,14 @@ func (t *AssertEqualsTransformation) Finish(id execute.DatasetID, err error) {
 	}
 
 	if t.gotParent.finished && t.wantParent.finished {
-		if t.wantParent.ntables != t.gotParent.ntables {
-			t.d.Finish(errors.New("assertEquals streams had unequal table counts"))
+		if !t.unequal {
+			if t.keysMatched > 0 {
+				t.d.Finish(&AssertEqualsError{fmt.Sprintf("test %s: unequal group key sets", t.name)})
+			}
+
+			if t.wantParent.ntables != t.gotParent.ntables {
+				t.d.Finish(&AssertEqualsError{"assertEquals streams had unequal table counts"})
+			}
 		}
 		t.d.Finish(nil)
 	}

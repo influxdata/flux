@@ -29,6 +29,7 @@ var skipTests = map[string]string{
 	"drop_non_existent":           "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
 	"keep_non_existent":           "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
 	"yield":                       "yield requires special test case (https://github.com/influxdata/flux/issues/535)",
+	"task_per_line":               "join produces inconsistent/racy results when table schemas do not match (https://github.com/influxdata/flux/issues/855)",
 }
 
 var querier = querytest.NewQuerier()
