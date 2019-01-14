@@ -10,8 +10,10 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/influxdata/flux/values"
 )
 
 func TestGroupOperation_Marshaling(t *testing.T) {
@@ -631,6 +633,121 @@ func TestGroup_Process(t *testing.T) {
 				},
 			},
 			want: []*executetest.Table{}, // TODO What do we want?
+		},
+		{
+			name: "null values",
+			spec: &universe.GroupProcedureSpec{
+				GroupMode: flux.GroupModeBy,
+				GroupKeys: []string{"t1"},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), nil, "a"},
+					{execute.Time(2), nil, "b"},
+					{execute.Time(3), 1.0, "a"},
+					{execute.Time(4), 2.0, "b"},
+					{execute.Time(5), 3.0, "a"},
+					{nil, 4.0, "b"},
+				},
+			}},
+			want: []*executetest.Table{
+				{
+					KeyCols: []string{"t1"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), nil, "a"},
+						{execute.Time(3), 1.0, "a"},
+						{execute.Time(5), 3.0, "a"},
+					},
+				},
+				{
+					KeyCols: []string{"t1"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(2), nil, "b"},
+						{execute.Time(4), 2.0, "b"},
+						{nil, 4.0, "b"},
+					},
+				},
+			},
+		},
+		{
+			name: "null values in group key",
+			spec: &universe.GroupProcedureSpec{
+				GroupMode: flux.GroupModeBy,
+				GroupKeys: []string{"t1"},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 1.0, "a"},
+					{execute.Time(2), 2.0, "b"},
+					{execute.Time(3), 3.0, nil},
+					{execute.Time(4), 4.0, "a"},
+					{execute.Time(5), 5.0, "b"},
+					{execute.Time(6), 6.0, nil},
+				},
+			}},
+			want: []*executetest.Table{
+				{
+					KeyCols: []string{"t1"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, "a"},
+						{execute.Time(4), 4.0, "a"},
+					},
+				},
+				{
+					KeyCols: []string{"t1"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(2), 2.0, "b"},
+						{execute.Time(5), 5.0, "b"},
+					},
+				},
+				{
+					KeyCols:   []string{"t1"},
+					KeyValues: []interface{}{nil},
+					GroupKey: execute.NewGroupKey(
+						[]flux.ColMeta{{Label: "t1", Type: flux.TString}},
+						[]values.Value{values.NewNull(semantic.String)},
+					),
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(3), 3.0, nil},
+						{execute.Time(6), 6.0, nil},
+					},
+				},
+			},
 		},
 	}
 	for _, tc := range testCases {
