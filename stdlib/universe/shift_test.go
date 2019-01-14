@@ -7,8 +7,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 func TestShiftOperation_Marshaling(t *testing.T) {
@@ -101,6 +101,60 @@ func TestShift_Process(t *testing.T) {
 					Data: [][]interface{}{
 						{"b", execute.Time(5), 3.0},
 						{"b", execute.Time(6), 4.0},
+					},
+				},
+			},
+		},
+		{
+			name: "null time",
+			spec: &universe.ShiftProcedureSpec{
+				Columns: []string{execute.DefaultTimeColLabel},
+				Shift:   flux.Duration(1),
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					KeyCols: []string{"t1"},
+					ColMeta: cols,
+					Data: [][]interface{}{
+						{"a", execute.Time(1), 2.0},
+						{"a", nil, 1.0},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					KeyCols: []string{"t1"},
+					ColMeta: cols,
+					Data: [][]interface{}{
+						{"a", execute.Time(2), 2.0},
+						{"a", nil, 1.0},
+					},
+				},
+			},
+		},
+		{
+			name: "null value",
+			spec: &universe.ShiftProcedureSpec{
+				Columns: []string{execute.DefaultTimeColLabel},
+				Shift:   flux.Duration(1),
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					KeyCols: []string{"t1"},
+					ColMeta: cols,
+					Data: [][]interface{}{
+						{"a", execute.Time(1), 2.0},
+						{"a", execute.Time(2), nil},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					KeyCols: []string{"t1"},
+					ColMeta: cols,
+					Data: [][]interface{}{
+						{"a", execute.Time(2), 2.0},
+						{"a", execute.Time(3), nil},
 					},
 				},
 			},

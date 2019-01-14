@@ -179,7 +179,16 @@ func (t *shiftTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 			if execute.ContainsStr(t.columns, c.Label) {
 				l := cr.Len()
 				for i := 0; i < l; i++ {
-					if err := builder.AppendTime(j, execute.Time(cr.Times(j).Value(i)).Add(t.shift)); err != nil {
+					vs := cr.Times(j)
+					if vs.IsNull(i) {
+						if err := builder.AppendNil(j); err != nil {
+							return err
+						}
+						continue
+					}
+
+					ts := execute.Time(vs.Value(i))
+					if err := builder.AppendTime(j, ts.Add(t.shift)); err != nil {
 						return err
 					}
 				}

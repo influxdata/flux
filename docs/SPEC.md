@@ -2825,6 +2825,7 @@ from(bucket: "telegraf/autogen")
 
 Shift adds a fixed duration to time columns.
 The output table schema is the same as the input table.
+If the time is null, the time will continue to be null.
 
 Shift has the following properties:
 
@@ -2834,6 +2835,7 @@ Shift has the following properties:
 | columns | []string | Columns is list of all columns that should be shifted. Defaults to `["_start", "_stop", "_time"]`. |
 
 Example:
+
 ```
 from(bucket: "telegraf/autogen")
 	|> range(start: -5m)
