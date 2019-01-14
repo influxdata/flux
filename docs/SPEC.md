@@ -1341,7 +1341,7 @@ Fill has the following properties:
 
 | Name        | Type                                 | Description                                                                                   |
 | ----        | ----                                 | -----------                                                                                   |
-| column      | string                               | The column to fill.                                                                           |
+| column      | string                               | The column to fill. Defaults to `"_value"`                                                                          |
 | value       | bool, int, uint, float, string, time | The constant value to use in place of nulls. The type must match the type of the valueColumn. |
 | usePrevious | bool                                 | If set, then assign the value set in the previous non-null row. Cannot be used with `value`.  |
 
