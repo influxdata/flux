@@ -218,6 +218,91 @@ func TestKeys_Process(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "with nulls",
+			spec: &universe.KeysProcedureSpec{
+				Column: "_value",
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					KeyCols: []string{"tag0", "tag1"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, "a", "b"},
+						{execute.Time(2), nil, "a", "b"},
+						{nil, 3.0, "a", "b"},
+					},
+				},
+				&executetest.Table{
+					KeyCols: []string{"tag0", "tag1"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{nil, 1.0, "a", nil},
+						{nil, 2.0, "a", nil},
+						{execute.Time(3), 3.0, "a", nil},
+					},
+				},
+				&executetest.Table{
+					KeyCols: []string{"tag0"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, nil},
+						{execute.Time(2), nil, nil},
+						{execute.Time(3), nil, nil},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					KeyCols: []string{"tag0", "tag1"},
+					ColMeta: []flux.ColMeta{
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TString},
+						{Label: "_value", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{"a", "b", "tag0"},
+						{"a", "b", "tag1"},
+					},
+				},
+				{
+					KeyCols: []string{"tag0", "tag1"},
+					ColMeta: []flux.ColMeta{
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TString},
+						{Label: "_value", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{"a", nil, "tag0"},
+						{"a", nil, "tag1"},
+					},
+				},
+				{
+					KeyCols: []string{"tag0"},
+					ColMeta: []flux.ColMeta{
+						{Label: "tag0", Type: flux.TString},
+						{Label: "_value", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{nil, "tag0"},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
