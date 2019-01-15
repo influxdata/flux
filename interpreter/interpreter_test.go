@@ -143,14 +143,6 @@ func TestEval(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "reassign nested scope",
-			query: `
-			s = () => 6
-			s = s()
-			`,
-			wantErr: true,
-		},
-		{
 			name: "binary expressions",
 			query: `
 			six = six()
@@ -219,16 +211,6 @@ func TestEval(t *testing.T) {
 			`,
 		},
 		{
-			name: "scope closing mutable",
-			query: `
-			x = 5
-            plusX = (r) => r + x
-            plusX(r:2) == 7 or fail()
-			x = 1
-            plusX(r:2) == 3 or fail()
-			`,
-		},
-		{
 			name: "nested scope mutations not visible outside",
 			query: `
 			x = 5
@@ -238,8 +220,6 @@ func TestEval(t *testing.T) {
             }
             xinc() == 6 or fail()
             x == 5 or fail()
-            x = 1
-            xinc() == 2 or fail()
 			`,
 		},
 		{
