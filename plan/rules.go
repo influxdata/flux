@@ -9,5 +9,7 @@ type Rule interface {
 	Pattern() Pattern
 
 	// Rewrite an operation into an equivalent one
+	// The returned node is the new root of the sub tree.
+	// The boolean return value should be true if anything changed during the rewrite.
 	Rewrite(PlanNode) (PlanNode, bool, error)
 }

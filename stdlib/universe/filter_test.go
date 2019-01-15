@@ -9,6 +9,8 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
@@ -578,6 +580,131 @@ func TestFilterOperation_Marshaling(t *testing.T) {
 		},
 	}
 	querytest.OperationMarshalingTestHelper(t, data, op)
+}
+
+func TestMergeFilterAnyRule(t *testing.T) {
+	var (
+		from        = &influxdb.FromProcedureSpec{}
+		count       = &universe.CountProcedureSpec{}
+		filterOther = &universe.FilterProcedureSpec{
+			Fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Body: &semantic.IdentifierExpression{
+						Name: "foo",
+					},
+				},
+			},
+		}
+		filterTrue = &universe.FilterProcedureSpec{
+			Fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Body: &semantic.BooleanLiteral{
+						Value: true,
+					},
+				},
+			},
+		}
+		filterFalse = &universe.FilterProcedureSpec{
+			Fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Body: &semantic.BooleanLiteral{
+						Value: false,
+					},
+				},
+			},
+		}
+	)
+
+	tests := []plantest.RuleTestCase{
+		{
+			Name: "filterOther",
+			// from -> filter => from -> filter
+			Rules: []plan.Rule{universe.RemoveTrivialFilterRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter", filterOther),
+				},
+				Edges: [][2]int{{0, 1}},
+			},
+			NoChange: true,
+		},
+		{
+			Name: "filterFalse",
+			// from -> filter => from -> filter
+			Rules: []plan.Rule{universe.RemoveTrivialFilterRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter", filterFalse),
+				},
+				Edges: [][2]int{{0, 1}},
+			},
+			NoChange: true,
+		},
+		{
+			Name: "filterTrue",
+			// from -> filter => from
+			Rules: []plan.Rule{universe.RemoveTrivialFilterRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter", filterTrue),
+				},
+				Edges: [][2]int{{0, 1}},
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+				},
+			},
+		},
+		{
+			Name: "count filterTrue",
+			// count -> filter => count
+			Rules: []plan.Rule{universe.RemoveTrivialFilterRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("count", count),
+					plan.CreatePhysicalNode("filter", filterTrue),
+				},
+				Edges: [][2]int{{0, 1}},
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("count", count),
+				},
+			},
+		},
+		{
+			Name: "from filterTrue count",
+			// from -> filter -> count => from -> count
+			Rules: []plan.Rule{universe.RemoveTrivialFilterRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter", filterTrue),
+					plan.CreatePhysicalNode("count", count),
+				},
+				Edges: [][2]int{{0, 1}, {1, 2}},
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("count", count),
+				},
+				Edges: [][2]int{{0, 1}},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			plantest.RuleTestHelper(t, &tc)
+		})
+	}
 }
 
 func TestFilter_Process(t *testing.T) {
