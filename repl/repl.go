@@ -153,6 +153,8 @@ func (r *REPL) executeLine(t string) (values.Value, error) {
 		return nil, err
 	}
 
+	r.scope.SetReturn(nil)
+
 	if _, err := r.interpreter.Eval(semPkg, r.scope, flux.StdLib()); err != nil {
 		return nil, err
 	}
