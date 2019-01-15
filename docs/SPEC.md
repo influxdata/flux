@@ -1778,7 +1778,7 @@ The following properties define how the sample is selected.
 
 | Name | Type | Description                                                                                                                                                                  |
 | ---- | ---- | -----------                                                                                                                                                                  |
-| n    | int  | Sample every Nth element                                                                                                                                                     |
+| n    | int  | Sample every Nth element. Must be a positive integer.                                                                                                                        |
 | pos  | int  | Pos is the offset from start of results to begin sampling. The `pos` must be less than `n`. If `pos` is less than 0, a random offset is used. Default is -1 (random offset). |
 
 Example:

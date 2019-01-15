@@ -45,12 +45,17 @@ func createSampleOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 	n, err := args.GetRequiredInt("n")
 	if err != nil {
 		return nil, err
+	} else if n <= 0 {
+		return nil, fmt.Errorf("n must be a positive integer, but was %d", n)
 	}
 	spec.N = n
 
 	if pos, ok, err := args.GetInt("pos"); err != nil {
 		return nil, err
 	} else if ok {
+		if pos >= spec.N {
+			return nil, fmt.Errorf("pos must be less than n, but %d >= %d", pos, spec.N)
+		}
 		spec.Pos = pos
 	} else {
 		spec.Pos = -1

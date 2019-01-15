@@ -6,8 +6,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 func TestSampleOperation_Marshaling(t *testing.T) {
@@ -323,6 +323,42 @@ func TestSample_Process(t *testing.T) {
 				{0},
 				nil,
 			},
+		},
+		{
+			fromor: &universe.SampleSelector{
+				N:   2,
+				Pos: 0,
+			},
+			name: "with-nulls",
+			data: executetest.MustCopyTable(&executetest.Table{
+				KeyCols: []string{"t1"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
+					{Label: "t3", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), 7.0, "a", "y", nil},
+					{execute.Time(10), 5.0, "a", "x", nil},
+					{execute.Time(20), 9.0, "a", "y", nil},
+					{execute.Time(30), 4.0, "a", "x", nil},
+					{execute.Time(40), 6.0, "a", "y", nil},
+					{execute.Time(50), 8.0, "a", "x", nil},
+					{execute.Time(60), 1.0, "a", "y", nil},
+					{execute.Time(70), 2.0, "a", "x", nil},
+					{execute.Time(80), 3.0, "a", "y", nil},
+					{execute.Time(90), 10.0, "a", "x", nil},
+				},
+			}),
+			want: [][]int{{
+				0,
+				2,
+				4,
+				6,
+				8,
+			}},
 		},
 	}
 	for _, tc := range testCases {
