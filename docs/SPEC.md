@@ -2121,6 +2121,7 @@ from(bucket: "telegraf/autogen")
 
 Duplicate duplicates a specified column in a table.
 If the specified column is not present in a table an error will be thrown.
+If the specified column is part of the group key, it will be duplicated, but it will not be part of the group key of the output table.
 
 Duplicate has the following properties:
 
