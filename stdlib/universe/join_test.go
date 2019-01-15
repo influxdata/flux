@@ -333,6 +333,147 @@ func TestMergeJoin_Process(t *testing.T) {
 			},
 		},
 		{
+			name: "inner with nulls in join columns",
+			spec: &universe.MergeJoinProcedureSpec{
+				On:         []string{"_time"},
+				TableNames: tableNames,
+			},
+			data0: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{nil, 100.0},
+						{execute.Time(1), 1.0},
+						{execute.Time(2), 2.0},
+						{nil, 200.0},
+						{execute.Time(3), 3.0},
+					},
+				},
+			},
+			data1: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 10.0},
+						{nil, 300.0},
+						{execute.Time(2), 20.0},
+						{execute.Time(3), 30.0},
+						{nil, 400.0},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, 10.0},
+						{execute.Time(2), 2.0, 20.0},
+						{execute.Time(3), 3.0, 30.0},
+					},
+				},
+			},
+		},
+		{
+			name: "disjoint join and group columns with nulls",
+			spec: &universe.MergeJoinProcedureSpec{
+				On:         []string{"_time"},
+				TableNames: tableNames,
+			},
+			data0: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "key", Type: flux.TString},
+					},
+					KeyCols: []string{"key"},
+					Data: [][]interface{}{
+						{nil, 0.0, "foo"},
+						{execute.Time(1), 1.0, "foo"},
+						{execute.Time(2), 2.0, "foo"},
+						{execute.Time(3), 3.0, "foo"},
+						{execute.Time(4), nil, "foo"},
+					},
+				},
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "key", Type: flux.TString},
+					},
+					KeyCols: []string{"key"},
+					Data: [][]interface{}{
+						{nil, 0.5, nil},
+						{execute.Time(1), 1.5, nil},
+						{execute.Time(2), 2.5, nil},
+						{execute.Time(3), 3.5, nil},
+						{execute.Time(4), nil, nil},
+					},
+				},
+			},
+			data1: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "key", Type: flux.TString},
+					},
+					KeyCols: []string{"key"},
+					Data: [][]interface{}{
+						{nil, 0.0, nil},
+						{execute.Time(1), 10.0, nil},
+						{execute.Time(2), 20.0, nil},
+						{execute.Time(3), 30.0, nil},
+						{execute.Time(4), nil, nil},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
+						{Label: "key_a", Type: flux.TString},
+						{Label: "key_b", Type: flux.TString},
+					},
+					KeyCols: []string{"key_a", "key_b"},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, 10.0, "foo", nil},
+						{execute.Time(2), 2.0, 20.0, "foo", nil},
+						{execute.Time(3), 3.0, 30.0, "foo", nil},
+						{execute.Time(4), nil, nil, "foo", nil},
+					},
+				},
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
+						{Label: "key_a", Type: flux.TString},
+						{Label: "key_b", Type: flux.TString},
+					},
+					KeyCols: []string{"key_a", "key_b"},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.5, 10.0, nil, nil},
+						{execute.Time(2), 2.5, 20.0, nil, nil},
+						{execute.Time(3), 3.5, 30.0, nil, nil},
+						{execute.Time(4), nil, nil, nil, nil},
+					},
+				},
+			},
+		},
+		{
 			name: "inner with missing values",
 			spec: &universe.MergeJoinProcedureSpec{
 				On:         []string{"_time"},
@@ -461,6 +602,85 @@ func TestMergeJoin_Process(t *testing.T) {
 						{execute.Time(1), 10.0, "a"},
 						{execute.Time(2), 20.0, "a"},
 						{execute.Time(3), 30.0, "a"},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					KeyCols: []string{"t1"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, 10.0, "a"},
+						{execute.Time(2), 2.0, 20.0, "a"},
+						{execute.Time(3), 3.0, 30.0, "a"},
+					},
+				},
+			},
+		},
+		{
+			name: "inner with common tags and nulls",
+			spec: &universe.MergeJoinProcedureSpec{
+				On:         []string{"_time", "t1"},
+				TableNames: tableNames,
+			},
+			data0: []*executetest.Table{
+				{
+					KeyCols: []string{"t1"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, "a"},
+						{execute.Time(2), 2.0, "a"},
+						{execute.Time(3), 3.0, "a"},
+					},
+				},
+				{
+					KeyCols: []string{"t1"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.1, nil},
+						{execute.Time(2), 2.1, nil},
+						{execute.Time(3), 3.1, nil},
+					},
+				},
+			},
+			data1: []*executetest.Table{
+				{
+					KeyCols: []string{"t1"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 10.0, "a"},
+						{execute.Time(2), 20.0, "a"},
+						{execute.Time(3), 30.0, "a"},
+					},
+				},
+				{
+					KeyCols: []string{"t1"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 10.1, nil},
+						{execute.Time(2), 20.1, nil},
+						{execute.Time(3), 30.1, nil},
 					},
 				},
 			},

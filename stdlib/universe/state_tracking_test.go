@@ -8,9 +8,9 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 func TestStateTrackingOperation_Marshaling(t *testing.T) {

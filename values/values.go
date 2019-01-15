@@ -92,6 +92,11 @@ func (v value) Equal(r Value) bool {
 	if v.Type() != r.Type() {
 		return false
 	}
+
+	if v.IsNull() || r.IsNull() {
+		return false
+	}
+
 	switch k := v.Type().Nature(); k {
 	case semantic.Bool:
 		return v.Bool() == r.Bool()

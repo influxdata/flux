@@ -280,7 +280,9 @@ func (t *mergeJoinTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	t.cache.insertIntoBuffer(id, tbl)
+	if err := t.cache.insertIntoBuffer(id, tbl); err != nil {
+		return err
+	}
 
 	// Check if enough data sources have been seen to produce an output schema
 	if !t.cache.isBufferEmpty(t.leftID) && !t.cache.isBufferEmpty(t.rightID) && !t.cache.postJoinSchemaBuilt() {
@@ -352,7 +354,7 @@ func (t *mergeJoinTransformation) Finish(id execute.DatasetID, err error) {
 //
 // reverseLookup:   Each output group key that is stored is mapped to its
 //                  corresponding pre-join group keys. These pre-join group
-//                  keys are then used to retrieve their correspoinding
+//                  keys are then used to retrieve their corresponding
 //                  tables from the buffers.
 //
 // tables:          All output tables are materialized and stored in this
@@ -674,7 +676,7 @@ func (c *MergeJoinCache) canEvictTables() bool {
 }
 
 // insertIntoBuffer adds the rows of an incoming table to one of the Join's internal buffers
-func (c *MergeJoinCache) insertIntoBuffer(id execute.DatasetID, tbl flux.Table) {
+func (c *MergeJoinCache) insertIntoBuffer(id execute.DatasetID, tbl flux.Table) error {
 	// Initialize schema if tbl is first from its stream
 	if _, ok := c.schemas[id]; !ok {
 
@@ -697,7 +699,27 @@ func (c *MergeJoinCache) insertIntoBuffer(id execute.DatasetID, tbl flux.Table) 
 
 		c.intersection = intersection
 	}
+
+	// Optimization: if any group key columns overlap join key columns,
+	// and there are any nulls in those columns, we can discard this table,
+	// since null != null for joining purposes.
+	k := tbl.Key()
+	for j, col := range k.Cols() {
+		if c.on[col.Label] {
+			if k.IsNull(j) {
+				// Discard the table and return.  Note: we need to iterate over the
+				// table at least once:
+				// https://github.com/influxdata/flux/issues/643
+				err := tbl.Do(func(flux.ColReader) error {
+					return nil
+				})
+				return err
+			}
+		}
+	}
+
 	c.buffers[id].insert(tbl)
+	return nil
 }
 
 // registerKey takes a group key from the input stream associated with id and joins
@@ -808,6 +830,19 @@ func (c *MergeJoinCache) buildPostJoinSchema() {
 	}
 }
 
+// equalJoinKeys compares two keys for equality.
+// Null values are not considered equal when joining (unlike when grouping).
+func equalJoinkeys(left, right flux.GroupKey) bool {
+
+	for j, v := range left.Values() {
+		// value.Equal will return false if both sides are null
+		if !v.Equal(right.Value(j)) {
+			return false
+		}
+	}
+	return true
+}
+
 func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Table, error) {
 	// Determine sort order for the joining tables
 	on := make([]string, len(c.on))
@@ -844,7 +879,7 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 
 	// Perform sort merge join
 	for !leftSet.Empty() && !rightSet.Empty() {
-		if leftKey.Equal(rightKey) {
+		if equalJoinkeys(leftKey, rightKey) {
 
 			for l := leftSet.Start; l < leftSet.Stop; l++ {
 				for r := rightSet.Start; r < rightSet.Stop; r++ {
