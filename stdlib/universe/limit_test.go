@@ -6,8 +6,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 func TestLimitOperation_Marshaling(t *testing.T) {
@@ -30,6 +30,30 @@ func TestLimit_Process(t *testing.T) {
 		want []*executetest.Table
 	}{
 		{
+			name: "empty table",
+			spec: &universe.LimitProcedureSpec{
+				N: 1,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: nil,
+			}},
+		},
+		{
 			name: "one table",
 			spec: &universe.LimitProcedureSpec{
 				N: 1,
@@ -51,6 +75,35 @@ func TestLimit_Process(t *testing.T) {
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 2.0},
+				},
+			}},
+		},
+		{
+			name: "with null",
+			spec: &universe.LimitProcedureSpec{
+				N:      2,
+				Offset: 1,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), nil},
+					{execute.Time(2), nil},
+					{execute.Time(2), 1.0},
+					{execute.Time(2), 1.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(2), nil},
+					{execute.Time(2), 1.0},
 				},
 			}},
 		},
