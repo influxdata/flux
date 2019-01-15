@@ -2706,6 +2706,7 @@ Cumulative sum has the following properties:
 | columns | []string | Columns is a list of columns on which to operate. |
 
 Example:
+
 ```
 from(bucket: "telegraf/autogen")
     |> range(start: -5m)

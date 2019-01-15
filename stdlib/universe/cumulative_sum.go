@@ -148,7 +148,11 @@ func (t *cumulativeSumTransformation) Process(id execute.DatasetID, tbl flux.Tab
 			case flux.TInt:
 				if sumers[j] != nil {
 					for i := 0; i < l; i++ {
-						if err := builder.AppendInt(j, sumers[j].sumInt(cr.Ints(j).Value(i))); err != nil {
+						if vs := cr.Ints(j); vs.IsValid(i) {
+							sumers[j].sumInt(vs.Value(i))
+						}
+
+						if err := builder.AppendInt(j, sumers[j].intVal); err != nil {
 							return err
 						}
 					}
@@ -160,7 +164,11 @@ func (t *cumulativeSumTransformation) Process(id execute.DatasetID, tbl flux.Tab
 			case flux.TUInt:
 				if sumers[j] != nil {
 					for i := 0; i < l; i++ {
-						if err := builder.AppendUInt(j, sumers[j].sumUInt(cr.UInts(j).Value(i))); err != nil {
+						if vs := cr.UInts(j); vs.IsValid(i) {
+							sumers[j].sumUInt(vs.Value(i))
+						}
+
+						if err := builder.AppendUInt(j, sumers[j].uintVal); err != nil {
 							return err
 						}
 					}
@@ -172,7 +180,11 @@ func (t *cumulativeSumTransformation) Process(id execute.DatasetID, tbl flux.Tab
 			case flux.TFloat:
 				if sumers[j] != nil {
 					for i := 0; i < l; i++ {
-						if err := builder.AppendFloat(j, sumers[j].sumFloat(cr.Floats(j).Value(i))); err != nil {
+						if vs := cr.Floats(j); vs.IsValid(i) {
+							sumers[j].sumFloat(vs.Value(i))
+						}
+
+						if err := builder.AppendFloat(j, sumers[j].floatVal); err != nil {
 							return err
 						}
 					}
