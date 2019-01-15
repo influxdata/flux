@@ -1,3 +1,5 @@
+import "testing"
+
 // The purpose of this test is to test the behavior of Group in case of nulls:
 //  - tables have null values here and there (also in group key columns),
 //  - the second group of tables misses column "name": its values should be filled with nulls.
@@ -81,7 +83,9 @@ t_group = (table=<-) =>
   |> range(start: 2018-05-22T19:53:26Z)
   |> group(columns: ["host"])
 
-testingTest(name: "group",
-            input: testLoadStorage(csv: inData),
-            want: testLoadMem(csv: outData),
-            test: t_group)
+testFn = testing.test
+
+testFn(name: "group",
+            input: testing.loadStorage(csv: inData),
+            want: testing.loadMem(csv: outData),
+            testFn: t_group)
