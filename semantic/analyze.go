@@ -11,7 +11,14 @@ import (
 
 // New creates a semantic graph from the provided AST
 func New(pkg *ast.Package) (*Package, error) {
-	return analyzePackage(pkg)
+	p, err := analyzePackage(pkg)
+	if err != nil {
+		return nil, err
+	}
+	if err := runChecks(p); err != nil {
+		return nil, err
+	}
+	return p, nil
 }
 
 func analyzePackage(pkg *ast.Package) (*Package, error) {
