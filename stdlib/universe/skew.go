@@ -111,7 +111,12 @@ func (a *SkewAgg) NewStringAgg() execute.DoStringAgg {
 }
 
 func (a *SkewAgg) DoInt(vs *array.Int64) {
-	for _, v := range vs.Int64Values() {
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsNull(i) {
+			continue
+		}
+		v := vs.Value(i)
+
 		n0 := a.n
 		a.n++
 		// TODO handle overflow
@@ -124,7 +129,12 @@ func (a *SkewAgg) DoInt(vs *array.Int64) {
 	}
 }
 func (a *SkewAgg) DoUInt(vs *array.Uint64) {
-	for _, v := range vs.Uint64Values() {
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsNull(i) {
+			continue
+		}
+		v := vs.Value(i)
+
 		n0 := a.n
 		a.n++
 		// TODO handle overflow
@@ -137,7 +147,12 @@ func (a *SkewAgg) DoUInt(vs *array.Uint64) {
 	}
 }
 func (a *SkewAgg) DoFloat(vs *array.Float64) {
-	for _, v := range vs.Float64Values() {
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsNull(i) {
+			continue
+		}
+		v := vs.Value(i)
+
 		n0 := a.n
 		a.n++
 		delta := v - a.m1
