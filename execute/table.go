@@ -1155,19 +1155,23 @@ func (b *ColListTableBuilder) GetRow(row int) values.Object {
 	record := values.NewObject()
 	var val values.Value
 	for j, col := range b.colMeta {
-		switch col.Type {
-		case flux.TBool:
-			val = values.NewBool(b.cols[j].(*boolColumnBuilder).data[row])
-		case flux.TInt:
-			val = values.NewInt(b.cols[j].(*intColumnBuilder).data[row])
-		case flux.TUInt:
-			val = values.NewUInt(b.cols[j].(*uintColumnBuilder).data[row])
-		case flux.TFloat:
-			val = values.NewFloat(b.cols[j].(*floatColumnBuilder).data[row])
-		case flux.TString:
-			val = values.NewString(b.cols[j].(*stringColumnBuilder).data[row])
-		case flux.TTime:
-			val = values.NewTime(b.cols[j].(*timeColumnBuilder).data[row])
+		if b.cols[j].IsNil(row) {
+			val = values.NewNull(flux.SemanticType(col.Type))
+		} else {
+			switch col.Type {
+			case flux.TBool:
+				val = values.NewBool(b.cols[j].(*boolColumnBuilder).data[row])
+			case flux.TInt:
+				val = values.NewInt(b.cols[j].(*intColumnBuilder).data[row])
+			case flux.TUInt:
+				val = values.NewUInt(b.cols[j].(*uintColumnBuilder).data[row])
+			case flux.TFloat:
+				val = values.NewFloat(b.cols[j].(*floatColumnBuilder).data[row])
+			case flux.TString:
+				val = values.NewString(b.cols[j].(*stringColumnBuilder).data[row])
+			case flux.TTime:
+				val = values.NewTime(b.cols[j].(*timeColumnBuilder).data[row])
+			}
 		}
 		record.Set(col.Label, val)
 	}

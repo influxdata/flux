@@ -2531,6 +2531,7 @@ from(bucket:"telegraf/autogen")
 #### Join
 
 Join merges two or more input streams, whose values are equal on a set of common columns, into a single output stream.
+Null values are not considered equal when comparing column values.
 The resulting schema is the union of the input schemas, and the resulting group key is the union of the input group keys.
 
 Join has the following properties:
