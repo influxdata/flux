@@ -139,9 +139,9 @@ stateCount = (fn, column="stateCount", tables=<-) =>
 // state duration will be 0.
 //
 // The duration is represented as an integer in the units specified.
-stateDuration = (fn, column="stateDuration", unit=1s, tables=<-) =>
+stateDuration = (fn, column="stateDuration", timeColumn="_time", unit=1s, tables=<-) =>
     tables
-        |> stateTracking(durationColumn:column, fn:fn, durationUnit:unit)
+        |> stateTracking(durationColumn:column, timeColumn:timeColumn, fn:fn, durationUnit:unit)
 
 // _sortLimit is a helper function, which sorts and limits a table.
 _sortLimit = (n, desc, columns=["_value"], tables=<-) =>
