@@ -13,7 +13,6 @@ import (
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
-	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 )
 
@@ -740,6 +739,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				},
 			},
 			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"1a"},
 				ColMeta: []flux.ColMeta{
 					{Label: "1a", Type: flux.TFloat},
 					{Label: "2a", Type: flux.TFloat},
@@ -750,17 +750,9 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					{1.0, 12.0, 13.0},
 					{1.0, 22.0, 23.0},
 				},
-				KeyCols:   []string{"1a"},
-				KeyValues: []interface{}{1.0},
-				GroupKey: execute.NewGroupKey(
-					[]flux.ColMeta{{
-						Label: "1a",
-						Type:  flux.TFloat,
-					}},
-					[]values.Value{values.NewFloat(1.0)},
-				),
 			}},
 			want: []*executetest.Table{{
+				KeyCols: []string{"1b"},
 				ColMeta: []flux.ColMeta{
 					{Label: "1b", Type: flux.TFloat},
 					{Label: "2b", Type: flux.TFloat},
@@ -771,15 +763,6 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					{1.0, 12.0, 13.0},
 					{1.0, 22.0, 23.0},
 				},
-				KeyCols:   []string{"1b"},
-				KeyValues: []interface{}{1.0},
-				GroupKey: execute.NewGroupKey(
-					[]flux.ColMeta{{
-						Label: "1b",
-						Type:  flux.TFloat,
-					}},
-					[]values.Value{values.NewFloat(1.0)},
-				),
 			}},
 		},
 		{
@@ -792,6 +775,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				},
 			},
 			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"2a"},
 				ColMeta: []flux.ColMeta{
 					{Label: "1a", Type: flux.TFloat},
 					{Label: "2a", Type: flux.TFloat},
@@ -802,17 +786,9 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					{11.0, 2.0, 13.0},
 					{21.0, 2.0, 23.0},
 				},
-				KeyCols:   []string{"2a"},
-				KeyValues: []interface{}{2.0},
-				GroupKey: execute.NewGroupKey(
-					[]flux.ColMeta{{
-						Label: "2a",
-						Type:  flux.TFloat,
-					}},
-					[]values.Value{values.NewFloat(2.0)},
-				),
 			}},
 			want: []*executetest.Table{{
+				KeyCols: []string(nil),
 				ColMeta: []flux.ColMeta{
 					{Label: "1a", Type: flux.TFloat},
 					{Label: "3a", Type: flux.TFloat},
@@ -822,9 +798,6 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					{11.0, 13.0},
 					{21.0, 23.0},
 				},
-				KeyCols:   []string(nil),
-				KeyValues: []interface{}(nil),
-				GroupKey:  execute.NewGroupKey([]flux.ColMeta{}, []values.Value{}),
 			}},
 		},
 		{
@@ -837,6 +810,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				},
 			},
 			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"1a", "3a"},
 				ColMeta: []flux.ColMeta{
 					{Label: "1a", Type: flux.TFloat},
 					{Label: "2a", Type: flux.TFloat},
@@ -847,17 +821,9 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					{1.0, 12.0, 3.0},
 					{1.0, 22.0, 3.0},
 				},
-				KeyCols:   []string{"1a", "3a"},
-				KeyValues: []interface{}{1.0, 3.0},
-				GroupKey: execute.NewGroupKey(
-					[]flux.ColMeta{
-						{Label: "1a", Type: flux.TFloat},
-						{Label: "3a", Type: flux.TFloat},
-					},
-					[]values.Value{values.NewFloat(1.0), values.NewFloat(3.0)},
-				),
 			}},
 			want: []*executetest.Table{{
+				KeyCols: []string{"1a"},
 				ColMeta: []flux.ColMeta{
 					{Label: "1a", Type: flux.TFloat},
 				},
@@ -866,14 +832,44 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					{1.0},
 					{1.0},
 				},
-				KeyCols:   []string{"1a"},
-				KeyValues: []interface{}{1.0},
-				GroupKey: execute.NewGroupKey(
-					[]flux.ColMeta{
-						{Label: "1a", Type: flux.TFloat},
+			}},
+		},
+		{
+			name: "duplicate group key",
+			spec: &universe.SchemaMutationProcedureSpec{
+				Mutations: []universe.SchemaMutation{
+					&universe.DuplicateOpSpec{
+						Column: "1a",
+						As:     "1a_1",
 					},
-					[]values.Value{values.NewFloat(1.0)},
-				),
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"1a", "3a"},
+				ColMeta: []flux.ColMeta{
+					{Label: "1a", Type: flux.TFloat},
+					{Label: "2a", Type: flux.TFloat},
+					{Label: "3a", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{1.0, 2.0, 3.0},
+					{1.0, 12.0, 3.0},
+					{1.0, 22.0, 3.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"1a", "3a"},
+				ColMeta: []flux.ColMeta{
+					{Label: "1a", Type: flux.TFloat},
+					{Label: "1a_1", Type: flux.TFloat},
+					{Label: "2a", Type: flux.TFloat},
+					{Label: "3a", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{1.0, 1.0, 2.0, 3.0},
+					{1.0, 1.0, 12.0, 3.0},
+					{1.0, 1.0, 22.0, 3.0},
+				},
 			}},
 		},
 		{
@@ -887,6 +883,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			},
 			data: []flux.Table{
 				&executetest.Table{
+					KeyCols: []string{"a"},
 					ColMeta: []flux.ColMeta{
 						{Label: "a", Type: flux.TInt},
 						{Label: "b", Type: flux.TFloat},
@@ -897,14 +894,9 @@ func TestDropRenameKeep_Process(t *testing.T) {
 						{int64(1), 12.0, 4.0},
 						{int64(1), 22.0, 5.0},
 					},
-					KeyCols:   []string{"a"},
-					KeyValues: []interface{}{int64(1)},
-					GroupKey: execute.NewGroupKey(
-						[]flux.ColMeta{{Label: "a", Type: flux.TInt}},
-						[]values.Value{values.NewInt(1)},
-					),
 				},
 				&executetest.Table{
+					KeyCols: []string{"a"},
 					ColMeta: []flux.ColMeta{
 						{Label: "a", Type: flux.TInt},
 						{Label: "b", Type: flux.TFloat},
@@ -914,44 +906,314 @@ func TestDropRenameKeep_Process(t *testing.T) {
 						{int64(2), 13.0},
 						{int64(2), 23.0},
 					},
-					KeyCols:   []string{"a"},
-					KeyValues: []interface{}{int64(2)},
-					GroupKey: execute.NewGroupKey(
-						[]flux.ColMeta{{Label: "a", Type: flux.TFloat}},
-						[]values.Value{values.NewInt(2)},
-					),
 				},
 			},
 			want: []*executetest.Table{
 				{
+					KeyCols: []string{"a"},
 					ColMeta: []flux.ColMeta{{Label: "a", Type: flux.TInt}},
 					Data: [][]interface{}{
 						{int64(1)},
 						{int64(1)},
 						{int64(1)},
 					},
-					KeyCols:   []string{"a"},
-					KeyValues: []interface{}{int64(1)},
-					GroupKey: execute.NewGroupKey(
-						[]flux.ColMeta{{Label: "a", Type: flux.TInt}},
-						[]values.Value{values.NewInt(1)},
-					),
 				},
 				{
+					KeyCols: []string{"a"},
 					ColMeta: []flux.ColMeta{{Label: "a", Type: flux.TInt}},
 					Data: [][]interface{}{
 						{int64(2)},
 						{int64(2)},
 						{int64(2)},
 					},
-					KeyCols:   []string{"a"},
-					KeyValues: []interface{}{int64(2)},
-					GroupKey: execute.NewGroupKey(
-						[]flux.ColMeta{{Label: "a", Type: flux.TInt}},
-						[]values.Value{values.NewInt(2)},
-					),
 				},
 			},
+		},
+		{
+			name: "rename with nulls",
+			spec: &universe.SchemaMutationProcedureSpec{
+				Mutations: []universe.SchemaMutation{
+					&universe.RenameOpSpec{
+						Columns: map[string]string{
+							"1a": "1b",
+							"2a": "2b",
+							"3a": "3b",
+						},
+					},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "1a", Type: flux.TFloat},
+					{Label: "2a", Type: flux.TFloat},
+					{Label: "3a", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{nil, 2.0, 3.0},
+					{11.0, 12.0, nil},
+					{21.0, nil, nil},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "1b", Type: flux.TFloat},
+					{Label: "2b", Type: flux.TFloat},
+					{Label: "3b", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{nil, 2.0, 3.0},
+					{11.0, 12.0, nil},
+					{21.0, nil, nil},
+				},
+			}},
+		},
+
+		{
+			name: "drop with nulls",
+			spec: &universe.SchemaMutationProcedureSpec{
+				Mutations: []universe.SchemaMutation{
+					&universe.DropOpSpec{
+						Columns: []string{"a", "b"},
+					},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "a", Type: flux.TFloat},
+					{Label: "b", Type: flux.TFloat},
+					{Label: "c", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{nil, 2.0, 3.0},
+					{nil, nil, nil},
+					{nil, 22.0, nil},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "c", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{3.0},
+					{nil},
+					{nil},
+				},
+			}},
+		},
+		{
+			name: "keep with nulls",
+			spec: &universe.SchemaMutationProcedureSpec{
+				Mutations: []universe.SchemaMutation{
+					&universe.KeepOpSpec{
+						Columns: []string{"a"},
+					},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "a", Type: flux.TFloat},
+					{Label: "b", Type: flux.TFloat},
+					{Label: "c", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{1.0, 2.0, nil},
+					{nil, 12.0, 13.0},
+					{21.0, nil, 23.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "a", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{1.0},
+					{nil},
+					{21.0},
+				},
+			}},
+		},
+		{
+			name: "duplicate with nulls",
+			spec: &universe.SchemaMutationProcedureSpec{
+				Mutations: []universe.SchemaMutation{
+					&universe.DuplicateOpSpec{
+						Column: "a",
+						As:     "a_1",
+					},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "a", Type: flux.TFloat},
+					{Label: "b", Type: flux.TFloat},
+					{Label: "c", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{nil, nil, 3.0},
+					{nil, 12.0, nil},
+					{21.0, nil, 23.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "a", Type: flux.TFloat},
+					{Label: "a_1", Type: flux.TFloat},
+					{Label: "b", Type: flux.TFloat},
+					{Label: "c", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{nil, nil, nil, 3.0},
+					{nil, nil, 12.0, nil},
+					{21.0, 21.0, nil, 23.0},
+				},
+			}},
+		},
+		{
+			name: "rename group key with nulls",
+			spec: &universe.SchemaMutationProcedureSpec{
+				Mutations: []universe.SchemaMutation{
+					&universe.RenameOpSpec{
+						Columns: map[string]string{
+							"1a": "1b",
+							"2a": "2b",
+							"3a": "3b",
+						},
+					},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"1a"},
+				ColMeta: []flux.ColMeta{
+					{Label: "1a", Type: flux.TFloat},
+					{Label: "2a", Type: flux.TFloat},
+					{Label: "3a", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{nil, 2.0, 3.0},
+					{nil, 12.0, nil},
+					{nil, nil, 23.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"1b"},
+				ColMeta: []flux.ColMeta{
+					{Label: "1b", Type: flux.TFloat},
+					{Label: "2b", Type: flux.TFloat},
+					{Label: "3b", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{nil, 2.0, 3.0},
+					{nil, 12.0, nil},
+					{nil, nil, 23.0},
+				},
+			}},
+		},
+		{
+			name: "drop group key with nulls",
+			spec: &universe.SchemaMutationProcedureSpec{
+				Mutations: []universe.SchemaMutation{
+					&universe.DropOpSpec{
+						Columns: []string{"2a"},
+					},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"2a"},
+				ColMeta: []flux.ColMeta{
+					{Label: "1a", Type: flux.TFloat},
+					{Label: "2a", Type: flux.TFloat},
+					{Label: "3a", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{1.0, nil, 3.0},
+					{nil, nil, 13.0},
+					{21.0, nil, nil},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string(nil),
+				ColMeta: []flux.ColMeta{
+					{Label: "1a", Type: flux.TFloat},
+					{Label: "3a", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{1.0, 3.0},
+					{nil, 13.0},
+					{21.0, nil},
+				},
+			}},
+		},
+		{
+			name: "keep group key with nulls",
+			spec: &universe.SchemaMutationProcedureSpec{
+				Mutations: []universe.SchemaMutation{
+					&universe.KeepOpSpec{
+						Columns: []string{"1a"},
+					},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"1a", "3a"},
+				ColMeta: []flux.ColMeta{
+					{Label: "1a", Type: flux.TFloat},
+					{Label: "2a", Type: flux.TFloat},
+					{Label: "3a", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{nil, 2.0, nil},
+					{nil, 12.0, nil},
+					{nil, 22.0, nil},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"1a"},
+				ColMeta: []flux.ColMeta{
+					{Label: "1a", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{nil},
+					{nil},
+					{nil},
+				},
+			}},
+		},
+		{
+			name: "duplicate group key with nulls",
+			spec: &universe.SchemaMutationProcedureSpec{
+				Mutations: []universe.SchemaMutation{
+					&universe.DuplicateOpSpec{
+						Column: "3a",
+						As:     "3a_1",
+					},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"1a", "3a"},
+				ColMeta: []flux.ColMeta{
+					{Label: "1a", Type: flux.TFloat},
+					{Label: "2a", Type: flux.TFloat},
+					{Label: "3a", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{1.0, 2.0, nil},
+					{1.0, 12.0, nil},
+					{1.0, 22.0, nil},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"1a", "3a"},
+				ColMeta: []flux.ColMeta{
+					{Label: "1a", Type: flux.TFloat},
+					{Label: "2a", Type: flux.TFloat},
+					{Label: "3a", Type: flux.TFloat},
+					{Label: "3a_1", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{1.0, 2.0, nil, nil},
+					{1.0, 12.0, nil, nil},
+					{1.0, 22.0, nil, nil},
+				},
+			}},
 		},
 	}
 
