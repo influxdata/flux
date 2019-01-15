@@ -134,6 +134,7 @@ func (t *uniqueTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		floatUnique  map[float64]bool
 		stringUnique map[string]bool
 		timeUnique   map[execute.Time]bool
+		nullUnique   bool
 	)
 	switch col.Type {
 	case flux.TBool:
@@ -156,41 +157,83 @@ func (t *uniqueTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 			// Check unique
 			switch col.Type {
 			case flux.TBool:
-				v := cr.Bools(colIdx).Value(i)
-				if boolUnique[v] {
-					continue
+				if vs := cr.Bools(colIdx); vs.IsNull(i) {
+					if nullUnique {
+						continue
+					}
+					nullUnique = true
+				} else {
+					v := vs.Value(i)
+					if boolUnique[v] {
+						continue
+					}
+					boolUnique[v] = true
 				}
-				boolUnique[v] = true
 			case flux.TInt:
-				v := cr.Ints(colIdx).Value(i)
-				if intUnique[v] {
-					continue
+				if vs := cr.Ints(colIdx); vs.IsNull(i) {
+					if nullUnique {
+						continue
+					}
+					nullUnique = true
+				} else {
+					v := vs.Value(i)
+					if intUnique[v] {
+						continue
+					}
+					intUnique[v] = true
 				}
-				intUnique[v] = true
 			case flux.TUInt:
-				v := cr.UInts(colIdx).Value(i)
-				if uintUnique[v] {
-					continue
+				if vs := cr.UInts(colIdx); vs.IsNull(i) {
+					if nullUnique {
+						continue
+					}
+					nullUnique = true
+				} else {
+					v := vs.Value(i)
+					if uintUnique[v] {
+						continue
+					}
+					uintUnique[v] = true
 				}
-				uintUnique[v] = true
 			case flux.TFloat:
-				v := cr.Floats(colIdx).Value(i)
-				if floatUnique[v] {
-					continue
+				if vs := cr.Floats(colIdx); vs.IsNull(i) {
+					if nullUnique {
+						continue
+					}
+					nullUnique = true
+				} else {
+					v := vs.Value(i)
+					if floatUnique[v] {
+						continue
+					}
+					floatUnique[v] = true
 				}
-				floatUnique[v] = true
 			case flux.TString:
-				v := cr.Strings(colIdx).ValueString(i)
-				if stringUnique[v] {
-					continue
+				if vs := cr.Strings(colIdx); vs.IsNull(i) {
+					if nullUnique {
+						continue
+					}
+					nullUnique = true
+				} else {
+					v := vs.ValueString(i)
+					if stringUnique[v] {
+						continue
+					}
+					stringUnique[v] = true
 				}
-				stringUnique[v] = true
 			case flux.TTime:
-				v := execute.Time(cr.Times(colIdx).Value(i))
-				if timeUnique[v] {
-					continue
+				if vs := cr.Times(colIdx); vs.IsNull(i) {
+					if nullUnique {
+						continue
+					}
+					nullUnique = true
+				} else {
+					v := execute.Time(vs.Value(i))
+					if timeUnique[v] {
+						continue
+					}
+					timeUnique[v] = true
 				}
-				timeUnique[v] = true
 			}
 
 			if err := execute.AppendRecord(i, cr, builder); err != nil {

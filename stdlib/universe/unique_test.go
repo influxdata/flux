@@ -132,6 +132,42 @@ func TestUnique_Process(t *testing.T) {
 				},
 			}},
 		},
+		{
+			name: "with nulls",
+			spec: &universe.UniqueProcedureSpec{
+				Column: "_value",
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 2.0},
+					{nil, 1.0},
+					{execute.Time(3), 3.0},
+					{execute.Time(4), 1.0},
+					{execute.Time(5), 2.0},
+					{execute.Time(6), 1.0},
+					{execute.Time(7), nil},
+					{execute.Time(8), nil},
+					{execute.Time(9), 3.0},
+					{execute.Time(10), nil},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 2.0},
+					{nil, 1.0},
+					{execute.Time(3), 3.0},
+					{execute.Time(7), nil},
+				},
+			}},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
