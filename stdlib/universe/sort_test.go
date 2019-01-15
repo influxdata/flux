@@ -6,8 +6,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 func TestSortOperation_Marshaling(t *testing.T) {
@@ -331,6 +331,64 @@ func TestSort_Process(t *testing.T) {
 					},
 				},
 			},
+		},
+		{
+			name: "one table with null",
+			spec: &universe.SortProcedureSpec{
+				Columns: []string{"_value"},
+				Desc:    false,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 2.0},
+					{execute.Time(2), 1.0},
+					{execute.Time(3), nil},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(3), nil},
+					{execute.Time(2), 1.0},
+					{execute.Time(1), 2.0},
+				},
+			}},
+		},
+		{
+			name: "one table descending",
+			spec: &universe.SortProcedureSpec{
+				Columns: []string{"_value"},
+				Desc:    true,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 1.0},
+					{execute.Time(2), 2.0},
+					{execute.Time(3), nil},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(3), nil},
+					{execute.Time(2), 2.0},
+					{execute.Time(1), 1.0},
+				},
+			}},
 		},
 	}
 	for _, tc := range testCases {

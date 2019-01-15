@@ -538,81 +538,62 @@ func (b *ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 		return -1, fmt.Errorf("table builder already has column with label %s", c.Label)
 	}
 	newIdx := len(b.cols)
-	var col columnBuilder
+	b.colMeta = append(b.colMeta, c)
+	colBase := columnBuilderBase{
+		ColMeta: c,
+		alloc:   b.alloc,
+		nils:    make(map[int]bool),
+	}
 	switch c.Type {
 	case flux.TBool:
-		col = &boolColumnBuilder{
-			ColMeta: c,
-			alloc:   b.alloc,
-			nils:    make(map[int]bool),
-		}
-		b.colMeta = append(b.colMeta, c)
-		b.cols = append(b.cols, col)
+		b.cols = append(b.cols, &boolColumnBuilder{
+			columnBuilderBase: colBase,
+		})
 		if b.NRows() > 0 {
 			if err := b.GrowBools(newIdx, b.NRows()); err != nil {
 				return -1, err
 			}
 		}
 	case flux.TInt:
-		col = &intColumnBuilder{
-			ColMeta: c,
-			alloc:   b.alloc,
-			nils:    make(map[int]bool),
-		}
-		b.colMeta = append(b.colMeta, c)
-		b.cols = append(b.cols, col)
+		b.cols = append(b.cols, &intColumnBuilder{
+			columnBuilderBase: colBase,
+		})
 		if b.NRows() > 0 {
 			if err := b.GrowInts(newIdx, b.NRows()); err != nil {
 				return -1, err
 			}
 		}
 	case flux.TUInt:
-		col = &uintColumnBuilder{
-			ColMeta: c,
-			alloc:   b.alloc,
-			nils:    make(map[int]bool),
-		}
-		b.colMeta = append(b.colMeta, c)
-		b.cols = append(b.cols, col)
+		b.cols = append(b.cols, &uintColumnBuilder{
+			columnBuilderBase: colBase,
+		})
 		if b.NRows() > 0 {
 			if err := b.GrowUInts(newIdx, b.NRows()); err != nil {
 				return -1, err
 			}
 		}
 	case flux.TFloat:
-		col = &floatColumnBuilder{
-			ColMeta: c,
-			alloc:   b.alloc,
-			nils:    make(map[int]bool),
-		}
-		b.colMeta = append(b.colMeta, c)
-		b.cols = append(b.cols, col)
+		b.cols = append(b.cols, &floatColumnBuilder{
+			columnBuilderBase: colBase,
+		})
 		if b.NRows() > 0 {
 			if err := b.GrowFloats(newIdx, b.NRows()); err != nil {
 				return -1, err
 			}
 		}
 	case flux.TString:
-		col = &stringColumnBuilder{
-			ColMeta: c,
-			alloc:   b.alloc,
-			nils:    make(map[int]bool),
-		}
-		b.colMeta = append(b.colMeta, c)
-		b.cols = append(b.cols, col)
+		b.cols = append(b.cols, &stringColumnBuilder{
+			columnBuilderBase: colBase,
+		})
 		if b.NRows() > 0 {
 			if err := b.GrowStrings(newIdx, b.NRows()); err != nil {
 				return -1, err
 			}
 		}
 	case flux.TTime:
-		col = &timeColumnBuilder{
-			ColMeta: c,
-			alloc:   b.alloc,
-			nils:    make(map[int]bool),
-		}
-		b.colMeta = append(b.colMeta, c)
-		b.cols = append(b.cols, col)
+		b.cols = append(b.cols, &timeColumnBuilder{
+			columnBuilderBase: colBase,
+		})
 		if b.NRows() > 0 {
 			if err := b.GrowTimes(newIdx, b.NRows()); err != nil {
 				return -1, err
@@ -1391,13 +1372,22 @@ func (c colListTableSorter) Len() int {
 }
 
 func (c colListTableSorter) Less(x int, y int) (less bool) {
+	var hasNil bool
 	for _, j := range c.cols {
 		if !c.b.cols[j].Equal(x, y) {
 			less = c.b.cols[j].Less(x, y)
+			// The Less function for an individual column always
+			// considers nil to be a lesser value, but when we
+			// are sorting in descending order, nil is greater.
+			// Mark down if the reason for the comparison is because
+			// one of the two values were nil. If both values
+			// are nil, then the columns are considered equal
+			// and we will never reach here.
+			hasNil = c.b.cols[j].IsNil(x) || c.b.cols[j].IsNil(y)
 			break
 		}
 	}
-	if c.desc {
+	if c.desc && !hasNil {
 		less = !less
 	}
 	return
@@ -1420,10 +1410,72 @@ type columnBuilder interface {
 	Clear()
 	Copy() column
 	Len() int
+	IsNil(i int) bool
 	SetNil(i int, isNil bool)
 	Equal(i, j int) bool
 	Less(i, j int) bool
 	Swap(i, j int)
+}
+
+type columnBuilderBase struct {
+	flux.ColMeta
+	nils  map[int]bool
+	alloc *Allocator
+}
+
+func (c *columnBuilderBase) Meta() flux.ColMeta {
+	return c.ColMeta
+}
+
+func (c *columnBuilderBase) IsNil(i int) bool {
+	return c.nils[i]
+}
+
+func (c *columnBuilderBase) SetNil(i int, isNil bool) {
+	if isNil {
+		c.nils[i] = isNil
+	} else {
+		delete(c.nils, i)
+	}
+}
+
+// EqualFunc will determine if two rows are equal to each other
+// for the given index. If both values are valid, the equal
+// function will be used.
+func (c *columnBuilderBase) EqualFunc(i, j int, equal func(i, j int) bool) bool {
+	if inil, jnil := c.nils[i], c.nils[j]; inil || jnil {
+		return inil == jnil
+	}
+	return equal(i, j)
+}
+
+// LessFunc will compare two rows. A nil value will always be
+// less than another nil value. If both values are valid, then
+// the comparison function is used.
+func (c *columnBuilderBase) LessFunc(i, j int, less func(i, j int) bool) bool {
+	if inil, jnil := c.nils[i], c.nils[j]; inil || jnil {
+		// They are equal so this is false.
+		if inil && jnil {
+			return false
+		}
+		// If i is nil, then we are less than the non-nil j.
+		// If j is nil, then this will be false because i will
+		// be non-nil.
+		return inil
+	}
+	return less(i, j)
+}
+
+func (c *columnBuilderBase) Swap(i, j int) {
+	if c.nils[i] != c.nils[j] {
+		if c.nils[i] {
+			delete(c.nils, i)
+			c.nils[j] = true
+		} else {
+			delete(c.nils, j)
+			c.nils[i] = true
+		}
+	}
 }
 
 type boolColumn struct {
@@ -1441,6 +1493,7 @@ func (c *boolColumn) Clear() {
 		c.data = nil
 	}
 }
+
 func (c *boolColumn) Copy() column {
 	c.data.Retain()
 	return &boolColumn{
@@ -1450,28 +1503,15 @@ func (c *boolColumn) Copy() column {
 }
 
 type boolColumnBuilder struct {
-	flux.ColMeta
-	data  []bool
-	nils  map[int]bool
-	alloc *Allocator
-}
-
-func (c *boolColumnBuilder) SetNil(i int, isNil bool) {
-	if isNil {
-		c.nils[i] = isNil
-	} else {
-		delete(c.nils, i)
-	}
-}
-
-func (c *boolColumnBuilder) Meta() flux.ColMeta {
-	return c.ColMeta
+	columnBuilderBase
+	data []bool
 }
 
 func (c *boolColumnBuilder) Clear() {
 	c.alloc.Free(len(c.data), boolSize)
 	c.data = c.data[0:0]
 }
+
 func (c *boolColumnBuilder) Copy() column {
 	var data *array.Boolean
 	if len(c.nils) > 0 {
@@ -1495,28 +1535,28 @@ func (c *boolColumnBuilder) Copy() column {
 	}
 	return col
 }
+
 func (c *boolColumnBuilder) Len() int {
 	return len(c.data)
 }
+
 func (c *boolColumnBuilder) Equal(i, j int) bool {
-	return c.data[i] == c.data[j]
+	return c.EqualFunc(i, j, func(i, j int) bool {
+		return c.data[i] == c.data[j]
+	})
 }
+
 func (c *boolColumnBuilder) Less(i, j int) bool {
-	if c.data[i] == c.data[j] {
-		return false
-	}
-	return c.data[j]
-}
-func (c *boolColumnBuilder) Swap(i, j int) {
-	if c.nils[i] != c.nils[j] {
-		if c.nils[i] {
-			delete(c.nils, i)
-			c.nils[j] = true
-		} else {
-			delete(c.nils, j)
-			c.nils[i] = true
+	return c.LessFunc(i, j, func(i, j int) bool {
+		if c.data[i] == c.data[j] {
+			return false
 		}
-	}
+		return c.data[j]
+	})
+}
+
+func (c *boolColumnBuilder) Swap(i, j int) {
+	c.columnBuilderBase.Swap(i, j)
 	c.data[i], c.data[j] = c.data[j], c.data[i]
 }
 
@@ -1544,28 +1584,15 @@ func (c *intColumn) Copy() column {
 }
 
 type intColumnBuilder struct {
-	flux.ColMeta
-	data  []int64
-	nils  map[int]bool
-	alloc *Allocator
-}
-
-func (c *intColumnBuilder) SetNil(i int, isNil bool) {
-	if isNil {
-		c.nils[i] = isNil
-	} else {
-		delete(c.nils, i)
-	}
-}
-
-func (c *intColumnBuilder) Meta() flux.ColMeta {
-	return c.ColMeta
+	columnBuilderBase
+	data []int64
 }
 
 func (c *intColumnBuilder) Clear() {
 	c.alloc.Free(len(c.data), int64Size)
 	c.data = c.data[0:0]
 }
+
 func (c *intColumnBuilder) Copy() column {
 	var data *array.Int64
 	if len(c.nils) > 0 {
@@ -1589,25 +1616,25 @@ func (c *intColumnBuilder) Copy() column {
 	}
 	return col
 }
+
 func (c *intColumnBuilder) Len() int {
 	return len(c.data)
 }
+
 func (c *intColumnBuilder) Equal(i, j int) bool {
-	return c.data[i] == c.data[j]
+	return c.EqualFunc(i, j, func(i, j int) bool {
+		return c.data[i] == c.data[j]
+	})
 }
+
 func (c *intColumnBuilder) Less(i, j int) bool {
-	return c.data[i] < c.data[j]
+	return c.LessFunc(i, j, func(i, j int) bool {
+		return c.data[i] < c.data[j]
+	})
 }
+
 func (c *intColumnBuilder) Swap(i, j int) {
-	if c.nils[i] != c.nils[j] {
-		if c.nils[i] {
-			delete(c.nils, i)
-			c.nils[j] = true
-		} else {
-			delete(c.nils, j)
-			c.nils[i] = true
-		}
-	}
+	c.columnBuilderBase.Swap(i, j)
 	c.data[i], c.data[j] = c.data[j], c.data[i]
 }
 
@@ -1635,28 +1662,15 @@ func (c *uintColumn) Copy() column {
 }
 
 type uintColumnBuilder struct {
-	flux.ColMeta
-	data  []uint64
-	nils  map[int]bool
-	alloc *Allocator
-}
-
-func (c *uintColumnBuilder) SetNil(i int, isNil bool) {
-	if isNil {
-		c.nils[i] = isNil
-	} else {
-		delete(c.nils, i)
-	}
-}
-
-func (c *uintColumnBuilder) Meta() flux.ColMeta {
-	return c.ColMeta
+	columnBuilderBase
+	data []uint64
 }
 
 func (c *uintColumnBuilder) Clear() {
 	c.alloc.Free(len(c.data), uint64Size)
 	c.data = c.data[0:0]
 }
+
 func (c *uintColumnBuilder) Copy() column {
 	var data *array.Uint64
 	if len(c.nils) > 0 {
@@ -1680,25 +1694,25 @@ func (c *uintColumnBuilder) Copy() column {
 	}
 	return col
 }
+
 func (c *uintColumnBuilder) Len() int {
 	return len(c.data)
 }
+
 func (c *uintColumnBuilder) Equal(i, j int) bool {
-	return c.data[i] == c.data[j]
+	return c.EqualFunc(i, j, func(i, j int) bool {
+		return c.data[i] == c.data[j]
+	})
 }
+
 func (c *uintColumnBuilder) Less(i, j int) bool {
-	return c.data[i] < c.data[j]
+	return c.LessFunc(i, j, func(i, j int) bool {
+		return c.data[i] < c.data[j]
+	})
 }
+
 func (c *uintColumnBuilder) Swap(i, j int) {
-	if c.nils[i] != c.nils[j] {
-		if c.nils[i] {
-			delete(c.nils, i)
-			c.nils[j] = true
-		} else {
-			delete(c.nils, j)
-			c.nils[i] = true
-		}
-	}
+	c.columnBuilderBase.Swap(i, j)
 	c.data[i], c.data[j] = c.data[j], c.data[i]
 }
 
@@ -1717,6 +1731,7 @@ func (c *floatColumn) Clear() {
 		c.data = nil
 	}
 }
+
 func (c *floatColumn) Copy() column {
 	c.data.Retain()
 	return &floatColumn{
@@ -1726,28 +1741,15 @@ func (c *floatColumn) Copy() column {
 }
 
 type floatColumnBuilder struct {
-	flux.ColMeta
-	data  []float64
-	nils  map[int]bool
-	alloc *Allocator
-}
-
-func (c *floatColumnBuilder) SetNil(i int, isNil bool) {
-	if isNil {
-		c.nils[i] = isNil
-	} else {
-		delete(c.nils, i)
-	}
-}
-
-func (c *floatColumnBuilder) Meta() flux.ColMeta {
-	return c.ColMeta
+	columnBuilderBase
+	data []float64
 }
 
 func (c *floatColumnBuilder) Clear() {
 	c.alloc.Free(len(c.data), float64Size)
 	c.data = c.data[0:0]
 }
+
 func (c *floatColumnBuilder) Copy() column {
 	var data *array.Float64
 	if len(c.nils) > 0 {
@@ -1771,25 +1773,25 @@ func (c *floatColumnBuilder) Copy() column {
 	}
 	return col
 }
+
 func (c *floatColumnBuilder) Len() int {
 	return len(c.data)
 }
+
 func (c *floatColumnBuilder) Equal(i, j int) bool {
-	return c.data[i] == c.data[j]
+	return c.EqualFunc(i, j, func(i, j int) bool {
+		return c.data[i] == c.data[j]
+	})
 }
+
 func (c *floatColumnBuilder) Less(i, j int) bool {
-	return c.data[i] < c.data[j]
+	return c.LessFunc(i, j, func(i, j int) bool {
+		return c.data[i] < c.data[j]
+	})
 }
+
 func (c *floatColumnBuilder) Swap(i, j int) {
-	if c.nils[i] != c.nils[j] {
-		if c.nils[i] {
-			delete(c.nils, i)
-			c.nils[j] = true
-		} else {
-			delete(c.nils, j)
-			c.nils[i] = true
-		}
-	}
+	c.columnBuilderBase.Swap(i, j)
 	c.data[i], c.data[j] = c.data[j], c.data[i]
 }
 
@@ -1808,6 +1810,7 @@ func (c *stringColumn) Clear() {
 		c.data = nil
 	}
 }
+
 func (c *stringColumn) Copy() column {
 	c.data.Retain()
 	return &stringColumn{
@@ -1817,28 +1820,15 @@ func (c *stringColumn) Copy() column {
 }
 
 type stringColumnBuilder struct {
-	flux.ColMeta
-	data  []string
-	nils  map[int]bool
-	alloc *Allocator
-}
-
-func (c *stringColumnBuilder) SetNil(i int, isNil bool) {
-	if isNil {
-		c.nils[i] = isNil
-	} else {
-		delete(c.nils, i)
-	}
-}
-
-func (c *stringColumnBuilder) Meta() flux.ColMeta {
-	return c.ColMeta
+	columnBuilderBase
+	data []string
 }
 
 func (c *stringColumnBuilder) Clear() {
 	c.alloc.Free(len(c.data), stringSize)
 	c.data = c.data[0:0]
 }
+
 func (c *stringColumnBuilder) Copy() column {
 	var data *array.Binary
 	if len(c.nils) > 0 {
@@ -1862,25 +1852,25 @@ func (c *stringColumnBuilder) Copy() column {
 	}
 	return col
 }
+
 func (c *stringColumnBuilder) Len() int {
 	return len(c.data)
 }
+
 func (c *stringColumnBuilder) Equal(i, j int) bool {
-	return c.data[i] == c.data[j]
+	return c.EqualFunc(i, j, func(i, j int) bool {
+		return c.data[i] == c.data[j]
+	})
 }
+
 func (c *stringColumnBuilder) Less(i, j int) bool {
-	return c.data[i] < c.data[j]
+	return c.LessFunc(i, j, func(i, j int) bool {
+		return c.data[i] < c.data[j]
+	})
 }
+
 func (c *stringColumnBuilder) Swap(i, j int) {
-	if c.nils[i] != c.nils[j] {
-		if c.nils[i] {
-			delete(c.nils, i)
-			c.nils[j] = true
-		} else {
-			delete(c.nils, j)
-			c.nils[i] = true
-		}
-	}
+	c.columnBuilderBase.Swap(i, j)
 	c.data[i], c.data[j] = c.data[j], c.data[i]
 }
 
@@ -1908,28 +1898,15 @@ func (c *timeColumn) Copy() column {
 }
 
 type timeColumnBuilder struct {
-	flux.ColMeta
-	data  []Time
-	nils  map[int]bool
-	alloc *Allocator
-}
-
-func (c *timeColumnBuilder) SetNil(i int, isNil bool) {
-	if isNil {
-		c.nils[i] = isNil
-	} else {
-		delete(c.nils, i)
-	}
-}
-
-func (c *timeColumnBuilder) Meta() flux.ColMeta {
-	return c.ColMeta
+	columnBuilderBase
+	data []Time
 }
 
 func (c *timeColumnBuilder) Clear() {
 	c.alloc.Free(len(c.data), timeSize)
 	c.data = c.data[0:0]
 }
+
 func (c *timeColumnBuilder) Copy() column {
 	b := arrow.NewIntBuilder(c.alloc.Allocator)
 	b.Reserve(len(c.data))
@@ -1947,25 +1924,25 @@ func (c *timeColumnBuilder) Copy() column {
 	b.Release()
 	return col
 }
+
 func (c *timeColumnBuilder) Len() int {
 	return len(c.data)
 }
+
 func (c *timeColumnBuilder) Equal(i, j int) bool {
-	return c.data[i] == c.data[j]
+	return c.EqualFunc(i, j, func(i, j int) bool {
+		return c.data[i] == c.data[j]
+	})
 }
+
 func (c *timeColumnBuilder) Less(i, j int) bool {
-	return c.data[i] < c.data[j]
+	return c.LessFunc(i, j, func(i, j int) bool {
+		return c.data[i] < c.data[j]
+	})
 }
+
 func (c *timeColumnBuilder) Swap(i, j int) {
-	if c.nils[i] != c.nils[j] {
-		if c.nils[i] {
-			delete(c.nils, i)
-			c.nils[j] = true
-		} else {
-			delete(c.nils, j)
-			c.nils[i] = true
-		}
-	}
+	c.columnBuilderBase.Swap(i, j)
 	c.data[i], c.data[j] = c.data[j], c.data[i]
 }
 
