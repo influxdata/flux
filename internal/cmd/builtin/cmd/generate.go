@@ -156,7 +156,7 @@ func walkDirs(path string, f func(dir string) error) error {
 	}
 
 	for _, file := range files {
-		if file.IsDir() {
+		if file.IsDir() && file.Name() != "testdata" {
 			if err := walkDirs(filepath.Join(path, file.Name()), f); err != nil {
 				return err
 			}
