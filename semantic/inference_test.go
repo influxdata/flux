@@ -43,38 +43,6 @@ func TestInferTypes(t *testing.T) {
 			},
 		},
 		{
-			name: "redeclaration",
-			node: &semantic.File{
-				Body: []semantic.Statement{
-					&semantic.NativeVariableAssignment{
-						Identifier: &semantic.Identifier{Name: "a"},
-						Init:       &semantic.BooleanLiteral{Value: true},
-					},
-					&semantic.NativeVariableAssignment{
-						Identifier: &semantic.Identifier{Name: "a"},
-						Init:       &semantic.BooleanLiteral{Value: false},
-					},
-					&semantic.NativeVariableAssignment{
-						Identifier: &semantic.Identifier{Name: "a"},
-						Init:       &semantic.BooleanLiteral{Value: false},
-					},
-				},
-			},
-			solution: &solutionVisitor{
-				f: func(node semantic.Node) semantic.PolyType {
-					return nil
-				},
-			},
-		},
-		{
-			name: "redeclaration error",
-			script: `
-a = true
-a = 13
-			`,
-			wantErr: errors.New(`type error 3:1-3:7: int != bool`),
-		},
-		{
 			name: "array expression",
 			node: &semantic.ArrayExpression{
 				Elements: []semantic.Expression{
