@@ -2163,15 +2163,17 @@ from(bucket: "telegraf/autogen") |> set(key: "mykey", value: "myvalue")
 Sorts orders the records within each table.
 One output table is produced for each input table.
 The output tables will have the same schema as their corresponding input tables.
+When sorting, nulls will always be first. When `desc: false` is set, then nulls are less than every other value. When `desc: true`, nulls are greater than every value.
 
 Sort has the following properties:
 
 | Name    | Type     | Description                                                                               |
 | ----    | ----     | -----------                                                                               |
 | columns | []string | Columns is the sort order to use; precedence from left to right. Default is `["_value"]`. |
-| desc    | bool     | Desc indicates results should be sorted in descending order.                              |
+| desc    | bool     | Desc indicates results should be sorted in descending order. Default is `false`.          |
 
 Example:
+
 ```
 from(bucket:"telegraf/autogen")
     |> filter(fn: (r) => r._measurement == "system" AND
@@ -2179,6 +2181,7 @@ from(bucket:"telegraf/autogen")
     |> range(start:-12h)
     |> sort(columns:["region", "host", "value"])
 ```
+
 #### Group
 
 Group groups records based on their values for specific columns.
