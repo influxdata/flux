@@ -2,6 +2,7 @@ package universe
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"sync"
 
@@ -99,21 +100,29 @@ type unionParentState struct {
 }
 
 func createUnionTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
-	parentState := make(map[execute.DatasetID]*unionParentState, len(a.Parents()))
-	for _, id := range a.Parents() {
-		parentState[id] = new(unionParentState)
+	s, ok := spec.(*UnionProcedureSpec)
+	if !ok {
+		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
 	}
 
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	dataset := execute.NewDataset(id, mode, cache)
-
-	transform := &unionTransformation{
-		parentState: parentState,
-		d:           dataset,
-		cache:       cache,
-	}
+	transform := NewUnionTransformation(dataset, cache, s, a.Parents())
 
 	return transform, dataset, nil
+}
+
+func NewUnionTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *UnionProcedureSpec, parents []execute.DatasetID) *unionTransformation {
+	parentState := make(map[execute.DatasetID]*unionParentState, len(parents))
+	for _, id := range parents {
+		parentState[id] = new(unionParentState)
+	}
+
+	return &unionTransformation{
+		parentState: parentState,
+		d:           d,
+		cache:       cache,
+	}
 }
 
 func (t *unionTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
