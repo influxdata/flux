@@ -35,6 +35,9 @@ func init() {
 	flux.RegisterOpSpec(FilterKind, newFilterOp)
 	plan.RegisterProcedureSpec(FilterKind, newFilterProcedure, FilterKind)
 	execute.RegisterTransformation(FilterKind, createFilterTransformation)
+	plan.RegisterPhysicalRules(
+		RemoveTrivialFilterRule{},
+	)
 }
 
 func createFilterOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
@@ -169,4 +172,30 @@ func (t *filterTransformation) UpdateProcessingTime(id execute.DatasetID, pt exe
 }
 func (t *filterTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
+}
+
+// RemoveTrivialFilterRule removes Filter nodes whose predicate always evaluates to true.
+type RemoveTrivialFilterRule struct{}
+
+func (RemoveTrivialFilterRule) Name() string {
+	return "MergeFilterAnyRule"
+}
+
+func (RemoveTrivialFilterRule) Pattern() plan.Pattern {
+	return plan.Pat(FilterKind, plan.Any())
+}
+
+func (RemoveTrivialFilterRule) Rewrite(filterNode plan.PlanNode) (plan.PlanNode, bool, error) {
+	filterSpec := filterNode.ProcedureSpec().(*FilterProcedureSpec)
+	if filterSpec.Fn == nil ||
+		filterSpec.Fn.Block == nil ||
+		filterSpec.Fn.Block.Body == nil {
+		return filterNode, false, nil
+	}
+	if boolean, ok := filterSpec.Fn.Block.Body.(*semantic.BooleanLiteral); !ok || !boolean.Value {
+		return filterNode, false, nil
+	}
+
+	anyNode := filterNode.Predecessors()[0]
+	return anyNode, true, nil
 }
