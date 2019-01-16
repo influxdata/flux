@@ -643,6 +643,57 @@ func TestExecutor_Execute(t *testing.T) {
 				}},
 			},
 		},
+		{
+			name: `yield preserves nulls`,
+			spec: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
+						[]*executetest.Table{&executetest.Table{
+							KeyCols: []string{"_start", "_stop"},
+							ColMeta: []flux.ColMeta{
+								{Label: "_start", Type: flux.TTime},
+								{Label: "_stop", Type: flux.TTime},
+								{Label: "_time", Type: flux.TTime},
+								{Label: "_value", Type: flux.TFloat},
+								{Label: "tag", Type: flux.TString},
+								{Label: "valid", Type: flux.TBool},
+							},
+							Data: [][]interface{}{
+								{nil, execute.Time(5), execute.Time(0), nil, nil, true},
+								{execute.Time(0), nil, execute.Time(1), nil, "t0", nil},
+								{execute.Time(0), nil, execute.Time(2), 3.0, "t0", nil},
+								{execute.Time(0), execute.Time(5), execute.Time(3), nil, "t0", false},
+								{execute.Time(0), nil, execute.Time(4), nil, "t0", true},
+							},
+						}},
+					)),
+					plan.CreatePhysicalNode("yield", &universe.YieldProcedureSpec{Name: "_result"}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+			want: map[string][]*executetest.Table{
+				"_result": []*executetest.Table{{
+					KeyCols: []string{"_start", "_stop"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag", Type: flux.TString},
+						{Label: "valid", Type: flux.TBool},
+					},
+					Data: [][]interface{}{
+						{nil, execute.Time(5), execute.Time(0), nil, nil, true},
+						{execute.Time(0), nil, execute.Time(1), nil, "t0", nil},
+						{execute.Time(0), nil, execute.Time(2), 3.0, "t0", nil},
+						{execute.Time(0), execute.Time(5), execute.Time(3), nil, "t0", false},
+						{execute.Time(0), nil, execute.Time(4), nil, "t0", true},
+					},
+				}},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
