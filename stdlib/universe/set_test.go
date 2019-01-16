@@ -59,6 +59,34 @@ func TestSet_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "new col with null value",
+			spec: &universe.SetProcedureSpec{
+				Key:   "t1",
+				Value: "bob",
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), nil},
+					{execute.Time(2), 1.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), nil, "bob"},
+					{execute.Time(2), 1.0, "bob"},
+				},
+			}},
+		},
+		{
 			name: "replace col",
 			spec: &universe.SetProcedureSpec{
 				Key:   "t1",
@@ -72,6 +100,35 @@ func TestSet_Process(t *testing.T) {
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), 1.0, "jim"},
+					{execute.Time(2), 2.0, "sue"},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 1.0, "bob"},
+					{execute.Time(2), 2.0, "bob"},
+				},
+			}},
+		},
+		{
+			name: "replace col with null",
+			spec: &universe.SetProcedureSpec{
+				Key:   "t1",
+				Value: "bob",
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t1", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 1.0, nil},
 					{execute.Time(2), 2.0, "sue"},
 				},
 			}},
