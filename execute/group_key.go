@@ -132,13 +132,18 @@ func groupKeyEqual(a, b flux.GroupKey) bool {
 	return true
 }
 
+// groupKeyLess determines if the former key is lexicographically less than the
+// latter.
 func groupKeyLess(a, b flux.GroupKey) bool {
 	aCols := a.Cols()
 	bCols := b.Cols()
-	if av, bv := len(aCols), len(bCols); av != bv {
-		return av < bv
+	min := len(aCols)
+
+	if min > len(bCols) {
+		min = len(bCols)
 	}
-	for j, c := range aCols {
+
+	for j := 0; j < min; j++ {
 		if av, bv := aCols[j].Label, bCols[j].Label; av != bv {
 			return av < bv
 		}
@@ -153,7 +158,7 @@ func groupKeyLess(a, b flux.GroupKey) bool {
 		} else if bv.IsNull() {
 			return false
 		}
-		switch c.Type {
+		switch aCols[j].Type {
 		case flux.TBool:
 			if av, bv := a.ValueBool(j), b.ValueBool(j); av != bv {
 				return av
@@ -180,5 +185,9 @@ func groupKeyLess(a, b flux.GroupKey) bool {
 			}
 		}
 	}
-	return false
+
+	// In this case, min columns have been compared and found to be equal.
+	// Whichever key has the greater number of columns is lexicographically
+	// greater than the other.
+	return len(aCols) < len(bCols)
 }

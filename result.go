@@ -166,6 +166,22 @@ type GroupKey interface {
 	String() string
 }
 
+// GroupKeys provides a sortable collection of group keys.
+type GroupKeys []GroupKey
+
+func (a GroupKeys) Len() int           { return len(a) }
+func (a GroupKeys) Less(i, j int) bool { return a[i].Less(a[j]) }
+func (a GroupKeys) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+
+// String returns a string representation of the keys
+func (a GroupKeys) String() string {
+	var result string
+	for _, key := range a {
+		result += key.String() + "\n"
+	}
+	return result
+}
+
 // ResultDecoder can decode a result from a reader.
 type ResultDecoder interface {
 	// Decode decodes data from r into a result.
