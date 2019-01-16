@@ -1,6 +1,8 @@
 package execute_test
 
 import (
+	"reflect"
+	"sort"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -9,6 +11,69 @@ import (
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
+
+// This tests that groups keys are sorted lexicographically according to the entire key.
+func TestGroupKey_LexicographicOrder(t *testing.T) {
+	in := flux.GroupKeys{
+		// This key has fewer columns, but is lexicographically > than the other key.
+		execute.NewGroupKey(
+			[]flux.ColMeta{
+				{Label: "_f", Type: flux.TString},
+				{Label: "_m", Type: flux.TString},
+				{Label: "host", Type: flux.TString},
+			},
+			[]values.Value{
+				values.NewString("0.001"),
+				values.NewString("query_control_all_duration_seconds"),
+				values.NewString("prod1.rsavage.local"),
+			},
+		),
+		// This key is lexicographically < than the previous key.
+		execute.NewGroupKey(
+			[]flux.ColMeta{
+				{Label: "_f", Type: flux.TString},
+				{Label: "_m", Type: flux.TString},
+				{Label: "handler", Type: flux.TString},
+				{Label: "host", Type: flux.TString},
+			},
+			[]values.Value{
+				values.NewString("0.001"),
+				values.NewString("http_api_request_duration_seconds"),
+				values.NewString("platform"),
+				values.NewString("prod1.rsavage.local"),
+			},
+		),
+		// This key is the same as the following key but has an additional column
+		execute.NewGroupKey(
+			[]flux.ColMeta{
+				{Label: "_f", Type: flux.TString},
+				{Label: "_m", Type: flux.TString},
+				{Label: "foo", Type: flux.TString},
+			},
+			[]values.Value{
+				values.NewString("0.002"),
+				values.NewString("http_api_request_duration_seconds"),
+				values.NewString("bar"),
+			},
+		),
+		execute.NewGroupKey(
+			[]flux.ColMeta{
+				{Label: "_f", Type: flux.TString},
+				{Label: "_m", Type: flux.TString},
+			},
+			[]values.Value{
+				values.NewString("0.002"),
+				values.NewString("http_api_request_duration_seconds"),
+			},
+		),
+	}
+	exp := flux.GroupKeys{in[1], in[0], in[3], in[2]}
+	sort.Sort(in)
+
+	if got := in; !reflect.DeepEqual(got, exp) {
+		t.Fatalf("got keys %s\n, expected %s", got, exp)
+	}
+}
 
 var (
 	cols = []flux.ColMeta{
