@@ -27,7 +27,7 @@ outData = "
 #group,false,false,false,false,false,false,true,true,true,true
 #default,_result,,,,,,,,,
 ,result,table,_start,_stop,_time,counter,_field,_measurement,cpu,host
-,,0,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:53:26Z,1,usage_guest,cpu,cpu-total,host.local
+,,0,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:53:36Z,1,usage_guest,cpu,cpu-total,host.local
 ,,0,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:53:46Z,2,usage_guest,cpu,cpu-total,host.local
 ,,0,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:53:56Z,4,usage_guest,cpu,cpu-total,host.local
 ,,0,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:54:06Z,4,usage_guest,cpu,cpu-total,host.local

@@ -664,7 +664,7 @@ func (t *derivativeTransformation) passThroughTime(ts *array.Int64, vs *array.In
 	l := vs.Len()
 	for ; i < l; i++ {
 		// If time is null, or did not advance from previous,
-		// don'cTime add any values to the result
+		// don't add any values to the result
 		if ts.IsNull(i) {
 			continue
 		}

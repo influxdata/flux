@@ -314,7 +314,7 @@ func TablesEqual(left, right flux.Table, alloc *memory.Allocator) (bool, error) 
 				eq = cmp.Equal(leftBuffer.cols[j].(*stringColumnBuilder).data,
 					rightBuffer.cols[j].(*stringColumnBuilder).data)
 			case flux.TTime:
-				eq = cmp.Equal(rightBuffer.cols[j].(*timeColumnBuilder).data,
+				eq = cmp.Equal(leftBuffer.cols[j].(*timeColumnBuilder).data,
 					rightBuffer.cols[j].(*timeColumnBuilder).data)
 			default:
 				PanicUnknownType(c.Type)
