@@ -43,9 +43,8 @@ t_fill_bool = (table=<-) => table
   |> range(start: -5m)
   |> fill(value: false)
 
-testFn = testing.test
-
-testFn(name: "fill",
+testing.test(
+    name: "fill",
     input: testing.loadStorage(csv: inData),
     want: testing.loadMem(csv: outData),
     testFn: t_fill_bool)

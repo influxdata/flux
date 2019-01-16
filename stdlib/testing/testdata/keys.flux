@@ -34,9 +34,8 @@ t_keys = (table=<-) =>
   |> range(start: 2018-05-20T19:53:26Z)
   |> keys()
 
-testFn = testing.test
-
-testFn(name: "keys",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_keys)
+testing.test(
+    name: "keys",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_keys)

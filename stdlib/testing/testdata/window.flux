@@ -42,9 +42,8 @@ t_window = (table=<-) =>
   |> map(fn: (r) => ({_time: r._time, mean: r._value}))
   |> yield(name:"0")
 
-testFn = testing.test
-
-testFn(name: "window",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_window)
+testing.test(
+    name: "window",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_window)

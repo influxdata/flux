@@ -24,10 +24,8 @@ covariance_missing_column_1 = (table=<-) =>
     |> covariance(columns: ["x", "r"])
 	|> yield(name: "0")
 
-
-testFn = testing.test
-
-testFn(name: "covariance_missing_column_1",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: covariance_missing_column_1)
+testing.test(
+    name: "covariance_missing_column_1",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: covariance_missing_column_1)

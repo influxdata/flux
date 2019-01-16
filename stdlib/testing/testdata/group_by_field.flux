@@ -29,9 +29,9 @@ t_group_by_field = (table=<-) =>
   table
     |> range(start:2018-05-22T19:53:26Z)
     |> group(columns: ["_value"])
-testFn = testing.test
 
-testFn(name: "group_by_field",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_group_by_field)
+testing.test(
+    name: "group_by_field",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_group_by_field)

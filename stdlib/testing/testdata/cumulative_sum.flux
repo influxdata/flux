@@ -62,9 +62,8 @@ outData = "
 t_cumulative_sum = (table=<-) => table
   |> cumulativeSum(columns: ["v0", "v1"])
 
-testFn = testing.test
-
-testFn(name: "cumulative_sum",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_cumulative_sum)
+testing.test(
+    name: "cumulative_sum",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_cumulative_sum)

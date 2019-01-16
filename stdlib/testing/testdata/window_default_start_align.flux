@@ -29,9 +29,8 @@ t_window_default_start_align = (table=<-) =>
     |> range(start:2018-05-22T19:53:30Z, stop: 2018-05-22T19:59:00Z)
     |> window(every:1m)
 
-testFn = testing.test
-
-testFn(name: "window_default_start_align",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_window_default_start_align)
+testing.test(
+    name: "window_default_start_align",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_window_default_start_align)

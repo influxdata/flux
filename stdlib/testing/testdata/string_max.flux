@@ -19,9 +19,9 @@ t_string_max = (table=<-) =>
   table
     |> range(start:2018-05-22T19:54:16Z)
     |> max()
-testFn = testing.test
 
-testFn(name: "string_max",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_string_max)
+testing.test(
+    name: "string_max",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_string_max)

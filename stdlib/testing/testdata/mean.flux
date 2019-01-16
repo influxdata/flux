@@ -50,9 +50,8 @@ t_mean = (table=<-) => table
   |> range(start: -5m)
   |> mean()
 
-testFn = testing.test
-
-testFn(name: "mean",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_mean)
+testing.test(
+    name: "mean",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_mean)

@@ -50,9 +50,8 @@ t_stddev = (table=<-) => table
   |> range(start: -5m)
   |> stddev()
 
-testFn = testing.test
-
-testFn(name: "stddev",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_stddev)
+testing.test(
+    name: "stddev",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_stddev)

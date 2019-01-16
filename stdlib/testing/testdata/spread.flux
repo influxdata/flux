@@ -60,9 +60,8 @@ t_spread = (table=<-) => table
   |> range(start: -5m)
   |> spread()
 
-testFn = testing.test
-
-testFn(name: "spread",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_spread)
+testing.test(
+    name: "spread",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_spread)

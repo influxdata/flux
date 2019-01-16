@@ -44,9 +44,9 @@ outData = "
 t_first = (table=<-) =>
   table
   |> first()
-testFn = testing.test
 
-testFn(name: "first",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_first)
+testing.test(
+    name: "first",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_first)

@@ -55,10 +55,8 @@ t_rename = (table=<-) =>
 	|> rename(columns:{host:"server"})
 	|> drop(columns:["_start", "_stop"])
 
-
-testFn = testing.test
-
-testFn(name: "rename",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_rename)
+testing.test(
+    name: "rename",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_rename)

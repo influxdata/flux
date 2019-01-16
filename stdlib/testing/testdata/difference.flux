@@ -40,9 +40,8 @@ t_difference = (table=<-) =>
     |> range(start:2018-05-22T19:53:26Z)
     |> difference()
 
-testFn = testing.test
-
-testFn(name: "difference",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_difference)
+testing.test(
+    name: "difference",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_difference)

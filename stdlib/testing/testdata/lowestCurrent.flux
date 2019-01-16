@@ -36,9 +36,8 @@ t_lowestCurrent = (table=<-) =>
     |> range(start: 2018-11-07T00:00:00Z)
     |> lowestCurrent(n: 3, groupColumns: ["_measurement", "host"])
 
-testFn = testing.test
-
-testFn(name: "lowestCurrent",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_lowestCurrent)
+testing.test(
+    name: "lowestCurrent",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_lowestCurrent)

@@ -50,9 +50,8 @@ t_skew = (table=<-) => table
   |> range(start: -5m)
   |> skew()
 
-testFn = testing.test
-
-testFn(name: "skew",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_skew)
+testing.test(
+    name: "skew",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_skew)

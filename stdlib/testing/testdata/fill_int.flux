@@ -43,9 +43,8 @@ t_fill_int = (table=<-) => table
   |> range(start: -5m)
   |> fill(column: "_value", value: -1)
 
-testFn = testing.test
-
-testFn(name: "fill",
+testing.test(
+    name: "fill",
     input: testing.loadStorage(csv: inData),
     want: testing.loadMem(csv: outData),
     testFn: t_fill_int)

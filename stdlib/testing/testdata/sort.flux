@@ -78,9 +78,8 @@ t_sort = (table=<-) =>
   |> range(start: 2018-05-22T19:53:26Z)
   |> sort(columns:["_value", "_time"])
 
-testFn = testing.test
-
-testFn(name: "sort",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_sort)
+testing.test(
+    name: "sort",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_sort)

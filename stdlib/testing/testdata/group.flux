@@ -36,9 +36,8 @@ t_group = (table=<-) =>
   |> map(fn: (r) => ({_time: r._time, max: r._value}))
   |> yield(name: "0")
 
-testFn = testing.test
-
-testFn(name: "group",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_group)
+testing.test(
+    name: "group",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_group)

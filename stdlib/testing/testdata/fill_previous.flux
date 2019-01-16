@@ -45,9 +45,8 @@ t_fill_int = (table=<-) => table
   |> range(start: -5m)
   |> fill(usePrevious: true)
 
-testFn = testing.test
-
-testFn(name: "fill",
+testing.test(
+    name: "fill",
     input: csv.from(csv: inData),
     want: csv.from(csv: outData),
     testFn: t_fill_int)

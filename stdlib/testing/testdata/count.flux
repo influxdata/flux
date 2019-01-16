@@ -75,9 +75,8 @@ t_count = (table=<-) => table
   |> range(start: -10m)
   |> count()
 
-testFn = testing.test
-
-testFn(name: "count",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_count)
+testing.test(
+    name: "count",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_count)

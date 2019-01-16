@@ -44,9 +44,8 @@ option now = () => 2018-12-19T22:15:00Z
 t_fill_float = (table=<-) => table
   |> fill(column: "_time", value: 2077-12-19T22:14:00Z)
 
-testFn = testing.test
-
-testFn(name: "fill",
+testing.test(
+    name: "fill",
     input: testing.loadStorage(csv: inData),
     want: testing.loadMem(csv: outData),
     testFn: t_fill_float)

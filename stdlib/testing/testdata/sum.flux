@@ -60,9 +60,8 @@ t_sum = (table=<-) => table
   |> range(start: -5m)
   |> sum()
 
-testFn = testing.test
-
-testFn(name: "sum",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_sum)
+testing.test(
+    name: "sum",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_sum)

@@ -129,9 +129,8 @@ t_percentile = (table=<-) => table
     |> range(start: -5m)
     |> percentile(percentile: 0.75, method:"exact_selector")
 
-testFn = testing.test
-
-testFn(name: "percentile",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_percentile)
+testing.test(
+    name: "percentile",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_percentile)

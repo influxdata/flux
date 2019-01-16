@@ -30,9 +30,8 @@ t_histogram = (table=<-) =>
   table
     |> histogram(bins:[-1.0,0.0,1.0,2.0])
 
-testFn = testing.test
-
-testFn(name: "histogram",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_histogram)
+testing.test(
+    name: "histogram",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_histogram)

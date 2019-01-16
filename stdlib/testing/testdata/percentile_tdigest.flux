@@ -26,9 +26,8 @@ t_percentile = (table=<-) => table
     |> range(start: -2m)
     |> percentile(percentile: 0.75, method: "estimate_tdigest")
 
-testFn = testing.test
-
-testFn(name: "percentile_tdigest",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_percentile)
+testing.test(
+    name: "percentile_tdigest",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_percentile)

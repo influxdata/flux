@@ -35,9 +35,8 @@ t_highestMax = (table=<-) =>
   table
     |> highestMax(n: 3, groupColumns: ["_measurement", "host"])
 
-testFn = testing.test
-
-testFn(name: "highestMax",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_highestMax)
+testing.test(
+    name: "highestMax",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_highestMax)

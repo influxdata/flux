@@ -42,10 +42,9 @@ t_filter_by_regex_function = (table=<-) =>
   table
   |> regexFunc(regLiteral: /io.*/)
 
-testFn = testing.test
-
-testFn(name: "filter_by_regex_function",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_filter_by_regex_function)
+testing.test(
+    name: "filter_by_regex_function",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_filter_by_regex_function)
 

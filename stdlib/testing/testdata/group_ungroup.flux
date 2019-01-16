@@ -45,9 +45,8 @@ t_group_ungroup = (table=<-) =>
   |> map(fn: (r) => ({_time: r._time, io_time:r._value}))
   |> yield(name:"0")
 
-testFn = testing.test
-
-testFn(name: "group_ungroup",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_group_ungroup)
+testing.test(
+    name: "group_ungroup",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_group_ungroup)

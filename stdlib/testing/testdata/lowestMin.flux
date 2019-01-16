@@ -36,9 +36,8 @@ t_lowestMin = (table=<-) =>
     |> range(start: 2018-11-07T00:00:00Z)
     |> lowestMin(n: 3, groupColumns: ["_measurement", "host"])
 
-testFn = testing.test
-
-testFn(name: "lowestMin",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_lowestMin)
+testing.test(
+    name: "lowestMin",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_lowestMin)

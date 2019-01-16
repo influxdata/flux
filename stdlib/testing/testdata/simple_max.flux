@@ -23,9 +23,8 @@ simple_max = (table=<-) =>
   |> max(column: "_value")
   |> map(fn: (r) => ({_time: r._time,max:r._value}))
 
-testFn = testing.test
-
-testFn(name: "simple_max",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: simple_max)
+testing.test(
+    name: "simple_max",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: simple_max)

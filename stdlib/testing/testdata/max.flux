@@ -44,9 +44,9 @@ outData = "
 t_max = (table=<-) =>
   table
   |> max()
-testFn = testing.test
 
-testFn(name: "max",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_max)
+testing.test(
+    name: "max",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_max)

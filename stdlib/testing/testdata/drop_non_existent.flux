@@ -38,12 +38,15 @@ t_drop = (table=<-) =>
 	|> range(start: 2018-05-22T19:53:26Z)
 	|> drop(columns: ["non_existent"])
 
-testFn = testing.test
+testing.test(
+    name: "drop_non_existent",
+    load: testLoadData,
+    infile: "drop_fn.in.csv",
+    outfile: "drop_non_existent.out.csv",
+    testFn: drop_fn)
 
-testFn(name: "drop_non_existent", load: testLoadData, infile: "drop_fn.in.csv", outfile: "drop_non_existent.out.csv", testFn: drop_fn)
-testFn = testing.test
-
-testFn(name: "drop_non_existent",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_drop)
+testing.test(
+    name: "drop_non_existent",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_drop)

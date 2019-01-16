@@ -43,11 +43,8 @@ outData =
 t_integral_columns = (table=<-) =>
   table |> integral(columns: ["v1", "v2"], unit: 10s)
 
-testFn = testing.test
-
-testFn(
+testing.test(
     name: "integral_columns",
-     input: testing.loadStorage(csv: inData),
-     want: testing.loadMem(csv: outData),
-     testFn:  t_integral_columns,
-)
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn:  t_integral_columns)

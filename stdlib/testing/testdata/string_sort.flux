@@ -30,9 +30,8 @@ t_string_sort = (table=<-) =>
     |> range(start:2018-05-22T19:53:26Z)
     |> sort()
 
-testFn = testing.test
-
-testFn(name: "string_sort",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_string_sort)
+testing.test(
+    name: "string_sort",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_string_sort)

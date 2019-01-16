@@ -52,9 +52,9 @@ outData = "
 t_sample = (table=<-) =>
   table
   |> sample(n: 3, pos: 1)
-testFn = testing.test
 
-testFn(name: "sample",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_sample)
+testing.test(
+    name: "sample",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_sample)

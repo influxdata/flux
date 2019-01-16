@@ -35,9 +35,10 @@ t_parse_regex = (table=<-) =>
     |> range(start:2018-05-20T19:53:26Z)
     |> filter(fn: (r) => r._field =~ filterRegex)
     |> max()
-testFn = testing.test
 
-testFn(name: "parse_regex",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_parse_regex)
+
+testing.test(
+    name: "parse_regex",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_parse_regex)

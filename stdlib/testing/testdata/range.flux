@@ -39,10 +39,8 @@ t_range = (table=<-) =>
   table
     |> range(start:2018-05-22T19:53:36Z)
 
-
-testFn = testing.test
-
-testFn(name: "range",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_range)
+testing.test(
+    name: "range",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_range)

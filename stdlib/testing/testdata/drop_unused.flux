@@ -53,9 +53,8 @@ drop_unused = (table=<-) =>
 	|> drop(columns: ["_measurement"])
 	|> filter(fn: (r) => r._field == "usage_guest")
 
-testFn = testing.test
-
-testFn(name: "drop_unused",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: drop_unused)
+testing.test(
+    name: "drop_unused",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: drop_unused)

@@ -55,9 +55,8 @@ drop_newname_before = (table=<-) =>
 	|> drop(columns:["new"])
 	|> rename(columns: {old:"new"})
 
-testFn = testing.test
-
-testFn(name: "drop_newname_before",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: drop_newname_before)
+testing.test(
+    name: "drop_newname_before",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: drop_newname_before)
