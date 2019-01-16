@@ -101,6 +101,7 @@ type AssertEqualsTransformation struct {
 	wantParent  *assertEqualsParentState
 	keysMatched int
 	unequal     bool
+	err         error
 
 	d     execute.Dataset
 	cache execute.TableBuilderCache
@@ -257,19 +258,19 @@ func (t *AssertEqualsTransformation) Finish(id execute.DatasetID, err error) {
 	}
 
 	if err != nil {
-		t.d.Finish(err)
+		t.err = err
 	}
 
 	if t.gotParent.finished && t.wantParent.finished {
 		if !t.unequal {
 			if t.keysMatched > 0 {
-				t.d.Finish(&AssertEqualsError{fmt.Sprintf("test %s: unequal group key sets", t.name)})
+				t.err = &AssertEqualsError{fmt.Sprintf("test %s: unequal group key sets", t.name)}
 			}
 
 			if t.wantParent.ntables != t.gotParent.ntables {
-				t.d.Finish(&AssertEqualsError{"assertEquals streams had unequal table counts"})
+				t.err = &AssertEqualsError{"assertEquals streams had unequal table counts"}
 			}
 		}
-		t.d.Finish(nil)
+		t.d.Finish(t.err)
 	}
 }
