@@ -217,3 +217,43 @@ func (kinds kindsMap) String() string {
 	builder.WriteString("}")
 	return builder.String()
 }
+
+// SolutionMap represents a mapping of nodes to their poly types.
+type SolutionMap map[Node]PolyType
+
+// CreateSolutionMap constructs a new solution map from the nodes and type solution.
+// Any type errors in the type solution are ignored.
+func CreateSolutionMap(node Node, sol TypeSolution) SolutionMap {
+	solMap := make(SolutionMap)
+	Walk(CreateVisitor(func(node Node) {
+		t, _ := sol.PolyTypeOf(node)
+		if t != nil {
+			solMap[node] = t
+		}
+
+	}), node)
+	return solMap
+}
+
+func (s SolutionMap) String() string {
+	var builder strings.Builder
+	builder.WriteString("{\n")
+	nodes := make([]Node, 0, len(s))
+	for n := range s {
+		nodes = append(nodes, n)
+	}
+	SortNodes(nodes)
+	for _, n := range nodes {
+		t := s[n]
+		fmt.Fprintf(&builder, "%T@%v: %v\n", n, n.Location(), t)
+	}
+	builder.WriteString("}")
+	return builder.String()
+}
+
+// SortNodes sorts a list of nodes by their source locations.
+func SortNodes(nodes []Node) {
+	sort.Slice(nodes, func(i, j int) bool {
+		return nodes[i].Location().Less(nodes[j].Location())
+	})
+}

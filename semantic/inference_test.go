@@ -2,9 +2,6 @@ package semantic_test
 
 import (
 	"errors"
-	"fmt"
-	"sort"
-	"strings"
 	"testing"
 
 	"github.com/influxdata/flux/ast"
@@ -1642,7 +1639,7 @@ foo.b
 				},
 			}
 
-			var wantSolution SolutionMap
+			var wantSolution semantic.SolutionMap
 			if tc.solution != nil {
 				semantic.Walk(tc.solution, tc.node)
 				wantSolution = tc.solution.Solution()
@@ -1661,12 +1658,7 @@ foo.b
 				t.Fatalf("expected error: %v", tc.wantErr)
 			}
 
-			// Read all types from node
-			v := &typeVisitor{
-				typeSolution: ts,
-			}
-			semantic.Walk(v, tc.node)
-			gotSolution := v.Solution()
+			gotSolution := semantic.CreateSolutionMap(tc.node, ts)
 
 			if want, got := len(wantSolution), len(gotSolution); got != want {
 				t.Errorf("unexpected solution length want: %d got: %d", want, got)
@@ -1675,7 +1667,7 @@ foo.b
 			for n := range wantSolution {
 				wantNodes = append(wantNodes, n)
 			}
-			sortNodes(wantNodes)
+			semantic.SortNodes(wantNodes)
 			for _, n := range wantNodes {
 				want := wantSolution[n]
 				got := gotSolution[n]
@@ -1689,7 +1681,7 @@ foo.b
 			for n := range gotSolution {
 				gotNodes = append(gotNodes, n)
 			}
-			sortNodes(gotNodes)
+			semantic.SortNodes(gotNodes)
 			for _, n := range gotNodes {
 				_, ok := wantSolution[n]
 				if !ok {
@@ -1701,37 +1693,19 @@ foo.b
 	}
 }
 
-type SolutionMap map[semantic.Node]semantic.PolyType
-
-func (s SolutionMap) String() string {
-	var builder strings.Builder
-	builder.WriteString("{\n")
-	nodes := make([]semantic.Node, 0, len(s))
-	for n := range s {
-		nodes = append(nodes, n)
-	}
-	sortNodes(nodes)
-	for _, n := range nodes {
-		t := s[n]
-		fmt.Fprintf(&builder, "%T@%v: %v\n", n, n.Location(), t)
-	}
-	builder.WriteString("}")
-	return builder.String()
-}
-
 type SolutionVisitor interface {
 	semantic.Visitor
-	Solution() SolutionMap
+	Solution() semantic.SolutionMap
 }
 
 type solutionVisitor struct {
 	f        func(node semantic.Node) semantic.PolyType
-	solution SolutionMap
+	solution semantic.SolutionMap
 }
 
 func (v *solutionVisitor) Visit(node semantic.Node) semantic.Visitor {
 	if v.solution == nil {
-		v.solution = make(SolutionMap)
+		v.solution = make(semantic.SolutionMap)
 	}
 	// Handle literals here
 	if l, ok := node.(semantic.Literal); ok {
@@ -1767,36 +1741,8 @@ func (v *solutionVisitor) Visit(node semantic.Node) semantic.Visitor {
 
 func (v *solutionVisitor) Done(semantic.Node) {}
 
-func (v *solutionVisitor) Solution() SolutionMap {
+func (v *solutionVisitor) Solution() semantic.SolutionMap {
 	return v.solution
-}
-
-type typeVisitor struct {
-	typeSolution semantic.TypeSolution
-	solution     SolutionMap
-}
-
-func (v *typeVisitor) Visit(node semantic.Node) semantic.Visitor {
-	if v.solution == nil {
-		v.solution = make(SolutionMap)
-	}
-	t, _ := v.typeSolution.PolyTypeOf(node)
-	if t != nil {
-		v.solution[node] = t
-	}
-	return v
-}
-
-func (v *typeVisitor) Done(semantic.Node) {}
-
-func (v *typeVisitor) Solution() SolutionMap {
-	return v.solution
-}
-
-func sortNodes(nodes []semantic.Node) {
-	sort.Slice(nodes, func(i, j int) bool {
-		return nodes[i].Location().Less(nodes[j].Location())
-	})
 }
 
 type importer struct {

@@ -38,6 +38,9 @@ type SourceLocation struct {
 }
 
 func (l SourceLocation) String() string {
+	if l.File != "" {
+		return fmt.Sprintf("%s|%v-%v", l.File, l.Start, l.End)
+	}
 	return fmt.Sprintf("%v-%v", l.Start, l.End)
 }
 

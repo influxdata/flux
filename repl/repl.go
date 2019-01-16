@@ -184,11 +184,7 @@ func (r *REPL) executeLine(t string) (values.Value, error) {
 		return nil, r.doQuery(spec)
 	}
 
-	// Print value
-	if v.Type() != semantic.Invalid {
-		return v, nil
-	}
-	return nil, nil
+	return v, nil
 }
 
 func (r *REPL) doQuery(spec *flux.Spec) error {
