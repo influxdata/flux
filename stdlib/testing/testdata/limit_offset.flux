@@ -35,6 +35,7 @@ outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string
 #group,false,false,false,false,false,false,true,true,true
 #default,_result,,,,,,,,
+,result,table,_start,_stop,_time,_value,_field,_measurement,host
 ,,161,2018-05-22T19:53:24.421470485Z,2018-05-22T19:54:24.421470485Z,2018-05-22T19:53:36Z,82.598876953125,used_percent,swap,host.local
 ,,161,2018-05-22T19:53:24.421470485Z,2018-05-22T19:54:24.421470485Z,2018-05-22T19:53:46Z,82.598876953125,used_percent,swap,host.local
 ,,162,2018-05-22T19:53:24.421470485Z,2018-05-22T19:54:24.421470485Z,2018-05-22T19:53:36Z,1.7,load1,system,host.local
