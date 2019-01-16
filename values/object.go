@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"sync/atomic"
 
 	"github.com/influxdata/flux/semantic"
 )
@@ -18,32 +17,22 @@ type Object interface {
 }
 
 type object struct {
-	values        map[string]Value
-	propertyTypes map[string]semantic.Type
-	typ           atomic.Value // semantic.Type
+	values map[string]Value
+	poly   semantic.PolyType
+	typ    semantic.Type
+	mod    bool
 }
 
 func NewObject() *object {
-	return &object{
-		values:        make(map[string]Value),
-		propertyTypes: make(map[string]semantic.Type),
-	}
+	return &object{values: map[string]Value{}}
 }
 func NewObjectWithValues(values map[string]Value) *object {
-	propertyTypes := make(map[string]semantic.Type, len(values))
-	for k, v := range values {
-		propertyTypes[k] = v.Type()
-	}
-	return &object{
-		values:        values,
-		propertyTypes: propertyTypes,
-	}
+	obj := &object{values: values, mod: true}
+	obj.updateTypes()
+	return obj
 }
 func NewObjectWithBacking(size int) *object {
-	return &object{
-		values:        make(map[string]Value, size),
-		propertyTypes: make(map[string]semantic.Type, size),
-	}
+	return &object{values: make(map[string]Value, size)}
 }
 
 func (o *object) IsNull() bool {
@@ -66,25 +55,37 @@ func (o *object) String() string {
 	return b.String()
 }
 
-func (o *object) Type() semantic.Type {
-	t := o.typ.Load()
-	if t != nil {
-		return t.(semantic.Type)
+func (o *object) updateTypes() {
+	if !o.mod {
+		return
 	}
-	typ := semantic.NewObjectType(o.propertyTypes)
-	o.typ.Store(typ)
-	return typ
+	l := len(o.values)
+	ts := make(map[string]semantic.Type, l)
+	ps := make(map[string]semantic.PolyType, l)
+	ls := make(semantic.LabelSet, 0, l)
+	for k, v := range o.values {
+		ts[k] = v.Type()
+		ps[k] = v.PolyType()
+		ls = append(ls, k)
+	}
+	o.poly = semantic.NewObjectPolyType(ps, nil, ls)
+	o.typ = semantic.NewObjectType(ts)
+	o.mod = false
+}
+
+func (o *object) Type() semantic.Type {
+	o.updateTypes()
+	return o.typ
 }
 
 func (o *object) PolyType() semantic.PolyType {
-	return o.Type().PolyType()
+	o.updateTypes()
+	return o.poly
 }
 
 func (o *object) Set(name string, v Value) {
 	o.values[name] = v
-	if o.propertyTypes[name] != v.Type() {
-		o.setPropertyType(name, v.Type())
-	}
+	o.mod = true
 }
 func (o *object) Get(name string) (Value, bool) {
 	v, ok := o.values[name]
@@ -92,12 +93,6 @@ func (o *object) Get(name string) (Value, bool) {
 }
 func (o *object) Len() int {
 	return len(o.values)
-}
-
-func (o *object) setPropertyType(name string, t semantic.Type) {
-	o.propertyTypes[name] = t
-	typ := semantic.NewObjectType(o.propertyTypes)
-	o.typ.Store(typ)
 }
 
 func (o *object) Range(f func(name string, v Value)) {

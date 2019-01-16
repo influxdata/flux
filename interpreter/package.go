@@ -1,6 +1,7 @@
 package interpreter
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -127,6 +128,8 @@ func (p *Package) String() string {
 			builder.WriteString(", ")
 		}
 		builder.WriteString(k)
+		builder.WriteString(": ")
+		builder.WriteString(fmt.Sprintf("%v", v.PolyType()))
 		i++
 	})
 	builder.WriteRune('}')
