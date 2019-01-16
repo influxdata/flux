@@ -675,6 +675,10 @@ func (f function) doCall(args Arguments) (values.Value, error) {
 	}
 }
 
+func (f function) String() string {
+	return fmt.Sprintf("%v", f.PolyType())
+}
+
 // Resolver represents a value that can resolve itself
 type Resolver interface {
 	Resolve() (semantic.Node, error)
