@@ -57,10 +57,9 @@ outData = "
 t_key_values_host_name = (table=<-) =>
   table
   |> keyValues(keyColumns: ["host", "name"])
-testFn = testing.test
 
-testFn(name: "key_values_host_name",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_key_values_host_name,
-)
+testing.test(
+    name: "key_values_host_name",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_key_values_host_name)

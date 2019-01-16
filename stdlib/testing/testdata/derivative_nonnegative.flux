@@ -35,9 +35,8 @@ derivative_nonnegative = (table=<-) =>
     |> range(start:2018-05-22T19:53:26Z)
     |> derivative(unit:100ms, nonNegative: true)
 
-testFn = testing.test
-
-testFn(name: "derivative_nonnegative",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: derivative_nonnegative)
+testing.test(
+    name: "derivative_nonnegative",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: derivative_nonnegative)

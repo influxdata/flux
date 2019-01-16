@@ -34,9 +34,8 @@ t_histogram = (table=<-) =>
            countColumn: "theCount",
            upperBoundColumn: "ub")
 
-testFn = testing.test
-
-testFn(name: "histogram",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_histogram)
+testing.test(
+    name: "histogram",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_histogram)

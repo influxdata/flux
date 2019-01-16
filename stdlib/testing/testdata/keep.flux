@@ -54,9 +54,8 @@ t_keep = (table=<-) =>
 	|> range(start: 2018-05-22T19:53:26Z)
 	|> keep(columns: ["_time", "_value", "_field"])
 
-testFn = testing.test
-
-testFn(name: "keep",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_keep)
+testing.test(
+    name: "keep",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_keep)

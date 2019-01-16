@@ -35,9 +35,8 @@ aggregate_window = (table=<-) =>
   |> range(start: 2018-05-22T00:00:00Z, stop:2018-05-22T00:01:00Z)
   |> aggregateWindow(every:30s,fn:mean)
 
-testFn = testing.test
-
-testFn(name: "aggregate_window",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: aggregate_window)
+testing.test(
+    name: "aggregate_window",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: aggregate_window)

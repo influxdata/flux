@@ -179,9 +179,8 @@ t_set_new_column = (table=<-) => table
   |> range(start: -5m)
   |> set(key: "t1", value: "server01")
 
-testFn = testing.test
-
-testFn(name: "set_new_column",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_set_new_column)
+testing.test(
+    name: "set_new_column",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_set_new_column)

@@ -29,9 +29,8 @@ t_derivative = (table=<-) =>
   |> range(start: 2018-05-22T19:53:24.421470485Z)
   |> derivative(unit:100ms)
 
-testFn = testing.test
-
-testFn(name: "derivative",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_derivative)
+testing.test(
+    name: "derivative",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_derivative)

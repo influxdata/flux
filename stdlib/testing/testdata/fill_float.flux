@@ -43,9 +43,8 @@ t_fill_float = (table=<-) => table
   |> range(start: -5m)
   |> fill(value: 0.01)
 
-testFn = testing.test
-
-testFn(name: "fill",
+testing.test(
+    name: "fill",
     input: testing.loadStorage(csv: inData),
     want: testing.loadMem(csv: outData),
     testFn: t_fill_float)

@@ -38,9 +38,8 @@ t_distinct = (table=<-) =>
   |> distinct(column:"_value")
   |> yield(name:"0")
 
-testFn = testing.test
-
-testFn(name: "distinct",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_distinct)
+testing.test(
+    name: "distinct",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_distinct)

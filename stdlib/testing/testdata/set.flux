@@ -179,9 +179,8 @@ t_set = (table=<-) => table
   |> range(start: -5m)
   |> set(key: "t0", value: "server01")
 
-testFn = testing.test
-
-testFn(name: "set",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_set)
+testing.test(
+    name: "set",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_set)

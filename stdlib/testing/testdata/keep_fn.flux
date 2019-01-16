@@ -55,9 +55,8 @@ t_keep_fn = (table=<-) =>
 	|> keep(fn: (column) => column == "_field" or column == "_value")
     |> keep(fn: (column) =>  {return column == "_value"})
 
-testFn = testing.test
-
-testFn(name: "keep_fn",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_keep_fn)
+testing.test(
+    name: "keep_fn",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_keep_fn)

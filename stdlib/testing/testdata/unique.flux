@@ -34,9 +34,8 @@ t_unique = (table=<-) =>
   table
   |> unique(column: "tag0")
 
-testFn = testing.test
-
-testFn(name: "unique",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_unique)
+testing.test(
+    name: "unique",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_unique)

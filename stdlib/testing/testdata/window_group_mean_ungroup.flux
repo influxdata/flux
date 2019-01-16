@@ -45,9 +45,8 @@ t_window_group_mean_ungroup = (table=<-) =>
   |> mean()
   |> group()
 
-testFn = testing.test
-
-testFn(name: "window_group_mean_ungroup",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_window_group_mean_ungroup)
+testing.test(
+    name: "window_group_mean_ungroup",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_window_group_mean_ungroup)

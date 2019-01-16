@@ -40,9 +40,9 @@ indata = testing.loadStorage(csv: inData)
 got = indata |> t_yield() |> yield(name: "5")
 want = testing.loadStorage(csv: outData) |> yield(name:"6")
 testing.assertEquals(name: "yield", want: want, got: got)
-testFn = testing.test
 
-testFn(name: "yield",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_yield)
+testing.test(
+    name: "yield",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_yield)

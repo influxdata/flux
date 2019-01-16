@@ -36,9 +36,9 @@ t_meta_query_measurements = (table=<-) =>
     |> group(columns: ["_measurement"])
     |> distinct(column: "_measurement")
     |> group()
-testFn = testing.test
 
-testFn(name: "meta_query_measurements",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_meta_query_measurements)
+testing.test(
+    name: "meta_query_measurements",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_meta_query_measurements)

@@ -43,9 +43,8 @@ t_fill_uint = (table=<-) => table
   |> range(start: -5m)
   |> fill(column: "_value", value: uint(v:0))
 
-testFn = testing.test
-
-testFn(name: "fill",
+testing.test(
+    name: "fill",
     input: testing.loadStorage(csv: inData),
     want: testing.loadMem(csv: outData),
     testFn: t_fill_uint)

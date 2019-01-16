@@ -88,9 +88,8 @@ t_group = (table=<-) =>
   |> range(start: 1902-05-22T19:53:26Z)
   |> group(columns: ["host"])
 
-testFn = testing.test
-
-testFn(name: "group",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_group)
+testing.test(
+    name: "group",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_group)

@@ -60,11 +60,8 @@ outData = "
 t_cumulative_sum_noop = (table=<-) => table
   |> cumulativeSum()
 
-testFn = testing.test
-
-testFn(
+testing.test(
     name: "cumulative_sum_noop",
     input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-    testFn: t_cumulative_sum_noop
-)
+    want: testing.loadMem(csv: outData),
+    testFn: t_cumulative_sum_noop)

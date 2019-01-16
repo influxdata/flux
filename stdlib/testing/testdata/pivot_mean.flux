@@ -28,9 +28,8 @@ t_pivot_mean = (table=<-) =>
   |> pivot(rowKey: ["_stop"], columnKey: ["host"], valueColumn: "_value")
   |> yield(name:"0")
 
-testFn = testing.test
-
-testFn(name: "pivot_mean",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_pivot_mean)
+testing.test(
+    name: "pivot_mean",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_pivot_mean)

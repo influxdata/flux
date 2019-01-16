@@ -60,9 +60,8 @@ outData = "
 t_shift = (table=<-) => table
   |> shift(shift: 120s)
 
-testFn = testing.test
-
-testFn(name: "shift",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_shift)
+testing.test(
+    name: "shift",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_shift)

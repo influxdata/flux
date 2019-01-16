@@ -69,9 +69,9 @@ t_window_generate_empty = (table=<-) =>
 	|> range(start:2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)
 	|> window(every: 30s, createEmpty: true)
 
-testFn = testing.test
 
-testFn(name: "window_generate_empty",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_window_generate_empty)
+testing.test(
+    name: "window_generate_empty",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_window_generate_empty)

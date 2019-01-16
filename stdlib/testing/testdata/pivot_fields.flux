@@ -60,9 +60,8 @@ t_pivot_fields = (table=<-) =>
   |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
   |> yield(name:"0")
 
-testFn = testing.test
-
-testFn(name: "pivot_fields",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_pivot_fields)
+testing.test(
+    name: "pivot_fields",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_pivot_fields)

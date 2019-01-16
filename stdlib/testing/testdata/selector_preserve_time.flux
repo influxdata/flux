@@ -28,9 +28,8 @@ t_selector_preserve_time = (table=<-) =>
 	|> top(n:3)
 	|> group(columns:["host"])
 
-testFn = testing.test
-
-testFn(name: "selector_preserve_time",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_selector_preserve_time)
+testing.test(
+    name: "selector_preserve_time",
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    testFn: t_selector_preserve_time)
