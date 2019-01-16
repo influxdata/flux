@@ -29,7 +29,6 @@ var skipTests = map[string]string{
 	"drop_non_existent":           "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
 	"keep_non_existent":           "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
 	"yield":                       "yield requires special test case (https://github.com/influxdata/flux/issues/535)",
-	"show_all_tag_keys":           "group keys not being sorted appropriately (https://github.com/influxdata/flux/issues/863)",
 }
 
 var querier = querytest.NewQuerier()

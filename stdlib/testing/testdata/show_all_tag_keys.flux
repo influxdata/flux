@@ -1092,11 +1092,11 @@ outData = "
 ,,0,_field
 ,,0,_measurement
 ,,0,host
-,,0,name
-,,0,cpu
 ,,0,device
 ,,0,fstype
 ,,0,path
+,,0,name
+,,0,cpu
 "
 
 t_show_all_tag_keys = (table=<-) =>
