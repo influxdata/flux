@@ -113,9 +113,13 @@ func AddNewTableCols(t flux.Table, builder TableBuilder, colMap []int) ([]int, e
 		found := false
 		for ej, ec := range existing {
 			if c.Label == ec.Label {
-				colMap[ej] = j
-				found = true
-				break
+				if c.Type == ec.Type {
+					colMap[ej] = j
+					found = true
+					break
+				} else {
+					return nil, fmt.Errorf("schema collision detected: column \"%s\" is both of type %s and %s", c.Label, c.Type, ec.Type)
+				}
 			}
 		}
 		if !found {
