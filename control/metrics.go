@@ -4,6 +4,8 @@ import "github.com/prometheus/client_golang/prometheus"
 
 // controllerMetrics holds metrics related to the query controller.
 type controllerMetrics struct {
+	functions *prometheus.CounterVec
+
 	all        *prometheus.GaugeVec
 	compiling  *prometheus.GaugeVec
 	queueing   *prometheus.GaugeVec
@@ -26,6 +28,13 @@ func newControllerMetrics(labels []string) *controllerMetrics {
 	)
 
 	return &controllerMetrics{
+		functions: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Namespace: namespace,
+			Subsystem: subsystem,
+			Name:      "functions_total",
+			Help:      "Count of functions in queries",
+		}, append(labels, "function")),
+
 		all: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace,
 			Subsystem: subsystem,
@@ -121,6 +130,8 @@ func newControllerMetrics(labels []string) *controllerMetrics {
 // PrometheusCollectors satisifies the prom.PrometheusCollector interface.
 func (cm *controllerMetrics) PrometheusCollectors() []prometheus.Collector {
 	return []prometheus.Collector{
+		cm.functions,
+
 		cm.all,
 		cm.compiling,
 		cm.queueing,
