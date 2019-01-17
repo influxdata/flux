@@ -874,6 +874,7 @@ The following named types are built-in.
     duration // duration of time
     time     // time
     string   // utf-8 encoded string
+    bytes    // sequence of 8 bit values
     regexp   // regular expression
     type     // a type that itself describes a type
 
@@ -962,8 +963,9 @@ Fail is a function that immediately terminates the Flux program.
 
 Fail takes a single parameter:
 
-* message - string
-    Message is a string message to report as the reason for failing.
+| Name    | Type   | Description                                                      |
+| ----    | ----   | -----------                                                      |
+| message | string | Message is a string message to report as the reason for failing. |
 
 ### Time constants
 
@@ -1232,13 +1234,9 @@ The available data types for a column are:
 A column's type consists of a description of column and its values:
 
     type columnMeta = {
-        label   :: string,
-        type    :: type,
-        grouped :: bool,
-    }
-    type column = {
-        meta   :: columnMeta,
-        values :: [...]record,
+        label:   string,
+        type:    type,
+        grouped: bool,
     }
 
 ### Table
@@ -1255,15 +1253,17 @@ A tables schema consists of its group key, and its column's labels and types.
 A table is represented using the following type:
 
     type table = {
-        columns :: []column,
+        columns: []columnMeta,
+        rows: [...]record,
     }
 
+Each record must have a property for each column defined on the table.
 
 A schema type is also defined that is useful for inspecing a table's schema ignoring the actual data.
 
     type schema = { 
         // List of columns on the table
-        columns :: []columnMeta, 
+        columns: []columnMeta, 
     }
 
 
@@ -1274,7 +1274,7 @@ A channel is grouped into individual tables using the group key.
 Within a channel each table's group key value is unique.
 
     type channel = {
-        tables  :: [...]table,
+        tables: [...]table,
     }
 
 ### Stream
@@ -1291,11 +1291,11 @@ A stream's type is represented as a set of named channels:
     type stream = {
         // Data is the raw data to be processed.
         // Transformations operate on the data channel.
-        data :: channel,
+        data: channel,
         // Meta is a channel of collected metadata.
         // Transformations do not operate on the meta channel, 
         // but they may add tables to it.
-        meta :: channel,
+        meta: channel,
     }
 
 ### Missing values
@@ -1321,7 +1321,7 @@ Transformations that modify the group keys or values will need to regroup the ta
 
 Transformations are repsented using function types.
 
-    type transformation = (tables :: <-stream) -> stream
+    type transformation = (tables: <-stream) -> stream
 
 ### Sources 
 
