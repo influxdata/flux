@@ -1,7 +1,6 @@
 package universe_test
 
 import (
-	"errors"
 	"testing"
 	"time"
 
@@ -56,6 +55,11 @@ func TestPivot_NewQuery(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name:    "overlapping rowKey and columnKey",
+			Raw:     `from(bucket:"testdb") |> range(start: -1h) |> pivot(rowKey: ["_time", "a"], columnKey: ["_measurement", "_field", "a"], valueColumn: "_value")`,
+			WantErr: true,
+		},
 	}
 	for _, tc := range tests {
 		tc := tc
@@ -89,22 +93,11 @@ func TestPivotOperation_Marshaling(t *testing.T) {
 
 func TestPivot_Process(t *testing.T) {
 	testCases := []struct {
-		name    string
-		spec    *universe.PivotProcedureSpec
-		data    []flux.Table
-		want    []*executetest.Table
-		wantErr error
+		name string
+		spec *universe.PivotProcedureSpec
+		data []flux.Table
+		want []*executetest.Table
 	}{
-		{
-			name: "overlapping rowKey and columnKey",
-			spec: &universe.PivotProcedureSpec{
-				RowKey:      []string{"_time", "a"},
-				ColumnKey:   []string{"_measurement", "_field", "a"},
-				ValueColumn: "_value",
-			},
-			data:    nil,
-			wantErr: errors.New("column name found in both rowKey and columnKey: a"),
-		},
 		{
 			name: "_field flatten case one table",
 			spec: &universe.PivotProcedureSpec{
@@ -684,7 +677,7 @@ func TestPivot_Process(t *testing.T) {
 				t,
 				tc.data,
 				tc.want,
-				tc.wantErr,
+				nil,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
 					return universe.NewPivotTransformation(d, c, tc.spec)
 				},

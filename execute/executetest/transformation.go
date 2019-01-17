@@ -58,16 +58,23 @@ func ProcessTestHelper(
 	tx := create(d, c)
 
 	parentID := RandomDatasetID()
+	var gotErr error
 	for _, b := range data {
 		if err := tx.Process(parentID, b); err != nil {
-			if wantErr != nil && wantErr.Error() != err.Error() {
-				t.Fatalf("unexpected error -want/+got\n%s", cmp.Diff(wantErr.Error(), err.Error()))
-			} else if wantErr == nil {
-				t.Fatalf("expected no error, got %s", err.Error())
-			}
+			gotErr = err
+			break
+		}
+	}
+
+	if gotErr == nil && wantErr != nil {
+		t.Fatalf("expected error %s, got none", wantErr.Error())
+	} else if gotErr != nil && wantErr == nil {
+		t.Fatalf("expected no error, got %s", gotErr.Error())
+	} else if gotErr != nil && wantErr != nil {
+		if wantErr.Error() != gotErr.Error() {
+			t.Fatalf("unexpected error -want/+got\n%s", cmp.Diff(wantErr.Error(), gotErr.Error()))
+		} else {
 			return
-		} else if wantErr != nil {
-			t.Fatalf("expected error %s, got none", wantErr.Error())
 		}
 	}
 
