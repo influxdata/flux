@@ -222,6 +222,9 @@ func (c *Controller) enqueueQuery(q *Query) error {
 		return errors.Wrap(err, "invalid query")
 	}
 
+	// Count functions in query
+	c.countFunctions(q)
+
 	// Add query to the queue
 	select {
 	case c.newQueries <- q:
@@ -230,6 +233,16 @@ func (c *Controller) enqueueQuery(q *Query) error {
 		return fmt.Errorf("query controller shutdown")
 	case <-q.parentCtx.Done():
 		return q.parentCtx.Err()
+	}
+}
+
+func (c *Controller) countFunctions(q *Query) {
+	l := len(q.labelValues)
+	lvs := make([]string, l+1)
+	copy(lvs, q.labelValues)
+	for _, op := range q.Spec().Operations {
+		lvs[l] = string(op.Spec.Kind())
+		c.metrics.functions.WithLabelValues(lvs...).Inc()
 	}
 }
 
