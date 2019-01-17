@@ -1,7 +1,6 @@
 package scanner
 
 import (
-	"fmt"
 	"unicode/utf8"
 
 	"github.com/influxdata/flux/internal/token"
@@ -75,7 +74,7 @@ func (s *Scanner) scan(cs int) (pos token.Pos, tok token.Token, lit string) {
 		// Execution failed meaning we hit a pattern that we don't support and
 		// doesn't produce a token. Use the unicode library to decode the next character
 		// in the sequence so we don't break up any unicode tokens.
-		ch, size := utf8.DecodeRune(s.data[s.ts:])
+		_, size := utf8.DecodeRune(s.data[s.ts:])
 		if size == 0 {
 			// This should be impossible as we would have produced an EOF token
 			// instead, but going to handle this anyway as in this impossible scenario
@@ -84,7 +83,7 @@ func (s *Scanner) scan(cs int) (pos token.Pos, tok token.Token, lit string) {
 		}
 		// Advance the data pointer to after the character we just emitted.
 		s.p = s.ts + size
-		return s.f.Pos(s.ts), token.ILLEGAL, fmt.Sprintf("%c", ch)
+		return s.f.Pos(s.ts), token.ILLEGAL, string(s.data[s.ts : s.ts+size])
 	} else if s.token == token.ILLEGAL && s.p == s.eof {
 		return s.f.Pos(len(s.data)), token.EOF, ""
 	}
