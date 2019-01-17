@@ -858,7 +858,7 @@ type importer struct {
 func (imp *importer) Copy() *importer {
 	packages := make(map[string]*interpreter.Package, len(imp.pkgs))
 	for k, v := range imp.pkgs {
-		packages[k] = v
+		packages[k] = v.Copy()
 	}
 	return &importer{
 		pkgs: packages,
