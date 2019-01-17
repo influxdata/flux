@@ -85,7 +85,7 @@ pearsonr = (x,y,on) => cov(x:x, y:y, on:on, pearsonr:true)
 // and then undo the windowing to produce an output table for every input table.
 aggregateWindow = (every, fn, columns=["_value"], timeSrc="_stop",timeDst="_time", tables=<-) =>
     tables
-        |> window(every:every)
+        |> window(every:every, createEmpty: true)
         |> fn(columns:columns)
         |> duplicate(column:timeSrc,as:timeDst)
         |> window(every:inf, timeColumn:timeDst)
