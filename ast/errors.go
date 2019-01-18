@@ -27,6 +27,26 @@ func check(n Node) int {
 			Msg: fmt.Sprintf("invalid statement %s@%d:%d-%d:%d: %s", loc.File, loc.Start.Line, loc.Start.Column, loc.End.Line, loc.End.Column, n.Text),
 		})
 		return len(n.Errors)
+	case *ObjectExpression:
+		hasImplicit := false
+		hasExplicit := false
+		for _, p := range n.Properties {
+			if p.Value == nil {
+				hasImplicit = true
+				if s, ok := p.Key.(*StringLiteral); ok {
+					p.Errors = append(p.Errors, Error{
+						Msg: fmt.Sprintf("string literal key %q must have a value", s.Value),
+					})
+				}
+			} else {
+				hasExplicit = true
+			}
+		}
+		if hasImplicit && hasExplicit {
+			n.Errors = append(n.Errors, Error{
+				Msg: fmt.Sprintf("cannot mix implicit and explicit properties"),
+			})
+		}
 	}
 
 	return 0

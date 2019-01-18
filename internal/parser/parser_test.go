@@ -1209,6 +1209,164 @@ import "path/bar"
 			},
 		},
 		{
+			name: "implicit key object literal error",
+			raw:  `x = {"a", b}`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:13"),
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
+						BaseNode: base("1:1", "1:13"),
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "x",
+						},
+						Init: &ast.ObjectExpression{
+							BaseNode: base("1:5", "1:13"),
+							Properties: []*ast.Property{
+								&ast.Property{
+									BaseNode: base(
+										"1:6", "1:9",
+										ast.Error{Msg: `string literal key "a" must have a value`},
+									),
+									Key: &ast.StringLiteral{
+										BaseNode: base("1:6", "1:9"),
+										Value:    "a",
+									},
+								},
+								&ast.Property{
+									BaseNode: base("1:11", "1:12"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:11", "1:12"),
+										Name:     "b",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "implicit and explicit keys object literal error",
+			raw:  `x = {a, b:c}`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:13"),
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
+						BaseNode: base("1:1", "1:13"),
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "x",
+						},
+						Init: &ast.ObjectExpression{
+							BaseNode: base(
+								"1:5", "1:13",
+								ast.Error{Msg: `cannot mix implicit and explicit properties`},
+							),
+							Properties: []*ast.Property{
+								&ast.Property{
+									BaseNode: base("1:6", "1:7"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:6", "1:7"),
+										Name:     "a",
+									},
+								},
+								&ast.Property{
+									BaseNode: base("1:9", "1:12"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:9", "1:10"),
+										Name:     "b",
+									},
+									Value: &ast.Identifier{
+										BaseNode: base("1:11", "1:12"),
+										Name:     "c",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "object with",
+			raw:  `{a with b:c, d:e}`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:18"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:18"),
+						Expression: &ast.ObjectExpression{
+							BaseNode: base("1:1", "1:18"),
+							With: &ast.Identifier{
+								BaseNode: base("1:2", "1:3"),
+								Name:     "a",
+							},
+							Properties: []*ast.Property{
+								&ast.Property{
+									BaseNode: base("1:9", "1:12"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:9", "1:10"),
+										Name:     "b",
+									},
+									Value: &ast.Identifier{
+										BaseNode: base("1:11", "1:12"),
+										Name:     "c",
+									},
+								},
+								&ast.Property{
+									BaseNode: base("1:14", "1:17"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:14", "1:15"),
+										Name:     "d",
+									},
+									Value: &ast.Identifier{
+										BaseNode: base("1:16", "1:17"),
+										Name:     "e",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "object with implicit keys",
+			raw:  `{a with b, c}`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:14"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:14"),
+						Expression: &ast.ObjectExpression{
+							BaseNode: base("1:1", "1:14"),
+							With: &ast.Identifier{
+								BaseNode: base("1:2", "1:3"),
+								Name:     "a",
+							},
+							Properties: []*ast.Property{
+								&ast.Property{
+									BaseNode: base("1:9", "1:10"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:9", "1:10"),
+										Name:     "b",
+									},
+								},
+								&ast.Property{
+									BaseNode: base("1:12", "1:13"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:12", "1:13"),
+										Name:     "c",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "index expression",
 			raw:  `a[3]`,
 			want: &ast.File{
@@ -3972,9 +4130,10 @@ func loc(start, end string) *ast.SourceLocation {
 	}
 }
 
-func base(start, end string) ast.BaseNode {
+func base(start, end string, errors ...ast.Error) ast.BaseNode {
 	return ast.BaseNode{
-		Loc: loc(start, end),
+		Loc:    loc(start, end),
+		Errors: errors,
 	}
 }
 

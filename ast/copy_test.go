@@ -240,6 +240,15 @@ func TestCopy(t *testing.T) {
 			},
 		},
 		{
+			node: &ast.ObjectExpression{
+				With: &ast.Identifier{Name: "z"},
+				Properties: []*ast.Property{{
+					Key:   &ast.Identifier{Name: "a"},
+					Value: &ast.IntegerLiteral{Value: 3},
+				}},
+			},
+		},
+		{
 			node: &ast.ConditionalExpression{},
 		},
 		{

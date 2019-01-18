@@ -626,10 +626,19 @@ Literals construct a value.
 
 Object literals construct a value with the object type.
 
-    ObjectLiteral = "{" PropertyList "}" .
-    PropertyList  = [ Property { "," Property } ] .
-    Property      = identifier [ ":" Expression ]
-                  | string_lit ":" Expression .
+    ObjectLiteral  = "{" ObjectBody "}" .
+    ObjectBody     = WithProperties | PropertyList .
+    WithProperties = identifier "with"  PropertyList .
+    PropertyList   = [ Property { "," Property } ] .
+    Property       = identifier [ ":" Expression ]
+                   | string_lit ":" Expression .
+
+Examples:
+
+    {a: 1, b: 2, c: 3}
+    {a, b, c}
+    {o with x: 5, y: 5}
+    {o with a, b}
 
 ##### Array literals
 

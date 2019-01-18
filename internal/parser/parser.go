@@ -818,12 +818,10 @@ func (p *parser) parseArrayLiteral() ast.Expression {
 
 func (p *parser) parseObjectLiteral() ast.Expression {
 	start, _ := p.open(token.LBRACE, token.RBRACE)
-	properties := p.parsePropertyList()
+	obj := p.parseObjectBody()
 	end, rbrace := p.close(token.RBRACE)
-	return &ast.ObjectExpression{
-		Properties: properties,
-		BaseNode:   p.position(start, end+token.Pos(len(rbrace))),
-	}
+	obj.BaseNode = p.position(start, end+token.Pos(len(rbrace)))
+	return obj
 }
 
 func (p *parser) parseParenExpression() ast.Expression {
@@ -892,6 +890,59 @@ func (p *parser) parseParenIdentExpression(lparen token.Pos, key *ast.Identifier
 	}
 }
 
+func (p *parser) parseObjectBody() *ast.ObjectExpression {
+	switch _, tok, _ := p.peek(); tok {
+	case token.IDENT:
+		ident := p.parseIdentifier()
+		return p.parseObjectBodySuffix(ident)
+	case token.STRING:
+		str := p.parseStringLiteral()
+		properties := p.parsePropertyListSuffix(str)
+		return &ast.ObjectExpression{
+			Properties: properties,
+		}
+	default:
+		// TODO(nathanielc): BadExpression.
+		return nil
+	}
+
+}
+func (p *parser) parseObjectBodySuffix(ident *ast.Identifier) *ast.ObjectExpression {
+	switch _, tok, lit := p.peek(); tok {
+	case token.IDENT:
+		if lit != "with" {
+			// TODO(nathanielc) BadExpression since we had two idents in a row
+			return nil
+		}
+		p.consume()
+		properties := p.parsePropertyList()
+		return &ast.ObjectExpression{
+			With:       ident,
+			Properties: properties,
+		}
+	default:
+		properties := p.parsePropertyListSuffix(ident)
+		return &ast.ObjectExpression{
+			Properties: properties,
+		}
+	}
+}
+
+func (p *parser) parsePropertyListSuffix(key ast.PropertyKey) []*ast.Property {
+	var properties []*ast.Property
+	prop := p.parsePropertySuffix(key)
+	properties = append(properties, prop)
+	switch _, tok, _ := p.peek(); tok {
+	case token.COMMA:
+		p.consume()
+		rest := p.parsePropertyList()
+		properties = append(properties, rest...)
+	default:
+		// Nothing to do
+	}
+	return properties
+}
+
 func (p *parser) parsePropertyList() []*ast.Property {
 	var params []*ast.Property
 	for p.more() {
@@ -916,20 +967,15 @@ func (p *parser) parsePropertyList() []*ast.Property {
 
 func (p *parser) parseStringProperty() *ast.Property {
 	key := p.parseStringLiteral()
-	p.expect(token.COLON)
-	val := p.parseExpression()
-	return &ast.Property{
-		Key:   key,
-		Value: val,
-		BaseNode: p.baseNode(p.sourceLocation(
-			locStart(key),
-			locEnd(val),
-		)),
-	}
+	return p.parsePropertySuffix(key)
 }
 
 func (p *parser) parseIdentProperty() *ast.Property {
 	key := p.parseIdentifier()
+	return p.parsePropertySuffix(key)
+}
+
+func (p *parser) parsePropertySuffix(key ast.PropertyKey) *ast.Property {
 	loc := key.Location()
 	property := &ast.Property{
 		Key:      key,

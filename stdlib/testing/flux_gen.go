@@ -186,6 +186,7 @@ var pkgAST = &ast.Package{
 								Name: "csv",
 							},
 						}},
+						With: nil,
 					}},
 					BaseNode: ast.BaseNode{
 						Errors: nil,
@@ -413,6 +414,7 @@ var pkgAST = &ast.Package{
 								Name: "csv",
 							},
 						}},
+						With: nil,
 					}},
 					BaseNode: ast.BaseNode{
 						Errors: nil,
@@ -866,6 +868,7 @@ var pkgAST = &ast.Package{
 										Name: "got",
 									},
 								}},
+								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
 								Errors: nil,
