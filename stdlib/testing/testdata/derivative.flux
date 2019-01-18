@@ -1,5 +1,7 @@
 import "testing"
 
+option now = () => 2030-01-01T00:00:00Z
+
 inData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string
 #group,false,false,true,true,false,false,true,true,true,true,true,true

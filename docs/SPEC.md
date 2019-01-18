@@ -1990,6 +1990,7 @@ from(bucket:"telegraf/autogen")
 
 Range filters records based on provided time bounds.
 Each input tables records are filtered to contain only records that exist within the time bounds.
+Records with a null value for their time will be filtered.
 Each input table's group key value is modified to fit within the time bounds.
 Tables where all records exists outside the time bounds are filtered entirely.
 

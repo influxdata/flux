@@ -1,14 +1,16 @@
 import "testing"
 
+option now = () => 2030-01-01T00:00:00Z
+
 inData = "
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string
-#group,false,false,false,false,false,false,true
-#default,_result,,,,,,
-,result,table,_start,_stop,_time,x,_measurement
-,,0,2018-05-22T19:53:24.421470485Z,2018-05-22T19:54:24.421470485Z,2018-05-22T19:53:26Z,0,cpu
-,,0,2018-05-22T19:53:24.421470485Z,2018-05-22T19:54:24.421470485Z,2018-05-22T19:53:36Z,0,cpu
-,,0,2018-05-22T19:53:24.421470485Z,2018-05-22T19:54:24.421470485Z,2018-05-22T19:53:46Z,2,cpu
-,,0,2018-05-22T19:53:24.421470485Z,2018-05-22T19:54:24.421470485Z,2018-05-22T19:53:56Z,7,cpu
+#datatype,string,long,dateTime:RFC3339,double,string
+#group,false,false,false,false,true
+#default,_result,,,,
+,result,table,_time,x,_measurement
+,,0,2018-05-22T19:53:26Z,0,cpu
+,,0,2018-05-22T19:53:36Z,0,cpu
+,,0,2018-05-22T19:53:46Z,2,cpu
+,,0,2018-05-22T19:53:56Z,7,cpu
 "
 outData = "
 #datatype,string,string

@@ -127,13 +127,12 @@ func TestRangeOperation_Marshaling(t *testing.T) {
 
 func TestRange_Process(t *testing.T) {
 	testCases := []struct {
-		name     string
-		spec     *universe.RangeProcedureSpec
-		data     []flux.Table
-		want     []*executetest.Table
-		groupKey func() flux.GroupKey
-		now      values.Time
-		wantErr  error
+		name    string
+		spec    *universe.RangeProcedureSpec
+		data    []flux.Table
+		want    []*executetest.Table
+		now     values.Time
+		wantErr error
 	}{
 		{
 			name: "from csv",
@@ -169,15 +168,16 @@ func TestRange_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TFloat},
 					{Label: "_start", Type: flux.TTime},
 					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
 				},
+				KeyCols: []string{"_start", "_stop"},
 				Data: [][]interface{}{
-					{execute.Time(2 * time.Minute.Nanoseconds()), 5.0, execute.Time(2 * time.Minute.Nanoseconds()), execute.Time(5 * time.Minute.Nanoseconds())},
-					{execute.Time(3 * time.Minute.Nanoseconds()), 9.0, execute.Time(2 * time.Minute.Nanoseconds()), execute.Time(5 * time.Minute.Nanoseconds())},
-					{execute.Time(4 * time.Minute.Nanoseconds()), 4.0, execute.Time(2 * time.Minute.Nanoseconds()), execute.Time(5 * time.Minute.Nanoseconds())},
+					{execute.Time(2 * time.Minute.Nanoseconds()), execute.Time(5 * time.Minute.Nanoseconds()), execute.Time(2 * time.Minute.Nanoseconds()), 5.0},
+					{execute.Time(2 * time.Minute.Nanoseconds()), execute.Time(5 * time.Minute.Nanoseconds()), execute.Time(3 * time.Minute.Nanoseconds()), 9.0},
+					{execute.Time(2 * time.Minute.Nanoseconds()), execute.Time(5 * time.Minute.Nanoseconds()), execute.Time(4 * time.Minute.Nanoseconds()), 4.0},
 				},
 			}},
 			now: values.Time(7 * time.Minute.Nanoseconds()),
@@ -221,7 +221,7 @@ func TestRange_Process(t *testing.T) {
 				},
 				Data: [][]interface{}(nil),
 			}},
-			wantErr: errors.New("range error: provided column _value is not of type time"),
+			wantErr: errors.New("range error: provided time column _value is not of type time"),
 			now:     values.Time(7 * time.Minute.Nanoseconds()),
 		},
 		{
@@ -255,14 +255,15 @@ func TestRange_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
+					{Label: "_stop", Type: flux.TTime},
 					{Label: "_start", Type: flux.TTime},
 					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
-					{Label: "_stop", Type: flux.TTime},
 				},
+				KeyCols: []string{"_start", "_stop"},
 				Data: [][]interface{}{
-					{execute.Time(time.Minute.Nanoseconds()), execute.Time(3 * time.Minute.Nanoseconds()), 9.0, execute.Time(3 * time.Minute.Nanoseconds())},
-					{execute.Time(2 * time.Minute.Nanoseconds()), execute.Time(7 * time.Minute.Nanoseconds()), 1.0, execute.Time(3 * time.Minute.Nanoseconds())},
+					{execute.Time(3 * time.Minute.Nanoseconds()), execute.Time(time.Minute.Nanoseconds()), execute.Time(3 * time.Minute.Nanoseconds()), 9.0},
+					{execute.Time(3 * time.Minute.Nanoseconds()), execute.Time(time.Minute.Nanoseconds()), execute.Time(7 * time.Minute.Nanoseconds()), 1.0},
 				},
 			}},
 			now: values.Time(3 * time.Minute.Nanoseconds()),
@@ -290,8 +291,7 @@ func TestRange_Process(t *testing.T) {
 					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
 				},
-				KeyCols:   []string{"_start", "_stop"},
-				KeyValues: []interface{}{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds())},
+				KeyCols: []string{"_start", "_stop"},
 				Data: [][]interface{}{
 					{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds()), execute.Time(11 * time.Minute.Nanoseconds()), 10.0},
 					{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds()), execute.Time(12 * time.Minute.Nanoseconds()), 9.0},
@@ -307,7 +307,7 @@ func TestRange_Process(t *testing.T) {
 					{Label: "_value", Type: flux.TFloat},
 				},
 				KeyCols:   []string{"_start", "_stop"},
-				KeyValues: []interface{}{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds())},
+				KeyValues: []interface{}{execute.Time(time.Minute.Nanoseconds()), execute.Time(3 * time.Minute.Nanoseconds())},
 				Data:      [][]interface{}(nil),
 			}},
 			now: values.Time(3 * time.Minute.Nanoseconds()),
@@ -334,8 +334,7 @@ func TestRange_Process(t *testing.T) {
 					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
 				},
-				KeyCols:   []string{"_start", "_stop"},
-				KeyValues: []interface{}{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds())},
+				KeyCols: []string{"_start", "_stop"},
 				Data: [][]interface{}{
 					{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds()), execute.Time(11 * time.Minute.Nanoseconds()), 11.0},
 					{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds()), execute.Time(12 * time.Minute.Nanoseconds()), 9.0},
@@ -350,36 +349,153 @@ func TestRange_Process(t *testing.T) {
 					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
 				},
-				KeyCols:   []string{"_start", "_stop"},
-				KeyValues: []interface{}{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds())},
+				KeyCols: []string{"_start", "_stop"},
 				Data: [][]interface{}{
 					{execute.Time(12 * time.Minute.Nanoseconds()), execute.Time(14 * time.Minute.Nanoseconds()), execute.Time(12 * time.Minute.Nanoseconds()), 9.0},
 					{execute.Time(12 * time.Minute.Nanoseconds()), execute.Time(14 * time.Minute.Nanoseconds()), execute.Time(13 * time.Minute.Nanoseconds()), 1.0},
 				},
 			}},
-			groupKey: func() flux.GroupKey {
-				t1 := values.NewTime(values.Time(10 * time.Minute.Nanoseconds()))
-				t2 := values.NewTime(values.Time(20 * time.Minute.Nanoseconds()))
-
-				vs := []values.Value{t1, t2}
-				return execute.NewGroupKey(
-					[]flux.ColMeta{
-						{Label: "_start", Type: flux.TTime},
-						{Label: "_stop", Type: flux.TTime},
+		},
+		{
+			name: "group key with null value",
+			spec: &universe.RangeProcedureSpec{
+				Bounds: flux.Bounds{
+					Start: flux.Time{
+						Absolute: time.Unix(12*time.Minute.Nanoseconds(), 0),
 					},
-					vs,
-				)
+					Stop: flux.Time{
+						Absolute: time.Unix(14*time.Minute.Nanoseconds(), 0),
+					},
+				},
+				TimeColumn:  "_time",
+				StartColumn: "_start",
+				StopColumn:  "_stop",
 			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				KeyCols: []string{"_start", "_stop"},
+				Data: [][]interface{}{
+					{nil, execute.Time(20 * time.Minute.Nanoseconds()), execute.Time(11 * time.Minute.Nanoseconds()), 11.0},
+					{nil, execute.Time(20 * time.Minute.Nanoseconds()), execute.Time(12 * time.Minute.Nanoseconds()), 9.0},
+					{nil, execute.Time(20 * time.Minute.Nanoseconds()), execute.Time(13 * time.Minute.Nanoseconds()), 1.0},
+					{nil, execute.Time(20 * time.Minute.Nanoseconds()), execute.Time(15 * time.Minute.Nanoseconds()), 4.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				KeyCols: []string{"_start", "_stop"},
+				Data: [][]interface{}{
+					{execute.Time(12 * time.Minute.Nanoseconds()), execute.Time(14 * time.Minute.Nanoseconds()), execute.Time(12 * time.Minute.Nanoseconds()), 9.0},
+					{execute.Time(12 * time.Minute.Nanoseconds()), execute.Time(14 * time.Minute.Nanoseconds()), execute.Time(13 * time.Minute.Nanoseconds()), 1.0},
+				},
+			}},
+		},
+		{
+			name: "null in _time column",
+			spec: &universe.RangeProcedureSpec{
+				Bounds: flux.Bounds{
+					Start: flux.Time{
+						Absolute: time.Unix(12*time.Minute.Nanoseconds(), 0),
+					},
+					Stop: flux.Time{
+						Absolute: time.Unix(14*time.Minute.Nanoseconds(), 0),
+					},
+				},
+				TimeColumn:  "_time",
+				StartColumn: "_start",
+				StopColumn:  "_stop",
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				KeyCols: []string{"_start", "_stop"},
+				Data: [][]interface{}{
+					{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds()), execute.Time(11 * time.Minute.Nanoseconds()), 11.0},
+					{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds()), nil, 9.0},
+					{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds()), execute.Time(13 * time.Minute.Nanoseconds()), 1.0},
+					{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds()), execute.Time(15 * time.Minute.Nanoseconds()), 4.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				KeyCols: []string{"_start", "_stop"},
+				Data: [][]interface{}{
+					{execute.Time(12 * time.Minute.Nanoseconds()), execute.Time(14 * time.Minute.Nanoseconds()), execute.Time(13 * time.Minute.Nanoseconds()), 1.0},
+				},
+			}},
+		},
+		{
+			name: "null values passed through",
+			spec: &universe.RangeProcedureSpec{
+				Bounds: flux.Bounds{
+					Start: flux.Time{
+						Absolute: time.Unix(12*time.Minute.Nanoseconds(), 0),
+					},
+					Stop: flux.Time{
+						Absolute: time.Unix(14*time.Minute.Nanoseconds(), 0),
+					},
+				},
+				TimeColumn:  "_time",
+				StartColumn: "_start",
+				StopColumn:  "_stop",
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				KeyCols: []string{"_start", "_stop"},
+				Data: [][]interface{}{
+					{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds()), execute.Time(11 * time.Minute.Nanoseconds()), 11.0},
+					{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds()), execute.Time(12 * time.Minute.Nanoseconds()), nil},
+					{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds()), execute.Time(13 * time.Minute.Nanoseconds()), 1.0},
+					{execute.Time(10 * time.Minute.Nanoseconds()), execute.Time(20 * time.Minute.Nanoseconds()), execute.Time(15 * time.Minute.Nanoseconds()), 4.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				KeyCols: []string{"_start", "_stop"},
+				Data: [][]interface{}{
+					{execute.Time(12 * time.Minute.Nanoseconds()), execute.Time(14 * time.Minute.Nanoseconds()), execute.Time(12 * time.Minute.Nanoseconds()), nil},
+					{execute.Time(12 * time.Minute.Nanoseconds()), execute.Time(14 * time.Minute.Nanoseconds()), execute.Time(13 * time.Minute.Nanoseconds()), 1.0},
+				},
+			}},
 		},
 		{
 			name: "empty bounds start == stop",
 			spec: &universe.RangeProcedureSpec{
 				Bounds: flux.Bounds{
 					Start: flux.Time{
-						Absolute: time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC),
+						Absolute: time.Unix(12*time.Minute.Nanoseconds(), 0),
 					},
 					Stop: flux.Time{
-						Absolute: time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC),
+						Absolute: time.Unix(12*time.Minute.Nanoseconds(), 0),
 					},
 				},
 
@@ -404,10 +520,15 @@ func TestRange_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TFloat},
 					{Label: "_start", Type: flux.TTime},
 					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				KeyCols: []string{"_start", "_stop"},
+				KeyValues: []interface{}{
+					execute.Time(12 * time.Minute.Nanoseconds()),
+					execute.Time(12 * time.Minute.Nanoseconds()),
 				},
 				Data: [][]interface{}(nil),
 			}},
@@ -447,10 +568,15 @@ func TestRange_Process(t *testing.T) {
 			}},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TFloat},
 					{Label: "_start", Type: flux.TTime},
 					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				KeyCols: []string{"_start", "_stop"},
+				KeyValues: []interface{}{
+					execute.Time(5 * time.Minute.Nanoseconds()),
+					execute.Time(2 * time.Minute.Nanoseconds()),
 				},
 				Data: [][]interface{}(nil),
 			}},
@@ -459,19 +585,6 @@ func TestRange_Process(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.groupKey != nil && tc.want != nil {
-				// populate group keys for the test case
-				for _, table := range tc.data {
-					tbl, ok := table.(*executetest.Table)
-					if !ok {
-						t.Fatal("failed to set group key")
-					}
-					tbl.GroupKey = tc.groupKey()
-				}
-				for _, table := range tc.want {
-					table.GroupKey = tc.groupKey()
-				}
-			}
 			executetest.ProcessTestHelper(
 				t,
 				tc.data,
