@@ -1,6 +1,7 @@
 package universe_test
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -214,10 +215,11 @@ func TestGroup_NewQuery(t *testing.T) {
 
 func TestGroup_Process(t *testing.T) {
 	testCases := []struct {
-		name string
-		spec *universe.GroupProcedureSpec
-		data []flux.Table
-		want []*executetest.Table
+		name    string
+		spec    *universe.GroupProcedureSpec
+		data    []flux.Table
+		want    []*executetest.Table
+		wantErr error
 	}{
 		{
 			name: "fan in",
@@ -632,7 +634,7 @@ func TestGroup_Process(t *testing.T) {
 					},
 				},
 			},
-			want: []*executetest.Table{}, // TODO What do we want?
+			wantErr: errors.New(`schema collision detected: column "_value" is both of type int and float`),
 		},
 		{
 			name: "null values",
@@ -753,15 +755,11 @@ func TestGroup_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.name == "heterogeneous typed columns" {
-				t.Skip("should pass once we decide the expected behavior: https://github.com/influxdata/flux/issues/439")
-			}
-
 			executetest.ProcessTestHelper(
 				t,
 				tc.data,
 				tc.want,
-				nil,
+				tc.wantErr,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
 					return universe.NewGroupTransformation(d, c, tc.spec)
 				},
