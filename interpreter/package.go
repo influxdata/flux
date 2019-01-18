@@ -124,6 +124,9 @@ func (p *Package) String() string {
 	builder.WriteString("pkg{")
 	i := 0
 	p.Range(func(k string, v values.Value) {
+		if _, ok := v.(*Package); ok {
+			return
+		}
 		if i != 0 {
 			builder.WriteString(", ")
 		}
