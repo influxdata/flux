@@ -1,8 +1,10 @@
 package parser_test
 
 import (
+	"fmt"
 	"reflect"
 	"regexp"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"testing"
@@ -1344,6 +1346,117 @@ import "path/bar"
 								Value:    "c",
 							},
 						},
+					},
+				},
+			},
+		},
+		{
+			name: "index with unclosed bracket",
+			raw:  `a[b()`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:6"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:6"),
+						Expression: &ast.IndexExpression{
+							BaseNode: ast.BaseNode{
+								Loc: loc("1:1", "1:6"),
+								Errors: []ast.Error{
+									{Msg: "expected RBRACK, got EOF"},
+								},
+							},
+							Array: &ast.Identifier{
+								BaseNode: base("1:1", "1:2"),
+								Name:     "a",
+							},
+							Index: &ast.CallExpression{
+								BaseNode: base("1:3", "1:6"),
+								Callee: &ast.Identifier{
+									BaseNode: base("1:3", "1:4"),
+									Name:     "b",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "index with unbalanced parenthesis",
+			raw:  `a[b(]`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:6"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:6"),
+						Expression: &ast.IndexExpression{
+							BaseNode: base("1:1", "1:6"),
+							Array: &ast.Identifier{
+								BaseNode: base("1:1", "1:2"),
+								Name:     "a",
+							},
+							Index: &ast.CallExpression{
+								BaseNode: ast.BaseNode{
+									Loc: loc("1:3", "1:6"),
+									Errors: []ast.Error{
+										{Msg: "expected RPAREN, got RBRACK"},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: base("1:3", "1:4"),
+									Name:     "b",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		// TODO(jsternberg): It would be ideal if the rparen was interpreted
+		// as either a bad operator or a bad expression, but we do not yet
+		// have that functionality.
+		{
+			name: "index with unexpected rparen",
+			raw:  `a[b)]`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:6"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:5"),
+						Expression: &ast.IndexExpression{
+							BaseNode: ast.BaseNode{
+								Loc: loc("1:1", "1:5"),
+								Errors: []ast.Error{
+									{Msg: "expected RBRACK, got RPAREN"},
+								},
+							},
+							Array: &ast.Identifier{
+								BaseNode: base("1:1", "1:2"),
+								Name:     "a",
+							},
+							Index: &ast.Identifier{
+								BaseNode: base("1:3", "1:4"),
+								Name:     "b",
+							},
+						},
+					},
+					&ast.BadStatement{
+						BaseNode: ast.BaseNode{
+							Loc: loc("1:4", "1:5"),
+							Errors: []ast.Error{
+								{Msg: "invalid statement @1:4-1:5: )"},
+							},
+						},
+						Text: ")",
+					},
+					&ast.BadStatement{
+						BaseNode: ast.BaseNode{
+							Loc: loc("1:5", "1:6"),
+							Errors: []ast.Error{
+								{Msg: "invalid statement @1:5-1:6: ]"},
+							},
+						},
+						Text: "]",
 					},
 				},
 			},
@@ -3611,12 +3724,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 								},
 							},
 							Call: &ast.CallExpression{
-								BaseNode: ast.BaseNode{
-									Loc: loc("1:22", "1:56"),
-									Errors: []ast.Error{
-										{Msg: "expected RPAREN, got EOF"},
-									},
-								},
+								BaseNode: base("1:22", "1:56"),
 								Callee: &ast.Identifier{
 									BaseNode: base("1:22", "1:25"),
 									Name:     "map",
@@ -3646,7 +3754,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 														BaseNode: ast.BaseNode{
 															Loc: loc("1:37", "1:56"),
 															Errors: []ast.Error{
-																{Msg: "expected RBRACE, got EOF"},
+																{Msg: "expected RBRACE, got RPAREN"},
 															},
 														},
 														Body: []ast.Statement{
@@ -3663,15 +3771,6 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 																		Name:     "_value",
 																	},
 																},
-															},
-															&ast.BadStatement{
-																BaseNode: ast.BaseNode{
-																	Loc: loc("1:55", "1:56"),
-																	Errors: []ast.Error{
-																		{Msg: "invalid statement @1:55-1:56: )"},
-																	},
-																},
-																Text: ")",
 															},
 														},
 													},
@@ -3824,7 +3923,12 @@ string"
 		runFn(tt.name, func(tb testing.TB) {
 			defer func() {
 				if err := recover(); err != nil {
-					tb.Fatalf("unexpected panic: %s", err)
+					errStr := fmt.Sprintf("%s", err)
+					if testing.Verbose() {
+						stack := debug.Stack()
+						errStr = fmt.Sprintf("%s\n%s", errStr, string(stack))
+					}
+					tb.Fatalf("unexpected panic: %s", errStr)
 				}
 			}()
 
