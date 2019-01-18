@@ -1,13 +1,12 @@
-package inputs
+package execute
 
 import (
 	"context"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
 )
 
-// Source Decoder is an interface that generalizes the process of retrieving data from an unspecified data source.
+// SourceDecoder is an interface that generalizes the process of retrieving data from an unspecified data source.
 //
 // Connect implements the logic needed to connect directly to the data source.
 //
@@ -26,14 +25,14 @@ type SourceDecoder interface {
 
 // CreateSourceFromDecoder takes an implementation of a SourceDecoder, as well as a dataset ID and Administration type
 // and creates an execute.Source.
-func CreateSourceFromDecoder(decoder SourceDecoder, dsid execute.DatasetID, a execute.Administration) (execute.Source, error) {
+func CreateSourceFromDecoder(decoder SourceDecoder, dsid DatasetID, a Administration) (Source, error) {
 	return &sourceIterator{decoder: decoder, id: dsid}, nil
 }
 
 type sourceIterator struct {
 	decoder SourceDecoder
-	id      execute.DatasetID
-	ts      []execute.Transformation
+	id      DatasetID
+	ts      []Transformation
 }
 
 func (c *sourceIterator) Do(f func(flux.Table) error) error {
@@ -64,7 +63,7 @@ func (c *sourceIterator) Do(f func(flux.Table) error) error {
 	return nil
 }
 
-func (c *sourceIterator) AddTransformation(t execute.Transformation) {
+func (c *sourceIterator) AddTransformation(t Transformation) {
 	c.ts = append(c.ts, t)
 }
 

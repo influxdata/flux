@@ -1,4 +1,4 @@
-package inputs
+package sql
 
 import (
 	"database/sql"
@@ -34,7 +34,7 @@ func init() {
 		Required: semantic.LabelSet{"driverName", "dataSourceName", "query"},
 		Return:   flux.TableObjectType,
 	}
-	flux.RegisterPackageValue("inputs", FromSQLKind, flux.FunctionValue(FromSQLKind, createFromSQLOpSpec, fromSQLSignature))
+	flux.RegisterPackageValue("sql", "from", flux.FunctionValue(FromSQLKind, createFromSQLOpSpec, fromSQLSignature))
 	flux.RegisterOpSpec(FromSQLKind, newFromSQLOp)
 	plan.RegisterProcedureSpec(FromSQLKind, newFromSQLProcedure, FromSQLKind)
 	execute.RegisterSource(FromSQLKind, createFromSQLSource)
@@ -116,7 +116,7 @@ func createFromSQLSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 
 	SQLIterator := SQLIterator{id: dsid, spec: spec, administration: a}
 
-	return CreateSourceFromDecoder(&SQLIterator, dsid, a)
+	return execute.CreateSourceFromDecoder(&SQLIterator, dsid, a)
 }
 
 type SQLIterator struct {

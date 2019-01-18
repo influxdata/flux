@@ -1,4 +1,4 @@
-package inputs
+package generate
 
 import (
 	"fmt"
@@ -40,7 +40,7 @@ func init() {
 		Required: semantic.LabelSet{"start", "stop", "count", "fn"},
 		Return:   flux.TableObjectType,
 	}
-	flux.RegisterPackageValue("inputs", FromGeneratorKind, flux.FunctionValue(FromGeneratorKind, createFromGeneratorOpSpec, fromGeneratorSignature))
+	flux.RegisterPackageValue("generate", "from", flux.FunctionValue(FromGeneratorKind, createFromGeneratorOpSpec, fromGeneratorSignature))
 	flux.RegisterOpSpec(FromGeneratorKind, newFromGeneratorOp)
 	plan.RegisterProcedureSpec(FromGeneratorKind, newFromGeneratorProcedure, FromGeneratorKind)
 	execute.RegisterSource(FromGeneratorKind, createFromGeneratorSource)
@@ -137,7 +137,7 @@ func createFromGeneratorSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID
 	s.Count = spec.Count
 	s.Fn = spec.Fn
 
-	return CreateSourceFromDecoder(s, dsid, a)
+	return execute.CreateSourceFromDecoder(s, dsid, a)
 }
 
 type GeneratorSource struct {
