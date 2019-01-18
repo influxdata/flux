@@ -1400,14 +1400,14 @@ an output table for every input table.
 AggregateWindow has the following properties:
 
 
-| Name    | Type                                            | Description                                                                                                           |
-| ----    | ----                                            | -----------                                                                                                           |
-| every   | duration                                        | Every specifies the window size to aggregate.                                                                         |
-| fn      | (tables: <-stream, columns: []string) -> stream | Fn specifies the aggregate operation to perform. Any of the functions in this Aggregate section can be provided.      |
-| columns | []string                                        | Columns specifies a list of columns to aggregate. Defaults to ["_value"].                                             |
-| timeSrc | string                                          | TimeSrc is the name of a column from the group key to use as the source for the aggregated time. Defaults to "_stop". |
-| timeDst | string                                          | TimeDst is the name of a new column in which the aggregated time is placed. Defaults to "_time".                      |
-
+| Name        | Type                                            | Description                                                                                                           |
+| ----        | ----                                            | -----------                                                                                                           |
+| every       | duration                                        | Every specifies the window size to aggregate.                                                                         |
+| fn          | (tables: <-stream, columns: []string) -> stream | Fn specifies the aggregate operation to perform. Any of the functions in this Aggregate section can be provided.      |
+| columns     | []string                                        | Columns specifies a list of columns to aggregate. Defaults to ["_value"].                                             |
+| timeSrc     | string                                          | TimeSrc is the name of a column from the group key to use as the source for the aggregated time. Defaults to "_stop". |
+| timeDst     | string                                          | TimeDst is the name of a new column in which the aggregated time is placed. Defaults to "_time".                      |
+| createEmpty | bool                                            | CreateEmpty, if true, will create empty windows and fill them with a null aggregate value.  Defaults to true.         |
 Example:
 
 ```
