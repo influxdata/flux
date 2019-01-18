@@ -1,6 +1,7 @@
 package interpreter_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/influxdata/flux/interpreter"
@@ -28,6 +29,66 @@ func (imp *importer) Import(path string) (semantic.PackageType, bool) {
 func (imp *importer) ImportPackageObject(path string) (*interpreter.Package, bool) {
 	pkg, ok := imp.packages[path]
 	return pkg, ok
+}
+
+func TestAccessNestedImport(t *testing.T) {
+	// package a
+	// x = 0
+	packageA := interpreter.NewPackageWithValues("a", values.NewObjectWithValues(map[string]values.Value{
+		"x": values.NewInt(0),
+	}))
+
+	// package b
+	// import "a"
+	packageB := interpreter.NewPackageWithValues("b", values.NewObjectWithValues(map[string]values.Value{
+		"a": packageA,
+	}))
+
+	// package c
+	// import "b"
+	// e = b.a.x
+	node := &semantic.Package{
+		Package: "c",
+		Files: []*semantic.File{
+			{
+				Package: &semantic.PackageClause{
+					Name: &semantic.Identifier{Name: "c"},
+				},
+				Imports: []*semantic.ImportDeclaration{
+					{
+						Path: &semantic.StringLiteral{Value: "b"},
+					},
+				},
+				Body: []semantic.Statement{
+					&semantic.NativeVariableAssignment{
+						Identifier: &semantic.Identifier{Name: "e"},
+						Init: &semantic.MemberExpression{
+							Object: &semantic.MemberExpression{
+								Object:   &semantic.IdentifierExpression{Name: "b"},
+								Property: "a",
+							},
+							Property: "x",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	importer := importer{
+		packages: map[string]*interpreter.Package{
+			"b": packageB,
+		},
+	}
+
+	expectedError := fmt.Errorf(`cannot access imported package "a" of imported package "b"`)
+
+	_, err := interpreter.NewInterpreter().Eval(node, interpreter.NewScope(), &importer)
+	if err == nil {
+		t.Errorf("expected error")
+	} else if err.Error() != expectedError.Error() {
+		t.Errorf("unexpected result; want err=%v, got err=%v", expectedError, err)
+	}
 }
 
 // TODO(jlapacik): re-work these tests

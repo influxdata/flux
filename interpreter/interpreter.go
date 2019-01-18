@@ -244,6 +244,10 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope Scope) (va
 		if !ok {
 			return nil, fmt.Errorf("object has no property %q", e.Property)
 		}
+		if pkg, ok := v.(*Package); ok {
+			// If the property of a member expression represents a package, then the object itself must be a package.
+			return nil, fmt.Errorf("cannot access imported package %q of imported package %q", pkg.Name(), obj.(*Package).Name())
+		}
 		return v, nil
 	case *semantic.IndexExpression:
 		arr, err := itrp.doExpression(e.Array, scope)
