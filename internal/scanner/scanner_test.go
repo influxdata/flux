@@ -340,21 +340,22 @@ func TestScanner_MultipleTokens(t *testing.T) {
 func TestScanner_IllegalToken(t *testing.T) {
 	for _, tt := range []struct {
 		name string
-		ch   rune
+		ch   string
 	}{
-		{name: "Ascii", ch: '@'},
-		{name: "Multibyte", ch: '£'},
+		{name: "Ascii", ch: fmt.Sprintf("%c", '@')},
+		{name: "Multibyte", ch: fmt.Sprintf("%c", '£')},
+		{name: "Invalid", ch: string([]byte{0xa2})},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			src := []byte(fmt.Sprintf(`%c x = 5`, tt.ch))
+			src := []byte(tt.ch + ` x = 5`)
 			f := token.NewFile("query.flux", len(src))
 			s := scanner.New(f, src)
 			_, tok, lit := s.ScanWithRegex()
 			if want, got := token.ILLEGAL, tok; want != got {
 				t.Errorf("unexpected token -want/+got\n\t- %d\n\t+ %d", want, got)
 			}
-			if want, got := fmt.Sprintf("%c", tt.ch), lit; want != got {
-				t.Errorf("unexpected literal -want/+got\n\t- %s\n\t+ %s", want, got)
+			if want, got := tt.ch, lit; want != got {
+				t.Errorf("unexpected literal -want/+got\n\t- %v\n\t+ %v", []byte(want), []byte(got))
 			}
 
 			// It should continue and read the next token.
@@ -363,7 +364,7 @@ func TestScanner_IllegalToken(t *testing.T) {
 				t.Errorf("unexpected token -want/+got\n\t- %d\n\t+ %d", want, got)
 			}
 			if want, got := "x", lit; want != got {
-				t.Errorf("unexpected literal -want/+got\n\t- %s\n\t+ %s", want, got)
+				t.Errorf("unexpected literal -want/+got\n\t- %v\n\t+ %v", []byte(want), []byte(got))
 			}
 
 			_, tok, lit = s.ScanWithRegex()
@@ -371,7 +372,7 @@ func TestScanner_IllegalToken(t *testing.T) {
 				t.Errorf("unexpected token -want/+got\n\t- %d\n\t+ %d", want, got)
 			}
 			if want, got := "=", lit; want != got {
-				t.Errorf("unexpected literal -want/+got\n\t- %s\n\t+ %s", want, got)
+				t.Errorf("unexpected literal -want/+got\n\t- %v\n\t+ %v", []byte(want), []byte(got))
 			}
 
 			_, tok, lit = s.ScanWithRegex()
@@ -379,7 +380,7 @@ func TestScanner_IllegalToken(t *testing.T) {
 				t.Errorf("unexpected token -want/+got\n\t- %d\n\t+ %d", want, got)
 			}
 			if want, got := "5", lit; want != got {
-				t.Errorf("unexpected literal -want/+got\n\t- %s\n\t+ %s", want, got)
+				t.Errorf("unexpected literal -want/+got\n\t- %v\n\t+ %v", []byte(want), []byte(got))
 			}
 
 			// Expect an EOF token.
