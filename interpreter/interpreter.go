@@ -412,6 +412,15 @@ func (itrp *Interpreter) doArray(a *semantic.ArrayExpression, scope Scope) (valu
 
 func (itrp *Interpreter) doObject(m *semantic.ObjectExpression, scope Scope) (values.Value, error) {
 	obj := values.NewObject()
+	if m.With != nil {
+		with, err := itrp.doExpression(m.With, scope)
+		if err != nil {
+			return nil, err
+		}
+		with.Object().Range(func(k string, v values.Value) {
+			obj.Set(k, v)
+		})
+	}
 	for _, p := range m.Properties {
 		v, err := itrp.doExpression(p.Value, scope)
 		if err != nil {

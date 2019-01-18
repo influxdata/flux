@@ -22,6 +22,7 @@ const (
 	IF
 	THEN
 	ELSE
+	WITH
 
 	// Identifiers and literals.
 	IDENT
@@ -87,6 +88,7 @@ var tokenStrings = []string{
 	"IF",
 	"THEN",
 	"ELSE",
+	"WITH",
 	"IDENT",
 	"INT",
 	"FLOAT",

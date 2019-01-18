@@ -699,12 +699,16 @@ func (k KClass) resolvePolyType(map[Tvar]Kind) (PolyType, error) {
 }
 
 type ObjectKind struct {
+	with       *Tvar
 	properties map[string]PolyType
 	lower      LabelSet
 	upper      LabelSet
 }
 
 func (k ObjectKind) String() string {
+	if k.with != nil {
+		return fmt.Sprintf("{%v with %v %v %v}", *k.with, k.properties, k.lower, k.upper)
+	}
 	return fmt.Sprintf("{%v %v %v}", k.properties, k.lower, k.upper)
 }
 
@@ -713,7 +717,21 @@ func (k ObjectKind) substituteKind(tv Tvar, t PolyType) Kind {
 	for k, f := range k.properties {
 		properties[k] = f.substituteType(tv, t)
 	}
+	var with *Tvar
+	if k.with != nil {
+		with = new(Tvar)
+		if *k.with == tv {
+			*with = tv
+			v, ok := t.(Tvar)
+			if ok {
+				*with = v
+			}
+		} else {
+			*with = *k.with
+		}
+	}
 	return ObjectKind{
+		with:       with,
 		properties: properties,
 		upper:      k.upper.copy(),
 		lower:      k.lower.copy(),
@@ -761,12 +779,28 @@ func (l ObjectKind) unifyKind(kinds map[Tvar]Kind, k Kind) (Kind, Substitution, 
 	upper := l.upper.intersect(r.upper)
 	lower := l.lower.union(r.lower)
 
+	// Check for missing properties
 	diff := lower.diff(upper)
 	if len(diff) > 0 {
 		return nil, nil, fmt.Errorf("missing object properties %v", diff)
 	}
 
+	var with *Tvar
+	switch {
+	case l.with == nil && r.with == nil:
+		// nothing to do
+	case l.with == nil && r.with != nil:
+		with = new(Tvar)
+		*with = *r.with
+	case l.with != nil && r.with == nil:
+		with = new(Tvar)
+		*with = *l.with
+	case l.with != nil && r.with != nil:
+		return nil, nil, errors.New("cannot unify two object each having a with constraint")
+	}
+
 	kr := ObjectKind{
+		with:       with,
 		properties: properties,
 		lower:      lower,
 		upper:      upper,
@@ -793,9 +827,13 @@ func (k ObjectKind) resolveType(kinds map[Tvar]Kind) (Type, error) {
 			properties[l] = t
 		}
 	}
+
 	return NewObjectType(properties), nil
 }
 func (k ObjectKind) MonoType() (Type, bool) {
+	if k.with != nil {
+		return nil, false
+	}
 	properties := make(map[string]Type, len(k.properties))
 	for l, ft := range k.properties {
 		if _, ok := ft.(invalid); !ok {

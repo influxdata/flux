@@ -40,7 +40,7 @@ func (s *Solution) FreshSolution() TypeSolution {
 //
 // Unifying two types means to do one of the following:
 //  1. Given two primitive types assert the types are the same or report an error.
-//  2. Given a type variable and another type record that the type variable now has the given type.
+//  2. Given a type variable and another type, record that the type variable now has the given type.
 //  3. Recurse into children types of compound types, for example unify the return types of functions.
 //
 // The unification process has two domains over which it operates.
@@ -88,13 +88,14 @@ func (sol *Solution) solve() error {
 		subst.Merge(s)
 	}
 
-	// Apply substituion to kind constraints
+	// Apply substitution to kind constraints
 	sol.kinds = make(map[Tvar]Kind, len(kinds))
 	for tv, k := range kinds {
 		k = subst.ApplyKind(k)
 		tv = subst.ApplyTvar(tv)
 		sol.kinds[tv] = k
 	}
+
 	// Apply substitution to the type annotations
 	for n, ann := range sol.cs.annotations {
 		if ann.Type != nil {

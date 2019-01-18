@@ -341,6 +341,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Value: parser.MustParseTime("2018-05-22T00:01:00Z"),
 											},
 										}},
+										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Errors: nil,
@@ -693,6 +694,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											}},
 										},
 									}},
+									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
@@ -938,6 +940,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										}},
 									},
 								}},
+								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
 								Errors: nil,
@@ -1114,6 +1117,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Name: "count",
 								},
 							}},
+							With: nil,
 						}},
 						BaseNode: ast.BaseNode{
 							Errors: nil,
@@ -1372,6 +1376,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "inData",
 										},
 									}},
+									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
@@ -1546,6 +1551,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "outData",
 										},
 									}},
+									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
@@ -1669,6 +1675,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Name: "agg_window_count_fn",
 							},
 						}},
+						With: nil,
 					},
 					Params: nil,
 				},
@@ -2098,6 +2105,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Value: parser.MustParseTime("2018-05-22T00:01:00Z"),
 											},
 										}},
+										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Errors: nil,
@@ -2450,6 +2458,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											}},
 										},
 									}},
+									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
@@ -2695,6 +2704,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										}},
 									},
 								}},
+								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
 								Errors: nil,
@@ -2871,6 +2881,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Name: "mean",
 								},
 							}},
+							With: nil,
 						}},
 						BaseNode: ast.BaseNode{
 							Errors: nil,
@@ -3129,6 +3140,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "inData",
 										},
 									}},
+									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
@@ -3303,6 +3315,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "outData",
 										},
 									}},
+									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
@@ -3426,6 +3439,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Name: "agg_window_mean_fn",
 							},
 						}},
+						With: nil,
 					},
 					Params: nil,
 				},
@@ -3858,6 +3872,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Value: parser.MustParseTime("2018-05-22T00:01:00Z"),
 														},
 													}},
+													With: nil,
 												}},
 												BaseNode: ast.BaseNode{
 													Errors: nil,
@@ -4210,6 +4225,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														}},
 													},
 												}},
+												With: nil,
 											}},
 											BaseNode: ast.BaseNode{
 												Errors: nil,
@@ -4455,6 +4471,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													}},
 												},
 											}},
+											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
 											Errors: nil,
@@ -4579,6 +4596,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												}},
 											},
 										}},
+										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Errors: nil,
@@ -4924,6 +4942,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Value: "except",
 								},
 							}},
+							With: nil,
 						}},
 						BaseNode: ast.BaseNode{
 							Errors: nil,
@@ -5182,6 +5201,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "inData",
 										},
 									}},
+									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
@@ -5356,6 +5376,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "outData",
 										},
 									}},
+									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
@@ -5479,6 +5500,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Name: "agg_window_median_fn",
 							},
 						}},
+						With: nil,
 					},
 					Params: nil,
 				},

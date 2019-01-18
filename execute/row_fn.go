@@ -41,17 +41,13 @@ func newRowFn(fn *semantic.FunctionExpression) (rowFn, error) {
 func (f *rowFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.Type) error {
 	// Prepare types and recordCols
 	propertyTypes := make(map[string]semantic.Type, len(f.references))
+	for j, c := range cols {
+		propertyTypes[c.Label] = ConvertToKind(c.Type)
+		f.recordCols[c.Label] = j
+	}
+
 	for _, r := range f.references {
-		found := false
-		for j, c := range cols {
-			if r == c.Label {
-				f.recordCols[r] = j
-				found = true
-				propertyTypes[r] = ConvertToKind(c.Type)
-				break
-			}
-		}
-		if !found {
+		if _, ok := f.recordCols[r]; !ok {
 			return fmt.Errorf("function references unknown column %q", r)
 		}
 	}
@@ -126,8 +122,8 @@ func (f *rowFn) eval(row int, cr flux.ColReader, extraParams map[string]values.V
 		return nil, errors.New("null reference used in row function: skipping evaluation until null support is provided")
 	}
 
-	for _, r := range f.references {
-		f.record.Set(r, ValueForRow(cr, row, f.recordCols[r]))
+	for r, col := range f.recordCols {
+		f.record.Set(r, ValueForRow(cr, row, col))
 	}
 	f.inRecord.Set(f.recordName, f.record)
 	for k, v := range extraParams {

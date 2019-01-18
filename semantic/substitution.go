@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Substitution is a maping of type variables to a poly type.
+// Substitution is a mapping of type variables to a poly type.
 type Substitution map[Tvar]PolyType
 
 func (s Substitution) ApplyType(t PolyType) PolyType {

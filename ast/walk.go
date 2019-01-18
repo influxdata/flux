@@ -238,6 +238,7 @@ func walk(v Visitor, node Node) {
 		}
 		w := v.Visit(n)
 		if w != nil {
+			walk(w, n.With)
 			for _, p := range n.Properties {
 				walk(w, p)
 			}

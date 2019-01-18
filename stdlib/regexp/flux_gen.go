@@ -169,6 +169,7 @@ var pkgAST = &ast.Package{
 						Name: "compile",
 					},
 				}},
+				With: nil,
 			},
 		}},
 		Imports: nil,

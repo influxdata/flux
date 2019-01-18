@@ -105,6 +105,10 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, fun
 	case *semantic.ObjectExpression:
 		properties := make(map[string]Evaluator, len(n.Properties))
 		propertyTypes := make(map[string]semantic.Type, len(n.Properties))
+		obj := &objEvaluator{
+			t: semantic.NewObjectType(propertyTypes),
+		}
+
 		for _, p := range n.Properties {
 			node, err := compile(p.Value, typeSol, builtIns, funcExprs)
 			if err != nil {
@@ -113,10 +117,22 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, fun
 			properties[p.Key.Key()] = node
 			propertyTypes[p.Key.Key()] = node.Type()
 		}
-		return &objEvaluator{
-			t:          semantic.NewObjectType(propertyTypes),
-			properties: properties,
-		}, nil
+		obj.properties = properties
+
+		if n.With != nil {
+			node, err := compile(n.With, typeSol, builtIns, funcExprs)
+			if err != nil {
+				return nil, err
+			}
+			with, ok := node.(*identifierEvaluator)
+			if !ok {
+				return nil, errors.New("unknown identifier in with expression")
+			}
+			obj.with = with
+
+		}
+
+		return obj, nil
 
 	case *semantic.ArrayExpression:
 		elements := make([]Evaluator, len(n.Elements))
