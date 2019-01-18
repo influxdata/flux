@@ -36,7 +36,8 @@ func ParseFile(f *token.File, src []byte) *ast.File {
 		s: &scannerSkipComments{
 			Scanner: scanner.New(f, src),
 		},
-		src: src,
+		src:    src,
+		blocks: make(map[token.Token]int),
 	}
 	return p.parseFile(f.Name())
 }
@@ -75,6 +76,10 @@ type parser struct {
 	lit      string
 	buffered bool
 	errs     []ast.Error
+
+	// blocks maintains a count of the end tokens for nested blocks
+	// that we have entered.
+	blocks map[token.Token]int
 }
 
 func (p *parser) parseFile(fname string) *ast.File {
@@ -96,7 +101,7 @@ func (p *parser) parseFile(fname string) *ast.File {
 	if len(file.Imports) > 0 {
 		file.Loc.End = locEnd(file.Imports[len(file.Imports)-1])
 	}
-	file.Body = p.parseStatementList(token.EOF)
+	file.Body = p.parseStatementList()
 	if len(file.Body) > 0 {
 		file.Loc.End = locEnd(file.Body[len(file.Body)-1])
 	}
@@ -145,10 +150,10 @@ func (p *parser) parseImportDeclaration() *ast.ImportDeclaration {
 	}
 }
 
-func (p *parser) parseStatementList(eof token.Token) []ast.Statement {
+func (p *parser) parseStatementList() []ast.Statement {
 	var stmts []ast.Statement
 	for {
-		if _, tok, _ := p.peek(); tok == eof || tok == token.EOF {
+		if ok := p.more(); !ok {
 			return stmts
 		}
 		stmts = append(stmts, p.parseStatement())
@@ -300,9 +305,9 @@ func (p *parser) parseExpressionStatement() *ast.ExpressionStatement {
 }
 
 func (p *parser) parseBlock() *ast.Block {
-	start, _ := p.expect(token.LBRACE)
-	stmts := p.parseStatementList(token.RBRACE)
-	end, rbrace := p.expect(token.RBRACE)
+	start, _ := p.open(token.LBRACE, token.RBRACE)
+	stmts := p.parseStatementList()
+	end, rbrace := p.close(token.RBRACE)
 	return &ast.Block{
 		Body:     stmts,
 		BaseNode: p.position(start, end+token.Pos(len(rbrace))),
@@ -325,7 +330,7 @@ func (p *parser) parseExpressionSuffix(expr ast.Expression) ast.Expression {
 
 func (p *parser) parseExpressionList() []ast.Expression {
 	var exprs []ast.Expression
-	for {
+	for p.more() {
 		switch _, tok, _ := p.peek(); tok {
 		case token.IDENT, token.INT, token.FLOAT, token.STRING, token.DIV,
 			token.TIME, token.DURATION, token.PIPE_RECEIVE,
@@ -333,14 +338,15 @@ func (p *parser) parseExpressionList() []ast.Expression {
 			token.ADD, token.SUB, token.NOT:
 			exprs = append(exprs, p.parseExpression())
 		default:
-			return exprs
+			// TODO(jsternberg): Add BadExpression type.
+			continue
 		}
 
-		if _, tok, _ := p.peek(); tok != token.COMMA {
-			return exprs
+		if _, tok, _ := p.peek(); tok == token.COMMA {
+			p.consume()
 		}
-		p.consume()
 	}
+	return exprs
 }
 
 func (p *parser) parseLogicalExpression() ast.Expression {
@@ -650,9 +656,9 @@ func (p *parser) parseDotExpression(expr ast.Expression) ast.Expression {
 }
 
 func (p *parser) parseCallExpression(callee ast.Expression) ast.Expression {
-	p.expect(token.LPAREN)
+	p.open(token.LPAREN, token.RPAREN)
 	params := p.parsePropertyList()
-	end, rparen := p.expect(token.RPAREN)
+	end, rparen := p.close(token.RPAREN)
 	expr := &ast.CallExpression{
 		Callee: callee,
 		BaseNode: p.baseNode(p.sourceLocation(
@@ -675,9 +681,9 @@ func (p *parser) parseCallExpression(callee ast.Expression) ast.Expression {
 }
 
 func (p *parser) parseIndexExpression(callee ast.Expression) ast.Expression {
-	p.expect(token.LBRACK)
+	p.open(token.LBRACK, token.RBRACK)
 	expr := p.parseExpression()
-	end, rbrack := p.expect(token.RBRACK)
+	end, rbrack := p.close(token.RBRACK)
 	if lit, ok := expr.(*ast.StringLiteral); ok {
 		return &ast.MemberExpression{
 			Object:   callee,
@@ -801,9 +807,9 @@ func (p *parser) parsePipeLiteral() *ast.PipeLiteral {
 }
 
 func (p *parser) parseArrayLiteral() ast.Expression {
-	start, _ := p.expect(token.LBRACK)
+	start, _ := p.open(token.LBRACK, token.RBRACK)
 	exprs := p.parseExpressionList()
-	end, rbrack := p.expect(token.RBRACK)
+	end, rbrack := p.close(token.RBRACK)
 	return &ast.ArrayExpression{
 		Elements: exprs,
 		BaseNode: p.position(start, end+token.Pos(len(rbrack))),
@@ -811,9 +817,9 @@ func (p *parser) parseArrayLiteral() ast.Expression {
 }
 
 func (p *parser) parseObjectLiteral() ast.Expression {
-	start, _ := p.expect(token.LBRACE)
+	start, _ := p.open(token.LBRACE, token.RBRACE)
 	properties := p.parsePropertyList()
-	end, rbrace := p.expect(token.RBRACE)
+	end, rbrace := p.close(token.RBRACE)
 	return &ast.ObjectExpression{
 		Properties: properties,
 		BaseNode:   p.position(start, end+token.Pos(len(rbrace))),
@@ -821,21 +827,21 @@ func (p *parser) parseObjectLiteral() ast.Expression {
 }
 
 func (p *parser) parseParenExpression() ast.Expression {
-	pos, _ := p.expect(token.LPAREN)
+	pos, _ := p.open(token.LPAREN, token.RPAREN)
 	return p.parseParenBodyExpression(pos)
 }
 
 func (p *parser) parseParenBodyExpression(lparen token.Pos) ast.Expression {
 	switch _, tok, _ := p.peek(); tok {
 	case token.RPAREN:
-		p.consume()
+		p.close(token.RPAREN)
 		return p.parseFunctionExpression(lparen, nil)
 	case token.IDENT:
 		ident := p.parseIdentifier()
 		return p.parseParenIdentExpression(lparen, ident)
 	default:
 		expr := p.parseExpression()
-		p.expect(token.RPAREN)
+		p.close(token.RPAREN)
 		return expr
 	}
 }
@@ -843,7 +849,7 @@ func (p *parser) parseParenBodyExpression(lparen token.Pos) ast.Expression {
 func (p *parser) parseParenIdentExpression(lparen token.Pos, key *ast.Identifier) ast.Expression {
 	switch _, tok, _ := p.peek(); tok {
 	case token.RPAREN:
-		p.consume()
+		p.close(token.RPAREN)
 		if _, tok, _ := p.peek(); tok == token.ARROW {
 			loc := key.Location()
 			return p.parseFunctionExpression(lparen, []*ast.Property{{
@@ -867,7 +873,7 @@ func (p *parser) parseParenIdentExpression(lparen token.Pos, key *ast.Identifier
 			p.consume()
 			params = append(params, p.parseParameterList()...)
 		}
-		p.expect(token.RPAREN)
+		p.close(token.RPAREN)
 		return p.parseFunctionExpression(lparen, params)
 	case token.COMMA:
 		p.consume()
@@ -877,34 +883,35 @@ func (p *parser) parseParenIdentExpression(lparen token.Pos, key *ast.Identifier
 			BaseNode: p.baseNode(&loc),
 		}}
 		params = append(params, p.parseParameterList()...)
-		p.expect(token.RPAREN)
+		p.close(token.RPAREN)
 		return p.parseFunctionExpression(lparen, params)
 	default:
 		expr := p.parseExpressionSuffix(key)
-		p.expect(token.RPAREN)
+		p.close(token.RPAREN)
 		return expr
 	}
 }
 
 func (p *parser) parsePropertyList() []*ast.Property {
 	var params []*ast.Property
-	for {
+	for p.more() {
 		var param *ast.Property
-		_, tok, _ := p.peek()
-		switch tok {
+		switch _, tok, _ := p.peek(); tok {
 		case token.IDENT:
 			param = p.parseIdentProperty()
 		case token.STRING:
 			param = p.parseStringProperty()
 		default:
-			return params
+			// TODO(jsternberg): BadExpression.
+			p.consume()
+			continue
 		}
 		params = append(params, param)
-		if _, tok, _ := p.peek(); tok != token.COMMA {
-			return params
+		if _, tok, _ := p.peek(); tok == token.COMMA {
+			p.consume()
 		}
-		p.consume()
 	}
+	return params
 }
 
 func (p *parser) parseStringProperty() *ast.Property {
@@ -942,15 +949,14 @@ func (p *parser) parseIdentProperty() *ast.Property {
 func (p *parser) parseParameterList() []*ast.Property {
 	var params []*ast.Property
 	for {
-		if _, tok, _ := p.peek(); tok != token.IDENT {
+		if !p.more() {
 			return params
 		}
 		param := p.parseParameter()
 		params = append(params, param)
-		if _, tok, _ := p.peek(); tok != token.COMMA {
-			return params
+		if _, tok, _ := p.peek(); tok == token.COMMA {
+			p.consume()
 		}
-		p.consume()
 	}
 }
 
@@ -1092,6 +1098,70 @@ func (p *parser) repeat(fn func() bool) {
 			return
 		}
 	}
+}
+
+// open will open a new block. It will expect that the next token
+// is the start token and mark that we expect the end token in the
+// future.
+func (p *parser) open(start, end token.Token) (pos token.Pos, lit string) {
+	pos, lit = p.expect(start)
+	p.blocks[end]++
+	return pos, lit
+}
+
+// more will check if we should continue reading tokens for the
+// current block. This is true when the next token is not EOF and
+// the next token is also not one that would close a block.
+func (p *parser) more() bool {
+	_, tok, _ := p.peek()
+	if tok == token.EOF {
+		return false
+	}
+	return p.blocks[tok] == 0
+}
+
+// close will close a block that was opened using open.
+//
+// This function will always decrement the block count for the end
+// token.
+//
+// If the next token is the end token, then this will consume the
+// token and return the pos and lit for the token. Otherwise, it will
+// return NoPos.
+//
+// TODO(jsternberg): NoPos doesn't exist yet so this will return the
+// values for the next token even if it isn't consumed.
+func (p *parser) close(end token.Token) (pos token.Pos, lit string) {
+	// If the end token is EOF, we have to do this specially
+	// since we don't track EOF.
+	if end == token.EOF {
+		// TODO(jsternberg): Check for EOF and panic if it isn't.
+		pos, _, lit := p.scan()
+		return pos, lit
+	}
+
+	// The end token must be in the block map.
+	count := p.blocks[end]
+	if count <= 0 {
+		panic("closing a block that was never opened")
+	}
+	p.blocks[end] = count - 1
+
+	// Read the next token.
+	pos, tok, lit := p.peek()
+	if tok == end {
+		p.consume()
+		return pos, lit
+	}
+
+	// TODO(jsternberg): Return NoPos when the positioning code
+	// is prepared for that.
+
+	// Append an error to the current node.
+	p.errs = append(p.errs, ast.Error{
+		Msg: fmt.Sprintf("expected %s, got %s", end, tok),
+	})
+	return pos, lit
 }
 
 // position will return a BaseNode with the position information
