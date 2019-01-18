@@ -38,9 +38,6 @@ that completes, it may be merged.
 To assist in review for the PR, please add the following to your pull request comment:
 
 ```md
-- [ ] CHANGELOG.md updated
-- [ ] Rebased/mergable
-- [ ] Tests pass
 - [ ] Sign [CLA](https://www.influxdata.com/legal/cla/) (if not already signed)
 ```
 
