@@ -113,12 +113,15 @@ func (c *Controller) Query(ctx context.Context, compiler flux.Compiler) (flux.Qu
 	q := c.createQuery(ctx, compiler.CompilerType())
 	if err := c.compileQuery(q, compiler); err != nil {
 		q.transitionTo(Errored)
+		c.countQueryRequest(q, labelCompileError)
 		return nil, err
 	}
 	if err := c.enqueueQuery(q); err != nil {
 		q.transitionTo(Errored)
+		c.countQueryRequest(q, labelQueueError)
 		return nil, err
 	}
+	c.countQueryRequest(q, labelSuccess)
 	return q, nil
 }
 
@@ -234,6 +237,14 @@ func (c *Controller) enqueueQuery(q *Query) error {
 	case <-q.parentCtx.Done():
 		return q.parentCtx.Err()
 	}
+}
+
+func (c *Controller) countQueryRequest(q *Query, result requestsLabel) {
+	l := len(q.labelValues)
+	lvs := make([]string, l+1)
+	copy(lvs, q.labelValues)
+	lvs[l] = string(result)
+	c.metrics.requests.WithLabelValues(lvs...).Inc()
 }
 
 func (c *Controller) countFunctions(q *Query) {
