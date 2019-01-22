@@ -632,7 +632,9 @@ func (e *CallExpression) Copy() Node {
 
 	ne.Callee = e.Callee.Copy().(Expression)
 	ne.Arguments = e.Arguments.Copy().(*ObjectExpression)
-	ne.Pipe = e.Pipe.Copy().(Expression)
+	if e.Pipe != nil {
+		ne.Pipe = e.Pipe.Copy().(Expression)
+	}
 
 	return ne
 }
