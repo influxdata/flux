@@ -2873,25 +2873,67 @@ from(bucket: "telegraf/autogen")
 #### StateCount
 
 StateCount computes the number of consecutive records in a given state.
+The state is defined via a user-defined predicate. For each consecutive point for
+which the predicate evaluates as true, the state count will be incremented.
+When a point evaluates as false, the state count is reset.
+
+The state count will be added as an additional column to each record. If the
+expression evaluates as false, the value will be -1. If the expression
+generates an error during evaluation, the point is discarded, and does not
+affect the state count.
 
 StateCount has the following parameters:
 
-| Name   | Type          | Description                                                                                  |
-| ----   | ----          | -----------                                                                                  |
-| fn     | function bool | Fn is a function that returns true when the record is in the desired state.                  |
-| column | string        | Column is the name of the column to use to output the state count. Defaults to `stateCount`. |
+| Name   | Type                | Description                                                                                  |
+| ----   | ----                | -----------                                                                                  |
+| fn     | (r: record) -> bool | Fn is a function that returns true when the record is in the desired state.                  |
+| column | string              | Column is the name of the column to use to output the state count. Defaults to `stateCount`. |
+
+Example:
+
+```
+from(bucket: "telegraf/autogen")
+    |> range(start: 2018-05-22T19:53:26Z)
+    |> stateCount(fn:(r) => r._value > 80)
+```
 
 #### StateDuration
 
 StateDuration computes the duration of a given state.
+The state is defined via a user-defined predicate. For each consecutive point for
+which the predicate evaluates as true, the state duration will be
+incremented by the duration between points. When a point evaluates as false,
+the state duration is reset.
+
+The state duration will be added as an additional column to each record.
+If the expression evaluates as false, the value will be -1. If the expression
+generates an error during evaluation, the point is discarded, and does not
+affect the state duration.
+
+Note that as the first point in the given state has no previous point, its
+state duration will be 0.
+
+The duration is represented as an integer in the units specified.
+
+StateDuration requires sorted and not-null timestamps. So, if one of this requirements
+is not met, it returns an error.
 
 StateDuration has the following parameters:
 
-| Name   | Type                | Description                                                                                      |
-| ----   | ----                | -----------                                                                                      |
-| fn     | (r: record) -> bool | Fn is a function that returns true when the record is in the desired state.                      |
-| column | string              | Column is the name of the column to use to output the state value.  Defaults to `stateDuration`. |
-| unit   | duration            | Unit is the dimension of the output value.  Defaults to `1s`.                                    |
+| Name       | Type                | Description                                                                                     |
+| ----       | ----                | -----------                                                                                     |
+| fn         | (r: record) -> bool | Fn is a function that returns true when the record is in the desired state.                     |
+| column     | string              | Column is the name of the column to use to output the state value. Defaults to `stateDuration`. |
+| timeColumn | string              | TimeColumn is the name of the column used to extract timestamps. Defaults to `_time`.           |
+| unit       | duration            | Unit is the dimension of the output value. Defaults to `1s`.                                    |
+
+Example:
+
+```
+from(bucket: "telegraf/autogen")
+    |> range(start: 2018-05-22T19:53:26Z)
+    |> stateDuration(fn:(r) => r._value > 80)
+```
 
 #### To
 

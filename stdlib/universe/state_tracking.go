@@ -229,10 +229,12 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Tab
 	}
 
 	var (
-		startTime execute.Time
-		count,
-		duration int64
-		inState bool
+		startTime       values.Time
+		prevTime        values.Time
+		count           int64
+		duration        int64
+		countInState    bool
+		durationInState bool
 	)
 
 	timeIdx := execute.ColIdx(t.timeCol, tbl.Cols())
@@ -243,28 +245,56 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Tab
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
-			tm := values.Time(cr.Times(timeIdx).Value(i))
 			match, err := t.fn.Eval(i, cr)
 			if err != nil {
-				log.Printf("failed to evaluate state count expression: %v", err)
+				log.Printf("failed to evaluate state tracking expression: %v", err)
 				continue
 			}
-			if !match {
-				count = -1
-				duration = -1
-				inState = false
-			} else {
-				if !inState {
-					startTime = tm
-					duration = 0
-					count = 0
-					inState = true
+
+			// Duration
+			if durationCol > 0 {
+				if ts := cr.Times(timeIdx); ts.IsNull(i) {
+					return errors.New("got a null timestamp")
 				}
-				if t.durationUnit > 0 {
-					duration = int64(tm-startTime) / t.durationUnit
+
+				tValue := values.Time(cr.Times(timeIdx).Value(i))
+
+				if prevTime > tValue {
+					return errors.New("got an out-of-order timestamp")
 				}
-				count++
+				prevTime = tValue
+
+				if !match {
+					duration = -1
+					durationInState = false
+				} else {
+					if !durationInState {
+						startTime = tValue
+						duration = 0
+						durationInState = true
+					}
+
+					if t.durationUnit > 0 {
+						tm := tValue
+						duration = int64(tm-startTime) / t.durationUnit
+					}
+				}
 			}
+
+			// Count
+			if countCol > 0 {
+				if !match {
+					count = -1
+					countInState = false
+				} else {
+					if !countInState {
+						count = 0
+						countInState = true
+					}
+					count++
+				}
+			}
+
 			colMap := make([]int, len(cr.Cols()))
 			colMap = execute.ColMap(colMap, builder, cr)
 			err = execute.AppendMappedRecordExplicit(i, cr, builder, colMap)
