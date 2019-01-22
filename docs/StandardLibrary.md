@@ -2,25 +2,15 @@
 
 The Flux standard library will define the set of functions, constants, and other
 values that are available out of the box with Flux, providing the functionality that is
-most frequently used.
+most frequently used. Everything in the Flux standard library is part of a package.  
+The top-level package is called "universe."
 
-Some functions in the standard library will be available without qualifying
-them with a namespace.  These will be the most common functions, to help Flux
-code be more concise.  Such functions are said to be in the "top level package."
+The Flux compiler provides the concept of a "prelude," which is the set of packages whose members
+may be used in a Flux program without namespace qualification.  For example,
+in the vanilla Flux CLI, the prelude includes the `universe` and `influxdata/influxdb`
+packages. 
 
-The remaining functions in the standard library will be divided up into
-discrete packages that are organized by topic.
-
-What's presented here is just a departure point for further discussion.
-
-## The Top Level Package
-
-Those functions that provide functionality that is very frequently
-used and should not need to be qualified with a namespace in Flux code.
-(Consider also the concept of "prelude")
-
-### Transformations
-Should some of these be in the `math` package instead?  `pearsonr` for example.
+## The `Universe` Package
 
 Fundamental transformations:
 - `bottom`
@@ -96,30 +86,34 @@ Other mathematical operations:
 
 ## Package `testing`
 - `assertEquals`
+- `loadStorage`
+- `loadMem`
+- `test`
 
 Others?
 
 ## I/O Packages
 
-Should vendor-specific packages like `influx` be part of the standard library?  
-If Flux is to be used as a stand-alone language independent of InfluxDB, perhaps
-they should not.
-
 ### Package `csv`
-- `from` (seems lonely here; could be in top level package?)
+- `from`
 
 ### Package `http`
+- `to`
+
+### Package `influxdata/influxdb`
+- `buckets`
 - `from`
 - `to`
 
-### Package `influx`
-- `buckets`
+### Package `influxdata/influxdb/v1`
+
+- `json`
 - `databases`
-- `fieldsAsCols`
-- `from`
-- `fromLP` [IMPL#70](https://github.com/influxdata/flux/issues/70)
-- `fromJSON`
-- `to`
+- `tagValues`
+- `measurementTagValues`
+- `tagKeys`
+- `measurementTagKeys`
+- `measurements`
 
 ### Package `kafka`
 - `from`
@@ -210,123 +204,8 @@ years = intervals(every:1y)
 ## Package `math`
 [IMPL#332](https://github.com/influxdata/flux/issues/332)
 
-There are all based on Go's `math` package.
-
-Limit constants:
-- `maxFloat`
-- `smallestNonzeroFloat`
-- `maxInt`
-- `maxUint`
-
-Mathematical constants:
-- `e`
-- `pi`
-- `phi`
-- `sqrt2`
-- `sqrtE`
-- `sqrtPi`
-- `sqrtPhi`
-- `ln2`
-- `log2E`
-- `ln10`
-- `log10E`
-
-Functions:
-- `abs`
-- `acos`
-- `acosh`
-- `asin`
-- `asinh`
-- `atan`
-- `atan2`
-- `atanh`
-- `cbrt`
-- `ceil`
-- `copysign`
-- `cos`
-- `cosh`
-- `dim`
-- `erf`
-- `erfc`
-- `erfcinv`
-- `erfinv`
-- `exp`
-- `exp2`
-- `expm1`
-- `float32bits`
-- `float32frombits`
-- `float64bits`
-- `float64frombits`
-- `floor`
-- `frexp`
-- `gamma`
-- `hypot`
-- `ilogb`
-- `inf`
-- `isInf`
-- `isNaN`
-- `j0`
-- `j1`
-- `jn`
-- `ldexp`
-- `lgamma`
-- `log`
-- `log10`
-- `log1p`
-- `log2`
-- `logb`
-- `max`
-- `min`
-- `mod`
-- `modf`
-- `nan`
-- `nextafter`
-- `nextafter32`
-- `pow`
-- `pow10`
-- `remainder`
-- `round`
-- `roundToEven`
-- `signbit`
-- `sin`
-- `sincos`
-- `sinh`
-- `sqrt`
-- `tan`
-- `tanh`
-- `trunc`
-- `y0`
-- `y1`
-- `yn`
-
-
 ## Package `strings`
 [IMPL#332](https://github.com/influxdata/flux/issues/332)
-
-Potential string functions (taken from Go's `strings` package;
-omitted are functions from Go that use the `rune` type):
-- `contains`, `containsAny`
-- `count`
-- `equalFold`
-- `fields`, `fieldsFunc`
-- `hasPrefix`
-- `hasSuffix`
-- `index`, `indexAny`, `indexFunc`
-- `join`
-- `lastIndex`, `lastIndexAny`, `lastIndexFunc`
-- `map`
-- `repeat`
-- `replace`
-- `split`, `splitAfter`, `splitAfterN`, `splitN`
-- `title`
-- `toLower`
-- `toUpper`
-- `trim`, `trimFunc`
-- `trimLeft`, `trimLeftFunc`
-- `trimPrefix`
-- `trimRight`, `trimRightFunc`
-- `trimSpace`
-- `trimSuffix`
 
 ## Package `experimental`
 
