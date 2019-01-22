@@ -2723,7 +2723,10 @@ from(bucket: "telegraf/autogen")
 #### Derivative
 
 Derivative computes the time based difference between subsequent non-null records.
-This function assumes that rows are ordered by the time column.
+This function will return an error if values in the time column are null or not sorted in
+ascending order.
+If there are multiple rows with the same time value, only the first row will be used to
+compute the derivative.
 
 Derivative has the following properties:
 
