@@ -4,22 +4,26 @@ import "fmt"
 
 func runChecks(pkg *Package) error {
 	// check for options declared below package block
-	if err := checkOptionDecs(pkg); err != nil {
+	if err := checkOptionAssignments(pkg); err != nil {
+		return err
+	}
+	// check for dependencies among options
+	if err := checkOptionDependencies(pkg); err != nil {
 		return err
 	}
 	// check for variable reassignments
-	if err := checkVarDecs(pkg); err != nil {
+	if err := checkVarAssignments(pkg); err != nil {
 		return err
 	}
 	return nil
 }
 
-func checkOptionDecs(pkg *Package) error {
+func checkOptionAssignments(pkg *Package) error {
 	var stmt *OptionStatement
 	optionFn := func(opt *OptionStatement) {
 		stmt = opt
 	}
-	visitor := optionDecVisitor{
+	visitor := optionAssignmentVisitor{
 		optionFn:     optionFn,
 		packageBlock: true,
 	}
@@ -50,12 +54,14 @@ func optionName(opt *OptionStatement) (string, error) {
 	}
 }
 
-type optionDecVisitor struct {
+// This visitor finds options declared below the package block.
+// Any such option is passed to optionFn.
+type optionAssignmentVisitor struct {
 	optionFn     func(*OptionStatement)
 	packageBlock bool
 }
 
-func (v optionDecVisitor) Visit(node Node) Visitor {
+func (v optionAssignmentVisitor) Visit(node Node) Visitor {
 	n, ok := node.(*OptionStatement)
 	if ok && !v.packageBlock {
 		v.optionFn(n)
@@ -64,16 +70,16 @@ func (v optionDecVisitor) Visit(node Node) Visitor {
 	return v
 }
 
-func (v optionDecVisitor) Nest() NestingVisitor {
+func (v optionAssignmentVisitor) Nest() NestingVisitor {
 	v.packageBlock = false
 	return v
 }
 
-func (v optionDecVisitor) Done(node Node) {}
+func (v optionAssignmentVisitor) Done(node Node) {}
 
-func checkVarDecs(pkg *Package) error {
+func checkVarAssignments(pkg *Package) error {
 	var node *NativeVariableAssignment
-	visitor := varDecVisitor{
+	visitor := varAssignmentVisitor{
 		names: make(map[string]bool, 8),
 		varFn: func(n *NativeVariableAssignment) {
 			node = n
@@ -87,13 +93,15 @@ func checkVarDecs(pkg *Package) error {
 	return nil
 }
 
-type varDecVisitor struct {
+// This visitor finds variable reassignments within a package.
+// Any such reassignment is passed to varFn.
+type varAssignmentVisitor struct {
 	names  map[string]bool
 	varFn  func(*NativeVariableAssignment)
 	option bool
 }
 
-func (v varDecVisitor) Visit(node Node) Visitor {
+func (v varAssignmentVisitor) Visit(node Node) Visitor {
 	switch n := node.(type) {
 	case *OptionStatement:
 		v.option = true
@@ -112,9 +120,90 @@ func (v varDecVisitor) Visit(node Node) Visitor {
 	return v
 }
 
-func (v varDecVisitor) Nest() NestingVisitor {
+func (v varAssignmentVisitor) Nest() NestingVisitor {
 	v.names = make(map[string]bool)
 	return v
 }
 
-func (v varDecVisitor) Done(node Node) {}
+func (v varAssignmentVisitor) Done(node Node) {}
+
+func checkOptionDependencies(pkg *Package) error {
+	var options optionStmtVisitor
+	Walk(&options, pkg)
+
+	var ref *IdentifierExpression
+
+	visitor := optionDependencyVisitor{
+		option: make(map[string]bool, len(options)),
+		shadow: make(map[string]bool, len(options)),
+		ref: func(n *IdentifierExpression) {
+			ref = n
+		},
+	}
+
+	for _, dec := range options {
+		// option name
+		name := dec.Identifier.Name
+		visitor.option[name] = true
+
+		// check for dependencies among options
+		Walk(NewScopedVisitor(&visitor), dec.Init)
+
+		if ref != nil {
+			return fmt.Errorf("option dependency: option %q depends on option %q defined in the same package at %v", name, ref.Name, ref.Location())
+		}
+	}
+	return nil
+}
+
+type optionStmtVisitor []*NativeVariableAssignment
+
+func (v *optionStmtVisitor) Visit(node Node) Visitor {
+	if stmt, ok := node.(Statement); ok {
+		if opt, ok := stmt.(*OptionStatement); ok {
+			if n, ok := opt.Assignment.(*NativeVariableAssignment); ok {
+				*v = append(*v, n)
+			}
+		}
+		return nil
+	}
+	return v
+}
+
+func (v *optionStmtVisitor) Done(node Node) {}
+
+// This visitor checks for dependencies among options in the same package block.
+// Any reference to another option made within an option statement is passed to ref.
+type optionDependencyVisitor struct {
+	option map[string]bool
+	shadow map[string]bool
+	ref    func(*IdentifierExpression)
+}
+
+func (v optionDependencyVisitor) Visit(node Node) Visitor {
+	switch n := node.(type) {
+	case *NativeVariableAssignment:
+		// var declarations shadow options
+		v.shadow[n.Identifier.Name] = true
+	case *FunctionParameter:
+		// function params shadow options
+		v.shadow[n.Key.Name] = true
+	case *IdentifierExpression:
+		if v.option[n.Name] && !v.shadow[n.Name] {
+			v.ref(n)
+			return nil
+		}
+	}
+	return v
+}
+
+func (v optionDependencyVisitor) Nest() NestingVisitor {
+	shadows := make(map[string]bool, len(v.shadow))
+	for k, v := range v.shadow {
+		shadows[k] = v
+	}
+	v.shadow = shadows
+	return v
+}
+
+func (v optionDependencyVisitor) Done(node Node) {}
