@@ -722,7 +722,23 @@ It is not possible to access an object's property using an arbitrary expression.
 #### Operators
 
 Operators combine operands into expressions.
-Operator precedence is encoded directly into the grammar.
+The precedence of the operators is given in the table below. Operators with a lower number have higher precedence.
+
+|Precedence| Operator |        Description        |
+|----------|----------|---------------------------|
+|     1    |  `a()`   |       Function call       |
+|          |  `a[]`   |  Member or index access   |
+|          |   `.`    |       Member access       |
+|     2    | `*` `/`  |Multiplication and division|
+|     3    | `+` `-`  | Addition and subtraction  |
+|     4    |`==` `!=` |   Comparison operators    |
+|          | `<` `<=` |                           |
+|          | `>` `>=` |                           |
+|          |`=~` `!~` |                           |
+|     5    |  `not`   | Unary logical expression  |
+|     6    |`and` `or`|    Logical AND and OR     |
+
+The operator precedence is encoded directly into the grammar as the following.
 
     Expression               = LogicalExpression .
     LogicalExpression        = UnaryLogicalExpression
@@ -734,12 +750,12 @@ Operator precedence is encoded directly into the grammar.
     ComparisonExpression     = MultiplicativeExpression
                              | ComparisonExpression ComparisonOperator MultiplicativeExpression .
     ComparisonOperator       = "==" | "!=" | "<" | "<=" | ">" | ">=" | "=~" | "!~" .
-    MultiplicativeExpression = AdditiveExpression
-                             | MultiplicativeExpression MultiplicativeOperator AdditiveExpression .
-    MultiplicativeOperator   = "*" | "/" .
-    AdditiveExpression       = PipeExpression
-                             | AdditiveExpression AdditiveOperator PipeExpression .
+    AdditiveExpression       = MultiplicativeExpression
+                             | AdditiveExpression AdditiveOperator MultiplicativeExpression .
     AdditiveOperator         = "+" | "-" .
+    MultiplicativeExpression = PipeExpression
+                             | MultiplicativeExpression MultiplicativeOperator PipeExpression .
+    MultiplicativeOperator   = "*" | "/" .
     PipeExpression           = PostfixExpression
                              | PipeExpression PipeOperator UnaryExpression .
     PipeOperator             = "|>" .
@@ -751,6 +767,7 @@ Operator precedence is encoded directly into the grammar.
     PostfixOperator          = MemberExpression
                              | CallExpression
                              | IndexExpression .
+                             
 ### Packages
 
 Flux source is organized into packages.

@@ -321,8 +321,8 @@ func (p *parser) parseExpression() ast.Expression {
 func (p *parser) parseExpressionSuffix(expr ast.Expression) ast.Expression {
 	p.repeat(p.parsePostfixOperatorSuffix(&expr))
 	p.repeat(p.parsePipeExpressionSuffix(&expr))
-	p.repeat(p.parseAdditiveExpressionSuffix(&expr))
 	p.repeat(p.parseMultiplicativeExpressionSuffix(&expr))
+	p.repeat(p.parseAdditiveExpressionSuffix(&expr))
 	p.repeat(p.parseComparisonExpressionSuffix(&expr))
 	p.repeat(p.parseLogicalExpressionSuffix(&expr))
 	return expr
@@ -415,7 +415,7 @@ func (p *parser) parseUnaryLogicalOperator() (token.Pos, ast.OperatorKind, bool)
 }
 
 func (p *parser) parseComparisonExpression() ast.Expression {
-	expr := p.parseMultiplicativeExpression()
+	expr := p.parseAdditiveExpression()
 	p.repeat(p.parseComparisonExpressionSuffix(&expr))
 	return expr
 }
@@ -426,7 +426,7 @@ func (p *parser) parseComparisonExpressionSuffix(expr *ast.Expression) func() bo
 		if !ok {
 			return false
 		}
-		rhs := p.parseMultiplicativeExpression()
+		rhs := p.parseAdditiveExpression()
 		*expr = &ast.BinaryExpression{
 			Operator: op,
 			Left:     *expr,
@@ -471,47 +471,8 @@ func (p *parser) parseComparisonOperator() (ast.OperatorKind, bool) {
 	}
 }
 
-func (p *parser) parseMultiplicativeExpression() ast.Expression {
-	expr := p.parseAdditiveExpression()
-	p.repeat(p.parseMultiplicativeExpressionSuffix(&expr))
-	return expr
-}
-
-func (p *parser) parseMultiplicativeExpressionSuffix(expr *ast.Expression) func() bool {
-	return func() bool {
-		op, ok := p.parseMultiplicativeOperator()
-		if !ok {
-			return false
-		}
-		rhs := p.parseAdditiveExpression()
-		*expr = &ast.BinaryExpression{
-			Operator: op,
-			Left:     *expr,
-			Right:    rhs,
-			BaseNode: p.baseNode(p.sourceLocation(
-				locStart(*expr),
-				locEnd(rhs),
-			)),
-		}
-		return true
-	}
-}
-
-func (p *parser) parseMultiplicativeOperator() (ast.OperatorKind, bool) {
-	switch _, tok, _ := p.peek(); tok {
-	case token.MUL:
-		p.consume()
-		return ast.MultiplicationOperator, true
-	case token.DIV:
-		p.consume()
-		return ast.DivisionOperator, true
-	default:
-		return 0, false
-	}
-}
-
 func (p *parser) parseAdditiveExpression() ast.Expression {
-	expr := p.parsePipeExpression()
+	expr := p.parseMultiplicativeExpression()
 	p.repeat(p.parseAdditiveExpressionSuffix(&expr))
 	return expr
 }
@@ -522,7 +483,7 @@ func (p *parser) parseAdditiveExpressionSuffix(expr *ast.Expression) func() bool
 		if !ok {
 			return false
 		}
-		rhs := p.parsePipeExpression()
+		rhs := p.parseMultiplicativeExpression()
 		*expr = &ast.BinaryExpression{
 			Operator: op,
 			Left:     *expr,
@@ -544,6 +505,45 @@ func (p *parser) parseAdditiveOperator() (ast.OperatorKind, bool) {
 	case token.SUB:
 		p.consume()
 		return ast.SubtractionOperator, true
+	default:
+		return 0, false
+	}
+}
+
+func (p *parser) parseMultiplicativeExpression() ast.Expression {
+	expr := p.parsePipeExpression()
+	p.repeat(p.parseMultiplicativeExpressionSuffix(&expr))
+	return expr
+}
+
+func (p *parser) parseMultiplicativeExpressionSuffix(expr *ast.Expression) func() bool {
+	return func() bool {
+		op, ok := p.parseMultiplicativeOperator()
+		if !ok {
+			return false
+		}
+		rhs := p.parsePipeExpression()
+		*expr = &ast.BinaryExpression{
+			Operator: op,
+			Left:     *expr,
+			Right:    rhs,
+			BaseNode: p.baseNode(p.sourceLocation(
+				locStart(*expr),
+				locEnd(rhs),
+			)),
+		}
+		return true
+	}
+}
+
+func (p *parser) parseMultiplicativeOperator() (ast.OperatorKind, bool) {
+	switch _, tok, _ := p.peek(); tok {
+	case token.MUL:
+		p.consume()
+		return ast.MultiplicationOperator, true
+	case token.DIV:
+		p.consume()
+		return ast.DivisionOperator, true
 	default:
 		return 0, false
 	}
