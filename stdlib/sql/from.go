@@ -240,3 +240,7 @@ func (c *SQLIterator) Decode() (flux.Table, error) {
 
 	return builder.Table()
 }
+
+func (c *SQLIterator) Close() error {
+	return c.db.Close()
+}
