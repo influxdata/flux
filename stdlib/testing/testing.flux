@@ -3,6 +3,7 @@ package testing
 import c "csv"
 
 builtin assertEquals
+builtin diff
 
 loadStorage = (csv) => c.from(csv: csv)
 loadMem = (csv) => c.from(csv: csv)
