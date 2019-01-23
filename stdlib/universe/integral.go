@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 const IntegralKind = "integral"
@@ -146,19 +147,31 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 	integrals := make([]*integral, len(cols))
 	colMap := make([]int, len(cols))
 
-	for j, c := range cols {
-		if execute.ContainsStr(t.spec.Columns, c.Label) {
-			integrals[j] = newIntegral(time.Duration(t.spec.Unit))
-
-			var err error
-			colMap[j], err = builder.AddCol(flux.ColMeta{
-				Label: c.Label,
-				Type:  flux.TFloat,
-			})
-			if err != nil {
-				return err
-			}
+	for _, c := range t.spec.Columns {
+		idx := execute.ColIdx(c, cols)
+		if idx < 0 {
+			return fmt.Errorf("column %q does not exist", c)
 		}
+
+		if tbl.Key().HasCol(c) {
+			return fmt.Errorf("cannot aggregate columns that are part of the group key")
+		}
+
+		if typ := cols[idx].Type; typ != flux.TFloat &&
+			typ != flux.TInt &&
+			typ != flux.TUInt {
+			return fmt.Errorf("cannot perform integral over %v", typ)
+		}
+
+		integrals[idx] = newIntegral(time.Duration(t.spec.Unit))
+		newIdx, err := builder.AddCol(flux.ColMeta{
+			Label: c,
+			Type:  flux.TFloat,
+		})
+		if err != nil {
+			return err
+		}
+		colMap[idx] = newIdx
 	}
 
 	timeIdx := execute.ColIdx(t.spec.TimeColumn, cols)
@@ -166,17 +179,41 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 		return fmt.Errorf("no column %q exists", t.spec.TimeColumn)
 	}
 	if err := tbl.Do(func(cr flux.ColReader) error {
+		if cr.Times(timeIdx).NullN() > 0 {
+			return fmt.Errorf("integral found null time in time column")
+		}
+
 		for j, in := range integrals {
 			if in == nil {
 				continue
 			}
+
+			var prevTime values.Time
 			l := cr.Len()
 			for i := 0; i < l; i++ {
-				if cr.Times(timeIdx).IsNull(i) || cr.Floats(j).IsNull(i) {
+				tm := execute.Time(cr.Times(timeIdx).Value(i))
+				if prevTime > tm {
+					return fmt.Errorf("integral found out-of-order times in time column")
+				} else if prevTime == tm {
+					// skip repeated times as in IFQL https://github.com/influxdata/influxdb/blob/1.8/query/functions.go
 					continue
 				}
-				tm := execute.Time(cr.Times(timeIdx).Value(i))
-				in.updateFloat(tm, cr.Floats(j).Value(i))
+				prevTime = tm
+
+				switch tbl.Cols()[j].Type {
+				case flux.TInt:
+					if vs := cr.Ints(j); vs.IsValid(i) {
+						in.updateFloat(tm, float64(vs.Value(i)))
+					}
+				case flux.TUInt:
+					if vs := cr.UInts(j); vs.IsValid(i) {
+						in.updateFloat(tm, float64(vs.Value(i)))
+					}
+				case flux.TFloat:
+					if vs := cr.Floats(j); vs.IsValid(i) {
+						in.updateFloat(tm, vs.Value(i))
+					}
+				}
 			}
 		}
 		return nil

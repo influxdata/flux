@@ -1500,15 +1500,18 @@ from(bucket: "telegraf/autogen") |> range(start: -5m) |> count()
 ##### Integral
 
 Integral is an aggregate operation.
-For each aggregate column, it outputs the area under the curve of non null records.
+For each aggregate column, it outputs the area under the curve of records.
 The curve is defined as a function where the domain is the record times and the range is the record values.
+This function will return an error if values in the time column are null or not sorted in
+ascending order.
+Null values in aggregate columns are skipped.
 
 Integral has the following properties:
 
 | Name       | Type     | Description                                                                           |
 | ----       | ----     | -----------                                                                           |
 | columns    | []string | Columns specifies a list of columns to aggregate. Defaults to `["_value"]`.           |
-| unit       | duration | Unit is the time duration to use when computing the integral.                         |
+| unit       | duration | Unit is the time duration to use when computing the integral.  Defaults to `1s`       |
 | timeColumn | string   | TimeColumn is the name of the column containing the time value.  Defaults to `_time`. |
 
 Example:
