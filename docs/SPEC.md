@@ -575,7 +575,8 @@ Examples:
 
 An option assignment creates an option bound to an identifier and gives it a type and a value.
 Options may only be assigned in a package block.
-An identifier assigned to an option may be reassigned a new value but not a new type.
+Once declared, an option may not be redeclared in the same package block.
+An option declared in one package may be reassigned a new value in another.
 An option keeps the same type for the remainder of its lifetime.
 
 Examples:
@@ -588,7 +589,6 @@ Examples:
 
     option alert.severity = ["low", "critical"]  // qualified option
 
-    option n = 1
     option n = 2
 
     f = (a, b) => a + b + n
@@ -945,7 +945,7 @@ A function produces side effects when it is explicitly declared to have side eff
 Packages are initialized in the following order:
 
 1. All imported packages are initialized and assigned to their package identifier. 
-2. All option declarations are evaluated and assigned regardless of order. An option cannot have a dependency on itself or any other option assigned in the same package block.
+2. All option declarations are evaluated and assigned regardless of order. An option cannot have a dependency on another option assigned in the same package block.
 3. All variable declarations are evaluated and assigned regardless of order. A variable cannot have a direct or indirect dependency on itself.
 4. Any package side effects are evaluated.
 
