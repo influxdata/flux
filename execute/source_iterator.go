@@ -21,6 +21,7 @@ type SourceDecoder interface {
 	Connect() error
 	Fetch() (bool, error)
 	Decode() (flux.Table, error)
+	Close() error
 }
 
 // CreateSourceFromDecoder takes an implementation of a SourceDecoder, as well as a dataset ID and Administration type
@@ -40,6 +41,8 @@ func (c *sourceIterator) Do(f func(flux.Table) error) error {
 	if err != nil {
 		return err
 	}
+	defer c.decoder.Close()
+
 	runOnce := true
 	more, err := c.decoder.Fetch()
 	if err != nil {
