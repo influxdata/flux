@@ -83,7 +83,8 @@ func (s *AssertEqualsProcedureSpec) Kind() plan.ProcedureKind {
 }
 
 func (s *AssertEqualsProcedureSpec) Copy() plan.ProcedureSpec {
-	return &AssertEqualsProcedureSpec{}
+	ns := *s
+	return &ns
 }
 
 func newAssertEqualsProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {

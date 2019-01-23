@@ -1377,6 +1377,7 @@ AssertEquals has the following properties:
 Example:
 
 ```
+option now = () => 2015-01-01T00:00:00Z
 want = from(bucket: "backup-telegraf/autogen") |> range(start: -5m)
 // in-line assertion
 from(bucket: "telegraf/autogen") |> range(start: -5m) |> assertEquals(want: want)
@@ -1384,6 +1385,33 @@ from(bucket: "telegraf/autogen") |> range(start: -5m) |> assertEquals(want: want
 // equivalent:
 got = from(bucket: "telegraf/autogen") |> range(start: -5m)
 assertEquals(got: got, want: want)
+```
+
+#### Diff
+
+Diff is a function that will produce a diff between two table streams.
+
+It will match tables from each stream that have the same group key. For each matched table, it will produce a diff. Any rows that were added or removed will be added to the table as a row.
+An additional string column with the name `_diff` will be created which will contain a `"-"` if the row was present in the `got` table and not in the `want` table or `"+"` if the opposite is true.
+
+The `diff` function is guaranteed to emit at least one row if the tables are different and no rows if the tables are the same. The exact diff that is produced may change.
+
+Diff has the following properties:
+
+| Name | Type   | Description                                                             |
+| ---- | ----   | -----------                                                             |
+| got  | stream | The stream you are testing. May be piped-forward from another function. |
+| want | stream | A copy of the expected stream.                                          |
+
+```
+option now = () => 2015-01-01T00:00:00Z
+want = from(bucket: "backup-telegraf/autogen") |> range(start: -5m)
+// in-line assertion
+from(bucket: "telegraf/autogen") |> range(start: -5m) |> assertEquals(want: want)
+
+// equivalent:
+got = from(bucket: "telegraf/autogen") |> range(start: -5m)
+diff(got: got, want: want)
 ```
 
 #### Aggregate operations

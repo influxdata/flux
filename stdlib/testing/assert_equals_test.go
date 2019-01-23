@@ -27,7 +27,6 @@ func TestAssertEqualsOperation_Marshaling(t *testing.T) {
 }
 
 func TestAssertEquals_Process(t *testing.T) {
-
 	testCases := []struct {
 		skip    bool
 		name    string
