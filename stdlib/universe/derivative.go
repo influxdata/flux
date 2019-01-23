@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"github.com/pkg/errors"
 )
 
 const DerivativeKind = "derivative"
@@ -205,6 +206,10 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 			return nil
 		}
 
+		if cr.Times(timeIdx).NullN() > 0 {
+			return fmt.Errorf("derivative found null time in time column")
+		}
+
 		for j, c := range cr.Cols() {
 			var err error
 			switch c.Type {
@@ -223,7 +228,7 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 			}
 
 			if err != nil {
-				return nil
+				return err
 			}
 		}
 		return nil
@@ -240,32 +245,25 @@ func (t *derivativeTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
 }
 
+const derivativeUnsortedTimeErr = "derivative found out-of-order times in time column"
+
 func (t *derivativeTransformation) passThroughBool(ts *array.Int64, vs *array.Boolean, b execute.TableBuilder, bj int) error {
 	i := 0
 
-	// Skip past any initial null times
-	for ts.IsNull(i) {
-		i++
-	}
-
-	// Now consume the first input value, which doesn't produce an output value
 	pTime := execute.Time(ts.Value(i))
 	i++
 
 	// Process the rest of the rows
 	l := vs.Len()
 	for ; i < l; i++ {
-		// If time is null, or did not advance from previous,
-		// don't add any values to the result
-		if ts.IsNull(i) {
-			continue
+		cTime := execute.Time(ts.Value(i))
+		if cTime < pTime {
+			return errors.New(derivativeUnsortedTimeErr)
 		}
 
-		cTime := execute.Time(ts.Value(i))
-		if cTime <= pTime {
-			// This time is before the last time we saw.
-			// Skip this row, but use this time to compare with the next row.
-			pTime = cTime
+		if cTime == pTime {
+			// Only use the first value found if a time value is the same as
+			// the previous row.
 			continue
 		}
 
@@ -290,12 +288,6 @@ func (t *derivativeTransformation) passThroughBool(ts *array.Int64, vs *array.Bo
 
 func (t *derivativeTransformation) doInt(ts, vs *array.Int64, b execute.TableBuilder, bj int, doDerivative bool) error {
 	i := 0
-
-	// Skip past any initial null times
-	for ts.IsNull(i) {
-		i++
-	}
-
 	var pValue int64
 	var pValueTime execute.Time
 	validPValue := false
@@ -312,24 +304,13 @@ func (t *derivativeTransformation) doInt(ts, vs *array.Int64, b execute.TableBui
 	// Process the rest of the rows
 	l := vs.Len()
 	for ; i < l; i++ {
-		// If time is null, or did not advance from previous,
-		// don't add any values to the result
-		if ts.IsNull(i) {
-			continue
+		cTime := execute.Time(ts.Value(i))
+		if cTime < pTime {
+			return errors.New(derivativeUnsortedTimeErr)
 		}
 
-		cTime := execute.Time(ts.Value(i))
-		if cTime <= pTime {
-			// This time is before the last time we saw.
-			// Skip this row, but use this time to compare with the next row.
-			pTime = cTime
-			if vs.IsValid(i) {
-				pValue = vs.Value(i)
-				pValueTime = pTime
-				validPValue = true
-			} else {
-				validPValue = false
-			}
+		if cTime == pTime {
+			// if time did not increase with this row, ignore it.
 			continue
 		}
 
@@ -391,12 +372,6 @@ func (t *derivativeTransformation) doInt(ts, vs *array.Int64, b execute.TableBui
 
 func (t *derivativeTransformation) doUInt(ts *array.Int64, vs *array.Uint64, b execute.TableBuilder, bj int, doDerivative bool) error {
 	i := 0
-
-	// Skip past any initial null times
-	for ts.IsNull(i) {
-		i++
-	}
-
 	var pValue uint64
 	var pValueTime execute.Time
 	validPValue := false
@@ -413,24 +388,13 @@ func (t *derivativeTransformation) doUInt(ts *array.Int64, vs *array.Uint64, b e
 	// Process the rest of the rows
 	l := vs.Len()
 	for ; i < l; i++ {
-		// If time is null, or did not advance from previous,
-		// don't add any values to the result
-		if ts.IsNull(i) {
-			continue
+		cTime := execute.Time(ts.Value(i))
+		if cTime < pTime {
+			return errors.New(derivativeUnsortedTimeErr)
 		}
 
-		cTime := execute.Time(ts.Value(i))
-		if cTime <= pTime {
-			// This time is before the last time we saw.
-			// Skip this row, but use this time to compare with the next row.
-			pTime = cTime
-			if vs.IsValid(i) {
-				pValue = vs.Value(i)
-				pValueTime = pTime
-				validPValue = true
-			} else {
-				validPValue = false
-			}
+		if cTime == pTime {
+			// if time did not increase with this row, ignore it.
 			continue
 		}
 
@@ -501,12 +465,6 @@ func (t *derivativeTransformation) doUInt(ts *array.Int64, vs *array.Uint64, b e
 
 func (t *derivativeTransformation) doFloat(ts *array.Int64, vs *array.Float64, b execute.TableBuilder, bj int, doDerivative bool) error {
 	i := 0
-
-	// Skip past any initial null times
-	for ts.IsNull(i) {
-		i++
-	}
-
 	var pValue float64
 	var pValueTime execute.Time
 	validPValue := false
@@ -523,24 +481,13 @@ func (t *derivativeTransformation) doFloat(ts *array.Int64, vs *array.Float64, b
 	// Process the rest of the rows
 	l := vs.Len()
 	for ; i < l; i++ {
-		// If time is null, or did not advance from previous,
-		// don't add any values to the result
-		if ts.IsNull(i) {
-			continue
+		cTime := execute.Time(ts.Value(i))
+		if cTime < pTime {
+			return errors.New(derivativeUnsortedTimeErr)
 		}
 
-		cTime := execute.Time(ts.Value(i))
-		if cTime <= pTime {
-			// This time is before the last time we saw.
-			// Skip this row, but use this time to compare with the next row.
-			pTime = cTime
-			if vs.IsValid(i) {
-				pValue = vs.Value(i)
-				pValueTime = pTime
-				validPValue = true
-			} else {
-				validPValue = false
-			}
+		if cTime == pTime {
+			// if time did not increase with this row, ignore it.
 			continue
 		}
 
@@ -584,7 +531,7 @@ func (t *derivativeTransformation) doFloat(ts *array.Int64, vs *array.Float64, b
 			} else {
 				// Finally, do the derivative.
 				elapsed := float64(cTime-pValueTime) / t.unit
-				diff := cValue - pValue
+				diff := float64(cValue - pValue)
 				if err := b.AppendFloat(bj, diff/elapsed); err != nil {
 					return err
 				}
@@ -602,30 +549,20 @@ func (t *derivativeTransformation) doFloat(ts *array.Int64, vs *array.Float64, b
 
 func (t *derivativeTransformation) passThroughString(ts *array.Int64, vs *array.Binary, b execute.TableBuilder, bj int) error {
 	i := 0
-
-	// Skip past any initial null times
-	for ts.IsNull(i) {
-		i++
-	}
-
-	// Now consume the first input value, which doesn't produce an output value
 	pTime := execute.Time(ts.Value(i))
 	i++
 
 	// Process the rest of the rows
 	l := vs.Len()
 	for ; i < l; i++ {
-		// If time is null, or did not advance from previous,
-		// don't add any values to the result
-		if ts.IsNull(i) {
-			continue
+		cTime := execute.Time(ts.Value(i))
+		if cTime < pTime {
+			return errors.New(derivativeUnsortedTimeErr)
 		}
 
-		cTime := execute.Time(ts.Value(i))
-		if cTime <= pTime {
-			// This time is before the last time we saw.
-			// Skip this row, but use this time to compare with the next row.
-			pTime = cTime
+		if cTime == pTime {
+			// Only use the first value found if a time value is the same as
+			// the previous row.
 			continue
 		}
 
@@ -650,30 +587,20 @@ func (t *derivativeTransformation) passThroughString(ts *array.Int64, vs *array.
 
 func (t *derivativeTransformation) passThroughTime(ts *array.Int64, vs *array.Int64, b execute.TableBuilder, bj int) error {
 	i := 0
-
-	// Skip past any initial null times
-	for ts.IsNull(i) {
-		i++
-	}
-
-	// Now consume the first input value, which doesn't produce an output value
 	pTime := execute.Time(ts.Value(i))
 	i++
 
 	// Process the rest of the rows
 	l := vs.Len()
 	for ; i < l; i++ {
-		// If time is null, or did not advance from previous,
-		// don't add any values to the result
-		if ts.IsNull(i) {
-			continue
+		cTime := execute.Time(ts.Value(i))
+		if cTime < pTime {
+			return errors.New(derivativeUnsortedTimeErr)
 		}
 
-		cTime := execute.Time(ts.Value(i))
-		if cTime <= pTime {
-			// This time is before the last time we saw.
-			// Skip this row, but use this time to compare with the next row.
-			pTime = cTime
+		if cTime == pTime {
+			// Only use the first value found if a time value is the same as
+			// the previous row.
 			continue
 		}
 

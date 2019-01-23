@@ -1,6 +1,7 @@
 package universe_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -36,10 +37,11 @@ func TestDerivative_PassThrough(t *testing.T) {
 
 func TestDerivative_Process(t *testing.T) {
 	testCases := []struct {
-		name string
-		spec *universe.DerivativeProcedureSpec
-		data []flux.Table
-		want []*executetest.Table
+		name    string
+		spec    *universe.DerivativeProcedureSpec
+		data    []flux.Table
+		want    []*executetest.Table
+		wantErr error
 	}{
 		{
 			name: "float",
@@ -464,17 +466,7 @@ func TestDerivative_Process(t *testing.T) {
 					{nil, 8.0, 20.0},
 				},
 			}},
-			want: []*executetest.Table{{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "x", Type: flux.TFloat},
-					{Label: "y", Type: flux.TFloat},
-				},
-				Data: [][]interface{}{
-					{execute.Time(4), nil, 5.0},
-					{execute.Time(6), 1.0, 2.5},
-				},
-			}},
+			wantErr: fmt.Errorf("derivative found null time in time column"),
 		},
 		{
 			name: "times out of order",
@@ -499,23 +491,10 @@ func TestDerivative_Process(t *testing.T) {
 					{execute.Time(7), 10.0, nil},
 				},
 			}},
-			want: []*executetest.Table{{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "x", Type: flux.TFloat},
-					{Label: "y", Type: flux.TFloat},
-				},
-				Data: [][]interface{}{
-					{execute.Time(4), nil, 5.0},
-					{execute.Time(6), 1.0, 2.5},
-
-					{execute.Time(5), nil, 5.0},
-					{execute.Time(7), 1.0, nil},
-				},
-			}},
+			wantErr: fmt.Errorf("derivative found out-of-order times in time column"),
 		},
 		{
-			name: "pass through",
+			name: "pass through with repeated times",
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:    []string{"x"},
 				TimeColumn: execute.DefaultTimeColLabel,
@@ -529,16 +508,11 @@ func TestDerivative_Process(t *testing.T) {
 					{Label: "s", Type: flux.TString},
 				},
 				Data: [][]interface{}{
-					{nil, nil, true, "foo"},
 					{execute.Time(2), nil, false, "bar"},
-					{execute.Time(4), 8.0, false, "dog"},
-					{nil, nil, true, nil},
-					{execute.Time(6), 10.0, nil, nil},
-
-					{execute.Time(3), nil, true, "car"},
-					{execute.Time(5), 8.0, true, "cat"},
-					{execute.Time(7), 10.0, nil, "baz"},
-					{nil, nil, true, "cdr"},
+					{execute.Time(2), 1.0, false, "bar"},
+					{execute.Time(4), 8.0, false, nil},
+					{execute.Time(4), 9.0, true, "baz"},
+					{execute.Time(6), 10.0, nil, "dog"},
 				},
 			}},
 			want: []*executetest.Table{{
@@ -549,11 +523,8 @@ func TestDerivative_Process(t *testing.T) {
 					{Label: "s", Type: flux.TString},
 				},
 				Data: [][]interface{}{
-					{execute.Time(4), nil, false, "dog"},
-					{execute.Time(6), 1.0, nil, nil},
-
-					{execute.Time(5), nil, true, "cat"},
-					{execute.Time(7), 1.0, nil, "baz"},
+					{execute.Time(4), nil, false, nil},
+					{execute.Time(6), 1.0, nil, "dog"},
 				},
 			}},
 		},
@@ -565,7 +536,7 @@ func TestDerivative_Process(t *testing.T) {
 				t,
 				tc.data,
 				tc.want,
-				nil,
+				tc.wantErr,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
 					return universe.NewDerivativeTransformation(d, c, tc.spec)
 				},
