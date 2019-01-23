@@ -319,6 +319,9 @@ func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tab
 		case defaultAnnotation:
 			resultID = line[resultIdx]
 			tableID = line[tableIdx]
+			if _, err := strconv.ParseInt(tableID, 10, 64); tableID != "" && err != nil {
+				return tableMetadata{}, fmt.Errorf("default Table ID is not an integer")
+			}
 			defaults = copyLine(line[recordStartIdx:])
 		default:
 			if annotation == "" {
@@ -579,10 +582,10 @@ DONE:
 }
 
 func (d *tableDecoder) init(line []string) error {
-	if d.meta.TableID != "" {
-		d.id = d.meta.TableID
-	} else if len(line) != 0 {
+	if len(line) != 0 {
 		d.id = line[tableIdx]
+	} else if d.meta.TableID != "" {
+		d.id = d.meta.TableID
 	} else {
 		return errors.New("missing table ID")
 	}
