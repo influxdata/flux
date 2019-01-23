@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"github.com/pkg/errors"
 )
 
 const DerivativeKind = "derivative"
@@ -205,6 +206,10 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 			return nil
 		}
 
+		if cr.Times(timeIdx).NullN() > 0 {
+			return fmt.Errorf("derivative found null time in time column")
+		}
+
 		for j, c := range cr.Cols() {
 			var err error
 			switch c.Type {
@@ -240,26 +245,20 @@ func (t *derivativeTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
 }
 
+const derivativeUnsortedTimeErr = "derivative found out-of-order times in time column"
+
 func (t *derivativeTransformation) passThroughBool(ts *array.Int64, vs *array.Boolean, b execute.TableBuilder, bj int) error {
 	i := 0
 
-	// Consume the first input value, which doesn't produce an output value
-	if ts.IsNull(i) {
-		return fmt.Errorf("derivative found null time in time column")
-	}
 	pTime := execute.Time(ts.Value(i))
 	i++
 
 	// Process the rest of the rows
 	l := vs.Len()
 	for ; i < l; i++ {
-		if ts.IsNull(i) {
-			return fmt.Errorf("derivative found null time in time column")
-		}
-
 		cTime := execute.Time(ts.Value(i))
 		if cTime < pTime {
-			return fmt.Errorf("derivative found out-of-order times in time column")
+			return errors.New(derivativeUnsortedTimeErr)
 		}
 
 		if cTime == pTime {
@@ -289,11 +288,6 @@ func (t *derivativeTransformation) passThroughBool(ts *array.Int64, vs *array.Bo
 
 func (t *derivativeTransformation) doInt(ts, vs *array.Int64, b execute.TableBuilder, bj int, doDerivative bool) error {
 	i := 0
-
-	if ts.IsNull(i) {
-		return fmt.Errorf("derivative found null time in time column")
-	}
-
 	var pValue int64
 	var pValueTime execute.Time
 	validPValue := false
@@ -310,13 +304,9 @@ func (t *derivativeTransformation) doInt(ts, vs *array.Int64, b execute.TableBui
 	// Process the rest of the rows
 	l := vs.Len()
 	for ; i < l; i++ {
-		if ts.IsNull(i) {
-			return fmt.Errorf("derivative found null time in time column")
-		}
-
 		cTime := execute.Time(ts.Value(i))
 		if cTime < pTime {
-			return fmt.Errorf("derivative found out-of-order times in time column")
+			return errors.New(derivativeUnsortedTimeErr)
 		}
 
 		if cTime == pTime {
@@ -382,11 +372,6 @@ func (t *derivativeTransformation) doInt(ts, vs *array.Int64, b execute.TableBui
 
 func (t *derivativeTransformation) doUInt(ts *array.Int64, vs *array.Uint64, b execute.TableBuilder, bj int, doDerivative bool) error {
 	i := 0
-
-	if ts.IsNull(i) {
-		return fmt.Errorf("derivative found null time in time column")
-	}
-
 	var pValue uint64
 	var pValueTime execute.Time
 	validPValue := false
@@ -403,13 +388,9 @@ func (t *derivativeTransformation) doUInt(ts *array.Int64, vs *array.Uint64, b e
 	// Process the rest of the rows
 	l := vs.Len()
 	for ; i < l; i++ {
-		if ts.IsNull(i) {
-			return fmt.Errorf("derivative found null time in time column")
-		}
-
 		cTime := execute.Time(ts.Value(i))
 		if cTime < pTime {
-			return fmt.Errorf("derivative found out-of-order times in time column")
+			return errors.New(derivativeUnsortedTimeErr)
 		}
 
 		if cTime == pTime {
@@ -484,11 +465,6 @@ func (t *derivativeTransformation) doUInt(ts *array.Int64, vs *array.Uint64, b e
 
 func (t *derivativeTransformation) doFloat(ts *array.Int64, vs *array.Float64, b execute.TableBuilder, bj int, doDerivative bool) error {
 	i := 0
-
-	if ts.IsNull(i) {
-		return fmt.Errorf("derivative found null time in time column")
-	}
-
 	var pValue float64
 	var pValueTime execute.Time
 	validPValue := false
@@ -505,13 +481,9 @@ func (t *derivativeTransformation) doFloat(ts *array.Int64, vs *array.Float64, b
 	// Process the rest of the rows
 	l := vs.Len()
 	for ; i < l; i++ {
-		if ts.IsNull(i) {
-			return fmt.Errorf("derivative found null time in time column")
-		}
-
 		cTime := execute.Time(ts.Value(i))
 		if cTime < pTime {
-			return fmt.Errorf("derivative found out-of-order times in time column")
+			return errors.New(derivativeUnsortedTimeErr)
 		}
 
 		if cTime == pTime {
@@ -577,24 +549,15 @@ func (t *derivativeTransformation) doFloat(ts *array.Int64, vs *array.Float64, b
 
 func (t *derivativeTransformation) passThroughString(ts *array.Int64, vs *array.Binary, b execute.TableBuilder, bj int) error {
 	i := 0
-
-	// Consume the first input value, which doesn't produce an output value
-	if ts.IsNull(i) {
-		return fmt.Errorf("derivative found null time in time column")
-	}
 	pTime := execute.Time(ts.Value(i))
 	i++
 
 	// Process the rest of the rows
 	l := vs.Len()
 	for ; i < l; i++ {
-		if ts.IsNull(i) {
-			return fmt.Errorf("derivative found null time in time column")
-		}
-
 		cTime := execute.Time(ts.Value(i))
 		if cTime < pTime {
-			return fmt.Errorf("derivative found out-of-order times in time column")
+			return errors.New(derivativeUnsortedTimeErr)
 		}
 
 		if cTime == pTime {
@@ -624,24 +587,15 @@ func (t *derivativeTransformation) passThroughString(ts *array.Int64, vs *array.
 
 func (t *derivativeTransformation) passThroughTime(ts *array.Int64, vs *array.Int64, b execute.TableBuilder, bj int) error {
 	i := 0
-
-	// Consume the first input value, which doesn't produce an output value
-	if ts.IsNull(i) {
-		return fmt.Errorf("derivative found null time in time column")
-	}
 	pTime := execute.Time(ts.Value(i))
 	i++
 
 	// Process the rest of the rows
 	l := vs.Len()
 	for ; i < l; i++ {
-		if ts.IsNull(i) {
-			return fmt.Errorf("derivative found null time in time column")
-		}
-
 		cTime := execute.Time(ts.Value(i))
 		if cTime < pTime {
-			return fmt.Errorf("derivative found out-of-order times in time column")
+			return errors.New(derivativeUnsortedTimeErr)
 		}
 
 		if cTime == pTime {
