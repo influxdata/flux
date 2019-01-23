@@ -1,6 +1,7 @@
 package universe_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -35,10 +36,11 @@ func TestIntegral_PassThrough(t *testing.T) {
 
 func TestIntegral_Process(t *testing.T) {
 	testCases := []struct {
-		name string
-		spec *universe.IntegralProcedureSpec
-		data []flux.Table
-		want []*executetest.Table
+		name    string
+		spec    *universe.IntegralProcedureSpec
+		data    []flux.Table
+		want    []*executetest.Table
+		wantErr error
 	}{
 		{
 			name: "float",
@@ -58,6 +60,70 @@ func TestIntegral_Process(t *testing.T) {
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(3), execute.Time(1), 2.0},
 					{execute.Time(1), execute.Time(3), execute.Time(2), 1.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), execute.Time(3), 1.5},
+				},
+			}},
+		},
+		{
+			name: "int",
+			spec: &universe.IntegralProcedureSpec{
+				Unit:            1,
+				TimeColumn:      execute.DefaultTimeColLabel,
+				AggregateConfig: execute.DefaultAggregateConfig,
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), execute.Time(3), execute.Time(1), int64(2)},
+					{execute.Time(1), execute.Time(3), execute.Time(2), int64(1)},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), execute.Time(3), 1.5},
+				},
+			}},
+		},
+		{
+			name: "uint",
+			spec: &universe.IntegralProcedureSpec{
+				Unit:            1,
+				TimeColumn:      execute.DefaultTimeColLabel,
+				AggregateConfig: execute.DefaultAggregateConfig,
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TUInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), execute.Time(3), execute.Time(1), uint64(2)},
+					{execute.Time(1), execute.Time(3), execute.Time(2), uint64(1)},
 				},
 			}},
 			want: []*executetest.Table{{
@@ -176,7 +242,7 @@ func TestIntegral_Process(t *testing.T) {
 			}},
 		},
 		{
-			name: "float with nulls",
+			name: "float with null timestamps",
 			spec: &universe.IntegralProcedureSpec{
 				Unit:            1,
 				TimeColumn:      execute.DefaultTimeColLabel,
@@ -193,8 +259,33 @@ func TestIntegral_Process(t *testing.T) {
 				Data: [][]interface{}{
 					{execute.Time(1), execute.Time(4), execute.Time(1), 2.0},
 					{execute.Time(1), execute.Time(4), nil, 3.0},
-					{execute.Time(1), execute.Time(4), execute.Time(2), 1.0},
+					{execute.Time(1), execute.Time(4), nil, 1.0},
 					{execute.Time(1), execute.Time(4), execute.Time(3), nil},
+				},
+			}},
+			wantErr: fmt.Errorf("integral found null time in time column"),
+		},
+		{
+			name: "float with null values",
+			spec: &universe.IntegralProcedureSpec{
+				Unit:            1,
+				TimeColumn:      execute.DefaultTimeColLabel,
+				AggregateConfig: execute.DefaultAggregateConfig,
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), execute.Time(6), execute.Time(1), 2.0},
+					{execute.Time(1), execute.Time(6), execute.Time(2), 3.0},
+					{execute.Time(1), execute.Time(6), execute.Time(3), 1.0},
+					{execute.Time(1), execute.Time(6), execute.Time(4), nil},
+					{execute.Time(1), execute.Time(6), execute.Time(5), 4.0},
 				},
 			}},
 			want: []*executetest.Table{{
@@ -205,7 +296,90 @@ func TestIntegral_Process(t *testing.T) {
 					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(1), execute.Time(4), 1.5},
+					{execute.Time(1), execute.Time(6), 9.5},
+				},
+			}},
+		},
+		{
+			name: "float with out-of-order timestamps",
+			spec: &universe.IntegralProcedureSpec{
+				Unit:            1,
+				TimeColumn:      execute.DefaultTimeColLabel,
+				AggregateConfig: execute.DefaultAggregateConfig,
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), execute.Time(5), execute.Time(1), 2.0},
+					{execute.Time(1), execute.Time(5), execute.Time(4), 5.0},
+					{execute.Time(1), execute.Time(5), execute.Time(3), 1.0},
+					{execute.Time(1), execute.Time(5), execute.Time(2), 3.0},
+				},
+			}},
+			wantErr: fmt.Errorf("integral found out-of-order times in time column"),
+		},
+		{
+			name: "integral over string",
+			spec: &universe.IntegralProcedureSpec{
+				Unit:       1,
+				TimeColumn: execute.DefaultTimeColLabel,
+				AggregateConfig: execute.AggregateConfig{
+					Columns: []string{"t"},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), execute.Time(3), execute.Time(1), 2.0, "a"},
+					{execute.Time(1), execute.Time(3), execute.Time(2), 1.0, "b"},
+				},
+			}},
+			wantErr: fmt.Errorf("cannot perform integral over string"),
+		},
+		{
+			name: "float repeated times",
+			spec: &universe.IntegralProcedureSpec{
+				Unit:            1,
+				TimeColumn:      execute.DefaultTimeColLabel,
+				AggregateConfig: execute.DefaultAggregateConfig,
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), execute.Time(3), execute.Time(1), 2.0},
+					{execute.Time(1), execute.Time(3), execute.Time(1), 32.0},
+					{execute.Time(1), execute.Time(3), execute.Time(2), 1.0},
+					{execute.Time(1), execute.Time(3), execute.Time(2), 42.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), execute.Time(3), 1.5},
 				},
 			}},
 		},
@@ -217,7 +391,7 @@ func TestIntegral_Process(t *testing.T) {
 				t,
 				tc.data,
 				tc.want,
-				nil,
+				tc.wantErr,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
 					return universe.NewIntegralTransformation(d, c, tc.spec)
 				},
