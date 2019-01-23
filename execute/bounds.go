@@ -76,6 +76,13 @@ func (b Bounds) Shift(d Duration) Bounds {
 	return Bounds{Start: b.Start.Add(d), Stop: b.Stop.Add(d)}
 }
 
+func (b Bounds) Duration() Duration {
+	if b.IsEmpty() {
+		return 0
+	}
+	return Duration(b.Stop - b.Start)
+}
+
 func Now() Time {
 	return values.ConvertTime(time.Now())
 }

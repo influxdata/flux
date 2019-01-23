@@ -15,15 +15,13 @@ import (
 const WindowKind = "window"
 
 type WindowOpSpec struct {
-	Every       flux.Duration    `json:"every"`
-	Period      flux.Duration    `json:"period"`
-	Start       flux.Time        `json:"start"`
-	Round       flux.Duration    `json:"round"`
-	Triggering  flux.TriggerSpec `json:"triggering"`
-	TimeColumn  string           `json:"timeColumn"`
-	StopColumn  string           `json:"stopColumn"`
-	StartColumn string           `json:"startColumn"`
-	CreateEmpty bool             `json:"createEmpty"`
+	Every       flux.Duration `json:"every"`
+	Period      flux.Duration `json:"period"`
+	Offset      flux.Duration `json:"offset"`
+	TimeColumn  string        `json:"timeColumn"`
+	StopColumn  string        `json:"stopColumn"`
+	StartColumn string        `json:"startColumn"`
+	CreateEmpty bool          `json:"createEmpty"`
 }
 
 var infinityVar = values.NewDuration(math.MaxInt64)
@@ -33,8 +31,7 @@ func init() {
 		map[string]semantic.PolyType{
 			"every":       semantic.Duration,
 			"period":      semantic.Duration,
-			"round":       semantic.Duration,
-			"start":       semantic.Tvar(1), // See similar TODO on range about type classes
+			"offset":      semantic.Duration,
 			"timeColumn":  semantic.String,
 			"startColumn": semantic.String,
 			"stopColumn":  semantic.String,
@@ -70,15 +67,10 @@ func createWindowOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 	if periodSet {
 		spec.Period = period
 	}
-	if round, ok, err := args.GetDuration("round"); err != nil {
+	if offset, ok, err := args.GetDuration("offset"); err != nil {
 		return nil, err
 	} else if ok {
-		spec.Round = round
-	}
-	if start, ok, err := args.GetTime("start"); err != nil {
-		return nil, err
-	} else if ok {
-		spec.Start = start
+		spec.Offset = offset
 	}
 
 	if !everySet && !periodSet {
@@ -134,8 +126,7 @@ func (s *WindowOpSpec) Kind() flux.OperationKind {
 
 type WindowProcedureSpec struct {
 	plan.DefaultCost
-	Window     plan.WindowSpec
-	Triggering flux.TriggerSpec
+	Window plan.WindowSpec
 	TimeColumn,
 	StartColumn,
 	StopColumn string
@@ -151,17 +142,12 @@ func newWindowProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Pro
 		Window: plan.WindowSpec{
 			Every:  s.Every,
 			Period: s.Period,
-			Round:  s.Round,
-			Start:  s.Start,
+			Offset: s.Offset,
 		},
-		Triggering:  s.Triggering,
 		TimeColumn:  s.TimeColumn,
 		StartColumn: s.StartColumn,
 		StopColumn:  s.StopColumn,
 		CreateEmpty: s.CreateEmpty,
-	}
-	if p.Triggering == nil {
-		p.Triggering = flux.DefaultTrigger
 	}
 	return p, nil
 }
@@ -172,12 +158,7 @@ func (s *WindowProcedureSpec) Kind() plan.ProcedureKind {
 func (s *WindowProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(WindowProcedureSpec)
 	ns.Window = s.Window
-	ns.Triggering = s.Triggering
 	return ns
-}
-
-func (s *WindowProcedureSpec) TriggerSpec() flux.TriggerSpec {
-	return s.Triggering
 }
 
 func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
@@ -187,12 +168,6 @@ func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationM
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
-	var start execute.Time
-	if s.Window.Start.IsZero() {
-		start = a.ResolveTime(flux.Now).Truncate(execute.Duration(s.Window.Every))
-	} else {
-		start = a.ResolveTime(s.Window.Start)
-	}
 
 	bounds := a.StreamContext().Bounds()
 	if bounds == nil {
@@ -203,12 +178,10 @@ func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationM
 		d,
 		cache,
 		*bounds,
-		execute.Window{
-			Every:  execute.Duration(s.Window.Every),
-			Period: execute.Duration(s.Window.Period),
-			Round:  execute.Duration(s.Window.Round),
-			Start:  start,
-		},
+		execute.NewWindow(
+			execute.Duration(s.Window.Every),
+			execute.Duration(s.Window.Period),
+			execute.Duration(s.Window.Offset)),
 		s.TimeColumn,
 		s.StartColumn,
 		s.StopColumn,
@@ -223,8 +196,6 @@ type fixedWindowTransformation struct {
 	w         execute.Window
 	bounds    execute.Bounds
 	allBounds []execute.Bounds
-
-	offset execute.Duration
 
 	timeCol,
 	startCol,
@@ -242,13 +213,11 @@ func NewFixedWindowTransformation(
 	stopCol string,
 	createEmpty bool,
 ) execute.Transformation {
-	offset := execute.Duration(w.Start - w.Start.Truncate(w.Every))
 	t := &fixedWindowTransformation{
 		d:           d,
 		cache:       cache,
 		w:           w,
 		bounds:      bounds,
-		offset:      offset,
 		timeCol:     timeCol,
 		startCol:    startCol,
 		stopCol:     stopCol,
@@ -390,49 +359,19 @@ func (t *fixedWindowTransformation) newWindowGroupKey(tbl flux.Table, keyCols []
 	return execute.NewGroupKey(cols, vs)
 }
 
-func (t *fixedWindowTransformation) generateInitialBounds(boundsStart, boundsStop execute.Time) (execute.Time, execute.Time) {
-	stop := boundsStart.Truncate(t.w.Every) + execute.Time(t.offset)
-	if boundsStop >= stop {
-		stop += execute.Time(t.w.Every)
-	}
-	start := stop - execute.Time(t.w.Period)
-
-	return start, stop
-}
-
-func (t *fixedWindowTransformation) clipBounds(bnds *execute.Bounds) {
-	// Check against procedure bounds
-	if bnds.Stop > t.bounds.Stop {
-		bnds.Stop = t.bounds.Stop
-	}
-
-	if bnds.Start < t.bounds.Start {
-		bnds.Start = t.bounds.Start
+func (t *fixedWindowTransformation) clipBounds(bs []execute.Bounds) {
+	for i := range bs {
+		bs[i] = t.bounds.Intersect(bs[i])
 	}
 }
 
-func (t *fixedWindowTransformation) getWindowBounds(now execute.Time) []execute.Bounds {
+func (t *fixedWindowTransformation) getWindowBounds(tm execute.Time) []execute.Bounds {
 	if t.w.Every == infinityVar.Duration() {
 		return []execute.Bounds{t.bounds}
 	}
-	start, stop := t.generateInitialBounds(now, now)
-
-	var bounds []execute.Bounds
-
-	for now >= start {
-		bnds := execute.Bounds{
-			Start: start,
-			Stop:  stop,
-		}
-
-		t.clipBounds(&bnds)
-		bounds = append(bounds, bnds)
-
-		stop += execute.Time(t.w.Every)
-		start += execute.Time(t.w.Every)
-	}
-
-	return bounds
+	bs := t.w.GetOverlappingBounds(execute.Bounds{Start: tm, Stop: tm + 1})
+	t.clipBounds(bs)
+	return bs
 }
 
 func (t *fixedWindowTransformation) generateWindowsWithinBounds() {
@@ -442,23 +381,9 @@ func (t *fixedWindowTransformation) generateWindowsWithinBounds() {
 		}
 		return
 	}
-	start, stop := t.generateInitialBounds(t.bounds.Start, t.bounds.Stop)
-
-	var bounds []execute.Bounds
-
-	for t.bounds.Stop > start {
-		bnds := execute.Bounds{
-			Start: start,
-			Stop:  stop,
-		}
-
-		t.clipBounds(&bnds)
-		bounds = append(bounds, bnds)
-
-		start += execute.Time(t.w.Every)
-		stop += execute.Time(t.w.Every)
-	}
-	t.allBounds = bounds
+	bs := t.w.GetOverlappingBounds(t.bounds)
+	t.clipBounds(bs)
+	t.allBounds = bs
 }
 
 func (t *fixedWindowTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
