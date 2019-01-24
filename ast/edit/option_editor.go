@@ -2,11 +2,8 @@ package edit
 
 import (
 	"fmt"
-	"sort"
 
 	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
 )
 
 // `OptionFn` is a function that, provided with an `OptionStatement`, returns
@@ -42,7 +39,7 @@ func OptionValueFn(expr ast.Expression) OptionFn {
 // Creates an `OptionFn` for updating the values of an `OptionStatement` that has an
 // `ObjectExpression` as value. Returns error if the child of the option statement is not
 // an object expression, or if some key in the provided map is not a property of the object.
-func OptionObjectFn(keyMap map[string]values.Value) OptionFn {
+func OptionObjectFn(keyMap map[string]ast.Expression) OptionFn {
 	return func(opt *ast.OptionStatement) (ast.Expression, error) {
 		a, ok := opt.Assignment.(*ast.VariableAssignment)
 		if !ok {
@@ -66,82 +63,14 @@ func OptionObjectFn(keyMap map[string]values.Value) OptionFn {
 		}
 
 		for _, p := range obj.Properties {
-			value, found := keyMap[p.Key.Key()]
+			exp, found := keyMap[p.Key.Key()]
 			if found {
-				p.Value = CreateLiteral(value)
+				p.Value = exp
 			}
 		}
 
 		return nil, nil
 	}
-}
-
-// `CreateLiteral` creates a AST `Expression` from a `Value`. Supported types for value are Bool, Int, UInt, Float,
-// String, Time, Duration, Regexp, Array, and Object. In the case of Object, the returned expression gets
-// properties sorted by their keys in increasing order.
-func CreateLiteral(v values.Value) ast.Expression {
-	var literal ast.Expression
-	switch v.Type().Nature() {
-	case semantic.Bool:
-		literal = &ast.BooleanLiteral{Value: v.Bool()}
-	case semantic.UInt:
-		literal = &ast.UnsignedIntegerLiteral{Value: v.UInt()}
-	case semantic.Int:
-		literal = &ast.IntegerLiteral{Value: v.Int()}
-	case semantic.Float:
-		literal = &ast.FloatLiteral{Value: v.Float()}
-	case semantic.String:
-		literal = &ast.StringLiteral{Value: v.Str()}
-	case semantic.Time:
-		literal = &ast.DateTimeLiteral{Value: v.Time().Time()}
-	case semantic.Duration:
-		literal = &ast.DurationLiteral{
-			Values: []ast.Duration{
-				{
-					Magnitude: int64(v.Duration()),
-					Unit:      "ns",
-				},
-			},
-		}
-	case semantic.Regexp:
-		literal = &ast.RegexpLiteral{Value: v.Regexp()}
-	case semantic.Array:
-		arr := v.Array()
-		arrExpr := &ast.ArrayExpression{Elements: make([]ast.Expression, arr.Len())}
-
-		arr.Range(func(i int, el values.Value) {
-			arrExpr.Elements[i] = CreateLiteral(el)
-		})
-
-		literal = arrExpr
-	case semantic.Object:
-		obj := v.Object()
-
-		// sort keys
-		keys := make([]string, 0, obj.Len())
-		obj.Range(func(k string, v values.Value) {
-			keys = append(keys, k)
-		})
-		sort.Strings(keys)
-
-		props := make([]*ast.Property, len(keys))
-
-		for i, k := range keys {
-			v, _ := obj.Get(k)
-			prop := &ast.Property{
-				Key:   &ast.Identifier{Name: k},
-				Value: CreateLiteral(v),
-			}
-
-			props[i] = prop
-		}
-
-		literal = &ast.ObjectExpression{Properties: props}
-	default:
-		panic(fmt.Errorf("cannot create literal for %v", v.Type().Nature()))
-	}
-
-	return literal
 }
 
 //Finds the `OptionStatement` with the specified `identifier` and updates its value.
