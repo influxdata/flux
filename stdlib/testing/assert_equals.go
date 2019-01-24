@@ -140,7 +140,7 @@ func createAssertEqualsTransformation(id execute.DatasetID, mode execute.Accumul
 	dataset := execute.NewDataset(id, mode, cache)
 	pspec, ok := spec.(*AssertEqualsProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", pspec)
+		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
 	}
 
 	transform := NewAssertEqualsTransformation(dataset, cache, pspec, a.Parents()[0], a.Parents()[1], a.Allocator())

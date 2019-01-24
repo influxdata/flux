@@ -66,6 +66,11 @@ func ProcessTestHelper(
 		}
 	}
 
+	tx.Finish(parentID, gotErr)
+	if gotErr == nil {
+		gotErr = d.FinishedErr
+	}
+
 	if gotErr == nil && wantErr != nil {
 		t.Fatalf("expected error %s, got none", wantErr.Error())
 	} else if gotErr != nil && wantErr == nil {
