@@ -15,7 +15,9 @@ func New(pkg *ast.Package) (*Package, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := runChecks(p); err != nil {
+	vars := make(map[string]bool)
+	opts := make(map[string]bool)
+	if err := runChecks(p, vars, opts); err != nil {
 		return nil, err
 	}
 	return p, nil
