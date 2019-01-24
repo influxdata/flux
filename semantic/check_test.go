@@ -7,7 +7,7 @@ import (
 	"github.com/influxdata/flux/ast"
 )
 
-func TestOptionDeclarationChecks(t *testing.T) {
+func TestOptionDeclarations(t *testing.T) {
 	testcases := []struct {
 		name string
 		pkg  *Package
@@ -15,8 +15,11 @@ func TestOptionDeclarationChecks(t *testing.T) {
 	}{
 		{
 			// package foo
-			// option bar = 0
-			// option bar = 1
+			// option a = 0
+			// f = () => {
+			//   a = 0
+			//   return a + 1
+			// }
 			//
 			name: "no error",
 			pkg: &Package{
@@ -29,115 +32,7 @@ func TestOptionDeclarationChecks(t *testing.T) {
 						Body: []Statement{
 							&OptionStatement{
 								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "bar"},
-									Init:       &IntegerLiteral{Value: 0},
-								},
-							},
-							&OptionStatement{
-								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "bar"},
-									Init:       &IntegerLiteral{Value: 1},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			// package foo
-			// option bar = 0
-			// f = () => {
-			//   a = 0
-			//   b = 0
-			//   return a + b
-			// }
-			// option bar = 1
-			//
-			name: "no error after block",
-			pkg: &Package{
-				Package: "foo",
-				Files: []*File{
-					{
-						Package: &PackageClause{
-							Name: &Identifier{Name: "foo"},
-						},
-						Body: []Statement{
-							&OptionStatement{
-								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "bar"},
-									Init:       &IntegerLiteral{Value: 0},
-								},
-							},
-							&NativeVariableAssignment{
-								Identifier: &Identifier{Name: "f"},
-								Init: &FunctionExpression{
-									Block: &FunctionBlock{
-										Body: &Block{
-											Body: []Statement{
-												&NativeVariableAssignment{
-													Identifier: &Identifier{Name: "a"},
-													Init:       &IntegerLiteral{Value: 0},
-												},
-												&NativeVariableAssignment{
-													Identifier: &Identifier{Name: "b"},
-													Init:       &IntegerLiteral{Value: 0},
-												},
-												&ReturnStatement{
-													Argument: &BinaryExpression{
-														Operator: ast.AdditionOperator,
-														Left:     &IdentifierExpression{Name: "a"},
-														Right:    &IdentifierExpression{Name: "b"},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-							&OptionStatement{
-								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "bar"},
-									Init:       &IntegerLiteral{Value: 1},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			// package foo
-			// option bar = 0
-			//
-			// package foo
-			// option baz = 0
-			//
-			name: "no error multiple files",
-			pkg: &Package{
-				Package: "foo",
-				Files: []*File{
-					{
-						Package: &PackageClause{
-							Name: &Identifier{Name: "foo"},
-						},
-						Body: []Statement{
-							&OptionStatement{
-								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "bar"},
-									Init:       &IntegerLiteral{Value: 0},
-								},
-							},
-						},
-					},
-					{
-						Package: &PackageClause{
-							Name: &Identifier{Name: "foo"},
-						},
-						Body: []Statement{
-							&OptionStatement{
-								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "baz"},
+									Identifier: &Identifier{Name: "a"},
 									Init:       &IntegerLiteral{Value: 0},
 								},
 							},
@@ -257,77 +152,12 @@ func TestOptionDeclarationChecks(t *testing.T) {
 		},
 		{
 			// package foo
-			// option bar = 0
-			//
-			// package foo
-			// f = () => {
-			//   option bar = 1
-			// }
-			//
-			name: "multiple files",
-			pkg: &Package{
-				Package: "foo",
-				Files: []*File{
-					{
-						Package: &PackageClause{
-							Name: &Identifier{Name: "foo"},
-						},
-						Body: []Statement{
-							&OptionStatement{
-								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "bar"},
-									Init:       &IntegerLiteral{Value: 0},
-								},
-							},
-						},
-					},
-					{
-						Package: &PackageClause{
-							Name: &Identifier{Name: "foo"},
-						},
-						Body: []Statement{
-							&NativeVariableAssignment{
-								Identifier: &Identifier{Name: "f"},
-								Init: &FunctionExpression{
-									Block: &FunctionBlock{
-										Body: &Block{
-											Body: []Statement{
-												&OptionStatement{
-													loc: loc{
-														File: "f.flux",
-														Start: ast.Position{
-															Line:   3,
-															Column: 3,
-														},
-														End: ast.Position{
-															Line:   3,
-															Column: 17,
-														},
-													},
-													Assignment: &NativeVariableAssignment{
-														Identifier: &Identifier{Name: "bar"},
-														Init:       &IntegerLiteral{Value: 1},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			err: fmt.Errorf(`option "bar" declared below package block at f.flux|3:3-3:17`),
-		},
-		{
-			// package foo
 			// import "bar"
 			// f = () => {
 			//   option bar.baz = 0
 			// }
 			//
-			name: "function block",
+			name: "qualified option",
 			pkg: &Package{
 				Package: "foo",
 				Files: []*File{
@@ -379,22 +209,32 @@ func TestOptionDeclarationChecks(t *testing.T) {
 		},
 		{
 			// package foo
+			// option a = 0
 			//
-			// option bar = 0
+			// package foo
+			// import "bar"
+			//
+			// x = bar.x
+			// option bar.x = 0
+			//
+			// package foo
+			// option b = 0
 			//
 			// f = () => {
-			//   a = 0
-			//   b = 0
-			//   return a + b
+			//   a = 1
+			//   b = 1
+			//   c = 1
+			//   return a + b - c
 			// }
 			//
-			// option baz = 0
-			//
+			// package foo
+			// option c = 0
 			// g = () => {
-			//   option baz = 0
+			//   option d = "d"
+			//   return 0
 			// }
 			//
-			name: "after function block",
+			name: "multiple files",
 			pkg: &Package{
 				Package: "foo",
 				Files: []*File{
@@ -405,7 +245,53 @@ func TestOptionDeclarationChecks(t *testing.T) {
 						Body: []Statement{
 							&OptionStatement{
 								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "bar"},
+									Identifier: &Identifier{Name: "a"},
+									Init:       &IntegerLiteral{Value: 0},
+								},
+							},
+						},
+					},
+					{
+						Package: &PackageClause{
+							Name: &Identifier{Name: "foo"},
+						},
+						Imports: []*ImportDeclaration{
+							{
+								Path: &StringLiteral{Value: "bar"},
+							},
+						},
+						Body: []Statement{
+							&NativeVariableAssignment{
+								Identifier: &Identifier{Name: "x"},
+								Init: &MemberExpression{
+									Object:   &IdentifierExpression{Name: "bar"},
+									Property: "x",
+								},
+							},
+							&OptionStatement{
+								Assignment: &MemberAssignment{
+									Member: &MemberExpression{
+										Object:   &IdentifierExpression{Name: "bar"},
+										Property: "x",
+									},
+									Init: &IntegerLiteral{Value: 0},
+								},
+							},
+						},
+					},
+					{
+						Package: &PackageClause{
+							Name: &Identifier{Name: "foo"},
+						},
+						Imports: []*ImportDeclaration{
+							{
+								Path: &StringLiteral{Value: "bar"},
+							},
+						},
+						Body: []Statement{
+							&OptionStatement{
+								Assignment: &NativeVariableAssignment{
+									Identifier: &Identifier{Name: "b"},
 									Init:       &IntegerLiteral{Value: 0},
 								},
 							},
@@ -417,17 +303,25 @@ func TestOptionDeclarationChecks(t *testing.T) {
 											Body: []Statement{
 												&NativeVariableAssignment{
 													Identifier: &Identifier{Name: "a"},
-													Init:       &IntegerLiteral{Value: 0},
+													Init:       &IntegerLiteral{Value: 1},
 												},
 												&NativeVariableAssignment{
 													Identifier: &Identifier{Name: "b"},
-													Init:       &IntegerLiteral{Value: 0},
+													Init:       &IntegerLiteral{Value: 1},
+												},
+												&NativeVariableAssignment{
+													Identifier: &Identifier{Name: "c"},
+													Init:       &IntegerLiteral{Value: 1},
 												},
 												&ReturnStatement{
 													Argument: &BinaryExpression{
 														Operator: ast.AdditionOperator,
 														Left:     &IdentifierExpression{Name: "a"},
-														Right:    &IdentifierExpression{Name: "b"},
+														Right: &BinaryExpression{
+															Operator: ast.SubtractionOperator,
+															Left:     &IdentifierExpression{Name: "b"},
+															Right:    &IdentifierExpression{Name: "c"},
+														},
 													},
 												},
 											},
@@ -435,9 +329,21 @@ func TestOptionDeclarationChecks(t *testing.T) {
 									},
 								},
 							},
+						},
+					},
+					{
+						Package: &PackageClause{
+							Name: &Identifier{Name: "foo"},
+						},
+						Imports: []*ImportDeclaration{
+							{
+								Path: &StringLiteral{Value: "bar"},
+							},
+						},
+						Body: []Statement{
 							&OptionStatement{
 								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "baz"},
+									Identifier: &Identifier{Name: "c"},
 									Init:       &IntegerLiteral{Value: 0},
 								},
 							},
@@ -449,19 +355,23 @@ func TestOptionDeclarationChecks(t *testing.T) {
 											Body: []Statement{
 												&OptionStatement{
 													loc: loc{
+														File: "g.flux",
 														Start: ast.Position{
-															Line:   14,
+															Line:   4,
 															Column: 3,
 														},
 														End: ast.Position{
-															Line:   14,
+															Line:   4,
 															Column: 17,
 														},
 													},
 													Assignment: &NativeVariableAssignment{
-														Identifier: &Identifier{Name: "baz"},
-														Init:       &IntegerLiteral{Value: 0},
+														Identifier: &Identifier{Name: "d"},
+														Init:       &StringLiteral{Value: "d"},
 													},
+												},
+												&ReturnStatement{
+													Argument: &IntegerLiteral{Value: 0},
 												},
 											},
 										},
@@ -472,13 +382,13 @@ func TestOptionDeclarationChecks(t *testing.T) {
 					},
 				},
 			},
-			err: fmt.Errorf(`option "baz" declared below package block at 14:3-14:17`),
+			err: fmt.Errorf(`option "d" declared below package block at g.flux|4:3-4:17`),
 		},
 	}
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			err := checkOptionAssignments(tc.pkg)
+			_, err := optionStatements(tc.pkg)
 			switch {
 			case err == nil && tc.err == nil:
 				// Test passes
@@ -496,7 +406,161 @@ func TestOptionDeclarationChecks(t *testing.T) {
 	}
 }
 
-func TestVarAssignmentChecks(t *testing.T) {
+func TestOptionReAssignments(t *testing.T) {
+	testcases := []struct {
+		name string
+		pkg  *Package
+		err  error
+	}{
+		{
+			// package foo
+			// option a = 0
+			// option a = 1
+			//
+			name: "simple",
+			pkg: &Package{
+				Package: "foo",
+				Files: []*File{
+					{
+						Package: &PackageClause{
+							Name: &Identifier{Name: "foo"},
+						},
+						Body: []Statement{
+							&OptionStatement{
+								Assignment: &NativeVariableAssignment{
+									Identifier: &Identifier{Name: "a"},
+									Init:       &IntegerLiteral{Value: 0},
+								},
+							},
+							&OptionStatement{
+								loc: loc{
+									Start: ast.Position{
+										Line:   3,
+										Column: 1,
+									},
+									End: ast.Position{
+										Line:   3,
+										Column: 13,
+									},
+								},
+								Assignment: &NativeVariableAssignment{
+									Identifier: &Identifier{Name: "a"},
+									Init:       &IntegerLiteral{Value: 1},
+								},
+							},
+						},
+					},
+				},
+			},
+			err: fmt.Errorf(`option "a" redeclared at 3:1-3:13`),
+		},
+		{
+			// package foo
+			// option a = 0
+			//
+			// package foo
+			// b = 0
+			//
+			// package foo
+			// option c = 0
+			//
+			// package foo
+			// option c = 1
+			//
+			name: "multiple files",
+			pkg: &Package{
+				Package: "foo",
+				Files: []*File{
+					{
+						Package: &PackageClause{
+							Name: &Identifier{Name: "foo"},
+						},
+						Body: []Statement{
+							&OptionStatement{
+								Assignment: &NativeVariableAssignment{
+									Identifier: &Identifier{Name: "a"},
+									Init:       &IntegerLiteral{Value: 0},
+								},
+							},
+						},
+					},
+					{
+						Package: &PackageClause{
+							Name: &Identifier{Name: "foo"},
+						},
+						Body: []Statement{
+							&NativeVariableAssignment{
+								Identifier: &Identifier{Name: "b"},
+								Init:       &IntegerLiteral{Value: 0},
+							},
+						},
+					},
+					{
+						Package: &PackageClause{
+							Name: &Identifier{Name: "foo"},
+						},
+						Body: []Statement{
+							&OptionStatement{
+								Assignment: &NativeVariableAssignment{
+									Identifier: &Identifier{Name: "c"},
+									Init:       &IntegerLiteral{Value: 0},
+								},
+							},
+						},
+					},
+					{
+						Package: &PackageClause{
+							Name: &Identifier{Name: "foo"},
+						},
+						Body: []Statement{
+							&OptionStatement{
+								loc: loc{
+									File: "c.flux",
+									Start: ast.Position{
+										Line:   2,
+										Column: 1,
+									},
+									End: ast.Position{
+										Line:   2,
+										Column: 13,
+									},
+								},
+								Assignment: &NativeVariableAssignment{
+									Identifier: &Identifier{Name: "c"},
+									Init:       &IntegerLiteral{Value: 1},
+								},
+							},
+						},
+					},
+				},
+			},
+			err: fmt.Errorf(`option "c" redeclared at c.flux|2:1-2:13`),
+		},
+	}
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			vars := make(map[string]bool)
+			opts := make(map[string]bool)
+			err := runChecks(tc.pkg, vars, opts)
+			switch {
+			case err == nil && tc.err == nil:
+				// Test passes
+			case err == nil && tc.err != nil:
+				t.Errorf("expected error: %v", tc.err)
+			case err != nil && tc.err == nil:
+				t.Errorf("unexpected error: %v", err)
+			case err != nil && tc.err != nil:
+				if err.Error() != tc.err.Error() {
+					t.Errorf("unexpected result; want err=%v, got err=%v", tc.err, err)
+				}
+				// else test passes
+			}
+		})
+	}
+}
+
+func TestVarReAssignments(t *testing.T) {
 	testcases := []struct {
 		name string
 		skip string
@@ -574,6 +638,84 @@ func TestVarAssignmentChecks(t *testing.T) {
 		{
 			// package foo
 			// a = 0
+			// a = 1
+			//
+			name: "redeclaration",
+			pkg: &Package{
+				Package: "foo",
+				Files: []*File{
+					{
+						Package: &PackageClause{
+							Name: &Identifier{Name: "foo"},
+						},
+						Body: []Statement{
+							&NativeVariableAssignment{
+								Identifier: &Identifier{Name: "a"},
+								Init:       &IntegerLiteral{Value: 0},
+							},
+							&NativeVariableAssignment{
+								loc: loc{
+									Start: ast.Position{
+										Line:   3,
+										Column: 1,
+									},
+									End: ast.Position{
+										Line:   3,
+										Column: 6,
+									},
+								},
+								Identifier: &Identifier{Name: "a"},
+								Init:       &IntegerLiteral{Value: 1},
+							},
+						},
+					},
+				},
+			},
+			err: fmt.Errorf(`var "a" redeclared at 3:1-3:6`),
+		},
+		{
+			// package foo
+			// option a = 0
+			// a = 1
+			//
+			name: "redec option",
+			pkg: &Package{
+				Package: "foo",
+				Files: []*File{
+					{
+						Package: &PackageClause{
+							Name: &Identifier{Name: "foo"},
+						},
+						Body: []Statement{
+							&OptionStatement{
+								Assignment: &NativeVariableAssignment{
+									Identifier: &Identifier{Name: "a"},
+									Init:       &IntegerLiteral{Value: 0},
+								},
+							},
+							&NativeVariableAssignment{
+								loc: loc{
+									Start: ast.Position{
+										Line:   3,
+										Column: 1,
+									},
+									End: ast.Position{
+										Line:   3,
+										Column: 6,
+									},
+								},
+								Identifier: &Identifier{Name: "a"},
+								Init:       &IntegerLiteral{Value: 1},
+							},
+						},
+					},
+				},
+			},
+			err: fmt.Errorf(`cannot declare variable "a" at 3:1-3:6; option with same name already declared`),
+		},
+		{
+			// package foo
+			// a = 0
 			// f = () => {
 			//   a = 2
 			//   return a
@@ -617,100 +759,13 @@ func TestVarAssignmentChecks(t *testing.T) {
 		},
 		{
 			// package foo
-			// option a = 0
-			// option a = 1
-			// b = 2
-			//
-			name: "no error with options",
-			pkg: &Package{
-				Package: "foo",
-				Files: []*File{
-					{
-						Package: &PackageClause{
-							Name: &Identifier{Name: "foo"},
-						},
-						Body: []Statement{
-							&OptionStatement{
-								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "a"},
-									Init:       &IntegerLiteral{Value: 0},
-								},
-							},
-							&OptionStatement{
-								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "a"},
-									Init:       &IntegerLiteral{Value: 1},
-								},
-							},
-							&NativeVariableAssignment{
-								Identifier: &Identifier{Name: "b"},
-								Init:       &IntegerLiteral{Value: 2},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			// package foo
-			// option a = 0
-			// option a = 1
-			// option b = 2
-			// b = 3
-			//
-			name: "error with options",
-			pkg: &Package{
-				Package: "foo",
-				Files: []*File{
-					{
-						Package: &PackageClause{
-							Name: &Identifier{Name: "foo"},
-						},
-						Body: []Statement{
-							&OptionStatement{
-								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "a"},
-									Init:       &IntegerLiteral{Value: 0},
-								},
-							},
-							&OptionStatement{
-								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "a"},
-									Init:       &IntegerLiteral{Value: 1},
-								},
-							},
-							&OptionStatement{
-								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "b"},
-									Init:       &IntegerLiteral{Value: 2},
-								},
-							},
-							&NativeVariableAssignment{
-								loc: loc{
-									Start: ast.Position{
-										Line:   5,
-										Column: 1,
-									},
-									End: ast.Position{
-										Line:   5,
-										Column: 6,
-									},
-								},
-								Identifier: &Identifier{Name: "b"},
-								Init:       &IntegerLiteral{Value: 3},
-							},
-						},
-					},
-				},
-			},
-			err: fmt.Errorf(`var "b" redeclared at 5:1-5:6`),
-		},
-		{
-			// package foo
+			// f = () => {
+			//   a = 2
+			//   return a
+			// }
 			// a = 0
-			// a = 1
 			//
-			name: "redeclaration",
+			name: "after shadow",
 			pkg: &Package{
 				Package: "foo",
 				Files: []*File{
@@ -719,29 +774,32 @@ func TestVarAssignmentChecks(t *testing.T) {
 							Name: &Identifier{Name: "foo"},
 						},
 						Body: []Statement{
+							&NativeVariableAssignment{
+								Identifier: &Identifier{Name: "f"},
+								Init: &FunctionExpression{
+									Block: &FunctionBlock{
+										Body: &Block{
+											Body: []Statement{
+												&NativeVariableAssignment{
+													Identifier: &Identifier{Name: "a"},
+													Init:       &IntegerLiteral{Value: 2},
+												},
+												&ReturnStatement{
+													Argument: &IdentifierExpression{Name: "a"},
+												},
+											},
+										},
+									},
+								},
+							},
 							&NativeVariableAssignment{
 								Identifier: &Identifier{Name: "a"},
 								Init:       &IntegerLiteral{Value: 0},
 							},
-							&NativeVariableAssignment{
-								loc: loc{
-									Start: ast.Position{
-										Line:   3,
-										Column: 1,
-									},
-									End: ast.Position{
-										Line:   3,
-										Column: 6,
-									},
-								},
-								Identifier: &Identifier{Name: "a"},
-								Init:       &IntegerLiteral{Value: 1},
-							},
 						},
 					},
 				},
 			},
-			err: fmt.Errorf(`var "a" redeclared at 3:1-3:6`),
 		},
 		{
 			// package foo
@@ -1048,61 +1106,6 @@ func TestVarAssignmentChecks(t *testing.T) {
 		},
 		{
 			// package foo
-			//
-			// f = () => {
-			//   a = 0
-			//   b = 0
-			//   return a + b
-			// }
-			//
-			// a = 1
-			//
-			name: "redec after block",
-			pkg: &Package{
-				Package: "foo",
-				Files: []*File{
-					{
-						Package: &PackageClause{
-							Name: &Identifier{Name: "foo"},
-						},
-						Body: []Statement{
-							&NativeVariableAssignment{
-								Identifier: &Identifier{Name: "f"},
-								Init: &FunctionExpression{
-									Block: &FunctionBlock{
-										Body: &Block{
-											Body: []Statement{
-												&NativeVariableAssignment{
-													Identifier: &Identifier{Name: "a"},
-													Init:       &IntegerLiteral{Value: 0},
-												},
-												&NativeVariableAssignment{
-													Identifier: &Identifier{Name: "b"},
-													Init:       &IntegerLiteral{Value: 0},
-												},
-												&ReturnStatement{
-													Argument: &BinaryExpression{
-														Operator: ast.AdditionOperator,
-														Left:     &IdentifierExpression{Name: "a"},
-														Right:    &IdentifierExpression{Name: "b"},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-							&NativeVariableAssignment{
-								Identifier: &Identifier{Name: "a"},
-								Init:       &IntegerLiteral{Value: 1},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			// package foo
 			// a = 0
 			// d = a
 			//
@@ -1321,7 +1324,9 @@ func TestVarAssignmentChecks(t *testing.T) {
 			if tc.skip != "" {
 				t.Skipf("skipping %s: %s", tc.name, tc.skip)
 			}
-			err := checkVarAssignments(tc.pkg)
+			vars := make(map[string]bool)
+			opts := make(map[string]bool)
+			err := runChecks(tc.pkg, vars, opts)
 			switch {
 			case err == nil && tc.err == nil:
 				// Test passes
@@ -1339,7 +1344,7 @@ func TestVarAssignmentChecks(t *testing.T) {
 	}
 }
 
-func TestOptionDependencyChecks(t *testing.T) {
+func TestOptionDependencies(t *testing.T) {
 	testcases := []struct {
 		name string
 		pkg  *Package
@@ -1348,42 +1353,11 @@ func TestOptionDependencyChecks(t *testing.T) {
 		{
 			// package foo
 			// option bar = 0
-			// option bar = 1
-			//
-			name: "no error",
-			pkg: &Package{
-				Package: "foo",
-				Files: []*File{
-					{
-						Package: &PackageClause{
-							Name: &Identifier{Name: "foo"},
-						},
-						Body: []Statement{
-							&OptionStatement{
-								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "bar"},
-									Init:       &IntegerLiteral{Value: 0},
-								},
-							},
-							&OptionStatement{
-								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "bar"},
-									Init:       &IntegerLiteral{Value: 1},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			// package foo
-			// option bar = 0
 			//
 			// package foo
 			// option baz = 0
 			//
-			name: "no error multiple files",
+			name: "no error",
 			pkg: &Package{
 				Package: "foo",
 				Files: []*File{
@@ -1551,7 +1525,6 @@ func TestOptionDependencyChecks(t *testing.T) {
 			// package foo
 			// import "bar"
 			//
-			// option a = 0
 			// option a = bar.a.x
 			//
 			name: "option with same name as export",
@@ -1571,12 +1544,6 @@ func TestOptionDependencyChecks(t *testing.T) {
 							&OptionStatement{
 								Assignment: &NativeVariableAssignment{
 									Identifier: &Identifier{Name: "a"},
-									Init:       &IntegerLiteral{Value: 0},
-								},
-							},
-							&OptionStatement{
-								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "a"},
 									Init: &MemberExpression{
 										Object: &MemberExpression{
 											Object:   &IdentifierExpression{Name: "bar"},
@@ -1590,112 +1557,6 @@ func TestOptionDependencyChecks(t *testing.T) {
 					},
 				},
 			},
-		},
-		{
-			// package foo
-			// option a = 0
-			// option a = a + 1
-			//
-			name: "option mutation",
-			pkg: &Package{
-				Package: "foo",
-				Files: []*File{
-					{
-						Package: &PackageClause{
-							Name: &Identifier{Name: "foo"},
-						},
-						Body: []Statement{
-							&OptionStatement{
-								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "a"},
-									Init:       &IntegerLiteral{Value: 0},
-								},
-							},
-							&OptionStatement{
-								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "a"},
-									Init: &BinaryExpression{
-										Operator: ast.AdditionOperator,
-										Left: &IdentifierExpression{
-											loc: loc{
-												Start: ast.Position{
-													Line:   3,
-													Column: 12,
-												},
-												End: ast.Position{
-													Line:   3,
-													Column: 13,
-												},
-											},
-											Name: "a",
-										},
-										Right: &IntegerLiteral{Value: 1},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			err: fmt.Errorf(`option dependency: option "a" depends on option "a" defined in the same package at 3:12-3:13`),
-		},
-		{
-			// package foo
-			// option a = 0
-			//
-			// package foo
-			// option a = a + 1
-			//
-			name: "option mutation across files",
-			pkg: &Package{
-				Package: "foo",
-				Files: []*File{
-					{
-						Package: &PackageClause{
-							Name: &Identifier{Name: "foo"},
-						},
-						Body: []Statement{
-							&OptionStatement{
-								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "a"},
-									Init:       &IntegerLiteral{Value: 0},
-								},
-							},
-						},
-					},
-					{
-						Package: &PackageClause{
-							Name: &Identifier{Name: "foo"},
-						},
-						Body: []Statement{
-							&OptionStatement{
-								Assignment: &NativeVariableAssignment{
-									Identifier: &Identifier{Name: "a"},
-									Init: &BinaryExpression{
-										Operator: ast.AdditionOperator,
-										Left: &IdentifierExpression{
-											loc: loc{
-												File: "a2.flux",
-												Start: ast.Position{
-													Line:   2,
-													Column: 12,
-												},
-												End: ast.Position{
-													Line:   2,
-													Column: 13,
-												},
-											},
-											Name: "a",
-										},
-										Right: &IntegerLiteral{Value: 1},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			err: fmt.Errorf(`option dependency: option "a" depends on option "a" defined in the same package at a2.flux|2:12-2:13`),
 		},
 		{
 			// package foo
@@ -2278,7 +2139,9 @@ func TestOptionDependencyChecks(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			err := checkOptionDependencies(tc.pkg)
+			vars := make(map[string]bool)
+			opts := make(map[string]bool)
+			err := runChecks(tc.pkg, vars, opts)
 			switch {
 			case err == nil && tc.err == nil:
 				// Test passes

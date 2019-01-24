@@ -2,40 +2,50 @@ package semantic
 
 import "fmt"
 
-func runChecks(pkg *Package) error {
-	// check for options declared below package block
-	if err := checkOptionAssignments(pkg); err != nil {
+func runChecks(n Node, vars, opts map[string]bool) error {
+	// Check for options declared below package block.
+	// Returns a list of option statements visited.
+	stmts, err := optionStatements(n)
+	if err != nil {
 		return err
 	}
-	// check for dependencies among options
-	if err := checkOptionDependencies(pkg); err != nil {
+	// Check for option reassignments in package block.
+	if err := optionReAssignments(stmts, vars, opts); err != nil {
 		return err
 	}
-	// check for variable reassignments
-	if err := checkVarAssignments(pkg); err != nil {
+	// Check for variable reassignments.
+	if err := varReAssignments(n, vars, opts); err != nil {
+		return err
+	}
+	// Check for dependencies among options.
+	if err := optionDependencies(stmts, opts); err != nil {
 		return err
 	}
 	return nil
 }
 
-func checkOptionAssignments(pkg *Package) error {
-	var stmt *OptionStatement
-	optionFn := func(opt *OptionStatement) {
-		stmt = opt
+func optionStatements(n Node) ([]*OptionStatement, error) {
+	var stmts []*OptionStatement
+	var errStmt *OptionStatement
+	errFn := func(n *OptionStatement) {
+		errStmt = n
 	}
-	visitor := optionAssignmentVisitor{
-		optionFn:     optionFn,
-		packageBlock: true,
+	optFn := func(n *OptionStatement) {
+		stmts = append(stmts, n)
 	}
-	Walk(NewScopedVisitor(visitor), pkg)
-	if stmt != nil {
-		name, err := optionName(stmt)
+	visitor := optionStmtVisitor{
+		optFn: optFn,
+		errFn: errFn,
+	}
+	Walk(NewScopedVisitor(visitor), n)
+	if errStmt != nil {
+		name, err := optionName(errStmt)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		return fmt.Errorf("option %q declared below package block at %v", name, stmt.Location())
+		return nil, fmt.Errorf("option %q declared below package block at %v", name, errStmt.Location())
 	}
-	return nil
+	return stmts, nil
 }
 
 func optionName(opt *OptionStatement) (string, error) {
@@ -54,54 +64,85 @@ func optionName(opt *OptionStatement) (string, error) {
 	}
 }
 
-// This visitor finds options declared below the package block.
-// Any such option is passed to optionFn.
-type optionAssignmentVisitor struct {
-	optionFn     func(*OptionStatement)
-	packageBlock bool
+// option statement visitor.
+// option statments nested within a package block are passed to errFn.
+type optionStmtVisitor struct {
+	optFn  func(*OptionStatement)
+	errFn  func(*OptionStatement)
+	nested bool
 }
 
-func (v optionAssignmentVisitor) Visit(node Node) Visitor {
-	n, ok := node.(*OptionStatement)
-	if ok && !v.packageBlock {
-		v.optionFn(n)
+func (v optionStmtVisitor) Visit(node Node) Visitor {
+	if n, ok := node.(*OptionStatement); ok {
+		if v.nested {
+			v.errFn(n)
+		} else {
+			v.optFn(n)
+		}
 		return nil
 	}
 	return v
 }
 
-func (v optionAssignmentVisitor) Nest() NestingVisitor {
-	v.packageBlock = false
+func (v optionStmtVisitor) Nest() NestingVisitor {
+	v.nested = true
 	return v
 }
 
-func (v optionAssignmentVisitor) Done(node Node) {}
+func (v optionStmtVisitor) Done(node Node) {}
 
-func checkVarAssignments(pkg *Package) error {
-	var node *NativeVariableAssignment
-	visitor := varAssignmentVisitor{
-		names: make(map[string]bool, 8),
-		varFn: func(n *NativeVariableAssignment) {
-			node = n
-		},
-	}
-	Walk(NewScopedVisitor(visitor), pkg)
-	if node != nil {
-		name := node.Identifier.Name
-		return fmt.Errorf("var %q redeclared at %v", name, node.Location())
+func optionReAssignments(stmts []*OptionStatement, vars, options map[string]bool) error {
+	for _, stmt := range stmts {
+		name, err := optionName(stmt)
+		if err != nil {
+			return err
+		}
+		if options[name] {
+			return fmt.Errorf("option %q redeclared at %v", name, stmt.Location())
+		}
+		if vars[name] {
+			return fmt.Errorf("cannot declare option %q at %v; variable with same name already declared", name, stmt.Location())
+		}
+		options[name] = true
 	}
 	return nil
 }
 
-// This visitor finds variable reassignments within a package.
-// Any such reassignment is passed to varFn.
-type varAssignmentVisitor struct {
-	names  map[string]bool
-	varFn  func(*NativeVariableAssignment)
-	option bool
+func varReAssignments(n Node, vars, opts map[string]bool) error {
+	var varDec, optDec *NativeVariableAssignment
+	varFn := func(n *NativeVariableAssignment) {
+		varDec = n
+	}
+	optFn := func(n *NativeVariableAssignment) {
+		optDec = n
+	}
+	visitor := varStmtVisitor{
+		vars:  vars,
+		opts:  opts,
+		varFn: varFn,
+		optFn: optFn,
+	}
+	Walk(NewScopedVisitor(visitor), n)
+	if varDec != nil {
+		name := varDec.Identifier.Name
+		return fmt.Errorf("var %q redeclared at %v", name, varDec.Location())
+	}
+	if optDec != nil {
+		name := optDec.Identifier.Name
+		return fmt.Errorf("cannot declare variable %q at %v; option with same name already declared", name, optDec.Location())
+	}
+	return nil
 }
 
-func (v varAssignmentVisitor) Visit(node Node) Visitor {
+// variable assignment visitor.
+// variable reassignments are passed to errFn.
+type varStmtVisitor struct {
+	vars, opts   map[string]bool
+	varFn, optFn func(*NativeVariableAssignment)
+	option       bool
+}
+
+func (v varStmtVisitor) Visit(node Node) Visitor {
 	switch n := node.(type) {
 	case *OptionStatement:
 		v.option = true
@@ -109,78 +150,64 @@ func (v varAssignmentVisitor) Visit(node Node) Visitor {
 		name := n.Identifier.Name
 		if v.option {
 			v.option = false
-		} else if v.names[name] {
+			return v
+		} else if v.vars[name] {
 			v.varFn(n)
 			return nil
+		} else if v.opts[name] {
+			v.optFn(n)
+			return nil
 		}
-		v.names[name] = true
+		v.vars[name] = true
 	case *FunctionParameter:
-		v.names[n.Key.Name] = true
+		v.vars[n.Key.Name] = true
 	}
 	return v
 }
 
-func (v varAssignmentVisitor) Nest() NestingVisitor {
-	v.names = make(map[string]bool)
+func (v varStmtVisitor) Nest() NestingVisitor {
+	v.vars = make(map[string]bool)
+	v.opts = make(map[string]bool)
 	return v
 }
 
-func (v varAssignmentVisitor) Done(node Node) {}
+func (v varStmtVisitor) Done(node Node) {}
 
-func checkOptionDependencies(pkg *Package) error {
-	var options optionStmtVisitor
-	Walk(&options, pkg)
-
-	var ref *IdentifierExpression
-
-	visitor := optionDependencyVisitor{
-		option: make(map[string]bool, len(options)),
+func optionDependencies(stmts []*OptionStatement, options map[string]bool) error {
+	var dep *IdentifierExpression
+	errFn := func(n *IdentifierExpression) {
+		dep = n
+	}
+	visitor := optionExprVisitor{
+		option: options,
 		shadow: make(map[string]bool, len(options)),
-		ref: func(n *IdentifierExpression) {
-			ref = n
-		},
+		errFn:  errFn,
 	}
-
-	for _, dec := range options {
-		// option name
-		name := dec.Identifier.Name
-		visitor.option[name] = true
-
-		// check for dependencies among options
-		Walk(NewScopedVisitor(&visitor), dec.Init)
-
-		if ref != nil {
-			return fmt.Errorf("option dependency: option %q depends on option %q defined in the same package at %v", name, ref.Name, ref.Location())
+	for _, stmt := range stmts {
+		// Externally declared options may have dependencies
+		// on other options.
+		n, ok := stmt.Assignment.(*NativeVariableAssignment)
+		if !ok {
+			continue
+		}
+		name := n.Identifier.Name
+		Walk(NewScopedVisitor(visitor), n.Init)
+		if dep != nil {
+			return fmt.Errorf("option dependency: option %q depends on option %q defined in the same package at %v", name, dep.Name, dep.Location())
 		}
 	}
 	return nil
 }
 
-type optionStmtVisitor []*NativeVariableAssignment
-
-func (v *optionStmtVisitor) Visit(node Node) Visitor {
-	if stmt, ok := node.(Statement); ok {
-		if opt, ok := stmt.(*OptionStatement); ok {
-			if n, ok := opt.Assignment.(*NativeVariableAssignment); ok {
-				*v = append(*v, n)
-			}
-		}
-		return nil
-	}
-	return v
-}
-
-func (v *optionStmtVisitor) Done(node Node) {}
-
-// This visitor checks for dependencies among options in the same package block.
-// Any reference to another option made within an option statement is passed to ref.
-type optionDependencyVisitor struct {
+// option expression visitor.
+// references to non-qualified options are passed to errFn.
+type optionExprVisitor struct {
 	option map[string]bool
 	shadow map[string]bool
-	ref    func(*IdentifierExpression)
+	errFn  func(*IdentifierExpression)
 }
 
-func (v optionDependencyVisitor) Visit(node Node) Visitor {
+func (v optionExprVisitor) Visit(node Node) Visitor {
 	switch n := node.(type) {
 	case *NativeVariableAssignment:
 		// var declarations shadow options
@@ -190,14 +217,14 @@ func (v optionDependencyVisitor) Visit(node Node) Visitor {
 		v.shadow[n.Key.Name] = true
 	case *IdentifierExpression:
 		if v.option[n.Name] && !v.shadow[n.Name] {
-			v.ref(n)
+			v.errFn(n)
 			return nil
 		}
 	}
 	return v
 }
 
-func (v optionDependencyVisitor) Nest() NestingVisitor {
+func (v optionExprVisitor) Nest() NestingVisitor {
 	shadows := make(map[string]bool, len(v.shadow))
 	for k, v := range v.shadow {
 		shadows[k] = v
@@ -206,4 +233,4 @@ func (v optionDependencyVisitor) Nest() NestingVisitor {
 	return v
 }
 
-func (v optionDependencyVisitor) Done(node Node) {}
+func (v optionExprVisitor) Done(node Node) {}
