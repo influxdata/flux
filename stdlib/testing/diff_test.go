@@ -55,16 +55,7 @@ func TestDiff_Process(t *testing.T) {
 					},
 				},
 			},
-			want: []*executetest.Table{
-				{
-					ColMeta: []flux.ColMeta{
-						{Label: "_diff", Type: flux.TString},
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
-					},
-					Data: [][]interface{}(nil),
-				},
-			},
+			want: []*executetest.Table(nil),
 		},
 		{
 			name: "different values",

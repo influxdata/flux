@@ -1,6 +1,8 @@
 package testing_test
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"io/ioutil"
 	"os"
@@ -8,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/querytest"
 	_ "github.com/influxdata/flux/stdlib" // Import the built-ins
@@ -33,10 +36,6 @@ var skipTests = map[string]string{
 }
 
 var querier = querytest.NewQuerier()
-
-type AssertionError interface {
-	Assertion() bool
-}
 
 func withEachFluxFile(t testing.TB, fn func(prefix, caseName string)) {
 	dir, err := os.Getwd()
@@ -114,16 +113,23 @@ func testFlux(t testing.TB, querier *querytest.Querier, prefix, queryExt string)
 	if !ok {
 		t.Fatalf("TEST error retrieving query result: %s", r.Err())
 	}
-	for _, v := range result {
-		err := v.Tables().Do(func(tbl flux.Table) error {
-			return nil
-		})
-		if err != nil {
-			if assertionErr, ok := err.(AssertionError); ok {
-				t.Error(assertionErr)
-			} else {
-				t.Fatal(err)
+
+	var out bytes.Buffer
+	defer func() {
+		if t.Failed() {
+			scanner := bufio.NewScanner(&out)
+			for scanner.Scan() {
+				t.Log(scanner.Text())
 			}
+		}
+	}()
+
+	for _, res := range result {
+		if err := res.Tables().Do(func(tbl flux.Table) error {
+			_, _ = execute.NewFormatter(tbl, nil).WriteTo(&out)
+			return nil
+		}); err != nil {
+			t.Error(err)
 		}
 	}
 }

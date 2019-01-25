@@ -400,6 +400,29 @@ func (t *DiffTransformation) createSchema(builder execute.TableBuilder, want, go
 }
 
 func (t *DiffTransformation) diff(key flux.GroupKey, want, got *tableBuffer) error {
+	// Find the smallest size for the tables. We will only iterate
+	// over these rows.
+	sz := want.sz
+	if got.sz < sz {
+		sz = got.sz
+	}
+
+	// Look for the first row that is unequal. This is only needed
+	// if the sizes are the same.
+	i := 0
+	if want.sz == got.sz {
+		for ; i < sz; i++ {
+			if eq := t.rowEqual(want, got, i); !eq {
+				break
+			}
+		}
+
+		// The tables are equal.
+		if i == sz {
+			return nil
+		}
+	}
+
 	// This diff algorithm is not really a smart diff. We may want to
 	// fix that in the future and we reserve the right to do that, but
 	// this will just check the first row of one table with the first
@@ -415,13 +438,7 @@ func (t *DiffTransformation) diff(key flux.GroupKey, want, got *tableBuffer) err
 		return err
 	}
 
-	// Find the smallest size for the tables. We will only iterate
-	// over these rows.
-	sz := want.sz
-	if got.sz < sz {
-		sz = got.sz
-	}
-	for i := 0; i < sz; i++ {
+	for ; i < sz; i++ {
 		if eq := t.rowEqual(want, got, i); !eq {
 			if err := t.appendRow(builder, i, diffIdx, "-", want, columnIdxs); err != nil {
 				return err
