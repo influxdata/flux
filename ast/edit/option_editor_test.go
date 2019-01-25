@@ -2,12 +2,10 @@ package edit_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/edit"
 	"github.com/influxdata/flux/parser"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 )
@@ -43,7 +41,7 @@ func TestEditor(t *testing.T) {
 			in:     `option alert.state = 0`,
 			edited: `option alert.state = 1`,
 			edit: func(node ast.Node) (bool, error) {
-				literal := edit.CreateLiteral(values.NewInt(int64(1)))
+				literal := &ast.IntegerLiteral{Value: int64(1)}
 				return edit.Option(node, "alert.state", edit.OptionValueFn(literal))
 			},
 		},
@@ -54,7 +52,7 @@ option bar = 1`,
 			edited: `option foo = 1
 option bar = 42`,
 			edit: func(node ast.Node) (bool, error) {
-				literal := edit.CreateLiteral(values.New(int64(42)))
+				literal := &ast.IntegerLiteral{Value: int64(42)}
 				return edit.Option(node, "bar", edit.OptionValueFn(literal))
 			},
 		},
@@ -71,17 +69,25 @@ option task = {
 			edited: `option foo = 1
 option task = {
 	name: "bar",
-	every: 7200000000000ns,
-	delay: 2520000000000ns,
+	every: 2hr3m10s,
+	delay: 42m,
 	cron: "buz",
 	retry: 10,
 }`,
 			edit: func(node ast.Node) (bool, error) {
-				return edit.Option(node, "task", edit.OptionObjectFn(map[string]values.Value{
-					"every": values.New(values.Duration(2 * time.Hour)),
-					"delay": values.New(values.Duration(42 * time.Minute)),
-					"cron":  values.New("buz"),
-					"retry": values.NewInt(10),
+				every, err := ast.ParseDuration("2hr3m10s")
+				if err != nil {
+					t.Fatal(err)
+				}
+				delay, err := ast.ParseDuration("42m")
+				if err != nil {
+					t.Fatal(err)
+				}
+				return edit.Option(node, "task", edit.OptionObjectFn(map[string]ast.Expression{
+					"every": &ast.DurationLiteral{Values: every},
+					"delay": &ast.DurationLiteral{Values: delay},
+					"cron":  &ast.StringLiteral{Value: "buz"},
+					"retry": &ast.IntegerLiteral{Value: 10},
 				}))
 			},
 		},
@@ -97,9 +103,13 @@ option task = {
 }`,
 			errorWanted: true,
 			edit: func(node ast.Node) (bool, error) {
-				return edit.Option(node, "task", edit.OptionObjectFn(map[string]values.Value{
-					"foo":   values.New("foo"), // should cause error
-					"every": values.New(values.Duration(2 * time.Hour)),
+				every, err := ast.ParseDuration("2hr")
+				if err != nil {
+					t.Fatal(err)
+				}
+				return edit.Option(node, "task", edit.OptionObjectFn(map[string]ast.Expression{
+					"foo":   &ast.StringLiteral{Value: "foo"}, // should cause error
+					"every": &ast.DurationLiteral{Values: every},
 				}))
 			},
 		},
@@ -108,12 +118,12 @@ option task = {
 			in:     `option foo = "edit me"`,
 			edited: `option foo = [1, 2, 3, 4]`,
 			edit: func(node ast.Node) (bool, error) {
-				literal := edit.CreateLiteral(values.NewArrayWithBacking(semantic.Int, []values.Value{
-					values.NewInt(1),
-					values.NewInt(2),
-					values.NewInt(3),
-					values.NewInt(4),
-				}))
+				literal := &ast.ArrayExpression{Elements: []ast.Expression{
+					&ast.IntegerLiteral{Value: 1},
+					&ast.IntegerLiteral{Value: 2},
+					&ast.IntegerLiteral{Value: 3},
+					&ast.IntegerLiteral{Value: 4},
+				}}
 				return edit.Option(node, "foo", edit.OptionValueFn(literal))
 			},
 		},
@@ -122,10 +132,15 @@ option task = {
 			in:     `option foo = "edit me"`,
 			edited: `option foo = {x: "x", y: "y"}`,
 			edit: func(node ast.Node) (bool, error) {
-				literal := edit.CreateLiteral(values.NewObjectWithValues(map[string]values.Value{
-					"x": values.New("x"),
-					"y": values.New("y"),
-				}))
+				literal := &ast.ObjectExpression{
+					Properties: []*ast.Property{{
+						Key:   &ast.Identifier{Name: "x"},
+						Value: &ast.StringLiteral{Value: "x"},
+					}, {
+						Key:   &ast.Identifier{Name: "y"},
+						Value: &ast.StringLiteral{Value: "y"},
+					},
+					}}
 				return edit.Option(node, "foo", edit.OptionValueFn(literal))
 			},
 		},
@@ -134,36 +149,40 @@ option task = {
 			in:     `option foo = "edit me"`,
 			edited: `option foo = {x: {a: [1, 2, 3]}, y: [[1], [2, 3]], z: [{a: 1}, {b: 2}]}`,
 			edit: func(node ast.Node) (bool, error) {
-				x := values.NewObjectWithValues(map[string]values.Value{
-					"a": values.NewArrayWithBacking(semantic.Array, []values.Value{
-						values.NewInt(1),
-						values.NewInt(2),
-						values.NewInt(3),
-					}),
-				})
-				y := values.NewArrayWithBacking(semantic.Array, []values.Value{
-					values.NewArrayWithBacking(semantic.Int, []values.Value{
-						values.NewInt(1),
-					}),
-					values.NewArrayWithBacking(semantic.Int, []values.Value{
-						values.NewInt(2),
-						values.NewInt(3),
-					}),
-				})
-				z := values.NewArrayWithBacking(semantic.Object, []values.Value{
-					values.NewObjectWithValues(map[string]values.Value{
-						"a": values.NewInt(1),
-					}),
-					values.NewObjectWithValues(map[string]values.Value{
-						"b": values.NewInt(2),
-					}),
-				})
+				x := &ast.ObjectExpression{
+					Properties: []*ast.Property{{
+						Key: &ast.Identifier{Name: "a"},
+						Value: &ast.ArrayExpression{Elements: []ast.Expression{
+							&ast.IntegerLiteral{Value: 1},
+							&ast.IntegerLiteral{Value: 2},
+							&ast.IntegerLiteral{Value: 3},
+						},
+						},
+					}}}
+				y := &ast.ArrayExpression{Elements: []ast.Expression{
+					&ast.ArrayExpression{Elements: []ast.Expression{&ast.IntegerLiteral{Value: 1}}},
+					&ast.ArrayExpression{Elements: []ast.Expression{
+						&ast.IntegerLiteral{Value: 2},
+						&ast.IntegerLiteral{Value: 3},
+					}},
+				}}
+				z := &ast.ArrayExpression{Elements: []ast.Expression{
+					&ast.ObjectExpression{Properties: []*ast.Property{{Key: &ast.Identifier{Name: "a"}, Value: &ast.IntegerLiteral{Value: 1}}}},
+					&ast.ObjectExpression{Properties: []*ast.Property{{Key: &ast.Identifier{Name: "b"}, Value: &ast.IntegerLiteral{Value: 2}}}},
+				}}
 
-				literal := edit.CreateLiteral(values.NewObjectWithValues(map[string]values.Value{
-					"x": x,
-					"y": y,
-					"z": z,
-				}))
+				literal := &ast.ObjectExpression{
+					Properties: []*ast.Property{{
+						Key:   &ast.Identifier{Name: "x"},
+						Value: x,
+					}, {
+						Key:   &ast.Identifier{Name: "y"},
+						Value: y,
+					}, {
+						Key:   &ast.Identifier{Name: "z"},
+						Value: z,
+					},
+					}}
 				return edit.Option(node, "foo", edit.OptionValueFn(literal))
 			},
 		},
@@ -197,7 +216,7 @@ option task = {
 
 				literal := &ast.FunctionExpression{
 					Params: []*ast.Property{},
-					Body:   edit.CreateLiteral(values.New(t)),
+					Body:   &ast.DateTimeLiteral{Value: t.Time()},
 				}
 				return edit.Option(node, "now", edit.OptionValueFn(literal))
 			},
