@@ -428,6 +428,52 @@ import "path/bar"
 			},
 		},
 		{
+			name: "test",
+			raw:  "test mean = {want: 0, got: 0}",
+			want: &ast.File{
+				BaseNode: base("1:1", "1:30"),
+				Body: []ast.Statement{
+					&ast.TestStatement{
+						BaseNode: base("1:1", "1:30"),
+						Assignment: &ast.VariableAssignment{
+							BaseNode: base("1:6", "1:30"),
+							ID: &ast.Identifier{
+								BaseNode: base("1:6", "1:10"),
+								Name:     "mean",
+							},
+							Init: &ast.ObjectExpression{
+								BaseNode: base("1:13", "1:30"),
+								Properties: []*ast.Property{
+									{
+										BaseNode: base("1:14", "1:21"),
+										Key: &ast.Identifier{
+											BaseNode: base("1:14", "1:18"),
+											Name:     "want",
+										},
+										Value: &ast.IntegerLiteral{
+											BaseNode: base("1:20", "1:21"),
+											Value:    0,
+										},
+									},
+									{
+										BaseNode: base("1:23", "1:29"),
+										Key: &ast.Identifier{
+											BaseNode: base("1:23", "1:26"),
+											Name:     "got",
+										},
+										Value: &ast.IntegerLiteral{
+											BaseNode: base("1:28", "1:29"),
+											Value:    0,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "from",
 			raw:  `from()`,
 			want: &ast.File{
