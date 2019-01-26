@@ -114,6 +114,14 @@ func walk(v Visitor, n Node) {
 		if w != nil {
 			walk(w, n.ID)
 		}
+	case *TestStatement:
+		if n == nil {
+			return
+		}
+		w := v.Visit(n)
+		if w != nil {
+			walk(w, n.Assignment)
+		}
 	case *ExpressionStatement:
 		if n == nil {
 			return

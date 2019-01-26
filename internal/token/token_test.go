@@ -21,6 +21,7 @@ func TestToken_String(t *testing.T) {
 		token.RETURN:       "RETURN",
 		token.OPTION:       "OPTION",
 		token.BUILTIN:      "BUILTIN",
+		token.TEST:         "TEST",
 		token.IDENT:        "IDENT",
 		token.INT:          "INT",
 		token.FLOAT:        "FLOAT",

@@ -128,6 +128,38 @@ func TestCopy(t *testing.T) {
 			},
 		},
 		{
+			node: &ast.TestStatement{},
+		},
+		{
+			node: &ast.TestStatement{
+				Assignment: &ast.VariableAssignment{
+					ID: &ast.Identifier{
+						Name: "mean",
+					},
+					Init: &ast.ObjectExpression{
+						Properties: []*ast.Property{
+							{
+								Key: &ast.Identifier{
+									Name: "want",
+								},
+								Value: &ast.IntegerLiteral{
+									Value: 0,
+								},
+							},
+							{
+								Key: &ast.Identifier{
+									Name: "got",
+								},
+								Value: &ast.IntegerLiteral{
+									Value: 0,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			node: &ast.VariableAssignment{},
 		},
 		{
