@@ -110,7 +110,7 @@ func doFileOutput(fname string) error {
 		return err
 	}
 
-	// Print all of the test below inData and outData...
+	// Print all of the test _below inData and outData...
 	lines := strings.FieldsFunc(string(querytext), ff)
 	lastQuote := 0
 	for i, line := range lines {

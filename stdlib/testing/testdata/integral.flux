@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,string,double
@@ -30,6 +32,7 @@ inData = "
 ,,3,2018-05-22T19:53:50Z,_m,SR,1
 ,,3,2018-05-22T19:54:00Z,_m,SR,1
 "
+
 outData = "
 #datatype,string,long,string,string,double
 #group,false,false,true,true,false
@@ -42,12 +45,10 @@ outData = "
 "
 
 t_integral = (table=<-) =>
-  table
-  |> integral(unit: 10s)
+	(table
+		|> integral(unit: 10s))
 
-testing.test(
-    name: "integral",
-     input: testing.loadStorage(csv: inData),
-     want: testing.loadMem(csv: outData),
-     testFn:  t_integral,
-)
+test _integral = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_integral})
+
+testing.run(case: _integral)

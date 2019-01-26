@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
@@ -32,6 +34,7 @@ inData = "
 ,,3,2018-05-22T19:54:06Z,82.598876953125,used_percent,swap,host.local
 ,,3,2018-05-22T19:54:16Z,82.6416015625,used_percent,swap,host.local
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
 #group,false,false,true,true,false,true,true,false
@@ -56,12 +59,12 @@ outData = "
 "
 
 t_pivot_fields = (table=<-) =>
-  table
-  |> range(start: 2018-05-22T19:53:26Z)
-  |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-  |> yield(name:"0")
+	(table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+		|> yield(name: "0"))
 
-testing.test(name: "pivot_fields",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_pivot_fields)
+test _pivot_fields = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_pivot_fields})
+
+testing.run(case: _pivot_fields)

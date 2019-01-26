@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
@@ -34,6 +36,7 @@ inData = "
 ,,4,2018-05-22T19:53:26Z,0,usage_irq,cpu,cpu-total,host.local
 ,,4,2018-05-22T19:53:36Z,0,usage_irq,cpu,cpu-total,host.local
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string
 #group,false,false,true,true,true,true,true,true,false
@@ -106,22 +109,25 @@ outData = "
 "
 
 t_meta_query_keys = (table=<-) => {
-  zero = table
-    |> range(start:2018-05-22T19:53:26Z)
-    |> filter(fn: (r) => r._measurement == "cpu")
-    |> keys()
-    |> yield(name:"0")
+	zero = table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> filter(fn: (r) =>
+			(r._measurement == "cpu"))
+		|> keys()
+		|> yield(name: "0")
+	one = table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> filter(fn: (r) =>
+			(r._measurement == "cpu"))
+		|> group(columns: ["host"])
+		|> distinct(column: "host")
+		|> group()
+		|> yield(name: "1")
 
-  one = table
-    |> range(start:2018-05-22T19:53:26Z)
-    |> filter(fn: (r) => r._measurement == "cpu")
-    |> group(columns: ["host"])
-    |> distinct(column: "host")
-    |> group()
-    |> yield(name:"1")
-  return union(tables: [zero, one])
+	return union(tables: [zero, one])
 }
-testing.test(name: "meta_query_keys",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_meta_query_keys)
+
+test _meta_query_keys = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_meta_query_keys})
+
+testing.run(case: _meta_query_keys)

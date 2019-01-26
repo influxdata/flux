@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
@@ -20,6 +22,7 @@ inData = "
 ,,1,2018-05-22T19:54:06Z,0,usage_guest_nice,cpu,cpu-total,host.local
 ,,1,2018-05-22T19:54:16Z,0,usage_guest_nice,cpu,cpu-total,host.local
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string
 #group,false,false,true,true,false,false,true,true,true,true,false
@@ -40,11 +43,11 @@ outData = "
 "
 
 t_duplicate = (table=<-) =>
-  table
-	|> range(start:2018-05-22T19:53:26Z)
-	|> duplicate(column: "host", as: "host_new")
+	(table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> duplicate(column: "host", as: "host_new"))
 
-testing.test(name: "duplicate",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_duplicate)
+test _duplicate = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duplicate})
+
+testing.run(case: _duplicate)

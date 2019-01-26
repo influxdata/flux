@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
@@ -14,6 +16,7 @@ inData = "
 ,,0,2018-05-22T19:57:06Z,62.78183460235596,used_percent,mem,host.local
 ,,0,2018-05-22T19:58:16Z,62.46745586395264,used_percent,mem,host.local
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string
 #group,false,false,true,true,false,false,true,true,true
@@ -28,10 +31,11 @@ outData = "
 "
 
 t_window_start_bound = (table=<-) =>
-  table
-    |> range(start:2018-05-22T19:53:00Z)
-    |> window(start:2018-05-22T19:53:30Z,every: 1m)
-testing.test(name: "window_start_bound",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_window_start_bound)
+	(table
+		|> range(start: 2018-05-22T19:53:00Z)
+		|> window(start: 2018-05-22T19:53:30Z, every: 1m))
+
+test _window_start_bound = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window_start_bound})
+
+testing.run(case: _window_start_bound)

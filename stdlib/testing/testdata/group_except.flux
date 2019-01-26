@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
@@ -20,6 +22,7 @@ inData = "
 ,,1,2018-05-22T19:54:06Z,648,io_time,diskio3,host.local,disk2
 ,,1,2018-05-22T19:54:16Z,648,io_time,diskio3,host.local,disk2
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string
 #group,false,false,true,true,false,false,true,false,true,true
@@ -30,12 +33,12 @@ outData = "
 "
 
 t_group_except = (table=<-) =>
-  table
-    |> range(start:2018-05-22T19:53:26Z)
-    |> group(columns:["_measurement", "_time", "_value"], mode: "except")
-    |> max()
+	(table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> group(columns: ["_measurement", "_time", "_value"], mode: "except")
+		|> max())
 
-testing.test(name: "group_except",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_group_except)
+test _group_except = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_except})
+
+testing.run(case: _group_except)

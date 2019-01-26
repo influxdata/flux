@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string
@@ -19,6 +21,7 @@ inData = "
 ,,4,2018-10-03T17:55:11.01435Z,2018-10-03T17:55:12Z,scheduledFor,02bac3c8f0f37000,02bac3c8d6c5b000,success,records
 ,,4,2018-10-03T17:55:11.115415Z,2018-10-03T17:55:13Z,scheduledFor,02bac3c8f0f37000,02bac3c8d6c5b000,success,records
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string
 #group,false,false,false,false,false,false,false,false,false,true,false
@@ -36,14 +39,15 @@ outData = "
 "
 
 t_group_by_irregular = (table=<-) =>
-  table
-  |> range(start: 2018-10-02T17:55:11.520461Z)
-  |> filter(fn: (r) => r._measurement == "records" and r.taskID == "02bac3c8f0f37000" )
-  |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-  |> group(columns: ["runID"])
-  |> yield(name:"r1")
+	(table
+		|> range(start: 2018-10-02T17:55:11.520461Z)
+		|> filter(fn: (r) =>
+			(r._measurement == "records" and r.taskID == "02bac3c8f0f37000"))
+		|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+		|> group(columns: ["runID"])
+		|> yield(name: "r1"))
 
-testing.test(name: "group_by_irregular",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_group_by_irregular)
+test _group_by_irregular = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_by_irregular})
+
+testing.run(case: _group_by_irregular)

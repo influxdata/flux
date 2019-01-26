@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string
@@ -23,12 +25,11 @@ outData = "
 "
 
 t_map = (table=<-) =>
-  table
-  |> map(fn: (r) => ({newValue: float(v: r._value)}))
+	(table
+		|> map(fn: (r) =>
+			({newValue: float(v: r._value)})))
 
-testing.test(name: "map",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_map)
+test _map = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})
 
-
+testing.run(case: _map)

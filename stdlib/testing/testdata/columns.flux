@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
@@ -20,6 +22,7 @@ inData = "
 ,,1,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2
 ,,1,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string
 #group,false,false,true,true,true,true,false
@@ -44,11 +47,11 @@ outData = "
 "
 
 t_columns = (table=<-) =>
-  table
-  |> range(start: 2018-05-20T19:53:26Z)
-  |> columns()
+	(table
+		|> range(start: 2018-05-20T19:53:26Z)
+		|> columns())
 
-testing.test(name: "columns",
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    testFn: t_columns)
+test _columns = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_columns})
+
+testing.run(case: _columns)

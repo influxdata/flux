@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string
@@ -23,6 +25,7 @@ inData = "
 ,,4,2018-11-07T13:00:00Z,13,B,DD,HostE
 ,,4,2018-11-07T14:00:00Z,27,B,DD,HostE
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string
 #group,false,false,false,false,false,false,false,false,false
@@ -34,11 +37,11 @@ outData = "
 "
 
 t_highestCurrent = (table=<-) =>
-  table
-    |> range(start: 2018-11-07T00:00:00Z)
-    |> highestCurrent(n: 3, groupColumns: ["_measurement", "host"])
+	(table
+		|> range(start: 2018-11-07T00:00:00Z)
+		|> highestCurrent(n: 3, groupColumns: ["_measurement", "host"]))
 
-testing.test(name: "highestCurrent",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_highestCurrent)
+test _highestCurrent = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_highestCurrent})
+
+testing.run(case: _highestCurrent)

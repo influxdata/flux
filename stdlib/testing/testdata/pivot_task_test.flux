@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string
@@ -19,6 +21,7 @@ inData = "
 ,,4,2018-10-03T17:55:11.01435Z,2018-10-03T17:55:12Z,scheduledFor,02bac3c8f0f37000,02bac3c8d6c5b000,success,records
 ,,4,2018-10-03T17:55:11.115415Z,2018-10-03T17:55:13Z,scheduledFor,02bac3c8f0f37000,02bac3c8d6c5b000,success,records
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string
 #group,false,false,true,true,false,true,true,true,true,false,false,false
@@ -36,12 +39,13 @@ outData = "
 "
 
 t_pivot_task_test = (table=<-) =>
-  table
-    |> range(start: 2018-10-02T17:55:11.520461Z)
-	|> filter(fn: (r) => r._measurement == "records" and r.taskID == "02bac3c8f0f37000" )
-	|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+	(table
+		|> range(start: 2018-10-02T17:55:11.520461Z)
+		|> filter(fn: (r) =>
+			(r._measurement == "records" and r.taskID == "02bac3c8f0f37000"))
+		|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value"))
 
-testing.test(name: "pivot_task_test",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_pivot_task_test)
+test _pivot_task_test = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_pivot_task_test})
+
+testing.run(case: _pivot_task_test)

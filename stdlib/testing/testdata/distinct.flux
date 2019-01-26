@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
@@ -20,6 +22,7 @@ inData = "
 ,,1,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2
 ,,1,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,long
 #group,false,false,true,true,true,true,false
@@ -35,12 +38,12 @@ outData = "
 "
 
 t_distinct = (table=<-) =>
-  table
-  |> range(start: 2018-05-20T19:53:26Z)
-  |> distinct(column:"_value")
-  |> yield(name:"0")
+	(table
+		|> range(start: 2018-05-20T19:53:26Z)
+		|> distinct(column: "_value")
+		|> yield(name: "0"))
 
-testing.test(name: "distinct",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_distinct)
+test _distinct = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_distinct})
+
+testing.run(case: _distinct)

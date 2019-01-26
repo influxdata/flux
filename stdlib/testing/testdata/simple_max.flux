@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,string,double
@@ -10,6 +12,7 @@ inData = "
 ,,0,2018-04-17T00:00:00Z,m1,f1,42
 ,,0,2018-04-17T00:00:01Z,m1,f1,43
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,string,dateTime:RFC3339,double
 #group,false,false,true,true,false,false
@@ -17,16 +20,15 @@ outData = "
 ,result,table,_start,_measurement,_time,max
 ,,0,2018-04-17T00:00:00Z,m1,2018-04-17T00:00:01Z,43
 "
-
 simple_max = (table=<-) =>
-  table
-  |> range(start:2018-04-17T00:00:00Z)
-  |> group(columns: ["_measurement", "_start"])
-  |> max(column: "_value")
-  |> map(fn: (r) => ({_time: r._time,max:r._value}))
+	(table
+		|> range(start: 2018-04-17T00:00:00Z)
+		|> group(columns: ["_measurement", "_start"])
+		|> max(column: "_value")
+		|> map(fn: (r) =>
+			({_time: r._time, max: r._value})))
 
-testing.test(
-    name: "simple_max",
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    testFn: simple_max)
+test _simple_max = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: simple_max})
+
+testing.run(case: _simple_max)

@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,string,string
@@ -20,6 +22,7 @@ inData = "
 ,,4,2018-05-22T19:53:46Z,37,f1,e
 ,,4,2018-05-22T19:53:36Z,69,f1,e
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,string,string,string
 #group,false,false,false,false,true,true
@@ -33,10 +36,10 @@ outData = "
 "
 
 t_unique = (table=<-) =>
-  table
-  |> unique(column: "tag0")
+	(table
+		|> unique(column: "tag0"))
 
-testing.test(name: "unique",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_unique)
+test _unique = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_unique})
+
+testing.run(case: _unique)

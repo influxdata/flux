@@ -1,10 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
-
-// The purpose of this test is to test the behavior of Group in case of nulls:
-//  - tables have null values here and there (also in group key columns),
-//  - the second group of tables misses column "name": its values should be filled with nulls.
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
@@ -96,10 +94,10 @@ outData = "
 "
 
 t_group = (table=<-) =>
-  table
-  |> group(columns: ["host"])
+	(table
+		|> group(columns: ["host"]))
 
-testing.test(name: "group",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_group)
+test _group = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})
+
+testing.run(case: _group)

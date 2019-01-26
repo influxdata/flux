@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,double,double
@@ -25,6 +27,7 @@ inData = "
 ,,1,2018-05-22T19:53:00Z,y_duration_seconds,45,1
 ,,1,2018-05-22T19:53:00Z,y_duration_seconds,45,+Inf
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double
 #group,false,false,true,true,true,true,false
@@ -35,14 +38,16 @@ outData = "
 "
 
 t_histogram_quantile = (table=<-) =>
-  table
-    |> range(start: 2018-05-22T19:53:00Z)
-    |> histogramQuantile(quantile:0.90,
-           upperBoundColumn:"upperBound",
-           countColumn:"count",
-           valueColumn:"quant")
+	(table
+		|> range(start: 2018-05-22T19:53:00Z)
+		|> histogramQuantile(
+			quantile: 0.9,
+			upperBoundColumn: "upperBound",
+			countColumn: "count",
+			valueColumn: "quant",
+		))
 
-testing.test(name: "histogram_quantile",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_histogram_quantile)
+test _histogram_quantile = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogram_quantile})
+
+testing.run(case: _histogram_quantile)

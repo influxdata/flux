@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string
@@ -14,6 +16,7 @@ inData = "
 ,,0,2018-05-22T19:53:46Z,b,used_percent,disk,disk1,apfs,host.local,/
 ,,0,2018-05-22T19:53:36Z,k9ngm,used_percent,disk,disk1,apfs,host.local,/
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string
 #group,false,false,true,true,false,false,true,true,true,true,true,true
@@ -28,11 +31,11 @@ outData = "
 "
 
 t_string_sort = (table=<-) =>
-  table
-    |> range(start:2018-05-22T19:53:26Z)
-    |> sort()
+	(table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> sort())
 
-testing.test(name: "string_sort",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_string_sort)
+test _string_sort = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_sort})
+
+testing.run(case: _string_sort)

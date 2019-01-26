@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,string,string,string,dateTime:RFC3339,string
@@ -20,6 +22,7 @@ inData = "
 ,,1,m1,f1,server02,2018-12-19T22:14:10Z,
 ,,1,m1,f1,server02,2018-12-19T22:14:20Z,
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,string
 #group,false,false,true,true,true,true,true,false,false
@@ -39,12 +42,12 @@ outData = "
 ,,1,2018-12-15T00:00:00Z,2030-01-01T00:00:00Z,m1,f1,server02,2018-12-19T22:14:20Z,A
 "
 
+t_fill_float = (table=<-) =>
+	(table
+		|> range(start: 2018-12-15T00:00:00Z)
+		|> fill(column: "_value", value: "A"))
 
-t_fill_float = (table=<-) => table
-  |> range(start: 2018-12-15T00:00:00Z)
-  |> fill(column: "_value", value: "A")
+test _fill = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_fill_float})
 
-testing.test(name: "fill",
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    testFn: t_fill_float)
+testing.run(case: _fill)

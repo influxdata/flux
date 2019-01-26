@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
@@ -20,6 +22,7 @@ inData = "
 ,,1,2018-05-22T19:54:06Z,648,ixo_time,diskio,host.local,disk2
 ,,1,2018-05-22T19:54:16Z,648,ixo_time,diskio,host.local,disk2
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string
 #group,false,false,true,true,false,false,true,true,true,true
@@ -31,20 +34,17 @@ outData = "
 #default,_result,1,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,,,ixo_time,diskio,host.local,disk2
 ,result,table,_start,_stop,_time,_value,_field,_measurement,host,name
 "
-
 regexFunc = (table=<-, regLiteral) =>
-   table
-     |>  range(start:2018-05-20T19:53:26Z)
-     |>  filter(fn: (r) => r._field =~ regLiteral)
-     |>  max()
-
-
+	(table
+		|> range(start: 2018-05-20T19:53:26Z)
+		|> filter(fn: (r) =>
+			(r._field =~ regLiteral))
+		|> max())
 t_filter_by_regex_function = (table=<-) =>
-  table
-  |> regexFunc(regLiteral: /io.*/)
+	(table
+		|> regexFunc(regLiteral: /io.*/))
 
-testing.test(name: "filter_by_regex_function",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_filter_by_regex_function)
+test _filter_by_regex_function = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex_function})
 
+testing.run(case: _filter_by_regex_function)

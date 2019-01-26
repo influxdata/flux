@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,string,long
@@ -30,6 +32,7 @@ inData = "
 ,,3,2018-05-22T19:54:10Z,_m,SR,72
 ,,3,2018-05-22T19:54:20Z,_m,SR,88
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,string,string,long
 #group,false,false,false,true,true,false
@@ -59,10 +62,11 @@ outData = "
 ,,3,2018-05-22T19:56:20Z,_m,SR,88
 "
 
-t_shift = (table=<-) => table
-  |> shift(shift: 120s)
+t_shift = (table=<-) =>
+	(table
+		|> shift(shift: 120s))
 
-testing.test(name: "shift",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_shift)
+test _shift = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shift})
+
+testing.run(case: _shift)

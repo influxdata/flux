@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string
@@ -24,6 +26,7 @@ inData = "
 ,,3,2018-05-22T19:54:06Z,2,RAM,user2
 ,,3,2018-05-22T19:54:16Z,10,RAM,user2
 "
+
 outData = "
 #datatype,string,long,string,double
 #group,false,false,true,false
@@ -34,21 +37,22 @@ outData = "
 "
 
 t_cov = () => {
-    left = testing.loadStorage(csv: inData)
-        |> range(start:2018-05-22T19:53:00Z, stop:2018-05-22T19:55:00Z)
-        |> drop(columns: ["_start", "_stop"])
-        |> filter(fn: (r) => r.user == "user1")
-        |> group(columns: ["_measurement"])
+	left = testing.loadStorage(csv: inData)
+		|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+		|> drop(columns: ["_start", "_stop"])
+		|> filter(fn: (r) =>
+			(r.user == "user1"))
+		|> group(columns: ["_measurement"])
+	right = testing.loadStorage(csv: inData)
+		|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+		|> drop(columns: ["_start", "_stop"])
+		|> filter(fn: (r) =>
+			(r.user == "user2"))
+		|> group(columns: ["_measurement"])
+	got = cov(x: left, y: right, on: ["_time", "_measurement"])
+	want = testing.loadStorage(csv: outData)
 
-    right = testing.loadStorage(csv: inData)
-        |> range(start:2018-05-22T19:53:00Z, stop:2018-05-22T19:55:00Z)
-        |> drop(columns: ["_start", "_stop"])
-        |> filter(fn: (r) => r.user == "user2")
-        |> group(columns: ["_measurement"])
-
-    got = cov(x:left, y:right, on: ["_time", "_measurement"])
-    want = testing.loadStorage(csv: outData)
-    return testing.assertEquals(name: "cov", want: want, got: got)
+	return testing.assertEquals(name: "cov", want: want, got: got)
 }
 
 t_cov()

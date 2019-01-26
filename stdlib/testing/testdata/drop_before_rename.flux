@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
@@ -26,6 +28,7 @@ inData = "
 ,,2,2018-05-22T19:54:06Z,68.304576144036,usage_idle,cpu,cpu-total,host.local
 ,,2,2018-05-22T19:54:16Z,87.88598574821853,usage_idle,cpu,cpu-total,host.local
 "
+
 outData = "
 #datatype,string,string
 #group,true,true
@@ -33,16 +36,14 @@ outData = "
 ,error,reference
 ,\"rename error: column \"\"old\"\" doesn't exist\",
 "
-
 drop_before_rename = (table=<-) =>
-  table
-	|> range(start: 2018-05-22T19:53:26Z)
-	|> drop(columns: ["old"])
-	|> rename(columns: {old: "new"})
-	|> yield(name: "0")
+	(table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> drop(columns: ["old"])
+		|> rename(columns: {old: "new"})
+		|> yield(name: "0"))
 
+test _drop_before_rename = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: drop_before_rename})
 
-testing.test(name: "drop_before_rename",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: drop_before_rename)
+testing.run(case: _drop_before_rename)

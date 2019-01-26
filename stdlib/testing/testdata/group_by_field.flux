@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
@@ -14,6 +16,7 @@ inData = "
 ,,0,2018-05-22T19:54:06Z,68.304576144036,usage_idle,cpu,cpu-total,host1
 ,,0,2018-05-22T19:54:16Z,87.88598574821853,usage_idle,cpu,cpu-total,host2
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string
 #group,false,false,false,false,false,true,false,false,false,false
@@ -28,10 +31,11 @@ outData = "
 "
 
 t_group_by_field = (table=<-) =>
-  table
-    |> range(start:2018-05-22T19:53:26Z)
-    |> group(columns: ["_value"])
-testing.test(name: "group_by_field",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_group_by_field)
+	(table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> group(columns: ["_value"]))
+
+test _group_by_field = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_by_field})
+
+testing.run(case: _group_by_field)

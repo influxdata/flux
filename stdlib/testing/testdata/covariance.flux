@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,double,string
@@ -16,6 +18,7 @@ inData = "
 ,,1,2018-05-22T19:53:46Z,30,20,mem
 ,,1,2018-05-22T19:53:56Z,40,10,mem
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double
 #group,false,false,true,true,true,false
@@ -26,11 +29,11 @@ outData = "
 "
 
 t_covariance = (tables=<-) =>
-  tables
-    |> range(start: 2018-05-22T19:53:26Z)
-    |> covariance(columns: ["x", "y"])
+	(tables
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> covariance(columns: ["x", "y"]))
 
-testing.test(name: "t_covariance",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_covariance)
+test _t_covariance = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_covariance})
+
+testing.run(case: _t_covariance)

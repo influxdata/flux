@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
@@ -53,11 +55,12 @@ outData = "
 "
 
 t_drop = (table=<-) =>
-  table
-	|> range(start: 2018-05-22T19:53:26Z)
-	|> drop(fn: (column) => column =~ /dropme*/)
+	(table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> drop(fn: (column) =>
+			(column =~ /dropme*/)))
 
-testing.test(name: "drop_fn",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_drop)
+test _drop_fn = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_drop})
+
+testing.run(case: _drop_fn)
