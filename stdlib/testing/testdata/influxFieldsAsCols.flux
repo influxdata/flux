@@ -1,7 +1,9 @@
+package main
+ 
 import "testing"
 import "influxdata/influxdb/v1"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
@@ -33,6 +35,7 @@ inData = "
 ,,3,2018-05-22T19:54:06Z,82.598876953125,used_percent,swap,host.local
 ,,3,2018-05-22T19:54:16Z,82.6416015625,used_percent,swap,host.local
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
 #group,false,false,true,true,false,true,true,false
@@ -57,11 +60,12 @@ outData = "
 "
 
 t_influxFieldsAsCols = (table=<-) =>
-  table
-  |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z)
-  |> v1.fieldsAsCols()
-  |> yield(name:"0")
-testing.test(name: "influxFieldsAsCols",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_influxFieldsAsCols)
+	(table
+		|> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z)
+		|> v1.fieldsAsCols()
+		|> yield(name: "0"))
+
+test _influxFieldsAsCols = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_influxFieldsAsCols})
+
+testing.run(case: _influxFieldsAsCols)

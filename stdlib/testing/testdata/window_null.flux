@@ -1,3 +1,5 @@
+package main
+ 
 import "testing"
 
 inData = "
@@ -13,6 +15,7 @@ inData = "
 ,,0,2019-01-15T21:39:30Z,2019-01-15T21:40:20Z,dlC,lDQVwm,2019-01-15T21:40:20Z,16.140262630578995
 
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,double
 #group,false,false,true,true,true,true,false,false
@@ -27,15 +30,14 @@ outData = "
 
 "
 
-option now = () => 2019-01-15T21:40:32Z
+option now = () => (2019-01-15T21:40:32Z)
 
-t_window_null = (table=<-) => table
+t_window_null = (table=<-) =>
+	(table
 		|> range(start: -5m)
-    |> window(every: 30s)
+		|> window(every: 30s))
 
-testing.test(
-	name: "window_null",
-	input: testing.loadStorage(csv: inData),
-	want: testing.loadMem(csv: outData),
-	testFn: t_window_null,
-)
+test _window_null = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window_null})
+
+testing.run(case: _window_null)

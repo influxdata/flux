@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string
@@ -20,6 +22,7 @@ inData = "
 ,,1,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s2,apfs,host.local,/
 ,,1,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s2,apfs,host.local,/
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string
 #group,false,false,true,true,false,false,true,true,true,true,true,true
@@ -38,11 +41,11 @@ outData = "
 "
 
 t_difference = (table=<-) =>
-  table
-    |> range(start:2018-05-22T19:53:26Z)
-    |> difference()
+	(table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> difference())
 
-testing.test(name: "difference",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_difference)
+test _difference = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_difference})
+
+testing.run(case: _difference)

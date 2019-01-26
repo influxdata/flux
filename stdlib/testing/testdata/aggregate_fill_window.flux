@@ -1,3 +1,5 @@
+package main
+ 
 import "testing"
 
 inData = "
@@ -24,6 +26,7 @@ inData = "
 ,,2,2018-05-22T19:53:24.421470485Z,2018-05-22T19:54:24.421470485Z,2018-05-22T19:54:06Z,68.304576144036,usage_idle,cpu,cpu-total,host.local
 ,,2,2018-05-22T19:53:24.421470485Z,2018-05-22T19:54:24.421470485Z,2018-05-22T19:54:16Z,87.88598574821853,usage_idle,cpu,cpu-total,host.local
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,double
 #group,false,false,true,true,false,true,true,true,true,false
@@ -32,28 +35,25 @@ outData = "
 ,,0,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:53:30Z,usage_guest,cpu,cpu-total,host.local,0
 ,,0,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:54:00Z,usage_guest,cpu,cpu-total,host.local,0
 ,,0,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:54:30Z,usage_guest,cpu,cpu-total,host.local,0
-,,0,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:55:00Z,usage_guest,cpu,cpu-total,host.local,
+,,0,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:55:00Z,usage_guest,cpu,cpu-total,host.local,0
 ,,1,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:53:30Z,usage_guest_nice,cpu,cpu-total,host.local,0
 ,,1,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:54:00Z,usage_guest_nice,cpu,cpu-total,host.local,0
 ,,1,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:54:30Z,usage_guest_nice,cpu,cpu-total,host.local,0
-,,1,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:55:00Z,usage_guest_nice,cpu,cpu-total,host.local,
+,,1,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:55:00Z,usage_guest_nice,cpu,cpu-total,host.local,0
 ,,2,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:53:30Z,usage_idle,cpu,cpu-total,host.local,91.7364670583823
 ,,2,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:54:00Z,usage_idle,cpu,cpu-total,host.local,271.637327705587
 ,,2,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:54:30Z,usage_idle,cpu,cpu-total,host.local,156.19056189225455
-,,2,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:55:00Z,usage_idle,cpu,cpu-total,host.local,
+,,2,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:55:00Z,usage_idle,cpu,cpu-total,host.local,0
 "
 
+test aggregate_window_fill = () => ({
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    fn: (table=<-) =>
+        table
+            |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)
+            |> aggregateWindow(every: 30s, fn: sum)
+            |> fill(value: 0.0),
+})
 
-
-t_window_generate_empty = (table=<-) =>
-  table
-	|> range(start:2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)
-	|> aggregateWindow(every:30s,fn:sum)
-	|> fill(value: 0.0)
-
-mem = testing.loadMem
-store = testing.loadStorage
-
-want = mem(csv: outData)
-got = store(csv: inData) |> t_window_generate_empty()
-testing.assertEquals(name: "aggregate_empty_window", want:want, got: got)
+testing.run(case: aggregate_window_fill)

@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string
@@ -14,6 +16,7 @@ inData = "
 ,,0,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s1,apfs,host.remote,/
 ,,0,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s1,apfs,host.remote,/
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,string,string,double,double
 #group,false,false,true,true,true,false,false
@@ -23,14 +26,14 @@ outData = "
 "
 
 t_pivot_mean = (table=<-) =>
-  table
-  |> range(start: 2018-05-22T19:53:26Z)
-  |> group(columns: ["_stop", "_measurement", "_field", "host"])
-  |> mean()
-  |> pivot(rowKey: ["_stop"], columnKey: ["host"], valueColumn: "_value")
-  |> yield(name:"0")
+	(table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> group(columns: ["_stop", "_measurement", "_field", "host"])
+		|> mean()
+		|> pivot(rowKey: ["_stop"], columnKey: ["host"], valueColumn: "_value")
+		|> yield(name: "0"))
 
-testing.test(name: "pivot_mean",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_pivot_mean)
+test _pivot_mean = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_pivot_mean})
+
+testing.run(case: _pivot_mean)

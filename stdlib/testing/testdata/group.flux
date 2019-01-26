@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
@@ -20,6 +22,7 @@ inData = "
 ,,1,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2
 ,,1,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #group,false,false,true,true,true,false,false
@@ -30,15 +33,17 @@ outData = "
 "
 
 t_group = (table=<-) =>
-  table
-  |> range(start: 2018-05-22T19:53:26Z)
-  |> filter(fn: (r) => r._measurement == "diskio" and r._field == "io_time")
-  |> group(columns: ["_measurement", "_start", "name"])
-  |> max()
-  |> map(fn: (r) => ({_time: r._time, max: r._value}))
-  |> yield(name: "0")
+	(table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> filter(fn: (r) =>
+			(r._measurement == "diskio" and r._field == "io_time"))
+		|> group(columns: ["_measurement", "_start", "name"])
+		|> max()
+		|> map(fn: (r) =>
+			({_time: r._time, max: r._value}))
+		|> yield(name: "0"))
 
-testing.test(name: "group",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_group)
+test _group = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})
+
+testing.run(case: _group)

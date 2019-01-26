@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
@@ -170,6 +172,7 @@ inData = "
 ,,26,2018-05-22T19:54:06Z,0,writes,diskio,host.local,disk3
 ,,26,2018-05-22T19:54:16Z,0,writes,diskio,host.local,disk3
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
 #group,false,false,false,false,false,false,true,false
@@ -194,20 +197,20 @@ outData = "
 ,,0,2018-05-22T19:54:16Z,202997248,read_bytes,diskio,host.local,disk2
 ,,0,2018-05-22T19:54:16Z,228613324800,read_bytes,diskio,host.local,disk0
 "
-
 left = testing.loadStorage(csv: inData)
-    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:53:50Z)
-    |> filter(fn: (r) => r._measurement == "diskio" and r._field == "io_time")
-    |> group(columns: ["host"])
-    |> drop(columns: ["_start", "_stop", "name"])
-
+	|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:53:50Z)
+	|> filter(fn: (r) =>
+		(r._measurement == "diskio" and r._field == "io_time"))
+	|> group(columns: ["host"])
+	|> drop(columns: ["_start", "_stop", "name"])
 right = testing.loadStorage(csv: inData)
-    |> range(start: 2018-05-22T19:53:50Z, stop: 2018-05-22T19:54:20Z)
-    |> filter(fn: (r) => r._measurement == "diskio" and r._field == "read_bytes")
-    |> group(columns: ["host"])
-    |> drop(columns: ["_start", "_stop"])
-
+	|> range(start: 2018-05-22T19:53:50Z, stop: 2018-05-22T19:54:20Z)
+	|> filter(fn: (r) =>
+		(r._measurement == "diskio" and r._field == "read_bytes"))
+	|> group(columns: ["host"])
+	|> drop(columns: ["_start", "_stop"])
 got = union(tables: [left, right])
-    |> sort(columns: ["_time", "_field", "_value"])
+	|> sort(columns: ["_time", "_field", "_value"])
 want = testing.loadStorage(csv: outData)
+
 testing.assertEquals(name: "union_heterogeneous", want: want, got: got)

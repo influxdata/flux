@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
@@ -16,6 +18,7 @@ inData = "
 ,,1,2018-05-22T19:53:26Z,2,usage_guest_nice,cpu,cpu-total,host.local
 ,,1,2018-05-22T19:53:36Z,4,field1,cpu,cpu-total,host.local
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string
 #group,false,false,true,true,false,false,true,true,true,true
@@ -28,12 +31,13 @@ outData = "
 "
 
 t_difference_panic = (table=<-) =>
-  table
-    |> range(start:2018-05-22T19:53:26Z)
-    |> filter(fn: (r) => r._field == "no_exist")
-    |> difference()
+	(table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> filter(fn: (r) =>
+			(r._field == "no_exist"))
+		|> difference())
 
-testing.test(name: "difference_panic",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_difference_panic)
+test _difference_panic = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_difference_panic})
+
+testing.run(case: _difference_panic)

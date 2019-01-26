@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
@@ -20,6 +22,7 @@ inData = "
 ,,1,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2
 ,,1,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2
 "
+
 outData = "
 #datatype,string,long,string,dateTime:RFC3339,long
 #group,false,false,true,false,false
@@ -41,7 +44,7 @@ t_filter_by_tags = (table=<-) =>
   |> map(fn: (r) => ({_time: r._time, io_time: r._value}))
   |> yield(name:"0")
 
-testing.test(name: "filter_by_tags",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_filter_by_tags)
+test _filter_by_tags = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_tags})
+
+testing.run(case: _filter_by_tags)

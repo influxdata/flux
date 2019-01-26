@@ -1,7 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
-
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,string,string,dateTime:RFC3339,unsignedLong
@@ -72,12 +73,12 @@ outData = "
 ,,4,2018-12-01T00:00:00Z,2030-01-01T00:00:00Z,iZquGj,ucyoZ,6
 "
 
-t_count = (table=<-) => table
-  |> range(start: 2018-12-01T00:00:00Z)
-  |> count()
+t_count = (table=<-) =>
+	(table
+		|> range(start: 2018-12-01T00:00:00Z)
+		|> count())
 
-testing.test(
-    name: "count",
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    testFn: t_count)
+test _count = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_count})
+
+testing.run(case: _count)

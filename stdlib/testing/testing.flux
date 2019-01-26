@@ -9,7 +9,26 @@ builtin diff
 loadStorage = (csv) => c.from(csv: csv)
 loadMem = (csv) => c.from(csv: csv)
 
-test = (name, input, want, testFn) => {
-    got = input |> testFn()
-    return got |> diff(want: want) |> yield(name: name) |> assertEmpty()
+run = (case) => {
+    tc = case()
+    return tc.input
+        |> tc.fn()
+        |> diff(want: tc.want)
+        |> yield(name: "diff")
+        |> assertEmpty()
+}
+
+inspect = (case) => {
+    tc = case()
+    got = tc.input |> tc.fn()
+    dif = got |> diff(want: tc.want)
+    pass = dif |> assertEmpty()
+    return {
+        fn:    tc.fn,
+        input: tc.input
+        want:  tc.want,
+        got:   got,
+        diff:  dif,
+        pass:  pass,
+    }
 }

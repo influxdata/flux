@@ -1,3 +1,5 @@
+package main
+ 
 import "testing"
 
 inData = "
@@ -24,6 +26,7 @@ inData = "
 ,,2,2018-05-22T19:53:24.421470485Z,2018-05-22T19:54:24.421470485Z,2018-05-22T19:54:06Z,68.304576144036,usage_idle,cpu,cpu-total,host.local
 ,,2,2018-05-22T19:53:24.421470485Z,2018-05-22T19:54:24.421470485Z,2018-05-22T19:54:16Z,87.88598574821853,usage_idle,cpu,cpu-total,host.local
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,double
 #group,false,false,true,true,false,true,true,true,true,false
@@ -43,16 +46,13 @@ outData = "
 ,,2,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:55:00Z,usage_idle,cpu,cpu-total,host.local,
 "
 
+test aggregate_window_empty = () => ({
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    fn: (table=<-) =>
+        table
+            |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)
+            |> aggregateWindow(every: 30s, fn: sum),
+})
 
-
-t_window_generate_empty = (table=<-) =>
-  table
-	|> range(start:2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)
-	|> aggregateWindow(every:30s,fn:sum)
-
-mem = testing.loadMem
-store = testing.loadStorage
-
-want = mem(csv: outData)
-got = store(csv: inData) |> t_window_generate_empty()
-testing.assertEquals(name: "aggregate_empty_window", want:want, got: got)
+testing.run(case: aggregate_window_empty)

@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,long
@@ -30,6 +32,7 @@ inData = "
 ,,0,2018-05-22T19:54:10Z,_m,1
 ,,0,2018-05-22T19:54:20Z,_m,1
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,long
 #group,false,false,true,true,false,true,false
@@ -59,13 +62,12 @@ outData = "
 ,,0,2018-05-15T00:00:00Z,2030-01-01T00:00:00Z,2018-05-22T19:54:20Z,_m,1
 "
 
-t_cumulative_sum_noop = (table=<-) => table
-  |> range(start: 2018-05-15T00:00:00Z)
-  |> cumulativeSum()
+t_cumulative_sum_noop = (table=<-) =>
+	(table
+		|> range(start: 2018-05-15T00:00:00Z)
+		|> cumulativeSum())
 
-testing.test(
-    name: "cumulative_sum_noop",
-    input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-    testFn: t_cumulative_sum_noop
-)
+test _cumulative_sum_noop = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_cumulative_sum_noop})
+
+testing.run(case: _cumulative_sum_noop)

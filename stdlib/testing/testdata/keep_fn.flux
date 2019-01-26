@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
@@ -26,6 +28,7 @@ inData = "
 ,,2,2018-05-22T19:54:06Z,68.304576144036,usage_idle,cpu,cpu-total,host.local
 ,,2,2018-05-22T19:54:16Z,87.88598574821853,usage_idle,cpu,cpu-total,host.local
 "
+
 outData = "
 #datatype,string,long,double
 #group,false,false,false
@@ -52,12 +55,15 @@ outData = "
 "
 
 t_keep_fn = (table=<-) =>
-  table
-	|> range(start: 2018-05-22T19:53:26Z)
-	|> keep(fn: (column) => column == "_field" or column == "_value")
-    |> keep(fn: (column) =>  {return column == "_value"})
+	(table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> keep(fn: (column) =>
+			(column == "_field" or column == "_value"))
+		|> keep(fn: (column) => {
+			return column == "_value"
+		}))
 
-testing.test(name: "keep_fn",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_keep_fn)
+test _keep_fn = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_keep_fn})
+
+testing.run(case: _keep_fn)

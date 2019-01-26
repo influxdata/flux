@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string
@@ -1111,6 +1113,7 @@ inData = "
 ,,167,2018-05-22T19:54:06Z,0,zombies,processes,host.local
 ,,167,2018-05-22T19:54:16Z,0,zombies,processes,host.local
 "
+
 outData = "
 #datatype,string,long,string
 #group,false,false,false
@@ -1129,14 +1132,15 @@ outData = "
 "
 
 t_show_all_tag_keys = (table=<-) =>
-  table
-  |> range(start:2018-05-22T19:53:26Z)
-  |> keys()
-  |> group()
-  |> distinct()
-  |> map(fn:(r) => r._value)
+	(table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> keys()
+		|> group()
+		|> distinct()
+		|> map(fn: (r) =>
+			(r._value)))
 
-testing.test(name: "show_all_tag_keys",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_show_all_tag_keys)
+test _show_all_tag_keys = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_show_all_tag_keys})
+
+testing.run(case: _show_all_tag_keys)

@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
@@ -34,6 +36,7 @@ inData = "
 ,,4,2018-05-22T19:53:26Z,0,usage_irq,cpu,cpu-total,host.local
 ,,4,2018-05-22T19:53:36Z,0,usage_irq,cpu,cpu-total,host.local
 "
+
 outData = "
 #datatype,string,long,string,string
 #group,false,false,false,false
@@ -47,13 +50,15 @@ outData = "
 "
 
 t_meta_query_fields = (table=<-) =>
-  table
-    |> range(start:2018-05-22T19:53:26Z)
-    |> filter(fn: (r) => r._measurement == "cpu")
-    |> group(columns: ["_field"])
-    |> distinct(column: "_field")
-    |> group()
-testing.test(name: "meta_query_fields",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_meta_query_fields)
+	(table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> filter(fn: (r) =>
+			(r._measurement == "cpu"))
+		|> group(columns: ["_field"])
+		|> distinct(column: "_field")
+		|> group())
+
+test _meta_query_fields = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_meta_query_fields})
+
+testing.run(case: _meta_query_fields)

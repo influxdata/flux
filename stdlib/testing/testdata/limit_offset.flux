@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
@@ -49,11 +51,11 @@ outData = "
 "
 
 t_limit = (table=<-) =>
-  table
-    |> range(start: 2018-05-22T19:00:00Z, stop: 2018-05-22T20:00:00Z)
-    |> limit(n: 2, offset: 1)
+	(table
+		|> range(start: 2018-05-22T19:00:00Z, stop: 2018-05-22T20:00:00Z)
+		|> limit(n: 2, offset: 1))
 
-testing.test(name: "limit_offset",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_limit)
+test _limit_offset = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_limit})
+
+testing.run(case: _limit_offset)

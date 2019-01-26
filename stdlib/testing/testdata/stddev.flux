@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,string,string,dateTime:RFC3339,unsignedLong
@@ -36,6 +38,7 @@ inData = "
 ,,2,Sgf,qaOnnQc,2018-12-18T22:11:45Z,16.140262630578995
 ,,2,Sgf,qaOnnQc,2018-12-18T22:11:55Z,29.50336437998469
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,double
 #group,false,false,true,true,true,true,false
@@ -46,12 +49,12 @@ outData = "
 ,,2,2018-12-01T00:00:00Z,2030-01-01T00:00:00Z,Sgf,qaOnnQc,59.9881468845287
 "
 
+t_stddev = (table=<-) =>
+	(table
+		|> range(start: 2018-12-01T00:00:00Z)
+		|> stddev())
 
-t_stddev = (table=<-) => table
-  |> range(start: 2018-12-01T00:00:00Z)
-  |> stddev()
+test _stddev = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stddev})
 
-testing.test(name: "stddev",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_stddev)
+testing.run(case: _stddev)

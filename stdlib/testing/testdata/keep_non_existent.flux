@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
@@ -36,11 +38,11 @@ outData = "
 "
 
 t_keep = (table=<-) =>
-  table
-	|> range(start: 2018-05-22T19:53:26Z)
-	|> keep(columns: ["non_existent"])
+	(table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> keep(columns: ["non_existent"]))
 
-testing.test(name: "keep_non_existent",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_keep)
+test _keep_non_existent = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_keep})
+
+testing.run(case: _keep_non_existent)

@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
@@ -20,6 +22,7 @@ inData = "
 ,,1,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2
 ,,1,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,dateTime:RFC3339,double
 #group,false,false,true,true,true,false,false
@@ -34,17 +37,18 @@ outData = "
 "
 
 t_window = (table=<-) =>
-  table
-  |> range(start:2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-  |> group(columns: ["_measurement"])
-  |> window(every: 1s)
-  |> mean()
-  |> duplicate(column: "_start", as: "_time")
-  |> window(every: inf)
-  |> map(fn: (r) => ({_time: r._time, mean: r._value}))
-  |> yield(name:"0")
+	(table
+		|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+		|> group(columns: ["_measurement"])
+		|> window(every: 1s)
+		|> mean()
+		|> duplicate(column: "_start", as: "_time")
+		|> window(every: inf)
+		|> map(fn: (r) =>
+			({_time: r._time, mean: r._value}))
+		|> yield(name: "0"))
 
-testing.test(name: "window",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_window)
+test _window = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window})
+
+testing.run(case: _window)

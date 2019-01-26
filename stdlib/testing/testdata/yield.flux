@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
@@ -14,6 +16,7 @@ inData = "
 ,,0,2018-05-22T19:54:06Z,68.304576144036,usage_idle,cpu,cpu-total,host.local
 ,,0,2018-05-22T19:54:16Z,87.88598574821853,usage_idle,cpu,cpu-total,host.local
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string
 #group,false,false,false,false,false,false,true,true,true,true
@@ -31,18 +34,17 @@ outData = "
 "
 
 t_yield = (table=<-) =>
-  table
-    |> sort()
-    |> limit(n: 3)
-    |> yield(name: "1: lowest 3")
-    |> sample(n: 2, pos: 1)
-    |> yield(name: "2: 2nd row")
-
+	(table
+		|> sort()
+		|> limit(n: 3)
+		|> yield(name: "1: lowest 3")
+		|> sample(n: 2, pos: 1)
+		|> yield(name: "2: 2nd row"))
 indata = testing.loadStorage(csv: inData)
-got = indata |> t_yield() |> yield(name: "5")
-want = testing.loadStorage(csv: outData) |> yield(name:"6")
+got = indata
+	|> t_yield()
+	|> yield(name: "5")
+want = testing.loadStorage(csv: outData)
+	|> yield(name: "6")
+
 testing.assertEquals(name: "yield", want: want, got: got)
-testing.test(name: "yield",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_yield)

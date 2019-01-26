@@ -22,10 +22,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 2,
-					Line:   15,
+					Line:   34,
 				},
 				File:   "testing.flux",
-				Source: "package testing\n\nimport c \"csv\"\n\nbuiltin assertEquals\nbuiltin assertEmpty\nbuiltin diff\n\nloadStorage = (csv) => c.from(csv: csv)\nloadMem = (csv) => c.from(csv: csv)\n\ntest = (name, input, want, testFn) => {\n    got = input |> testFn()\n    return got |> diff(want: want) |> yield(name: name) |> assertEmpty()\n}",
+				Source: "package testing\n\nimport c \"csv\"\n\nbuiltin assertEquals\nbuiltin assertEmpty\nbuiltin diff\n\nloadStorage = (csv) => c.from(csv: csv)\nloadMem = (csv) => c.from(csv: csv)\n\nrun = (case) => {\n    tc = case()\n    return tc.input\n        |> tc.fn()\n        |> diff(want: tc.want)\n        |> yield(name: \"diff\")\n        |> assertEmpty()\n}\n\ninspect = (case) => {\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n    pass = dif |> assertEmpty()\n    return {\n        fn:    tc.fn,\n        input: tc.input\n        want:  tc.want,\n        got:   got,\n        diff:  dif,\n        pass:  pass,\n    }\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -594,10 +594,10 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   15,
+						Line:   19,
 					},
 					File:   "testing.flux",
-					Source: "test = (name, input, want, testFn) => {\n    got = input |> testFn()\n    return got |> diff(want: want) |> yield(name: name) |> assertEmpty()\n}",
+					Source: "run = (case) => {\n    tc = case()\n    return tc.input\n        |> tc.fn()\n        |> diff(want: tc.want)\n        |> yield(name: \"diff\")\n        |> assertEmpty()\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   12,
@@ -609,18 +609,18 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 5,
+							Column: 4,
 							Line:   12,
 						},
 						File:   "testing.flux",
-						Source: "test",
+						Source: "run",
 						Start: ast.Position{
 							Column: 1,
 							Line:   12,
 						},
 					},
 				},
-				Name: "test",
+				Name: "run",
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
@@ -628,12 +628,12 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   15,
+							Line:   19,
 						},
 						File:   "testing.flux",
-						Source: "(name, input, want, testFn) => {\n    got = input |> testFn()\n    return got |> diff(want: want) |> yield(name: name) |> assertEmpty()\n}",
+						Source: "(case) => {\n    tc = case()\n    return tc.input\n        |> tc.fn()\n        |> diff(want: tc.want)\n        |> yield(name: \"diff\")\n        |> assertEmpty()\n}",
 						Start: ast.Position{
-							Column: 8,
+							Column: 7,
 							Line:   12,
 						},
 					},
@@ -644,12 +644,12 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   15,
+								Line:   19,
 							},
 							File:   "testing.flux",
-							Source: "{\n    got = input |> testFn()\n    return got |> diff(want: want) |> yield(name: name) |> assertEmpty()\n}",
+							Source: "{\n    tc = case()\n    return tc.input\n        |> tc.fn()\n        |> diff(want: tc.want)\n        |> yield(name: \"diff\")\n        |> assertEmpty()\n}",
 							Start: ast.Position{
-								Column: 39,
+								Column: 17,
 								Line:   12,
 							},
 						},
@@ -659,11 +659,11 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 28,
+									Column: 16,
 									Line:   13,
 								},
 								File:   "testing.flux",
-								Source: "got = input |> testFn()",
+								Source: "tc = case()",
 								Start: ast.Position{
 									Column: 5,
 									Line:   13,
@@ -675,121 +675,209 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 8,
+										Column: 7,
 										Line:   13,
 									},
 									File:   "testing.flux",
-									Source: "got",
+									Source: "tc",
 									Start: ast.Position{
 										Column: 5,
 										Line:   13,
 									},
 								},
 							},
-							Name: "got",
+							Name: "tc",
 						},
-						Init: &ast.PipeExpression{
-							Argument: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 16,
-											Line:   13,
-										},
-										File:   "testing.flux",
-										Source: "input",
-										Start: ast.Position{
-											Column: 11,
-											Line:   13,
-										},
-									},
-								},
-								Name: "input",
-							},
+						Init: &ast.CallExpression{
+							Arguments: nil,
 							BaseNode: ast.BaseNode{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 28,
+										Column: 16,
 										Line:   13,
 									},
 									File:   "testing.flux",
-									Source: "input |> testFn()",
+									Source: "case()",
 									Start: ast.Position{
-										Column: 11,
+										Column: 10,
 										Line:   13,
 									},
 								},
 							},
-							Call: &ast.CallExpression{
-								Arguments: nil,
+							Callee: &ast.Identifier{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 28,
+											Column: 14,
 											Line:   13,
 										},
 										File:   "testing.flux",
-										Source: "testFn()",
+										Source: "case",
 										Start: ast.Position{
-											Column: 20,
+											Column: 10,
 											Line:   13,
 										},
 									},
 								},
-								Callee: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 26,
-												Line:   13,
-											},
-											File:   "testing.flux",
-											Source: "testFn",
-											Start: ast.Position{
-												Column: 20,
-												Line:   13,
-											},
-										},
-									},
-									Name: "testFn",
-								},
+								Name: "case",
 							},
 						},
 					}, &ast.ReturnStatement{
 						Argument: &ast.PipeExpression{
 							Argument: &ast.PipeExpression{
 								Argument: &ast.PipeExpression{
-									Argument: &ast.Identifier{
+									Argument: &ast.PipeExpression{
+										Argument: &ast.MemberExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 20,
+														Line:   14,
+													},
+													File:   "testing.flux",
+													Source: "tc.input",
+													Start: ast.Position{
+														Column: 12,
+														Line:   14,
+													},
+												},
+											},
+											Object: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 14,
+															Line:   14,
+														},
+														File:   "testing.flux",
+														Source: "tc",
+														Start: ast.Position{
+															Column: 12,
+															Line:   14,
+														},
+													},
+												},
+												Name: "tc",
+											},
+											Property: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 20,
+															Line:   14,
+														},
+														File:   "testing.flux",
+														Source: "input",
+														Start: ast.Position{
+															Column: 15,
+															Line:   14,
+														},
+													},
+												},
+												Name: "input",
+											},
+										},
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 15,
-													Line:   14,
+													Column: 19,
+													Line:   15,
 												},
 												File:   "testing.flux",
-												Source: "got",
+												Source: "tc.input\n        |> tc.fn()",
 												Start: ast.Position{
 													Column: 12,
 													Line:   14,
 												},
 											},
 										},
-										Name: "got",
+										Call: &ast.CallExpression{
+											Arguments: nil,
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 19,
+														Line:   15,
+													},
+													File:   "testing.flux",
+													Source: "tc.fn()",
+													Start: ast.Position{
+														Column: 12,
+														Line:   15,
+													},
+												},
+											},
+											Callee: &ast.MemberExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 17,
+															Line:   15,
+														},
+														File:   "testing.flux",
+														Source: "tc.fn",
+														Start: ast.Position{
+															Column: 12,
+															Line:   15,
+														},
+													},
+												},
+												Object: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 14,
+																Line:   15,
+															},
+															File:   "testing.flux",
+															Source: "tc",
+															Start: ast.Position{
+																Column: 12,
+																Line:   15,
+															},
+														},
+													},
+													Name: "tc",
+												},
+												Property: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 17,
+																Line:   15,
+															},
+															File:   "testing.flux",
+															Source: "fn",
+															Start: ast.Position{
+																Column: 15,
+																Line:   15,
+															},
+														},
+													},
+													Name: "fn",
+												},
+											},
+										},
 									},
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 35,
-												Line:   14,
+												Column: 31,
+												Line:   16,
 											},
 											File:   "testing.flux",
-											Source: "got |> diff(want: want)",
+											Source: "tc.input\n        |> tc.fn()\n        |> diff(want: tc.want)",
 											Start: ast.Position{
 												Column: 12,
 												Line:   14,
@@ -802,14 +890,14 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 34,
-														Line:   14,
+														Column: 30,
+														Line:   16,
 													},
 													File:   "testing.flux",
-													Source: "want: want",
+													Source: "want: tc.want",
 													Start: ast.Position{
-														Column: 24,
-														Line:   14,
+														Column: 17,
+														Line:   16,
 													},
 												},
 											},
@@ -818,14 +906,14 @@ var pkgAST = &ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 34,
-															Line:   14,
+															Column: 30,
+															Line:   16,
 														},
 														File:   "testing.flux",
-														Source: "want: want",
+														Source: "want: tc.want",
 														Start: ast.Position{
-															Column: 24,
-															Line:   14,
+															Column: 17,
+															Line:   16,
 														},
 													},
 												},
@@ -834,36 +922,71 @@ var pkgAST = &ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 28,
-																Line:   14,
+																Column: 21,
+																Line:   16,
 															},
 															File:   "testing.flux",
 															Source: "want",
 															Start: ast.Position{
-																Column: 24,
-																Line:   14,
+																Column: 17,
+																Line:   16,
 															},
 														},
 													},
 													Name: "want",
 												},
-												Value: &ast.Identifier{
+												Value: &ast.MemberExpression{
 													BaseNode: ast.BaseNode{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 34,
-																Line:   14,
+																Column: 30,
+																Line:   16,
 															},
 															File:   "testing.flux",
-															Source: "want",
+															Source: "tc.want",
 															Start: ast.Position{
-																Column: 30,
-																Line:   14,
+																Column: 23,
+																Line:   16,
 															},
 														},
 													},
-													Name: "want",
+													Object: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 25,
+																	Line:   16,
+																},
+																File:   "testing.flux",
+																Source: "tc",
+																Start: ast.Position{
+																	Column: 23,
+																	Line:   16,
+																},
+															},
+														},
+														Name: "tc",
+													},
+													Property: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 30,
+																	Line:   16,
+																},
+																File:   "testing.flux",
+																Source: "want",
+																Start: ast.Position{
+																	Column: 26,
+																	Line:   16,
+																},
+															},
+														},
+														Name: "want",
+													},
 												},
 											}},
 										}},
@@ -871,14 +994,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 35,
-													Line:   14,
+													Column: 31,
+													Line:   16,
 												},
 												File:   "testing.flux",
-												Source: "diff(want: want)",
+												Source: "diff(want: tc.want)",
 												Start: ast.Position{
-													Column: 19,
-													Line:   14,
+													Column: 12,
+													Line:   16,
 												},
 											},
 										},
@@ -887,14 +1010,14 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 23,
-														Line:   14,
+														Column: 16,
+														Line:   16,
 													},
 													File:   "testing.flux",
 													Source: "diff",
 													Start: ast.Position{
-														Column: 19,
-														Line:   14,
+														Column: 12,
+														Line:   16,
 													},
 												},
 											},
@@ -906,11 +1029,11 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 56,
-											Line:   14,
+											Column: 31,
+											Line:   17,
 										},
 										File:   "testing.flux",
-										Source: "got |> diff(want: want) |> yield(name: name)",
+										Source: "tc.input\n        |> tc.fn()\n        |> diff(want: tc.want)\n        |> yield(name: \"diff\")",
 										Start: ast.Position{
 											Column: 12,
 											Line:   14,
@@ -923,14 +1046,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 55,
-													Line:   14,
+													Column: 30,
+													Line:   17,
 												},
 												File:   "testing.flux",
-												Source: "name: name",
+												Source: "name: \"diff\"",
 												Start: ast.Position{
-													Column: 45,
-													Line:   14,
+													Column: 18,
+													Line:   17,
 												},
 											},
 										},
@@ -939,14 +1062,14 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 55,
-														Line:   14,
+														Column: 30,
+														Line:   17,
 													},
 													File:   "testing.flux",
-													Source: "name: name",
+													Source: "name: \"diff\"",
 													Start: ast.Position{
-														Column: 45,
-														Line:   14,
+														Column: 18,
+														Line:   17,
 													},
 												},
 											},
@@ -955,36 +1078,36 @@ var pkgAST = &ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 49,
-															Line:   14,
+															Column: 22,
+															Line:   17,
 														},
 														File:   "testing.flux",
 														Source: "name",
 														Start: ast.Position{
-															Column: 45,
-															Line:   14,
+															Column: 18,
+															Line:   17,
 														},
 													},
 												},
 												Name: "name",
 											},
-											Value: &ast.Identifier{
+											Value: &ast.StringLiteral{
 												BaseNode: ast.BaseNode{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 55,
-															Line:   14,
+															Column: 30,
+															Line:   17,
 														},
 														File:   "testing.flux",
-														Source: "name",
+														Source: "\"diff\"",
 														Start: ast.Position{
-															Column: 51,
-															Line:   14,
+															Column: 24,
+															Line:   17,
 														},
 													},
 												},
-												Name: "name",
+												Value: "diff",
 											},
 										}},
 									}},
@@ -992,14 +1115,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 56,
-												Line:   14,
+												Column: 31,
+												Line:   17,
 											},
 											File:   "testing.flux",
-											Source: "yield(name: name)",
+											Source: "yield(name: \"diff\")",
 											Start: ast.Position{
-												Column: 39,
-												Line:   14,
+												Column: 12,
+												Line:   17,
 											},
 										},
 									},
@@ -1008,14 +1131,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 44,
-													Line:   14,
+													Column: 17,
+													Line:   17,
 												},
 												File:   "testing.flux",
 												Source: "yield",
 												Start: ast.Position{
-													Column: 39,
-													Line:   14,
+													Column: 12,
+													Line:   17,
 												},
 											},
 										},
@@ -1027,11 +1150,11 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 73,
-										Line:   14,
+										Column: 25,
+										Line:   18,
 									},
 									File:   "testing.flux",
-									Source: "got |> diff(want: want) |> yield(name: name) |> assertEmpty()",
+									Source: "tc.input\n        |> tc.fn()\n        |> diff(want: tc.want)\n        |> yield(name: \"diff\")\n        |> assertEmpty()",
 									Start: ast.Position{
 										Column: 12,
 										Line:   14,
@@ -1044,14 +1167,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 73,
-											Line:   14,
+											Column: 25,
+											Line:   18,
 										},
 										File:   "testing.flux",
 										Source: "assertEmpty()",
 										Start: ast.Position{
-											Column: 60,
-											Line:   14,
+											Column: 12,
+											Line:   18,
 										},
 									},
 								},
@@ -1060,14 +1183,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 71,
-												Line:   14,
+												Column: 23,
+												Line:   18,
 											},
 											File:   "testing.flux",
 											Source: "assertEmpty",
 											Start: ast.Position{
-												Column: 60,
-												Line:   14,
+												Column: 12,
+												Line:   18,
 											},
 										},
 									},
@@ -1079,11 +1202,11 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 73,
-									Line:   14,
+									Column: 25,
+									Line:   18,
 								},
 								File:   "testing.flux",
-								Source: "return got |> diff(want: want) |> yield(name: name) |> assertEmpty()",
+								Source: "return tc.input\n        |> tc.fn()\n        |> diff(want: tc.want)\n        |> yield(name: \"diff\")\n        |> assertEmpty()",
 								Start: ast.Position{
 									Column: 5,
 									Line:   14,
@@ -1097,13 +1220,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 13,
+								Column: 12,
 								Line:   12,
 							},
 							File:   "testing.flux",
-							Source: "name",
+							Source: "case",
 							Start: ast.Position{
-								Column: 9,
+								Column: 8,
 								Line:   12,
 							},
 						},
@@ -1113,68 +1236,1113 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 13,
+									Column: 12,
 									Line:   12,
 								},
 								File:   "testing.flux",
-								Source: "name",
+								Source: "case",
 								Start: ast.Position{
-									Column: 9,
+									Column: 8,
 									Line:   12,
 								},
 							},
 						},
-						Name: "name",
+						Name: "case",
 					},
 					Value: nil,
-				}, &ast.Property{
+				}},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   34,
+					},
+					File:   "testing.flux",
+					Source: "inspect = (case) => {\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n    pass = dif |> assertEmpty()\n    return {\n        fn:    tc.fn,\n        input: tc.input\n        want:  tc.want,\n        got:   got,\n        diff:  dif,\n        pass:  pass,\n    }\n}",
+					Start: ast.Position{
+						Column: 1,
+						Line:   21,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   21,
+						},
+						File:   "testing.flux",
+						Source: "inspect",
+						Start: ast.Position{
+							Column: 1,
+							Line:   21,
+						},
+					},
+				},
+				Name: "inspect",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   34,
+						},
+						File:   "testing.flux",
+						Source: "(case) => {\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n    pass = dif |> assertEmpty()\n    return {\n        fn:    tc.fn,\n        input: tc.input\n        want:  tc.want,\n        got:   got,\n        diff:  dif,\n        pass:  pass,\n    }\n}",
+						Start: ast.Position{
+							Column: 11,
+							Line:   21,
+						},
+					},
+				},
+				Body: &ast.Block{
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 20,
-								Line:   12,
+								Column: 2,
+								Line:   34,
 							},
 							File:   "testing.flux",
-							Source: "input",
+							Source: "{\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n    pass = dif |> assertEmpty()\n    return {\n        fn:    tc.fn,\n        input: tc.input\n        want:  tc.want,\n        got:   got,\n        diff:  dif,\n        pass:  pass,\n    }\n}",
 							Start: ast.Position{
-								Column: 15,
-								Line:   12,
+								Column: 21,
+								Line:   21,
 							},
 						},
 					},
-					Key: &ast.Identifier{
+					Body: []ast.Statement{&ast.VariableAssignment{
 						BaseNode: ast.BaseNode{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 20,
-									Line:   12,
+									Column: 16,
+									Line:   22,
 								},
 								File:   "testing.flux",
-								Source: "input",
+								Source: "tc = case()",
 								Start: ast.Position{
-									Column: 15,
-									Line:   12,
+									Column: 5,
+									Line:   22,
 								},
 							},
 						},
-						Name: "input",
-					},
-					Value: nil,
-				}, &ast.Property{
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 7,
+										Line:   22,
+									},
+									File:   "testing.flux",
+									Source: "tc",
+									Start: ast.Position{
+										Column: 5,
+										Line:   22,
+									},
+								},
+							},
+							Name: "tc",
+						},
+						Init: &ast.CallExpression{
+							Arguments: nil,
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 16,
+										Line:   22,
+									},
+									File:   "testing.flux",
+									Source: "case()",
+									Start: ast.Position{
+										Column: 10,
+										Line:   22,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 14,
+											Line:   22,
+										},
+										File:   "testing.flux",
+										Source: "case",
+										Start: ast.Position{
+											Column: 10,
+											Line:   22,
+										},
+									},
+								},
+								Name: "case",
+							},
+						},
+					}, &ast.VariableAssignment{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 30,
+									Line:   23,
+								},
+								File:   "testing.flux",
+								Source: "got = tc.input |> tc.fn()",
+								Start: ast.Position{
+									Column: 5,
+									Line:   23,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 8,
+										Line:   23,
+									},
+									File:   "testing.flux",
+									Source: "got",
+									Start: ast.Position{
+										Column: 5,
+										Line:   23,
+									},
+								},
+							},
+							Name: "got",
+						},
+						Init: &ast.PipeExpression{
+							Argument: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 19,
+											Line:   23,
+										},
+										File:   "testing.flux",
+										Source: "tc.input",
+										Start: ast.Position{
+											Column: 11,
+											Line:   23,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   23,
+											},
+											File:   "testing.flux",
+											Source: "tc",
+											Start: ast.Position{
+												Column: 11,
+												Line:   23,
+											},
+										},
+									},
+									Name: "tc",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 19,
+												Line:   23,
+											},
+											File:   "testing.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 14,
+												Line:   23,
+											},
+										},
+									},
+									Name: "input",
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 30,
+										Line:   23,
+									},
+									File:   "testing.flux",
+									Source: "tc.input |> tc.fn()",
+									Start: ast.Position{
+										Column: 11,
+										Line:   23,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 30,
+											Line:   23,
+										},
+										File:   "testing.flux",
+										Source: "tc.fn()",
+										Start: ast.Position{
+											Column: 23,
+											Line:   23,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 28,
+												Line:   23,
+											},
+											File:   "testing.flux",
+											Source: "tc.fn",
+											Start: ast.Position{
+												Column: 23,
+												Line:   23,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 25,
+													Line:   23,
+												},
+												File:   "testing.flux",
+												Source: "tc",
+												Start: ast.Position{
+													Column: 23,
+													Line:   23,
+												},
+											},
+										},
+										Name: "tc",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 28,
+													Line:   23,
+												},
+												File:   "testing.flux",
+												Source: "fn",
+												Start: ast.Position{
+													Column: 26,
+													Line:   23,
+												},
+											},
+										},
+										Name: "fn",
+									},
+								},
+							},
+						},
+					}, &ast.VariableAssignment{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 37,
+									Line:   24,
+								},
+								File:   "testing.flux",
+								Source: "dif = got |> diff(want: tc.want)",
+								Start: ast.Position{
+									Column: 5,
+									Line:   24,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 8,
+										Line:   24,
+									},
+									File:   "testing.flux",
+									Source: "dif",
+									Start: ast.Position{
+										Column: 5,
+										Line:   24,
+									},
+								},
+							},
+							Name: "dif",
+						},
+						Init: &ast.PipeExpression{
+							Argument: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 14,
+											Line:   24,
+										},
+										File:   "testing.flux",
+										Source: "got",
+										Start: ast.Position{
+											Column: 11,
+											Line:   24,
+										},
+									},
+								},
+								Name: "got",
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 37,
+										Line:   24,
+									},
+									File:   "testing.flux",
+									Source: "got |> diff(want: tc.want)",
+									Start: ast.Position{
+										Column: 11,
+										Line:   24,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 36,
+												Line:   24,
+											},
+											File:   "testing.flux",
+											Source: "want: tc.want",
+											Start: ast.Position{
+												Column: 23,
+												Line:   24,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 36,
+													Line:   24,
+												},
+												File:   "testing.flux",
+												Source: "want: tc.want",
+												Start: ast.Position{
+													Column: 23,
+													Line:   24,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 27,
+														Line:   24,
+													},
+													File:   "testing.flux",
+													Source: "want",
+													Start: ast.Position{
+														Column: 23,
+														Line:   24,
+													},
+												},
+											},
+											Name: "want",
+										},
+										Value: &ast.MemberExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 36,
+														Line:   24,
+													},
+													File:   "testing.flux",
+													Source: "tc.want",
+													Start: ast.Position{
+														Column: 29,
+														Line:   24,
+													},
+												},
+											},
+											Object: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 31,
+															Line:   24,
+														},
+														File:   "testing.flux",
+														Source: "tc",
+														Start: ast.Position{
+															Column: 29,
+															Line:   24,
+														},
+													},
+												},
+												Name: "tc",
+											},
+											Property: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 36,
+															Line:   24,
+														},
+														File:   "testing.flux",
+														Source: "want",
+														Start: ast.Position{
+															Column: 32,
+															Line:   24,
+														},
+													},
+												},
+												Name: "want",
+											},
+										},
+									}},
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 37,
+											Line:   24,
+										},
+										File:   "testing.flux",
+										Source: "diff(want: tc.want)",
+										Start: ast.Position{
+											Column: 18,
+											Line:   24,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 22,
+												Line:   24,
+											},
+											File:   "testing.flux",
+											Source: "diff",
+											Start: ast.Position{
+												Column: 18,
+												Line:   24,
+											},
+										},
+									},
+									Name: "diff",
+								},
+							},
+						},
+					}, &ast.VariableAssignment{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   25,
+								},
+								File:   "testing.flux",
+								Source: "pass = dif |> assertEmpty()",
+								Start: ast.Position{
+									Column: 5,
+									Line:   25,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 9,
+										Line:   25,
+									},
+									File:   "testing.flux",
+									Source: "pass",
+									Start: ast.Position{
+										Column: 5,
+										Line:   25,
+									},
+								},
+							},
+							Name: "pass",
+						},
+						Init: &ast.PipeExpression{
+							Argument: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   25,
+										},
+										File:   "testing.flux",
+										Source: "dif",
+										Start: ast.Position{
+											Column: 12,
+											Line:   25,
+										},
+									},
+								},
+								Name: "dif",
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 32,
+										Line:   25,
+									},
+									File:   "testing.flux",
+									Source: "dif |> assertEmpty()",
+									Start: ast.Position{
+										Column: 12,
+										Line:   25,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 32,
+											Line:   25,
+										},
+										File:   "testing.flux",
+										Source: "assertEmpty()",
+										Start: ast.Position{
+											Column: 19,
+											Line:   25,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 30,
+												Line:   25,
+											},
+											File:   "testing.flux",
+											Source: "assertEmpty",
+											Start: ast.Position{
+												Column: 19,
+												Line:   25,
+											},
+										},
+									},
+									Name: "assertEmpty",
+								},
+							},
+						},
+					}, &ast.ReturnStatement{
+						Argument: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 6,
+										Line:   33,
+									},
+									File:   "testing.flux",
+									Source: "{\n        fn:    tc.fn,\n        input: tc.input\n        want:  tc.want,\n        got:   got,\n        diff:  dif,\n        pass:  pass,\n    }",
+									Start: ast.Position{
+										Column: 12,
+										Line:   26,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   27,
+										},
+										File:   "testing.flux",
+										Source: "fn:    tc.fn",
+										Start: ast.Position{
+											Column: 9,
+											Line:   27,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   27,
+											},
+											File:   "testing.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 9,
+												Line:   27,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 21,
+												Line:   27,
+											},
+											File:   "testing.flux",
+											Source: "tc.fn",
+											Start: ast.Position{
+												Column: 16,
+												Line:   27,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   27,
+												},
+												File:   "testing.flux",
+												Source: "tc",
+												Start: ast.Position{
+													Column: 16,
+													Line:   27,
+												},
+											},
+										},
+										Name: "tc",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 21,
+													Line:   27,
+												},
+												File:   "testing.flux",
+												Source: "fn",
+												Start: ast.Position{
+													Column: 19,
+													Line:   27,
+												},
+											},
+										},
+										Name: "fn",
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 24,
+											Line:   28,
+										},
+										File:   "testing.flux",
+										Source: "input: tc.input",
+										Start: ast.Position{
+											Column: 9,
+											Line:   28,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 14,
+												Line:   28,
+											},
+											File:   "testing.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 9,
+												Line:   28,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 24,
+												Line:   28,
+											},
+											File:   "testing.flux",
+											Source: "tc.input",
+											Start: ast.Position{
+												Column: 16,
+												Line:   28,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   28,
+												},
+												File:   "testing.flux",
+												Source: "tc",
+												Start: ast.Position{
+													Column: 16,
+													Line:   28,
+												},
+											},
+										},
+										Name: "tc",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 24,
+													Line:   28,
+												},
+												File:   "testing.flux",
+												Source: "input",
+												Start: ast.Position{
+													Column: 19,
+													Line:   28,
+												},
+											},
+										},
+										Name: "input",
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   29,
+										},
+										File:   "testing.flux",
+										Source: "want:  tc.want",
+										Start: ast.Position{
+											Column: 9,
+											Line:   29,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   29,
+											},
+											File:   "testing.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 9,
+												Line:   29,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 23,
+												Line:   29,
+											},
+											File:   "testing.flux",
+											Source: "tc.want",
+											Start: ast.Position{
+												Column: 16,
+												Line:   29,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   29,
+												},
+												File:   "testing.flux",
+												Source: "tc",
+												Start: ast.Position{
+													Column: 16,
+													Line:   29,
+												},
+											},
+										},
+										Name: "tc",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   29,
+												},
+												File:   "testing.flux",
+												Source: "want",
+												Start: ast.Position{
+													Column: 19,
+													Line:   29,
+												},
+											},
+										},
+										Name: "want",
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 19,
+											Line:   30,
+										},
+										File:   "testing.flux",
+										Source: "got:   got",
+										Start: ast.Position{
+											Column: 9,
+											Line:   30,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   30,
+											},
+											File:   "testing.flux",
+											Source: "got",
+											Start: ast.Position{
+												Column: 9,
+												Line:   30,
+											},
+										},
+									},
+									Name: "got",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 19,
+												Line:   30,
+											},
+											File:   "testing.flux",
+											Source: "got",
+											Start: ast.Position{
+												Column: 16,
+												Line:   30,
+											},
+										},
+									},
+									Name: "got",
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 19,
+											Line:   31,
+										},
+										File:   "testing.flux",
+										Source: "diff:  dif",
+										Start: ast.Position{
+											Column: 9,
+											Line:   31,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   31,
+											},
+											File:   "testing.flux",
+											Source: "diff",
+											Start: ast.Position{
+												Column: 9,
+												Line:   31,
+											},
+										},
+									},
+									Name: "diff",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 19,
+												Line:   31,
+											},
+											File:   "testing.flux",
+											Source: "dif",
+											Start: ast.Position{
+												Column: 16,
+												Line:   31,
+											},
+										},
+									},
+									Name: "dif",
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 20,
+											Line:   32,
+										},
+										File:   "testing.flux",
+										Source: "pass:  pass",
+										Start: ast.Position{
+											Column: 9,
+											Line:   32,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   32,
+											},
+											File:   "testing.flux",
+											Source: "pass",
+											Start: ast.Position{
+												Column: 9,
+												Line:   32,
+											},
+										},
+									},
+									Name: "pass",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   32,
+											},
+											File:   "testing.flux",
+											Source: "pass",
+											Start: ast.Position{
+												Column: 16,
+												Line:   32,
+											},
+										},
+									},
+									Name: "pass",
+								},
+							}},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   33,
+								},
+								File:   "testing.flux",
+								Source: "return {\n        fn:    tc.fn,\n        input: tc.input\n        want:  tc.want,\n        got:   got,\n        diff:  dif,\n        pass:  pass,\n    }",
+								Start: ast.Position{
+									Column: 5,
+									Line:   26,
+								},
+							},
+						},
+					}},
+				},
+				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 26,
-								Line:   12,
+								Column: 16,
+								Line:   21,
 							},
 							File:   "testing.flux",
-							Source: "want",
+							Source: "case",
 							Start: ast.Position{
-								Column: 22,
-								Line:   12,
+								Column: 12,
+								Line:   21,
 							},
 						},
 					},
@@ -1183,53 +2351,18 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 26,
-									Line:   12,
+									Column: 16,
+									Line:   21,
 								},
 								File:   "testing.flux",
-								Source: "want",
+								Source: "case",
 								Start: ast.Position{
-									Column: 22,
-									Line:   12,
+									Column: 12,
+									Line:   21,
 								},
 							},
 						},
-						Name: "want",
-					},
-					Value: nil,
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 34,
-								Line:   12,
-							},
-							File:   "testing.flux",
-							Source: "testFn",
-							Start: ast.Position{
-								Column: 28,
-								Line:   12,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 34,
-									Line:   12,
-								},
-								File:   "testing.flux",
-								Source: "testFn",
-								Start: ast.Position{
-									Column: 28,
-									Line:   12,
-								},
-							},
-						},
-						Name: "testFn",
+						Name: "case",
 					},
 					Value: nil,
 				}},

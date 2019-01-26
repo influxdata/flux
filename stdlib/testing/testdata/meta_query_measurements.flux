@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string
@@ -22,6 +24,7 @@ inData = "
 ,,2,2018-05-22T19:53:26Z,9223372036854775807,inodes_total,disk2,disk1s1,apfs,host.local,/
 ,,2,2018-05-22T19:53:36Z,9223372036854775807,inodes_total,disk2,disk1s1,apfs,host.local,/
 "
+
 outData = "
 #datatype,string,long,string,string
 #group,false,false,false,false
@@ -33,12 +36,13 @@ outData = "
 "
 
 t_meta_query_measurements = (table=<-) =>
-  table
-    |> range(start:2018-05-22T19:53:26Z)
-    |> group(columns: ["_measurement"])
-    |> distinct(column: "_measurement")
-    |> group()
-testing.test(name: "meta_query_measurements",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_meta_query_measurements)
+	(table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> group(columns: ["_measurement"])
+		|> distinct(column: "_measurement")
+		|> group())
+
+test _meta_query_measurements = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_meta_query_measurements})
+
+testing.run(case: _meta_query_measurements)

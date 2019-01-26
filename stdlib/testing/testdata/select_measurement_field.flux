@@ -1,6 +1,8 @@
+package main
+ 
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
@@ -38,6 +40,7 @@ inData = "
 ,,3,2018-05-22T19:54:06Z,2.598876953125,used_percent,swap,host1.local
 ,,3,2018-05-22T19:54:16Z,2.6416015625,used_percent,swap,host1.local
 "
+
 outData = "
 #datatype,string,long,dateTime:RFC3339,string,dateTime:RFC3339,double
 #group,false,false,true,true,false,false
@@ -52,14 +55,16 @@ outData = "
 "
 
 t_select_measurement_field = (table=<-) =>
-  table
-  |> range(start: 2018-05-22T19:53:26Z)
-  |> filter(fn: (r) => r._measurement ==  "system" and r._field == "load1")
-  |> group(columns: ["_measurement", "_start"])
-  |> map(fn: (r) => ({_time: r._time, load1:r._value}))
-  |> yield(name:"0")
+	(table
+		|> range(start: 2018-05-22T19:53:26Z)
+		|> filter(fn: (r) =>
+			(r._measurement == "system" and r._field == "load1"))
+		|> group(columns: ["_measurement", "_start"])
+		|> map(fn: (r) =>
+			({_time: r._time, load1: r._value}))
+		|> yield(name: "0"))
 
-testing.test(name: "select_measurement_field",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_select_measurement_field)
+test _select_measurement_field = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_select_measurement_field})
+
+testing.run(case: _select_measurement_field)
