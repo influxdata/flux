@@ -182,6 +182,11 @@ func (f *formatter) formatOptionStatement(n *OptionStatement) {
 	f.formatNode(n.Assignment)
 }
 
+func (f *formatter) formatTestStatment(n *TestStatement) {
+	f.writeString("test ")
+	f.formatNode(n.Assignment)
+}
+
 func (f *formatter) formatVariableAssignment(n *VariableAssignment) {
 	f.formatNode(n.ID)
 	f.writeString(" = ")
@@ -496,6 +501,8 @@ func (f *formatter) formatNode(n Node) {
 		f.formatImportDeclaration(n)
 	case *OptionStatement:
 		f.formatOptionStatement(n)
+	case *TestStatement:
+		f.formatTestStatment(n)
 	case *ExpressionStatement:
 		f.formatExpressionStatement(n)
 	case *ReturnStatement:

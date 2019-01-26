@@ -123,6 +123,35 @@ func TestJSONMarshal(t *testing.T) {
 			want: `{"type":"BuiltinStatement","id":{"type":"Identifier","name":"task"}}`,
 		},
 		{
+			name: "test statement",
+			node: &ast.TestStatement{
+				Assignment: &ast.VariableAssignment{
+					ID: &ast.Identifier{Name: "mean"},
+					Init: &ast.ObjectExpression{
+						Properties: []*ast.Property{
+							{
+								Key: &ast.Identifier{
+									Name: "want",
+								},
+								Value: &ast.IntegerLiteral{
+									Value: 0,
+								},
+							},
+							{
+								Key: &ast.Identifier{
+									Name: "got",
+								},
+								Value: &ast.IntegerLiteral{
+									Value: 0,
+								},
+							},
+						},
+					},
+				},
+			},
+			want: `{"type":"TestStatement","assignment":{"type":"VariableAssignment","id":{"type":"Identifier","name":"mean"},"init":{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"want"},"value":{"type":"IntegerLiteral","value":"0"}},{"type":"Property","key":{"type":"Identifier","name":"got"},"value":{"type":"IntegerLiteral","value":"0"}}]}}}`,
+		},
+		{
 			name: "qualified option statement",
 			node: &ast.OptionStatement{
 				Assignment: &ast.MemberAssignment{

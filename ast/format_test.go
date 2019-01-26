@@ -109,6 +109,10 @@ a[i]`,
 			script: `option alert.state = "Warning"`,
 		},
 		{
+			name:   "test statement",
+			script: `test mean = {want: 0, got: 0}`,
+		},
+		{
 			name: "nil_value_as_default",
 			script: `foo = (arg=[]) =>
 	(1)`,
