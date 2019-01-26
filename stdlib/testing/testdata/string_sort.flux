@@ -32,7 +32,7 @@ t_string_sort = (table=<-) =>
     |> range(start:2018-05-22T19:53:26Z)
     |> sort()
 
-testing.test(name: "string_sort",
+testing.run(name: "string_sort",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_string_sort)

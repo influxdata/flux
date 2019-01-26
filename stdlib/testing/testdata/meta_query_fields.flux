@@ -53,7 +53,7 @@ t_meta_query_fields = (table=<-) =>
     |> group(columns: ["_field"])
     |> distinct(column: "_field")
     |> group()
-testing.test(name: "meta_query_fields",
+testing.run(name: "meta_query_fields",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_meta_query_fields)

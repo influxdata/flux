@@ -51,7 +51,7 @@ t_pivot = (table=<-) =>
   |> pivot(rowKey: ["_time"], columnKey: ["_measurement", "_field"], valueColumn: "_value")
   |> yield(name:"0")
 
-testing.test(name: "pivot",
+testing.run(name: "pivot",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_pivot)

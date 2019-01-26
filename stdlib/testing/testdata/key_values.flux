@@ -43,7 +43,7 @@ t_key_values = (table=<-) =>
   table
   |> keyValues(keyColumns: ["_value"])
 
-testing.test(name: "key_values",
+testing.run(name: "key_values",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_key_values,

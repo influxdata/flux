@@ -33,7 +33,7 @@ t_window_null = (table=<-) => table
 		|> range(start: -5m)
     |> window(every: 30s)
 
-testing.test(
+testing.run(
 	name: "window_null",
 	input: testing.loadStorage(csv: inData),
 	want: testing.loadMem(csv: outData),

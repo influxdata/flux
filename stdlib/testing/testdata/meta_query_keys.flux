@@ -121,7 +121,7 @@ t_meta_query_keys = (table=<-) => {
     |> yield(name:"1")
   return union(tables: [zero, one])
 }
-testing.test(name: "meta_query_keys",
+testing.run(name: "meta_query_keys",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_meta_query_keys)

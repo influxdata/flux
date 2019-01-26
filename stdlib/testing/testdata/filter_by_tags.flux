@@ -41,7 +41,7 @@ t_filter_by_tags = (table=<-) =>
   |> map(fn: (r) => ({_time: r._time, io_time: r._value}))
   |> yield(name:"0")
 
-testing.test(name: "filter_by_tags",
+testing.run(name: "filter_by_tags",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_filter_by_tags)

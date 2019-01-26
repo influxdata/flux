@@ -63,7 +63,7 @@ t_cumulative_sum_default = (table=<-) => table
   |> range(start: 2018-05-15T00:00:00Z)
   |> cumulativeSum()
 
-testing.test(
+testing.run(
     name: "cumulative_sum_default",
     input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),

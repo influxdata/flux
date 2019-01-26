@@ -30,7 +30,7 @@ t_covariance = (tables=<-) =>
     |> range(start: 2018-05-22T19:53:26Z)
     |> covariance(columns: ["x", "y"])
 
-testing.test(name: "t_covariance",
+testing.run(name: "t_covariance",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_covariance)

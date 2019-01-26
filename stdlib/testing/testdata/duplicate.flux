@@ -44,7 +44,7 @@ t_duplicate = (table=<-) =>
 	|> range(start:2018-05-22T19:53:26Z)
 	|> duplicate(column: "host", as: "host_new")
 
-testing.test(name: "duplicate",
+testing.run(name: "duplicate",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_duplicate)

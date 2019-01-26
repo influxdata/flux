@@ -53,7 +53,7 @@ t_limit = (table=<-) =>
     |> range(start: 2018-05-22T19:00:00Z, stop: 2018-05-22T20:00:00Z)
     |> limit(n: 2, offset: 1)
 
-testing.test(name: "limit_offset",
+testing.run(name: "limit_offset",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_limit)

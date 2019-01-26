@@ -1136,7 +1136,7 @@ t_show_all_tag_keys = (table=<-) =>
   |> distinct()
   |> map(fn:(r) => r._value)
 
-testing.test(name: "show_all_tag_keys",
+testing.run(name: "show_all_tag_keys",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_show_all_tag_keys)

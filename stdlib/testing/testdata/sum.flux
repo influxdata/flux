@@ -59,7 +59,7 @@ t_sum = (table=<-) => table
   |> range(start: 2018-12-01T00:00:00Z)
   |> sum()
 
-testing.test(name: "sum",
+testing.run(name: "sum",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_sum)

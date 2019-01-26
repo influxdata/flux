@@ -43,7 +43,7 @@ outData = "
 t_fill_float = (table=<-) => table
   |> fill(column: "_time", value: 2077-12-19T22:14:00Z)
 
-testing.test(
+testing.run(
     name: "fill",
     input: testing.loadStorage(csv: inData),
     want: testing.loadMem(csv: outData),

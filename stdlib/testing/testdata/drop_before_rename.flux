@@ -42,7 +42,7 @@ drop_before_rename = (table=<-) =>
 	|> yield(name: "0")
 
 
-testing.test(name: "drop_before_rename",
+testing.run(name: "drop_before_rename",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: drop_before_rename)

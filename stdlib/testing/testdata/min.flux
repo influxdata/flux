@@ -46,7 +46,7 @@ outData = "
 t_min = (table=<-) =>
   table
   |> min()
-testing.test(name: "min",
+testing.run(name: "min",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_min)

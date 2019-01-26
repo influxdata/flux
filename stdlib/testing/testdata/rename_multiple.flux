@@ -57,7 +57,7 @@ t_rename_multiple = (table=<-) =>
 	|> rename(columns: {old:"new"})
 	|> rename(columns: {new: "new1"})
 
-testing.test(name: "rename_multiple",
+testing.run(name: "rename_multiple",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_rename_multiple)

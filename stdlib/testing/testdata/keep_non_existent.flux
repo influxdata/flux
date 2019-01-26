@@ -40,7 +40,7 @@ t_keep = (table=<-) =>
 	|> range(start: 2018-05-22T19:53:26Z)
 	|> keep(columns: ["non_existent"])
 
-testing.test(name: "keep_non_existent",
+testing.run(name: "keep_non_existent",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_keep)

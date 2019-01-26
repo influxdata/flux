@@ -176,7 +176,7 @@ t_set = (table=<-) => table
   |> range(start: 2018-01-01T00:00:00Z)
   |> set(key: "t0", value: "server01")
 
-testing.test(name: "set",
+testing.run(name: "set",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_set)

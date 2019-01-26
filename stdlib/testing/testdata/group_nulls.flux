@@ -99,7 +99,7 @@ t_group = (table=<-) =>
   table
   |> group(columns: ["host"])
 
-testing.test(name: "group",
+testing.run(name: "group",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_group)

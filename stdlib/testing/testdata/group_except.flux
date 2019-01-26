@@ -35,7 +35,7 @@ t_group_except = (table=<-) =>
     |> group(columns:["_measurement", "_time", "_value"], mode: "except")
     |> max()
 
-testing.test(name: "group_except",
+testing.run(name: "group_except",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_group_except)

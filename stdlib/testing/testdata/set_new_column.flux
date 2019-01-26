@@ -176,7 +176,7 @@ t_set_new_column = (table=<-) => table
   |> range(start: 2018-01-01T00:00:00Z)
   |> set(key: "t1", value: "server01")
 
-testing.test(name: "set_new_column",
+testing.run(name: "set_new_column",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_set_new_column)

@@ -33,7 +33,7 @@ t_difference_panic = (table=<-) =>
     |> filter(fn: (r) => r._field == "no_exist")
     |> difference()
 
-testing.test(name: "difference_panic",
+testing.run(name: "difference_panic",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_difference_panic)

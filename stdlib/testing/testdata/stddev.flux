@@ -51,7 +51,7 @@ t_stddev = (table=<-) => table
   |> range(start: 2018-12-01T00:00:00Z)
   |> stddev()
 
-testing.test(name: "stddev",
+testing.run(name: "stddev",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_stddev)

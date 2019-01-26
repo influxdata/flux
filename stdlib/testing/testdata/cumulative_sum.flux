@@ -65,7 +65,7 @@ t_cumulative_sum = (table=<-) => table
   |> range(start: 2018-05-20T00:00:00Z)
   |> cumulativeSum(columns: ["v0", "v1"])
 
-testing.test(name: "cumulative_sum",
+testing.run(name: "cumulative_sum",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_cumulative_sum)

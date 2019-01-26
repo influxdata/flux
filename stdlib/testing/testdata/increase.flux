@@ -50,7 +50,7 @@ t_increase = (table=<-) =>
     |> range(start:2018-05-22T19:53:26Z)
     |> increase(columns:["counter"])
 
-testing.test(
+testing.run(
     name: "increase",
     input: testing.loadStorage(csv: inData),
     want: testing.loadMem(csv: outData),

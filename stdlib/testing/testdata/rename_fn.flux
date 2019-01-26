@@ -55,7 +55,7 @@ t_rename = (table=<-) =>
 	|> rename(fn: (column) => column)
 	|> drop(fn: (column) => column == "_start" or column == "_stop")
 
-testing.test(name: "rename_fn",
+testing.run(name: "rename_fn",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_rename)

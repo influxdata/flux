@@ -51,7 +51,7 @@ t_mean = (table=<-) => table
   |> range(start: 2018-12-01T00:00:00Z)
   |> mean()
 
-testing.test(name: "mean",
+testing.run(name: "mean",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_mean)

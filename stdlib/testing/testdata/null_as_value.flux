@@ -17,7 +17,7 @@ t_null_as_value = (table=<-) =>
     |> range(start:2018-05-22T19:53:26Z)
 	|> filter(fn: (r) => r._value == null)
 
-testing.test(name: "null_as_value",
+testing.run(name: "null_as_value",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_null_as_value)

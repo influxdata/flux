@@ -42,7 +42,7 @@ t_histogram_quantile = (table=<-) =>
            countColumn:"count",
            valueColumn:"quant")
 
-testing.test(name: "histogram_quantile",
+testing.run(name: "histogram_quantile",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_histogram_quantile)

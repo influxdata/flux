@@ -38,7 +38,7 @@ t_highestCurrent = (table=<-) =>
     |> range(start: 2018-11-07T00:00:00Z)
     |> highestCurrent(n: 3, groupColumns: ["_measurement", "host"])
 
-testing.test(name: "highestCurrent",
+testing.run(name: "highestCurrent",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_highestCurrent)

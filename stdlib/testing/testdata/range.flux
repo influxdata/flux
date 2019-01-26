@@ -42,7 +42,7 @@ t_range = (table=<-) =>
     |> range(start:2018-05-22T19:53:36Z)
 
 
-testing.test(name: "range",
+testing.run(name: "range",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_range)

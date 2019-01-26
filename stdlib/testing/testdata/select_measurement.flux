@@ -53,7 +53,7 @@ t_select_measurement = (table=<-) =>
   |> map(fn: (r) => ({_time: r._time, used_percent:r._value}))
   |> yield(name:"0")
 
-testing.test(name: "select_measurement",
+testing.run(name: "select_measurement",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_select_measurement)

@@ -48,7 +48,7 @@ t_columns = (table=<-) =>
   |> range(start: 2018-05-20T19:53:26Z)
   |> columns()
 
-testing.test(name: "columns",
+testing.run(name: "columns",
     input: testing.loadStorage(csv: inData),
     want: testing.loadMem(csv: outData),
     testFn: t_columns)

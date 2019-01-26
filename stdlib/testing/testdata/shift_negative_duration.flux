@@ -62,7 +62,7 @@ outData = "
 t_shift_negative_duration = (table=<-) => table
   |> shift(shift: -5m)
 
-testing.test(name: "shift_negative_duration",
+testing.run(name: "shift_negative_duration",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_shift_negative_duration)

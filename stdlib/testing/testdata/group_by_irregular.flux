@@ -43,7 +43,7 @@ t_group_by_irregular = (table=<-) =>
   |> group(columns: ["runID"])
   |> yield(name:"r1")
 
-testing.test(name: "group_by_irregular",
+testing.run(name: "group_by_irregular",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_group_by_irregular)

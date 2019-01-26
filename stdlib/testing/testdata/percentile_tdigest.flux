@@ -27,7 +27,7 @@ t_percentile = (table=<-) => table
     |> range(start: 2018-01-01T00:00:00Z)
     |> percentile(percentile: 0.75, method: "estimate_tdigest")
 
-testing.test(
+testing.run(
     name: "percentile_tdigest",
     input: testing.loadStorage(csv: inData),
     want: testing.loadMem(csv: outData),

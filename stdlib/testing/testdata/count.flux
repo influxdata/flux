@@ -76,7 +76,7 @@ t_count = (table=<-) => table
   |> range(start: 2018-12-01T00:00:00Z)
   |> count()
 
-testing.test(
+testing.run(
     name: "count",
     input: testing.loadStorage(csv: inData),
     want: testing.loadMem(csv: outData),

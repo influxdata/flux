@@ -44,7 +44,7 @@ t_state_duration = (table=<-) =>
   |> range(start: 2018-05-22T19:53:26Z)
   |> stateDuration(fn:(r) => r._value > 80)
 
-testing.test(name: "state_duration",
+testing.run(name: "state_duration",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_state_duration)

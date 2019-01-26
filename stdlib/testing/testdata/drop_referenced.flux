@@ -40,7 +40,7 @@ drop_referenced = (table=<-) =>
 	|> drop(columns: ["_field"])
 	|> filter(fn: (r) => r._field == "usage_guest")
 
-testing.test(name: "drop_referenced",
+testing.run(name: "drop_referenced",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: drop_referenced)

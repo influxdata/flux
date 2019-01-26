@@ -37,7 +37,7 @@ t_highestAverage = (table=<-) =>
   table
     |> highestAverage(n: 3, groupColumns: ["_measurement", "host"])
 
-testing.test(name: "highestAverage",
+testing.run(name: "highestAverage",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_highestAverage)

@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   15,
 				},
 				File:   "testing.flux",
-				Source: "package testing\n\nimport c \"csv\"\n\nbuiltin assertEquals\nbuiltin assertEmpty\nbuiltin diff\n\nloadStorage = (csv) => c.from(csv: csv)\nloadMem = (csv) => c.from(csv: csv)\n\ntest = (name, input, want, testFn) => {\n    got = input |> testFn()\n    return got |> diff(want: want) |> yield(name: name) |> assertEmpty()\n}",
+				Source: "package testing\n\nimport c \"csv\"\n\nbuiltin assertEquals\nbuiltin assertEmpty\nbuiltin diff\n\nloadStorage = (csv) => c.from(csv: csv)\nloadMem = (csv) => c.from(csv: csv)\n\nrun = (name, input, want, testFn) => {\n    got = input |> testFn()\n    return got |> diff(want: want) |> yield(name: name) |> assertEmpty()\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -597,7 +597,7 @@ var pkgAST = &ast.Package{
 						Line:   15,
 					},
 					File:   "testing.flux",
-					Source: "test = (name, input, want, testFn) => {\n    got = input |> testFn()\n    return got |> diff(want: want) |> yield(name: name) |> assertEmpty()\n}",
+					Source: "run = (name, input, want, testFn) => {\n    got = input |> testFn()\n    return got |> diff(want: want) |> yield(name: name) |> assertEmpty()\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   12,
@@ -609,18 +609,18 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 5,
+							Column: 4,
 							Line:   12,
 						},
 						File:   "testing.flux",
-						Source: "test",
+						Source: "run",
 						Start: ast.Position{
 							Column: 1,
 							Line:   12,
 						},
 					},
 				},
-				Name: "test",
+				Name: "run",
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
@@ -633,7 +633,7 @@ var pkgAST = &ast.Package{
 						File:   "testing.flux",
 						Source: "(name, input, want, testFn) => {\n    got = input |> testFn()\n    return got |> diff(want: want) |> yield(name: name) |> assertEmpty()\n}",
 						Start: ast.Position{
-							Column: 8,
+							Column: 7,
 							Line:   12,
 						},
 					},
@@ -649,7 +649,7 @@ var pkgAST = &ast.Package{
 							File:   "testing.flux",
 							Source: "{\n    got = input |> testFn()\n    return got |> diff(want: want) |> yield(name: name) |> assertEmpty()\n}",
 							Start: ast.Position{
-								Column: 39,
+								Column: 38,
 								Line:   12,
 							},
 						},
@@ -1097,13 +1097,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 13,
+								Column: 12,
 								Line:   12,
 							},
 							File:   "testing.flux",
 							Source: "name",
 							Start: ast.Position{
-								Column: 9,
+								Column: 8,
 								Line:   12,
 							},
 						},
@@ -1113,13 +1113,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 13,
+									Column: 12,
 									Line:   12,
 								},
 								File:   "testing.flux",
 								Source: "name",
 								Start: ast.Position{
-									Column: 9,
+									Column: 8,
 									Line:   12,
 								},
 							},
@@ -1132,13 +1132,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 20,
+								Column: 19,
 								Line:   12,
 							},
 							File:   "testing.flux",
 							Source: "input",
 							Start: ast.Position{
-								Column: 15,
+								Column: 14,
 								Line:   12,
 							},
 						},
@@ -1148,13 +1148,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 20,
+									Column: 19,
 									Line:   12,
 								},
 								File:   "testing.flux",
 								Source: "input",
 								Start: ast.Position{
-									Column: 15,
+									Column: 14,
 									Line:   12,
 								},
 							},
@@ -1167,13 +1167,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 26,
+								Column: 25,
 								Line:   12,
 							},
 							File:   "testing.flux",
 							Source: "want",
 							Start: ast.Position{
-								Column: 22,
+								Column: 21,
 								Line:   12,
 							},
 						},
@@ -1183,13 +1183,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 26,
+									Column: 25,
 									Line:   12,
 								},
 								File:   "testing.flux",
 								Source: "want",
 								Start: ast.Position{
-									Column: 22,
+									Column: 21,
 									Line:   12,
 								},
 							},
@@ -1202,13 +1202,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 34,
+								Column: 33,
 								Line:   12,
 							},
 							File:   "testing.flux",
 							Source: "testFn",
 							Start: ast.Position{
-								Column: 28,
+								Column: 27,
 								Line:   12,
 							},
 						},
@@ -1218,13 +1218,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 34,
+									Column: 33,
 									Line:   12,
 								},
 								File:   "testing.flux",
 								Source: "testFn",
 								Start: ast.Position{
-									Column: 28,
+									Column: 27,
 									Line:   12,
 								},
 							},

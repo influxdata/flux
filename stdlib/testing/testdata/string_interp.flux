@@ -26,7 +26,7 @@ t_string_interp = (table=<-) =>
   table
     |> range(start:2018-05-22T19:53:26Z)
     |> filter(fn: (r) => r._field == fieldSelect)
-testing.test(name: "string_interp",
+testing.run(name: "string_interp",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_string_interp)

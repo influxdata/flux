@@ -60,7 +60,7 @@ t_influxFieldsAsCols = (table=<-) =>
   |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z)
   |> influxFieldsAsCols()
   |> yield(name:"0")
-testing.test(name: "influxFieldsAsCols",
+testing.run(name: "influxFieldsAsCols",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_influxFieldsAsCols)

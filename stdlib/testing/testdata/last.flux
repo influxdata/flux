@@ -46,7 +46,7 @@ outData = "
 t_last = (table=<-) =>
   table
   |> last()
-testing.test(name: "last",
+testing.run(name: "last",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_last)

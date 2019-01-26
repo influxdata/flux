@@ -26,7 +26,7 @@ t_map = (table=<-) =>
   table
   |> map(fn: (r) => ({newValue: float(v: r._value)}))
 
-testing.test(name: "map",
+testing.run(name: "map",
             input: testing.loadStorage(csv: inData),
             want: testing.loadMem(csv: outData),
             testFn: t_map)
