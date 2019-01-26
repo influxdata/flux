@@ -34,6 +34,7 @@ func (*ImportDeclaration) node() {}
 
 func (*OptionStatement) node()            {}
 func (*BuiltinStatement) node()           {}
+func (*TestStatement) node()              {}
 func (*ExpressionStatement) node()        {}
 func (*ReturnStatement) node()            {}
 func (*MemberAssignment) node()           {}
@@ -75,6 +76,7 @@ type Statement interface {
 
 func (*OptionStatement) stmt()          {}
 func (*BuiltinStatement) stmt()         {}
+func (*TestStatement) stmt()            {}
 func (*ExpressionStatement) stmt()      {}
 func (*ReturnStatement) stmt()          {}
 func (*NativeVariableAssignment) stmt() {}
@@ -299,6 +301,26 @@ func (s *BuiltinStatement) Copy() Node {
 	*ns = *s
 
 	ns.ID = s.ID.Copy().(*Identifier)
+
+	return ns
+}
+
+type TestStatement struct {
+	loc `json:"-"`
+
+	Assignment *NativeVariableAssignment `json:"assignment"`
+}
+
+func (s *TestStatement) NodeType() string { return "TestStatement" }
+
+func (s *TestStatement) Copy() Node {
+	if s == nil {
+		return s
+	}
+	ns := new(TestStatement)
+	*ns = *s
+
+	ns.Assignment = s.Assignment.Copy().(*NativeVariableAssignment)
 
 	return ns
 }

@@ -13,6 +13,7 @@ The parser directly implements the following grammar.
     StatementList                  = { Statement } .
     Statement                      = OptionAssignment
                                    | BuiltinStatement
+                                   | TestStatement
                                    | IdentStatement
                                    | ReturnStatement
                                    | ExpressionStatement .
@@ -21,6 +22,7 @@ The parser directly implements the following grammar.
     OptionAssignmentSuffix         = AssignStatement
                                    | "." identifier AssignStatement .
     BuiltinStatement               = "builtin" identifier .
+    TestStatement                  = "test" identifier AssignStatement .
     AssignStatement                = "=" Expression .
     ReturnStatement                = "return" Expression .
     ExpressionStatement            = Expression .

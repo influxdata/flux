@@ -163,6 +163,8 @@ func (p *parser) parseStatement() ast.Statement {
 		return p.parseOptionAssignment()
 	case token.BUILTIN:
 		return p.parseBuiltinStatement()
+	case token.TEST:
+		return p.parseTestStatement()
 	case token.RETURN:
 		return p.parseReturnStatement()
 	case token.INT, token.FLOAT, token.STRING, token.DIV,
@@ -246,6 +248,28 @@ func (p *parser) parseBuiltinStatement() *ast.BuiltinStatement {
 				p.s.File().Position(pos),
 				locEnd(ident),
 			),
+		},
+	}
+}
+
+func (p *parser) parseTestStatement() *ast.TestStatement {
+	pos, _ := p.expect(token.TEST)
+	id := p.parseIdentifier()
+	ex := p.parseAssignStatement()
+	return &ast.TestStatement{
+		BaseNode: ast.BaseNode{
+			Loc: p.sourceLocation(
+				p.s.File().Position(pos),
+				locEnd(ex),
+			),
+		},
+		Assignment: &ast.VariableAssignment{
+			BaseNode: p.baseNode(p.sourceLocation(
+				locStart(id),
+				locEnd(ex),
+			)),
+			ID:   id,
+			Init: ex,
 		},
 	}
 }

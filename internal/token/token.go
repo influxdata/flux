@@ -18,6 +18,7 @@ const (
 	RETURN
 	OPTION
 	BUILTIN
+	TEST
 
 	// Identifiers and literals.
 	IDENT
@@ -78,6 +79,7 @@ var tokenStrings = []string{
 	"RETURN",
 	"OPTION",
 	"BUILTIN",
+	"TEST",
 	"IDENT",
 	"INT",
 	"FLOAT",

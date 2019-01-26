@@ -153,6 +153,8 @@ func (itrp *Interpreter) doStatement(stmt semantic.Statement, scope Scope) (valu
 	case *semantic.BuiltinStatement:
 		// Nothing to do
 		return nil, nil
+	case *semantic.TestStatement:
+		return itrp.doTestStatement(s, scope)
 	case *semantic.NativeVariableAssignment:
 		return itrp.doVariableAssignment(s, scope)
 	case *semantic.MemberAssignment:
@@ -177,6 +179,10 @@ func (itrp *Interpreter) doStatement(stmt semantic.Statement, scope Scope) (valu
 }
 
 func (itrp *Interpreter) doOptionStatement(s *semantic.OptionStatement, scope Scope) (values.Value, error) {
+	return itrp.doAssignment(s.Assignment, scope)
+}
+
+func (itrp *Interpreter) doTestStatement(s *semantic.TestStatement, scope Scope) (values.Value, error) {
 	return itrp.doAssignment(s.Assignment, scope)
 }
 

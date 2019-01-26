@@ -113,6 +113,35 @@ func TestJSONMarshal(t *testing.T) {
 			want: `{"type":"OptionStatement","assignment":{"type":"MemberAssignment","member":{"type":"MemberExpression","object":{"type":"IdentifierExpression","name":"alert"},"property":"state"},"init":{"type":"StringLiteral","value":"Warning"}}}`,
 		},
 		{
+			name: "test statement",
+			node: &semantic.TestStatement{
+				Assignment: &semantic.NativeVariableAssignment{
+					Identifier: &semantic.Identifier{Name: "mean"},
+					Init: &semantic.ObjectExpression{
+						Properties: []*semantic.Property{
+							{
+								Key: &semantic.Identifier{
+									Name: "want",
+								},
+								Value: &semantic.IntegerLiteral{
+									Value: 0,
+								},
+							},
+							{
+								Key: &semantic.Identifier{
+									Name: "got",
+								},
+								Value: &semantic.IntegerLiteral{
+									Value: 0,
+								},
+							},
+						},
+					},
+				},
+			},
+			want: `{"type":"TestStatement","assignment":{"type":"NativeVariableAssignment","identifier":{"type":"Identifier","name":"mean"},"init":{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"want"},"value":{"type":"IntegerLiteral","value":"0"}},{"type":"Property","key":{"type":"Identifier","name":"got"},"value":{"type":"IntegerLiteral","value":"0"}}]}}}`,
+		},
+		{
 			name: "expression statement",
 			node: &semantic.ExpressionStatement{
 				Expression: &semantic.StringLiteral{Value: "hello"},

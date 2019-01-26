@@ -121,6 +121,8 @@ func analyzeStatment(s ast.Statement) (Statement, error) {
 		return analyzeOptionStatement(s)
 	case *ast.BuiltinStatement:
 		return analyzeBuiltinStatement(s)
+	case *ast.TestStatement:
+		return analyzeTestStatement(s)
 	case *ast.ExpressionStatement:
 		return analyzeExpressionStatement(s)
 	case *ast.ReturnStatement:
@@ -183,6 +185,16 @@ func analyzeBuiltinStatement(builtin *ast.BuiltinStatement) (*BuiltinStatement, 
 	return &BuiltinStatement{
 		loc: loc(builtin.Location()),
 		ID:  ident,
+	}, nil
+}
+func analyzeTestStatement(test *ast.TestStatement) (*TestStatement, error) {
+	assignment, err := analyzeVariableAssignment(test.Assignment)
+	if err != nil {
+		return nil, err
+	}
+	return &TestStatement{
+		loc:        loc(test.Location()),
+		Assignment: assignment,
 	}, nil
 }
 func analyzeExpressionStatement(expr *ast.ExpressionStatement) (*ExpressionStatement, error) {
