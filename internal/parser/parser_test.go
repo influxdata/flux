@@ -4210,7 +4210,24 @@ string"
 				},
 			},
 		},
+		//{
+		//	name: "conditional expression",
+		//	raw: `n < 2 ? n : n + fib(n: n - 1)`,
+		//	want: nil,
+		//	//	&ast.File{
+		//	//	BaseNode: base("1:1", "1:12"),
+		//	//	Body: []ast.Statement{
+		//	//		&ast.ExpressionStatement{
+		//	//
+		//	//		},
+		//	//	},
+		//	//},
+		//},
 	} {
+		//if tt.name != "conditional expression" {
+		//	continue
+		//}
+
 		runFn(tt.name, func(tb testing.TB) {
 			defer func() {
 				if err := recover(); err != nil {

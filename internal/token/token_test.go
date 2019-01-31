@@ -52,6 +52,7 @@ func TestToken_String(t *testing.T) {
 		token.COMMA:        "COMMA",
 		token.DOT:          "DOT",
 		token.COLON:        "COLON",
+		token.QUESTION:     "QUESTION",
 		token.PIPE_FORWARD: "PIPE_FORWARD",
 		token.PIPE_RECEIVE: "PIPE_RECEIVE",
 	}

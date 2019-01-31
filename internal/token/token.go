@@ -53,6 +53,7 @@ const (
 	COMMA
 	DOT
 	COLON
+	QUESTION
 	PIPE_FORWARD
 	PIPE_RECEIVE
 )
@@ -109,6 +110,7 @@ var tokenStrings = []string{
 	"COMMA",
 	"DOT",
 	"COLON",
+	"QUESTION",
 	"PIPE_FORWARD",
 	"PIPE_RECEIVE",
 }

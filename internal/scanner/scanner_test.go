@@ -82,6 +82,7 @@ var common = []TokenPattern{
 	{s: `,`, tok: token.COMMA, lit: `,`},
 	{s: `.`, tok: token.DOT, lit: `.`},
 	{s: `:`, tok: token.COLON, lit: `:`},
+	{s: `?`, tok: token.QUESTION, lit: `?`},
 	{s: `|>`, tok: token.PIPE_FORWARD, lit: `|>`},
 }
 

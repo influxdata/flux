@@ -216,6 +216,22 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		v.cs.AddTypeConst(l, Bool, n.Location())
 		v.cs.AddTypeConst(r, Bool, n.Location())
 		return Bool, nil
+	case *ConditionalExpression:
+		t, err := v.lookup(n.Test)
+		if err != nil {
+			return nil, err
+		}
+		c, err := v.lookup(n.Consequent)
+		if err != nil {
+			return nil, err
+		}
+		a, err := v.lookup(n.Alternate)
+		if err != nil {
+			return nil, err
+		}
+		v.cs.AddTypeConst(t, Bool, n.Location())
+		v.cs.AddTypeConst(c, a, n.Location())
+		return c, nil
 	case *UnaryExpression:
 		t, err := v.lookup(n.Argument)
 		if err != nil {

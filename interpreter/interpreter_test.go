@@ -641,6 +641,14 @@ func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
 				values.NewInt(1),
 			},
 		},
+		{
+			name: "conditional expression",
+			builtins: []string{`a = 30`},
+			program: `a < 0 ? -10 : 10`,
+			want: []values.Value{
+				values.NewInt(10),
+			},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc

@@ -104,6 +104,7 @@ import "github.com/influxdata/flux/internal/token"
 		"{" => { s.token = token.LBRACE; fbreak; };
 		"}" => { s.token = token.RBRACE; fbreak; };
 		":" => { s.token = token.COLON; fbreak; };
+		"?" => { s.token = token.QUESTION; fbreak; };
 		"|>" => { s.token = token.PIPE_FORWARD; fbreak; };
 		"," => { s.token = token.COMMA; fbreak; };
 		"." => { s.token = token.DOT; fbreak; };

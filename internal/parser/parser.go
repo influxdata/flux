@@ -320,6 +320,7 @@ func (p *parser) parseExpressionSuffix(expr ast.Expression) ast.Expression {
 	p.repeat(p.parseAdditiveExpressionSuffix(&expr))
 	p.repeat(p.parseComparisonExpressionSuffix(&expr))
 	p.repeat(p.parseLogicalExpressionSuffix(&expr))
+	p.repeat(p.parseConditionalExpressionSuffix(&expr))
 	return expr
 }
 
@@ -345,6 +346,33 @@ func (p *parser) parseExpressionList() []ast.Expression {
 }
 
 func (p *parser) parseLogicalExpression() ast.Expression {
+	e := p.parseLogicalAtom()
+	switch _, tok, _ := p.peek(); tok {
+	case token.QUESTION:
+		t, f := p.parseConditionalSuffix()
+		return &ast.ConditionalExpression{
+			BaseNode:  p.baseNode(p.sourceLocation(
+				locStart(e),
+				locEnd(f),
+			)),
+			Test: e,
+			Consequent: t,
+			Alternate: f,
+		}
+	default:
+		return e
+	}
+}
+
+func (p *parser) parseConditionalSuffix() (ast.Expression, ast.Expression) {
+	p.consume() // consume the "?"
+	t := p.parseLogicalAtom()
+	p.expect(token.COLON)
+	f := p.parseLogicalAtom()
+	return t, f
+}
+
+func (p *parser) parseLogicalAtom() ast.Expression {
 	expr := p.parseUnaryLogicalExpression()
 	p.repeat(p.parseLogicalExpressionSuffix(&expr))
 	return expr
@@ -367,6 +395,25 @@ func (p *parser) parseLogicalExpressionSuffix(expr *ast.Expression) func() bool 
 			)),
 		}
 		return true
+	}
+}
+
+func (p *parser) parseConditionalExpressionSuffix(expr *ast.Expression) func() bool {
+	return func() bool {
+		if _, tok, _ := p.peek(); tok == token.QUESTION {
+			t, f := p.parseConditionalSuffix()
+			*expr = &ast.ConditionalExpression{
+				Test: *expr,
+				Consequent: t,
+				Alternate: f,
+				BaseNode: p.baseNode(p.sourceLocation(
+					locStart(*expr),
+					locEnd(f),
+				)),
+			}
+			return true
+		}
+		return false
 	}
 }
 

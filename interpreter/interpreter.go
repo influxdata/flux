@@ -342,6 +342,18 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope Scope) (va
 		default:
 			return nil, fmt.Errorf("invalid logical operator %v", e.Operator)
 		}
+	case *semantic.ConditionalExpression:
+		t, err := itrp.doExpression(e.Test, scope)
+		if err != nil {
+			return nil, err
+		}
+		test := t.Bool()
+		if test {
+			return itrp.doExpression(e.Consequent, scope)
+		} else {
+			return itrp.doExpression(e.Alternate, scope)
+		}
+
 	case *semantic.FunctionExpression:
 		// Capture type information
 		types := make(map[semantic.Node]semantic.Type)
