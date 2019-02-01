@@ -162,9 +162,9 @@ func unifyKinds(kinds map[Tvar]Kind, tvl, tvr Tvar, l, r Kind) (Substitution, er
 }
 
 func unifyVarAndType(kinds map[Tvar]Kind, tv Tvar, t PolyType) (Substitution, error) {
-	if t.occurs(tv) {
-		return nil, fmt.Errorf("type var %v occurs in %v creating a cycle", tv, t)
-	}
+	//if t.occurs(tv) {
+	//	return nil, fmt.Errorf("type var %v occurs in %v creating a cycle", tv, t)
+	//}
 	unifyKindsByType(kinds, tv, t)
 	return Substitution{tv: t}, nil
 }

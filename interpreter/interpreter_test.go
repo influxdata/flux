@@ -649,6 +649,37 @@ func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
 				values.NewInt(10),
 			},
 		},
+		{
+			name: "z combinator",
+			builtins: []string{`
+               z =
+                 (f) =>
+                   ((g) => g(g: g))(g: (g) => {
+			         h = g
+			         return f(g: (g) => h(g: h)(g: g))
+		           })
+               `,`
+               fib = z(f: (g) => {
+			     fib = g
+			     return  (g) => {
+			       n = g
+			       return n < 2 ? n : fib(g: n - 1) + fib(g: n - 2)
+		         }
+		       })
+			`},
+			program: `fib(g: 9)`,
+			want: []values.Value{
+				values.NewInt(34),
+			},
+		},
+		{
+			name: "fibonacci",
+			builtins: []string{`fib = (n) => n < 2 ? n : fib(n: n - 1) + fib(n: n - 2)`},
+			program: `fib(n: 7)`,
+			want: []values.Value{
+				values.NewInt(13),
+			},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc

@@ -62,6 +62,16 @@ func (v ConstraintGenerator) Visit(node Node) Visitor {
 	if *v.err != nil {
 		return nil
 	}
+
+	if va, ok := node.(*NativeVariableAssignment); ok {
+		nodeVar := v.cs.annotations[va.Init].Var
+		scheme := Scheme{
+			T: nodeVar,
+			//Free: TvarSet{nodeVar},
+		}
+		v.env.Set(va.Identifier.Name, scheme)
+	}
+
 	return v
 }
 
@@ -80,6 +90,20 @@ func (v ConstraintGenerator) Done(node Node) {
 	if *v.err == nil && a.Err != nil {
 		*v.err = a.Err
 	}
+
+	//if ce, ok := node.(*ConditionalExpression); ok && *v.err != nil {
+	//	if ct := v.cs.annotations[ce.Consequent].Type; ct != nil {
+	//		a.Type = ct
+	//		v.cs.annotations[node] = a
+	//		v.cs.annotations[ce.Alternate] = a
+	//	} else if at := v.cs.annotations[ce.Alternate].Type; at != nil {
+	//		a.Type = at
+	//		v.cs.annotations[node] = a
+	//		v.cs.annotations[ce.Consequent] = a
+	//	}
+	//
+	//	*v.err = nil
+	//}
 }
 
 // lookup returns the poly type of the visited node.
