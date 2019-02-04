@@ -106,11 +106,6 @@ median = (method="estimate_tdigest", compression=0.0, tables=<-) =>
     tables
         |> percentile(percentile:0.5, method:method, compression:compression)
 
-// influxFieldsAsCols aligns data into time-aligned tuples.
-influxFieldsAsCols = (tables=<-) =>
-    tables
-        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-
 // stateCount computes the number of consecutive records in a given state.
 // The state is defined via the function fn. For each consecutive point for
 // which the expression evaluates as true, the state count will be incremented

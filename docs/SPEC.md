@@ -2557,27 +2557,6 @@ Output:
 |              null              |  null |  null |   null    |    null   |  9.0  |  15.0   |
 | 1970-01-01T00:00:00.000000003Z |  null |  null |   null    |   13.0    |  12.0 |  11.0   |
 
-#### InfluxFieldsAsCols
-
-InfluxFieldsAsCols is a special application of pivot that will automatically align fields within each measurement that have the same timestamp.
-Its definition is: 
-
-```
- influxFieldsAsCols = (tables=<-) =>
-     tables
-         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-```
-
-Example: 
-
-```
-from(bucket:"telegraf/autogen")
-  |> filter(fn: (r) => r._measurement == "cpu")
-  |> range(start: -1h)
-  |> influxFieldsAsCols()
-  |> keep(columns: ["_time", "cpu", "usage_idle", "usage_user"])
-```
-
 #### Join
 
 Join merges two or more input streams, whose values are equal on a set of common columns, into a single output stream.
