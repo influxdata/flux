@@ -208,7 +208,7 @@ func TestController_ExecuteQuery_Failure(t *testing.T) {
 	}
 }
 
-func TestController_CancelQuery(t *testing.T) {
+func TestController_CancelQuery_Ready(t *testing.T) {
 	executor := mock.NewExecutor()
 	executor.ExecuteFn = func(context.Context, *plan.PlanSpec, *memory.Allocator) (map[string]flux.Result, error) {
 		// Return an empty result.
@@ -235,8 +235,14 @@ func TestController_CancelQuery(t *testing.T) {
 	// We do not care about the results, just that the query is ready.
 	<-q.Ready()
 
-	// Cancel the query. This should result in it switching to the canceled state.
+	// Cancel the query. This is after the executor has already run,
+	// but before we finalize the query. This ensures that canceling
+	// at this stage will report the canceled state.
 	q.Cancel()
+
+	if want, got := Canceled, q.(*Query).State(); want != got {
+		t.Errorf("unexpected state: want=%s got=%s", want, got)
+	}
 
 	// Now finish the query by using Done.
 	q.Done()
@@ -254,6 +260,152 @@ func TestController_CancelQuery(t *testing.T) {
 
 	if got, exp := int(metric.Gauge.GetValue()), 0; got != exp {
 		t.Fatalf("unexpected metric value: exp=%d got=%d", exp, got)
+	}
+}
+
+func TestController_CancelQuery_Execute(t *testing.T) {
+	executor := mock.NewExecutor()
+	executor.ExecuteFn = func(ctx context.Context, spec *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, error) {
+		timer := time.NewTimer(100 * time.Microsecond)
+		select {
+		case <-timer.C:
+			// Return an empty result.
+			return map[string]flux.Result{}, nil
+		case <-ctx.Done():
+			timer.Stop()
+			return nil, ctx.Err()
+		}
+	}
+
+	ctrl := New(Config{})
+	ctrl.executor = executor
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer func() {
+		if err := ctrl.Shutdown(ctx); err != nil {
+			t.Fatal(err)
+		}
+		cancel()
+	}()
+
+	// Run a query and then wait for it to be ready.
+	q, err := ctrl.Query(context.Background(), mockCompiler)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	go q.Cancel()
+
+	// We do not care about the results, just that the query is ready.
+	// We should not receive any results as the cancellation should
+	// have signaled to the executor to cancel the query.
+	_, ok := <-q.Ready()
+	if ok {
+		t.Error("unexpected result from the query")
+	}
+
+	// The state should be canceled.
+	if want, got := Canceled, q.(*Query).State(); want != got {
+		t.Errorf("unexpected state: want=%s got=%s", want, got)
+	}
+
+	// Now finish the query by using Done.
+	q.Done()
+
+	// Verify the metrics say there are no queries.
+	gauge, err := ctrl.metrics.all.GetMetricWithLabelValues()
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	metric := &dto.Metric{}
+	if err := gauge.Write(metric); err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	if got, exp := int(metric.Gauge.GetValue()), 0; got != exp {
+		t.Fatalf("unexpected metric value: exp=%d got=%d", exp, got)
+	}
+}
+
+// Start queries and then immediately cancel them to try and trigger
+// a race condition while testing under the race detector.
+func TestController_CancelQuery_Concurrent(t *testing.T) {
+	executor := mock.NewExecutor()
+	executor.ExecuteFn = func(ctx context.Context, spec *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, error) {
+		return map[string]flux.Result{}, nil
+	}
+
+	ctrl := New(Config{})
+	ctrl.executor = executor
+
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		if err := ctrl.Shutdown(ctx); err != nil {
+			t.Fatal(err)
+		}
+		cancel()
+	}()
+
+	// Run a bunch of queries and cancel them. We don't really know
+	// when they will be canceled, so we are mostly testing that
+	// canceling at any point during the query does not cause a problem
+	// like a data race.
+	queries := make(chan flux.Query, 100)
+	var creatorWaitGroup syncutil.WaitGroup
+	for i := 0; i < 5; i++ {
+		creatorWaitGroup.Do(func() error {
+			for j := 0; j < 100; j++ {
+				q, err := ctrl.Query(context.Background(), mockCompiler)
+				if err != nil {
+					return err
+				}
+				queries <- q
+			}
+			return nil
+		})
+	}
+
+	var (
+		cancelWaitGroup syncutil.WaitGroup
+		doneWaitGroup   syncutil.WaitGroup
+	)
+	for i := 0; i < 5; i++ {
+		cancelWaitGroup.Do(func() error {
+			for q := range queries {
+				// Cancel the query. This may or may not cancel
+				// it as the results may have already been reported,
+				// but we will attempt this anyway.
+				q.Cancel()
+
+				// Assign a variable so the closure
+				// captures the current query rather than
+				// the one from the for loop that will
+				// change.
+				query := q
+				doneWaitGroup.Do(func() error {
+					<-query.Ready()
+					query.Done()
+					return nil
+				})
+			}
+			return nil
+		})
+	}
+
+	if err := creatorWaitGroup.Wait(); err != nil {
+		t.Errorf("unexpected error: %s", err)
+	}
+	close(queries)
+
+	// All of the cancellations should finish.
+	if err := cancelWaitGroup.Wait(); err != nil {
+		t.Errorf("unexpected error: %s", err)
+	}
+
+	// Wait for all of the queries to finish.
+	if err := doneWaitGroup.Wait(); err != nil {
+		t.Errorf("unexpected error: %s", err)
 	}
 }
 
