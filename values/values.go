@@ -158,9 +158,14 @@ func New(v interface{}) Value {
 }
 
 func NewNull(t semantic.Type) Value {
-	return value{
-		t: t,
-		v: nil,
+	switch t {
+	case semantic.Float:
+		return Float{Null: true}
+	default:
+		return value{
+			t: t,
+			v: nil,
+		}
 	}
 }
 
@@ -183,10 +188,7 @@ func NewUInt(v uint64) Value {
 	}
 }
 func NewFloat(v float64) Value {
-	return value{
-		t: semantic.Float,
-		v: v,
-	}
+	return Float{Value: v}
 }
 func NewBool(v bool) Value {
 	return value{

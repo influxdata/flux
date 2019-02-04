@@ -16,7 +16,7 @@ type Func interface {
 	EvalString(input values.Object) (string, error)
 	EvalInt(input values.Object) (int64, error)
 	EvalUInt(input values.Object) (uint64, error)
-	EvalFloat(input values.Object) (float64, error)
+	EvalFloat(input values.Object) (values.Float, error)
 	EvalBool(input values.Object) (bool, error)
 	EvalTime(input values.Object) (values.Time, error)
 	EvalDuration(input values.Object) (values.Duration, error)
@@ -31,7 +31,7 @@ type Evaluator interface {
 	EvalString(scope Scope) string
 	EvalInt(scope Scope) int64
 	EvalUInt(scope Scope) uint64
-	EvalFloat(scope Scope) float64
+	EvalFloat(scope Scope) values.Float
 	EvalBool(scope Scope) bool
 	EvalTime(scope Scope) values.Time
 	EvalDuration(scope Scope) values.Duration
@@ -87,7 +87,7 @@ func (c compiledFn) Eval(input values.Object) (values.Value, error) {
 	case semantic.UInt:
 		return values.NewUInt(c.root.EvalUInt(c.inputScope)), nil
 	case semantic.Float:
-		return values.NewFloat(c.root.EvalFloat(c.inputScope)), nil
+		return c.root.EvalFloat(c.inputScope), nil
 	case semantic.Bool:
 		return values.NewBool(c.root.EvalBool(c.inputScope)), nil
 	case semantic.Time:
@@ -131,9 +131,9 @@ func (c compiledFn) EvalUInt(input values.Object) (uint64, error) {
 	}
 	return c.root.EvalUInt(c.inputScope), nil
 }
-func (c compiledFn) EvalFloat(input values.Object) (float64, error) {
+func (c compiledFn) EvalFloat(input values.Object) (values.Float, error) {
 	if err := c.buildScope(input); err != nil {
-		return 0, err
+		return values.Float{Null: true}, err
 	}
 	return c.root.EvalFloat(c.inputScope), nil
 }
@@ -192,8 +192,8 @@ func (s Scope) GetInt(name string) int64 {
 func (s Scope) GetUInt(name string) uint64 {
 	return s[name].UInt()
 }
-func (s Scope) GetFloat(name string) float64 {
-	return s[name].Float()
+func (s Scope) GetFloat(name string) values.Float {
+	return s[name].(values.Float)
 }
 func (s Scope) GetBool(name string) bool {
 	return s[name].Bool()
@@ -234,7 +234,7 @@ func eval(e Evaluator, scope Scope) values.Value {
 	case semantic.UInt:
 		return values.NewUInt(e.EvalUInt(scope))
 	case semantic.Float:
-		return values.NewFloat(e.EvalFloat(scope))
+		return e.EvalFloat(scope)
 	case semantic.Bool:
 		return values.NewBool(e.EvalBool(scope))
 	case semantic.Time:
@@ -285,10 +285,10 @@ func (e *blockEvaluator) EvalUInt(scope Scope) uint64 {
 	e.eval(scope)
 	return e.value.UInt()
 }
-func (e *blockEvaluator) EvalFloat(scope Scope) float64 {
+func (e *blockEvaluator) EvalFloat(scope Scope) values.Float {
 	values.CheckKind(e.t.Nature(), semantic.Float)
 	e.eval(scope)
-	return e.value.Float()
+	return e.value.(values.Float)
 }
 func (e *blockEvaluator) EvalBool(scope Scope) bool {
 	values.CheckKind(e.t.Nature(), semantic.Bool)
@@ -356,7 +356,7 @@ func (e *declarationEvaluator) EvalUInt(scope Scope) uint64 {
 	e.eval(scope)
 	return scope.GetUInt(e.id)
 }
-func (e *declarationEvaluator) EvalFloat(scope Scope) float64 {
+func (e *declarationEvaluator) EvalFloat(scope Scope) values.Float {
 	e.eval(scope)
 	return scope.GetFloat(e.id)
 }
@@ -407,7 +407,7 @@ func (e *objEvaluator) EvalInt(scope Scope) int64 {
 func (e *objEvaluator) EvalUInt(scope Scope) uint64 {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *objEvaluator) EvalFloat(scope Scope) float64 {
+func (e *objEvaluator) EvalFloat(scope Scope) values.Float {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
 }
 func (e *objEvaluator) EvalBool(scope Scope) bool {
@@ -456,7 +456,7 @@ func (e *logicalEvaluator) EvalInt(scope Scope) int64 {
 func (e *logicalEvaluator) EvalUInt(scope Scope) uint64 {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *logicalEvaluator) EvalFloat(scope Scope) float64 {
+func (e *logicalEvaluator) EvalFloat(scope Scope) values.Float {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
 }
 func (e *logicalEvaluator) EvalBool(scope Scope) bool {
@@ -511,8 +511,8 @@ func (e *binaryEvaluator) EvalInt(scope Scope) int64 {
 func (e *binaryEvaluator) EvalUInt(scope Scope) uint64 {
 	return e.f(e.eval(scope)).UInt()
 }
-func (e *binaryEvaluator) EvalFloat(scope Scope) float64 {
-	return e.f(e.eval(scope)).Float()
+func (e *binaryEvaluator) EvalFloat(scope Scope) values.Float {
+	return e.f(e.eval(scope)).(values.Float)
 }
 func (e *binaryEvaluator) EvalBool(scope Scope) bool {
 	return e.f(e.eval(scope)).Bool()
@@ -555,9 +555,13 @@ func (e *unaryEvaluator) EvalInt(scope Scope) int64 {
 func (e *unaryEvaluator) EvalUInt(scope Scope) uint64 {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *unaryEvaluator) EvalFloat(scope Scope) float64 {
+func (e *unaryEvaluator) EvalFloat(scope Scope) values.Float {
 	// There is only one float unary operator
-	return -e.node.EvalFloat(scope)
+	v := e.node.EvalFloat(scope)
+	if !v.Null {
+		v.Value = -v.Value
+	}
+	return v
 }
 func (e *unaryEvaluator) EvalBool(scope Scope) bool {
 	// There is only one boolean unary operator
@@ -601,7 +605,7 @@ func (e *integerEvaluator) EvalInt(scope Scope) int64 {
 func (e *integerEvaluator) EvalUInt(scope Scope) uint64 {
 	return uint64(e.i)
 }
-func (e *integerEvaluator) EvalFloat(scope Scope) float64 {
+func (e *integerEvaluator) EvalFloat(scope Scope) values.Float {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
 }
 func (e *integerEvaluator) EvalBool(scope Scope) bool {
@@ -644,7 +648,7 @@ func (e *stringEvaluator) EvalInt(scope Scope) int64 {
 func (e *stringEvaluator) EvalUInt(scope Scope) uint64 {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *stringEvaluator) EvalFloat(scope Scope) float64 {
+func (e *stringEvaluator) EvalFloat(scope Scope) values.Float {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
 }
 func (e *stringEvaluator) EvalBool(scope Scope) bool {
@@ -687,7 +691,7 @@ func (e *regexpEvaluator) EvalInt(scope Scope) int64 {
 func (e *regexpEvaluator) EvalUInt(scope Scope) uint64 {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *regexpEvaluator) EvalFloat(scope Scope) float64 {
+func (e *regexpEvaluator) EvalFloat(scope Scope) values.Float {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
 }
 func (e *regexpEvaluator) EvalBool(scope Scope) bool {
@@ -730,7 +734,7 @@ func (e *booleanEvaluator) EvalInt(scope Scope) int64 {
 func (e *booleanEvaluator) EvalUInt(scope Scope) uint64 {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *booleanEvaluator) EvalFloat(scope Scope) float64 {
+func (e *booleanEvaluator) EvalFloat(scope Scope) values.Float {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
 }
 func (e *booleanEvaluator) EvalBool(scope Scope) bool {
@@ -773,8 +777,8 @@ func (e *floatEvaluator) EvalInt(scope Scope) int64 {
 func (e *floatEvaluator) EvalUInt(scope Scope) uint64 {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *floatEvaluator) EvalFloat(scope Scope) float64 {
-	return e.f
+func (e *floatEvaluator) EvalFloat(scope Scope) values.Float {
+	return values.Float{Value: e.f}
 }
 func (e *floatEvaluator) EvalBool(scope Scope) bool {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Bool))
@@ -816,7 +820,7 @@ func (e *timeEvaluator) EvalInt(scope Scope) int64 {
 func (e *timeEvaluator) EvalUInt(scope Scope) uint64 {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *timeEvaluator) EvalFloat(scope Scope) float64 {
+func (e *timeEvaluator) EvalFloat(scope Scope) values.Float {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
 }
 func (e *timeEvaluator) EvalBool(scope Scope) bool {
@@ -859,7 +863,7 @@ func (e *identifierEvaluator) EvalInt(scope Scope) int64 {
 func (e *identifierEvaluator) EvalUInt(scope Scope) uint64 {
 	return scope.GetUInt(e.name)
 }
-func (e *identifierEvaluator) EvalFloat(scope Scope) float64 {
+func (e *identifierEvaluator) EvalFloat(scope Scope) values.Float {
 	return scope.GetFloat(e.name)
 }
 func (e *identifierEvaluator) EvalBool(scope Scope) bool {
@@ -901,8 +905,8 @@ func (e *valueEvaluator) EvalInt(scope Scope) int64 {
 func (e *valueEvaluator) EvalUInt(scope Scope) uint64 {
 	return e.value.UInt()
 }
-func (e *valueEvaluator) EvalFloat(scope Scope) float64 {
-	return e.value.Float()
+func (e *valueEvaluator) EvalFloat(scope Scope) values.Float {
+	return e.value.(values.Float)
 }
 func (e *valueEvaluator) EvalBool(scope Scope) bool {
 	return e.value.Bool()
@@ -948,9 +952,9 @@ func (e *memberEvaluator) EvalUInt(scope Scope) uint64 {
 	v, _ := e.object.EvalObject(scope).Get(e.property)
 	return v.UInt()
 }
-func (e *memberEvaluator) EvalFloat(scope Scope) float64 {
+func (e *memberEvaluator) EvalFloat(scope Scope) values.Float {
 	v, _ := e.object.EvalObject(scope).Get(e.property)
-	return v.Float()
+	return v.(values.Float)
 }
 func (e *memberEvaluator) EvalBool(scope Scope) bool {
 	v, _ := e.object.EvalObject(scope).Get(e.property)
@@ -1003,9 +1007,9 @@ func (e *arrayEvaluator) EvalUInt(scope Scope) uint64 {
 	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
 	return v.UInt()
 }
-func (e *arrayEvaluator) EvalFloat(scope Scope) float64 {
+func (e *arrayEvaluator) EvalFloat(scope Scope) values.Float {
 	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
-	return v.Float()
+	return v.(values.Float)
 }
 func (e *arrayEvaluator) EvalBool(scope Scope) bool {
 	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
@@ -1063,8 +1067,8 @@ func (e *callEvaluator) EvalInt(scope Scope) int64 {
 func (e *callEvaluator) EvalUInt(scope Scope) uint64 {
 	return e.eval(scope).UInt()
 }
-func (e *callEvaluator) EvalFloat(scope Scope) float64 {
-	return e.eval(scope).Float()
+func (e *callEvaluator) EvalFloat(scope Scope) values.Float {
+	return e.eval(scope).(values.Float)
 }
 func (e *callEvaluator) EvalBool(scope Scope) bool {
 	return e.eval(scope).Bool()
@@ -1107,7 +1111,7 @@ func (e *functionEvaluator) EvalInt(scope Scope) int64 {
 func (e *functionEvaluator) EvalUInt(scope Scope) uint64 {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *functionEvaluator) EvalFloat(scope Scope) float64 {
+func (e *functionEvaluator) EvalFloat(scope Scope) values.Float {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
 }
 func (e *functionEvaluator) EvalBool(scope Scope) bool {
