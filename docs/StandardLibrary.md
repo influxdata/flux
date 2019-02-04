@@ -109,6 +109,7 @@ Others?
 
 - `json`
 - `databases`
+- `fieldsAsCols`
 - `tagValues`
 - `measurementTagValues`
 - `tagKeys`

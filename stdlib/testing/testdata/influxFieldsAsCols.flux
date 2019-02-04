@@ -1,4 +1,5 @@
 import "testing"
+import "influxdata/influxdb/v1"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -58,7 +59,7 @@ outData = "
 t_influxFieldsAsCols = (table=<-) =>
   table
   |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z)
-  |> influxFieldsAsCols()
+  |> v1.fieldsAsCols()
   |> yield(name:"0")
 testing.test(name: "influxFieldsAsCols",
             input: testing.loadStorage(csv: inData),

@@ -6,6 +6,11 @@ builtin json
 // Databases returns the list of available databases, it has no parameters.
 builtin databases
 
+// fieldsAsCols is a special application of pivot that will automatically align fields within each measurement that have the same timestamp.
+fieldsAsCols = (tables=<-) =>
+    tables
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+
 // TagValues returns the unique values for a given tag.
 // The return value is always a single table with a single column "_value".
 tagValues = (bucket, tag, predicate=(r) => true, start=-30d) =>
@@ -16,7 +21,7 @@ tagValues = (bucket, tag, predicate=(r) => true, start=-30d) =>
       |> distinct(column: tag)
       |> keep(columns: ["_value"])
 
-// MeasurementTagValues returns a single table with a single column "_value" that contains the 
+// MeasurementTagValues returns a single table with a single column "_value" that contains the
 // The return value is always a single table with a single column "_value".
 measurementTagValues = (bucket, measurement, tag) =>
     tagValues(bucket: bucket, tag: tag, predicate: (r) => r._measurement == measurement)
