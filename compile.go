@@ -42,6 +42,17 @@ type options struct {
 // Compile evaluates a Flux script producing a query Spec.
 // now parameter must be non-zero, that is the default now time should be set before compiling.
 func Compile(ctx context.Context, q string, now time.Time, opts ...Option) (*Spec, error) {
+	astPkg, err := Parse(q)
+	if err != nil {
+		return nil, err
+	}
+
+	return CompileAST(ctx, astPkg, now, opts...)
+}
+
+// CompileAST evaluates a Flux AST and produces a query Spec.
+// now parameter must be non-zero, that is the default now time should be set before compiling.
+func CompileAST(ctx context.Context, astPkg *ast.Package, now time.Time, opts ...Option) (*Spec, error) {
 	o := new(options)
 	for _, opt := range opts {
 		opt(o)
@@ -49,7 +60,7 @@ func Compile(ctx context.Context, q string, now time.Time, opts ...Option) (*Spe
 
 	s, _ := opentracing.StartSpanFromContext(ctx, "parse")
 
-	sideEffects, scope, err := Eval(q, SetOption(nowOption, nowFunc(now)))
+	sideEffects, scope, err := EvalAST(astPkg, SetOption(nowOption, nowFunc(now)))
 	if err != nil {
 		return nil, err
 	}
@@ -79,12 +90,27 @@ func Compile(ctx context.Context, q string, now time.Time, opts ...Option) (*Spe
 	return spec, nil
 }
 
-func Eval(flux string, opts ...ScopeMutator) ([]values.Value, interpreter.Scope, error) {
+// Parse parses a Flux script and produces an ast.Package.
+func Parse(flux string) (*ast.Package, error) {
 	astPkg := parser.ParseSource(flux)
 	if ast.Check(astPkg) > 0 {
-		return nil, nil, ast.GetError(astPkg)
+		return nil, ast.GetError(astPkg)
 	}
 
+	return astPkg, nil
+}
+
+// Eval accepts a Flux script and evaluates it to produce a set of side effects (as a slice of values) and a scope.
+func Eval(flux string, opts ...ScopeMutator) ([]values.Value, interpreter.Scope, error) {
+	astPkg, err := Parse(flux)
+	if err != nil {
+		return nil, nil, err
+	}
+	return EvalAST(astPkg, opts...)
+}
+
+// EvalAST accepts a Flux AST and evaluates it to produce a set of side effects (as a slice of values) and a scope.
+func EvalAST(astPkg *ast.Package, opts ...ScopeMutator) ([]values.Value, interpreter.Scope, error) {
 	semPkg, err := semantic.New(astPkg)
 	if err != nil {
 		return nil, nil, err
@@ -103,16 +129,17 @@ func Eval(flux string, opts ...ScopeMutator) ([]values.Value, interpreter.Scope,
 	}
 
 	return sideEffects, universe, nil
+
 }
 
-// SetOption returns a func that adds a var binding to a scope
+// SetOption returns a func that adds a var binding to a scope.
 func SetOption(name string, v values.Value) ScopeMutator {
 	return func(scope interpreter.Scope) {
 		scope.Set(name, v)
 	}
 }
 
-// ScopeMutator is any function that mutates the scope of an identifier
+// ScopeMutator is any function that mutates the scope of an identifier.
 type ScopeMutator = func(interpreter.Scope)
 
 func nowFunc(now time.Time) values.Function {

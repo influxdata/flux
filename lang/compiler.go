@@ -5,11 +5,13 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/ast"
 )
 
 const (
 	FluxCompilerType = "flux"
 	SpecCompilerType = "spec"
+	ASTCompilerType  = "ast"
 )
 
 // AddCompilerMappings adds the Flux specific compiler mappings.
@@ -48,4 +50,17 @@ func (c SpecCompiler) Compile(ctx context.Context) (*flux.Spec, error) {
 }
 func (c SpecCompiler) CompilerType() flux.CompilerType {
 	return SpecCompilerType
+}
+
+// ASTCompiler implements Compiler by producing a Spec from an AST.
+type ASTCompiler struct {
+	AST *ast.Package `json:"ast"`
+}
+
+func (c ASTCompiler) Compile(ctx context.Context) (*flux.Spec, error) {
+	return flux.CompileAST(ctx, c.AST, time.Now())
+}
+
+func (ASTCompiler) CompilerType() flux.CompilerType {
+	return ASTCompilerType
 }
