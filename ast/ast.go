@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"strconv"
 	"time"
 )
 
@@ -1128,6 +1129,38 @@ func (l *RegexpLiteral) Copy() Node {
 type Duration struct {
 	Magnitude int64  `json:"magnitude"`
 	Unit      string `json:"unit"`
+}
+
+func (l *Duration) Duration() (time.Duration, error) {
+	// TODO: This is temporary code until we have proper duration type that takes different months, DST, etc into account
+	var dur time.Duration
+	var err error
+	mag := l.Magnitude
+	unit := l.Unit
+
+	switch unit {
+	case "y":
+		mag *= 12
+		unit = "mo"
+		fallthrough
+	case "mo":
+		const weeksPerMonth = 365.25 / 12 / 7
+		mag = int64(float64(mag) * weeksPerMonth)
+		unit = "w"
+		fallthrough
+	case "w":
+		mag *= 7
+		unit = "d"
+		fallthrough
+	case "d":
+		mag *= 24
+		unit = "h"
+		fallthrough
+	default:
+		// ParseDuration will handle h, m, s, ms, us, ns.
+		dur, err = time.ParseDuration(strconv.FormatInt(mag, 10) + unit)
+	}
+	return dur, err
 }
 
 // DurationLiteral represents the elapsed time between two instants as an
