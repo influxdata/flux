@@ -55,8 +55,12 @@ func TestFormat(t *testing.T) {
 			script: `{"a": 1, b: 2}`,
 		},
 		{
-			name:   "member",
+			name:   "member ident",
 			script: `object.property`,
+		},
+		{
+			name:   "member string literal",
+			script: `object["property"]`,
 		},
 		{
 			name: "array",

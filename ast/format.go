@@ -312,7 +312,7 @@ func (f *formatter) formatMemberExpression(n *MemberExpression) {
 	if _, ok := n.Property.(*StringLiteral); ok {
 		f.writeRune('[')
 		f.formatNode(n.Property)
-		f.writeRune('[')
+		f.writeRune(']')
 	} else {
 		f.writeRune('.')
 		f.formatNode(n.Property)
