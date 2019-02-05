@@ -365,7 +365,7 @@ func constructValue(v reflect.Value) (jen.Code, error) {
 			lit := v.Interface().(ast.DateTimeLiteral)
 			fmtTime := lit.Value.Format(time.RFC3339Nano)
 			return constructStructValue(v, map[string]*jen.Statement{
-				"Value": jen.Qual("github.com/influxdata/flux/ast", "MustParseTime").Call(jen.Lit(fmtTime)),
+				"Value": jen.Qual("github.com/influxdata/flux/internal/parser", "MustParseTime").Call(jen.Lit(fmtTime)),
 			})
 		case "RegexpLiteral":
 			lit := v.Interface().(ast.RegexpLiteral)

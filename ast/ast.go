@@ -1158,7 +1158,10 @@ type Duration struct {
 	Unit      string `json:"unit"`
 }
 
-func (l *Duration) Duration() (time.Duration, error) {
+// toDuration returns a time.Duration corresponding to Duration.  It is an approximation, as months, etc
+// can't be properly figured out without knowing the time from when.
+// This may have to be modified to also accept a time.Time to make this exact.
+func toDuration(l Duration) (time.Duration, error) {
 	// TODO: This is temporary code until we have proper duration type that takes different months, DST, etc into account
 	var dur time.Duration
 	var err error
@@ -1215,6 +1218,24 @@ func (l *DurationLiteral) Copy() Node {
 	}
 	return nl
 }
+
+// Duration gives you a DurationLiteral from a time.Duration.
+// Currently this is an approximation, but since we accept time, it can be made exact.
+// TODO: makes this exact and not an approximation.
+// currently the time.Time is ignored
+func DurationFrom(l *DurationLiteral, _ time.Time) (time.Duration, error) {
+	var d time.Duration
+	for i := range l.Values {
+		tempD, err := toDuration(l.Values[i])
+		if err != nil {
+			return 0, err
+		}
+		d += tempD
+	}
+	return d, nil
+}
+
+// TODO: we need a "duration from" that takes a time and a durationliteral, and gives an exact time.Duration instead of an approximation
 
 // DateTimeLiteral represents an instant in time with nanosecond precision using
 // the syntax of golang's RFC3339 Nanosecond variant
