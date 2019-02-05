@@ -114,11 +114,56 @@ func ConvertFromKind(k semantic.Nature) flux.ColType {
 }
 
 func (f *rowFn) eval(row int, cr flux.ColReader) (values.Value, error) {
+	// TODO(affo) will remove this once null support for lambdas is provided
+	if f.anyNilReferenceInRow(row, cr) {
+		return nil, errors.New("null reference used in row function: skipping evaluation until null support is provided")
+	}
+
 	for _, r := range f.references {
 		f.record.Set(r, ValueForRow(cr, row, f.recordCols[r]))
 	}
 	f.inRecord.Set(f.recordName, f.record)
 	return f.preparedFn.Eval(f.inRecord)
+}
+
+func (f *rowFn) anyNilReferenceInRow(i int, cr flux.ColReader) bool {
+	for _, ref := range f.references {
+		j := ColIdx(ref, cr.Cols())
+		if j < 0 {
+			continue
+		}
+
+		switch cr.Cols()[j].Type {
+		case flux.TBool:
+			if cr.Bools(j).IsNull(i) {
+				return true
+			}
+		case flux.TInt:
+			if cr.Ints(j).IsNull(i) {
+				return true
+			}
+		case flux.TUInt:
+			if cr.UInts(j).IsNull(i) {
+				return true
+			}
+		case flux.TFloat:
+			if cr.Floats(j).IsNull(i) {
+				return true
+			}
+		case flux.TString:
+			if cr.Strings(j).IsNull(i) {
+				return true
+			}
+		case flux.TTime:
+			if cr.Times(j).IsNull(i) {
+				return true
+			}
+		default:
+			PanicUnknownType(cr.Cols()[j].Type)
+		}
+	}
+
+	return false
 }
 
 type RowPredicateFn struct {
