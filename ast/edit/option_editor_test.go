@@ -69,23 +69,23 @@ option task = {
 			edited: `option foo = 1
 option task = {
 	name: "bar",
-	every: 2hr3m10s,
+	every: 2h3m10s,
 	delay: 42m,
 	cron: "buz",
 	retry: 10,
 }`,
 			edit: func(node ast.Node) (bool, error) {
-				every, err := ast.ParseDuration("2hr3m10s")
+				every, err := parser.ParseDuration("2h3m10s")
 				if err != nil {
 					t.Fatal(err)
 				}
-				delay, err := ast.ParseDuration("42m")
+				delay, err := parser.ParseDuration("42m")
 				if err != nil {
 					t.Fatal(err)
 				}
 				return edit.Option(node, "task", edit.OptionObjectFn(map[string]ast.Expression{
-					"every": &ast.DurationLiteral{Values: every},
-					"delay": &ast.DurationLiteral{Values: delay},
+					"every": every,
+					"delay": delay,
 					"cron":  &ast.StringLiteral{Value: "buz"},
 					"retry": &ast.IntegerLiteral{Value: 10},
 				}))
@@ -103,7 +103,7 @@ option task = {
 }`, edited: `option foo = 1
 option task = {
 	name: "bar",
-	every: 2hr,
+	every: 2h,
 	delay: 1m,
 	cron: "20 * * *",
 	retry: 5,
@@ -111,13 +111,13 @@ option task = {
 }`,
 			errorWanted: false,
 			edit: func(node ast.Node) (bool, error) {
-				every, err := ast.ParseDuration("2hr")
+				every, err := parser.ParseDuration("2h")
 				if err != nil {
 					t.Fatal(err)
 				}
 				return edit.Option(node, "task", edit.OptionObjectFn(map[string]ast.Expression{
 					"foo":   &ast.StringLiteral{Value: "foo"}, // should add a foo string
-					"every": &ast.DurationLiteral{Values: every},
+					"every": every,
 				}))
 			},
 		},

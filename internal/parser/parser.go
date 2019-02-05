@@ -782,7 +782,7 @@ func (p *parser) parseFloatLiteral() *ast.FloatLiteral {
 
 func (p *parser) parseStringLiteral() *ast.StringLiteral {
 	pos, lit := p.expect(token.STRING)
-	value, _ := ast.ParseString(lit)
+	value, _ := ParseString(lit)
 	return &ast.StringLiteral{
 		Value:    value,
 		BaseNode: p.posRange(pos, len(lit)),
@@ -792,7 +792,7 @@ func (p *parser) parseStringLiteral() *ast.StringLiteral {
 func (p *parser) parseRegexpLiteral() *ast.RegexpLiteral {
 	pos, lit := p.expect(token.REGEX)
 	// todo(jsternberg): handle errors.
-	value, _ := ast.ParseRegexp(lit)
+	value, _ := ParseRegexp(lit)
 	return &ast.RegexpLiteral{
 		Value:    value,
 		BaseNode: p.posRange(pos, len(lit)),
@@ -801,7 +801,7 @@ func (p *parser) parseRegexpLiteral() *ast.RegexpLiteral {
 
 func (p *parser) parseTimeLiteral() *ast.DateTimeLiteral {
 	pos, lit := p.expect(token.TIME)
-	value, _ := ast.ParseTime(lit)
+	value, _ := ParseTime(lit)
 	return &ast.DateTimeLiteral{
 		Value:    value,
 		BaseNode: p.posRange(pos, len(lit)),
@@ -811,9 +811,9 @@ func (p *parser) parseTimeLiteral() *ast.DateTimeLiteral {
 func (p *parser) parseDurationLiteral() *ast.DurationLiteral {
 	pos, lit := p.expect(token.DURATION)
 	// todo(jsternberg): handle errors.
-	values, _ := ast.ParseDuration(lit)
+	d, _ := ParseDuration(lit)
 	return &ast.DurationLiteral{
-		Values:   values,
+		Values:   d,
 		BaseNode: p.posRange(pos, len(lit)),
 	}
 }

@@ -599,13 +599,9 @@ func analyzeDateTimeLiteral(lit *ast.DateTimeLiteral) (*DateTimeLiteral, error) 
 	}, nil
 }
 func analyzeDurationLiteral(lit *ast.DurationLiteral) (*DurationLiteral, error) {
-	var duration time.Duration
-	for _, d := range lit.Values {
-		dur, err := d.Duration()
-		if err != nil {
-			return nil, err
-		}
-		duration += dur
+	duration, err := ast.DurationFrom(lit, time.Time{})
+	if err != nil {
+		return nil, err
 	}
 	return &DurationLiteral{
 		loc:   loc(lit.Location()),
