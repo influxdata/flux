@@ -6,6 +6,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic/semantictest"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 // SimpleRule is a simple rule whose pattern matches any plan node and
@@ -25,6 +27,26 @@ func (sr *SimpleRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool, error) {
 
 func (sr *SimpleRule) Name() string {
 	return "simple"
+}
+
+// MergeFromRangePhysicalRule merges a from and a subsequent range.
+type MergeFromRangePhysicalRule struct{}
+
+func (sr *MergeFromRangePhysicalRule) Pattern() plan.Pattern {
+	return plan.Pat(universe.RangeKind, plan.Pat(influxdb.FromKind))
+}
+
+func (sr *MergeFromRangePhysicalRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool, error) {
+	mergedSpec := node.Predecessors()[0].ProcedureSpec().Copy().(*influxdb.FromProcedureSpec)
+	mergedNode, err := plan.MergePhysicalPlanNodes(node, node.Predecessors()[0], mergedSpec)
+	if err != nil {
+		return nil, false, err
+	}
+	return mergedNode, true, nil
+}
+
+func (sr *MergeFromRangePhysicalRule) Name() string {
+	return "fromRangeRule"
 }
 
 // SmashPlanRule adds an `Intruder` as predecessor of the given `Node` without

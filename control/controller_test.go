@@ -12,7 +12,8 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
@@ -66,20 +67,14 @@ func TestController_CompileQuery_Failure(t *testing.T) {
 }
 
 func TestController_PlanQuery_Failure(t *testing.T) {
-	// this compiler returns a spec that cannot be planned
-	// (no range to push into from)
-	compiler := &mock.Compiler{
-		CompileFn: func(ctx context.Context) (*flux.Spec, error) {
-			return &flux.Spec{
-				Operations: []*flux.Operation{{
-					ID:   "from",
-					Spec: &influxdb.FromOpSpec{Bucket: "telegraf"},
-				}},
-			}, nil
+	// Register a rule that destroys the integrity of the plan returned by the mock compiler.
+	// The query should fail.
+	config := Config{
+		PPlannerOptions: []plan.PhysicalOption{
+			plan.OnlyPhysicalRules(plantest.CreateCycleRule{Kind: universe.RangeKind}),
 		},
 	}
-
-	ctrl := New(Config{})
+	ctrl := New(config)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer func() {
@@ -90,7 +85,7 @@ func TestController_PlanQuery_Failure(t *testing.T) {
 	}()
 
 	// Run the query. It should return an error.
-	if _, err := ctrl.Query(context.Background(), compiler); err == nil {
+	if _, err := ctrl.Query(context.Background(), mockCompiler); err == nil {
 		t.Fatal("expected error")
 	}
 
