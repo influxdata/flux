@@ -112,14 +112,14 @@ func New(c Config) *Controller {
 func (c *Controller) Query(ctx context.Context, compiler flux.Compiler) (flux.Query, error) {
 	q := c.createQuery(ctx, compiler.CompilerType())
 	if err := c.compileQuery(q, compiler); err != nil {
-		q.transitionTo(Errored)
+		q.setErr(err)
 		c.countQueryRequest(q, labelCompileError)
-		return nil, err
+		return nil, q.Err()
 	}
 	if err := c.enqueueQuery(q); err != nil {
-		q.transitionTo(Errored)
+		q.setErr(err)
 		c.countQueryRequest(q, labelQueueError)
-		return nil, err
+		return nil, q.Err()
 	}
 	c.countQueryRequest(q, labelSuccess)
 	return q, nil
@@ -154,7 +154,6 @@ func (c *Controller) createQuery(ctx context.Context, ct flux.CompilerType) *Que
 		c.metrics.allDur.WithLabelValues(labelValues...),
 		c.metrics.all.WithLabelValues(labelValues...),
 	)
-	ready := make(chan map[string]flux.Result, 1)
 	return &Query{
 		id:                 id,
 		labelValues:        labelValues,
@@ -162,7 +161,7 @@ func (c *Controller) createQuery(ctx context.Context, ct flux.CompilerType) *Que
 		state:              Created,
 		c:                  c,
 		now:                time.Now().UTC(),
-		ready:              ready,
+		ready:              make(chan map[string]flux.Result, 1),
 		parentCtx:          parentCtx,
 		parentSpan:         parentSpan,
 		cancel:             cancel,
@@ -346,7 +345,7 @@ func (c *Controller) run() {
 				pq.Pop()
 			}
 			if err != nil {
-				go q.setErr(err)
+				q.setErr(err)
 			}
 		}
 	}
@@ -471,13 +470,13 @@ type Query struct {
 	spec flux.Spec
 	now  time.Time
 
-	err error
-
 	ready chan map[string]flux.Result
 
-	mu     sync.Mutex
-	state  State
-	cancel func()
+	// query state. The stateMu protects access for the group below.
+	stateMu sync.RWMutex
+	state   State
+	err     error
+	cancel  func()
 
 	parentCtx, currentCtx   context.Context
 	parentSpan, currentSpan *span
@@ -508,52 +507,48 @@ func (q *Query) Concurrency() int {
 
 // Cancel will stop the query execution.
 func (q *Query) Cancel() {
-	q.mu.Lock()
-	defer q.mu.Unlock()
-
-	// call cancel func
+	// Call the cancel function to signal that execution should
+	// be interrupted.
 	q.cancel()
-
-	if q.state != Errored && q.state != Canceled {
-		q.transitionTo(Canceled)
-	}
 }
 
 // Ready returns a channel that will deliver the query results.
+//
 // It's possible that the channel is closed before any results arrive.
-// In particular, if a query's context is cancelled during execution,
-// the channel will be closed immediately and an error will be exposed
-// via Err(). For this reason, a query should always be inspected for
-// an error using Err().
+// In particular, if a query's context or the query itself is canceled,
+// the query may close the results channel before any results are computed.
+//
+// The query may also have an error during execution so the Err()
+// function should be used to check if an error happened.
 func (q *Query) Ready() <-chan map[string]flux.Result {
 	return q.ready
 }
 
-// Done must always be called to free resources.
+// Done signals to the Controller that this query is no longer
+// being used and resources related to the query may be freed.
+//
+// The Ready method must have returned a result before calling
+// this method either by the query executing, being canceled, or
+// an error occurring.
 func (q *Query) Done() {
-	// TODO(jsternberg): I'm pretty sure this can results in releasing resources that are still
-	// actively being used. This method should indicate to the controller that it no longer has to
-	// keep the queries around, but it shouldn't let the client decide the resources are freed since
-	// the query may have been canceled and is still waiting to hit a cancel point.
-	// This could result in reporting the wrong number for resource usage.
+	// We are not considered to be in the run loop anymore once
+	// this is called.
 	q.done.Do(func() {
-		q.mu.Lock()
-		if q.state != Errored {
-			q.transitionTo(Finished)
-		}
-		q.mu.Unlock()
+		q.stateMu.Lock()
+		q.transitionTo(Finished)
+		q.stateMu.Unlock()
 
-		// We must send the information that this query is done outside of the lock because
-		// otherwise we can deadlock with the controller.
 		q.c.queryDone <- q
 	})
 }
 
-// Statistics reports the statisitcs for the query.
-// The statisitcs are not complete until the query is finished.
+// Statistics reports the statistics for the query.
+//
+// This method must be called after Done. It will block until
+// the query has been finalized unless a context is given.
 func (q *Query) Statistics() flux.Statistics {
-	q.mu.Lock()
-	defer q.mu.Unlock()
+	q.stateMu.Lock()
+	defer q.stateMu.Unlock()
 
 	stats := q.stats
 	stats.Concurrency = q.concurrency
@@ -565,17 +560,45 @@ func (q *Query) Statistics() flux.Statistics {
 
 // State reports the current state of the query.
 func (q *Query) State() State {
-	q.mu.Lock()
-	s := q.state
-	q.mu.Unlock()
-	return s
+	q.stateMu.RLock()
+	state := q.state
+	if !isFinishedState(state) {
+		// If the query is a non-finished state, check the
+		// context to see if we have been interrupted.
+		select {
+		case <-q.parentCtx.Done():
+			// The query has been canceled so report to the
+			// outside world that we have been canceled.
+			// Do NOT attempt to change the internal state
+			// variable here. It is a minefield. Leave the
+			// normal query execution to figure that out.
+			state = Canceled
+		default:
+			// The context has not been canceled.
+		}
+	}
+	q.stateMu.RUnlock()
+	return state
 }
 
 // transitionTo will transition from one state to another. If a list of current states
 // is given, then the query must be in one of those states for the transition to succeed.
-// This method must be called with a lock and it must not transition to a final state
-// from within the run loop.
+// This method must be called with a lock and it must be called from within the run loop.
 func (q *Query) transitionTo(newState State, currentState ...State) bool {
+	// If we are transitioning to a non-finished state, the query
+	// may have been canceled. If the query was canceled, then
+	// we need to transition to the canceled state
+	if !isFinishedState(newState) {
+		select {
+		case <-q.parentCtx.Done():
+			// Transition to the canceled state and report that
+			// we failed to transition to the desired state.
+			_ = q.transitionTo(Canceled)
+			return false
+		default:
+		}
+	}
+
 	if len(currentState) > 0 {
 		// Find the current state in the list of current states.
 		for _, st := range currentState {
@@ -606,17 +629,11 @@ TRANSITION:
 	q.currentSpan, q.currentCtx = nil, nil
 
 	// If we are transitioning to a finished state from a non-finished state, finish the parent span.
-	switch newState {
-	case Errored, Canceled, Finished:
+	if isFinishedState(newState) {
 		if q.parentSpan != nil {
 			q.parentSpan.Finish()
 			q.stats.TotalDuration = q.parentSpan.Duration
 			q.parentSpan = nil
-
-			// Close the ready channel on the first time we move to one of these states.
-			// It should signal any queries waiting on the results that no results will come.
-			// Signal to the main loop that this query has completed.
-			close(q.ready)
 		}
 	}
 
@@ -655,63 +672,81 @@ TRANSITION:
 }
 
 func (q *Query) isOK() bool {
-	q.mu.Lock()
+	q.stateMu.RLock()
 	ok := q.state != Canceled && q.state != Errored && q.state != Finished
-	q.mu.Unlock()
+	q.stateMu.RUnlock()
 	return ok
 }
 
 // Err reports any error the query may have encountered.
 func (q *Query) Err() error {
-	q.mu.Lock()
+	q.stateMu.Lock()
 	err := q.err
-	q.mu.Unlock()
+	q.stateMu.Unlock()
 	return err
 }
+
+// setErr marks this query with an error. If the query was
+// canceled, then the error is ignored.
+//
+// This will mark the query as ready so setResults must not
+// be called if this method is invoked.
 func (q *Query) setErr(err error) {
-	q.mu.Lock()
-	defer q.mu.Unlock()
+	q.stateMu.Lock()
+	defer q.stateMu.Unlock()
+
+	// We may have this get called when the query is canceled.
+	// If that is the case, transition to the canceled state
+	// instead and record the error from that since the error
+	// we received is probably wrong.
+	select {
+	case <-q.parentCtx.Done():
+		q.transitionTo(Canceled)
+		err = q.parentCtx.Err()
+	default:
+		q.transitionTo(Errored)
+	}
 	q.err = err
 
-	q.transitionTo(Errored)
+	// Close the ready channel to report that no results
+	// will be sent.
+	close(q.ready)
 }
 
+// setResults will set the results and send them over the ready channel.
 func (q *Query) setResults(r map[string]flux.Result) {
-	q.mu.Lock()
-	if q.state == Executing {
-		q.ready <- r
-	}
-	q.mu.Unlock()
+	q.ready <- r
+	close(q.ready)
 }
 
 // tryCompile attempts to transition the query into the Compiling state.
 func (q *Query) tryCompile() bool {
-	q.mu.Lock()
-	defer q.mu.Unlock()
+	q.stateMu.Lock()
+	defer q.stateMu.Unlock()
 
 	return q.transitionTo(Compiling, Created)
 }
 
 // tryPlan attempts to transition the query into the Planning state.
 func (q *Query) tryPlan() bool {
-	q.mu.Lock()
-	defer q.mu.Unlock()
+	q.stateMu.Lock()
+	defer q.stateMu.Unlock()
 
 	return q.transitionTo(Planning, Compiling)
 }
 
 // tryQueue attempts to transition the query into the Queueing state.
 func (q *Query) tryQueue() bool {
-	q.mu.Lock()
-	defer q.mu.Unlock()
+	q.stateMu.Lock()
+	defer q.stateMu.Unlock()
 
 	return q.transitionTo(Queueing, Planning)
 }
 
 // tryRequeue attempts to transition the query into the Requeueing state.
 func (q *Query) tryRequeue() bool {
-	q.mu.Lock()
-	defer q.mu.Unlock()
+	q.stateMu.Lock()
+	defer q.stateMu.Unlock()
 
 	if q.state == Requeueing {
 		// Already in the correct state.
@@ -722,8 +757,8 @@ func (q *Query) tryRequeue() bool {
 
 // tryExec attempts to transition the query into the Executing state.
 func (q *Query) tryExec() bool {
-	q.mu.Lock()
-	defer q.mu.Unlock()
+	q.stateMu.Lock()
+	defer q.stateMu.Unlock()
 
 	return q.transitionTo(Executing, Requeueing, Queueing)
 }
@@ -732,14 +767,40 @@ func (q *Query) tryExec() bool {
 type State int
 
 const (
+	// Created indicates the query has been created.
 	Created State = iota
+
+	// Compiling indicates that the query is in the process
+	// of executing the compiler associated with the query.
 	Compiling
-	Queueing
+
+	// Planning indicates that a query spec has been created
+	// from the compiler and the query planner is executing.
 	Planning
+
+	// Queueing indicates the query is waiting inside of the
+	// scheduler to be executed.
+	Queueing
+
+	// Requeueing indicates that the query scheduler wanted
+	// to run the query, but not enough resources were available
+	// so it is in the process of waiting again.
 	Requeueing
+
+	// Executing indicates that the query is currently executing.
 	Executing
+
+	// Errored indicates that there was an error when attempting
+	// to execute a query within any state inside of the controller.
 	Errored
+
+	// Finished indicates that the query has been marked as Done
+	// and it is awaiting removal from the Controller or has already
+	// been removed.
 	Finished
+
+	// Canceled indicates that the query was signaled to be
+	// canceled. A canceled query must still be released with Done.
 	Canceled
 )
 
@@ -765,6 +826,15 @@ func (s State) String() string {
 		return "canceled"
 	default:
 		return "unknown"
+	}
+}
+
+func isFinishedState(state State) bool {
+	switch state {
+	case Canceled, Errored, Finished:
+		return true
+	default:
+		return false
 	}
 }
 
