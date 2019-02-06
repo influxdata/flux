@@ -17,7 +17,7 @@ func init() {
 // SystemTime return a function value that when called will give the current system time
 func SystemTime() values.Value {
 	name := systemTimeFuncName
-	ftype := semantic.NewFunctionType(semantic.FunctionSignature{
+	ftype := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 		Return: semantic.Time,
 	})
 	call := func(args values.Object) (values.Value, error) {

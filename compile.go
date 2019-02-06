@@ -144,7 +144,7 @@ type ScopeMutator = func(interpreter.Scope)
 
 func nowFunc(now time.Time) values.Function {
 	timeVal := values.NewTime(values.ConvertTime(now))
-	ftype := semantic.NewFunctionType(semantic.FunctionSignature{
+	ftype := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 		Return: semantic.Time,
 	})
 	call := func(args values.Object) (values.Value, error) {

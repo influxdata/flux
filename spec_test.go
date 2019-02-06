@@ -353,7 +353,7 @@ func Example_overrideDefaultOptionInternally() {
 	// Define a new now function which returns a static time value of 2018-07-13T00:00:00.000000000Z
 	timeValue := time.Date(2018, 7, 13, 0, 0, 0, 0, time.UTC)
 	functionName := "newTime"
-	functionType := semantic.NewFunctionType(semantic.FunctionSignature{
+	functionType := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 		Return: semantic.Time,
 	})
 	functionCall := func(args values.Object) (values.Value, error) {

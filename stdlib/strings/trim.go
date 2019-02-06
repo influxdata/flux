@@ -10,8 +10,8 @@ import (
 func generateMultiArgStringFunction(name string, stringFn func(string, string) string) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.NewFunctionType(semantic.FunctionSignature{
-			Parameters: map[string]semantic.Type{
+		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+			Parameters: map[string]semantic.PolyType{
 				stringArg: semantic.String,
 				cutset:    semantic.String,
 			},

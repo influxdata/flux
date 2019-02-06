@@ -15,7 +15,7 @@ type Function interface {
 }
 
 // NewFunction returns a new function value
-func NewFunction(name string, typ semantic.Type, call func(args Object) (Value, error), sideEffect bool) Function {
+func NewFunction(name string, typ semantic.PolyType, call func(args Object) (Value, error), sideEffect bool) Function {
 	return &function{
 		name:          name,
 		t:             typ,
@@ -27,7 +27,7 @@ func NewFunction(name string, typ semantic.Type, call func(args Object) (Value, 
 // function implements Value interface and more specifically the Function interface
 type function struct {
 	name          string
-	t             semantic.Type
+	t             semantic.PolyType
 	call          func(args Object) (Value, error)
 	hasSideEffect bool
 }
@@ -40,10 +40,14 @@ func (f *function) String() string {
 }
 
 func (f *function) Type() semantic.Type {
-	return f.t
+	typ, ok := f.t.MonoType()
+	if ok {
+		return typ
+	}
+	return semantic.Invalid
 }
 func (f *function) PolyType() semantic.PolyType {
-	return f.t.PolyType()
+	return f.t
 }
 
 func (f *function) Str() string {

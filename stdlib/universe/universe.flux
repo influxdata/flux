@@ -64,6 +64,8 @@ builtin string
 builtin time
 builtin uint
 
+// contains function
+builtin contains
 
 // other builtins
 builtin inf

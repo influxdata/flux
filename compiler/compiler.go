@@ -119,6 +119,26 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, fun
 			t:          semantic.NewObjectType(propertyTypes),
 			properties: properties,
 		}, nil
+
+	case *semantic.ArrayExpression:
+		elements := make([]Evaluator, len(n.Elements))
+		if len(n.Elements) == 0 {
+			return &arrayEvaluator{
+				t:     semantic.EmptyArrayType,
+				array: nil,
+			}, nil
+		}
+		for i, e := range n.Elements {
+			node, err := compile(e, typeSol, builtIns, funcExprs)
+			if err != nil {
+				return nil, err
+			}
+			elements[i] = node
+		}
+		return &arrayEvaluator{
+			t:     semantic.NewArrayType(elements[0].Type()),
+			array: elements,
+		}, nil
 	case *semantic.IdentifierExpression:
 		if v, ok := builtIns[n.Name]; ok {
 			//Resolve any built in identifiers now
@@ -171,7 +191,7 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, fun
 		if err != nil {
 			return nil, err
 		}
-		return &arrayEvaluator{
+		return &arrayIndexEvaluator{
 			t:     monoType(typeSol.TypeOf(n)),
 			array: arr,
 			index: idx,

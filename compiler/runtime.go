@@ -437,6 +437,53 @@ func (e *objEvaluator) EvalFunction(scope Scope) values.Function {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Function))
 }
 
+type arrayEvaluator struct {
+	t     semantic.Type
+	array []Evaluator
+}
+
+func (e *arrayEvaluator) Type() semantic.Type {
+	return e.t
+}
+
+func (e *arrayEvaluator) EvalString(scope Scope) string {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.String))
+}
+func (e *arrayEvaluator) EvalInt(scope Scope) int64 {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.Int))
+}
+func (e *arrayEvaluator) EvalUInt(scope Scope) uint64 {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
+}
+func (e *arrayEvaluator) EvalFloat(scope Scope) float64 {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
+}
+func (e *arrayEvaluator) EvalBool(scope Scope) bool {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.Bool))
+}
+func (e *arrayEvaluator) EvalTime(scope Scope) values.Time {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.Time))
+}
+func (e *arrayEvaluator) EvalDuration(scope Scope) values.Duration {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.Duration))
+}
+func (e *arrayEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.Regexp))
+}
+func (e *arrayEvaluator) EvalArray(scope Scope) values.Array {
+	arr := values.NewArray(e.t)
+	for _, ev := range e.array {
+		arr.Append(eval(ev, scope))
+	}
+	return arr
+}
+func (e *arrayEvaluator) EvalObject(scope Scope) values.Object {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.Object))
+}
+func (e *arrayEvaluator) EvalFunction(scope Scope) values.Function {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.Function))
+}
+
 type logicalEvaluator struct {
 	t           semantic.Type
 	operator    ast.LogicalOperatorKind
@@ -981,57 +1028,57 @@ func (e *memberEvaluator) EvalFunction(scope Scope) values.Function {
 	return v.Function()
 }
 
-type arrayEvaluator struct {
+type arrayIndexEvaluator struct {
 	t     semantic.Type
 	array Evaluator
 	index Evaluator
 }
 
-func (e *arrayEvaluator) Type() semantic.Type {
+func (e *arrayIndexEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *arrayEvaluator) EvalString(scope Scope) string {
+func (e *arrayIndexEvaluator) EvalString(scope Scope) string {
 	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
 	return v.Str()
 }
-func (e *arrayEvaluator) EvalInt(scope Scope) int64 {
+func (e *arrayIndexEvaluator) EvalInt(scope Scope) int64 {
 	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
 	return v.Int()
 }
-func (e *arrayEvaluator) EvalUInt(scope Scope) uint64 {
+func (e *arrayIndexEvaluator) EvalUInt(scope Scope) uint64 {
 	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
 	return v.UInt()
 }
-func (e *arrayEvaluator) EvalFloat(scope Scope) float64 {
+func (e *arrayIndexEvaluator) EvalFloat(scope Scope) float64 {
 	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
 	return v.Float()
 }
-func (e *arrayEvaluator) EvalBool(scope Scope) bool {
+func (e *arrayIndexEvaluator) EvalBool(scope Scope) bool {
 	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
 	return v.Bool()
 }
-func (e *arrayEvaluator) EvalTime(scope Scope) values.Time {
+func (e *arrayIndexEvaluator) EvalTime(scope Scope) values.Time {
 	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
 	return v.Time()
 }
-func (e *arrayEvaluator) EvalDuration(scope Scope) values.Duration {
+func (e *arrayIndexEvaluator) EvalDuration(scope Scope) values.Duration {
 	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
 	return v.Duration()
 }
-func (e *arrayEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
+func (e *arrayIndexEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
 	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
 	return v.Regexp()
 }
-func (e *arrayEvaluator) EvalArray(scope Scope) values.Array {
+func (e *arrayIndexEvaluator) EvalArray(scope Scope) values.Array {
 	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
 	return v.Array()
 }
-func (e *arrayEvaluator) EvalObject(scope Scope) values.Object {
+func (e *arrayIndexEvaluator) EvalObject(scope Scope) values.Object {
 	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
 	return v.Object()
 }
-func (e *arrayEvaluator) EvalFunction(scope Scope) values.Function {
+func (e *arrayIndexEvaluator) EvalFunction(scope Scope) values.Function {
 	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
 	return v.Function()
 }
