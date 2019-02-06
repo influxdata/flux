@@ -3111,6 +3111,37 @@ If you need to convert other columns use the `map` function directly with the `u
 
 [IMPL#242](https://github.com/influxdata/platform/issues/242) Update specification around type conversion functions.
 
+#### String operations
+
+##### trim
+
+Remove leading and trailing characters specified in cutset from a string.
+
+Example: `trim(v: ".abc.", cutset: ".")` returns the string `abc`.
+
+##### trimSpace
+
+Remove leading and trailing spaces from a string.
+
+Example: `trimSpace(v: "  abc  ")` returns the string `abc`.
+
+##### title
+
+Convert a string to title case.
+
+Example: `title(v: "a flux of foxes")` returns the string `A Flux Of Foxes`.
+
+##### toUpper
+
+Convert a string to upper case.
+
+Example: `toUpper(v: "koala")` returns the string `KOALA`.
+
+##### toLower
+
+Convert a string to lower case.
+
+Example: `toLower(v: "KOALA")` returns the string `koala`.
 
 ### Composite data types
 
