@@ -3041,6 +3041,19 @@ Example:
         |> filter(fn:(r) => r._measurement == "net" and r._field == "bytes_sent")
         |> top(n:10, columns:["_value"])
 
+#### Contains 
+
+Tests whether a value is a member of a set.  
+
+Contains has the following parameters: 
+
+| Name    | Type                                          | Description                  |
+| ----    | ----                                          | -----------                  |
+| value   | bool, int, uint, float, string, time          | The value to search for.     |
+| set     | array of bool, int, uint, float, string, time | The set of values to search. |
+
+Example: 
+    `contains(value:1, set:[1,2,3])` will return `true`.   
 
 #### Type conversion operations
 

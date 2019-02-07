@@ -12,8 +12,8 @@ import (
 func generateStringFunction(name string, stringFn func(string) string) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.NewFunctionType(semantic.FunctionSignature{
-			Parameters: map[string]semantic.Type{stringArg: semantic.String},
+		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+			Parameters: map[string]semantic.PolyType{stringArg: semantic.String},
 			Required:   semantic.LabelSet{stringArg},
 			Return:     semantic.String,
 		}),

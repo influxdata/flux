@@ -45,7 +45,7 @@ func TestValue(t *testing.T) {
 func TestFunctionNames(t *testing.T) {
 	boom := values.NewFunction(
 		"boom",
-		semantic.NewFunctionType(semantic.FunctionSignature{}),
+		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{}),
 		func(values.Object) (values.Value, error) { return nil, nil },
 		false,
 	)
@@ -67,8 +67,8 @@ func TestFunctionSuggestion(t *testing.T) {
 	name := "bar"
 	bar := values.NewFunction(
 		name,
-		semantic.NewFunctionType(semantic.FunctionSignature{
-			Parameters: map[string]semantic.Type{
+		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+			Parameters: map[string]semantic.PolyType{
 				"start": semantic.Time,
 				"stop":  semantic.Time,
 			},
