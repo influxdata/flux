@@ -187,7 +187,11 @@ func (c *Controller) compileQuery(q *Query, compiler flux.Compiler) error {
 
 	if q.tryPlan() {
 		// Plan query to determine needed resources
-		lp, err := c.lplanner.Plan(&q.spec)
+		ip, err := c.lplanner.CreateInitialPlan(&q.spec)
+		if err != nil {
+			return errors.Wrap(err, "failed to create initial logical plan")
+		}
+		lp, err := c.lplanner.Plan(ip)
 		if err != nil {
 			return errors.Wrap(err, "failed to create logical plan")
 		}
