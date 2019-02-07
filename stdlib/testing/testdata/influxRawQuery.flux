@@ -49,11 +49,10 @@ rawQuery = (stream=<-, start, stop, measurement, fields=[], groupBy=["_time", "_
     |> v1.fieldsAsCols()
     |> window(every: every, period: period)
 
-t_influxRawQuery = (table=<-) =>
-  table
-   |> rawQuery(measurement: "system",fields: ["load1", "load15", "load5"], start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z)
+test influx_raw_query = () => ({
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    fn: (table=<-) => table |> rawQuery(measurement: "system",fields: ["load1", "load15", "load5"], start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z)
+})
 
-testing.test(name: "influxRawQuery",
-            input: testing.loadStorage(csv: inData),
-            want: testing.loadMem(csv: outData),
-            testFn: t_influxRawQuery)
+testing.run(case: influx_raw_query)
