@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -41,4 +42,7 @@ t_distinct = (table=<-) =>
 		|> distinct(column: "_value")
 		|> yield(name: "0"))
 
-test distinct = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_distinct}
+test distinct = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_distinct})
+
+testing.run(case: distinct)

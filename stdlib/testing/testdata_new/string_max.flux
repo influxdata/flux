@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -23,4 +24,7 @@ t_string_max = (table=<-) =>
 		|> range(start: 2018-05-22T19:54:16Z)
 		|> max())
 
-test string_max = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_max}
+test string_max = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_max})
+
+testing.run(case: string_max)

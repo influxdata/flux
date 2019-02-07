@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -46,4 +47,7 @@ t_state_count = (table=<-) =>
 		|> stateCount(fn: (r) =>
 			(r._value > 80)))
 
-test state_count = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_count}
+test state_count = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_count})
+
+testing.run(case: state_count)

@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -58,4 +59,7 @@ t_rename = (table=<-) =>
 		|> rename(columns: {host: "server"})
 		|> drop(columns: ["_start", "_stop"]))
 
-test rename = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_rename}
+test rename = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_rename})
+
+testing.run(case: rename)

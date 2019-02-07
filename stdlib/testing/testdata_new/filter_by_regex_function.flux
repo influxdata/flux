@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -43,4 +44,7 @@ t_filter_by_regex_function = (table=<-) =>
 	(table
 		|> regexFunc(regLiteral: /io.*/))
 
-test filter_by_regex_function = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex_function}
+test filter_by_regex_function = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex_function})
+
+testing.run(case: filter_by_regex_function)

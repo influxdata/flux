@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 inData = "
@@ -36,4 +37,7 @@ t_window_null = (table=<-) =>
 		|> range(start: -5m)
 		|> window(every: 30s))
 
-test window_null = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window_null}
+test window_null = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window_null})
+
+testing.run(case: window_null)

@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -25,4 +26,7 @@ t_null_as_value = (table=<-) =>
 		|> filter(fn: (r) =>
 			(r._value == null)))
 
-test null_as_value = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_null_as_value}
+test null_as_value = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_null_as_value})
+
+testing.run(case: null_as_value)

@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -95,4 +96,7 @@ t_group = (table=<-) =>
 	(table
 		|> group(columns: ["host"]))
 
-test group = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group}
+test group = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})
+
+testing.run(case: group)

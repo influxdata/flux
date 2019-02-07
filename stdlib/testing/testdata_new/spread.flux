@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -60,4 +61,7 @@ t_spread = (table=<-) =>
 		|> range(start: 2018-12-01T00:00:00Z)
 		|> spread())
 
-test spread = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_spread}
+test spread = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_spread})
+
+testing.run(case: spread)

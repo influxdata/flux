@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -48,4 +49,7 @@ t_first = (table=<-) =>
 	(table
 		|> first())
 
-test first = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_first}
+test first = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_first})
+
+testing.run(case: first)

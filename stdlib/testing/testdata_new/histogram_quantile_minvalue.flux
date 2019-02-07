@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -32,4 +33,7 @@ t_histogram_quantile = (table=<-) =>
 		|> range(start: 2018-05-22T19:53:00Z)
 		|> histogramQuantile(quantile: 0.25, minValue: -100.0))
 
-test histogram_quantile_minvalue = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogram_quantile}
+test histogram_quantile_minvalue = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogram_quantile})
+
+testing.run(case: histogram_quantile_minvalue)

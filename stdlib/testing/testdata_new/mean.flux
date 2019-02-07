@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -52,4 +53,7 @@ t_mean = (table=<-) =>
 		|> range(start: 2018-12-01T00:00:00Z)
 		|> mean())
 
-test mean = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_mean}
+test mean = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_mean})
+
+testing.run(case: mean)

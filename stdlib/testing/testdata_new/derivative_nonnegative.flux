@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -38,4 +39,7 @@ derivative_nonnegative = (table=<-) =>
 		|> range(start: 2018-05-22T19:53:26Z)
 		|> derivative(unit: 100ms, nonNegative: true))
 
-test derivative_nonnegative = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: derivative_nonnegative}
+test derivative_nonnegative = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: derivative_nonnegative})
+
+testing.run(case: derivative_nonnegative)

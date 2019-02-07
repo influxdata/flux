@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -61,4 +62,7 @@ t_keep_fn = (table=<-) =>
 			return column == "_value"
 		}))
 
-test keep_fn = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_keep_fn}
+test keep_fn = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_keep_fn})
+
+testing.run(case: keep_fn)

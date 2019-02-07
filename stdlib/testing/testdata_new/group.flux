@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -41,4 +42,7 @@ t_group = (table=<-) =>
 			({_time: r._time, max: r._value}))
 		|> yield(name: "0"))
 
-test group = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group}
+test group = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})
+
+testing.run(case: group)

@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -76,4 +77,7 @@ t_count = (table=<-) =>
 		|> range(start: 2018-12-01T00:00:00Z)
 		|> count())
 
-test count = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_count}
+test count = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_count})
+
+testing.run(case: count)

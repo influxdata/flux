@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -62,4 +63,7 @@ t_select_measurement_field = (table=<-) =>
 			({_time: r._time, load1: r._value}))
 		|> yield(name: "0"))
 
-test select_measurement_field = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_select_measurement_field}
+test select_measurement_field = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_select_measurement_field})
+
+testing.run(case: select_measurement_field)

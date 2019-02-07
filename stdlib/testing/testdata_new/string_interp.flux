@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -28,4 +29,7 @@ t_string_interp = (table=<-) =>
 		|> filter(fn: (r) =>
 			(r._field == fieldSelect)))
 
-test string_interp = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_interp}
+test string_interp = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_interp})
+
+testing.run(case: string_interp)

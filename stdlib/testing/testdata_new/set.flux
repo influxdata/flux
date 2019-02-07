@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -177,4 +178,7 @@ t_set = (table=<-) =>
 		|> range(start: 2018-01-01T00:00:00Z)
 		|> set(key: "t0", value: "server01"))
 
-test set = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_set}
+test set = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_set})
+
+testing.run(case: set)

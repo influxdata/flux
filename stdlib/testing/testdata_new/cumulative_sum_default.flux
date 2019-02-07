@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -65,4 +66,7 @@ t_cumulative_sum_default = (table=<-) =>
 		|> range(start: 2018-05-15T00:00:00Z)
 		|> cumulativeSum())
 
-test cumulative_sum_default = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_cumulative_sum_default}
+test cumulative_sum_default = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_cumulative_sum_default})
+
+testing.run(case: cumulative_sum_default)

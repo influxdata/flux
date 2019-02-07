@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -32,4 +33,7 @@ t_derivative = (table=<-) =>
 		|> range(start: 2018-05-22T19:53:24.421470485Z)
 		|> derivative(unit: 100ms))
 
-test derivative = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_derivative}
+test derivative = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_derivative})
+
+testing.run(case: derivative)

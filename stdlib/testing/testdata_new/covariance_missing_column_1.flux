@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -27,4 +28,7 @@ covariance_missing_column_1 = (table=<-) =>
 		|> covariance(columns: ["x", "r"])
 		|> yield(name: "0"))
 
-test covariance_missing_column_1 = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_1}
+test covariance_missing_column_1 = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_1})
+
+testing.run(case: covariance_missing_column_1)

@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -43,4 +44,7 @@ t_difference = (table=<-) =>
 		|> range(start: 2018-05-22T19:53:26Z)
 		|> difference(columns: ["x", "y"]))
 
-test difference_columns = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_difference}
+test difference_columns = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_difference})
+
+testing.run(case: difference_columns)

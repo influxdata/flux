@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -38,4 +39,7 @@ t_highestAverage = (table=<-) =>
 	(table
 		|> highestAverage(n: 3, groupColumns: ["_measurement", "host"]))
 
-test highestAverage = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_highestAverage}
+test highestAverage = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_highestAverage})
+
+testing.run(case: highestAverage)

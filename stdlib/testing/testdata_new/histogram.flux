@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -33,4 +34,7 @@ t_histogram = (table=<-) =>
 	(table
 		|> histogram(bins: [-1.0, 0.0, 1.0, 2.0]))
 
-test histogram = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogram}
+test histogram = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogram})
+
+testing.run(case: histogram)

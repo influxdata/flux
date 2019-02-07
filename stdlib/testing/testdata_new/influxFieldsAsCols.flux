@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -62,4 +63,7 @@ t_influxFieldsAsCols = (table=<-) =>
 		|> influxFieldsAsCols()
 		|> yield(name: "0"))
 
-test influxFieldsAsCols = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_influxFieldsAsCols}
+test influxFieldsAsCols = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_influxFieldsAsCols})
+
+testing.run(case: influxFieldsAsCols)

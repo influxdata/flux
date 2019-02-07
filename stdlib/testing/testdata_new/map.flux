@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -27,4 +28,7 @@ t_map = (table=<-) =>
 		|> map(fn: (r) =>
 			({newValue: float(v: r._value)})))
 
-test map = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map}
+test map = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})
+
+testing.run(case: map)

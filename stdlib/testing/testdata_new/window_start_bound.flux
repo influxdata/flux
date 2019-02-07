@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -33,4 +34,7 @@ t_window_start_bound = (table=<-) =>
 		|> range(start: 2018-05-22T19:53:00Z)
 		|> window(start: 2018-05-22T19:53:30Z, every: 1m))
 
-test window_start_bound = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window_start_bound}
+test window_start_bound = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window_start_bound})
+
+testing.run(case: window_start_bound)

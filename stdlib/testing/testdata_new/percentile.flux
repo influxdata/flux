@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -127,4 +128,7 @@ t_percentile = (table=<-) =>
 		|> range(start: 2019-01-01T00:00:00Z)
 		|> percentile(percentile: 0.75, method: "exact_selector"))
 
-test percentile = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_percentile}
+test percentile = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_percentile})
+
+testing.run(case: percentile)

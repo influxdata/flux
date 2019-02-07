@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -27,4 +28,7 @@ simple_max = (table=<-) =>
 		|> map(fn: (r) =>
 			({_time: r._time, max: r._value})))
 
-test simple_max = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: simple_max}
+test simple_max = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: simple_max})
+
+testing.run(case: simple_max)

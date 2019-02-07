@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -45,4 +46,7 @@ t_fill_bool = (table=<-) =>
 		|> range(start: 2018-12-15T00:00:00Z)
 		|> fill(value: false))
 
-test fill = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_fill_bool}
+test fill = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_fill_bool})
+
+testing.run(case: fill)

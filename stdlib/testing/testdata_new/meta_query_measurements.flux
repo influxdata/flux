@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -40,4 +41,7 @@ t_meta_query_measurements = (table=<-) =>
 		|> distinct(column: "_measurement")
 		|> group())
 
-test meta_query_measurements = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_meta_query_measurements}
+test meta_query_measurements = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_meta_query_measurements})
+
+testing.run(case: meta_query_measurements)

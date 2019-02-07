@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -46,4 +47,7 @@ t_integral_columns = (table=<-) =>
 	(table
 		|> integral(columns: ["v1", "v2"], unit: 10s))
 
-test integral_columns = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_integral_columns}
+test integral_columns = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_integral_columns})
+
+testing.run(case: integral_columns)

@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -64,4 +65,7 @@ t_shift = (table=<-) =>
 	(table
 		|> shift(shift: 120s))
 
-test shift = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shift}
+test shift = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shift})
+
+testing.run(case: shift)

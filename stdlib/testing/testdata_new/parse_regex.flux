@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -38,4 +39,7 @@ t_parse_regex = (table=<-) =>
 			(r._field =~ filterRegex))
 		|> max())
 
-test parse_regex = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_parse_regex}
+test parse_regex = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_parse_regex})
+
+testing.run(case: parse_regex)

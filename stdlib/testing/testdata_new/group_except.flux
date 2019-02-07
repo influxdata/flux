@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -36,4 +37,7 @@ t_group_except = (table=<-) =>
 		|> group(columns: ["_measurement", "_time", "_value"], mode: "except")
 		|> max())
 
-test group_except = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_except}
+test group_except = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_except})
+
+testing.run(case: group_except)

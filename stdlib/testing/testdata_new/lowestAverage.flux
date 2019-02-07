@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -39,4 +40,7 @@ t_lowestAverage = (table=<-) =>
 		|> range(start: 2018-11-07T00:00:00Z)
 		|> lowestAverage(n: 3, groupColumns: ["_measurement", "host"]))
 
-test lowestAverage = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_lowestAverage}
+test lowestAverage = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_lowestAverage})
+
+testing.run(case: lowestAverage)

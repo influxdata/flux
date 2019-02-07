@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -39,4 +40,7 @@ t_lowestMin = (table=<-) =>
 		|> range(start: 2018-11-07T00:00:00Z)
 		|> lowestMin(n: 3, groupColumns: ["_measurement", "host"]))
 
-test lowestMin = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_lowestMin}
+test lowestMin = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_lowestMin})
+
+testing.run(case: lowestMin)

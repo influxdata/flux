@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -45,4 +46,7 @@ t_group_by_irregular = (table=<-) =>
 		|> group(columns: ["runID"])
 		|> yield(name: "r1"))
 
-test group_by_irregular = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_by_irregular}
+test group_by_irregular = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_by_irregular})
+
+testing.run(case: group_by_irregular)

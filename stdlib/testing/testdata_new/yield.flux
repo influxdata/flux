@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -47,4 +48,7 @@ want = testing.loadStorage(csv: outData)
 
 testing.assertEquals(name: "yield", want: want, got: got)
 
-test yield = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_yield}
+test yield = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_yield})
+
+testing.run(case: yield)

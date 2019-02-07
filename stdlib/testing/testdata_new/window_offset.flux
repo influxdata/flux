@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -46,4 +47,7 @@ t_window_offset = (table=<-) =>
 			({_time: r._time, mean: r._value}))
 		|> yield(name: "0"))
 
-test window_offset = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window_offset}
+test window_offset = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window_offset})
+
+testing.run(case: window_offset)

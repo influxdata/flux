@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -58,4 +59,7 @@ t_rename_multiple = (table=<-) =>
 		|> rename(columns: {old: "new"})
 		|> rename(columns: {new: "new1"}))
 
-test rename_multiple = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_rename_multiple}
+test rename_multiple = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_rename_multiple})
+
+testing.run(case: rename_multiple)

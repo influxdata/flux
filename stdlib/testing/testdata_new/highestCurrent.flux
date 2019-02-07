@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -39,4 +40,7 @@ t_highestCurrent = (table=<-) =>
 		|> range(start: 2018-11-07T00:00:00Z)
 		|> highestCurrent(n: 3, groupColumns: ["_measurement", "host"]))
 
-test highestCurrent = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_highestCurrent}
+test highestCurrent = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_highestCurrent})
+
+testing.run(case: highestCurrent)

@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -45,4 +46,7 @@ t_duplicate = (table=<-) =>
 		|> range(start: 2018-05-22T19:53:26Z)
 		|> duplicate(column: "host", as: "host_new"))
 
-test duplicate = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duplicate}
+test duplicate = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duplicate})
+
+testing.run(case: duplicate)

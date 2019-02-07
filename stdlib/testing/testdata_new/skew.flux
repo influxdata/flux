@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -52,4 +53,7 @@ t_skew = (table=<-) =>
 		|> range(start: 2018-01-01T00:00:00Z)
 		|> skew())
 
-test skew = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_skew}
+test skew = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_skew})
+
+testing.run(case: skew)

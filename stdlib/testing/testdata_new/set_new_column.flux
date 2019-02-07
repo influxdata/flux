@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -177,4 +178,7 @@ t_set_new_column = (table=<-) =>
 		|> range(start: 2018-01-01T00:00:00Z)
 		|> set(key: "t1", value: "server01"))
 
-test set_new_column = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_set_new_column}
+test set_new_column = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_set_new_column})
+
+testing.run(case: set_new_column)

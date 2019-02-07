@@ -1,4 +1,5 @@
 package main
+// 
 import "csv"
 import "testing"
 
@@ -46,4 +47,7 @@ t_fill_int = (table=<-) =>
 		|> range(start: 2018-12-15T00:00:00Z)
 		|> fill(usePrevious: true))
 
-test fill = {input: csv.from(csv: inData), want: csv.from(csv: outData), fn: t_fill_int}
+test fill = () =>
+	({input: csv.from(csv: inData), want: csv.from(csv: outData), fn: t_fill_int})
+
+testing.run(case: fill)

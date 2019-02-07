@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -52,4 +53,7 @@ drop_referenced = (table=<-) =>
 		|> filter(fn: (r) =>
 			(r._field == "usage_guest")))
 
-test drop_referenced = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: drop_referenced}
+test drop_referenced = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: drop_referenced})
+
+testing.run(case: drop_referenced)

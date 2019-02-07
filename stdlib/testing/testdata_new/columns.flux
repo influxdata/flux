@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -49,4 +50,7 @@ t_columns = (table=<-) =>
 		|> range(start: 2018-05-20T19:53:26Z)
 		|> columns())
 
-test columns = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_columns}
+test columns = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_columns})
+
+testing.run(case: columns)

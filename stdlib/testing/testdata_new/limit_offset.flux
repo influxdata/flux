@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -53,4 +54,7 @@ t_limit = (table=<-) =>
 		|> range(start: 2018-05-22T19:00:00Z, stop: 2018-05-22T20:00:00Z)
 		|> limit(n: 2, offset: 1))
 
-test limit_offset = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_limit}
+test limit_offset = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_limit})
+
+testing.run(case: limit_offset)

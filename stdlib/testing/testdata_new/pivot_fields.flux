@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -62,4 +63,7 @@ t_pivot_fields = (table=<-) =>
 		|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
 		|> yield(name: "0"))
 
-test pivot_fields = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_pivot_fields}
+test pivot_fields = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_pivot_fields})
+
+testing.run(case: pivot_fields)

@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -56,4 +57,7 @@ t_meta_query_fields = (table=<-) =>
 		|> distinct(column: "_field")
 		|> group())
 
-test meta_query_fields = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_meta_query_fields}
+test meta_query_fields = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_meta_query_fields})
+
+testing.run(case: meta_query_fields)

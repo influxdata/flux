@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -35,4 +36,7 @@ t_difference_panic = (table=<-) =>
 			(r._field == "no_exist"))
 		|> difference())
 
-test difference_panic = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_difference_panic}
+test difference_panic = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_difference_panic})
+
+testing.run(case: difference_panic)

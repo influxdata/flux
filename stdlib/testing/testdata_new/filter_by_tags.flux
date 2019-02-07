@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -44,4 +45,7 @@ t_filter_by_tags = (table=<-) =>
 			({_time: r._time, io_time: r._value}))
 		|> yield(name: "0"))
 
-test filter_by_tags = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_tags}
+test filter_by_tags = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_tags})
+
+testing.run(case: filter_by_tags)

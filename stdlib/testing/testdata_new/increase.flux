@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -51,4 +52,7 @@ t_increase = (table=<-) =>
 		|> range(start: 2018-05-22T19:53:26Z)
 		|> increase(columns: ["counter"]))
 
-test increase = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_increase}
+test increase = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_increase})
+
+testing.run(case: increase)

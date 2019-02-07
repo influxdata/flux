@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -38,4 +39,7 @@ t_highestMax = (table=<-) =>
 	(table
 		|> highestMax(n: 3, groupColumns: ["_measurement", "host"]))
 
-test highestMax = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_highestMax}
+test highestMax = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_highestMax})
+
+testing.run(case: highestMax)

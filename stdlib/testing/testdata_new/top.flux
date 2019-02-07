@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -37,4 +38,7 @@ t_top = (table=<-) =>
 		|> range(start: 2018-05-22T19:53:24.421470485Z)
 		|> top(n: 2))
 
-test top = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_top}
+test top = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_top})
+
+testing.run(case: top)

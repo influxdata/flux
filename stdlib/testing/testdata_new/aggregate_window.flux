@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -37,4 +38,7 @@ aggregate_window = (table=<-) =>
 		|> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)
 		|> aggregateWindow(every: 30s, fn: mean))
 
-test aggregate_window = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: aggregate_window}
+test aggregate_window = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: aggregate_window})
+
+testing.run(case: aggregate_window)

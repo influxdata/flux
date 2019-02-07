@@ -1,4 +1,5 @@
 package main
+// 
 option task = {name: "test", every: 10m}
 
 from(bucket: "test")

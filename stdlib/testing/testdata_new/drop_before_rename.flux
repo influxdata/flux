@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -42,4 +43,7 @@ drop_before_rename = (table=<-) =>
 		|> rename(columns: {old: "new"})
 		|> yield(name: "0"))
 
-test drop_before_rename = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: drop_before_rename}
+test drop_before_rename = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: drop_before_rename})
+
+testing.run(case: drop_before_rename)

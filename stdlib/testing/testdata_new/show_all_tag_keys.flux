@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -1138,4 +1139,7 @@ t_show_all_tag_keys = (table=<-) =>
 		|> map(fn: (r) =>
 			(r._value)))
 
-test show_all_tag_keys = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_show_all_tag_keys}
+test show_all_tag_keys = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_show_all_tag_keys})
+
+testing.run(case: show_all_tag_keys)

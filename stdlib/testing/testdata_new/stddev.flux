@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -52,4 +53,7 @@ t_stddev = (table=<-) =>
 		|> range(start: 2018-12-01T00:00:00Z)
 		|> stddev())
 
-test stddev = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stddev}
+test stddev = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stddev})
+
+testing.run(case: stddev)

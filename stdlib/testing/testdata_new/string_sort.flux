@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -33,4 +34,7 @@ t_string_sort = (table=<-) =>
 		|> range(start: 2018-05-22T19:53:26Z)
 		|> sort())
 
-test string_sort = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_sort}
+test string_sort = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_sort})
+
+testing.run(case: string_sort)

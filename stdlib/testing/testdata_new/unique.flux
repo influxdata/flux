@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -37,4 +38,7 @@ t_unique = (table=<-) =>
 	(table
 		|> unique(column: "tag0"))
 
-test unique = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_unique}
+test unique = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_unique})
+
+testing.run(case: unique)

@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -31,4 +32,7 @@ t_covariance = (tables=<-) =>
 		|> range(start: 2018-05-22T19:53:26Z)
 		|> covariance(columns: ["x", "y"]))
 
-test t_covariance = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_covariance}
+test t_covariance = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_covariance})
+
+testing.run(case: t_covariance)

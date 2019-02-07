@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -22,4 +23,7 @@ difference_one_value = (table=<-) =>
 		|> range(start: 2018-05-22T19:53:26Z)
 		|> difference(nonNegative: true))
 
-test difference_one_value = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: difference_one_value}
+test difference_one_value = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: difference_one_value})
+
+testing.run(case: difference_one_value)

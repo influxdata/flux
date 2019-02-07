@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -49,4 +50,7 @@ t_group_ungroup = (table=<-) =>
 			({_time: r._time, io_time: r._value}))
 		|> yield(name: "0"))
 
-test group_ungroup = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_ungroup}
+test group_ungroup = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_ungroup})
+
+testing.run(case: group_ungroup)

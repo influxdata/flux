@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -32,4 +33,7 @@ t_window_default_start_align = (table=<-) =>
 		|> range(start: 2018-05-22T19:53:30Z, stop: 2018-05-22T19:59:00Z)
 		|> window(every: 1m))
 
-test window_default_start_align = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window_default_start_align}
+test window_default_start_align = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window_default_start_align})
+
+testing.run(case: window_default_start_align)

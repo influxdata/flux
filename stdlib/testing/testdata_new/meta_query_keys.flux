@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -125,4 +126,7 @@ t_meta_query_keys = (table=<-) => {
 	return union(tables: [zero, one])
 }
 
-test meta_query_keys = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_meta_query_keys}
+test meta_query_keys = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_meta_query_keys})
+
+testing.run(case: meta_query_keys)

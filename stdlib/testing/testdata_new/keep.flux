@@ -1,4 +1,5 @@
 package main
+// 
 import "testing"
 
 option now = () =>
@@ -57,4 +58,7 @@ t_keep = (table=<-) =>
 		|> range(start: 2018-05-22T19:53:26Z)
 		|> keep(columns: ["_time", "_value", "_field"]))
 
-test keep = {input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_keep}
+test keep = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_keep})
+
+testing.run(case: keep)
