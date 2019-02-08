@@ -40,7 +40,7 @@ t_window_offset = (table=<-) =>
 	(table
 		|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
 		|> group(columns: ["_measurement"])
-		|> window(every: 1s, start: 2)
+		|> window(every: 1s, offset: 2s)
 		|> mean()
 		|> duplicate(column: "_start", as: "_time")
 		|> window(every: inf)

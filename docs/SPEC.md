@@ -1049,6 +1049,8 @@ The generator is then used to produce the set of intervals.
 The set of intervals will include all intervals that intersect with the initial range of time.
 The `intervals` function is designed to be used with the `intervals` parameter of the `window` function.
 
+By default the end boundary of an interval will align with the Unix epoch (zero time) modified by the offset of the `location` option.
+
 An interval is a built-in named type:
 
     type interval = {
@@ -1058,12 +1060,12 @@ An interval is a built-in named type:
     
 Intervals has the following parameters:
 
-| Name   | Type                         | Description                                                                                                                                                      |
-| ----   | ----                         | -----------                                                                                                                                                      |
-| every  | duration                     | Every is the duration between starts of each of the intervals. Defaults to the value of the `period` duration.                                                   |
-| period | duration                     | Period is the length of each interval. It can be negative, indicating the start and stop boundaries are reversed. Defaults to the value of the `every` duration. |
-| offset | duration                     | Offset is the offset duration relative to the location offset. It can be negative, indicating that the offset goes backwards in time. Defaults to zero.          |
-| filter | (interval: interval) -> bool | Filter accepts an interval object and returns a boolean value. Defaults to include all intervals.                                                                |
+| Name   | Type                         | Description                                                                                                                                                                                                             |
+| ----   | ----                         | -----------                                                                                                                                                                                                             |
+| every  | duration                     | Every is the duration between starts of each of the intervals. Defaults to the value of the `period` duration.                                                                                                          |
+| period | duration                     | Period is the length of each interval. It can be negative, indicating the start and stop boundaries are reversed. Defaults to the value of the `every` duration.                                                        |
+| offset | duration                     | Offset is the duration by which to shift the window boundaries. It can be negative, indicating that the offset goes backwards in time. Defaults to 0, which will align window end boundaries with the `every` duration. |
+| filter | (interval: interval) -> bool | Filter accepts an interval object and returns a boolean value. Defaults to include all intervals.                                                                                                                       |
 
 The Nth interval start date is the initial start date plus the offset plus an Nth multiple of the every parameter.
 Each interval stop date is equal to the interval start date plus the period duration.
@@ -2428,17 +2430,20 @@ New columns are added to uniquely identify each window and those columns are add
 
 A single input record will be placed into zero or more output tables, depending on the specific windowing function.
 
+By default the start boundary of a window will align with the Unix epoch (zero time) modified by the offset of the `location` option.
+
 Window has the following properties:
 
 | Name        | Type                                       | Description                                                                                                                                                                                                                                   |
 | ----        | ----                                       | -----------                                                                                                                                                                                                                                   |
-| every       | duration                                   | Every is the duration of time between windows. Defaults to `period`'s value One of `every`, `period` or `intervals` must be provided.                                                                                                         |
-| period      | duration                                   | Period is the duration of the window. Period is the length of each interval. It can be negative, indicating the start and stop boundaries are reversed. Defaults to `every`'s value One of `every`, `period` or `intervals` must be provided. |
-| offset      | time                                       | Offset is the duration relative to the location offset. It can be negative, indicating that the offset goes backwards in time. The default aligns the window boundaries to line up with the `now` option time.                                |
+| every       | duration                                   | Every is the duration of time between windows. Defaults to `period`'s value. One of `every`, `period` or `intervals` must be provided.                                                                                                         |
+| period      | duration                                   | Period is the duration of the window. Period is the length of each interval. It can be negative, indicating the start and stop boundaries are reversed. Defaults to `every`'s value. One of `every`, `period` or `intervals` must be provided. |
+| offset      | duration                                   | Offset is the duration by which to shift the window boundaries. It can be negative, indicating that the offset goes backwards in time. Defaults to 0, which will align window end boundaries with the `every` duration.                                |
 | intervals   | (start: time, stop: time) -> [...]interval | Intervals is a set of intervals to be used as the windows. One of `every`, `period` or `intervals` must be provided. When `intervals` is provided, `every`, `period`, and `offset` must be zero.                                              |
 | timeColumn  | string                                     | TimeColumn is the name of the time column to use.  Defaults to `_time`.                                                                                                                                                                       |
 | startColumn | string                                     | StartColumn is the name of the column containing the window start time. Defaults to `_start`.                                                                                                                                                 |
 | stopColumn  | string                                     | StopColumn is the name of the column containing the window stop time. Defaults to `_stop`.                                                                                                                                                    |
+| createEmpty | bool                                       | CreateEmpty specifies whether empty tables should be created. Defaults to `false`.
 
 Example: 
 ```

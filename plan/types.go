@@ -327,6 +327,5 @@ func ReplaceNode(oldNode, newNode PlanNode) {
 type WindowSpec struct {
 	Every  flux.Duration
 	Period flux.Duration
-	Round  flux.Duration
-	Start  flux.Time
+	Offset flux.Duration
 }

@@ -19,7 +19,7 @@ func (t Time) Round(d Duration) Time {
 	if d <= 0 {
 		return t
 	}
-	r := remainder(t, d)
+	r := t.Remainder(d)
 	if lessThanHalf(r, d) {
 		return t - Time(r)
 	}
@@ -30,7 +30,7 @@ func (t Time) Truncate(d Duration) Time {
 	if d <= 0 {
 		return t
 	}
-	r := remainder(t, d)
+	r := t.Remainder(d)
 	return t - Time(r)
 }
 
@@ -38,15 +38,15 @@ func (t Time) Add(d Duration) Time {
 	return t + Time(d)
 }
 
+// remainder divides t by d and returns the remainder.
+func (t Time) Remainder(d Duration) (r Duration) {
+	return Duration(int64(t) % int64(d))
+}
+
 // lessThanHalf reports whether x+x < y but avoids overflow,
 // assuming x and y are both positive (Duration is signed).
 func lessThanHalf(x, y Duration) bool {
 	return uint64(x)+uint64(x) < uint64(y)
-}
-
-// remainder divides t by d and returns the remainder.
-func remainder(t Time, d Duration) (r Duration) {
-	return Duration(int64(t) % int64(d))
 }
 
 func (t Time) String() string {

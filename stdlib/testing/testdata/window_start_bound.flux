@@ -33,7 +33,7 @@ outData = "
 t_window_start_bound = (table=<-) =>
 	(table
 		|> range(start: 2018-05-22T19:53:00Z)
-		|> window(start: 2018-05-22T19:53:30Z, every: 1m))
+		|> window(every: 1m, offset: 30s))
 
 test _window_start_bound = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window_start_bound})
