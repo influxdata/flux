@@ -13,6 +13,7 @@ run = (case) => {
     tc = case()
     return tc.input
         |> tc.fn()
+        |> yield(name: "_test_result")
         |> diff(want: tc.want)
         |> yield(name: "diff")
         |> assertEmpty()
