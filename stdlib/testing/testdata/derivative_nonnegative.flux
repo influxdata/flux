@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -42,4 +42,3 @@ derivative_nonnegative = (table=<-) =>
 test _derivative_nonnegative = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: derivative_nonnegative})
 
-testing.run(case: _derivative_nonnegative)

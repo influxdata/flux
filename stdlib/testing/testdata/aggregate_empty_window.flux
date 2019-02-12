@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -55,4 +55,3 @@ test aggregate_window_empty = () => ({
             |> aggregateWindow(every: 30s, fn: sum),
 })
 
-testing.run(case: aggregate_window_empty)

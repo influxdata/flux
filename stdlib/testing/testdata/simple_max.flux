@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -31,4 +31,3 @@ simple_max = (table=<-) =>
 test _simple_max = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: simple_max})
 
-testing.run(case: _simple_max)

@@ -1,4 +1,4 @@
-package main
+package testdata_test
 
 import (
 	"bufio"

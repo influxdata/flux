@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -46,4 +46,3 @@ t_distinct = (table=<-) =>
 test _distinct = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_distinct})
 
-testing.run(case: _distinct)

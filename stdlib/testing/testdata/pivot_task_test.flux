@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -48,4 +48,3 @@ t_pivot_task_test = (table=<-) =>
 test _pivot_task_test = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_pivot_task_test})
 
-testing.run(case: _pivot_task_test)

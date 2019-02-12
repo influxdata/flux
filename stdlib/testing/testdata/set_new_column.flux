@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -182,4 +182,3 @@ t_set_new_column = (table=<-) =>
 test _set_new_column = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_set_new_column})
 
-testing.run(case: _set_new_column)

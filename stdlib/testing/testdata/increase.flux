@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -56,4 +56,3 @@ t_increase = (table=<-) =>
 test _increase = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_increase})
 
-testing.run(case: _increase)

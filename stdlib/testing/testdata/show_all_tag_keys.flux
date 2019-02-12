@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -1143,4 +1143,3 @@ t_show_all_tag_keys = (table=<-) =>
 test _show_all_tag_keys = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_show_all_tag_keys})
 
-testing.run(case: _show_all_tag_keys)

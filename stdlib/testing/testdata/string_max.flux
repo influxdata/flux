@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -28,4 +28,3 @@ t_string_max = (table=<-) =>
 test _string_max = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_max})
 
-testing.run(case: _string_max)

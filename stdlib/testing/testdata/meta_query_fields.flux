@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -61,4 +61,3 @@ t_meta_query_fields = (table=<-) =>
 test _meta_query_fields = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_meta_query_fields})
 
-testing.run(case: _meta_query_fields)

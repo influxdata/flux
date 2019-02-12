@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -29,4 +29,3 @@ t_null_as_value = (table=<-) =>
 test _null_as_value = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_null_as_value})
 
-testing.run(case: _null_as_value)

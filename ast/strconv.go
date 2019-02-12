@@ -20,6 +20,15 @@ func ParseTime(lit string) (time.Time, error) {
 	return time.Parse(time.RFC3339Nano, lit)
 }
 
+// MustParseTime parses a time literal and panics in the case of an error.
+func MustParseTime(lit string) time.Time {
+	ts, err := ParseTime(lit)
+	if err != nil {
+		panic(err)
+	}
+	return ts
+}
+
 // ParseDuration will convert a string into components of the duration.
 func ParseDuration(lit string) ([]Duration, error) {
 	var values []Duration

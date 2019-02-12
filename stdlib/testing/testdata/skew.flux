@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -57,4 +57,3 @@ t_skew = (table=<-) =>
 test _skew = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_skew})
 
-testing.run(case: _skew)

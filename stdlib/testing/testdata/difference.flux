@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -48,4 +48,3 @@ t_difference = (table=<-) =>
 test _difference = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_difference})
 
-testing.run(case: _difference)

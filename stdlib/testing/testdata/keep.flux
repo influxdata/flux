@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -62,4 +62,3 @@ t_keep = (table=<-) =>
 test _keep = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_keep})
 
-testing.run(case: _keep)

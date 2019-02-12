@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -44,4 +44,3 @@ t_histogram = (table=<-) =>
 test _histogram = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogram})
 
-testing.run(case: _histogram)

@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -42,4 +42,3 @@ t_unique = (table=<-) =>
 test _unique = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_unique})
 
-testing.run(case: _unique)

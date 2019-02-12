@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 option task = {name: "test", every: 10m}
 

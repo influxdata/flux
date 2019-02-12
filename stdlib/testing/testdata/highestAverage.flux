@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -43,4 +43,3 @@ t_highestAverage = (table=<-) =>
 test _highestAverage = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_highestAverage})
 
-testing.run(case: _highestAverage)

@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "csv"
 import "testing"
@@ -51,4 +51,3 @@ t_fill_int = (table=<-) =>
 test _fill = () =>
 	({input: csv.from(csv: inData), want: csv.from(csv: outData), fn: t_fill_int})
 
-testing.run(case: _fill)

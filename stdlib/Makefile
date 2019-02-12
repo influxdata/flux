@@ -1,5 +1,5 @@
 # List any generated files here
-TARGETS = packages.go $(shell find . -name flux_gen.go)
+TARGETS = packages.go $(shell find . -name *_gen.go)
 # List any source files used to generate the targets here
 SOURCES = $(shell find . -name \*.flux)
 # List any directories that have their own Makefile here

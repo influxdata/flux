@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -44,4 +44,3 @@ t_highestCurrent = (table=<-) =>
 test _highestCurrent = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_highestCurrent})
 
-testing.run(case: _highestCurrent)

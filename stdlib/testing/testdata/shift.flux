@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -69,4 +69,3 @@ t_shift = (table=<-) =>
 test _shift = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shift})
 
-testing.run(case: _shift)

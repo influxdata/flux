@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -36,4 +36,3 @@ t_pivot_mean = (table=<-) =>
 test _pivot_mean = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_pivot_mean})
 
-testing.run(case: _pivot_mean)

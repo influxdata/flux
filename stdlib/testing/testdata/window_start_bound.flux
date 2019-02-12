@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -38,4 +38,3 @@ t_window_start_bound = (table=<-) =>
 test _window_start_bound = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window_start_bound})
 
-testing.run(case: _window_start_bound)

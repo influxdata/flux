@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -37,4 +37,3 @@ t_window_default_start_align = (table=<-) =>
 test _window_default_start_align = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window_default_start_align})
 
-testing.run(case: _window_default_start_align)
