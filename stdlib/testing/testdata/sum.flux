@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -65,4 +65,3 @@ t_sum = (table=<-) =>
 test _sum = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sum})
 
-testing.run(case: _sum)

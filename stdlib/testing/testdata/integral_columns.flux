@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -51,4 +51,3 @@ t_integral_columns = (table=<-) =>
 test _integral_columns = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_integral_columns})
 
-testing.run(case: _integral_columns)

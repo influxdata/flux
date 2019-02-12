@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -47,4 +47,3 @@ test _drop_non_existent = () =>
 test _drop_non_existent = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_drop})
 
-testing.run(case: _drop_non_existent)

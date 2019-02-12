@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -66,4 +66,3 @@ test _spread = () => ({
             |> spread(),
 })
 
-testing.run(case: _spread)

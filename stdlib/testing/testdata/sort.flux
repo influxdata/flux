@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -86,4 +86,3 @@ t_sort = (table=<-) =>
 test _sort = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sort})
 
-testing.run(case: _sort)

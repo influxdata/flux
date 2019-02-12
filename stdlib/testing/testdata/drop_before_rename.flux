@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -46,4 +46,3 @@ drop_before_rename = (table=<-) =>
 test _drop_before_rename = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: drop_before_rename})
 
-testing.run(case: _drop_before_rename)

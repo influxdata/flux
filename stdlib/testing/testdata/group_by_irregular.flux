@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -50,4 +50,3 @@ t_group_by_irregular = (table=<-) =>
 test _group_by_irregular = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_by_irregular})
 
-testing.run(case: _group_by_irregular)

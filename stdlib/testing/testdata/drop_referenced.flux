@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -56,4 +56,3 @@ drop_referenced = (table=<-) =>
 test _drop_referenced = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: drop_referenced})
 
-testing.run(case: _drop_referenced)

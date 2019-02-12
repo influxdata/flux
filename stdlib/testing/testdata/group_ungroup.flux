@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -54,4 +54,3 @@ t_group_ungroup = (table=<-) =>
 test _group_ungroup = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_ungroup})
 
-testing.run(case: _group_ungroup)

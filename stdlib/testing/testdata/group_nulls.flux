@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -100,4 +100,3 @@ t_group = (table=<-) =>
 test _group = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})
 
-testing.run(case: _group)

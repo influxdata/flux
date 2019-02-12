@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -32,4 +32,3 @@ t_map = (table=<-) =>
 test _map = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})
 
-testing.run(case: _map)

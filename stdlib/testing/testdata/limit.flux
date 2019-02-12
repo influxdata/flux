@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -54,4 +54,3 @@ t_limit = (table=<-) =>
 test _limit = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_limit})
 
-testing.run(case: _limit)

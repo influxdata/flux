@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -53,4 +53,3 @@ t_window_group_mean_ungroup = (table=<-) =>
 test _window_group_mean_ungroup = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window_group_mean_ungroup})
 
-testing.run(case: _window_group_mean_ungroup)

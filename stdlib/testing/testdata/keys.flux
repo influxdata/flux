@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -46,4 +46,3 @@ t_keys = (table=<-) =>
 test _keys = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_keys})
 
-testing.run(case: _keys)

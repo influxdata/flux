@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -31,4 +31,3 @@ covariance_missing_column_2 = (table=<-) =>
 test _covariance_missing_column_2 = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_2})
 
-testing.run(case: _covariance_missing_column_2)

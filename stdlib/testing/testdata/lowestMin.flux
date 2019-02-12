@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -44,4 +44,3 @@ t_lowestMin = (table=<-) =>
 test _lowestMin = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_lowestMin})
 
-testing.run(case: _lowestMin)

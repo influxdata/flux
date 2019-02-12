@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -50,4 +50,3 @@ t_duplicate = (table=<-) =>
 test _duplicate = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duplicate})
 
-testing.run(case: _duplicate)

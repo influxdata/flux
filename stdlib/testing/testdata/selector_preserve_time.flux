@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -36,4 +36,3 @@ t_selector_preserve_time = (table=<-) =>
 test _selector_preserve_time = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_selector_preserve_time})
 
-testing.run(case: _selector_preserve_time)

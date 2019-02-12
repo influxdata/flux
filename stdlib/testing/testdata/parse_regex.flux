@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -42,4 +42,3 @@ t_parse_regex = (table=<-) =>
 test _parse_regex = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_parse_regex})
 
-testing.run(case: _parse_regex)

@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -62,4 +62,3 @@ drop_newname_after = (table=<-) =>
 test _drop_newname_after = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: drop_newname_after})
 
-testing.run(case: _drop_newname_after)

@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -70,4 +70,3 @@ t_cumulative_sum = (table=<-) =>
 test _cumulative_sum = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_cumulative_sum})
 
-testing.run(case: _cumulative_sum)

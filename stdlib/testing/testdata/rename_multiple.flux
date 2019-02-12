@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -63,4 +63,3 @@ t_rename_multiple = (table=<-) =>
 test _rename_multiple = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_rename_multiple})
 
-testing.run(case: _rename_multiple)

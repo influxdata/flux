@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -36,4 +36,3 @@ t_covariance = (tables=<-) =>
 test _t_covariance = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_covariance})
 
-testing.run(case: _t_covariance)

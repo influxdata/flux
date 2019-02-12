@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -40,4 +40,3 @@ t_difference_panic = (table=<-) =>
 test _difference_panic = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_difference_panic})
 
-testing.run(case: _difference_panic)

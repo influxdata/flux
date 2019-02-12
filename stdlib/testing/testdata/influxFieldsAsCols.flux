@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 import "influxdata/influxdb/v1"
@@ -68,4 +68,3 @@ t_influxFieldsAsCols = (table=<-) =>
 test _influxFieldsAsCols = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_influxFieldsAsCols})
 
-testing.run(case: _influxFieldsAsCols)

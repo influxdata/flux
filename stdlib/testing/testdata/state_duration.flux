@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -51,4 +51,3 @@ t_state_duration = (table=<-) =>
 test _state_duration = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_duration})
 
-testing.run(case: _state_duration)

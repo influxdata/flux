@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -47,4 +47,3 @@ t_filter_by_regex_function = (table=<-) =>
 test _filter_by_regex_function = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex_function})
 
-testing.run(case: _filter_by_regex_function)

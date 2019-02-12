@@ -1,4 +1,4 @@
-package main
+package testdata_test
  
 import "testing"
 
@@ -56,4 +56,3 @@ test aggregate_window_fill = () => ({
             |> fill(value: 0.0),
 })
 
-testing.run(case: aggregate_window_fill)

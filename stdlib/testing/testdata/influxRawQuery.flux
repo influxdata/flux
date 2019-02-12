@@ -1,3 +1,5 @@
+package testdata_test
+
 import "testing"
 import "influxdata/influxdb/v1"
 
@@ -55,4 +57,4 @@ test influx_raw_query = () => ({
     fn: (table=<-) => table |> rawQuery(measurement: "system",fields: ["load1", "load15", "load5"], start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z)
 })
 
-testing.run(case: influx_raw_query)
+
