@@ -15,7 +15,6 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/internal/token"
 	"github.com/influxdata/flux/parser"
-	fluxtest "github.com/influxdata/flux/stdlib/testing"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -216,7 +215,7 @@ func generateTestASTFile(dir, pkg string, pkgs []*ast.Package) error {
 }
 
 func generateTestCases(pkg *ast.Package) []*ast.Package {
-	packs := make([]*ast.Package, 0, len(pkg.Files))
+	packs := make([]*ast.Package, len(pkg.Files))
 	tests := make([]ast.Statement, 4)
 	visitor := testStmtVisitor{
 		fn: func(s ast.Statement) {
@@ -224,17 +223,14 @@ func generateTestCases(pkg *ast.Package) []*ast.Package {
 		},
 	}
 
-	for _, file := range pkg.Files {
-		if _, ok := fluxtest.Skip[strings.TrimSuffix(file.Name, ".flux")]; ok {
-			continue
-		}
+	for i, file := range pkg.Files {
 		tests = tests[:0]
 		ast.Walk(visitor, file)
 		file.Body = append(file.Body, tests...)
-		packs = append(packs, &ast.Package{
+		packs[i] = &ast.Package{
 			Package: "main",
 			Files:   []*ast.File{file},
-		})
+		}
 	}
 	return packs
 }
