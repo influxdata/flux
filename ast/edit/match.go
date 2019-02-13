@@ -226,84 +226,419 @@ func match(pattern, node ast.Node, ms sliceMatchingStrategy) bool {
 	if pattern == node {
 		return true
 	}
+	// beware of untyped nils
 	if pattern == nil {
 		return true
 	}
 	if node == nil {
 		return false
 	}
-	if pattern.Type() != node.Type() {
-		return false
-	}
 
-	switch n := pattern.(type) {
+	switch p := pattern.(type) {
 	case *ast.Package:
-		return matchPackage(n, node.(*ast.Package), ms)
+		n, ok := node.(*ast.Package)
+		if !ok {
+			// nodes are of different type, they don't match.
+			// cannot use p.Type() != n.Type() because, if p or n is a typed nil,
+			// it would cause a nil dereference panic. I should do it below.
+			// However, at this point, I just know they are of different type.
+			return false
+		}
+		// beware of typed nils
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchPackage(p, n, ms)
 	case *ast.File:
-		return matchFile(n, node.(*ast.File), ms)
+		n, ok := node.(*ast.File)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchFile(p, n, ms)
 	case *ast.Block:
-		return matchBlock(n, node.(*ast.Block), ms)
+		n, ok := node.(*ast.Block)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchBlock(p, n, ms)
 	case *ast.PackageClause:
-		return matchPackageClause(n, node.(*ast.PackageClause), ms)
+		n, ok := node.(*ast.PackageClause)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchPackageClause(p, n, ms)
 	case *ast.ImportDeclaration:
-		return matchImportDeclaration(n, node.(*ast.ImportDeclaration), ms)
+		n, ok := node.(*ast.ImportDeclaration)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchImportDeclaration(p, n, ms)
 	case *ast.OptionStatement:
-		return matchOptionStatement(n, node.(*ast.OptionStatement), ms)
+		n, ok := node.(*ast.OptionStatement)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchOptionStatement(p, n, ms)
 	case *ast.ExpressionStatement:
-		return matchExpressionStatement(n, node.(*ast.ExpressionStatement), ms)
+		n, ok := node.(*ast.ExpressionStatement)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchExpressionStatement(p, n, ms)
 	case *ast.ReturnStatement:
-		return matchReturnStatement(n, node.(*ast.ReturnStatement), ms)
+		n, ok := node.(*ast.ReturnStatement)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchReturnStatement(p, n, ms)
+	case *ast.TestStatement:
+		n, ok := node.(*ast.TestStatement)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchTestStatement(p, n, ms)
 	case *ast.VariableAssignment:
-		return matchVariableAssignment(n, node.(*ast.VariableAssignment), ms)
+		n, ok := node.(*ast.VariableAssignment)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchVariableAssignment(p, n, ms)
 	case *ast.MemberAssignment:
-		return matchMemberAssignment(n, node.(*ast.MemberAssignment), ms)
+		n, ok := node.(*ast.MemberAssignment)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchMemberAssignment(p, n, ms)
 	case *ast.CallExpression:
-		return matchCallExpression(n, node.(*ast.CallExpression), ms)
+		n, ok := node.(*ast.CallExpression)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchCallExpression(p, n, ms)
 	case *ast.PipeExpression:
-		return matchPipeExpression(n, node.(*ast.PipeExpression), ms)
+		n, ok := node.(*ast.PipeExpression)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchPipeExpression(p, n, ms)
 	case *ast.MemberExpression:
-		return matchMemberExpression(n, node.(*ast.MemberExpression), ms)
+		n, ok := node.(*ast.MemberExpression)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchMemberExpression(p, n, ms)
 	case *ast.IndexExpression:
-		return matchIndexExpression(n, node.(*ast.IndexExpression), ms)
+		n, ok := node.(*ast.IndexExpression)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchIndexExpression(p, n, ms)
 	case *ast.BinaryExpression:
-		return matchBinaryExpression(n, node.(*ast.BinaryExpression), ms)
+		n, ok := node.(*ast.BinaryExpression)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchBinaryExpression(p, n, ms)
 	case *ast.UnaryExpression:
-		return matchUnaryExpression(n, node.(*ast.UnaryExpression), ms)
+		n, ok := node.(*ast.UnaryExpression)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchUnaryExpression(p, n, ms)
 	case *ast.LogicalExpression:
-		return matchLogicalExpression(n, node.(*ast.LogicalExpression), ms)
+		n, ok := node.(*ast.LogicalExpression)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchLogicalExpression(p, n, ms)
 	case *ast.ObjectExpression:
-		return matchObjectExpression(n, node.(*ast.ObjectExpression), ms)
+		n, ok := node.(*ast.ObjectExpression)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchObjectExpression(p, n, ms)
 	case *ast.ConditionalExpression:
-		return matchConditionalExpression(n, node.(*ast.ConditionalExpression), ms)
+		n, ok := node.(*ast.ConditionalExpression)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchConditionalExpression(p, n, ms)
 	case *ast.ArrayExpression:
-		return matchArrayExpression(n, node.(*ast.ArrayExpression), ms)
+		n, ok := node.(*ast.ArrayExpression)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchArrayExpression(p, n, ms)
 	case *ast.Identifier:
-		return matchIdentifier(n, node.(*ast.Identifier), ms)
+		n, ok := node.(*ast.Identifier)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchIdentifier(p, n, ms)
 	case *ast.PipeLiteral:
-		return matchPipeLiteral(n, node.(*ast.PipeLiteral), ms)
+		n, ok := node.(*ast.PipeLiteral)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchPipeLiteral(p, n, ms)
 	case *ast.StringLiteral:
-		return matchStringLiteral(n, node.(*ast.StringLiteral), ms)
+		n, ok := node.(*ast.StringLiteral)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchStringLiteral(p, n, ms)
 	case *ast.BooleanLiteral:
-		return matchBooleanLiteral(n, node.(*ast.BooleanLiteral), ms)
+		n, ok := node.(*ast.BooleanLiteral)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchBooleanLiteral(p, n, ms)
 	case *ast.FloatLiteral:
-		return matchFloatLiteral(n, node.(*ast.FloatLiteral), ms)
+		n, ok := node.(*ast.FloatLiteral)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchFloatLiteral(p, n, ms)
 	case *ast.IntegerLiteral:
-		return matchIntegerLiteral(n, node.(*ast.IntegerLiteral), ms)
+		n, ok := node.(*ast.IntegerLiteral)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchIntegerLiteral(p, n, ms)
 	case *ast.UnsignedIntegerLiteral:
-		return matchUnsignedIntegerLiteral(n, node.(*ast.UnsignedIntegerLiteral), ms)
+		n, ok := node.(*ast.UnsignedIntegerLiteral)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchUnsignedIntegerLiteral(p, n, ms)
 	case *ast.RegexpLiteral:
-		return matchRegexpLiteral(n, node.(*ast.RegexpLiteral), ms)
+		n, ok := node.(*ast.RegexpLiteral)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchRegexpLiteral(p, n, ms)
 	case *ast.DurationLiteral:
-		return matchDurationLiteral(n, node.(*ast.DurationLiteral), ms)
+		n, ok := node.(*ast.DurationLiteral)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchDurationLiteral(p, n, ms)
 	case *ast.DateTimeLiteral:
-		return matchDateTimeLiteral(n, node.(*ast.DateTimeLiteral), ms)
+		n, ok := node.(*ast.DateTimeLiteral)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchDateTimeLiteral(p, n, ms)
 	case *ast.FunctionExpression:
-		return matchFunctionExpression(n, node.(*ast.FunctionExpression), ms)
+		n, ok := node.(*ast.FunctionExpression)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchFunctionExpression(p, n, ms)
 	case *ast.Property:
-		return matchProperty(n, node.(*ast.Property), ms)
+		n, ok := node.(*ast.Property)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchProperty(p, n, ms)
 	default:
 		// If we were able not to find the type, than this switch is wrong
-		panic(fmt.Errorf("unknown type %q", n.Type()))
+		panic(fmt.Errorf("unknown type %q", p.Type()))
 	}
 }
 
@@ -371,6 +706,10 @@ func matchExpressionStatement(p *ast.ExpressionStatement, n *ast.ExpressionState
 
 func matchReturnStatement(p *ast.ReturnStatement, n *ast.ReturnStatement, ms sliceMatchingStrategy) bool {
 	return match(p.Argument, n.Argument, ms)
+}
+
+func matchTestStatement(p *ast.TestStatement, n *ast.TestStatement, ms sliceMatchingStrategy) bool {
+	return match(p.Assignment, n.Assignment, ms)
 }
 
 func matchVariableAssignment(p *ast.VariableAssignment, n *ast.VariableAssignment, ms sliceMatchingStrategy) bool {
