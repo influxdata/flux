@@ -6,8 +6,8 @@ builtin assertEquals
 builtin assertEmpty
 builtin diff
 
-loadStorage = (csv) => c.from(csv: csv)
-loadMem = (csv) => c.from(csv: csv)
+option loadStorage = (csv) => c.from(csv: csv)
+option loadMem = (csv) => c.from(csv: csv)
 
 run = (case) => {
     tc = case()
