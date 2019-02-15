@@ -100,15 +100,23 @@ option task = {
 	delay: 1m,
 	cron: "20 * * *",
 	retry: 5,
+}`, edited: `option foo = 1
+option task = {
+	name: "bar",
+	every: 2hr,
+	delay: 1m,
+	cron: "20 * * *",
+	retry: 5,
+	foo: "foo",
 }`,
-			errorWanted: true,
+			errorWanted: false,
 			edit: func(node ast.Node) (bool, error) {
 				every, err := ast.ParseDuration("2hr")
 				if err != nil {
 					t.Fatal(err)
 				}
 				return edit.Option(node, "task", edit.OptionObjectFn(map[string]ast.Expression{
-					"foo":   &ast.StringLiteral{Value: "foo"}, // should cause error
+					"foo":   &ast.StringLiteral{Value: "foo"}, // should add a foo string
 					"every": &ast.DurationLiteral{Values: every},
 				}))
 			},
