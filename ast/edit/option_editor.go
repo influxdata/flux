@@ -53,11 +53,11 @@ func OptionObjectFn(keyMap map[string]ast.Expression) OptionFn {
 		// check that every specified property exists in the object
 		found := make(map[string]bool, len(obj.Properties))
 		for _, p := range obj.Properties {
-			found[p.Key.Key()] = false
+			found[p.Key.Key()] = true
 		}
 
 		for k := range keyMap {
-			if _, ok := found[k]; !ok {
+			if !found[k] {
 				obj.Properties = append(obj.Properties, &ast.Property{
 					Key:   &ast.Identifier{Name: k},
 					Value: keyMap[k],
