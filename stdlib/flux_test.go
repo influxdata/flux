@@ -6,11 +6,11 @@ import (
 	"context"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib"
 )
@@ -47,7 +47,7 @@ func BenchmarkFluxEndToEnd(b *testing.B) {
 func runEndToEnd(t *testing.T, querier *querytest.Querier, pkgs []*ast.Package) {
 	for _, pkg := range pkgs {
 		name := pkg.Files[0].Name
-		c := compiler{pkg: pkg}
+		c := lang.ASTCompiler{AST: pkg}
 		t.Run(name, func(t *testing.T) {
 			n := strings.TrimSuffix(name, ".flux")
 			if reason, ok := skip[n]; ok {
@@ -61,8 +61,12 @@ func runEndToEnd(t *testing.T, querier *querytest.Querier, pkgs []*ast.Package) 
 func benchEndToEnd(b *testing.B, querier *querytest.Querier, pkgs []*ast.Package) {
 	for _, pkg := range pkgs {
 		name := pkg.Files[0].Name
-		c := compiler{pkg: pkg}
+		c := lang.ASTCompiler{AST: pkg}
 		b.Run(name, func(b *testing.B) {
+			n := strings.TrimSuffix(name, ".flux")
+			if reason, ok := skip[n]; ok {
+				b.Skip(reason)
+			}
 			b.ResetTimer()
 			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
@@ -101,16 +105,4 @@ func testFlux(t testing.TB, querier *querytest.Querier, compiler flux.Compiler) 
 			t.Error(err)
 		}
 	}
-}
-
-type compiler struct {
-	pkg *ast.Package
-}
-
-func (c compiler) Compile(ctx context.Context) (*flux.Spec, error) {
-	return flux.CompileAST(ctx, c.pkg, time.Now())
-}
-
-func (c compiler) CompilerType() flux.CompilerType {
-	return "test"
 }
