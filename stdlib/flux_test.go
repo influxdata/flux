@@ -1,7 +1,6 @@
 package stdlib_test
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"strings"
@@ -46,22 +45,22 @@ func BenchmarkFluxEndToEnd(b *testing.B) {
 
 func runEndToEnd(t *testing.T, querier *querytest.Querier, pkgs []*ast.Package) {
 	for _, pkg := range pkgs {
+		pkg := pkg.Copy().(*ast.Package)
 		name := pkg.Files[0].Name
-		c := lang.ASTCompiler{AST: pkg}
 		t.Run(name, func(t *testing.T) {
 			n := strings.TrimSuffix(name, ".flux")
 			if reason, ok := skip[n]; ok {
 				t.Skip(reason)
 			}
-			testFlux(t, querier, c)
+			testFlux(t, querier, pkg)
 		})
 	}
 }
 
 func benchEndToEnd(b *testing.B, querier *querytest.Querier, pkgs []*ast.Package) {
 	for _, pkg := range pkgs {
+		pkg := pkg.Copy().(*ast.Package)
 		name := pkg.Files[0].Name
-		c := lang.ASTCompiler{AST: pkg}
 		b.Run(name, func(b *testing.B) {
 			n := strings.TrimSuffix(name, ".flux")
 			if reason, ok := skip[n]; ok {
@@ -70,39 +69,65 @@ func benchEndToEnd(b *testing.B, querier *querytest.Querier, pkgs []*ast.Package
 			b.ResetTimer()
 			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
-				testFlux(b, querier, c)
+				testFlux(b, querier, pkg)
 			}
 		})
 	}
 }
 
-func testFlux(t testing.TB, querier *querytest.Querier, compiler flux.Compiler) {
-	r, err := querier.C.Query(context.Background(), compiler)
+func testFlux(t testing.TB, querier *querytest.Querier, pkg *ast.Package) {
+	pkg.Files = append(pkg.Files, stdlib.TestingRunCalls(pkg))
+	c := lang.ASTCompiler{AST: pkg}
+
+	// testing.run
+	doTestRun(t, querier, c)
+
+	// testing.inspect
+	if t.Failed() {
+		// Rerun the test case using testing.inspect
+		pkg.Files[len(pkg.Files)-1] = stdlib.TestingInspectCalls(pkg)
+		c := lang.ASTCompiler{AST: pkg}
+		doTestInspect(t, querier, c)
+	}
+}
+
+func doTestRun(t testing.TB, querier *querytest.Querier, c flux.Compiler) {
+	r, err := querier.C.Query(context.Background(), c)
 	if err != nil {
-		t.Fatalf("unexpected error while executing test: %v", err)
+		t.Fatalf("unexpected error while executing testing.run: %v", err)
 	}
 	defer r.Done()
 	result, ok := <-r.Ready()
 	if !ok {
-		t.Fatalf("TEST error retrieving query result: %s", r.Err())
+		t.Fatalf("unexpected error retrieving testing.run result: %s", r.Err())
 	}
 
-	var out bytes.Buffer
-	defer func() {
-		if t.Failed() {
-			scanner := bufio.NewScanner(&out)
-			for scanner.Scan() {
-				t.Log(scanner.Text())
-			}
-		}
-	}()
-
+	// Read all results checking for errors
 	for _, res := range result {
-		if err := res.Tables().Do(func(tbl flux.Table) error {
-			_, _ = execute.NewFormatter(tbl, nil).WriteTo(&out)
+		err := res.Tables().Do(func(flux.Table) error {
 			return nil
-		}); err != nil {
+		})
+		if err != nil {
 			t.Error(err)
 		}
 	}
+}
+func doTestInspect(t testing.TB, querier *querytest.Querier, c flux.Compiler) {
+	r, err := querier.C.Query(context.Background(), c)
+	if err != nil {
+		t.Fatalf("unexpected error while executing testing.inspect: %v", err)
+	}
+	defer r.Done()
+	result, ok := <-r.Ready()
+	if !ok {
+		t.Fatalf("unexpected error retrieving testing.inspect result: %s", r.Err())
+	}
+	// Read all results and format them
+	var out bytes.Buffer
+	for _, res := range result {
+		if err := execute.FormatResult(&out, res); err != nil {
+			t.Error(err)
+		}
+	}
+	t.Log(out.String())
 }

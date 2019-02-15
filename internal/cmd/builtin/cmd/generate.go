@@ -125,8 +125,8 @@ func generate(cmd *cobra.Command, args []string) error {
 			if importPath != pkgName {
 				testPackages = append(testPackages, importPath)
 			}
-			// Isolate tests; add calls to testing.run
-			packs := generateTestCases(testPkg)
+			// Isolate tests files into their own package
+			packs := splitTestPackages(testPkg)
 			if err := generateTestASTFile(dir, testPkg.Package, packs); err != nil {
 				return err
 			}
@@ -214,19 +214,12 @@ func generateTestASTFile(dir, pkg string, pkgs []*ast.Package) error {
 	return file.Save(filepath.Join(dir, "flux_test_gen.go"))
 }
 
-func generateTestCases(pkg *ast.Package) []*ast.Package {
+func splitTestPackages(pkg *ast.Package) []*ast.Package {
 	packs := make([]*ast.Package, len(pkg.Files))
-	tests := make([]ast.Statement, 4)
-	visitor := testStmtVisitor{
-		fn: func(s ast.Statement) {
-			tests = append(tests, s)
-		},
-	}
-
 	for i, file := range pkg.Files {
-		tests = tests[:0]
-		ast.Walk(visitor, file)
-		file.Body = append(file.Body, tests...)
+		if file.Package != nil {
+			file.Package.Name.Name = "main"
+		}
 		packs[i] = &ast.Package{
 			Package: "main",
 			Files:   []*ast.File{file},
@@ -234,43 +227,6 @@ func generateTestCases(pkg *ast.Package) []*ast.Package {
 	}
 	return packs
 }
-
-type testStmtVisitor struct {
-	fn func(ast.Statement)
-}
-
-func (v testStmtVisitor) Visit(node ast.Node) ast.Visitor {
-	switch n := node.(type) {
-	case *ast.PackageClause:
-		// make package executable
-		n.Name.Name = "main"
-	case ast.Statement:
-		if n, ok := n.(*ast.TestStatement); ok {
-			v.fn(&ast.ExpressionStatement{
-				Expression: &ast.CallExpression{
-					Callee: &ast.MemberExpression{
-						Object:   &ast.Identifier{Name: "testing"},
-						Property: &ast.Identifier{Name: "run"},
-					},
-					Arguments: []ast.Expression{
-						&ast.ObjectExpression{
-							Properties: []*ast.Property{
-								{
-									Key:   &ast.Identifier{Name: "case"},
-									Value: n.Assignment.ID,
-								},
-							},
-						},
-					},
-				},
-			})
-		}
-		return nil
-	}
-	return v
-}
-
-func (v testStmtVisitor) Done(node ast.Node) {}
 
 func readIgnoreFile(fn string) ([]string, error) {
 	f, err := os.Open(fn)
