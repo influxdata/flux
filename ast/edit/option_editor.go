@@ -38,7 +38,7 @@ func OptionValueFn(expr ast.Expression) OptionFn {
 
 // Creates an `OptionFn` for updating the values of an `OptionStatement` that has an
 // `ObjectExpression` as value. Returns error if the child of the option statement is not
-// an object expression, or if some key in the provided map is not a property of the object.
+// an object expression. If some key is not a property of the object it is added.
 func OptionObjectFn(keyMap map[string]ast.Expression) OptionFn {
 	return func(opt *ast.OptionStatement) (ast.Expression, error) {
 		a, ok := opt.Assignment.(*ast.VariableAssignment)
@@ -51,14 +51,17 @@ func OptionObjectFn(keyMap map[string]ast.Expression) OptionFn {
 		}
 
 		// check that every specified property exists in the object
-		keys := make(map[string]bool, len(obj.Properties))
+		found := make(map[string]bool, len(obj.Properties))
 		for _, p := range obj.Properties {
-			keys[p.Key.Key()] = true
+			found[p.Key.Key()] = false
 		}
 
 		for k := range keyMap {
-			if !keys[k] {
-				return nil, fmt.Errorf("cannot find property '%s' in object expression", k)
+			if _, ok := found[k]; !ok {
+				obj.Properties = append(obj.Properties, &ast.Property{
+					Key:   &ast.Identifier{Name: k},
+					Value: keyMap[k],
+				})
 			}
 		}
 
