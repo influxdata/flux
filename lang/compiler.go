@@ -55,9 +55,13 @@ func (c SpecCompiler) CompilerType() flux.CompilerType {
 // ASTCompiler implements Compiler by producing a Spec from an AST.
 type ASTCompiler struct {
 	AST *ast.Package `json:"ast"`
+	Now func() time.Time
 }
 
 func (c ASTCompiler) Compile(ctx context.Context) (*flux.Spec, error) {
+	if c.Now != nil {
+		return flux.CompileAST(ctx, c.AST, c.Now())
+	}
 	return flux.CompileAST(ctx, c.AST, time.Now())
 }
 
