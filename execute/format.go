@@ -1,6 +1,7 @@
 package execute
 
 import (
+	"fmt"
 	"io"
 	"sort"
 	"strconv"
@@ -11,6 +12,18 @@ import (
 )
 
 const fixedWidthTimeFmt = "2006-01-02T15:04:05.000000000Z"
+
+// FormatResult prints the result to w.
+func FormatResult(w io.Writer, res flux.Result) error {
+	fmt.Fprintf(w, "Result: %s\n", res.Name())
+	if err := res.Tables().Do(func(tbl flux.Table) error {
+		_, err := NewFormatter(tbl, nil).WriteTo(w)
+		return err
+	}); err != nil {
+		return err
+	}
+	return nil
+}
 
 // Formatter writes a table to a Writer.
 type Formatter struct {
