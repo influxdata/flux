@@ -68,3 +68,8 @@ func (c ASTCompiler) Compile(ctx context.Context) (*flux.Spec, error) {
 func (ASTCompiler) CompilerType() flux.CompilerType {
 	return ASTCompilerType
 }
+
+// PrependFile prepends a file onto the compiler's list of package files.
+func (c *ASTCompiler) PrependFile(file *ast.File) {
+	c.AST.Files = append([]*ast.File{file}, c.AST.Files...)
+}
