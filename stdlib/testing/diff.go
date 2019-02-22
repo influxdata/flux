@@ -574,10 +574,14 @@ func (t *DiffTransformation) appendRow(builder execute.TableBuilder, i, diffIdx 
 }
 
 func (t *DiffTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
+	t.mu.Lock()
+	defer t.mu.Unlock()
 	return t.d.UpdateWatermark(mark)
 }
 
 func (t *DiffTransformation) UpdateProcessingTime(id execute.DatasetID, mark execute.Time) error {
+	t.mu.Lock()
+	defer t.mu.Unlock()
 	return t.d.UpdateProcessingTime(mark)
 }
 
