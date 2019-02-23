@@ -7,9 +7,9 @@ import (
 	"log"
 	"os/user"
 	"path"
-	"reflect"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
 	"github.com/prometheus/prometheus/promql"
 )
@@ -67,11 +67,14 @@ func main() {
 		log.Fatalln("Error processing InfluxDB results:", err)
 	}
 
-	fmt.Println("======== PROMETHEUS RESULTS:")
-	fmt.Println(promMatrix)
+	if diff := cmp.Diff(promMatrix, influxMatrix); diff != "" {
+		fmt.Println("Prometheus and InfluxDB results differ:\n\n", diff)
 
-	fmt.Println("======== INFLUXDB RESULTS:")
-	fmt.Println(influxMatrix)
+		fmt.Println("=== INFLUX:\n", influxMatrix)
+		fmt.Println("=== Prometheus:\n", promMatrix)
+	} else {
+		fmt.Println("Results equal!")
+	}
 
-	fmt.Println("======== RESULTS EQUAL:", reflect.DeepEqual(influxMatrix, promMatrix))
+	fmt.Println(ast.Format(fluxNode))
 }

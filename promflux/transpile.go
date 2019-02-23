@@ -31,12 +31,16 @@ func transpile(bucket string, n promql.Node, start time.Time, end time.Time, res
 			option queryRangeEnd = ""
 			option queryResolution = ""
 			option queryMetricName = ""
+			option queryOffset = ""
 
 		  from(bucket: "prom")
 			|> range(start: queryRangeStart, stop: queryRangeEnd)
 			|> filter(fn: (r) => r._measurement == queryMetricName)
 			|> window(every: queryResolution, period: 5m)
 			|> last()
+			|> drop(columns: ["_time"])
+			|> duplicate(column: "_stop", as: "_time")
+			|> shift(shift: queryOffset)
 		`
 		p := parser.ParseSource(script)
 		if ast.Check(p) > 0 {
@@ -44,10 +48,11 @@ func transpile(bucket string, n promql.Node, start time.Time, end time.Time, res
 		}
 
 		opts := map[string]edit.OptionFn{
-			"queryRangeStart": edit.OptionValueFn(&ast.DateTimeLiteral{Value: start.Add(-5 * time.Minute)}),
-			"queryRangeEnd":   edit.OptionValueFn(&ast.DateTimeLiteral{Value: end}),
+			"queryRangeStart": edit.OptionValueFn(&ast.DateTimeLiteral{Value: start.Add(-5*time.Minute - t.Offset)}),
+			"queryRangeEnd":   edit.OptionValueFn(&ast.DateTimeLiteral{Value: end.Add(-t.Offset)}),
 			"queryResolution": edit.OptionValueFn(&ast.DurationLiteral{Values: []ast.Duration{{Magnitude: resolution.Nanoseconds(), Unit: "ns"}}}),
 			"queryMetricName": edit.OptionValueFn(&ast.StringLiteral{Value: t.Name}),
+			"queryOffset":     edit.OptionValueFn(&ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Offset.Nanoseconds(), Unit: "ns"}}}),
 		}
 
 		if err := editOptions(p, opts); err != nil {
