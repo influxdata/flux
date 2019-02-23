@@ -18,6 +18,7 @@ func main() {
 	influxURL := flag.String("influx-url", "http://localhost:9999/", "InfluxDB server URL.")
 	influxBucket := flag.String("influx-bucket", "prometheus", "InfluxDB bucket name.")
 	influxToken := flag.String("influx-token", "", "InfluxDB authentication token.")
+	influxOrg := flag.String("influx-org", "prometheus", "The InfluxDB organization name.")
 	promURL := flag.String("prometheus-url", "http://localhost:9090/", "Prometheus server URL.")
 	promqlExpr := flag.String("query-expr", "up", "PromQL expression to query.")
 	queryStart := flag.Int64("query-start", 0, "Query start timestamp in milliseconds.")
@@ -58,7 +59,7 @@ func main() {
 	if err != nil {
 		log.Fatalln("Error querying Prometheus:", err)
 	}
-	influxResult, err := queryInfluxDB(*influxURL, *influxBucket, *influxToken, ast.Format(fluxNode))
+	influxResult, err := queryInfluxDB(*influxURL, *influxOrg, *influxToken, *influxBucket, ast.Format(fluxNode))
 	if err != nil {
 		log.Fatalln("Error querying InfluxDB:", err)
 	}

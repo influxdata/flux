@@ -38,7 +38,7 @@ func queryPrometheus(url string, expr string, start time.Time, end time.Time, re
 	return v, nil
 }
 
-func queryInfluxDB(url string, bucket string, token string, query string) (flux.ResultIterator, error) {
+func queryInfluxDB(url string, org string, token string, bucket string, query string) (flux.ResultIterator, error) {
 	jsonObj := map[string]interface{}{
 		"dialect": map[string]interface{}{
 			"annotations": []string{"group", "datatype", "default"},
@@ -52,7 +52,7 @@ func queryInfluxDB(url string, bucket string, token string, query string) (flux.
 	}
 
 	body := bytes.NewBuffer(jsonBody)
-	req, err := http.NewRequest("POST", url+"api/v2/query", body)
+	req, err := http.NewRequest("POST", url+"api/v2/query?org="+org, body)
 	if err != nil {
 		return nil, fmt.Errorf("error creating InfluxDB request: %s", err)
 	}

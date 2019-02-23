@@ -32,11 +32,13 @@ func transpile(bucket string, n promql.Node, start time.Time, end time.Time, res
 			option queryResolution = ""
 			option queryMetricName = ""
 			option queryOffset = ""
+			option queryXXX = ""
 
 		  from(bucket: "prom")
 			|> range(start: queryRangeStart, stop: queryRangeEnd)
 			|> filter(fn: (r) => r._measurement == queryMetricName)
 			|> window(every: queryResolution, period: 5m)
+			|> filter(fn: (r) => r._start > queryXXX)
 			|> last()
 			|> drop(columns: ["_time"])
 			|> duplicate(column: "_stop", as: "_time")
@@ -53,6 +55,7 @@ func transpile(bucket string, n promql.Node, start time.Time, end time.Time, res
 			"queryResolution": edit.OptionValueFn(&ast.DurationLiteral{Values: []ast.Duration{{Magnitude: resolution.Nanoseconds(), Unit: "ns"}}}),
 			"queryMetricName": edit.OptionValueFn(&ast.StringLiteral{Value: t.Name}),
 			"queryOffset":     edit.OptionValueFn(&ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Offset.Nanoseconds(), Unit: "ns"}}}),
+			"queryXXX":        edit.OptionValueFn(&ast.DateTimeLiteral{Value: end.Add(-5 * time.Minute)}),
 		}
 
 		if err := editOptions(p, opts); err != nil {
