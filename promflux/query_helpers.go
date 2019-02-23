@@ -18,7 +18,7 @@ import (
 	"github.com/prometheus/common/model"
 )
 
-func queryPrometheus(url string, expr string, start time.Time, end time.Time, resolution time.Duration) (model.Value, error) {
+func queryPrometheus(url string, expr string, start time.Time, end time.Time, resolution time.Duration) (model.Matrix, error) {
 	c, err := api.NewClient(api.Config{
 		Address: url,
 	})
@@ -35,7 +35,8 @@ func queryPrometheus(url string, expr string, start time.Time, end time.Time, re
 	if err != nil {
 		return nil, fmt.Errorf("error querying Prometheus: %s", err)
 	}
-	return v, nil
+
+	return v.(model.Matrix), nil
 }
 
 func queryInfluxDB(url string, org string, token string, bucket string, query string) (flux.ResultIterator, error) {
@@ -125,7 +126,7 @@ func influxResultToPromMatrix(resultIt flux.ResultIterator) (model.Matrix, error
 		return nil, fmt.Errorf("error processing InfluxDB results: %s", err)
 	}
 
-	var matrix model.Matrix
+	matrix := make(model.Matrix, 0, len(fpToSS))
 	for _, ss := range fpToSS {
 		// TODO: Also sort sample stream by time? Or are these always sorted coming from InfluxDB?
 		matrix = append(matrix, ss)

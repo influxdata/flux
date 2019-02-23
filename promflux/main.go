@@ -46,6 +46,7 @@ func main() {
 	startTime := time.Unix(0, *queryStart*1e6).UTC()
 	endTime := time.Unix(0, *queryEnd*1e6).UTC()
 
+	// Transpile PromQL into Flux.
 	promqlNode, err := promql.ParseExpr(*promqlExpr)
 	if err != nil {
 		log.Fatalln("Error parsing PromQL expression:", err)
@@ -55,27 +56,28 @@ func main() {
 		log.Fatalln("Error transpiling PromQL expression to Flux:", err)
 	}
 
+	// Query both Prometheus and InfluxDB, expect same result.
 	promMatrix, err := queryPrometheus(*promURL, *promqlExpr, startTime, endTime, *queryRes)
 	if err != nil {
 		log.Fatalln("Error querying Prometheus:", err)
 	}
+	fmt.Printf("Running Flux query:\n============================================\n%s\n============================================\n\n", ast.Format(fluxNode))
 	influxResult, err := queryInfluxDB(*influxURL, *influxOrg, *influxToken, *influxBucket, ast.Format(fluxNode))
 	if err != nil {
 		log.Fatalln("Error querying InfluxDB:", err)
 	}
+	// Make InfluxDB result comparable with the Prometheus result.
 	influxMatrix, err := influxResultToPromMatrix(influxResult)
 	if err != nil {
 		log.Fatalln("Error processing InfluxDB results:", err)
 	}
 
 	if diff := cmp.Diff(promMatrix, influxMatrix); diff != "" {
-		fmt.Println("Prometheus and InfluxDB results differ:\n\n", diff)
-
-		fmt.Println("=== INFLUX:\n", influxMatrix)
-		fmt.Println("=== Prometheus:\n", promMatrix)
+		fmt.Println("FAILED! Prometheus and InfluxDB results differ:\n\n", diff)
+		fmt.Println("Full results:")
+		fmt.Println("=== InfluxDB results:\n", influxMatrix)
+		fmt.Println("=== Prometheus results:\n", promMatrix)
 	} else {
-		fmt.Println("Results equal!")
+		fmt.Println("SUCCESS! Results equal.")
 	}
-
-	fmt.Println(ast.Format(fluxNode))
 }
