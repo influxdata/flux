@@ -9,7 +9,7 @@ Start the test setup (brings up Prometheus & InfluxDB, both with identical test 
 **NOTE**: Read the script to see which binaries are expected to be in your path!
 
 ```bash
-./e2e/influx.sh
+./db-setup/setup.sh
 ```
 
 Run PromQL+Flux queries against it:
