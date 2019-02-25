@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/edit"
 	"github.com/influxdata/flux/parser"
 	"github.com/prometheus/common/model"
+	"github.com/prometheus/prometheus/pkg/labels"
 	"github.com/prometheus/prometheus/promql"
 )
 
@@ -23,18 +25,72 @@ func mustEditOptions(n ast.Node, options map[string]edit.OptionFn) {
 	}
 }
 
+var labelMatchOps = map[labels.MatchType]ast.OperatorKind{
+	labels.MatchEqual:     ast.EqualOperator,
+	labels.MatchNotEqual:  ast.NotEqualOperator,
+	labels.MatchRegexp:    ast.RegexpMatchOperator,
+	labels.MatchNotRegexp: ast.NotRegexpMatchOperator,
+}
+
+func transpileLabelMatchersFn(lms []*labels.Matcher) *ast.FunctionExpression {
+	return &ast.FunctionExpression{
+		Params: []*ast.Property{
+			{
+				Key: &ast.Identifier{Name: "r"},
+			},
+		},
+		Body: transpileLabelMatchers(lms),
+	}
+}
+
+func transpileLabelMatchers(lms []*labels.Matcher) ast.Expression {
+	if len(lms) == 0 {
+		panic("empty label matchers")
+	}
+	if len(lms) == 1 {
+		return transpileLabelMatcher(lms[0])
+	}
+	return &ast.LogicalExpression{
+		Operator: ast.AndOperator,
+		Left:     transpileLabelMatcher(lms[0]),
+		// Recurse until we have all label matchers AND-ed together in a right-heavy tree.
+		Right: transpileLabelMatchers(lms[1:]),
+	}
+}
+
+func transpileLabelMatcher(lm *labels.Matcher) *ast.BinaryExpression {
+	op, ok := labelMatchOps[lm.Type]
+	if !ok {
+		panic(fmt.Errorf("invalid label matcher type %v", lm.Type))
+	}
+	if lm.Name == model.MetricNameLabel {
+		lm.Name = "_measurement"
+	}
+	be := &ast.BinaryExpression{
+		Operator: op,
+		Left: &ast.MemberExpression{
+			Object:   &ast.Identifier{Name: "r"},
+			Property: &ast.Identifier{Name: lm.Name},
+		},
+	}
+	if op == ast.EqualOperator || op == ast.NotEqualOperator {
+		be.Right = &ast.StringLiteral{Value: lm.Value}
+	} else {
+		// PromQL parsing already validates regexes.
+		// PromQL regexes are always full-string matches / fully anchored.
+		be.Right = &ast.RegexpLiteral{Value: regexp.MustCompile("^(?:" + lm.Value + ")$")}
+	}
+	return be
+}
+
 func transpile(bucket string, n promql.Node, start time.Time, end time.Time, resolution time.Duration) (ast.Node, error) {
 	switch t := n.(type) {
 	case *promql.VectorSelector:
-		if len(t.LabelMatchers) != 1 || t.LabelMatchers[0].Name != model.MetricNameLabel {
-			return nil, fmt.Errorf("vector selector label matchers not supported yet")
-		}
-
 		script := `
 			option queryRangeStart = ""
 			option queryRangeEnd = ""
 			option queryResolution = ""
-			option queryMetricName = ""
+			option queryLabelMatchersFn = ""
 			option queryOffset = ""
 			option queryWindowCutoff = ""
 
@@ -43,7 +99,7 @@ func transpile(bucket string, n promql.Node, start time.Time, end time.Time, res
 				|> range(start: queryRangeStart, stop: queryRangeEnd)
 
 				// Apply metric (and later label) filters.
-				|> filter(fn: (r) => r._measurement == queryMetricName)
+				|> filter(fn: queryLabelMatchersFn)
 
 				// At every resolution step, look back 5m (PromQL lookback delta).
 				|> window(every: queryResolution, period: 5m)
@@ -67,12 +123,12 @@ func transpile(bucket string, n promql.Node, start time.Time, end time.Time, res
 		}
 
 		opts := map[string]edit.OptionFn{
-			"queryRangeStart":   edit.OptionValueFn(&ast.DateTimeLiteral{Value: start.Add(-5*time.Minute - t.Offset)}),
-			"queryRangeEnd":     edit.OptionValueFn(&ast.DateTimeLiteral{Value: end.Add(-t.Offset)}),
-			"queryResolution":   edit.OptionValueFn(&ast.DurationLiteral{Values: []ast.Duration{{Magnitude: resolution.Nanoseconds(), Unit: "ns"}}}),
-			"queryMetricName":   edit.OptionValueFn(&ast.StringLiteral{Value: t.Name}),
-			"queryOffset":       edit.OptionValueFn(&ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Offset.Nanoseconds(), Unit: "ns"}}}),
-			"queryWindowCutoff": edit.OptionValueFn(&ast.DateTimeLiteral{Value: end.Add(-5*time.Minute - t.Offset)}),
+			"queryRangeStart":      edit.OptionValueFn(&ast.DateTimeLiteral{Value: start.Add(-5*time.Minute - t.Offset)}),
+			"queryRangeEnd":        edit.OptionValueFn(&ast.DateTimeLiteral{Value: end.Add(-t.Offset)}),
+			"queryResolution":      edit.OptionValueFn(&ast.DurationLiteral{Values: []ast.Duration{{Magnitude: resolution.Nanoseconds(), Unit: "ns"}}}),
+			"queryLabelMatchersFn": edit.OptionValueFn(transpileLabelMatchersFn(t.LabelMatchers)),
+			"queryOffset":          edit.OptionValueFn(&ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Offset.Nanoseconds(), Unit: "ns"}}}),
+			"queryWindowCutoff":    edit.OptionValueFn(&ast.DateTimeLiteral{Value: end.Add(-5*time.Minute - t.Offset)}),
 		}
 
 		mustEditOptions(p, opts)
