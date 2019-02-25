@@ -4,11 +4,20 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/plan"
 )
 
 type Node interface {
 	AddTransformation(t Transformation)
+}
+
+// MetadataNode is a node that has additional metadata
+// that should be added to the result after it is
+// processed.
+type MetadataNode interface {
+	Node
+	Metadata() flux.Metadata
 }
 
 type Source interface {

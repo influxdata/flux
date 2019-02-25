@@ -711,7 +711,7 @@ func TestExecutor_Execute(t *testing.T) {
 			plan := plantest.CreatePlanSpec(tc.spec)
 
 			exe := execute.NewExecutor(nil, zaptest.NewLogger(t))
-			results, err := exe.Execute(context.Background(), plan, executetest.UnlimitedAllocator)
+			results, _, err := exe.Execute(context.Background(), plan, executetest.UnlimitedAllocator)
 			if err != nil {
 				t.Fatal(err)
 			}

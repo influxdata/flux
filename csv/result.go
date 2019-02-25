@@ -110,7 +110,6 @@ type resultIterator struct {
 	err  error
 
 	canceled bool
-	stats    flux.Statistics
 }
 
 func (r *resultIterator) More() bool {
@@ -118,7 +117,6 @@ func (r *resultIterator) More() bool {
 		var extraMeta *tableMetadata
 		if r.next != nil {
 			extraMeta = r.next.extraMeta
-			r.stats = r.stats.Add(r.next.Statistics())
 		}
 		r.next, r.err = newResultDecoder(r.cr, r.c, extraMeta)
 		if r.err == nil {
@@ -139,10 +137,6 @@ func (r *resultIterator) Next() flux.Result {
 	return r.next
 }
 
-func (r *resultIterator) Statistics() flux.Statistics {
-	return r.stats
-}
-
 func (r *resultIterator) Release() {
 	if r.canceled {
 		return
@@ -158,6 +152,10 @@ func (r *resultIterator) Err() error {
 	return r.err
 }
 
+func (r *resultIterator) Statistics() flux.Statistics {
+	return flux.Statistics{}
+}
+
 type resultDecoder struct {
 	id string
 	c  ResultDecoderConfig
@@ -167,8 +165,6 @@ type resultDecoder struct {
 	extraMeta *tableMetadata
 
 	eof bool
-
-	stats flux.Statistics
 }
 
 func newResultDecoder(cr *csv.Reader, c ResultDecoderConfig, extraMeta *tableMetadata) (*resultDecoder, error) {
@@ -206,10 +202,6 @@ func (r *resultDecoder) Name() string {
 
 func (r *resultDecoder) Tables() flux.TableIterator {
 	return r
-}
-
-func (r *resultDecoder) Statistics() flux.Statistics {
-	return r.stats
 }
 
 func (r *resultDecoder) Abort(error) {
@@ -260,7 +252,6 @@ func (r *resultDecoder) Do(f func(flux.Table) error) error {
 		if len(extraLine) > 0 {
 			newMeta = extraLine[annotationIdx] != ""
 		}
-		r.stats.Add(b.Statistics())
 	}
 	return nil
 }
@@ -441,8 +432,6 @@ type tableDecoder struct {
 
 	eof       bool
 	extraLine []string
-
-	stats flux.Statistics
 }
 
 func newTable(
@@ -501,14 +490,9 @@ func (d *tableDecoder) Do(f func(flux.ColReader) error) error {
 		} else if err := table.Do(f); err != nil {
 			return err
 		}
-		d.stats = d.stats.Add(table.Statistics())
 		d.builder.ClearData()
 	}
 	return nil
-}
-
-func (d *tableDecoder) Statistics() flux.Statistics {
-	return d.stats
 }
 
 // advance reads the csv data until the end of the table or bufSize rows have been read.
@@ -655,8 +639,6 @@ func (d *tableDecoder) Key() flux.GroupKey {
 func (d *tableDecoder) Cols() []flux.ColMeta {
 	return d.builder.Cols()
 }
-
-// func (d *tableDecoder) Stats() flux.Statistics { return flux.Statistics{} }
 
 type colMeta struct {
 	flux.ColMeta

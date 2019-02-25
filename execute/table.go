@@ -1291,9 +1291,6 @@ func (t *ColListTable) Empty() bool {
 func (t *ColListTable) NRows() int {
 	return t.nrows
 }
-func (t *ColListTable) Statistics() flux.Statistics {
-	return flux.Statistics{}
-}
 
 func (t *ColListTable) Len() int {
 	return t.nrows

@@ -32,10 +32,6 @@ func (s *ToProcedureSpec) Cost(inStats []plan.Statistics) (plan.Cost, plan.Stati
 	return plan.Cost{}, plan.Statistics{}
 }
 
-func (s *ToProcedureSpec) Statistics() flux.Statistics {
-	return flux.Statistics{}
-}
-
 // ToTransformation simulates an output or an identity transformation
 type ToTransformation struct {
 	d execute.Dataset

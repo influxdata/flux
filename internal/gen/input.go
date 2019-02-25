@@ -475,7 +475,3 @@ func (r *result) Name() string {
 func (r *result) Tables() flux.TableIterator {
 	return r
 }
-
-func (r *result) Statistics() flux.Statistics {
-	return flux.Statistics{}
-}

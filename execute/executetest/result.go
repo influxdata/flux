@@ -8,10 +8,9 @@ import (
 )
 
 type Result struct {
-	Nm    string
-	Tbls  []*Table
-	Err   error
-	Stats flux.Statistics
+	Nm   string
+	Tbls []*Table
+	Err  error
 }
 
 func NewResult(tables []*Table) *Result {
@@ -33,16 +32,10 @@ func (r *Result) Normalize() {
 	NormalizeTables(r.Tbls)
 }
 
-func (r *Result) Statistics() flux.Statistics {
-	return r.Stats
-}
-
 type TableIterator struct {
 	tables []*Table
 	err    error
 }
-
-func (ti *TableIterator) Statistics() flux.Statistics { return flux.Statistics{} }
 
 func (ti *TableIterator) Do(f func(flux.Table) error) error {
 	if ti.err != nil {

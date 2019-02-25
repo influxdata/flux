@@ -6,7 +6,7 @@ import (
 
 // ResultIterator allows iterating through all results synchronously.
 // A ResultIterator is not thread-safe and all of the methods are expected to be
-// called within the same goroutine. A ResultIterator may implement Statisticser.
+// called within the same goroutine.
 type ResultIterator interface {
 	// More indicates if there are more results.
 	More() bool
@@ -25,7 +25,8 @@ type ResultIterator interface {
 	// or the query has been cancelled.
 	Err() error
 
-	// Statistics returns any statistics computed by the resultset.
+	// Statistics reports the statistics for the query.
+	// The statistics are not complete until Release is called.
 	Statistics() Statistics
 }
 
@@ -74,11 +75,7 @@ func (r *queryResultIterator) Err() error {
 }
 
 func (r *queryResultIterator) Statistics() Statistics {
-	stats := r.query.Statistics()
-	if r.results != nil {
-		stats = stats.Add(r.results.Statistics())
-	}
-	return stats
+	return r.query.Statistics()
 }
 
 type mapResultIterator struct {
@@ -118,11 +115,7 @@ func (r *mapResultIterator) Err() error {
 }
 
 func (r *mapResultIterator) Statistics() Statistics {
-	var stats Statistics
-	for _, result := range r.results {
-		stats = stats.Add(result.Statistics())
-	}
-	return stats
+	return Statistics{}
 }
 
 type sliceResultIterator struct {
@@ -155,9 +148,5 @@ func (r *sliceResultIterator) Err() error {
 }
 
 func (r *sliceResultIterator) Statistics() Statistics {
-	var stats Statistics
-	for _, result := range r.results {
-		stats = stats.Add(result.Statistics())
-	}
-	return stats
+	return Statistics{}
 }

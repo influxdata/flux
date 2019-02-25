@@ -14,13 +14,10 @@ type Result interface {
 	Name() string
 	// Tables returns a TableIterator for iterating through results
 	Tables() TableIterator
-	// Statistics returns statistics collected the processing of the result.
-	Statistics() Statistics
 }
 
 type TableIterator interface {
 	Do(f func(Table) error) error
-	Statistics() Statistics
 }
 
 type Table interface {
@@ -38,9 +35,6 @@ type Table interface {
 
 	// Empty returns whether the table contains no records.
 	Empty() bool
-
-	// Stats returns collected statistics about this table during processing.
-	Statistics() Statistics
 }
 
 // ColMeta contains the information about the column metadata.

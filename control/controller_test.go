@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/internal/pkg/syncutil"
@@ -154,8 +155,8 @@ func TestController_EnqueueQuery_Failure(t *testing.T) {
 
 func TestController_ExecuteQuery_Failure(t *testing.T) {
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(context.Context, *plan.PlanSpec, *memory.Allocator) (map[string]flux.Result, error) {
-		return nil, errors.New("expected")
+	executor.ExecuteFn = func(context.Context, *plan.PlanSpec, *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
+		return nil, mock.NoMetadata, errors.New("expected")
 	}
 
 	ctrl := New(Config{})
@@ -205,9 +206,9 @@ func TestController_ExecuteQuery_Failure(t *testing.T) {
 
 func TestController_CancelQuery_Ready(t *testing.T) {
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(context.Context, *plan.PlanSpec, *memory.Allocator) (map[string]flux.Result, error) {
+	executor.ExecuteFn = func(context.Context, *plan.PlanSpec, *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
 		// Return an empty result.
-		return map[string]flux.Result{}, nil
+		return map[string]flux.Result{}, mock.NoMetadata, nil
 	}
 
 	ctrl := New(Config{})
@@ -260,15 +261,15 @@ func TestController_CancelQuery_Ready(t *testing.T) {
 
 func TestController_CancelQuery_Execute(t *testing.T) {
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(ctx context.Context, spec *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, error) {
+	executor.ExecuteFn = func(ctx context.Context, spec *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
 		timer := time.NewTimer(100 * time.Microsecond)
 		select {
 		case <-timer.C:
 			// Return an empty result.
-			return map[string]flux.Result{}, nil
+			return map[string]flux.Result{}, mock.NoMetadata, nil
 		case <-ctx.Done():
 			timer.Stop()
-			return nil, ctx.Err()
+			return nil, mock.NoMetadata, ctx.Err()
 		}
 	}
 
@@ -327,8 +328,8 @@ func TestController_CancelQuery_Execute(t *testing.T) {
 // a race condition while testing under the race detector.
 func TestController_CancelQuery_Concurrent(t *testing.T) {
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(ctx context.Context, spec *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, error) {
-		return map[string]flux.Result{}, nil
+	executor.ExecuteFn = func(ctx context.Context, spec *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
+		return map[string]flux.Result{}, mock.NoMetadata, nil
 	}
 
 	ctrl := New(Config{})
@@ -408,9 +409,9 @@ func TestController_BlockedExecutor(t *testing.T) {
 	done := make(chan struct{})
 
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(context.Context, *plan.PlanSpec, *memory.Allocator) (map[string]flux.Result, error) {
+	executor.ExecuteFn = func(context.Context, *plan.PlanSpec, *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
 		<-done
-		return nil, nil
+		return nil, mock.NoMetadata, nil
 	}
 
 	ctrl := New(Config{})
@@ -459,9 +460,9 @@ func TestController_CancelledContextPropagatesToExecutor(t *testing.T) {
 	t.Parallel()
 
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(ctx context.Context, _ *plan.PlanSpec, _ *memory.Allocator) (map[string]flux.Result, error) {
+	executor.ExecuteFn = func(ctx context.Context, _ *plan.PlanSpec, _ *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
 		<-ctx.Done() // Unblock only when context has been cancelled
-		return nil, nil
+		return nil, mock.NoMetadata, nil
 	}
 
 	ctrl := New(Config{})
@@ -521,9 +522,9 @@ func TestController_Shutdown(t *testing.T) {
 	var executeGroup sync.WaitGroup
 	executeGroup.Add(10)
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(ctx context.Context, p *plan.PlanSpec, a *memory.Allocator) (results map[string]flux.Result, e error) {
+	executor.ExecuteFn = func(ctx context.Context, p *plan.PlanSpec, a *memory.Allocator) (results map[string]flux.Result, metaCh <-chan flux.Metadata, e error) {
 		executeGroup.Done()
-		return nil, nil
+		return nil, mock.NoMetadata, nil
 	}
 	ctrl := New(Config{})
 	ctrl.executor = executor
@@ -602,8 +603,26 @@ func TestController_Shutdown(t *testing.T) {
 }
 
 func TestController_Statistics(t *testing.T) {
+	executor := mock.NewExecutor()
+	executor.ExecuteFn = func(ctx context.Context, p *plan.PlanSpec, a *memory.Allocator) (results map[string]flux.Result, metadata <-chan flux.Metadata, e error) {
+		// Create a metadata channel that we will use to simulate sending metadata
+		// from the executor.
+		metaCh := make(chan flux.Metadata, 2)
+		go func() {
+			defer close(metaCh)
+			metaCh <- flux.Metadata{
+				"influxdb/scanned-values": []interface{}{int64(60)},
+				"influxdb/scanned-bytes":  []interface{}{int64(60 * 8)},
+			}
+			metaCh <- flux.Metadata{
+				"influxdb/scanned-values": []interface{}{int64(34)},
+				"influxdb/scanned-bytes":  []interface{}{int64(34 * 8)},
+			}
+		}()
+		return nil, metaCh, nil
+	}
 	ctrl := New(Config{})
-	ctrl.executor = mock.NewExecutor()
+	ctrl.executor = executor
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer func() {
@@ -613,7 +632,7 @@ func TestController_Statistics(t *testing.T) {
 		cancel()
 	}()
 
-	// Run the query. It should return an error.
+	// Run the query. It should not return an error.
 	q, err := ctrl.Query(context.Background(), mockCompiler)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
@@ -623,14 +642,15 @@ func TestController_Statistics(t *testing.T) {
 	time.Sleep(time.Millisecond)
 	q.Done()
 
-	statser, ok := q.(flux.Statisticser)
-	if !ok {
-		t.Fatal("query does not implement flux.Statisticser")
-	}
-
 	// Ensure this works without
-	stats := statser.Statistics()
+	stats := q.Statistics()
 	if stats.TotalDuration == 0 {
-		t.Fatal("total duration should be greater than zero")
+		t.Error("total duration should be greater than zero")
+	}
+	if want, got := (flux.Metadata{
+		"influxdb/scanned-values": []interface{}{int64(60), int64(34)},
+		"influxdb/scanned-bytes":  []interface{}{int64(60 * 8), int64(int64(34 * 8))},
+	}), stats.Metadata; !cmp.Equal(want, got) {
+		t.Errorf("unexpected metadata -want/+got\n%s", cmp.Diff(want, got))
 	}
 }
