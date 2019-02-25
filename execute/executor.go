@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"runtime/debug"
+	"sync"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -16,7 +17,13 @@ import (
 )
 
 type Executor interface {
-	Execute(ctx context.Context, p *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, error)
+	// Execute will begin execution of the PlanSpec using the memory allocator.
+	// This returns a mapping of names to the query results.
+	// This will also return a channel for the Metadata from the query. The channel
+	// may return zero or more values. The returned channel must not require itself to
+	// be read so the executor must allocate enough space in the channel so if the channel
+	// is unread that it will not block.
+	Execute(ctx context.Context, p *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error)
 }
 
 type executor struct {
@@ -53,6 +60,7 @@ type executionState struct {
 
 	results map[string]flux.Result
 	sources []Source
+	metaCh  chan flux.Metadata
 
 	transports []Transport
 
@@ -60,14 +68,14 @@ type executionState struct {
 	logger     *zap.Logger
 }
 
-func (e *executor) Execute(ctx context.Context, p *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, error) {
+func (e *executor) Execute(ctx context.Context, p *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
 	es, err := e.createExecutionState(ctx, p, a)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to initialize execute state")
+		return nil, nil, errors.Wrap(err, "failed to initialize execute state")
 	}
 	es.logger = e.logger
 	es.do(ctx)
-	return es.results, nil
+	return es.results, es.metaCh, nil
 }
 
 func validatePlan(p *plan.PlanSpec) error {
@@ -101,6 +109,11 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.PlanSpec, a
 	if err := p.BottomUpWalk(v.Visit); err != nil {
 		return nil, err
 	}
+
+	// Only sources can be a MetadataNode at the moment so allocate enough
+	// space for all of them to report metadata. Not all of them will necessarily
+	// report metadata.
+	es.metaCh = make(chan flux.Metadata, len(es.sources))
 
 	return v.es, nil
 }
@@ -242,8 +255,12 @@ func (es *executionState) abort(err error) {
 }
 
 func (es *executionState) do(ctx context.Context) {
+	var wg sync.WaitGroup
 	for _, src := range es.sources {
+		wg.Add(1)
 		go func(src Source) {
+			defer wg.Done()
+
 			// Setup panic handling on the source goroutines
 			defer func() {
 				if e := recover(); e != nil {
@@ -263,8 +280,18 @@ func (es *executionState) do(ctx context.Context) {
 				}
 			}()
 			src.Run(ctx)
+
+			if mdn, ok := src.(MetadataNode); ok {
+				es.metaCh <- mdn.Metadata()
+			}
 		}(src)
 	}
+
+	go func() {
+		defer close(es.metaCh)
+		wg.Wait()
+	}()
+
 	es.dispatcher.Start(es.resources.ConcurrencyQuota, ctx)
 	go func() {
 		// Wait for all transports to finish

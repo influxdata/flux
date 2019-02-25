@@ -162,6 +162,7 @@ func (c *Controller) createQuery(ctx context.Context, ct flux.CompilerType) *Que
 		c:                  c,
 		now:                time.Now().UTC(),
 		ready:              make(chan map[string]flux.Result, 1),
+		metaCh:             noMetadata, // This will be set to a non-closed channel upon successful execution.
 		parentCtx:          parentCtx,
 		parentSpan:         parentSpan,
 		cancel:             cancel,
@@ -424,11 +425,11 @@ func (c *Controller) processQuery(q *Query) (pop bool, err error) {
 		}
 		q.alloc = new(memory.Allocator)
 		// TODO: pass the plan to the executor here
-		r, err := c.executor.Execute(q.currentCtx, q.plan, q.alloc)
+		r, md, err := c.executor.Execute(q.currentCtx, q.plan, q.alloc)
 		if err != nil {
 			return true, errors.Wrap(err, "failed to execute query")
 		}
-		q.setResults(r)
+		q.setResults(r, md)
 	} else {
 		// update state to queueing
 		if !q.tryRequeue() {
@@ -474,7 +475,8 @@ type Query struct {
 	spec flux.Spec
 	now  time.Time
 
-	ready chan map[string]flux.Result
+	ready  chan map[string]flux.Result
+	metaCh <-chan flux.Metadata
 
 	// query state. The stateMu protects access for the group below.
 	stateMu sync.RWMutex
@@ -540,6 +542,14 @@ func (q *Query) Done() {
 	q.done.Do(func() {
 		q.stateMu.Lock()
 		q.transitionTo(Finished)
+
+		// Read from the metadata channel. We only do this in this location so no locking
+		// is needed.
+		meta := make(flux.Metadata)
+		for md := range q.metaCh {
+			meta.AddAll(md)
+		}
+		q.stats.Metadata = meta
 		q.stateMu.Unlock()
 
 		q.c.queryDone <- q
@@ -632,8 +642,14 @@ TRANSITION:
 	}
 	q.currentSpan, q.currentCtx = nil, nil
 
-	// If we are transitioning to a finished state from a non-finished state, finish the parent span.
 	if isFinishedState(newState) {
+		// Invoke the cancel function to ensure that we have signaled that the query should be done.
+		// The user is supposed to read the entirety of the tables returned before we end up in a finished
+		// state, but user error may have caused this not to happen so there's no harm to canceling multiple
+		// times.
+		q.cancel()
+
+		// If we are transitioning to a finished state from a non-finished state, finish the parent span.
 		if q.parentSpan != nil {
 			q.parentSpan.Finish()
 			q.stats.TotalDuration = q.parentSpan.Duration
@@ -718,7 +734,11 @@ func (q *Query) setErr(err error) {
 }
 
 // setResults will set the results and send them over the ready channel.
-func (q *Query) setResults(r map[string]flux.Result) {
+func (q *Query) setResults(r map[string]flux.Result, md <-chan flux.Metadata) {
+	q.stateMu.Lock()
+	q.metaCh = md
+	q.stateMu.Unlock()
+
 	q.ready <- r
 	close(q.ready)
 }
@@ -872,4 +892,10 @@ func (s *span) Finish() {
 	})
 	s.hist.Observe(s.Duration.Seconds())
 	s.gauge.Dec()
+}
+
+var noMetadata = make(chan flux.Metadata)
+
+func init() {
+	close(noMetadata)
 }

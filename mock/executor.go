@@ -11,20 +11,28 @@ import (
 
 var _ execute.Executor = (*Executor)(nil)
 
+var NoMetadata <-chan flux.Metadata
+
 // Executor is a mock implementation of an execute.Executor.
 type Executor struct {
-	ExecuteFn func(ctx context.Context, p *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, error)
+	ExecuteFn func(ctx context.Context, p *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error)
 }
 
 // NewExecutor returns a mock Executor where its methods will return zero values.
 func NewExecutor() *Executor {
 	return &Executor{
-		ExecuteFn: func(context.Context, *plan.PlanSpec, *memory.Allocator) (map[string]flux.Result, error) {
-			return nil, nil
+		ExecuteFn: func(context.Context, *plan.PlanSpec, *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
+			return nil, NoMetadata, nil
 		},
 	}
 }
 
-func (e *Executor) Execute(ctx context.Context, p *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, error) {
+func (e *Executor) Execute(ctx context.Context, p *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
 	return e.ExecuteFn(ctx, p, a)
+}
+
+func init() {
+	noMetaCh := make(chan flux.Metadata)
+	close(noMetaCh)
+	NoMetadata = noMetaCh
 }

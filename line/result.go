@@ -20,7 +20,6 @@ import (
 // ResultDecoder outputs one table once the reader reaches EOF.
 type ResultDecoder struct {
 	reader *bufio.Reader
-	stats  flux.Statistics
 	config *ResultDecoderConfig
 }
 
@@ -79,9 +78,6 @@ func (rd *ResultDecoder) Do(f func(flux.Table) error) error {
 	if err != nil {
 		return err
 	}
-
-	rd.stats = tbl.Statistics()
-
 	return f(tbl)
 }
 
@@ -91,10 +87,6 @@ func (*ResultDecoder) Name() string {
 
 func (rd *ResultDecoder) Tables() flux.TableIterator {
 	return rd
-}
-
-func (rd *ResultDecoder) Statistics() flux.Statistics {
-	return rd.stats
 }
 
 func (rd *ResultDecoder) Decode(r io.Reader) (flux.Result, error) {
