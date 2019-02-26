@@ -7,7 +7,6 @@ import (
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/edit"
-	"github.com/influxdata/flux/parser"
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/pkg/labels"
 	"github.com/prometheus/prometheus/promql"
@@ -83,57 +82,111 @@ func transpileLabelMatcher(lm *labels.Matcher) *ast.BinaryExpression {
 	return be
 }
 
+func buildPipeline(exprs ...*ast.CallExpression) *ast.PipeExpression {
+	switch len(exprs) {
+	case 0:
+		panic("empty expression list")
+	case 1:
+		panic("less than two pipeline stages")
+	case 2:
+		return &ast.PipeExpression{
+			Argument: exprs[0],
+			Call:     exprs[1],
+		}
+	default:
+		return &ast.PipeExpression{
+			Argument: buildPipeline(exprs[0 : len(exprs)-1]...),
+			Call:     exprs[len(exprs)-1],
+		}
+	}
+}
+
+func call(fn string, args map[string]ast.Expression) *ast.CallExpression {
+	expr := &ast.CallExpression{
+		Callee: &ast.Identifier{Name: fn},
+	}
+	if len(args) > 0 {
+		props := make([]*ast.Property, 0, len(args))
+		for k, v := range args {
+			props = append(props, &ast.Property{
+				Key:   &ast.Identifier{Name: k},
+				Value: v,
+			})
+		}
+
+		expr.Arguments = []ast.Expression{
+			&ast.ObjectExpression{
+				Properties: props,
+			},
+		}
+	}
+	return expr
+}
+
+// Function to remove any windows that are <5m long.
+func windowCutoffFn(maxStart time.Time) *ast.FunctionExpression {
+	return &ast.FunctionExpression{
+		Params: []*ast.Property{
+			{
+				Key: &ast.Identifier{
+					Name: "r",
+				},
+			},
+		},
+		Body: &ast.BinaryExpression{
+			Operator: ast.LessThanEqualOperator,
+			Left: &ast.MemberExpression{
+				Object: &ast.Identifier{
+					Name: "r",
+				},
+				Property: &ast.Identifier{
+					Name: "_start",
+				},
+			},
+			Right: &ast.DateTimeLiteral{Value: maxStart},
+		},
+	}
+}
+
+func transpileInstantVectorSelector(bucket string, v *promql.VectorSelector, start time.Time, end time.Time, resolution time.Duration) *ast.PipeExpression {
+	return buildPipeline(
+		// Select all Prometheus data.
+		call("from", map[string]ast.Expression{"bucket": &ast.StringLiteral{Value: bucket}}),
+		// Query entire graph range.
+		call("range", map[string]ast.Expression{
+			"start": &ast.DateTimeLiteral{Value: start.Add(-5*time.Minute - v.Offset)},
+			"stop":  &ast.DateTimeLiteral{Value: end.Add(-v.Offset)},
+		}),
+		// Apply label matching filters.
+		call("filter", map[string]ast.Expression{"fn": transpileLabelMatchersFn(v.LabelMatchers)}),
+		// At every resolution step, load / look back up to 5m of data (PromQL lookback delta).
+		call("window", map[string]ast.Expression{
+			"every":  &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: resolution.Nanoseconds(), Unit: "ns"}}},
+			"period": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: 5, Unit: "m"}}},
+		}),
+		// Remove any windows <5m long to act like PromQL.
+		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(end.Add(-5*time.Minute - v.Offset))}),
+		// Select the last data point after the current evaluation (resolution step) timestamp.
+		call("last", nil),
+		// The resolution step evaluation timestamp needs to become the output timestamp.
+		call("drop", map[string]ast.Expression{"columns": &ast.ArrayExpression{
+			Elements: []ast.Expression{&ast.StringLiteral{Value: "_time"}},
+		}}),
+		call("duplicate", map[string]ast.Expression{
+			"column": &ast.StringLiteral{Value: "_stop"},
+			"as":     &ast.StringLiteral{Value: "_time"},
+		}),
+		// Apply offsets to make past data look like it's in the present.
+		call("shift", map[string]ast.Expression{
+			"shift": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: v.Offset.Nanoseconds(), Unit: "ns"}}},
+		}),
+	)
+}
+
 func transpile(bucket string, n promql.Node, start time.Time, end time.Time, resolution time.Duration) (ast.Node, error) {
 	switch t := n.(type) {
 	case *promql.VectorSelector:
-		script := `
-			option queryRangeStart = ""
-			option queryRangeEnd = ""
-			option queryResolution = ""
-			option queryLabelMatchersFn = ""
-			option queryOffset = ""
-			option queryWindowCutoff = ""
-
-			from(bucket: "prom")
-				// This is the query range with offsets already applied.
-				|> range(start: queryRangeStart, stop: queryRangeEnd)
-
-				// Apply metric (and later label) filters.
-				|> filter(fn: queryLabelMatchersFn)
-
-				// At every resolution step, look back 5m (PromQL lookback delta).
-				|> window(every: queryResolution, period: 5m)
-
-				// Remove any windows <5m long to act like PromQL.
-				|> filter(fn: (r) => r._start <= queryWindowCutoff)
-
-				// Select the last data point after the current evaluation (resolution step) timestamp.
-				|> last()
-
-				// The resolution step evaluation timestamp needs to become the output timestamp.
-				|> drop(columns: ["_time"])
-				|> duplicate(column: "_stop", as: "_time")
-
-				// Apply offsets to make past data look like it's in the present.
-				|> shift(shift: queryOffset)
-		`
-		p := parser.ParseSource(script)
-		if ast.Check(p) > 0 {
-			return nil, fmt.Errorf("error parsing Flux script: %s", ast.GetError(p))
-		}
-
-		opts := map[string]edit.OptionFn{
-			"queryRangeStart":      edit.OptionValueFn(&ast.DateTimeLiteral{Value: start.Add(-5*time.Minute - t.Offset)}),
-			"queryRangeEnd":        edit.OptionValueFn(&ast.DateTimeLiteral{Value: end.Add(-t.Offset)}),
-			"queryResolution":      edit.OptionValueFn(&ast.DurationLiteral{Values: []ast.Duration{{Magnitude: resolution.Nanoseconds(), Unit: "ns"}}}),
-			"queryLabelMatchersFn": edit.OptionValueFn(transpileLabelMatchersFn(t.LabelMatchers)),
-			"queryOffset":          edit.OptionValueFn(&ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Offset.Nanoseconds(), Unit: "ns"}}}),
-			"queryWindowCutoff":    edit.OptionValueFn(&ast.DateTimeLiteral{Value: end.Add(-5*time.Minute - t.Offset)}),
-		}
-
-		mustEditOptions(p, opts)
-		return p, nil
-
+		return transpileInstantVectorSelector(bucket, t, start, end, resolution), nil
 	default:
 		return nil, fmt.Errorf("PromQL node type %T is not supported yet", t)
 	}
