@@ -82,21 +82,19 @@ func transpileLabelMatcher(lm *labels.Matcher) *ast.BinaryExpression {
 	return be
 }
 
-func buildPipeline(exprs ...*ast.CallExpression) *ast.PipeExpression {
-	switch len(exprs) {
+func buildPipeline(arg ast.Expression, calls ...*ast.CallExpression) *ast.PipeExpression {
+	switch len(calls) {
 	case 0:
-		panic("empty expression list")
+		panic("empty calls list")
 	case 1:
-		panic("less than two pipeline stages")
-	case 2:
 		return &ast.PipeExpression{
-			Argument: exprs[0],
-			Call:     exprs[1],
+			Argument: arg,
+			Call:     calls[0],
 		}
 	default:
 		return &ast.PipeExpression{
-			Argument: buildPipeline(exprs[0 : len(exprs)-1]...),
-			Call:     exprs[len(exprs)-1],
+			Argument: buildPipeline(arg, calls[0:len(calls)-1]...),
+			Call:     calls[len(calls)-1],
 		}
 	}
 }
@@ -183,10 +181,157 @@ func transpileInstantVectorSelector(bucket string, v *promql.VectorSelector, sta
 	)
 }
 
-func transpile(bucket string, n promql.Node, start time.Time, end time.Time, resolution time.Duration) (ast.Node, error) {
+func columnList(strs ...string) *ast.ArrayExpression {
+	list := make([]ast.Expression, len(strs))
+	for i, str := range strs {
+		if str == model.MetricNameLabel {
+			str = "_measurement"
+		}
+		list[i] = &ast.StringLiteral{Value: str}
+	}
+	return &ast.ArrayExpression{
+		Elements: list,
+	}
+}
+
+type aggregateFn struct {
+	name            string
+	dropMeasurement bool
+	dropNonGrouping bool
+}
+
+var aggregateFns = map[promql.ItemType]aggregateFn{
+	promql.ItemSum:     {name: "sum", dropMeasurement: true, dropNonGrouping: false},
+	promql.ItemAvg:     {name: "mean", dropMeasurement: true, dropNonGrouping: false},
+	promql.ItemMax:     {name: "max", dropMeasurement: true, dropNonGrouping: true},
+	promql.ItemMin:     {name: "min", dropMeasurement: true, dropNonGrouping: true},
+	promql.ItemCount:   {name: "count", dropMeasurement: true, dropNonGrouping: false},
+	promql.ItemStddev:  {name: "stddev", dropMeasurement: true, dropNonGrouping: false},
+	promql.ItemTopK:    {name: "top", dropMeasurement: false, dropNonGrouping: false},
+	promql.ItemBottomK: {name: "bottom", dropMeasurement: false, dropNonGrouping: false},
+	// TODO: Flux does not yet have a quantile() aggregator.
+	promql.ItemQuantile: {name: "quantile", dropMeasurement: true, dropNonGrouping: false},
+}
+
+func dropNonGroupingColsCall(groupCols []string, without bool) *ast.CallExpression {
+	if without {
+		cols := make([]string, len(groupCols)-1)
+		// Remove "_value" from list of columns to drop.
+		for _, col := range groupCols {
+			if col != "_value" {
+				cols = append(cols, col)
+			}
+		}
+
+		// TODO: This errors with non-existent columns. In PromQL, this is a no-op.
+		return call("drop", map[string]ast.Expression{"columns": columnList(groupCols...)})
+	}
+
+	// We want to keep "_value" and "_time" even if they are not explicitly in the grouping labels.
+	cols := append(groupCols, "_value", "_time")
+	return call("keep", map[string]ast.Expression{"columns": columnList(cols...)})
+}
+
+// Taken from Prometheus.
+const (
+	// The largest SampleValue that can be converted to an int64 without overflow.
+	maxInt64 = 9223372036854774784
+	// The smallest SampleValue that can be converted to an int64 without underflow.
+	minInt64 = -9223372036854775808
+)
+
+// convertibleToInt64 returns true if v does not over-/underflow an int64.
+func convertibleToInt64(v float64) bool {
+	return v <= maxInt64 && v >= minInt64
+}
+
+func transpileAggregateExpr(bucket string, a *promql.AggregateExpr, start time.Time, end time.Time, resolution time.Duration) (ast.Expression, error) {
+	expr, err := transpile(bucket, a.Expr, start, end, resolution)
+	if err != nil {
+		return nil, fmt.Errorf("error transpiling aggregate sub-expression: %s", err)
+	}
+
+	aggFn, ok := aggregateFns[a.Op]
+	if !ok {
+		return nil, fmt.Errorf("unsupported aggregation type %s", a.Op)
+	}
+
+	groupCols := columnList(a.Grouping...)
+	aggArgs := map[string]ast.Expression{}
+
+	if a.Op == promql.ItemTopK || a.Op == promql.ItemBottomK {
+		// The PromQL parser already verifies that a.Param is a scalar.
+		n, ok := a.Param.(*promql.NumberLiteral)
+		if !ok {
+			return nil, fmt.Errorf("arbitrary scalar subexpressions not supported yet")
+		}
+		if !convertibleToInt64(n.Val) {
+			return nil, fmt.Errorf("scalar value %v overflows int64", n)
+		}
+		aggArgs["n"] = &ast.IntegerLiteral{Value: int64(n.Val)}
+	}
+
+	if a.Op == promql.ItemQuantile {
+		// TODO: there's no Flux quantile() function yet.
+		return nil, fmt.Errorf("quantile aggregator not supported yet")
+
+		// The PromQL already verifies that a.Param is a scalar.
+		n, ok := a.Param.(*promql.NumberLiteral)
+		if !ok {
+			return nil, fmt.Errorf("arbitrary scalar subexpressions not supported yet")
+		}
+		aggArgs["q"] = &ast.FloatLiteral{Value: n.Val}
+	}
+
+	mode := "by"
+	dropMeasurement := true
+	if a.Without {
+		mode = "except"
+		groupCols.Elements = append(groupCols.Elements, &ast.StringLiteral{Value: "_value"})
+	} else {
+		groupCols.Elements = append(groupCols.Elements, &ast.StringLiteral{Value: "_time"})
+		for _, col := range a.Grouping {
+			if col == model.MetricNameLabel {
+				dropMeasurement = false
+			}
+		}
+	}
+
+	pipeline := buildPipeline(
+		// Get the underlying data.
+		expr,
+		// Group values according to by() / without() clauses.
+		call("group", map[string]ast.Expression{
+			"columns": groupCols,
+			"mode":    &ast.StringLiteral{Value: mode},
+		}),
+		// Aggregate.
+		call(aggFn.name, aggArgs),
+	)
+	if aggFn.dropNonGrouping {
+		// Drop labels that are not part of the grouping.
+		pipeline = buildPipeline(pipeline, dropNonGroupingColsCall(a.Grouping, a.Without))
+	}
+	if aggFn.dropMeasurement && dropMeasurement {
+		pipeline = buildPipeline(
+			pipeline,
+			call("drop", map[string]ast.Expression{
+				"columns": &ast.ArrayExpression{Elements: []ast.Expression{&ast.StringLiteral{Value: "_measurement"}}},
+			}),
+		)
+	}
+	return pipeline, nil
+}
+
+func transpile(bucket string, n promql.Node, start time.Time, end time.Time, resolution time.Duration) (ast.Expression, error) {
 	switch t := n.(type) {
+	// case *promql.NumberLiteral:
+	// 	// TODO: Do we need to keep the scalar timestamp?
+	// 	return &ast.FloatLiteral{Value: t.Val}, nil
 	case *promql.VectorSelector:
 		return transpileInstantVectorSelector(bucket, t, start, end, resolution), nil
+	case *promql.AggregateExpr:
+		return transpileAggregateExpr(bucket, t, start, end, resolution)
 	default:
 		return nil, fmt.Errorf("PromQL node type %T is not supported yet", t)
 	}
