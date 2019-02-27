@@ -63,13 +63,6 @@ func toStringSet(arr []string) map[string]bool {
 	return set
 }
 
-func checkCol(label string, cols []flux.ColMeta) error {
-	if execute.ColIdx(label, cols) < 0 {
-		return fmt.Errorf(`column "%s" doesn't exist`, label)
-	}
-	return nil
-}
-
 type RenameMutator struct {
 	Columns   map[string]string
 	Fn        compiler.Func
@@ -121,20 +114,7 @@ func (m *RenameMutator) renameCol(col *flux.ColMeta) error {
 	return nil
 }
 
-func (m *RenameMutator) checkColumns(tableCols []flux.ColMeta) error {
-	for c := range m.Columns {
-		if err := checkCol(c, tableCols); err != nil {
-			return errors.Wrap(err, "rename error")
-		}
-	}
-	return nil
-}
-
 func (m *RenameMutator) Mutate(ctx *BuilderContext) error {
-	if err := m.checkColumns(ctx.Cols()); err != nil {
-		return err
-	}
-
 	keyCols := make([]flux.ColMeta, 0, len(ctx.Cols()))
 	keyValues := make([]values.Value, 0, len(ctx.Cols()))
 
@@ -205,17 +185,6 @@ func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
 	return m, nil
 }
 
-func (m *DropKeepMutator) checkKeepColumns(tableCols []flux.ColMeta) error {
-	if m.KeepCols != nil {
-		for c := range m.KeepCols {
-			if err := checkCol(c, tableCols); err != nil {
-				return errors.Wrap(err, "keep error")
-			}
-		}
-	}
-	return nil
-}
-
 func (m *DropKeepMutator) shouldDrop(col string) (bool, error) {
 	m.Input.Set(m.ParamName, values.NewString(col))
 	if shouldDrop, err := m.Predicate.EvalBool(m.Input); err != nil {
@@ -239,10 +208,9 @@ func (m *DropKeepMutator) shouldDropCol(col string) (bool, error) {
 }
 
 func (m *DropKeepMutator) keepToDropCols(cols []flux.ColMeta) {
-	// If we have columns we want to keep, we can accomplish this by inverting the Cols map,
-	// and storing it in Cols.
-	//  With a keep operation, Cols may be changed with each call to `Mutate`, but
-	// `Cols` will not be.
+	// Transform a keep mutator into the equivalent drop mutator by
+	// inverting the column map. Any incoming columns that are not
+	// in the keep column map will be added to the drop column map.
 	if m.KeepCols != nil {
 		exclusiveDropCols := make(map[string]bool, len(cols))
 		for _, c := range cols {
@@ -255,10 +223,7 @@ func (m *DropKeepMutator) keepToDropCols(cols []flux.ColMeta) {
 }
 
 func (m *DropKeepMutator) Mutate(ctx *BuilderContext) error {
-	if err := m.checkKeepColumns(ctx.Cols()); err != nil {
-		return err
-	}
-
+	// Invert keep by transforming it into the equivalient drop operation
 	m.keepToDropCols(ctx.Cols())
 
 	keyCols := make([]flux.ColMeta, 0, len(ctx.Cols()))
@@ -309,10 +274,6 @@ func NewDuplicateMutator(qs flux.OperationSpec) (*DuplicateMutator, error) {
 }
 
 func (m *DuplicateMutator) Mutate(ctx *BuilderContext) error {
-	if err := checkCol(m.Column, ctx.Cols()); err != nil {
-		return errors.Wrap(err, "duplicate error")
-	}
-
 	newCols := make([]flux.ColMeta, 0, len(ctx.Cols())+1)
 	newColMap := make([]int, 0, len(ctx.Cols())+1)
 	oldColMap := ctx.ColMap()
