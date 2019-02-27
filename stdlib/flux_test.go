@@ -33,6 +33,7 @@ var skip = map[string]string{
 	"yield":                       "yield requires special test case (https://github.com/influxdata/flux/issues/535)",
 	"task_per_line":               "join produces inconsistent/racy results when table schemas do not match (https://github.com/influxdata/flux/issues/855)",
 	"rowfn_with_import":           "imported libraries are not visible in user-defined functions (https://github.com/influxdata/flux/issues/1000)",
+	"string_trim":                 "cannot reference a package function from within a row function",
 }
 
 var querier = querytest.NewQuerier()
