@@ -607,6 +607,17 @@ A primary expressions may be a literal, an identifier denoting a variable, or a 
 
     PrimaryExpression = identifier | Literal | "(" Expression ")" .
 
+#### Logical Operators
+
+Flux provides the logical operators `and` and `or`.  
+Flux's logical operators observe the short-circuiting behavior seen in other programming languages, meaning that the right-hand side (RHS) operand is conditionally evaluated depending on the result of evaluating the left-hand side (LHS) operand.
+
+When the operator is `and`:
+- If the LHS operand evaluates to `false`, a value of `false` is produced and the RHS operand is not evaluated.
+
+When the operator is `or`:
+- If the LHS operand evaluates to `true`, a value of `true` is produced and the RHS operand is not evaluated.
+
 #### Literals
 
 Literals construct a value.
