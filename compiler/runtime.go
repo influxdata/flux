@@ -1097,7 +1097,10 @@ func (e *callEvaluator) eval(scope Scope) values.Value {
 	args := e.args.EvalObject(scope)
 	f := e.callee.EvalFunction(scope)
 	//TODO(nathanielc): What to do about error when calling functions?
-	v, _ := f.Call(args)
+	v, err := f.Call(args)
+	if err != nil {
+		panic(err)
+	}
 	return v
 }
 
