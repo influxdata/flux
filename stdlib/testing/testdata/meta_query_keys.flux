@@ -72,59 +72,13 @@ outData = "
 ,,4,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_irq,cpu,cpu-total,host.local,_measurement
 ,,4,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_irq,cpu,cpu-total,host.local,cpu
 ,,4,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_irq,cpu,cpu-total,host.local,host
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string
-#group,false,false,true,true,true,true,true,true,false
-#default,_result,,,,,,,,
-,result,table,_start,_stop,_field,_measurement,cpu,host,_value
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_guest,cpu,cpu-total,host.local,_start
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_guest,cpu,cpu-total,host.local,_stop
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_guest,cpu,cpu-total,host.local,_field
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_guest,cpu,cpu-total,host.local,_measurement
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_guest,cpu,cpu-total,host.local,cpu
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_guest,cpu,cpu-total,host.local,host
-,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_guest_nice,cpu,cpu-total,host.local,_start
-,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_guest_nice,cpu,cpu-total,host.local,_stop
-,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_guest_nice,cpu,cpu-total,host.local,_field
-,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_guest_nice,cpu,cpu-total,host.local,_measurement
-,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_guest_nice,cpu,cpu-total,host.local,cpu
-,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_guest_nice,cpu,cpu-total,host.local,host
-,,2,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_idle,cpu,cpu-total,host.local,_start
-,,2,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_idle,cpu,cpu-total,host.local,_stop
-,,2,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_idle,cpu,cpu-total,host.local,_field
-,,2,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_idle,cpu,cpu-total,host.local,_measurement
-,,2,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_idle,cpu,cpu-total,host.local,cpu
-,,2,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_idle,cpu,cpu-total,host.local,host
-,,3,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_iowait,cpu,cpu-total,host.local,_start
-,,3,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_iowait,cpu,cpu-total,host.local,_stop
-,,3,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_iowait,cpu,cpu-total,host.local,_field
-,,3,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_iowait,cpu,cpu-total,host.local,_measurement
-,,3,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_iowait,cpu,cpu-total,host.local,cpu
-,,3,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_iowait,cpu,cpu-total,host.local,host
-,,4,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_irq,cpu,cpu-total,host.local,_start
-,,4,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_irq,cpu,cpu-total,host.local,_stop
-,,4,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_irq,cpu,cpu-total,host.local,_field
-,,4,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_irq,cpu,cpu-total,host.local,_measurement
-,,4,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_irq,cpu,cpu-total,host.local,cpu
-,,4,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_irq,cpu,cpu-total,host.local,host
 "
 
 t_meta_query_keys = (table=<-) => {
-	zero = table
+	return table
 		|> range(start: 2018-05-22T19:53:26Z)
-		|> filter(fn: (r) =>
-			(r._measurement == "cpu"))
+		|> filter(fn: (r) => r._measurement == "cpu")
 		|> keys()
-		|> yield(name: "0")
-	one = table
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> filter(fn: (r) =>
-			(r._measurement == "cpu"))
-		|> group(columns: ["host"])
-		|> distinct(column: "host")
-		|> group()
-		|> yield(name: "1")
-
-	return union(tables: [zero, one])
 }
 
 test _meta_query_keys = () =>

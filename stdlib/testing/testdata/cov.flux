@@ -36,23 +36,21 @@ outData = "
 ,,1,RAM,-1.8333333333333333
 "
 
-t_cov = () => {
-	left = testing.loadStorage(csv: inData)
+t_cov = (table=<-) => {
+    t1 = table
 		|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
 		|> drop(columns: ["_start", "_stop"])
-		|> filter(fn: (r) =>
-			(r.user == "user1"))
+		|> filter(fn: (r) => r.user == "user1")
 		|> group(columns: ["_measurement"])
-	right = testing.loadStorage(csv: inData)
-		|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-		|> drop(columns: ["_start", "_stop"])
-		|> filter(fn: (r) =>
-			(r.user == "user2"))
-		|> group(columns: ["_measurement"])
-	got = cov(x: left, y: right, on: ["_time", "_measurement"])
-	want = testing.loadStorage(csv: outData)
 
-	return testing.assertEquals(name: "cov", want: want, got: got)
+    t2 = table
+		|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+		|> drop(columns: ["_start", "_stop"])
+		|> filter(fn: (r) => r.user == "user2")
+		|> group(columns: ["_measurement"])
+
+    return cov(x: t1, y: t2, on: ["_time", "_measurement"])
 }
 
-t_cov()
+test _cov = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_cov})

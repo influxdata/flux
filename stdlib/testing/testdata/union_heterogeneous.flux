@@ -197,20 +197,24 @@ outData = "
 ,,0,2018-05-22T19:54:16Z,202997248,read_bytes,diskio,host.local,disk2
 ,,0,2018-05-22T19:54:16Z,228613324800,read_bytes,diskio,host.local,disk0
 "
-left = testing.loadStorage(csv: inData)
-	|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:53:50Z)
-	|> filter(fn: (r) =>
-		(r._measurement == "diskio" and r._field == "io_time"))
-	|> group(columns: ["host"])
-	|> drop(columns: ["_start", "_stop", "name"])
-right = testing.loadStorage(csv: inData)
-	|> range(start: 2018-05-22T19:53:50Z, stop: 2018-05-22T19:54:20Z)
-	|> filter(fn: (r) =>
-		(r._measurement == "diskio" and r._field == "read_bytes"))
-	|> group(columns: ["host"])
-	|> drop(columns: ["_start", "_stop"])
-got = union(tables: [left, right])
-	|> sort(columns: ["_time", "_field", "_value"])
-want = testing.loadStorage(csv: outData)
 
-testing.assertEquals(name: "union_heterogeneous", want: want, got: got)
+t_union = (table=<-) => {
+    t1 = table
+        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:53:50Z)
+        |> filter(fn: (r) =>
+            (r._measurement == "diskio" and r._field == "io_time"))
+        |> group(columns: ["host"])
+        |> drop(columns: ["_start", "_stop", "name"])
+
+    t2 = table
+        |> range(start: 2018-05-22T19:53:50Z, stop: 2018-05-22T19:54:20Z)
+        |> filter(fn: (r) =>
+            (r._measurement == "diskio" and r._field == "read_bytes"))
+        |> group(columns: ["host"])
+        |> drop(columns: ["_start", "_stop"])
+
+    return union(tables: [t1, t2]) |> sort(columns: ["_time", "_field", "_value"])
+}
+
+test _union_heterogeneous = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_union})

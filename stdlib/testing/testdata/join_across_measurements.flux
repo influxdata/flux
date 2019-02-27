@@ -181,15 +181,18 @@ outData = "
 ,,0,used,total,mem,processes,2018-05-22T19:53:00Z,2018-05-22T19:55:00Z,2018-05-22T19:54:06Z,10785837056,418,host.local
 ,,0,used,total,mem,processes,2018-05-22T19:53:00Z,2018-05-22T19:55:00Z,2018-05-22T19:54:16Z,10731827200,417,host.local
 "
-memUsed = testing.loadStorage(csv: inData)
-	|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-	|> filter(fn: (r) =>
-		(r._measurement == "mem" and r._field == "used"))
-procTotal = testing.loadStorage(csv: inData)
-	|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-	|> filter(fn: (r) =>
-		(r._measurement == "processes" and r._field == "total"))
-got = join(tables: {mem: memUsed, proc: procTotal}, on: ["_time", "_stop", "_start", "host"])
-want = testing.loadStorage(csv: outData)
 
-testing.assertEquals(name: "join", want: want, got: got)
+t_join = (table=<-) => {
+    mem = table
+        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+        |> filter(fn: (r) => r._measurement == "mem" and r._field == "used")
+
+    proc = table
+        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+        |> filter(fn: (r) => r._measurement == "processes" and r._field == "total")
+
+    return join(tables: {mem: mem, proc: proc}, on: ["_time", "_stop", "_start", "host"])
+}
+
+test _join = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_join})
