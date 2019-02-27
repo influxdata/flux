@@ -2088,7 +2088,6 @@ Rename renames specified columns in a table.
 There are two variants: one which takes a map of old column names to new column names,
 and one which takes a mapping function.
 If a column is renamed and is part of the group key, the column name in the group key will be updated.
-If a specified column is not present in a table an error will be thrown.
 
 Rename has the following properties: 
 
@@ -2117,9 +2116,9 @@ from(bucket: "telegraf/autogen")
 
 #### Drop 
 
-Drop excludes specified columns from a table. Columns to exclude can be specified either through a list, or a predicate function.
+Drop excludes specified columns from a table.
+Columns to exclude can be specified either through a list, or a predicate function.
 When a dropped column is part of the group key it will also be dropped from the key.
-If a specified column is not present in a table an error will be thrown.
 
 Drop has the following properties:
 
@@ -2148,10 +2147,9 @@ from(bucket: "telegraf/autogen")
 
 #### Keep 
 
-Keep is the inverse of drop. It returns a table containing only columns that are specified,
-ignoring all others.
+Keep is the inverse of drop.
+It returns a table containing at most the columns that are specified and ignoring all others.
 Only columns in the group key that are also specified in `keep` will be kept in the resulting group key.
-If a specified column is not present in a table an error will be thrown.
 
 Keep has the following properties:
 
@@ -2181,7 +2179,6 @@ from(bucket: "telegraf/autogen")
 #### Duplicate 
 
 Duplicate duplicates a specified column in a table.
-If the specified column is not present in a table an error will be thrown.
 If the specified column is part of the group key, it will be duplicated, but it will not be part of the group key of the output table.
 
 Duplicate has the following properties:
