@@ -48,18 +48,19 @@ outData = "
 ,,2,2018-05-22T19:54:16Z,87.88598574821853,usage_idle,cpu,cpu-total,host.local
 "
 
-left = testing.loadStorage(csv: inData)
-	|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:53:50Z)
-	|> filter(fn: (r) =>
-		(r._field == "usage_guest" or r._field == "usage_guest_nice"))
-	|> drop(columns: ["_start", "_stop"])
-right = testing.loadStorage(csv: inData)
-	|> range(start: 2018-05-22T19:53:50Z, stop: 2018-05-22T19:54:20Z)
-	|> filter(fn: (r) =>
-		(r._field == "usage_guest" or r._field == "usage_idle"))
-	|> drop(columns: ["_start", "_stop"])
-got = union(tables: [left, right])
-	|> sort(columns: ["_time"])
-want = testing.loadStorage(csv: outData)
+t_union = (table=<-) => {
+    t1 = table
+        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:53:50Z)
+        |> filter(fn: (r) => r._field == "usage_guest" or r._field == "usage_guest_nice")
+        |> drop(columns: ["_start", "_stop"])
 
-testing.assertEquals(name: "union", want: want, got: got)
+    t2 = table
+        |> range(start: 2018-05-22T19:53:50Z, stop: 2018-05-22T19:54:20Z)
+        |> filter(fn: (r) => r._field == "usage_guest" or r._field == "usage_idle")
+        |> drop(columns: ["_start", "_stop"])
+
+    return union(tables: [t1, t2]) |> sort(columns: ["time"])
+}
+
+test _union = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_union})

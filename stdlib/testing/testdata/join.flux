@@ -40,23 +40,23 @@ outData = "
 ,,1,RAM,2018-05-22T19:53:56Z,5,0,user1,user2
 "
 
-t_join = () => {
-	left = testing.loadStorage(csv: inData)
+t_join = (table=<-) => {
+    left = table
 		|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
 		|> drop(columns: ["_start", "_stop"])
 		|> filter(fn: (r) =>
 			(r.user == "user1"))
 		|> group(columns: ["user"])
-	right = testing.loadStorage(csv: inData)
+
+    right = table
 		|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
 		|> drop(columns: ["_start", "_stop"])
 		|> filter(fn: (r) =>
 			(r.user == "user2"))
 		|> group(columns: ["_measurement"])
-	got = join(tables: {left: left, right: right}, on: ["_time", "_measurement"])
-	want = testing.loadStorage(csv: outData)
 
-	return testing.assertEquals(name: "join", want: want, got: got)
+    return join(tables: {left: left, right: right}, on: ["_time", "_measurement"])
 }
 
-t_join()
+test _join = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_join})

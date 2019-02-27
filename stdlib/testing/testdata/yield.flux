@@ -33,18 +33,13 @@ outData = "
 ,,0,2018-05-22T19:53:24.421470485Z,2018-05-22T19:54:24.421470485Z,2018-05-22T19:54:16Z,87.88598574821853,usage_idle,cpu,cpu-total,host.local
 "
 
-t_yield = (table=<-) =>
-	(table
-		|> sort()
-		|> limit(n: 3)
-		|> yield(name: "1: lowest 3")
-		|> sample(n: 2, pos: 1)
-		|> yield(name: "2: 2nd row"))
-indata = testing.loadStorage(csv: inData)
-got = indata
-	|> t_yield()
-	|> yield(name: "5")
-want = testing.loadStorage(csv: outData)
-	|> yield(name: "6")
+t_yield = (table=<-) => table
+    |> sort()
+    |> limit(n: 3)
+    |> yield(name: "1: lowest 3")
+    |> sample(n: 2, pos: 1)
+    |> yield(name: "2: 2nd row")
+    |> yield(name: "5")
 
-testing.assertEquals(name: "yield", want: want, got: got)
+test _yield = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData) |> yield(name: "6"), fn: t_yield})
