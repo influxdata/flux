@@ -122,21 +122,15 @@ func createFromCSVSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 		}
 		csvText = string(csvBytes)
 	}
-
-	decoder := csv.NewResultDecoder(csv.ResultDecoderConfig{})
-	result, err := decoder.Decode(strings.NewReader(csvText))
-	if err != nil {
-		return nil, err
-	}
-	csvSource := CSVSource{id: dsid, data: result}
+	csvSource := CSVSource{id: dsid, tx: csvText}
 
 	return &csvSource, nil
 }
 
 type CSVSource struct {
-	id   execute.DatasetID
-	data flux.Result
-	ts   []execute.Transformation
+	id execute.DatasetID
+	tx string
+	ts []execute.Transformation
 }
 
 func (c *CSVSource) AddTransformation(t execute.Transformation) {
@@ -147,8 +141,18 @@ func (c *CSVSource) Run(ctx context.Context) {
 	var err error
 	var max execute.Time
 	maxSet := false
-	err = c.data.Tables().Do(func(tbl flux.Table) error {
-		for _, t := range c.ts {
+	for _, t := range c.ts {
+		// For each downstream transformation, instantiate a new result
+		// decoder. This way a table instance goes to one and only one
+		// transformation. Unlike other sources, tables from csv sources
+		// are not read-only. They contain mutable state and therefore
+		// cannot be shared among goroutines.
+		decoder := csv.NewResultDecoder(csv.ResultDecoderConfig{})
+		result, err := decoder.Decode(strings.NewReader(c.tx))
+		if err != nil {
+			goto FINISH
+		}
+		err = result.Tables().Do(func(tbl flux.Table) error {
 			err := t.Process(c.id, tbl)
 			if err != nil {
 				return err
@@ -159,11 +163,11 @@ func (c *CSVSource) Run(ctx context.Context) {
 					maxSet = true
 				}
 			}
+			return nil
+		})
+		if err != nil {
+			goto FINISH
 		}
-		return nil
-	})
-	if err != nil {
-		goto FINISH
 	}
 
 	if maxSet {
