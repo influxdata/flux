@@ -13,8 +13,9 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/semantic"
 	"github.com/prometheus/client_golang/api"
-	"github.com/prometheus/client_golang/api/prometheus/v1"
+	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/prometheus/common/model"
 )
 
@@ -95,7 +96,17 @@ func influxResultToPromMatrix(resultIt flux.ResultIterator) (model.Matrix, error
 						case "_time":
 							ts = model.TimeFromUnixNano(execute.ValueForRow(cr, i, j).Time().Time().UnixNano())
 						case "_value":
-							val = model.SampleValue(execute.ValueForRow(cr, i, j).Float())
+							v := execute.ValueForRow(cr, i, j)
+							switch v.Type().Nature() {
+							case semantic.Float:
+								val = model.SampleValue(v.Float())
+							case semantic.Int:
+								val = model.SampleValue(v.Int())
+							case semantic.UInt:
+								val = model.SampleValue(v.UInt())
+							default:
+								panic("invalid value type")
+							}
 						case "_start", "_stop", "_field":
 							// Ignore.
 						default:
