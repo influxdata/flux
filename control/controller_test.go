@@ -260,24 +260,21 @@ func TestController_CancelQuery_Ready(t *testing.T) {
 }
 
 func TestController_CancelQuery_Execute(t *testing.T) {
+	executing := make(chan struct{})
+	defer close(executing)
+
 	executor := mock.NewExecutor()
 	executor.ExecuteFn = func(ctx context.Context, spec *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
-		timer := time.NewTimer(100 * time.Microsecond)
-		select {
-		case <-timer.C:
-			// Return an empty result.
-			return map[string]flux.Result{}, mock.NoMetadata, nil
-		case <-ctx.Done():
-			timer.Stop()
-			return nil, mock.NoMetadata, ctx.Err()
-		}
+		executing <- struct{}{}
+		<-ctx.Done()
+		return nil, mock.NoMetadata, ctx.Err()
 	}
 
 	ctrl := New(Config{})
 	ctrl.executor = executor
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		if err := ctrl.Shutdown(ctx); err != nil {
 			t.Fatal(err)
 		}
@@ -285,20 +282,25 @@ func TestController_CancelQuery_Execute(t *testing.T) {
 	}()
 
 	// Run a query and then wait for it to be ready.
-	q, err := ctrl.Query(context.Background(), mockCompiler)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	q, err := ctrl.Query(ctx, mockCompiler)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
-
-	go q.Cancel()
+	<-executing
+	q.Cancel()
 
 	// We do not care about the results, just that the query is ready.
 	// We should not receive any results as the cancellation should
 	// have signaled to the executor to cancel the query.
-	_, ok := <-q.Ready()
-	if ok {
-		t.Error("unexpected result from the query")
+	select {
+	case <-q.Ready():
+		// The execute function should have received the cancel signal and exited
+		// with an error.
+	case <-ctx.Done():
+		t.Error("timeout while waiting for the query to be canceled")
 	}
+	cancel()
 
 	// The state should be canceled.
 	if want, got := Canceled, q.(*Query).State(); want != got {
@@ -307,6 +309,11 @@ func TestController_CancelQuery_Execute(t *testing.T) {
 
 	// Now finish the query by using Done.
 	q.Done()
+
+	// The query should have been canceled and not a timeout.
+	if want, got := context.Canceled, q.Err(); want != got {
+		t.Errorf("unexpected error: want=%s got=%s", want, got)
+	}
 
 	// Verify the metrics say there are no queries.
 	gauge, err := ctrl.metrics.all.GetMetricWithLabelValues()
