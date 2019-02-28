@@ -188,16 +188,15 @@ type aggregateFn struct {
 }
 
 var aggregateFns = map[promql.ItemType]aggregateFn{
-	promql.ItemSum:     {name: "sum", dropMeasurement: true, dropNonGrouping: false},
-	promql.ItemAvg:     {name: "mean", dropMeasurement: true, dropNonGrouping: false},
-	promql.ItemMax:     {name: "max", dropMeasurement: true, dropNonGrouping: true},
-	promql.ItemMin:     {name: "min", dropMeasurement: true, dropNonGrouping: true},
-	promql.ItemCount:   {name: "count", dropMeasurement: true, dropNonGrouping: false},
-	promql.ItemStddev:  {name: "stddev", dropMeasurement: true, dropNonGrouping: false},
-	promql.ItemTopK:    {name: "top", dropMeasurement: false, dropNonGrouping: false},
-	promql.ItemBottomK: {name: "bottom", dropMeasurement: false, dropNonGrouping: false},
-	// TODO: Flux does not yet have a quantile() aggregator.
-	promql.ItemQuantile: {name: "quantile", dropMeasurement: true, dropNonGrouping: false},
+	promql.ItemSum:      {name: "sum", dropMeasurement: true, dropNonGrouping: false},
+	promql.ItemAvg:      {name: "mean", dropMeasurement: true, dropNonGrouping: false},
+	promql.ItemMax:      {name: "max", dropMeasurement: true, dropNonGrouping: true},
+	promql.ItemMin:      {name: "min", dropMeasurement: true, dropNonGrouping: true},
+	promql.ItemCount:    {name: "count", dropMeasurement: true, dropNonGrouping: false},
+	promql.ItemStddev:   {name: "stddev", dropMeasurement: true, dropNonGrouping: false},
+	promql.ItemTopK:     {name: "top", dropMeasurement: false, dropNonGrouping: false},
+	promql.ItemBottomK:  {name: "bottom", dropMeasurement: false, dropNonGrouping: false},
+	promql.ItemQuantile: {name: "percentile", dropMeasurement: true, dropNonGrouping: false},
 }
 
 func dropNonGroupingColsCall(groupCols []string, without bool) *ast.CallExpression {
@@ -259,15 +258,13 @@ func transpileAggregateExpr(bucket string, a *promql.AggregateExpr, start time.T
 	}
 
 	if a.Op == promql.ItemQuantile {
-		// TODO: there's no Flux quantile() function yet.
-		return nil, fmt.Errorf("quantile aggregator not supported yet")
-
 		// The PromQL already verifies that a.Param is a scalar.
 		n, ok := a.Param.(*promql.NumberLiteral)
 		if !ok {
 			return nil, fmt.Errorf("arbitrary scalar subexpressions not supported yet")
 		}
-		aggArgs["q"] = &ast.FloatLiteral{Value: n.Val}
+		aggArgs["percentile"] = &ast.FloatLiteral{Value: n.Val}
+		aggArgs["method"] = &ast.StringLiteral{Value: "exact_mean"}
 	}
 
 	mode := "by"
