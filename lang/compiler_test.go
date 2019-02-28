@@ -18,14 +18,14 @@ import (
 func TestASTCompiler(t *testing.T) {
 	testcases := []struct {
 		name   string
-		now    func() time.Time
-		file *ast.File
+		now    time.Time
+		file   *ast.File
 		script string
 		want   *flux.Spec
 	}{
 		{
 			name: "override now time using now option",
-			now:  func() time.Time { return time.Unix(1, 1) },
+			now:  time.Unix(1, 1),
 			script: `
 import "csv"
 option now = () => 2017-10-10T00:01:00Z
@@ -51,7 +51,7 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 		},
 		{
 			name: "get now time from compiler",
-			now:  func() time.Time { return time.Unix(1, 1) },
+			now:  time.Unix(1, 1),
 			script: `
 import "csv"
 csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
