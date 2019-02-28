@@ -32,7 +32,7 @@ function shutdown_influxdb() {
 # Sleep a bit to make sure InfluxDB is operational before setting it up.
 sleep 8
 
-influx setup -b prom -f -o prom -p promprom -u prom -r 9999
+influx setup -b prometheus -f -o prometheus -p prometheus -u prometheus -r 9999
 
 # Dump the Prometheus test TSDB into the InfluxDB line protocol, but ignore NaN values (not supported in InfluxDB yet).
 go run prometheus/prom_tsdb_to_influxdb.go --tsdb.path=prometheus/data | grep -v f64=NaN > influx-data.txt
@@ -40,6 +40,6 @@ go run prometheus/prom_tsdb_to_influxdb.go --tsdb.path=prometheus/data | grep -v
 export INFLUX_TOKEN=$(influx auth find | grep active | awk '{ print $2 }')
 
 # Store the test data in InfluxDB.
-curl --globoff "http://localhost:9999/api/v2/write?bucket=prom&org=prom" -XPOST -H "Authorization: Token $INFLUX_TOKEN" -H "content-type: text/plain; charset=utf-8" --data-binary @influx-data.txt
+curl --globoff "http://localhost:9999/api/v2/write?bucket=prometheus&org=prometheus" -XPOST -H "Authorization: Token $INFLUX_TOKEN" -H "content-type: text/plain; charset=utf-8" --data-binary @influx-data.txt
 
 prometheus --config.file=prometheus/prometheus-noscrape.yml --storage.tsdb.path=prometheus/data
