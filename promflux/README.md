@@ -4,6 +4,8 @@ This takes a PromQL query, transpiles it to Flux, and then runs it against both 
 
 It compares the results and expects them to be the same. So far, only selecting a single metric name without any matchers is supported.
 
+## Test DB Setup
+
 Start the test setup (brings up Prometheus & InfluxDB, both with identical test datasets):
 
 **NOTE**: Read the script to see which binaries are expected to be in your path!
@@ -12,10 +14,12 @@ Start the test setup (brings up Prometheus & InfluxDB, both with identical test 
 ./db-setup/setup.sh
 ```
 
+## Manual test runs
+
 Run PromQL+Flux queries against it:
 
 ```bash
-$ GO111MODULE=on go run . -influx-org=prom -query-expr="demo_cpu_usage_seconds_total" -query-start=1550781000000 -query-end=1550781900000 -query-resolution=10s
+$ GO111MODULE=on go run . -query-expr="demo_cpu_usage_seconds_total" -query-start=1550781000000 -query-end=1550781900000 -query-resolution=10s
 Running Flux query:
 ============================================
 package main
@@ -46,7 +50,7 @@ SUCCESS! Results equal.
 Or one with an offset:
 
 ```bash
-GO111MODULE=on go run . -influx-org=prom -query-expr="demo_cpu_usage_seconds_total offset 3m" -query-start=1550781000000 -query-end=1550781900000 -query-resolution=10s
+GO111MODULE=on go run . -query-expr="demo_cpu_usage_seconds_total offset 3m" -query-start=1550781000000 -query-end=1550781900000 -query-resolution=10s
 Running Flux query:
 ============================================
 package main
@@ -58,7 +62,7 @@ option queryMetricName = "demo_cpu_usage_seconds_total"
 option queryOffset = 180000000000ns
 option queryWindowCutoff = 2019-02-21T20:37:00Z
 
-from(bucket: "prom")
+from(bucket: "prometheus")
 	|> range(start: queryRangeStart, stop: queryRangeEnd)
 	|> filter(fn: (r) =>
 		(r._measurement == queryMetricName))
@@ -72,4 +76,10 @@ from(bucket: "prom")
 ============================================
 
 SUCCESS! Results equal.
+```
+
+## End-to-end test suite
+
+```
+go test .
 ```
