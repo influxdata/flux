@@ -6,23 +6,10 @@ import (
 	"time"
 
 	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/ast/edit"
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/pkg/labels"
 	"github.com/prometheus/prometheus/promql"
 )
-
-func mustEditOptions(n ast.Node, options map[string]edit.OptionFn) {
-	for opt, fn := range options {
-		changed, err := edit.Option(n, opt, fn)
-		if !changed {
-			panic(fmt.Errorf("option %q not found", opt))
-		}
-		if err != nil {
-			panic(fmt.Errorf("error editing option %q: %s", opt, err))
-		}
-	}
-}
 
 var labelMatchOps = map[labels.MatchType]ast.OperatorKind{
 	labels.MatchEqual:     ast.EqualOperator,
