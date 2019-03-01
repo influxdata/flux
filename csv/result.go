@@ -765,6 +765,7 @@ func (e *ResultEncoder) Encode(w io.Writer, result flux.Result) (int64, error) {
 	var lastCols []colMeta
 	var lastEmpty bool
 
+	resultName := result.Name()
 	err := result.Tables().Do(func(tbl flux.Table) error {
 		e.written = true
 		// Update cols with table cols
@@ -787,7 +788,7 @@ func (e *ResultEncoder) Encode(w io.Writer, result flux.Result) (int64, error) {
 				writer.Write(nil)
 			}
 
-			if err := writeSchema(writer, &e.c, row, cols, tbl.Empty(), tbl.Key(), result.Name(), tableIDStr); err != nil {
+			if err := writeSchema(writer, &e.c, row, cols, tbl.Empty(), tbl.Key(), resultName, tableIDStr); err != nil {
 				return wrapEncodingError(err)
 			}
 		}
@@ -799,6 +800,19 @@ func (e *ResultEncoder) Encode(w io.Writer, result flux.Result) (int64, error) {
 					row[j] = ""
 				case resultIdx:
 					row[j] = ""
+				case tableIdx:
+					row[j] = tableIDStr
+				default:
+					row[j] = ""
+				}
+			}
+		} else {
+			for j := range cols {
+				switch j {
+				case annotationIdx:
+					row[j] = ""
+				case resultIdx:
+					row[j] = resultName
 				case tableIdx:
 					row[j] = tableIDStr
 				default:
@@ -895,7 +909,6 @@ func writeSchema(writer *csv.Writer, c *ResultEncoderConfig, row []string, cols 
 			}
 		}
 	}
-	// TODO: use real result name
 	if err := writeAnnotations(writer, c.Annotations, row, defaults, cols, key); err != nil {
 		return err
 	}
