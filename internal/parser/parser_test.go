@@ -4256,6 +4256,29 @@ string"
 				},
 			},
 		},
+		// TODO(jsternberg): This should fill in error nodes.
+		// The current behavior is non-sensical.
+		{
+			name: "invalid expression in array",
+			raw:  `['a']`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:6"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:6"),
+						Expression: &ast.ArrayExpression{
+							BaseNode: base("1:1", "1:6"),
+							Elements: []ast.Expression{
+								&ast.Identifier{
+									BaseNode: base("1:3", "1:4"),
+									Name:     "a",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	} {
 		runFn(tt.name, func(tb testing.TB) {
 			defer func() {

@@ -357,7 +357,8 @@ func (p *parser) parseExpressionList() []ast.Expression {
 			token.ADD, token.SUB, token.NOT:
 			exprs = append(exprs, p.parseExpression())
 		default:
-			// TODO(jsternberg): Add BadExpression type.
+			// TODO(jsternberg): BadExpression.
+			p.consume()
 			continue
 		}
 
