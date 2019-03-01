@@ -22,6 +22,12 @@ func AddCompilerMappings(mappings flux.CompilerMappings) error {
 	}); err != nil {
 		return err
 	}
+	if err := mappings.Add(ASTCompilerType, func() flux.Compiler {
+		return new(ASTCompiler)
+
+	}); err != nil {
+		return err
+	}
 	return mappings.Add(SpecCompilerType, func() flux.Compiler {
 		return new(SpecCompiler)
 	})
