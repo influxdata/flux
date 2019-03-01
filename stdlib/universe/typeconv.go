@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -551,11 +552,11 @@ func (c *timeConv) Call(args values.Object) (values.Value, error) {
 	}
 	switch v.Type().Nature() {
 	case semantic.String:
-		n, err := values.ParseTime(v.Str())
+		ast, err := parser.ParseTime(v.Str())
 		if err != nil {
 			return nil, err
 		}
-		t = n
+		t = values.Time(ast.Value.UnixNano())
 	case semantic.Int:
 		t = values.Time(v.Int())
 	case semantic.UInt:
