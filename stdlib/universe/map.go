@@ -2,7 +2,6 @@ package universe
 
 import (
 	"fmt"
-	"log"
 	"sort"
 
 	"github.com/influxdata/flux"
@@ -11,6 +10,7 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
+	"github.com/pkg/errors"
 )
 
 const MapKind = "map"
@@ -170,8 +170,7 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 		for i := 0; i < l; i++ {
 			m, err := t.fn.Eval(i, cr)
 			if err != nil {
-				log.Printf("failed to evaluate map expression: %v", err)
-				continue
+				return errors.Wrap(err, "failed to evaluate map function")
 			}
 			key := groupKeyForObject(i, cr, m, on)
 			builder, created := t.cache.TableBuilder(key)

@@ -118,7 +118,7 @@ func createFromCSVSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 	if spec.File != "" {
 		csvBytes, err := ioutil.ReadFile(spec.File)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "csv.from() failed to read file")
 		}
 		csvText = string(csvBytes)
 	}
@@ -180,6 +180,7 @@ func (c *CSVSource) Run(ctx context.Context) {
 
 FINISH:
 	for _, t := range c.ts {
+		err = errors.Wrap(err, "error in csv.from()")
 		t.Finish(c.id, err)
 	}
 }
