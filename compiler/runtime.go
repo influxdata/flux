@@ -28,17 +28,17 @@ type Func interface {
 
 type Evaluator interface {
 	Type() semantic.Type
-	EvalString(scope Scope) string
-	EvalInt(scope Scope) int64
-	EvalUInt(scope Scope) uint64
-	EvalFloat(scope Scope) float64
-	EvalBool(scope Scope) bool
-	EvalTime(scope Scope) values.Time
-	EvalDuration(scope Scope) values.Duration
-	EvalRegexp(scope Scope) *regexp.Regexp
-	EvalArray(scope Scope) values.Array
-	EvalObject(scope Scope) values.Object
-	EvalFunction(scope Scope) values.Function
+	EvalString(scope Scope) (string, error)
+	EvalInt(scope Scope) (int64, error)
+	EvalUInt(scope Scope) (uint64, error)
+	EvalFloat(scope Scope) (float64, error)
+	EvalBool(scope Scope) (bool, error)
+	EvalTime(scope Scope) (values.Time, error)
+	EvalDuration(scope Scope) (values.Duration, error)
+	EvalRegexp(scope Scope) (*regexp.Regexp, error)
+	EvalArray(scope Scope) (values.Array, error)
+	EvalObject(scope Scope) (values.Object, error)
+	EvalFunction(scope Scope) (values.Function, error)
 }
 
 type compiledFn struct {
@@ -79,99 +79,75 @@ func (c compiledFn) Eval(input values.Object) (values.Value, error) {
 	if err := c.buildScope(input); err != nil {
 		return nil, err
 	}
-	switch c.Type().Nature() {
-	case semantic.String:
-		return values.NewString(c.root.EvalString(c.inputScope)), nil
-	case semantic.Int:
-		return values.NewInt(c.root.EvalInt(c.inputScope)), nil
-	case semantic.UInt:
-		return values.NewUInt(c.root.EvalUInt(c.inputScope)), nil
-	case semantic.Float:
-		return values.NewFloat(c.root.EvalFloat(c.inputScope)), nil
-	case semantic.Bool:
-		return values.NewBool(c.root.EvalBool(c.inputScope)), nil
-	case semantic.Time:
-		return values.NewTime(c.root.EvalTime(c.inputScope)), nil
-	case semantic.Duration:
-		return values.NewDuration(c.root.EvalDuration(c.inputScope)), nil
-	case semantic.Regexp:
-		return values.NewRegexp(c.root.EvalRegexp(c.inputScope)), nil
-	case semantic.Array:
-		return c.root.EvalArray(c.inputScope), nil
-	case semantic.Object:
-		return c.root.EvalObject(c.inputScope), nil
-	case semantic.Function:
-		return c.root.EvalFunction(c.inputScope), nil
-	default:
-		return nil, fmt.Errorf("unsupported kind %s", c.Type().Nature())
-	}
+
+	return eval(c.root, c.inputScope)
 }
 
 func (c compiledFn) EvalString(input values.Object) (string, error) {
 	if err := c.buildScope(input); err != nil {
 		return "", err
 	}
-	return c.root.EvalString(c.inputScope), nil
+	return c.root.EvalString(c.inputScope)
 }
 func (c compiledFn) EvalBool(input values.Object) (bool, error) {
 	if err := c.buildScope(input); err != nil {
 		return false, err
 	}
-	return c.root.EvalBool(c.inputScope), nil
+	return c.root.EvalBool(c.inputScope)
 }
 func (c compiledFn) EvalInt(input values.Object) (int64, error) {
 	if err := c.buildScope(input); err != nil {
 		return 0, err
 	}
-	return c.root.EvalInt(c.inputScope), nil
+	return c.root.EvalInt(c.inputScope)
 }
 func (c compiledFn) EvalUInt(input values.Object) (uint64, error) {
 	if err := c.buildScope(input); err != nil {
 		return 0, err
 	}
-	return c.root.EvalUInt(c.inputScope), nil
+	return c.root.EvalUInt(c.inputScope)
 }
 func (c compiledFn) EvalFloat(input values.Object) (float64, error) {
 	if err := c.buildScope(input); err != nil {
 		return 0, err
 	}
-	return c.root.EvalFloat(c.inputScope), nil
+	return c.root.EvalFloat(c.inputScope)
 }
 func (c compiledFn) EvalTime(input values.Object) (values.Time, error) {
 	if err := c.buildScope(input); err != nil {
 		return 0, err
 	}
-	return c.root.EvalTime(c.inputScope), nil
+	return c.root.EvalTime(c.inputScope)
 }
 func (c compiledFn) EvalDuration(input values.Object) (values.Duration, error) {
 	if err := c.buildScope(input); err != nil {
 		return 0, err
 	}
-	return c.root.EvalDuration(c.inputScope), nil
+	return c.root.EvalDuration(c.inputScope)
 }
 func (c compiledFn) EvalRegexp(input values.Object) (*regexp.Regexp, error) {
 	if err := c.buildScope(input); err != nil {
 		return nil, err
 	}
-	return c.root.EvalRegexp(c.inputScope), nil
+	return c.root.EvalRegexp(c.inputScope)
 }
 func (c compiledFn) EvalArray(input values.Object) (values.Array, error) {
 	if err := c.buildScope(input); err != nil {
 		return nil, err
 	}
-	return c.root.EvalArray(c.inputScope), nil
+	return c.root.EvalArray(c.inputScope)
 }
 func (c compiledFn) EvalObject(input values.Object) (values.Object, error) {
 	if err := c.buildScope(input); err != nil {
 		return nil, err
 	}
-	return c.root.EvalObject(c.inputScope), nil
+	return c.root.EvalObject(c.inputScope)
 }
 func (c compiledFn) EvalFunction(input values.Object) (values.Function, error) {
 	if err := c.buildScope(input); err != nil {
 		return nil, err
 	}
-	return c.root.EvalFunction(c.inputScope), nil
+	return c.root.EvalFunction(c.inputScope)
 }
 
 type Scope map[string]values.Value
@@ -225,33 +201,71 @@ func (s Scope) Copy() Scope {
 	return n
 }
 
-func eval(e Evaluator, scope Scope) values.Value {
+func eval(e Evaluator, scope Scope) (values.Value, error) {
+	var v values.Value
+	var err error
 	switch e.Type().Nature() {
 	case semantic.String:
-		return values.NewString(e.EvalString(scope))
+		var v0 string
+		v0, err = e.EvalString(scope)
+		if err == nil {
+			v = values.NewString(v0)
+		}
 	case semantic.Int:
-		return values.NewInt(e.EvalInt(scope))
+		var v0 int64
+		v0, err = e.EvalInt(scope)
+		if err == nil {
+			v = values.NewInt(v0)
+		}
 	case semantic.UInt:
-		return values.NewUInt(e.EvalUInt(scope))
+		var v0 uint64
+		v0, err = e.EvalUInt(scope)
+		if err == nil {
+			v = values.NewUInt(v0)
+		}
 	case semantic.Float:
-		return values.NewFloat(e.EvalFloat(scope))
+		var v0 float64
+		v0, err = e.EvalFloat(scope)
+		if err == nil {
+			v = values.NewFloat(v0)
+		}
 	case semantic.Bool:
-		return values.NewBool(e.EvalBool(scope))
+		var v0 bool
+		v0, err = e.EvalBool(scope)
+		if err == nil {
+			v = values.NewBool(v0)
+		}
 	case semantic.Time:
-		return values.NewTime(e.EvalTime(scope))
+		var v0 values.Time
+		v0, err = e.EvalTime(scope)
+		if err == nil {
+			v = values.NewTime(v0)
+		}
 	case semantic.Duration:
-		return values.NewDuration(e.EvalDuration(scope))
+		var v0 values.Duration
+		v0, err = e.EvalDuration(scope)
+		if err == nil {
+			v = values.NewDuration(v0)
+		}
 	case semantic.Regexp:
-		return values.NewRegexp(e.EvalRegexp(scope))
+		var v0 *regexp.Regexp
+		v0, err = e.EvalRegexp(scope)
+		if err == nil {
+			v = values.NewRegexp(v0)
+		}
 	case semantic.Array:
-		return e.EvalArray(scope)
+		v, err = e.EvalArray(scope)
 	case semantic.Object:
-		return e.EvalObject(scope)
+		v, err = e.EvalObject(scope)
 	case semantic.Function:
-		return e.EvalFunction(scope)
+		v, err = e.EvalFunction(scope)
+	case semantic.Nil:
+		return nil, nil
 	default:
-		return nil
+		err = fmt.Errorf("eval: unknown type: %v", e.Type())
 	}
+
+	return v, err
 }
 
 type blockEvaluator struct {
@@ -264,66 +278,105 @@ func (e *blockEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *blockEvaluator) eval(scope Scope) {
+func (e *blockEvaluator) eval(scope Scope) error {
+	var err error
 	for _, b := range e.body {
-		e.value = eval(b, scope)
+		e.value, err = eval(b, scope)
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
-func (e *blockEvaluator) EvalString(scope Scope) string {
+func (e *blockEvaluator) EvalString(scope Scope) (string, error) {
 	values.CheckKind(e.t.Nature(), semantic.String)
-	e.eval(scope)
-	return e.value.Str()
+	err := e.eval(scope)
+	if err != nil {
+		return "", err
+	}
+	return e.value.Str(), nil
 }
-func (e *blockEvaluator) EvalInt(scope Scope) int64 {
+func (e *blockEvaluator) EvalInt(scope Scope) (int64, error) {
 	values.CheckKind(e.t.Nature(), semantic.Int)
-	e.eval(scope)
-	return e.value.Int()
+	err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return e.value.Int(), nil
 }
-func (e *blockEvaluator) EvalUInt(scope Scope) uint64 {
+func (e *blockEvaluator) EvalUInt(scope Scope) (uint64, error) {
 	values.CheckKind(e.t.Nature(), semantic.UInt)
-	e.eval(scope)
-	return e.value.UInt()
+	err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return e.value.UInt(), nil
 }
-func (e *blockEvaluator) EvalFloat(scope Scope) float64 {
+func (e *blockEvaluator) EvalFloat(scope Scope) (float64, error) {
 	values.CheckKind(e.t.Nature(), semantic.Float)
-	e.eval(scope)
-	return e.value.Float()
+	err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return e.value.Float(), nil
 }
-func (e *blockEvaluator) EvalBool(scope Scope) bool {
+func (e *blockEvaluator) EvalBool(scope Scope) (bool, error) {
 	values.CheckKind(e.t.Nature(), semantic.Bool)
-	e.eval(scope)
-	return e.value.Bool()
+	err := e.eval(scope)
+	if err != nil {
+		return false, err
+	}
+	return e.value.Bool(), nil
 }
-func (e *blockEvaluator) EvalTime(scope Scope) values.Time {
+func (e *blockEvaluator) EvalTime(scope Scope) (values.Time, error) {
 	values.CheckKind(e.t.Nature(), semantic.Time)
-	e.eval(scope)
-	return e.value.Time()
+	err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return e.value.Time(), nil
 }
-func (e *blockEvaluator) EvalDuration(scope Scope) values.Duration {
+func (e *blockEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
 	values.CheckKind(e.t.Nature(), semantic.Duration)
-	e.eval(scope)
-	return e.value.Duration()
+	err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return e.value.Duration(), nil
 }
-func (e *blockEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
+func (e *blockEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
 	values.CheckKind(e.t.Nature(), semantic.Regexp)
-	e.eval(scope)
-	return e.value.Regexp()
+	err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return e.value.Regexp(), nil
 }
-func (e *blockEvaluator) EvalArray(scope Scope) values.Array {
+func (e *blockEvaluator) EvalArray(scope Scope) (values.Array, error) {
 	values.CheckKind(e.t.Nature(), semantic.Object)
-	e.eval(scope)
-	return e.value.Array()
+	err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return e.value.Array(), nil
 }
-func (e *blockEvaluator) EvalObject(scope Scope) values.Object {
+func (e *blockEvaluator) EvalObject(scope Scope) (values.Object, error) {
 	values.CheckKind(e.t.Nature(), semantic.Object)
-	e.eval(scope)
-	return e.value.Object()
+	err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return e.value.Object(), nil
 }
-func (e *blockEvaluator) EvalFunction(scope Scope) values.Function {
+func (e *blockEvaluator) EvalFunction(scope Scope) (values.Function, error) {
 	values.CheckKind(e.t.Nature(), semantic.Object)
-	e.eval(scope)
-	return e.value.Function()
+	err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return e.value.Function(), nil
 }
 
 type returnEvaluator struct {
@@ -340,53 +393,95 @@ func (e *declarationEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *declarationEvaluator) eval(scope Scope) {
-	scope.Set(e.id, eval(e.init, scope))
+func (e *declarationEvaluator) eval(scope Scope) error {
+	v, err := eval(e.init, scope)
+	if err != nil {
+		return err
+	}
+
+	scope.Set(e.id, v)
+	return nil
 }
 
-func (e *declarationEvaluator) EvalString(scope Scope) string {
-	e.eval(scope)
-	return scope.GetString(e.id)
+func (e *declarationEvaluator) EvalString(scope Scope) (string, error) {
+	err := e.eval(scope)
+	if err != nil {
+		return "", err
+	}
+	return scope.GetString(e.id), nil
 }
-func (e *declarationEvaluator) EvalInt(scope Scope) int64 {
-	e.eval(scope)
-	return scope.GetInt(e.id)
+func (e *declarationEvaluator) EvalInt(scope Scope) (int64, error) {
+	err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return scope.GetInt(e.id), nil
 }
-func (e *declarationEvaluator) EvalUInt(scope Scope) uint64 {
-	e.eval(scope)
-	return scope.GetUInt(e.id)
+func (e *declarationEvaluator) EvalUInt(scope Scope) (uint64, error) {
+	err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+
+	return scope.GetUInt(e.id), nil
 }
-func (e *declarationEvaluator) EvalFloat(scope Scope) float64 {
-	e.eval(scope)
-	return scope.GetFloat(e.id)
+func (e *declarationEvaluator) EvalFloat(scope Scope) (float64, error) {
+	err := e.eval(scope)
+	if err != nil {
+		return 0.0, err
+	}
+
+	return scope.GetFloat(e.id), nil
 }
-func (e *declarationEvaluator) EvalBool(scope Scope) bool {
-	e.eval(scope)
-	return scope.GetBool(e.id)
+func (e *declarationEvaluator) EvalBool(scope Scope) (bool, error) {
+	err := e.eval(scope)
+	if err != nil {
+		return false, err
+	}
+	return scope.GetBool(e.id), nil
 }
-func (e *declarationEvaluator) EvalTime(scope Scope) values.Time {
-	e.eval(scope)
-	return scope.GetTime(e.id)
+func (e *declarationEvaluator) EvalTime(scope Scope) (values.Time, error) {
+	err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return scope.GetTime(e.id), nil
 }
-func (e *declarationEvaluator) EvalDuration(scope Scope) values.Duration {
-	e.eval(scope)
-	return scope.GetDuration(e.id)
+func (e *declarationEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
+	err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+
+	return scope.GetDuration(e.id), nil
 }
-func (e *declarationEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
-	e.eval(scope)
-	return scope.GetRegexp(e.id)
+func (e *declarationEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
+	err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return scope.GetRegexp(e.id), nil
 }
-func (e *declarationEvaluator) EvalArray(scope Scope) values.Array {
-	e.eval(scope)
-	return scope.GetArray(e.id)
+func (e *declarationEvaluator) EvalArray(scope Scope) (values.Array, error) {
+	err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return scope.GetArray(e.id), nil
 }
-func (e *declarationEvaluator) EvalObject(scope Scope) values.Object {
-	e.eval(scope)
-	return scope.GetObject(e.id)
+func (e *declarationEvaluator) EvalObject(scope Scope) (values.Object, error) {
+	err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return scope.GetObject(e.id), nil
 }
-func (e *declarationEvaluator) EvalFunction(scope Scope) values.Function {
-	e.eval(scope)
-	return scope.GetFunction(e.id)
+func (e *declarationEvaluator) EvalFunction(scope Scope) (values.Function, error) {
+	err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return scope.GetFunction(e.id), nil
 }
 
 type objEvaluator struct {
@@ -398,42 +493,45 @@ func (e *objEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *objEvaluator) EvalString(scope Scope) string {
+func (e *objEvaluator) EvalString(scope Scope) (string, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.String))
 }
-func (e *objEvaluator) EvalInt(scope Scope) int64 {
+func (e *objEvaluator) EvalInt(scope Scope) (int64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Int))
 }
-func (e *objEvaluator) EvalUInt(scope Scope) uint64 {
+func (e *objEvaluator) EvalUInt(scope Scope) (uint64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *objEvaluator) EvalFloat(scope Scope) float64 {
+func (e *objEvaluator) EvalFloat(scope Scope) (float64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
 }
-func (e *objEvaluator) EvalBool(scope Scope) bool {
+func (e *objEvaluator) EvalBool(scope Scope) (bool, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Bool))
 }
-func (e *objEvaluator) EvalTime(scope Scope) values.Time {
+func (e *objEvaluator) EvalTime(scope Scope) (values.Time, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Time))
 }
-func (e *objEvaluator) EvalDuration(scope Scope) values.Duration {
+func (e *objEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Duration))
 }
-func (e *objEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
+func (e *objEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Regexp))
 }
-func (e *objEvaluator) EvalArray(scope Scope) values.Array {
+func (e *objEvaluator) EvalArray(scope Scope) (values.Array, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Array))
 }
-func (e *objEvaluator) EvalObject(scope Scope) values.Object {
+func (e *objEvaluator) EvalObject(scope Scope) (values.Object, error) {
 	obj := values.NewObject()
 	for k, node := range e.properties {
-		v := eval(node, scope)
+		v, err := eval(node, scope)
+		if err != nil {
+			return nil, err
+		}
 		obj.Set(k, v)
 	}
-	return obj
+	return obj, nil
 }
-func (e *objEvaluator) EvalFunction(scope Scope) values.Function {
+func (e *objEvaluator) EvalFunction(scope Scope) (values.Function, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Function))
 }
 
@@ -446,41 +544,45 @@ func (e *arrayEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *arrayEvaluator) EvalString(scope Scope) string {
+func (e *arrayEvaluator) EvalString(scope Scope) (string, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.String))
 }
-func (e *arrayEvaluator) EvalInt(scope Scope) int64 {
+func (e *arrayEvaluator) EvalInt(scope Scope) (int64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Int))
 }
-func (e *arrayEvaluator) EvalUInt(scope Scope) uint64 {
+func (e *arrayEvaluator) EvalUInt(scope Scope) (uint64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *arrayEvaluator) EvalFloat(scope Scope) float64 {
+func (e *arrayEvaluator) EvalFloat(scope Scope) (float64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
 }
-func (e *arrayEvaluator) EvalBool(scope Scope) bool {
+func (e *arrayEvaluator) EvalBool(scope Scope) (bool, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Bool))
 }
-func (e *arrayEvaluator) EvalTime(scope Scope) values.Time {
+func (e *arrayEvaluator) EvalTime(scope Scope) (values.Time, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Time))
 }
-func (e *arrayEvaluator) EvalDuration(scope Scope) values.Duration {
+func (e *arrayEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Duration))
 }
-func (e *arrayEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
+func (e *arrayEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Regexp))
 }
-func (e *arrayEvaluator) EvalArray(scope Scope) values.Array {
+func (e *arrayEvaluator) EvalArray(scope Scope) (values.Array, error) {
 	arr := values.NewArray(e.t)
 	for _, ev := range e.array {
-		arr.Append(eval(ev, scope))
+		v, err := eval(ev, scope)
+		if err != nil {
+			return nil, err
+		}
+		arr.Append(v)
 	}
-	return arr
+	return arr, nil
 }
-func (e *arrayEvaluator) EvalObject(scope Scope) values.Object {
+func (e *arrayEvaluator) EvalObject(scope Scope) (values.Object, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Object))
 }
-func (e *arrayEvaluator) EvalFunction(scope Scope) values.Function {
+func (e *arrayEvaluator) EvalFunction(scope Scope) (values.Function, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Function))
 }
 
@@ -494,44 +596,59 @@ func (e *logicalEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *logicalEvaluator) EvalString(scope Scope) string {
+func (e *logicalEvaluator) EvalString(scope Scope) (string, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.String))
 }
-func (e *logicalEvaluator) EvalInt(scope Scope) int64 {
+func (e *logicalEvaluator) EvalInt(scope Scope) (int64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Int))
 }
-func (e *logicalEvaluator) EvalUInt(scope Scope) uint64 {
+func (e *logicalEvaluator) EvalUInt(scope Scope) (uint64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *logicalEvaluator) EvalFloat(scope Scope) float64 {
+func (e *logicalEvaluator) EvalFloat(scope Scope) (float64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
 }
-func (e *logicalEvaluator) EvalBool(scope Scope) bool {
+func (e *logicalEvaluator) EvalBool(scope Scope) (bool, error) {
+	l, err := e.left.EvalBool(scope)
+	if err != nil {
+		return false, err
+	}
+
 	switch e.operator {
 	case ast.AndOperator:
-		return e.left.EvalBool(scope) && e.right.EvalBool(scope)
+		if !l {
+			return false, nil
+		}
 	case ast.OrOperator:
-		return e.left.EvalBool(scope) || e.right.EvalBool(scope)
+		if l {
+			return true, nil
+		}
 	default:
 		panic(fmt.Errorf("unknown logical operator %v", e.operator))
 	}
+
+	r, err := e.right.EvalBool(scope)
+	if err != nil {
+		return false, err
+	}
+	return r, nil
 }
-func (e *logicalEvaluator) EvalTime(scope Scope) values.Time {
+func (e *logicalEvaluator) EvalTime(scope Scope) (values.Time, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Time))
 }
-func (e *logicalEvaluator) EvalDuration(scope Scope) values.Duration {
+func (e *logicalEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Duration))
 }
-func (e *logicalEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
+func (e *logicalEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Regexp))
 }
-func (e *logicalEvaluator) EvalArray(scope Scope) values.Array {
+func (e *logicalEvaluator) EvalArray(scope Scope) (values.Array, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Array))
 }
-func (e *logicalEvaluator) EvalObject(scope Scope) values.Object {
+func (e *logicalEvaluator) EvalObject(scope Scope) (values.Object, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Object))
 }
-func (e *logicalEvaluator) EvalFunction(scope Scope) values.Function {
+func (e *logicalEvaluator) EvalFunction(scope Scope) (values.Function, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Function))
 }
 
@@ -545,41 +662,77 @@ func (e *binaryEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *binaryEvaluator) eval(scope Scope) (l, r values.Value) {
-	return eval(e.left, scope), eval(e.right, scope)
+func (e *binaryEvaluator) eval(scope Scope) (values.Value, values.Value, error) {
+	l, err := eval(e.left, scope)
+	if err != nil {
+		return nil, nil, err
+	}
+	r, err := eval(e.right, scope)
+	if err != nil {
+		return nil, nil, err
+	}
+	return l, r, nil
 }
 
-func (e *binaryEvaluator) EvalString(scope Scope) string {
-	return e.f(e.eval(scope)).Str()
+func (e *binaryEvaluator) EvalString(scope Scope) (string, error) {
+	l, r, err := e.eval(scope)
+	if err != nil {
+		return "", err
+	}
+	return e.f(l, r).Str(), nil
 }
-func (e *binaryEvaluator) EvalInt(scope Scope) int64 {
-	return e.f(e.eval(scope)).Int()
+func (e *binaryEvaluator) EvalInt(scope Scope) (int64, error) {
+	l, r, err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return e.f(l, r).Int(), nil
 }
-func (e *binaryEvaluator) EvalUInt(scope Scope) uint64 {
-	return e.f(e.eval(scope)).UInt()
+func (e *binaryEvaluator) EvalUInt(scope Scope) (uint64, error) {
+	l, r, err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return e.f(l, r).UInt(), nil
 }
-func (e *binaryEvaluator) EvalFloat(scope Scope) float64 {
-	return e.f(e.eval(scope)).Float()
+func (e *binaryEvaluator) EvalFloat(scope Scope) (float64, error) {
+	l, r, err := e.eval(scope)
+	if err != nil {
+		return 0.0, err
+	}
+	return e.f(l, r).Float(), nil
 }
-func (e *binaryEvaluator) EvalBool(scope Scope) bool {
-	return e.f(e.eval(scope)).Bool()
+func (e *binaryEvaluator) EvalBool(scope Scope) (bool, error) {
+	l, r, err := e.eval(scope)
+	if err != nil {
+		return false, err
+	}
+	return e.f(l, r).Bool(), nil
 }
-func (e *binaryEvaluator) EvalTime(scope Scope) values.Time {
-	return e.f(e.eval(scope)).Time()
+func (e *binaryEvaluator) EvalTime(scope Scope) (values.Time, error) {
+	l, r, err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return e.f(l, r).Time(), nil
 }
-func (e *binaryEvaluator) EvalDuration(scope Scope) values.Duration {
-	return e.f(e.eval(scope)).Duration()
+func (e *binaryEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
+	l, r, err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return e.f(l, r).Duration(), nil
 }
-func (e *binaryEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
+func (e *binaryEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Regexp))
 }
-func (e *binaryEvaluator) EvalArray(scope Scope) values.Array {
+func (e *binaryEvaluator) EvalArray(scope Scope) (values.Array, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Array))
 }
-func (e *binaryEvaluator) EvalObject(scope Scope) values.Object {
+func (e *binaryEvaluator) EvalObject(scope Scope) (values.Object, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Object))
 }
-func (e *binaryEvaluator) EvalFunction(scope Scope) values.Function {
+func (e *binaryEvaluator) EvalFunction(scope Scope) (values.Function, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Function))
 }
 
@@ -592,41 +745,57 @@ func (e *unaryEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *unaryEvaluator) EvalString(scope Scope) string {
+func (e *unaryEvaluator) EvalString(scope Scope) (string, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.String))
 }
-func (e *unaryEvaluator) EvalInt(scope Scope) int64 {
+func (e *unaryEvaluator) EvalInt(scope Scope) (int64, error) {
+	v, err := e.node.EvalInt(scope)
+	if err != nil {
+		return 0, err
+	}
 	// There is only one integer unary operator
-	return -e.node.EvalInt(scope)
+	return -v, nil
 }
-func (e *unaryEvaluator) EvalUInt(scope Scope) uint64 {
+func (e *unaryEvaluator) EvalUInt(scope Scope) (uint64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *unaryEvaluator) EvalFloat(scope Scope) float64 {
+func (e *unaryEvaluator) EvalFloat(scope Scope) (float64, error) {
+	v, err := e.node.EvalFloat(scope)
+	if err != nil {
+		return 0, err
+	}
 	// There is only one float unary operator
-	return -e.node.EvalFloat(scope)
+	return -v, nil
 }
-func (e *unaryEvaluator) EvalBool(scope Scope) bool {
-	// There is only one boolean unary operator
-	return !e.node.EvalBool(scope)
+func (e *unaryEvaluator) EvalBool(scope Scope) (bool, error) {
+	v, err := e.node.EvalBool(scope)
+	if err != nil {
+		return false, err
+	}
+	// There is only one bool unary operator
+	return !v, nil
 }
-func (e *unaryEvaluator) EvalTime(scope Scope) values.Time {
+func (e *unaryEvaluator) EvalTime(scope Scope) (values.Time, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Time))
 }
-func (e *unaryEvaluator) EvalDuration(scope Scope) values.Duration {
+func (e *unaryEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
+	v, err := e.node.EvalDuration(scope)
+	if err != nil {
+		return 0, err
+	}
 	// There is only one duration unary operator
-	return -e.node.EvalDuration(scope)
+	return -v, nil
 }
-func (e *unaryEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
+func (e *unaryEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Regexp))
 }
-func (e *unaryEvaluator) EvalArray(scope Scope) values.Array {
+func (e *unaryEvaluator) EvalArray(scope Scope) (values.Array, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Array))
 }
-func (e *unaryEvaluator) EvalObject(scope Scope) values.Object {
+func (e *unaryEvaluator) EvalObject(scope Scope) (values.Object, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Object))
 }
-func (e *unaryEvaluator) EvalFunction(scope Scope) values.Function {
+func (e *unaryEvaluator) EvalFunction(scope Scope) (values.Function, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Function))
 }
 
@@ -639,37 +808,37 @@ func (e *integerEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *integerEvaluator) EvalString(scope Scope) string {
+func (e *integerEvaluator) EvalString(scope Scope) (string, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.String))
 }
-func (e *integerEvaluator) EvalInt(scope Scope) int64 {
-	return e.i
+func (e *integerEvaluator) EvalInt(scope Scope) (int64, error) {
+	return e.i, nil
 }
-func (e *integerEvaluator) EvalUInt(scope Scope) uint64 {
-	return uint64(e.i)
+func (e *integerEvaluator) EvalUInt(scope Scope) (uint64, error) {
+	return uint64(e.i), nil
 }
-func (e *integerEvaluator) EvalFloat(scope Scope) float64 {
+func (e *integerEvaluator) EvalFloat(scope Scope) (float64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
 }
-func (e *integerEvaluator) EvalBool(scope Scope) bool {
+func (e *integerEvaluator) EvalBool(scope Scope) (bool, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Bool))
 }
-func (e *integerEvaluator) EvalTime(scope Scope) values.Time {
+func (e *integerEvaluator) EvalTime(scope Scope) (values.Time, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Time))
 }
-func (e *integerEvaluator) EvalDuration(scope Scope) values.Duration {
+func (e *integerEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Duration))
 }
-func (e *integerEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
+func (e *integerEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Regexp))
 }
-func (e *integerEvaluator) EvalArray(scope Scope) values.Array {
+func (e *integerEvaluator) EvalArray(scope Scope) (values.Array, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Array))
 }
-func (e *integerEvaluator) EvalObject(scope Scope) values.Object {
+func (e *integerEvaluator) EvalObject(scope Scope) (values.Object, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Object))
 }
-func (e *integerEvaluator) EvalFunction(scope Scope) values.Function {
+func (e *integerEvaluator) EvalFunction(scope Scope) (values.Function, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Function))
 }
 
@@ -682,37 +851,37 @@ func (e *stringEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *stringEvaluator) EvalString(scope Scope) string {
-	return e.s
+func (e *stringEvaluator) EvalString(scope Scope) (string, error) {
+	return e.s, nil
 }
-func (e *stringEvaluator) EvalInt(scope Scope) int64 {
+func (e *stringEvaluator) EvalInt(scope Scope) (int64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Int))
 }
-func (e *stringEvaluator) EvalUInt(scope Scope) uint64 {
+func (e *stringEvaluator) EvalUInt(scope Scope) (uint64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *stringEvaluator) EvalFloat(scope Scope) float64 {
+func (e *stringEvaluator) EvalFloat(scope Scope) (float64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
 }
-func (e *stringEvaluator) EvalBool(scope Scope) bool {
+func (e *stringEvaluator) EvalBool(scope Scope) (bool, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Bool))
 }
-func (e *stringEvaluator) EvalTime(scope Scope) values.Time {
+func (e *stringEvaluator) EvalTime(scope Scope) (values.Time, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Time))
 }
-func (e *stringEvaluator) EvalDuration(scope Scope) values.Duration {
+func (e *stringEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Duration))
 }
-func (e *stringEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
+func (e *stringEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Regexp))
 }
-func (e *stringEvaluator) EvalArray(scope Scope) values.Array {
+func (e *stringEvaluator) EvalArray(scope Scope) (values.Array, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Array))
 }
-func (e *stringEvaluator) EvalObject(scope Scope) values.Object {
+func (e *stringEvaluator) EvalObject(scope Scope) (values.Object, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Object))
 }
-func (e *stringEvaluator) EvalFunction(scope Scope) values.Function {
+func (e *stringEvaluator) EvalFunction(scope Scope) (values.Function, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Function))
 }
 
@@ -725,37 +894,37 @@ func (e *regexpEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *regexpEvaluator) EvalString(scope Scope) string {
+func (e *regexpEvaluator) EvalString(scope Scope) (string, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.String))
 }
-func (e *regexpEvaluator) EvalInt(scope Scope) int64 {
+func (e *regexpEvaluator) EvalInt(scope Scope) (int64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Int))
 }
-func (e *regexpEvaluator) EvalUInt(scope Scope) uint64 {
+func (e *regexpEvaluator) EvalUInt(scope Scope) (uint64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *regexpEvaluator) EvalFloat(scope Scope) float64 {
+func (e *regexpEvaluator) EvalFloat(scope Scope) (float64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
 }
-func (e *regexpEvaluator) EvalBool(scope Scope) bool {
+func (e *regexpEvaluator) EvalBool(scope Scope) (bool, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Bool))
 }
-func (e *regexpEvaluator) EvalTime(scope Scope) values.Time {
+func (e *regexpEvaluator) EvalTime(scope Scope) (values.Time, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Time))
 }
-func (e *regexpEvaluator) EvalDuration(scope Scope) values.Duration {
+func (e *regexpEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Duration))
 }
-func (e *regexpEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
-	return e.r
+func (e *regexpEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
+	return e.r, nil
 }
-func (e *regexpEvaluator) EvalArray(scope Scope) values.Array {
+func (e *regexpEvaluator) EvalArray(scope Scope) (values.Array, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Array))
 }
-func (e *regexpEvaluator) EvalObject(scope Scope) values.Object {
+func (e *regexpEvaluator) EvalObject(scope Scope) (values.Object, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Object))
 }
-func (e *regexpEvaluator) EvalFunction(scope Scope) values.Function {
+func (e *regexpEvaluator) EvalFunction(scope Scope) (values.Function, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Function))
 }
 
@@ -768,37 +937,37 @@ func (e *booleanEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *booleanEvaluator) EvalString(scope Scope) string {
+func (e *booleanEvaluator) EvalString(scope Scope) (string, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.String))
 }
-func (e *booleanEvaluator) EvalInt(scope Scope) int64 {
+func (e *booleanEvaluator) EvalInt(scope Scope) (int64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Int))
 }
-func (e *booleanEvaluator) EvalUInt(scope Scope) uint64 {
+func (e *booleanEvaluator) EvalUInt(scope Scope) (uint64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *booleanEvaluator) EvalFloat(scope Scope) float64 {
+func (e *booleanEvaluator) EvalFloat(scope Scope) (float64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
 }
-func (e *booleanEvaluator) EvalBool(scope Scope) bool {
-	return e.b
+func (e *booleanEvaluator) EvalBool(scope Scope) (bool, error) {
+	return e.b, nil
 }
-func (e *booleanEvaluator) EvalTime(scope Scope) values.Time {
+func (e *booleanEvaluator) EvalTime(scope Scope) (values.Time, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Time))
 }
-func (e *booleanEvaluator) EvalDuration(scope Scope) values.Duration {
+func (e *booleanEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Duration))
 }
-func (e *booleanEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
+func (e *booleanEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Regexp))
 }
-func (e *booleanEvaluator) EvalArray(scope Scope) values.Array {
+func (e *booleanEvaluator) EvalArray(scope Scope) (values.Array, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Array))
 }
-func (e *booleanEvaluator) EvalObject(scope Scope) values.Object {
+func (e *booleanEvaluator) EvalObject(scope Scope) (values.Object, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Object))
 }
-func (e *booleanEvaluator) EvalFunction(scope Scope) values.Function {
+func (e *booleanEvaluator) EvalFunction(scope Scope) (values.Function, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Function))
 }
 
@@ -811,37 +980,37 @@ func (e *floatEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *floatEvaluator) EvalString(scope Scope) string {
+func (e *floatEvaluator) EvalString(scope Scope) (string, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.String))
 }
-func (e *floatEvaluator) EvalInt(scope Scope) int64 {
+func (e *floatEvaluator) EvalInt(scope Scope) (int64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Int))
 }
-func (e *floatEvaluator) EvalUInt(scope Scope) uint64 {
+func (e *floatEvaluator) EvalUInt(scope Scope) (uint64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *floatEvaluator) EvalFloat(scope Scope) float64 {
-	return e.f
+func (e *floatEvaluator) EvalFloat(scope Scope) (float64, error) {
+	return e.f, nil
 }
-func (e *floatEvaluator) EvalBool(scope Scope) bool {
+func (e *floatEvaluator) EvalBool(scope Scope) (bool, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Bool))
 }
-func (e *floatEvaluator) EvalTime(scope Scope) values.Time {
+func (e *floatEvaluator) EvalTime(scope Scope) (values.Time, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Time))
 }
-func (e *floatEvaluator) EvalDuration(scope Scope) values.Duration {
+func (e *floatEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Duration))
 }
-func (e *floatEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
+func (e *floatEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Regexp))
 }
-func (e *floatEvaluator) EvalArray(scope Scope) values.Array {
+func (e *floatEvaluator) EvalArray(scope Scope) (values.Array, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Array))
 }
-func (e *floatEvaluator) EvalObject(scope Scope) values.Object {
+func (e *floatEvaluator) EvalObject(scope Scope) (values.Object, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Object))
 }
-func (e *floatEvaluator) EvalFunction(scope Scope) values.Function {
+func (e *floatEvaluator) EvalFunction(scope Scope) (values.Function, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Function))
 }
 
@@ -854,37 +1023,37 @@ func (e *timeEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *timeEvaluator) EvalString(scope Scope) string {
+func (e *timeEvaluator) EvalString(scope Scope) (string, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.String))
 }
-func (e *timeEvaluator) EvalInt(scope Scope) int64 {
+func (e *timeEvaluator) EvalInt(scope Scope) (int64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Int))
 }
-func (e *timeEvaluator) EvalUInt(scope Scope) uint64 {
+func (e *timeEvaluator) EvalUInt(scope Scope) (uint64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *timeEvaluator) EvalFloat(scope Scope) float64 {
+func (e *timeEvaluator) EvalFloat(scope Scope) (float64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
 }
-func (e *timeEvaluator) EvalBool(scope Scope) bool {
+func (e *timeEvaluator) EvalBool(scope Scope) (bool, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Bool))
 }
-func (e *timeEvaluator) EvalTime(scope Scope) values.Time {
-	return e.time
+func (e *timeEvaluator) EvalTime(scope Scope) (values.Time, error) {
+	return e.time, nil
 }
-func (e *timeEvaluator) EvalDuration(scope Scope) values.Duration {
+func (e *timeEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Duration))
 }
-func (e *timeEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
+func (e *timeEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Regexp))
 }
-func (e *timeEvaluator) EvalArray(scope Scope) values.Array {
+func (e *timeEvaluator) EvalArray(scope Scope) (values.Array, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Array))
 }
-func (e *timeEvaluator) EvalObject(scope Scope) values.Object {
+func (e *timeEvaluator) EvalObject(scope Scope) (values.Object, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Object))
 }
-func (e *timeEvaluator) EvalFunction(scope Scope) values.Function {
+func (e *timeEvaluator) EvalFunction(scope Scope) (values.Function, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Function))
 }
 
@@ -897,38 +1066,38 @@ func (e *identifierEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *identifierEvaluator) EvalString(scope Scope) string {
-	return scope.GetString(e.name)
+func (e *identifierEvaluator) EvalString(scope Scope) (string, error) {
+	return scope.GetString(e.name), nil
 }
-func (e *identifierEvaluator) EvalInt(scope Scope) int64 {
-	return scope.GetInt(e.name)
+func (e *identifierEvaluator) EvalInt(scope Scope) (int64, error) {
+	return scope.GetInt(e.name), nil
 }
-func (e *identifierEvaluator) EvalUInt(scope Scope) uint64 {
-	return scope.GetUInt(e.name)
+func (e *identifierEvaluator) EvalUInt(scope Scope) (uint64, error) {
+	return scope.GetUInt(e.name), nil
 }
-func (e *identifierEvaluator) EvalFloat(scope Scope) float64 {
-	return scope.GetFloat(e.name)
+func (e *identifierEvaluator) EvalFloat(scope Scope) (float64, error) {
+	return scope.GetFloat(e.name), nil
 }
-func (e *identifierEvaluator) EvalBool(scope Scope) bool {
-	return scope.GetBool(e.name)
+func (e *identifierEvaluator) EvalBool(scope Scope) (bool, error) {
+	return scope.GetBool(e.name), nil
 }
-func (e *identifierEvaluator) EvalTime(scope Scope) values.Time {
-	return scope.GetTime(e.name)
+func (e *identifierEvaluator) EvalTime(scope Scope) (values.Time, error) {
+	return scope.GetTime(e.name), nil
 }
-func (e *identifierEvaluator) EvalDuration(scope Scope) values.Duration {
-	return scope.GetDuration(e.name)
+func (e *identifierEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
+	return scope.GetDuration(e.name), nil
 }
-func (e *identifierEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
-	return scope.GetRegexp(e.name)
+func (e *identifierEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
+	return scope.GetRegexp(e.name), nil
 }
-func (e *identifierEvaluator) EvalArray(scope Scope) values.Array {
-	return scope.GetArray(e.name)
+func (e *identifierEvaluator) EvalArray(scope Scope) (values.Array, error) {
+	return scope.GetArray(e.name), nil
 }
-func (e *identifierEvaluator) EvalObject(scope Scope) values.Object {
-	return scope.GetObject(e.name)
+func (e *identifierEvaluator) EvalObject(scope Scope) (values.Object, error) {
+	return scope.GetObject(e.name), nil
 }
-func (e *identifierEvaluator) EvalFunction(scope Scope) values.Function {
-	return scope.GetFunction(e.name)
+func (e *identifierEvaluator) EvalFunction(scope Scope) (values.Function, error) {
+	return scope.GetFunction(e.name), nil
 }
 
 type valueEvaluator struct {
@@ -939,38 +1108,38 @@ func (e *valueEvaluator) Type() semantic.Type {
 	return e.value.Type()
 }
 
-func (e *valueEvaluator) EvalString(scope Scope) string {
-	return e.value.Str()
+func (e *valueEvaluator) EvalString(scope Scope) (string, error) {
+	return e.value.Str(), nil
 }
-func (e *valueEvaluator) EvalInt(scope Scope) int64 {
-	return e.value.Int()
+func (e *valueEvaluator) EvalInt(scope Scope) (int64, error) {
+	return e.value.Int(), nil
 }
-func (e *valueEvaluator) EvalUInt(scope Scope) uint64 {
-	return e.value.UInt()
+func (e *valueEvaluator) EvalUInt(scope Scope) (uint64, error) {
+	return e.value.UInt(), nil
 }
-func (e *valueEvaluator) EvalFloat(scope Scope) float64 {
-	return e.value.Float()
+func (e *valueEvaluator) EvalFloat(scope Scope) (float64, error) {
+	return e.value.Float(), nil
 }
-func (e *valueEvaluator) EvalBool(scope Scope) bool {
-	return e.value.Bool()
+func (e *valueEvaluator) EvalBool(scope Scope) (bool, error) {
+	return e.value.Bool(), nil
 }
-func (e *valueEvaluator) EvalTime(scope Scope) values.Time {
-	return e.value.Time()
+func (e *valueEvaluator) EvalTime(scope Scope) (values.Time, error) {
+	return e.value.Time(), nil
 }
-func (e *valueEvaluator) EvalDuration(scope Scope) values.Duration {
-	return e.value.Duration()
+func (e *valueEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
+	return e.value.Duration(), nil
 }
-func (e *valueEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
-	return e.value.Regexp()
+func (e *valueEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
+	return e.value.Regexp(), nil
 }
-func (e *valueEvaluator) EvalArray(scope Scope) values.Array {
-	return e.value.Array()
+func (e *valueEvaluator) EvalArray(scope Scope) (values.Array, error) {
+	return e.value.Array(), nil
 }
-func (e *valueEvaluator) EvalObject(scope Scope) values.Object {
-	return e.value.Object()
+func (e *valueEvaluator) EvalObject(scope Scope) (values.Object, error) {
+	return e.value.Object(), nil
 }
-func (e *valueEvaluator) EvalFunction(scope Scope) values.Function {
-	return e.value.Function()
+func (e *valueEvaluator) EvalFunction(scope Scope) (values.Function, error) {
+	return e.value.Function(), nil
 }
 
 type memberEvaluator struct {
@@ -983,49 +1152,93 @@ func (e *memberEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *memberEvaluator) EvalString(scope Scope) string {
-	v, _ := e.object.EvalObject(scope).Get(e.property)
-	return v.Str()
+func (e *memberEvaluator) EvalString(scope Scope) (string, error) {
+	o, err := e.object.EvalObject(scope)
+	if err != nil {
+		return "", err
+	}
+	v, _ := o.Get(e.property)
+	return v.Str(), nil
 }
-func (e *memberEvaluator) EvalInt(scope Scope) int64 {
-	v, _ := e.object.EvalObject(scope).Get(e.property)
-	return v.Int()
+func (e *memberEvaluator) EvalInt(scope Scope) (int64, error) {
+	o, err := e.object.EvalObject(scope)
+	if err != nil {
+		return 0, err
+	}
+	v, _ := o.Get(e.property)
+	return v.Int(), nil
 }
-func (e *memberEvaluator) EvalUInt(scope Scope) uint64 {
-	v, _ := e.object.EvalObject(scope).Get(e.property)
-	return v.UInt()
+func (e *memberEvaluator) EvalUInt(scope Scope) (uint64, error) {
+	o, err := e.object.EvalObject(scope)
+	if err != nil {
+		return 0, err
+	}
+	v, _ := o.Get(e.property)
+	return v.UInt(), nil
 }
-func (e *memberEvaluator) EvalFloat(scope Scope) float64 {
-	v, _ := e.object.EvalObject(scope).Get(e.property)
-	return v.Float()
+func (e *memberEvaluator) EvalFloat(scope Scope) (float64, error) {
+	o, err := e.object.EvalObject(scope)
+	if err != nil {
+		return 0.0, err
+	}
+	v, _ := o.Get(e.property)
+	return v.Float(), nil
 }
-func (e *memberEvaluator) EvalBool(scope Scope) bool {
-	v, _ := e.object.EvalObject(scope).Get(e.property)
-	return v.Bool()
+func (e *memberEvaluator) EvalBool(scope Scope) (bool, error) {
+	o, err := e.object.EvalObject(scope)
+	if err != nil {
+		return false, err
+	}
+	v, _ := o.Get(e.property)
+	return v.Bool(), nil
 }
-func (e *memberEvaluator) EvalTime(scope Scope) values.Time {
-	v, _ := e.object.EvalObject(scope).Get(e.property)
-	return v.Time()
+func (e *memberEvaluator) EvalTime(scope Scope) (values.Time, error) {
+	o, err := e.object.EvalObject(scope)
+	if err != nil {
+		return 0, err
+	}
+	v, _ := o.Get(e.property)
+	return v.Time(), nil
 }
-func (e *memberEvaluator) EvalDuration(scope Scope) values.Duration {
-	v, _ := e.object.EvalObject(scope).Get(e.property)
-	return v.Duration()
+func (e *memberEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
+	o, err := e.object.EvalObject(scope)
+	if err != nil {
+		return 0, err
+	}
+	v, _ := o.Get(e.property)
+	return v.Duration(), nil
 }
-func (e *memberEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
-	v, _ := e.object.EvalObject(scope).Get(e.property)
-	return v.Regexp()
+func (e *memberEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
+	o, err := e.object.EvalObject(scope)
+	if err != nil {
+		return nil, err
+	}
+	v, _ := o.Get(e.property)
+	return v.Regexp(), nil
 }
-func (e *memberEvaluator) EvalArray(scope Scope) values.Array {
-	v, _ := e.object.EvalObject(scope).Get(e.property)
-	return v.Array()
+func (e *memberEvaluator) EvalArray(scope Scope) (values.Array, error) {
+	o, err := e.object.EvalObject(scope)
+	if err != nil {
+		return nil, nil
+	}
+	v, _ := o.Get(e.property)
+	return v.Array(), nil
 }
-func (e *memberEvaluator) EvalObject(scope Scope) values.Object {
-	v, _ := e.object.EvalObject(scope).Get(e.property)
-	return v.Object()
+func (e *memberEvaluator) EvalObject(scope Scope) (values.Object, error) {
+	o, err := e.object.EvalObject(scope)
+	if err != nil {
+		return nil, nil
+	}
+	v, _ := o.Get(e.property)
+	return v.Object(), nil
 }
-func (e *memberEvaluator) EvalFunction(scope Scope) values.Function {
-	v, _ := e.object.EvalObject(scope).Get(e.property)
-	return v.Function()
+func (e *memberEvaluator) EvalFunction(scope Scope) (values.Function, error) {
+	o, err := e.object.EvalObject(scope)
+	if err != nil {
+		return nil, err
+	}
+	v, _ := o.Get(e.property)
+	return v.Function(), nil
 }
 
 type arrayIndexEvaluator struct {
@@ -1038,49 +1251,94 @@ func (e *arrayIndexEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *arrayIndexEvaluator) EvalString(scope Scope) string {
-	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
-	return v.Str()
+func (e *arrayIndexEvaluator) eval(scope Scope) (values.Value, error) {
+	a, err := e.array.EvalArray(scope)
+	if err != nil {
+		return nil, err
+	}
+	i, err := e.index.EvalInt(scope)
+	if err != nil {
+		return nil, err
+	}
+	return a.Get(int(i)), nil
 }
-func (e *arrayIndexEvaluator) EvalInt(scope Scope) int64 {
-	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
-	return v.Int()
+
+func (e *arrayIndexEvaluator) EvalString(scope Scope) (string, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return "", err
+	}
+	return v.Str(), nil
 }
-func (e *arrayIndexEvaluator) EvalUInt(scope Scope) uint64 {
-	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
-	return v.UInt()
+func (e *arrayIndexEvaluator) EvalInt(scope Scope) (int64, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return v.Int(), nil
 }
-func (e *arrayIndexEvaluator) EvalFloat(scope Scope) float64 {
-	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
-	return v.Float()
+func (e *arrayIndexEvaluator) EvalUInt(scope Scope) (uint64, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return v.UInt(), nil
 }
-func (e *arrayIndexEvaluator) EvalBool(scope Scope) bool {
-	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
-	return v.Bool()
+func (e *arrayIndexEvaluator) EvalFloat(scope Scope) (float64, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return 0.0, err
+	}
+	return v.Float(), nil
 }
-func (e *arrayIndexEvaluator) EvalTime(scope Scope) values.Time {
-	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
-	return v.Time()
+func (e *arrayIndexEvaluator) EvalBool(scope Scope) (bool, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return false, err
+	}
+	return v.Bool(), nil
 }
-func (e *arrayIndexEvaluator) EvalDuration(scope Scope) values.Duration {
-	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
-	return v.Duration()
+func (e *arrayIndexEvaluator) EvalTime(scope Scope) (values.Time, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return v.Time(), nil
 }
-func (e *arrayIndexEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
-	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
-	return v.Regexp()
+func (e *arrayIndexEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return v.Duration(), nil
 }
-func (e *arrayIndexEvaluator) EvalArray(scope Scope) values.Array {
-	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
-	return v.Array()
+func (e *arrayIndexEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return v.Regexp(), nil
 }
-func (e *arrayIndexEvaluator) EvalObject(scope Scope) values.Object {
-	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
-	return v.Object()
+func (e *arrayIndexEvaluator) EvalArray(scope Scope) (values.Array, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return v.Array(), nil
 }
-func (e *arrayIndexEvaluator) EvalFunction(scope Scope) values.Function {
-	v := e.array.EvalArray(scope).Get(int(e.index.EvalInt(scope)))
-	return v.Function()
+func (e *arrayIndexEvaluator) EvalObject(scope Scope) (values.Object, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return v.Object(), nil
+}
+func (e *arrayIndexEvaluator) EvalFunction(scope Scope) (values.Function, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return v.Function(), nil
 }
 
 type callEvaluator struct {
@@ -1093,46 +1351,94 @@ func (e *callEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *callEvaluator) eval(scope Scope) values.Value {
-	args := e.args.EvalObject(scope)
-	f := e.callee.EvalFunction(scope)
-	//TODO(nathanielc): What to do about error when calling functions?
-	v, _ := f.Call(args)
-	return v
+func (e *callEvaluator) eval(scope Scope) (values.Value, error) {
+	args, err := e.args.EvalObject(scope)
+	if err != nil {
+		return nil, err
+	}
+	f, err := e.callee.EvalFunction(scope)
+	if err != nil {
+		return nil, err
+	}
+	return f.Call(args)
 }
 
-func (e *callEvaluator) EvalString(scope Scope) string {
-	return e.eval(scope).Str()
+func (e *callEvaluator) EvalString(scope Scope) (string, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return "", err
+	}
+	return v.Str(), nil
 }
-func (e *callEvaluator) EvalInt(scope Scope) int64 {
-	return e.eval(scope).Int()
+func (e *callEvaluator) EvalInt(scope Scope) (int64, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return v.Int(), nil
 }
-func (e *callEvaluator) EvalUInt(scope Scope) uint64 {
-	return e.eval(scope).UInt()
+func (e *callEvaluator) EvalUInt(scope Scope) (uint64, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return v.UInt(), nil
 }
-func (e *callEvaluator) EvalFloat(scope Scope) float64 {
-	return e.eval(scope).Float()
+func (e *callEvaluator) EvalFloat(scope Scope) (float64, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return 0.0, err
+	}
+	return v.Float(), nil
 }
-func (e *callEvaluator) EvalBool(scope Scope) bool {
-	return e.eval(scope).Bool()
+func (e *callEvaluator) EvalBool(scope Scope) (bool, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return false, err
+	}
+	return v.Bool(), nil
 }
-func (e *callEvaluator) EvalTime(scope Scope) values.Time {
-	return e.eval(scope).Time()
+func (e *callEvaluator) EvalTime(scope Scope) (values.Time, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return v.Time(), nil
 }
-func (e *callEvaluator) EvalDuration(scope Scope) values.Duration {
-	return e.eval(scope).Duration()
+func (e *callEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return v.Duration(), nil
 }
-func (e *callEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
-	return e.eval(scope).Regexp()
+func (e *callEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return v.Regexp(), nil
 }
-func (e *callEvaluator) EvalArray(scope Scope) values.Array {
-	return e.eval(scope).Array()
+func (e *callEvaluator) EvalArray(scope Scope) (values.Array, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return v.Array(), nil
 }
-func (e *callEvaluator) EvalObject(scope Scope) values.Object {
-	return e.eval(scope).Object()
+func (e *callEvaluator) EvalObject(scope Scope) (values.Object, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return v.Object(), nil
 }
-func (e *callEvaluator) EvalFunction(scope Scope) values.Function {
-	return e.eval(scope).Function()
+func (e *callEvaluator) EvalFunction(scope Scope) (values.Function, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return v.Function(), nil
 }
 
 type functionEvaluator struct {
@@ -1145,43 +1451,43 @@ func (e *functionEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *functionEvaluator) EvalString(scope Scope) string {
+func (e *functionEvaluator) EvalString(scope Scope) (string, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.String))
 }
-func (e *functionEvaluator) EvalInt(scope Scope) int64 {
+func (e *functionEvaluator) EvalInt(scope Scope) (int64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Int))
 }
-func (e *functionEvaluator) EvalUInt(scope Scope) uint64 {
+func (e *functionEvaluator) EvalUInt(scope Scope) (uint64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
 }
-func (e *functionEvaluator) EvalFloat(scope Scope) float64 {
+func (e *functionEvaluator) EvalFloat(scope Scope) (float64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
 }
-func (e *functionEvaluator) EvalBool(scope Scope) bool {
+func (e *functionEvaluator) EvalBool(scope Scope) (bool, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Bool))
 }
-func (e *functionEvaluator) EvalTime(scope Scope) values.Time {
+func (e *functionEvaluator) EvalTime(scope Scope) (values.Time, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Time))
 }
-func (e *functionEvaluator) EvalDuration(scope Scope) values.Duration {
+func (e *functionEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Duration))
 }
-func (e *functionEvaluator) EvalRegexp(scope Scope) *regexp.Regexp {
+func (e *functionEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Regexp))
 }
-func (e *functionEvaluator) EvalArray(scope Scope) values.Array {
+func (e *functionEvaluator) EvalArray(scope Scope) (values.Array, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Array))
 }
-func (e *functionEvaluator) EvalObject(scope Scope) values.Object {
+func (e *functionEvaluator) EvalObject(scope Scope) (values.Object, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Object))
 }
-func (e *functionEvaluator) EvalFunction(scope Scope) values.Function {
+func (e *functionEvaluator) EvalFunction(scope Scope) (values.Function, error) {
 	return &functionValue{
 		t:      e.t,
 		body:   e.body,
 		params: e.params,
 		scope:  scope,
-	}
+	}, nil
 }
 
 type functionValue struct {
@@ -1254,11 +1560,66 @@ func (f *functionValue) HasSideEffect() bool {
 func (f *functionValue) Call(args values.Object) (values.Value, error) {
 	scope := f.scope.Copy()
 	for _, p := range f.params {
-		v, ok := args.Get(p.Key)
+		a, ok := args.Get(p.Key)
 		if !ok && p.Default != nil {
-			v = eval(p.Default, f.scope)
+			v, err := eval(p.Default, f.scope)
+			if err != nil {
+				return nil, err
+			}
+			a = v
 		}
-		scope.Set(p.Key, v)
+		scope.Set(p.Key, a)
 	}
-	return eval(f.body, scope), nil
+	return eval(f.body, scope)
+}
+
+type noopEvaluator struct {
+}
+
+func (noopEvaluator) Type() semantic.Type {
+	return semantic.Nil
+}
+
+func (noopEvaluator) EvalString(scope Scope) (string, error) {
+	return "", nil
+}
+
+func (noopEvaluator) EvalInt(scope Scope) (int64, error) {
+	return 0, nil
+}
+
+func (noopEvaluator) EvalUInt(scope Scope) (uint64, error) {
+	return 0, nil
+}
+
+func (noopEvaluator) EvalFloat(scope Scope) (float64, error) {
+	return 0.0, nil
+}
+
+func (noopEvaluator) EvalBool(scope Scope) (bool, error) {
+	return false, nil
+}
+
+func (noopEvaluator) EvalTime(scope Scope) (values.Time, error) {
+	return 0, nil
+}
+
+func (noopEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
+	return 0, nil
+}
+
+func (noopEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
+	return nil, nil
+}
+
+func (noopEvaluator) EvalArray(scope Scope) (values.Array, error) {
+	return nil, nil
+}
+
+func (noopEvaluator) EvalObject(scope Scope) (values.Object, error) {
+	return nil, nil
+}
+
+func (noopEvaluator) EvalFunction(scope Scope) (values.Function, error) {
+	return nil, nil
 }

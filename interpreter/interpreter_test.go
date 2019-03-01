@@ -370,6 +370,38 @@ func TestEval(t *testing.T) {
 			`,
 			wantErr: true,
 		},
+		{
+			name: "short circuit logical and",
+			query: `
+                false and fail()
+            `,
+			want: []values.Value{
+				values.NewBool(false),
+			},
+		},
+		{
+			name: "short circuit logical or",
+			query: `
+                true or fail()
+            `,
+			want: []values.Value{
+				values.NewBool(true),
+			},
+		},
+		{
+			name: "no short circuit logical and",
+			query: `
+                true and fail()
+            `,
+			wantErr: true,
+		},
+		{
+			name: "no short circuit logical or",
+			query: `
+                false or fail()
+            `,
+			wantErr: true,
+		},
 	}
 
 	for _, tc := range testCases {

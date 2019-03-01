@@ -2,13 +2,13 @@ package universe
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"github.com/pkg/errors"
 )
 
 const FilterKind = "filter"
@@ -150,8 +150,7 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			if pass, err := t.fn.Eval(i, cr); err != nil {
-				log.Printf("failed to evaluate filter expression: %v", err)
-				continue
+				return errors.Wrap(err, "failed to evaluate filter function")
 			} else if !pass {
 				// No match, skipping
 				continue

@@ -1,6 +1,7 @@
 package universe_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/influxdata/flux"
@@ -166,10 +167,11 @@ func TestMapOperation_Marshaling(t *testing.T) {
 }
 func TestMap_Process(t *testing.T) {
 	testCases := []struct {
-		name string
-		spec *universe.MapProcedureSpec
-		data []flux.Table
-		want []*executetest.Table
+		name    string
+		spec    *universe.MapProcedureSpec
+		data    []flux.Table
+		want    []*executetest.Table
+		wantErr error
 	}{
 		{
 			name: `_value+5`,
@@ -803,6 +805,57 @@ func TestMap_Process(t *testing.T) {
 				},
 			}},
 		},
+		{
+			name: `float("foo") produces error`,
+			spec: &universe.MapProcedureSpec{
+				MergeKey: false,
+				Fn: &semantic.FunctionExpression{
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{
+									Key: &semantic.Identifier{Name: "_time"},
+									Value: &semantic.MemberExpression{
+										Object: &semantic.IdentifierExpression{
+											Name: "r",
+										},
+										Property: "_time",
+									},
+								},
+								{
+									Key: &semantic.Identifier{Name: "_value"},
+									Value: &semantic.CallExpression{
+										Callee: &semantic.IdentifierExpression{Name: "float"},
+										Arguments: &semantic.ObjectExpression{
+											Properties: []*semantic.Property{{
+												Key: &semantic.Identifier{Name: "v"},
+												Value: &semantic.StringLiteral{
+													Value: "foo",
+												},
+											}},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TUInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), uint64(1)},
+					{execute.Time(2), uint64(6)},
+				},
+			}},
+			wantErr: errors.New(`failed to evaluate map function: strconv.ParseFloat: parsing "foo": invalid syntax`),
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
@@ -811,7 +864,7 @@ func TestMap_Process(t *testing.T) {
 				t,
 				tc.data,
 				tc.want,
-				nil,
+				tc.wantErr,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
 					f, err := universe.NewMapTransformation(d, c, tc.spec)
 					if err != nil {

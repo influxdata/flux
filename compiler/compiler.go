@@ -79,7 +79,7 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, fun
 			body: body,
 		}, nil
 	case *semantic.ExpressionStatement:
-		return nil, errors.New("statement does nothing, sideffects are not supported by the compiler")
+		return nil, errors.New("statement does nothing, side effects are not supported by the compiler")
 	case *semantic.ReturnStatement:
 		node, err := compile(n.Argument, typeSol, builtIns, funcExprs)
 		if err != nil {
@@ -91,9 +91,7 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, fun
 	case *semantic.NativeVariableAssignment:
 		if fe, ok := n.Init.(*semantic.FunctionExpression); ok {
 			funcExprs[n.Identifier.Name] = fe
-			return &blockEvaluator{
-				t: semantic.Invalid,
-			}, nil
+			return &noopEvaluator{}, nil
 		}
 		node, err := compile(n.Init, typeSol, builtIns, funcExprs)
 		if err != nil {
