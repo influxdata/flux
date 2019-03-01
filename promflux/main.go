@@ -51,7 +51,13 @@ func main() {
 	if err != nil {
 		log.Fatalln("Error parsing PromQL expression:", err)
 	}
-	fluxNode, err := transpile(*influxBucket, promqlNode, startTime, endTime, *queryRes)
+	t := transpiler{
+		bucket:     *influxBucket,
+		start:      startTime,
+		end:        endTime,
+		resolution: *queryRes,
+	}
+	fluxNode, err := t.transpile(promqlNode)
 	if err != nil {
 		log.Fatalln("Error transpiling PromQL expression to Flux:", err)
 	}

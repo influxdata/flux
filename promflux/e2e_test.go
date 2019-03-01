@@ -141,6 +141,9 @@ var queries = []struct {
 		query:    `quantile({{.quantile}}, demo_cpu_usage_seconds_total)`,
 		variants: testQuantiles,
 	},
+	{
+		query: `avg(max by(mode) (demo_cpu_usage_seconds_total))`,
+	},
 	// {
 	// 	query: `1 * 2 + 4 / 6 - 10`,
 	// },
@@ -257,7 +260,13 @@ func (r *e2eRunner) runQuery(t *testing.T, query string) {
 	if err != nil {
 		t.Fatalf("Error parsing PromQL expression %q: %s", query, err)
 	}
-	fluxNode, err := transpile(r.influxBucket, promqlNode, r.start, r.end, r.resolution)
+	tr := &transpiler{
+		bucket:     r.influxBucket,
+		start:      r.start,
+		end:        r.end,
+		resolution: r.resolution,
+	}
+	fluxNode, err := tr.transpile(promqlNode)
 	if err != nil {
 		t.Fatalf("Error transpiling PromQL expression %q to Flux: %s", query, err)
 	}

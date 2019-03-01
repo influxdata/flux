@@ -133,24 +133,24 @@ func windowCutoffFn(maxStart time.Time) *ast.FunctionExpression {
 	}
 }
 
-func transpileInstantVectorSelector(bucket string, v *promql.VectorSelector, start time.Time, end time.Time, resolution time.Duration) *ast.PipeExpression {
+func (t *transpiler) transpileInstantVectorSelector(v *promql.VectorSelector) *ast.PipeExpression {
 	return buildPipeline(
 		// Select all Prometheus data.
-		call("from", map[string]ast.Expression{"bucket": &ast.StringLiteral{Value: bucket}}),
+		call("from", map[string]ast.Expression{"bucket": &ast.StringLiteral{Value: t.bucket}}),
 		// Query entire graph range.
 		call("range", map[string]ast.Expression{
-			"start": &ast.DateTimeLiteral{Value: start.Add(-5*time.Minute - v.Offset)},
-			"stop":  &ast.DateTimeLiteral{Value: end.Add(-v.Offset)},
+			"start": &ast.DateTimeLiteral{Value: t.start.Add(-5*time.Minute - v.Offset)},
+			"stop":  &ast.DateTimeLiteral{Value: t.end.Add(-v.Offset)},
 		}),
 		// Apply label matching filters.
 		call("filter", map[string]ast.Expression{"fn": transpileLabelMatchersFn(v.LabelMatchers)}),
 		// At every resolution step, load / look back up to 5m of data (PromQL lookback delta).
 		call("window", map[string]ast.Expression{
-			"every":  &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: resolution.Nanoseconds(), Unit: "ns"}}},
+			"every":  &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.resolution.Nanoseconds(), Unit: "ns"}}},
 			"period": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: 5, Unit: "m"}}},
 		}),
 		// Remove any windows <5m long to act like PromQL.
-		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(end.Add(-5*time.Minute - v.Offset))}),
+		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.end.Add(-5*time.Minute - v.Offset))}),
 		// Select the last data point after the current evaluation (resolution step) timestamp.
 		call("last", nil),
 		// The resolution step evaluation timestamp needs to become the output timestamp.
@@ -242,8 +242,8 @@ var dropMeasurementCall = call(
 	},
 )
 
-func transpileAggregateExpr(bucket string, a *promql.AggregateExpr, start time.Time, end time.Time, resolution time.Duration) (ast.Expression, error) {
-	expr, err := transpile(bucket, a.Expr, start, end, resolution)
+func (t *transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expression, error) {
+	expr, err := t.transpile(a.Expr)
 	if err != nil {
 		return nil, fmt.Errorf("error transpiling aggregate sub-expression: %s", err)
 	}
@@ -383,14 +383,14 @@ func arithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped bool) 
 	}
 }
 
-func transpileBinaryExpr(bucket string, b *promql.BinaryExpr, start time.Time, end time.Time, resolution time.Duration) (ast.Expression, error) {
-	lhs, err := transpile(bucket, b.LHS, start, end, resolution)
+func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, error) {
+	lhs, err := t.transpile(b.LHS)
 	if err != nil {
-		return nil, fmt.Errorf("unable to compile left-hand side of binary operation: %s", err)
+		return nil, fmt.Errorf("unable to transpile left-hand side of binary operation: %s", err)
 	}
-	rhs, err := transpile(bucket, b.RHS, start, end, resolution)
+	rhs, err := t.transpile(b.RHS)
 	if err != nil {
-		return nil, fmt.Errorf("unable to compile right-hand side of binary operation: %s", err)
+		return nil, fmt.Errorf("unable to transpile right-hand side of binary operation: %s", err)
 	}
 
 	swapped := false
@@ -425,19 +425,26 @@ func transpileBinaryExpr(bucket string, b *promql.BinaryExpr, start time.Time, e
 	}
 }
 
-func transpile(bucket string, n promql.Node, start time.Time, end time.Time, resolution time.Duration) (ast.Expression, error) {
-	switch t := n.(type) {
+type transpiler struct {
+	bucket     string
+	start      time.Time
+	end        time.Time
+	resolution time.Duration
+}
+
+func (t *transpiler) transpile(node promql.Node) (ast.Expression, error) {
+	switch n := node.(type) {
 	case *promql.ParenExpr:
-		return transpile(bucket, t.Expr, start, end, resolution)
+		return t.transpile(n.Expr)
 	case *promql.NumberLiteral:
 		// TODO: Do we need to keep the scalar timestamp?
-		return &ast.FloatLiteral{Value: t.Val}, nil
+		return &ast.FloatLiteral{Value: n.Val}, nil
 	case *promql.VectorSelector:
-		return transpileInstantVectorSelector(bucket, t, start, end, resolution), nil
+		return t.transpileInstantVectorSelector(n), nil
 	case *promql.AggregateExpr:
-		return transpileAggregateExpr(bucket, t, start, end, resolution)
+		return t.transpileAggregateExpr(n)
 	case *promql.BinaryExpr:
-		return transpileBinaryExpr(bucket, t, start, end, resolution)
+		return t.transpileBinaryExpr(n)
 	default:
 		return nil, fmt.Errorf("PromQL node type %T is not supported yet", t)
 	}
