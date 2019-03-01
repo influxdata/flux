@@ -231,6 +231,17 @@ func convertibleToInt64(v float64) bool {
 	return v <= maxInt64 && v >= minInt64
 }
 
+var dropMeasurementCall = call(
+	"drop",
+	map[string]ast.Expression{
+		"columns": &ast.ArrayExpression{
+			Elements: []ast.Expression{
+				&ast.StringLiteral{Value: "_measurement"},
+			},
+		},
+	},
+)
+
 func transpileAggregateExpr(bucket string, a *promql.AggregateExpr, start time.Time, end time.Time, resolution time.Duration) (ast.Expression, error) {
 	expr, err := transpile(bucket, a.Expr, start, end, resolution)
 	if err != nil {
@@ -299,23 +310,134 @@ func transpileAggregateExpr(bucket string, a *promql.AggregateExpr, start time.T
 	if aggFn.dropMeasurement && dropMeasurement {
 		pipeline = buildPipeline(
 			pipeline,
-			call("drop", map[string]ast.Expression{
-				"columns": &ast.ArrayExpression{Elements: []ast.Expression{&ast.StringLiteral{Value: "_measurement"}}},
-			}),
+			dropMeasurementCall,
 		)
 	}
 	return pipeline, nil
 }
 
+var arithBinOps = map[promql.ItemType]ast.OperatorKind{
+	promql.ItemADD: ast.AdditionOperator,
+	promql.ItemSUB: ast.SubtractionOperator,
+	promql.ItemMUL: ast.MultiplicationOperator,
+	promql.ItemDIV: ast.DivisionOperator,
+	// TODO: Doesn't exist yet.
+	// promql.ItemPOW: ast.PowerOperator,
+	//promql.ItemMOD: ast.ModuloOperator,
+	// promql.ItemEQL:
+	// promql.ItemNEQ:
+	// promql.ItemGTR:
+	// promql.ItemLSS:
+	// promql.ItemGTE:
+	// promql.ItemLTE:
+}
+
+// Function to multiply all values in a table by a given float64.
+func arithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped bool) *ast.FunctionExpression {
+	val := &ast.MemberExpression{
+		Object: &ast.Identifier{
+			Name: "r",
+		},
+		Property: &ast.Identifier{
+			Name: "_value",
+		},
+	}
+
+	var lhs, rhs ast.Expression = val, operand
+
+	if swapped {
+		lhs, rhs = rhs, lhs
+	}
+
+	return &ast.FunctionExpression{
+		Params: []*ast.Property{
+			{
+				Key: &ast.Identifier{
+					Name: "r",
+				},
+			},
+		},
+		Body: &ast.ObjectExpression{
+			Properties: []*ast.Property{
+				{
+					Key: &ast.Identifier{Name: "_value"},
+					Value: &ast.BinaryExpression{
+						Operator: op,
+						Left:     lhs,
+						Right:    rhs,
+					},
+				},
+				{
+					Key: &ast.Identifier{Name: "_time"},
+					Value: &ast.MemberExpression{
+						Object: &ast.Identifier{
+							Name: "r",
+						},
+						Property: &ast.Identifier{
+							Name: "_time",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func transpileBinaryExpr(bucket string, b *promql.BinaryExpr, start time.Time, end time.Time, resolution time.Duration) (ast.Expression, error) {
+	lhs, err := transpile(bucket, b.LHS, start, end, resolution)
+	if err != nil {
+		return nil, fmt.Errorf("unable to compile left-hand side of binary operation: %s", err)
+	}
+	rhs, err := transpile(bucket, b.RHS, start, end, resolution)
+	if err != nil {
+		return nil, fmt.Errorf("unable to compile right-hand side of binary operation: %s", err)
+	}
+
+	swapped := false
+
+	switch lt, rt := b.LHS.Type(), b.RHS.Type(); {
+	case lt == promql.ValueTypeScalar && rt == promql.ValueTypeScalar:
+		if op, ok := arithBinOps[b.Op]; ok {
+			return &ast.BinaryExpression{
+				Operator: op,
+				Left:     lhs,
+				Right:    rhs,
+			}, nil
+		}
+
+		return nil, fmt.Errorf("non-arithmetic binary operations not supported yet")
+	case lt == promql.ValueTypeScalar && rt == promql.ValueTypeVector:
+		lhs, rhs = rhs, lhs
+		swapped = true
+		fallthrough
+	case lt == promql.ValueTypeVector && rt == promql.ValueTypeScalar:
+		if op, ok := arithBinOps[b.Op]; ok {
+			return buildPipeline(
+				lhs,
+				call("map", map[string]ast.Expression{"fn": arithBinaryOpFn(op, rhs, swapped)}),
+				dropMeasurementCall,
+			), nil
+		}
+
+		return nil, fmt.Errorf("non-arithmetic binary operations not supported yet")
+	default:
+		return nil, fmt.Errorf("vector binary operations not supported yet")
+	}
+}
+
 func transpile(bucket string, n promql.Node, start time.Time, end time.Time, resolution time.Duration) (ast.Expression, error) {
 	switch t := n.(type) {
-	// case *promql.NumberLiteral:
-	// 	// TODO: Do we need to keep the scalar timestamp?
-	// 	return &ast.FloatLiteral{Value: t.Val}, nil
+	case *promql.ParenExpr:
+		return transpile(bucket, t.Expr, start, end, resolution)
+	case *promql.NumberLiteral:
+		// TODO: Do we need to keep the scalar timestamp?
+		return &ast.FloatLiteral{Value: t.Val}, nil
 	case *promql.VectorSelector:
 		return transpileInstantVectorSelector(bucket, t, start, end, resolution), nil
 	case *promql.AggregateExpr:
 		return transpileAggregateExpr(bucket, t, start, end, resolution)
+	case *promql.BinaryExpr:
+		return transpileBinaryExpr(bucket, t, start, end, resolution)
 	default:
 		return nil, fmt.Errorf("PromQL node type %T is not supported yet", t)
 	}

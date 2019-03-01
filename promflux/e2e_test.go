@@ -19,7 +19,7 @@ import (
 	"github.com/prometheus/prometheus/promql"
 )
 
-var queryOffsets = []map[string]interface{}{
+var testOffsets = []map[string]interface{}{
 	{"offset": "1m"},
 	{"offset": "5m"},
 	{"offset": "10m"},
@@ -40,7 +40,7 @@ var topBottomOps = []map[string]interface{}{
 	{"op": "bottomk"},
 }
 
-var quantiles = []map[string]interface{}{
+var testQuantiles = []map[string]interface{}{
 	// TODO: Should return -Inf.
 	// {"quantile": "-0.5"},
 	{"quantile": "0.1"},
@@ -52,6 +52,16 @@ var quantiles = []map[string]interface{}{
 	{"quantile": "1"},
 	// TODO: Should return +Inf.
 	// {"quantile": "1.5"},
+}
+
+var testArithBinops = []map[string]interface{}{
+	{"op": "+"},
+	{"op": "-"},
+	{"op": "*"},
+	{"op": "/"},
+	// TODO: Not supported yet.
+	// {"op": "%"},
+	// {"op": "^"},
 }
 
 var queries = []struct {
@@ -87,7 +97,7 @@ var queries = []struct {
 	},
 	{
 		query:    `demo_cpu_usage_seconds_total offset {{.offset}}`,
-		variants: queryOffsets,
+		variants: testOffsets,
 	},
 	{
 		query:    `{{.op}} (demo_cpu_usage_seconds_total)`,
@@ -129,8 +139,28 @@ var queries = []struct {
 	},
 	{
 		query:    `quantile({{.quantile}}, demo_cpu_usage_seconds_total)`,
-		variants: quantiles,
+		variants: testQuantiles,
 	},
+	// {
+	// 	query: `1 * 2 + 4 / 6 - 10`,
+	// },
+	{
+		query:    `demo_cpu_usage_seconds_total {{.op}} 1.2345`,
+		variants: testArithBinops,
+	},
+	{
+		query:    `0.12345 {{.op}} demo_cpu_usage_seconds_total`,
+		variants: testArithBinops,
+	},
+	// TODO: Flux drops parens when formatting out, loses associativity.
+	// {
+	// 	query:    `(1 * 2 + 4 / 6 - 10) {{.op}} demo_cpu_usage_seconds_total`,
+	// 	variants: testArithBinops,
+	// },
+	// {
+	// 	query:    `demo_cpu_usage_seconds_total {{.op}} (1 * 2 + 4 / 6 - 10)`,
+	// 	variants: testArithBinops,
+	// },
 }
 
 func TestQueriesE2E(t *testing.T) {
