@@ -64,6 +64,15 @@ var testArithBinops = []map[string]interface{}{
 	// {"op": "^"},
 }
 
+var testRanges = []map[string]interface{}{
+	{"range": "1s"},
+	{"range": "15s"},
+	{"range": "1m"},
+	{"range": "5m"},
+	{"range": "15m"},
+	{"range": "1h"},
+}
+
 var queries = []struct {
 	query    string
 	variants []map[string]interface{}
@@ -164,6 +173,10 @@ var queries = []struct {
 	// 	query:    `demo_cpu_usage_seconds_total {{.op}} (1 * 2 + 4 / 6 - 10)`,
 	// 	variants: testArithBinops,
 	// },
+	{
+		query:    `count_over_time(demo_cpu_usage_seconds_total[{{.range}}])`,
+		variants: testRanges,
+	},
 }
 
 func TestQueriesE2E(t *testing.T) {

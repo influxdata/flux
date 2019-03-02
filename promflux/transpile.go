@@ -11,6 +11,13 @@ import (
 	"github.com/prometheus/prometheus/promql"
 )
 
+type transpiler struct {
+	bucket     string
+	start      time.Time
+	end        time.Time
+	resolution time.Duration
+}
+
 var labelMatchOps = map[labels.MatchType]ast.OperatorKind{
 	labels.MatchEqual:     ast.EqualOperator,
 	labels.MatchNotEqual:  ast.NotEqualOperator,
@@ -149,7 +156,7 @@ func (t *transpiler) transpileInstantVectorSelector(v *promql.VectorSelector) *a
 			"every":  &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.resolution.Nanoseconds(), Unit: "ns"}}},
 			"period": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: 5, Unit: "m"}}},
 		}),
-		// Remove any windows <5m long to act like PromQL.
+		// Remove any windows <5m long at the end of the graph range to act like PromQL.
 		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.end.Add(-5*time.Minute - v.Offset))}),
 		// Select the last data point after the current evaluation (resolution step) timestamp.
 		call("last", nil),
@@ -161,6 +168,31 @@ func (t *transpiler) transpileInstantVectorSelector(v *promql.VectorSelector) *a
 			"column": &ast.StringLiteral{Value: "_stop"},
 			"as":     &ast.StringLiteral{Value: "_time"},
 		}),
+		// Apply offsets to make past data look like it's in the present.
+		call("shift", map[string]ast.Expression{
+			"shift": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: v.Offset.Nanoseconds(), Unit: "ns"}}},
+		}),
+	)
+}
+
+func (t *transpiler) transpileRangeVectorSelector(v *promql.MatrixSelector) *ast.PipeExpression {
+	return buildPipeline(
+		// Select all Prometheus data.
+		call("from", map[string]ast.Expression{"bucket": &ast.StringLiteral{Value: t.bucket}}),
+		// Query entire graph range.
+		call("range", map[string]ast.Expression{
+			"start": &ast.DateTimeLiteral{Value: t.start.Add(-v.Range - v.Offset)},
+			"stop":  &ast.DateTimeLiteral{Value: t.end.Add(-v.Offset)},
+		}),
+		// Apply label matching filters.
+		call("filter", map[string]ast.Expression{"fn": transpileLabelMatchersFn(v.LabelMatchers)}),
+		// At every resolution step, include the specified range of data.
+		call("window", map[string]ast.Expression{
+			"every":  &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.resolution.Nanoseconds(), Unit: "ns"}}},
+			"period": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: v.Range.Nanoseconds(), Unit: "ns"}}},
+		}),
+		// Remove any windows smaller than the specified range at the end of the graph range.
+		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.end.Add(-v.Range - v.Offset))}),
 		// Apply offsets to make past data look like it's in the present.
 		call("shift", map[string]ast.Expression{
 			"shift": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: v.Offset.Nanoseconds(), Unit: "ns"}}},
@@ -237,6 +269,33 @@ var dropMeasurementCall = call(
 		"columns": &ast.ArrayExpression{
 			Elements: []ast.Expression{
 				&ast.StringLiteral{Value: "_measurement"},
+			},
+		},
+	},
+)
+
+var filterWindowsWithZeroValueCall = call(
+	"filter",
+	map[string]ast.Expression{
+		"fn": &ast.FunctionExpression{
+			Params: []*ast.Property{
+				{
+					Key: &ast.Identifier{
+						Name: "r",
+					},
+				},
+			},
+			Body: &ast.BinaryExpression{
+				Operator: ast.LessThanEqualOperator,
+				Left: &ast.MemberExpression{
+					Object: &ast.Identifier{
+						Name: "r",
+					},
+					Property: &ast.Identifier{
+						Name: "_value",
+					},
+				},
+				Right: &ast.FloatLiteral{Value: 0},
 			},
 		},
 	},
@@ -425,11 +484,36 @@ func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 	}
 }
 
-type transpiler struct {
-	bucket     string
-	start      time.Time
-	end        time.Time
-	resolution time.Duration
+func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
+	switch c.Func.Name {
+	case
+		"avg_over_time",
+		"min_over_time",
+		"max_over_time",
+		"sum_over_time",
+		"count_over_time",
+		"quantile_over_time",
+		"stddev_over_time",
+		"stdvar_over_time":
+
+		v, err := t.transpile(c.Args[0])
+		if err != nil {
+			return nil, fmt.Errorf("error transpiling function argument")
+		}
+
+		return buildPipeline(
+			v,
+			call("count", nil),
+			filterWindowsWithZeroValueCall,
+			call("duplicate", map[string]ast.Expression{
+				"column": &ast.StringLiteral{Value: "_stop"},
+				"as":     &ast.StringLiteral{Value: "_time"},
+			}),
+			dropMeasurementCall,
+		), nil
+	default:
+		return nil, fmt.Errorf("PromQL function %q is not supported yet", c.Func.Name)
+	}
 }
 
 func (t *transpiler) transpile(node promql.Node) (ast.Expression, error) {
@@ -441,10 +525,14 @@ func (t *transpiler) transpile(node promql.Node) (ast.Expression, error) {
 		return &ast.FloatLiteral{Value: n.Val}, nil
 	case *promql.VectorSelector:
 		return t.transpileInstantVectorSelector(n), nil
+	case *promql.MatrixSelector:
+		return t.transpileRangeVectorSelector(n), nil
 	case *promql.AggregateExpr:
 		return t.transpileAggregateExpr(n)
 	case *promql.BinaryExpr:
 		return t.transpileBinaryExpr(n)
+	case *promql.Call:
+		return t.transpileCall(n)
 	default:
 		return nil, fmt.Errorf("PromQL node type %T is not supported yet", t)
 	}
