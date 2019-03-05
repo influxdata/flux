@@ -671,7 +671,7 @@ func TestResultEncoder(t *testing.T) {
 	testCases := []TestCase{
 		// Add tests cases specific to encoding here
 		{
-			name: "no annotations",
+			name:          "no annotations",
 			encoderConfig: csv.ResultEncoderConfig{},
 			encoded: toCRLF(`,result,table,_start,_stop,_time,_measurement,host,_value
 ,_result,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:00Z,cpu,A,42
@@ -710,8 +710,8 @@ func TestResultEncoder(t *testing.T) {
 				}},
 			},
 		},
-			{
-			name: "no annotations, multiple tables",
+		{
+			name:          "no annotations, multiple tables",
 			encoderConfig: csv.ResultEncoderConfig{},
 			encoded: toCRLF(`,result,table,_start,_stop,_time,_measurement,host,_value
 ,_result,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:00Z,cpu,A,42
