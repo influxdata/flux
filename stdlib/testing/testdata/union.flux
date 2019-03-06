@@ -1,5 +1,5 @@
 package testdata_test
- 
+
 import "testing"
 
 option now = () => (2030-01-01T00:00:00Z)
@@ -59,7 +59,7 @@ t_union = (table=<-) => {
         |> filter(fn: (r) => r._field == "usage_guest" or r._field == "usage_idle")
         |> drop(columns: ["_start", "_stop"])
 
-    return union(tables: [t1, t2]) |> sort(columns: ["time"])
+    return union(tables: [t1, t2]) |> sort(columns: ["_time"])
 }
 
 test _union = () =>
