@@ -390,6 +390,30 @@ func CompileFnParam(fn *semantic.FunctionExpression, paramType, returnType seman
 	return compiled, paramName, nil
 }
 
+func CompileReduceFn(fn *semantic.FunctionExpression, paramType semantic.Type) (Func, []string, error) {
+	scope := flux.BuiltIns()
+	compileCache := NewCompilationCache(fn, scope)
+	if len(fn.Block.Parameters.List) != 2 {
+		return nil, nil, errors.New("function should only have a single parameter")
+	}
+	paramList := fn.Block.Parameters.List
+	paramNames := []string{paramList[0].Key.Name, paramList[1].Key.Name}
+
+	compiled, err := compileCache.Compile(semantic.NewObjectType(map[string]semantic.Type{
+		paramNames[0]: paramType,
+		paramNames[1]: paramType,
+	}))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if compiled.Type() != paramType {
+		return nil, nil, fmt.Errorf("provided function does not evaluate to type %s", paramType.Nature())
+	}
+
+	return compiled, paramNames, nil
+}
+
 // externAssignments produces a list of external declarations from a scope
 func externAssignments(scope Scope) []*semantic.ExternalVariableAssignment {
 	declarations := make([]*semantic.ExternalVariableAssignment, 0, len(scope))

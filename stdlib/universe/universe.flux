@@ -39,6 +39,7 @@ builtin min
 builtin percentile
 builtin pivot
 builtin range
+builtin reduce
 builtin rename
 builtin sample
 builtin set

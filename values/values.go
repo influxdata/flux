@@ -4,8 +4,10 @@ package values
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 
 	"github.com/influxdata/flux/semantic"
+	"github.com/pkg/errors"
 )
 
 type Typer interface {
@@ -28,6 +30,10 @@ type Value interface {
 	Object() Object
 	Function() Function
 	Equal(Value) bool
+}
+
+type ValueStringer interface {
+	String() string
 }
 
 type value struct {
@@ -162,6 +168,49 @@ func NewNull(t semantic.Type) Value {
 		t: t,
 		v: nil,
 	}
+}
+
+func NewFromString(t semantic.Type, s string) (Value, error) {
+	var err error
+	v := value{t: t}
+	switch t {
+	case semantic.String:
+		v.v = s
+	case semantic.Int:
+		v.v, err = strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+	case semantic.UInt:
+		v.v, err = strconv.ParseUint(s, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+	case semantic.Float:
+		v.v, err = strconv.ParseFloat(s, 64)
+		if err != nil {
+			return nil, err
+		}
+	case semantic.Bool:
+		v.v, err = strconv.ParseBool(s)
+		if err != nil {
+			return nil, err
+		}
+	case semantic.Time:
+		v.v, err = ParseTime(s)
+		if err != nil {
+			return nil, err
+		}
+	case semantic.Duration:
+		v.v, err = ParseDuration(s)
+		if err != nil {
+			return nil, err
+		}
+
+	default:
+		return nil, errors.New("invalid type for value stringer")
+	}
+	return v, nil
 }
 
 func NewString(v string) Value {
