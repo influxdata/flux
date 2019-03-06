@@ -368,6 +368,7 @@ type MergeJoinCache struct {
 	buffers map[execute.DatasetID]*streamBuffer
 
 	on           map[string]bool
+	order        []string
 	intersection map[string]bool
 
 	schema    schema
@@ -517,6 +518,7 @@ func NewMergeJoinCache(alloc *memory.Allocator, datasetIDs []execute.DatasetID, 
 
 	return &MergeJoinCache{
 		on:            on,
+		order:         key,
 		intersection:  intersection,
 		leftID:        datasetIDs[0],
 		rightID:       datasetIDs[1],
@@ -844,16 +846,9 @@ func equalJoinkeys(left, right flux.GroupKey) bool {
 }
 
 func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Table, error) {
-	// Determine sort order for the joining tables
-	on := make([]string, len(c.on))
-
-	for k := range c.on {
-		on = append(on, k)
-	}
-
 	// Sort input tables
-	left.Sort(on, false)
-	right.Sort(on, false)
+	left.Sort(c.order, false)
+	right.Sort(c.order, false)
 
 	var leftSet, rightSet subset
 	var leftKey, rightKey flux.GroupKey
