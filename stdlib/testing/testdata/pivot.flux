@@ -1,5 +1,5 @@
 package testdata_test
- 
+
 import "testing"
 
 option now = () => (2030-01-01T00:00:00Z)
@@ -51,7 +51,7 @@ outData = "
 t_pivot = (table=<-) =>
 	(table
 		|> range(start: 2018-05-22T19:53:26Z)
-		|> pivot(rowKey: ["_time"], columnKey: ["_measurement", "_field"], valueColumn: "_value")
+		|> pivot(rowKey: ["_time"], columnKey: ["_field", "_measurement"], valueColumn: "_value")
 		|> yield(name: "0"))
 
 test _pivot = () =>
