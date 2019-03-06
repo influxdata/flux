@@ -109,6 +109,7 @@ type DiffTransformation struct {
 
 	d     execute.Dataset
 	cache execute.TableBuilderCache
+	alloc *memory.Allocator
 
 	inputCache *execute.GroupLookup
 }
@@ -130,7 +131,7 @@ type tableColumn struct {
 	Values array.Interface
 }
 
-func copyTable(id execute.DatasetID, tbl flux.Table) (*tableBuffer, error) {
+func copyTable(id execute.DatasetID, tbl flux.Table, alloc *memory.Allocator) (*tableBuffer, error) {
 	// Find the value columns for the table and save them.
 	// We do not care about the group key.
 	type tableBuilderColumn struct {
@@ -146,17 +147,17 @@ func copyTable(id execute.DatasetID, tbl flux.Table) (*tableBuffer, error) {
 		bc := tableBuilderColumn{Type: col.Type}
 		switch col.Type {
 		case flux.TFloat:
-			bc.Builder = arrow.NewFloatBuilder(nil)
+			bc.Builder = arrow.NewFloatBuilder(alloc)
 		case flux.TInt:
-			bc.Builder = arrow.NewIntBuilder(nil)
+			bc.Builder = arrow.NewIntBuilder(alloc)
 		case flux.TUInt:
-			bc.Builder = arrow.NewUintBuilder(nil)
+			bc.Builder = arrow.NewUintBuilder(alloc)
 		case flux.TString:
-			bc.Builder = arrow.NewStringBuilder(nil)
+			bc.Builder = arrow.NewStringBuilder(alloc)
 		case flux.TBool:
-			bc.Builder = arrow.NewBoolBuilder(nil)
+			bc.Builder = arrow.NewBoolBuilder(alloc)
 		case flux.TTime:
-			bc.Builder = arrow.NewIntBuilder(nil)
+			bc.Builder = arrow.NewIntBuilder(alloc)
 		default:
 			return nil, errors.New("implement me")
 		}
@@ -294,6 +295,7 @@ func NewDiffTransformation(d execute.Dataset, cache execute.TableBuilderCache, s
 		cache:      cache,
 		inputCache: execute.NewGroupLookup(),
 		finished:   make(map[execute.DatasetID]bool, 2),
+		alloc:      a,
 	}
 }
 
@@ -314,7 +316,7 @@ func (t *DiffTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 
 	// Copy the table we are processing into a buffer.
 	// This may or may not be the want table. We fix that later.
-	want, err := copyTable(id, tbl)
+	want, err := copyTable(id, tbl, t.alloc)
 	if err != nil {
 		return err
 	}
