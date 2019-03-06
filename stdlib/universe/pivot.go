@@ -247,15 +247,19 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		for row := 0; row < cr.Len(); row++ {
 			rowKey := ""
 			colKey := ""
-			for j, c := range cr.Cols() {
-				if _, ok := rowKeyIndex[c.Label]; ok {
-					rowKey += valueToStr(cr, c, row, j)
-				} else if _, ok := colKeyIndex[c.Label]; ok {
-					if colKey == "" {
-						colKey = valueToStr(cr, c, row, j)
-					} else {
-						colKey = colKey + "_" + valueToStr(cr, c, row, j)
-					}
+			for _, rk := range t.spec.RowKey {
+				j := rowKeyIndex[rk]
+				c := cr.Cols()[j]
+				rowKey += valueToStr(cr, c, row, j)
+			}
+
+			for _, ck := range t.spec.ColumnKey {
+				j := colKeyIndex[ck]
+				c := cr.Cols()[j]
+				if colKey == "" {
+					colKey = valueToStr(cr, c, row, j)
+				} else {
+					colKey = colKey + "_" + valueToStr(cr, c, row, j)
 				}
 			}
 
