@@ -161,6 +161,23 @@ source
 						{Label: "boolean", Type: flux.TBool},
 					},
 					Data: [][]interface{}{
+						{execute.Time(0), "b", "b", 0.42, false},
+						{execute.Time(0), "b", "b", 0.1, false},
+						{execute.Time(0), "b", "b", -0.3, false},
+						{execute.Time(0), "b", "b", 10.0, false},
+						{execute.Time(0), "b", "b", 5.33, false},
+					},
+				},
+				{
+					KeyCols: []string{"tag1", "tag2", "boolean"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "tag1", Type: flux.TString},
+						{Label: "tag2", Type: flux.TString},
+						{Label: "double", Type: flux.TFloat},
+						{Label: "boolean", Type: flux.TBool},
+					},
+					Data: [][]interface{}{
 						{execute.Time(0), "a", "b", 0.42, true},
 						{execute.Time(0), "a", "b", 0.1, true},
 						{execute.Time(0), "a", "b", -0.3, true},
@@ -183,23 +200,6 @@ source
 						{execute.Time(0), "b", "b", -0.3, true},
 						{execute.Time(0), "b", "b", 10.0, true},
 						{execute.Time(0), "b", "b", 5.33, true},
-					},
-				},
-				{
-					KeyCols: []string{"tag1", "tag2", "boolean"},
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "tag1", Type: flux.TString},
-						{Label: "tag2", Type: flux.TString},
-						{Label: "double", Type: flux.TFloat},
-						{Label: "boolean", Type: flux.TBool},
-					},
-					Data: [][]interface{}{
-						{execute.Time(0), "b", "b", 0.42, false},
-						{execute.Time(0), "b", "b", 0.1, false},
-						{execute.Time(0), "b", "b", -0.3, false},
-						{execute.Time(0), "b", "b", 10.0, false},
-						{execute.Time(0), "b", "b", 5.33, false},
 					},
 				},
 			},
