@@ -216,6 +216,9 @@ func columnList(strs ...string) *ast.ArrayExpression {
 type aggregateFn struct {
 	name            string
 	dropMeasurement bool
+	// All PromQL aggregation operators drop non-grouping labels, but some
+	// of the (non-aggregation) Flux counterparts don't. This field indicates
+	// that the non-grouping drop needs to be explicitly added to the pipeline.
 	dropNonGrouping bool
 }
 
@@ -286,7 +289,7 @@ var filterWindowsWithZeroValueCall = call(
 				},
 			},
 			Body: &ast.BinaryExpression{
-				Operator: ast.LessThanEqualOperator,
+				Operator: ast.GreaterThanOperator,
 				Left: &ast.MemberExpression{
 					Object: &ast.Identifier{
 						Name: "r",
@@ -391,8 +394,8 @@ var arithBinOps = map[promql.ItemType]ast.OperatorKind{
 	// promql.ItemLTE:
 }
 
-// Function to multiply all values in a table by a given float64.
-func arithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped bool) *ast.FunctionExpression {
+// Function to apply a binary operator to all values in a table and a given float64 operand.
+func scalarArithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped bool) *ast.FunctionExpression {
 	val := &ast.MemberExpression{
 		Object: &ast.Identifier{
 			Name: "r",
@@ -409,6 +412,7 @@ func arithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped bool) 
 	}
 
 	return &ast.FunctionExpression{
+		// (r) => ...
 		Params: []*ast.Property{
 			{
 				Key: &ast.Identifier{
@@ -416,6 +420,7 @@ func arithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped bool) 
 				},
 			},
 		},
+		// {"_value": lhs <op> rhs, "_time": r._time}
 		Body: &ast.ObjectExpression{
 			Properties: []*ast.Property{
 				{
@@ -434,6 +439,61 @@ func arithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped bool) 
 						},
 						Property: &ast.Identifier{
 							Name: "_time",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+// Function to apply a binary operator to all values in a table and a given float64 operand.
+func vectorArithBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
+	lhs := &ast.MemberExpression{
+		Object: &ast.Identifier{
+			Name: "r",
+		},
+		Property: &ast.Identifier{
+			Name: "_value_lhs",
+		},
+	}
+	rhs := &ast.MemberExpression{
+		Object: &ast.Identifier{
+			Name: "r",
+		},
+		Property: &ast.Identifier{
+			Name: "_value_rhs",
+		},
+	}
+
+	return &ast.FunctionExpression{
+		// (r) => ...
+		Params: []*ast.Property{
+			{
+				Key: &ast.Identifier{
+					Name: "r",
+				},
+			},
+		},
+		// {"_value": lhs <op> rhs, "_time": r._stop_lhs}
+		Body: &ast.ObjectExpression{
+			Properties: []*ast.Property{
+				{
+					Key: &ast.Identifier{Name: "_value"},
+					Value: &ast.BinaryExpression{
+						Operator: op,
+						Left:     lhs,
+						Right:    rhs,
+					},
+				},
+				{
+					Key: &ast.Identifier{Name: "_time"},
+					Value: &ast.MemberExpression{
+						Object: &ast.Identifier{
+							Name: "r",
+						},
+						Property: &ast.Identifier{
+							Name: "_stop_lhs",
 						},
 					},
 				},
@@ -473,44 +533,97 @@ func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 		if op, ok := arithBinOps[b.Op]; ok {
 			return buildPipeline(
 				lhs,
-				call("map", map[string]ast.Expression{"fn": arithBinaryOpFn(op, rhs, swapped)}),
+				call("map", map[string]ast.Expression{"fn": scalarArithBinaryOpFn(op, rhs, swapped)}),
 				dropMeasurementCall,
 			), nil
 		}
 
 		return nil, fmt.Errorf("non-arithmetic binary operations not supported yet")
 	default:
+		// if b.VectorMatching.Card != promql.CardOneToOne {
+		// 	return nil, fmt.Errorf("non-one-to-one vector matching not supported yet")
+		// }
+		if !b.VectorMatching.On || len(b.VectorMatching.MatchingLabels) == 0 {
+			return nil, fmt.Errorf("vector-to-vector binary expressions without on() clause not supported yet")
+		}
+
+		onCols := append(b.VectorMatching.MatchingLabels, "_time")
+		if op, ok := arithBinOps[b.Op]; ok {
+			return buildPipeline(
+				call("join", map[string]ast.Expression{
+					"tables": &ast.ObjectExpression{
+						Properties: []*ast.Property{
+							{
+								Key:   &ast.Identifier{Name: "lhs"},
+								Value: lhs,
+							},
+							{
+								Key:   &ast.Identifier{Name: "rhs"},
+								Value: rhs,
+							},
+						},
+					},
+					"on": columnList(onCols...),
+				}),
+				call("map", map[string]ast.Expression{"fn": vectorArithBinaryOpFn(op)}),
+				call("keep", map[string]ast.Expression{
+					"columns": columnList(append(append(onCols, "_value"), b.VectorMatching.Include...)...),
+				}),
+				dropMeasurementCall,
+			), nil
+		}
 		return nil, fmt.Errorf("vector binary operations not supported yet")
 	}
 }
 
-func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
-	switch c.Func.Name {
-	case
-		"avg_over_time",
-		"min_over_time",
-		"max_over_time",
-		"sum_over_time",
-		"count_over_time",
-		"quantile_over_time",
-		"stddev_over_time",
-		"stdvar_over_time":
+var aggregateOverTimeFns = map[string]string{
+	"sum_over_time":      "sum",
+	"avg_over_time":      "mean",
+	"max_over_time":      "max",
+	"min_over_time":      "min",
+	"count_over_time":    "count",
+	"stddev_over_time":   "stddev",
+	"stdvar_over_time":   "stdvar",
+	"quantile_over_time": "percentile",
+}
 
+func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
+	if fn, ok := aggregateOverTimeFns[c.Func.Name]; ok {
 		v, err := t.transpile(c.Args[0])
 		if err != nil {
 			return nil, fmt.Errorf("error transpiling function argument")
 		}
 
+		args := map[string]ast.Expression{}
+		if fn == "percentile" {
+			args["percentile"] = v
+			args["method"] = &ast.StringLiteral{Value: "exact_mean"}
+
+			v, err = t.transpile(c.Args[1])
+			if err != nil {
+				return nil, fmt.Errorf("error transpiling function argument")
+			}
+		}
+
 		return buildPipeline(
 			v,
-			call("count", nil),
+			call(fn, args),
 			filterWindowsWithZeroValueCall,
+			dropMeasurementCall,
+			// Strictly we wouldn't need to drop "_time" and duplicate it from "_stop" for
+			// *all* Flux functions, only "max"/"min" on the Flux side. But this keeps
+			// the code simpler by always doing it.
+			call("drop", map[string]ast.Expression{"columns": &ast.ArrayExpression{
+				Elements: []ast.Expression{&ast.StringLiteral{Value: "_time"}},
+			}}),
 			call("duplicate", map[string]ast.Expression{
 				"column": &ast.StringLiteral{Value: "_stop"},
 				"as":     &ast.StringLiteral{Value: "_time"},
 			}),
-			dropMeasurementCall,
 		), nil
+	}
+
+	switch c.Func.Name {
 	default:
 		return nil, fmt.Errorf("PromQL function %q is not supported yet", c.Func.Name)
 	}

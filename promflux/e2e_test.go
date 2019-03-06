@@ -19,64 +19,36 @@ import (
 	"github.com/prometheus/prometheus/promql"
 )
 
-var testOffsets = []map[string]interface{}{
-	{"offset": "1m"},
-	{"offset": "5m"},
-	{"offset": "10m"},
-}
-
-var simpleAggrOps = []map[string]interface{}{
-	{"op": "sum"},
-	{"op": "avg"},
-	{"op": "max"},
-	{"op": "min"},
-	{"op": "count"},
-	// TODO: Needs support for population standard deviation mode in Flux.
-	// {"op": "stddev"},
-}
-
-var topBottomOps = []map[string]interface{}{
-	{"op": "topk"},
-	{"op": "bottomk"},
-}
-
-var testQuantiles = []map[string]interface{}{
-	// TODO: Should return -Inf.
-	// {"quantile": "-0.5"},
-	{"quantile": "0.1"},
-	{"quantile": "0.5"},
-	{"quantile": "0.75"},
-	{"quantile": "0.95"},
-	{"quantile": "0.90"},
-	{"quantile": "0.99"},
-	{"quantile": "1"},
-	// TODO: Should return +Inf.
-	// {"quantile": "1.5"},
-}
-
-var testArithBinops = []map[string]interface{}{
-	{"op": "+"},
-	{"op": "-"},
-	{"op": "*"},
-	{"op": "/"},
-	// TODO: Not supported yet.
-	// {"op": "%"},
-	// {"op": "^"},
-}
-
-var testRanges = []map[string]interface{}{
-	{"range": "1s"},
-	{"range": "15s"},
-	{"range": "1m"},
-	{"range": "5m"},
-	{"range": "15m"},
-	{"range": "1h"},
+var testVariantArgs = map[string][]string{
+	"range":  []string{"1s", "15s", "1m", "5m", "15m", "1h"},
+	"offset": []string{"1m", "5m", "10m"},
+	// stddev/stdvar Needs support for population standard deviation mode in Flux.
+	"simpleAggrOp": []string{"sum", "avg", "max", "min", "count" /*, "stddev", "stdvar" */},
+	"topBottomOp":  []string{"topk", "bottomk"},
+	"quantile": []string{
+		// TODO: Should return -Inf.
+		// "-0.5",
+		"0.1",
+		"0.5",
+		"0.75",
+		"0.95",
+		"0.90",
+		"0.99",
+		"1",
+		// TODO: Should return +Inf.
+		// "1.5",
+	},
+	// TODO: "%" and "^" not supported yet by Flux.
+	"arithBinop": []string{"+", "-", "*", "/" /*, "%", "^" */},
 }
 
 var queries = []struct {
-	query    string
-	variants []map[string]interface{}
+	query       string
+	variantArgs []string
 }{
+	{
+		query: `nonexistent_metric`,
+	},
 	{
 		query: `demo_cpu_usage_seconds_total`,
 	},
@@ -105,77 +77,96 @@ var queries = []struct {
 		query: "nonexistent_metric_name",
 	},
 	{
-		query:    `demo_cpu_usage_seconds_total offset {{.offset}}`,
-		variants: testOffsets,
+		query:       `demo_cpu_usage_seconds_total offset {{.offset}}`,
+		variantArgs: []string{"offset"},
 	},
 	{
-		query:    `{{.op}} (demo_cpu_usage_seconds_total)`,
-		variants: simpleAggrOps,
+		query:       `{{.simpleAggrOp}} (demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"simpleAggrOp"},
 	},
 	{
-		query:    `{{.op}} by(instance) (demo_cpu_usage_seconds_total)`,
-		variants: simpleAggrOps,
+		query:       `{{.simpleAggrOp}} by(instance) (demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"simpleAggrOp"},
 	},
 	{
-		query:    `{{.op}} by(instance, mode) (demo_cpu_usage_seconds_total)`,
-		variants: simpleAggrOps,
+		query:       `{{.simpleAggrOp}} by(instance, mode) (demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"simpleAggrOp"},
 	},
 	// TODO: grouping by non-existent columns is not supported in Flux.
 	//
 	// {
-	// 	query:    `{{.op}} by(nonexistent) (demo_cpu_usage_seconds_total)`,
-	// 	variants: simpleAggrOps,
+	// 	query:    `{{.simpleAggrOp}} by(nonexistent) (demo_cpu_usage_seconds_total)`,
+	// variantArgs: []string{"simpleAggrOp"},
 	// },
 	{
-		query:    `{{.op}} without(instance) (demo_cpu_usage_seconds_total)`,
-		variants: simpleAggrOps,
+		query:       `{{.simpleAggrOp}} without(instance) (demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"simpleAggrOp"},
 	},
 	{
-		query:    `{{.op}} without(instance, mode) (demo_cpu_usage_seconds_total)`,
-		variants: simpleAggrOps,
+		query:       `{{.simpleAggrOp}} without(instance, mode) (demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"simpleAggrOp"},
 	},
 	{
-		query:    `{{.op}} without(nonexistent) (demo_cpu_usage_seconds_total)`,
-		variants: simpleAggrOps,
+		query:       `{{.simpleAggrOp}} without(nonexistent) (demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"simpleAggrOp"},
 	},
 	{
-		query:    `{{.op}} (3, demo_cpu_usage_seconds_total)`,
-		variants: topBottomOps,
+		query:       `{{.topBottomOp}} (3, demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"topBottomOp"},
 	},
 	{
-		query:    `{{.op}} by(instance) (2, demo_cpu_usage_seconds_total)`,
-		variants: topBottomOps,
+		query:       `{{.topBottomOp}} by(instance) (2, demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"topBottomOp"},
 	},
 	{
-		query:    `quantile({{.quantile}}, demo_cpu_usage_seconds_total)`,
-		variants: testQuantiles,
+		query:       `quantile({{.quantile}}, demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"quantile"},
 	},
 	{
 		query: `avg(max by(mode) (demo_cpu_usage_seconds_total))`,
 	},
+	{
+		query: `count(go_memstats_heap_released_bytes_total)`,
+	},
 	// {
+	// TODO: Missing root node.
 	// 	query: `1 * 2 + 4 / 6 - 10`,
+	//  variantArgs: []string{""},
 	// },
 	{
-		query:    `demo_cpu_usage_seconds_total {{.op}} 1.2345`,
-		variants: testArithBinops,
+		query:       `demo_cpu_usage_seconds_total {{.arithBinOp}} 1.2345`,
+		variantArgs: []string{"arithBinOp"},
 	},
 	{
-		query:    `0.12345 {{.op}} demo_cpu_usage_seconds_total`,
-		variants: testArithBinops,
+		query:       `0.12345 {{.arithBinOp}} demo_cpu_usage_seconds_total`,
+		variantArgs: []string{"arithBinOp"},
 	},
 	// TODO: Flux drops parens when formatting out, loses associativity.
 	// {
-	// 	query:    `(1 * 2 + 4 / 6 - 10) {{.op}} demo_cpu_usage_seconds_total`,
-	// 	variants: testArithBinops,
+	// 	query:    `(1 * 2 + 4 / 6 - 10) {{.arithBinOp}} demo_cpu_usage_seconds_total`,
+	//  variantArgs: []string{"arithBinOp"},
 	// },
 	// {
-	// 	query:    `demo_cpu_usage_seconds_total {{.op}} (1 * 2 + 4 / 6 - 10)`,
-	// 	variants: testArithBinops,
+	// 	query:    `demo_cpu_usage_seconds_total {{.arithBinOp}} (1 * 2 + 4 / 6 - 10)`,
+	//  variantArgs: []string{"arithBinOp"},
+	// },
+
+	// TODO: SLOOOOOW (but working).
+	// {
+	// 	query: `demo_cpu_usage_seconds_total / on(instance, job, mode) demo_cpu_usage_seconds_total`,
+	// },
+	// {
+	// 	// Check that __name__ is always dropped, even if it's part of the matching labels.
+	// 	query: `demo_cpu_usage_seconds_total / on(instance, job, mode, __name__) demo_cpu_usage_seconds_total`,
 	// },
 	{
-		query:    `count_over_time(demo_cpu_usage_seconds_total[{{.range}}])`,
-		variants: testRanges,
+		query: `sum without(job) (demo_cpu_usage_seconds_total) / on(instance, mode) group_left(job) demo_cpu_usage_seconds_total`,
+	},
+	// TODO: Add non-explicit many-to-one / one-to-many that errors.
+	// TODO: Add many-to-many that errors.
+	{
+		query:       `{{.simpleAggrOp}}_over_time(demo_cpu_usage_seconds_total[{{.range}}])`,
+		variantArgs: []string{"simpleAggrOp", "range"},
 	},
 }
 
@@ -232,20 +223,22 @@ func TestQueriesE2E(t *testing.T) {
 	// if err != cmd.Start()
 
 	for _, q := range queries {
-		if len(q.variants) > 0 {
-			for _, variant := range q.variants {
-				query := tprintf(q.query, variant)
-				runner.runQuery(t, query)
-			}
-		} else {
-			runner.runQuery(t, q.query)
-		}
+		runner.runQueryVariants(t, q.query, q.variantArgs, map[string]string{})
+
+		// 	if len(q.variants) > 0 {
+		// 		for _, variant := range q.variants {
+		// 			query := tprintf(q.query, variant)
+		// 			runner.runQuery(t, query)
+		// 		}
+		// 	} else {
+		// 		runner.runQuery(t, q.query)
+		// 	}
 	}
 }
 
 // tprintf passed template string is formatted usign its operands and returns the resulting string.
 // Spaces are added between operands when neither is a string.
-func tprintf(tmpl string, data map[string]interface{}) string {
+func tprintf(tmpl string, data map[string]string) string {
 	t := template.Must(template.New("query").Parse(tmpl))
 	buf := &bytes.Buffer{}
 	if err := t.Execute(buf, data); err != nil {
@@ -267,7 +260,36 @@ type e2eRunner struct {
 	resolution time.Duration
 }
 
-func (r *e2eRunner) runQuery(t *testing.T, query string) {
+// runQueryVariants runs a query with all possible combinations (variants) of query args.
+func (r *e2eRunner) runQueryVariants(t *testing.T, query string, variantArgs []string, args map[string]string) {
+	// Either this query had no variants defined to begin with or they have
+	// been fully filled out in "args" from recursive parent calls.
+	if len(variantArgs) == 0 {
+		query := tprintf(query, args)
+		r.runQuery(t, query, args)
+		return
+	}
+
+	// Recursively iterate through the values for each variant arg dimension,
+	// selecting one dimension (arg) to vary per recursion level and let the
+	// other recursion levels iterate through the remaining dimensions until
+	// all args are defined.
+	for _, vArg := range variantArgs {
+		filteredVArgs := make([]string, 0, len(variantArgs)-1)
+		for _, va := range variantArgs {
+			if va != vArg {
+				filteredVArgs = append(filteredVArgs, va)
+			}
+		}
+
+		for _, variantVal := range testVariantArgs[vArg] {
+			args[vArg] = variantVal
+			r.runQueryVariants(t, query, filteredVArgs, args)
+		}
+	}
+}
+
+func (r *e2eRunner) runQuery(t *testing.T, query string, args map[string]string) {
 	// Transpile PromQL into Flux.
 	promqlNode, err := promql.ParseExpr(query)
 	if err != nil {
@@ -296,7 +318,7 @@ func (r *e2eRunner) runQuery(t *testing.T, query string) {
 	// Make InfluxDB result comparable with the Prometheus result.
 	influxMatrix, err := influxResultToPromMatrix(influxResult)
 	if err != nil {
-		t.Fatalf("Error processing InfluxDB results for %q: %s", query, err)
+		t.Fatalf("Error processing InfluxDB results for %s: %s", ast.Format(fluxNode), err)
 	}
 
 	cmpOpts := cmp.Options{
