@@ -6,6 +6,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -55,7 +56,7 @@ func (d *Dataset) Finish(err error) {
 	d.FinishedErr = err
 }
 
-func (d *Dataset) SetTriggerSpec(t flux.TriggerSpec) {
+func (d *Dataset) SetTriggerSpec(t plan.TriggerSpec) {
 	panic("not implemented")
 }
 
@@ -67,7 +68,7 @@ func TransformationPassThroughTestHelper(t *testing.T, newTr NewTransformation) 
 	now := execute.Now()
 	d := NewDataset(RandomDatasetID())
 	c := execute.NewTableBuilderCache(UnlimitedAllocator)
-	c.SetTriggerSpec(execute.DefaultTriggerSpec)
+	c.SetTriggerSpec(plan.DefaultTriggerSpec)
 
 	parentID := RandomDatasetID()
 	tr := newTr(d, c)

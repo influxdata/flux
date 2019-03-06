@@ -128,6 +128,11 @@ func (s *TDigestPercentileProcedureSpec) Copy() plan.ProcedureSpec {
 	}
 }
 
+// TriggerSpec implements plan.TriggerAwareProcedureSpec
+func (s *TDigestPercentileProcedureSpec) TriggerSpec() plan.TriggerSpec {
+	return plan.NarrowTransformationTriggerSpec{}
+}
+
 type ExactPercentileAggProcedureSpec struct {
 	Percentile float64 `json:"percentile"`
 	execute.AggregateConfig
@@ -140,6 +145,11 @@ func (s *ExactPercentileAggProcedureSpec) Copy() plan.ProcedureSpec {
 	return &ExactPercentileAggProcedureSpec{Percentile: s.Percentile, AggregateConfig: s.AggregateConfig}
 }
 
+// TriggerSpec implements plan.TriggerAwareProcedureSpec
+func (s *ExactPercentileAggProcedureSpec) TriggerSpec() plan.TriggerSpec {
+	return plan.NarrowTransformationTriggerSpec{}
+}
+
 type ExactPercentileSelectProcedureSpec struct {
 	Percentile float64 `json:"percentile"`
 	execute.SelectorConfig
@@ -150,6 +160,11 @@ func (s *ExactPercentileSelectProcedureSpec) Kind() plan.ProcedureKind {
 }
 func (s *ExactPercentileSelectProcedureSpec) Copy() plan.ProcedureSpec {
 	return &ExactPercentileSelectProcedureSpec{Percentile: s.Percentile}
+}
+
+// TriggerSpec implements plan.TriggerAwareProcedureSpec
+func (s *ExactPercentileSelectProcedureSpec) TriggerSpec() plan.TriggerSpec {
+	return plan.NarrowTransformationTriggerSpec{}
 }
 
 func newPercentileProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {

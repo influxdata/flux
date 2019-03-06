@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/plan"
 )
 
 type Trigger interface {
@@ -23,25 +24,27 @@ type TableContext struct {
 	Count int
 }
 
-func NewTriggerFromSpec(spec flux.TriggerSpec) Trigger {
+func NewTriggerFromSpec(spec plan.TriggerSpec) Trigger {
 	switch s := spec.(type) {
-	case flux.AfterWatermarkTriggerSpec:
+	case plan.NarrowTransformationTriggerSpec:
+		return &narrowTransformationTrigger{}
+	case plan.AfterWatermarkTriggerSpec:
 		return &afterWatermarkTrigger{
 			allowedLateness: Duration(s.AllowedLateness),
 		}
-	case flux.RepeatedTriggerSpec:
+	case plan.RepeatedTriggerSpec:
 		return &repeatedlyForever{
 			t: NewTriggerFromSpec(s.Trigger),
 		}
-	case flux.AfterProcessingTimeTriggerSpec:
+	case plan.AfterProcessingTimeTriggerSpec:
 		return &afterProcessingTimeTrigger{
 			duration: Duration(s.Duration),
 		}
-	case flux.AfterAtLeastCountTriggerSpec:
+	case plan.AfterAtLeastCountTriggerSpec:
 		return &afterAtLeastCount{
 			atLeast: s.Count,
 		}
-	case flux.OrFinallyTriggerSpec:
+	case plan.OrFinallyTriggerSpec:
 		return &orFinally{
 			main:    NewTriggerFromSpec(s.Main),
 			finally: NewTriggerFromSpec(s.Finally),
@@ -52,6 +55,24 @@ func NewTriggerFromSpec(spec flux.TriggerSpec) Trigger {
 		panic(fmt.Sprintf("unsupported trigger spec provided %T", spec))
 	}
 }
+
+// Informally a narrow transformation is one where each output table originates
+// from a single input table. Once an input table is processed, the resulting
+// output table may be sent downstream immediately. The trigger associated with
+// these kinds of transformations fires immediately as well as finishes
+// immediately. This behavior ensures there is at most one table in the
+// transformation's data cache at any given time.
+type narrowTransformationTrigger struct{}
+
+func (t *narrowTransformationTrigger) Triggered(c TriggerContext) bool {
+	return true
+}
+
+func (t *narrowTransformationTrigger) Finished() bool {
+	return true
+}
+
+func (t *narrowTransformationTrigger) Reset() {}
 
 // afterWatermarkTrigger triggers once the watermark is greater than the bounds of the block.
 type afterWatermarkTrigger struct {

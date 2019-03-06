@@ -103,6 +103,11 @@ func (s *IntegralProcedureSpec) Copy() plan.ProcedureSpec {
 	return ns
 }
 
+// TriggerSpec implements plan.TriggerAwareProcedureSpec
+func (s *IntegralProcedureSpec) TriggerSpec() plan.TriggerSpec {
+	return plan.NarrowTransformationTriggerSpec{}
+}
+
 func createIntegralTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*IntegralProcedureSpec)
 	if !ok {

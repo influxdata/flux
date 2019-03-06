@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/mock"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/socket"
 	"github.com/influxdata/flux/stdlib/universe"
@@ -212,7 +213,7 @@ source
 			id := executetest.RandomDatasetID()
 			d := executetest.NewDataset(id)
 			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
-			c.SetTriggerSpec(flux.DefaultTrigger)
+			c.SetTriggerSpec(plan.DefaultTriggerSpec)
 			r := ioutil.NopCloser(bytes.NewReader([]byte(tc.input)))
 			ss, err := socket.NewSocketSource(tc.spec, r, &mock.AscendingTimeProvider{}, id)
 			if err != nil {

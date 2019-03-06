@@ -68,6 +68,11 @@ func (s *SumProcedureSpec) Copy() plan.ProcedureSpec {
 	}
 }
 
+// TriggerSpec implements plan.TriggerAwareProcedureSpec
+func (s *SumProcedureSpec) TriggerSpec() plan.TriggerSpec {
+	return plan.NarrowTransformationTriggerSpec{}
+}
+
 func (s *SumProcedureSpec) AggregateMethod() string {
 	return SumKind
 }

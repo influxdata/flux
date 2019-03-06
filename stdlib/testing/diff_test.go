@@ -233,7 +233,7 @@ func TestDiff_Process(t *testing.T) {
 
 			d := executetest.NewDataset(executetest.RandomDatasetID())
 			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
-			c.SetTriggerSpec(execute.DefaultTriggerSpec)
+			c.SetTriggerSpec(plan.DefaultTriggerSpec)
 			jt := fluxtesting.NewDiffTransformation(d, c, tc.spec, parents[0], parents[1], executetest.UnlimitedAllocator)
 
 			executetest.NormalizeTables(tc.data0)

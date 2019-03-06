@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/stdlib/universe"
 )
 
@@ -180,7 +181,7 @@ func TestRowSelector_Process(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			d := executetest.NewDataset(executetest.RandomDatasetID())
 			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
-			c.SetTriggerSpec(execute.DefaultTriggerSpec)
+			c.SetTriggerSpec(plan.DefaultTriggerSpec)
 
 			selector := execute.NewRowSelectorTransformation(d, c, new(universe.MinSelector), tc.config)
 
@@ -338,7 +339,7 @@ func TestIndexSelector_Process(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			d := executetest.NewDataset(executetest.RandomDatasetID())
 			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
-			c.SetTriggerSpec(execute.DefaultTriggerSpec)
+			c.SetTriggerSpec(plan.DefaultTriggerSpec)
 
 			selector := execute.NewIndexSelectorTransformation(d, c, new(universe.FirstSelector), tc.config)
 

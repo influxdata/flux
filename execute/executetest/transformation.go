@@ -9,6 +9,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
 	"gonum.org/v1/gonum/floats"
 )
 
@@ -53,7 +54,7 @@ func ProcessTestHelper(
 
 	d := NewDataset(RandomDatasetID())
 	c := execute.NewTableBuilderCache(UnlimitedAllocator)
-	c.SetTriggerSpec(execute.DefaultTriggerSpec)
+	c.SetTriggerSpec(plan.DefaultTriggerSpec)
 
 	tx := create(d, c)
 

@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/stdlib/universe"
 )
 
@@ -552,7 +553,7 @@ func TestAggregate_Process(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			d := executetest.NewDataset(executetest.RandomDatasetID())
 			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
-			c.SetTriggerSpec(execute.DefaultTriggerSpec)
+			c.SetTriggerSpec(plan.DefaultTriggerSpec)
 
 			agg := execute.NewAggregateTransformation(d, c, tc.agg, tc.config)
 

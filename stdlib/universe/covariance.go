@@ -105,6 +105,11 @@ func (s *CovarianceProcedureSpec) Copy() plan.ProcedureSpec {
 	return ns
 }
 
+// TriggerSpec implements plan.TriggerAwareProcedureSpec
+func (s *CovarianceProcedureSpec) TriggerSpec() plan.TriggerSpec {
+	return plan.NarrowTransformationTriggerSpec{}
+}
+
 type CovarianceTransformation struct {
 	d     execute.Dataset
 	cache execute.TableBuilderCache

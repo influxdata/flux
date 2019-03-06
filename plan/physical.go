@@ -52,6 +52,11 @@ func (pp *physicalPlanner) Plan(spec *PlanSpec) (*PlanSpec, error) {
 		return nil, err
 	}
 
+	// Set all default and/or registered trigger specs
+	if err := transformedSpec.TopDownWalk(SetTriggerSpec); err != nil {
+		return nil, err
+	}
+
 	// Ensure that the plan is valid
 	if !pp.disableValidation {
 		err := transformedSpec.CheckIntegrity()
@@ -184,6 +189,10 @@ type PhysicalPlanNode struct {
 	bounds
 	id   NodeID
 	Spec PhysicalProcedureSpec
+
+	// The trigger spec defines how and when a transformation
+	// sends its tables to downstream operators
+	TriggerSpec TriggerSpec
 
 	// The attributes required from inputs to this node
 	RequiredAttrs []PhysicalAttributes

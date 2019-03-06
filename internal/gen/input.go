@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -141,7 +142,7 @@ func Input(schema Schema) (flux.ResultIterator, error) {
 	}
 
 	cache := execute.NewTableBuilderCache(&memory.Allocator{})
-	cache.SetTriggerSpec(flux.DefaultTrigger)
+	cache.SetTriggerSpec(plan.DefaultTriggerSpec)
 	for {
 		if len(groups) == 0 {
 			break
