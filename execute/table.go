@@ -1245,11 +1245,11 @@ func (b *ColListTableBuilder) ClearData() {
 }
 
 func (b *ColListTableBuilder) Sort(cols []string, desc bool) {
-	colIdxs := make([]int, len(cols))
-	for i, label := range cols {
+	colIdxs := make([]int, 0, len(cols))
+	for _, label := range cols {
 		for j, c := range b.colMeta {
 			if c.Label == label {
-				colIdxs[i] = j
+				colIdxs = append(colIdxs, j)
 				break
 			}
 		}
