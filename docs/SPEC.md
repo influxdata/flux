@@ -1279,12 +1279,14 @@ The _null_ value can be of any data type.
 
 Transformations define a change to a stream.
 Transformations may consume an input stream and always produce a new output stream.
+The order of group keys for the output stream will have a stable output order based on the input stream.
+The specific ordering may change between releases and it would not be considered a breaking change.
 
 Most transformations output one table for every table they receive from the input stream.
 Transformations that modify the group keys or values will need to regroup the tables in the output stream.
 A transformation produces side effects when it is constructed from a function that produces side effects.
 
-Transformations are repsented using function types.
+Transformations are represented using function types.
 
 ### Built-in transformations
 
