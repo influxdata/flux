@@ -9,6 +9,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/v1"
 	_ "github.com/influxdata/flux/stdlib/kafka"
+	_ "github.com/influxdata/flux/stdlib/math"
 	_ "github.com/influxdata/flux/stdlib/socket"
 	_ "github.com/influxdata/flux/stdlib/sql"
 	_ "github.com/influxdata/flux/stdlib/strings"
