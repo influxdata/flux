@@ -26,6 +26,28 @@ func Pat(kind ProcedureKind, predecessors ...Pattern) Pattern {
 	}
 }
 
+// PhysPat returns a pattern that matches a physical plan node with the given
+// ProcedureKind and whose predecessors match the given predecessor patterns.
+func PhysPat(kind ProcedureKind, predecessors ...Pattern) Pattern {
+	return PhysicalOneKindPattern{
+		pattern: Pat(kind, predecessors...),
+	}
+}
+
+// PhysicalOneKindPattern matches a physical operator pattern
+type PhysicalOneKindPattern struct {
+	pattern Pattern
+}
+
+func (p PhysicalOneKindPattern) Root() ProcedureKind {
+	return p.pattern.Root()
+}
+
+func (p PhysicalOneKindPattern) Match(node PlanNode) bool {
+	_, ok := node.(*PhysicalPlanNode)
+	return ok && p.pattern.Match(node)
+}
+
 // Any returns a pattern that matches anything.
 func Any() Pattern {
 	return &AnyPattern{}

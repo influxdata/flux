@@ -35,7 +35,7 @@ func SetTriggerSpec(node PlanNode) error {
 	spec := ppn.Spec
 	if n, ok := spec.(TriggerAwareProcedureSpec); ok {
 		ppn.TriggerSpec = n.TriggerSpec()
-	} else {
+	} else if ppn.TriggerSpec == nil {
 		ppn.TriggerSpec = DefaultTriggerSpec
 	}
 	return nil

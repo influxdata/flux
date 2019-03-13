@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
@@ -896,6 +897,283 @@ func TestFixedWindow_Process(t *testing.T) {
 
 			if !cmp.Equal(want, got) {
 				t.Errorf("unexpected tables -want/+got\n%s", cmp.Diff(want, got))
+			}
+		})
+	}
+}
+
+func windowOp(id string) plan.PlanNode {
+	return plan.CreatePhysicalNode(plan.NodeID(id), &universe.WindowProcedureSpec{})
+}
+
+func boundsOp(id string) plan.PlanNode {
+	return plan.CreatePhysicalNode(plan.NodeID(id), &universe.RangeProcedureSpec{})
+}
+
+func rangeOp(id string) plan.PlanNode {
+	return plan.CreatePhysicalNode(plan.NodeID(id), &universe.RangeProcedureSpec{})
+}
+
+func mockPred(id string) plan.PlanNode {
+	// Create a dummy physical operation that is just a wrapper around a filter.
+	// Filter is one of the operators that is allowed to be a predecessor of window
+	// in order to perform the trigger optimization.
+	return plan.CreatePhysicalNode(plan.NodeID(id), &universe.FilterProcedureSpec{})
+}
+
+func TestWindowRewriteRule(t *testing.T) {
+	testcases := []struct {
+		name string
+		spec *plantest.PlanSpec
+		// list of rewritten window operations
+		want []plan.NodeID
+	}{
+		// In the following test cases, the following definitions hold:
+		//    w: window transformation
+		//    r: range transformation
+		//    b: bounded source
+		//    W: window transformation with narrow trigger spec
+		{
+			name: "bounded source",
+			// w       W
+			// |       |
+			// 1  ==>  1
+			// |       |
+			// b       b
+			spec: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					boundsOp("0"),
+					mockPred("1"),
+					windowOp("2"),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+			want: []plan.NodeID{"2"},
+		},
+		{
+			name: "unbounded source",
+			// w       w
+			// |       |
+			// 1  ==>  1
+			// |       |
+			// 0       0
+			spec: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					mockPred("0"),
+					mockPred("1"),
+					windowOp("2"),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+		},
+		{
+			name: "dependent window",
+			// w       w
+			// |       |
+			// 3       3
+			// |       |
+			// w  ==>  W
+			// |       |
+			// 1       1
+			// |       |
+			// b       b
+			spec: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					boundsOp("0"),
+					mockPred("1"),
+					windowOp("2"),
+					mockPred("3"),
+					windowOp("4"),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+					{3, 4},
+				},
+			},
+			want: []plan.NodeID{"2"},
+		},
+		{
+			name: "range after window",
+			// w       W
+			// |       |
+			// r       r
+			// |       |
+			// w  ==>  W
+			// |       |
+			// 1       1
+			// |       |
+			// b       b
+			spec: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					boundsOp("0"),
+					mockPred("1"),
+					windowOp("2"),
+					rangeOp("3"),
+					windowOp("4"),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+					{3, 4},
+				},
+			},
+			want: []plan.NodeID{"2", "4"},
+		},
+		{
+			name: "range after window",
+			// w       W
+			// |       |
+			// r       r
+			// |       |
+			// w  ==>  w
+			// |       |
+			// 1       1
+			// |       |
+			// 0       0
+			spec: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					mockPred("0"),
+					mockPred("1"),
+					windowOp("2"),
+					rangeOp("3"),
+					windowOp("4"),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+					{3, 4},
+				},
+			},
+			want: []plan.NodeID{"4"},
+		},
+		{
+			name: "multiple sources",
+			//   w           w
+			//   |           |
+			//   4           4
+			//  / \         / \
+			// w   w  ==>  W   W
+			// |   |       |   |
+			// b   b       b   b
+			spec: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					boundsOp("0"),
+					windowOp("1"),
+					boundsOp("2"),
+					windowOp("3"),
+					mockPred("4"),
+					windowOp("5"),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 4},
+					{2, 3},
+					{3, 4},
+					{4, 5},
+				},
+			},
+			want: []plan.NodeID{"1", "3"},
+		},
+		{
+			name: "multiple sources",
+			//   w           w
+			//   |           |
+			//   4           4
+			//  / \         / \
+			// w   w  ==>  W   w
+			// |   |       |   |
+			// b   2       b   2
+			spec: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					boundsOp("0"),
+					windowOp("1"),
+					mockPred("2"),
+					windowOp("3"),
+					mockPred("4"),
+					windowOp("5"),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 4},
+					{2, 3},
+					{3, 4},
+					{4, 5},
+				},
+			},
+			want: []plan.NodeID{"1"},
+		},
+		{
+			name: "multiple sources",
+			//   w           W
+			//   |           |
+			//   r           r
+			//   |           |
+			//   4           4
+			//  / \         / \
+			// w   w  ==>  W   w
+			// |   |       |   |
+			// b   2       b   2
+			spec: &plantest.PlanSpec{
+				Nodes: []plan.PlanNode{
+					boundsOp("0"),
+					windowOp("1"),
+					mockPred("2"),
+					windowOp("3"),
+					mockPred("4"),
+					rangeOp("5"),
+					windowOp("6"),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 4},
+					{2, 3},
+					{3, 4},
+					{4, 5},
+					{5, 6},
+				},
+			},
+			want: []plan.NodeID{"1", "6"},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			spec := plantest.CreatePlanSpec(tc.spec)
+
+			physicalPlanner := plan.NewPhysicalPlanner(
+				plan.OnlyPhysicalRules(universe.WindowTriggerPhysicalRule{}),
+				plan.DisableValidation(),
+			)
+
+			pp, err := physicalPlanner.Plan(spec)
+			if err != nil {
+				t.Fatalf("unexpected error during physical planning: %v", err)
+			}
+
+			var got []plan.NodeID
+			pp.BottomUpWalk(func(node plan.PlanNode) error {
+				if _, ok := node.ProcedureSpec().(*universe.WindowProcedureSpec); !ok {
+					return nil
+				}
+				ppn := node.(*plan.PhysicalPlanNode)
+				if _, ok := ppn.TriggerSpec.(plan.NarrowTransformationTriggerSpec); !ok {
+					return nil
+				}
+				got = append(got, node.ID())
+				return nil
+			})
+
+			if !cmp.Equal(tc.want, got) {
+				t.Fatalf("unexpected window trigger spec: -want/+got\n- %v\n+ %v", tc.want, got)
 			}
 		})
 	}
