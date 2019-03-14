@@ -42,7 +42,7 @@ builtin range
 builtin rename
 builtin sample
 builtin set
-builtin shift
+builtin timeShift
 builtin skew
 builtin spread
 builtin sort

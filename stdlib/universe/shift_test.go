@@ -12,7 +12,7 @@ import (
 )
 
 func TestShiftOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"shift","kind":"shift","spec":{"shift":"1h"}}`)
+	data := []byte(`{"id":"shift","kind":"timeShift","spec":{"duration":"1h"}}`)
 	op := &flux.Operation{
 		ID: "shift",
 		Spec: &universe.ShiftOpSpec{
