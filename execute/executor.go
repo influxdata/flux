@@ -118,14 +118,6 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.PlanSpec, a
 	return v.es, nil
 }
 
-// DefaultTriggerSpec defines the triggering that should be used for datasets
-// whose parent transformation is not a windowing transformation.
-var DefaultTriggerSpec = flux.AfterWatermarkTriggerSpec{}
-
-type triggeringSpec interface {
-	TriggerSpec() flux.TriggerSpec
-}
-
 // createExecutionNodeVisitor visits each node in a physical query plan
 // and creates a node responsible for executing that physical operation.
 type createExecutionNodeVisitor struct {
@@ -158,6 +150,10 @@ func nonYieldPredecessors(pn plan.PlanNode) []plan.PlanNode {
 
 // Visit creates the node that will execute a particular plan node
 func (v *createExecutionNodeVisitor) Visit(node plan.PlanNode) error {
+	ppn, ok := node.(*plan.PhysicalPlanNode)
+	if !ok {
+		return fmt.Errorf("cannot execute plan node of type %T", node)
+	}
 	spec := node.ProcedureSpec()
 	kind := spec.Kind()
 	id := DatasetIDFromNodeID(node.ID())
@@ -222,12 +218,10 @@ func (v *createExecutionNodeVisitor) Visit(node plan.PlanNode) error {
 			return err
 		}
 
-		// Setup triggering
-		var ts flux.TriggerSpec = DefaultTriggerSpec
-		if t, ok := spec.(triggeringSpec); ok {
-			ts = t.TriggerSpec()
+		if ppn.TriggerSpec == nil {
+			ppn.TriggerSpec = plan.DefaultTriggerSpec
 		}
-		ds.SetTriggerSpec(ts)
+		ds.SetTriggerSpec(ppn.TriggerSpec)
 		v.nodes[node] = ds
 
 		for _, p := range nonYieldPredecessors(node) {

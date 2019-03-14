@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
@@ -1525,7 +1526,7 @@ func TestMergeJoin_Process(t *testing.T) {
 
 			d := executetest.NewDataset(executetest.RandomDatasetID())
 			c := universe.NewMergeJoinCache(executetest.UnlimitedAllocator, parents, tableNames, tc.spec.On)
-			c.SetTriggerSpec(execute.DefaultTriggerSpec)
+			c.SetTriggerSpec(plan.DefaultTriggerSpec)
 			jt := universe.NewMergeJoinTransformation(d, c, tc.spec, parents, tableNames)
 
 			l := len(tc.data0)

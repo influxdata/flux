@@ -68,6 +68,11 @@ func (s *SkewProcedureSpec) Copy() plan.ProcedureSpec {
 	}
 }
 
+// TriggerSpec implements plan.TriggerAwareProcedureSpec
+func (s *SkewProcedureSpec) TriggerSpec() plan.TriggerSpec {
+	return plan.NarrowTransformationTriggerSpec{}
+}
+
 type SkewAgg struct {
 	n, m1, m2, m3 float64
 }

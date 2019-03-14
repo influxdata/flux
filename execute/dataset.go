@@ -15,7 +15,7 @@ type Dataset interface {
 	UpdateWatermark(mark Time) error
 	Finish(error)
 
-	SetTriggerSpec(t flux.TriggerSpec)
+	SetTriggerSpec(t plan.TriggerSpec)
 }
 
 // DataCache holds all working data for a transformation.
@@ -28,7 +28,7 @@ type DataCache interface {
 	DiscardTable(flux.GroupKey)
 	ExpireTable(flux.GroupKey)
 
-	SetTriggerSpec(t flux.TriggerSpec)
+	SetTriggerSpec(t plan.TriggerSpec)
 }
 
 type AccumulationMode int
@@ -79,7 +79,7 @@ func (d *dataset) AddTransformation(t Transformation) {
 	d.ts = append(d.ts, t)
 }
 
-func (d *dataset) SetTriggerSpec(spec flux.TriggerSpec) {
+func (d *dataset) SetTriggerSpec(spec plan.TriggerSpec) {
 	d.cache.SetTriggerSpec(spec)
 }
 

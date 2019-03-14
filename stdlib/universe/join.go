@@ -380,7 +380,7 @@ type MergeJoinCache struct {
 
 	tables      map[flux.GroupKey]flux.Table
 	alloc       *memory.Allocator
-	triggerSpec flux.TriggerSpec
+	triggerSpec plan.TriggerSpec
 }
 
 type streamBuffer struct {
@@ -664,7 +664,7 @@ func (c *MergeJoinCache) ExpireTable(key flux.GroupKey) {
 }
 
 // SetTriggerSpec sets the trigger rule for this cache
-func (c *MergeJoinCache) SetTriggerSpec(spec flux.TriggerSpec) {
+func (c *MergeJoinCache) SetTriggerSpec(spec plan.TriggerSpec) {
 	c.triggerSpec = spec
 }
 

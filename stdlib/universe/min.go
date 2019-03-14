@@ -68,6 +68,11 @@ func (s *MinProcedureSpec) Copy() plan.ProcedureSpec {
 	return ns
 }
 
+// TriggerSpec implements plan.TriggerAwareProcedureSpec
+func (s *MinProcedureSpec) TriggerSpec() plan.TriggerSpec {
+	return plan.NarrowTransformationTriggerSpec{}
+}
+
 type MinSelector struct {
 	set  bool
 	rows []execute.Row

@@ -82,6 +82,11 @@ func (s *UniqueProcedureSpec) Copy() plan.ProcedureSpec {
 	return ns
 }
 
+// TriggerSpec implements plan.TriggerAwareProcedureSpec
+func (s *UniqueProcedureSpec) TriggerSpec() plan.TriggerSpec {
+	return plan.NarrowTransformationTriggerSpec{}
+}
+
 func createUniqueTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*UniqueProcedureSpec)
 	if !ok {

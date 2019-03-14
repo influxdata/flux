@@ -66,6 +66,11 @@ func (s *StddevProcedureSpec) Copy() plan.ProcedureSpec {
 	}
 }
 
+// TriggerSpec implements plan.TriggerAwareProcedureSpec
+func (s *StddevProcedureSpec) TriggerSpec() plan.TriggerSpec {
+	return plan.NarrowTransformationTriggerSpec{}
+}
+
 type StddevAgg struct {
 	n, m2, mean float64
 }

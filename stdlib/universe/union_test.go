@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
@@ -754,7 +755,7 @@ func TestUnion_Process(t *testing.T) {
 
 			d := executetest.NewDataset(executetest.RandomDatasetID())
 			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
-			c.SetTriggerSpec(execute.DefaultTriggerSpec)
+			c.SetTriggerSpec(plan.DefaultTriggerSpec)
 			ut := universe.NewUnionTransformation(d, c, spec, parentIds)
 
 			for i, s := range tc.data {

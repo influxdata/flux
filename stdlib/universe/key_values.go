@@ -108,6 +108,11 @@ func (s *KeyValuesProcedureSpec) Copy() plan.ProcedureSpec {
 	return ns
 }
 
+// TriggerSpec implements plan.TriggerAwareProcedureSpec
+func (s *KeyValuesProcedureSpec) TriggerSpec() plan.TriggerSpec {
+	return plan.NarrowTransformationTriggerSpec{}
+}
+
 type keyValuesTransformation struct {
 	d        execute.Dataset
 	cache    execute.TableBuilderCache

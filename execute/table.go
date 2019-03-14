@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -1962,7 +1963,7 @@ type tableBuilderCache struct {
 	tables *GroupLookup
 	alloc  *memory.Allocator
 
-	triggerSpec flux.TriggerSpec
+	triggerSpec plan.TriggerSpec
 }
 
 func NewTableBuilderCache(a *memory.Allocator) *tableBuilderCache {
@@ -1977,7 +1978,7 @@ type tableState struct {
 	trigger Trigger
 }
 
-func (d *tableBuilderCache) SetTriggerSpec(ts flux.TriggerSpec) {
+func (d *tableBuilderCache) SetTriggerSpec(ts plan.TriggerSpec) {
 	d.triggerSpec = ts
 }
 

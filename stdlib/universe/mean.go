@@ -68,6 +68,11 @@ func (s *MeanProcedureSpec) Copy() plan.ProcedureSpec {
 	}
 }
 
+// TriggerSpec implements plan.TriggerAwareProcedureSpec
+func (s *MeanProcedureSpec) TriggerSpec() plan.TriggerSpec {
+	return plan.NarrowTransformationTriggerSpec{}
+}
+
 type MeanAgg struct {
 	count int64
 	sum   float64

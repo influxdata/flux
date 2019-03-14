@@ -73,6 +73,11 @@ func (s *CountProcedureSpec) ReAggregateSpec() plan.ProcedureSpec {
 	return new(SumProcedureSpec)
 }
 
+// TriggerSpec implements plan.TriggerAwareProcedureSpec
+func (s *CountProcedureSpec) TriggerSpec() plan.TriggerSpec {
+	return plan.NarrowTransformationTriggerSpec{}
+}
+
 type CountAgg struct {
 	count int64
 }

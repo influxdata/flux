@@ -1,22 +1,54 @@
-package flux
+package plan
+
+import (
+	"fmt"
+
+	"github.com/influxdata/flux"
+)
 
 type TriggerSpec interface {
 	Kind() TriggerKind
 }
+
 type TriggerKind int
 
 const (
-	AfterWatermark TriggerKind = iota
+	NarrowTransformation TriggerKind = iota
+	AfterWatermark
 	Repeated
 	AfterProcessingTime
 	AfterAtLeastCount
 	OrFinally
 )
 
-var DefaultTrigger = AfterWatermarkTriggerSpec{}
+var DefaultTriggerSpec = AfterWatermarkTriggerSpec{}
+
+type TriggerAwareProcedureSpec interface {
+	TriggerSpec() TriggerSpec
+}
+
+func SetTriggerSpec(node PlanNode) error {
+	ppn, ok := node.(*PhysicalPlanNode)
+	if !ok {
+		return fmt.Errorf("cannot set trigger spec on plan node of type %T", node)
+	}
+	spec := ppn.Spec
+	if n, ok := spec.(TriggerAwareProcedureSpec); ok {
+		ppn.TriggerSpec = n.TriggerSpec()
+	} else {
+		ppn.TriggerSpec = DefaultTriggerSpec
+	}
+	return nil
+}
+
+type NarrowTransformationTriggerSpec struct{}
+
+func (NarrowTransformationTriggerSpec) Kind() TriggerKind {
+	return NarrowTransformation
+}
 
 type AfterWatermarkTriggerSpec struct {
-	AllowedLateness Duration
+	AllowedLateness flux.Duration
 }
 
 func (AfterWatermarkTriggerSpec) Kind() TriggerKind {
@@ -32,7 +64,7 @@ func (RepeatedTriggerSpec) Kind() TriggerKind {
 }
 
 type AfterProcessingTimeTriggerSpec struct {
-	Duration Duration
+	Duration flux.Duration
 }
 
 func (AfterProcessingTimeTriggerSpec) Kind() TriggerKind {

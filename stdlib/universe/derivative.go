@@ -125,6 +125,11 @@ func (s *DerivativeProcedureSpec) Copy() plan.ProcedureSpec {
 	return ns
 }
 
+// TriggerSpec implements plan.TriggerAwareProcedureSpec
+func (s *DerivativeProcedureSpec) TriggerSpec() plan.TriggerSpec {
+	return plan.NarrowTransformationTriggerSpec{}
+}
+
 func createDerivativeTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*DerivativeProcedureSpec)
 	if !ok {
