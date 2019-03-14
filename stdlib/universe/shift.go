@@ -12,20 +12,20 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-const ShiftKind = "shift"
+const ShiftKind = "timeShift"
 
 type ShiftOpSpec struct {
-	Shift   flux.Duration `json:"shift"`
+	Shift   flux.Duration `json:"duration"`
 	Columns []string      `json:"columns"`
 }
 
 func init() {
 	shiftSignature := flux.FunctionSignature(
 		map[string]semantic.PolyType{
-			"shift":   semantic.Duration,
-			"columns": semantic.NewArrayPolyType(semantic.String),
+			"duration": semantic.Duration,
+			"columns":  semantic.NewArrayPolyType(semantic.String),
 		},
-		[]string{"shift"},
+		[]string{"duration"},
 	)
 
 	flux.RegisterPackageValue("universe", ShiftKind, flux.FunctionValue(ShiftKind, createShiftOpSpec, shiftSignature))
@@ -41,7 +41,7 @@ func createShiftOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 
 	spec := new(ShiftOpSpec)
 
-	if shift, err := args.GetRequiredDuration("shift"); err != nil {
+	if shift, err := args.GetRequiredDuration("duration"); err != nil {
 		return nil, err
 	} else {
 		spec.Shift = shift

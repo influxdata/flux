@@ -2896,25 +2896,25 @@ from(bucket: "telegraf/autogen")
 ```
 
 
-#### Shift
+#### TimeShift
 
-Shift adds a fixed duration to time columns.
+TimeShift adds a fixed duration to time columns.
 The output table schema is the same as the input table.
 If the time is null, the time will continue to be null.
 
-Shift has the following properties:
+TimeShift has the following properties:
 
-| Name    | Type     | Description                                                                                        |
-| ----    | ----     | -----------                                                                                        |
-| shift   | duration | Shift is the amount to add to each time value.  May be a negative duration.                        |
-| columns | []string | Columns is list of all columns that should be shifted. Defaults to `["_start", "_stop", "_time"]`. |
+| Name     | Type     | Description                                                                                        |
+| ----     | ----     | -----------                                                                                        |
+| duration | duration | Duration is the amount to add to each time value.  May be a negative duration.                     |
+| columns  | []string | Columns is list of all columns that should be shifted. Defaults to `["_start", "_stop", "_time"]`. |
 
 Example:
 
 ```
 from(bucket: "telegraf/autogen")
 	|> range(start: -5m)
-	|> shift(shift: 1000h)
+	|> timeShift(duration: 1000h)
 ```
 
 #### StateCount
