@@ -17,22 +17,49 @@ type Object interface {
 }
 
 type object struct {
-	values map[string]Value
-	poly   semantic.PolyType
-	typ    semantic.Type
-	mod    bool
+	labels semantic.LabelSet
+	values []Value
+	ptyp   map[string]semantic.PolyType
+	mtyp   map[string]semantic.Type
 }
 
 func NewObject() *object {
-	return &object{values: map[string]Value{}}
+	return &object{
+		ptyp: make(map[string]semantic.PolyType),
+		mtyp: make(map[string]semantic.Type),
+	}
 }
-func NewObjectWithValues(values map[string]Value) *object {
-	obj := &object{values: values, mod: true}
-	obj.updateTypes()
-	return obj
+func NewObjectWithValues(vals map[string]Value) *object {
+	l := len(vals)
+
+	labels := make(semantic.LabelSet, 0, l)
+	values := make([]Value, 0, l)
+
+	ptyp := make(map[string]semantic.PolyType, l)
+	mtyp := make(map[string]semantic.Type, l)
+
+	for k, v := range vals {
+		labels = append(labels, k)
+		values = append(values, v)
+
+		ptyp[k] = v.PolyType()
+		mtyp[k] = v.Type()
+	}
+
+	return &object{
+		labels: labels,
+		values: values,
+		ptyp:   ptyp,
+		mtyp:   mtyp,
+	}
 }
 func NewObjectWithBacking(size int) *object {
-	return &object{values: make(map[string]Value, size)}
+	return &object{
+		labels: make(semantic.LabelSet, 0, size),
+		values: make([]Value, 0, size),
+		ptyp:   make(map[string]semantic.PolyType, size),
+		mtyp:   make(map[string]semantic.Type, size),
+	}
 }
 
 func (o *object) IsNull() bool {
@@ -55,49 +82,43 @@ func (o *object) String() string {
 	return b.String()
 }
 
-func (o *object) updateTypes() {
-	if !o.mod {
-		return
-	}
-	l := len(o.values)
-	ts := make(map[string]semantic.Type, l)
-	ps := make(map[string]semantic.PolyType, l)
-	ls := make(semantic.LabelSet, 0, l)
-	for k, v := range o.values {
-		ts[k] = v.Type()
-		ps[k] = v.PolyType()
-		ls = append(ls, k)
-	}
-	o.poly = semantic.NewObjectPolyType(ps, nil, ls)
-	o.typ = semantic.NewObjectType(ts)
-	o.mod = false
-}
-
 func (o *object) Type() semantic.Type {
-	o.updateTypes()
-	return o.typ
+	return semantic.NewObjectType(o.mtyp)
 }
 
 func (o *object) PolyType() semantic.PolyType {
-	o.updateTypes()
-	return o.poly
+	return semantic.NewObjectPolyType(o.ptyp, nil, o.labels)
 }
 
-func (o *object) Set(name string, v Value) {
-	o.values[name] = v
-	o.mod = true
+func (o *object) Set(k string, v Value) {
+	for i, l := range o.labels {
+		if l == k {
+			o.values[i] = v
+			o.ptyp[l] = v.PolyType()
+			o.mtyp[l] = v.Type()
+			return
+		}
+	}
+	o.labels = append(o.labels, k)
+	o.values = append(o.values, v)
+	o.ptyp[k] = v.PolyType()
+	o.mtyp[k] = v.Type()
 }
 func (o *object) Get(name string) (Value, bool) {
-	v, ok := o.values[name]
-	return v, ok
+	for i, l := range o.labels {
+		if name == l {
+			return o.values[i], true
+		}
+	}
+	return nil, false
 }
 func (o *object) Len() int {
 	return len(o.values)
 }
 
 func (o *object) Range(f func(name string, v Value)) {
-	for k, v := range o.values {
-		f(k, v)
+	for i, l := range o.labels {
+		f(l, o.values[i])
 	}
 }
 
@@ -142,9 +163,9 @@ func (o *object) Equal(rhs Value) bool {
 	if o.Len() != r.Len() {
 		return false
 	}
-	for k, v := range o.values {
-		val, ok := r.Get(k)
-		if !ok || !v.Equal(val) {
+	for i, l := range o.labels {
+		val, ok := r.Get(l)
+		if !ok && !o.values[i].Equal(val) {
 			return false
 		}
 	}
