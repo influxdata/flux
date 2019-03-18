@@ -6,6 +6,25 @@ import (
 	"github.com/influxdata/flux"
 )
 
+// GroupLookup is a container that maps group keys to a value.
+//
+// The GroupLookup container is optimized for appending values in
+// order and iterating over them in the same order. The GroupLookup
+// will always have a deterministic order for the Range call, but that
+// order may be influenced by the order that inserts happen.
+//
+// At the current moment, the GroupLookup maintains the groups in sorted
+// order although future implementations may change that.
+//
+// To optimize inserts, the lookup is kept in an array of arrays. The first
+// layer keeps a group of sorted key groups and each of these groups maintains
+// their own sorted list of keys. Each time a new key is added, it is appended
+// to the end of one of the key lists. If a key needs to be added in the middle
+// of a list, the list is split into two so that the key can be appended.
+// The index of the last list to be used is maintained so that future inserts
+// can skip past the first search for the key list and an insert can be done in
+// constant time. Similarly, a lookup for a key that was just inserted will also
+// be in constant time with the worst case time being O(n log n).
 type GroupLookup struct {
 	// groups contains groups of group keys in sorted order.
 	// These are optimized for appending access.
@@ -83,6 +102,7 @@ func (kg *groupKeyList) At(i int) interface{} {
 	return kg.elements[i].value
 }
 
+// NewGroupLookup constructs a GroupLookup.
 func NewGroupLookup() *GroupLookup {
 	return &GroupLookup{
 		lastIndex: -1,
@@ -90,6 +110,7 @@ func NewGroupLookup() *GroupLookup {
 	}
 }
 
+// Lookup will retrieve the value associated with the given key if it exists.
 func (l *GroupLookup) Lookup(key flux.GroupKey) (interface{}, bool) {
 	if key == nil || len(l.groups) == 0 {
 		return nil, false
@@ -107,6 +128,7 @@ func (l *GroupLookup) Lookup(key flux.GroupKey) (interface{}, bool) {
 	return nil, false
 }
 
+// Set will set the value for the given key. It will overwrite an existing value.
 func (l *GroupLookup) Set(key flux.GroupKey, value interface{}) {
 	group := l.lookupGroup(key)
 	l.createOrSetInGroup(group, key, value)
@@ -141,6 +163,10 @@ func (l *GroupLookup) lookupGroup(key flux.GroupKey) int {
 	return index
 }
 
+// createOrSetInGroup will overwrite or insert a key into the group with the associated value.
+// If the key needs to be inserted into the middle of the array, it splits the array into
+// two different groups so that the value is always appended to the end of a group to optimize
+// future inserts.
 func (l *GroupLookup) createOrSetInGroup(index int, key flux.GroupKey, value interface{}) {
 	// If this index is at -1, then we are inserting a value with a smaller key
 	// than every group and we need to create a new group to insert it at the
@@ -193,6 +219,8 @@ func (l *GroupLookup) createOrSetInGroup(index int, key flux.GroupKey, value int
 	})
 }
 
+// newKeyGroup will construct a new groupKeyList with the next available id. The
+// ids are used for detecting if a group has been deleted during a call to Range.
 func (l *GroupLookup) newKeyGroup(entries []groupKeyListElement) *groupKeyList {
 	id := l.nextID
 	l.nextID++
@@ -202,6 +230,8 @@ func (l *GroupLookup) newKeyGroup(entries []groupKeyListElement) *groupKeyList {
 	}
 }
 
+// Delete will remove the key from this GroupLookup. It will return the same
+// thing as a call to Lookup.
 func (l *GroupLookup) Delete(key flux.GroupKey) (v interface{}, found bool) {
 	if key == nil {
 		return
