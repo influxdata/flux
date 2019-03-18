@@ -44,6 +44,7 @@ func init() {
 	flux.RegisterOpSpec(WindowKind, newWindowOp)
 	flux.RegisterPackageValue("universe", "inf", infinityVar)
 	plan.RegisterProcedureSpec(WindowKind, newWindowProcedure, WindowKind)
+	plan.RegisterPhysicalRules(WindowTriggerPhysicalRule{})
 	execute.RegisterTransformation(WindowKind, createWindowTransformation)
 }
 
@@ -394,4 +395,85 @@ func (t *fixedWindowTransformation) UpdateProcessingTime(id execute.DatasetID, p
 }
 func (t *fixedWindowTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
+}
+
+// WindowTriggerPhysicalRule rewrites a physical window operation
+// to use a narrow trigger if certain conditions are met.
+type WindowTriggerPhysicalRule struct{}
+
+func (WindowTriggerPhysicalRule) Name() string {
+	return "WindowTriggerPhysicalRule"
+}
+
+// Pattern matches the physical operator pattern consisting of a window
+// operator with a single predecessor of any kind.
+func (WindowTriggerPhysicalRule) Pattern() plan.Pattern {
+	return plan.PhysPat(WindowKind, plan.Any())
+}
+
+// Rewrite modifies a window's trigger spec so long as it doesn't have any
+// window descendents that occur earlier in the plan and as long as none
+// of its descendents merge multiple streams together like union and join.
+func (WindowTriggerPhysicalRule) Rewrite(window plan.PlanNode) (plan.PlanNode, bool, error) {
+	// This rule's pattern ensures us only one predecessor
+	if !hasValidPredecessors(window.Predecessors()[0]) {
+		return window, false, nil
+	}
+	// This rule's pattern ensures us a physical operator
+	ppn := window.(*plan.PhysicalPlanNode)
+	if ppn.TriggerSpec != nil {
+		return ppn, false, nil
+	}
+	ppn.TriggerSpec = plan.NarrowTransformationTriggerSpec{}
+	return ppn, true, nil
+}
+
+func hasValidPredecessors(node plan.PlanNode) bool {
+	pred := node.Predecessors()
+	// Source nodes might not produce uniform time bounds for all
+	// tables in which case we can't optimize window. However if a
+	// source is a BoundsAwareProcedureSpec then it must produce
+	// bounded data in which case we can perform the optimization.
+	if len(pred) == 0 {
+		s := node.ProcedureSpec()
+		n, ok := s.(plan.BoundsAwareProcedureSpec)
+		return ok && n.TimeBounds(nil) != nil
+	}
+	kind := node.Kind()
+	switch kind {
+	// Range gives the same static time bounds to the entire stream,
+	// so no need to recurse.
+	case RangeKind:
+		return true
+	case ColumnsKind,
+		CumulativeSumKind,
+		DerivativeKind,
+		DifferenceKind,
+		DistinctKind,
+		FilterKind,
+		FirstKind,
+		GroupKind,
+		KeyValuesKind,
+		KeysKind,
+		LastKind,
+		LimitKind,
+		MaxKind,
+		MinKind,
+		ExactPercentileSelectKind,
+		SampleKind,
+		DropKind,
+		KeepKind,
+		DuplicateKind,
+		RenameKind,
+		ShiftKind,
+		SortKind,
+		StateTrackingKind,
+		UniqueKind:
+	default:
+		return false
+	}
+	if len(pred) == 1 {
+		return hasValidPredecessors(pred[0])
+	}
+	return false
 }
