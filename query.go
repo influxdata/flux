@@ -83,11 +83,6 @@ type Statistics struct {
 
 	// Metadata contains metadata key/value pairs that have been attached during execution.
 	Metadata Metadata `json:"metadata"`
-
-	// ScannedValues is the number of values scanned.
-	ScannedValues int `json:"scanned_values"`
-	// ScannedBytes number of uncompressed bytes scanned.
-	ScannedBytes int `json:"scanned_bytes"`
 }
 
 // Add returns the sum of s and other.
@@ -104,8 +99,6 @@ func (s Statistics) Add(other Statistics) Statistics {
 		ExecuteDuration: s.ExecuteDuration + other.ExecuteDuration,
 		Concurrency:     s.Concurrency + other.Concurrency,
 		MaxAllocated:    s.MaxAllocated + other.MaxAllocated,
-		ScannedValues:   s.ScannedValues + other.ScannedValues,
-		ScannedBytes:    s.ScannedBytes + other.ScannedBytes,
 		Metadata:        md,
 	}
 }
