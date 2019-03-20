@@ -722,6 +722,12 @@ func (f function) Resolve() (semantic.Node, error) {
 
 func (f function) resolveIdentifiers(n semantic.Node) (semantic.Node, error) {
 	switch n := n.(type) {
+	case *semantic.MemberExpression:
+		node, err := f.resolveIdentifiers(n.Object)
+		if err != nil {
+			return nil, err
+		}
+		n.Object = node.(semantic.Expression)
 	case *semantic.IdentifierExpression:
 		if f.e.Block.Parameters != nil {
 			for _, p := range f.e.Block.Parameters.List {
@@ -817,6 +823,17 @@ func (f function) resolveIdentifiers(n semantic.Node) (semantic.Node, error) {
 			}
 			n.Elements[i] = node.(semantic.Expression)
 		}
+	case *semantic.IndexExpression:
+		node, err := f.resolveIdentifiers(n.Array)
+		if err != nil {
+			return nil, err
+		}
+		n.Array = node.(semantic.Expression)
+		node, err = f.resolveIdentifiers(n.Index)
+		if err != nil {
+			return nil, err
+		}
+		n.Index = node.(semantic.Expression)
 	case *semantic.ObjectExpression:
 		for i, p := range n.Properties {
 			node, err := f.resolveIdentifiers(p)

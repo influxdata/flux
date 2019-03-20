@@ -19,7 +19,7 @@ func Compile(f *semantic.FunctionExpression, in semantic.Type, builtins Scope) (
 		Block:       &semantic.ExternBlock{Node: f},
 	}
 
-	typeSol, err := semantic.InferTypes(extern, nil)
+	typeSol, err := semantic.InferTypes(extern, flux.StdLib())
 	if err != nil {
 		return nil, err
 	}
@@ -223,6 +223,11 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, fun
 		return &timeEvaluator{
 			t:    monoType(typeSol.TypeOf(n)),
 			time: values.ConvertTime(n.Value),
+		}, nil
+	case *semantic.DurationLiteral:
+		return &durationEvaluator{
+			t:        monoType(typeSol.TypeOf(n)),
+			duration: values.Duration(n.Value),
 		}, nil
 	case *semantic.UnaryExpression:
 		node, err := compile(n.Argument, typeSol, builtIns, funcExprs)

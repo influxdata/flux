@@ -1057,6 +1057,49 @@ func (e *timeEvaluator) EvalFunction(scope Scope) (values.Function, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Function))
 }
 
+type durationEvaluator struct {
+	t        semantic.Type
+	duration values.Duration
+}
+
+func (e *durationEvaluator) Type() semantic.Type {
+	return e.t
+}
+
+func (e *durationEvaluator) EvalString(scope Scope) (string, error) {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.String))
+}
+func (e *durationEvaluator) EvalInt(scope Scope) (int64, error) {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.Int))
+}
+func (e *durationEvaluator) EvalUInt(scope Scope) (uint64, error) {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
+}
+func (e *durationEvaluator) EvalFloat(scope Scope) (float64, error) {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.Float))
+}
+func (e *durationEvaluator) EvalBool(scope Scope) (bool, error) {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.Bool))
+}
+func (e *durationEvaluator) EvalTime(scope Scope) (values.Time, error) {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.Time))
+}
+func (e *durationEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
+	return e.duration, nil
+}
+func (e *durationEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.Regexp))
+}
+func (e *durationEvaluator) EvalArray(scope Scope) (values.Array, error) {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.Array))
+}
+func (e *durationEvaluator) EvalObject(scope Scope) (values.Object, error) {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.Object))
+}
+func (e *durationEvaluator) EvalFunction(scope Scope) (values.Function, error) {
+	panic(values.UnexpectedKind(e.t.Nature(), semantic.Function))
+}
+
 type identifierEvaluator struct {
 	t    semantic.Type
 	name string
