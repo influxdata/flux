@@ -2048,6 +2048,54 @@ from(bucket:"telegraf/autogen")
     |> map(fn: (r) => ({_time: r._time, app_server: r._service}))
 ```
 
+#### Reduce
+Reduce aggregates records in each table according to the reducer `fn`.  The output for each table will be the group key of the table, plus columns corresponding to each field in the reducer object.  
+
+If the reducer record contains a column with the same name as a group key column, then the group key column's value is overwritten and the the resulting record is regrouped into the appropriate table.
+
+Reduce has the following properties:
+
+| Name     | Type                  | Description                                                                                               |
+| ----     | ----                  | -----------                                                                                               |
+| fn       | (r: record, accumulator: 'a) -> 'a | Function to apply to each record with a reducer object of type 'a.  |
+| identity | 'a                  | an initial value to use when creating a reducer. May be used more than once in asynchronous processing use cases.|
+
+
+Example (compute the sum of the value column):
+```
+from(bucket:"telegraf/autogen")
+    |> filter(fn: (r) => r._measurement == "cpu" AND
+                r._field == "usage_system" AND
+                r.service == "app-server")
+    |> range(start:-12h)
+    |> reduce(fn: (r, accumulator) =>
+            ({sum: r._value + accumulator.sum}), identity: {sum: 0.0}))
+```
+
+Example (compute the sum and count in a single reducer):
+```
+from(bucket:"telegraf/autogen")
+    |> filter(fn: (r) => r._measurement == "cpu" AND
+                r._field == "usage_system" AND
+                r.service == "app-server")
+    |> range(start:-12h)
+    |> reduce(fn: (r, accumulator) =>
+            ({sum: r._value + accumulator.sum, count: accumulator.count + 1.0}), identity: {sum: 0.0, count:0.0}))
+```
+
+Example (compute the product of all values):
+```
+from(bucket:"telegraf/autogen")
+    |> filter(fn: (r) => r._measurement == "cpu" AND
+                r._field == "usage_system" AND
+                r.service == "app-server")
+    |> range(start:-12h)
+    |> reduce(fn: (r, accumulator) =>
+            ({prod: r._value * accumulator.prod}), identity: {prod: 1.0}))
+```
+
+
+
 #### Range
 
 Range filters records based on provided time bounds.

@@ -25,9 +25,9 @@ type rowFn struct {
 }
 
 func newRowFn(fn *semantic.FunctionExpression) (rowFn, error) {
-	if fn.Block.Parameters != nil && len(fn.Block.Parameters.List) != 1 {
-		return rowFn{}, errors.New("function should only have a single parameter")
-	}
+	//if fn.Block.Parameters != nil && len(fn.Block.Parameters.List) != 1 {
+	//	return rowFn{}, errors.New("function should only have a single parameter")
+	//}
 	scope := flux.BuiltIns()
 	return rowFn{
 		compilationCache: compiler.NewCompilationCache(fn, scope),
@@ -38,7 +38,7 @@ func newRowFn(fn *semantic.FunctionExpression) (rowFn, error) {
 	}, nil
 }
 
-func (f *rowFn) prepare(cols []flux.ColMeta) error {
+func (f *rowFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.Type) error {
 	// Prepare types and recordCols
 	propertyTypes := make(map[string]semantic.Type, len(f.references))
 	for _, r := range f.references {
@@ -55,12 +55,19 @@ func (f *rowFn) prepare(cols []flux.ColMeta) error {
 			return fmt.Errorf("function references unknown column %q", r)
 		}
 	}
+
 	f.record = NewRecord(semantic.NewObjectType(propertyTypes))
+	if extraTypes == nil {
+		extraTypes = map[string]semantic.Type{
+			f.recordName: f.record.Type(),
+		}
+	} else {
+		extraTypes[f.recordName] = f.record.Type()
+	}
+
 	// Compile fn for given types
 	fn, err := f.compilationCache.Compile(
-		semantic.NewObjectType(map[string]semantic.Type{
-			f.recordName: f.record.Type(),
-		}),
+		semantic.NewObjectType(extraTypes),
 	)
 	if err != nil {
 		return err
@@ -113,7 +120,7 @@ func ConvertFromKind(k semantic.Nature) flux.ColType {
 	}
 }
 
-func (f *rowFn) eval(row int, cr flux.ColReader) (values.Value, error) {
+func (f *rowFn) eval(row int, cr flux.ColReader, extraParams map[string]values.Value) (values.Value, error) {
 	// TODO(affo) will remove this once null support for lambdas is provided
 	if f.anyNilReferenceInRow(row, cr) {
 		return nil, errors.New("null reference used in row function: skipping evaluation until null support is provided")
@@ -123,6 +130,10 @@ func (f *rowFn) eval(row int, cr flux.ColReader) (values.Value, error) {
 		f.record.Set(r, ValueForRow(cr, row, f.recordCols[r]))
 	}
 	f.inRecord.Set(f.recordName, f.record)
+	for k, v := range extraParams {
+		f.inRecord.Set(k, v)
+	}
+
 	return f.preparedFn.Eval(f.inRecord)
 }
 
@@ -181,7 +192,7 @@ func NewRowPredicateFn(fn *semantic.FunctionExpression) (*RowPredicateFn, error)
 }
 
 func (f *RowPredicateFn) Prepare(cols []flux.ColMeta) error {
-	err := f.rowFn.prepare(cols)
+	err := f.rowFn.prepare(cols, nil)
 	if err != nil {
 		return err
 	}
@@ -192,7 +203,7 @@ func (f *RowPredicateFn) Prepare(cols []flux.ColMeta) error {
 }
 
 func (f *RowPredicateFn) Eval(row int, cr flux.ColReader) (bool, error) {
-	v, err := f.rowFn.eval(row, cr)
+	v, err := f.rowFn.eval(row, cr, nil)
 	if err != nil {
 		return false, err
 	}
@@ -217,7 +228,7 @@ func NewRowMapFn(fn *semantic.FunctionExpression) (*RowMapFn, error) {
 }
 
 func (f *RowMapFn) Prepare(cols []flux.ColMeta) error {
-	err := f.rowFn.prepare(cols)
+	err := f.rowFn.prepare(cols, nil)
 	if err != nil {
 		return err
 	}
@@ -239,7 +250,57 @@ func (f *RowMapFn) Type() semantic.Type {
 }
 
 func (f *RowMapFn) Eval(row int, cr flux.ColReader) (values.Object, error) {
-	v, err := f.rowFn.eval(row, cr)
+	v, err := f.rowFn.eval(row, cr, nil)
+	if err != nil {
+		return nil, err
+	}
+	if f.isWrap {
+		f.wrapObj.Set(DefaultValueColLabel, v)
+		return f.wrapObj, nil
+	}
+	return v.Object(), nil
+}
+
+type RowReduceFn struct {
+	rowFn
+	isWrap  bool
+	wrapObj *Record
+}
+
+func NewRowReduceFn(fn *semantic.FunctionExpression) (*RowReduceFn, error) {
+	r, err := newRowFn(fn)
+	if err != nil {
+		return nil, err
+	}
+	return &RowReduceFn{
+		rowFn: r,
+	}, nil
+}
+
+func (f *RowReduceFn) Prepare(cols []flux.ColMeta, reducerType map[string]semantic.Type) error {
+	err := f.rowFn.prepare(cols, reducerType)
+	if err != nil {
+		return err
+	}
+	k := f.preparedFn.Type().Nature()
+	f.isWrap = k != semantic.Object
+	if f.isWrap {
+		f.wrapObj = NewRecord(semantic.NewObjectType(map[string]semantic.Type{
+			DefaultValueColLabel: f.preparedFn.Type(),
+		}))
+	}
+	return nil
+}
+
+func (f *RowReduceFn) Type() semantic.Type {
+	if f.isWrap {
+		return f.wrapObj.Type()
+	}
+	return f.preparedFn.Type()
+}
+
+func (f *RowReduceFn) Eval(row int, cr flux.ColReader, extraParams map[string]values.Value) (values.Object, error) {
+	v, err := f.rowFn.eval(row, cr, extraParams)
 	if err != nil {
 		return nil, err
 	}
@@ -285,6 +346,7 @@ func NewRecord(t semantic.Type) *Record {
 		values: make(map[string]values.Value),
 	}
 }
+
 func (r *Record) Type() semantic.Type {
 	return r.t
 }
