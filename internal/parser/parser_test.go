@@ -18,6 +18,9 @@ import (
 
 var CompareOptions = []cmp.Option{
 	cmp.Transformer("", func(re *regexp.Regexp) string {
+		if re == nil {
+			return "<nil>"
+		}
 		return re.String()
 	}),
 	cmp.Transformer("", func(pos ast.Position) string {
@@ -558,6 +561,26 @@ import "path/bar"
 						Expression: &ast.RegexpLiteral{
 							BaseNode: base("1:1", "1:12"),
 							Value:    regexp.MustCompile(`a/b\\c\d`),
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "bad regex literal",
+			raw:  `/*/`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:4"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:4"),
+						Expression: &ast.RegexpLiteral{
+							BaseNode: ast.BaseNode{
+								Loc: loc("1:1", "1:4"),
+								Errors: []ast.Error{
+									{Msg: "error parsing regexp: missing argument to repetition operator: `*`"},
+								},
+							},
 						},
 					},
 				},

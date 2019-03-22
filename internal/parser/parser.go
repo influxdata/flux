@@ -793,7 +793,12 @@ func (p *parser) parseStringLiteral() *ast.StringLiteral {
 func (p *parser) parseRegexpLiteral() *ast.RegexpLiteral {
 	pos, lit := p.expect(token.REGEX)
 	// todo(jsternberg): handle errors.
-	value, _ := ParseRegexp(lit)
+	value, err := ParseRegexp(lit)
+	if err != nil {
+		p.errs = append(p.errs, ast.Error{
+			Msg: err.Error(),
+		})
+	}
 	return &ast.RegexpLiteral{
 		Value:    value,
 		BaseNode: p.posRange(pos, len(lit)),
