@@ -10,16 +10,49 @@ import (
 )
 
 var skip = map[string]string{
-	"array_expr":     "without pars -> bad syntax, with pars formatting removes them",
-	"conditional":    "how is a conditional expression defined in spec?",
-	"multi_var_decl": "how is a variable declaration with multiple declarations represented?",
+	"array_expr":  "without pars -> bad syntax, with pars formatting removes them",
+	"conditional": "how is a conditional expression defined in spec?",
 }
 
-func TestFormat(t *testing.T) {
-	testCases := []struct {
-		name   string
-		script string
-	}{
+type formatTestCase struct {
+	name   string
+	script string
+}
+
+// formatTestHelper tests that a raw script has valid syntax and
+// that it has the same value if parsed and then formatted.
+func formatTestHelper(t *testing.T, testCases []formatTestCase) {
+	t.Helper()
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			if reason, ok := skip[tc.name]; ok {
+				t.Skip(reason)
+			}
+
+			pkg := parser.ParseSource(tc.script)
+			if ast.Check(pkg) > 0 {
+				err := ast.GetError(pkg)
+				t.Fatal(errors.Wrapf(err, "source has bad syntax:\n%s", tc.script))
+			}
+
+			stringResult := ast.Format(pkg.Files[0])
+
+			if tc.script != stringResult {
+				t.Errorf("unexpected output: -want/+got:\n %s", cmp.Diff(tc.script, stringResult))
+			}
+		})
+	}
+}
+
+func TestFormat_Nodes(t *testing.T) {
+	testCases := []formatTestCase{
+		{
+			name:   "binary_op",
+			script: `1 + 1 - 2`,
+		},
 		{
 			name: "arrow_fn",
 			script: `(r) =>
@@ -33,10 +66,6 @@ func TestFormat(t *testing.T) {
 		{
 			name:   "fn_call",
 			script: `add(a: 1, b: 2)`,
-		},
-		{
-			name:   "multi_var_decl",
-			script: `var(a = 1, b = 2, c = 3)`,
 		},
 		{
 			name:   "object",
@@ -283,27 +312,79 @@ highestAverage = (n, columns=["_value"], by, tables=<-) =>
 		},
 	}
 
-	for _, tc := range testCases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			if reason, ok := skip[tc.name]; ok {
-				t.Skip(reason)
-			}
-
-			pkg := parser.ParseSource(tc.script)
-			if ast.Check(pkg) > 0 {
-				err := ast.GetError(pkg)
-				t.Fatal(errors.Wrapf(err, "source has bad syntax:\n%s", tc.script))
-			}
-
-			stringResult := ast.Format(pkg.Files[0])
-
-			if tc.script != stringResult {
-				t.Errorf("unexpected output: -want/+got:\n %s", cmp.Diff(tc.script, stringResult))
-			}
-		})
-	}
+	formatTestHelper(t, testCases)
 }
+
+func TestFormat_Associativity(t *testing.T) {
+	testCases := []formatTestCase{
+		{
+			name:   "math no pars",
+			script: `a * b + c / d - e * f`,
+		},
+		{
+			name:   "math with pars",
+			script: `(a * b + c / d - e) * f`,
+		},
+		{
+			name:   "math with more pars",
+			script: `(a * (b + c) / d / e * (f + g) - h) * i * j / (k + l)`,
+		},
+		{
+			name:   "logic",
+			script: `a or b and c`,
+		},
+		{
+			name:   "logic with pars",
+			script: `(a or b) and c`,
+		},
+		{
+			name:   "logic with comparison",
+			script: `a == 0 or b != 1 and c > 2`,
+		},
+		{
+			name:   "logic with comparison with pars",
+			script: `(a == 0 or b != 1) and c > 2`,
+		},
+		{
+			name:   "logic and math",
+			script: `a * b + c * d != 0 or not e == 1 and f == g`,
+		},
+		{
+			name:   "logic and math with pars",
+			script: `(a * (b + c) * d != 0 or not e == 1) and f == g`,
+		},
+		{
+			name:   "unary",
+			script: `not b and c`,
+		},
+		{
+			name:   "unary with pars",
+			script: `not (b and c)`,
+		},
+		{
+			name:   "function call with pars",
+			script: `(a + b * c == 0)(foo: "bar")`,
+		},
+		{
+			name:   "member with pars",
+			script: `((a + b) * c)._value`,
+		},
+		{
+			name:   "index with pars",
+			script: `((a - b) / (c + d))[3]`,
+		},
+		{
+			name: "misc",
+			script: `foo = (a) =>
+	((bar or buz)(arg: a + 1) + (a / (b + c))[42])
+
+foo(a: (obj1 and obj2 or obj3).idk)`,
+		},
+	}
+
+	formatTestHelper(t, testCases)
+}
+
 func TestFormat_Raw(t *testing.T) {
 	testCases := []struct {
 		name   string
@@ -354,6 +435,27 @@ a = 1
 
 // b.flux
 b = 2`,
+		},
+		{
+			name: "package file no name",
+			node: &ast.Package{
+				Package: "foo",
+				Files: []*ast.File{
+					{
+						Package: &ast.PackageClause{
+							Name: &ast.Identifier{Name: "foo"},
+						},
+						Body: []ast.Statement{
+							&ast.VariableAssignment{
+								ID:   &ast.Identifier{Name: "a"},
+								Init: &ast.IntegerLiteral{Value: 1},
+							},
+						},
+					},
+				},
+			},
+			script: `package foo
+a = 1`,
 		},
 	}
 	for _, tc := range testCases {

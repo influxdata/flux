@@ -7,15 +7,12 @@ import (
 	"time"
 )
 
-/*
-Returns a valid script for a given AST rooted at node `n`.
-
-Formatting rules:
- - In a list of statements, if two statements are of a different type
-	(e.g. an `OptionStatement` followed by an `ExpressionStatement`), they are separated by a double newline.
- - In a function call (or object definition), if the arguments (or properties) are more than 3,
-	they are split into multiple lines.
-*/
+//Returns a valid script for a given AST rooted at node `n`.
+//Formatting rules:
+// - In a list of statements, if two statements are of a different type
+//	(e.g. an `OptionStatement` followed by an `ExpressionStatement`), they are separated by a double newline.
+// - In a function call (or object definition), if the arguments (or properties) are more than 3,
+//	they are split into multiple lines.
 func Format(n Node) string {
 	f := &formatter{new(strings.Builder), 0}
 	f.formatNode(n)
@@ -31,9 +28,9 @@ func (f *formatter) get() string {
 	return f.String()
 }
 
-// `strings.Builder`'s methods never return a non-nil error,
-// so it is safe to ignore it.
 func (f *formatter) writeString(s string) {
+	// `strings.Builder`'s methods never return a non-nil error,
+	// so it is safe to ignore it.
 	f.WriteString(s)
 }
 
@@ -64,6 +61,113 @@ func (f *formatter) writeComment(comment string) {
 	f.writeRune('\n')
 }
 
+// Logic for handling operator precedence and parenthesis formatting.
+
+const (
+	functionCall = 1
+	member       = 2
+	index        = 3
+
+	// Use offsets for operators and logical operators to ensure they are unique keys
+	// in the map of operators precedence.
+	opOffset  = 100
+	lopOffset = 1000
+)
+
+func getIntForOp(op OperatorKind) int {
+	return int(op) + opOffset
+}
+
+func getIntForLOp(op LogicalOperatorKind) int {
+	return int(op) + lopOffset
+}
+
+func getPrecedence(key int) int {
+	return opPrecedence[key]
+}
+
+func getPrecedenceForOp(op OperatorKind) int {
+	return getPrecedence(getIntForOp(op))
+}
+
+func getPrecedenceForLOp(op LogicalOperatorKind) int {
+	return getPrecedence(getIntForLOp(op))
+}
+
+// this matches the SPEC
+var opPrecedence = map[int]int{
+	functionCall: 1,
+	member:       1,
+	index:        1,
+	// these are OperatorKinds
+	getIntForOp(MultiplicationOperator):   2,
+	getIntForOp(DivisionOperator):         2,
+	getIntForOp(AdditionOperator):         3,
+	getIntForOp(SubtractionOperator):      3,
+	getIntForOp(LessThanEqualOperator):    4,
+	getIntForOp(LessThanOperator):         4,
+	getIntForOp(GreaterThanEqualOperator): 4,
+	getIntForOp(GreaterThanOperator):      4,
+	getIntForOp(StartsWithOperator):       4,
+	getIntForOp(InOperator):               4,
+	getIntForOp(NotEmptyOperator):         4,
+	getIntForOp(EmptyOperator):            4,
+	getIntForOp(EqualOperator):            4,
+	getIntForOp(NotEqualOperator):         4,
+	getIntForOp(RegexpMatchOperator):      4,
+	getIntForOp(NotRegexpMatchOperator):   4,
+	getIntForOp(NotOperator):              5,
+	// theses are LogicalOperatorKinds:
+	getIntForLOp(AndOperator): 6,
+	getIntForLOp(OrOperator):  7,
+}
+
+func (f *formatter) formatChildWithParens(parent, child Node) {
+	var pvp, pvc int
+	switch parent := parent.(type) {
+	case *BinaryExpression:
+		pvp = getPrecedenceForOp(parent.Operator)
+	case *LogicalExpression:
+		pvp = getPrecedenceForLOp(parent.Operator)
+	case *UnaryExpression:
+		pvp = getPrecedenceForOp(parent.Operator)
+	case *CallExpression:
+		pvp = getPrecedence(functionCall)
+	case *MemberExpression:
+		pvp = getPrecedence(member)
+	case *IndexExpression:
+		pvp = getPrecedence(index)
+	}
+
+	switch child := child.(type) {
+	case *BinaryExpression:
+		pvc = getPrecedenceForOp(child.Operator)
+	case *LogicalExpression:
+		pvc = getPrecedenceForLOp(child.Operator)
+	case *UnaryExpression:
+		pvc = getPrecedenceForOp(child.Operator)
+	case *CallExpression:
+		pvc = getPrecedence(functionCall)
+	case *MemberExpression:
+		pvc = getPrecedence(member)
+	case *IndexExpression:
+		pvc = getPrecedence(index)
+	}
+
+	// If one of parent or child has not matched any case, then we shouldn't apply any parenthesis.
+	par := !(pvc == 0 || pvp == 0)
+	// Need a parenthesis if parent and child have matched, and if the child node
+	// has lower precedence (bigger value) then the current node.
+	par = par && pvc > pvp
+	if par {
+		f.writeRune('(')
+	}
+	f.formatNode(child)
+	if par {
+		f.writeRune(')')
+	}
+}
+
 func (f *formatter) formatPackage(n *Package) {
 	f.formatPackageClause(&PackageClause{
 		Name: &Identifier{Name: n.Package},
@@ -73,7 +177,9 @@ func (f *formatter) formatPackage(n *Package) {
 			f.writeRune('\n')
 			f.writeRune('\n')
 		}
-		f.writeComment(file.Name)
+		if len(file.Name) > 0 {
+			f.writeComment(file.Name)
+		}
 		f.formatFile(file, false)
 	}
 }
@@ -182,7 +288,7 @@ func (f *formatter) formatOptionStatement(n *OptionStatement) {
 	f.formatNode(n.Assignment)
 }
 
-func (f *formatter) formatTestStatment(n *TestStatement) {
+func (f *formatter) formatTestStatement(n *TestStatement) {
 	f.writeString("test ")
 	f.formatNode(n.Assignment)
 }
@@ -253,27 +359,28 @@ func (f *formatter) formatFunctionExpression(n *FunctionExpression) {
 
 func (f *formatter) formatUnaryExpression(n *UnaryExpression) {
 	f.writeString(n.Operator.String())
-	f.formatNode(n.Argument)
+	f.writeRune(' ')
+	f.formatChildWithParens(n, n.Argument)
 }
 
 func (f *formatter) formatBinaryExpression(n *BinaryExpression) {
-	f.formatNode(n.Left)
-	f.writeRune(' ')
-	f.writeString(n.Operator.String())
-	f.writeRune(' ')
-	f.formatNode(n.Right)
+	f.formatBinary(n.Operator.String(), n, n.Left, n.Right)
 }
 
 func (f *formatter) formatLogicalExpression(n *LogicalExpression) {
-	f.formatNode(n.Left)
+	f.formatBinary(n.Operator.String(), n, n.Left, n.Right)
+}
+
+func (f *formatter) formatBinary(op string, parent, left, right Node) {
+	f.formatChildWithParens(parent, left)
 	f.writeRune(' ')
-	f.writeString(n.Operator.String())
+	f.writeString(op)
 	f.writeRune(' ')
-	f.formatNode(n.Right)
+	f.formatChildWithParens(parent, right)
 }
 
 func (f *formatter) formatCallExpression(n *CallExpression) {
-	f.formatNode(n.Callee)
+	f.formatChildWithParens(n, n.Callee)
 	f.writeRune('(')
 
 	sep := ", "
@@ -312,7 +419,7 @@ func (f *formatter) formatConditionalExpression(n *ConditionalExpression) {
 }
 
 func (f *formatter) formatMemberExpression(n *MemberExpression) {
-	f.formatNode(n.Object)
+	f.formatChildWithParens(n, n.Object)
 
 	if _, ok := n.Property.(*StringLiteral); ok {
 		f.writeRune('[')
@@ -325,7 +432,7 @@ func (f *formatter) formatMemberExpression(n *MemberExpression) {
 }
 
 func (f *formatter) formatIndexExpression(n *IndexExpression) {
-	f.formatNode(n.Array)
+	f.formatChildWithParens(n, n.Array)
 	f.writeRune('[')
 	f.formatNode(n.Index)
 	f.writeRune(']')
@@ -502,7 +609,7 @@ func (f *formatter) formatNode(n Node) {
 	case *OptionStatement:
 		f.formatOptionStatement(n)
 	case *TestStatement:
-		f.formatTestStatment(n)
+		f.formatTestStatement(n)
 	case *ExpressionStatement:
 		f.formatExpressionStatement(n)
 	case *ReturnStatement:
