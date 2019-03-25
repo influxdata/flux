@@ -2,6 +2,7 @@ package universe_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
@@ -10,8 +11,252 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 )
+
+func TestPercentile_NewQuery(t *testing.T) {
+	tests := []querytest.NewQueryTestCase{
+		{
+			Name: "tdigest",
+			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> percentile(percentile: 0.99, method: "estimate_tdigest", compression: 1000.0)`,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: "testdb",
+						},
+					},
+					{
+						ID: "range1",
+						Spec: &universe.RangeOpSpec{
+							Start: flux.Time{
+								Relative:   -1 * time.Hour,
+								IsRelative: true,
+							},
+							Stop: flux.Time{
+								IsRelative: true,
+							},
+							TimeColumn:  "_time",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
+						},
+					},
+					{
+						ID: "percentile2",
+						Spec: &universe.PercentileOpSpec{
+							Percentile:      0.99,
+							Compression:     1000,
+							Method:          "estimate_tdigest",
+							AggregateConfig: execute.DefaultAggregateConfig,
+						},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "range1"},
+					{Parent: "range1", Child: "percentile2"},
+				},
+			},
+		},
+		{
+			Name: "exact_mean",
+			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> percentile(percentile: 0.99, method: "exact_mean")`,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: "testdb",
+						},
+					},
+					{
+						ID: "range1",
+						Spec: &universe.RangeOpSpec{
+							Start: flux.Time{
+								Relative:   -1 * time.Hour,
+								IsRelative: true,
+							},
+							Stop: flux.Time{
+								IsRelative: true,
+							},
+							TimeColumn:  "_time",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
+						},
+					},
+					{
+						ID: "percentile2",
+						Spec: &universe.PercentileOpSpec{
+							Percentile:      0.99,
+							Method:          "exact_mean",
+							AggregateConfig: execute.DefaultAggregateConfig,
+						},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "range1"},
+					{Parent: "range1", Child: "percentile2"},
+				},
+			},
+		},
+		{
+			Name: "exact_selector",
+			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> percentile(percentile: 0.99, method: "exact_selector")`,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: "testdb",
+						},
+					},
+					{
+						ID: "range1",
+						Spec: &universe.RangeOpSpec{
+							Start: flux.Time{
+								Relative:   -1 * time.Hour,
+								IsRelative: true,
+							},
+							Stop: flux.Time{
+								IsRelative: true,
+							},
+							TimeColumn:  "_time",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
+						},
+					},
+					{
+						ID: "percentile2",
+						Spec: &universe.PercentileOpSpec{
+							Percentile:     0.99,
+							Method:         "exact_selector",
+							SelectorConfig: execute.DefaultSelectorConfig,
+						},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "range1"},
+					{Parent: "range1", Child: "percentile2"},
+				},
+			},
+		},
+		{
+			Name: "custom cols",
+			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> percentile(percentile: 0.99, method: "exact_mean", columns: ["foo", "bar"])`,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: "testdb",
+						},
+					},
+					{
+						ID: "range1",
+						Spec: &universe.RangeOpSpec{
+							Start: flux.Time{
+								Relative:   -1 * time.Hour,
+								IsRelative: true,
+							},
+							Stop: flux.Time{
+								IsRelative: true,
+							},
+							TimeColumn:  "_time",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
+						},
+					},
+					{
+						ID: "percentile2",
+						Spec: &universe.PercentileOpSpec{
+							Percentile: 0.99,
+							Method:     "exact_mean",
+							AggregateConfig: execute.AggregateConfig{
+								Columns: []string{"foo", "bar"},
+							},
+						},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "range1"},
+					{Parent: "range1", Child: "percentile2"},
+				},
+			},
+		},
+		{
+			Name: "custom col",
+			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> percentile(percentile: 0.99, method: "exact_selector", column: "foo")`,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: "testdb",
+						},
+					},
+					{
+						ID: "range1",
+						Spec: &universe.RangeOpSpec{
+							Start: flux.Time{
+								Relative:   -1 * time.Hour,
+								IsRelative: true,
+							},
+							Stop: flux.Time{
+								IsRelative: true,
+							},
+							TimeColumn:  "_time",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
+						},
+					},
+					{
+						ID: "percentile2",
+						Spec: &universe.PercentileOpSpec{
+							Percentile: 0.99,
+							Method:     "exact_selector",
+							SelectorConfig: execute.SelectorConfig{
+								Column: "foo",
+							},
+						},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "range1"},
+					{Parent: "range1", Child: "percentile2"},
+				},
+			},
+		},
+		// errors
+		{
+			Name:    "wrong method",
+			Raw:     `from(bucket:"testdb") |> range(start: -1h) |> percentile(percentile: 0.99, method: "non_existent_method")`,
+			WantErr: true,
+		},
+		{
+			Name:    "non-tdigest with compression",
+			Raw:     `from(bucket:"testdb") |> range(start: -1h) |> percentile(percentile: 0.99, method: "exact_mean", compression: 800.0)`,
+			WantErr: true,
+		},
+		{
+			Name:    "selector with columns",
+			Raw:     `from(bucket:"testdb") |> range(start: -1h) |> percentile(percentile: 0.99, method: "exact_selector", columns: ["1", "2"])`,
+			WantErr: true,
+		},
+		{
+			Name:    "aggregate with column",
+			Raw:     `from(bucket:"testdb") |> range(start: -1h) |> percentile(percentile: 0.99, method: "estimate_tdigest", column: "1")`,
+			WantErr: true,
+		},
+	}
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			querytest.NewQueryTestHelper(t, tc)
+		})
+	}
+}
 
 func TestPercentileOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"percentile","kind":"percentile","spec":{"percentile":0.9}}`)

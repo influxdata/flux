@@ -23,11 +23,17 @@ type SelectorConfig struct {
 	Column string `json:"column"`
 }
 
+var DefaultSelectorConfig = SelectorConfig{
+	Column: DefaultValueColLabel,
+}
+
 func (c *SelectorConfig) ReadArgs(args flux.Arguments) error {
 	if col, ok, err := args.GetString("column"); err != nil {
 		return err
 	} else if ok {
 		c.Column = col
+	} else {
+		c.Column = DefaultSelectorConfig.Column
 	}
 	return nil
 }

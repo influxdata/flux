@@ -38,7 +38,8 @@ type PercentileOpSpec struct {
 func init() {
 	percentileSignature := flux.FunctionSignature(
 		map[string]semantic.PolyType{
-			"column":      semantic.String,
+			"column":      semantic.String,                            // selector
+			"columns":     semantic.NewArrayPolyType(semantic.String), // aggregate
 			"percentile":  semantic.Float,
 			"compression": semantic.Float,
 			"method":      semantic.String,
@@ -92,12 +93,17 @@ func createPercentileOpSpec(args flux.Arguments, a *flux.Administration) (flux.O
 		spec.Compression = 1000
 	}
 
-	if err := spec.AggregateConfig.ReadArgs(args); err != nil {
-		return nil, err
-	}
-
-	if err := spec.SelectorConfig.ReadArgs(args); err != nil {
-		return nil, err
+	switch spec.Method {
+	case methodExactSelector:
+		if err := spec.SelectorConfig.ReadArgs(args); err != nil {
+			return nil, err
+		}
+	case methodEstimateTdigest, methodExactMean:
+		if err := spec.AggregateConfig.ReadArgs(args); err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("unknown method %s", spec.Method)
 	}
 
 	return spec, nil
