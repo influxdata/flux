@@ -16,9 +16,12 @@ func TestCompile(t *testing.T) {
 		q  string
 		ok bool
 	}{
-		{q: "0/0", ok: true},
+		{q: `from(bucket: "foo")`, ok: true},
 		{q: `t=""t.t`},
 		{q: `t=0t.s`},
+		{q: `x = from(bucket: "foo")`},
+		{q: `x = from(bucket: "foo") |> yield()`, ok: true},
+		{q: `from(bucket: "foo")`, ok: true},
 	} {
 		_, err := flux.Compile(ctx, tc.q, now)
 		if tc.ok && err != nil {
