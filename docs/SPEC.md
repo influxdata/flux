@@ -1633,7 +1633,7 @@ Example:
 from(bucket: "telegraf/autogen")
 	|> range(start: -5m)
 	|> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
-	|> percentile(percentile: 0.99, method: "estimate_tdigest", compression: 1000)
+	|> percentile(percentile: 0.99, method: "estimate_tdigest", compression: 1000.0)
 ```
 
 ##### Skew
