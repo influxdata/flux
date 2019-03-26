@@ -8,6 +8,10 @@ import (
 	"github.com/influxdata/flux"
 )
 
+type Planner interface {
+	Plan(*flux.Spec) (*Spec, error)
+}
+
 // Node defines the common interface for interacting with
 // logical and physical plan nodes.
 type Node interface {
