@@ -334,7 +334,7 @@ func (p *parser) parseBlock() *ast.Block {
 }
 
 func (p *parser) parseExpression() ast.Expression {
-	return p.parseLogicalExpression()
+	return p.parseLogicalOrExpression()
 }
 
 func (p *parser) parseExpressionSuffix(expr ast.Expression) ast.Expression {
@@ -343,7 +343,8 @@ func (p *parser) parseExpressionSuffix(expr ast.Expression) ast.Expression {
 	p.repeat(p.parseMultiplicativeExpressionSuffix(&expr))
 	p.repeat(p.parseAdditiveExpressionSuffix(&expr))
 	p.repeat(p.parseComparisonExpressionSuffix(&expr))
-	p.repeat(p.parseLogicalExpressionSuffix(&expr))
+	p.repeat(p.parseLogicalAndExpressionSuffix(&expr))
+	p.repeat(p.parseLogicalOrExpressionSuffix(&expr))
 	return expr
 }
 
@@ -369,15 +370,20 @@ func (p *parser) parseExpressionList() []ast.Expression {
 	return exprs
 }
 
-func (p *parser) parseLogicalExpression() ast.Expression {
+func (p *parser) parseLogicalAndExpression() ast.Expression {
 	expr := p.parseUnaryLogicalExpression()
-	p.repeat(p.parseLogicalExpressionSuffix(&expr))
+	p.repeat(p.parseLogicalAndExpressionSuffix(&expr))
+	return expr
+}
+func (p *parser) parseLogicalOrExpression() ast.Expression {
+	expr := p.parseLogicalAndExpression()
+	p.repeat(p.parseLogicalOrExpressionSuffix(&expr))
 	return expr
 }
 
-func (p *parser) parseLogicalExpressionSuffix(expr *ast.Expression) func() bool {
+func (p *parser) parseLogicalAndExpressionSuffix(expr *ast.Expression) func() bool {
 	return func() bool {
-		op, ok := p.parseLogicalOperator()
+		op, ok := p.parseLogicalAndOperator()
 		if !ok {
 			return false
 		}
@@ -395,11 +401,38 @@ func (p *parser) parseLogicalExpressionSuffix(expr *ast.Expression) func() bool 
 	}
 }
 
-func (p *parser) parseLogicalOperator() (ast.LogicalOperatorKind, bool) {
+func (p *parser) parseLogicalOrExpressionSuffix(expr *ast.Expression) func() bool {
+	return func() bool {
+		op, ok := p.parseLogicalOrOperator()
+		if !ok {
+			return false
+		}
+		rhs := p.parseLogicalAndExpression()
+		*expr = &ast.LogicalExpression{
+			Operator: op,
+			Left:     *expr,
+			Right:    rhs,
+			BaseNode: p.baseNode(p.sourceLocation(
+				locStart(*expr),
+				locEnd(rhs),
+			)),
+		}
+		return true
+	}
+}
+
+func (p *parser) parseLogicalAndOperator() (ast.LogicalOperatorKind, bool) {
 	switch _, tok, _ := p.peek(); tok {
 	case token.AND:
 		p.consume()
 		return ast.AndOperator, true
+	default:
+		return 0, false
+	}
+}
+
+func (p *parser) parseLogicalOrOperator() (ast.LogicalOperatorKind, bool) {
+	switch _, tok, _ := p.peek(); tok {
 	case token.OR:
 		p.consume()
 		return ast.OrOperator, true
