@@ -41,6 +41,7 @@ type options struct {
 
 // Compile evaluates a Flux script producing a query Spec.
 // now parameter must be non-zero, that is the default now time should be set before compiling.
+// If the given Flux script would produce an empty Spec, an error will be returned.
 func Compile(ctx context.Context, q string, now time.Time, opts ...Option) (*Spec, error) {
 	astPkg, err := Parse(q)
 	if err != nil {
@@ -52,6 +53,7 @@ func Compile(ctx context.Context, q string, now time.Time, opts ...Option) (*Spe
 
 // CompileAST evaluates a Flux AST and produces a query Spec.
 // now parameter must be non-zero, that is the default now time should be set before compiling.
+// If the given AST would produce an empty Spec, an error will be returned.
 func CompileAST(ctx context.Context, astPkg *ast.Package, now time.Time, opts ...Option) (*Spec, error) {
 	o := new(options)
 	for _, opt := range opts {
@@ -82,6 +84,10 @@ func CompileAST(ctx context.Context, astPkg *ast.Package, now time.Time, opts ..
 	spec, err := ToSpec(sideEffects, nowTime.Time().Time())
 	if err != nil {
 		return nil, err
+	}
+
+	if len(spec.Operations) == 0 {
+		return nil, errors.New("this Flux script returns no streaming data. Consider adding a \"yield\" or invoking streaming functions directly, without performing an assignment")
 	}
 
 	if o.verbose {
