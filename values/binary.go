@@ -164,6 +164,11 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		r := rv.Str()
 		return NewBool(l <= r)
 	},
+	{Operator: ast.LessThanEqualOperator, Left: semantic.Time, Right: semantic.Time}: func(lv, rv Value) Value {
+		l := lv.Time().Time()
+		r := rv.Time().Time()
+		return NewBool(!l.After(r))
+	},
 
 	// LessThanOperator
 
@@ -222,6 +227,11 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.Str()
 		r := rv.Str()
 		return NewBool(l < r)
+	},
+	{Operator: ast.LessThanOperator, Left: semantic.Time, Right: semantic.Time}: func(lv, rv Value) Value {
+		l := lv.Time().Time()
+		r := rv.Time().Time()
+		return NewBool(l.Before(r))
 	},
 
 	// GreaterThanEqualOperator
@@ -282,6 +292,11 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		r := rv.Str()
 		return NewBool(l >= r)
 	},
+	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Time, Right: semantic.Time}: func(lv, rv Value) Value {
+		l := lv.Time().Time()
+		r := rv.Time().Time()
+		return NewBool(!r.After(l))
+	},
 
 	// GreaterThanOperator
 
@@ -340,6 +355,11 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.Str()
 		r := rv.Str()
 		return NewBool(l > r)
+	},
+	{Operator: ast.GreaterThanOperator, Left: semantic.Time, Right: semantic.Time}: func(lv, rv Value) Value {
+		l := lv.Time().Time()
+		r := rv.Time().Time()
+		return NewBool(l.After(r))
 	},
 
 	// EqualOperator
@@ -400,6 +420,11 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		r := rv.Str()
 		return NewBool(l == r)
 	},
+	{Operator: ast.EqualOperator, Left: semantic.Time, Right: semantic.Time}: func(lv, rv Value) Value {
+		l := lv.Time().Time()
+		r := rv.Time().Time()
+		return NewBool(l.Equal(r))
+	},
 
 	// NotEqualOperator
 
@@ -458,6 +483,11 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.Str()
 		r := rv.Str()
 		return NewBool(l != r)
+	},
+	{Operator: ast.NotEqualOperator, Left: semantic.Time, Right: semantic.Time}: func(lv, rv Value) Value {
+		l := lv.Time().Time()
+		r := rv.Time().Time()
+		return NewBool(!l.Equal(r))
 	},
 	{Operator: ast.RegexpMatchOperator, Left: semantic.String, Right: semantic.Regexp}: func(lv, rv Value) Value {
 		l := lv.Str()

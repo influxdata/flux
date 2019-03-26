@@ -81,6 +81,10 @@ func TestBinaryOperator(t *testing.T) {
 		{lhs: "x", op: "<=", rhs: "x", want: true},
 		{lhs: "x", op: "<=", rhs: "a", want: false},
 		{lhs: "x", op: "<=", rhs: "abc", want: false},
+		// time <= time
+		{lhs: values.Time(0), op: "<=", rhs: values.Time(1), want: true},
+		{lhs: values.Time(0), op: "<=", rhs: values.Time(0), want: true},
+		{lhs: values.Time(1), op: "<=", rhs: values.Time(0), want: false},
 		// int < int
 		{lhs: int64(6), op: "<", rhs: int64(4), want: false},
 		{lhs: int64(4), op: "<", rhs: int64(4), want: false},
@@ -123,6 +127,10 @@ func TestBinaryOperator(t *testing.T) {
 		{lhs: "x", op: "<", rhs: "x", want: false},
 		{lhs: "x", op: "<", rhs: "a", want: false},
 		{lhs: "x", op: "<", rhs: "abc", want: false},
+		// time < time
+		{lhs: values.Time(0), op: "<", rhs: values.Time(1), want: true},
+		{lhs: values.Time(0), op: "<", rhs: values.Time(0), want: false},
+		{lhs: values.Time(1), op: "<", rhs: values.Time(0), want: false},
 		// int >= int
 		{lhs: int64(6), op: ">=", rhs: int64(4), want: true},
 		{lhs: int64(4), op: ">=", rhs: int64(4), want: true},
@@ -165,6 +173,10 @@ func TestBinaryOperator(t *testing.T) {
 		{lhs: "x", op: ">=", rhs: "x", want: true},
 		{lhs: "x", op: ">=", rhs: "a", want: true},
 		{lhs: "x", op: ">=", rhs: "abc", want: true},
+		// time >= time
+		{lhs: values.Time(0), op: ">=", rhs: values.Time(1), want: false},
+		{lhs: values.Time(0), op: ">=", rhs: values.Time(0), want: true},
+		{lhs: values.Time(1), op: ">=", rhs: values.Time(0), want: true},
 		// int > int
 		{lhs: int64(6), op: ">", rhs: int64(4), want: true},
 		{lhs: int64(4), op: ">", rhs: int64(4), want: false},
@@ -207,6 +219,10 @@ func TestBinaryOperator(t *testing.T) {
 		{lhs: "x", op: ">", rhs: "x", want: false},
 		{lhs: "x", op: ">", rhs: "a", want: true},
 		{lhs: "x", op: ">", rhs: "abc", want: true},
+		// time > time
+		{lhs: values.Time(0), op: ">", rhs: values.Time(1), want: false},
+		{lhs: values.Time(0), op: ">", rhs: values.Time(0), want: false},
+		{lhs: values.Time(1), op: ">", rhs: values.Time(0), want: true},
 		// int == int
 		{lhs: int64(4), op: "==", rhs: int64(4), want: true},
 		{lhs: int64(6), op: "==", rhs: int64(4), want: false},
@@ -237,6 +253,10 @@ func TestBinaryOperator(t *testing.T) {
 		// string == string
 		{lhs: "a", op: "==", rhs: "a", want: true},
 		{lhs: "a", op: "==", rhs: "b", want: false},
+		// time == time
+		{lhs: values.Time(0), op: "==", rhs: values.Time(1), want: false},
+		{lhs: values.Time(0), op: "==", rhs: values.Time(0), want: true},
+		{lhs: values.Time(1), op: "==", rhs: values.Time(0), want: false},
 		// int != int
 		{lhs: int64(4), op: "!=", rhs: int64(4), want: false},
 		{lhs: int64(6), op: "!=", rhs: int64(4), want: true},
@@ -267,6 +287,10 @@ func TestBinaryOperator(t *testing.T) {
 		// string != string
 		{lhs: "a", op: "!=", rhs: "a", want: false},
 		{lhs: "a", op: "!=", rhs: "b", want: true},
+		// time != time
+		{lhs: values.Time(0), op: "!=", rhs: values.Time(1), want: true},
+		{lhs: values.Time(0), op: "!=", rhs: values.Time(0), want: false},
+		{lhs: values.Time(1), op: "!=", rhs: values.Time(0), want: true},
 		// string =~ regex
 		{lhs: "abc", op: "=~", rhs: regexp.MustCompile(`.+`), want: true},
 		{lhs: "abc", op: "=~", rhs: regexp.MustCompile(`b{2}`), want: false},
