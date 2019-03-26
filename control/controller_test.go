@@ -177,7 +177,7 @@ func TestController_ExecuteQuery_Failure(t *testing.T) {
 	}
 
 	// We do not care about the results, just that the query is ready.
-	<-q.Ready()
+	<-q.Results()
 
 	if err := q.Err(); err == nil {
 		t.Fatal("expected error")
@@ -229,7 +229,7 @@ func TestController_CancelQuery_Ready(t *testing.T) {
 	}
 
 	// We do not care about the results, just that the query is ready.
-	<-q.Ready()
+	<-q.Results()
 
 	// Cancel the query. This is after the executor has already run,
 	// but before we finalize the query. This ensures that canceling
@@ -294,7 +294,7 @@ func TestController_CancelQuery_Execute(t *testing.T) {
 	// We should not receive any results as the cancellation should
 	// have signaled to the executor to cancel the query.
 	select {
-	case <-q.Ready():
+	case <-q.Results():
 		// The execute function should have received the cancel signal and exited
 		// with an error.
 	case <-ctx.Done():
@@ -387,7 +387,7 @@ func TestController_CancelQuery_Concurrent(t *testing.T) {
 				// change.
 				query := q
 				doneWaitGroup.Do(func() error {
-					<-query.Ready()
+					<-query.Results()
 					query.Done()
 					return nil
 				})
@@ -439,7 +439,7 @@ func TestController_BlockedExecutor(t *testing.T) {
 	}
 	defer func() {
 		close(done)
-		<-q.Ready()
+		<-q.Results()
 		q.Done()
 	}()
 
@@ -494,8 +494,8 @@ func TestController_CancelledContextPropagatesToExecutor(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 		}
-		// Ready will unblock when executor unblocks
-		<-q.Ready()
+		// Results will unblock when executor unblocks
+		<-q.Results()
 		// TODO(jlapacik): query should expose error if cancelled during execution
 		// if q.Err() == nil {
 		//     t.Errorf("expected error; cancelled query context before execution finished")
@@ -536,7 +536,7 @@ func TestController_Shutdown(t *testing.T) {
 	ctrl := New(Config{})
 	ctrl.executor = executor
 
-	// Create a bunch of queries and never call Ready which should leave them in the controller.
+	// Create a bunch of queries and never call Results which should leave them in the controller.
 	queries := make([]flux.Query, 0, 15)
 	for i := 0; i < 10; i++ {
 		q, err := ctrl.Query(context.Background(), mockCompiler)
@@ -593,7 +593,7 @@ func TestController_Shutdown(t *testing.T) {
 	for _, q := range queries {
 		q := q
 		wg.Do(func() error {
-			<-q.Ready()
+			<-q.Results()
 			q.Done()
 			return nil
 		})
@@ -645,7 +645,7 @@ func TestController_Statistics(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 
-	<-q.Ready()
+	<-q.Results()
 	time.Sleep(time.Millisecond)
 	q.Done()
 

@@ -6,14 +6,10 @@ import (
 
 // Query represents an active query.
 type Query interface {
-	// Spec returns the spec used to execute this query.
-	// Spec must not be modified.
-	Spec() *Spec
-
-	// Ready returns a channel that will deliver the query results.
+	// Results returns a channel that will deliver the query results.
 	// Its possible that the channel is closed before any results arrive,
 	// in which case the query should be inspected for an error using Err().
-	Ready() <-chan map[string]Result
+	Results() <-chan Result
 
 	// Done must always be called to free resources. It is safe to call Done
 	// multiple times.

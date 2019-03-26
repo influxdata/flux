@@ -111,19 +111,13 @@ func New(c Config) *Controller {
 // Query submits a query for execution returning immediately.
 // Done must be called on any returned Query objects.
 func (c *Controller) Query(ctx context.Context, compiler flux.Compiler) (flux.Query, error) {
-	q := c.createQuery(ctx, compiler.CompilerType())
-	if err := c.compileQuery(q, compiler); err != nil {
-		q.setErr(err)
-		c.countQueryRequest(q, labelCompileError)
-		return nil, q.Err()
+	prog, err := compiler.Compile(ctx)
+	if err != nil {
+		return nil, err
 	}
-	if err := c.enqueueQuery(q); err != nil {
-		q.setErr(err)
-		c.countQueryRequest(q, labelQueueError)
-		return nil, q.Err()
-	}
-	c.countQueryRequest(q, labelSuccess)
-	return q, nil
+
+	a := new(memory.Allocator)
+	return prog.Start(ctx, a)
 }
 
 type Stringer interface {
@@ -171,38 +165,6 @@ func (c *Controller) createQuery(ctx context.Context, ct flux.CompilerType) *Que
 }
 
 func (c *Controller) compileQuery(q *Query, compiler flux.Compiler) error {
-	if !q.tryCompile() {
-		return errors.New("failed to transition query to compiling state")
-	}
-	spec, err := compiler.Compile(q.currentCtx)
-	if err != nil {
-		return errors.Wrap(err, "failed to compile query")
-	}
-
-	// Incoming query spec may have been produced by an entity other than the
-	// Flux interpreter, so we must set the default Now time if not already set.
-	if spec.Now.IsZero() {
-		spec.Now = q.now
-	}
-
-	q.spec = *spec
-
-	if q.tryPlan() {
-		// Plan query to determine needed resources
-		p, err := c.planner.Plan(&q.spec)
-		if err != nil {
-			return errors.Wrap(err, "failed to plan query")
-		}
-		q.plan = p
-		q.concurrency = p.Resources.ConcurrencyQuota
-		if q.concurrency > c.maxConcurrency {
-			q.concurrency = c.maxConcurrency
-		}
-		q.memory = p.Resources.MemoryBytesQuota
-		if entry := c.logger.Check(zapcore.DebugLevel, "physical plan"); entry != nil {
-			entry.Write(zap.String("plan", fmt.Sprint(plan.Formatted(q.plan))))
-		}
-	}
 	return nil
 }
 
@@ -507,7 +469,7 @@ func (q *Query) Cancel() {
 	q.cancel()
 }
 
-// Ready returns a channel that will deliver the query results.
+// Results returns a channel that will deliver the query results.
 //
 // It's possible that the channel is closed before any results arrive.
 // In particular, if a query's context or the query itself is canceled,
@@ -522,7 +484,7 @@ func (q *Query) Ready() <-chan map[string]flux.Result {
 // Done signals to the Controller that this query is no longer
 // being used and resources related to the query may be freed.
 //
-// The Ready method must have returned a result before calling
+// The Results method must have returned a result before calling
 // this method either by the query executing, being canceled, or
 // an error occurring.
 func (q *Query) Done() {

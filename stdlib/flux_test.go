@@ -99,7 +99,7 @@ func doTestRun(t testing.TB, querier *querytest.Querier, c flux.Compiler) {
 		t.Fatalf("unexpected error while executing testing.run: %v", err)
 	}
 	defer r.Done()
-	result, ok := <-r.Ready()
+	result, ok := <-r.Results()
 	if !ok {
 		t.Fatalf("unexpected error retrieving testing.run result: %s", r.Err())
 	}
@@ -120,7 +120,7 @@ func doTestInspect(t testing.TB, querier *querytest.Querier, c flux.Compiler) {
 		t.Fatalf("unexpected error while executing testing.inspect: %v", err)
 	}
 	defer r.Done()
-	result, ok := <-r.Ready()
+	result, ok := <-r.Results()
 	if !ok {
 		t.Fatalf("unexpected error retrieving testing.inspect result: %s", r.Err())
 	}
