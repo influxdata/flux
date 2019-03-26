@@ -229,7 +229,7 @@ func (r MergeGroupRule) Pattern() plan.Pattern {
 	return plan.Pat(GroupKind, plan.Pat(GroupKind, plan.Any()))
 }
 
-func (r MergeGroupRule) Rewrite(lastGroup plan.PlanNode) (plan.PlanNode, bool, error) {
+func (r MergeGroupRule) Rewrite(lastGroup plan.Node) (plan.Node, bool, error) {
 	firstGroup := lastGroup.Predecessors()[0]
 	lastSpec := lastGroup.ProcedureSpec().(*GroupProcedureSpec)
 
@@ -238,7 +238,7 @@ func (r MergeGroupRule) Rewrite(lastGroup plan.PlanNode) (plan.PlanNode, bool, e
 		return lastGroup, false, nil
 	}
 
-	merged, err := plan.MergeToLogicalPlanNode(lastGroup, firstGroup, lastSpec.Copy())
+	merged, err := plan.MergeToLogicalNode(lastGroup, firstGroup, lastSpec.Copy())
 	if err != nil {
 		return nil, false, err
 	}

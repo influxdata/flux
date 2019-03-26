@@ -27,7 +27,7 @@ type TriggerAwareProcedureSpec interface {
 	TriggerSpec() TriggerSpec
 }
 
-func SetTriggerSpec(node PlanNode) error {
+func SetTriggerSpec(node Node) error {
 	ppn, ok := node.(*PhysicalPlanNode)
 	if !ok {
 		return fmt.Errorf("cannot set trigger spec on plan node of type %T", node)

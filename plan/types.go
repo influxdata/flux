@@ -8,9 +8,9 @@ import (
 	"github.com/influxdata/flux"
 )
 
-// PlanNode defines the common interface for interacting with
+// Node defines the common interface for interacting with
 // logical and physical plan nodes.
-type PlanNode interface {
+type Node interface {
 	// Returns an identifier for this plan node
 	ID() NodeID
 
@@ -18,10 +18,10 @@ type PlanNode interface {
 	Bounds() *Bounds
 
 	// Plan nodes executed immediately before this node
-	Predecessors() []PlanNode
+	Predecessors() []Node
 
 	// Plan nodes executed immediately after this node
-	Successors() []PlanNode
+	Successors() []Node
 
 	// Specification of the procedure represented by this node
 	ProcedureSpec() ProcedureSpec
@@ -35,32 +35,32 @@ type PlanNode interface {
 	// Helper methods for manipulating a plan
 	// These methods are used during planning
 	SetBounds(bounds *Bounds)
-	AddSuccessors(...PlanNode)
-	AddPredecessors(...PlanNode)
+	AddSuccessors(...Node)
+	AddPredecessors(...Node)
 	ClearSuccessors()
 	ClearPredecessors()
 
-	ShallowCopy() PlanNode
+	ShallowCopy() Node
 }
 
 type NodeID string
 
-// PlanSpec holds the result nodes of a query plan with associated metadata
-type PlanSpec struct {
-	Roots     map[PlanNode]struct{}
+// Spec holds the result nodes of a query plan with associated metadata
+type Spec struct {
+	Roots     map[Node]struct{}
 	Resources flux.ResourceManagement
 	Now       time.Time
 }
 
 // NewPlanSpec initializes a new query plan
-func NewPlanSpec() *PlanSpec {
-	return &PlanSpec{
-		Roots: make(map[PlanNode]struct{}),
+func NewPlanSpec() *Spec {
+	return &Spec{
+		Roots: make(map[Node]struct{}),
 	}
 }
 
 // Replace replaces one of the root nodes of the query plan
-func (plan *PlanSpec) Replace(root, with PlanNode) {
+func (plan *Spec) Replace(root, with Node) {
 	delete(plan.Roots, root)
 	plan.Roots[with] = struct{}{}
 }
@@ -87,14 +87,14 @@ func (plan *PlanSpec) Replace(root, with PlanNode) {
 //               |--> R
 //     N2 --------
 //
-func (plan *PlanSpec) CheckIntegrity() error {
-	sinks := make([]PlanNode, 0, len(plan.Roots))
+func (plan *Spec) CheckIntegrity() error {
+	sinks := make([]Node, 0, len(plan.Roots))
 	for root := range plan.Roots {
 		sinks = append(sinks, root)
 	}
-	sources := make([]PlanNode, 0)
+	sources := make([]Node, 0)
 
-	fn := func(node PlanNode) error {
+	fn := func(node Node) error {
 		if len(node.Predecessors()) == 0 {
 			sources = append(sources, node)
 		}
@@ -110,7 +110,7 @@ func (plan *PlanSpec) CheckIntegrity() error {
 	return WalkSuccessors(sources, symmetryCheck)
 }
 
-func symmetryCheck(node PlanNode) error {
+func symmetryCheck(node Node) error {
 	for _, pred := range node.Predecessors() {
 		if !isNodeInNodes(node, pred.Successors()) {
 			return fmt.Errorf("integrity violated: %s is predecessor of %s, "+
@@ -128,7 +128,7 @@ func symmetryCheck(node PlanNode) error {
 	return nil
 }
 
-func isNodeInNodes(node PlanNode, nodes []PlanNode) bool {
+func isNodeInNodes(node Node, nodes []Node) bool {
 	for _, n := range nodes {
 		if n == node {
 			return true
@@ -160,23 +160,23 @@ func (b *bounds) Bounds() *Bounds {
 }
 
 type edges struct {
-	predecessors []PlanNode
-	successors   []PlanNode
+	predecessors []Node
+	successors   []Node
 }
 
-func (e *edges) Predecessors() []PlanNode {
+func (e *edges) Predecessors() []Node {
 	return e.predecessors
 }
 
-func (e *edges) Successors() []PlanNode {
+func (e *edges) Successors() []Node {
 	return e.successors
 }
 
-func (e *edges) AddSuccessors(nodes ...PlanNode) {
+func (e *edges) AddSuccessors(nodes ...Node) {
 	e.successors = append(e.successors, nodes...)
 }
 
-func (e *edges) AddPredecessors(nodes ...PlanNode) {
+func (e *edges) AddPredecessors(nodes ...Node) {
 	e.predecessors = append(e.predecessors, nodes...)
 }
 
@@ -195,7 +195,7 @@ func (e *edges) shallowCopy() edges {
 	return *newEdges
 }
 
-// MergeToLogicalPlanNode merges top and bottom plan nodes into a new plan node, with the
+// MergeToLogicalNode merges top and bottom plan nodes into a new plan node, with the
 // given procedure spec.
 //
 //     V1     V2       V1            V2       <-- successors
@@ -209,8 +209,8 @@ func (e *edges) shallowCopy() edges {
 // The returned node will have its predecessors set to the predecessors
 // of "bottom", however, it's successors will not be set---it will be the responsibility of
 // the plan to attach the merged node to its successors.
-func MergeToLogicalPlanNode(top, bottom PlanNode, procSpec ProcedureSpec) (PlanNode, error) {
-	merged := &LogicalPlanNode{
+func MergeToLogicalNode(top, bottom Node, procSpec ProcedureSpec) (Node, error) {
+	merged := &LogicalNode{
 		id:   mergeIDs(top.ID(), bottom.ID()),
 		Spec: procSpec,
 	}
@@ -218,7 +218,7 @@ func MergeToLogicalPlanNode(top, bottom PlanNode, procSpec ProcedureSpec) (PlanN
 	return mergePlanNodes(top, bottom, merged)
 }
 
-func MergeToPhysicalPlanNode(top, bottom PlanNode, procSpec PhysicalProcedureSpec) (PlanNode, error) {
+func MergeToPhysicalNode(top, bottom Node, procSpec PhysicalProcedureSpec) (Node, error) {
 	merged := &PhysicalPlanNode{
 		id:   mergeIDs(top.ID(), bottom.ID()),
 		Spec: procSpec,
@@ -239,7 +239,7 @@ func mergeIDs(top, bottom NodeID) NodeID {
 
 }
 
-func mergePlanNodes(top, bottom, merged PlanNode) (PlanNode, error) {
+func mergePlanNodes(top, bottom, merged Node) (Node, error) {
 	if len(top.Predecessors()) != 1 ||
 		len(bottom.Successors()) != 1 ||
 		top.Predecessors()[0] != bottom {
@@ -272,7 +272,7 @@ func mergePlanNodes(top, bottom, merged PlanNode) (PlanNode, error) {
 // Note that successors of the original top node will not be updated, and the returned
 // plan node will have no successors.  It will be the responsibility of the plan to
 // attach the swapped nodes to successors.
-func SwapPlanNodes(top, bottom PlanNode) (PlanNode, error) {
+func SwapPlanNodes(top, bottom Node) (Node, error) {
 	if len(top.Predecessors()) != 1 ||
 		len(bottom.Successors()) != 1 ||
 		len(bottom.Predecessors()) != 1 {
@@ -308,7 +308,7 @@ func SwapPlanNodes(top, bottom PlanNode) (PlanNode, error) {
 //
 // As is convention, newNode will not have any successors attached.
 // The planner will take care of this.
-func ReplaceNode(oldNode, newNode PlanNode) {
+func ReplaceNode(oldNode, newNode Node) {
 	newNode.ClearPredecessors()
 	newNode.ClearSuccessors()
 

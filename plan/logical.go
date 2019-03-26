@@ -7,15 +7,15 @@ import (
 	"github.com/influxdata/flux"
 )
 
-// LogicalPlanner translates a flux.Spec into a PlanSpec and applies any
+// LogicalPlanner translates a flux.Spec into a plan.Spec and applies any
 // registered logical rules to the plan.
 //
 // Logical planning should transform the plan in ways that are independent of
 // actual physical algorithms used to implement operations, and independent of
 // the actual data being processed.
 type LogicalPlanner interface {
-	CreateInitialPlan(spec *flux.Spec) (*PlanSpec, error)
-	Plan(*PlanSpec) (*PlanSpec, error)
+	CreateInitialPlan(spec *flux.Spec) (*Spec, error)
+	Plan(*Spec) (*Spec, error)
 }
 
 // NewLogicalPlanner returns a new logical plan with the given options.
@@ -77,12 +77,12 @@ func DisableIntegrityChecks() LogicalOption {
 }
 
 // CreateInitialPlan translates the flux.Spec into an unoptimized, naive plan.
-func (l *logicalPlanner) CreateInitialPlan(spec *flux.Spec) (*PlanSpec, error) {
+func (l *logicalPlanner) CreateInitialPlan(spec *flux.Spec) (*Spec, error) {
 	return createLogicalPlan(spec)
 }
 
 // Plan transforms the given naive plan by applying rules.
-func (l *logicalPlanner) Plan(logicalPlan *PlanSpec) (*PlanSpec, error) {
+func (l *logicalPlanner) Plan(logicalPlan *Spec) (*Spec, error) {
 	newLogicalPlan, err := l.heuristicPlanner.Plan(logicalPlan)
 	if err != nil {
 		return nil, err
@@ -107,9 +107,9 @@ func (a administration) Now() time.Time {
 	return a.now
 }
 
-// LogicalPlanNode consists of the input and output edges and a procedure spec
+// LogicalNode consists of the input and output edges and a procedure spec
 // that describes what the node does.
-type LogicalPlanNode struct {
+type LogicalNode struct {
 	edges
 	bounds
 	id   NodeID
@@ -117,27 +117,27 @@ type LogicalPlanNode struct {
 }
 
 // ID returns a human-readable identifier unique to this plan.
-func (lpn *LogicalPlanNode) ID() NodeID {
+func (lpn *LogicalNode) ID() NodeID {
 	return lpn.id
 }
 
 // Kind returns the kind of procedure performed by this plan node.
-func (lpn *LogicalPlanNode) Kind() ProcedureKind {
+func (lpn *LogicalNode) Kind() ProcedureKind {
 	return lpn.Spec.Kind()
 }
 
 // ProcedureSpec returns the procedure spec for this plan node.
-func (lpn *LogicalPlanNode) ProcedureSpec() ProcedureSpec {
+func (lpn *LogicalNode) ProcedureSpec() ProcedureSpec {
 	return lpn.Spec
 }
 
-func (lpn *LogicalPlanNode) ReplaceSpec(newSpec ProcedureSpec) error {
+func (lpn *LogicalNode) ReplaceSpec(newSpec ProcedureSpec) error {
 	lpn.Spec = newSpec
 	return nil
 }
 
-func (lpn *LogicalPlanNode) ShallowCopy() PlanNode {
-	newNode := new(LogicalPlanNode)
+func (lpn *LogicalNode) ShallowCopy() Node {
+	newNode := new(LogicalNode)
 	newNode.edges = lpn.edges.shallowCopy()
 	newNode.id = lpn.id + "_copy"
 	newNode.Spec = lpn.Spec.Copy()
@@ -145,8 +145,8 @@ func (lpn *LogicalPlanNode) ShallowCopy() PlanNode {
 }
 
 // createLogicalPlan creates a logical query plan from a flux spec
-func createLogicalPlan(spec *flux.Spec) (*PlanSpec, error) {
-	nodes := make(map[flux.OperationID]PlanNode, len(spec.Operations))
+func createLogicalPlan(spec *flux.Spec) (*Spec, error) {
+	nodes := make(map[flux.OperationID]Node, len(spec.Operations))
 	admin := administration{now: spec.Now}
 
 	plan := NewPlanSpec()
@@ -172,12 +172,12 @@ func createLogicalPlan(spec *flux.Spec) (*PlanSpec, error) {
 type fluxSpecVisitor struct {
 	a          Administration
 	spec       *flux.Spec
-	plan       *PlanSpec
-	nodes      map[flux.OperationID]PlanNode
+	plan       *Spec
+	nodes      map[flux.OperationID]Node
 	yieldNames map[string]struct{}
 }
 
-func (v *fluxSpecVisitor) addYieldName(pn PlanNode) error {
+func (v *fluxSpecVisitor) addYieldName(pn Node) error {
 	yieldSpec := pn.ProcedureSpec().(YieldProcedureSpec)
 	name := yieldSpec.YieldName()
 	_, isDup := v.yieldNames[name]
@@ -189,7 +189,7 @@ func (v *fluxSpecVisitor) addYieldName(pn PlanNode) error {
 	return nil
 }
 
-func generateYieldNode(pred PlanNode) PlanNode {
+func generateYieldNode(pred Node) Node {
 	yieldSpec := &GeneratedYieldProcedureSpec{Name: DefaultYieldName}
 	yieldNode := CreateLogicalNode(NodeID("generated_yield"), yieldSpec)
 	pred.AddSuccessors(yieldNode)
@@ -218,7 +218,7 @@ func (v *fluxSpecVisitor) visitOperation(o *flux.Operation) error {
 		return err
 	}
 
-	// Create a LogicalPlanNode using the ProcedureSpec
+	// Create a LogicalNode using the ProcedureSpec
 	logicalNode := CreateLogicalNode(NodeID(o.ID), procedureSpec)
 
 	v.nodes[o.ID] = logicalNode
@@ -259,8 +259,8 @@ func (v *fluxSpecVisitor) visitOperation(o *flux.Operation) error {
 
 // CreateLogicalNode creates a single logical plan node from a procedure spec.
 // The newly created logical node has no incoming or outgoing edges.
-func CreateLogicalNode(id NodeID, spec ProcedureSpec) *LogicalPlanNode {
-	return &LogicalPlanNode{
+func CreateLogicalNode(id NodeID, spec ProcedureSpec) *LogicalNode {
+	return &LogicalNode{
 		id:   id,
 		Spec: spec,
 	}

@@ -6,7 +6,7 @@ const MockKind = "mock"
 
 // CreateLogicalMockNode creates a mock plan node that doesn't match any rules
 // (other than rules that match any node)
-func CreateLogicalMockNode(id string) *plan.LogicalPlanNode {
+func CreateLogicalMockNode(id string) *plan.LogicalNode {
 	return plan.CreateLogicalNode(plan.NodeID(id), MockProcedureSpec{})
 }
 

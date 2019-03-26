@@ -20,7 +20,7 @@ func (sr *SimpleRule) Pattern() plan.Pattern {
 	return plan.Any()
 }
 
-func (sr *SimpleRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool, error) {
+func (sr *SimpleRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
 	sr.SeenNodes = append(sr.SeenNodes, node.ID())
 	return node, false, nil
 }
@@ -36,9 +36,9 @@ func (sr *MergeFromRangePhysicalRule) Pattern() plan.Pattern {
 	return plan.Pat(universe.RangeKind, plan.Pat(influxdb.FromKind))
 }
 
-func (sr *MergeFromRangePhysicalRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool, error) {
+func (sr *MergeFromRangePhysicalRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
 	mergedSpec := node.Predecessors()[0].ProcedureSpec().Copy().(*influxdb.FromProcedureSpec)
-	mergedNode, err := plan.MergeToPhysicalPlanNode(node, node.Predecessors()[0], mergedSpec)
+	mergedNode, err := plan.MergeToPhysicalNode(node, node.Predecessors()[0], mergedSpec)
 	if err != nil {
 		return nil, false, err
 	}
@@ -54,8 +54,8 @@ func (sr *MergeFromRangePhysicalRule) Name() string {
 // If `Kind` is specified, it takes precedence over `Node`, and the rule will use it
 // to match.
 type SmashPlanRule struct {
-	Node     plan.PlanNode
-	Intruder plan.PlanNode
+	Node     plan.Node
+	Intruder plan.Node
 	Kind     plan.ProcedureKind
 }
 
@@ -74,7 +74,7 @@ func (spp SmashPlanRule) Pattern() plan.Pattern {
 	return plan.Pat(k, plan.Any())
 }
 
-func (spp SmashPlanRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool, error) {
+func (spp SmashPlanRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
 	var changed bool
 	if len(spp.Kind) > 0 || node == spp.Node {
 		node.AddPredecessors(spp.Intruder)
@@ -92,7 +92,7 @@ func (spp SmashPlanRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool, error
 // If `Kind` is specified, it takes precedence over `Node`, and the rule will use it
 // to match.
 type CreateCycleRule struct {
-	Node plan.PlanNode
+	Node plan.Node
 	Kind plan.ProcedureKind
 }
 
@@ -111,7 +111,7 @@ func (ccr CreateCycleRule) Pattern() plan.Pattern {
 	return plan.Pat(k, plan.Any())
 }
 
-func (ccr CreateCycleRule) Rewrite(node plan.PlanNode) (plan.PlanNode, bool, error) {
+func (ccr CreateCycleRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
 	var changed bool
 	if len(ccr.Kind) > 0 || node == ccr.Node {
 		node.Predecessors()[0].AddPredecessors(node)
@@ -138,7 +138,7 @@ func PhysicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
 	t.Helper()
 
 	before := CreatePlanSpec(tc.Before)
-	var after *plan.PlanSpec
+	var after *plan.Spec
 	if tc.NoChange {
 		after = CreatePlanSpec(tc.Before.Copy())
 	} else {
@@ -161,7 +161,7 @@ func PhysicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
 		Spec plan.PhysicalProcedureSpec
 	}
 	want := make([]testAttrs, 0)
-	after.BottomUpWalk(func(node plan.PlanNode) error {
+	after.BottomUpWalk(func(node plan.Node) error {
 		want = append(want, testAttrs{
 			ID:   node.ID(),
 			Spec: node.ProcedureSpec().(plan.PhysicalProcedureSpec),
@@ -170,7 +170,7 @@ func PhysicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
 	})
 
 	got := make([]testAttrs, 0)
-	pp.BottomUpWalk(func(node plan.PlanNode) error {
+	pp.BottomUpWalk(func(node plan.Node) error {
 		got = append(got, testAttrs{
 			ID:   node.ID(),
 			Spec: node.ProcedureSpec().(plan.PhysicalProcedureSpec),
@@ -189,7 +189,7 @@ func LogicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
 	t.Helper()
 
 	before := CreatePlanSpec(tc.Before)
-	var after *plan.PlanSpec
+	var after *plan.Spec
 	if tc.NoChange {
 		after = CreatePlanSpec(tc.Before.Copy())
 	} else {
@@ -210,7 +210,7 @@ func LogicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
 		Spec plan.ProcedureSpec
 	}
 	want := make([]testAttrs, 0)
-	after.BottomUpWalk(func(node plan.PlanNode) error {
+	after.BottomUpWalk(func(node plan.Node) error {
 		want = append(want, testAttrs{
 			ID:   node.ID(),
 			Spec: node.ProcedureSpec(),
@@ -219,7 +219,7 @@ func LogicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
 	})
 
 	got := make([]testAttrs, 0)
-	pp.BottomUpWalk(func(node plan.PlanNode) error {
+	pp.BottomUpWalk(func(node plan.Node) error {
 		got = append(got, testAttrs{
 			ID:   node.ID(),
 			Spec: node.ProcedureSpec(),

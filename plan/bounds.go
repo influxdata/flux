@@ -22,7 +22,7 @@ type BoundsAwareProcedureSpec interface {
 
 // ComputeBounds computes the time bounds for a
 // plan node from the bounds of its predecessors.
-func ComputeBounds(node PlanNode) error {
+func ComputeBounds(node Node) error {
 	var bounds *Bounds
 
 	for _, pred := range node.Predecessors() {

@@ -795,7 +795,7 @@ func TestMergeGroupRule(t *testing.T) {
 			Name:  "single group",
 			Rules: []plan.Rule{&universe.MergeGroupRule{}},
 			Before: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from", from),
 					plan.CreateLogicalNode("group", groupBy),
 				},
@@ -809,7 +809,7 @@ func TestMergeGroupRule(t *testing.T) {
 			Name:  "double group",
 			Rules: []plan.Rule{&universe.MergeGroupRule{}},
 			Before: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from", from),
 					plan.CreateLogicalNode("group0", groupNone),
 					plan.CreateLogicalNode("group1", groupBy),
@@ -820,7 +820,7 @@ func TestMergeGroupRule(t *testing.T) {
 				},
 			},
 			After: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from", from),
 					plan.CreateLogicalNode("merged_group0_group1", groupBy),
 				},
@@ -833,7 +833,7 @@ func TestMergeGroupRule(t *testing.T) {
 			Name:  "triple group",
 			Rules: []plan.Rule{&universe.MergeGroupRule{}},
 			Before: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from", from),
 					plan.CreateLogicalNode("group0", groupNone),
 					plan.CreateLogicalNode("group1", groupBy),
@@ -846,7 +846,7 @@ func TestMergeGroupRule(t *testing.T) {
 				},
 			},
 			After: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from", from),
 					plan.CreateLogicalNode("merged_group0_group1_group2", groupExcept),
 				},
@@ -859,7 +859,7 @@ func TestMergeGroupRule(t *testing.T) {
 			Name:  "double group not by nor except",
 			Rules: []plan.Rule{&universe.MergeGroupRule{}},
 			Before: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from", from),
 					plan.CreateLogicalNode("group0", groupNone),
 					plan.CreateLogicalNode("group1", groupNotByNorExcept),
@@ -876,7 +876,7 @@ func TestMergeGroupRule(t *testing.T) {
 			Name:  "triple group not by nor except",
 			Rules: []plan.Rule{&universe.MergeGroupRule{}},
 			Before: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from", from),
 					plan.CreateLogicalNode("group0", groupNone),
 					plan.CreateLogicalNode("group1", groupNotByNorExcept),
@@ -889,7 +889,7 @@ func TestMergeGroupRule(t *testing.T) {
 				},
 			},
 			After: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from", from),
 					plan.CreateLogicalNode("merged_group0_group1_group2", groupExcept),
 				},
@@ -902,7 +902,7 @@ func TestMergeGroupRule(t *testing.T) {
 			Name:  "quad group not by nor except",
 			Rules: []plan.Rule{&universe.MergeGroupRule{}},
 			Before: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from", from),
 					plan.CreateLogicalNode("group0", groupNone),
 					plan.CreateLogicalNode("group1", groupNotByNorExcept),
@@ -917,7 +917,7 @@ func TestMergeGroupRule(t *testing.T) {
 				},
 			},
 			After: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from", from),
 					plan.CreateLogicalNode("merged_group0_group1_group2", groupExcept),
 					plan.CreateLogicalNode("group3", groupNotByNorExcept),
@@ -932,7 +932,7 @@ func TestMergeGroupRule(t *testing.T) {
 			Name:  "from group group filter",
 			Rules: []plan.Rule{universe.MergeGroupRule{}},
 			Before: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from", from),
 					plan.CreateLogicalNode("group0", groupExcept),
 					plan.CreateLogicalNode("group1", groupBy),
@@ -945,7 +945,7 @@ func TestMergeGroupRule(t *testing.T) {
 				},
 			},
 			After: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from", from),
 					plan.CreateLogicalNode("merged_group0_group1", groupBy),
 					plan.CreateLogicalNode("filter", filter),

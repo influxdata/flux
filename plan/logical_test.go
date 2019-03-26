@@ -135,7 +135,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 			name:  `from range with yield`,
 			query: `from(bucket: "my-bucket") |> range(start:-1h) |> yield()`,
 			plan: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from0", fromSpec),
 					plan.CreateLogicalNode("range1", rangeSpec),
 					plan.CreateLogicalNode("yield2", standardYield("_result")),
@@ -151,7 +151,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 			name:  `from range without yield`,
 			query: `from(bucket: "my-bucket") |> range(start:-1h)`,
 			plan: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from0", fromSpec),
 					plan.CreateLogicalNode("range1", rangeSpec),
 					plan.CreateLogicalNode("generated_yield", generatedYield("_result")),
@@ -166,7 +166,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 			name:  `from range filter`,
 			query: `from(bucket: "my-bucket") |> range(start:-1h) |> filter(fn: (r) => true)`,
 			plan: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from0", fromSpec),
 					plan.CreateLogicalNode("range1", rangeSpec),
 					plan.CreateLogicalNode("filter2", filterSpec),
@@ -183,7 +183,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 			name:  `Non-yield side effect`,
 			query: `import "http" from(bucket: "my-bucket") |> range(start:-1h) |> http.to(url: "/my/url")`,
 			plan: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from0", fromSpec),
 					plan.CreateLogicalNode("range1", rangeSpec),
 					plan.CreateLogicalNode("toHTTP2", toHTTPSpec),
@@ -202,7 +202,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 				from(bucket: "my-bucket") |> range(start:-1h) |> http.to(url: "/my/url")
 				from(bucket: "my-bucket") |> range(start:-1h) |> kafka.to(brokers: ["broker"], topic: "topic")`,
 			plan: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					// First plan
 					plan.CreateLogicalNode("from0", fromSpec),
 					plan.CreateLogicalNode("range1", rangeSpec),
@@ -229,7 +229,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 				from(bucket: "my-bucket") |> range(start:-1h) |> http.to(url: "/my/url")
 				from(bucket: "my-bucket") |> range(start:-1h)`,
 			plan: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					// First plan
 					plan.CreateLogicalNode("from0", fromSpec),
 					plan.CreateLogicalNode("range1", rangeSpec),
@@ -267,7 +267,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 				C |> sum() |> yield(name: "sum")
 				C |> mean() |> yield(name: "mean")`,
 			plan: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from0", fromSpec),
 					plan.CreateLogicalNode("range1", rangeSpec),
 					plan.CreateLogicalNode("from2", fromSpec),
@@ -338,7 +338,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 				wantPlan := plantest.CreatePlanSpec(tc.plan)
 
 				gotAttrs := make([]testAttrs, 0, 10)
-				gotPlan.BottomUpWalk(func(node plan.PlanNode) error {
+				gotPlan.BottomUpWalk(func(node plan.Node) error {
 					gotAttrs = append(gotAttrs, testAttrs{
 						ID:   node.ID(),
 						Spec: node.ProcedureSpec(),
@@ -348,7 +348,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 				})
 
 				wantAttrs := make([]testAttrs, 0, 10)
-				wantPlan.BottomUpWalk(func(node plan.PlanNode) error {
+				wantPlan.BottomUpWalk(func(node plan.Node) error {
 					wantAttrs = append(wantAttrs, testAttrs{
 						ID:   node.ID(),
 						Spec: node.ProcedureSpec(),
@@ -379,14 +379,14 @@ func (MergeFiltersRule) Pattern() plan.Pattern {
 			plan.Any()))
 }
 
-func (MergeFiltersRule) Rewrite(pn plan.PlanNode) (plan.PlanNode, bool, error) {
+func (MergeFiltersRule) Rewrite(pn plan.Node) (plan.Node, bool, error) {
 	specTop := pn.ProcedureSpec()
 
 	filterSpecTop := specTop.(*universe.FilterProcedureSpec)
 	filterSpecBottom := pn.Predecessors()[0].ProcedureSpec().(*universe.FilterProcedureSpec)
 	mergedFilterSpec := mergeFilterSpecs(filterSpecTop, filterSpecBottom)
 
-	newNode, err := plan.MergeToLogicalPlanNode(pn, pn.Predecessors()[0], mergedFilterSpec)
+	newNode, err := plan.MergeToLogicalNode(pn, pn.Predecessors()[0], mergedFilterSpec)
 	if err != nil {
 		return pn, false, err
 	}
@@ -429,7 +429,7 @@ func (PushFilterThroughMapRule) Pattern() plan.Pattern {
 			plan.Any()))
 }
 
-func (PushFilterThroughMapRule) Rewrite(pn plan.PlanNode) (plan.PlanNode, bool, error) {
+func (PushFilterThroughMapRule) Rewrite(pn plan.Node) (plan.Node, bool, error) {
 	// It will not always be possible to push a filter through a map... but this is just a unit test.
 
 	swapped, err := plan.SwapPlanNodes(pn, pn.Predecessors()[0])
@@ -454,7 +454,7 @@ func TestLogicalPlanner(t *testing.T) {
 				filter(fn: (r) => r._value < 0.9) |>
 				yield(name: "result")`,
 		wantPlan: plantest.PlanSpec{
-			Nodes: []plan.PlanNode{
+			Nodes: []plan.Node{
 				plan.CreateLogicalNode("from0", &influxdb.FromProcedureSpec{Bucket: "telegraf"}),
 				plan.CreateLogicalNode("merged_filter1_filter2_filter3", &universe.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
 					Block: &semantic.FunctionBlock{
@@ -485,7 +485,7 @@ func TestLogicalPlanner(t *testing.T) {
 			name: "with swappable map and filter",
 			flux: `from(bucket: "telegraf") |> map(fn: (r) => r._value * 2.0) |> filter(fn: (r) => r._value < 10.0) |> yield(name: "result")`,
 			wantPlan: plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from0", &influxdb.FromProcedureSpec{Bucket: "telegraf"}),
 					plan.CreateLogicalNode("filter2_copy", &universe.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
 						Block: &semantic.FunctionBlock{
@@ -524,7 +524,7 @@ func TestLogicalPlanner(t *testing.T) {
 					filter(fn: (r) => r._value < 100) |>
 					yield(name: "result")`,
 			wantPlan: plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from0", &influxdb.FromProcedureSpec{Bucket: "telegraf"}),
 					plan.CreateLogicalNode("merged_filter1_filter3_copy", &universe.FilterProcedureSpec{Fn: &semantic.FunctionExpression{
 						Block: &semantic.FunctionBlock{
