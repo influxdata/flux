@@ -56,8 +56,7 @@ type Controller struct {
 	metrics   *controllerMetrics
 	labelKeys []string
 
-	lplanner plan.LogicalPlanner
-	pplanner plan.PhysicalPlanner
+	planner  plan.Planner
 	executor execute.Executor
 	logger   *zap.Logger
 
@@ -86,6 +85,9 @@ func New(c Config) *Controller {
 	if logger == nil {
 		logger = zap.NewNop()
 	}
+	pb := plan.PlannerBuilder{}
+	pb.AddLogicalOptions(c.LPlannerOptions...)
+	pb.AddPhysicalOption(c.PPlannerOptions...)
 	ctrl := &Controller{
 		newQueries:           make(chan *Query),
 		queries:              make(map[QueryID]*Query),
@@ -95,8 +97,7 @@ func New(c Config) *Controller {
 		maxConcurrency:       c.ConcurrencyQuota,
 		availableConcurrency: c.ConcurrencyQuota,
 		availableMemory:      c.MemoryBytesQuota,
-		lplanner:             plan.NewLogicalPlanner(c.LPlannerOptions...),
-		pplanner:             plan.NewPhysicalPlanner(c.PPlannerOptions...),
+		planner:              pb.Build(),
 		executor:             execute.NewExecutor(c.ExecutorDependencies, logger),
 		logger:               logger,
 		metrics:              newControllerMetrics(c.MetricLabelKeys),
@@ -188,21 +189,9 @@ func (c *Controller) compileQuery(q *Query, compiler flux.Compiler) error {
 
 	if q.tryPlan() {
 		// Plan query to determine needed resources
-		ip, err := c.lplanner.CreateInitialPlan(&q.spec)
+		p, err := c.planner.Plan(&q.spec)
 		if err != nil {
-			return errors.Wrap(err, "failed to create initial logical plan")
-		}
-		lp, err := c.lplanner.Plan(ip)
-		if err != nil {
-			return errors.Wrap(err, "failed to create logical plan")
-		}
-		if entry := c.logger.Check(zapcore.DebugLevel, "logical plan"); entry != nil {
-			entry.Write(zap.String("plan", fmt.Sprint(plan.Formatted(lp))))
-		}
-
-		p, err := c.pplanner.Plan(lp)
-		if err != nil {
-			return errors.Wrap(err, "failed to create physical plan")
+			return errors.Wrap(err, "failed to plan query")
 		}
 		q.plan = p
 		q.concurrency = p.Resources.ConcurrencyQuota
