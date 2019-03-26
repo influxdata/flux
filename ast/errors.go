@@ -27,6 +27,12 @@ func check(n Node) int {
 			Msg: fmt.Sprintf("invalid statement %s@%d:%d-%d:%d: %s", loc.File, loc.Start.Line, loc.Start.Column, loc.End.Line, loc.End.Column, n.Text),
 		})
 		return len(n.Errors)
+	case *PipeExpression:
+		if n.Call == nil {
+			n.Errors = append(n.Errors, Error{
+				Msg: "pipe destination is missing",
+			})
+		}
 	}
 
 	return 0
