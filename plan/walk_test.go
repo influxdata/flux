@@ -15,7 +15,7 @@ func TestPlanSpec_BottomUpWalk(t *testing.T) {
 		//  3 4 5  additional edge (8->3)
 		//  |/|/|
 		//  6 7 8
-		Nodes: []plan.PlanNode{
+		Nodes: []plan.Node{
 			plantest.CreateLogicalMockNode("0"),
 			plantest.CreateLogicalMockNode("1"),
 			plantest.CreateLogicalMockNode("2"),
@@ -48,7 +48,7 @@ func TestPlanSpec_BottomUpWalk(t *testing.T) {
 	thePlan := plantest.CreatePlanSpec(spec)
 
 	got := make([]plan.NodeID, 0, 9)
-	thePlan.BottomUpWalk(func(n plan.PlanNode) error {
+	thePlan.BottomUpWalk(func(n plan.Node) error {
 		got = append(got, n.ID())
 		return nil
 	})
@@ -66,7 +66,7 @@ func TestPlanSpec_TopDownWalk(t *testing.T) {
 		//  3 4 5  additional edge (8->3)
 		//  |/|/|
 		//  6 7 8
-		Nodes: []plan.PlanNode{
+		Nodes: []plan.Node{
 			plantest.CreateLogicalMockNode("0"),
 			plantest.CreateLogicalMockNode("1"),
 			plantest.CreateLogicalMockNode("2"),
@@ -99,7 +99,7 @@ func TestPlanSpec_TopDownWalk(t *testing.T) {
 	thePlan := plantest.CreatePlanSpec(spec)
 
 	got := make([]plan.NodeID, 0, 9)
-	thePlan.TopDownWalk(func(n plan.PlanNode) error {
+	thePlan.TopDownWalk(func(n plan.Node) error {
 		got = append(got, n.ID())
 		return nil
 	})
@@ -117,7 +117,7 @@ func TestPlanSpec_TopologicalWalk(t *testing.T) {
 		//  3 4 5  additional edge (8->3)
 		//  |/|/|
 		//  6 7 8
-		Nodes: []plan.PlanNode{
+		Nodes: []plan.Node{
 			plantest.CreateLogicalMockNode("0"),
 			plantest.CreateLogicalMockNode("1"),
 			plantest.CreateLogicalMockNode("2"),
@@ -149,7 +149,7 @@ func TestPlanSpec_TopologicalWalk(t *testing.T) {
 
 	thePlan := plantest.CreatePlanSpec(spec)
 	got := make([]plan.NodeID, 0, 9)
-	thePlan.TopologicalWalk(func(n plan.PlanNode) error {
+	thePlan.TopologicalWalk(func(n plan.Node) error {
 		got = append(got, n.ID())
 		return nil
 	})
@@ -167,7 +167,7 @@ func TestPlanSpec_WalkPredecessorsSuccessors(t *testing.T) {
 		//  3 4 5  additional edge (8->3)
 		//  |/|/|
 		//  6 7 8
-		Nodes: []plan.PlanNode{
+		Nodes: []plan.Node{
 			plantest.CreateLogicalMockNode("0"),
 			plantest.CreateLogicalMockNode("1"),
 			plantest.CreateLogicalMockNode("2"),
@@ -198,9 +198,9 @@ func TestPlanSpec_WalkPredecessorsSuccessors(t *testing.T) {
 	}
 
 	plantest.CreatePlanSpec(spec)
-	roots := []plan.PlanNode{spec.Nodes[0], spec.Nodes[1], spec.Nodes[2]}
+	roots := []plan.Node{spec.Nodes[0], spec.Nodes[1], spec.Nodes[2]}
 	got := make([]plan.NodeID, 0, 9)
-	plan.WalkPredecessors(roots, func(n plan.PlanNode) error {
+	plan.WalkPredecessors(roots, func(n plan.Node) error {
 		got = append(got, n.ID())
 		return nil
 	})
@@ -210,9 +210,9 @@ func TestPlanSpec_WalkPredecessorsSuccessors(t *testing.T) {
 		t.Errorf("Did not get expected node traversal, -want/+got:\n%v", cmp.Diff(want, got))
 	}
 
-	roots = []plan.PlanNode{spec.Nodes[6], spec.Nodes[7], spec.Nodes[8]}
+	roots = []plan.Node{spec.Nodes[6], spec.Nodes[7], spec.Nodes[8]}
 	got = make([]plan.NodeID, 0, 9)
-	plan.WalkSuccessors(roots, func(n plan.PlanNode) error {
+	plan.WalkSuccessors(roots, func(n plan.Node) error {
 		got = append(got, n.ID())
 		return nil
 	})

@@ -155,7 +155,7 @@ func TestController_EnqueueQuery_Failure(t *testing.T) {
 
 func TestController_ExecuteQuery_Failure(t *testing.T) {
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(context.Context, *plan.PlanSpec, *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
+	executor.ExecuteFn = func(context.Context, *plan.Spec, *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
 		return nil, mock.NoMetadata, errors.New("expected")
 	}
 
@@ -206,7 +206,7 @@ func TestController_ExecuteQuery_Failure(t *testing.T) {
 
 func TestController_CancelQuery_Ready(t *testing.T) {
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(context.Context, *plan.PlanSpec, *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
+	executor.ExecuteFn = func(context.Context, *plan.Spec, *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
 		// Return an empty result.
 		return map[string]flux.Result{}, mock.NoMetadata, nil
 	}
@@ -264,7 +264,7 @@ func TestController_CancelQuery_Execute(t *testing.T) {
 	defer close(executing)
 
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(ctx context.Context, spec *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
+	executor.ExecuteFn = func(ctx context.Context, spec *plan.Spec, a *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
 		executing <- struct{}{}
 		<-ctx.Done()
 		return nil, mock.NoMetadata, ctx.Err()
@@ -335,7 +335,7 @@ func TestController_CancelQuery_Execute(t *testing.T) {
 // a race condition while testing under the race detector.
 func TestController_CancelQuery_Concurrent(t *testing.T) {
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(ctx context.Context, spec *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
+	executor.ExecuteFn = func(ctx context.Context, spec *plan.Spec, a *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
 		return map[string]flux.Result{}, mock.NoMetadata, nil
 	}
 
@@ -416,7 +416,7 @@ func TestController_BlockedExecutor(t *testing.T) {
 	done := make(chan struct{})
 
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(context.Context, *plan.PlanSpec, *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
+	executor.ExecuteFn = func(context.Context, *plan.Spec, *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
 		<-done
 		return nil, mock.NoMetadata, nil
 	}
@@ -467,7 +467,7 @@ func TestController_CancelledContextPropagatesToExecutor(t *testing.T) {
 	t.Parallel()
 
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(ctx context.Context, _ *plan.PlanSpec, _ *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
+	executor.ExecuteFn = func(ctx context.Context, _ *plan.Spec, _ *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
 		<-ctx.Done() // Unblock only when context has been cancelled
 		return nil, mock.NoMetadata, nil
 	}
@@ -529,7 +529,7 @@ func TestController_Shutdown(t *testing.T) {
 	var executeGroup sync.WaitGroup
 	executeGroup.Add(10)
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(ctx context.Context, p *plan.PlanSpec, a *memory.Allocator) (results map[string]flux.Result, metaCh <-chan flux.Metadata, e error) {
+	executor.ExecuteFn = func(ctx context.Context, p *plan.Spec, a *memory.Allocator) (results map[string]flux.Result, metaCh <-chan flux.Metadata, e error) {
 		executeGroup.Done()
 		return nil, mock.NoMetadata, nil
 	}
@@ -611,7 +611,7 @@ func TestController_Shutdown(t *testing.T) {
 
 func TestController_Statistics(t *testing.T) {
 	executor := mock.NewExecutor()
-	executor.ExecuteFn = func(ctx context.Context, p *plan.PlanSpec, a *memory.Allocator) (results map[string]flux.Result, metadata <-chan flux.Metadata, e error) {
+	executor.ExecuteFn = func(ctx context.Context, p *plan.Spec, a *memory.Allocator) (results map[string]flux.Result, metadata <-chan flux.Metadata, e error) {
 		// Create a metadata channel that we will use to simulate sending metadata
 		// from the executor.
 		metaCh := make(chan flux.Metadata, 2)

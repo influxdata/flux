@@ -902,19 +902,19 @@ func TestFixedWindow_Process(t *testing.T) {
 	}
 }
 
-func windowOp(id string) plan.PlanNode {
+func windowOp(id string) plan.Node {
 	return plan.CreatePhysicalNode(plan.NodeID(id), &universe.WindowProcedureSpec{})
 }
 
-func boundsOp(id string) plan.PlanNode {
+func boundsOp(id string) plan.Node {
 	return plan.CreatePhysicalNode(plan.NodeID(id), &universe.RangeProcedureSpec{})
 }
 
-func rangeOp(id string) plan.PlanNode {
+func rangeOp(id string) plan.Node {
 	return plan.CreatePhysicalNode(plan.NodeID(id), &universe.RangeProcedureSpec{})
 }
 
-func mockPred(id string) plan.PlanNode {
+func mockPred(id string) plan.Node {
 	// Create a dummy physical operation that is just a wrapper around a filter.
 	// Filter is one of the operators that is allowed to be a predecessor of window
 	// in order to perform the trigger optimization.
@@ -941,7 +941,7 @@ func TestWindowRewriteRule(t *testing.T) {
 			// |       |
 			// b       b
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					boundsOp("0"),
 					mockPred("1"),
 					windowOp("2"),
@@ -961,7 +961,7 @@ func TestWindowRewriteRule(t *testing.T) {
 			// |       |
 			// 0       0
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					mockPred("0"),
 					mockPred("1"),
 					windowOp("2"),
@@ -984,7 +984,7 @@ func TestWindowRewriteRule(t *testing.T) {
 			// |       |
 			// b       b
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					boundsOp("0"),
 					mockPred("1"),
 					windowOp("2"),
@@ -1012,7 +1012,7 @@ func TestWindowRewriteRule(t *testing.T) {
 			// |       |
 			// b       b
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					boundsOp("0"),
 					mockPred("1"),
 					windowOp("2"),
@@ -1040,7 +1040,7 @@ func TestWindowRewriteRule(t *testing.T) {
 			// |       |
 			// 0       0
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					mockPred("0"),
 					mockPred("1"),
 					windowOp("2"),
@@ -1066,7 +1066,7 @@ func TestWindowRewriteRule(t *testing.T) {
 			// |   |       |   |
 			// b   b       b   b
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					boundsOp("0"),
 					windowOp("1"),
 					boundsOp("2"),
@@ -1094,7 +1094,7 @@ func TestWindowRewriteRule(t *testing.T) {
 			// |   |       |   |
 			// b   2       b   2
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					boundsOp("0"),
 					windowOp("1"),
 					mockPred("2"),
@@ -1124,7 +1124,7 @@ func TestWindowRewriteRule(t *testing.T) {
 			// |   |       |   |
 			// b   2       b   2
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					boundsOp("0"),
 					windowOp("1"),
 					mockPred("2"),
@@ -1160,7 +1160,7 @@ func TestWindowRewriteRule(t *testing.T) {
 			}
 
 			var got []plan.NodeID
-			pp.BottomUpWalk(func(node plan.PlanNode) error {
+			pp.BottomUpWalk(func(node plan.Node) error {
 				if _, ok := node.ProcedureSpec().(*universe.WindowProcedureSpec); !ok {
 					return nil
 				}

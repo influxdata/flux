@@ -16,7 +16,7 @@ func TestPhysicalOptions(t *testing.T) {
 
 	for _, options := range configs {
 		spec := &plantest.PlanSpec{
-			Nodes: []plan.PlanNode{
+			Nodes: []plan.Node{
 				plantest.CreatePhysicalMockNode("0"),
 				plantest.CreatePhysicalMockNode("1"),
 			},
@@ -50,7 +50,7 @@ func TestPhysicalIntegrityCheckOption(t *testing.T) {
 	node0 := plantest.CreatePhysicalMockNode("0")
 	node1 := plantest.CreatePhysicalMockNode("1")
 	spec := &plantest.PlanSpec{
-		Nodes: []plan.PlanNode{
+		Nodes: []plan.Node{
 			node0,
 			node1,
 		},

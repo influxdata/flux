@@ -414,7 +414,7 @@ func (WindowTriggerPhysicalRule) Pattern() plan.Pattern {
 // Rewrite modifies a window's trigger spec so long as it doesn't have any
 // window descendents that occur earlier in the plan and as long as none
 // of its descendents merge multiple streams together like union and join.
-func (WindowTriggerPhysicalRule) Rewrite(window plan.PlanNode) (plan.PlanNode, bool, error) {
+func (WindowTriggerPhysicalRule) Rewrite(window plan.Node) (plan.Node, bool, error) {
 	// This rule's pattern ensures us only one predecessor
 	if !hasValidPredecessors(window.Predecessors()[0]) {
 		return window, false, nil
@@ -428,7 +428,7 @@ func (WindowTriggerPhysicalRule) Rewrite(window plan.PlanNode) (plan.PlanNode, b
 	return ppn, true, nil
 }
 
-func hasValidPredecessors(node plan.PlanNode) bool {
+func hasValidPredecessors(node plan.Node) bool {
 	pred := node.Predecessors()
 	// Source nodes might not produce uniform time bounds for all
 	// tables in which case we can't optimize window. However if a

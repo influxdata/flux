@@ -10,7 +10,7 @@ import (
 // PhysicalPlanner performs transforms a logical plan to a physical plan,
 // by applying any registered physical rules.
 type PhysicalPlanner interface {
-	Plan(lplan *PlanSpec) (*PlanSpec, error)
+	Plan(lplan *Spec) (*Spec, error)
 }
 
 // NewPhysicalPlanner creates a new physical plan with the specified options.
@@ -41,7 +41,7 @@ func NewPhysicalPlanner(options ...PhysicalOption) PhysicalPlanner {
 	return pp
 }
 
-func (pp *physicalPlanner) Plan(spec *PlanSpec) (*PlanSpec, error) {
+func (pp *physicalPlanner) Plan(spec *Spec) (*Spec, error) {
 	transformedSpec, err := pp.heuristicPlanner.Plan(spec)
 	if err != nil {
 		return nil, err
@@ -83,8 +83,8 @@ func (pp *physicalPlanner) Plan(spec *PlanSpec) (*PlanSpec, error) {
 	return transformedSpec, nil
 }
 
-func validatePhysicalPlan(plan *PlanSpec) error {
-	err := plan.BottomUpWalk(func(pn PlanNode) error {
+func validatePhysicalPlan(plan *Spec) error {
+	err := plan.BottomUpWalk(func(pn Node) error {
 		if validator, ok := pn.ProcedureSpec().(PostPhysicalValidator); ok {
 			return validator.PostPhysicalValidate(pn.ID())
 		}
@@ -152,13 +152,13 @@ func (physicalConverterRule) Pattern() Pattern {
 	return Any()
 }
 
-func (physicalConverterRule) Rewrite(pn PlanNode) (PlanNode, bool, error) {
+func (physicalConverterRule) Rewrite(pn Node) (Node, bool, error) {
 	if _, ok := pn.(*PhysicalPlanNode); ok {
 		// Already converted
 		return pn, false, nil
 	}
 
-	ln := pn.(*LogicalPlanNode)
+	ln := pn.(*LogicalNode)
 	pspec, ok := ln.Spec.(PhysicalProcedureSpec)
 	if !ok {
 		// A different rule will do the conversion
@@ -226,7 +226,7 @@ func (ppn *PhysicalPlanNode) Kind() ProcedureKind {
 	return ppn.Spec.Kind()
 }
 
-func (ppn *PhysicalPlanNode) ShallowCopy() PlanNode {
+func (ppn *PhysicalPlanNode) ShallowCopy() Node {
 	newNode := new(PhysicalPlanNode)
 	newNode.edges = ppn.edges.shallowCopy()
 	newNode.id = ppn.id + "_copy"

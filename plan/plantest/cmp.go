@@ -9,15 +9,15 @@ import (
 )
 
 // ComparePlans compares two query plans using an arbitrary comparator function f
-func ComparePlans(p, q *plan.PlanSpec, f func(p, q plan.PlanNode) error) error {
-	var w, v []plan.PlanNode
+func ComparePlans(p, q *plan.Spec, f func(p, q plan.Node) error) error {
+	var w, v []plan.Node
 
-	p.TopDownWalk(func(node plan.PlanNode) error {
+	p.TopDownWalk(func(node plan.Node) error {
 		w = append(w, node)
 		return nil
 	})
 
-	q.TopDownWalk(func(node plan.PlanNode) error {
+	q.TopDownWalk(func(node plan.Node) error {
 		v = append(v, node)
 		return nil
 	})
@@ -37,20 +37,20 @@ func ComparePlans(p, q *plan.PlanSpec, f func(p, q plan.PlanNode) error) error {
 }
 
 // CompareLogicalPlanNodes is a comparator fuction for LogicalPlanNodes
-func CompareLogicalPlanNodes(p, q plan.PlanNode) error {
-	if _, ok := p.(*plan.LogicalPlanNode); !ok {
-		return fmt.Errorf("expected %s to be a LogicalPlanNode", p.ID())
+func CompareLogicalPlanNodes(p, q plan.Node) error {
+	if _, ok := p.(*plan.LogicalNode); !ok {
+		return fmt.Errorf("expected %s to be a LogicalNode", p.ID())
 	}
 
-	if _, ok := q.(*plan.LogicalPlanNode); !ok {
-		return fmt.Errorf("expected %s to be a LogicalPlanNode", q.ID())
+	if _, ok := q.(*plan.LogicalNode); !ok {
+		return fmt.Errorf("expected %s to be a LogicalNode", q.ID())
 	}
 
 	return cmpPlanNode(p, q)
 }
 
 // ComparePhysicalPlanNodes is a comparator function for PhysicalPlanNodes
-func ComparePhysicalPlanNodes(p, q plan.PlanNode) error {
+func ComparePhysicalPlanNodes(p, q plan.Node) error {
 	var pp, qq *plan.PhysicalPlanNode
 	var ok bool
 
@@ -81,7 +81,7 @@ func ComparePhysicalPlanNodes(p, q plan.PlanNode) error {
 	return nil
 }
 
-func cmpPlanNode(p, q plan.PlanNode) error {
+func cmpPlanNode(p, q plan.Node) error {
 	// Both nodes must have the same ID
 	if p.ID() != q.ID() {
 		return fmt.Errorf("wanted %s, but got %s", p.ID(), q.ID())

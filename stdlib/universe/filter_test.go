@@ -621,7 +621,7 @@ func TestMergeFilterAnyRule(t *testing.T) {
 			// from -> filter => from -> filter
 			Rules: []plan.Rule{universe.RemoveTrivialFilterRule{}},
 			Before: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from", from),
 					plan.CreatePhysicalNode("filter", filterOther),
 				},
@@ -634,7 +634,7 @@ func TestMergeFilterAnyRule(t *testing.T) {
 			// from -> filter => from -> filter
 			Rules: []plan.Rule{universe.RemoveTrivialFilterRule{}},
 			Before: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from", from),
 					plan.CreatePhysicalNode("filter", filterFalse),
 				},
@@ -647,14 +647,14 @@ func TestMergeFilterAnyRule(t *testing.T) {
 			// from -> filter => from
 			Rules: []plan.Rule{universe.RemoveTrivialFilterRule{}},
 			Before: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from", from),
 					plan.CreatePhysicalNode("filter", filterTrue),
 				},
 				Edges: [][2]int{{0, 1}},
 			},
 			After: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from", from),
 				},
 			},
@@ -664,14 +664,14 @@ func TestMergeFilterAnyRule(t *testing.T) {
 			// count -> filter => count
 			Rules: []plan.Rule{universe.RemoveTrivialFilterRule{}},
 			Before: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("count", count),
 					plan.CreatePhysicalNode("filter", filterTrue),
 				},
 				Edges: [][2]int{{0, 1}},
 			},
 			After: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("count", count),
 				},
 			},
@@ -681,7 +681,7 @@ func TestMergeFilterAnyRule(t *testing.T) {
 			// from -> filter -> count => from -> count
 			Rules: []plan.Rule{universe.RemoveTrivialFilterRule{}},
 			Before: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from", from),
 					plan.CreatePhysicalNode("filter", filterTrue),
 					plan.CreatePhysicalNode("count", count),
@@ -689,7 +689,7 @@ func TestMergeFilterAnyRule(t *testing.T) {
 				Edges: [][2]int{{0, 1}, {1, 2}},
 			},
 			After: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from", from),
 					plan.CreatePhysicalNode("count", count),
 				},

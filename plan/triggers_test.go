@@ -26,7 +26,7 @@ func (s triggerAwareProcedureSpec) TriggerSpec() plan.TriggerSpec {
 func TestTriggers(t *testing.T) {
 	testcases := []struct {
 		name    string
-		node    plan.PlanNode
+		node    plan.Node
 		want    plan.TriggerSpec
 		wantErr bool
 	}{
@@ -44,7 +44,7 @@ func TestTriggers(t *testing.T) {
 		},
 		{
 			name:    "cannot set trigger on logical node",
-			node:    &plan.LogicalPlanNode{},
+			node:    &plan.LogicalNode{},
 			wantErr: true,
 		},
 	}

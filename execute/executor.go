@@ -17,13 +17,13 @@ import (
 )
 
 type Executor interface {
-	// Execute will begin execution of the PlanSpec using the memory allocator.
+	// Execute will begin execution of the plan.Spec using the memory allocator.
 	// This returns a mapping of names to the query results.
 	// This will also return a channel for the Metadata from the query. The channel
 	// may return zero or more values. The returned channel must not require itself to
 	// be read so the executor must allocate enough space in the channel so if the channel
 	// is unread that it will not block.
-	Execute(ctx context.Context, p *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error)
+	Execute(ctx context.Context, p *plan.Spec, a *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error)
 }
 
 type executor struct {
@@ -51,7 +51,7 @@ func (ctx streamContext) Bounds() *Bounds {
 }
 
 type executionState struct {
-	p    *plan.PlanSpec
+	p    *plan.Spec
 	deps Dependencies
 
 	alloc *memory.Allocator
@@ -68,7 +68,7 @@ type executionState struct {
 	logger     *zap.Logger
 }
 
-func (e *executor) Execute(ctx context.Context, p *plan.PlanSpec, a *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
+func (e *executor) Execute(ctx context.Context, p *plan.Spec, a *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
 	es, err := e.createExecutionState(ctx, p, a)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to initialize execute state")
@@ -78,14 +78,14 @@ func (e *executor) Execute(ctx context.Context, p *plan.PlanSpec, a *memory.Allo
 	return es.results, es.metaCh, nil
 }
 
-func validatePlan(p *plan.PlanSpec) error {
+func validatePlan(p *plan.Spec) error {
 	if p.Resources.ConcurrencyQuota == 0 {
 		return errors.New("plan must have a non-zero concurrency quota")
 	}
 	return nil
 }
 
-func (e *executor) createExecutionState(ctx context.Context, p *plan.PlanSpec, a *memory.Allocator) (*executionState, error) {
+func (e *executor) createExecutionState(ctx context.Context, p *plan.Spec, a *memory.Allocator) (*executionState, error) {
 	if err := validatePlan(p); err != nil {
 		return nil, errors.Wrap(err, "invalid plan")
 	}
@@ -103,7 +103,7 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.PlanSpec, a
 	v := &createExecutionNodeVisitor{
 		ctx:   ctx,
 		es:    es,
-		nodes: make(map[plan.PlanNode]Node),
+		nodes: make(map[plan.Node]Node),
 	}
 
 	if err := p.BottomUpWalk(v.Visit); err != nil {
@@ -123,11 +123,11 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.PlanSpec, a
 type createExecutionNodeVisitor struct {
 	ctx   context.Context
 	es    *executionState
-	nodes map[plan.PlanNode]Node
+	nodes map[plan.Node]Node
 }
 
-func skipYields(pn plan.PlanNode) plan.PlanNode {
-	isYield := func(pn plan.PlanNode) bool {
+func skipYields(pn plan.Node) plan.Node {
+	isYield := func(pn plan.Node) bool {
 		_, ok := pn.ProcedureSpec().(plan.YieldProcedureSpec)
 		return ok
 	}
@@ -139,8 +139,8 @@ func skipYields(pn plan.PlanNode) plan.PlanNode {
 	return pn
 }
 
-func nonYieldPredecessors(pn plan.PlanNode) []plan.PlanNode {
-	nodes := make([]plan.PlanNode, len(pn.Predecessors()))
+func nonYieldPredecessors(pn plan.Node) []plan.Node {
+	nodes := make([]plan.Node, len(pn.Predecessors()))
 	for i, pred := range pn.Predecessors() {
 		nodes[i] = skipYields(pred)
 	}
@@ -149,7 +149,7 @@ func nonYieldPredecessors(pn plan.PlanNode) []plan.PlanNode {
 }
 
 // Visit creates the node that will execute a particular plan node
-func (v *createExecutionNodeVisitor) Visit(node plan.PlanNode) error {
+func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 	ppn, ok := node.(*plan.PhysicalPlanNode)
 	if !ok {
 		return fmt.Errorf("cannot execute plan node of type %T", node)

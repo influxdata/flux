@@ -11,7 +11,7 @@ import (
 func TestAny(t *testing.T) {
 	pat := plan.Any()
 
-	node := &plan.LogicalPlanNode{
+	node := &plan.LogicalNode{
 		Spec: &influxdb.FromProcedureSpec{},
 	}
 
@@ -20,7 +20,7 @@ func TestAny(t *testing.T) {
 	}
 }
 
-func addEdge(pred plan.PlanNode, succ plan.PlanNode) {
+func addEdge(pred plan.Node, succ plan.Node) {
 	pred.AddSuccessors(succ)
 	succ.AddPredecessors(pred)
 }
@@ -35,11 +35,11 @@ func TestPat(t *testing.T) {
 	//   from(...) |> filter(...)
 	filterFromPat := plan.Pat(universe.FilterKind, plan.Pat(influxdb.FromKind))
 
-	from := &plan.LogicalPlanNode{
+	from := &plan.LogicalNode{
 		Spec: &influxdb.FromProcedureSpec{},
 	}
 
-	filter1 := &plan.LogicalPlanNode{
+	filter1 := &plan.LogicalNode{
 		Spec: &universe.FilterProcedureSpec{},
 	}
 
@@ -53,7 +53,7 @@ func TestPat(t *testing.T) {
 		t.Fatalf("Expected match")
 	}
 
-	filter2 := &plan.LogicalPlanNode{
+	filter2 := &plan.LogicalNode{
 		Spec: &universe.FilterProcedureSpec{},
 	}
 
@@ -72,7 +72,7 @@ func TestPat(t *testing.T) {
 
 	// Add another successor to filter1.  Thus should break the filter-filter pattern
 
-	filter3 := &plan.LogicalPlanNode{
+	filter3 := &plan.LogicalNode{
 		Spec: &universe.FilterProcedureSpec{},
 	}
 

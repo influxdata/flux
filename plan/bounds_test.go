@@ -290,16 +290,16 @@ func (m *mockBoundsShiftProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds
 	return nil
 }
 
-// Create a PlanNode with id and mockBoundsIntersectProcedureSpec
-func makeBoundsNode(id string, bounds *plan.Bounds) plan.PlanNode {
+// Create a Node with id and mockBoundsIntersectProcedureSpec
+func makeBoundsNode(id string, bounds *plan.Bounds) plan.Node {
 	return plan.CreatePhysicalNode(plan.NodeID(id),
 		&mockBoundsIntersectProcedureSpec{
 			bounds: bounds,
 		})
 }
 
-// Create a PlanNode with id and mockBoundsShiftProcedureSpec
-func makeShiftNode(id string, duration values.Duration) plan.PlanNode {
+// Create a Node with id and mockBoundsShiftProcedureSpec
+func makeShiftNode(id string, duration values.Duration) plan.Node {
 	return plan.CreateLogicalNode(plan.NodeID(id),
 		&mockBoundsShiftProcedureSpec{
 			by: duration,
@@ -326,7 +326,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 		{
 			name: "no bounds",
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plantest.CreatePhysicalMockNode("0"),
 				},
 			},
@@ -338,7 +338,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			name: "single time bounds",
 			// 0 -> 1 -> 2 -> 3 -> 4
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plantest.CreatePhysicalMockNode("0"),
 					plantest.CreatePhysicalMockNode("1"),
 					makeBoundsNode("2", bounds(5, 10)),
@@ -363,7 +363,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			name: "multiple intersect time bounds",
 			// 0 -> 1 -> 2 -> 3 -> 4
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plantest.CreatePhysicalMockNode("0"),
 					makeBoundsNode("1", bounds(5, 10)),
 					plantest.CreatePhysicalMockNode("2"),
@@ -388,7 +388,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			name: "shift nil time bounds",
 			// 0 -> 1 -> 2
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plantest.CreatePhysicalMockNode("0"),
 					makeShiftNode("1", values.Duration(5)),
 					plantest.CreatePhysicalMockNode("2"),
@@ -408,7 +408,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			name: "shift bounds after intersecting bounds",
 			// 0 -> 1 -> 2 -> 3 -> 4
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plantest.CreatePhysicalMockNode("0"),
 					makeBoundsNode("1", bounds(5, 10)),
 					plantest.CreatePhysicalMockNode("2"),
@@ -435,7 +435,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			//  / \
 			// 0   1
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					makeBoundsNode("0", bounds(5, 10)),
 					makeBoundsNode("1", bounds(12, 20)),
 					plantest.CreatePhysicalMockNode("2"),
@@ -459,7 +459,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			//    \ /
 			//     0
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plantest.CreatePhysicalMockNode("0"),
 					makeBoundsNode("1", bounds(5, 10)),
 					plantest.CreatePhysicalMockNode("2"),
@@ -496,7 +496,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 
 			// Map NodeID -> Bounds
 			got := make(map[plan.NodeID]*plan.Bounds)
-			thePlan.BottomUpWalk(func(n plan.PlanNode) error {
+			thePlan.BottomUpWalk(func(n plan.Node) error {
 				got[n.ID()] = n.Bounds()
 				return nil
 			})

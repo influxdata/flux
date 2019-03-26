@@ -8,9 +8,9 @@ import (
 	"github.com/influxdata/flux/plan"
 )
 
-// PlanSpec is a set of nodes and edges of a logical query plan
+// Spec is a set of nodes and edges of a logical query plan
 type PlanSpec struct {
-	Nodes []plan.PlanNode
+	Nodes []plan.Node
 
 	// Edges is a list of predecessor-to-successor edges.
 	// [1, 3] => Nodes[1] is a predecessor of Nodes[3].
@@ -23,15 +23,15 @@ type PlanSpec struct {
 }
 
 // CreatePlanSpec creates a logical plan from a set of nodes and edges
-func CreatePlanSpec(spec *PlanSpec) *plan.PlanSpec {
+func CreatePlanSpec(spec *PlanSpec) *plan.Spec {
 	return createPlanSpec(spec.Nodes, spec.Edges, spec.Resources, spec.Now)
 }
 
-// Copy makes a copy of a PlanSpec.
+// Copy makes a copy of a Spec.
 func (ps *PlanSpec) Copy() *PlanSpec {
 	cps := new(PlanSpec)
 
-	cps.Nodes = make([]plan.PlanNode, len(ps.Nodes))
+	cps.Nodes = make([]plan.Node, len(ps.Nodes))
 	for i := range ps.Nodes {
 		cps.Nodes[i] = copyNode(ps.Nodes[i])
 	}
@@ -43,10 +43,10 @@ func (ps *PlanSpec) Copy() *PlanSpec {
 	return cps
 }
 
-func copyNode(n plan.PlanNode) plan.PlanNode {
-	var cn plan.PlanNode
+func copyNode(n plan.Node) plan.Node {
+	var cn plan.Node
 	switch n := n.(type) {
-	case *plan.LogicalPlanNode:
+	case *plan.LogicalNode:
 		cn = plan.CreateLogicalNode(n.ID(), n.ProcedureSpec().Copy())
 	case *plan.PhysicalPlanNode:
 		cn = plan.CreatePhysicalNode(n.ID(), n.ProcedureSpec().Copy().(plan.PhysicalProcedureSpec))
@@ -54,9 +54,9 @@ func copyNode(n plan.PlanNode) plan.PlanNode {
 	return cn
 }
 
-func createPlanSpec(nodes []plan.PlanNode, edges [][2]int, resources flux.ResourceManagement, now time.Time) *plan.PlanSpec {
-	predecessors := make(map[plan.PlanNode][]plan.PlanNode)
-	successors := make(map[plan.PlanNode][]plan.PlanNode)
+func createPlanSpec(nodes []plan.Node, edges [][2]int, resources flux.ResourceManagement, now time.Time) *plan.Spec {
+	predecessors := make(map[plan.Node][]plan.Node)
+	successors := make(map[plan.Node][]plan.Node)
 
 	// Compute predecessors and successors of each node
 	for _, edge := range edges {
@@ -68,7 +68,7 @@ func createPlanSpec(nodes []plan.PlanNode, edges [][2]int, resources flux.Resour
 		predecessors[child] = append(predecessors[child], parent)
 	}
 
-	roots := make([]plan.PlanNode, 0)
+	roots := make([]plan.Node, 0)
 
 	// Construct query plan
 	for _, node := range nodes {

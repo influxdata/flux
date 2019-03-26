@@ -34,7 +34,7 @@ func TestExecutor_Execute(t *testing.T) {
 		{
 			name: `from`,
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{&executetest.Table{
 							KeyCols: []string{"_start", "_stop"},
@@ -81,7 +81,7 @@ func TestExecutor_Execute(t *testing.T) {
 		{
 			name: `from with filter`,
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{&executetest.Table{
 							KeyCols: []string{"_start", "_stop"},
@@ -149,7 +149,7 @@ func TestExecutor_Execute(t *testing.T) {
 		{
 			name: `from with filter with multiple tables`,
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{
 							{
@@ -254,7 +254,7 @@ func TestExecutor_Execute(t *testing.T) {
 		{
 			name: `multiple aggregates`,
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{
 							{
@@ -361,7 +361,7 @@ func TestExecutor_Execute(t *testing.T) {
 		{
 			name: `diamond join`,
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{
 							{
@@ -478,7 +478,7 @@ func TestExecutor_Execute(t *testing.T) {
 		{
 			name: "yield with successor",
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{&executetest.Table{
 							KeyCols: []string{"_start", "_stop"},
@@ -542,7 +542,7 @@ func TestExecutor_Execute(t *testing.T) {
 		{
 			name: "adjacent yields",
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{&executetest.Table{
 							KeyCols: []string{"_start", "_stop"},
@@ -601,7 +601,7 @@ func TestExecutor_Execute(t *testing.T) {
 		{
 			name: "terminal output function",
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{&executetest.Table{
 							KeyCols: []string{"_start", "_stop"},
@@ -646,7 +646,7 @@ func TestExecutor_Execute(t *testing.T) {
 		{
 			name: `yield preserves nulls`,
 			spec: &plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
 						[]*executetest.Table{&executetest.Table{
 							KeyCols: []string{"_start", "_stop"},

@@ -6,7 +6,7 @@ const AnyKind = "*** any procedure kind ***"
 // It can match itself against a query plan
 type Pattern interface {
 	Root() ProcedureKind
-	Match(PlanNode) bool
+	Match(Node) bool
 }
 
 // Pat returns a pattern that can match a plan node with the given ProcedureKind
@@ -43,7 +43,7 @@ func (p PhysicalOneKindPattern) Root() ProcedureKind {
 	return p.pattern.Root()
 }
 
-func (p PhysicalOneKindPattern) Match(node PlanNode) bool {
+func (p PhysicalOneKindPattern) Match(node Node) bool {
 	_, ok := node.(*PhysicalPlanNode)
 	return ok && p.pattern.Match(node)
 }
@@ -67,7 +67,7 @@ func (okp OneKindPattern) Root() ProcedureKind {
 	return okp.kind
 }
 
-func (okp OneKindPattern) Match(node PlanNode) bool {
+func (okp OneKindPattern) Match(node Node) bool {
 	if node.Kind() != okp.kind {
 		return false
 	}
@@ -99,6 +99,6 @@ func (AnyPattern) Root() ProcedureKind {
 	return AnyKind
 }
 
-func (AnyPattern) Match(node PlanNode) bool {
+func (AnyPattern) Match(node Node) bool {
 	return true
 }

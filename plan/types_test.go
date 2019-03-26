@@ -9,7 +9,7 @@ import (
 
 func TestPlanSpec_CheckIntegrity(t *testing.T) {
 	ps := &plantest.PlanSpec{
-		Nodes: []plan.PlanNode{
+		Nodes: []plan.Node{
 			plantest.CreateLogicalMockNode("0"),
 			plantest.CreateLogicalMockNode("1"),
 			plantest.CreateLogicalMockNode("2"),
@@ -65,14 +65,14 @@ func TestPlanSpec_CheckIntegrity(t *testing.T) {
 	assertKO(t, p)
 }
 
-func assertOK(t *testing.T, p *plan.PlanSpec) {
+func assertOK(t *testing.T, p *plan.Spec) {
 	err := p.CheckIntegrity()
 	if err != nil {
 		t.Fatalf("unexpected integrity check fail: %v", err)
 	}
 }
 
-func assertKO(t *testing.T, p *plan.PlanSpec) {
+func assertKO(t *testing.T, p *plan.Spec) {
 	err := p.CheckIntegrity()
 	if err == nil {
 		t.Fatal("unexpected integrity check pass")

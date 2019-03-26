@@ -488,7 +488,7 @@ type Query struct {
 	parentSpan, currentSpan *span
 	stats                   flux.Statistics
 
-	plan *plan.PlanSpec
+	plan *plan.Spec
 
 	done        sync.Once
 	concurrency int

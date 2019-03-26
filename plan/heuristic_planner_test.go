@@ -19,7 +19,7 @@ func TestPlanTraversal(t *testing.T) {
 			name: "simple",
 			//        0
 			plan: plantest.PlanSpec{
-				Nodes: []plan.PlanNode{plantest.CreatePhysicalMockNode("0")},
+				Nodes: []plan.Node{plantest.CreatePhysicalMockNode("0")},
 			},
 			nodeIDs: []plan.NodeID{"0"},
 		},
@@ -29,7 +29,7 @@ func TestPlanTraversal(t *testing.T) {
 			//        |
 			//        0
 			plan: plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plantest.CreatePhysicalMockNode("0"),
 					plantest.CreatePhysicalMockNode("1"),
 				},
@@ -45,7 +45,7 @@ func TestPlanTraversal(t *testing.T) {
 			//        |    |
 			//        0    2
 			plan: plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plantest.CreatePhysicalMockNode("0"),
 					plantest.CreatePhysicalMockNode("1"),
 					plantest.CreatePhysicalMockNode("2"),
@@ -66,7 +66,7 @@ func TestPlanTraversal(t *testing.T) {
 			//      |   |
 			//      0   2
 			plan: plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plantest.CreatePhysicalMockNode("0"),
 					plantest.CreatePhysicalMockNode("1"),
 					plantest.CreatePhysicalMockNode("2"),
@@ -94,7 +94,7 @@ func TestPlanTraversal(t *testing.T) {
 			//          |   |
 			//          0   2
 			plan: plantest.PlanSpec{
-				Nodes: []plan.PlanNode{
+				Nodes: []plan.Node{
 					plantest.CreatePhysicalMockNode("0"),
 					plantest.CreatePhysicalMockNode("1"),
 					plantest.CreatePhysicalMockNode("2"),

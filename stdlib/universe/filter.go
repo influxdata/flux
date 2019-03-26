@@ -189,7 +189,7 @@ func (RemoveTrivialFilterRule) Pattern() plan.Pattern {
 	return plan.Pat(FilterKind, plan.Any())
 }
 
-func (RemoveTrivialFilterRule) Rewrite(filterNode plan.PlanNode) (plan.PlanNode, bool, error) {
+func (RemoveTrivialFilterRule) Rewrite(filterNode plan.Node) (plan.Node, bool, error) {
 	filterSpec := filterNode.ProcedureSpec().(*FilterProcedureSpec)
 	if filterSpec.Fn == nil ||
 		filterSpec.Fn.Block == nil ||

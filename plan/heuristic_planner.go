@@ -2,7 +2,7 @@ package plan
 
 import "sort"
 
-// heuristicPlanner applies a set of rules to the nodes in a PlanSpec
+// heuristicPlanner applies a set of rules to the nodes in a Spec
 // until a fixed point is reached and no more rules can be applied.
 type heuristicPlanner struct {
 	rules map[ProcedureKind][]Rule
@@ -27,7 +27,7 @@ func (p *heuristicPlanner) clearRules() {
 
 // matchRules applies any applicable rules to the given plan node,
 // and returns the rewritten plan node and whether or not any rewriting was done.
-func (p *heuristicPlanner) matchRules(node PlanNode) (PlanNode, bool, error) {
+func (p *heuristicPlanner) matchRules(node Node) (Node, bool, error) {
 	anyChanged := false
 
 	for _, rule := range p.rules[AnyKind] {
@@ -59,13 +59,13 @@ func (p *heuristicPlanner) matchRules(node PlanNode) (PlanNode, bool, error) {
 // It traverses the DAG depth-first, attempting to apply rewrite rules at each node.
 // Traversal is repeated until a pass over the DAG results in no changes with the given rule set.
 //
-// Plan may change its argument and/or return a new instance of PlanSpec, so the correct way to call Plan is:
+// Plan may change its argument and/or return a new instance of Spec, so the correct way to call Plan is:
 //     plan, err = plan.Plan(plan)
-func (p *heuristicPlanner) Plan(inputPlan *PlanSpec) (*PlanSpec, error) {
+func (p *heuristicPlanner) Plan(inputPlan *Spec) (*Spec, error) {
 	for anyChanged := true; anyChanged; {
-		visited := make(map[PlanNode]struct{})
+		visited := make(map[Node]struct{})
 
-		nodeStack := make([]PlanNode, 0, len(inputPlan.Roots))
+		nodeStack := make([]Node, 0, len(inputPlan.Roots))
 		for root := range inputPlan.Roots {
 			nodeStack = append(nodeStack, root)
 		}
@@ -118,7 +118,7 @@ func (p *heuristicPlanner) Plan(inputPlan *PlanSpec) (*PlanSpec, error) {
 //   node  becomes   newNode
 //   / \               / \
 //  D   E             D'  E'    <-- predecessors
-func updateSuccessors(plan *PlanSpec, oldNode, newNode PlanNode) {
+func updateSuccessors(plan *Spec, oldNode, newNode Node) {
 	// no need to update successors if the node hasn't actually changed
 	if oldNode == newNode {
 		return
