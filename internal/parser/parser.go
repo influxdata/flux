@@ -582,7 +582,25 @@ func (p *parser) parsePipeExpressionSuffix(expr *ast.Expression) func() bool {
 		}
 		// todo(jsternberg): this is not correct.
 		rhs := p.parseUnaryExpression()
-		call, _ := rhs.(*ast.CallExpression)
+		call, ok := rhs.(*ast.CallExpression)
+		if !ok && rhs != nil {
+			// We did not parse a call expression, but we still have something
+			// that was parsed so we need to pass over any errors from it
+			// and the location information so those remain present.
+			// We are losing the expression, so check for errors so that they
+			// are included in the output.
+			ast.Check(rhs)
+
+			// Copy the information to a blank call expression.
+			call = &ast.CallExpression{}
+			if loc := rhs.Location(); loc.IsValid() {
+				call.Loc = &loc
+			}
+			call.Errors = rhs.Errs()
+			call.Errors = append(call.Errors, ast.Error{
+				Msg: "pipe destination must be a function call",
+			})
+		}
 		*expr = &ast.PipeExpression{
 			Argument: *expr,
 			Call:     call,

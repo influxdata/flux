@@ -983,6 +983,36 @@ import "path/bar"
 			},
 		},
 		{
+			name: "pipe expression into non-call expression",
+			raw:  `foo() |> bar`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:13"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:13"),
+						Expression: &ast.PipeExpression{
+							BaseNode: base("1:1", "1:13"),
+							Argument: &ast.CallExpression{
+								BaseNode: base("1:1", "1:6"),
+								Callee: &ast.Identifier{
+									BaseNode: base("1:1", "1:4"),
+									Name:     "foo",
+								},
+							},
+							Call: &ast.CallExpression{
+								BaseNode: ast.BaseNode{
+									Loc: loc("1:10", "1:13"),
+									Errors: []ast.Error{
+										{Msg: "pipe destination must be a function call"},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "two variables for two froms",
 			raw: `howdy = from()
 			doody = from()
