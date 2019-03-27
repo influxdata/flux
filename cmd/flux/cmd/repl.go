@@ -15,7 +15,7 @@ import (
 var replCmd = &cobra.Command{
 	Use:   "repl",
 	Short: "Launch a Flux REPL",
-	Long:  "Launch a Flux REPL (Run-Execute-Print-Loop)",
+	Long:  "Launch a Flux REPL (Read-Eval-Print-Loop)",
 	Run: func(cmd *cobra.Command, args []string) {
 		q := NewQuerier()
 		r := repl.New(q)

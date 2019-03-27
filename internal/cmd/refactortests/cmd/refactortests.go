@@ -183,7 +183,7 @@ func executeScript(pkg *ast.Package) (string, string, error) {
 		return "", "", errors.Wrap(err, "error during compilation, check your script and retry")
 	}
 	defer r.Done()
-	results, ok := <-r.Ready()
+	results, ok := <-r.Results()
 	if !ok {
 		return "", "", errors.Wrap(r.Err(), "error retrieving query result")
 	}

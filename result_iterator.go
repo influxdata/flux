@@ -34,7 +34,7 @@ type ResultIterator interface {
 type queryResultIterator struct {
 	query    Query
 	released bool
-	results  ResultIterator
+	nextResult Result
 }
 
 func NewResultIteratorFromQuery(q Query) ResultIterator {
@@ -43,31 +43,58 @@ func NewResultIteratorFromQuery(q Query) ResultIterator {
 	}
 }
 
+// More returns true iff there is more data to be produced by the iterator.
+// More is idempotent---successive calls to More with no intervening call to Next should
+// return the same value and leave the iterator in the same state.
 func (r *queryResultIterator) More() bool {
+
+	// When the return value is true, r.nextResult should be non-nil, and nil otherwise.
+
 	if r.released {
 		return false
 	}
 
-	if r.results == nil {
-		results, ok := <-r.query.Ready()
-		if !ok {
-			return false
-		}
-		r.results = NewMapResultIterator(results)
+	if r.nextResult != nil {
+		return true
 	}
-	return r.results.More()
+
+	nr, ok := <-r.query.Results()
+	if !ok {
+		r.nextResult = nil
+		return false
+	}
+
+	r.nextResult = nr
+	return true
 }
 
+// Next produces the next result.
+// If there is no more data, Next panics.
+// It is possible to call Next without calling More first (although not recommended).
 func (r *queryResultIterator) Next() Result {
-	return r.results.Next()
+	if r.released {
+		panic("call to Next() on released iterator")
+	}
+	var nr Result
+	if r.nextResult == nil {
+		var ok bool
+		nr, ok = <-r.query.Results()
+		if !ok {
+			panic("call to Next() when More() is false")
+		}
+	} else {
+		nr = r.nextResult
+	}
+
+	r.nextResult = nil
+	return nr
 }
 
+// Release frees resources associated with this iterator.
 func (r *queryResultIterator) Release() {
 	r.query.Done()
 	r.released = true
-	if r.results != nil {
-		r.results.Release()
-	}
+	r.nextResult = nil 	// a panic will occur if caller attempts to call Next().
 }
 
 func (r *queryResultIterator) Err() error {
