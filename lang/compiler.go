@@ -6,6 +6,9 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/plan"
 )
 
 const (
@@ -38,8 +41,21 @@ type FluxCompiler struct {
 	Query string `json:"query"`
 }
 
-func (c FluxCompiler) Compile(ctx context.Context) (*flux.Spec, error) {
-	return flux.Compile(ctx, c.Query, time.Now())
+func (c FluxCompiler) Compile(ctx context.Context) (flux.Program, error) {
+	spec, err := flux.Compile(ctx, c.Query, time.Now())
+	if err != nil {
+		return nil, err
+	}
+
+	planner := (&plan.PlannerBuilder{}).Build()
+	ps, err := planner.Plan(spec)
+	if err != nil {
+		return nil, err
+	}
+
+	return Program{
+		ps: ps,
+	}, err
 }
 
 func (c FluxCompiler) CompilerType() flux.CompilerType {
@@ -51,9 +67,18 @@ type SpecCompiler struct {
 	Spec *flux.Spec `json:"spec"`
 }
 
-func (c SpecCompiler) Compile(ctx context.Context) (*flux.Spec, error) {
-	return c.Spec, nil
+func (c SpecCompiler) Compile(ctx context.Context) (flux.Program, error) {
+	planner := (&plan.PlannerBuilder{}).Build()
+	ps, err := planner.Plan(c.Spec)
+	if err != nil {
+		return nil, err
+	}
+
+	return Program{
+		ps: ps,
+	}, err
 }
+
 func (c SpecCompiler) CompilerType() flux.CompilerType {
 	return SpecCompilerType
 }
@@ -64,11 +89,24 @@ type ASTCompiler struct {
 	Now time.Time
 }
 
-func (c ASTCompiler) Compile(ctx context.Context) (*flux.Spec, error) {
-	if c.Now.IsZero() {
-		return flux.CompileAST(ctx, c.AST, time.Now())
+func (c ASTCompiler) Compile(ctx context.Context) (flux.Program, error) {
+	now := c.Now
+	if now.IsZero() {
+		now = time.Now()
 	}
-	return flux.CompileAST(ctx, c.AST, c.Now)
+
+	spec, err := flux.CompileAST(ctx, c.AST, now)
+	if err != nil {
+		return Program{}, err
+	}
+
+	planner := (&plan.PlannerBuilder{}).Build()
+	ps, err := planner.Plan(spec)
+	if err != nil {
+		return Program{}, err
+	}
+
+	return Program{ps: ps}, err
 }
 
 func (ASTCompiler) CompilerType() flux.CompilerType {
@@ -78,4 +116,30 @@ func (ASTCompiler) CompilerType() flux.CompilerType {
 // PrependFile prepends a file onto the compiler's list of package files.
 func (c *ASTCompiler) PrependFile(file *ast.File) {
 	c.AST.Files = append([]*ast.File{file}, c.AST.Files...)
+}
+
+// Program implements the flux.Program interface
+type Program struct {
+	deps execute.Dependencies
+	ps   *plan.Spec
+}
+
+func (p Program) Start(ctx context.Context, allocator *memory.Allocator) (flux.Query, error) {
+	e := execute.NewExecutor(p.deps, nil)
+	results, _, err := e.Execute(ctx, p.ps, allocator)
+	if err != nil {
+		return nil, err
+	}
+
+	ch := make(chan flux.Result)
+	go func() {
+		for _, r := range results {
+			ch <- r
+		}
+		close(ch)
+	}()
+
+	return &Query{
+		ch: ch,
+	}, nil
 }
