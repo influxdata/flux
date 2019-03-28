@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/semantic"
@@ -410,6 +411,7 @@ func (PushFilterThroughMapRule) Rewrite(pn plan.Node) (plan.Node, bool, error) {
 }
 
 func TestLogicalPlanner(t *testing.T) {
+	now := parser.MustParseTime("2018-01-01T10:00:00Z").Value
 	testcases := []struct {
 		name     string
 		flux     string
@@ -417,6 +419,7 @@ func TestLogicalPlanner(t *testing.T) {
 	}{{
 		name: "with merge-able filters",
 		flux: `
+            option now = () => 2018-01-01T10:00:00Z
 			from(bucket: "telegraf") |>
 				filter(fn: (r) => r._measurement == "cpu") |>
 				filter(fn: (r) => r._value > 0.5) |>
@@ -448,11 +451,14 @@ func TestLogicalPlanner(t *testing.T) {
 				{0, 1},
 				{1, 2},
 			},
+			Now: now,
 		},
 	},
 		{
 			name: "with swappable map and filter",
-			flux: `from(bucket: "telegraf") |> map(fn: (r) => r._value * 2.0) |> filter(fn: (r) => r._value < 10.0) |> yield(name: "result")`,
+			flux: `
+                option now = () => 2018-01-01T10:00:00Z
+                from(bucket: "telegraf") |> map(fn: (r) => r._value * 2.0) |> filter(fn: (r) => r._value < 10.0) |> yield(name: "result")`,
 			wantPlan: plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from0", &influxdb.FromProcedureSpec{Bucket: "telegraf"}),
@@ -483,10 +489,12 @@ func TestLogicalPlanner(t *testing.T) {
 					{1, 2},
 					{2, 3},
 				},
+				Now: now,
 			}},
 		{
 			name: "rules working together",
 			flux: `
+                option now = () => 2018-01-01T10:00:00Z
 				from(bucket: "telegraf") |>
 					filter(fn: (r) => r._value != 0) |>
 					map(fn: (r) => r._value * 10) |>
@@ -523,6 +531,7 @@ func TestLogicalPlanner(t *testing.T) {
 					{1, 2},
 					{2, 3},
 				},
+				Now: now,
 			},
 		},
 	}

@@ -23,7 +23,7 @@ func (pb *PlannerBuilder) AddPhysicalOption(popt ...PhysicalOption) {
 }
 
 // Build builds a planner with specified attributes.
-func (pb *PlannerBuilder) Build() Planner {
+func (pb PlannerBuilder) Build() Planner {
 	return &planner{
 		lp: NewLogicalPlanner(pb.lopts...),
 		pp: NewPhysicalPlanner(pb.popts...),
