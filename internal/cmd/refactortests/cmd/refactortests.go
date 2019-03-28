@@ -177,15 +177,18 @@ func executeScript(pkg *ast.Package) (string, string, error) {
 		Query: ast.Format(testPkg),
 	}
 
-	r, err := querier.C.Query(context.Background(), c)
+	q, err := querier.C.Query(context.Background(), c)
 	if err != nil {
 		fmt.Println(ast.Format(testPkg))
 		return "", "", errors.Wrap(err, "error during compilation, check your script and retry")
 	}
-	defer r.Done()
-	results, ok := <-r.Results()
-	if !ok {
-		return "", "", errors.Wrap(r.Err(), "error retrieving query result")
+	defer q.Done()
+	results := make(map[string]flux.Result)
+	for r := range q.Results() {
+		results[r.Name()] = r
+	}
+	if err := q.Err(); err != nil {
+		return "", "", errors.Wrap(err, "error retrieving query result")
 	}
 
 	var diffBuf, resultBuf bytes.Buffer

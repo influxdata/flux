@@ -156,7 +156,7 @@ func (c *Controller) createQuery(ctx context.Context, ct flux.CompilerType) *Que
 		state:              Created,
 		c:                  c,
 		now:                time.Now().UTC(),
-		ready:              make(chan map[string]flux.Result, 1),
+		ready:              make(chan flux.Result, 1),
 		metaCh:             noMetadata, // This will be set to a non-closed channel upon successful execution.
 		parentCtx:          parentCtx,
 		parentSpan:         parentSpan,
@@ -426,7 +426,7 @@ type Query struct {
 	spec flux.Spec
 	now  time.Time
 
-	ready  chan map[string]flux.Result
+	ready  chan flux.Result
 	metaCh <-chan flux.Metadata
 
 	// query state. The stateMu protects access for the group below.
@@ -477,7 +477,7 @@ func (q *Query) Cancel() {
 //
 // The query may also have an error during execution so the Err()
 // function should be used to check if an error happened.
-func (q *Query) Ready() <-chan map[string]flux.Result {
+func (q *Query) Results() <-chan flux.Result {
 	return q.ready
 }
 
@@ -685,12 +685,12 @@ func (q *Query) setErr(err error) {
 }
 
 // setResults will set the results and send them over the ready channel.
-func (q *Query) setResults(r map[string]flux.Result, md <-chan flux.Metadata) {
+func (q *Query) setResults(_ map[string]flux.Result, md <-chan flux.Metadata) {
 	q.stateMu.Lock()
 	q.metaCh = md
 	q.stateMu.Unlock()
 
-	q.ready <- r
+	//q.ready <- r
 	close(q.ready)
 }
 
