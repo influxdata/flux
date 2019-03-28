@@ -69,6 +69,12 @@ func OnlyLogicalRules(rules ...Rule) LogicalOption {
 	})
 }
 
+func AddLogicalRules(rules ...Rule) LogicalOption {
+	return logicalOption(func(lp *logicalPlanner) {
+		lp.addRules(rules...)
+	})
+}
+
 // Disables integrity checks in the logical planner
 func DisableIntegrityChecks() LogicalOption {
 	return logicalOption(func(lp *logicalPlanner) {

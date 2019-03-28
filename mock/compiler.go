@@ -7,11 +7,11 @@ import (
 )
 
 type Compiler struct {
-	CompileFn func(ctx context.Context) (*flux.Spec, error)
+	CompileFn func(ctx context.Context) (flux.Program, error)
 	Type      flux.CompilerType
 }
 
-func (c Compiler) Compile(ctx context.Context) (*flux.Spec, error) {
+func (c Compiler) Compile(ctx context.Context) (flux.Program, error) {
 	return c.CompileFn(ctx)
 }
 func (c Compiler) CompilerType() flux.CompilerType {

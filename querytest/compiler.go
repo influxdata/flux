@@ -4,35 +4,32 @@ import (
 	"context"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/lang"
+	"github.com/influxdata/flux/plan"
 )
 
-// ReplaceOpInSpecFunction is a function that takes an Operation and returns a new OperationSpec for substitution,
-// or nil, if nothing has to be changed.
-type ReplaceOpInSpecFunction func(op *flux.Operation) flux.OperationSpec
-
+// ReplaceSpecCompiler provides a compiler that will produce programs
+// that are modified my the given rule, e.g., so you can replace influxdb.from
+// with csv.from.
 type ReplaceSpecCompiler struct {
-	flux.Compiler
-	fn ReplaceOpInSpecFunction
+	Spec *flux.Spec
+	Rule plan.Rule
 }
 
-func NewReplaceSpecCompiler(compiler flux.Compiler, fn ReplaceOpInSpecFunction) *ReplaceSpecCompiler {
-	return &ReplaceSpecCompiler{Compiler: compiler, fn: fn}
+func NewReplaceSpecCompiler(rule plan.Rule) *ReplaceSpecCompiler {
+	return &ReplaceSpecCompiler{
+		Rule: rule,
+	}
 }
 
-func (c *ReplaceSpecCompiler) Compile(ctx context.Context) (*flux.Spec, error) {
-	spec, err := c.Compiler.Compile(ctx)
+func (c *ReplaceSpecCompiler) Compile(ctx context.Context) (flux.Program, error) {
+	pb := &plan.PlannerBuilder{}
+	pb.AddLogicalOptions(plan.AddLogicalRules(c.Rule))
+	planner := pb.Build()
+	plan, err := planner.Plan(c.Spec)
 	if err != nil {
 		return nil, err
 	}
-	ReplaceOpInSpec(spec, c.fn)
-	return spec, nil
-}
 
-func ReplaceOpInSpec(q *flux.Spec, replaceFn ReplaceOpInSpecFunction) {
-	for _, op := range q.Operations {
-		newOpSpec := replaceFn(op)
-		if newOpSpec != nil {
-			op.Spec = newOpSpec
-		}
-	}
+	return lang.NewProgram(plan), nil
 }
