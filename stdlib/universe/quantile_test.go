@@ -15,11 +15,11 @@ import (
 	"github.com/influxdata/flux/stdlib/universe"
 )
 
-func TestPercentile_NewQuery(t *testing.T) {
+func TestQuantile_NewQuery(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{
 			Name: "tdigest",
-			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> percentile(percentile: 0.99, method: "estimate_tdigest", compression: 1000.0)`,
+			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "estimate_tdigest", compression: 1000.0)`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
@@ -44,9 +44,9 @@ func TestPercentile_NewQuery(t *testing.T) {
 						},
 					},
 					{
-						ID: "percentile2",
-						Spec: &universe.PercentileOpSpec{
-							Percentile:      0.99,
+						ID: "quantile2",
+						Spec: &universe.QuantileOpSpec{
+							Quantile:        0.99,
 							Compression:     1000,
 							Method:          "estimate_tdigest",
 							AggregateConfig: execute.DefaultAggregateConfig,
@@ -55,13 +55,13 @@ func TestPercentile_NewQuery(t *testing.T) {
 				},
 				Edges: []flux.Edge{
 					{Parent: "from0", Child: "range1"},
-					{Parent: "range1", Child: "percentile2"},
+					{Parent: "range1", Child: "quantile2"},
 				},
 			},
 		},
 		{
 			Name: "exact_mean",
-			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> percentile(percentile: 0.99, method: "exact_mean")`,
+			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "exact_mean")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
@@ -86,9 +86,9 @@ func TestPercentile_NewQuery(t *testing.T) {
 						},
 					},
 					{
-						ID: "percentile2",
-						Spec: &universe.PercentileOpSpec{
-							Percentile:      0.99,
+						ID: "quantile2",
+						Spec: &universe.QuantileOpSpec{
+							Quantile:        0.99,
 							Method:          "exact_mean",
 							AggregateConfig: execute.DefaultAggregateConfig,
 						},
@@ -96,13 +96,13 @@ func TestPercentile_NewQuery(t *testing.T) {
 				},
 				Edges: []flux.Edge{
 					{Parent: "from0", Child: "range1"},
-					{Parent: "range1", Child: "percentile2"},
+					{Parent: "range1", Child: "quantile2"},
 				},
 			},
 		},
 		{
 			Name: "exact_selector",
-			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> percentile(percentile: 0.99, method: "exact_selector")`,
+			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "exact_selector")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
@@ -127,9 +127,9 @@ func TestPercentile_NewQuery(t *testing.T) {
 						},
 					},
 					{
-						ID: "percentile2",
-						Spec: &universe.PercentileOpSpec{
-							Percentile:     0.99,
+						ID: "quantile2",
+						Spec: &universe.QuantileOpSpec{
+							Quantile:       0.99,
 							Method:         "exact_selector",
 							SelectorConfig: execute.DefaultSelectorConfig,
 						},
@@ -137,13 +137,13 @@ func TestPercentile_NewQuery(t *testing.T) {
 				},
 				Edges: []flux.Edge{
 					{Parent: "from0", Child: "range1"},
-					{Parent: "range1", Child: "percentile2"},
+					{Parent: "range1", Child: "quantile2"},
 				},
 			},
 		},
 		{
 			Name: "custom cols",
-			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> percentile(percentile: 0.99, method: "exact_mean", columns: ["foo", "bar"])`,
+			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "exact_mean", columns: ["foo", "bar"])`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
@@ -168,10 +168,10 @@ func TestPercentile_NewQuery(t *testing.T) {
 						},
 					},
 					{
-						ID: "percentile2",
-						Spec: &universe.PercentileOpSpec{
-							Percentile: 0.99,
-							Method:     "exact_mean",
+						ID: "quantile2",
+						Spec: &universe.QuantileOpSpec{
+							Quantile: 0.99,
+							Method:   "exact_mean",
 							AggregateConfig: execute.AggregateConfig{
 								Columns: []string{"foo", "bar"},
 							},
@@ -180,13 +180,13 @@ func TestPercentile_NewQuery(t *testing.T) {
 				},
 				Edges: []flux.Edge{
 					{Parent: "from0", Child: "range1"},
-					{Parent: "range1", Child: "percentile2"},
+					{Parent: "range1", Child: "quantile2"},
 				},
 			},
 		},
 		{
 			Name: "custom col",
-			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> percentile(percentile: 0.99, method: "exact_selector", column: "foo")`,
+			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "exact_selector", column: "foo")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
@@ -211,10 +211,10 @@ func TestPercentile_NewQuery(t *testing.T) {
 						},
 					},
 					{
-						ID: "percentile2",
-						Spec: &universe.PercentileOpSpec{
-							Percentile: 0.99,
-							Method:     "exact_selector",
+						ID: "quantile2",
+						Spec: &universe.QuantileOpSpec{
+							Quantile: 0.99,
+							Method:   "exact_selector",
 							SelectorConfig: execute.SelectorConfig{
 								Column: "foo",
 							},
@@ -223,29 +223,29 @@ func TestPercentile_NewQuery(t *testing.T) {
 				},
 				Edges: []flux.Edge{
 					{Parent: "from0", Child: "range1"},
-					{Parent: "range1", Child: "percentile2"},
+					{Parent: "range1", Child: "quantile2"},
 				},
 			},
 		},
 		// errors
 		{
 			Name:    "wrong method",
-			Raw:     `from(bucket:"testdb") |> range(start: -1h) |> percentile(percentile: 0.99, method: "non_existent_method")`,
+			Raw:     `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "non_existent_method")`,
 			WantErr: true,
 		},
 		{
 			Name:    "non-tdigest with compression",
-			Raw:     `from(bucket:"testdb") |> range(start: -1h) |> percentile(percentile: 0.99, method: "exact_mean", compression: 800.0)`,
+			Raw:     `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "exact_mean", compression: 800.0)`,
 			WantErr: true,
 		},
 		{
 			Name:    "selector with columns",
-			Raw:     `from(bucket:"testdb") |> range(start: -1h) |> percentile(percentile: 0.99, method: "exact_selector", columns: ["1", "2"])`,
+			Raw:     `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "exact_selector", columns: ["1", "2"])`,
 			WantErr: true,
 		},
 		{
 			Name:    "aggregate with column",
-			Raw:     `from(bucket:"testdb") |> range(start: -1h) |> percentile(percentile: 0.99, method: "estimate_tdigest", column: "1")`,
+			Raw:     `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "estimate_tdigest", column: "1")`,
 			WantErr: true,
 		},
 	}
@@ -258,127 +258,127 @@ func TestPercentile_NewQuery(t *testing.T) {
 	}
 }
 
-func TestPercentileOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"percentile","kind":"percentile","spec":{"percentile":0.9}}`)
+func TestQuantileOperation_Marshaling(t *testing.T) {
+	data := []byte(`{"id":"quantile","kind":"quantile","spec":{"quantile":0.9}}`)
 	op := &flux.Operation{
-		ID: "percentile",
-		Spec: &universe.PercentileOpSpec{
-			Percentile: 0.9,
+		ID: "quantile",
+		Spec: &universe.QuantileOpSpec{
+			Quantile: 0.9,
 		},
 	}
 
 	querytest.OperationMarshalingTestHelper(t, data, op)
 }
 
-func TestPercentile_Process(t *testing.T) {
+func TestQuantile_Process(t *testing.T) {
 	testCases := []struct {
-		name       string
-		data       func() *array.Float64
-		percentile float64
-		exact      bool
-		want       interface{}
+		name     string
+		data     func() *array.Float64
+		quantile float64
+		exact    bool
+		want     interface{}
 	}{
 		{
 			name: "zero",
 			data: func() *array.Float64 {
 				return arrow.NewFloat([]float64{0, 0, 0}, nil)
 			},
-			percentile: 0.5,
-			want:       0.0,
+			quantile: 0.5,
+			want:     0.0,
 		},
 		{
 			name: "50th",
 			data: func() *array.Float64 {
 				return arrow.NewFloat([]float64{1, 2, 3, 4, 5, 5, 4, 3, 2, 1}, nil)
 			},
-			percentile: 0.5,
-			want:       3.0,
+			quantile: 0.5,
+			want:     3.0,
 		},
 		{
 			name: "75th",
 			data: func() *array.Float64 {
 				return arrow.NewFloat([]float64{1, 2, 3, 4, 5, 5, 4, 3, 2, 1}, nil)
 			},
-			percentile: 0.75,
-			want:       4.0,
+			quantile: 0.75,
+			want:     4.0,
 		},
 		{
 			name: "90th",
 			data: func() *array.Float64 {
 				return arrow.NewFloat([]float64{1, 2, 3, 4, 5, 5, 4, 3, 2, 1}, nil)
 			},
-			percentile: 0.9,
-			want:       5.0,
+			quantile: 0.9,
+			want:     5.0,
 		},
 		{
 			name: "99th",
 			data: func() *array.Float64 {
 				return arrow.NewFloat([]float64{1, 2, 3, 4, 5, 5, 4, 3, 2, 1}, nil)
 			},
-			percentile: 0.99,
-			want:       5.0,
+			quantile: 0.99,
+			want:     5.0,
 		},
 		{
 			name: "exact 50th",
 			data: func() *array.Float64 {
 				return arrow.NewFloat([]float64{1, 2, 3, 4, 5}, nil)
 			},
-			percentile: 0.5,
-			exact:      true,
-			want:       3.0,
+			quantile: 0.5,
+			exact:    true,
+			want:     3.0,
 		},
 		{
 			name: "exact 75th",
 			data: func() *array.Float64 {
 				return arrow.NewFloat([]float64{1, 2, 3, 4, 5}, nil)
 			},
-			percentile: 0.75,
-			exact:      true,
-			want:       4.0,
+			quantile: 0.75,
+			exact:    true,
+			want:     4.0,
 		},
 		{
 			name: "exact 90th",
 			data: func() *array.Float64 {
 				return arrow.NewFloat([]float64{1, 2, 3, 4, 5}, nil)
 			},
-			percentile: 0.9,
-			exact:      true,
-			want:       4.6,
+			quantile: 0.9,
+			exact:    true,
+			want:     4.6,
 		},
 		{
 			name: "exact 99th",
 			data: func() *array.Float64 {
 				return arrow.NewFloat([]float64{1, 2, 3, 4, 5}, nil)
 			},
-			percentile: 0.99,
-			exact:      true,
-			want:       4.96,
+			quantile: 0.99,
+			exact:    true,
+			want:     4.96,
 		},
 		{
 			name: "exact 100th",
 			data: func() *array.Float64 {
 				return arrow.NewFloat([]float64{1, 2, 3, 4, 5}, nil)
 			},
-			percentile: 1,
-			exact:      true,
-			want:       5.0,
+			quantile: 1,
+			exact:    true,
+			want:     5.0,
 		},
 		{
 			name: "exact 50th normal",
 			data: func() *array.Float64 {
 				return arrow.NewFloat(NormalData, nil)
 			},
-			percentile: 0.5,
-			exact:      true,
-			want:       10.000736834856248,
+			quantile: 0.5,
+			exact:    true,
+			want:     10.000736834856248,
 		},
 		{
 			name: "normal",
 			data: func() *array.Float64 {
 				return arrow.NewFloat(NormalData, nil)
 			},
-			percentile: 0.9,
-			want:       13.842132136909889,
+			quantile: 0.9,
+			want:     13.842132136909889,
 		},
 		{
 			name: "empty",
@@ -399,8 +399,8 @@ func TestPercentile_Process(t *testing.T) {
 				b.AppendValues([]float64{1}, nil)
 				return b.NewFloat64Array()
 			},
-			percentile: 0.5,
-			want:       3.0,
+			quantile: 0.5,
+			want:     3.0,
 		},
 		{
 			name: "only nulls",
@@ -419,10 +419,10 @@ func TestPercentile_Process(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			var agg execute.Aggregate
 			if tc.exact {
-				agg = &universe.ExactPercentileAgg{Quantile: tc.percentile}
+				agg = &universe.ExactQuantileAgg{Quantile: tc.quantile}
 			} else {
-				agg = &universe.PercentileAgg{
-					Quantile:    tc.percentile,
+				agg = &universe.QuantileAgg{
+					Quantile:    tc.quantile,
 					Compression: 1000,
 				}
 			}
@@ -436,7 +436,7 @@ func TestPercentile_Process(t *testing.T) {
 	}
 }
 
-func TestPercentileSelector_Process(t *testing.T) {
+func TestQuantileSelector_Process(t *testing.T) {
 	testCases := []struct {
 		name     string
 		quantile float64
@@ -742,18 +742,18 @@ func TestPercentileSelector_Process(t *testing.T) {
 				tc.want,
 				nil,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					return universe.NewExactPercentileSelectorTransformation(d, c, &universe.ExactPercentileSelectProcedureSpec{Percentile: tc.quantile}, executetest.UnlimitedAllocator)
+					return universe.NewExactQuantileSelectorTransformation(d, c, &universe.ExactQuantileSelectProcedureSpec{Quantile: tc.quantile}, executetest.UnlimitedAllocator)
 				},
 			)
 		})
 	}
 }
 
-func BenchmarkPercentile(b *testing.B) {
+func BenchmarkQuantile(b *testing.B) {
 	data := arrow.NewFloat(NormalData, &memory.Allocator{})
 	executetest.AggFuncBenchmarkHelper(
 		b,
-		&universe.PercentileAgg{
+		&universe.QuantileAgg{
 			Quantile:    0.9,
 			Compression: 1000,
 		},
