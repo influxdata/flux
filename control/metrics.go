@@ -30,6 +30,8 @@ const (
 	labelQueueError   = requestsLabel("queue_error")
 )
 
+var _, _, _ = labelSuccess, labelCompileError, labelQueueError
+
 func newControllerMetrics(labels []string) *controllerMetrics {
 	const (
 		namespace = "query"

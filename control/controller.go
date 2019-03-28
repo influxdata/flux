@@ -43,7 +43,6 @@ import (
 // The controller is responsible for queueing, planning, and executing queries.
 type Controller struct {
 	newQueries    chan *Query
-	lastID        QueryID
 	queriesMu     sync.RWMutex
 	queries       map[QueryID]*Query
 	queryDone     chan *Query
@@ -122,105 +121,6 @@ func (c *Controller) Query(ctx context.Context, compiler flux.Compiler) (flux.Qu
 
 type Stringer interface {
 	String() string
-}
-
-func (c *Controller) createQuery(ctx context.Context, ct flux.CompilerType) *Query {
-	id := c.nextID()
-	labelValues := make([]string, len(c.labelKeys))
-	compileLabelValues := make([]string, len(c.labelKeys)+1)
-	for i, k := range c.labelKeys {
-		value := ctx.Value(k)
-		var str string
-		switch v := value.(type) {
-		case string:
-			str = v
-		case Stringer:
-			str = v.String()
-		}
-		labelValues[i] = str
-		compileLabelValues[i] = str
-	}
-	compileLabelValues[len(compileLabelValues)-1] = string(ct)
-
-	cctx, cancel := context.WithCancel(ctx)
-	parentSpan, parentCtx := StartSpanFromContext(
-		cctx,
-		"all",
-		c.metrics.allDur.WithLabelValues(labelValues...),
-		c.metrics.all.WithLabelValues(labelValues...),
-	)
-	return &Query{
-		id:                 id,
-		labelValues:        labelValues,
-		compileLabelValues: compileLabelValues,
-		state:              Created,
-		c:                  c,
-		now:                time.Now().UTC(),
-		ready:              make(chan flux.Result, 1),
-		metaCh:             noMetadata, // This will be set to a non-closed channel upon successful execution.
-		parentCtx:          parentCtx,
-		parentSpan:         parentSpan,
-		cancel:             cancel,
-	}
-}
-
-func (c *Controller) compileQuery(q *Query, compiler flux.Compiler) error {
-	return nil
-}
-
-func (c *Controller) enqueueQuery(q *Query) error {
-	if entry := c.logger.Check(zapcore.DebugLevel, "queueing query"); entry != nil {
-		entry.Write(zap.String("spec", fmt.Sprint(flux.Formatted(&q.spec, flux.FmtJSON))))
-	}
-
-	if !q.tryQueue() {
-		return errors.New("failed to transition query to queueing state")
-	}
-	if err := q.spec.Validate(); err != nil {
-		return errors.Wrap(err, "invalid query")
-	}
-
-	// Count functions in query
-	c.countFunctions(q)
-
-	// Add query to the queue
-	select {
-	case c.newQueries <- q:
-		return nil
-	case <-c.shutdownCtx.Done():
-		return fmt.Errorf("query controller shutdown")
-	case <-q.parentCtx.Done():
-		return q.parentCtx.Err()
-	}
-}
-
-func (c *Controller) countQueryRequest(q *Query, result requestsLabel) {
-	l := len(q.labelValues)
-	lvs := make([]string, l+1)
-	copy(lvs, q.labelValues)
-	lvs[l] = string(result)
-	c.metrics.requests.WithLabelValues(lvs...).Inc()
-}
-
-func (c *Controller) countFunctions(q *Query) {
-	l := len(q.labelValues)
-	lvs := make([]string, l+1)
-	copy(lvs, q.labelValues)
-	for _, op := range q.Spec().Operations {
-		lvs[l] = string(op.Spec.Kind())
-		c.metrics.functions.WithLabelValues(lvs...).Inc()
-	}
-}
-
-func (c *Controller) nextID() QueryID {
-	c.queriesMu.Lock()
-	defer c.queriesMu.Unlock()
-	ok := true
-	for ok {
-		c.lastID++
-		_, ok = c.queries[c.lastID]
-	}
-	return c.lastID
 }
 
 // Queries reports the active queries.
@@ -424,7 +324,6 @@ type Query struct {
 	c *Controller
 
 	spec flux.Spec
-	now  time.Time
 
 	ready  chan flux.Result
 	metaCh <-chan flux.Metadata
@@ -692,30 +591,6 @@ func (q *Query) setResults(_ map[string]flux.Result, md <-chan flux.Metadata) {
 
 	//q.ready <- r
 	close(q.ready)
-}
-
-// tryCompile attempts to transition the query into the Compiling state.
-func (q *Query) tryCompile() bool {
-	q.stateMu.Lock()
-	defer q.stateMu.Unlock()
-
-	return q.transitionTo(Compiling, Created)
-}
-
-// tryPlan attempts to transition the query into the Planning state.
-func (q *Query) tryPlan() bool {
-	q.stateMu.Lock()
-	defer q.stateMu.Unlock()
-
-	return q.transitionTo(Planning, Compiling)
-}
-
-// tryQueue attempts to transition the query into the Queueing state.
-func (q *Query) tryQueue() bool {
-	q.stateMu.Lock()
-	defer q.stateMu.Unlock()
-
-	return q.transitionTo(Queueing, Planning)
 }
 
 // tryRequeue attempts to transition the query into the Requeueing state.
