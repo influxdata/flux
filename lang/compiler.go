@@ -47,14 +47,14 @@ func (c FluxCompiler) Compile(ctx context.Context) (flux.Program, error) {
 		return nil, err
 	}
 
-	planner := (&plan.PlannerBuilder{}).Build()
+	planner := plan.PlannerBuilder{}.Build()
 	ps, err := planner.Plan(spec)
 	if err != nil {
 		return nil, err
 	}
 
 	return Program{
-		ps: ps,
+		PlanSpec: ps,
 	}, err
 }
 
@@ -68,14 +68,14 @@ type SpecCompiler struct {
 }
 
 func (c SpecCompiler) Compile(ctx context.Context) (flux.Program, error) {
-	planner := (&plan.PlannerBuilder{}).Build()
+	planner := plan.PlannerBuilder{}.Build()
 	ps, err := planner.Plan(c.Spec)
 	if err != nil {
 		return nil, err
 	}
 
 	return Program{
-		ps: ps,
+		PlanSpec: ps,
 	}, err
 }
 
@@ -100,13 +100,13 @@ func (c ASTCompiler) Compile(ctx context.Context) (flux.Program, error) {
 		return Program{}, err
 	}
 
-	planner := (&plan.PlannerBuilder{}).Build()
+	planner := plan.PlannerBuilder{}.Build()
 	ps, err := planner.Plan(spec)
 	if err != nil {
 		return Program{}, err
 	}
 
-	return Program{ps: ps}, err
+	return Program{PlanSpec: ps}, err
 }
 
 func (ASTCompiler) CompilerType() flux.CompilerType {
@@ -120,13 +120,19 @@ func (c *ASTCompiler) PrependFile(file *ast.File) {
 
 // Program implements the flux.Program interface
 type Program struct {
-	deps execute.Dependencies
-	ps   *plan.Spec
+	deps     execute.Dependencies
+	PlanSpec *plan.Spec
+}
+
+func NewProgram(ps *plan.Spec) *Program {
+	return &Program{
+		PlanSpec: ps,
+	}
 }
 
 func (p Program) Start(ctx context.Context, allocator *memory.Allocator) (flux.Query, error) {
 	e := execute.NewExecutor(p.deps, nil)
-	results, _, err := e.Execute(ctx, p.ps, allocator)
+	results, _, err := e.Execute(ctx, p.PlanSpec, allocator)
 	if err != nil {
 		return nil, err
 	}

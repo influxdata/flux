@@ -2,15 +2,17 @@ package lang_test
 
 import (
 	"context"
+	"math"
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/lang"
+	"github.com/influxdata/flux/parser"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/stdlib/csv"
 	"github.com/influxdata/flux/stdlib/universe"
 )
@@ -21,7 +23,7 @@ func TestASTCompiler(t *testing.T) {
 		now    time.Time
 		file   *ast.File
 		script string
-		want   *flux.Spec
+		want   plantest.PlanSpec
 	}{
 		{
 			name: "override now time using now option",
@@ -31,47 +33,39 @@ import "csv"
 option now = () => 2017-10-10T00:01:00Z
 csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 `,
-			want: &flux.Spec{
-				Operations: []*flux.Operation{
-					{
-						ID:   flux.OperationID("fromCSV0"),
-						Spec: &csv.FromCSVOpSpec{CSV: "foo,bar"},
-					},
-					{
-						ID: flux.OperationID("range1"),
-						Spec: &universe.RangeOpSpec{
-							Start:      flux.Time{Absolute: time.Date(2017, 10, 10, 0, 0, 0, 0, time.UTC)},
-							Stop:       flux.Time{IsRelative: true},
-							TimeColumn: "_time", StartColumn: "_start", StopColumn: "_stop"},
-					},
+			want: plantest.PlanSpec{
+				Nodes: []plan.Node{
+					&plan.PhysicalPlanNode{Spec: &csv.FromCSVProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
-				Edges: []flux.Edge{{Parent: flux.OperationID("fromCSV0"), Child: flux.OperationID("range1")}},
-				Now:   time.Date(2017, 10, 10, 0, 1, 0, 0, time.UTC),
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
+				Now:       parser.MustParseTime("2017-10-10T00:01:00Z").Value,
 			},
 		},
 		{
 			name: "get now time from compiler",
-			now:  time.Unix(1, 1),
+			now:  parser.MustParseTime("2018-10-10T00:00:00Z").Value,
 			script: `
 import "csv"
 csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 `,
-			want: &flux.Spec{
-				Operations: []*flux.Operation{
-					{
-						ID:   flux.OperationID("fromCSV0"),
-						Spec: &csv.FromCSVOpSpec{CSV: "foo,bar"},
-					},
-					{
-						ID: flux.OperationID("range1"),
-						Spec: &universe.RangeOpSpec{
-							Start:      flux.Time{Absolute: time.Date(2017, 10, 10, 0, 0, 0, 0, time.UTC)},
-							Stop:       flux.Time{IsRelative: true},
-							TimeColumn: "_time", StartColumn: "_start", StopColumn: "_stop"},
-					},
+			want: plantest.PlanSpec{
+				Nodes: []plan.Node{
+					&plan.PhysicalPlanNode{Spec: &csv.FromCSVProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
-				Edges: []flux.Edge{{Parent: flux.OperationID("fromCSV0"), Child: flux.OperationID("range1")}},
-				Now:   time.Unix(1, 1),
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
+				Now:       parser.MustParseTime("2018-10-10T00:00:00Z").Value,
 			},
 		},
 		{
@@ -83,7 +77,7 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 							ID: &ast.Identifier{Name: "now"},
 							Init: &ast.FunctionExpression{
 								Body: &ast.DateTimeLiteral{
-									Value: time.Unix(1, 1),
+									Value: parser.MustParseTime("2018-10-10T00:00:00Z").Value,
 								},
 							},
 						},
@@ -94,22 +88,18 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 import "csv"
 csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 `,
-			want: &flux.Spec{
-				Operations: []*flux.Operation{
-					{
-						ID:   flux.OperationID("fromCSV0"),
-						Spec: &csv.FromCSVOpSpec{CSV: "foo,bar"},
-					},
-					{
-						ID: flux.OperationID("range1"),
-						Spec: &universe.RangeOpSpec{
-							Start:      flux.Time{Absolute: time.Date(2017, 10, 10, 0, 0, 0, 0, time.UTC)},
-							Stop:       flux.Time{IsRelative: true},
-							TimeColumn: "_time", StartColumn: "_start", StopColumn: "_stop"},
-					},
+			want: plantest.PlanSpec{
+				Nodes: []plan.Node{
+					&plan.PhysicalPlanNode{Spec: &csv.FromCSVProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
-				Edges: []flux.Edge{{Parent: flux.OperationID("fromCSV0"), Child: flux.OperationID("range1")}},
-				Now:   time.Unix(1, 1),
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
+				Now:       parser.MustParseTime("2018-10-10T00:00:00Z").Value,
 			},
 		},
 	}
@@ -129,14 +119,15 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 				c.PrependFile(tc.file)
 			}
 
-			got, err := c.Compile(context.Background())
+			prog, err := c.Compile(context.Background())
 			if err != nil {
 				t.Fatalf("failed to compile AST: %v", err)
 			}
 
-			cmpOpts := cmpopts.IgnoreUnexported(flux.Spec{})
-			if !cmp.Equal(tc.want, got, cmpOpts) {
-				t.Fatalf("compiler produced unexpected spec; -want/+got:\n%v\n", cmp.Diff(tc.want, got, cmpOpts))
+			got := prog.(lang.Program).PlanSpec
+			want := plantest.CreatePlanSpec(&tc.want)
+			if err := plantest.ComparePlansShallow(want, got); err != nil {
+				t.Error(err)
 			}
 		})
 	}

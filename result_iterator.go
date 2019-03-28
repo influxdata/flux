@@ -32,8 +32,8 @@ type ResultIterator interface {
 
 // queryResultIterator implements a ResultIterator while consuming a Query
 type queryResultIterator struct {
-	query    Query
-	released bool
+	query      Query
+	released   bool
 	nextResult Result
 }
 
@@ -94,7 +94,7 @@ func (r *queryResultIterator) Next() Result {
 func (r *queryResultIterator) Release() {
 	r.query.Done()
 	r.released = true
-	r.nextResult = nil 	// a panic will occur if caller attempts to call Next().
+	r.nextResult = nil // a panic will occur if caller attempts to call Next().
 }
 
 func (r *queryResultIterator) Err() error {
