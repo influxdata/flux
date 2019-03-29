@@ -41,6 +41,8 @@ To assist in review for the PR, please add the following to your pull request co
 - [ ] Sign [CLA](https://www.influxdata.com/legal/cla/) (if not already signed)
 ```
 
+Flux uses _conventional commit message_ formats: https://www.conventionalcommits.org/en/v1.0.0-beta.3/. Please use this commit message format for commits that will be visible in influxdata/flux history.
+
 ## Signing the CLA
 In order to contribute back to Flux, you must sign the
 [InfluxData Contributor License Agreement](https://www.influxdata.com/legal/cla/) (CLA).
