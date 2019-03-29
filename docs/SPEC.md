@@ -1592,10 +1592,10 @@ Median is defined as:
 
     median = (method="estimate_tdigest", compression=0.0, tables=<-) =>
     	tables
-    		|> percentile(percentile:0.5, method:method, compression:compression)
+            |> quantile(q:0.5, method:method, compression:compression)
 
-Is it simply a `percentile` with the `percentile` paramter always set to `0.5`.
-It therefore shares all the same properties as the percentile function.
+Is it simply a `quantile` with the `q` paramter always set to `0.5`.
+It therefore shares all the same properties as the quantile function.
 
 Example:
 ```
@@ -1606,34 +1606,34 @@ from(bucket: "telegraf/autogen")
 	|> median()
 ```
 
-##### Percentile (aggregate)
+##### Quantile (aggregate)
 
-Percentile is both an aggregate operation and a selector operation depending on selected options.
-In the aggregate methods, it outputs the value that represents the specified percentile of the non null record as a float.
+Quantile is both an aggregate operation and a selector operation depending on selected options.
+In the aggregate methods, it outputs the value that represents the specified quantile of the non null record as a float.
 
-Percentile has the following properties:
+Quantile has the following properties:
 
 | Name        | Type     | Description                                                                                                                                                                                   |
 | ----        | ----     | -----------                                                                                                                                                                                   |
 | columns     | []string | Columns specifies a list of columns to aggregate. Defaults to `["_value"]`                                                                                                                    |
-| percentile  | float    | Percentile is a value between 0 and 1 indicating the desired percentile.                                                                                                                      |
+| q           | float    | q is a value between 0 and 1 indicating the desired quantile.                                                                                                                                 |
 | method      | string   | Method must be one of: estimate_tdigest, exact_mean, or exact_selector.                                                                                                                       |
 | compression | float    | Compression indicates how many centroids to use when compressing the dataset. A larger number produces a more accurate result at the cost of increased memory requirements. Defaults to 1000. |
 
 
 The method parameter must be one of:
 
-* `estimate_tdigest`: an aggregate result that uses a tdigest data structure to compute an accurate percentile estimate on large data sources. 
-* `exact_mean`: an aggregate result that takes the average of the two points closest to the percentile value. 
-* `exact_selector`: see Percentile (selector) 
+* `estimate_tdigest`: an aggregate result that uses a tdigest data structure to compute an accurate quantile estimate on large data sources. 
+* `exact_mean`: an aggregate result that takes the average of the two points closest to the quantile value. 
+* `exact_selector`: see Quantile (selector) 
 
 Example:
 ```
-// Determine 99th percentile cpu system usage:
+// Determine the 0.99 quantile for cpu system usage:
 from(bucket: "telegraf/autogen")
 	|> range(start: -5m)
 	|> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
-	|> percentile(percentile: 0.99, method: "estimate_tdigest", compression: 1000.0)
+	|> quantile(q: 0.99, method: "estimate_tdigest", compression: 1000.0)
 ```
 
 ##### Skew
@@ -1783,32 +1783,32 @@ from(bucket:"telegraf/autogen")
     |> min()
 ```
 
-##### Percentile (selector)
+##### Quantile (selector)
 
-Percentile is both an aggregate operation and a selector operation depending on selected options.
-In the aggregate methods, it outputs the value that represents the specified percentile of the non null record as a float.
+Quantile is both an aggregate operation and a selector operation depending on selected options.
+In the aggregate methods, it outputs the value that represents the specified quantile of the non null record as a float.
 
-Percentile has the following properties:
+Quantile has the following properties:
 
 | Name       | Type   | Description                                                                                       |
 | ----       | ----   | -----------                                                                                       |
-| column     | string | Column indicates which column will be used for the percentile computation. Defaults to `"_value"` |
-| percentile | float  | Percentile is a value between 0 and 1 indicating the desired percentile.                                        |
+| column     | string | Column indicates which column will be used for the quantile computation. Defaults to `"_value"`   |
+| q          | float  | q is a value between 0 and 1 indicating the desired quantile.                                     |
 | method     | string | Method must be one of: estimate_tdigest, exact_mean, exact_selector.                              |
 
 The method parameter must be one of:
 
-* `estimate_tdigest`: See Percentile (Aggregate).
-* `exact_mean`: See Percentile (Aggregate).
-* `exact_selector`: a selector result that returns the data point for which at least `percentile` points are less than.
+* `estimate_tdigest`: See Quantile (Aggregate).
+* `exact_mean`: See Quantile (Aggregate).
+* `exact_selector`: a selector result that returns the data point for which at least `q` points are less than.
 
 Example:
 ```
-// Determine 99th percentile cpu system usage:
+// Determine the 0.99 quantile for cpu system usage:
 from(bucket: "telegraf/autogen")
 	|> range(start: -5m)
 	|> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
-	|> percentile(percentile: 0.99, method: "exact_selector")
+	|> quantile(q: 0.99, method: "exact_selector")
 ```
 
 ##### Median (selector)
@@ -1817,10 +1817,10 @@ Median is defined as:
 
     median = (method="estimate_tdigest", compression=0.0, tables=<-) =>
     	tables
-    		|> percentile(percentile:0.5, method:method, compression:compression)
+    		|> quantile(q:0.5, method:method, compression:compression)
 
-Is it simply a `percentile` with the `percentile` paramter always set to `0.5`.
-It therefore shares all the same properties as the percentile function.
+Is it simply a `quantile` with the `q` paramter always set to `0.5`.
+It therefore shares all the same properties as the quantile function.
 
 Example:
 ```
