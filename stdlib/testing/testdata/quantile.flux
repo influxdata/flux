@@ -124,11 +124,11 @@ outData = "
 ,,9,2019-01-01T00:00:00Z,2030-01-01T00:00:00Z,Reiva,rc2iOD1,qCnJDC,2019-01-09T19:45:48Z,78
 "
 
-t_percentile = (table=<-) =>
+t_quantile = (table=<-) =>
 	(table
 		|> range(start: 2019-01-01T00:00:00Z)
-		|> percentile(percentile: 0.75, method: "exact_selector"))
+		|> quantile(q: 0.75, method: "exact_selector"))
 
-test _percentile = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_percentile})
+test _quantile = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_quantile})
 

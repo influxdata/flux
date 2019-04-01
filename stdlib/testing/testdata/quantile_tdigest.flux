@@ -25,11 +25,11 @@ outData = "
 ,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,SOYcRk,NC7N,29.50336437998469
 "
 
-t_percentile = (table=<-) =>
+t_quantile = (table=<-) =>
 	(table
 		|> range(start: 2018-01-01T00:00:00Z)
-		|> percentile(percentile: 0.75, method: "estimate_tdigest"))
+		|> quantile(q: 0.75, method: "estimate_tdigest"))
 
-test _percentile_tdigest = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_percentile})
+test _quantile_tdigest = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_quantile})
 

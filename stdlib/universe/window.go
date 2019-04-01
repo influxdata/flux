@@ -459,7 +459,7 @@ func hasValidPredecessors(node plan.Node) bool {
 		LimitKind,
 		MaxKind,
 		MinKind,
-		ExactPercentileSelectKind,
+		ExactQuantileSelectKind,
 		SampleKind,
 		DropKind,
 		KeepKind,

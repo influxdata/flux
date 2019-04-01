@@ -16,9 +16,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-const PercentileKind = "percentile"
-const ExactPercentileAggKind = "exact-percentile-aggregate"
-const ExactPercentileSelectKind = "exact-percentile-selector"
+const QuantileKind = "quantile"
+const ExactQuantileAggKind = "exact-quantile-aggregate"
+const ExactQuantileSelectKind = "exact-quantile-selector"
 
 const (
 	methodEstimateTdigest = "estimate_tdigest"
@@ -26,50 +26,50 @@ const (
 	methodExactSelector   = "exact_selector"
 )
 
-type PercentileOpSpec struct {
-	Percentile  float64 `json:"percentile"`
+type QuantileOpSpec struct {
+	Quantile    float64 `json:"quantile"`
 	Compression float64 `json:"compression"`
 	Method      string  `json:"method"`
-	// percentile is either an aggregate, or a selector based on the options
+	// quantile is either an aggregate, or a selector based on the options
 	execute.AggregateConfig
 	execute.SelectorConfig
 }
 
 func init() {
-	percentileSignature := flux.FunctionSignature(
+	quantileSignature := flux.FunctionSignature(
 		map[string]semantic.PolyType{
 			"column":      semantic.String,                            // selector
 			"columns":     semantic.NewArrayPolyType(semantic.String), // aggregate
-			"percentile":  semantic.Float,
+			"q":           semantic.Float,
 			"compression": semantic.Float,
 			"method":      semantic.String,
 		},
-		[]string{"percentile"},
+		[]string{"q"},
 	)
 
-	flux.RegisterPackageValue("universe", PercentileKind, flux.FunctionValue(PercentileKind, createPercentileOpSpec, percentileSignature))
+	flux.RegisterPackageValue("universe", QuantileKind, flux.FunctionValue(QuantileKind, createQuantileOpSpec, quantileSignature))
 
-	flux.RegisterOpSpec(PercentileKind, newPercentileOp)
-	plan.RegisterProcedureSpec(PercentileKind, newPercentileProcedure, PercentileKind)
-	execute.RegisterTransformation(PercentileKind, createPercentileTransformation)
-	execute.RegisterTransformation(ExactPercentileAggKind, createExactPercentileAggTransformation)
-	execute.RegisterTransformation(ExactPercentileSelectKind, createExactPercentileSelectTransformation)
+	flux.RegisterOpSpec(QuantileKind, newQuantileOp)
+	plan.RegisterProcedureSpec(QuantileKind, newQuantileProcedure, QuantileKind)
+	execute.RegisterTransformation(QuantileKind, createQuantileTransformation)
+	execute.RegisterTransformation(ExactQuantileAggKind, createExactQuantileAggTransformation)
+	execute.RegisterTransformation(ExactQuantileSelectKind, createExactQuantileSelectTransformation)
 }
 
-func createPercentileOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func createQuantileOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
 
-	spec := new(PercentileOpSpec)
-	p, err := args.GetRequiredFloat("percentile")
+	spec := new(QuantileOpSpec)
+	p, err := args.GetRequiredFloat("q")
 	if err != nil {
 		return nil, err
 	}
-	spec.Percentile = p
+	spec.Quantile = p
 
-	if spec.Percentile < 0 || spec.Percentile > 1 {
-		return nil, errors.New("percentile must be between 0 and 1.")
+	if spec.Quantile < 0 || spec.Quantile > 1 {
+		return nil, errors.New("quantile must be between 0 and 1.")
 	}
 
 	if m, ok, err := args.GetString("method"); err != nil {
@@ -109,99 +109,99 @@ func createPercentileOpSpec(args flux.Arguments, a *flux.Administration) (flux.O
 	return spec, nil
 }
 
-func newPercentileOp() flux.OperationSpec {
-	return new(PercentileOpSpec)
+func newQuantileOp() flux.OperationSpec {
+	return new(QuantileOpSpec)
 }
 
-func (s *PercentileOpSpec) Kind() flux.OperationKind {
-	return PercentileKind
+func (s *QuantileOpSpec) Kind() flux.OperationKind {
+	return QuantileKind
 }
 
-type TDigestPercentileProcedureSpec struct {
-	Percentile  float64 `json:"percentile"`
+type TDigestQuantileProcedureSpec struct {
+	Quantile    float64 `json:"quantile"`
 	Compression float64 `json:"compression"`
 	execute.AggregateConfig
 }
 
-func (s *TDigestPercentileProcedureSpec) Kind() plan.ProcedureKind {
-	return PercentileKind
+func (s *TDigestQuantileProcedureSpec) Kind() plan.ProcedureKind {
+	return QuantileKind
 }
-func (s *TDigestPercentileProcedureSpec) Copy() plan.ProcedureSpec {
-	return &TDigestPercentileProcedureSpec{
-		Percentile:      s.Percentile,
+func (s *TDigestQuantileProcedureSpec) Copy() plan.ProcedureSpec {
+	return &TDigestQuantileProcedureSpec{
+		Quantile:        s.Quantile,
 		Compression:     s.Compression,
 		AggregateConfig: s.AggregateConfig,
 	}
 }
 
 // TriggerSpec implements plan.TriggerAwareProcedureSpec
-func (s *TDigestPercentileProcedureSpec) TriggerSpec() plan.TriggerSpec {
+func (s *TDigestQuantileProcedureSpec) TriggerSpec() plan.TriggerSpec {
 	return plan.NarrowTransformationTriggerSpec{}
 }
 
-type ExactPercentileAggProcedureSpec struct {
-	Percentile float64 `json:"percentile"`
+type ExactQuantileAggProcedureSpec struct {
+	Quantile float64 `json:"quantile"`
 	execute.AggregateConfig
 }
 
-func (s *ExactPercentileAggProcedureSpec) Kind() plan.ProcedureKind {
-	return ExactPercentileAggKind
+func (s *ExactQuantileAggProcedureSpec) Kind() plan.ProcedureKind {
+	return ExactQuantileAggKind
 }
-func (s *ExactPercentileAggProcedureSpec) Copy() plan.ProcedureSpec {
-	return &ExactPercentileAggProcedureSpec{Percentile: s.Percentile, AggregateConfig: s.AggregateConfig}
+func (s *ExactQuantileAggProcedureSpec) Copy() plan.ProcedureSpec {
+	return &ExactQuantileAggProcedureSpec{Quantile: s.Quantile, AggregateConfig: s.AggregateConfig}
 }
 
 // TriggerSpec implements plan.TriggerAwareProcedureSpec
-func (s *ExactPercentileAggProcedureSpec) TriggerSpec() plan.TriggerSpec {
+func (s *ExactQuantileAggProcedureSpec) TriggerSpec() plan.TriggerSpec {
 	return plan.NarrowTransformationTriggerSpec{}
 }
 
-type ExactPercentileSelectProcedureSpec struct {
-	Percentile float64 `json:"percentile"`
+type ExactQuantileSelectProcedureSpec struct {
+	Quantile float64 `json:"quantile"`
 	execute.SelectorConfig
 }
 
-func (s *ExactPercentileSelectProcedureSpec) Kind() plan.ProcedureKind {
-	return ExactPercentileSelectKind
+func (s *ExactQuantileSelectProcedureSpec) Kind() plan.ProcedureKind {
+	return ExactQuantileSelectKind
 }
-func (s *ExactPercentileSelectProcedureSpec) Copy() plan.ProcedureSpec {
-	return &ExactPercentileSelectProcedureSpec{Percentile: s.Percentile}
+func (s *ExactQuantileSelectProcedureSpec) Copy() plan.ProcedureSpec {
+	return &ExactQuantileSelectProcedureSpec{Quantile: s.Quantile}
 }
 
 // TriggerSpec implements plan.TriggerAwareProcedureSpec
-func (s *ExactPercentileSelectProcedureSpec) TriggerSpec() plan.TriggerSpec {
+func (s *ExactQuantileSelectProcedureSpec) TriggerSpec() plan.TriggerSpec {
 	return plan.NarrowTransformationTriggerSpec{}
 }
 
-func newPercentileProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
-	spec, ok := qs.(*PercentileOpSpec)
+func newQuantileProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
+	spec, ok := qs.(*QuantileOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
 	}
 
 	switch spec.Method {
 	case methodExactMean:
-		return &ExactPercentileAggProcedureSpec{
-			Percentile:      spec.Percentile,
+		return &ExactQuantileAggProcedureSpec{
+			Quantile:        spec.Quantile,
 			AggregateConfig: spec.AggregateConfig,
 		}, nil
 	case methodExactSelector:
-		return &ExactPercentileSelectProcedureSpec{
-			Percentile: spec.Percentile,
+		return &ExactQuantileSelectProcedureSpec{
+			Quantile: spec.Quantile,
 		}, nil
 	case methodEstimateTdigest:
 		fallthrough
 	default:
-		// default to estimated percentile
-		return &TDigestPercentileProcedureSpec{
-			Percentile:      spec.Percentile,
+		// default to estimated quantile
+		return &TDigestQuantileProcedureSpec{
+			Quantile:        spec.Quantile,
 			Compression:     spec.Compression,
 			AggregateConfig: spec.AggregateConfig,
 		}, nil
 	}
 }
 
-type PercentileAgg struct {
+type QuantileAgg struct {
 	Quantile,
 	Compression float64
 
@@ -209,46 +209,46 @@ type PercentileAgg struct {
 	ok     bool
 }
 
-func createPercentileTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
-	ps, ok := spec.(*TDigestPercentileProcedureSpec)
+func createQuantileTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
+	ps, ok := spec.(*TDigestQuantileProcedureSpec)
 	if !ok {
 		return nil, nil, fmt.Errorf("invalid spec type %T", ps)
 	}
-	agg := &PercentileAgg{
-		Quantile:    ps.Percentile,
+	agg := &QuantileAgg{
+		Quantile:    ps.Quantile,
 		Compression: ps.Compression,
 	}
 	t, d := execute.NewAggregateTransformationAndDataset(id, mode, agg, ps.AggregateConfig, a.Allocator())
 	return t, d, nil
 }
-func (a *PercentileAgg) Copy() *PercentileAgg {
-	na := new(PercentileAgg)
+func (a *QuantileAgg) Copy() *QuantileAgg {
+	na := new(QuantileAgg)
 	*na = *a
 	na.digest = tdigest.NewWithCompression(na.Compression)
 	return na
 }
 
-func (a *PercentileAgg) NewBoolAgg() execute.DoBoolAgg {
+func (a *QuantileAgg) NewBoolAgg() execute.DoBoolAgg {
 	return nil
 }
 
-func (a *PercentileAgg) NewIntAgg() execute.DoIntAgg {
+func (a *QuantileAgg) NewIntAgg() execute.DoIntAgg {
 	return nil
 }
 
-func (a *PercentileAgg) NewUIntAgg() execute.DoUIntAgg {
+func (a *QuantileAgg) NewUIntAgg() execute.DoUIntAgg {
 	return nil
 }
 
-func (a *PercentileAgg) NewFloatAgg() execute.DoFloatAgg {
+func (a *QuantileAgg) NewFloatAgg() execute.DoFloatAgg {
 	return a.Copy()
 }
 
-func (a *PercentileAgg) NewStringAgg() execute.DoStringAgg {
+func (a *QuantileAgg) NewStringAgg() execute.DoStringAgg {
 	return nil
 }
 
-func (a *PercentileAgg) DoFloat(vs *array.Float64) {
+func (a *QuantileAgg) DoFloat(vs *array.Float64) {
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsValid(i) {
 			a.digest.Add(vs.Value(i), 1)
@@ -257,62 +257,62 @@ func (a *PercentileAgg) DoFloat(vs *array.Float64) {
 	}
 }
 
-func (a *PercentileAgg) Type() flux.ColType {
+func (a *QuantileAgg) Type() flux.ColType {
 	return flux.TFloat
 }
 
-func (a *PercentileAgg) ValueFloat() float64 {
+func (a *QuantileAgg) ValueFloat() float64 {
 	return a.digest.Quantile(a.Quantile)
 }
 
-func (a *PercentileAgg) IsNull() bool {
+func (a *QuantileAgg) IsNull() bool {
 	return !a.ok
 }
 
-type ExactPercentileAgg struct {
+type ExactQuantileAgg struct {
 	Quantile float64
 	data     []float64
 }
 
-func createExactPercentileAggTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
-	ps, ok := spec.(*ExactPercentileAggProcedureSpec)
+func createExactQuantileAggTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
+	ps, ok := spec.(*ExactQuantileAggProcedureSpec)
 	if !ok {
 		return nil, nil, fmt.Errorf("invalid spec type %T", ps)
 	}
-	agg := &ExactPercentileAgg{
-		Quantile: ps.Percentile,
+	agg := &ExactQuantileAgg{
+		Quantile: ps.Quantile,
 	}
 	t, d := execute.NewAggregateTransformationAndDataset(id, mode, agg, ps.AggregateConfig, a.Allocator())
 	return t, d, nil
 }
 
-func (a *ExactPercentileAgg) Copy() *ExactPercentileAgg {
-	na := new(ExactPercentileAgg)
+func (a *ExactQuantileAgg) Copy() *ExactQuantileAgg {
+	na := new(ExactQuantileAgg)
 	*na = *a
 	na.data = nil
 	return na
 }
-func (a *ExactPercentileAgg) NewBoolAgg() execute.DoBoolAgg {
+func (a *ExactQuantileAgg) NewBoolAgg() execute.DoBoolAgg {
 	return nil
 }
 
-func (a *ExactPercentileAgg) NewIntAgg() execute.DoIntAgg {
+func (a *ExactQuantileAgg) NewIntAgg() execute.DoIntAgg {
 	return nil
 }
 
-func (a *ExactPercentileAgg) NewUIntAgg() execute.DoUIntAgg {
+func (a *ExactQuantileAgg) NewUIntAgg() execute.DoUIntAgg {
 	return nil
 }
 
-func (a *ExactPercentileAgg) NewFloatAgg() execute.DoFloatAgg {
+func (a *ExactQuantileAgg) NewFloatAgg() execute.DoFloatAgg {
 	return a.Copy()
 }
 
-func (a *ExactPercentileAgg) NewStringAgg() execute.DoStringAgg {
+func (a *ExactQuantileAgg) NewStringAgg() execute.DoStringAgg {
 	return nil
 }
 
-func (a *ExactPercentileAgg) DoFloat(vs *array.Float64) {
+func (a *ExactQuantileAgg) DoFloat(vs *array.Float64) {
 	if vs.NullN() == 0 {
 		a.data = append(a.data, vs.Float64Values()...)
 		return
@@ -336,11 +336,11 @@ func (a *ExactPercentileAgg) DoFloat(vs *array.Float64) {
 	}
 }
 
-func (a *ExactPercentileAgg) Type() flux.ColType {
+func (a *ExactQuantileAgg) Type() flux.ColType {
 	return flux.TFloat
 }
 
-func (a *ExactPercentileAgg) ValueFloat() float64 {
+func (a *ExactQuantileAgg) ValueFloat() float64 {
 	sort.Float64s(a.data)
 
 	x := a.Quantile * float64(len(a.data)-1)
@@ -359,36 +359,36 @@ func (a *ExactPercentileAgg) ValueFloat() float64 {
 	return y
 }
 
-func (a *ExactPercentileAgg) IsNull() bool {
+func (a *ExactQuantileAgg) IsNull() bool {
 	return len(a.data) == 0
 }
 
-func createExactPercentileSelectTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
-	ps, ok := spec.(*ExactPercentileSelectProcedureSpec)
+func createExactQuantileSelectTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
+	ps, ok := spec.(*ExactQuantileSelectProcedureSpec)
 	if !ok {
 		return nil, nil, fmt.Errorf("invalid spec type %T", ps)
 	}
 
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
-	t := NewExactPercentileSelectorTransformation(d, cache, ps, a.Allocator())
+	t := NewExactQuantileSelectorTransformation(d, cache, ps, a.Allocator())
 
 	return t, d, nil
 }
 
-type ExactPercentileSelectorTransformation struct {
+type ExactQuantileSelectorTransformation struct {
 	d     execute.Dataset
 	cache execute.TableBuilderCache
-	spec  ExactPercentileSelectProcedureSpec
+	spec  ExactQuantileSelectProcedureSpec
 	a     *memory.Allocator
 }
 
-func NewExactPercentileSelectorTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ExactPercentileSelectProcedureSpec, a *memory.Allocator) *ExactPercentileSelectorTransformation {
+func NewExactQuantileSelectorTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ExactQuantileSelectProcedureSpec, a *memory.Allocator) *ExactQuantileSelectorTransformation {
 	if spec.SelectorConfig.Column == "" {
 		spec.SelectorConfig.Column = execute.DefaultValueColLabel
 	}
 
-	sel := &ExactPercentileSelectorTransformation{
+	sel := &ExactQuantileSelectorTransformation{
 		d:     d,
 		cache: cache,
 		spec:  *spec,
@@ -397,7 +397,7 @@ func NewExactPercentileSelectorTransformation(d execute.Dataset, cache execute.T
 	return sel
 }
 
-func (t *ExactPercentileSelectorTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
+func (t *ExactQuantileSelectorTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	valueIdx := execute.ColIdx(t.spec.Column, tbl.Cols())
 	if valueIdx < 0 {
 		return fmt.Errorf("no column %q exists", t.spec.Column)
@@ -431,7 +431,7 @@ func (t *ExactPercentileSelectorTransformation) Process(id execute.DatasetID, tb
 			sort.SliceStable(rows, func(i, j int) bool {
 				return rows[i].value < rows[j].value
 			})
-			index := getQuantileIndex(t.spec.Percentile, len(rows))
+			index := getQuantileIndex(t.spec.Quantile, len(rows))
 			row = rows[index].row
 		}
 	case flux.TInt:
@@ -460,7 +460,7 @@ func (t *ExactPercentileSelectorTransformation) Process(id execute.DatasetID, tb
 			sort.SliceStable(rows, func(i, j int) bool {
 				return rows[i].value < rows[j].value
 			})
-			index := getQuantileIndex(t.spec.Percentile, len(rows))
+			index := getQuantileIndex(t.spec.Quantile, len(rows))
 			row = rows[index].row
 		}
 	case flux.TUInt:
@@ -489,7 +489,7 @@ func (t *ExactPercentileSelectorTransformation) Process(id execute.DatasetID, tb
 			sort.SliceStable(rows, func(i, j int) bool {
 				return rows[i].value < rows[j].value
 			})
-			index := getQuantileIndex(t.spec.Percentile, len(rows))
+			index := getQuantileIndex(t.spec.Quantile, len(rows))
 			row = rows[index].row
 		}
 	case flux.TString:
@@ -518,7 +518,7 @@ func (t *ExactPercentileSelectorTransformation) Process(id execute.DatasetID, tb
 			sort.SliceStable(rows, func(i, j int) bool {
 				return rows[i].value < rows[j].value
 			})
-			index := getQuantileIndex(t.spec.Percentile, len(rows))
+			index := getQuantileIndex(t.spec.Quantile, len(rows))
 			row = rows[index].row
 		}
 	case flux.TTime:
@@ -547,7 +547,7 @@ func (t *ExactPercentileSelectorTransformation) Process(id execute.DatasetID, tb
 			sort.SliceStable(rows, func(i, j int) bool {
 				return rows[i].value < rows[j].value
 			})
-			index := getQuantileIndex(t.spec.Percentile, len(rows))
+			index := getQuantileIndex(t.spec.Quantile, len(rows))
 			row = rows[index].row
 		}
 	case flux.TBool:
@@ -579,7 +579,7 @@ func (t *ExactPercentileSelectorTransformation) Process(id execute.DatasetID, tb
 				}
 				return rows[j].value
 			})
-			index := getQuantileIndex(t.spec.Percentile, len(rows))
+			index := getQuantileIndex(t.spec.Quantile, len(rows))
 			row = rows[index].row
 		}
 	default:
@@ -627,18 +627,18 @@ func getQuantileIndex(quantile float64, len int) int {
 	return index
 }
 
-func (t *ExactPercentileSelectorTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
+func (t *ExactQuantileSelectorTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *ExactPercentileSelectorTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
+func (t *ExactQuantileSelectorTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
 	return t.d.UpdateWatermark(mark)
 }
 
-func (t *ExactPercentileSelectorTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute.Time) error {
+func (t *ExactQuantileSelectorTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute.Time) error {
 	return t.d.UpdateProcessingTime(pt)
 }
 
-func (t *ExactPercentileSelectorTransformation) Finish(id execute.DatasetID, err error) {
+func (t *ExactQuantileSelectorTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
 }

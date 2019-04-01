@@ -36,7 +36,7 @@ builtin map
 builtin max
 builtin mean
 builtin min
-builtin percentile
+builtin quantile
 builtin pivot
 builtin range
 builtin reduce
@@ -107,7 +107,7 @@ increase = (tables=<-, columns=["_value"]) =>
 // Using the exact method requires that the entire data set can fit in memory.
 median = (method="estimate_tdigest", compression=0.0, tables=<-) =>
     tables
-        |> percentile(percentile:0.5, method:method, compression:compression)
+        |> quantile(q:0.5, method:method, compression:compression)
 
 // stateCount computes the number of consecutive records in a given state.
 // The state is defined via the function fn. For each consecutive point for
