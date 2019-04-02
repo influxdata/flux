@@ -15,7 +15,7 @@ import (
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 )
 
@@ -451,7 +451,7 @@ func init() {
 	TableObjectMonoType, _ = TableObjectType.MonoType()
 }
 
-// IDer produces the mapping of table Objects to OpertionIDs
+// IDer produces the mapping of table Objects to OperationIDs
 type IDer interface {
 	ID(*TableObject) OperationID
 }
@@ -462,6 +462,10 @@ type IDerOpSpec interface {
 	IDer(ider IDer)
 }
 
+// TableObject represents the value returned by a transformation.
+// As such, it holds the OperationSpec of the transformation it is associated with,
+// and it is a values.Value (and, also, a values.Object).
+// It can be compiled and executed as a flux.Program by using a lang.TableObjectCompiler.
 type TableObject struct {
 	// TODO(Josh): Remove args once the
 	// OperationSpec interface has an Equal method.
@@ -538,17 +542,6 @@ func (i *ider) ID(t *TableObject) OperationID {
 		tableID = i.set(t, i.nextID())
 	}
 	return tableID
-}
-
-func (t *TableObject) ToSpec() *Spec {
-	ider := &ider{
-		id:     0,
-		lookup: make(map[*TableObject]OperationID),
-	}
-	spec := new(Spec)
-	visited := make(map[*TableObject]bool)
-	t.buildSpec(ider, spec, visited)
-	return spec
 }
 
 func (t *TableObject) buildSpec(ider IDer, spec *Spec, visited map[*TableObject]bool) {
