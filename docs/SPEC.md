@@ -746,7 +746,8 @@ The precedence of the operators is given in the table below. Operators with a lo
 |          | `>` `>=` |                           |
 |          |`=~` `!~` |                           |
 |     5    |  `not`   | Unary logical expression  |
-|     6    |`and` `or`|    Logical AND and OR     |
+|     6    |  `and`   |        Logical AND        |
+|     7    |  `or`    |        Logical OR         |
 
 The operator precedence is encoded directly into the grammar as the following.
 
