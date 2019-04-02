@@ -28,7 +28,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
-	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"

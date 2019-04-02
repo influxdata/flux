@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
@@ -22,7 +23,7 @@ import (
 )
 
 func compile(fluxText string, now time.Time) (*flux.Spec, error) {
-	return flux.Compile(context.Background(), fluxText, now)
+	return spec.FromScript(context.Background(), fluxText, now)
 }
 
 func TestPlan_LogicalPlanFromSpec(t *testing.T) {

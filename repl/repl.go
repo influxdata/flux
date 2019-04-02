@@ -13,11 +13,11 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/influxdata/flux/ast"
-
-	prompt "github.com/c-bata/go-prompt"
+	"github.com/c-bata/go-prompt"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/parser"
@@ -177,11 +177,8 @@ func (r *REPL) executeLine(t string) (values.Value, error) {
 		if err != nil {
 			return nil, err
 		}
-		spec, err := flux.ToSpec([]values.Value{t}, nowTime.Time().Time())
-		if err != nil {
-			return nil, err
-		}
-		return nil, r.doQuery(spec)
+		s := spec.FromTableObject(t, nowTime.Time().Time())
+		return nil, r.doQuery(s)
 	}
 
 	return v, nil
