@@ -3136,7 +3136,11 @@ Example:
         |> filter(fn:(r) => r._measurement == "net" and r._field == "bytes_sent")
         |> top(n:10, columns:["_value"])
 
-#### Contains
+#### Helper Predicate Functions
+The functions in this section may be useful in designing filters and other more complex predicates.  
+Two predicate functions that return boolean values and are useful in filters are: 
+
+##### Contains
 
 Tests whether a value is a member of a set.  
 
@@ -3150,6 +3154,25 @@ Contains has the following parameters:
 Example: 
     `contains(value:1, set:[1,2,3])` will return `true`.
 
+##### Exists 
+
+Tests whether a key is a member of an object.  
+
+Exists has the following parameters: 
+
+| Name    | Type   | Description                  |
+| ----    | ----   | -----------                  |
+| r       | object | The object to be checked.    |
+| key     | string | The key to verify.           |
+
+Example: 
+```
+r = {a: 1, b: 2}
+// true
+exists(r, "a")
+// false 
+exists(r, "c")
+```
 #### Stream/table functions
 
 These functions allow to extract a table from a stream of tables (`tableFind`) and access its

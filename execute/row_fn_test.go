@@ -211,22 +211,39 @@ func TestRowPredicateFn_Eval(t *testing.T) {
 				Parameters: &semantic.FunctionParameters{
 					List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 				},
-				Body: &semantic.BinaryExpression{
-					Operator: ast.GreaterThanOperator,
-					Left: &semantic.MemberExpression{
-						Object:   &semantic.IdentifierExpression{Name: "r"},
-						Property: "_value",
+				Body: &semantic.LogicalExpression{
+					Operator: ast.AndOperator,
+					Left: &semantic.CallExpression{
+						Callee: &semantic.IdentifierExpression{
+							Name: "exists",
+						},
+						Arguments: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{Key: &semantic.Identifier{Name: "r"}, Value: &semantic.IdentifierExpression{Name: "r"}},
+								{Key: &semantic.Identifier{Name: "key"}, Value: &semantic.StringLiteral{
+									Value: "_value",
+								}},
+							},
+						},
 					},
-					Right: &semantic.FloatLiteral{Value: 2.0},
+					Right: &semantic.BinaryExpression{
+						Operator: ast.GreaterThanOperator,
+						Left: &semantic.MemberExpression{
+							Object:   &semantic.IdentifierExpression{Name: "r"},
+							Property: "_value",
+						},
+						Right: &semantic.FloatLiteral{Value: 2.0},
+					},
 				},
 			},
 		})
 	}
 
 	testCases := []struct {
-		name string
-		data *executetest.Table
-		want []bool
+		name    string
+		data    *executetest.Table
+		want    []bool
+		wantErr execute.UnknownColumnError
 	}{
 		{
 			name: "gt 2.0",
@@ -272,8 +289,29 @@ func TestRowPredicateFn_Eval(t *testing.T) {
 			want: []bool{
 				false,
 				false,
+				false,
+				false,
 				true,
+				false,
 			},
+		},
+		{
+			name: "gt 2.0 column missing",
+			data: &executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1)},
+					{execute.Time(2)},
+					{execute.Time(3)},
+					{execute.Time(4)},
+					{execute.Time(5)},
+					{execute.Time(6)},
+				},
+			},
+			want:    []bool{},
+			wantErr: execute.UnknownColumnError{Name: "_value"},
 		},
 	}
 
@@ -288,6 +326,12 @@ func TestRowPredicateFn_Eval(t *testing.T) {
 			}
 			err = f.Prepare(tc.data.ColMeta)
 			if err != nil {
+				if we, ok := err.(*execute.UnknownColumnError); ok {
+					if we.Error() != tc.wantErr.Error() {
+						t.Errorf("unexpected missing column error.\nwant: %s\ngot: %s", tc.wantErr.Error(), we.Error())
+					}
+					return
+				}
 				t.Fatal(err)
 			}
 
