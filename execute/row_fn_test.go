@@ -211,13 +211,28 @@ func TestRowPredicateFn_Eval(t *testing.T) {
 				Parameters: &semantic.FunctionParameters{
 					List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 				},
-				Body: &semantic.BinaryExpression{
-					Operator: ast.GreaterThanOperator,
-					Left: &semantic.MemberExpression{
-						Object:   &semantic.IdentifierExpression{Name: "r"},
-						Property: "_value",
+				Body: &semantic.LogicalExpression{
+					Operator: ast.AndOperator,
+					Left: &semantic.CallExpression{
+						Callee: &semantic.IdentifierExpression{
+							Name: "exists",
+						},
+						Arguments: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{{Key: &semantic.Identifier{Name: "value"}, Value: &semantic.MemberExpression{
+								Object:   &semantic.IdentifierExpression{Name: "r"},
+								Property: "_value",
+							},
+							}},
+						},
 					},
-					Right: &semantic.FloatLiteral{Value: 2.0},
+					Right: &semantic.BinaryExpression{
+						Operator: ast.GreaterThanOperator,
+						Left: &semantic.MemberExpression{
+							Object:   &semantic.IdentifierExpression{Name: "r"},
+							Property: "_value",
+						},
+						Right: &semantic.FloatLiteral{Value: 2.0},
+					},
 				},
 			},
 		})
@@ -272,7 +287,10 @@ func TestRowPredicateFn_Eval(t *testing.T) {
 			want: []bool{
 				false,
 				false,
+				false,
+				false,
 				true,
+				false,
 			},
 		},
 	}

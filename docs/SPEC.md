@@ -1897,6 +1897,11 @@ from(bucket:"telegraf/autogen")
                 r.service == "app-server")
 ```
 
+##### Helper Predicate Functions
+Two predicate functions that return boolean values and are useful in filters are: 
+* `contains(value:T0, set: [T0...])`: tests whether the `set` contains the given value.  The type of value and set can vary, but must match.
+* `exists(value)`: tests whether the referred value exists, e.g., `exists(r.missingField)`
+
 #### Highest/Lowest
 
 There are six highest/lowest functions that compute the top or bottom N records from all tables in a stream based on a specific aggregation method.

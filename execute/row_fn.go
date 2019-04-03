@@ -121,11 +121,6 @@ func ConvertFromKind(k semantic.Nature) flux.ColType {
 }
 
 func (f *rowFn) eval(row int, cr flux.ColReader, extraParams map[string]values.Value) (values.Value, error) {
-	// TODO(affo) will remove this once null support for lambdas is provided
-	if f.anyNilReferenceInRow(row, cr) {
-		return nil, errors.New("null reference used in row function: skipping evaluation until null support is provided")
-	}
-
 	for _, r := range f.references {
 		f.record.Set(r, ValueForRow(cr, row, f.recordCols[r]))
 	}
@@ -250,6 +245,10 @@ func (f *RowMapFn) Type() semantic.Type {
 }
 
 func (f *RowMapFn) Eval(row int, cr flux.ColReader) (values.Object, error) {
+	// TODO(affo) will remove this once null support for lambdas is provided
+	if f.rowFn.anyNilReferenceInRow(row, cr) {
+		return nil, errors.New("null reference used in row function: skipping evaluation until null support is provided")
+	}
 	v, err := f.rowFn.eval(row, cr, nil)
 	if err != nil {
 		return nil, err
@@ -300,6 +299,10 @@ func (f *RowReduceFn) Type() semantic.Type {
 }
 
 func (f *RowReduceFn) Eval(row int, cr flux.ColReader, extraParams map[string]values.Value) (values.Object, error) {
+	// TODO(affo) will remove this once null support for lambdas is provided
+	if f.rowFn.anyNilReferenceInRow(row, cr) {
+		return nil, errors.New("null reference used in row function: skipping evaluation until null support is provided")
+	}
 	v, err := f.rowFn.eval(row, cr, extraParams)
 	if err != nil {
 		return nil, err
