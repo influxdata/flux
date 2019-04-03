@@ -95,6 +95,9 @@ func (v value) Function() Function {
 	return v.v.(Function)
 }
 func (v value) Equal(r Value) bool {
+	if v.IsNull() && r.IsNull() {
+		return true
+	}
 	if v.Type() != r.Type() {
 		return false
 	}

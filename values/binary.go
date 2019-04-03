@@ -363,7 +363,6 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	},
 
 	// EqualOperator
-
 	{Operator: ast.EqualOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) Value {
 		l := lv.Int()
 		r := rv.Int()
@@ -424,6 +423,48 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.Time().Time()
 		r := rv.Time().Time()
 		return NewBool(l.Equal(r))
+	},
+	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.Bool}: func(lv, rv Value) Value {
+		return NewBool(rv.IsNull())
+	},
+	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.Int}: func(lv, rv Value) Value {
+		return NewBool(rv.IsNull())
+	},
+	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.UInt}: func(lv, rv Value) Value {
+		return NewBool(rv.IsNull())
+	},
+	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.Float}: func(lv, rv Value) Value {
+		return NewBool(rv.IsNull())
+	},
+	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.Duration}: func(lv, rv Value) Value {
+		return NewBool(rv.IsNull())
+	},
+	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.Time}: func(lv, rv Value) Value {
+		return NewBool(rv.IsNull())
+	},
+	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.String}: func(lv, rv Value) Value {
+		return NewBool(rv.IsNull())
+	},
+	{Operator: ast.EqualOperator, Left: semantic.Bool, Right: semantic.Nil}: func(lv, rv Value) Value {
+		return NewBool(lv.IsNull())
+	},
+	{Operator: ast.EqualOperator, Left: semantic.Int, Right: semantic.Nil}: func(lv, rv Value) Value {
+		return NewBool(lv.IsNull())
+	},
+	{Operator: ast.EqualOperator, Left: semantic.UInt, Right: semantic.Nil}: func(lv, rv Value) Value {
+		return NewBool(lv.IsNull())
+	},
+	{Operator: ast.EqualOperator, Left: semantic.Float, Right: semantic.Nil}: func(lv, rv Value) Value {
+		return NewBool(lv.IsNull())
+	},
+	{Operator: ast.EqualOperator, Left: semantic.Duration, Right: semantic.Nil}: func(lv, rv Value) Value {
+		return NewBool(lv.IsNull())
+	},
+	{Operator: ast.EqualOperator, Left: semantic.Time, Right: semantic.Nil}: func(lv, rv Value) Value {
+		return NewBool(lv.IsNull())
+	},
+	{Operator: ast.EqualOperator, Left: semantic.String, Right: semantic.Nil}: func(lv, rv Value) Value {
+		return NewBool(lv.IsNull())
 	},
 
 	// NotEqualOperator
@@ -489,6 +530,49 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		r := rv.Time().Time()
 		return NewBool(!l.Equal(r))
 	},
+	{Operator: ast.NotEqualOperator, Left: semantic.Nil, Right: semantic.Bool}: func(lv, rv Value) Value {
+		return NewBool(!rv.IsNull())
+	},
+	{Operator: ast.NotEqualOperator, Left: semantic.Nil, Right: semantic.Int}: func(lv, rv Value) Value {
+		return NewBool(!rv.IsNull())
+	},
+	{Operator: ast.NotEqualOperator, Left: semantic.Nil, Right: semantic.UInt}: func(lv, rv Value) Value {
+		return NewBool(!rv.IsNull())
+	},
+	{Operator: ast.NotEqualOperator, Left: semantic.Nil, Right: semantic.Float}: func(lv, rv Value) Value {
+		return NewBool(!rv.IsNull())
+	},
+	{Operator: ast.NotEqualOperator, Left: semantic.Nil, Right: semantic.Duration}: func(lv, rv Value) Value {
+		return NewBool(!rv.IsNull())
+	},
+	{Operator: ast.NotEqualOperator, Left: semantic.Nil, Right: semantic.Time}: func(lv, rv Value) Value {
+		return NewBool(!rv.IsNull())
+	},
+	{Operator: ast.NotEqualOperator, Left: semantic.Nil, Right: semantic.String}: func(lv, rv Value) Value {
+		return NewBool(!rv.IsNull())
+	},
+	{Operator: ast.NotEqualOperator, Left: semantic.Bool, Right: semantic.Nil}: func(lv, rv Value) Value {
+		return NewBool(!lv.IsNull())
+	},
+	{Operator: ast.NotEqualOperator, Left: semantic.Int, Right: semantic.Nil}: func(lv, rv Value) Value {
+		return NewBool(!lv.IsNull())
+	},
+	{Operator: ast.NotEqualOperator, Left: semantic.UInt, Right: semantic.Nil}: func(lv, rv Value) Value {
+		return NewBool(!lv.IsNull())
+	},
+	{Operator: ast.NotEqualOperator, Left: semantic.Float, Right: semantic.Nil}: func(lv, rv Value) Value {
+		return NewBool(!lv.IsNull())
+	},
+	{Operator: ast.NotEqualOperator, Left: semantic.Duration, Right: semantic.Nil}: func(lv, rv Value) Value {
+		return NewBool(!lv.IsNull())
+	},
+	{Operator: ast.NotEqualOperator, Left: semantic.Time, Right: semantic.Nil}: func(lv, rv Value) Value {
+		return NewBool(!lv.IsNull())
+	},
+	{Operator: ast.NotEqualOperator, Left: semantic.String, Right: semantic.Nil}: func(lv, rv Value) Value {
+		return NewBool(!lv.IsNull())
+	},
+
 	{Operator: ast.RegexpMatchOperator, Left: semantic.String, Right: semantic.Regexp}: func(lv, rv Value) Value {
 		l := lv.Str()
 		r := rv.Regexp()

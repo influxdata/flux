@@ -548,6 +548,10 @@ func (f *formatter) formatBooleanLiteral(n *BooleanLiteral) {
 	f.writeString(strconv.FormatBool(n.Value))
 }
 
+func (f *formatter) formatNilLiteral(n *NilLiteral) {
+	f.writeString("nil")
+}
+
 func (f *formatter) formatDateTimeLiteral(n *DateTimeLiteral) {
 	f.writeString(n.Value.Format(time.RFC3339Nano))
 }
@@ -646,6 +650,8 @@ func (f *formatter) formatNode(n Node) {
 		f.formatStringLiteral(n)
 	case *BooleanLiteral:
 		f.formatBooleanLiteral(n)
+	case *NilLiteral:
+		f.formatNilLiteral(n)
 	case *FloatLiteral:
 		f.formatFloatLiteral(n)
 	case *IntegerLiteral:

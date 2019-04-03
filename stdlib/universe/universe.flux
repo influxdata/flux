@@ -9,6 +9,9 @@ option now = system.time
 builtin true
 builtin false
 
+// nil
+builtin nil
+
 // Transformation functions
 builtin columns
 builtin count

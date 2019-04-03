@@ -61,6 +61,7 @@ func (*FunctionParameter) node()  {}
 func (*FunctionBlock) node()      {}
 
 func (*BooleanLiteral) node()         {}
+func (*NilLiteral) node()             {}
 func (*DateTimeLiteral) node()        {}
 func (*DurationLiteral) node()        {}
 func (*FloatLiteral) node()           {}
@@ -98,6 +99,7 @@ type Expression interface {
 func (*ArrayExpression) expression()        {}
 func (*BinaryExpression) expression()       {}
 func (*BooleanLiteral) expression()         {}
+func (*NilLiteral) expression()             {}
 func (*CallExpression) expression()         {}
 func (*ConditionalExpression) expression()  {}
 func (*DateTimeLiteral) expression()        {}
@@ -121,6 +123,7 @@ type Literal interface {
 }
 
 func (*BooleanLiteral) literal()         {}
+func (*NilLiteral) literal()             {}
 func (*DateTimeLiteral) literal()        {}
 func (*DurationLiteral) literal()        {}
 func (*FloatLiteral) literal()           {}
@@ -865,6 +868,22 @@ func (l *BooleanLiteral) Copy() Node {
 		return l
 	}
 	nl := new(BooleanLiteral)
+	*nl = *l
+
+	return nl
+}
+
+type NilLiteral struct {
+	loc `json:"-"`
+}
+
+func (*NilLiteral) NodeType() string { return "NilLiteral" }
+
+func (l *NilLiteral) Copy() Node {
+	if l == nil {
+		return l
+	}
+	nl := new(NilLiteral)
 	*nl = *l
 
 	return nl

@@ -311,6 +311,11 @@ func walk(v Visitor, n Node) {
 			return
 		}
 		v.Visit(n)
+	case *NilLiteral:
+		if n == nil {
+			return
+		}
+		v.Visit(n)
 	case *DateTimeLiteral:
 		if n == nil {
 			return

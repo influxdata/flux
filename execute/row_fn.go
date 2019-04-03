@@ -122,9 +122,9 @@ func ConvertFromKind(k semantic.Nature) flux.ColType {
 
 func (f *rowFn) eval(row int, cr flux.ColReader, extraParams map[string]values.Value) (values.Value, error) {
 	// TODO(affo) will remove this once null support for lambdas is provided
-	if f.anyNilReferenceInRow(row, cr) {
-		return nil, errors.New("null reference used in row function: skipping evaluation until null support is provided")
-	}
+	//if f.anyNilReferenceInRow(row, cr) {
+	//	return nil, errors.New("null reference used in row function: skipping evaluation until null support is provided")
+	//}
 
 	for _, r := range f.references {
 		f.record.Set(r, ValueForRow(cr, row, f.recordCols[r]))
