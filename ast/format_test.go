@@ -362,6 +362,14 @@ func TestFormat_Associativity(t *testing.T) {
 			script: `not (b and c)`,
 		},
 		{
+			name:   "unary negative duration",
+			script: `-30s`,
+		},
+		{
+			name:   "unary positive duration",
+			script: `+30s`,
+		},
+		{
 			name:   "function call with pars",
 			script: `(a + b * c == 0)(foo: "bar")`,
 		},
