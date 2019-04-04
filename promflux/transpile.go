@@ -11,6 +11,9 @@ import (
 	"github.com/prometheus/prometheus/promql"
 )
 
+// TODO: Temporary hack, remove this.
+const nullReplacement = 123456789
+
 type transpiler struct {
 	bucket     string
 	start      time.Time
@@ -184,8 +187,8 @@ func (t *transpiler) transpileInstantVectorSelector(v *promql.VectorSelector) *a
 			"as":     &ast.StringLiteral{Value: "_time"},
 		}),
 		// Apply offsets to make past data look like it's in the present.
-		call("shift", map[string]ast.Expression{
-			"shift": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: v.Offset.Nanoseconds(), Unit: "ns"}}},
+		call("timeShift", map[string]ast.Expression{
+			"duration": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: v.Offset.Nanoseconds(), Unit: "ns"}}},
 		}),
 	)
 }
@@ -209,8 +212,8 @@ func (t *transpiler) transpileRangeVectorSelector(v *promql.MatrixSelector) *ast
 		// Remove any windows smaller than the specified range at the edges of the graph range.
 		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start.Add(-v.Offset), t.end.Add(-v.Range-v.Offset))}),
 		// Apply offsets to make past data look like it's in the present.
-		call("shift", map[string]ast.Expression{
-			"shift": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: v.Offset.Nanoseconds(), Unit: "ns"}}},
+		call("timeShift", map[string]ast.Expression{
+			"duration": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: v.Offset.Nanoseconds(), Unit: "ns"}}},
 		}),
 	)
 }
@@ -246,7 +249,7 @@ var aggregateFns = map[promql.ItemType]aggregateFn{
 	promql.ItemStddev:   {name: "stddev", dropMeasurement: true, dropNonGrouping: false},
 	promql.ItemTopK:     {name: "top", dropMeasurement: false, dropNonGrouping: false},
 	promql.ItemBottomK:  {name: "bottom", dropMeasurement: false, dropNonGrouping: false},
-	promql.ItemQuantile: {name: "percentile", dropMeasurement: true, dropNonGrouping: false},
+	promql.ItemQuantile: {name: "quantile", dropMeasurement: true, dropNonGrouping: false},
 }
 
 func dropNonGroupingColsCall(groupCols []string, without bool) *ast.CallExpression {
@@ -254,7 +257,7 @@ func dropNonGroupingColsCall(groupCols []string, without bool) *ast.CallExpressi
 		cols := make([]string, len(groupCols)-1)
 		// Remove "_value" from list of columns to drop.
 		for _, col := range groupCols {
-			if col != "_value" {
+			if col != "_value" { // TODO: also _start, _stop?
 				cols = append(cols, col)
 			}
 		}
@@ -263,8 +266,8 @@ func dropNonGroupingColsCall(groupCols []string, without bool) *ast.CallExpressi
 		return call("drop", map[string]ast.Expression{"columns": columnList(groupCols...)})
 	}
 
-	// We want to keep "_value" and "_time" even if they are not explicitly in the grouping labels.
-	cols := append(groupCols, "_value", "_time")
+	// We want to keep value and time columns even if they are not explicitly in the grouping labels.
+	cols := append(groupCols, "_value", "_time", "_start", "_stop")
 	return call("keep", map[string]ast.Expression{"columns": columnList(cols...)})
 }
 
@@ -319,6 +322,34 @@ var filterWindowsWithZeroValueCall = call(
 	},
 )
 
+// TODO: Super temporary hack to deal with null values. Remove!
+var filterSpecialNullValuesCall = call(
+	"filter",
+	map[string]ast.Expression{
+		"fn": &ast.FunctionExpression{
+			Params: []*ast.Property{
+				{
+					Key: &ast.Identifier{
+						Name: "r",
+					},
+				},
+			},
+			Body: &ast.BinaryExpression{
+				Operator: ast.NotEqualOperator,
+				Left: &ast.MemberExpression{
+					Object: &ast.Identifier{
+						Name: "r",
+					},
+					Property: &ast.Identifier{
+						Name: "_value",
+					},
+				},
+				Right: &ast.FloatLiteral{Value: nullReplacement},
+			},
+		},
+	},
+)
+
 func (t *transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expression, error) {
 	expr, err := t.transpile(a.Expr)
 	if err != nil {
@@ -351,7 +382,7 @@ func (t *transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expres
 		if !ok {
 			return nil, fmt.Errorf("arbitrary scalar subexpressions not supported yet")
 		}
-		aggArgs["percentile"] = &ast.FloatLiteral{Value: n.Val}
+		aggArgs["q"] = &ast.FloatLiteral{Value: n.Val}
 		aggArgs["method"] = &ast.StringLiteral{Value: "exact_mean"}
 	}
 
@@ -361,7 +392,7 @@ func (t *transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expres
 		mode = "except"
 		groupCols.Elements = append(groupCols.Elements, &ast.StringLiteral{Value: "_value"})
 	} else {
-		groupCols.Elements = append(groupCols.Elements, &ast.StringLiteral{Value: "_time"})
+		groupCols.Elements = append(groupCols.Elements, &ast.StringLiteral{Value: "_time"}, &ast.StringLiteral{Value: "_start"}, &ast.StringLiteral{Value: "_stop"})
 		for _, col := range a.Grouping {
 			if col == model.MetricNameLabel {
 				dropMeasurement = false
@@ -407,15 +438,18 @@ var arithBinOps = map[promql.ItemType]ast.OperatorKind{
 	// TODO: Doesn't exist yet.
 	// promql.ItemPOW: ast.PowerOperator,
 	//promql.ItemMOD: ast.ModuloOperator,
-	// promql.ItemEQL:
-	// promql.ItemNEQ:
-	// promql.ItemGTR:
-	// promql.ItemLSS:
-	// promql.ItemGTE:
-	// promql.ItemLTE:
 }
 
-// Function to apply a binary operator to all values in a table and a given float64 operand.
+var compBinOps = map[promql.ItemType]ast.OperatorKind{
+	promql.ItemEQL: ast.EqualOperator,
+	promql.ItemNEQ: ast.NotEqualOperator,
+	promql.ItemGTR: ast.GreaterThanOperator,
+	promql.ItemLSS: ast.LessThanOperator,
+	promql.ItemGTE: ast.GreaterThanEqualOperator,
+	promql.ItemLTE: ast.LessThanEqualOperator,
+}
+
+// Function to apply an arithmetic binary operator to all values in a table and a given float64 operand.
 func scalarArithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped bool) *ast.FunctionExpression {
 	val := &ast.MemberExpression{
 		Object: &ast.Identifier{
@@ -432,8 +466,9 @@ func scalarArithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped 
 		lhs, rhs = rhs, lhs
 	}
 
+	// TODO: This sets _time, what about _stop and _start?
+	// (r) => {"_value": <lhs> <op> <rhs>, "_time": r._time}
 	return &ast.FunctionExpression{
-		// (r) => ...
 		Params: []*ast.Property{
 			{
 				Key: &ast.Identifier{
@@ -441,7 +476,6 @@ func scalarArithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped 
 				},
 			},
 		},
-		// {"_value": lhs <op> rhs, "_time": r._time}
 		Body: &ast.ObjectExpression{
 			Properties: []*ast.Property{
 				{
@@ -468,7 +502,41 @@ func scalarArithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped 
 	}
 }
 
-// Function to apply a binary operator to all values in a table and a given float64 operand.
+// Function to apply a comparison binary operator to all values in a table and a given float64 operand.
+func scalarCompBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped bool) *ast.FunctionExpression {
+	val := &ast.MemberExpression{
+		Object: &ast.Identifier{
+			Name: "r",
+		},
+		Property: &ast.Identifier{
+			Name: "_value",
+		},
+	}
+
+	var lhs, rhs ast.Expression = val, operand
+
+	if swapped {
+		lhs, rhs = rhs, lhs
+	}
+
+	// (r) => <lhs> <op> <rhs>
+	return &ast.FunctionExpression{
+		Params: []*ast.Property{
+			{
+				Key: &ast.Identifier{
+					Name: "r",
+				},
+			},
+		},
+		Body: &ast.BinaryExpression{
+			Operator: op,
+			Left:     lhs,
+			Right:    rhs,
+		},
+	}
+}
+
+// Function to apply a binary operator between values of two joined tables.
 func vectorArithBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 	lhs := &ast.MemberExpression{
 		Object: &ast.Identifier{
@@ -487,8 +555,8 @@ func vectorArithBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 		},
 	}
 
+	// (r) => {"_value": <lhs> <op> <rhs>, "_time": r._stop_lhs}
 	return &ast.FunctionExpression{
-		// (r) => ...
 		Params: []*ast.Property{
 			{
 				Key: &ast.Identifier{
@@ -496,7 +564,6 @@ func vectorArithBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 				},
 			},
 		},
-		// {"_value": lhs <op> rhs, "_time": r._stop_lhs}
 		Body: &ast.ObjectExpression{
 			Properties: []*ast.Property{
 				{
@@ -559,6 +626,13 @@ func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 			), nil
 		}
 
+		if op, ok := compBinOps[b.Op]; ok {
+			return buildPipeline(
+				lhs,
+				call("filter", map[string]ast.Expression{"fn": scalarCompBinaryOpFn(op, rhs, swapped)}),
+			), nil
+		}
+
 		return nil, fmt.Errorf("non-arithmetic binary operations not supported yet")
 	default:
 		// if b.VectorMatching.Card != promql.CardOneToOne {
@@ -605,7 +679,7 @@ var aggregateOverTimeFns = map[string]string{
 	"count_over_time":    "count",
 	"stddev_over_time":   "stddev",
 	"stdvar_over_time":   "stdvar",
-	"quantile_over_time": "percentile",
+	"quantile_over_time": "quantile",
 }
 
 func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
@@ -616,8 +690,8 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 		}
 
 		args := map[string]ast.Expression{}
-		if fn == "percentile" {
-			args["percentile"] = v
+		if fn == "quantile" {
+			args["q"] = v
 			args["method"] = &ast.StringLiteral{Value: "exact_mean"}
 
 			v, err = t.transpile(c.Args[1])
@@ -626,9 +700,31 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			}
 		}
 
+		// "toFloat" and "filter" can both not deal with null values.
+		fillCall := call("fill", map[string]ast.Expression{
+			"column": &ast.StringLiteral{Value: "_value"},
+			"value":  &ast.FloatLiteral{Value: nullReplacement},
+		})
+		// "count" is the only aggregation function that returns an int.
+		if fn == "count" {
+			fillCall = call("fill", map[string]ast.Expression{
+				"column": &ast.StringLiteral{Value: "_value"},
+				"value":  &ast.IntegerLiteral{Value: nullReplacement},
+			})
+		}
+
 		return buildPipeline(
 			v,
 			call(fn, args),
+			fillCall,
+			call("toFloat", nil),
+			filterSpecialNullValuesCall,
+			// TODO: Change this in the language to drop empty tables?
+			// Remove any windows <5m long at the end of the graph range to act like PromQL.
+			// Even if those windows were filtered by a vector selector previously, they might
+			// exist as empty tables and then the Flux aggregator functions would records rows with null
+			// values for each empty table, which can then confuse further filtering etc. steps.
+			//call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start, t.end.Add(-5*time.Minute))}),
 			filterWindowsWithZeroValueCall,
 			dropMeasurementCall,
 			// Strictly we wouldn't need to drop "_time" and duplicate it from "_stop" for
@@ -645,6 +741,16 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 	}
 
 	switch c.Func.Name {
+	case "timestamp":
+		v, err := t.transpile(c.Args[0])
+		if err != nil {
+			return nil, fmt.Errorf("error transpiling function argument")
+		}
+		return buildPipeline(
+			v,
+			dropMeasurementCall,
+			call("promql.timestamp", nil),
+		), nil
 	default:
 		return nil, fmt.Errorf("PromQL function %q is not supported yet", c.Func.Name)
 	}

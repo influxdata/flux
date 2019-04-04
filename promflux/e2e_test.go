@@ -40,6 +40,8 @@ var testVariantArgs = map[string][]string{
 	},
 	// TODO: "%" and "^" not supported yet by Flux.
 	"arithBinop": []string{"+", "-", "*", "/" /*, "%", "^" */},
+	"compBinop":  []string{"==", "!=", "<", ">", "<=", ">="},
+	"binop":      []string{"+", "-", "*", "/" /*, "%", "^" */, "==", "!=", "<", ">", "<=", ">="},
 }
 
 var queries = []struct {
@@ -47,10 +49,10 @@ var queries = []struct {
 	variantArgs []string
 }{
 	{
-		query: `nonexistent_metric`,
+		query: `demo_cpu_usage_seconds_total`,
 	},
 	{
-		query: `demo_cpu_usage_seconds_total`,
+		query: `{__name__="demo_cpu_usage_seconds_total"}`,
 	},
 	{
 		query: `demo_cpu_usage_seconds_total{mode="idle"}`,
@@ -93,10 +95,10 @@ var queries = []struct {
 		variantArgs: []string{"simpleAggrOp"},
 	},
 	// TODO: grouping by non-existent columns is not supported in Flux.
-	//
+	// https://github.com/influxdata/flux/issues/1117
 	// {
-	// 	query:    `{{.simpleAggrOp}} by(nonexistent) (demo_cpu_usage_seconds_total)`,
-	// variantArgs: []string{"simpleAggrOp"},
+	// 	query:       `{{.simpleAggrOp}} by(nonexistent) (demo_cpu_usage_seconds_total)`,
+	// 	variantArgs: []string{"simpleAggrOp"},
 	// },
 	{
 		query:       `{{.simpleAggrOp}} without(instance) (demo_cpu_usage_seconds_total)`,
@@ -134,39 +136,53 @@ var queries = []struct {
 	//  variantArgs: []string{""},
 	// },
 	{
-		query:       `demo_cpu_usage_seconds_total {{.arithBinOp}} 1.2345`,
-		variantArgs: []string{"arithBinOp"},
+		query:       `demo_cpu_usage_seconds_total {{.binOp}} 1.2345`,
+		variantArgs: []string{"binOp"},
 	},
 	{
-		query:       `0.12345 {{.arithBinOp}} demo_cpu_usage_seconds_total`,
-		variantArgs: []string{"arithBinOp"},
+		query:       `0.12345 {{.binOp}} demo_cpu_usage_seconds_total`,
+		variantArgs: []string{"binOp"},
 	},
-	// TODO: Flux drops parens when formatting out, loses associativity.
-	// {
-	// 	query:    `(1 * 2 + 4 / 6 - 10) {{.arithBinOp}} demo_cpu_usage_seconds_total`,
-	//  variantArgs: []string{"arithBinOp"},
-	// },
-	// {
-	// 	query:    `demo_cpu_usage_seconds_total {{.arithBinOp}} (1 * 2 + 4 / 6 - 10)`,
-	//  variantArgs: []string{"arithBinOp"},
-	// },
+	{
+		query:       `(1 * 2 + 4 / 6 - 10) {{.binOp}} demo_cpu_usage_seconds_total`,
+		variantArgs: []string{"binOp"},
+	},
+	{
+		query:       `demo_cpu_usage_seconds_total {{.binOp}} (1 * 2 + 4 / 6 - 10)`,
+		variantArgs: []string{"binOp"},
+	},
 
-	// TODO: SLOOOOOW (but working).
-	// {
-	// 	query: `demo_cpu_usage_seconds_total / on(instance, job, mode) demo_cpu_usage_seconds_total`,
-	// },
-	// {
-	// 	// Check that __name__ is always dropped, even if it's part of the matching labels.
-	// 	query: `demo_cpu_usage_seconds_total / on(instance, job, mode, __name__) demo_cpu_usage_seconds_total`,
-	// },
+	{
+		query: `demo_cpu_usage_seconds_total / on(instance, job, mode) demo_cpu_usage_seconds_total`,
+	},
+	{
+		// Check that __name__ is always dropped, even if it's part of the matching labels.
+		query: `demo_cpu_usage_seconds_total / on(instance, job, mode, __name__) demo_cpu_usage_seconds_total`,
+	},
+	{
+		query: `sum without(job) (demo_cpu_usage_seconds_total) / on(instance, mode) demo_cpu_usage_seconds_total`,
+	},
+	{
+		query: `sum without(job) (demo_cpu_usage_seconds_total) / on(instance, mode) group_left demo_cpu_usage_seconds_total`,
+	},
 	{
 		query: `sum without(job) (demo_cpu_usage_seconds_total) / on(instance, mode) group_left(job) demo_cpu_usage_seconds_total`,
 	},
+	// {
+	// 	query: `demo_cpu_usage_seconds_total / on(instance, job) group_left demo_num_cpus`,
+	// },
+	// TODO: See https://github.com/influxdata/flux/issues/1118
+	// {
+	// 	query: `demo_cpu_usage_seconds_total / on(instance, mode, job, non_existent) demo_cpu_usage_seconds_total`,
+	// },
 	// TODO: Add non-explicit many-to-one / one-to-many that errors.
 	// TODO: Add many-to-many that errors.
 	{
 		query:       `{{.simpleAggrOp}}_over_time(demo_cpu_usage_seconds_total[{{.range}}])`,
 		variantArgs: []string{"simpleAggrOp", "range"},
+	},
+	{
+		query: `timestamp(demo_num_cpus)`,
 	},
 }
 
@@ -178,8 +194,10 @@ func TestQueriesE2E(t *testing.T) {
 	flag.StringVar(&runner.influxToken, "influx-token", "", "InfluxDB authentication token.")
 	flag.StringVar(&runner.influxOrg, "influx-org", "prometheus", "The InfluxDB organization name.")
 	flag.StringVar(&runner.promURL, "prometheus-url", "http://localhost:9090/", "Prometheus server URL.")
-	queryStart := flag.Int64("query-start", 1550781000000, "Query start timestamp in milliseconds.")
-	queryEnd := flag.Int64("query-end", 1550781900000, "Query end timestamp in milliseconds.")
+	queryStart := flag.Int64("query-start", 1550767830000, "Query start timestamp in milliseconds.")
+	queryEnd := flag.Int64("query-end", 1550767900000, "Query end timestamp in milliseconds.")
+	//queryStart := flag.Int64("query-start", 1550767200000, "Query start timestamp in milliseconds.")
+	//queryEnd := flag.Int64("query-end", 1550770000000, "Query end timestamp in milliseconds.")
 	flag.DurationVar(&runner.resolution, "query-resolution", 10*time.Second, "Query resolution in seconds.")
 
 	flag.Parse()
@@ -305,20 +323,28 @@ func (r *e2eRunner) runQuery(t *testing.T, query string, args map[string]string)
 	if err != nil {
 		t.Fatalf("Error transpiling PromQL expression %q to Flux: %s", query, err)
 	}
+	fluxFile := &ast.File{
+		Imports: []*ast.ImportDeclaration{{Path: &ast.StringLiteral{Value: "promql"}}},
+		Body: []ast.Statement{
+			&ast.ExpressionStatement{
+				Expression: fluxNode,
+			},
+		},
+	}
 
 	// Query both Prometheus and InfluxDB, expect same result.
 	promMatrix, err := queryPrometheus(r.promURL, query, r.start, r.end, r.resolution)
 	if err != nil {
 		t.Fatalf("Error querying Prometheus for %q: %s", query, err)
 	}
-	influxResult, err := queryInfluxDB(r.influxURL, r.influxOrg, r.influxToken, r.influxBucket, ast.Format(fluxNode))
+	influxResult, err := queryInfluxDB(r.influxURL, r.influxOrg, r.influxToken, r.influxBucket, ast.Format(fluxFile))
 	if err != nil {
 		t.Fatalf("Error querying InfluxDB for %q: %s", query, err)
 	}
 	// Make InfluxDB result comparable with the Prometheus result.
 	influxMatrix, err := influxResultToPromMatrix(influxResult)
 	if err != nil {
-		t.Fatalf("Error processing InfluxDB results for %s: %s", ast.Format(fluxNode), err)
+		t.Fatalf("Error processing InfluxDB results for %q\n\n%s: %s", query, ast.Format(fluxFile), err)
 	}
 
 	cmpOpts := cmp.Options{
@@ -333,7 +359,7 @@ func (r *e2eRunner) runQuery(t *testing.T, query string, args map[string]string)
 		t.Error(
 			"FAILED! Prometheus and InfluxDB results differ:\n\n", diff,
 			"\nPromQL query was:\n============================================\n", query, "\n============================================\n\n",
-			"\nFlux query was:\n============================================\n", ast.Format(fluxNode), "\n============================================\n\n",
+			"\nFlux query was:\n============================================\n", ast.Format(fluxFile), "\n============================================\n\n",
 			"\nFull results:",
 			"\n=== InfluxDB results:\n", influxMatrix,
 			"\n=== Prometheus results:\n", promMatrix,

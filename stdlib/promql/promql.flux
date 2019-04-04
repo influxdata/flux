@@ -1,0 +1,3 @@
+package promql
+
+builtin timestamp
