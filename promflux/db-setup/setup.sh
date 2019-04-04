@@ -18,7 +18,6 @@ rm -rf ./influx-data
 influxd \
   --bolt-path=influx-data/influxd.bolt \
   --engine-path=influx-data/engine \
-  --protos-path=influx-data/protos \
   --reporting-disabled &
 INFLUX_PID=$!
 
