@@ -116,7 +116,7 @@ func call(fn string, args map[string]ast.Expression) *ast.CallExpression {
 }
 
 // Function to remove any windows that are <5m long.
-func windowCutoffFn(maxStart time.Time) *ast.FunctionExpression {
+func windowCutoffFn(minStop time.Time, maxStart time.Time) *ast.FunctionExpression {
 	return &ast.FunctionExpression{
 		Params: []*ast.Property{
 			{
@@ -125,17 +125,32 @@ func windowCutoffFn(maxStart time.Time) *ast.FunctionExpression {
 				},
 			},
 		},
-		Body: &ast.BinaryExpression{
-			Operator: ast.LessThanEqualOperator,
-			Left: &ast.MemberExpression{
-				Object: &ast.Identifier{
-					Name: "r",
+		Body: &ast.LogicalExpression{
+			Operator: ast.AndOperator,
+			Left: &ast.BinaryExpression{
+				Operator: ast.GreaterThanEqualOperator,
+				Left: &ast.MemberExpression{
+					Object: &ast.Identifier{
+						Name: "r",
+					},
+					Property: &ast.Identifier{
+						Name: "_stop",
+					},
 				},
-				Property: &ast.Identifier{
-					Name: "_start",
-				},
+				Right: &ast.DateTimeLiteral{Value: minStop},
 			},
-			Right: &ast.DateTimeLiteral{Value: maxStart},
+			Right: &ast.BinaryExpression{
+				Operator: ast.LessThanEqualOperator,
+				Left: &ast.MemberExpression{
+					Object: &ast.Identifier{
+						Name: "r",
+					},
+					Property: &ast.Identifier{
+						Name: "_start",
+					},
+				},
+				Right: &ast.DateTimeLiteral{Value: maxStart},
+			},
 		},
 	}
 }
@@ -156,8 +171,8 @@ func (t *transpiler) transpileInstantVectorSelector(v *promql.VectorSelector) *a
 			"every":  &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.resolution.Nanoseconds(), Unit: "ns"}}},
 			"period": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: 5, Unit: "m"}}},
 		}),
-		// Remove any windows <5m long at the end of the graph range to act like PromQL.
-		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.end.Add(-5*time.Minute - v.Offset))}),
+		// Remove any windows <5m long at the edges of the graph range to act like PromQL.
+		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start.Add(-v.Offset), t.end.Add(-5*time.Minute-v.Offset))}),
 		// Select the last data point after the current evaluation (resolution step) timestamp.
 		call("last", nil),
 		// The resolution step evaluation timestamp needs to become the output timestamp.
@@ -191,8 +206,8 @@ func (t *transpiler) transpileRangeVectorSelector(v *promql.MatrixSelector) *ast
 			"every":  &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.resolution.Nanoseconds(), Unit: "ns"}}},
 			"period": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: v.Range.Nanoseconds(), Unit: "ns"}}},
 		}),
-		// Remove any windows smaller than the specified range at the end of the graph range.
-		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.end.Add(-v.Range - v.Offset))}),
+		// Remove any windows smaller than the specified range at the edges of the graph range.
+		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start.Add(-v.Offset), t.end.Add(-v.Range-v.Offset))}),
 		// Apply offsets to make past data look like it's in the present.
 		call("shift", map[string]ast.Expression{
 			"shift": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: v.Offset.Nanoseconds(), Unit: "ns"}}},
@@ -364,6 +379,12 @@ func (t *transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expres
 		}),
 		// Aggregate.
 		call(aggFn.name, aggArgs),
+		// TODO: Change this in the language to drop empty tables?
+		// Remove any windows <5m long at the end of the graph range to act like PromQL.
+		// Even if those windows were filtered by a vector selector previously, they might
+		// exist as empty tables and then the Flux aggregator functions would records rows with null
+		// values for each empty table, which can then confuse further filtering etc. steps.
+		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start, t.end.Add(-5*time.Minute))}),
 	)
 	if aggFn.dropNonGrouping {
 		// Drop labels that are not part of the grouping.
