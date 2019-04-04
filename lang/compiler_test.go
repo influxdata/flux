@@ -130,7 +130,7 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 				t.Fatalf("failed to compile AST: %v", err)
 			}
 
-			got := prog.(lang.Program).PlanSpec
+			got := prog.(*lang.Program).PlanSpec
 			want := plantest.CreatePlanSpec(&tc.want)
 			if err := plantest.ComparePlansShallow(want, got); err != nil {
 				t.Error(err)
@@ -270,15 +270,15 @@ func getTableObjectTablesOrFail(t *testing.T, to *flux.TableObject) []*executete
 		t.Fatal(err)
 	}
 	result := <-q.Results()
-	if r := <-q.Results(); r != nil {
+	if _, ok := <-q.Results(); ok {
 		t.Fatalf("got more then one result for %s", to.Kind)
 	}
+	tables := getTablesFromResultOrFail(t, result)
 	q.Done()
 	if err := q.Err(); err != nil {
 		t.Fatal(err)
 	}
-
-	return getTablesFromResultOrFail(t, result)
+	return tables
 }
 
 func getTablesFromResultOrFail(t *testing.T, result flux.Result) []*executetest.Table {

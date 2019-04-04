@@ -55,7 +55,7 @@ func (c FluxCompiler) Compile(ctx context.Context) (flux.Program, error) {
 		return nil, err
 	}
 
-	return Program{
+	return &Program{
 		PlanSpec: ps,
 	}, err
 }
@@ -76,7 +76,7 @@ func (c SpecCompiler) Compile(ctx context.Context) (flux.Program, error) {
 		return nil, err
 	}
 
-	return Program{
+	return &Program{
 		PlanSpec: ps,
 	}, err
 }
@@ -99,16 +99,16 @@ func (c ASTCompiler) Compile(ctx context.Context) (flux.Program, error) {
 
 	spec, err := flux.CompileAST(ctx, c.AST, now)
 	if err != nil {
-		return Program{}, err
+		return nil, err
 	}
 
 	planner := plan.PlannerBuilder{}.Build()
 	ps, err := planner.Plan(spec)
 	if err != nil {
-		return Program{}, err
+		return nil, err
 	}
 
-	return Program{PlanSpec: ps}, err
+	return &Program{PlanSpec: ps}, err
 }
 
 func (ASTCompiler) CompilerType() flux.CompilerType {
@@ -206,34 +206,50 @@ func buildSpec(t *flux.TableObject, ider flux.IDer, spec *flux.Spec, visited map
 	spec.Operations = append(spec.Operations, t.Operation(ider))
 }
 
-// Program implements the flux.Program interface
+// Program implements the flux.Program interface.
+// It will execute a compiled plan using an executor.
 type Program struct {
-	deps     execute.Dependencies
-	PlanSpec *plan.Spec
+	Dependencies execute.Dependencies
+	PlanSpec     *plan.Spec
 }
 
-func NewProgram(ps *plan.Spec) *Program {
-	return &Program{
-		PlanSpec: ps,
+func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+	ctx, cancel := context.WithCancel(ctx)
+	results := make(chan flux.Result)
+	q := &query{
+		results: results,
+		alloc:   alloc,
+		cancel:  cancel,
 	}
+	q.wg.Add(1)
+	go p.run(ctx, q)
+	return q, nil
 }
 
-func (p Program) Start(ctx context.Context, allocator *memory.Allocator) (flux.Query, error) {
-	e := execute.NewExecutor(p.deps, nil)
-	results, _, err := e.Execute(ctx, p.PlanSpec, allocator)
+func (p *Program) run(ctx context.Context, q *query) {
+	defer q.wg.Done()
+	defer close(q.results)
+
+	e := execute.NewExecutor(p.Dependencies, nil)
+	results, md, err := e.Execute(ctx, p.PlanSpec, q.alloc)
 	if err != nil {
-		return nil, err
+		q.err = err
+		return
 	}
 
-	ch := make(chan flux.Result)
-	go func() {
-		for _, r := range results {
-			ch <- r
+	// There was no error so send the results downstream.
+	for _, res := range results {
+		select {
+		case q.results <- res:
+		case <-ctx.Done():
+			q.err = ctx.Err()
+			return
 		}
-		close(ch)
-	}()
+	}
 
-	return &Query{
-		ch: ch,
-	}, nil
+	// If we have successfully sent all results downstream,
+	// we will now read the metadata coming from the executor.
+	for m := range md {
+		q.stats.Metadata.AddAll(m)
+	}
 }
