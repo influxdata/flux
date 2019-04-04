@@ -7,19 +7,15 @@ type controllerMetrics struct {
 	requests  *prometheus.CounterVec
 	functions *prometheus.CounterVec
 
-	all        *prometheus.GaugeVec
-	compiling  *prometheus.GaugeVec
-	queueing   *prometheus.GaugeVec
-	requeueing *prometheus.GaugeVec
-	planning   *prometheus.GaugeVec
-	executing  *prometheus.GaugeVec
+	all       *prometheus.GaugeVec
+	compiling *prometheus.GaugeVec
+	queueing  *prometheus.GaugeVec
+	executing *prometheus.GaugeVec
 
-	allDur        *prometheus.HistogramVec
-	compilingDur  *prometheus.HistogramVec
-	queueingDur   *prometheus.HistogramVec
-	requeueingDur *prometheus.HistogramVec
-	planningDur   *prometheus.HistogramVec
-	executingDur  *prometheus.HistogramVec
+	allDur       *prometheus.HistogramVec
+	compilingDur *prometheus.HistogramVec
+	queueingDur  *prometheus.HistogramVec
+	executingDur *prometheus.HistogramVec
 }
 
 type requestsLabel string
@@ -74,20 +70,6 @@ func newControllerMetrics(labels []string) *controllerMetrics {
 			Help:      "Number of queries actively queueing",
 		}, labels),
 
-		requeueing: prometheus.NewGaugeVec(prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: subsystem,
-			Name:      "requeueing_active",
-			Help:      "Number of queries actively requeueing",
-		}, labels),
-
-		planning: prometheus.NewGaugeVec(prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: subsystem,
-			Name:      "planning_active",
-			Help:      "Number of queries actively planning",
-		}, labels),
-
 		executing: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace,
 			Subsystem: subsystem,
@@ -119,22 +101,6 @@ func newControllerMetrics(labels []string) *controllerMetrics {
 			Buckets:   prometheus.ExponentialBuckets(1e-3, 5, 7),
 		}, labels),
 
-		requeueingDur: prometheus.NewHistogramVec(prometheus.HistogramOpts{
-			Namespace: namespace,
-			Subsystem: subsystem,
-			Name:      "requeueing_duration_seconds",
-			Help:      "Histogram of times spent requeueing queries",
-			Buckets:   prometheus.ExponentialBuckets(1e-3, 5, 7),
-		}, labels),
-
-		planningDur: prometheus.NewHistogramVec(prometheus.HistogramOpts{
-			Namespace: namespace,
-			Subsystem: subsystem,
-			Name:      "planning_duration_seconds",
-			Help:      "Histogram of times spent planning queries",
-			Buckets:   prometheus.ExponentialBuckets(1e-5, 5, 7),
-		}, labels),
-
 		executingDur: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Namespace: namespace,
 			Subsystem: subsystem,
@@ -154,15 +120,11 @@ func (cm *controllerMetrics) PrometheusCollectors() []prometheus.Collector {
 		cm.all,
 		cm.compiling,
 		cm.queueing,
-		cm.requeueing,
-		cm.planning,
 		cm.executing,
 
 		cm.allDur,
 		cm.compilingDur,
 		cm.queueingDur,
-		cm.requeueingDur,
-		cm.planningDur,
 		cm.executingDur,
 	}
 }
