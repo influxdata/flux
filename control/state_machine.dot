@@ -13,14 +13,7 @@ strict digraph controller {
   };
 
   queueing -> {
-    planning;
-    errored;
-    canceled;
-  };
-
-  planning -> {
     executing;
-    requeueing;
     errored;
     canceled;
   };
@@ -29,12 +22,6 @@ strict digraph controller {
     errored;
     canceled;
     finished;
-  };
-
-  requeueing -> {
-    executing;
-    errored;
-    canceled;
   };
 
   canceled -> {
