@@ -1,76 +1,57 @@
-// Package control controls which resources a query may consume.
+// Package control keeps track of resources and manages queries.
 //
-// The Controller manages the resources available to each query and ensures
-// an optimal use of those resources to execute queries in a timely manner.
-// The controller also maintains the state of a query as it goes through the
-// various stages of execution and is responsible for killing currently
-// executing queries when requested by the user.
+// The Controller manages the resources available to each query by
+// managing the memory allocation and concurrency usage of each query.
+// The Controller will compile a program by using the passed in language
+// and it will start the program using the ResourceManager.
 //
-// The Controller manages when a query is executed. This can be based on
-// anything within the query's requested resources. For example, a basic
-// implementation of the Controller may decide to execute anything with a high
-// priority before anything with a low priority.  The implementation of the
-// Controller will vary and change over time and this package may provide
-// multiple implementations for different controller algorithms.
+// It will guarantee that each program that is started has at least
+// one goroutine that it can use with the dispatcher and it will
+// ensure a minimum amount of memory is available before the program
+// runs.
 //
-// During execution, the Controller manages the resources used by the query and
-// provides observabiility into what resources are being used and by which
-// queries. The Controller also imposes limitations so a query that uses more
-// than its allocated resources or more resources than available on the system
-// will be aborted.
+// Other goroutines and memory usage is at the will of the specific
+// resource strategy that the Controller is using.
+//
+// The Controller also provides visibility into the lifetime of the query
+// and its current resource usage.
 package control
 
 import (
 	"context"
 	"fmt"
-	"math"
-	"runtime/debug"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/plan"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 // Controller provides a central location to manage all incoming queries.
-// The controller is responsible for queueing, planning, and executing queries.
+// The controller is responsible for compiling, queueing, and executing queries.
 type Controller struct {
-	newQueries    chan *Query
-	queriesMu     sync.RWMutex
-	queries       map[QueryID]*Query
-	queryDone     chan *Query
-	cancelRequest chan QueryID
-
-	shutdownCtx context.Context
-	shutdown    func()
-	done        chan struct{}
+	lastID    uint64
+	queriesMu sync.RWMutex
+	queries   map[QueryID]*Query
+	shutdown  bool
+	done      chan struct{}
 
 	metrics   *controllerMetrics
 	labelKeys []string
 
-	planner  plan.Planner
-	executor execute.Executor
-	logger   *zap.Logger
-
-	maxConcurrency       int
-	availableConcurrency int
-	availableMemory      int64
+	logger *zap.Logger
 }
 
 type Config struct {
-	ConcurrencyQuota     int
-	MemoryBytesQuota     int64
-	ExecutorDependencies execute.Dependencies
-	PPlannerOptions      []plan.PhysicalOption
-	LPlannerOptions      []plan.LogicalOption
-	Logger               *zap.Logger
+	// TODO(jsternberg): Integrate the concurrency and memory bytes quotas.
+	ConcurrencyQuota int
+	MemoryBytesQuota int64
+	Logger           *zap.Logger
 	// MetricLabelKeys is a list of labels to add to the metrics produced by the controller.
 	// The value for a given key will be read off the context.
 	// The context value must be a string or an implementation of the Stringer interface.
@@ -84,43 +65,160 @@ func New(c Config) *Controller {
 	if logger == nil {
 		logger = zap.NewNop()
 	}
-	pb := plan.PlannerBuilder{}
-	pb.AddLogicalOptions(c.LPlannerOptions...)
-	pb.AddPhysicalOption(c.PPlannerOptions...)
 	ctrl := &Controller{
-		newQueries:           make(chan *Query),
-		queries:              make(map[QueryID]*Query),
-		queryDone:            make(chan *Query),
-		cancelRequest:        make(chan QueryID),
-		done:                 make(chan struct{}),
-		maxConcurrency:       c.ConcurrencyQuota,
-		availableConcurrency: c.ConcurrencyQuota,
-		availableMemory:      c.MemoryBytesQuota,
-		planner:              pb.Build(),
-		executor:             execute.NewExecutor(c.ExecutorDependencies, logger),
-		logger:               logger,
-		metrics:              newControllerMetrics(c.MetricLabelKeys),
-		labelKeys:            c.MetricLabelKeys,
+		queries:   make(map[QueryID]*Query),
+		done:      make(chan struct{}),
+		logger:    logger,
+		metrics:   newControllerMetrics(c.MetricLabelKeys),
+		labelKeys: c.MetricLabelKeys,
 	}
-	ctrl.shutdownCtx, ctrl.shutdown = context.WithCancel(context.Background())
-	go ctrl.run()
 	return ctrl
 }
 
 // Query submits a query for execution returning immediately.
 // Done must be called on any returned Query objects.
 func (c *Controller) Query(ctx context.Context, compiler flux.Compiler) (flux.Query, error) {
-	prog, err := compiler.Compile(ctx)
+	q, err := c.createQuery(ctx, compiler.CompilerType())
 	if err != nil {
 		return nil, err
 	}
 
-	a := new(memory.Allocator)
-	return prog.Start(ctx, a)
+	if err := c.compileQuery(q, compiler); err != nil {
+		q.setErr(err)
+		c.finish(q)
+		c.countQueryRequest(q, labelCompileError)
+		return nil, q.Err()
+	}
+	if err := c.enqueueQuery(q); err != nil {
+		q.setErr(err)
+		c.finish(q)
+		c.countQueryRequest(q, labelQueueError)
+		return nil, q.Err()
+	}
+	c.countQueryRequest(q, labelSuccess)
+	return q, nil
 }
 
-type Stringer interface {
-	String() string
+func (c *Controller) createQuery(ctx context.Context, ct flux.CompilerType) (*Query, error) {
+	c.queriesMu.RLock()
+	if c.shutdown {
+		c.queriesMu.RUnlock()
+		return nil, errors.New("query controller shutdown")
+	}
+	c.queriesMu.RUnlock()
+
+	id := c.nextID()
+	labelValues := make([]string, len(c.labelKeys))
+	compileLabelValues := make([]string, len(c.labelKeys)+1)
+	for i, k := range c.labelKeys {
+		value := ctx.Value(k)
+		var str string
+		switch v := value.(type) {
+		case string:
+			str = v
+		case fmt.Stringer:
+			str = v.String()
+		}
+		labelValues[i] = str
+		compileLabelValues[i] = str
+	}
+	compileLabelValues[len(compileLabelValues)-1] = string(ct)
+
+	cctx, cancel := context.WithCancel(ctx)
+	parentSpan, parentCtx := StartSpanFromContext(
+		cctx,
+		"all",
+		c.metrics.allDur.WithLabelValues(labelValues...),
+		c.metrics.all.WithLabelValues(labelValues...),
+	)
+	q := &Query{
+		id:                 id,
+		labelValues:        labelValues,
+		compileLabelValues: compileLabelValues,
+		state:              Created,
+		c:                  c,
+		results:            make(chan flux.Result),
+		parentCtx:          parentCtx,
+		parentSpan:         parentSpan,
+		cancel:             cancel,
+	}
+
+	// Lock the queries mutex for the rest of this method.
+	c.queriesMu.Lock()
+	defer c.queriesMu.Unlock()
+
+	if c.shutdown {
+		// Query controller was shutdown between when we started
+		// creating the query and ending it.
+		err := errors.New("query controller shutdown")
+		q.setErr(err)
+		return nil, err
+	}
+	c.queries[id] = q
+	return q, nil
+}
+
+func (c *Controller) nextID() QueryID {
+	nextID := atomic.AddUint64(&c.lastID, 1)
+	return QueryID(nextID)
+}
+
+func (c *Controller) countQueryRequest(q *Query, result requestsLabel) {
+	l := len(q.labelValues)
+	lvs := make([]string, l+1)
+	copy(lvs, q.labelValues)
+	lvs[l] = string(result)
+	c.metrics.requests.WithLabelValues(lvs...).Inc()
+}
+
+func (c *Controller) compileQuery(q *Query, compiler flux.Compiler) error {
+	if !q.tryCompile() {
+		return errors.New("failed to transition query to compiling state")
+	}
+
+	prog, err := compiler.Compile(q.currentCtx)
+	if err != nil {
+		return errors.Wrap(err, "compilation failed")
+	}
+	q.program = prog
+	return nil
+}
+
+func (c *Controller) enqueueQuery(q *Query) error {
+	if !q.tryQueue() {
+		return errors.New("failed to transition query to queueing state")
+	}
+
+	// TODO(jsternberg): We should have a real queue! It should only
+	// start the query when we know we have a minimum amount of memory
+	// available and at least one goroutine we can use. Since we don't
+	// implement a queue at the moment, the rest just fakes it by
+	// immediately switching to the execute state and then calling
+	// start which should start the query in a new goroutine and return
+	// the underlying results.
+	if !q.tryExec() {
+		return errors.New("failed to transition query into executing state")
+	}
+
+	// TODO(jsternberg): Introduce memory restrictions.
+	q.alloc = new(memory.Allocator)
+	exec, err := q.program.Start(q.currentCtx, q.alloc)
+	if err != nil {
+		q.setErr(err)
+		return nil
+	}
+	q.exec = exec
+	go q.pump(exec)
+	return nil
+}
+
+func (c *Controller) finish(q *Query) {
+	c.queriesMu.Lock()
+	delete(c.queries, q.id)
+	if len(c.queries) == 0 && c.shutdown {
+		close(c.done)
+	}
+	c.queriesMu.Unlock()
 }
 
 // Queries reports the active queries.
@@ -139,173 +237,30 @@ func (c *Controller) Queries() []*Query {
 // This will return once the Controller's run loop has been exited and all
 // queries have been finished or until the Context has been canceled.
 func (c *Controller) Shutdown(ctx context.Context) error {
-	// Initiate the shutdown procedure by signaling to the run thread.
-	c.shutdown()
-
-	// Wait for the run loop to exit.
-	select {
-	case <-c.done:
+	// Mark that the controller is shutdown so it does not
+	// accept new queries.
+	c.queriesMu.Lock()
+	c.shutdown = true
+	if len(c.queries) == 0 {
+		c.queriesMu.Unlock()
 		return nil
-	case <-ctx.Done():
-		c.CancelAll()
-		return ctx.Err()
 	}
-}
+	c.queriesMu.Unlock()
 
-// CancelAll cancels all executing queries.
-func (c *Controller) CancelAll() {
+	// Cancel all of the currently active queries.
 	c.queriesMu.RLock()
 	for _, q := range c.queries {
 		q.Cancel()
 	}
 	c.queriesMu.RUnlock()
-}
 
-func (c *Controller) run() {
-	defer close(c.done)
-
-	pq := newPriorityQueue()
-	for {
-		select {
-		// Wait for resources to free
-		case q := <-c.queryDone:
-			c.free(q)
-			c.queriesMu.Lock()
-			delete(c.queries, q.id)
-			c.queriesMu.Unlock()
-		// Wait for new queries
-		case q := <-c.newQueries:
-			pq.Push(q)
-			c.queriesMu.Lock()
-			c.queries[q.id] = q
-			c.queriesMu.Unlock()
-		// Wait for cancel query requests
-		case id := <-c.cancelRequest:
-			c.queriesMu.RLock()
-			q := c.queries[id]
-			c.queriesMu.RUnlock()
-			q.Cancel()
-		// Check if we have been signaled to shutdown.
-		case <-c.shutdownCtx.Done():
-			// We have been signaled to shutdown so drain the queues
-			// and exit the for loop.
-			c.drain(pq)
-			return
-		}
-
-		// Peek at head of priority queue
-		q := pq.Peek()
-		if q != nil {
-			pop, err := c.processQuery(q)
-			if pop {
-				pq.Pop()
-			}
-			if err != nil {
-				q.setErr(err)
-			}
-		}
-	}
-}
-
-// drain will continue processing queries from the priority queue and
-// processing done queries.
-func (c *Controller) drain(pq *PriorityQueue) {
-	for {
-		c.queriesMu.RLock()
-		if len(c.queries) == 0 {
-			c.queriesMu.RUnlock()
-			return
-		}
-		c.queriesMu.RUnlock()
-
-		// Wait for resources to free
-		q := <-c.queryDone
-		c.free(q)
-		c.queriesMu.Lock()
-		delete(c.queries, q.id)
-		c.queriesMu.Unlock()
-
-		// Peek at head of priority queue
-		q = pq.Peek()
-		if q != nil {
-			pop, err := c.processQuery(q)
-			if pop {
-				pq.Pop()
-			}
-			if err != nil {
-				go q.setErr(err)
-			}
-		}
-	}
-}
-
-// processQuery move the query through the state machine and returns and errors and if the query should be popped.
-func (c *Controller) processQuery(q *Query) (pop bool, err error) {
-	defer func() {
-		if e := recover(); e != nil {
-			// If a query panicked, always pop it from the queue so we don't
-			// try to reprocess it.
-			pop = true
-
-			// Update the error with information about the query if this is an
-			// error type and create an error if it isn't.
-			switch e := e.(type) {
-			case error:
-				err = errors.Wrap(e, "panic")
-			default:
-				err = fmt.Errorf("panic: %s", e)
-			}
-			if entry := c.logger.Check(zapcore.InfoLevel, "Controller panic"); entry != nil {
-				entry.Stack = string(debug.Stack())
-				entry.Write(zap.Error(err))
-			}
-		}
-	}()
-
-	// Check if we have enough resources
-	if c.check(q) {
-		// Update resource gauges
-		c.consume(q)
-
-		// Remove the query from the queue
-		pop = true
-
-		// Execute query
-		if !q.tryExec() {
-			return true, errors.New("failed to transition query into executing state")
-		}
-		q.alloc = new(memory.Allocator)
-		// TODO: pass the plan to the executor here
-		r, md, err := c.executor.Execute(q.currentCtx, q.plan, q.alloc)
-		if err != nil {
-			return true, errors.Wrap(err, "failed to execute query")
-		}
-		q.setResults(r, md)
-	} else {
-		// update state to queueing
-		if !q.tryRequeue() {
-			return true, errors.New("failed to transition query into requeueing state")
-		}
-	}
-	return pop, nil
-}
-
-func (c *Controller) check(q *Query) bool {
-	return c.availableConcurrency >= q.concurrency && (q.memory == math.MaxInt64 || c.availableMemory >= q.memory)
-}
-func (c *Controller) consume(q *Query) {
-	c.availableConcurrency -= q.concurrency
-
-	if q.memory != math.MaxInt64 {
-		c.availableMemory -= q.memory
-	}
-}
-
-func (c *Controller) free(q *Query) {
-	c.availableConcurrency += q.concurrency
-
-	if q.memory != math.MaxInt64 {
-		c.availableMemory += q.memory
+	// Wait for all of the queries to be cleaned up or until the
+	// context is done.
+	select {
+	case <-c.done:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	}
 }
 
@@ -323,11 +278,6 @@ type Query struct {
 
 	c *Controller
 
-	spec flux.Spec
-
-	ready  chan flux.Result
-	metaCh <-chan flux.Metadata
-
 	// query state. The stateMu protects access for the group below.
 	stateMu sync.RWMutex
 	state   State
@@ -338,27 +288,17 @@ type Query struct {
 	parentSpan, currentSpan *span
 	stats                   flux.Statistics
 
-	plan *plan.Spec
+	done sync.Once
 
-	done        sync.Once
-	concurrency int
-	memory      int64
-
-	alloc *memory.Allocator
+	program flux.Program
+	exec    flux.Query
+	results chan flux.Result
+	alloc   *memory.Allocator
 }
 
 // ID reports an ephemeral unique ID for the query.
 func (q *Query) ID() QueryID {
 	return q.id
-}
-
-func (q *Query) Spec() *flux.Spec {
-	return &q.spec
-}
-
-// Concurrency reports the number of goroutines allowed to process the request.
-func (q *Query) Concurrency() int {
-	return q.concurrency
 }
 
 // Cancel will stop the query execution.
@@ -377,32 +317,30 @@ func (q *Query) Cancel() {
 // The query may also have an error during execution so the Err()
 // function should be used to check if an error happened.
 func (q *Query) Results() <-chan flux.Result {
-	return q.ready
+	return q.results
 }
 
 // Done signals to the Controller that this query is no longer
 // being used and resources related to the query may be freed.
-//
-// The Results method must have returned a result before calling
-// this method either by the query executing, being canceled, or
-// an error occurring.
 func (q *Query) Done() {
 	// We are not considered to be in the run loop anymore once
 	// this is called.
 	q.done.Do(func() {
+		if q.exec != nil {
+			q.exec.Done()
+			if q.err == nil {
+				// TODO(jsternberg): The underlying program never returns
+				// this so maybe their interface should change?
+				q.err = q.exec.Err()
+			}
+			stats := q.exec.Statistics()
+			q.stats.Metadata = stats.Metadata
+		}
+
 		q.stateMu.Lock()
 		q.transitionTo(Finished)
-
-		// Read from the metadata channel. We only do this in this location so no locking
-		// is needed.
-		meta := make(flux.Metadata)
-		for md := range q.metaCh {
-			meta.AddAll(md)
-		}
-		q.stats.Metadata = meta
 		q.stateMu.Unlock()
-
-		q.c.queryDone <- q
+		q.c.finish(q)
 	})
 }
 
@@ -415,7 +353,6 @@ func (q *Query) Statistics() flux.Statistics {
 	defer q.stateMu.Unlock()
 
 	stats := q.stats
-	stats.Concurrency = q.concurrency
 	if q.alloc != nil {
 		stats.MaxAllocated = q.alloc.MaxAllocated()
 	}
@@ -482,10 +419,6 @@ TRANSITION:
 			q.stats.CompileDuration += q.currentSpan.Duration
 		case Queueing:
 			q.stats.QueueDuration += q.currentSpan.Duration
-		case Planning:
-			q.stats.PlanDuration += q.currentSpan.Duration
-		case Requeueing:
-			q.stats.RequeueDuration += q.currentSpan.Duration
 		case Executing:
 			q.stats.ExecuteDuration += q.currentSpan.Duration
 		}
@@ -522,10 +455,6 @@ TRANSITION:
 		labelValues = q.compileLabelValues
 	case Queueing:
 		dur, gauge = q.c.metrics.queueingDur, q.c.metrics.queueing
-	case Planning:
-		dur, gauge = q.c.metrics.planningDur, q.c.metrics.planning
-	case Requeueing:
-		dur, gauge = q.c.metrics.requeueingDur, q.c.metrics.requeueing
 	case Executing:
 		dur, gauge = q.c.metrics.executingDur, q.c.metrics.executing
 	default:
@@ -539,13 +468,6 @@ TRANSITION:
 		gauge.WithLabelValues(labelValues...),
 	)
 	return true
-}
-
-func (q *Query) isOK() bool {
-	q.stateMu.RLock()
-	ok := q.state != Canceled && q.state != Errored && q.state != Finished
-	q.stateMu.RUnlock()
-	return ok
 }
 
 // Err reports any error the query may have encountered.
@@ -580,29 +502,60 @@ func (q *Query) setErr(err error) {
 
 	// Close the ready channel to report that no results
 	// will be sent.
-	close(q.ready)
+	close(q.results)
 }
 
-// setResults will set the results and send them over the ready channel.
-func (q *Query) setResults(_ map[string]flux.Result, md <-chan flux.Metadata) {
-	q.stateMu.Lock()
-	q.metaCh = md
-	q.stateMu.Unlock()
+// pump will read from the executing query results and pump the
+// results to our destination.
+// When there are no more results, then this will close our own
+// results channel.
+func (q *Query) pump(exec flux.Query) {
+	defer close(q.results)
 
-	//q.ready <- r
-	close(q.ready)
+	done := q.currentCtx.Done()
+	for {
+		select {
+		case res, ok := <-exec.Results():
+			if !ok {
+				return
+			}
+
+			// It is possible for the underlying query to misbehave.
+			// We have to continue pumping results even if this is the
+			// case, but if the query has been canceled or finished with
+			// done, nobody is going to read these values so we need
+			// to avoid blocking.
+			select {
+			case <-q.currentCtx.Done():
+			case q.results <- res:
+			}
+		case <-done:
+			// Signal to the underlying executor that the query
+			// has been canceled. Usually, the signal on the context
+			// is likely enough, but this explicitly signals just in case.
+			exec.Cancel()
+
+			// Set the done channel to nil so we don't do this again
+			// and we continue to drain the results.
+			done = nil
+		}
+	}
 }
 
-// tryRequeue attempts to transition the query into the Requeueing state.
-func (q *Query) tryRequeue() bool {
+// tryCompile attempts to transition the query into the Compiling state.
+func (q *Query) tryCompile() bool {
 	q.stateMu.Lock()
 	defer q.stateMu.Unlock()
 
-	if q.state == Requeueing {
-		// Already in the correct state.
-		return true
-	}
-	return q.transitionTo(Requeueing, Queueing)
+	return q.transitionTo(Compiling, Created)
+}
+
+// tryQueue attempts to transition the query into the Queueing state.
+func (q *Query) tryQueue() bool {
+	q.stateMu.Lock()
+	defer q.stateMu.Unlock()
+
+	return q.transitionTo(Queueing, Compiling)
 }
 
 // tryExec attempts to transition the query into the Executing state.
@@ -610,7 +563,7 @@ func (q *Query) tryExec() bool {
 	q.stateMu.Lock()
 	defer q.stateMu.Unlock()
 
-	return q.transitionTo(Executing, Requeueing, Queueing)
+	return q.transitionTo(Executing, Queueing)
 }
 
 // State is the query state.
@@ -624,18 +577,11 @@ const (
 	// of executing the compiler associated with the query.
 	Compiling
 
-	// Planning indicates that a query spec has been created
-	// from the compiler and the query planner is executing.
-	Planning
-
 	// Queueing indicates the query is waiting inside of the
 	// scheduler to be executed.
+	// TODO(jsternberg): This stage isn't used currently, but
+	// it makes sense to readd this once we have a work queue again.
 	Queueing
-
-	// Requeueing indicates that the query scheduler wanted
-	// to run the query, but not enough resources were available
-	// so it is in the process of waiting again.
-	Requeueing
 
 	// Executing indicates that the query is currently executing.
 	Executing
@@ -662,10 +608,6 @@ func (s State) String() string {
 		return "compiling"
 	case Queueing:
 		return "queueing"
-	case Planning:
-		return "planning"
-	case Requeueing:
-		return "requeueing"
 	case Executing:
 		return "executing"
 	case Errored:
@@ -718,10 +660,4 @@ func (s *span) Finish() {
 	})
 	s.hist.Observe(s.Duration.Seconds())
 	s.gauge.Dec()
-}
-
-var noMetadata = make(chan flux.Metadata)
-
-func init() {
-	close(noMetadata)
 }
