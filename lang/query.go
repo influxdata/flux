@@ -1,31 +1,39 @@
 package lang
 
 import (
+	"sync"
+
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/memory"
 )
 
-// Query implements the flux.Query interface.
-type Query struct {
-	ch <-chan flux.Result
+// query implements the flux.Query interface.
+type query struct {
+	results chan flux.Result
+	stats   flux.Statistics
+	alloc   *memory.Allocator
+	cancel  func()
+	err     error
+	wg      sync.WaitGroup
 }
 
-func (q *Query) Results() <-chan flux.Result {
-	return q.ch
+func (q *query) Results() <-chan flux.Result {
+	return q.results
 }
 
-func (q *Query) Done() {
-	// consume all remaining elements so channel can be closed
-	for range q.ch {
-	}
+func (q *query) Done() {
+	q.cancel()
+	q.wg.Wait()
 }
 
-func (*Query) Cancel() {
+func (q *query) Cancel() {
+	q.cancel()
 }
 
-func (*Query) Err() error {
-	return nil
+func (q *query) Err() error {
+	return q.err
 }
 
-func (*Query) Statistics() flux.Statistics {
-	return flux.Statistics{}
+func (q *query) Statistics() flux.Statistics {
+	return q.stats
 }
