@@ -2,6 +2,7 @@ package lang
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -9,6 +10,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/values"
 )
 
 const (
@@ -116,6 +118,92 @@ func (ASTCompiler) CompilerType() flux.CompilerType {
 // PrependFile prepends a file onto the compiler's list of package files.
 func (c *ASTCompiler) PrependFile(file *ast.File) {
 	c.AST.Files = append([]*ast.File{file}, c.AST.Files...)
+}
+
+// TableObjectCompiler compiles a TableObject into an executable flux.Program.
+// It is not added to CompilerMappings and it is not serializable, because
+// it is impossible to use it outside of the context of an ongoing execution.
+type TableObjectCompiler struct {
+	Tables *flux.TableObject
+}
+
+func (c *TableObjectCompiler) Compile(ctx context.Context) (flux.Program, error) {
+	ider := &ider{
+		id:     0,
+		lookup: make(map[*flux.TableObject]flux.OperationID),
+	}
+	spec := new(flux.Spec)
+	visited := make(map[*flux.TableObject]bool)
+	buildSpec(c.Tables, ider, spec, visited)
+
+	specCompiler := &SpecCompiler{
+		Spec: spec,
+	}
+	return specCompiler.Compile(ctx)
+}
+
+func (*TableObjectCompiler) CompilerType() flux.CompilerType {
+	panic("TableObjectCompiler is not associated with a CompilerType")
+}
+
+// TODO(affo): this is duplicate code of the private types in /compile.go to avoid cyclic
+//  dependencies between `flux` and `lang`.
+type ider struct {
+	id     int
+	lookup map[*flux.TableObject]flux.OperationID
+}
+
+func (i *ider) nextID() int {
+	next := i.id
+	i.id++
+	return next
+}
+
+func (i *ider) get(t *flux.TableObject) (flux.OperationID, bool) {
+	tableID, ok := i.lookup[t]
+	return tableID, ok
+}
+
+func (i *ider) set(t *flux.TableObject, id int) flux.OperationID {
+	opID := flux.OperationID(fmt.Sprintf("%s%d", t.Kind, id))
+	i.lookup[t] = opID
+	return opID
+}
+
+func (i *ider) ID(t *flux.TableObject) flux.OperationID {
+	tableID, ok := i.get(t)
+	if !ok {
+		tableID = i.set(t, i.nextID())
+	}
+	return tableID
+}
+
+// TODO(affo): duplicate code in /compile.go.
+func buildSpec(t *flux.TableObject, ider flux.IDer, spec *flux.Spec, visited map[*flux.TableObject]bool) {
+	// Traverse graph upwards to first unvisited node.
+	// Note: parents are sorted based on parameter name, so the visit order is consistent.
+	t.Parents.Range(func(i int, v values.Value) {
+		p := v.(*flux.TableObject)
+		if !visited[p] {
+			// rescurse up parents
+			buildSpec(p, ider, spec, visited)
+		}
+	})
+
+	// Assign ID to table object after visiting all ancestors.
+	tableID := ider.ID(t)
+
+	// Link table object to all parents after assigning ID.
+	t.Parents.Range(func(i int, v values.Value) {
+		p := v.(*flux.TableObject)
+		spec.Edges = append(spec.Edges, flux.Edge{
+			Parent: ider.ID(p),
+			Child:  tableID,
+		})
+	})
+
+	visited[t] = true
+	spec.Operations = append(spec.Operations, t.Operation(ider))
 }
 
 // Program implements the flux.Program interface
