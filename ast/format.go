@@ -359,7 +359,10 @@ func (f *formatter) formatFunctionExpression(n *FunctionExpression) {
 
 func (f *formatter) formatUnaryExpression(n *UnaryExpression) {
 	f.writeString(n.Operator.String())
-	f.writeRune(' ')
+	if n.Operator != SubtractionOperator &&
+		n.Operator != AdditionOperator {
+		f.WriteRune(' ')
+	}
 	f.formatChildWithParens(n, n.Argument)
 }
 
