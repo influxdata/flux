@@ -220,6 +220,9 @@ func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Quer
 		results: results,
 		alloc:   alloc,
 		cancel:  cancel,
+		stats: flux.Statistics{
+			Metadata: make(flux.Metadata),
+		},
 	}
 	q.wg.Add(1)
 	go p.run(ctx, q)
