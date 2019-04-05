@@ -178,14 +178,6 @@ func (t *transpiler) transpileInstantVectorSelector(v *promql.VectorSelector) *a
 		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start.Add(-v.Offset), t.end.Add(-5*time.Minute-v.Offset))}),
 		// Select the last data point after the current evaluation (resolution step) timestamp.
 		call("last", nil),
-		// The resolution step evaluation timestamp needs to become the output timestamp.
-		call("drop", map[string]ast.Expression{"columns": &ast.ArrayExpression{
-			Elements: []ast.Expression{&ast.StringLiteral{Value: "_time"}},
-		}}),
-		call("duplicate", map[string]ast.Expression{
-			"column": &ast.StringLiteral{Value: "_stop"},
-			"as":     &ast.StringLiteral{Value: "_time"},
-		}),
 		// Apply offsets to make past data look like it's in the present.
 		call("timeShift", map[string]ast.Expression{
 			"duration": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: v.Offset.Nanoseconds(), Unit: "ns"}}},
@@ -390,9 +382,18 @@ func (t *transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expres
 	dropMeasurement := true
 	if a.Without {
 		mode = "except"
-		groupCols.Elements = append(groupCols.Elements, &ast.StringLiteral{Value: "_value"})
+		groupCols.Elements = append(
+			groupCols.Elements,
+			&ast.StringLiteral{Value: "_value"},
+			&ast.StringLiteral{Value: "_time"},
+		)
 	} else {
-		groupCols.Elements = append(groupCols.Elements, &ast.StringLiteral{Value: "_time"}, &ast.StringLiteral{Value: "_start"}, &ast.StringLiteral{Value: "_stop"})
+		groupCols.Elements = append(
+			groupCols.Elements,
+			//&ast.StringLiteral{Value: "_time"},
+			&ast.StringLiteral{Value: "_start"},
+			&ast.StringLiteral{Value: "_stop"},
+		)
 		for _, col := range a.Grouping {
 			if col == model.MetricNameLabel {
 				dropMeasurement = false
@@ -555,7 +556,8 @@ func vectorArithBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 		},
 	}
 
-	// (r) => {"_value": <lhs> <op> <rhs>, "_time": r._stop_lhs}
+	// TODO: This sets _time, what about _stop and _start?
+	// (r) => {"_value": <lhs> <op> <rhs>, "_time": r._stop}
 	return &ast.FunctionExpression{
 		Params: []*ast.Property{
 			{
@@ -653,7 +655,7 @@ func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 			return nil, fmt.Errorf("vector-to-vector binary expressions without on() clause not supported yet")
 		}
 
-		onCols := append(b.VectorMatching.MatchingLabels, "_time")
+		onCols := append(b.VectorMatching.MatchingLabels, "_start", "_stop")
 		if op, ok := arithBinOps[b.Op]; ok {
 			return buildPipeline(
 				call("join", map[string]ast.Expression{

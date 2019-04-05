@@ -184,6 +184,10 @@ var queries = []struct {
 	{
 		query: `timestamp(demo_num_cpus)`,
 	},
+	{
+		// Check that binops preserve time fields required by aggregations.
+		query: `sum(demo_cpu_usage_seconds_total / on(instance, job, mode) demo_cpu_usage_seconds_total)`,
+	},
 }
 
 func TestQueriesE2E(t *testing.T) {
