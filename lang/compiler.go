@@ -237,6 +237,10 @@ func (p *Program) run(ctx context.Context, q *query) {
 		return
 	}
 
+	// Begin reading from the metadata channel.
+	q.wg.Add(1)
+	go p.readMetadata(q, md)
+
 	// There was no error so send the results downstream.
 	for _, res := range results {
 		select {
@@ -246,10 +250,11 @@ func (p *Program) run(ctx context.Context, q *query) {
 			return
 		}
 	}
+}
 
-	// If we have successfully sent all results downstream,
-	// we will now read the metadata coming from the executor.
-	for m := range md {
-		q.stats.Metadata.AddAll(m)
+func (p *Program) readMetadata(q *query, metaCh <-chan flux.Metadata) {
+	defer q.wg.Done()
+	for md := range metaCh {
+		q.stats.Metadata.AddAll(md)
 	}
 }
