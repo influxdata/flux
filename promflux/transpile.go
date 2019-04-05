@@ -695,6 +695,69 @@ func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 	}
 }
 
+// Function to apply a simple one-operand function to all values in a table.
+func vectorMathFn(fn string) *ast.FunctionExpression {
+	// (r) => {"_value": <lhs> <op> <rhs>, "_stop": r._stop, "_time": r._stop}
+	return &ast.FunctionExpression{
+		Params: []*ast.Property{
+			{
+				Key: &ast.Identifier{
+					Name: "r",
+				},
+			},
+		},
+		Body: &ast.ObjectExpression{
+			Properties: []*ast.Property{
+				{
+					Key: &ast.Identifier{Name: "_value"},
+					Value: &ast.CallExpression{
+						Callee: &ast.Identifier{Name: fn},
+						Arguments: []ast.Expression{
+							&ast.ObjectExpression{
+								Properties: []*ast.Property{
+									&ast.Property{
+										Key: &ast.Identifier{Name: "x"},
+										Value: &ast.MemberExpression{
+											Object: &ast.Identifier{
+												Name: "r",
+											},
+											Property: &ast.Identifier{
+												Name: "_value",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Key: &ast.Identifier{Name: "_stop"},
+					Value: &ast.MemberExpression{
+						Object: &ast.Identifier{
+							Name: "r",
+						},
+						Property: &ast.Identifier{
+							Name: "_stop",
+						},
+					},
+				},
+				{
+					Key: &ast.Identifier{Name: "_time"},
+					Value: &ast.MemberExpression{
+						Object: &ast.Identifier{
+							Name: "r",
+						},
+						Property: &ast.Identifier{
+							Name: "_stop",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 var aggregateOverTimeFns = map[string]string{
 	"sum_over_time":      "sum",
 	"avg_over_time":      "mean",
@@ -704,6 +767,17 @@ var aggregateOverTimeFns = map[string]string{
 	"stddev_over_time":   "stddev",
 	"stdvar_over_time":   "stdvar",
 	"quantile_over_time": "quantile",
+}
+
+var vectorMathFunctions = map[string]string{
+	"abs":   "math.abs",
+	"ceil":  "math.ceil",
+	"floor": "math.floor",
+	"exp":   "math.exp",
+	"sqrt":  "math.sqrt",
+	"ln":    "math.log",
+	"log2":  "math.log2",
+	"log10": "math.log10",
 }
 
 func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
@@ -754,6 +828,26 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			// Strictly we wouldn't need to drop "_time" and duplicate it from "_stop" for
 			// *all* Flux functions, only "max"/"min" on the Flux side. But this keeps
 			// the code simpler by always doing it.
+			call("drop", map[string]ast.Expression{"columns": &ast.ArrayExpression{
+				Elements: []ast.Expression{&ast.StringLiteral{Value: "_time"}},
+			}}),
+			call("duplicate", map[string]ast.Expression{
+				"column": &ast.StringLiteral{Value: "_stop"},
+				"as":     &ast.StringLiteral{Value: "_time"},
+			}),
+		), nil
+	}
+
+	if fn, ok := vectorMathFunctions[c.Func.Name]; ok {
+		v, err := t.transpileExpr(c.Args[0])
+		if err != nil {
+			return nil, fmt.Errorf("error transpiling function argument")
+		}
+
+		return buildPipeline(
+			v,
+			call("map", map[string]ast.Expression{"fn": vectorMathFn(fn)}),
+			dropMeasurementCall,
 			call("drop", map[string]ast.Expression{"columns": &ast.ArrayExpression{
 				Elements: []ast.Expression{&ast.StringLiteral{Value: "_time"}},
 			}}),

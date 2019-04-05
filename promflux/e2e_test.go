@@ -39,9 +39,10 @@ var testVariantArgs = map[string][]string{
 		// "1.5",
 	},
 	// TODO: "%" and "^" not supported yet by Flux.
-	"arithBinop": []string{"+", "-", "*", "/" /*, "%", "^" */},
-	"compBinop":  []string{"==", "!=", "<", ">", "<=", ">="},
-	"binop":      []string{"+", "-", "*", "/" /*, "%", "^" */, "==", "!=", "<", ">", "<=", ">="},
+	"arithBinop":     []string{"+", "-", "*", "/" /*, "%", "^" */},
+	"compBinop":      []string{"==", "!=", "<", ">", "<=", ">="},
+	"binop":          []string{"+", "-", "*", "/" /*, "%", "^" */, "==", "!=", "<", ">", "<=", ">="},
+	"simpleMathFunc": []string{"abs", "ceil", "floor", "exp", "sqrt", "ln", "log2", "log10"},
 }
 
 var queries = []struct {
@@ -191,6 +192,10 @@ var queries = []struct {
 	{
 		// Check that scalar-vector binops sets _time field to the window's _stop.
 		query: `timestamp(demo_cpu_usage_seconds_total * 1)`,
+	},
+	{
+		query:       `{{.simpleMathFunc}}(demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"simpleMathFunc"},
 	},
 }
 
