@@ -353,7 +353,7 @@ func (r *e2eRunner) runQuery(t *testing.T, query string, args map[string]string)
 			return float64(in)
 		}),
 		// Allow comparison tolerances due to floating point inaccuracy.
-		cmpopts.EquateApprox(0.000000000000001, 0),
+		cmpopts.EquateApprox(0.00000000000001, 0),
 	}
 	if diff := cmp.Diff(promMatrix, influxMatrix, cmpOpts); diff != "" {
 		t.Error(
