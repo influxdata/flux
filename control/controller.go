@@ -25,6 +25,8 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
@@ -45,6 +47,8 @@ type Controller struct {
 	labelKeys []string
 
 	logger *zap.Logger
+
+	dependencies execute.Dependencies
 }
 
 type Config struct {
@@ -56,6 +60,8 @@ type Config struct {
 	// The value for a given key will be read off the context.
 	// The context value must be a string or an implementation of the Stringer interface.
 	MetricLabelKeys []string
+
+	ExecutorDependencies execute.Dependencies
 }
 
 type QueryID uint64
@@ -66,11 +72,12 @@ func New(c Config) *Controller {
 		logger = zap.NewNop()
 	}
 	ctrl := &Controller{
-		queries:   make(map[QueryID]*Query),
-		done:      make(chan struct{}),
-		logger:    logger,
-		metrics:   newControllerMetrics(c.MetricLabelKeys),
-		labelKeys: c.MetricLabelKeys,
+		queries:      make(map[QueryID]*Query),
+		done:         make(chan struct{}),
+		logger:       logger,
+		metrics:      newControllerMetrics(c.MetricLabelKeys),
+		labelKeys:    c.MetricLabelKeys,
+		dependencies: c.ExecutorDependencies,
 	}
 	return ctrl
 }
@@ -180,6 +187,13 @@ func (c *Controller) compileQuery(q *Query, compiler flux.Compiler) error {
 	if err != nil {
 		return errors.Wrap(err, "compilation failed")
 	}
+
+	// TODO(cwolff): the compiler should be responsible for assigning
+	//   dependencies, see https://github.com/influxdata/flux/issues/1126
+	if p, ok := prog.(*lang.Program); ok {
+		p.Dependencies = c.dependencies
+	}
+
 	q.program = prog
 	return nil
 }
