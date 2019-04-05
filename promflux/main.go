@@ -57,7 +57,7 @@ func main() {
 		end:        endTime,
 		resolution: *queryRes,
 	}
-	fluxNode, err := t.transpile(promqlNode)
+	fluxFile, err := t.transpile(promqlNode)
 	if err != nil {
 		log.Fatalln("Error transpiling PromQL expression to Flux:", err)
 	}
@@ -67,8 +67,8 @@ func main() {
 	if err != nil {
 		log.Fatalln("Error querying Prometheus:", err)
 	}
-	fmt.Printf("Running Flux query:\n============================================\n%s\n============================================\n\n", ast.Format(fluxNode))
-	influxResult, err := queryInfluxDB(*influxURL, *influxOrg, *influxToken, *influxBucket, ast.Format(fluxNode))
+	fmt.Printf("Running Flux query:\n============================================\n%s\n============================================\n\n", ast.Format(fluxFile))
+	influxResult, err := queryInfluxDB(*influxURL, *influxOrg, *influxToken, *influxBucket, ast.Format(fluxFile))
 	if err != nil {
 		log.Fatalln("Error querying InfluxDB:", err)
 	}

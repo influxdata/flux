@@ -351,7 +351,7 @@ var filterSpecialNullValuesCall = call(
 )
 
 func (t *transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expression, error) {
-	expr, err := t.transpile(a.Expr)
+	expr, err := t.transpileExpr(a.Expr)
 	if err != nil {
 		return nil, fmt.Errorf("error transpiling aggregate sub-expression: %s", err)
 	}
@@ -581,7 +581,18 @@ func vectorArithBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 							Name: "r",
 						},
 						Property: &ast.Identifier{
-							Name: "_stop_lhs",
+							Name: "_stop",
+						},
+					},
+				},
+				{
+					Key: &ast.Identifier{Name: "_stop"},
+					Value: &ast.MemberExpression{
+						Object: &ast.Identifier{
+							Name: "r",
+						},
+						Property: &ast.Identifier{
+							Name: "_stop",
 						},
 					},
 				},
@@ -591,11 +602,11 @@ func vectorArithBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 }
 
 func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, error) {
-	lhs, err := t.transpile(b.LHS)
+	lhs, err := t.transpileExpr(b.LHS)
 	if err != nil {
 		return nil, fmt.Errorf("unable to transpile left-hand side of binary operation: %s", err)
 	}
-	rhs, err := t.transpile(b.RHS)
+	rhs, err := t.transpileExpr(b.RHS)
 	if err != nil {
 		return nil, fmt.Errorf("unable to transpile right-hand side of binary operation: %s", err)
 	}
@@ -684,7 +695,7 @@ var aggregateOverTimeFns = map[string]string{
 
 func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 	if fn, ok := aggregateOverTimeFns[c.Func.Name]; ok {
-		v, err := t.transpile(c.Args[0])
+		v, err := t.transpileExpr(c.Args[0])
 		if err != nil {
 			return nil, fmt.Errorf("error transpiling function argument")
 		}
@@ -694,7 +705,7 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			args["q"] = v
 			args["method"] = &ast.StringLiteral{Value: "exact_mean"}
 
-			v, err = t.transpile(c.Args[1])
+			v, err = t.transpileExpr(c.Args[1])
 			if err != nil {
 				return nil, fmt.Errorf("error transpiling function argument")
 			}
@@ -742,7 +753,7 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 
 	switch c.Func.Name {
 	case "timestamp":
-		v, err := t.transpile(c.Args[0])
+		v, err := t.transpileExpr(c.Args[0])
 		if err != nil {
 			return nil, fmt.Errorf("error transpiling function argument")
 		}
@@ -756,10 +767,10 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 	}
 }
 
-func (t *transpiler) transpile(node promql.Node) (ast.Expression, error) {
+func (t *transpiler) transpileExpr(node promql.Node) (ast.Expression, error) {
 	switch n := node.(type) {
 	case *promql.ParenExpr:
-		return t.transpile(n.Expr)
+		return t.transpileExpr(n.Expr)
 	case *promql.NumberLiteral:
 		// TODO: Do we need to keep the scalar timestamp?
 		return &ast.FloatLiteral{Value: n.Val}, nil
@@ -776,4 +787,29 @@ func (t *transpiler) transpile(node promql.Node) (ast.Expression, error) {
 	default:
 		return nil, fmt.Errorf("PromQL node type %T is not supported yet", t)
 	}
+}
+
+func (t *transpiler) transpile(node promql.Node) (*ast.File, error) {
+	fluxNode, err := t.transpileExpr(node)
+	if err != nil {
+		return nil, fmt.Errorf("error transpiling expression: %s", err)
+	}
+	return &ast.File{
+		Imports: []*ast.ImportDeclaration{{Path: &ast.StringLiteral{Value: "promql"}}},
+		Body: []ast.Statement{
+			&ast.ExpressionStatement{
+				Expression: buildPipeline(
+					fluxNode,
+					// The resolution step evaluation timestamp needs to become the output timestamp.
+					call("drop", map[string]ast.Expression{"columns": &ast.ArrayExpression{
+						Elements: []ast.Expression{&ast.StringLiteral{Value: "_time"}},
+					}}),
+					call("duplicate", map[string]ast.Expression{
+						"column": &ast.StringLiteral{Value: "_stop"},
+						"as":     &ast.StringLiteral{Value: "_time"},
+					}),
+				),
+			},
+		},
+	}, nil
 }

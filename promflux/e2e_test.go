@@ -319,17 +319,9 @@ func (r *e2eRunner) runQuery(t *testing.T, query string, args map[string]string)
 		end:        r.end,
 		resolution: r.resolution,
 	}
-	fluxNode, err := tr.transpile(promqlNode)
+	fluxFile, err := tr.transpile(promqlNode)
 	if err != nil {
 		t.Fatalf("Error transpiling PromQL expression %q to Flux: %s", query, err)
-	}
-	fluxFile := &ast.File{
-		Imports: []*ast.ImportDeclaration{{Path: &ast.StringLiteral{Value: "promql"}}},
-		Body: []ast.Statement{
-			&ast.ExpressionStatement{
-				Expression: fluxNode,
-			},
-		},
 	}
 
 	// Query both Prometheus and InfluxDB, expect same result.
