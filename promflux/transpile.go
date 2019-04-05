@@ -784,7 +784,7 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 	if fn, ok := aggregateOverTimeFns[c.Func.Name]; ok {
 		v, err := t.transpileExpr(c.Args[0])
 		if err != nil {
-			return nil, fmt.Errorf("error transpiling function argument")
+			return nil, fmt.Errorf("error transpiling function argument: %s", err)
 		}
 
 		args := map[string]ast.Expression{}
@@ -874,10 +874,43 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 	}
 }
 
+func (t *transpiler) transpileUnaryExpr(ue *promql.UnaryExpr) (ast.Expression, error) {
+	expr, err := t.transpileExpr(ue.Expr)
+	if err != nil {
+		return nil, fmt.Errorf("error transpiling expression in unary expression: %s", err)
+	}
+
+	switch ue.Op {
+	case promql.ItemADD:
+		return expr, nil
+	case promql.ItemSUB:
+		return buildPipeline(
+			expr,
+			// Multiply by -1.
+			call("map", map[string]ast.Expression{
+				"fn": scalarArithBinaryOpFn(ast.MultiplicationOperator, &ast.FloatLiteral{Value: -1}, false)},
+			),
+			dropMeasurementCall,
+			call("drop", map[string]ast.Expression{"columns": &ast.ArrayExpression{
+				Elements: []ast.Expression{&ast.StringLiteral{Value: "_time"}},
+			}}),
+			call("duplicate", map[string]ast.Expression{
+				"column": &ast.StringLiteral{Value: "_stop"},
+				"as":     &ast.StringLiteral{Value: "_time"},
+			}),
+		), nil
+	default:
+		// PromQL fails to parse this, so this should never happen.
+		panic("invalid unary expression operator type")
+	}
+}
+
 func (t *transpiler) transpileExpr(node promql.Node) (ast.Expression, error) {
 	switch n := node.(type) {
 	case *promql.ParenExpr:
 		return t.transpileExpr(n.Expr)
+	case *promql.UnaryExpr:
+		return t.transpileUnaryExpr(n)
 	case *promql.NumberLiteral:
 		// TODO: Do we need to keep the scalar timestamp?
 		return &ast.FloatLiteral{Value: n.Val}, nil

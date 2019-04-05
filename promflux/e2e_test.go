@@ -137,6 +137,9 @@ var queries = []struct {
 	//  variantArgs: []string{""},
 	// },
 	{
+		query: `-demo_cpu_usage_seconds_total`,
+	},
+	{
 		query:       `demo_cpu_usage_seconds_total {{.binOp}} 1.2345`,
 		variantArgs: []string{"binOp"},
 	},
@@ -195,6 +198,10 @@ var queries = []struct {
 	},
 	{
 		query:       `{{.simpleMathFunc}}(demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"simpleMathFunc"},
+	},
+	{
+		query:       `{{.simpleMathFunc}}(-demo_cpu_usage_seconds_total)`,
 		variantArgs: []string{"simpleMathFunc"},
 	},
 }
@@ -359,6 +366,7 @@ func (r *e2eRunner) runQuery(t *testing.T, query string, args map[string]string)
 		}),
 		// Allow comparison tolerances due to floating point inaccuracy.
 		cmpopts.EquateApprox(0.00000000000001, 0),
+		cmpopts.EquateNaNs(),
 	}
 	if diff := cmp.Diff(promMatrix, influxMatrix, cmpOpts); diff != "" {
 		t.Error(
