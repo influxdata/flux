@@ -32,7 +32,7 @@ func init() {
 		Required: semantic.LabelSet{"index", "query"},
 		Return:   flux.TableObjectType,
 	}
-	flux.RegisterPackageValue("elastic", "from", flux.FunctionValue(FromElasticKind, createFromElasticOpSpec, fromElasticSignature))
+	flux.RegisterPackageValue("elasticsearch", "from", flux.FunctionValue(FromElasticKind, createFromElasticOpSpec, fromElasticSignature))
 	flux.RegisterOpSpec(FromElasticKind, newFromElasticOp)
 	plan.RegisterProcedureSpec(FromElasticKind, newFromElasticProcedure, FromElasticKind)
 	execute.RegisterSource(FromElasticKind, createFromElasticSource)
@@ -41,7 +41,7 @@ func init() {
 func createFromElasticOpSpec(args flux.Arguments, administration *flux.Administration) (flux.OperationSpec, error) {
 	spec := new(FromElasticOpSpec)
 
-	if index, err := args.GetRequiredString("indec"); err != nil {
+	if index, err := args.GetRequiredString("index"); err != nil {
 		return nil, err
 	} else {
 		spec.Index = index
