@@ -185,7 +185,7 @@ func (c *ElasticIterator) Decode() (flux.Table, error) {
 			firstRow = false
 		}
 		var j = 0
-		for name, value := range item {
+		for _, value := range item {
 			switch value.(type) {
 			case bool:
 				if err := builder.AppendBool(j, value.(bool)); err != nil {
