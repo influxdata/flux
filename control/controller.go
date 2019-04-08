@@ -53,9 +53,10 @@ type Controller struct {
 
 type Config struct {
 	// TODO(jsternberg): Integrate the concurrency and memory bytes quotas.
-	ConcurrencyQuota int
-	MemoryBytesQuota int64
-	Logger           *zap.Logger
+	ConcurrencyQuota         int
+	MemoryBytesQuota         int64
+	MemoryBytesQuotaPerQuery int64
+	Logger                   *zap.Logger
 	// MetricLabelKeys is a list of labels to add to the metrics produced by the controller.
 	// The value for a given key will be read off the context.
 	// The context value must be a string or an implementation of the Stringer interface.
