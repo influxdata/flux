@@ -2234,7 +2234,11 @@ from(bucket: "telegraf/autogen")
 Duplicate duplicates a specified column in a table.
 If the specified column is not present in a table an error will be thrown.
 If the specified column is part of the group key, it will be duplicated, but it will not be part of the group key of the output table.
-
+If the column indicated by `as` does not exist, a column will be added to the table. 
+If the column does exist, that column will be overwritten with the values specified by `column`.  
+If the `as` column is in the group key, there are two possible outcomes: 
+If the column indicated by `column` is in the group key, then `as` will remain in the group key and have the same group key value as `column`.  
+If `column` is not part of the group key, then `as` is removed from the group key. 
 Duplicate has the following properties:
 
 | Name   | Type   | Description                                                     |

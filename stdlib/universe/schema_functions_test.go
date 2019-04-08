@@ -441,14 +441,14 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "a", Type: flux.TFloat},
-					{Label: "a_1", Type: flux.TFloat},
 					{Label: "b", Type: flux.TFloat},
 					{Label: "c", Type: flux.TFloat},
+					{Label: "a_1", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{1.0, 1.0, 2.0, 3.0},
-					{11.0, 11.0, 12.0, 13.0},
-					{21.0, 21.0, 22.0, 23.0},
+					{1.0, 2.0, 3.0, 1.0},
+					{11.0, 12.0, 13.0, 11.0},
+					{21.0, 22.0, 23.0, 21.0},
 				},
 			}},
 		},
@@ -861,14 +861,14 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				KeyCols: []string{"1a", "3a"},
 				ColMeta: []flux.ColMeta{
 					{Label: "1a", Type: flux.TFloat},
-					{Label: "1a_1", Type: flux.TFloat},
 					{Label: "2a", Type: flux.TFloat},
 					{Label: "3a", Type: flux.TFloat},
+					{Label: "1a_1", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{1.0, 1.0, 2.0, 3.0},
-					{1.0, 1.0, 12.0, 3.0},
-					{1.0, 1.0, 22.0, 3.0},
+					{1.0, 2.0, 3.0, 1.0},
+					{1.0, 12.0, 3.0, 1.0},
+					{1.0, 22.0, 3.0, 1.0},
 				},
 			}},
 		},
@@ -1057,14 +1057,14 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "a", Type: flux.TFloat},
-					{Label: "a_1", Type: flux.TFloat},
 					{Label: "b", Type: flux.TFloat},
 					{Label: "c", Type: flux.TFloat},
+					{Label: "a_1", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{nil, nil, nil, 3.0},
-					{nil, nil, 12.0, nil},
-					{21.0, 21.0, nil, 23.0},
+					{nil, nil, 3.0, nil},
+					{nil, 12.0, nil, nil},
+					{21.0, nil, 23.0, 21.0},
 				},
 			}},
 		},
