@@ -4,20 +4,35 @@ import (
 	"fmt"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic/semantictest"
+	"github.com/influxdata/flux/stdlib/kafka"
+	"github.com/influxdata/flux/stdlib/universe"
+)
+
+// CmpOptions are the options needed to compare plan.ProcedureSpecs inside plan.Spec.
+var CmpOptions = append(
+	semantictest.CmpOptions,
+	cmp.AllowUnexported(flux.Spec{}),
+	cmp.AllowUnexported(universe.JoinOpSpec{}),
+	cmpopts.IgnoreUnexported(flux.Spec{}),
+	cmpopts.IgnoreUnexported(universe.JoinOpSpec{}),
+	cmp.AllowUnexported(kafka.ToKafkaProcedureSpec{}),
+	cmpopts.IgnoreUnexported(kafka.ToKafkaProcedureSpec{}),
 )
 
 // ComparePlans compares two query plans using an arbitrary comparator function f
 func ComparePlans(p, q *plan.Spec, f func(p, q plan.Node) error) error {
 	var w, v []plan.Node
 
-	p.TopDownWalk(func(node plan.Node) error {
+	_ = p.TopDownWalk(func(node plan.Node) error {
 		w = append(w, node)
 		return nil
 	})
 
-	q.TopDownWalk(func(node plan.Node) error {
+	_ = q.TopDownWalk(func(node plan.Node) error {
 		v = append(v, node)
 		return nil
 	})
@@ -36,7 +51,12 @@ func ComparePlans(p, q *plan.Spec, f func(p, q plan.Node) error) error {
 	return nil
 }
 
-// CompareLogicalPlanNodes is a comparator fuction for LogicalPlanNodes
+// CompareLogicalPlans compares two logical plans.
+func CompareLogicalPlans(p, q *plan.Spec) error {
+	return ComparePlans(p, q, CompareLogicalPlanNodes)
+}
+
+// CompareLogicalPlanNodes is a comparator function for LogicalPlanNodes
 func CompareLogicalPlanNodes(p, q plan.Node) error {
 	if _, ok := p.(*plan.LogicalNode); !ok {
 		return fmt.Errorf("expected %s to be a LogicalNode", p.ID())
@@ -99,9 +119,9 @@ func cmpPlanNode(p, q plan.Node) error {
 	}
 
 	// The specifications of both procedures must be the same
-	if !cmp.Equal(p.ProcedureSpec(), q.ProcedureSpec(), semantictest.CmpOptions...) {
+	if !cmp.Equal(p.ProcedureSpec(), q.ProcedureSpec(), CmpOptions...) {
 		return fmt.Errorf("procedure specs not equal -want(%s)/+got(%s) %s",
-			p.ID(), q.ID(), cmp.Diff(p.ProcedureSpec(), q.ProcedureSpec(), semantictest.CmpOptions...))
+			p.ID(), q.ID(), cmp.Diff(p.ProcedureSpec(), q.ProcedureSpec(), CmpOptions...))
 	}
 
 	return nil
