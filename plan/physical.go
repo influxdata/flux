@@ -127,6 +127,9 @@ func WithDefaultMemoryLimit(memBytes int64) PhysicalOption {
 func OnlyPhysicalRules(rules ...Rule) PhysicalOption {
 	return physicalOption(func(pp *physicalPlanner) {
 		pp.clearRules()
+		// Always add physicalConverterRule. It doesn't change the plan but only convert nodes to physical.
+		// This is required for some pieces to work on the physical plan (e.g. SetTriggerSpec).
+		pp.addRules(physicalConverterRule{})
 		pp.addRules(rules...)
 	})
 }

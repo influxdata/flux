@@ -23,6 +23,36 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
+func TestFluxCompiler(t *testing.T) {
+	ctx := context.Background()
+
+	for _, tc := range []struct {
+		q  string
+		ok bool
+	}{
+		{q: `from(bucket: "foo")`, ok: true},
+		{q: `t=""t.t`},
+		{q: `t=0t.s`},
+		{q: `x = from(bucket: "foo")`},
+		{q: `x = from(bucket: "foo") |> yield()`, ok: true},
+		{q: `from(bucket: "foo")`, ok: true},
+	} {
+		c := lang.FluxCompiler{
+			Query: tc.q,
+		}
+		program, err := c.Compile(ctx)
+		if err != nil {
+			t.Fatalf("failed to compile AST: %v", err)
+		}
+		// we need to start the program to get compile errors derived from AST evaluation
+		if _, err = program.Start(context.Background(), &memory.Allocator{}); tc.ok && err != nil {
+			t.Errorf("expected query %q to compile successfully but got error %v", tc.q, err)
+		} else if !tc.ok && err == nil {
+			t.Errorf("expected query %q to compile with error but got no error", tc.q)
+		}
+	}
+}
+
 func TestASTCompiler(t *testing.T) {
 	testcases := []struct {
 		name   string
@@ -125,12 +155,16 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 				c.PrependFile(tc.file)
 			}
 
-			prog, err := c.Compile(context.Background())
+			program, err := c.Compile(context.Background())
 			if err != nil {
 				t.Fatalf("failed to compile AST: %v", err)
 			}
+			// we need to start the program to get compile errors derived from AST evaluation
+			if _, err := program.Start(context.Background(), &memory.Allocator{}); err != nil {
+				t.Fatalf("failed to start program: %v", err)
+			}
 
-			got := prog.(*lang.Program).PlanSpec
+			got := program.(*lang.AstProgram).PlanSpec
 			want := plantest.CreatePlanSpec(&tc.want)
 			if err := plantest.ComparePlansShallow(want, got); err != nil {
 				t.Error(err)

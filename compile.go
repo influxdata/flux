@@ -1,9 +1,7 @@
 package flux
 
 import (
-	"context"
 	"fmt"
-	"log"
 	"path"
 	"regexp"
 	"strings"
@@ -15,7 +13,6 @@ import (
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 )
 
@@ -23,78 +20,8 @@ const (
 	TablesParameter = "tables"
 	tableKindKey    = "kind"
 	tableParentsKey = "parents"
-	nowOption       = "now"
 	tableSpecKey    = "spec"
 )
-
-type Option func(*options)
-
-func Verbose(v bool) Option {
-	return func(o *options) {
-		o.verbose = v
-	}
-}
-
-type options struct {
-	verbose bool
-}
-
-// Compile evaluates a Flux script producing a query Spec.
-// now parameter must be non-zero, that is the default now time should be set before compiling.
-// If the given Flux script would produce an empty Spec, an error will be returned.
-func Compile(ctx context.Context, q string, now time.Time, opts ...Option) (*Spec, error) {
-	astPkg, err := Parse(q)
-	if err != nil {
-		return nil, err
-	}
-
-	return CompileAST(ctx, astPkg, now, opts...)
-}
-
-// CompileAST evaluates a Flux AST and produces a query Spec.
-// now parameter must be non-zero, that is the default now time should be set before compiling.
-// If the given AST would produce an empty Spec, an error will be returned.
-func CompileAST(ctx context.Context, astPkg *ast.Package, now time.Time, opts ...Option) (*Spec, error) {
-	o := new(options)
-	for _, opt := range opts {
-		opt(o)
-	}
-
-	s, _ := opentracing.StartSpanFromContext(ctx, "parse")
-
-	sideEffects, scope, err := EvalAST(astPkg, SetOption(nowOption, nowFunc(now)))
-	if err != nil {
-		return nil, err
-	}
-
-	s.Finish()
-	s, _ = opentracing.StartSpanFromContext(ctx, "compile")
-	defer s.Finish()
-
-	nowOpt, ok := scope.Lookup(nowOption)
-	if !ok {
-		return nil, fmt.Errorf("%q option not set", nowOption)
-	}
-
-	nowTime, err := nowOpt.Function().Call(nil)
-	if err != nil {
-		return nil, err
-	}
-
-	spec, err := ToSpec(sideEffects, nowTime.Time().Time())
-	if err != nil {
-		return nil, err
-	}
-
-	if len(spec.Operations) == 0 {
-		return nil, errors.New("this Flux script returns no streaming data. Consider adding a \"yield\" or invoking streaming functions directly, without performing an assignment")
-	}
-
-	if o.verbose {
-		log.Println("Query Spec: ", Formatted(spec, FmtJSON))
-	}
-	return spec, nil
-}
 
 // Parse parses a Flux script and produces an ast.Package.
 func Parse(flux string) (*ast.Package, error) {
@@ -138,55 +65,14 @@ func EvalAST(astPkg *ast.Package, opts ...ScopeMutator) ([]values.Value, interpr
 
 }
 
+// ScopeMutator is any function that mutates the scope of an identifier.
+type ScopeMutator = func(interpreter.Scope)
+
 // SetOption returns a func that adds a var binding to a scope.
 func SetOption(name string, v values.Value) ScopeMutator {
 	return func(scope interpreter.Scope) {
 		scope.Set(name, v)
 	}
-}
-
-// ScopeMutator is any function that mutates the scope of an identifier.
-type ScopeMutator = func(interpreter.Scope)
-
-func nowFunc(now time.Time) values.Function {
-	timeVal := values.NewTime(values.ConvertTime(now))
-	ftype := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Return: semantic.Time,
-	})
-	call := func(args values.Object) (values.Value, error) {
-		return timeVal, nil
-	}
-	sideEffect := false
-	return values.NewFunction(nowOption, ftype, call, sideEffect)
-}
-
-func ToSpec(functionCalls []values.Value, now time.Time) (*Spec, error) {
-	ider := &ider{
-		id:     0,
-		lookup: make(map[*TableObject]OperationID),
-	}
-
-	spec := &Spec{Now: now}
-	seen := make(map[*TableObject]bool)
-	objs := make([]*TableObject, 0, len(functionCalls))
-
-	for _, call := range functionCalls {
-		if op, ok := call.(*TableObject); ok {
-			dup := false
-			for _, tableObject := range objs {
-				if op.Equal(tableObject) {
-					dup = true
-					break
-				}
-			}
-			if !dup {
-				op.buildSpec(ider, spec, seen)
-				objs = append(objs, op)
-			}
-		}
-	}
-
-	return spec, nil
 }
 
 type CreateOperationSpec func(args Arguments, a *Administration) (OperationSpec, error)
@@ -512,63 +398,6 @@ func (t *TableObject) str(b *strings.Builder, arrow bool) {
 	if arrow {
 		b.WriteString(" -> ")
 	}
-}
-
-type ider struct {
-	id     int
-	lookup map[*TableObject]OperationID
-}
-
-func (i *ider) nextID() int {
-	next := i.id
-	i.id++
-	return next
-}
-
-func (i *ider) get(t *TableObject) (OperationID, bool) {
-	tableID, ok := i.lookup[t]
-	return tableID, ok
-}
-
-func (i *ider) set(t *TableObject, id int) OperationID {
-	opID := OperationID(fmt.Sprintf("%s%d", t.Kind, id))
-	i.lookup[t] = opID
-	return opID
-}
-
-func (i *ider) ID(t *TableObject) OperationID {
-	tableID, ok := i.get(t)
-	if !ok {
-		tableID = i.set(t, i.nextID())
-	}
-	return tableID
-}
-
-func (t *TableObject) buildSpec(ider IDer, spec *Spec, visited map[*TableObject]bool) {
-	// Traverse graph upwards to first unvisited node.
-	// Note: parents are sorted based on parameter name, so the visit order is consistent.
-	t.Parents.Range(func(i int, v values.Value) {
-		p := v.(*TableObject)
-		if !visited[p] {
-			// rescurse up parents
-			p.buildSpec(ider, spec, visited)
-		}
-	})
-
-	// Assign ID to table object after visiting all ancestors.
-	tableID := ider.ID(t)
-
-	// Link table object to all parents after assigning ID.
-	t.Parents.Range(func(i int, v values.Value) {
-		p := v.(*TableObject)
-		spec.Edges = append(spec.Edges, Edge{
-			Parent: ider.ID(p),
-			Child:  tableID,
-		})
-	})
-
-	visited[t] = true
-	spec.Operations = append(spec.Operations, t.Operation(ider))
 }
 
 func (t *TableObject) Type() semantic.Type {
