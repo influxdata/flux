@@ -43,6 +43,7 @@ var CmpOptions = []cmp.Option{
 	cmpopts.IgnoreUnexported(semantic.IdentifierExpression{}),
 	cmpopts.IgnoreUnexported(semantic.Identifier{}),
 	cmpopts.IgnoreUnexported(semantic.BooleanLiteral{}),
+	cmpopts.IgnoreUnexported(semantic.NilLiteral{}),
 	cmpopts.IgnoreUnexported(semantic.DateTimeLiteral{}),
 	cmpopts.IgnoreUnexported(semantic.DurationLiteral{}),
 	cmpopts.IgnoreUnexported(semantic.IntegerLiteral{}),

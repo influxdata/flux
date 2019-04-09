@@ -19,6 +19,7 @@ func init() {
 	flux.RegisterPackageValue("universe", "bool", &boolConv{})
 	flux.RegisterPackageValue("universe", "time", &timeConv{})
 	flux.RegisterPackageValue("universe", "duration", &durationConv{})
+	flux.RegisterPackageValue("universe", "nil", values.NewNull(semantic.Nil))
 }
 
 const (

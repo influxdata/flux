@@ -107,6 +107,7 @@ func (*Property) node()   {}
 func (*Identifier) node() {}
 
 func (*BooleanLiteral) node()         {}
+func (*NilLiteral) node()             {}
 func (*DateTimeLiteral) node()        {}
 func (*DurationLiteral) node()        {}
 func (*FloatLiteral) node()           {}
@@ -514,6 +515,7 @@ func (*ArrayExpression) expression()        {}
 func (*FunctionExpression) expression()     {}
 func (*BinaryExpression) expression()       {}
 func (*BooleanLiteral) expression()         {}
+func (*NilLiteral) expression()             {}
 func (*CallExpression) expression()         {}
 func (*ConditionalExpression) expression()  {}
 func (*DateTimeLiteral) expression()        {}
@@ -1001,6 +1003,7 @@ type Literal interface {
 }
 
 func (*BooleanLiteral) literal()         {}
+func (*NilLiteral) literal()             {}
 func (*DateTimeLiteral) literal()        {}
 func (*DurationLiteral) literal()        {}
 func (*FloatLiteral) literal()           {}
@@ -1066,6 +1069,24 @@ func (l *BooleanLiteral) Copy() Node {
 		return l
 	}
 	nl := new(BooleanLiteral)
+	*nl = *l
+	nl.BaseNode = l.BaseNode.Copy()
+	return nl
+}
+
+// NilLiteral represent boolean values
+type NilLiteral struct {
+	BaseNode
+}
+
+// Type is the abstract type
+func (*NilLiteral) Type() string { return "NilLiteral" }
+
+func (l *NilLiteral) Copy() Node {
+	if l == nil {
+		return l
+	}
+	nl := new(NilLiteral)
 	*nl = *l
 	nl.BaseNode = l.BaseNode.Copy()
 	return nl

@@ -199,6 +199,8 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, fun
 			t: monoType(typeSol.TypeOf(n)),
 			b: n.Value,
 		}, nil
+	case *semantic.NilLiteral:
+		return &nilEvaluator{t: monoType(typeSol.TypeOf(n))}, nil
 	case *semantic.IntegerLiteral:
 		return &integerEvaluator{
 			t: monoType(typeSol.TypeOf(n)),

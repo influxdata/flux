@@ -386,6 +386,8 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		return Float, nil
 	case *BooleanLiteral:
 		return Bool, nil
+	case *NilLiteral:
+		return Nil, nil
 	case *DateTimeLiteral:
 		return Time, nil
 	case *DurationLiteral:

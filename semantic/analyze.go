@@ -289,6 +289,8 @@ func analyzeLiteral(lit ast.Literal) (Literal, error) {
 		return analyzeStringLiteral(lit)
 	case *ast.BooleanLiteral:
 		return analyzeBooleanLiteral(lit)
+	case *ast.NilLiteral:
+		return analyzeNilLiteral(lit)
 	case *ast.FloatLiteral:
 		return analyzeFloatLiteral(lit)
 	case *ast.IntegerLiteral:
@@ -636,6 +638,11 @@ func analyzeBooleanLiteral(lit *ast.BooleanLiteral) (*BooleanLiteral, error) {
 	return &BooleanLiteral{
 		loc:   loc(lit.Location()),
 		Value: lit.Value,
+	}, nil
+}
+func analyzeNilLiteral(lit *ast.NilLiteral) (*NilLiteral, error) {
+	return &NilLiteral{
+		loc: loc(lit.Location()),
 	}, nil
 }
 func analyzeRegexpLiteral(lit *ast.RegexpLiteral) (*RegexpLiteral, error) {

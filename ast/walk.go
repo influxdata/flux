@@ -302,6 +302,11 @@ func walk(v Visitor, node Node) {
 			return
 		}
 		v.Visit(n)
+	case *NilLiteral:
+		if n == nil {
+			return
+		}
+		v.Visit(n)
 	case *FloatLiteral:
 		if n == nil {
 			return

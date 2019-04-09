@@ -421,6 +421,8 @@ func (itrp *Interpreter) doLiteral(lit semantic.Literal) (values.Value, error) {
 		return values.NewRegexp(l.Value), nil
 	case *semantic.BooleanLiteral:
 		return values.NewBool(l.Value), nil
+	case *semantic.NilLiteral:
+		return values.NewNull(semantic.Nil), nil
 	default:
 		return nil, fmt.Errorf("unknown literal type %T", lit)
 	}
@@ -892,6 +894,8 @@ func resolveValue(v values.Value) (semantic.Node, error) {
 		return &semantic.BooleanLiteral{
 			Value: v.Bool(),
 		}, nil
+	case semantic.Nil:
+		return &semantic.NilLiteral{}, nil
 	case semantic.Time:
 		return &semantic.DateTimeLiteral{
 			Value: v.Time().Time(),
@@ -953,6 +957,7 @@ func resolveValue(v values.Value) (semantic.Node, error) {
 			return nil, err
 		}
 		return node, nil
+
 	default:
 		return nil, fmt.Errorf("cannot resove value of type %v", k)
 	}

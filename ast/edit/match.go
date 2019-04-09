@@ -540,6 +540,18 @@ func match(pattern, node ast.Node, ms sliceMatchingStrategy) bool {
 			return false
 		}
 		return matchBooleanLiteral(p, n, ms)
+	case *ast.NilLiteral:
+		n, ok := node.(*ast.NilLiteral)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchNilLiteral(p, n, ms)
 	case *ast.FloatLiteral:
 		n, ok := node.(*ast.FloatLiteral)
 		if !ok {
@@ -779,6 +791,10 @@ func matchStringLiteral(p *ast.StringLiteral, n *ast.StringLiteral, ms sliceMatc
 
 func matchBooleanLiteral(p *ast.BooleanLiteral, n *ast.BooleanLiteral, ms sliceMatchingStrategy) bool {
 	return p.Value == n.Value
+}
+
+func matchNilLiteral(p *ast.NilLiteral, n *ast.NilLiteral, ms sliceMatchingStrategy) bool {
+	return true
 }
 
 func matchFloatLiteral(p *ast.FloatLiteral, n *ast.FloatLiteral, ms sliceMatchingStrategy) bool {

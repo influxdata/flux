@@ -782,6 +782,17 @@ func (l *BooleanLiteral) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(raw)
 }
+func (l *NilLiteral) MarshalJSON() ([]byte, error) {
+	type Alias NilLiteral
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  l.NodeType(),
+		Alias: (*Alias)(l),
+	}
+	return json.Marshal(raw)
+}
 func (l *FloatLiteral) MarshalJSON() ([]byte, error) {
 	type Alias FloatLiteral
 	raw := struct {
@@ -1074,6 +1085,8 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 		node = new(StringLiteral)
 	case "BooleanLiteral":
 		node = new(BooleanLiteral)
+	case "NilLiteral":
+		node = new(NilLiteral)
 	case "FloatLiteral":
 		node = new(FloatLiteral)
 	case "IntegerLiteral":
