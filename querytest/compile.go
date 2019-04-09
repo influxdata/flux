@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/semantic/semantictest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
@@ -34,7 +35,7 @@ func NewQueryTestHelper(t *testing.T, tc NewQueryTestCase) {
 	t.Helper()
 
 	now := time.Now().UTC()
-	got, err := flux.Compile(context.Background(), tc.Raw, now)
+	got, err := spec.FromScript(context.Background(), tc.Raw, now)
 	if (err != nil) != tc.WantErr {
 		t.Errorf("error compiling spec error = %v, wantErr %v", err, tc.WantErr)
 		return

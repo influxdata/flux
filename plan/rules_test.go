@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 )
@@ -19,7 +19,7 @@ func TestRuleRegistration(t *testing.T) {
 	plan.RegisterLogicalRules(&simpleRule)
 
 	now := time.Now().UTC()
-	fluxSpec, err := flux.Compile(context.Background(), `from(bucket: "telegraf") |> range(start: -5m)`, now)
+	fluxSpec, err := spec.FromScript(context.Background(), `from(bucket: "telegraf") |> range(start: -5m)`, now)
 	if err != nil {
 		t.Fatalf("could not compile very simple Flux query: %v", err)
 	}
