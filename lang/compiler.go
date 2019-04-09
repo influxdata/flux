@@ -2,15 +2,16 @@ package lang
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/values"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -38,26 +39,92 @@ func AddCompilerMappings(mappings flux.CompilerMappings) error {
 	})
 }
 
+// CompileOption represents an option for compilation.
+type CompileOption func(*compileOptions)
+
+type compileOptions struct {
+	verbose bool
+}
+
+func defaultOptions() *compileOptions {
+	o := new(compileOptions)
+	return o
+}
+
+func applyOptions(opts ...CompileOption) *compileOptions {
+	o := defaultOptions()
+	for _, opt := range opts {
+		opt(o)
+	}
+	return o
+}
+
+// NOTE: compileOptions can be used only when invoking Compile* functions.
+// They can't be used when unmarshaling a Compiler and invoking its Compile method.
+
+func Verbose(v bool) CompileOption {
+	return func(o *compileOptions) {
+		o.verbose = v
+	}
+}
+
+// Compile evaluates a Flux script producing a flux.Program.
+// now parameter must be non-zero, that is the default now time should be set before compiling.
+func Compile(q string, now time.Time, opts ...CompileOption) (*AstProgram, error) {
+	astPkg, err := flux.Parse(q)
+	if err != nil {
+		return nil, err
+	}
+	return CompileAST(astPkg, now, opts...), nil
+}
+
+// CompileAST evaluates a Flux AST and produces a flux.Program.
+// now parameter must be non-zero, that is the default now time should be set before compiling.
+func CompileAST(astPkg *ast.Package, now time.Time, opts ...CompileOption) *AstProgram {
+	return &AstProgram{
+		Program: &Program{
+			opts: applyOptions(opts...),
+		},
+		Ast: astPkg,
+		Now: now,
+	}
+}
+
+// CompileTableObject evaluates a TableObject and produces a flux.Program.
+// now parameter must be non-zero, that is the default now time should be set before compiling.
+func CompileTableObject(to *flux.TableObject, now time.Time, opts ...CompileOption) (*Program, error) {
+	o := applyOptions(opts...)
+	s := spec.FromTableObject(to, now)
+	if o.verbose {
+		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
+	}
+	ps, err := buildPlan(s)
+	if err != nil {
+		return nil, err
+	}
+	return &Program{
+		opts:     o,
+		PlanSpec: ps,
+	}, nil
+}
+
+func buildPlan(spec *flux.Spec) (*plan.Spec, error) {
+	pb := plan.PlannerBuilder{}
+	ps, err := pb.Build().Plan(spec)
+	if err != nil {
+		return nil, err
+	}
+	return ps, nil
+}
+
 // FluxCompiler compiles a Flux script into a spec.
 type FluxCompiler struct {
 	Query string `json:"query"`
 }
 
 func (c FluxCompiler) Compile(ctx context.Context) (flux.Program, error) {
-	spec, err := flux.Compile(ctx, c.Query, time.Now())
-	if err != nil {
-		return nil, err
-	}
-
-	planner := plan.PlannerBuilder{}.Build()
-	ps, err := planner.Plan(spec)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Program{
-		PlanSpec: ps,
-	}, err
+	// Ignore context, it will be provided upon Program Start.
+	return Compile(c.Query, time.Now())
 }
 
 func (c FluxCompiler) CompilerType() flux.CompilerType {
@@ -70,15 +137,14 @@ type SpecCompiler struct {
 }
 
 func (c SpecCompiler) Compile(ctx context.Context) (flux.Program, error) {
-	planner := plan.PlannerBuilder{}.Build()
-	ps, err := planner.Plan(c.Spec)
+	// Ignore context, it will be provided upon Program Start.
+	ps, err := buildPlan(c.Spec)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error in building plan while compiling")
 	}
-
 	return &Program{
 		PlanSpec: ps,
-	}, err
+	}, nil
 }
 
 func (c SpecCompiler) CompilerType() flux.CompilerType {
@@ -96,19 +162,8 @@ func (c ASTCompiler) Compile(ctx context.Context) (flux.Program, error) {
 	if now.IsZero() {
 		now = time.Now()
 	}
-
-	spec, err := flux.CompileAST(ctx, c.AST, now)
-	if err != nil {
-		return nil, err
-	}
-
-	planner := plan.PlannerBuilder{}.Build()
-	ps, err := planner.Plan(spec)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Program{PlanSpec: ps}, err
+	// Ignore context, it will be provided upon Program Start.
+	return CompileAST(c.AST, now), nil
 }
 
 func (ASTCompiler) CompilerType() flux.CompilerType {
@@ -125,92 +180,25 @@ func (c *ASTCompiler) PrependFile(file *ast.File) {
 // it is impossible to use it outside of the context of an ongoing execution.
 type TableObjectCompiler struct {
 	Tables *flux.TableObject
+	Now    time.Time
 }
 
 func (c *TableObjectCompiler) Compile(ctx context.Context) (flux.Program, error) {
-	ider := &ider{
-		id:     0,
-		lookup: make(map[*flux.TableObject]flux.OperationID),
-	}
-	spec := new(flux.Spec)
-	visited := make(map[*flux.TableObject]bool)
-	buildSpec(c.Tables, ider, spec, visited)
-
-	specCompiler := &SpecCompiler{
-		Spec: spec,
-	}
-	return specCompiler.Compile(ctx)
+	// Ignore context, it will be provided upon Program Start.
+	return CompileTableObject(c.Tables, c.Now)
 }
 
 func (*TableObjectCompiler) CompilerType() flux.CompilerType {
 	panic("TableObjectCompiler is not associated with a CompilerType")
 }
 
-// TODO(affo): this is duplicate code of the private types in /compile.go to avoid cyclic
-//  dependencies between `flux` and `lang`.
-type ider struct {
-	id     int
-	lookup map[*flux.TableObject]flux.OperationID
-}
-
-func (i *ider) nextID() int {
-	next := i.id
-	i.id++
-	return next
-}
-
-func (i *ider) get(t *flux.TableObject) (flux.OperationID, bool) {
-	tableID, ok := i.lookup[t]
-	return tableID, ok
-}
-
-func (i *ider) set(t *flux.TableObject, id int) flux.OperationID {
-	opID := flux.OperationID(fmt.Sprintf("%s%d", t.Kind, id))
-	i.lookup[t] = opID
-	return opID
-}
-
-func (i *ider) ID(t *flux.TableObject) flux.OperationID {
-	tableID, ok := i.get(t)
-	if !ok {
-		tableID = i.set(t, i.nextID())
-	}
-	return tableID
-}
-
-// TODO(affo): duplicate code in /compile.go.
-func buildSpec(t *flux.TableObject, ider flux.IDer, spec *flux.Spec, visited map[*flux.TableObject]bool) {
-	// Traverse graph upwards to first unvisited node.
-	// Note: parents are sorted based on parameter name, so the visit order is consistent.
-	t.Parents.Range(func(i int, v values.Value) {
-		p := v.(*flux.TableObject)
-		if !visited[p] {
-			// rescurse up parents
-			buildSpec(p, ider, spec, visited)
-		}
-	})
-
-	// Assign ID to table object after visiting all ancestors.
-	tableID := ider.ID(t)
-
-	// Link table object to all parents after assigning ID.
-	t.Parents.Range(func(i int, v values.Value) {
-		p := v.(*flux.TableObject)
-		spec.Edges = append(spec.Edges, flux.Edge{
-			Parent: ider.ID(p),
-			Child:  tableID,
-		})
-	})
-
-	visited[t] = true
-	spec.Operations = append(spec.Operations, t.Operation(ider))
-}
-
 // Program implements the flux.Program interface.
 // It will execute a compiled plan using an executor.
 type Program struct {
 	Dependencies execute.Dependencies
-	PlanSpec     *plan.Spec
+	opts         *compileOptions
+
+	PlanSpec *plan.Spec
 }
 
 func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
@@ -260,4 +248,37 @@ func (p *Program) readMetadata(q *query, metaCh <-chan flux.Metadata) {
 	for md := range metaCh {
 		q.stats.Metadata.AddAll(md)
 	}
+}
+
+// AstProgram wraps a Program with an AST that will be evaluated upon Start.
+// As such, the PlanSpec is populated after Start and evaluation errors are returned by Start.
+type AstProgram struct {
+	*Program
+
+	Ast *ast.Package
+	Now time.Time
+}
+
+func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+	if p.opts == nil {
+		p.opts = defaultOptions()
+	}
+
+	if p.Now.IsZero() {
+		p.Now = time.Now()
+	}
+	s, err := spec.FromAST(ctx, p.Ast, p.Now)
+	if err != nil {
+		return nil, errors.Wrap(err, "error in evaluating AST while starting program")
+	}
+	if p.opts.verbose {
+		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
+	}
+	ps, err := buildPlan(s)
+	if err != nil {
+		return nil, errors.Wrap(err, "error in building plan while starting program")
+	}
+	p.PlanSpec = ps
+
+	return p.Program.Start(ctx, alloc)
 }
