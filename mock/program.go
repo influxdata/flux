@@ -36,30 +36,3 @@ func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Quer
 	}
 	return startFn(ctx, alloc)
 }
-
-type Query struct {
-	ResultsCh chan flux.Result
-	CancelFn  func()
-}
-
-func (q *Query) Results() <-chan flux.Result {
-	return q.ResultsCh
-}
-
-func (q *Query) Done() {
-	q.Cancel()
-}
-
-func (q *Query) Cancel() {
-	if q.CancelFn != nil {
-		q.CancelFn()
-	}
-}
-
-func (q *Query) Err() error {
-	return nil
-}
-
-func (q *Query) Statistics() flux.Statistics {
-	return flux.Statistics{}
-}
