@@ -148,8 +148,9 @@ func (c *CSVSource) Run(ctx context.Context) {
 		// are not read-only. They contain mutable state and therefore
 		// cannot be shared among goroutines.
 		decoder := csv.NewResultDecoder(csv.ResultDecoderConfig{})
-		result, err := decoder.Decode(strings.NewReader(c.tx))
-		if err != nil {
+		result, decodeErr := decoder.Decode(strings.NewReader(c.tx))
+		if decodeErr != nil {
+			err = decodeErr
 			goto FINISH
 		}
 		err = result.Tables().Do(func(tbl flux.Table) error {
