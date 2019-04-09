@@ -1447,9 +1447,9 @@ Any output table will have the following properties:
 
 All aggregate operations have the following properties:
 
-| Name    | Type     | Description                                       |
-| ----    | ----     | -----------                                       |
-| columns | []string | Columns specifies a list of columns to aggregate. |
+| Name   | Type   | Description                             |
+| ----   | ----   | -----------                             |
+| column | string | Column specifies a column to aggregate. |
 
 ##### AggregateWindow
 
@@ -1460,14 +1460,14 @@ an output table for every input table.
 AggregateWindow has the following properties:
 
 
-| Name        | Type                                            | Description                                                                                                           |
-| ----        | ----                                            | -----------                                                                                                           |
-| every       | duration                                        | Every specifies the window size to aggregate.                                                                         |
-| fn          | (tables: <-stream, columns: []string) -> stream | Fn specifies the aggregate operation to perform. Any of the functions in this Aggregate section can be provided.      |
-| columns     | []string                                        | Columns specifies a list of columns to aggregate. Defaults to ["_value"].                                             |
-| timeSrc     | string                                          | TimeSrc is the name of a column from the group key to use as the source for the aggregated time. Defaults to "_stop". |
-| timeDst     | string                                          | TimeDst is the name of a new column in which the aggregated time is placed. Defaults to "_time".                      |
-| createEmpty | bool                                            | CreateEmpty, if true, will create empty windows and fill them with a null aggregate value.  Defaults to true.         |
+| Name        | Type                                            | Description                                                                                                                                                     |
+| ----        | ----                                            | -----------                                                                                                                                                     |
+| every       | duration                                        | Every specifies the window size to aggregate.                                                                                                                   |
+| fn          | (tables: <-stream, columns: []string) -> stream | Fn specifies the aggregate operation to perform. Any of the functions in this Aggregate section that accept a singular `column` parameter can be provided.      |
+| column      | string                                          | Columns specifies column to aggregate. Defaults to "_value".                                                                                                    |
+| timeSrc     | string                                          | TimeSrc is the name of a column from the group key to use as the source for the aggregated time. Defaults to "_stop".                                           |
+| timeDst     | string                                          | TimeDst is the name of a new column in which the aggregated time is placed. Defaults to "_time".                                                                |
+| createEmpty | bool                                            | CreateEmpty, if true, will create empty windows and fill them with a null aggregate value.  Defaults to true.                                                   |
 Example:
 
 ```
@@ -1485,11 +1485,11 @@ Covariance computes the covariance between two columns.
 
 Covariance has the following properties:
 
-| Name     | Type     | Description                                                                                 |
-| ----     | ----     | -----------                                                                                 |
-| columns  | []string | Columns specifies a list of columns to aggregate. Defaults to `["_value"]`.                 |
-| pearsonr | bool     | Pearsonr indicates whether the result should be normalized to be the Pearson R coefficient. |
-| valueDst | string   | ValueDst is the column into which the result will be placed. Defaults to `_value`.          |
+| Name     | Type     | Description                                                                                            |
+| ----     | ----     | -----------                                                                                            |
+| columns  | []string | Columns specifies a list of the two columns to aggregate. This property is required and has no default.|
+| pearsonr | bool     | Pearsonr indicates whether the result should be normalized to be the Pearson R coefficient.            |
+| valueDst | string   | ValueDst is the column into which the result will be placed. Defaults to `_value`.                     |
 
 Additionally exactly two columns must be provided to the `columns` property.
 
@@ -1530,9 +1530,9 @@ For each aggregated column, it outputs the number of records as an integer. It w
 
 Count has the following property:
 
-| Name    | Type     | Description                                                                 |
-| ----    | ----     | -----------                                                                 |
-| columns | []string | Columns specifies a list of columns to aggregate. Defaults to `["_value"]`. |
+| Name    | Type     | Description                                                      |
+| ----    | ----     | -----------                                                      |
+| column  | string   | Columns specifies a column to aggregate. Defaults to `"_value"`. |
 
 Example:
 ```
@@ -1553,7 +1553,7 @@ Integral has the following properties:
 
 | Name       | Type     | Description                                                                           |
 | ----       | ----     | -----------                                                                           |
-| columns    | []string | Columns specifies a list of columns to aggregate. Defaults to `["_value"]`.           |
+| column     | string   | Columns specifies a column to aggregate. Defaults to `"_value"`.                      |
 | unit       | duration | Unit is the time duration to use when computing the integral.  Defaults to `1s`       |
 | timeColumn | string   | TimeColumn is the name of the column containing the time value.  Defaults to `_time`. |
 
@@ -1575,7 +1575,7 @@ Mean has the following property:
 
 | Name    | Type     | Description                                                                 |
 | ----    | ----     | -----------                                                                 |
-| columns | []string | Columns specifies a list of columns to aggregate. Defaults to `["_value"]`. |
+| column  | string   | Columns specifies a column to aggregate. Defaults to `"_value"`.            |
 
 Example:
 ```
@@ -1616,7 +1616,7 @@ Quantile has the following properties:
 
 | Name        | Type     | Description                                                                                                                                                                                   |
 | ----        | ----     | -----------                                                                                                                                                                                   |
-| columns     | []string | Columns specifies a list of columns to aggregate. Defaults to `["_value"]`                                                                                                                    |
+| column      | string   | Column specifies a column to aggregate. Defaults to `"_value"`                                                                                                                                |
 | q           | float    | q is a value between 0 and 1 indicating the desired quantile.                                                                                                                                 |
 | method      | string   | Method must be one of: estimate_tdigest, exact_mean, or exact_selector.                                                                                                                       |
 | compression | float    | Compression indicates how many centroids to use when compressing the dataset. A larger number produces a more accurate result at the cost of increased memory requirements. Defaults to 1000. |
@@ -1646,7 +1646,7 @@ Skew has the following parameter:
 
 | Name    | Type     | Description                                                                 |
 | ----    | ----     | -----------                                                                 |
-| columns | []string | Columns specifies a list of columns to aggregate. Defaults to `["_value"]`. |
+| column  | string   | Column specifies a columns to aggregate. Defaults to `"_value"`.            |
 
 Example:
 
@@ -1666,9 +1666,9 @@ All other input types are invalid.
 
 Spread has the following parameter:
 
-| Name    | Type     | Description                                                                 |
-| ----    | ----     | -----------                                                                 |
-| columns | []string | Columns specifies a list of columns to aggregate. Defaults to `["_value"]`. |
+| Name    | Type     | Description                                                     |
+| ----    | ----     | -----------                                                     |
+| column  | string   | Column specifies a column to aggregate. Defaults to `"_value"`. |
 
 Example:
 ```
@@ -1684,9 +1684,9 @@ For each aggregated column, it outputs the standard deviation of the non null re
 
 Stddev has the following parameter:
 
-| Name    | Type     | Description                                                                 |
-| ----    | ----     | -----------                                                                 |
-| columns | []string | Columns specifies a list of columns to aggregate. Defaults to `["_value"]`. |
+| Name    | Type     | Description                                                      |
+| ----    | ----     | -----------                                                      |
+| column  | string   | Columns specifies a column to aggregate. Defaults to `"_value"`. |
 
 Example:
 
@@ -1705,9 +1705,9 @@ The output column type is the same as the input column type.
 
 Sum has the following parameter:
 
-| Name    | Type     | Description                                                                 |
-| ----    | ----     | -----------                                                                 |
-| columns | []string | Columns specifies a list of columns to aggregate. Defaults to `["_value"]`. |
+| Name    | Type     | Description                                                     |
+| ----    | ----     | -----------                                                     |
+| column  | string   | Column specifies a column to aggregate. Defaults to `"_value"`. |
 
 Example:
 ```

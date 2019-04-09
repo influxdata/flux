@@ -86,10 +86,10 @@ pearsonr = (x,y,on) => cov(x:x, y:y, on:on, pearsonr:true)
 // AggregateWindow applies an aggregate function to fixed windows of time.
 // The procedure is to window the data, perform an aggregate operation,
 // and then undo the windowing to produce an output table for every input table.
-aggregateWindow = (every, fn, columns=["_value"], timeSrc="_stop",timeDst="_time", createEmpty=true, tables=<-) =>
+aggregateWindow = (every, fn, column="_value", timeSrc="_stop",timeDst="_time", createEmpty=true, tables=<-) =>
     tables
         |> window(every:every, createEmpty: createEmpty)
-        |> fn(columns:columns)
+        |> fn(column:column)
         |> duplicate(column:timeSrc,as:timeDst)
         |> window(every:inf, timeColumn:timeDst)
 
@@ -158,80 +158,80 @@ bottom = (n, columns=["_value"], tables=<-) =>
         |> _sortLimit(n:n, columns:columns, desc:false)
 
 // _highestOrLowest is a helper function, which reduces all groups into a single group by specific tags and a reducer function,
-// then it selects the highest or lowest records based on the columns and the _sortLimit function.
+// then it selects the highest or lowest records based on the column and the _sortLimit function.
 // The default reducer assumes no reducing needs to be performed.
-_highestOrLowest = (n, _sortLimit, reducer, columns=["_value"], groupColumns=[], tables=<-) =>
+_highestOrLowest = (n, _sortLimit, reducer, column="_value", groupColumns=[], tables=<-) =>
     tables
         |> group(columns:groupColumns)
         |> reducer()
         |> group(columns:[])
-        |> _sortLimit(n:n, columns:columns)
+        |> _sortLimit(n:n, columns:[column])
 
 // highestMax returns the top N records from all groups using the maximum of each group.
-highestMax = (n, columns=["_value"], groupColumns=[], tables=<-) =>
+highestMax = (n, column="_value", groupColumns=[], tables=<-) =>
     tables
         |> _highestOrLowest(
                 n:n,
-                columns:columns,
+                column:column,
                 groupColumns:groupColumns,
                 // TODO(nathanielc): Once max/min support selecting based on multiple columns change this to pass all columns.
-                reducer: (tables=<-) => tables |> max(column:columns[0]),
+                reducer: (tables=<-) => tables |> max(column:column),
                 _sortLimit: top,
             )
 
 // highestAverage returns the top N records from all groups using the average of each group.
-highestAverage = (n, columns=["_value"], groupColumns=[], tables=<-) =>
+highestAverage = (n, column="_value", groupColumns=[], tables=<-) =>
     tables
         |> _highestOrLowest(
                 n:n,
-                columns:columns,
+                column:column,
                 groupColumns:groupColumns,
-                reducer: (tables=<-) => tables |> mean(columns:[columns[0]]),
+                reducer: (tables=<-) => tables |> mean(column:column),
                 _sortLimit: top,
             )
 
 // highestCurrent returns the top N records from all groups using the last value of each group.
-highestCurrent = (n, columns=["_value"], groupColumns=[], tables=<-) =>
+highestCurrent = (n, column="_value", groupColumns=[], tables=<-) =>
     tables
         |> _highestOrLowest(
                 n:n,
-                columns:columns,
+                column:column,
                 groupColumns:groupColumns,
-                reducer: (tables=<-) => tables |> last(column:columns[0]),
+                reducer: (tables=<-) => tables |> last(column:column),
                 _sortLimit: top,
             )
 
 // lowestMin returns the bottom N records from all groups using the minimum of each group.
-lowestMin = (n, columns=["_value"], groupColumns=[], tables=<-) =>
+lowestMin = (n, column="_value", groupColumns=[], tables=<-) =>
     tables
         |> _highestOrLowest(
                 n:n,
-                columns:columns,
+                column:column,
                 groupColumns:groupColumns,
                 // TODO(nathanielc): Once max/min support selecting based on multiple columns change this to pass all columns.
-                reducer: (tables=<-) => tables |> min(column:columns[0]),
+                reducer: (tables=<-) => tables |> min(column:column),
                 _sortLimit: bottom,
             )
 
 // lowestAverage returns the bottom N records from all groups using the average of each group.
-lowestAverage = (n, columns=["_value"], groupColumns=[], tables=<-) =>
+lowestAverage = (n, column="_value", groupColumns=[], tables=<-) =>
     tables
         |> _highestOrLowest(
                 n:n,
-                columns:columns,
+                column:column,
                 groupColumns:groupColumns,
-                reducer: (tables=<-) => tables |> mean(columns:[columns[0]]),
+                reducer: (tables=<-) => tables |> mean(column:column),
                 _sortLimit: bottom,
             )
 
 // lowestCurrent returns the bottom N records from all groups using the last value of each group.
-lowestCurrent = (n, columns=["_value"], groupColumns=[], tables=<-) =>
+lowestCurrent = (n, column="_value", groupColumns=[], tables=<-) =>
     tables
         |> _highestOrLowest(
                 n:n,
-                columns:columns,
+                column:column,
                 groupColumns:groupColumns,
-                reducer: (tables=<-) => tables |> last(column:columns[0]),
+                reducer: (tables=<-) => tables |> last(column:column),
                 _sortLimit: bottom,
             )
 
