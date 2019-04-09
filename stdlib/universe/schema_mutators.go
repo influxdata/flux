@@ -309,26 +309,34 @@ func NewDuplicateMutator(qs flux.OperationSpec) (*DuplicateMutator, error) {
 }
 
 func (m *DuplicateMutator) Mutate(ctx *BuilderContext) error {
-	if err := checkCol(m.Column, ctx.Cols()); err != nil {
-		return errors.Wrap(err, "duplicate error")
+	fromIdx := execute.ColIdx(m.Column, ctx.Cols())
+	if fromIdx < 0 {
+		return fmt.Errorf(`duplicate error: column "%s" doesn't exist`, m.Column)
 	}
 
-	newCols := make([]flux.ColMeta, 0, len(ctx.Cols())+1)
-	newColMap := make([]int, 0, len(ctx.Cols())+1)
-	oldColMap := ctx.ColMap()
-
-	for i, c := range ctx.Cols() {
-		newCols = append(newCols, c)
-		newColMap = append(newColMap, oldColMap[i])
-
-		if c.Label == m.Column {
-			newCols = append(newCols, duplicate(c, m.As))
-			newColMap = append(newColMap, oldColMap[i])
+	newCol := duplicate(ctx.TableColumns[fromIdx], m.As)
+	asIdx := execute.ColIdx(m.As, ctx.Cols())
+	if asIdx < 0 {
+		ctx.TableColumns = append(ctx.TableColumns, newCol)
+		ctx.ColIdxMap = append(ctx.ColIdxMap, ctx.ColIdxMap[fromIdx])
+		asIdx = len(ctx.TableColumns) - 1
+	} else {
+		ctx.TableColumns[asIdx] = newCol
+		ctx.ColIdxMap[asIdx] = ctx.ColIdxMap[fromIdx]
+	}
+	asKeyIdx := execute.ColIdx(ctx.TableColumns[asIdx].Label, ctx.Key().Cols())
+	if asKeyIdx >= 0 {
+		newKeyCols := append(ctx.Key().Cols()[:0:0], ctx.Key().Cols()...)
+		newKeyVals := append(ctx.Key().Values()[:0:0], ctx.Key().Values()...)
+		fromKeyIdx := execute.ColIdx(m.Column, newKeyCols)
+		if fromKeyIdx >= 0 {
+			newKeyCols[asKeyIdx] = newCol
+			newKeyVals[asKeyIdx] = newKeyVals[fromKeyIdx]
+		} else {
+			newKeyCols = append(newKeyCols[:asKeyIdx], newKeyCols[asKeyIdx+1:]...)
 		}
+		ctx.TableKey = execute.NewGroupKey(newKeyCols, newKeyVals)
 	}
-
-	ctx.TableColumns = newCols
-	ctx.ColIdxMap = newColMap
 
 	return nil
 }
