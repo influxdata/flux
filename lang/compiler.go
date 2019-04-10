@@ -218,6 +218,11 @@ func (*TableObjectCompiler) CompilerType() flux.CompilerType {
 	panic("TableObjectCompiler is not associated with a CompilerType")
 }
 
+type DependenciesAwareProgram interface {
+	SetExecutorDependencies(execute.Dependencies)
+	SetLogger(logger *zap.Logger)
+}
+
 // Program implements the flux.Program interface.
 // It will execute a compiled plan using an executor.
 type Program struct {
@@ -226,6 +231,14 @@ type Program struct {
 	PlanSpec     *plan.Spec
 
 	opts *compileOptions
+}
+
+func (p *Program) SetExecutorDependencies(deps execute.Dependencies) {
+	p.Dependencies = deps
+}
+
+func (p *Program) SetLogger(logger *zap.Logger) {
+	p.Logger = logger
 }
 
 func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
