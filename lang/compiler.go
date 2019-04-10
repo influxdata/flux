@@ -17,7 +17,6 @@ import (
 
 const (
 	FluxCompilerType = "flux"
-	SpecCompilerType = "spec"
 	ASTCompilerType  = "ast"
 )
 
@@ -35,9 +34,7 @@ func AddCompilerMappings(mappings flux.CompilerMappings) error {
 	}); err != nil {
 		return err
 	}
-	return mappings.Add(SpecCompilerType, func() flux.Compiler {
-		return new(SpecCompiler)
-	})
+	return nil
 }
 
 // CompileOption represents an option for compilation.
@@ -155,26 +152,6 @@ func (c FluxCompiler) Compile(ctx context.Context) (flux.Program, error) {
 
 func (c FluxCompiler) CompilerType() flux.CompilerType {
 	return FluxCompilerType
-}
-
-// SpecCompiler implements Compiler by returning a known spec.
-type SpecCompiler struct {
-	Spec *flux.Spec `json:"spec"`
-}
-
-func (c SpecCompiler) Compile(ctx context.Context) (flux.Program, error) {
-	// Ignore context, it will be provided upon Program Start.
-	ps, err := buildPlan(c.Spec, nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "error in building plan while compiling")
-	}
-	return &Program{
-		PlanSpec: ps,
-	}, nil
-}
-
-func (c SpecCompiler) CompilerType() flux.CompilerType {
-	return SpecCompilerType
 }
 
 // ASTCompiler implements Compiler by producing a Spec from an AST.
