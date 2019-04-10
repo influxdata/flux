@@ -193,6 +193,7 @@ func (c *Controller) compileQuery(q *Query, compiler flux.Compiler) error {
 	//   dependencies, see https://github.com/influxdata/flux/issues/1126
 	if p, ok := prog.(*lang.Program); ok {
 		p.Dependencies = c.dependencies
+		p.Logger = c.logger
 	}
 
 	q.program = prog
