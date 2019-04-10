@@ -173,6 +173,57 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 	}
 }
 
+func TestCompileOptions(t *testing.T) {
+	src := `import "csv"
+			csv.from(csv: "foo,bar")
+				|> range(start: 2017-10-10T00:00:00Z)
+				|> count()`
+
+	now := parser.MustParseTime("2018-10-10T00:00:00Z").Value
+
+	opt := lang.WithLogPlanOpts(plan.OnlyLogicalRules(removeCount{}))
+
+	program, err := lang.Compile(src, now, opt)
+	if err != nil {
+		t.Fatalf("failed to compile script: %v", err)
+	}
+
+	// start program in order to evaluate planner options
+	if _, err := program.Start(context.Background(), &memory.Allocator{}); err != nil {
+		t.Fatalf("failed to start program: %v", err)
+	}
+
+	want := plantest.CreatePlanSpec(&plantest.PlanSpec{
+		Nodes: []plan.Node{
+			&plan.PhysicalPlanNode{Spec: &csv.FromCSVProcedureSpec{}},
+			&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+			&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
+		},
+		Edges: [][2]int{
+			{0, 1},
+			{1, 2},
+		},
+		Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
+		Now:       parser.MustParseTime("2018-10-10T00:00:00Z").Value,
+	})
+
+	if err := plantest.ComparePlansShallow(want, program.PlanSpec); err != nil {
+		t.Fatalf("unexpected plans: %v", err)
+	}
+}
+
+type removeCount struct{}
+
+func (rule removeCount) Name() string {
+	return "removeCountRule"
+}
+func (rule removeCount) Pattern() plan.Pattern {
+	return plan.Pat(universe.CountKind, plan.Any())
+}
+func (rule removeCount) Rewrite(node plan.Node) (plan.Node, bool, error) {
+	return node.Predecessors()[0], true, nil
+}
+
 // TestTableObjectCompiler evaluates a simple `from |> range |> filter` script on csv data, and
 // extracts the TableObjects obtained from evaluation. It eventually compiles TableObjects and
 // compares obtained results with expected ones (obtained from decoding the raw csv data).
