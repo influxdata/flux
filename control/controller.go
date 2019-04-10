@@ -189,11 +189,9 @@ func (c *Controller) compileQuery(q *Query, compiler flux.Compiler) error {
 		return errors.Wrap(err, "compilation failed")
 	}
 
-	// TODO(cwolff): the compiler should be responsible for assigning
-	//   dependencies, see https://github.com/influxdata/flux/issues/1126
-	if p, ok := prog.(*lang.Program); ok {
-		p.Dependencies = c.dependencies
-		p.Logger = c.logger
+	if p, ok := prog.(lang.DependenciesAwareProgram); ok {
+		p.SetExecutorDependencies(c.dependencies)
+		p.SetLogger(c.logger)
 	}
 
 	q.program = prog
