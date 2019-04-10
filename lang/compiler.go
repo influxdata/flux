@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 const (
@@ -196,9 +197,10 @@ func (*TableObjectCompiler) CompilerType() flux.CompilerType {
 // It will execute a compiled plan using an executor.
 type Program struct {
 	Dependencies execute.Dependencies
-	opts         *compileOptions
+	Logger       *zap.Logger
+	PlanSpec     *plan.Spec
 
-	PlanSpec *plan.Spec
+	opts *compileOptions
 }
 
 func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
@@ -212,28 +214,29 @@ func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Quer
 			Metadata: make(flux.Metadata),
 		},
 	}
-	q.wg.Add(1)
-	go p.run(ctx, q)
-	return q, nil
-}
 
-func (p *Program) run(ctx context.Context, q *query) {
-	defer q.wg.Done()
-	defer close(q.results)
-
-	e := execute.NewExecutor(p.Dependencies, nil)
-	results, md, err := e.Execute(ctx, p.PlanSpec, q.alloc)
+	e := execute.NewExecutor(p.Dependencies, p.Logger)
+	resultMap, md, err := e.Execute(ctx, p.PlanSpec, q.alloc)
 	if err != nil {
-		q.err = err
-		return
+		return nil, err
 	}
+
+	// There was no error so send the results downstream.
+	q.wg.Add(1)
+	go p.processResults(ctx, q, resultMap)
 
 	// Begin reading from the metadata channel.
 	q.wg.Add(1)
 	go p.readMetadata(q, md)
 
-	// There was no error so send the results downstream.
-	for _, res := range results {
+	return q, nil
+}
+
+func (p *Program) processResults(ctx context.Context, q *query, resultMap map[string]flux.Result) {
+	defer q.wg.Done()
+	defer close(q.results)
+
+	for _, res := range resultMap {
 		select {
 		case q.results <- res:
 		case <-ctx.Done():
