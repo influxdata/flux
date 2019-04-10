@@ -12,16 +12,23 @@ import (
 	"github.com/influxdata/flux/ast"
 	_ "github.com/influxdata/flux/builtin"
 	fcsv "github.com/influxdata/flux/csv"
+	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/stdlib/csv"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
 )
+
+func init() {
+	execute.RegisterSource(influxdb.FromKind, mock.CreateMockFromSource)
+}
 
 func TestFluxCompiler(t *testing.T) {
 	ctx := context.Background()
