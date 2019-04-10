@@ -18,7 +18,7 @@ func (pb *PlannerBuilder) AddLogicalOptions(lopt ...LogicalOption) {
 
 // AddPhysicalOptions lets callers specify attributes of the physical planner
 // that will be part of the created planner.
-func (pb *PlannerBuilder) AddPhysicalOption(popt ...PhysicalOption) {
+func (pb *PlannerBuilder) AddPhysicalOptions(popt ...PhysicalOption) {
 	pb.popts = append(pb.popts, popt...)
 }
 
