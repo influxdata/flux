@@ -45,6 +45,22 @@ type CompileOption func(*compileOptions)
 
 type compileOptions struct {
 	verbose bool
+
+	planOptions struct {
+		logical  []plan.LogicalOption
+		physical []plan.PhysicalOption
+	}
+}
+
+func WithLogPlanOpts(lopts ...plan.LogicalOption) CompileOption {
+	return func(o *compileOptions) {
+		o.planOptions.logical = append(o.planOptions.logical, lopts...)
+	}
+}
+func WithPhysPlanOpts(popts ...plan.PhysicalOption) CompileOption {
+	return func(o *compileOptions) {
+		o.planOptions.physical = append(o.planOptions.physical, popts...)
+	}
 }
 
 func defaultOptions() *compileOptions {
@@ -99,7 +115,7 @@ func CompileTableObject(to *flux.TableObject, now time.Time, opts ...CompileOpti
 	if o.verbose {
 		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
 	}
-	ps, err := buildPlan(s)
+	ps, err := buildPlan(s, o)
 	if err != nil {
 		return nil, err
 	}
@@ -109,8 +125,17 @@ func CompileTableObject(to *flux.TableObject, now time.Time, opts ...CompileOpti
 	}, nil
 }
 
-func buildPlan(spec *flux.Spec) (*plan.Spec, error) {
+func buildPlan(spec *flux.Spec, opts *compileOptions) (*plan.Spec, error) {
 	pb := plan.PlannerBuilder{}
+
+	planOptions := opts.planOptions
+
+	lopts := planOptions.logical
+	popts := planOptions.physical
+
+	pb.AddLogicalOptions(lopts...)
+	pb.AddPhysicalOptions(popts...)
+
 	ps, err := pb.Build().Plan(spec)
 	if err != nil {
 		return nil, err
@@ -139,7 +164,7 @@ type SpecCompiler struct {
 
 func (c SpecCompiler) Compile(ctx context.Context) (flux.Program, error) {
 	// Ignore context, it will be provided upon Program Start.
-	ps, err := buildPlan(c.Spec)
+	ps, err := buildPlan(c.Spec, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error in building plan while compiling")
 	}
@@ -277,7 +302,7 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	if p.opts.verbose {
 		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
 	}
-	ps, err := buildPlan(s)
+	ps, err := buildPlan(s, p.opts)
 	if err != nil {
 		return nil, errors.Wrap(err, "error in building plan while starting program")
 	}
