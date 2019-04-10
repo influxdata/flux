@@ -19,7 +19,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -191,11 +190,11 @@ func (r *REPL) doQuery(spec *flux.Spec) error {
 	defer cancelFunc()
 	defer r.clearCancel()
 
-	compiler := lang.SpecCompiler{
+	replCompiler := Compiler{
 		Spec: spec,
 	}
 
-	results, err := r.querier.Query(ctx, compiler)
+	results, err := r.querier.Query(ctx, replCompiler)
 	if err != nil {
 		return err
 	}
