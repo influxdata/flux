@@ -122,6 +122,16 @@ func CompileTableObject(to *flux.TableObject, now time.Time, opts ...CompileOpti
 	}, nil
 }
 
+func WalkIR(astPkg *ast.Package, f func(o *flux.Operation) error) error {
+
+	if spec, err := spec.FromAST(context.Background(), astPkg, time.Now()); err != nil {
+		return err
+	} else {
+		return spec.Walk(f)
+	}
+
+}
+
 func buildPlan(spec *flux.Spec, opts *compileOptions) (*plan.Spec, error) {
 	pb := plan.PlannerBuilder{}
 
