@@ -5,8 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
@@ -15,7 +13,6 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/semantic/semantictest"
 	"github.com/influxdata/flux/stdlib/http"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/kafka"
@@ -27,13 +24,6 @@ func compile(fluxText string, now time.Time) (*flux.Spec, error) {
 }
 
 func TestPlan_LogicalPlanFromSpec(t *testing.T) {
-	// Test for equality on these attributes
-	type testAttrs struct {
-		ID   plan.NodeID
-		Spec plan.ProcedureSpec
-		Kind plan.ProcedureKind
-	}
-
 	standardYield := func(name string) *universe.YieldProcedureSpec {
 		return &universe.YieldProcedureSpec{Name: name}
 	}
@@ -147,6 +137,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 					{0, 1},
 					{1, 2},
 				},
+				Now: now,
 			},
 		},
 		{
@@ -162,6 +153,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 					{0, 1},
 					{1, 2},
 				},
+				Now: now,
 			},
 		},
 		{
@@ -179,6 +171,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 					{1, 2},
 					{2, 3},
 				},
+				Now: now,
 			},
 		},
 		{
@@ -194,6 +187,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 					{0, 1},
 					{1, 2},
 				},
+				Now: now,
 			},
 		},
 		{
@@ -222,6 +216,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 					{3, 4},
 					{4, 5},
 				},
+				Now: now,
 			},
 		},
 		{
@@ -249,6 +244,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 					{3, 4},
 					{4, 5},
 				},
+				Now: now,
 			},
 		},
 		{
@@ -290,6 +286,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 					{4, 7},
 					{7, 8},
 				},
+				Now: now,
 			},
 		},
 		{
@@ -300,12 +297,6 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 			wantErr: true,
 		},
 	}
-
-	opts := append(
-		semantictest.CmpOptions,
-		cmp.AllowUnexported(kafka.ToKafkaProcedureSpec{}),
-		cmpopts.IgnoreUnexported(kafka.ToKafkaProcedureSpec{}),
-	)
 
 	for _, tc := range testcases {
 		tc := tc
@@ -336,32 +327,10 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-
 				wantPlan := plantest.CreatePlanSpec(tc.plan)
 
-				gotAttrs := make([]testAttrs, 0, 10)
-				gotPlan.BottomUpWalk(func(node plan.Node) error {
-					gotAttrs = append(gotAttrs, testAttrs{
-						ID:   node.ID(),
-						Spec: node.ProcedureSpec(),
-						Kind: node.Kind(),
-					})
-					return nil
-				})
-
-				wantAttrs := make([]testAttrs, 0, 10)
-				wantPlan.BottomUpWalk(func(node plan.Node) error {
-					wantAttrs = append(wantAttrs, testAttrs{
-						ID:   node.ID(),
-						Spec: node.ProcedureSpec(),
-						Kind: node.Kind(),
-					})
-					return nil
-				})
-
-				// Compare acutal vs expected logical plan nodes
-				if !cmp.Equal(wantAttrs, gotAttrs, opts...) {
-					t.Errorf("plan nodes do not have expected attributes, -want/+got:\n%v", cmp.Diff(wantAttrs, gotAttrs, opts...))
+				if err := plantest.CompareLogicalPlans(wantPlan, gotPlan); err != nil {
+					t.Error(err)
 				}
 			}
 		})
@@ -589,7 +558,7 @@ func TestLogicalPlanner(t *testing.T) {
 			}
 
 			wantPlan := plantest.CreatePlanSpec(&tc.wantPlan)
-			if err := plantest.ComparePlans(wantPlan, logicalPlan, plantest.CompareLogicalPlanNodes); err != nil {
+			if err := plantest.CompareLogicalPlans(wantPlan, logicalPlan); err != nil {
 				t.Error(err)
 			}
 		})

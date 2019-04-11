@@ -5,7 +5,6 @@ import (
 
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -22,7 +21,7 @@ type aggregateTransformation struct {
 
 type AggregateConfig struct {
 	plan.DefaultCost
-	Columns []string `json:"columns"`
+	Columns []string `json:"column"`
 }
 
 var DefaultAggregateConfig = AggregateConfig{
@@ -35,7 +34,7 @@ func AggregateSignature(args map[string]semantic.PolyType, required []string) se
 	if args == nil {
 		args = make(map[string]semantic.PolyType)
 	}
-	args["columns"] = semantic.NewArrayPolyType(semantic.String)
+	args["column"] = semantic.String
 	return flux.FunctionSignature(args, required)
 }
 
@@ -49,14 +48,10 @@ func (c AggregateConfig) Copy() AggregateConfig {
 }
 
 func (c *AggregateConfig) ReadArgs(args flux.Arguments) error {
-	if cols, ok, err := args.GetArray("columns", semantic.String); err != nil {
+	if col, ok, err := args.GetString("column"); err != nil {
 		return err
 	} else if ok {
-		columns, err := interpreter.ToStringArray(cols)
-		if err != nil {
-			return err
-		}
-		c.Columns = columns
+		c.Columns = []string{col}
 	} else {
 		c.Columns = DefaultAggregateConfig.Columns
 	}

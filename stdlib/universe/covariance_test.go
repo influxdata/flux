@@ -33,9 +33,7 @@ func TestCovariance_NewQuery(t *testing.T) {
 						ID: "covariance1",
 						Spec: &universe.CovarianceOpSpec{
 							ValueDst: execute.DefaultValueColLabel,
-							AggregateConfig: execute.AggregateConfig{
-								Columns: []string{"a", "b"},
-							},
+							Columns:  []string{"a", "b"},
 						},
 					},
 				},
@@ -60,9 +58,7 @@ func TestCovariance_NewQuery(t *testing.T) {
 						Spec: &universe.CovarianceOpSpec{
 							ValueDst:           execute.DefaultValueColLabel,
 							PearsonCorrelation: true,
-							AggregateConfig: execute.AggregateConfig{
-								Columns: []string{"a", "b"},
-							},
+							Columns:            []string{"a", "b"},
 						},
 					},
 				},
@@ -104,9 +100,7 @@ func TestCovariance_NewQuery(t *testing.T) {
 						Spec: &universe.CovarianceOpSpec{
 							ValueDst:           execute.DefaultValueColLabel,
 							PearsonCorrelation: true,
-							AggregateConfig: execute.AggregateConfig{
-								Columns: []string{"_value_x", "_value_y"},
-							},
+							Columns:            []string{"_value_x", "_value_y"},
 						},
 					},
 				},
@@ -155,9 +149,7 @@ func TestCovariance_Process(t *testing.T) {
 			name: "variance",
 			spec: &universe.CovarianceProcedureSpec{
 				ValueLabel: execute.DefaultValueColLabel,
-				AggregateConfig: execute.AggregateConfig{
-					Columns: []string{"x", "y"},
-				},
+				Columns:    []string{"x", "y"},
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -192,9 +184,7 @@ func TestCovariance_Process(t *testing.T) {
 			name: "negative covariance",
 			spec: &universe.CovarianceProcedureSpec{
 				ValueLabel: execute.DefaultValueColLabel,
-				AggregateConfig: execute.AggregateConfig{
-					Columns: []string{"x", "y"},
-				},
+				Columns:    []string{"x", "y"},
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -229,9 +219,7 @@ func TestCovariance_Process(t *testing.T) {
 			name: "small covariance",
 			spec: &universe.CovarianceProcedureSpec{
 				ValueLabel: execute.DefaultValueColLabel,
-				AggregateConfig: execute.AggregateConfig{
-					Columns: []string{"x", "y"},
-				},
+				Columns:    []string{"x", "y"},
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -267,9 +255,7 @@ func TestCovariance_Process(t *testing.T) {
 			spec: &universe.CovarianceProcedureSpec{
 				ValueLabel:         execute.DefaultValueColLabel,
 				PearsonCorrelation: true,
-				AggregateConfig: execute.AggregateConfig{
-					Columns: []string{"x", "y"},
-				},
+				Columns:            []string{"x", "y"},
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -305,9 +291,7 @@ func TestCovariance_Process(t *testing.T) {
 			spec: &universe.CovarianceProcedureSpec{
 				ValueLabel:         execute.DefaultValueColLabel,
 				PearsonCorrelation: true,
-				AggregateConfig: execute.AggregateConfig{
-					Columns: []string{"x", "y"},
-				},
+				Columns:            []string{"x", "y"},
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -342,9 +326,7 @@ func TestCovariance_Process(t *testing.T) {
 			name: "variance with nulls",
 			spec: &universe.CovarianceProcedureSpec{
 				ValueLabel: execute.DefaultValueColLabel,
-				AggregateConfig: execute.AggregateConfig{
-					Columns: []string{"x", "y"},
-				},
+				Columns:    []string{"x", "y"},
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
