@@ -58,11 +58,6 @@ func ComparePlans(p, q *plan.Spec, f func(p, q plan.Node) error) error {
 	return nil
 }
 
-// CompareLogicalPlans compares two logical plans.
-func CompareLogicalPlans(p, q *plan.Spec) error {
-	return ComparePlans(p, q, CompareLogicalPlanNodes)
-}
-
 // ComparePlansShallow Compares the two specs, but only compares the
 // metadata and the types of each node.  Individual fields of procedure specs
 // are not compared.
@@ -81,7 +76,12 @@ func compareMetadata(p, q *plan.Spec) error {
 	return nil
 }
 
-// CompareLogicalPlanNodes is a comparator fuction for LogicalPlanNodes
+// CompareLogicalPlans compares two logical plans.
+func CompareLogicalPlans(p, q *plan.Spec) error {
+	return ComparePlans(p, q, CompareLogicalPlanNodes)
+}
+
+// CompareLogicalPlanNodes is a comparator function for LogicalPlanNodes
 func CompareLogicalPlanNodes(p, q plan.Node) error {
 	if _, ok := p.(*plan.LogicalNode); !ok {
 		return fmt.Errorf("expected %s to be a LogicalNode", p.ID())
