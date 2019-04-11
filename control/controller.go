@@ -180,11 +180,12 @@ func (c *Controller) countQueryRequest(q *Query, result requestsLabel) {
 }
 
 func (c *Controller) compileQuery(q *Query, compiler flux.Compiler) error {
-	if !q.tryCompile() {
+	ctx, ok := q.tryCompile()
+	if !ok {
 		return errors.New("failed to transition query to compiling state")
 	}
 
-	prog, err := compiler.Compile(q.currentCtx)
+	prog, err := compiler.Compile(ctx)
 	if err != nil {
 		return errors.Wrap(err, "compilation failed")
 	}
@@ -199,7 +200,7 @@ func (c *Controller) compileQuery(q *Query, compiler flux.Compiler) error {
 }
 
 func (c *Controller) enqueueQuery(q *Query) error {
-	if !q.tryQueue() {
+	if _, ok := q.tryQueue(); !ok {
 		return errors.New("failed to transition query to queueing state")
 	}
 
@@ -210,19 +211,24 @@ func (c *Controller) enqueueQuery(q *Query) error {
 	// immediately switching to the execute state and then calling
 	// start which should start the query in a new goroutine and return
 	// the underlying results.
-	if !q.tryExec() {
+	return c.executeQuery(q)
+}
+
+func (c *Controller) executeQuery(q *Query) error {
+	ctx, ok := q.tryExec()
+	if !ok {
 		return errors.New("failed to transition query into executing state")
 	}
 
 	// TODO(jsternberg): Introduce memory restrictions.
 	q.alloc = new(memory.Allocator)
-	exec, err := q.program.Start(q.currentCtx, q.alloc)
+	exec, err := q.program.Start(ctx, q.alloc)
 	if err != nil {
 		q.setErr(err)
 		return nil
 	}
 	q.exec = exec
-	go q.pump(exec)
+	go q.pump(exec, ctx.Done())
 	return nil
 }
 
@@ -298,7 +304,7 @@ type Query struct {
 	err     error
 	cancel  func()
 
-	parentCtx, currentCtx   context.Context
+	parentCtx               context.Context
 	parentSpan, currentSpan *span
 	stats                   flux.Statistics
 
@@ -351,9 +357,7 @@ func (q *Query) Done() {
 			q.stats.Metadata = stats.Metadata
 		}
 
-		q.stateMu.Lock()
 		q.transitionTo(Finished)
-		q.stateMu.Unlock()
 		q.c.finish(q)
 	})
 }
@@ -363,9 +367,6 @@ func (q *Query) Done() {
 // This method must be called after Done. It will block until
 // the query has been finalized unless a context is given.
 func (q *Query) Statistics() flux.Statistics {
-	q.stateMu.Lock()
-	defer q.stateMu.Unlock()
-
 	stats := q.stats
 	if q.alloc != nil {
 		stats.MaxAllocated = q.alloc.MaxAllocated()
@@ -399,7 +400,7 @@ func (q *Query) State() State {
 // transitionTo will transition from one state to another. If a list of current states
 // is given, then the query must be in one of those states for the transition to succeed.
 // This method must be called with a lock and it must be called from within the run loop.
-func (q *Query) transitionTo(newState State, currentState ...State) bool {
+func (q *Query) transitionTo(newState State, currentState ...State) (context.Context, bool) {
 	// If we are transitioning to a non-finished state, the query
 	// may have been canceled. If the query was canceled, then
 	// we need to transition to the canceled state
@@ -408,8 +409,8 @@ func (q *Query) transitionTo(newState State, currentState ...State) bool {
 		case <-q.parentCtx.Done():
 			// Transition to the canceled state and report that
 			// we failed to transition to the desired state.
-			_ = q.transitionTo(Canceled)
-			return false
+			_, _ = q.transitionTo(Canceled)
+			return nil, false
 		default:
 		}
 	}
@@ -421,7 +422,7 @@ func (q *Query) transitionTo(newState State, currentState ...State) bool {
 				goto TRANSITION
 			}
 		}
-		return false
+		return nil, false
 	}
 
 TRANSITION:
@@ -437,7 +438,7 @@ TRANSITION:
 			q.stats.ExecuteDuration += q.currentSpan.Duration
 		}
 	}
-	q.currentSpan, q.currentCtx = nil, nil
+	q.currentSpan = nil
 
 	if isFinishedState(newState) {
 		// Invoke the cancel function to ensure that we have signaled that the query should be done.
@@ -473,15 +474,17 @@ TRANSITION:
 		dur, gauge = q.c.metrics.executingDur, q.c.metrics.executing
 	default:
 		// This state is not tracked so do not create a new span or context for it.
-		return true
+		// Use the parent context if one is needed.
+		return q.parentCtx, true
 	}
-	q.currentSpan, q.currentCtx = StartSpanFromContext(
+	var currentCtx context.Context
+	q.currentSpan, currentCtx = StartSpanFromContext(
 		q.parentCtx,
 		newState.String(),
 		dur.WithLabelValues(labelValues...),
 		gauge.WithLabelValues(labelValues...),
 	)
-	return true
+	return currentCtx, true
 }
 
 // Err reports any error the query may have encountered.
@@ -523,10 +526,17 @@ func (q *Query) setErr(err error) {
 // results to our destination.
 // When there are no more results, then this will close our own
 // results channel.
-func (q *Query) pump(exec flux.Query) {
+func (q *Query) pump(exec flux.Query, done <-chan struct{}) {
 	defer close(q.results)
 
-	done := q.currentCtx.Done()
+	// When our context is canceled, we need to propagate that cancel
+	// signal down to the executing program just in case it is waiting
+	// for a cancel signal and is ignoring the passed in context.
+	// We want this signal to only be sent once and we want to continue
+	// draining the results until the underlying program has actually
+	// been finished so we copy this to a new channel and set it to
+	// nil when it has been closed.
+	signalCh := done
 	for {
 		select {
 		case res, ok := <-exec.Results():
@@ -540,10 +550,10 @@ func (q *Query) pump(exec flux.Query) {
 			// done, nobody is going to read these values so we need
 			// to avoid blocking.
 			select {
-			case <-q.currentCtx.Done():
+			case <-done:
 			case q.results <- res:
 			}
-		case <-done:
+		case <-signalCh:
 			// Signal to the underlying executor that the query
 			// has been canceled. Usually, the signal on the context
 			// is likely enough, but this explicitly signals just in case.
@@ -551,13 +561,13 @@ func (q *Query) pump(exec flux.Query) {
 
 			// Set the done channel to nil so we don't do this again
 			// and we continue to drain the results.
-			done = nil
+			signalCh = nil
 		}
 	}
 }
 
 // tryCompile attempts to transition the query into the Compiling state.
-func (q *Query) tryCompile() bool {
+func (q *Query) tryCompile() (context.Context, bool) {
 	q.stateMu.Lock()
 	defer q.stateMu.Unlock()
 
@@ -565,7 +575,7 @@ func (q *Query) tryCompile() bool {
 }
 
 // tryQueue attempts to transition the query into the Queueing state.
-func (q *Query) tryQueue() bool {
+func (q *Query) tryQueue() (context.Context, bool) {
 	q.stateMu.Lock()
 	defer q.stateMu.Unlock()
 
@@ -573,7 +583,7 @@ func (q *Query) tryQueue() bool {
 }
 
 // tryExec attempts to transition the query into the Executing state.
-func (q *Query) tryExec() bool {
+func (q *Query) tryExec() (context.Context, bool) {
 	q.stateMu.Lock()
 	defer q.stateMu.Unlock()
 
