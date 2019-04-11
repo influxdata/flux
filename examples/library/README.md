@@ -6,11 +6,9 @@ This folder contains a [main.go](main.go) file that shows how flux can be used a
 
 The main components you need are:
 
-- The interpreter;
-- The scope (aka Prelude);
-- The builtin library and your additional functions, if you want to define them;
-- The language specification compiler;
-- A querier.
+- A Flux Compiler to parse and generate the AST;
+- A Querier to send the query expressed in the AST;
+- A ResultEncoder to display results to humans;
 
 ## What does this example do?
 
