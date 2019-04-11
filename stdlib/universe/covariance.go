@@ -7,6 +7,7 @@ import (
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/pkg/errors"
@@ -15,18 +16,19 @@ import (
 const CovarianceKind = "covariance"
 
 type CovarianceOpSpec struct {
-	PearsonCorrelation bool   `json:"pearsonr"`
-	ValueDst           string `json:"valueDst"`
-	execute.AggregateConfig
+	PearsonCorrelation bool     `json:"pearsonr"`
+	ValueDst           string   `json:"valueDst"`
+	Columns            []string `json:"column"`
 }
 
 func init() {
-	var covarianceSignature = execute.AggregateSignature(
+	var covarianceSignature = flux.FunctionSignature(
 		map[string]semantic.PolyType{
 			"pearsonr": semantic.Bool,
 			"valueDst": semantic.String,
+			"columns":  semantic.NewArrayPolyType(semantic.String),
 		},
-		nil,
+		[]string{"columns"},
 	)
 	flux.RegisterPackageValue("universe", CovarianceKind, flux.FunctionValue(CovarianceKind, createCovarianceOpSpec, covarianceSignature))
 	flux.RegisterOpSpec(CovarianceKind, newCovarianceOp)
@@ -56,9 +58,16 @@ func createCovarianceOpSpec(args flux.Arguments, a *flux.Administration) (flux.O
 		spec.ValueDst = execute.DefaultValueColLabel
 	}
 
-	if err := spec.AggregateConfig.ReadArgs(args); err != nil {
+	if cols, err := args.GetRequiredArray("columns", semantic.String); err != nil {
 		return nil, err
+	} else {
+		columns, err := interpreter.ToStringArray(cols)
+		if err != nil {
+			return nil, err
+		}
+		spec.Columns = columns
 	}
+
 	if len(spec.Columns) != 2 {
 		return nil, errors.New("must provide exactly two columns")
 	}
@@ -74,9 +83,10 @@ func (s *CovarianceOpSpec) Kind() flux.OperationKind {
 }
 
 type CovarianceProcedureSpec struct {
+	plan.DefaultCost
 	PearsonCorrelation bool
 	ValueLabel         string
-	execute.AggregateConfig
+	Columns            []string
 }
 
 func newCovarianceProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -84,12 +94,14 @@ func newCovarianceProcedure(qs flux.OperationSpec, pa plan.Administration) (plan
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
 	}
-
-	return &CovarianceProcedureSpec{
+	cs := CovarianceProcedureSpec{
 		PearsonCorrelation: spec.PearsonCorrelation,
 		ValueLabel:         spec.ValueDst,
-		AggregateConfig:    spec.AggregateConfig,
-	}, nil
+	}
+	cs.Columns = make([]string, len(spec.Columns))
+	copy(cs.Columns, spec.Columns)
+
+	return &cs, nil
 }
 
 func (s *CovarianceProcedureSpec) Kind() plan.ProcedureKind {
@@ -100,7 +112,10 @@ func (s *CovarianceProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(CovarianceProcedureSpec)
 	*ns = *s
 
-	ns.AggregateConfig = s.AggregateConfig.Copy()
+	if s.Columns != nil {
+		ns.Columns = make([]string, len(s.Columns))
+		copy(ns.Columns, s.Columns)
+	}
 
 	return ns
 }

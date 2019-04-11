@@ -142,49 +142,6 @@ func TestQuantile_NewQuery(t *testing.T) {
 			},
 		},
 		{
-			Name: "custom cols",
-			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "exact_mean", columns: ["foo", "bar"])`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
-					{
-						ID: "from0",
-						Spec: &influxdb.FromOpSpec{
-							Bucket: "testdb",
-						},
-					},
-					{
-						ID: "range1",
-						Spec: &universe.RangeOpSpec{
-							Start: flux.Time{
-								Relative:   -1 * time.Hour,
-								IsRelative: true,
-							},
-							Stop: flux.Time{
-								IsRelative: true,
-							},
-							TimeColumn:  "_time",
-							StartColumn: "_start",
-							StopColumn:  "_stop",
-						},
-					},
-					{
-						ID: "quantile2",
-						Spec: &universe.QuantileOpSpec{
-							Quantile: 0.99,
-							Method:   "exact_mean",
-							AggregateConfig: execute.AggregateConfig{
-								Columns: []string{"foo", "bar"},
-							},
-						},
-					},
-				},
-				Edges: []flux.Edge{
-					{Parent: "from0", Child: "range1"},
-					{Parent: "range1", Child: "quantile2"},
-				},
-			},
-		},
-		{
 			Name: "custom col",
 			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "exact_selector", column: "foo")`,
 			Want: &flux.Spec{
@@ -227,6 +184,49 @@ func TestQuantile_NewQuery(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name: "custom column",
+			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "exact_mean", column: "foo")`,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: "testdb",
+						},
+					},
+					{
+						ID: "range1",
+						Spec: &universe.RangeOpSpec{
+							Start: flux.Time{
+								Relative:   -1 * time.Hour,
+								IsRelative: true,
+							},
+							Stop: flux.Time{
+								IsRelative: true,
+							},
+							TimeColumn:  "_time",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
+						},
+					},
+					{
+						ID: "quantile2",
+						Spec: &universe.QuantileOpSpec{
+							Quantile: 0.99,
+							Method:   "exact_mean",
+							AggregateConfig: execute.AggregateConfig{
+								Columns: []string{"foo"},
+							},
+						},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "range1"},
+					{Parent: "range1", Child: "quantile2"},
+				},
+			},
+		},
 		// errors
 		{
 			Name:    "wrong method",
@@ -241,11 +241,6 @@ func TestQuantile_NewQuery(t *testing.T) {
 		{
 			Name:    "selector with columns",
 			Raw:     `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "exact_selector", columns: ["1", "2"])`,
-			WantErr: true,
-		},
-		{
-			Name:    "aggregate with column",
-			Raw:     `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "estimate_tdigest", column: "1")`,
 			WantErr: true,
 		},
 	}

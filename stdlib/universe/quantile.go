@@ -38,8 +38,7 @@ type QuantileOpSpec struct {
 func init() {
 	quantileSignature := flux.FunctionSignature(
 		map[string]semantic.PolyType{
-			"column":      semantic.String,                            // selector
-			"columns":     semantic.NewArrayPolyType(semantic.String), // aggregate
+			"column":      semantic.String,
 			"q":           semantic.Float,
 			"compression": semantic.Float,
 			"method":      semantic.String,
