@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/influxdata/flux/values"
 	"github.com/olivere/elastic"
+	"github.com/olivere/elastic/config"
 	"reflect"
 
 	"time"
@@ -19,17 +20,17 @@ import (
 const FromElasticKind = "fromElastic"
 
 type FromElasticOpSpec struct {
-	Index string `json:"index,omitempty"`
-	Query string `json:"query,omitempty"`
+	DataSourceName string `json:"dataSourceName,omitempty"`
+	Query          string `json:"query,omitempty"`
 }
 
 func init() {
 	fromElasticSignature := semantic.FunctionPolySignature{
 		Parameters: map[string]semantic.PolyType{
-			"index": semantic.String,
+			"dataSourceName": semantic.String,
 			"query": semantic.String,
 		},
-		Required: semantic.LabelSet{"index", "query"},
+		Required: semantic.LabelSet{"dataSourceName", "query"},
 		Return:   flux.TableObjectType,
 	}
 	flux.RegisterPackageValue("elasticsearch", "from", flux.FunctionValue(FromElasticKind, createFromElasticOpSpec, fromElasticSignature))
@@ -41,10 +42,10 @@ func init() {
 func createFromElasticOpSpec(args flux.Arguments, administration *flux.Administration) (flux.OperationSpec, error) {
 	spec := new(FromElasticOpSpec)
 
-	if index, err := args.GetRequiredString("index"); err != nil {
+	if dataSourceName, err := args.GetRequiredString("dataSourceName"); err != nil {
 		return nil, err
 	} else {
-		spec.Index = index
+		spec.DataSourceName = dataSourceName
 	}
 
 	if query, err := args.GetRequiredString("query"); err != nil {
@@ -66,8 +67,8 @@ func (s *FromElasticOpSpec) Kind() flux.OperationKind {
 
 type FromElasticProcedureSpec struct {
 	plan.DefaultCost
-	Index string
-	Query string
+	DataSourceName string
+	Query          string
 }
 
 func newFromElasticProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -77,8 +78,8 @@ func newFromElasticProcedure(qs flux.OperationSpec, pa plan.Administration) (pla
 	}
 
 	return &FromElasticProcedureSpec{
-		Index: spec.Index,
-		Query: spec.Query,
+		DataSourceName: spec.DataSourceName,
+		Query:          spec.Query,
 	}, nil
 }
 
@@ -88,7 +89,7 @@ func (s *FromElasticProcedureSpec) Kind() plan.ProcedureKind {
 
 func (s *FromElasticProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(FromElasticProcedureSpec)
-	ns.Index = s.Index
+	ns.DataSourceName = s.DataSourceName
 	ns.Query = s.Query
 	return ns
 }
@@ -113,13 +114,15 @@ type ElasticIterator struct {
 }
 
 func (c *ElasticIterator) Connect() error {
-	url := "http://127.0.0.1:9200" // TODO
-	client_option := elastic.SetURL(url)
-	client, err := elastic.NewClient(client_option)
+	cfg, err := config.Parse(c.spec.DataSourceName)
 	if err != nil {
 		return err
 	}
-	if _, _, err = client.Ping(url).Do(context.TODO()); err != nil {
+	client, err := elastic.NewClientFromConfig(cfg)
+	if err != nil {
+		return err
+	}
+	if _, _, err = client.Ping(cfg.URL).Do(context.TODO()); err != nil {
 		return err
 	}
 	c.client = client
@@ -129,7 +132,6 @@ func (c *ElasticIterator) Connect() error {
 
 func (c *ElasticIterator) Fetch() (bool, error) {
 	searchResult, err := c.client.Search().
-		Index(c.spec.Index).
 		Query(elastic.NewSimpleQueryStringQuery(c.spec.Query)).
 		Do(context.TODO())
 
