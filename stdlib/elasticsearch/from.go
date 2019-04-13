@@ -231,13 +231,7 @@ func (c *ElasticIterator) Decode() (flux.Table, error) {
 
 func (c *ElasticIterator) Close() error {
 	var err error
-	for i := 0; i < 3; i++ {
-		_, err = c.client.Flush().Do(context.TODO())
-		if err == nil {
-			break
-		}
-		time.Sleep(1*10 ^ 9)
-	}
+	_, err = c.client.Flush().Do(context.TODO())
 	c.client = nil
 	return err
 }
