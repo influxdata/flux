@@ -55,6 +55,10 @@ builtin unique
 builtin window
 builtin yield
 
+// stream/table index functions
+builtin tableFind
+builtin getColumn
+builtin getRecord
 
 // type conversion functions
 builtin bool
