@@ -64,17 +64,54 @@ func (s *scannerSkipComments) ScanWithRegex() (pos token.Pos, tok token.Token, l
 }
 
 type parser struct {
-	s        Scanner
-	src      []byte
-	pos      token.Pos
-	tok      token.Token
-	lit      string
-	buffered bool
-	errs     []ast.Error
+	s    Scanner
+	src  []byte
+	errs []ast.Error
+
+	bts bufferedTokens
 
 	// blocks maintains a count of the end tokens for nested blocks
 	// that we have entered.
 	blocks map[token.Token]int
+}
+
+type bufferedToken struct {
+	pos token.Pos
+	tok token.Token
+	lit string
+}
+
+const (
+	lookaheadTokens = 3
+)
+
+type bufferedTokens []bufferedToken
+
+func (bts *bufferedTokens) put(pos token.Pos, tok token.Token, lit string) {
+	if len(*bts) == lookaheadTokens {
+		panic("exceeded expected number of lookahead tokens")
+	}
+
+	*bts = append(*bts, bufferedToken{
+		pos: pos,
+		tok: tok,
+		lit: lit,
+	})
+}
+
+func (bts *bufferedTokens) consume() (token.Pos, token.Token, string) {
+	if len(*bts) == 0 {
+		panic("attempt to consume token from empty buffer")
+	}
+
+	pos, tok, lit := (*bts)[0].pos, (*bts)[0].tok, (*bts)[0].lit
+	*bts = (*bts)[1:]
+	return pos, tok, lit
+}
+
+func (bts *bufferedTokens) peek(i int) (token.Pos, token.Token, string) {
+	pos, tok, lit := (*bts)[i].pos, (*bts)[i].tok, (*bts)[i].lit
+	return pos, tok, lit
 }
 
 func (p *parser) parseFile(fname string) *ast.File {
@@ -768,6 +805,10 @@ func (p *parser) parsePostfixOperator(expr *ast.Expression) bool {
 		*expr = p.parseDotExpression(*expr)
 		return true
 	case token.LPAREN:
+		// This could either be a call, or it could be simple parentheses for grouping.
+		if !p.peekPropertyList(token.LPAREN, token.RPAREN) {
+			break
+		}
 		*expr = p.parseCallExpression(*expr)
 		return true
 	case token.LBRACK:
@@ -1212,12 +1253,11 @@ func (p *parser) parseFunctionBodyExpression(lparen token.Pos, params []*ast.Pro
 	fn := &ast.FunctionExpression{
 		Params: params,
 		Body: func() ast.Node {
-			switch tok {
-			case token.LBRACE:
+			if tok == token.LBRACE && !p.peekPropertyList(token.LBRACE, token.RBRACE) {
 				return p.parseBlock()
-			default:
-				return p.parseExpression()
 			}
+
+			return p.parseExpression()
 		}(),
 	}
 	fn.BaseNode = p.baseNode(p.sourceLocation(
@@ -1227,12 +1267,15 @@ func (p *parser) parseFunctionBodyExpression(lparen token.Pos, params []*ast.Pro
 	return fn
 }
 
+func (p *parser) buffered() bool {
+	return len(p.bts) > 0
+}
+
 // scan will read the next token from the Scanner. If peek has been used,
 // this will return the peeked token and consume it.
 func (p *parser) scan() (token.Pos, token.Token, string) {
-	if p.buffered {
-		p.buffered = false
-		return p.pos, p.tok, p.lit
+	if p.buffered() {
+		return p.bts.consume()
 	}
 	pos, tok, lit := p.s.Scan()
 	return pos, tok, lit
@@ -1241,55 +1284,96 @@ func (p *parser) scan() (token.Pos, token.Token, string) {
 // peek will read the next token from the Scanner and then buffer it.
 // It will return information about the token.
 func (p *parser) peek() (token.Pos, token.Token, string) {
-	if !p.buffered {
-		p.pos, p.tok, p.lit = p.s.Scan()
-		p.buffered = true
+	if !p.buffered() {
+		pos, tok, lit := p.s.Scan()
+		p.bts.put(pos, tok, lit)
 	}
-	return p.pos, p.tok, p.lit
+	return p.bts.peek(0)
 }
 
 // peekWithRegex is the same as peek, except that the scan step will allow scanning regexp tokens.
 func (p *parser) peekWithRegex() (token.Pos, token.Token, string) {
-	if p.buffered {
-		if p.tok != token.DIV {
-			return p.pos, p.tok, p.lit
+	if p.buffered() {
+		if len(p.bts) > 1 && p.bts[0].tok == token.DIV {
+			panic("peekWithRegex has more than one buffered token after DIV")
 		}
+
+		pos, tok, lit := p.bts.peek(0)
+		if tok != token.DIV {
+			return pos, tok, lit
+		}
+		// There is just one buffered token.
 		p.s.Unread()
+		p.bts.consume()
 	}
-	p.pos, p.tok, p.lit = p.s.ScanWithRegex()
-	p.buffered = true
-	return p.pos, p.tok, p.lit
+
+	pos, tok, lit := p.s.ScanWithRegex()
+	p.bts.put(pos, tok, lit)
+	return pos, tok, lit
+}
+
+func (p *parser) peekN(n int) []bufferedToken {
+	// Make sure we have enough tokens buffered to fulfil the request
+	for i := len(p.bts); i < n; i++ {
+		pos, tok, lit := p.s.Scan()
+		p.bts.put(pos, tok, lit)
+	}
+
+	return p.bts[0:n]
+}
+
+// peekPropertyList looks at the incoming tokens and returns true
+// if the input appears to be a property list, and false otherwise.
+func (p *parser) peekPropertyList(openTok, closeTok token.Token) bool {
+	if _, tok, _ := p.peek(); tok != openTok {
+		return false
+	}
+
+	tok1 := p.peekN(2)[1].tok
+	if tok1 == closeTok {
+		// looks like an empty property list
+		return true
+	}
+
+	if tok1 != token.STRING && tok1 != token.IDENT {
+		return false
+	}
+
+	tok2 := p.peekN(3)[2].tok
+	if tok1 == token.STRING {
+		return tok2 == token.COLON
+	}
+
+	// tok1 is IDENT
+	return tok2 == token.COLON || tok2 == closeTok
 }
 
 // consume will consume a token that has been retrieve using peek.
 // This will panic if a token has not been buffered with peek.
 func (p *parser) consume() {
-	if !p.buffered {
-		panic("called consume on an unbuffered input")
-	}
-	p.buffered = false
+	p.bts.consume()
 }
 
 // expect will continuously scan the input until it reads the requested
 // token. If a token has been buffered by peek, then the token will
 // be read if it matches or will be discarded if it is the wrong token.
 func (p *parser) expect(exp token.Token) (token.Pos, string) {
-	if p.buffered {
-		p.buffered = false
-		if p.tok == exp || p.tok == token.EOF {
-			if p.tok == token.EOF {
+	for p.buffered() {
+		pos, tok, lit := p.bts.consume()
+		if tok == exp || tok == token.EOF {
+			if tok == token.EOF {
 				p.errs = append(p.errs, ast.Error{
 					Msg: fmt.Sprintf("expected %s, got EOF", exp),
 				})
 			}
-			return p.pos, p.lit
+			return pos, lit
 		}
 		p.errs = append(p.errs, ast.Error{
 			Msg: fmt.Sprintf("expected %s, got %s (%q) at %s",
 				exp,
-				p.tok,
-				p.lit,
-				p.s.File().Position(p.pos),
+				tok,
+				lit,
+				p.s.File().Position(pos),
 			),
 		})
 	}

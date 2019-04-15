@@ -1489,22 +1489,21 @@ import "path/bar"
 					&ast.ExpressionStatement{
 						BaseNode: base("1:1", "1:6"),
 						Expression: &ast.IndexExpression{
-							BaseNode: base("1:1", "1:6"),
+							BaseNode: ast.BaseNode{
+								Loc: loc("1:1", "1:6"),
+								Errors: []ast.Error{
+									{Msg: "expected RPAREN, got RBRACK"},
+									{Msg: "invalid expression @1:5-1:6: ]"},
+									{Msg: "expected RBRACK, got EOF"},
+								},
+							},
 							Array: &ast.Identifier{
 								BaseNode: base("1:1", "1:2"),
 								Name:     "a",
 							},
-							Index: &ast.CallExpression{
-								BaseNode: ast.BaseNode{
-									Loc: loc("1:3", "1:6"),
-									Errors: []ast.Error{
-										{Msg: "expected RPAREN, got RBRACK"},
-									},
-								},
-								Callee: &ast.Identifier{
-									BaseNode: base("1:3", "1:4"),
-									Name:     "b",
-								},
+							Index: &ast.Identifier{
+								BaseNode: base("1:3", "1:4"),
+								Name:     "b",
 							},
 						},
 					},
@@ -2765,55 +2764,45 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/`,
 				BaseNode: base("1:1", "2:15"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
-						BaseNode: base("1:1", "2:15"),
-						Expression: &ast.LogicalExpression{
-							BaseNode: base("1:1", "2:15"),
-							Operator: ast.AndOperator,
-							Left: &ast.UnaryExpression{
-								BaseNode: base("1:1", "2:9"),
-								Operator: ast.NotOperator,
-								Argument: &ast.CallExpression{
-									BaseNode: ast.BaseNode{
-										Loc: loc("1:6", "2:9"),
-										Errors: []ast.Error{
-											{Msg: `expected comma in property list, got OR ("or")`},
-										},
-									},
-									Callee: &ast.LogicalExpression{
-										BaseNode: base("1:6", "1:13"),
-										Operator: ast.AndOperator,
-										Left: &ast.Identifier{
-											BaseNode: base("1:6", "1:7"),
-											Name:     "a",
-										},
-										Right: &ast.Identifier{
-											BaseNode: base("1:12", "1:13"),
-											Name:     "b",
-										},
-									},
-									Arguments: []ast.Expression{
-										&ast.ObjectExpression{
-											Properties: []*ast.Property{
-												{
-													Key: &ast.Identifier{
-														BaseNode: base("2:2", "2:3"),
-														Name:     "a",
-													},
-												},
-												{
-													BaseNode: ast.BaseNode{
-														Loc: loc("2:4", "2:8"),
-														Errors: []ast.Error{
-															{Msg: `unexpected token for property key: OR ("or")`},
-														},
-													},
-												},
-											},
-										},
-									},
+						BaseNode: base("1:1", "1:13"),
+						Expression: &ast.UnaryExpression{
+							BaseNode: base("1:1", "1:13"),
+							Operator: ast.NotOperator,
+							Argument: &ast.LogicalExpression{
+								BaseNode: base("1:6", "1:13"),
+								Operator: ast.AndOperator,
+								Left: &ast.Identifier{
+									BaseNode: base("1:6", "1:7"),
+									Name:     "a",
+								},
+								Right: &ast.Identifier{
+									BaseNode: base("1:12", "1:13"),
+									Name:     "b",
 								},
 							},
-							Right: &ast.Identifier{BaseNode: base("2:14", "2:15"), Name: "c"},
+						},
+					},
+					&ast.ExpressionStatement{
+						BaseNode: base("2:2", "2:15"),
+						Expression: &ast.LogicalExpression{
+							BaseNode: base("2:2", "2:15"),
+							Operator: ast.AndOperator,
+							Left: &ast.LogicalExpression{
+								BaseNode: base("2:2", "2:8"),
+								Operator: ast.OrOperator,
+								Left: &ast.Identifier{
+									BaseNode: base("2:2", "2:3"),
+									Name:     "a",
+								},
+								Right: &ast.Identifier{
+									BaseNode: base("2:7", "2:8"),
+									Name:     "b",
+								},
+							},
+							Right: &ast.Identifier{
+								BaseNode: base("2:14", "2:15"),
+								Name:     "c",
+							},
 						},
 					},
 				},
@@ -2891,7 +2880,7 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/`,
 		},
 		{
 			name: "arrow function return map",
-			raw:  `toMap = (r) =>({r:r})`,
+			raw:  `toMap = (r) => {r:r}`,
 			want: &ast.File{
 				BaseNode: base("1:1", "1:21"),
 				Body: []ast.Statement{
