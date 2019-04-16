@@ -729,29 +729,45 @@ It is not possible to access an object's property using an arbitrary expression.
     DotExpression           = "." identifer
     MemberBracketExpression = "[" string_lit "]" .
 
+#### Conditional Expressions
+
+Conditional expressions evaluate a boolean-valued condition and if the result it _true_,
+the expression following the `then` keyword is evaluated and returned.
+Otherwise the condition evaluates to _null_ or _false_,
+and the expression following the `else` keyword is evaluated and returned.
+
+    ConditionalExpression   = "if" Expression "then" Expression "else" Expression .
+
+Example:
+
+    color = if code == 0 then "green" else if code == 1 then "yellow" else "red"
+
 #### Operators
 
 Operators combine operands into expressions.
 The precedence of the operators is given in the table below. Operators with a lower number have higher precedence.
 
-|Precedence| Operator |        Description        |
-|----------|----------|---------------------------|
-|     1    |  `a()`   |       Function call       |
-|          |  `a[]`   |  Member or index access   |
-|          |   `.`    |       Member access       |
-|     2    | `*` `/`  |Multiplication and division|
-|     3    | `+` `-`  | Addition and subtraction  |
-|     4    |`==` `!=` |   Comparison operators    |
-|          | `<` `<=` |                           |
-|          | `>` `>=` |                           |
-|          |`=~` `!~` |                           |
-|     5    |  `not`   | Unary logical expression  |
-|     6    |  `and`   |        Logical AND        |
-|     7    |  `or`    |        Logical OR         |
+|Precedence| Operator       |        Description        |
+|----------|----------------|---------------------------|
+|     1    |  `a()`         |       Function call       |
+|          |  `a[]`         |  Member or index access   |
+|          |   `.`          |       Member access       |
+|     2    | `*` `/`        |Multiplication and division|
+|     3    | `+` `-`        | Addition and subtraction  |
+|     4    |`==` `!=`       |   Comparison operators    |
+|          | `<` `<=`       |                           |
+|          | `>` `>=`       |                           |
+|          |`=~` `!~`       |                           |
+|     5    |  `not`         | Unary logical expression  |
+|     6    |  `and`         |        Logical AND        |
+|     7    |  `or`          |        Logical OR         |
+|     8    | `if/then/else` |        Conditional        |
 
 The operator precedence is encoded directly into the grammar as the following.
 
-    Expression               = LogicalExpression .
+    Expression               = ConditionalExpression .
+    ConditionalExpression    = LogicalExpression
+                             | "if" Expression "then" Expression "else" Expression .
     LogicalExpression        = UnaryLogicalExpression
                              | LogicalExpression LogicalOperator UnaryLogicalExpression .
     LogicalOperator          = "and" | "or" .
