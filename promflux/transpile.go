@@ -246,7 +246,7 @@ var aggregateFns = map[promql.ItemType]aggregateFn{
 
 func dropNonGroupingColsCall(groupCols []string, without bool) *ast.CallExpression {
 	if without {
-		cols := make([]string, len(groupCols)-1)
+		cols := make([]string, 0, len(groupCols))
 		// Remove "_value" from list of columns to drop.
 		for _, col := range groupCols {
 			if col != "_value" { // TODO: also _start, _stop?
@@ -255,7 +255,7 @@ func dropNonGroupingColsCall(groupCols []string, without bool) *ast.CallExpressi
 		}
 
 		// TODO: This errors with non-existent columns. In PromQL, this is a no-op.
-		return call("drop", map[string]ast.Expression{"columns": columnList(groupCols...)})
+		return call("drop", map[string]ast.Expression{"columns": columnList(cols...)})
 	}
 
 	// We want to keep value and time columns even if they are not explicitly in the grouping labels.
@@ -436,9 +436,11 @@ var arithBinOps = map[promql.ItemType]ast.OperatorKind{
 	promql.ItemSUB: ast.SubtractionOperator,
 	promql.ItemMUL: ast.MultiplicationOperator,
 	promql.ItemDIV: ast.DivisionOperator,
-	// TODO: Doesn't exist yet.
-	// promql.ItemPOW: ast.PowerOperator,
-	//promql.ItemMOD: ast.ModuloOperator,
+}
+
+var arithBinOpFns = map[promql.ItemType]string{
+	promql.ItemPOW: "pow",
+	promql.ItemMOD: "mod",
 }
 
 var compBinOps = map[promql.ItemType]ast.OperatorKind{
@@ -514,6 +516,66 @@ func scalarArithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped 
 	}
 }
 
+// Function to apply a math function to all values in a table and a given float64 operand.
+func scalarArithBinaryMathFn(mathFn string, operand ast.Expression, swapped bool) *ast.FunctionExpression {
+	val := &ast.MemberExpression{
+		Object: &ast.Identifier{
+			Name: "r",
+		},
+		Property: &ast.Identifier{
+			Name: "_value",
+		},
+	}
+
+	var lhs, rhs ast.Expression = val, operand
+
+	if swapped {
+		lhs, rhs = rhs, lhs
+	}
+
+	// TODO: This sets _time, what about _stop and _start?
+	// (r) => {"_value": <lhs> <op> <rhs>, "_stop": r._stop, "_time": r._stop}
+	return &ast.FunctionExpression{
+		Params: []*ast.Property{
+			{
+				Key: &ast.Identifier{
+					Name: "r",
+				},
+			},
+		},
+		Body: &ast.ObjectExpression{
+			Properties: []*ast.Property{
+				{
+					Key:   &ast.Identifier{Name: "_value"},
+					Value: call(mathFn, map[string]ast.Expression{"x": lhs, "y": rhs}),
+				},
+				{
+					Key: &ast.Identifier{Name: "_stop"},
+					Value: &ast.MemberExpression{
+						Object: &ast.Identifier{
+							Name: "r",
+						},
+						Property: &ast.Identifier{
+							Name: "_stop",
+						},
+					},
+				},
+				{
+					Key: &ast.Identifier{Name: "_time"},
+					Value: &ast.MemberExpression{
+						Object: &ast.Identifier{
+							Name: "r",
+						},
+						Property: &ast.Identifier{
+							Name: "_stop",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 // Function to apply a comparison binary operator to all values in a table and a given float64 operand.
 func scalarCompBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped bool) *ast.FunctionExpression {
 	val := &ast.MemberExpression{
@@ -548,7 +610,7 @@ func scalarCompBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped b
 	}
 }
 
-// Function to apply a binary operator between values of two joined tables.
+// Function to apply a binary arithmetic operator between values of two joined tables.
 func vectorArithBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 	lhs := &ast.MemberExpression{
 		Object: &ast.Identifier{
@@ -567,7 +629,7 @@ func vectorArithBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 		},
 	}
 
-	// TODO: This sets _time, what about _stop and _start?
+	// TODO: What about _start?
 	// (r) => {"_value": <lhs> <op> <rhs>, "_stop": r._stop, "_time": r._stop}
 	return &ast.FunctionExpression{
 		Params: []*ast.Property{
@@ -614,6 +676,105 @@ func vectorArithBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 	}
 }
 
+// Function to apply a binary arithmetic operator math function between values of two joined tables.
+func vectorArithBinaryMathFn(mathFn string) *ast.FunctionExpression {
+	lhs := &ast.MemberExpression{
+		Object: &ast.Identifier{
+			Name: "r",
+		},
+		Property: &ast.Identifier{
+			Name: "_value_lhs",
+		},
+	}
+	rhs := &ast.MemberExpression{
+		Object: &ast.Identifier{
+			Name: "r",
+		},
+		Property: &ast.Identifier{
+			Name: "_value_rhs",
+		},
+	}
+
+	// TODO: What about _start?
+	// (r) => {"_value": <lhs> <op> <rhs>, "_stop": r._stop, "_time": r._stop}
+	return &ast.FunctionExpression{
+		Params: []*ast.Property{
+			{
+				Key: &ast.Identifier{
+					Name: "r",
+				},
+			},
+		},
+		Body: &ast.ObjectExpression{
+			Properties: []*ast.Property{
+				{
+					Key:   &ast.Identifier{Name: "_value"},
+					Value: call(mathFn, map[string]ast.Expression{"x": lhs, "y": rhs}),
+				},
+				{
+					Key: &ast.Identifier{Name: "_stop"},
+					Value: &ast.MemberExpression{
+						Object: &ast.Identifier{
+							Name: "r",
+						},
+						Property: &ast.Identifier{
+							Name: "_stop",
+						},
+					},
+				},
+				{
+					Key: &ast.Identifier{Name: "_time"},
+					Value: &ast.MemberExpression{
+						Object: &ast.Identifier{
+							Name: "r",
+						},
+						Property: &ast.Identifier{
+							Name: "_stop",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+// Function to apply a binary comparison operator between values of two joined tables.
+func vectorCompBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
+	lhs := &ast.MemberExpression{
+		Object: &ast.Identifier{
+			Name: "r",
+		},
+		Property: &ast.Identifier{
+			Name: "_value_lhs",
+		},
+	}
+	rhs := &ast.MemberExpression{
+		Object: &ast.Identifier{
+			Name: "r",
+		},
+		Property: &ast.Identifier{
+			Name: "_value_rhs",
+		},
+	}
+
+	// TODO: What about _start?
+	// (r) => {"_value": <lhs> <op> <rhs>, "_stop": r._stop, "_time": r._stop}
+	return &ast.FunctionExpression{
+		Params: []*ast.Property{
+			{
+				Key: &ast.Identifier{
+					Name: "r",
+				},
+			},
+		},
+		Body: &ast.BinaryExpression{
+			Operator: op,
+			Left:     lhs,
+			Right:    rhs,
+		},
+	}
+}
+
 func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, error) {
 	lhs, err := t.transpileExpr(b.LHS)
 	if err != nil {
@@ -636,7 +797,26 @@ func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 			}, nil
 		}
 
-		return nil, fmt.Errorf("non-arithmetic binary operations not supported yet")
+		if opFn, ok := arithBinOpFns[b.Op]; ok {
+			return call(opFn, map[string]ast.Expression{"x": lhs, "y": rhs}), nil
+		}
+
+		if op, ok := compBinOps[b.Op]; ok {
+			if !b.ReturnBool {
+				// This is already caught by the PromQL parser.
+				panic("scalar-to-scalar binary op is missing 'bool' modifier")
+			}
+
+			return call("float", map[string]ast.Expression{
+				"v": &ast.BinaryExpression{
+					Operator: op,
+					Left:     lhs,
+					Right:    rhs,
+				},
+			}), nil
+		}
+
+		panic(fmt.Errorf("invalid scalar-scalar binary op %q", b.Op))
 	case lt == promql.ValueTypeScalar && rt == promql.ValueTypeVector:
 		lhs, rhs = rhs, lhs
 		swapped = true
@@ -650,48 +830,114 @@ func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 			), nil
 		}
 
+		if opFn, ok := arithBinOpFns[b.Op]; ok {
+			return buildPipeline(
+				lhs,
+				call("map", map[string]ast.Expression{"fn": scalarArithBinaryMathFn(opFn, rhs, swapped)}),
+				dropMeasurementCall,
+			), nil
+		}
+
 		if op, ok := compBinOps[b.Op]; ok {
+			if b.ReturnBool {
+				return buildPipeline(
+					lhs,
+					// map(fn: (r) => ({_value: })
+					call("map", map[string]ast.Expression{
+						"fn": scalarArithBinaryOpFn(op, rhs, swapped),
+					}),
+					call("toFloat", nil),
+					dropMeasurementCall,
+				), nil
+			}
 			return buildPipeline(
 				lhs,
 				call("filter", map[string]ast.Expression{"fn": scalarCompBinaryOpFn(op, rhs, swapped)}),
 			), nil
 		}
 
-		return nil, fmt.Errorf("non-arithmetic binary operations not supported yet")
+		panic(fmt.Errorf("invalid scalar-vector binary op %q", b.Op))
 	default:
 		// if b.VectorMatching.Card != promql.CardOneToOne {
 		// 	return nil, fmt.Errorf("non-one-to-one vector matching not supported yet")
 		// }
-		if !b.VectorMatching.On || len(b.VectorMatching.MatchingLabels) == 0 {
-			return nil, fmt.Errorf("vector-to-vector binary expressions without on() clause not supported yet")
-		}
+		// if !b.VectorMatching.On || len(b.VectorMatching.MatchingLabels) == 0 {
+		// 	return nil, fmt.Errorf("vector-to-vector binary expressions without on() clause not supported yet")
+		// }
 
 		onCols := append(b.VectorMatching.MatchingLabels, "_start", "_stop")
+		joinCall := call("join", map[string]ast.Expression{
+			"tables": &ast.ObjectExpression{
+				Properties: []*ast.Property{
+					{
+						Key:   &ast.Identifier{Name: "lhs"},
+						Value: lhs,
+					},
+					{
+						Key:   &ast.Identifier{Name: "rhs"},
+						Value: rhs,
+					},
+				},
+			},
+			"on": columnList(onCols...),
+		})
+
 		if op, ok := arithBinOps[b.Op]; ok {
 			return buildPipeline(
-				call("join", map[string]ast.Expression{
-					"tables": &ast.ObjectExpression{
-						Properties: []*ast.Property{
-							{
-								Key:   &ast.Identifier{Name: "lhs"},
-								Value: lhs,
-							},
-							{
-								Key:   &ast.Identifier{Name: "rhs"},
-								Value: rhs,
-							},
-						},
-					},
-					"on": columnList(onCols...),
-				}),
+				joinCall,
 				call("map", map[string]ast.Expression{"fn": vectorArithBinaryOpFn(op)}),
+				// TODO: Currently this is needed due to a PromQL bug: https://github.com/prometheus/prometheus/issues/5326
+				// Instead, it should return LHS labels + extra RHS labels from grouping clause.
 				call("keep", map[string]ast.Expression{
 					"columns": columnList(append(append(onCols, "_value"), b.VectorMatching.Include...)...),
 				}),
 				dropMeasurementCall,
 			), nil
 		}
-		return nil, fmt.Errorf("vector binary operations not supported yet")
+
+		if opFn, ok := arithBinOpFns[b.Op]; ok {
+			return buildPipeline(
+				joinCall,
+				call("map", map[string]ast.Expression{"fn": vectorArithBinaryMathFn(opFn)}),
+				// TODO: Currently this is needed due to a PromQL bug: https://github.com/prometheus/prometheus/issues/5326
+				// Instead, it should return LHS labels + extra RHS labels from grouping clause.
+				call("keep", map[string]ast.Expression{
+					"columns": columnList(append(append(onCols, "_value"), b.VectorMatching.Include...)...),
+				}),
+				dropMeasurementCall,
+			), nil
+		}
+
+		if op, ok := compBinOps[b.Op]; ok {
+			if b.ReturnBool {
+				return buildPipeline(
+					joinCall,
+					call("map", map[string]ast.Expression{"fn": vectorArithBinaryOpFn(op)}),
+					call("toFloat", nil),
+					// TODO: Currently this is needed due to a PromQL bug: https://github.com/prometheus/prometheus/issues/5326
+					// Instead, it should return LHS labels + extra RHS labels from grouping clause.
+					call("keep", map[string]ast.Expression{
+						"columns": columnList(append(append(onCols, "_value"), b.VectorMatching.Include...)...),
+					}),
+				), nil
+			}
+
+			return buildPipeline(
+				joinCall,
+				call("filter", map[string]ast.Expression{"fn": vectorCompBinaryOpFn(op)}),
+				call("duplicate", map[string]ast.Expression{
+					"column": &ast.StringLiteral{Value: "_value_lhs"},
+					"as":     &ast.StringLiteral{Value: "_value"},
+				}),
+				// TODO: Currently this is needed due to a PromQL bug: https://github.com/prometheus/prometheus/issues/5326
+				// Instead, it should return LHS labels + extra RHS labels from grouping clause.
+				call("keep", map[string]ast.Expression{
+					"columns": columnList(append(append(onCols, "_value"), b.VectorMatching.Include...)...),
+				}),
+			), nil
+		}
+
+		return nil, fmt.Errorf("vector set operations not supported yet")
 	}
 }
 
@@ -825,12 +1071,8 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			//call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start, t.end.Add(-5*time.Minute))}),
 			filterWindowsWithZeroValueCall,
 			dropMeasurementCall,
-			// Strictly we wouldn't need to drop "_time" and duplicate it from "_stop" for
-			// *all* Flux functions, only "max"/"min" on the Flux side. But this keeps
-			// the code simpler by always doing it.
-			call("drop", map[string]ast.Expression{"columns": &ast.ArrayExpression{
-				Elements: []ast.Expression{&ast.StringLiteral{Value: "_time"}},
-			}}),
+			// Strictly we wouldn't need copy "_stop" to "_time" for *all* Flux functions, only "max"/"min" on
+			// the Flux side. But this keeps the code simpler by always doing it.
 			call("duplicate", map[string]ast.Expression{
 				"column": &ast.StringLiteral{Value: "_stop"},
 				"as":     &ast.StringLiteral{Value: "_time"},
@@ -848,9 +1090,6 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			v,
 			call("map", map[string]ast.Expression{"fn": vectorMathFn(fn)}),
 			dropMeasurementCall,
-			call("drop", map[string]ast.Expression{"columns": &ast.ArrayExpression{
-				Elements: []ast.Expression{&ast.StringLiteral{Value: "_time"}},
-			}}),
 			call("duplicate", map[string]ast.Expression{
 				"column": &ast.StringLiteral{Value: "_stop"},
 				"as":     &ast.StringLiteral{Value: "_time"},
@@ -891,9 +1130,6 @@ func (t *transpiler) transpileUnaryExpr(ue *promql.UnaryExpr) (ast.Expression, e
 				"fn": scalarArithBinaryOpFn(ast.MultiplicationOperator, &ast.FloatLiteral{Value: -1}, false)},
 			),
 			dropMeasurementCall,
-			call("drop", map[string]ast.Expression{"columns": &ast.ArrayExpression{
-				Elements: []ast.Expression{&ast.StringLiteral{Value: "_time"}},
-			}}),
 			call("duplicate", map[string]ast.Expression{
 				"column": &ast.StringLiteral{Value: "_stop"},
 				"as":     &ast.StringLiteral{Value: "_time"},
@@ -912,8 +1148,9 @@ func (t *transpiler) transpileExpr(node promql.Node) (ast.Expression, error) {
 	case *promql.UnaryExpr:
 		return t.transpileUnaryExpr(n)
 	case *promql.NumberLiteral:
-		// TODO: Do we need to keep the scalar timestamp?
 		return &ast.FloatLiteral{Value: n.Val}, nil
+	case *promql.StringLiteral:
+		return &ast.StringLiteral{Value: n.Val}, nil
 	case *promql.VectorSelector:
 		return t.transpileInstantVectorSelector(n), nil
 	case *promql.MatrixSelector:
@@ -941,9 +1178,6 @@ func (t *transpiler) transpile(node promql.Node) (*ast.File, error) {
 				Expression: buildPipeline(
 					fluxNode,
 					// The resolution step evaluation timestamp needs to become the output timestamp.
-					call("drop", map[string]ast.Expression{"columns": &ast.ArrayExpression{
-						Elements: []ast.Expression{&ast.StringLiteral{Value: "_time"}},
-					}}),
 					call("duplicate", map[string]ast.Expression{
 						"column": &ast.StringLiteral{Value: "_stop"},
 						"as":     &ast.StringLiteral{Value: "_time"},

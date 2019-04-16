@@ -39,9 +39,9 @@ var testVariantArgs = map[string][]string{
 		// "1.5",
 	},
 	// TODO: "%" and "^" not supported yet by Flux.
-	"arithBinop":     []string{"+", "-", "*", "/" /*, "%", "^" */},
-	"compBinop":      []string{"==", "!=", "<", ">", "<=", ">="},
-	"binop":          []string{"+", "-", "*", "/" /*, "%", "^" */, "==", "!=", "<", ">", "<=", ">="},
+	"arithBinOp":     []string{"+", "-", "*", "/", "%", "^"},
+	"compBinOp":      []string{"==", "!=", "<", ">", "<=", ">="},
+	"binOp":          []string{"+", "-", "*", "/", "%", "^", "==", "!=", "<", ">", "<=", ">="},
 	"simpleMathFunc": []string{"abs", "ceil", "floor", "exp", "sqrt", "ln", "log2", "log10"},
 }
 
@@ -49,6 +49,9 @@ var queries = []struct {
 	query       string
 	variantArgs []string
 }{
+	{
+		query: `demo_cpu_usage_seconds_total / demo_cpu_usage_seconds_total`,
+	},
 	{
 		query: `demo_cpu_usage_seconds_total`,
 	},
@@ -88,6 +91,10 @@ var queries = []struct {
 		variantArgs: []string{"simpleAggrOp"},
 	},
 	{
+		query:       `{{.simpleAggrOp}} by() (demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"simpleAggrOp"},
+	},
+	{
 		query:       `{{.simpleAggrOp}} by(instance) (demo_cpu_usage_seconds_total)`,
 		variantArgs: []string{"simpleAggrOp"},
 	},
@@ -101,6 +108,15 @@ var queries = []struct {
 	// 	query:       `{{.simpleAggrOp}} by(nonexistent) (demo_cpu_usage_seconds_total)`,
 	// 	variantArgs: []string{"simpleAggrOp"},
 	// },
+	{
+		query:       `{{.simpleAggrOp}} without() (demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"simpleAggrOp"},
+	},
+	// TODO: Need to handle & test external injections of special column names more systematically.
+	{
+		query:       `{{.simpleAggrOp}} without(_value) (demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"simpleAggrOp"},
+	},
 	{
 		query:       `{{.simpleAggrOp}} without(instance) (demo_cpu_usage_seconds_total)`,
 		variantArgs: []string{"simpleAggrOp"},
@@ -137,6 +153,10 @@ var queries = []struct {
 	//  variantArgs: []string{""},
 	// },
 	{
+		query:       `demo_num_cpus + (1 {{.compBinOp}} bool 2)`,
+		variantArgs: []string{"compBinOp"},
+	},
+	{
 		query: `-demo_cpu_usage_seconds_total`,
 	},
 	{
@@ -144,11 +164,19 @@ var queries = []struct {
 		variantArgs: []string{"binOp"},
 	},
 	{
+		query:       `demo_cpu_usage_seconds_total {{.compBinOp}} bool 1.2345`,
+		variantArgs: []string{"compBinOp"},
+	},
+	{
+		query:       `1.2345 {{.compBinOp}} bool demo_cpu_usage_seconds_total`,
+		variantArgs: []string{"compBinOp"},
+	},
+	{
 		query:       `0.12345 {{.binOp}} demo_cpu_usage_seconds_total`,
 		variantArgs: []string{"binOp"},
 	},
 	{
-		query:       `(1 * 2 + 4 / 6 - 10) {{.binOp}} demo_cpu_usage_seconds_total`,
+		query:       `(1 * 2 + 4 / 6 - (10%7)^2) {{.binOp}} demo_cpu_usage_seconds_total`,
 		variantArgs: []string{"binOp"},
 	},
 	{
@@ -156,8 +184,28 @@ var queries = []struct {
 		variantArgs: []string{"binOp"},
 	},
 
+	// TODO: https://github.com/influxdata/flux/issues/1040
+	// {
+	// 	query: `demo_num_cpus * Inf`,
+	// },
+	// {
+	// 	query: `demo_num_cpus * -Inf`,
+	// },
+	// {
+	// 	query: `demo_num_cpus * NaN`,
+	// },
+
 	{
-		query: `demo_cpu_usage_seconds_total / on(instance, job, mode) demo_cpu_usage_seconds_total`,
+		query:       `demo_cpu_usage_seconds_total {{.binOp}} on(instance, job, mode) demo_cpu_usage_seconds_total`,
+		variantArgs: []string{"binOp"},
+	},
+	{
+		query:       `sum by(instance, mode) (demo_cpu_usage_seconds_total) {{.binOp}} on(instance, mode) group_left(job) demo_cpu_usage_seconds_total`,
+		variantArgs: []string{"binOp"},
+	},
+	{
+		query:       `demo_cpu_usage_seconds_total {{.compBinOp}} bool on(instance, job, mode) demo_cpu_usage_seconds_total`,
+		variantArgs: []string{"compBinOp"},
 	},
 	{
 		// Check that __name__ is always dropped, even if it's part of the matching labels.
@@ -195,6 +243,10 @@ var queries = []struct {
 	{
 		// Check that scalar-vector binops sets _time field to the window's _stop.
 		query: `timestamp(demo_cpu_usage_seconds_total * 1)`,
+	},
+	{
+		// Check that unary minus sets _time field to the window's _stop.
+		query: `timestamp(-demo_cpu_usage_seconds_total)`,
 	},
 	{
 		query:       `{{.simpleMathFunc}}(demo_cpu_usage_seconds_total)`,
@@ -320,7 +372,11 @@ func (r *e2eRunner) runQueryVariants(t *testing.T, query string, variantArgs []s
 			}
 		}
 
-		for _, variantVal := range testVariantArgs[vArg] {
+		vals := testVariantArgs[vArg]
+		if len(vals) == 0 {
+			t.Fatalf("Unknown variant arg %q", vArg)
+		}
+		for _, variantVal := range vals {
 			args[vArg] = variantVal
 			r.runQueryVariants(t, query, filteredVArgs, args)
 		}
