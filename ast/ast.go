@@ -1146,7 +1146,7 @@ func (l *RegexpLiteral) Copy() Node {
 	nl.BaseNode = l.BaseNode.Copy()
 
 	if l.Value != nil {
-		nl.Value = l.Value.Copy()
+		nl.Value = l.Value
 	}
 	return nl
 }
