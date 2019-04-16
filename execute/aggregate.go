@@ -21,7 +21,7 @@ type aggregateTransformation struct {
 
 type AggregateConfig struct {
 	plan.DefaultCost
-	Columns []string `json:"column"`
+	Columns []string `json:"columns"`
 }
 
 var DefaultAggregateConfig = AggregateConfig{
