@@ -908,8 +908,8 @@ func (e *ObjectExpression) Copy() Node {
 type ConditionalExpression struct {
 	BaseNode
 	Test       Expression `json:"test"`
-	Alternate  Expression `json:"alternate"`
 	Consequent Expression `json:"consequent"`
+	Alternate  Expression `json:"alternate"`
 }
 
 // Type is the abstract type

@@ -19,6 +19,9 @@ const (
 	OPTION
 	BUILTIN
 	TEST
+	IF
+	THEN
+	ELSE
 
 	// Identifiers and literals.
 	IDENT
@@ -80,6 +83,9 @@ var tokenStrings = []string{
 	"OPTION",
 	"BUILTIN",
 	"TEST",
+	"IF",
+	"THEN",
+	"ELSE",
 	"IDENT",
 	"INT",
 	"FLOAT",
