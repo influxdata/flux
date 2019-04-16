@@ -15,7 +15,7 @@ inspect = (case) => {
     dif = got |> diff(want: tc.want)
     return {
         fn:    tc.fn,
-        input: tc.input
+        input: tc.input,
         want:  tc.want |> yield(name: "want"),
         got:   got |> yield(name: "got"),
         diff:  dif |> yield(name: "diff"),

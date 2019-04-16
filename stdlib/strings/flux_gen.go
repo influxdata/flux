@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   21,
 				},
 				File:   "strings.flux",
-				Source: "package strings\n\n// Transformation functions\nbuiltin title\nbuiltin toUpper\nbuiltin toLower\nbuiltin trim\nbuiltin trimPrefix\nbuiltin trimSpace\nbuiltin trimSuffix\n\n// hack to simulate an imported strings package\nstrings = {\n  title:title\n  toUpper:toUpper\n  toLower:toLower\n  trim:trim\n  trimPrefix:trimPrefix\n  trimSpace:trimSpace\n  trimSuffix:trimSuffix\n}",
+				Source: "package strings\n\n// Transformation functions\nbuiltin title\nbuiltin toUpper\nbuiltin toLower\nbuiltin trim\nbuiltin trimPrefix\nbuiltin trimSpace\nbuiltin trimSuffix\n\n// hack to simulate an imported strings package\nstrings = {\n  title:title,\n  toUpper:toUpper,\n  toLower:toLower,\n  trim:trim,\n  trimPrefix:trimPrefix,\n  trimSpace:trimSpace,\n  trimSuffix:trimSuffix,\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -279,7 +279,7 @@ var pkgAST = &ast.Package{
 						Line:   21,
 					},
 					File:   "strings.flux",
-					Source: "strings = {\n  title:title\n  toUpper:toUpper\n  toLower:toLower\n  trim:trim\n  trimPrefix:trimPrefix\n  trimSpace:trimSpace\n  trimSuffix:trimSuffix\n}",
+					Source: "strings = {\n  title:title,\n  toUpper:toUpper,\n  toLower:toLower,\n  trim:trim,\n  trimPrefix:trimPrefix,\n  trimSpace:trimSpace,\n  trimSuffix:trimSuffix,\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   13,
@@ -313,7 +313,7 @@ var pkgAST = &ast.Package{
 							Line:   21,
 						},
 						File:   "strings.flux",
-						Source: "{\n  title:title\n  toUpper:toUpper\n  toLower:toLower\n  trim:trim\n  trimPrefix:trimPrefix\n  trimSpace:trimSpace\n  trimSuffix:trimSuffix\n}",
+						Source: "{\n  title:title,\n  toUpper:toUpper,\n  toLower:toLower,\n  trim:trim,\n  trimPrefix:trimPrefix,\n  trimSpace:trimSpace,\n  trimSuffix:trimSuffix,\n}",
 						Start: ast.Position{
 							Column: 11,
 							Line:   13,
