@@ -298,7 +298,7 @@ func TestJSONMarshal(t *testing.T) {
 				Alternate:  &ast.StringLiteral{Value: "false"},
 				Consequent: &ast.StringLiteral{Value: "true"},
 			},
-			want: `{"type":"ConditionalExpression","test":{"type":"BooleanLiteral","value":true},"alternate":{"type":"StringLiteral","value":"false"},"consequent":{"type":"StringLiteral","value":"true"}}`,
+			want: `{"type":"ConditionalExpression","test":{"type":"BooleanLiteral","value":true},"consequent":{"type":"StringLiteral","value":"true"},"alternate":{"type":"StringLiteral","value":"false"}}`,
 		},
 		{
 			name: "property",
