@@ -170,7 +170,7 @@ func (p *parser) parseStatement() ast.Statement {
 	case token.INT, token.FLOAT, token.STRING, token.DIV,
 		token.TIME, token.DURATION, token.PIPE_RECEIVE,
 		token.LPAREN, token.LBRACK, token.LBRACE,
-		token.ADD, token.SUB, token.NOT:
+		token.ADD, token.SUB, token.NOT, token.IF:
 		return p.parseExpressionStatement()
 	default:
 		p.consume()
@@ -334,7 +334,7 @@ func (p *parser) parseBlock() *ast.Block {
 }
 
 func (p *parser) parseExpression() ast.Expression {
-	return p.parseLogicalOrExpression()
+	return p.parseConditionalExpression()
 }
 
 func (p *parser) parseExpressionSuffix(expr ast.Expression) ast.Expression {
@@ -368,6 +368,26 @@ func (p *parser) parseExpressionList() []ast.Expression {
 		}
 	}
 	return exprs
+}
+
+func (p *parser) parseConditionalExpression() ast.Expression {
+	if ifPos, tok, _ := p.peek(); tok == token.IF {
+		p.consume()
+		test := p.parseExpression()
+		p.expect(token.THEN)
+		consequent := p.parseExpression()
+		p.expect(token.ELSE)
+		alternate := p.parseExpression()
+		return &ast.ConditionalExpression{
+			BaseNode: p.baseNode(p.sourceLocation(
+				p.s.File().Position(ifPos),
+				locEnd(alternate))),
+			Test:       test,
+			Consequent: consequent,
+			Alternate:  alternate,
+		}
+	}
+	return p.parseLogicalOrExpression()
 }
 
 func (p *parser) parseLogicalAndExpression() ast.Expression {
