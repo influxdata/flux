@@ -731,9 +731,9 @@ It is not possible to access an object's property using an arbitrary expression.
 
 #### Conditional Expressions
 
-Conditional expressions evaluate a boolean-valued condition and if the result it _true_,
+Conditional expressions evaluate a boolean-valued condition and if the result is _true_,
 the expression following the `then` keyword is evaluated and returned.
-Otherwise the condition evaluates to _null_ or _false_,
+Otherwise the condition evaluates to _false_,
 and the expression following the `else` keyword is evaluated and returned.
 
     ConditionalExpression   = "if" Expression "then" Expression "else" Expression .
