@@ -5,6 +5,7 @@ jobs:
       - image: nathanielc/flux-build:latest
     environment:
       GOCACHE: /tmp/go-cache
+      GOFLAGS: -p=8
       GOPATH: /tmp/go
       GO111MODULE: 'on' # must be quoted to force string type instead of boolean type
     steps:
@@ -47,6 +48,7 @@ jobs:
       - image: nathanielc/flux-build:latest
     environment:
       GOPATH: /tmp/go
+      GOFLAGS: -p=8
       GO111MODULE: 'on' # must be quoted to force string type instead of boolean type
     steps:
       - checkout
