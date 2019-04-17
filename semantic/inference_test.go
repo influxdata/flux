@@ -1606,6 +1606,71 @@ foo.b
 				},
 			},
 		},
+		{
+			name:   "conditional expression",
+			script: `if true then 3 else 30`,
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					switch node.(type) {
+					case *semantic.ConditionalExpression:
+						return semantic.Int
+					case *semantic.IdentifierExpression:
+						return semantic.Bool
+					}
+					return nil
+				},
+			},
+		},
+		{
+			name:   "conditional infer branches",
+			script: `(t, c, a) => if t then c else a`,
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					// Type inference is able to deduce that the branches of the conditional
+					// must have the same type, so parameters c and a must also have the same type.
+					tv := semantic.Tvar(5)
+					switch n := node.(type) {
+					case *semantic.FunctionExpression:
+						return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+							Parameters: map[string]semantic.PolyType{
+								"t": semantic.Bool,
+								"c": tv,
+								"a": tv,
+							},
+							Required: semantic.LabelSet{"t", "c", "a"},
+							Return:   tv,
+						})
+					case *semantic.FunctionBlock:
+						return tv
+					case *semantic.FunctionParameter:
+						if n.Key.Name == "t" {
+							return semantic.Bool
+						} else {
+							return tv
+						}
+					case *semantic.ConditionalExpression:
+						return tv
+					case *semantic.IdentifierExpression:
+						if n.Name == "t" {
+							return semantic.Bool
+						} else {
+							return tv
+						}
+					}
+					return nil
+				},
+			},
+		},
+		{
+			name:    "conditional branches must agree",
+			script:  `if true then 0 else "foo"`,
+			wantErr: errors.New(`type error 1:1-1:26: int != string`),
+		},
+		{
+			name:    "conditional test must be bool",
+			script:  `if 1 then 0.1 else 0.0`,
+			wantErr: errors.New(`type error 1:4-1:5: int != bool`),
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
