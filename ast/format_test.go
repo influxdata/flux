@@ -15,8 +15,9 @@ var skip = map[string]string{
 }
 
 type formatTestCase struct {
-	name   string
-	script string
+	name       string
+	script     string
+	shouldFail bool
 }
 
 // formatTestHelper tests that a raw script has valid syntax and
@@ -41,7 +42,9 @@ func formatTestHelper(t *testing.T, testCases []formatTestCase) {
 			stringResult := ast.Format(pkg.Files[0])
 
 			if tc.script != stringResult {
-				t.Errorf("unexpected output: -want/+got:\n %s", cmp.Diff(tc.script, stringResult))
+				if !tc.shouldFail {
+					t.Errorf("unexpected output: -want/+got:\n %s", cmp.Diff(tc.script, stringResult))
+				}
 			}
 		})
 	}
@@ -324,6 +327,46 @@ func TestFormat_Associativity(t *testing.T) {
 		{
 			name:   "math with pars",
 			script: `(a * b + c / d - e) * f`,
+		},
+		{
+			name:   "minus before parens",
+			script: `r._value - (1 * 2 + 4 / 6 - 10)`,
+		},
+		{
+			name:       "plus with unintended parens 1",
+			script:     `(1 + 2) + 3`,
+			shouldFail: true,
+		},
+		{
+			name:       "plus with unintended parens 2",
+			script:     `1 + (2 + 3)`,
+			shouldFail: true,
+		},
+		{
+			name:       "minus with unintended parens",
+			script:     `(1 - 2) - 3`,
+			shouldFail: true,
+		},
+		{
+			name:   "minus with intended parens",
+			script: `1 - (2 - 3)`,
+		},
+		{
+			name:   "minus no parens",
+			script: `1 - 2 - 3`,
+		},
+		{
+			name:   "div with parens",
+			script: `1 / (2 * 3)`,
+		},
+		{
+			name:   "div no parens",
+			script: `1 / 2 * 3`,
+		},
+		{
+			name:       "div with unintended parens",
+			script:     `(1 / 2) * 3`,
+			shouldFail: true,
 		},
 		{
 			name:   "math with more pars",

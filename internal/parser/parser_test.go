@@ -2097,6 +2097,134 @@ a = 5.0
 			},
 		},
 		{
+			name: "binary operator precedence - double subtraction",
+			raw:  `1 - 2 - 3`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:10"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:10"),
+						Expression: &ast.BinaryExpression{
+							BaseNode: base("1:1", "1:10"),
+							Operator: ast.SubtractionOperator,
+							Left: &ast.BinaryExpression{
+								BaseNode: base("1:1", "1:6"),
+								Operator: ast.SubtractionOperator,
+								Left: &ast.IntegerLiteral{
+									BaseNode: base("1:1", "1:2"),
+									Value:    1,
+								},
+								Right: &ast.IntegerLiteral{
+									BaseNode: base("1:5", "1:6"),
+									Value:    2,
+								},
+							},
+							Right: &ast.IntegerLiteral{
+								BaseNode: base("1:9", "1:10"),
+								Value:    3,
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "binary operator precedence - double subtraction with parens",
+			raw:  `1 - (2 - 3)`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:11"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:11"),
+						Expression: &ast.BinaryExpression{
+							BaseNode: base("1:1", "1:11"),
+							Operator: ast.SubtractionOperator,
+							Left: &ast.IntegerLiteral{
+								BaseNode: base("1:1", "1:2"),
+								Value:    1,
+							},
+							Right: &ast.BinaryExpression{
+								BaseNode: base("1:6", "1:11"),
+								Operator: ast.SubtractionOperator,
+								Left: &ast.IntegerLiteral{
+									BaseNode: base("1:6", "1:7"),
+									Value:    2,
+								},
+								Right: &ast.IntegerLiteral{
+									BaseNode: base("1:10", "1:11"),
+									Value:    3,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "binary operator precedence - double sum",
+			raw:  `1 + 2 + 3`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:10"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:10"),
+						Expression: &ast.BinaryExpression{
+							BaseNode: base("1:1", "1:10"),
+							Operator: ast.AdditionOperator,
+							Left: &ast.BinaryExpression{
+								BaseNode: base("1:1", "1:6"),
+								Operator: ast.AdditionOperator,
+								Left: &ast.IntegerLiteral{
+									BaseNode: base("1:1", "1:2"),
+									Value:    1,
+								},
+								Right: &ast.IntegerLiteral{
+									BaseNode: base("1:5", "1:6"),
+									Value:    2,
+								},
+							},
+							Right: &ast.IntegerLiteral{
+								BaseNode: base("1:9", "1:10"),
+								Value:    3,
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "binary operator precedence - double sum with parens",
+			raw:  `1 + (2 + 3)`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:11"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:11"),
+						Expression: &ast.BinaryExpression{
+							BaseNode: base("1:1", "1:11"),
+							Operator: ast.AdditionOperator,
+							Left: &ast.IntegerLiteral{
+								BaseNode: base("1:1", "1:2"),
+								Value:    1,
+							},
+							Right: &ast.BinaryExpression{
+								BaseNode: base("1:6", "1:11"),
+								Operator: ast.AdditionOperator,
+								Left: &ast.IntegerLiteral{
+									BaseNode: base("1:6", "1:7"),
+									Value:    2,
+								},
+								Right: &ast.IntegerLiteral{
+									BaseNode: base("1:10", "1:11"),
+									Value:    3,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "logical unary operator precedence",
 			raw:  `not -1 == a`,
 			want: &ast.File{
