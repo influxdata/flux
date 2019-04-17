@@ -122,7 +122,32 @@ var opPrecedence = map[int]int{
 	getIntForLOp(OrOperator):  7,
 }
 
+// formatChildWithParens applies the generic rule for parenthesis (not for binary expressions).
 func (f *formatter) formatChildWithParens(parent, child Node) {
+	f.formatLeftChildWithParens(parent, child)
+}
+
+// formatLeftChildWithParens applies the generic rule for parenthesis to the left child of a binary expression.
+func (f *formatter) formatLeftChildWithParens(parent, child Node) {
+	pvp, pvc := getPrecedences(parent, child)
+	if needsParenthesis(pvp, pvc, false) {
+		f.formatNodeWithParens(child)
+	} else {
+		f.formatNode(child)
+	}
+}
+
+// formatRightChildWithParens applies the generic rule for parenthesis to the right child of a binary expression.
+func (f *formatter) formatRightChildWithParens(parent, child Node) {
+	pvp, pvc := getPrecedences(parent, child)
+	if needsParenthesis(pvp, pvc, true) {
+		f.formatNodeWithParens(child)
+	} else {
+		f.formatNode(child)
+	}
+}
+
+func getPrecedences(parent, child Node) (int, int) {
 	var pvp, pvc int
 	switch parent := parent.(type) {
 	case *BinaryExpression:
@@ -154,18 +179,37 @@ func (f *formatter) formatChildWithParens(parent, child Node) {
 		pvc = getPrecedence(index)
 	}
 
-	// If one of parent or child has not matched any case, then we shouldn't apply any parenthesis.
+	return pvp, pvc
+}
+
+// About parenthesis:
+// We need parenthesis if a child node has lower precedence (bigger value) than its parent node.
+// The same stands for the left child of a binary expression; while, for the right child, we need parenthesis if its
+// precedence is lower or equal then its parent's.
+//
+// To explain parenthesis logic, we must to understand how the parser generates the AST.
+// (A) - The parser always puts lower precedence operators at the root of the AST.
+// (B) - When there are multiple operators with the same precedence, the right-most expression is at root.
+// (C) - When there are parenthesis, instead, the parser recursively generates a AST for the expression contained
+// in the parenthesis, and makes it the right child.
+// So, when formatting:
+//  - if we encounter a child with lower precedence on the left, this means it requires parenthesis, because, for sure,
+//    the parser detected parenthesis to break (A);
+//  - if we encounter a child with higher or equal precedence on the left, it doesn't need parenthesis, because
+//    that was the natural parsing order of elements (see (B));
+//  - if we encounter a child with lower or equal precedence on the right, it requires parenthesis, otherwise, it
+//    would have been at root (see (C)).
+func needsParenthesis(pvp, pvc int, isRight bool) bool {
+	// If one of the precedence values is invalid, then we shouldn't apply any parenthesis.
 	par := !(pvc == 0 || pvp == 0)
-	// Need a parenthesis if parent and child have matched, and if the child node
-	// has lower precedence (bigger value) then the current node.
-	par = par && pvc > pvp
-	if par {
-		f.writeRune('(')
-	}
-	f.formatNode(child)
-	if par {
-		f.writeRune(')')
-	}
+	par = par && ((!isRight && pvc > pvp) || (isRight && pvc >= pvp))
+	return par
+}
+
+func (f *formatter) formatNodeWithParens(node Node) {
+	f.writeRune('(')
+	f.formatNode(node)
+	f.writeRune(')')
 }
 
 func (f *formatter) formatPackage(n *Package) {
@@ -375,11 +419,11 @@ func (f *formatter) formatLogicalExpression(n *LogicalExpression) {
 }
 
 func (f *formatter) formatBinary(op string, parent, left, right Node) {
-	f.formatChildWithParens(parent, left)
+	f.formatLeftChildWithParens(parent, left)
 	f.writeRune(' ')
 	f.writeString(op)
 	f.writeRune(' ')
-	f.formatChildWithParens(parent, right)
+	f.formatRightChildWithParens(parent, right)
 }
 
 func (f *formatter) formatCallExpression(n *CallExpression) {
