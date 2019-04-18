@@ -652,6 +652,108 @@ func (e *logicalEvaluator) EvalFunction(scope Scope) (values.Function, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Function))
 }
 
+type conditionalEvaluator struct {
+	t          semantic.Type
+	test       Evaluator
+	consequent Evaluator
+	alternate  Evaluator
+}
+
+func (e *conditionalEvaluator) Type() semantic.Type {
+	return e.t
+}
+
+func (e *conditionalEvaluator) eval(scope Scope) (values.Value, error) {
+	t, err := eval(e.test, scope)
+	if err != nil {
+		return nil, err
+	}
+
+	if t.Bool() {
+		return eval(e.consequent, scope)
+	} else {
+		return eval(e.alternate, scope)
+	}
+}
+
+func (e *conditionalEvaluator) EvalString(scope Scope) (string, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return "", err
+	}
+	return v.Str(), nil
+}
+func (e *conditionalEvaluator) EvalInt(scope Scope) (int64, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return v.Int(), nil
+}
+func (e *conditionalEvaluator) EvalUInt(scope Scope) (uint64, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return v.UInt(), nil
+}
+func (e *conditionalEvaluator) EvalFloat(scope Scope) (float64, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return 0.0, err
+	}
+	return v.Float(), nil
+}
+func (e *conditionalEvaluator) EvalBool(scope Scope) (bool, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return false, err
+	}
+	return v.Bool(), nil
+}
+func (e *conditionalEvaluator) EvalTime(scope Scope) (values.Time, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return v.Time(), nil
+}
+func (e *conditionalEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return 0, err
+	}
+	return v.Duration(), nil
+}
+func (e *conditionalEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return v.Regexp(), nil
+}
+func (e *conditionalEvaluator) EvalArray(scope Scope) (values.Array, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return v.Array(), nil
+}
+func (e *conditionalEvaluator) EvalObject(scope Scope) (values.Object, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return v.Object(), nil
+}
+func (e *conditionalEvaluator) EvalFunction(scope Scope) (values.Function, error) {
+	v, err := e.eval(scope)
+	if err != nil {
+		return nil, err
+	}
+	return v.Function(), nil
+}
+
 type binaryEvaluator struct {
 	t           semantic.Type
 	left, right Evaluator
