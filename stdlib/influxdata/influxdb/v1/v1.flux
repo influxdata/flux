@@ -34,6 +34,7 @@ tagKeys = (bucket, predicate=(r) => true, start=-30d) =>
         |> filter(fn: predicate)
         |> keys()
         |> keep(columns: ["_value"])
+        |> distinct()
 
 // MeasurementTagKeys returns the list of tag keys for a specific measurement.
 measurementTagKeys = (bucket, measurement) =>
