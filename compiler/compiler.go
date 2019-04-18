@@ -253,6 +253,25 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, fun
 			left:     l,
 			right:    r,
 		}, nil
+	case *semantic.ConditionalExpression:
+		test, err := compile(n.Test, typeSol, builtIns, funcExprs)
+		if err != nil {
+			return nil, err
+		}
+		c, err := compile(n.Consequent, typeSol, builtIns, funcExprs)
+		if err != nil {
+			return nil, err
+		}
+		a, err := compile(n.Alternate, typeSol, builtIns, funcExprs)
+		if err != nil {
+			return nil, err
+		}
+		return &conditionalEvaluator{
+			t:          monoType(typeSol.TypeOf(n.Consequent)),
+			test:       test,
+			consequent: c,
+			alternate:  a,
+		}, nil
 	case *semantic.BinaryExpression:
 		l, err := compile(n.Left, typeSol, builtIns, funcExprs)
 		if err != nil {
