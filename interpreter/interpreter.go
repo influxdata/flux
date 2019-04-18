@@ -336,7 +336,7 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope Scope) (va
 			return nil, err
 		}
 		if r.Type() != semantic.Bool {
-			return nil, errors.New("right operand to logcial expression is not a boolean value")
+			return nil, errors.New("right operand to logical expression is not a boolean value")
 		}
 		right := r.Bool()
 
@@ -347,6 +347,19 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope Scope) (va
 			return values.NewBool(left || right), nil
 		default:
 			return nil, fmt.Errorf("invalid logical operator %v", e.Operator)
+		}
+	case *semantic.ConditionalExpression:
+		t, err := itrp.doExpression(e.Test, scope)
+		if err != nil {
+			return nil, err
+		}
+		if t.Type() != semantic.Bool {
+			return nil, errors.New("conditional test expression is not a boolean value")
+		}
+		if t.Bool() {
+			return itrp.doExpression(e.Consequent, scope)
+		} else {
+			return itrp.doExpression(e.Alternate, scope)
 		}
 	case *semantic.FunctionExpression:
 		// Capture type information
