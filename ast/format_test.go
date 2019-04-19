@@ -149,6 +149,14 @@ a[i]`,
 			script: `test mean = {want: 0, got: 0}`,
 		},
 		{
+			name:   "conditional",
+			script: "if a then b else c",
+		},
+		{
+			name:   "conditional with more complex expressions",
+			script: `if not a or b and c then 2 / (3 * 2) else obj.a(par: "foo")`,
+		},
+		{
 			name: "nil_value_as_default",
 			script: `foo = (arg=[]) =>
 	(1)`,
