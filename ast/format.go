@@ -458,10 +458,11 @@ func (f *formatter) formatPipeExpression(n *PipeExpression) {
 }
 
 func (f *formatter) formatConditionalExpression(n *ConditionalExpression) {
+	f.writeString("if ")
 	f.formatNode(n.Test)
-	f.writeString(" ? ")
+	f.writeString(" then ")
 	f.formatNode(n.Consequent)
-	f.writeString(" : ")
+	f.writeString(" else ")
 	f.formatNode(n.Alternate)
 }
 
