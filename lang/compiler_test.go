@@ -60,6 +60,18 @@ func TestFluxCompiler(t *testing.T) {
 	}
 }
 
+func TestCompilationError(t *testing.T) {
+	program, err := lang.Compile(`illegal query`, time.Unix(0, 0))
+	if err != nil {
+		// This shouldn't happen, has the script should be evaluated at program Start.
+		t.Fatal(err)
+	}
+	_, err = program.Start(context.Background(), &memory.Allocator{})
+	if err == nil {
+		t.Fatal("compilation error expected, got none")
+	}
+}
+
 func TestASTCompiler(t *testing.T) {
 	testcases := []struct {
 		name   string
