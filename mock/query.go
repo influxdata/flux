@@ -2,6 +2,7 @@ package mock
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/influxdata/flux"
 )
@@ -16,7 +17,9 @@ type Query struct {
 
 	resSet        bool
 	providedStats flux.Statistics
-	canceled      chan struct{}
+
+	canceledOnce sync.Once
+	Canceled     chan struct{}
 }
 
 func (q *Query) Results() <-chan flux.Result {
@@ -33,12 +36,10 @@ func (q *Query) Cancel() {
 	if q.CancelFn != nil {
 		q.CancelFn()
 	}
-	if q.canceled != nil {
-		select {
-		case <-q.canceled: // it has already been closed
-		default:
-			close(q.canceled)
-		}
+	if q.Canceled != nil {
+		q.canceledOnce.Do(func() {
+			close(q.Canceled)
+		})
 	}
 }
 
@@ -73,10 +74,10 @@ func (q *Query) ProduceResults(resultProvider func(results chan<- flux.Result, c
 
 	q.resSet = true
 	q.ResultsCh = make(chan flux.Result)
-	q.canceled = make(chan struct{})
+	q.Canceled = make(chan struct{})
 	go func() {
 		defer close(q.ResultsCh)
-		resultProvider(q.ResultsCh, q.canceled)
+		resultProvider(q.ResultsCh, q.Canceled)
 	}()
 }
 

@@ -24,6 +24,7 @@ func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Quer
 			q := &Query{
 				ResultsCh: results,
 				CancelFn:  cancel,
+				Canceled:  make(chan struct{}),
 			}
 			go func() {
 				defer close(results)

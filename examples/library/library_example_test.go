@@ -30,7 +30,10 @@ g.from(start: 1993-02-16T00:00:00Z, stop: 1993-02-16T00:03:00Z, count: 5, fn: (n
 		AST: astPkg,
 	}
 
-	querier := cmd.NewQuerier()
+	querier, err := cmd.NewQuerier()
+	if err != nil {
+		panic(err)
+	}
 
 	results, err := querier.Query(ctx, compiler)
 	if err != nil {
