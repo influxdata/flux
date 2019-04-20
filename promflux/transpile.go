@@ -1024,6 +1024,7 @@ var vectorMathFunctions = map[string]string{
 	"ln":    "math.log",
 	"log2":  "math.log2",
 	"log10": "math.log10",
+	"round": "math.round",
 }
 
 func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {

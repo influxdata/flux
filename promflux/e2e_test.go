@@ -42,7 +42,7 @@ var testVariantArgs = map[string][]string{
 	"arithBinOp":     []string{"+", "-", "*", "/", "%", "^"},
 	"compBinOp":      []string{"==", "!=", "<", ">", "<=", ">="},
 	"binOp":          []string{"+", "-", "*", "/", "%", "^", "==", "!=", "<", ">", "<=", ">="},
-	"simpleMathFunc": []string{"abs", "ceil", "floor", "exp", "sqrt", "ln", "log2", "log10"},
+	"simpleMathFunc": []string{"abs", "ceil", "floor", "exp", "sqrt", "ln", "log2", "log10", "round"},
 }
 
 var queries = []struct {
