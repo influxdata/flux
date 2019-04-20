@@ -8,6 +8,7 @@ import (
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/control"
 	"github.com/influxdata/flux/repl"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +18,10 @@ var replCmd = &cobra.Command{
 	Short: "Launch a Flux REPL",
 	Long:  "Launch a Flux REPL (Read-Eval-Print-Loop)",
 	Run: func(cmd *cobra.Command, args []string) {
-		q := NewQuerier()
+		q, err := NewQuerier()
+		if err != nil {
+			panic(err)
+		}
 		r := repl.New(q)
 		r.Run()
 	},
@@ -39,15 +43,18 @@ func (q *Querier) Query(ctx context.Context, c flux.Compiler) (flux.ResultIterat
 	return flux.NewResultIteratorFromQuery(qry), nil
 }
 
-func NewQuerier() *Querier {
+func NewQuerier() (*Querier, error) {
 	config := control.Config{
-		ConcurrencyQuota: 1,
-		MemoryBytesQuota: math.MaxInt64,
+		ConcurrencyQuota:         1,
+		MemoryBytesQuotaPerQuery: math.MaxInt64,
+		QueueSize:                1,
 	}
 
-	c := control.New(config)
-
+	c, err := control.New(config)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not create controller")
+	}
 	return &Querier{
 		c: c,
-	}
+	}, nil
 }

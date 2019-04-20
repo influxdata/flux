@@ -15,21 +15,28 @@ import (
 	"github.com/influxdata/flux/mock"
 )
 
-var mockCompiler *mock.Compiler
-
-func init() {
-	mockCompiler = new(mock.Compiler)
-	mockCompiler.CompileFn = func(ctx context.Context) (flux.Program, error) {
-		return &mock.Program{
-			ExecuteFn: func(ctx context.Context, q *mock.Query, alloc *memory.Allocator) {
-				q.ResultsCh <- &executetest.Result{}
-			},
-		}, nil
+var (
+	mockCompiler = &mock.Compiler{
+		CompileFn: func(ctx context.Context) (flux.Program, error) {
+			return &mock.Program{
+				ExecuteFn: func(ctx context.Context, q *mock.Query, alloc *memory.Allocator) {
+					q.ResultsCh <- &executetest.Result{}
+				},
+			}, nil
+		},
 	}
-}
+	config = control.Config{
+		ConcurrencyQuota:         1,
+		MemoryBytesQuotaPerQuery: 1024,
+		QueueSize:                1,
+	}
+)
 
 func TestController_QuerySuccess(t *testing.T) {
-	ctrl := control.New(control.Config{})
+	ctrl, err := control.New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer shutdown(t, ctrl)
 
 	q, err := ctrl.Query(context.Background(), mockCompiler)
@@ -62,7 +69,10 @@ func TestController_QuerySuccess(t *testing.T) {
 }
 
 func TestController_AfterShutdown(t *testing.T) {
-	ctrl := control.New(control.Config{})
+	ctrl, err := control.New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
 	shutdown(t, ctrl)
 
 	// No point in continuing. The shutdown didn't work
@@ -79,7 +89,10 @@ func TestController_AfterShutdown(t *testing.T) {
 }
 
 func TestController_CompileError(t *testing.T) {
-	ctrl := control.New(control.Config{})
+	ctrl, err := control.New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer shutdown(t, ctrl)
 
 	compiler := &mock.Compiler{
@@ -95,7 +108,10 @@ func TestController_CompileError(t *testing.T) {
 }
 
 func TestController_ExecuteError(t *testing.T) {
-	ctrl := control.New(control.Config{})
+	ctrl, err := control.New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer shutdown(t, ctrl)
 
 	compiler := &mock.Compiler{
@@ -132,7 +148,10 @@ func TestController_ExecuteError(t *testing.T) {
 }
 
 func TestController_ShutdownWithRunningQuery(t *testing.T) {
-	ctrl := control.New(control.Config{})
+	ctrl, err := control.New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer shutdown(t, ctrl)
 
 	executing := make(chan struct{})
@@ -175,7 +194,10 @@ func TestController_ShutdownWithRunningQuery(t *testing.T) {
 }
 
 func TestController_ShutdownWithTimeout(t *testing.T) {
-	ctrl := control.New(control.Config{})
+	ctrl, err := control.New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer shutdown(t, ctrl)
 
 	// This channel blocks program execution until we are done
@@ -220,6 +242,177 @@ func TestController_ShutdownWithTimeout(t *testing.T) {
 		t.Errorf("unexpected error -want/+got\n\t- %q\n\t+ %q", want, got)
 	}
 	cancel()
+}
+
+func TestController_PerQueryMemoryLimit(t *testing.T) {
+	ctrl, err := control.New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer shutdown(t, ctrl)
+
+	compiler := &mock.Compiler{
+		CompileFn: func(ctx context.Context) (flux.Program, error) {
+			return &mock.Program{
+				ExecuteFn: func(ctx context.Context, q *mock.Query, alloc *memory.Allocator) {
+					// This is emulating the behavior of exceeding the memory limit at runtime
+					if err := alloc.Allocate(int(config.MemoryBytesQuotaPerQuery + 1)); err != nil {
+						q.SetErr(err)
+					}
+				},
+			}, nil
+		},
+	}
+
+	q, err := ctrl.Query(context.Background(), compiler)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for range q.Results() {
+		// discard the results
+	}
+	q.Done()
+
+	if q.Err() == nil {
+		t.Fatal("expected error about memory limit exceeded")
+	}
+}
+
+func TestController_ConcurrencyQuota(t *testing.T) {
+	const (
+		numQueries       = 3
+		concurrencyQuota = 2
+	)
+
+	config := config
+	config.ConcurrencyQuota = concurrencyQuota
+	config.QueueSize = numQueries
+	ctrl, err := control.New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer shutdown(t, ctrl)
+
+	executing := make(chan struct{}, numQueries)
+	compiler := &mock.Compiler{
+		CompileFn: func(ctx context.Context) (flux.Program, error) {
+			return &mock.Program{
+				ExecuteFn: func(ctx context.Context, q *mock.Query, alloc *memory.Allocator) {
+					select {
+					case <-q.Canceled:
+					default:
+						executing <- struct{}{}
+						<-q.Canceled
+					}
+				},
+			}, nil
+		},
+	}
+
+	for i := 0; i < numQueries; i++ {
+		q, err := ctrl.Query(context.Background(), compiler)
+		if err != nil {
+			t.Fatal(err)
+		}
+		go func() {
+			for range q.Results() {
+				// discard the results
+			}
+			q.Done()
+		}()
+	}
+
+	// Give 2 queries a chance to begin executing.  The remaining third query should stay queued.
+	time.Sleep(250 * time.Millisecond)
+
+	if err := ctrl.Shutdown(context.Background()); err != nil {
+		t.Error(err)
+	}
+
+	// There is a chance that the remaining query managed to get executed after the executing queries
+	// were canceled.  As a result, this test is somewhat flaky.
+
+	close(executing)
+
+	var count int
+	for range executing {
+		count++
+	}
+
+	if count != concurrencyQuota {
+		t.Fatalf("expected exactly %v queries to execute, but got: %v", concurrencyQuota, count)
+	}
+}
+
+func TestController_QueueSize(t *testing.T) {
+	const (
+		concurrencyQuota = 2
+		queueSize        = 3
+	)
+
+	config := config
+	config.ConcurrencyQuota = concurrencyQuota
+	config.QueueSize = queueSize
+	ctrl, err := control.New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer shutdown(t, ctrl)
+
+	// This channel blocks program execution until we are done
+	// with running the test.
+	done := make(chan struct{})
+	defer close(done)
+
+	executing := make(chan struct{}, config.ConcurrencyQuota)
+	compiler := &mock.Compiler{
+		CompileFn: func(ctx context.Context) (flux.Program, error) {
+			return &mock.Program{
+				ExecuteFn: func(ctx context.Context, q *mock.Query, alloc *memory.Allocator) {
+					executing <- struct{}{}
+					// Block until test is finished
+					<-done
+				},
+			}, nil
+		},
+	}
+
+	// Start as many queries as can be running at the same time
+	for i := 0; i < concurrencyQuota; i++ {
+		q, err := ctrl.Query(context.Background(), compiler)
+		if err != nil {
+			t.Fatal(err)
+		}
+		go func() {
+			for range q.Results() {
+				// discard the results
+			}
+			q.Done()
+		}()
+
+		// Wait until it's executing
+		<-executing
+	}
+
+	// Now fill up the queue
+	for i := 0; i < queueSize; i++ {
+		q, err := ctrl.Query(context.Background(), compiler)
+		if err != nil {
+			t.Fatal(err)
+		}
+		go func() {
+			for range q.Results() {
+				// discard the results
+			}
+			q.Done()
+		}()
+	}
+
+	_, err = ctrl.Query(context.Background(), compiler)
+	if err == nil {
+		t.Fatal("expected an error about queue length exceeded")
+	}
 }
 
 func shutdown(t *testing.T, ctrl *control.Controller) {

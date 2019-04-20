@@ -28,12 +28,18 @@ func (q *Querier) Query(ctx context.Context, w io.Writer, c flux.Compiler, d flu
 
 func NewQuerier() *Querier {
 	config := control.Config{
-		ConcurrencyQuota: 1,
-		MemoryBytesQuota: math.MaxInt64,
+		ConcurrencyQuota:         1,
+		MemoryBytesQuotaPerQuery: math.MaxInt64,
+		QueueSize:                1,
+	}
+
+	ctrl, err := control.New(config)
+	if err != nil {
+		panic(err)
 	}
 
 	// Because this is for use in test, ensure that consumers properly clean up queries.
-	c := controltest.New(control.New(config))
+	c := controltest.New(ctrl)
 
 	return &Querier{
 		C: c,
