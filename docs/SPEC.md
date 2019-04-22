@@ -3208,6 +3208,18 @@ Remove leading and trailing spaces from a string.
 
 Example: `trimSpace(v: "  abc  ")` returns the string `abc`.
 
+##### trimPrefix
+
+Remove a prefix from a string. Strings that do not start with the prefix are returned unchanged.
+
+Example: `trimPrefix(v: "123_abc", prefix: "123")` returns the string `_abc`.
+
+##### trimSuffix
+
+Remove a suffix from a string. Strings that do not end with the suffix are returned unchanged.
+
+Example: `trimSuffix(v: "abc_123", suffix: "123")` returns the string `abc_`.
+
 ##### title
 
 Convert a string to title case.

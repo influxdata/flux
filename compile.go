@@ -87,6 +87,7 @@ var (
 		"universe",
 		"influxdata/influxdb",
 		"math",
+		"strings",
 	}
 	preludeScope = &scopeSet{
 		packages: make([]*interpreter.Package, len(prelude)),
