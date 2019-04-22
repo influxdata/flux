@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   45,
 				},
 				File:   "v1.flux",
-				Source: "package v1\n\n// Json parses an InfluxDB 1.x json result into a table stream.\nbuiltin json\n\n// Databases returns the list of available databases, it has no parameters.\nbuiltin databases\n\n// fieldsAsCols is a special application of pivot that will automatically align fields within each measurement that have the same timestamp.\nfieldsAsCols = (tables=<-) =>\n    tables\n        |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n\n// TagValues returns the unique values for a given tag.\n// The return value is always a single table with a single column \"_value\".\ntagValues = (bucket, tag, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> group(columns: [tag])\n      |> distinct(column: tag)\n      |> keep(columns: [\"_value\"])\n\n// MeasurementTagValues returns a single table with a single column \"_value\" that contains the\n// The return value is always a single table with a single column \"_value\".\nmeasurementTagValues = (bucket, measurement, tag) =>\n    tagValues(bucket: bucket, tag: tag, predicate: (r) => r._measurement == measurement)\n\n// TagKeys returns the list of tag keys for all series that match the predicate.\n// The return value is always a single table with a single column \"_value\".\ntagKeys = (bucket, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n        |> range(start: start)\n        |> filter(fn: predicate)\n        |> keys()\n        |> keep(columns: [\"_value\"])\n        |> distinct()\n\n// MeasurementTagKeys returns the list of tag keys for a specific measurement.\nmeasurementTagKeys = (bucket, measurement) =>\n    tagKeys(bucket: bucket, predicate: (r) => r._measurement == measurement)\n\n// Measurements returns the list of measurements in a specific bucket.\nmeasurements = (bucket) =>\n    tagValues(bucket: bucket, tag: \"_measurement\")",
+				Source: "package v1\n\n// Json parses an InfluxDB 1.x json result into a table stream.\nbuiltin json\n\n// Databases returns the list of available databases, it has no parameters.\nbuiltin databases\n\n// fieldsAsCols is a special application of pivot that will automatically align fields within each measurement that have the same timestamp.\nfieldsAsCols = (tables=<-) =>\n    tables\n        |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n\n// TagValues returns the unique values for a given tag.\n// The return value is always a single table with a single column \"_value\".\ntagValues = (bucket, tag, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> keep(columns: [tag])\n      |> group()\n      |> distinct(column: tag)\n\n// MeasurementTagValues returns a single table with a single column \"_value\" that contains the\n// The return value is always a single table with a single column \"_value\".\nmeasurementTagValues = (bucket, measurement, tag) =>\n    tagValues(bucket: bucket, tag: tag, predicate: (r) => r._measurement == measurement)\n\n// TagKeys returns the list of tag keys for all series that match the predicate.\n// The return value is always a single table with a single column \"_value\".\ntagKeys = (bucket, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n        |> range(start: start)\n        |> filter(fn: predicate)\n        |> keys()\n        |> keep(columns: [\"_value\"])\n        |> distinct()\n\n// MeasurementTagKeys returns the list of tag keys for a specific measurement.\nmeasurementTagKeys = (bucket, measurement) =>\n    tagKeys(bucket: bucket, predicate: (r) => r._measurement == measurement)\n\n// Measurements returns the list of measurements in a specific bucket.\nmeasurements = (bucket) =>\n    tagValues(bucket: bucket, tag: \"_measurement\")",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -484,11 +484,11 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 35,
+						Column: 31,
 						Line:   22,
 					},
 					File:   "v1.flux",
-					Source: "tagValues = (bucket, tag, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> group(columns: [tag])\n      |> distinct(column: tag)\n      |> keep(columns: [\"_value\"])",
+					Source: "tagValues = (bucket, tag, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> keep(columns: [tag])\n      |> group()\n      |> distinct(column: tag)",
 					Start: ast.Position{
 						Column: 1,
 						Line:   16,
@@ -518,11 +518,11 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 35,
+							Column: 31,
 							Line:   22,
 						},
 						File:   "v1.flux",
-						Source: "(bucket, tag, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> group(columns: [tag])\n      |> distinct(column: tag)\n      |> keep(columns: [\"_value\"])",
+						Source: "(bucket, tag, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> keep(columns: [tag])\n      |> group()\n      |> distinct(column: tag)",
 						Start: ast.Position{
 							Column: 13,
 							Line:   16,
@@ -885,11 +885,11 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 31,
+										Column: 30,
 										Line:   20,
 									},
 									File:   "v1.flux",
-									Source: "from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> group(columns: [tag])",
+									Source: "from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> keep(columns: [tag])",
 									Start: ast.Position{
 										Column: 5,
 										Line:   17,
@@ -902,13 +902,13 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 30,
+												Column: 29,
 												Line:   20,
 											},
 											File:   "v1.flux",
 											Source: "columns: [tag]",
 											Start: ast.Position{
-												Column: 16,
+												Column: 15,
 												Line:   20,
 											},
 										},
@@ -918,13 +918,13 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 30,
+													Column: 29,
 													Line:   20,
 												},
 												File:   "v1.flux",
 												Source: "columns: [tag]",
 												Start: ast.Position{
-													Column: 16,
+													Column: 15,
 													Line:   20,
 												},
 											},
@@ -934,13 +934,13 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 23,
+														Column: 22,
 														Line:   20,
 													},
 													File:   "v1.flux",
 													Source: "columns",
 													Start: ast.Position{
-														Column: 16,
+														Column: 15,
 														Line:   20,
 													},
 												},
@@ -952,13 +952,13 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 30,
+														Column: 29,
 														Line:   20,
 													},
 													File:   "v1.flux",
 													Source: "[tag]",
 													Start: ast.Position{
-														Column: 25,
+														Column: 24,
 														Line:   20,
 													},
 												},
@@ -968,13 +968,13 @@ var pkgAST = &ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 29,
+															Column: 28,
 															Line:   20,
 														},
 														File:   "v1.flux",
 														Source: "tag",
 														Start: ast.Position{
-															Column: 26,
+															Column: 25,
 															Line:   20,
 														},
 													},
@@ -988,11 +988,11 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 31,
+											Column: 30,
 											Line:   20,
 										},
 										File:   "v1.flux",
-										Source: "group(columns: [tag])",
+										Source: "keep(columns: [tag])",
 										Start: ast.Position{
 											Column: 10,
 											Line:   20,
@@ -1004,18 +1004,18 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 15,
+												Column: 14,
 												Line:   20,
 											},
 											File:   "v1.flux",
-											Source: "group",
+											Source: "keep",
 											Start: ast.Position{
 												Column: 10,
 												Line:   20,
 											},
 										},
 									},
-									Name: "group",
+									Name: "keep",
 								},
 							},
 						},
@@ -1023,11 +1023,11 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 31,
+									Column: 17,
 									Line:   21,
 								},
 								File:   "v1.flux",
-								Source: "from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> group(columns: [tag])\n      |> distinct(column: tag)",
+								Source: "from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> keep(columns: [tag])\n      |> group()",
 								Start: ast.Position{
 									Column: 5,
 									Line:   17,
@@ -1035,85 +1035,16 @@ var pkgAST = &ast.Package{
 							},
 						},
 						Call: &ast.CallExpression{
-							Arguments: []ast.Expression{&ast.ObjectExpression{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 30,
-											Line:   21,
-										},
-										File:   "v1.flux",
-										Source: "column: tag",
-										Start: ast.Position{
-											Column: 19,
-											Line:   21,
-										},
-									},
-								},
-								Properties: []*ast.Property{&ast.Property{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 30,
-												Line:   21,
-											},
-											File:   "v1.flux",
-											Source: "column: tag",
-											Start: ast.Position{
-												Column: 19,
-												Line:   21,
-											},
-										},
-									},
-									Key: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 25,
-													Line:   21,
-												},
-												File:   "v1.flux",
-												Source: "column",
-												Start: ast.Position{
-													Column: 19,
-													Line:   21,
-												},
-											},
-										},
-										Name: "column",
-									},
-									Value: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 30,
-													Line:   21,
-												},
-												File:   "v1.flux",
-												Source: "tag",
-												Start: ast.Position{
-													Column: 27,
-													Line:   21,
-												},
-											},
-										},
-										Name: "tag",
-									},
-								}},
-							}},
+							Arguments: nil,
 							BaseNode: ast.BaseNode{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 31,
+										Column: 17,
 										Line:   21,
 									},
 									File:   "v1.flux",
-									Source: "distinct(column: tag)",
+									Source: "group()",
 									Start: ast.Position{
 										Column: 10,
 										Line:   21,
@@ -1125,18 +1056,18 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 18,
+											Column: 15,
 											Line:   21,
 										},
 										File:   "v1.flux",
-										Source: "distinct",
+										Source: "group",
 										Start: ast.Position{
 											Column: 10,
 											Line:   21,
 										},
 									},
 								},
-								Name: "distinct",
+								Name: "group",
 							},
 						},
 					},
@@ -1144,11 +1075,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 35,
+								Column: 31,
 								Line:   22,
 							},
 							File:   "v1.flux",
-							Source: "from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> group(columns: [tag])\n      |> distinct(column: tag)\n      |> keep(columns: [\"_value\"])",
+							Source: "from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> keep(columns: [tag])\n      |> group()\n      |> distinct(column: tag)",
 							Start: ast.Position{
 								Column: 5,
 								Line:   17,
@@ -1161,13 +1092,13 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 34,
+										Column: 30,
 										Line:   22,
 									},
 									File:   "v1.flux",
-									Source: "columns: [\"_value\"]",
+									Source: "column: tag",
 									Start: ast.Position{
-										Column: 15,
+										Column: 19,
 										Line:   22,
 									},
 								},
@@ -1177,13 +1108,13 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 34,
+											Column: 30,
 											Line:   22,
 										},
 										File:   "v1.flux",
-										Source: "columns: [\"_value\"]",
+										Source: "column: tag",
 										Start: ast.Position{
-											Column: 15,
+											Column: 19,
 											Line:   22,
 										},
 									},
@@ -1193,53 +1124,36 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 22,
+												Column: 25,
 												Line:   22,
 											},
 											File:   "v1.flux",
-											Source: "columns",
+											Source: "column",
 											Start: ast.Position{
-												Column: 15,
+												Column: 19,
 												Line:   22,
 											},
 										},
 									},
-									Name: "columns",
+									Name: "column",
 								},
-								Value: &ast.ArrayExpression{
+								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 34,
+												Column: 30,
 												Line:   22,
 											},
 											File:   "v1.flux",
-											Source: "[\"_value\"]",
+											Source: "tag",
 											Start: ast.Position{
-												Column: 24,
+												Column: 27,
 												Line:   22,
 											},
 										},
 									},
-									Elements: []ast.Expression{&ast.StringLiteral{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 33,
-													Line:   22,
-												},
-												File:   "v1.flux",
-												Source: "\"_value\"",
-												Start: ast.Position{
-													Column: 25,
-													Line:   22,
-												},
-											},
-										},
-										Value: "_value",
-									}},
+									Name: "tag",
 								},
 							}},
 						}},
@@ -1247,11 +1161,11 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 35,
+									Column: 31,
 									Line:   22,
 								},
 								File:   "v1.flux",
-								Source: "keep(columns: [\"_value\"])",
+								Source: "distinct(column: tag)",
 								Start: ast.Position{
 									Column: 10,
 									Line:   22,
@@ -1263,18 +1177,18 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 14,
+										Column: 18,
 										Line:   22,
 									},
 									File:   "v1.flux",
-									Source: "keep",
+									Source: "distinct",
 									Start: ast.Position{
 										Column: 10,
 										Line:   22,
 									},
 								},
 							},
-							Name: "keep",
+							Name: "distinct",
 						},
 					},
 				},

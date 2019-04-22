@@ -17,9 +17,9 @@ tagValues = (bucket, tag, predicate=(r) => true, start=-30d) =>
     from(bucket: bucket)
       |> range(start: start)
       |> filter(fn: predicate)
-      |> group(columns: [tag])
+      |> keep(columns: [tag])
+      |> group()
       |> distinct(column: tag)
-      |> keep(columns: ["_value"])
 
 // MeasurementTagValues returns a single table with a single column "_value" that contains the
 // The return value is always a single table with a single column "_value".
