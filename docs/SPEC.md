@@ -2070,7 +2070,7 @@ from(bucket:"telegraf/autogen")
 #### Reduce
 Reduce aggregates records in each table according to the reducer `fn`.  The output for each table will be the group key of the table, plus columns corresponding to each field in the reducer object.  
 
-If the reducer record contains a column with the same name as a group key column, then the group key column's value is overwritten and the the resulting record is regrouped into the appropriate table.
+If the reducer record contains a column with the same name as a group key column, then the group key column's value is overwritten, and the outgoing group key is changed.  However, if two reduced tables write to the same destination group key, then the function will error.
 
 Reduce has the following properties:
 
