@@ -735,6 +735,8 @@ Conditional expressions evaluate a boolean-valued condition and if the result is
 the expression following the `then` keyword is evaluated and returned.
 Otherwise the condition evaluates to _false_,
 and the expression following the `else` keyword is evaluated and returned.
+In either case, the branch not taken is not evaluated;
+only side effects associated with the branch that is taken will occur.
 
     ConditionalExpression   = "if" Expression "then" Expression "else" Expression .
 
