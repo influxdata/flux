@@ -101,6 +101,10 @@ func New(c Config) (*Controller, error) {
 	if logger == nil {
 		logger = zap.NewNop()
 	}
+	logger.Info("Starting query controller",
+		zap.Int("concurrency_quota", c.ConcurrencyQuota),
+		zap.Int64("memory_bytes_quota_per_query", c.MemoryBytesQuotaPerQuery),
+		zap.Int("queue_size", c.QueueSize))
 	ctrl := &Controller{
 		queries:                  make(map[QueryID]*Query),
 		queryQueue:               make(chan *Query, c.QueueSize),
