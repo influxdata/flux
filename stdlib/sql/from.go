@@ -202,34 +202,34 @@ func (c *SQLIterator) Decode() (flux.Table, error) {
 		}
 
 		for i, col := range columns {
-			switch col.(type) {
+			switch col := col.(type) {
 			case bool:
-				if err := builder.AppendBool(i, col.(bool)); err != nil {
+				if err := builder.AppendBool(i, col); err != nil {
 					return nil, err
 				}
 			case int64:
-				if err := builder.AppendInt(i, col.(int64)); err != nil {
+				if err := builder.AppendInt(i, col); err != nil {
 					return nil, err
 				}
 			case uint64:
-				if err := builder.AppendUInt(i, col.(uint64)); err != nil {
+				if err := builder.AppendUInt(i, col); err != nil {
 					return nil, err
 				}
 			case float64:
-				if err := builder.AppendFloat(i, col.(float64)); err != nil {
+				if err := builder.AppendFloat(i, col); err != nil {
 					return nil, err
 				}
 			case string:
-				if err := builder.AppendString(i, col.(string)); err != nil {
+				if err := builder.AppendString(i, col); err != nil {
 					return nil, err
 				}
 			case []uint8:
 				// Hack for MySQL, might need to work with charset?
-				if err := builder.AppendString(i, string(col.([]uint8))); err != nil {
+				if err := builder.AppendString(i, string(col)); err != nil {
 					return nil, err
 				}
 			case time.Time:
-				if err := builder.AppendTime(i, values.ConvertTime(col.(time.Time))); err != nil {
+				if err := builder.AppendTime(i, values.ConvertTime(col)); err != nil {
 					return nil, err
 				}
 			default:
