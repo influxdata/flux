@@ -239,6 +239,7 @@ var aggregateFns = map[promql.ItemType]aggregateFn{
 	promql.ItemMin:      {name: "min", dropMeasurement: true, dropNonGrouping: true},
 	promql.ItemCount:    {name: "count", dropMeasurement: true, dropNonGrouping: false},
 	promql.ItemStddev:   {name: "stddev", dropMeasurement: true, dropNonGrouping: false},
+	promql.ItemStdvar:   {name: "stddev", dropMeasurement: true, dropNonGrouping: false},
 	promql.ItemTopK:     {name: "top", dropMeasurement: false, dropNonGrouping: false},
 	promql.ItemBottomK:  {name: "bottom", dropMeasurement: false, dropNonGrouping: false},
 	promql.ItemQuantile: {name: "quantile", dropMeasurement: true, dropNonGrouping: false},
@@ -378,6 +379,10 @@ func (t *transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expres
 		aggArgs["method"] = &ast.StringLiteral{Value: "exact_mean"}
 	}
 
+	if a.Op == promql.ItemStddev || a.Op == promql.ItemStdvar {
+		aggArgs["mode"] = &ast.StringLiteral{Value: "population"}
+	}
+
 	mode := "by"
 	dropMeasurement := true
 	if a.Without {
@@ -426,6 +431,14 @@ func (t *transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expres
 		pipeline = buildPipeline(
 			pipeline,
 			dropMeasurementCall,
+		)
+	}
+	if a.Op == promql.ItemStdvar {
+		pipeline = buildPipeline(
+			pipeline,
+			call("map", map[string]ast.Expression{
+				"fn": scalarArithBinaryMathFn("pow", &ast.FloatLiteral{Value: 2}, false),
+			}),
 		)
 	}
 	return pipeline, nil
@@ -775,6 +788,58 @@ func vectorCompBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 	}
 }
 
+func yieldsFloat(expr promql.Expr) bool {
+	switch v := expr.(type) {
+	case *promql.NumberLiteral:
+		return true
+	case *promql.BinaryExpr:
+		return yieldsFloat(v.LHS) && yieldsFloat(v.RHS)
+	case *promql.UnaryExpr:
+		return yieldsFloat(v.Expr)
+	case *promql.ParenExpr:
+		return yieldsFloat(v.Expr)
+	default:
+		return false
+	}
+}
+
+func yieldsTable(expr promql.Expr) bool {
+	return !yieldsFloat(expr)
+}
+
+// Function to rename post-join LHS/RHS columns.
+func stripSuffixFn(suffix string) *ast.FunctionExpression {
+	return &ast.FunctionExpression{
+		Params: []*ast.Property{
+			{
+				Key: &ast.Identifier{
+					Name: "column",
+				},
+			},
+		},
+		Body: call("strings.trimSuffix", map[string]ast.Expression{
+			"v":      &ast.Identifier{Name: "column"},
+			"suffix": &ast.StringLiteral{Value: suffix},
+		}),
+	}
+}
+
+// Function to match post-join RHS columns.
+var matchRHSSuffixFn = &ast.FunctionExpression{
+	Params: []*ast.Property{
+		{
+			Key: &ast.Identifier{
+				Name: "column",
+			},
+		},
+	},
+	Body: &ast.BinaryExpression{
+		Operator: ast.RegexpMatchOperator,
+		Left:     &ast.Identifier{Name: "column"},
+		Right:    &ast.RegexpLiteral{Value: regexp.MustCompile("_rhs$")},
+	},
+}
+
 func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, error) {
 	lhs, err := t.transpileExpr(b.LHS)
 	if err != nil {
@@ -787,8 +852,8 @@ func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 
 	swapped := false
 
-	switch lt, rt := b.LHS.Type(), b.RHS.Type(); {
-	case lt == promql.ValueTypeScalar && rt == promql.ValueTypeScalar:
+	switch {
+	case yieldsFloat(b.LHS) && yieldsFloat(b.RHS):
 		if op, ok := arithBinOps[b.Op]; ok {
 			return &ast.BinaryExpression{
 				Operator: op,
@@ -817,11 +882,11 @@ func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 		}
 
 		panic(fmt.Errorf("invalid scalar-scalar binary op %q", b.Op))
-	case lt == promql.ValueTypeScalar && rt == promql.ValueTypeVector:
+	case yieldsFloat(b.LHS) && yieldsTable(b.RHS):
 		lhs, rhs = rhs, lhs
 		swapped = true
 		fallthrough
-	case lt == promql.ValueTypeVector && rt == promql.ValueTypeScalar:
+	case yieldsTable(b.LHS) && yieldsFloat(b.RHS):
 		if op, ok := arithBinOps[b.Op]; ok {
 			return buildPipeline(
 				lhs,
@@ -842,7 +907,6 @@ func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 			if b.ReturnBool {
 				return buildPipeline(
 					lhs,
-					// map(fn: (r) => ({_value: })
 					call("map", map[string]ast.Expression{
 						"fn": scalarArithBinaryOpFn(op, rhs, swapped),
 					}),
@@ -858,86 +922,100 @@ func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 
 		panic(fmt.Errorf("invalid scalar-vector binary op %q", b.Op))
 	default:
-		// if b.VectorMatching.Card != promql.CardOneToOne {
-		// 	return nil, fmt.Errorf("non-one-to-one vector matching not supported yet")
-		// }
-		// if !b.VectorMatching.On || len(b.VectorMatching.MatchingLabels) == 0 {
-		// 	return nil, fmt.Errorf("vector-to-vector binary expressions without on() clause not supported yet")
-		// }
+		if b.VectorMatching == nil {
+			// We end up in this branch for non-const scalar-typed PromQL nodes,
+			// which don't have VectorMatching initialized.
+			b.VectorMatching = &promql.VectorMatching{
+				On: true,
+			}
+		} else if !b.VectorMatching.On || len(b.VectorMatching.MatchingLabels) == 0 {
+			return nil, fmt.Errorf("vector-to-vector binary expressions without on() clause not supported yet")
+		}
 
-		onCols := append(b.VectorMatching.MatchingLabels, "_start", "_stop")
-		joinCall := call("join", map[string]ast.Expression{
-			"tables": &ast.ObjectExpression{
-				Properties: []*ast.Property{
-					{
-						Key:   &ast.Identifier{Name: "lhs"},
-						Value: lhs,
-					},
-					{
-						Key:   &ast.Identifier{Name: "rhs"},
-						Value: rhs,
-					},
-				},
-			},
-			"on": columnList(onCols...),
-		})
+		dropMeasurement := true
+		var opCalls []*ast.CallExpression
 
 		if op, ok := arithBinOps[b.Op]; ok {
-			return buildPipeline(
-				joinCall,
+			opCalls = []*ast.CallExpression{
 				call("map", map[string]ast.Expression{"fn": vectorArithBinaryOpFn(op)}),
-				// TODO: Currently this is needed due to a PromQL bug: https://github.com/prometheus/prometheus/issues/5326
-				// Instead, it should return LHS labels + extra RHS labels from grouping clause.
-				call("keep", map[string]ast.Expression{
-					"columns": columnList(append(append(onCols, "_value"), b.VectorMatching.Include...)...),
-				}),
-				dropMeasurementCall,
-			), nil
-		}
-
-		if opFn, ok := arithBinOpFns[b.Op]; ok {
-			return buildPipeline(
-				joinCall,
+			}
+		} else if opFn, ok := arithBinOpFns[b.Op]; ok {
+			opCalls = []*ast.CallExpression{
 				call("map", map[string]ast.Expression{"fn": vectorArithBinaryMathFn(opFn)}),
-				// TODO: Currently this is needed due to a PromQL bug: https://github.com/prometheus/prometheus/issues/5326
-				// Instead, it should return LHS labels + extra RHS labels from grouping clause.
-				call("keep", map[string]ast.Expression{
-					"columns": columnList(append(append(onCols, "_value"), b.VectorMatching.Include...)...),
-				}),
-				dropMeasurementCall,
-			), nil
-		}
-
-		if op, ok := compBinOps[b.Op]; ok {
+			}
+		} else if op, ok := compBinOps[b.Op]; ok {
 			if b.ReturnBool {
-				return buildPipeline(
-					joinCall,
+				opCalls = []*ast.CallExpression{
 					call("map", map[string]ast.Expression{"fn": vectorArithBinaryOpFn(op)}),
 					call("toFloat", nil),
-					// TODO: Currently this is needed due to a PromQL bug: https://github.com/prometheus/prometheus/issues/5326
-					// Instead, it should return LHS labels + extra RHS labels from grouping clause.
-					call("keep", map[string]ast.Expression{
-						"columns": columnList(append(append(onCols, "_value"), b.VectorMatching.Include...)...),
-					}),
-				), nil
+				}
+			} else {
+				opCalls = []*ast.CallExpression{
+					call("filter", map[string]ast.Expression{"fn": vectorCompBinaryOpFn(op)}),
+				}
+				if b.LHS.Type() == promql.ValueTypeScalar {
+					// For <scalar> <comp-op> <vector> filter expressions, we always want to
+					// return the sample value from the vector, not the scalar.
+					opCalls = append(
+						opCalls,
+						call("duplicate", map[string]ast.Expression{
+							"column": &ast.StringLiteral{Value: "_value_rhs"},
+							"as":     &ast.StringLiteral{Value: "_value_lhs"},
+						}),
+					)
+				}
+				dropMeasurement = false
 			}
-
-			return buildPipeline(
-				joinCall,
-				call("filter", map[string]ast.Expression{"fn": vectorCompBinaryOpFn(op)}),
-				call("duplicate", map[string]ast.Expression{
-					"column": &ast.StringLiteral{Value: "_value_lhs"},
-					"as":     &ast.StringLiteral{Value: "_value"},
-				}),
-				// TODO: Currently this is needed due to a PromQL bug: https://github.com/prometheus/prometheus/issues/5326
-				// Instead, it should return LHS labels + extra RHS labels from grouping clause.
-				call("keep", map[string]ast.Expression{
-					"columns": columnList(append(append(onCols, "_value"), b.VectorMatching.Include...)...),
-				}),
-			), nil
+		} else {
+			return nil, fmt.Errorf("vector set operations not supported yet")
 		}
 
-		return nil, fmt.Errorf("vector set operations not supported yet")
+		onCols := append(b.VectorMatching.MatchingLabels, "_start", "_stop")
+
+		rhsColRenameMap := make([]*ast.Property, len(b.VectorMatching.Include))
+		for i, col := range b.VectorMatching.Include {
+			rhsColRenameMap[i] = &ast.Property{
+				Key:   &ast.Identifier{Name: col + "_rhs"},
+				Value: &ast.StringLiteral{Value: col},
+			}
+		}
+
+		outputColTransformCalls := []*ast.CallExpression{
+			// Rename x_lhs -> x.
+			call("rename", map[string]ast.Expression{"fn": stripSuffixFn("_lhs")}),
+			// Drop cols RHS cols, except ones we want to copy into the result via a group_x(...) clause.
+			// AH FUCK
+			call("drop", map[string]ast.Expression{"columns": columnList(b.VectorMatching.Include...)}),
+			// Rename x_rhs -> x.
+			call("rename", map[string]ast.Expression{"fn": stripSuffixFn("_rhs")}),
+			// Drop any remaining RHS cols.
+			call("drop", map[string]ast.Expression{"fn": matchRHSSuffixFn}),
+		}
+
+		postJoinCalls := append(opCalls, outputColTransformCalls...)
+		if dropMeasurement {
+			postJoinCalls = append(postJoinCalls, dropMeasurementCall)
+		}
+
+		return buildPipeline(
+			call("join", map[string]ast.Expression{
+				"tables": &ast.ObjectExpression{
+					Properties: []*ast.Property{
+						{
+							Key:   &ast.Identifier{Name: "lhs"},
+							Value: lhs,
+						},
+						{
+							Key:   &ast.Identifier{Name: "rhs"},
+							Value: rhs,
+						},
+					},
+				},
+				"on": columnList(onCols...),
+			}),
+			postJoinCalls...,
+		), nil
+
 	}
 }
 
@@ -1011,7 +1089,7 @@ var aggregateOverTimeFns = map[string]string{
 	"min_over_time":      "min",
 	"count_over_time":    "count",
 	"stddev_over_time":   "stddev",
-	"stdvar_over_time":   "stdvar",
+	"stdvar_over_time":   "stddev", // TODO: Add stdvar() to Flux stdlib instead of special-casing this below.
 	"quantile_over_time": "quantile",
 }
 
@@ -1045,6 +1123,10 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			}
 		}
 
+		if fn == "stddev" {
+			args["mode"] = &ast.StringLiteral{Value: "population"}
+		}
+
 		// "toFloat" and "filter" can both not deal with null values.
 		fillCall := call("fill", map[string]ast.Expression{
 			"column": &ast.StringLiteral{Value: "_value"},
@@ -1058,19 +1140,11 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			})
 		}
 
-		return buildPipeline(
-			v,
+		pipelineCalls := []*ast.CallExpression{
 			call(fn, args),
 			fillCall,
 			call("toFloat", nil),
 			filterSpecialNullValuesCall,
-			// TODO: Change this in the language to drop empty tables?
-			// Remove any windows <5m long at the end of the graph range to act like PromQL.
-			// Even if those windows were filtered by a vector selector previously, they might
-			// exist as empty tables and then the Flux aggregator functions would records rows with null
-			// values for each empty table, which can then confuse further filtering etc. steps.
-			//call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start, t.end.Add(-5*time.Minute))}),
-			filterWindowsWithZeroValueCall,
 			dropMeasurementCall,
 			// Strictly we wouldn't need copy "_stop" to "_time" for *all* Flux functions, only "max"/"min" on
 			// the Flux side. But this keeps the code simpler by always doing it.
@@ -1078,6 +1152,25 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 				"column": &ast.StringLiteral{Value: "_stop"},
 				"as":     &ast.StringLiteral{Value: "_time"},
 			}),
+		}
+		if fn == "count" {
+			// Count is the only function that produces a 0 instead of null value for an empty table.
+			// In PromQL, when we count_over_time() over an empty range, the result is empty, so we need
+			// to filter away 0 values here.
+			pipelineCalls = append(pipelineCalls, filterWindowsWithZeroValueCall)
+		}
+		if c.Func.Name == "stdvar_over_time" {
+			pipelineCalls = append(
+				pipelineCalls,
+				call("map", map[string]ast.Expression{
+					"fn": scalarArithBinaryMathFn("pow", &ast.FloatLiteral{Value: 2}, false),
+				}),
+			)
+		}
+
+		return buildPipeline(
+			v,
+			pipelineCalls...,
 		), nil
 	}
 
@@ -1106,9 +1199,49 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 		}
 		return buildPipeline(
 			v,
+			call("promql.timestamp", nil),
 			dropMeasurementCall,
+		), nil
+	case "time":
+		return buildPipeline(
+			call("csv.from", map[string]ast.Expression{
+				"file": &ast.StringLiteral{Value: "/home/julius/Downloads/chronograf_data.csv"},
+			}),
+			call("range", map[string]ast.Expression{
+				"start": &ast.DateTimeLiteral{Value: t.start.Add(-5 * time.Minute)},
+				"stop":  &ast.DateTimeLiteral{Value: t.end},
+			}),
+			call("window", map[string]ast.Expression{
+				"every":       &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.resolution.Nanoseconds(), Unit: "ns"}}},
+				"period":      &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: 5, Unit: "m"}}},
+				"createEmpty": &ast.BooleanLiteral{Value: true},
+			}),
+			call("sum", nil),
+			// Remove any windows <5m long at the edges of the graph range to act like PromQL.
+			call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start, t.end.Add(-5*time.Minute))}),
+			call("duplicate", map[string]ast.Expression{
+				"column": &ast.StringLiteral{Value: "_stop"},
+				"as":     &ast.StringLiteral{Value: "_time"},
+			}),
 			call("promql.timestamp", nil),
 		), nil
+
+	// --------------------------------------------------------------------------------
+	// import "promql"
+	// import "csv"
+	//
+	// csv.from(file: "/home/julius/Downloads/chronograf_data.csv")
+	//        |> range(start: 2019-02-21T16:41:30Z, stop: 2019-02-21T16:51:40Z)
+	//        //|> filter(fn: (r) => r._measurement == ("demo_cpu_usage_secons_total"))
+	//        |> window(every: 10000000000ns, period: 5m, createEmpty: true)
+	//        |> filter(fn: (r) => ((r._stop) >= (2019-02-21T16:50:30Z) and (r._start) <= (2019-02-21T16:46:40Z)))
+	//        |> sum()
+	//        |> duplicate(column: "_stop", as: "_time")
+	//        |> promql.timestamp()
+	// --------------------------------------------------------------------------------
+
+	// 	// TODO:
+	// 	// - create output windows
 	default:
 		return nil, fmt.Errorf("PromQL function %q is not supported yet", c.Func.Name)
 	}
@@ -1124,18 +1257,27 @@ func (t *transpiler) transpileUnaryExpr(ue *promql.UnaryExpr) (ast.Expression, e
 	case promql.ItemADD:
 		return expr, nil
 	case promql.ItemSUB:
-		return buildPipeline(
-			expr,
-			// Multiply by -1.
-			call("map", map[string]ast.Expression{
-				"fn": scalarArithBinaryOpFn(ast.MultiplicationOperator, &ast.FloatLiteral{Value: -1}, false)},
-			),
-			dropMeasurementCall,
-			call("duplicate", map[string]ast.Expression{
-				"column": &ast.StringLiteral{Value: "_stop"},
-				"as":     &ast.StringLiteral{Value: "_time"},
-			}),
-		), nil
+		if yieldsTable(ue.Expr) {
+			// Multiply all table _value columns by -1.
+			return buildPipeline(
+				expr,
+				call("map", map[string]ast.Expression{
+					"fn": scalarArithBinaryOpFn(ast.MultiplicationOperator, &ast.FloatLiteral{Value: -1}, false)},
+				),
+				dropMeasurementCall,
+				call("duplicate", map[string]ast.Expression{
+					"column": &ast.StringLiteral{Value: "_stop"},
+					"as":     &ast.StringLiteral{Value: "_time"},
+				}),
+			), nil
+		}
+
+		// Multiply float expression by -1.
+		return &ast.BinaryExpression{
+			Operator: ast.MultiplicationOperator,
+			Left:     expr,
+			Right:    &ast.FloatLiteral{Value: -1},
+		}, nil
 	default:
 		// PromQL fails to parse this, so this should never happen.
 		panic("invalid unary expression operator type")
@@ -1173,7 +1315,10 @@ func (t *transpiler) transpile(node promql.Node) (*ast.File, error) {
 		return nil, fmt.Errorf("error transpiling expression: %s", err)
 	}
 	return &ast.File{
-		Imports: []*ast.ImportDeclaration{{Path: &ast.StringLiteral{Value: "promql"}}},
+		Imports: []*ast.ImportDeclaration{
+			{Path: &ast.StringLiteral{Value: "promql"}},
+			{Path: &ast.StringLiteral{Value: "csv"}},
+		},
 		Body: []ast.Statement{
 			&ast.ExpressionStatement{
 				Expression: buildPipeline(

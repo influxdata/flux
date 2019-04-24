@@ -4,6 +4,7 @@ package main
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os/user"
@@ -23,7 +24,8 @@ var testVariantArgs = map[string][]string{
 	"range":  []string{"1s", "15s", "1m", "5m", "15m", "1h"},
 	"offset": []string{"1m", "5m", "10m"},
 	// stddev/stdvar Needs support for population standard deviation mode in Flux.
-	"simpleAggrOp": []string{"sum", "avg", "max", "min", "count" /*, "stddev", "stdvar" */},
+	// https://github.com/influxdata/flux/issues/1010
+	"simpleAggrOp": []string{"sum", "avg", "max", "min", "count", "stddev", "stdvar"},
 	"topBottomOp":  []string{"topk", "bottomk"},
 	"quantile": []string{
 		// TODO: Should return -Inf.
@@ -50,7 +52,76 @@ var queries = []struct {
 	variantArgs []string
 }{
 	{
-		query: `demo_cpu_usage_seconds_total / demo_cpu_usage_seconds_total`,
+		query:       `{{.simpleAggrOp}} without() (demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"simpleAggrOp"},
+	},
+	// TODO: Need to handle & test external injections of special column names more systematically.
+	{
+		query:       `{{.simpleAggrOp}} without(_value) (demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"simpleAggrOp"},
+	},
+	{
+		query:       `{{.simpleAggrOp}} without(instance) (demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"simpleAggrOp"},
+	},
+	{
+		query:       `{{.simpleAggrOp}} without(instance, mode) (demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"simpleAggrOp"},
+	},
+	{
+		query:       `{{.simpleAggrOp}} without(nonexistent) (demo_cpu_usage_seconds_total)`,
+		variantArgs: []string{"simpleAggrOp"},
+	},
+	{
+		query:       `{{.simpleAggrOp}}_over_time(demo_cpu_usage_seconds_total[{{.range}}])`,
+		variantArgs: []string{"simpleAggrOp", "range"},
+	},
+	// TODO REMOVE EVERYTHING ABOVE THIS LINE AS ITS DUPLICATED
+}
+
+var queries2 = []struct {
+	query       string
+	variantArgs []string
+}{
+	// TODO: Move this section somewhere appropriate.
+	{
+		query: "time()",
+	},
+	{
+		query:       "1 {{.arithBinOp}} time()",
+		variantArgs: []string{"arithBinOp"},
+	},
+	{
+		query:       "time() {{.arithBinOp}} 1",
+		variantArgs: []string{"arithBinOp"},
+	},
+	{
+		query:       "time() {{.compBinOp}} bool 1",
+		variantArgs: []string{"compBinOp"},
+	},
+	{
+		query:       "1 {{.compBinOp}} bool time()",
+		variantArgs: []string{"compBinOp"},
+	},
+	{
+		query:       "time() {{.arithBinOp}} time()",
+		variantArgs: []string{"arithBinOp"},
+	},
+	{
+		query:       "time() {{.compBinOp}} bool time()",
+		variantArgs: []string{"compBinOp"},
+	},
+	{
+		query:       "time() {{.binOp}} demo_cpu_usage_seconds_total",
+		variantArgs: []string{"binOp"},
+	},
+	{
+		query:       "demo_cpu_usage_seconds_total {{.binOp}} time()",
+		variantArgs: []string{"binOp"},
+	},
+
+	{
+		query: `demo_cpu_usage_seconds_total + -(1 + 1)`,
 	},
 	{
 		query: `demo_cpu_usage_seconds_total`,
@@ -234,6 +305,10 @@ var queries = []struct {
 		variantArgs: []string{"simpleAggrOp", "range"},
 	},
 	{
+		query:       `quantile_over_time({{.quantile}}, demo_cpu_usage_seconds_total[{{.range}}])`,
+		variantArgs: []string{"quantile", "range"},
+	},
+	{
 		query: `timestamp(demo_num_cpus)`,
 	},
 	{
@@ -356,7 +431,7 @@ func (r *e2eRunner) runQueryVariants(t *testing.T, query string, variantArgs []s
 	// been fully filled out in "args" from recursive parent calls.
 	if len(variantArgs) == 0 {
 		query := tprintf(query, args)
-		r.runQuery(t, query, args)
+		r.runQuery(t, query)
 		return
 	}
 
@@ -383,7 +458,8 @@ func (r *e2eRunner) runQueryVariants(t *testing.T, query string, variantArgs []s
 	}
 }
 
-func (r *e2eRunner) runQuery(t *testing.T, query string, args map[string]string) {
+func (r *e2eRunner) runQuery(t *testing.T, query string) {
+	fmt.Println(query)
 	// Transpile PromQL into Flux.
 	promqlNode, err := promql.ParseExpr(query)
 	if err != nil {
@@ -425,7 +501,7 @@ func (r *e2eRunner) runQuery(t *testing.T, query string, args map[string]string)
 		cmpopts.EquateNaNs(),
 	}
 	if diff := cmp.Diff(promMatrix, influxMatrix, cmpOpts); diff != "" {
-		t.Error(
+		t.Fatal(
 			"FAILED! Prometheus and InfluxDB results differ:\n\n", diff,
 			"\nPromQL query was:\n============================================\n", query, "\n============================================\n\n",
 			"\nFlux query was:\n============================================\n", ast.Format(fluxFile), "\n============================================\n\n",
