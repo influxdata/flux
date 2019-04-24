@@ -1700,11 +1700,17 @@ from(bucket: "telegraf/autogen")
 Stddev is an aggregate operation.
 For each aggregated column, it outputs the standard deviation of the non null record as a float.
 
-Stddev has the following parameter:
+Stddev has the following parameters:
 
 | Name    | Type     | Description                                                      |
 | ----    | ----     | -----------                                                      |
 | column  | string   | Columns specifies a column to aggregate. Defaults to `"_value"`. |
+| mode    | string   | The standard deviation mode. Must be one of `"sample"` or `"population"`. Defaults to `"sample"`. |
+
+The `mode` parameter specifies the type of standard deviation to calculate:
+
+* `"sample"`: Calculates the sample standard deviation, where the data is considered to be part of a larger population.
+* `"population"`: Calculates the population standard deviation, where the data is considered a population of its own.
 
 Example:
 

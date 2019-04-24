@@ -8,16 +8,28 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
-const StddevKind = "stddev"
+const (
+	StddevKind = "stddev"
+
+	modePopulation = "population"
+	modeSample     = "sample"
+)
 
 type StddevOpSpec struct {
+	Mode string `json:"mode"`
 	execute.AggregateConfig
 }
 
 func init() {
-	stddevSignature := execute.AggregateSignature(nil, nil)
+	stddevSignature := execute.AggregateSignature(
+		map[string]semantic.PolyType{
+			"mode": semantic.String,
+		},
+		nil,
+	)
 
 	flux.RegisterPackageValue("universe", StddevKind, flux.FunctionValue(StddevKind, createStddevOpSpec, stddevSignature))
 	flux.RegisterOpSpec(StddevKind, newStddevOp)
@@ -28,7 +40,20 @@ func createStddevOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
+
 	s := new(StddevOpSpec)
+
+	if mode, ok, err := args.GetString("mode"); err != nil {
+		return nil, err
+	} else if ok {
+		if mode != modePopulation && mode != modeSample {
+			return nil, fmt.Errorf("%q is not a valid standard deviation mode", mode)
+		}
+		s.Mode = mode
+	} else {
+		s.Mode = modeSample
+	}
+
 	if err := s.AggregateConfig.ReadArgs(args); err != nil {
 		return s, err
 	}
@@ -44,6 +69,7 @@ func (s *StddevOpSpec) Kind() flux.OperationKind {
 }
 
 type StddevProcedureSpec struct {
+	Mode string `json:"mode"`
 	execute.AggregateConfig
 }
 
@@ -53,6 +79,7 @@ func newStddevProcedure(qs flux.OperationSpec, a plan.Administration) (plan.Proc
 		return nil, fmt.Errorf("invalid spec type %T", qs)
 	}
 	return &StddevProcedureSpec{
+		Mode:            spec.Mode,
 		AggregateConfig: spec.AggregateConfig,
 	}, nil
 }
@@ -62,6 +89,7 @@ func (s *StddevProcedureSpec) Kind() plan.ProcedureKind {
 }
 func (s *StddevProcedureSpec) Copy() plan.ProcedureSpec {
 	return &StddevProcedureSpec{
+		Mode:            s.Mode,
 		AggregateConfig: s.AggregateConfig,
 	}
 }
@@ -72,6 +100,7 @@ func (s *StddevProcedureSpec) TriggerSpec() plan.TriggerSpec {
 }
 
 type StddevAgg struct {
+	Mode        string
 	n, m2, mean float64
 }
 
@@ -80,7 +109,7 @@ func createStddevTransformation(id execute.DatasetID, mode execute.AccumulationM
 	if !ok {
 		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
 	}
-	t, d := execute.NewAggregateTransformationAndDataset(id, mode, new(StddevAgg), s.AggregateConfig, a.Allocator())
+	t, d := execute.NewAggregateTransformationAndDataset(id, mode, &StddevAgg{Mode: s.Mode}, s.AggregateConfig, a.Allocator())
 	return t, d, nil
 }
 
@@ -89,15 +118,15 @@ func (a *StddevAgg) NewBoolAgg() execute.DoBoolAgg {
 }
 
 func (a *StddevAgg) NewIntAgg() execute.DoIntAgg {
-	return new(StddevAgg)
+	return &StddevAgg{Mode: a.Mode}
 }
 
 func (a *StddevAgg) NewUIntAgg() execute.DoUIntAgg {
-	return new(StddevAgg)
+	return &StddevAgg{Mode: a.Mode}
 }
 
 func (a *StddevAgg) NewFloatAgg() execute.DoFloatAgg {
-	return new(StddevAgg)
+	return &StddevAgg{Mode: a.Mode}
 }
 
 func (a *StddevAgg) NewStringAgg() execute.DoStringAgg {
@@ -151,10 +180,14 @@ func (a *StddevAgg) Type() flux.ColType {
 	return flux.TFloat
 }
 func (a *StddevAgg) ValueFloat() float64 {
-	if a.n < 2 {
+	var n = a.n
+	if a.Mode == modeSample {
+		n--
+	}
+	if n < 1 {
 		return math.NaN()
 	}
-	return math.Sqrt(a.m2 / float64(a.n-1))
+	return math.Sqrt(a.m2 / float64(n))
 }
 func (a *StddevAgg) IsNull() bool {
 	return a.n == 0
