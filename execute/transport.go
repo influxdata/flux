@@ -68,6 +68,7 @@ func (t *consecutiveTransport) RetractTable(id DatasetID, key flux.GroupKey) err
 }
 
 func (t *consecutiveTransport) Process(id DatasetID, tbl flux.Table) error {
+	tbl.RefCount(1)
 	select {
 	case <-t.finished:
 		return t.err()
