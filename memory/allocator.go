@@ -92,5 +92,5 @@ type LimitExceededError struct {
 }
 
 func (a LimitExceededError) Error() string {
-	return fmt.Sprintf("allocation limit reached: limit %d, allocated: %d, wanted: %d", a.Limit, a.Allocated, a.Wanted)
+	return fmt.Sprintf("memory allocation limit reached: limit %d bytes, allocated: %d, wanted: %d", a.Limit, a.Allocated, a.Wanted)
 }
