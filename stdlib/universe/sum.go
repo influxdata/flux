@@ -114,7 +114,6 @@ type SumIntAgg struct {
 }
 
 func (a *SumIntAgg) DoInt(vs *array.Int64) {
-	// https://issues.apache.org/jira/browse/ARROW-4081
 	if l := vs.Len() - vs.NullN(); l > 0 {
 		if vs.NullN() == 0 {
 			a.sum += math.Int64.Sum(vs)
@@ -145,7 +144,6 @@ type SumUIntAgg struct {
 }
 
 func (a *SumUIntAgg) DoUInt(vs *array.Uint64) {
-	// https://issues.apache.org/jira/browse/ARROW-4081
 	if l := vs.Len() - vs.NullN(); l > 0 {
 		if vs.NullN() == 0 {
 			a.sum += math.Uint64.Sum(vs)
@@ -176,7 +174,6 @@ type SumFloatAgg struct {
 }
 
 func (a *SumFloatAgg) DoFloat(vs *array.Float64) {
-	// https://issues.apache.org/jira/browse/ARROW-4081
 	if l := vs.Len() - vs.NullN(); l > 0 {
 		if vs.NullN() == 0 {
 			a.sum += math.Float64.Sum(vs)

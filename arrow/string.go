@@ -10,6 +10,11 @@ import (
 func NewString(vs []string, alloc *memory.Allocator) *array.Binary {
 	b := NewStringBuilder(alloc)
 	b.Reserve(len(vs))
+	sz := 0
+	for _, v := range vs {
+		sz += len(v)
+	}
+	b.ReserveData(sz)
 	for _, v := range vs {
 		b.AppendString(v)
 	}

@@ -108,7 +108,6 @@ func (a *MeanAgg) NewStringAgg() execute.DoStringAgg {
 }
 
 func (a *MeanAgg) DoInt(vs *array.Int64) {
-	// https://issues.apache.org/jira/browse/ARROW-4081
 	if l := vs.Len() - vs.NullN(); l > 0 {
 		a.count += int64(l)
 		if vs.NullN() == 0 {
@@ -123,7 +122,6 @@ func (a *MeanAgg) DoInt(vs *array.Int64) {
 	}
 }
 func (a *MeanAgg) DoUInt(vs *array.Uint64) {
-	// https://issues.apache.org/jira/browse/ARROW-4081
 	if l := vs.Len() - vs.NullN(); l > 0 {
 		a.count += int64(l)
 		if vs.NullN() == 0 {
@@ -138,7 +136,6 @@ func (a *MeanAgg) DoUInt(vs *array.Uint64) {
 	}
 }
 func (a *MeanAgg) DoFloat(vs *array.Float64) {
-	// https://issues.apache.org/jira/browse/ARROW-4081
 	if l := vs.Len() - vs.NullN(); l > 0 {
 		a.count += int64(l)
 		if vs.NullN() == 0 {

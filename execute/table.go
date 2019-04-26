@@ -1840,6 +1840,14 @@ func (c *stringColumnBuilder) Copy() column {
 	if len(c.nils) > 0 {
 		b := arrow.NewStringBuilder(c.alloc.Allocator)
 		b.Reserve(len(c.data))
+		sz := 0
+		for i, v := range c.data {
+			if c.nils[i] {
+				continue
+			}
+			sz += len(v)
+		}
+		b.ReserveData(sz)
 		for i, v := range c.data {
 			if c.nils[i] {
 				b.AppendNull()
