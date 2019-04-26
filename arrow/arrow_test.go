@@ -11,8 +11,6 @@ import (
 )
 
 func TestSum_Float64_Empty(t *testing.T) {
-	t.Skip("https://issues.apache.org/jira/browse/ARROW-4081")
-
 	b := array.NewFloat64Builder(arrowmemory.NewGoAllocator())
 	vs := b.NewFloat64Array()
 	b.Release()
@@ -29,8 +27,6 @@ func TestSum_Float64_Empty(t *testing.T) {
 }
 
 func TestSum_Int64_Empty(t *testing.T) {
-	t.Skip("https://issues.apache.org/jira/browse/ARROW-4081")
-
 	b := array.NewInt64Builder(arrowmemory.NewGoAllocator())
 	vs := b.NewInt64Array()
 	b.Release()
@@ -47,8 +43,6 @@ func TestSum_Int64_Empty(t *testing.T) {
 }
 
 func TestSum_Uint64_Empty(t *testing.T) {
-	t.Skip("https://issues.apache.org/jira/browse/ARROW-4081")
-
 	b := array.NewUint64Builder(arrowmemory.NewGoAllocator())
 	vs := b.NewUint64Array()
 	b.Release()
