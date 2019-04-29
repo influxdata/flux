@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	uuid "github.com/satori/go.uuid"
 )
@@ -62,4 +63,46 @@ func (src *FromProcedureSpec) Run(ctx context.Context) {
 
 func CreateFromSource(spec plan.ProcedureSpec, id execute.DatasetID, a execute.Administration) (execute.Source, error) {
 	return spec.(*FromProcedureSpec), nil
+}
+
+// AllocatingFromProcedureSpec is a procedure spec AND an execution node
+// that allocates ByteCount bytes during execution.
+type AllocatingFromProcedureSpec struct {
+	ByteCount int
+
+	alloc *memory.Allocator
+	ts    []execute.Transformation
+}
+
+const AllocatingFromTestKind = "allocating-from-test"
+
+func (AllocatingFromProcedureSpec) Kind() plan.ProcedureKind {
+	return AllocatingFromTestKind
+}
+
+func (s *AllocatingFromProcedureSpec) Copy() plan.ProcedureSpec {
+	return &AllocatingFromProcedureSpec{
+		ByteCount: s.ByteCount,
+		alloc:     s.alloc,
+	}
+}
+
+func (AllocatingFromProcedureSpec) Cost(inStats []plan.Statistics) (cost plan.Cost, outStats plan.Statistics) {
+	return plan.Cost{}, plan.Statistics{}
+}
+
+func CreateAllocatingFromSource(spec plan.ProcedureSpec, id execute.DatasetID, a execute.Administration) (execute.Source, error) {
+	s := spec.(*AllocatingFromProcedureSpec)
+	s.alloc = a.Allocator()
+	return s, nil
+}
+
+func (s *AllocatingFromProcedureSpec) Run(ctx context.Context) {
+	if err := s.alloc.Allocate(s.ByteCount); err != nil {
+		panic(err)
+	}
+}
+
+func (s *AllocatingFromProcedureSpec) AddTransformation(t execute.Transformation) {
+	s.ts = append(s.ts, t)
 }
