@@ -29,6 +29,9 @@ type Table struct {
 	// Data is a list of rows, i.e. Data[row][col]
 	// Each row must be a list with length equal to len(ColMeta)
 	Data [][]interface{}
+	// Err contains the error that should be returned
+	// by this table when calling Do.
+	Err error
 }
 
 // Normalize ensures all fields of the table are set correctly.
@@ -79,6 +82,10 @@ func (t *Table) Key() flux.GroupKey {
 }
 
 func (t *Table) Do(f func(flux.ColReader) error) error {
+	if t.Err != nil {
+		return t.Err
+	}
+
 	cols := make([]array.Interface, len(t.ColMeta))
 	for j, col := range t.ColMeta {
 		switch col.Type {
