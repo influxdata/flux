@@ -23,10 +23,9 @@ type requestsLabel string
 const (
 	labelSuccess      = requestsLabel("success")
 	labelCompileError = requestsLabel("compile_error")
+	labelRuntimeError = requestsLabel("runtime_error")
 	labelQueueError   = requestsLabel("queue_error")
 )
-
-var _, _, _ = labelSuccess, labelCompileError, labelQueueError
 
 func newControllerMetrics(labels []string) *controllerMetrics {
 	const (
