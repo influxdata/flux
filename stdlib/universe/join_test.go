@@ -1,6 +1,7 @@
 package universe_test
 
 import (
+	"errors"
 	"sort"
 	"testing"
 	"time"
@@ -1503,6 +1504,31 @@ func TestMergeJoin_Process(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "two failures",
+			spec: &universe.MergeJoinProcedureSpec{
+				On:         []string{"_time"},
+				TableNames: tableNames,
+			},
+			data0: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Err: errors.New("expected error"),
+				},
+			},
+			data1: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Err: errors.New("expected error"),
+				},
+			},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
@@ -1533,18 +1559,21 @@ func TestMergeJoin_Process(t *testing.T) {
 			if len(tc.data1) > l {
 				l = len(tc.data1)
 			}
+			var err error
 			for i := 0; i < l; i++ {
 				if i < len(tc.data0) {
-					if err := jt.Process(parents[0], tc.data0[i]); err != nil {
-						t.Fatal(err)
+					if err = jt.Process(parents[0], tc.data0[i]); err != nil {
+						break
 					}
 				}
 				if i < len(tc.data1) {
-					if err := jt.Process(parents[1], tc.data1[i]); err != nil {
-						t.Fatal(err)
+					if err = jt.Process(parents[1], tc.data1[i]); err != nil {
+						break
 					}
 				}
 			}
+			jt.Finish(parents[0], err)
+			jt.Finish(parents[1], err)
 
 			got, err := executetest.TablesFromCache(c)
 			if err != nil {
