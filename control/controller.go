@@ -146,7 +146,6 @@ func (c *Controller) Query(ctx context.Context, compiler flux.Compiler) (flux.Qu
 		c.countQueryRequest(q, labelQueueError)
 		return nil, q.Err()
 	}
-	c.countQueryRequest(q, labelSuccess)
 	return q, nil
 }
 
@@ -430,6 +429,13 @@ func (q *Query) Done() {
 
 		q.transitionTo(Finished)
 		q.c.finish(q)
+
+		// count query request
+		if q.err != nil || len(q.runtimeErrs) > 0 {
+			q.c.countQueryRequest(q, labelRuntimeError)
+		} else {
+			q.c.countQueryRequest(q, labelSuccess)
+		}
 	})
 }
 
