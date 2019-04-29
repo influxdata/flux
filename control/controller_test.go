@@ -19,6 +19,8 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/prometheus/client_golang/prometheus"
+	dto "github.com/prometheus/client_model/go"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -43,6 +45,45 @@ var (
 	}
 )
 
+func setupPromRegistry(c *control.Controller) *prometheus.Registry {
+	reg := prometheus.NewRegistry()
+	for _, col := range c.PrometheusCollectors() {
+		err := reg.Register(col)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return reg
+}
+
+func validateRequestTotals(t testing.TB, reg *prometheus.Registry, success, compile, runtime, queue int) {
+	t.Helper()
+	metrics, err := reg.Gather()
+	if err != nil {
+		t.Fatal(err)
+	}
+	validate := func(name string, want int) {
+		m := FindMetric(
+			metrics,
+			"query_control_requests_total",
+			map[string]string{
+				"result": name,
+			},
+		)
+		var got int
+		if m != nil {
+			got = int(*m.Counter.Value)
+		}
+		if got != want {
+			t.Errorf("unexpected %s total: got %d want: %d", name, got, want)
+		}
+	}
+	validate("success", success)
+	validate("compile_error", compile)
+	validate("runtime_error", runtime)
+	validate("queue_error", queue)
+}
+
 func TestController_QuerySuccess(t *testing.T) {
 	ctrl, err := control.New(config)
 	if err != nil {
@@ -50,9 +91,11 @@ func TestController_QuerySuccess(t *testing.T) {
 	}
 	defer shutdown(t, ctrl)
 
+	reg := setupPromRegistry(ctrl)
+
 	q, err := ctrl.Query(context.Background(), mockCompiler)
 	if err != nil {
-		t.Errorf("unexpected error: %s", err)
+		t.Fatalf("unexpected error: %s", err)
 	}
 
 	for range q.Results() {
@@ -77,6 +120,186 @@ func TestController_QuerySuccess(t *testing.T) {
 	if stats.TotalDuration == 0 {
 		t.Error("expected total duration to be above zero")
 	}
+	validateRequestTotals(t, reg, 1, 0, 0, 0)
+}
+
+func TestController_QueryCompileError(t *testing.T) {
+	ctrl, err := control.New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer shutdown(t, ctrl)
+
+	reg := setupPromRegistry(ctrl)
+
+	q, err := ctrl.Query(context.Background(), &mock.Compiler{
+		CompileFn: func(ctx context.Context) (flux.Program, error) {
+			return nil, errors.New("compile error")
+		},
+	})
+	if err == nil {
+		t.Error("expected compiler error")
+	}
+
+	if q != nil {
+		t.Errorf("unexpected query value: %v", q)
+		defer q.Done()
+	}
+
+	validateRequestTotals(t, reg, 0, 1, 0, 0)
+}
+
+func TestController_QueryRuntimeError(t *testing.T) {
+	ctrl, err := control.New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer shutdown(t, ctrl)
+
+	reg := setupPromRegistry(ctrl)
+
+	q, err := ctrl.Query(context.Background(), &mock.Compiler{
+		CompileFn: func(ctx context.Context) (flux.Program, error) {
+			return &mock.Program{
+				ExecuteFn: func(ctx context.Context, q *mock.Query, alloc *memory.Allocator) {
+					q.SetErr(errors.New("runtime error"))
+				},
+			}, nil
+		},
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	for range q.Results() {
+		// discard the results as we do not care.
+	}
+	q.Done()
+
+	if q.Err() == nil {
+		t.Error("expected runtime error")
+	}
+
+	stats := q.Statistics()
+	if stats.CompileDuration == 0 {
+		t.Error("expected compile duration to be above zero")
+	}
+	if stats.QueueDuration == 0 {
+		t.Error("expected queue duration to be above zero")
+	}
+	if stats.ExecuteDuration == 0 {
+		t.Error("expected execute duration to be above zero")
+	}
+	if stats.TotalDuration == 0 {
+		t.Error("expected total duration to be above zero")
+	}
+	validateRequestTotals(t, reg, 0, 0, 1, 0)
+}
+
+func TestController_QueryQueueError(t *testing.T) {
+	t.Skip("This test exposed several race conditions, its not clear if the races are specific to the test case")
+
+	ctrl, err := control.New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer shutdown(t, ctrl)
+
+	reg := setupPromRegistry(ctrl)
+
+	// This channel blocks program execution until we are done
+	// with running the test.
+	done := make(chan struct{})
+	defer close(done)
+
+	// Insert three queries, two that block forever and a last that does not.
+	// The third should error to be enqueued.
+	for i := 0; i < 2; i++ {
+		q, err := ctrl.Query(context.Background(), &mock.Compiler{
+			CompileFn: func(ctx context.Context) (flux.Program, error) {
+				return &mock.Program{
+					ExecuteFn: func(ctx context.Context, q *mock.Query, alloc *memory.Allocator) {
+						// Block until test is finished
+						<-done
+					},
+				}, nil
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer q.Done()
+	}
+
+	// Third "normal" query
+	q, err := ctrl.Query(context.Background(), mockCompiler)
+	if err == nil {
+		t.Error("expected queue error")
+	}
+
+	if q != nil {
+		t.Errorf("unexpected query value: %v", q)
+		defer q.Done()
+	}
+
+	validateRequestTotals(t, reg, 0, 0, 0, 1)
+}
+
+// TODO(nathanielc): Use promtest in influxdb/kit
+
+// FindMetric iterates through mfs to find the first metric family matching name.
+// If a metric family matches, then the metrics inside the family are searched,
+// and the first metric whose labels match the given labels are returned.
+// If no matches are found, FindMetric returns nil.
+//
+// FindMetric assumes that the labels on the metric family are well formed,
+// i.e. there are no duplicate label names, and the label values are not empty strings.
+func FindMetric(mfs []*dto.MetricFamily, name string, labels map[string]string) *dto.Metric {
+	_, m := findMetric(mfs, name, labels)
+	return m
+}
+
+// findMetric is a helper that returns the matching family and the matching metric.
+// The exported FindMetric function specifically only finds the metric, not the family,
+// but for test it is more helpful to identify whether the family was matched.
+func findMetric(mfs []*dto.MetricFamily, name string, labels map[string]string) (*dto.MetricFamily, *dto.Metric) {
+	var fam *dto.MetricFamily
+
+	for _, mf := range mfs {
+		if mf.GetName() == name {
+			fam = mf
+			break
+		}
+	}
+
+	if fam == nil {
+		// No family matching the name.
+		return nil, nil
+	}
+
+	for _, m := range fam.Metric {
+		if len(m.Label) != len(labels) {
+			continue
+		}
+
+		match := true
+		for _, l := range m.Label {
+			if labels[l.GetName()] != l.GetValue() {
+				match = false
+				break
+			}
+		}
+
+		if !match {
+			continue
+		}
+
+		// All labels matched.
+		return fam, m
+	}
+
+	// Didn't find a metric whose labels all matched.
+	return fam, nil
 }
 
 func TestController_AfterShutdown(t *testing.T) {
