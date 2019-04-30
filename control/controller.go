@@ -282,6 +282,7 @@ func (c *Controller) executeQuery(q *Query) {
 	q.alloc.Limit = func(v int64) *int64 { return &v }(c.memoryBytesQuotaPerQuery)
 	exec, err := q.program.Start(ctx, q.alloc)
 	if err != nil {
+		q.addRuntimeError(err)
 		q.setErr(err)
 		return
 	}
@@ -362,10 +363,11 @@ type Query struct {
 	c *Controller
 
 	// query state. The stateMu protects access for the group below.
-	stateMu sync.RWMutex
-	state   State
-	err     error
-	cancel  func()
+	stateMu     sync.RWMutex
+	state       State
+	err         error
+	runtimeErrs []error
+	cancel      func()
 
 	parentCtx               context.Context
 	parentSpan, currentSpan *span
@@ -419,6 +421,12 @@ func (q *Query) Done() {
 			stats := q.exec.Statistics()
 			q.stats.Metadata = stats.Metadata
 		}
+
+		errMsgs := make([]string, 0, len(q.runtimeErrs))
+		for _, e := range q.runtimeErrs {
+			errMsgs = append(errMsgs, e.Error())
+		}
+		q.stats.RuntimeErrors = errMsgs
 
 		q.transitionTo(Finished)
 		q.c.finish(q)
@@ -585,6 +593,13 @@ func (q *Query) setErr(err error) {
 	close(q.results)
 }
 
+func (q *Query) addRuntimeError(e error) {
+	q.stateMu.Lock()
+	defer q.stateMu.Unlock()
+
+	q.runtimeErrs = append(q.runtimeErrs, e)
+}
+
 // pump will read from the executing query results and pump the
 // results to our destination.
 // When there are no more results, then this will close our own
@@ -612,9 +627,13 @@ func (q *Query) pump(exec flux.Query, done <-chan struct{}) {
 			// case, but if the query has been canceled or finished with
 			// done, nobody is going to read these values so we need
 			// to avoid blocking.
+			ecr := &errorCollectingResult{
+				Result: res,
+				q:      q,
+			}
 			select {
 			case <-done:
-			case q.results <- res:
+			case q.results <- ecr:
 			}
 		case <-signalCh:
 			// Signal to the underlying executor that the query
@@ -655,6 +674,31 @@ func (q *Query) tryExec() (context.Context, bool) {
 	defer q.stateMu.Unlock()
 
 	return q.transitionTo(Executing, Queueing)
+}
+
+type errorCollectingResult struct {
+	flux.Result
+	q *Query
+}
+
+func (r *errorCollectingResult) Tables() flux.TableIterator {
+	return &errorCollectingTableIterator{
+		TableIterator: r.Result.Tables(),
+		q:             r.q,
+	}
+}
+
+type errorCollectingTableIterator struct {
+	flux.TableIterator
+	q *Query
+}
+
+func (ti *errorCollectingTableIterator) Do(f func(t flux.Table) error) error {
+	err := ti.TableIterator.Do(f)
+	if err != nil {
+		ti.q.addRuntimeError(err)
+	}
+	return err
 }
 
 // State is the query state.

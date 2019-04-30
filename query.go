@@ -77,12 +77,18 @@ type Statistics struct {
 	// MaxAllocated is the maximum number of bytes the query allocated.
 	MaxAllocated int64 `json:"max_allocated"`
 
+	// RuntimeErrors contains error messages that happened during the execution of the query.
+	RuntimeErrors []string `json:"runtime_errors"`
+
 	// Metadata contains metadata key/value pairs that have been attached during execution.
 	Metadata Metadata `json:"metadata"`
 }
 
 // Add returns the sum of s and other.
 func (s Statistics) Add(other Statistics) Statistics {
+	errs := make([]string, len(s.RuntimeErrors), len(s.RuntimeErrors)+len(other.RuntimeErrors))
+	copy(errs, s.RuntimeErrors)
+	errs = append(errs, other.RuntimeErrors...)
 	md := make(Metadata)
 	md.AddAll(s.Metadata)
 	md.AddAll(other.Metadata)
@@ -94,6 +100,7 @@ func (s Statistics) Add(other Statistics) Statistics {
 		RequeueDuration: s.RequeueDuration + other.RequeueDuration,
 		ExecuteDuration: s.ExecuteDuration + other.ExecuteDuration,
 		Concurrency:     s.Concurrency + other.Concurrency,
+		RuntimeErrors:   errs,
 		MaxAllocated:    s.MaxAllocated + other.MaxAllocated,
 		Metadata:        md,
 	}
