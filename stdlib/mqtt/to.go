@@ -8,6 +8,7 @@ import (
 	"sort"
 	"time"
 	"strings"
+	"strconv"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 
 
@@ -32,6 +33,7 @@ func init() {
 			"broker":       semantic.String,
 			"topic":        semantic.String,
 			"message":      semantic.String,
+			"format":       semantic.String,
 			"qos":          semantic.Int,
 			"clientid":     semantic.String,
 			"username":     semantic.String,
@@ -72,6 +74,7 @@ type ToMQTTOpSpec struct {
 	Name         string            `json:"name"`
 	Topic        string            `json:"topic"`
 	Message      string            `json:"message"`
+	Format       string            `json:"format"`
 	ClientID     string            `json:"clientid"`
 	Username     string            `json:"username"`
 	Password     string            `json:"password"`
@@ -104,6 +107,15 @@ func (o *ToMQTTOpSpec) ReadArgs(args flux.Arguments) error {
 	}
 	if len(o.Message) > 0 && len(o.Topic) <= 0 {
 		return fmt.Errorf("Topic required with message %s", o.Message)
+	}
+	o.Format, ok, err = args.GetString("format")
+	if err != nil {
+		return err
+	}
+	if len(o.Format) > 0 {
+		if o.Format != "lineProtocol" && o.Format != "JSON"{
+			return fmt.Errorf("Format must be lineProtocol or JSON, not %s", o.Format)
+		}
 	}
 	o.Name, ok, err = args.GetString("name")
 	if err != nil {
@@ -489,6 +501,9 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 			if len(mqttTopic) <= 0 {// create topic out of tags
 				mqttTopic = m.createTopic(message.String())				
 			}
+			if t.spec.Spec.Format == "JSON" { // format message as a JSON
+				message = m.formatJSON(message.String())
+			}
 			token := client.Publish(mqttTopic, 0, false, message.String())
 			token.Wait()
 			lines = 0
@@ -509,6 +524,105 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	return nil
 
 }
+
+func (t *toMqttMetric) formatJSON(message string) strings.Builder {
+	var b strings.Builder
+	b.WriteString("{")
+	b.WriteString(" \"measurement\": \"")
+	at := strings.Split(message, " ")
+	as := strings.Split(at[0], ",")
+	if len(as) > 1 {
+		b.WriteString(as[0])
+		b.WriteString("\"")
+		b.WriteString(t.parseTags(as[1]))
+	} else {
+		b.WriteString(at[0])
+		b.WriteString("\"")
+	}
+	b.WriteString(", ")
+	b.WriteString(" \"values\": { ")
+	as = strings.Split(at[1], ",")
+	l := len(as) - 1
+	if l > 1 {
+		for i := 1; i < l; i++ {
+			toke := strings.Split(as[i], "=")
+			if i > 1 {
+				b.WriteString(", ")
+			}
+			b.WriteString(toke[0])
+			b.WriteString(": ")
+			if _, err := strconv.Atoi(toke[1]); err == nil {
+				b.WriteString(toke[1])
+			} else if _, err := strconv.ParseBool(toke[1]); err == nil {
+				b.WriteString("\"")
+				b.WriteString(toke[1])
+				b.WriteString("\"")
+			} else if _, err := strconv.ParseFloat(toke[1], 64); err == nil {
+				b.WriteString(toke[1])
+			} else if _, err := strconv.ParseInt(toke[1], 10, 64); err == nil {
+				b.WriteString(toke[1])
+			} else {
+				b.WriteString("\"")
+				b.WriteString(toke[1])
+				b.WriteString("\"")
+			}
+		}
+	} else {
+		as = strings.Split(at[1], "=")
+		b.WriteString("\"")
+		b.WriteString(as[0])
+		b.WriteString("\": ")
+		if _, err := strconv.Atoi(as[1]); err == nil {
+			b.WriteString(as[1])
+		} else if _, err := strconv.ParseBool(as[1]); err == nil {
+			b.WriteString("\"")
+			b.WriteString(as[1])
+			b.WriteString("\"")
+		} else if _, err := strconv.ParseFloat(as[1], 64); err == nil {
+			b.WriteString(as[1])
+		} else if _, err := strconv.ParseInt(as[1], 10, 64); err == nil {
+			b.WriteString(as[1])
+		} else {
+			b.WriteString("\"")
+			b.WriteString(as[1])
+			b.WriteString("\"")
+		}
+	}
+	b.WriteString("}, \"time\": ")
+	b.WriteString(at[2])
+	b.WriteString("}")
+	return b
+
+}
+
+func (t *toMqttMetric) parseTags(tags string) string{
+	var mess strings.Builder
+	mess.WriteString("\", \"tags\": { ")
+	as := strings.Split(tags, ",")
+	l := len(as) - 1
+	if l > 1 {
+		for i := 1; i < l; i++ {
+			toke := strings.Split(tags, "=")
+			if i > 1 {
+				mess.WriteString(", ")
+			}
+			mess.WriteString("\"")
+			mess.WriteString(toke[0])
+			mess.WriteString("\": \"")
+			mess.WriteString(toke[1])
+			mess.WriteString("\"")
+		}
+	} else {
+		as = strings.Split(tags, "=")
+		mess.WriteString("\"")
+		mess.WriteString(as[0])
+		mess.WriteString("\": \"")
+		mess.WriteString(as[1])
+		mess.WriteString("\"")
+	}
+	mess.WriteString("}")  
+	return mess.String()
+}
  // creates a topic consisting of measurement/tagname/tagvalue for all tags
 func (t *toMqttMetric) createTopic(topicString string) string {
 	var top strings.Builder
@@ -516,14 +630,15 @@ func (t *toMqttMetric) createTopic(topicString string) string {
 	tt = strings.Split(tt[0], ",")
 	top.WriteString("/")
 	top.WriteString(tt[0])
-	top.WriteString("/")
+	//
 	l := len(tt) - 1
 	for i := 1; i < l; i++ {
 		toke := strings.Split(tt[i], "=")
+		top.WriteString("/")
 		top.WriteString(toke[0])
 		top.WriteString("/")
 		top.WriteString(toke[1])
-		top.WriteString("/")
+		//top.WriteString("/")
 	}
 	return top.String()
 }
