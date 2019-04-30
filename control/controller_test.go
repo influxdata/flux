@@ -3,6 +3,7 @@ package control_test
 import (
 	"context"
 	"errors"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -10,10 +11,20 @@ import (
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/control"
+	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/mock"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/stdlib/universe"
+	"go.uber.org/zap/zaptest"
 )
+
+func init() {
+	execute.RegisterSource(executetest.AllocatingFromTestKind, executetest.CreateAllocatingFromSource)
+}
 
 var (
 	mockCompiler = &mock.Compiler{
@@ -144,6 +155,80 @@ func TestController_ExecuteError(t *testing.T) {
 		t.Error("expected error")
 	} else if got, want := err.Error(), "expected error"; got != want {
 		t.Errorf("unexpected error -want/+got\n\t- %q\n\t+ %q", want, got)
+	}
+}
+
+func TestController_LimitExceededError(t *testing.T) {
+	const memoryBytesQuotaPerQuery = 64
+	config := config
+	config.MemoryBytesQuotaPerQuery = memoryBytesQuotaPerQuery
+	ctrl, err := control.New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer shutdown(t, ctrl)
+
+	compiler := &mock.Compiler{
+		CompileFn: func(ctx context.Context) (flux.Program, error) {
+			// Return a program that will allocate one more byte than is allowed.
+			pts := plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("allocating-from-test", &executetest.AllocatingFromProcedureSpec{
+						ByteCount: memoryBytesQuotaPerQuery + 1,
+					}),
+					plan.CreatePhysicalNode("yield", &universe.YieldProcedureSpec{Name: "_result"}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+				Resources: flux.ResourceManagement{
+					ConcurrencyQuota: 1,
+				},
+			}
+
+			ps := plantest.CreatePlanSpec(&pts)
+			prog := &lang.Program{
+				Logger:   zaptest.NewLogger(t),
+				PlanSpec: ps,
+			}
+
+			return prog, nil
+		},
+	}
+
+	q, err := ctrl.Query(context.Background(), compiler)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	ri := flux.NewResultIteratorFromQuery(q)
+	defer ri.Release()
+	for ri.More() {
+		res := ri.Next()
+		err = res.Tables().Do(func(t flux.Table) error {
+			return nil
+		})
+		if err != nil {
+			break
+		}
+	}
+	ri.Release()
+
+	if err == nil {
+		t.Fatal("expected an error")
+	}
+
+	if !strings.Contains(err.Error(), "memory") {
+		t.Fatalf("expected an error about memory limit exceeded, got %v", err)
+	}
+
+	stats := ri.Statistics()
+	if len(stats.RuntimeErrors) != 1 {
+		t.Fatal("expected one runtime error reported in stats")
+	}
+
+	if !strings.Contains(stats.RuntimeErrors[0], "memory") {
+		t.Fatalf("expected an error about memory limit exceeded, got %v", err)
 	}
 }
 
