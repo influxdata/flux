@@ -315,12 +315,16 @@ func (p *parser) parseReturnStatement() *ast.ReturnStatement {
 }
 
 func (p *parser) parseExpressionStatement() *ast.ExpressionStatement {
-	expr := p.parseExpression()
-	loc := expr.Location()
-	return &ast.ExpressionStatement{
-		Expression: expr,
-		BaseNode:   p.baseNode(&loc),
+	stmt := &ast.ExpressionStatement{
+		Expression: p.parseExpression(),
 	}
+	if stmt.Expression != nil {
+		loc := stmt.Expression.Location()
+		stmt.BaseNode = p.baseNode(&loc)
+	} else {
+		stmt.BaseNode = p.baseNode(nil)
+	}
+	return stmt
 }
 
 func (p *parser) parseBlock() *ast.Block {
@@ -335,6 +339,46 @@ func (p *parser) parseBlock() *ast.Block {
 
 func (p *parser) parseExpression() ast.Expression {
 	return p.parseConditionalExpression()
+}
+
+// parseExpressionWhile will continue to parse expressions until
+// the function while the function returns true.
+// If there are multiple ast.Expression nodes that are parsed,
+// they will be combined into an invalid ast.BinaryExpr node.
+// In a well-formed document, this function works identically to
+// parseExpression.
+func (p *parser) parseExpressionWhile(fn func() bool) ast.Expression {
+	var expr ast.Expression
+	for fn() {
+		e := p.parseExpression()
+		if e == nil {
+			// We expected to parse an expression but read nothing.
+			// We need to skip past this token.
+			// TODO(jsternberg): We should pretend the token is
+			// an operator and create a binary expression.
+			// For now, skip past it.
+			pos, _, lit := p.scan()
+			loc := p.loc(pos, pos+token.Pos(len(lit)))
+			p.errs = append(p.errs, ast.Error{
+				Msg: fmt.Sprintf("invalid expression %s@%d:%d-%d:%d: %s", loc.File, loc.Start.Line, loc.Start.Column, loc.End.Line, loc.End.Column, lit),
+			})
+			continue
+		}
+
+		if expr != nil {
+			expr = &ast.BinaryExpression{
+				BaseNode: p.baseNode(p.sourceLocation(
+					locStart(expr),
+					locEnd(e),
+				)),
+				Left:  expr,
+				Right: e,
+			}
+		} else {
+			expr = e
+		}
+	}
+	return expr
 }
 
 func (p *parser) parseExpressionSuffix(expr ast.Expression) ast.Expression {
@@ -773,7 +817,7 @@ func (p *parser) parseCallExpression(callee ast.Expression) ast.Expression {
 
 func (p *parser) parseIndexExpression(callee ast.Expression) ast.Expression {
 	p.open(token.LBRACK, token.RBRACK)
-	expr := p.parseExpression()
+	expr := p.parseExpressionWhile(p.more)
 	end, rbrack := p.close(token.RBRACK)
 	if lit, ok := expr.(*ast.StringLiteral); ok {
 		return &ast.MemberExpression{
@@ -936,7 +980,7 @@ func (p *parser) parseParenBodyExpression(lparen token.Pos) ast.Expression {
 		ident := p.parseIdentifier()
 		return p.parseParenIdentExpression(lparen, ident)
 	default:
-		expr := p.parseExpression()
+		expr := p.parseExpressionWhile(p.more)
 		p.close(token.RPAREN)
 		return expr
 	}
@@ -983,6 +1027,25 @@ func (p *parser) parseParenIdentExpression(lparen token.Pos, key *ast.Identifier
 		return p.parseFunctionExpression(lparen, params)
 	default:
 		expr := p.parseExpressionSuffix(key)
+		for p.more() {
+			rhs := p.parseExpression()
+			if rhs == nil {
+				pos, _, lit := p.scan()
+				loc := p.loc(pos, pos+token.Pos(len(lit)))
+				p.errs = append(p.errs, ast.Error{
+					Msg: fmt.Sprintf("invalid expression %s@%d:%d-%d:%d: %s", loc.File, loc.Start.Line, loc.Start.Column, loc.End.Line, loc.End.Column, lit),
+				})
+				continue
+			}
+			expr = &ast.BinaryExpression{
+				BaseNode: p.baseNode(p.sourceLocation(
+					locStart(expr),
+					locEnd(rhs),
+				)),
+				Left:  expr,
+				Right: rhs,
+			}
+		}
 		p.close(token.RPAREN)
 		return expr
 	}
@@ -1260,17 +1323,21 @@ func (p *parser) close(end token.Token) (pos token.Pos, lit string) {
 	return pos, lit
 }
 
-// position will return a BaseNode with the position information
-// filled based on the start and end position.
-func (p *parser) position(start, end token.Pos) ast.BaseNode {
+func (p *parser) loc(start, end token.Pos) *ast.SourceLocation {
 	soffset := int(start) - p.s.File().Base()
 	eoffset := int(end) - p.s.File().Base()
-	return p.baseNode(&ast.SourceLocation{
+	return &ast.SourceLocation{
 		File:   p.s.File().Name(),
 		Start:  p.s.File().Position(start),
 		End:    p.s.File().Position(end),
 		Source: string(p.src[soffset:eoffset]),
-	})
+	}
+}
+
+// position will return a BaseNode with the position information
+// filled based on the start and end position.
+func (p *parser) position(start, end token.Pos) ast.BaseNode {
+	return p.baseNode(p.loc(start, end))
 }
 
 // posRange will posRange the position cursor to the end of the given

@@ -29,8 +29,7 @@ outData = "
 ,,0,2018-05-22T19:52:00Z,2030-01-01T00:00:00Z,k,m,2018-05-22T19:00:00Z
 "
 
-t_toTime = (table=<-) =>
-	(table
+t_toTime = (table=<-) => table
 		|> range(start: 2018-05-22T19:52:00Z)
 		|> toTime()
 
