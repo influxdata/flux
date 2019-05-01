@@ -1192,6 +1192,30 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 	}
 
 	switch c.Func.Name {
+	case "rate", "delta", "increase":
+		isCounter := true
+		isRate := true
+
+		if c.Func.Name == "delta" {
+			isCounter = false
+			isRate = false
+		}
+		if c.Func.Name == "increase" {
+			isRate = false
+		}
+
+		v, err := t.transpileExpr(c.Args[0])
+		if err != nil {
+			return nil, fmt.Errorf("error transpiling function argument")
+		}
+		return buildPipeline(
+			v,
+			call("promql.extrapolatedRate", map[string]ast.Expression{
+				"isCounter": &ast.BooleanLiteral{Value: isCounter},
+				"isRate":    &ast.BooleanLiteral{Value: isRate},
+			}),
+			dropMeasurementCall,
+		), nil
 	case "timestamp":
 		v, err := t.transpileExpr(c.Args[0])
 		if err != nil {

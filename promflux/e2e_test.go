@@ -45,6 +45,7 @@ var testVariantArgs = map[string][]string{
 	"compBinOp":      []string{"==", "!=", "<", ">", "<=", ">="},
 	"binOp":          []string{"+", "-", "*", "/", "%", "^", "==", "!=", "<", ">", "<=", ">="},
 	"simpleMathFunc": []string{"abs", "ceil", "floor", "exp", "sqrt", "ln", "log2", "log10", "round"},
+	"extrapolatedRateFunc": []string{"delta", "rate", "increase"},
 }
 
 var queries = []struct {
@@ -330,6 +331,17 @@ var queries2 = []struct {
 	{
 		query:       `{{.simpleMathFunc}}(-demo_cpu_usage_seconds_total)`,
 		variantArgs: []string{"simpleMathFunc"},
+	},
+	{
+		query:       "{{.extrapolatedRateFunc}}(nonexistent_metric[5m])",
+		variantArgs: []string{"extrapolatedRateFunc"},
+	},
+	{
+		query:       "{{.extrapolatedRateFunc}}(demo_cpu_usage_seconds_total[{{.range}}])",
+		variantArgs: []string{"extrapolatedRateFunc", "range"},
+	},
+	{
+		query: "sum by(job, instance) (rate(demo_cpu_usage_seconds_total[1m]))",
 	},
 }
 
