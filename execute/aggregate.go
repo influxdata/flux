@@ -21,7 +21,7 @@ type aggregateTransformation struct {
 
 type AggregateConfig struct {
 	plan.DefaultCost
-	Columns []string `json:"column"`
+	Columns []string `json:"columns"`
 }
 
 var DefaultAggregateConfig = AggregateConfig{
@@ -155,7 +155,7 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 			case flux.TString:
 				vf.(DoStringAgg).DoString(cr.Strings(tj))
 			default:
-				return fmt.Errorf("unsupport aggregate type %v", c.Type)
+				return fmt.Errorf("unsupported aggregate type %v", c.Type)
 			}
 		}
 		return nil

@@ -957,7 +957,7 @@ func (l *RegexpLiteral) Copy() Node {
 	nl := new(RegexpLiteral)
 	*nl = *l
 
-	nl.Value = l.Value.Copy()
+	nl.Value = l.Value
 
 	return nl
 }

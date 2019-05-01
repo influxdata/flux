@@ -142,8 +142,8 @@ type reduceTransformation struct {
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 
-	fn      *execute.RowReduceFn
-	reducer values.Object
+	fn             *execute.RowReduceFn
+	neutralElement map[string]values.Value
 }
 
 func NewReduceTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ReduceProcedureSpec) (*reduceTransformation, error) {
@@ -152,61 +152,31 @@ func NewReduceTransformation(d execute.Dataset, cache execute.TableBuilderCache,
 		return nil, err
 	}
 
-	valMap := make(map[string]values.Value)
+	ne := make(map[string]values.Value)
 	for k, v := range spec.ReducerType.Properties() {
 		newVal, err := values.NewFromString(v.Nature(), spec.Identity[k])
 		if err != nil {
 			return nil, err
 		}
-		valMap[k] = newVal
+		ne[k] = newVal
 	}
-	r := values.NewObjectWithValues(valMap)
 
 	return &reduceTransformation{
-		d:       d,
-		cache:   cache,
-		fn:      fn,
-		reducer: r,
+		d:              d,
+		cache:          cache,
+		fn:             fn,
+		neutralElement: ne,
 	}, nil
 }
 
 func (t *reduceTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	// Find the output table that we will write to.  For reduce, we will write rows with the same
-	// table group key
-	builder, created := t.cache.TableBuilder(tbl.Key())
-	if !created {
-		return fmt.Errorf("aggregate found duplicate table with key: %v", tbl.Key())
-	}
 
-	// add the key columns to the table.
-	if err := execute.AddTableKeyCols(tbl.Key(), builder); err != nil {
-		return err
-	}
-	// go maps have unsorted keys, so we need to extract the keys and sort them
-	typ := t.reducer.Type().Properties()
-	var typeKeys []string
-	for k := range typ {
-		typeKeys = append(typeKeys, k)
-	}
-	sort.Strings(typeKeys)
-	// add table columns for each key in the reducer type map
-	for _, k := range typeKeys {
-		if tbl.Key().HasCol(k) {
-			continue
-		}
-		if _, err := builder.AddCol(flux.ColMeta{
-			Label: k,
-			Type:  flux.ColumnType(typ[k]),
-		}); err != nil {
-			return err
-		}
-	}
-
+	var reducer values.Object = values.NewObjectWithValues(t.neutralElement)
 	// t.fn.Prepare will pre-compile the function given the specific columns of the input table,
 	// plus the reducer type.  For a given set of type values, we will cache the compiled function to
 	// avoid costly recompilation.
 	cols := tbl.Cols()
-	err := t.fn.Prepare(cols, map[string]semantic.Type{"accumulator": t.reducer.Type()})
+	err := t.fn.Prepare(cols, map[string]semantic.Type{"accumulator": reducer.Type()})
 	if err != nil {
 		// TODO(nathanielc): Should we not fail the query for failed compilation?
 		return err
@@ -221,32 +191,75 @@ func (t *reduceTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		for i := 0; i < l; i++ {
 			// the RowReduce function type takes a row of values, and an accumulator value, and
 			// computes a new accumulator result.
-			m, err := t.fn.Eval(i, cr, map[string]values.Value{"accumulator": t.reducer})
+			m, err := t.fn.Eval(i, cr, map[string]values.Value{"accumulator": reducer})
 			if err != nil {
 				return errors.Wrap(err, "failed to evaluate reduce function")
 			}
-			t.reducer = m
+			reducer = m
 		}
 		return nil
 	}); err != nil {
 		return err
 	}
 
-	for j, c := range builder.Cols() {
-		v, ok := t.reducer.Get(c.Label)
-		if !ok {
-			if idx := execute.ColIdx(c.Label, tbl.Key().Cols()); idx >= 0 {
-				v = tbl.Key().Value(idx)
-			} else {
-				// This should be unreachable
-				return fmt.Errorf("could not find value for column %q", c.Label)
-			}
-		}
-		if err := builder.AppendValue(j, v); err != nil {
-			return err
+	gkb := execute.NewGroupKeyBuilder(tbl.Key())
+	typ := reducer.Type().Properties()
+	var typeKeys []string
+	for k := range typ {
+		typeKeys = append(typeKeys, k)
+	}
+	// go maps have unsorted keys, so we need to extract the keys and sort them
+	sort.Strings(typeKeys)
+	for _, k := range typeKeys {
+		if tbl.Key().HasCol(k) {
+			val, _ := reducer.Get(k)
+			gkb.SetKeyValue(k, val)
 		}
 	}
 
+	// Find the output table that we will write to.  For reduce, we will write rows with the same
+	// table group key
+	tblKey, err := gkb.Build()
+	if err != nil {
+		return err
+	}
+	builder, created := t.cache.TableBuilder(tblKey)
+	if created {
+		// add the key columns to the table.
+		if err := execute.AddTableKeyCols(tblKey, builder); err != nil {
+			return err
+		}
+
+		// add table columns for each key in the reducer type map
+		for _, k := range typeKeys {
+			if tblKey.HasCol(k) {
+				continue
+			}
+			if _, err := builder.AddCol(flux.ColMeta{
+				Label: k,
+				Type:  flux.ColumnType(typ[k]),
+			}); err != nil {
+				return err
+			}
+		}
+
+		for j, c := range builder.Cols() {
+			v, ok := reducer.Get(c.Label)
+			if !ok {
+				if idx := execute.ColIdx(c.Label, tbl.Key().Cols()); idx >= 0 {
+					v = tbl.Key().Value(idx)
+				} else {
+					// This should be unreachable
+					return fmt.Errorf("could not find value for column %q", c.Label)
+				}
+			}
+			if err := builder.AppendValue(j, v); err != nil {
+				return err
+			}
+		}
+	} else {
+		return errors.New("two reducers writing result to the same table")
+	}
 	return nil
 }
 

@@ -448,6 +448,42 @@ func TestCompileAndEval(t *testing.T) {
 			want:    values.NewBool(true),
 			wantErr: false,
 		},
+		{
+			name: "conditional",
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "t"}},
+							{Key: &semantic.Identifier{Name: "c"}},
+							{Key: &semantic.Identifier{Name: "a"}},
+						},
+					},
+					Body: &semantic.ConditionalExpression{
+						Test: &semantic.IdentifierExpression{
+							Name: "t",
+						},
+						Consequent: &semantic.IdentifierExpression{
+							Name: "c",
+						},
+						Alternate: &semantic.IdentifierExpression{
+							Name: "a",
+						},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"t": semantic.Bool,
+				"c": semantic.String,
+				"a": semantic.String,
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"t": values.NewBool(true),
+				"c": values.NewString("cats"),
+				"a": values.NewString("dogs"),
+			}),
+			want: values.NewString("cats"),
+		},
 	}
 
 	for _, tc := range testCases {

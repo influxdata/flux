@@ -12,6 +12,7 @@ import (
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/semantic"
@@ -20,16 +21,19 @@ import (
 )
 
 func init() {
-	execute.RegisterSource("from-test", executetest.CreateFromSource)
+	execute.RegisterSource(executetest.FromTestKind, executetest.CreateFromSource)
+	execute.RegisterSource(executetest.AllocatingFromTestKind, executetest.CreateAllocatingFromSource)
 	execute.RegisterTransformation(executetest.ToTestKind, executetest.CreateToTransformation)
 	plan.RegisterProcedureSpecWithSideEffect(executetest.ToTestKind, executetest.NewToProcedure, executetest.ToTestKind)
 }
 
 func TestExecutor_Execute(t *testing.T) {
 	testcases := []struct {
-		name string
-		spec *plantest.PlanSpec
-		want map[string][]*executetest.Table
+		name      string
+		spec      *plantest.PlanSpec
+		want      map[string][]*executetest.Table
+		allocator *memory.Allocator
+		wantErr   error
 	}{
 		{
 			name: `from`,
@@ -694,6 +698,20 @@ func TestExecutor_Execute(t *testing.T) {
 				}},
 			},
 		},
+		{
+			name: "memory limit exceeded",
+			spec: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("allocating-from-test", &executetest.AllocatingFromProcedureSpec{ByteCount: 65}),
+					plan.CreatePhysicalNode("yield", &universe.YieldProcedureSpec{Name: "_result"}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+			allocator: &memory.Allocator{Limit: func(v int64) *int64 { return &v }(64)},
+			wantErr:   memory.LimitExceededError{Limit: 64, Wanted: 65},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -711,22 +729,44 @@ func TestExecutor_Execute(t *testing.T) {
 			plan := plantest.CreatePlanSpec(tc.spec)
 
 			exe := execute.NewExecutor(nil, zaptest.NewLogger(t))
-			results, _, err := exe.Execute(context.Background(), plan, executetest.UnlimitedAllocator)
-			if err != nil {
+
+			alloc := tc.allocator
+			if alloc == nil {
+				alloc = executetest.UnlimitedAllocator
+			}
+
+			// Execute the query and preserve any error returned
+			results, _, err := exe.Execute(context.Background(), plan, alloc)
+			var got map[string][]*executetest.Table
+			if err == nil {
+				got = make(map[string][]*executetest.Table, len(results))
+				for name, r := range results {
+					if err = r.Tables().Do(func(tbl flux.Table) error {
+						cb, err := executetest.ConvertTable(tbl)
+						if err != nil {
+							return err
+						}
+						got[name] = append(got[name], cb)
+						return nil
+					}); err != nil {
+						break
+					}
+				}
+			}
+
+			if tc.wantErr == nil && err != nil {
 				t.Fatal(err)
 			}
-			got := make(map[string][]*executetest.Table, len(results))
-			for name, r := range results {
-				if err := r.Tables().Do(func(tbl flux.Table) error {
-					cb, err := executetest.ConvertTable(tbl)
-					if err != nil {
-						return err
-					}
-					got[name] = append(got[name], cb)
-					return nil
-				}); err != nil {
-					t.Fatal(err)
+
+			if tc.wantErr != nil {
+				if err == nil {
+					t.Fatalf(`expected an error "%v" but got none`, tc.wantErr)
 				}
+
+				if diff := cmp.Diff(tc.wantErr, err); diff != "" {
+					t.Fatalf("unexpected error: -want/+got: %v", diff)
+				}
+				return
 			}
 
 			for _, g := range got {

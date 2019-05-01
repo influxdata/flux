@@ -42,7 +42,10 @@ func execute(cmd *cobra.Command, args []string) error {
 		Query: script,
 	}
 
-	querier := NewQuerier()
+	querier, err := NewQuerier()
+	if err != nil {
+		return err
+	}
 	result, err := querier.Query(context.Background(), c)
 	if err != nil {
 		return err

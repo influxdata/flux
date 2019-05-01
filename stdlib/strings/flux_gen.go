@@ -21,11 +21,11 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 18,
-					Line:   8,
+					Column: 2,
+					Line:   21,
 				},
 				File:   "strings.flux",
-				Source: "package strings\n\n// Transformation functions\nbuiltin trim\nbuiltin toUpper\nbuiltin toLower\nbuiltin title\nbuiltin trimSpace",
+				Source: "package strings\n\n// Transformation functions\nbuiltin title\nbuiltin toUpper\nbuiltin toLower\nbuiltin trim\nbuiltin trimPrefix\nbuiltin trimSpace\nbuiltin trimSuffix\n\n// hack to simulate an imported strings package\nstrings = {\n  title:title\n  toUpper:toUpper\n  toLower:toLower\n  trim:trim\n  trimPrefix:trimPrefix\n  trimSpace:trimSpace\n  trimSuffix:trimSuffix\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -37,11 +37,11 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 13,
+						Column: 14,
 						Line:   4,
 					},
 					File:   "strings.flux",
-					Source: "builtin trim",
+					Source: "builtin title",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -53,18 +53,18 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 13,
+							Column: 14,
 							Line:   4,
 						},
 						File:   "strings.flux",
-						Source: "trim",
+						Source: "title",
 						Start: ast.Position{
 							Column: 9,
 							Line:   4,
 						},
 					},
 				},
-				Name: "trim",
+				Name: "title",
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -139,11 +139,11 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 14,
+						Column: 13,
 						Line:   7,
 					},
 					File:   "strings.flux",
-					Source: "builtin title",
+					Source: "builtin trim",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -155,18 +155,52 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 14,
+							Column: 13,
 							Line:   7,
 						},
 						File:   "strings.flux",
-						Source: "title",
+						Source: "trim",
 						Start: ast.Position{
 							Column: 9,
 							Line:   7,
 						},
 					},
 				},
-				Name: "title",
+				Name: "trim",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 19,
+						Line:   8,
+					},
+					File:   "strings.flux",
+					Source: "builtin trimPrefix",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 19,
+							Line:   8,
+						},
+						File:   "strings.flux",
+						Source: "trimPrefix",
+						Start: ast.Position{
+							Column: 9,
+							Line:   8,
+						},
+					},
+				},
+				Name: "trimPrefix",
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -174,13 +208,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   8,
+						Line:   9,
 					},
 					File:   "strings.flux",
 					Source: "builtin trimSpace",
 					Start: ast.Position{
 						Column: 1,
-						Line:   8,
+						Line:   9,
 					},
 				},
 			},
@@ -190,17 +224,467 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   8,
+							Line:   9,
 						},
 						File:   "strings.flux",
 						Source: "trimSpace",
 						Start: ast.Position{
 							Column: 9,
-							Line:   8,
+							Line:   9,
 						},
 					},
 				},
 				Name: "trimSpace",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 19,
+						Line:   10,
+					},
+					File:   "strings.flux",
+					Source: "builtin trimSuffix",
+					Start: ast.Position{
+						Column: 1,
+						Line:   10,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 19,
+							Line:   10,
+						},
+						File:   "strings.flux",
+						Source: "trimSuffix",
+						Start: ast.Position{
+							Column: 9,
+							Line:   10,
+						},
+					},
+				},
+				Name: "trimSuffix",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   21,
+					},
+					File:   "strings.flux",
+					Source: "strings = {\n  title:title\n  toUpper:toUpper\n  toLower:toLower\n  trim:trim\n  trimPrefix:trimPrefix\n  trimSpace:trimSpace\n  trimSuffix:trimSuffix\n}",
+					Start: ast.Position{
+						Column: 1,
+						Line:   13,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   13,
+						},
+						File:   "strings.flux",
+						Source: "strings",
+						Start: ast.Position{
+							Column: 1,
+							Line:   13,
+						},
+					},
+				},
+				Name: "strings",
+			},
+			Init: &ast.ObjectExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   21,
+						},
+						File:   "strings.flux",
+						Source: "{\n  title:title\n  toUpper:toUpper\n  toLower:toLower\n  trim:trim\n  trimPrefix:trimPrefix\n  trimSpace:trimSpace\n  trimSuffix:trimSuffix\n}",
+						Start: ast.Position{
+							Column: 11,
+							Line:   13,
+						},
+					},
+				},
+				Properties: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   14,
+							},
+							File:   "strings.flux",
+							Source: "title:title",
+							Start: ast.Position{
+								Column: 3,
+								Line:   14,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   14,
+								},
+								File:   "strings.flux",
+								Source: "title",
+								Start: ast.Position{
+									Column: 3,
+									Line:   14,
+								},
+							},
+						},
+						Name: "title",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   14,
+								},
+								File:   "strings.flux",
+								Source: "title",
+								Start: ast.Position{
+									Column: 9,
+									Line:   14,
+								},
+							},
+						},
+						Name: "title",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 18,
+								Line:   15,
+							},
+							File:   "strings.flux",
+							Source: "toUpper:toUpper",
+							Start: ast.Position{
+								Column: 3,
+								Line:   15,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 10,
+									Line:   15,
+								},
+								File:   "strings.flux",
+								Source: "toUpper",
+								Start: ast.Position{
+									Column: 3,
+									Line:   15,
+								},
+							},
+						},
+						Name: "toUpper",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 18,
+									Line:   15,
+								},
+								File:   "strings.flux",
+								Source: "toUpper",
+								Start: ast.Position{
+									Column: 11,
+									Line:   15,
+								},
+							},
+						},
+						Name: "toUpper",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 18,
+								Line:   16,
+							},
+							File:   "strings.flux",
+							Source: "toLower:toLower",
+							Start: ast.Position{
+								Column: 3,
+								Line:   16,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 10,
+									Line:   16,
+								},
+								File:   "strings.flux",
+								Source: "toLower",
+								Start: ast.Position{
+									Column: 3,
+									Line:   16,
+								},
+							},
+						},
+						Name: "toLower",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 18,
+									Line:   16,
+								},
+								File:   "strings.flux",
+								Source: "toLower",
+								Start: ast.Position{
+									Column: 11,
+									Line:   16,
+								},
+							},
+						},
+						Name: "toLower",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   17,
+							},
+							File:   "strings.flux",
+							Source: "trim:trim",
+							Start: ast.Position{
+								Column: 3,
+								Line:   17,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 7,
+									Line:   17,
+								},
+								File:   "strings.flux",
+								Source: "trim",
+								Start: ast.Position{
+									Column: 3,
+									Line:   17,
+								},
+							},
+						},
+						Name: "trim",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   17,
+								},
+								File:   "strings.flux",
+								Source: "trim",
+								Start: ast.Position{
+									Column: 8,
+									Line:   17,
+								},
+							},
+						},
+						Name: "trim",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   18,
+							},
+							File:   "strings.flux",
+							Source: "trimPrefix:trimPrefix",
+							Start: ast.Position{
+								Column: 3,
+								Line:   18,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 13,
+									Line:   18,
+								},
+								File:   "strings.flux",
+								Source: "trimPrefix",
+								Start: ast.Position{
+									Column: 3,
+									Line:   18,
+								},
+							},
+						},
+						Name: "trimPrefix",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 24,
+									Line:   18,
+								},
+								File:   "strings.flux",
+								Source: "trimPrefix",
+								Start: ast.Position{
+									Column: 14,
+									Line:   18,
+								},
+							},
+						},
+						Name: "trimPrefix",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 22,
+								Line:   19,
+							},
+							File:   "strings.flux",
+							Source: "trimSpace:trimSpace",
+							Start: ast.Position{
+								Column: 3,
+								Line:   19,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   19,
+								},
+								File:   "strings.flux",
+								Source: "trimSpace",
+								Start: ast.Position{
+									Column: 3,
+									Line:   19,
+								},
+							},
+						},
+						Name: "trimSpace",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 22,
+									Line:   19,
+								},
+								File:   "strings.flux",
+								Source: "trimSpace",
+								Start: ast.Position{
+									Column: 13,
+									Line:   19,
+								},
+							},
+						},
+						Name: "trimSpace",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   20,
+							},
+							File:   "strings.flux",
+							Source: "trimSuffix:trimSuffix",
+							Start: ast.Position{
+								Column: 3,
+								Line:   20,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 13,
+									Line:   20,
+								},
+								File:   "strings.flux",
+								Source: "trimSuffix",
+								Start: ast.Position{
+									Column: 3,
+									Line:   20,
+								},
+							},
+						},
+						Name: "trimSuffix",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 24,
+									Line:   20,
+								},
+								File:   "strings.flux",
+								Source: "trimSuffix",
+								Start: ast.Position{
+									Column: 14,
+									Line:   20,
+								},
+							},
+						},
+						Name: "trimSuffix",
+					},
+				}},
 			},
 		}},
 		Imports: nil,

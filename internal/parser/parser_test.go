@@ -1515,9 +1515,6 @@ import "path/bar"
 				},
 			},
 		},
-		// TODO(jsternberg): It would be ideal if the rparen was interpreted
-		// as either a bad operator or a bad expression, but we do not yet
-		// have that functionality.
 		{
 			name: "index with unexpected rparen",
 			raw:  `a[b)]`,
@@ -1525,12 +1522,12 @@ import "path/bar"
 				BaseNode: base("1:1", "1:6"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
-						BaseNode: base("1:1", "1:5"),
+						BaseNode: base("1:1", "1:6"),
 						Expression: &ast.IndexExpression{
 							BaseNode: ast.BaseNode{
-								Loc: loc("1:1", "1:5"),
+								Loc: loc("1:1", "1:6"),
 								Errors: []ast.Error{
-									{Msg: "expected RBRACK, got RPAREN"},
+									{Msg: "invalid expression @1:4-1:5: )"},
 								},
 							},
 							Array: &ast.Identifier{
@@ -1542,24 +1539,6 @@ import "path/bar"
 								Name:     "b",
 							},
 						},
-					},
-					&ast.BadStatement{
-						BaseNode: ast.BaseNode{
-							Loc: loc("1:4", "1:5"),
-							Errors: []ast.Error{
-								{Msg: "invalid statement @1:4-1:5: )"},
-							},
-						},
-						Text: ")",
-					},
-					&ast.BadStatement{
-						BaseNode: ast.BaseNode{
-							Loc: loc("1:5", "1:6"),
-							Errors: []ast.Error{
-								{Msg: "invalid statement @1:5-1:6: ]"},
-							},
-						},
-						Text: "]",
 					},
 				},
 			},
@@ -2090,6 +2069,134 @@ a = 5.0
 							Right: &ast.FloatLiteral{
 								BaseNode: base("1:11", "1:14"),
 								Value:    1.0,
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "binary operator precedence - double subtraction",
+			raw:  `1 - 2 - 3`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:10"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:10"),
+						Expression: &ast.BinaryExpression{
+							BaseNode: base("1:1", "1:10"),
+							Operator: ast.SubtractionOperator,
+							Left: &ast.BinaryExpression{
+								BaseNode: base("1:1", "1:6"),
+								Operator: ast.SubtractionOperator,
+								Left: &ast.IntegerLiteral{
+									BaseNode: base("1:1", "1:2"),
+									Value:    1,
+								},
+								Right: &ast.IntegerLiteral{
+									BaseNode: base("1:5", "1:6"),
+									Value:    2,
+								},
+							},
+							Right: &ast.IntegerLiteral{
+								BaseNode: base("1:9", "1:10"),
+								Value:    3,
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "binary operator precedence - double subtraction with parens",
+			raw:  `1 - (2 - 3)`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:11"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:11"),
+						Expression: &ast.BinaryExpression{
+							BaseNode: base("1:1", "1:11"),
+							Operator: ast.SubtractionOperator,
+							Left: &ast.IntegerLiteral{
+								BaseNode: base("1:1", "1:2"),
+								Value:    1,
+							},
+							Right: &ast.BinaryExpression{
+								BaseNode: base("1:6", "1:11"),
+								Operator: ast.SubtractionOperator,
+								Left: &ast.IntegerLiteral{
+									BaseNode: base("1:6", "1:7"),
+									Value:    2,
+								},
+								Right: &ast.IntegerLiteral{
+									BaseNode: base("1:10", "1:11"),
+									Value:    3,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "binary operator precedence - double sum",
+			raw:  `1 + 2 + 3`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:10"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:10"),
+						Expression: &ast.BinaryExpression{
+							BaseNode: base("1:1", "1:10"),
+							Operator: ast.AdditionOperator,
+							Left: &ast.BinaryExpression{
+								BaseNode: base("1:1", "1:6"),
+								Operator: ast.AdditionOperator,
+								Left: &ast.IntegerLiteral{
+									BaseNode: base("1:1", "1:2"),
+									Value:    1,
+								},
+								Right: &ast.IntegerLiteral{
+									BaseNode: base("1:5", "1:6"),
+									Value:    2,
+								},
+							},
+							Right: &ast.IntegerLiteral{
+								BaseNode: base("1:9", "1:10"),
+								Value:    3,
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "binary operator precedence - double sum with parens",
+			raw:  `1 + (2 + 3)`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:11"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:11"),
+						Expression: &ast.BinaryExpression{
+							BaseNode: base("1:1", "1:11"),
+							Operator: ast.AdditionOperator,
+							Left: &ast.IntegerLiteral{
+								BaseNode: base("1:1", "1:2"),
+								Value:    1,
+							},
+							Right: &ast.BinaryExpression{
+								BaseNode: base("1:6", "1:11"),
+								Operator: ast.AdditionOperator,
+								Left: &ast.IntegerLiteral{
+									BaseNode: base("1:6", "1:7"),
+									Value:    2,
+								},
+								Right: &ast.IntegerLiteral{
+									BaseNode: base("1:10", "1:11"),
+									Value:    3,
+								},
 							},
 						},
 					},
@@ -3067,6 +3174,119 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/`,
 											},
 										},
 									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "conditional",
+			raw:  `a = if true then 0 else 1`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:26"),
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
+						BaseNode: base("1:1", "1:26"),
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "a",
+						},
+						Init: &ast.ConditionalExpression{
+							BaseNode: base("1:5", "1:26"),
+							Test: &ast.Identifier{
+								BaseNode: base("1:8", "1:12"),
+								Name:     "true",
+							},
+							Consequent: &ast.IntegerLiteral{
+								BaseNode: base("1:18", "1:19"),
+							},
+							Alternate: &ast.IntegerLiteral{
+								BaseNode: base("1:25", "1:26"),
+								Value:    1,
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "nested conditionals",
+			raw: `if if b < 0 then true else false
+                  then if c > 0 then 30 else 60
+                  else if d == 0 then 90 else 120`,
+			want: &ast.File{
+				BaseNode: base("1:1", "3:50"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "3:50"),
+						Expression: &ast.ConditionalExpression{
+							BaseNode: base("1:1", "3:50"),
+							Test: &ast.ConditionalExpression{
+								BaseNode: base("1:4", "1:33"),
+								Test: &ast.BinaryExpression{
+									BaseNode: base("1:7", "1:12"),
+									Operator: ast.LessThanOperator,
+									Left: &ast.Identifier{
+										BaseNode: base("1:7", "1:8"),
+										Name:     "b",
+									},
+									Right: &ast.IntegerLiteral{
+										BaseNode: base("1:11", "1:12"),
+									},
+								},
+								Consequent: &ast.Identifier{
+									BaseNode: base("1:18", "1:22"),
+									Name:     "true",
+								},
+								Alternate: &ast.Identifier{
+									BaseNode: base("1:28", "1:33"),
+									Name:     "false",
+								},
+							},
+							Consequent: &ast.ConditionalExpression{
+								BaseNode: base("2:24", "2:48"),
+								Test: &ast.BinaryExpression{
+									BaseNode: base("2:27", "2:32"),
+									Operator: ast.GreaterThanOperator,
+									Left: &ast.Identifier{
+										BaseNode: base("2:27", "2:28"),
+										Name:     "c",
+									},
+									Right: &ast.IntegerLiteral{
+										BaseNode: base("2:31", "2:32"),
+									},
+								},
+								Consequent: &ast.IntegerLiteral{
+									BaseNode: base("2:38", "2:40"),
+									Value:    30,
+								},
+								Alternate: &ast.IntegerLiteral{
+									BaseNode: base("2:46", "2:48"),
+									Value:    60,
+								},
+							},
+							Alternate: &ast.ConditionalExpression{
+								BaseNode: base("3:24", "3:50"),
+								Test: &ast.BinaryExpression{
+									BaseNode: base("3:27", "3:33"),
+									Operator: ast.EqualOperator,
+									Left: &ast.Identifier{
+										BaseNode: base("3:27", "3:28"),
+										Name:     "d",
+									},
+									Right: &ast.IntegerLiteral{
+										BaseNode: base("3:32", "3:33"),
+									},
+								},
+								Consequent: &ast.IntegerLiteral{
+									BaseNode: base("3:39", "3:41"),
+									Value:    90,
+								},
+								Alternate: &ast.IntegerLiteral{
+									BaseNode: base("3:47", "3:50"),
+									Value:    120,
 								},
 							},
 						},
@@ -4621,6 +4841,106 @@ string"
 							BaseNode: base("1:3", "1:8"),
 							Name:     "ident",
 						},
+					},
+				},
+			},
+		},
+		{
+			name: "multiple idents in parens",
+			raw:  `(a b)`,
+			want: &ast.File{
+				// TODO(jsternberg): Parens aren't recorded correctly
+				// in the source and are mostly ignored.
+				BaseNode: base("1:1", "1:5"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:2", "1:5"),
+						Expression: &ast.BinaryExpression{
+							BaseNode: ast.BaseNode{
+								Loc: loc("1:2", "1:5"),
+								Errors: []ast.Error{
+									{Msg: "expected an operator between two expressions"},
+								},
+							},
+							Left: &ast.Identifier{
+								BaseNode: base("1:2", "1:3"),
+								Name:     "a",
+							},
+							Right: &ast.Identifier{
+								BaseNode: base("1:4", "1:5"),
+								Name:     "b",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "missing left hand side",
+			raw:  `(*b)`,
+			want: &ast.File{
+				// TODO(jsternberg): Parens aren't recorded correctly
+				// in the source and are mostly ignored.
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.BinaryExpression{
+							BaseNode: ast.BaseNode{
+								Errors: []ast.Error{
+									{Msg: "missing left hand side of expression"},
+								},
+							},
+							Operator: ast.MultiplicationOperator,
+							Right: &ast.Identifier{
+								BaseNode: base("1:3", "1:4"),
+								Name:     "b",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "missing right hand side",
+			raw:  `(a*)`,
+			want: &ast.File{
+				// TODO(jsternberg): Parens aren't recorded correctly
+				// in the source and are mostly ignored.
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.BinaryExpression{
+							BaseNode: ast.BaseNode{
+								Errors: []ast.Error{
+									{Msg: "missing right hand side of expression"},
+								},
+							},
+							Operator: ast.MultiplicationOperator,
+							Left: &ast.Identifier{
+								BaseNode: base("1:2", "1:3"),
+								Name:     "a",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "illegal expression",
+			raw:  `(@)`,
+			want: &ast.File{
+				// TODO(jsternberg): Parens aren't recorded correctly
+				// in the source and are mostly ignored.
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: ast.BaseNode{
+							Errors: []ast.Error{
+								{Msg: "invalid expression @1:2-1:3: @"},
+							},
+						},
+						// TODO(jsternberg): This should be a BadExpression.
+						// We are adding this though to ensure that
+						// parseExpressionWhile does not end up in an infinite
+						// loop.
+						Expression: nil,
 					},
 				},
 			},

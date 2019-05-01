@@ -26,7 +26,9 @@ The parser directly implements the following grammar.
     AssignStatement                = "=" Expression .
     ReturnStatement                = "return" Expression .
     ExpressionStatement            = Expression .
-    Expression                     = LogicalOrExpression .
+    Expression                     = ConditionalExpression .
+    ConditionalExpression          = LogicalExpression
+                                   | "if" Expression "then" Expression "else" Expression .
     ExpressionSuffix               = { PostfixOperator } { PipeExpressionSuffix } { MultiplicativeExpressionSuffix } { AdditiveExpressionSuffix } { ComparisonExpressionSuffix } { LogicalAndExpressionSuffix } { LogicalOrExpressionSuffix } .
     LogicalOrExpression            = LogicalAndExpression { LogicalOrExpressionSuffix } .
     LogicalOrExpressionSuffix      = LogicalOrOperator LogicalAndExpression .
@@ -110,18 +112,20 @@ To determine which tokens a production accepts, compute `FIRST(X)` for each prod
 
 Operator precedence is defined within the grammar itself so a precedence table is not needed. While the table itself is not needed and not used in the parser itself, a table is provided below for human readability with verifying the grammar.
 
-|Precedence| Operator |        Description        |
-|----------|----------|---------------------------|
-|     1    |  `a()`   |       Function call       |
-|          |  `a[]`   |  Member or index access   |
-|          |   `.`    |       Member access       |
-|     2    | `*` `/`  |Multiplication and division|
-|     3    | `+` `-`  | Addition and subtraction  |
-|     4    |`==` `!=` |   Comparison operators    |
-|          | `<` `<=` |                           |
-|          | `>` `>=` |                           |
-|          |`=~` `!~` |                           |
-|     5    |  `not`   | Unary logical expression  |
-|     6    |`and` `or`|    Logical AND and OR     |
+|Precedence| Operator       |        Description        |
+|----------|----------------|---------------------------|
+|     1    |  `a()`         |       Function call       |
+|          |  `a[]`         |  Member or index access   |
+|          |   `.`          |       Member access       |
+|     2    | `*` `/`        |Multiplication and division|
+|     3    | `+` `-`        | Addition and subtraction  |
+|     4    | `==` `!=`      |   Comparison operators    |
+|          | `<` `<=`       |                           |
+|          | `>` `>=`       |                           |
+|          | `=~` `!~`      |                           |
+|     5    |  `not`         | Unary logical expression  |
+|     6    |  `and`         |       Logical AND         |
+|     7    |   `or`         |       Logical OR          |
+|     8    | `if/then/else` |  conditional expression   |
 
 Within the grammar itself, precedence is reversed so lower precedence operators appear above higher precedence operators. This ensures that the higher precedence values are nested within lower precedence operators.

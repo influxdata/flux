@@ -74,6 +74,9 @@ import "github.com/influxdata/flux/internal/token"
         "option" => { s.token = token.OPTION; fbreak; };
         "builtin" => { s.token = token.BUILTIN; fbreak; };
         "test" => { s.token = token.TEST; fbreak; };
+        "if" => { s.token = token.IF; fbreak; };
+        "then" => { s.token = token.THEN; fbreak; };
+        "else" => { s.token = token.ELSE; fbreak; };
 
         identifier => { s.token = token.IDENT; fbreak; };
         int_lit => { s.token = token.INT; fbreak; };

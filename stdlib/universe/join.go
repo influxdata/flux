@@ -242,6 +242,7 @@ type mergeJoinTransformation struct {
 	leftName, rightName string
 
 	parentState map[execute.DatasetID]*mergeJoinParentState
+	err         error
 
 	keys []string
 }
@@ -327,8 +328,10 @@ func (t *mergeJoinTransformation) UpdateProcessingTime(id execute.DatasetID, pt 
 func (t *mergeJoinTransformation) Finish(id execute.DatasetID, err error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	if err != nil {
-		t.d.Finish(err)
+
+	// Only report the first error that occurs.
+	if t.err == nil && err != nil {
+		t.err = err
 	}
 
 	t.parentState[id].finished = true
@@ -338,7 +341,7 @@ func (t *mergeJoinTransformation) Finish(id execute.DatasetID, err error) {
 	}
 
 	if finished {
-		t.d.Finish(nil)
+		t.d.Finish(t.err)
 	}
 }
 
@@ -406,15 +409,19 @@ func (buf *streamBuffer) table(key flux.GroupKey) *execute.ColListTableBuilder {
 	return buf.data[key]
 }
 
-func (buf *streamBuffer) insert(table flux.Table) {
+func (buf *streamBuffer) insert(table flux.Table) error {
 	// Construct a new table builder with same schema as input table
 	builder := execute.NewColListTableBuilder(table.Key(), buf.alloc)
 	// this will only error if we try to add a duplicate column to the builder.
 	// since this is a new table, that won't happen.
-	_ = execute.AddTableCols(table, builder)
+	if err := execute.AddTableCols(table, builder); err != nil {
+		return err
+	}
 
 	// Append the input table to this builder, safe to ignore errors
-	_ = execute.AppendTable(table, builder)
+	if err := execute.AppendTable(table, builder); err != nil {
+		return err
+	}
 
 	// Insert this table into the buffer
 	buf.data[table.Key()] = builder
@@ -434,6 +441,7 @@ func (buf *streamBuffer) insert(table flux.Table) {
 			buf.last = leftKeyValue
 		}
 	}
+	return nil
 }
 
 func (buf *streamBuffer) expire(key flux.GroupKey) {
@@ -712,16 +720,13 @@ func (c *MergeJoinCache) insertIntoBuffer(id execute.DatasetID, tbl flux.Table) 
 				// Discard the table and return.  Note: we need to iterate over the
 				// table at least once:
 				// https://github.com/influxdata/flux/issues/643
-				err := tbl.Do(func(flux.ColReader) error {
+				return tbl.Do(func(flux.ColReader) error {
 					return nil
 				})
-				return err
 			}
 		}
 	}
-
-	c.buffers[id].insert(tbl)
-	return nil
+	return c.buffers[id].insert(tbl)
 }
 
 // registerKey takes a group key from the input stream associated with id and joins

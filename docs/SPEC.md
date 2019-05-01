@@ -602,7 +602,7 @@ An expression specifies the computation of a value by applying the operators and
 
 Operands denote the elementary values in an expression.
 
-Primary expressions are the operands for unary and binary expressions. 
+Primary expressions are the operands for unary and binary expressions.
 A primary expressions may be a literal, an identifier denoting a variable, or a parenthesized expression.
 
     PrimaryExpression = identifier | Literal | "(" Expression ")" .
@@ -729,29 +729,47 @@ It is not possible to access an object's property using an arbitrary expression.
     DotExpression           = "." identifer
     MemberBracketExpression = "[" string_lit "]" .
 
+#### Conditional Expressions
+
+Conditional expressions evaluate a boolean-valued condition and if the result is _true_,
+the expression following the `then` keyword is evaluated and returned.
+Otherwise the condition evaluates to _false_,
+and the expression following the `else` keyword is evaluated and returned.
+In either case, the branch not taken is not evaluated;
+only side effects associated with the branch that is taken will occur.
+
+    ConditionalExpression   = "if" Expression "then" Expression "else" Expression .
+
+Example:
+
+    color = if code == 0 then "green" else if code == 1 then "yellow" else "red"
+
 #### Operators
 
 Operators combine operands into expressions.
 The precedence of the operators is given in the table below. Operators with a lower number have higher precedence.
 
-|Precedence| Operator |        Description        |
-|----------|----------|---------------------------|
-|     1    |  `a()`   |       Function call       |
-|          |  `a[]`   |  Member or index access   |
-|          |   `.`    |       Member access       |
-|     2    | `*` `/`  |Multiplication and division|
-|     3    | `+` `-`  | Addition and subtraction  |
-|     4    |`==` `!=` |   Comparison operators    |
-|          | `<` `<=` |                           |
-|          | `>` `>=` |                           |
-|          |`=~` `!~` |                           |
-|     5    |  `not`   | Unary logical expression  |
-|     6    |  `and`   |        Logical AND        |
-|     7    |  `or`    |        Logical OR         |
+|Precedence| Operator       |        Description        |
+|----------|----------------|---------------------------|
+|     1    |  `a()`         |       Function call       |
+|          |  `a[]`         |  Member or index access   |
+|          |   `.`          |       Member access       |
+|     2    | `*` `/`        |Multiplication and division|
+|     3    | `+` `-`        | Addition and subtraction  |
+|     4    |`==` `!=`       |   Comparison operators    |
+|          | `<` `<=`       |                           |
+|          | `>` `>=`       |                           |
+|          |`=~` `!~`       |                           |
+|     5    |  `not`         | Unary logical expression  |
+|     6    |  `and`         |        Logical AND        |
+|     7    |  `or`          |        Logical OR         |
+|     8    | `if/then/else` |        Conditional        |
 
 The operator precedence is encoded directly into the grammar as the following.
 
-    Expression               = LogicalExpression .
+    Expression               = ConditionalExpression .
+    ConditionalExpression    = LogicalExpression
+                             | "if" Expression "then" Expression "else" Expression .
     LogicalExpression        = UnaryLogicalExpression
                              | LogicalExpression LogicalOperator UnaryLogicalExpression .
     LogicalOperator          = "and" | "or" .
@@ -778,7 +796,7 @@ The operator precedence is encoded directly into the grammar as the following.
     PostfixOperator          = MemberExpression
                              | CallExpression
                              | IndexExpression .
-                             
+
 ### Packages
 
 Flux source is organized into packages.
@@ -912,7 +930,7 @@ Parameters to function types define whether the parameter is a pipe forward para
 The `<-` indicates the parameter is the pipe forward parameter.
 
 Examples:
- 
+
     // alias the bool type
     type boolean = bool
 
@@ -925,7 +943,7 @@ Examples:
     // Define addition on ints
     type intAdd = (a: int, b: int) -> int
 
-    // Define polymorphic addition 
+    // Define polymorphic addition
     type add = (a: 'a, b: 'a) -> 'a
 
     // Define funcion with pipe parameter
@@ -955,7 +973,7 @@ A function produces side effects when it is explicitly declared to have side eff
 
 Packages are initialized in the following order:
 
-1. All imported packages are initialized and assigned to their package identifier. 
+1. All imported packages are initialized and assigned to their package identifier.
 2. All option declarations are evaluated and assigned regardless of order. An option cannot have a dependency on another option assigned in the same package block.
 3. All variable declarations are evaluated and assigned regardless of order. A variable cannot have a direct or indirect dependency on itself.
 4. Any package side effects are evaluated.
@@ -1045,7 +1063,7 @@ These are builtin functions that all take a single `time` argument and return an
 * `month` int
     Month returns the month of the year for the provided time in the range `[1-12]`.
 
-[IMPL#155](https://github.com/influxdata/flux/issues/155) Implement Time and date functions 
+[IMPL#155](https://github.com/influxdata/flux/issues/155) Implement Time and date functions
 
 ### System Time
 
@@ -1069,7 +1087,7 @@ An interval is a built-in named type:
         start: time,
         stop: time,
     }
-    
+
 Intervals has the following parameters:
 
 | Name   | Type                         | Description                                                                                                                                                                                                             |
@@ -1330,7 +1348,7 @@ Example:
 #### Buckets
 
 Buckets is a type of data source that retrieves a list of buckets that the caller is authorized to access.  
-It takes no input parameters and produces an output table with the following columns: 
+It takes no input parameters and produces an output table with the following columns:
 
 | Name            | Type     | Description                                                 |
 | ----            | ----     | -----------                                                 |
@@ -1341,9 +1359,9 @@ It takes no input parameters and produces an output table with the following col
 | retentionPolicy | string   | The name of the retention policy, if present.               |
 | retentionPeriod | duration | The duration of time for which data is held in this bucket. |
 
-Example: 
+Example:
 
-    buckets() |> filter(fn: (r) => r.organization == "my-org") 
+    buckets() |> filter(fn: (r) => r.organization == "my-org")
 
 #### Yield
 
@@ -1369,7 +1387,7 @@ Fill will scan a stream for null values and replace them with a non-null value.
 
 The output stream will be the same as the input stream, with all null values in the column replaced.  
 
-Fill has the following properties: 
+Fill has the following properties:
 
 | Name        | Type                                 | Description                                                                                   |
 | ----        | ----                                 | -----------                                                                                   |
@@ -1511,7 +1529,7 @@ Cov has the following properties:
 | valueDst | string   | ValueDst is the column into which the result will be placed.  Defaults to `_value`.         |
 
 Example:
-    
+
     cpu = from(bucket: "telegraf/autogen") |> range(start:-5m) |> filter(fn:(r) => r._measurement == "cpu")
     mem = from(bucket: "telegraf/autogen") |> range(start:-5m) |> filter(fn:(r) => r._measurement == "mem")
     cov(x: cpu, y: mem)
@@ -1624,9 +1642,9 @@ Quantile has the following properties:
 
 The method parameter must be one of:
 
-* `estimate_tdigest`: an aggregate result that uses a tdigest data structure to compute an accurate quantile estimate on large data sources. 
-* `exact_mean`: an aggregate result that takes the average of the two points closest to the quantile value. 
-* `exact_selector`: see Quantile (selector) 
+* `estimate_tdigest`: an aggregate result that uses a tdigest data structure to compute an accurate quantile estimate on large data sources.
+* `exact_mean`: an aggregate result that takes the average of the two points closest to the quantile value.
+* `exact_selector`: see Quantile (selector)
 
 Example:
 ```
@@ -1682,11 +1700,17 @@ from(bucket: "telegraf/autogen")
 Stddev is an aggregate operation.
 For each aggregated column, it outputs the standard deviation of the non null record as a float.
 
-Stddev has the following parameter:
+Stddev has the following parameters:
 
 | Name    | Type     | Description                                                      |
 | ----    | ----     | -----------                                                      |
 | column  | string   | Columns specifies a column to aggregate. Defaults to `"_value"`. |
+| mode    | string   | The standard deviation mode. Must be one of `"sample"` or `"population"`. Defaults to `"sample"`. |
+
+The `mode` parameter specifies the type of standard deviation to calculate:
+
+* `"sample"`: Calculates the sample standard deviation, where the data is considered to be part of a larger population.
+* `"population"`: Calculates the population standard deviation, where the data is considered a population of its own.
 
 Example:
 
@@ -1775,7 +1799,7 @@ from(bucket:"telegraf/autogen")
 Min is a selector operation.
 Min selects the minimum record from the input table.
 
-Example: 
+Example:
 
 ```
 from(bucket:"telegraf/autogen")
@@ -1892,11 +1916,11 @@ There are six highest/lowest functions that compute the top or bottom N records 
 
 All of the highest/lowest functions take the following parameters:
 
-| Name         | Type     | Description                                                                        |
-| ----         | ----     | -----------                                                                        |
-| n            | int      | N is the number of records to select.                                              |
-| columns      | []string | Columns is the list of columns to use when aggregating.  Defaults to `["_value"]`. |
-| groupColumns | []string | GroupColumns are the columns on which to group to perform the aggregation.         |
+| Name         | Type     | Description                                                                |
+| ----         | ----     | -----------                                                                |
+| n            | int      | N is the number of records to select.                                      |
+| column       | string   | Column is the column to use when aggregating. Defaults to `"_value"`.      |
+| groupColumns | []string | GroupColumns are the columns on which to group to perform the aggregation. |
 
 #### Histogram
 
@@ -2052,7 +2076,7 @@ from(bucket:"telegraf/autogen")
 #### Reduce
 Reduce aggregates records in each table according to the reducer `fn`.  The output for each table will be the group key of the table, plus columns corresponding to each field in the reducer object.  
 
-If the reducer record contains a column with the same name as a group key column, then the group key column's value is overwritten and the the resulting record is regrouped into the appropriate table.
+If the reducer record contains a column with the same name as a group key column, then the group key column's value is overwritten, and the outgoing group key is changed.  However, if two reduced tables write to the same destination group key, then the function will error.
 
 Reduce has the following properties:
 
@@ -2133,7 +2157,7 @@ from(bucket:"telegraf/autogen")
                r._field == "usage_system")
 ```
 
-#### Rename 
+#### Rename
 
 Rename renames specified columns in a table.
 There are two variants: one which takes a map of old column names to new column names,
@@ -2141,7 +2165,7 @@ and one which takes a mapping function.
 If a column is renamed and is part of the group key, the column name in the group key will be updated.
 If a specified column is not present in a table an error will be thrown.
 
-Rename has the following properties: 
+Rename has the following properties:
 
 | Name    | Type                       | Description                                                                                    |
 | ----    | ----                       | -----------                                                                                    |
@@ -2166,7 +2190,7 @@ from(bucket: "telegraf/autogen")
     |> rename(fn: (column) => column + "_new")
 ```
 
-#### Drop 
+#### Drop
 
 Drop excludes specified columns from a table. Columns to exclude can be specified either through a list, or a predicate function.
 When a dropped column is part of the group key it will also be dropped from the key.
@@ -2197,7 +2221,7 @@ from(bucket: "telegraf/autogen")
     |> drop(fn: (column) => column =~ /usage*/)
 ```
 
-#### Keep 
+#### Keep
 
 Keep is the inverse of drop. It returns a table containing only columns that are specified,
 ignoring all others.
@@ -2226,19 +2250,19 @@ Keep all columns matching a predicate:
 ```
 from(bucket: "telegraf/autogen")
     |> range(start: -5m)
-    |> keep(fn: (column) => column =~ /inodes*/) 
+    |> keep(fn: (column) => column =~ /inodes*/)
 ```
 
-#### Duplicate 
+#### Duplicate
 
 Duplicate duplicates a specified column in a table.
 If the specified column is not present in a table an error will be thrown.
 If the specified column is part of the group key, it will be duplicated, but it will not be part of the group key of the output table.
-If the column indicated by `as` does not exist, a column will be added to the table. 
+If the column indicated by `as` does not exist, a column will be added to the table.
 If the column does exist, that column will be overwritten with the values specified by `column`.  
-If the `as` column is in the group key, there are two possible outcomes: 
+If the `as` column is in the group key, there are two possible outcomes:
 If the column indicated by `column` is in the group key, then `as` will remain in the group key and have the same group key value as `column`.  
-If `column` is not part of the group key, then `as` is removed from the group key. 
+If `column` is not part of the group key, then `as` is removed from the group key.
 Duplicate has the following properties:
 
 | Name   | Type   | Description                                                     |
@@ -2320,8 +2344,8 @@ __Examples__
 _By_
 
 ```
-from(bucket: "telegraf/autogen") 
-    |> range(start: -30m) 
+from(bucket: "telegraf/autogen")
+    |> range(start: -30m)
     |> group(columns: ["host", "_measurement"])
 ```
 
@@ -2511,7 +2535,7 @@ Window has the following properties:
 | stopColumn  | string                                     | StopColumn is the name of the column containing the window stop time. Defaults to `_stop`.                                                                                                                                                    |
 | createEmpty | bool                                       | CreateEmpty specifies whether empty tables should be created. Defaults to `false`.
 
-Example: 
+Example:
 ```
 from(bucket:"telegraf/autogen")
     |> range(start:-12h)
@@ -2537,7 +2561,7 @@ Pivot has the following properties:
 | valueColumn | string   | ValueColumn identifies the single column that contains the value to be moved around the pivot. |
 
 The group key of the resulting table will be the same as the input tables, excluding the columns found in the `columnKey` and `valueColumn`.
-This is because these columns are not part of the resulting output table. 
+This is because these columns are not part of the resulting output table.
 
 Any columns in the original table that are not referenced in the `rowKey` or the original table's group key will be dropped.
 
@@ -2552,7 +2576,7 @@ The output is constructed as follows:
  - A new row is created for each unique value identified in the input by the `rowKey` parameter.
  - For each new row, values for group key columns stay the same, while values for new columns are determined from the input tables by the value in `valueColumn` at the row identified by the `rowKey` values and the new column's label.
  If no value is found, the value is set to null.
- 
+
 Example 1, align fields within each measurement that have the same timestamp:
 
  ```
@@ -2560,7 +2584,7 @@ Example 1, align fields within each measurement that have the same timestamp:
       |> range(start: 1970-01-01T00:00:00.000000000Z)
       |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
  ```
- 
+
 Input:
 
 |              _time             | _value | _measurement | _field |
@@ -2732,7 +2756,7 @@ Example:
 #### Union
 
 Union concatenates two or more input streams into a single output stream.  In tables that have identical
-schema and group keys, contents of the tables will be concatenated in the output stream.  The output schemas of 
+schema and group keys, contents of the tables will be concatenated in the output stream.  The output schemas of
 the Union operation shall be the union of all input schemas.
 
 Union does not preserve the sort order of the rows within tables. A sort operation may be added if a specific sort order is needed.
@@ -3112,18 +3136,18 @@ Example:
         |> filter(fn:(r) => r._measurement == "net" and r._field == "bytes_sent")
         |> top(n:10, columns:["_value"])
 
-#### Contains 
+#### Contains
 
 Tests whether a value is a member of a set.  
 
-Contains has the following parameters: 
+Contains has the following parameters:
 
 | Name    | Type                                          | Description                  |
 | ----    | ----                                          | -----------                  |
 | value   | bool, int, uint, float, string, time          | The value to search for.     |
 | set     | array of bool, int, uint, float, string, time | The set of values to search. |
 
-Example: 
+Example:
     `contains(value:1, set:[1,2,3])` will return `true`.   
 
 #### Type conversion operations
@@ -3207,6 +3231,18 @@ Example: `trim(v: ".abc.", cutset: ".")` returns the string `abc`.
 Remove leading and trailing spaces from a string.
 
 Example: `trimSpace(v: "  abc  ")` returns the string `abc`.
+
+##### trimPrefix
+
+Remove a prefix from a string. Strings that do not start with the prefix are returned unchanged.
+
+Example: `trimPrefix(v: "123_abc", prefix: "123")` returns the string `_abc`.
+
+##### trimSuffix
+
+Remove a suffix from a string. Strings that do not end with the suffix are returned unchanged.
+
+Example: `trimSuffix(v: "abc_123", suffix: "123")` returns the string `abc_`.
 
 ##### title
 

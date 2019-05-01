@@ -89,8 +89,6 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.Spec, a *me
 	if err := validatePlan(p); err != nil {
 		return nil, errors.Wrap(err, "invalid plan")
 	}
-	// Set allocation limit
-	a.Limit = &p.Resources.MemoryBytesQuota
 	es := &executionState{
 		p:         p,
 		deps:      e.deps,
@@ -266,7 +264,13 @@ func (es *executionState) do(ctx context.Context) {
 					default:
 						err = fmt.Errorf("%v", e)
 					}
-					es.abort(fmt.Errorf("panic: %v\n%s", err, debug.Stack()))
+
+					if _, ok := err.(memory.LimitExceededError); ok {
+						es.abort(err)
+						return
+					}
+
+					es.abort(fmt.Errorf("panic: %v", err))
 					if entry := es.logger.Check(zapcore.InfoLevel, "Execute source panic"); entry != nil {
 						entry.Stack = string(debug.Stack())
 						entry.Write(zap.Error(err))
@@ -293,7 +297,7 @@ func (es *executionState) do(ctx context.Context) {
 			select {
 			case <-t.Finished():
 			case <-ctx.Done():
-				es.abort(errors.New("context done"))
+				es.abort(ctx.Err())
 			case err := <-es.dispatcher.Err():
 				if err != nil {
 					es.abort(err)

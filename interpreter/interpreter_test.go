@@ -402,6 +402,40 @@ func TestEval(t *testing.T) {
             `,
 			wantErr: true,
 		},
+		{
+			name: "conditional true",
+			query: `
+				if 1 != 0 then 10 else 100
+			`,
+			want: []values.Value{
+				values.NewInt(10),
+			},
+		},
+		{
+			name: "conditional false",
+			query: `
+				if 1 == 0 then 10 else 100
+			`,
+			want: []values.Value{
+				values.NewInt(100),
+			},
+		},
+		{
+			name: "conditional in function",
+			query: `
+				f = (t, c, a) => if t then c else a
+				{
+					v1: f(t: false, c: 30, a: 300),
+					v2: f(t: true, c: "cats", a: "dogs"),
+				}
+			`,
+			want: []values.Value{
+				values.NewObjectWithValues(map[string]values.Value{
+					"v1": values.NewInt(300),
+					"v2": values.NewString("cats"),
+				}),
+			},
+		},
 	}
 
 	for _, tc := range testCases {

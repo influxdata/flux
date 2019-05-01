@@ -4,6 +4,7 @@ package main
 import (
 	"fmt"
 	"go/importer"
+	"go/token"
 	"go/types"
 	"log"
 	"os"
@@ -21,7 +22,7 @@ func main() {
 	}
 	defer f.Close()
 
-	pkg, err := importer.For("source", nil).Import("github.com/influxdata/flux/ast")
+	pkg, err := importer.ForCompiler(&token.FileSet{}, "source", nil).Import("github.com/influxdata/flux/ast")
 	if err != nil {
 		log.Fatal(err)
 	}

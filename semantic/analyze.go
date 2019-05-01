@@ -270,6 +270,8 @@ func analyzeExpression(expr ast.Expression) (Expression, error) {
 		return analyzeUnaryExpression(expr)
 	case *ast.LogicalExpression:
 		return analyzeLogicalExpression(expr)
+	case *ast.ConditionalExpression:
+		return analyzeConditionalExpression(expr)
 	case *ast.ObjectExpression:
 		return analyzeObjectExpression(expr)
 	case *ast.ArrayExpression:
@@ -521,6 +523,26 @@ func analyzeLogicalExpression(logical *ast.LogicalExpression) (*LogicalExpressio
 		Operator: logical.Operator,
 		Left:     left,
 		Right:    right,
+	}, nil
+}
+func analyzeConditionalExpression(ce *ast.ConditionalExpression) (*ConditionalExpression, error) {
+	t, err := analyzeExpression(ce.Test)
+	if err != nil {
+		return nil, err
+	}
+	c, err := analyzeExpression(ce.Consequent)
+	if err != nil {
+		return nil, err
+	}
+	a, err := analyzeExpression(ce.Alternate)
+	if err != nil {
+		return nil, err
+	}
+	return &ConditionalExpression{
+		loc:        loc(ce.Location()),
+		Test:       t,
+		Consequent: c,
+		Alternate:  a,
 	}, nil
 }
 func analyzeObjectExpression(obj *ast.ObjectExpression) (*ObjectExpression, error) {
