@@ -1515,9 +1515,6 @@ import "path/bar"
 				},
 			},
 		},
-		// TODO(jsternberg): It would be ideal if the rparen was interpreted
-		// as either a bad operator or a bad expression, but we do not yet
-		// have that functionality.
 		{
 			name: "index with unexpected rparen",
 			raw:  `a[b)]`,
@@ -1525,12 +1522,12 @@ import "path/bar"
 				BaseNode: base("1:1", "1:6"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
-						BaseNode: base("1:1", "1:5"),
+						BaseNode: base("1:1", "1:6"),
 						Expression: &ast.IndexExpression{
 							BaseNode: ast.BaseNode{
-								Loc: loc("1:1", "1:5"),
+								Loc: loc("1:1", "1:6"),
 								Errors: []ast.Error{
-									{Msg: "expected RBRACK, got RPAREN"},
+									{Msg: "invalid expression @1:4-1:5: )"},
 								},
 							},
 							Array: &ast.Identifier{
@@ -1542,24 +1539,6 @@ import "path/bar"
 								Name:     "b",
 							},
 						},
-					},
-					&ast.BadStatement{
-						BaseNode: ast.BaseNode{
-							Loc: loc("1:4", "1:5"),
-							Errors: []ast.Error{
-								{Msg: "invalid statement @1:4-1:5: )"},
-							},
-						},
-						Text: ")",
-					},
-					&ast.BadStatement{
-						BaseNode: ast.BaseNode{
-							Loc: loc("1:5", "1:6"),
-							Errors: []ast.Error{
-								{Msg: "invalid statement @1:5-1:6: ]"},
-							},
-						},
-						Text: "]",
 					},
 				},
 			},
@@ -4862,6 +4841,106 @@ string"
 							BaseNode: base("1:3", "1:8"),
 							Name:     "ident",
 						},
+					},
+				},
+			},
+		},
+		{
+			name: "multiple idents in parens",
+			raw:  `(a b)`,
+			want: &ast.File{
+				// TODO(jsternberg): Parens aren't recorded correctly
+				// in the source and are mostly ignored.
+				BaseNode: base("1:1", "1:5"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:2", "1:5"),
+						Expression: &ast.BinaryExpression{
+							BaseNode: ast.BaseNode{
+								Loc: loc("1:2", "1:5"),
+								Errors: []ast.Error{
+									{Msg: "expected an operator between two expressions"},
+								},
+							},
+							Left: &ast.Identifier{
+								BaseNode: base("1:2", "1:3"),
+								Name:     "a",
+							},
+							Right: &ast.Identifier{
+								BaseNode: base("1:4", "1:5"),
+								Name:     "b",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "missing left hand side",
+			raw:  `(*b)`,
+			want: &ast.File{
+				// TODO(jsternberg): Parens aren't recorded correctly
+				// in the source and are mostly ignored.
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.BinaryExpression{
+							BaseNode: ast.BaseNode{
+								Errors: []ast.Error{
+									{Msg: "missing left hand side of expression"},
+								},
+							},
+							Operator: ast.MultiplicationOperator,
+							Right: &ast.Identifier{
+								BaseNode: base("1:3", "1:4"),
+								Name:     "b",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "missing right hand side",
+			raw:  `(a*)`,
+			want: &ast.File{
+				// TODO(jsternberg): Parens aren't recorded correctly
+				// in the source and are mostly ignored.
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.BinaryExpression{
+							BaseNode: ast.BaseNode{
+								Errors: []ast.Error{
+									{Msg: "missing right hand side of expression"},
+								},
+							},
+							Operator: ast.MultiplicationOperator,
+							Left: &ast.Identifier{
+								BaseNode: base("1:2", "1:3"),
+								Name:     "a",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "illegal expression",
+			raw:  `(@)`,
+			want: &ast.File{
+				// TODO(jsternberg): Parens aren't recorded correctly
+				// in the source and are mostly ignored.
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: ast.BaseNode{
+							Errors: []ast.Error{
+								{Msg: "invalid expression @1:2-1:3: @"},
+							},
+						},
+						// TODO(jsternberg): This should be a BadExpression.
+						// We are adding this though to ensure that
+						// parseExpressionWhile does not end up in an infinite
+						// loop.
+						Expression: nil,
 					},
 				},
 			},

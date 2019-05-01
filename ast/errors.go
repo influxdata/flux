@@ -33,6 +33,22 @@ func check(n Node) int {
 				Msg: "pipe destination is missing",
 			})
 		}
+	case *BinaryExpression:
+		if n.Left == nil {
+			n.Errors = append(n.Errors, Error{
+				Msg: "missing left hand side of expression",
+			})
+		}
+		if n.Right == nil {
+			n.Errors = append(n.Errors, Error{
+				Msg: "missing right hand side of expression",
+			})
+		}
+		if n.Operator == 0 {
+			n.Errors = append(n.Errors, Error{
+				Msg: "expected an operator between two expressions",
+			})
+		}
 	}
 
 	return 0
