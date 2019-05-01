@@ -105,7 +105,7 @@ func (o *ToMQTTOpSpec) ReadArgs(args flux.Arguments) error {
 	if err != nil {
 		return err
 	}
-	if len(o.Message) > 0 && len(o.Topic) <= 0 {
+	if len(o.Message) > 0 && len(o.Topic) <= 0 { // if you are sending a static mesage, must define a topic.
 		return fmt.Errorf("Topic required with message %s", o.Message)
 	}
 	o.Format, ok, err = args.GetString("format")
@@ -136,7 +136,7 @@ func (o *ToMQTTOpSpec) ReadArgs(args flux.Arguments) error {
 		return err
 	}
 	if !ok {
-		o.ClientID = "flux-client"
+		o.ClientID = "flux-mqtt"
 	}
     
 	o.Username, ok, err = args.GetString("username")
@@ -480,25 +480,24 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		return token.Error()
 	}
 	p := make([]byte, 2024) 
-	var s string
 	var message strings.Builder
 	lines := 0
+	// messages come in as triples: measurement & tags, values, timestamp
+	// put them all together and you have line-protocol! 
 	for {
 		n, err := pr.Read(p)
 		if err != nil{
 		    if err == io.EOF {
-				s = string(p[:n])
-				message.WriteString(s)
+				message.WriteString(string(p[:n]))
 				break
-		    }
-		    fmt.Println(err)
+			}
+			client.Disconnect(250)
 			return err
 		}
-		s = string(p[:n])
-		message.WriteString(s)
+		message.WriteString(string(p[:n])) // handle leftovers
 		lines += 1
-		if lines > 2 { // post message after each row is read.
-			if len(mqttTopic) <= 0 {// create topic out of tags
+		if lines > 2 { // post message after full row is read.
+			if len(mqttTopic) <= 0 {// No topic set? Create topic out of tags
 				mqttTopic = m.createTopic(message.String())				
 			}
 			if t.spec.Spec.Format == "JSON" { // format message as a JSON
@@ -518,17 +517,17 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	  	token.Wait()
 	}
 	if err := wg.Wait(); err != nil {
+		client.Disconnect(250)
 		return err
 	}
 	client.Disconnect(250)
 	return nil
 
 }
-
+// format the message as json
 func (t *toMqttMetric) formatJSON(message string) strings.Builder {
 	var b strings.Builder
-	b.WriteString("{")
-	b.WriteString(" \"measurement\": \"")
+	b.WriteString("{ \"measurement\": \"")
 	at := strings.Split(message, " ")
 	as := strings.Split(at[0], ",")
 	if len(as) > 1 {
@@ -539,8 +538,7 @@ func (t *toMqttMetric) formatJSON(message string) strings.Builder {
 		b.WriteString(at[0])
 		b.WriteString("\"")
 	}
-	b.WriteString(", ")
-	b.WriteString(" \"values\": { ")
+	b.WriteString(", \"values\": { ")
 	as = strings.Split(at[1], ",")
 	l := len(as) - 1
 	if l > 1 {
@@ -594,7 +592,7 @@ func (t *toMqttMetric) formatJSON(message string) strings.Builder {
 	return b
 
 }
-
+// add all tags to the JSON
 func (t *toMqttMetric) parseTags(tags string) string{
 	var mess strings.Builder
 	mess.WriteString("\", \"tags\": { ")
@@ -630,7 +628,6 @@ func (t *toMqttMetric) createTopic(topicString string) string {
 	tt = strings.Split(tt[0], ",")
 	top.WriteString("/")
 	top.WriteString(tt[0])
-	//
 	l := len(tt) - 1
 	for i := 1; i < l; i++ {
 		toke := strings.Split(tt[i], "=")
@@ -638,7 +635,6 @@ func (t *toMqttMetric) createTopic(topicString string) string {
 		top.WriteString(toke[0])
 		top.WriteString("/")
 		top.WriteString(toke[1])
-		//top.WriteString("/")
 	}
 	return top.String()
 }
