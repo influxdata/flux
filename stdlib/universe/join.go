@@ -556,7 +556,7 @@ func (c *MergeJoinCache) Table(key flux.GroupKey) (flux.Table, error) {
 		}
 
 		right := c.buffers[c.rightID].table(preJoinGroupKeys.right)
-		if left == nil {
+		if right == nil {
 			return nil, fmt.Errorf("no table in right join buffer with key: %v", key)
 		}
 
