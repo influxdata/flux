@@ -11,7 +11,7 @@ import (
 	"github.com/prometheus/prometheus/promql"
 )
 
-// TODO: Temporary hack, remove this.
+// TODO: Temporary hack to work around lack of null support in filter(). Remove this.
 const nullReplacement = 123456789
 
 type transpiler struct {
@@ -421,7 +421,10 @@ func (t *transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expres
 		// Even if those windows were filtered by a vector selector previously, they might
 		// exist as empty tables and then the Flux aggregator functions would records rows with null
 		// values for each empty table, which can then confuse further filtering etc. steps.
-		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start, t.end.Add(-5*time.Minute))}),
+		//
+		// TODO: NOTE: This actually breaks things for windows different than 5m (like a "rate(foo[1m])")
+		// and doesn't actually seem to be needed anymore?
+		//call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start, t.end.Add(-5*time.Minute))}),
 	)
 	if aggFn.dropNonGrouping {
 		// Drop labels that are not part of the grouping.
@@ -972,24 +975,20 @@ func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 
 		onCols := append(b.VectorMatching.MatchingLabels, "_start", "_stop")
 
-		rhsColRenameMap := make([]*ast.Property, len(b.VectorMatching.Include))
-		for i, col := range b.VectorMatching.Include {
-			rhsColRenameMap[i] = &ast.Property{
-				Key:   &ast.Identifier{Name: col + "_rhs"},
-				Value: &ast.StringLiteral{Value: col},
-			}
-		}
-
 		outputColTransformCalls := []*ast.CallExpression{
-			// Rename x_lhs -> x.
-			call("rename", map[string]ast.Expression{"fn": stripSuffixFn("_lhs")}),
-			// Drop cols RHS cols, except ones we want to copy into the result via a group_x(...) clause.
-			// AH FUCK
-			call("drop", map[string]ast.Expression{"columns": columnList(b.VectorMatching.Include...)}),
-			// Rename x_rhs -> x.
-			call("rename", map[string]ast.Expression{"fn": stripSuffixFn("_rhs")}),
-			// Drop any remaining RHS cols.
-			call("drop", map[string]ast.Expression{"fn": matchRHSSuffixFn}),
+			call("keep", map[string]ast.Expression{
+				"columns": columnList(append(append(onCols, "_value"), b.VectorMatching.Include...)...),
+			}),
+
+			// // Rename x_lhs -> x.
+			// call("rename", map[string]ast.Expression{"fn": stripSuffixFn("_lhs")}),
+			// // Drop cols RHS cols, except ones we want to copy into the result via a group_x(...) clause.
+			// // AH FUCK
+			// call("drop", map[string]ast.Expression{"columns": columnList(b.VectorMatching.Include...)}),
+			// // Rename x_rhs -> x.
+			// call("rename", map[string]ast.Expression{"fn": stripSuffixFn("_rhs")}),
+			// // Drop any remaining RHS cols.
+			// call("drop", map[string]ast.Expression{"fn": matchRHSSuffixFn}),
 		}
 
 		postJoinCalls := append(opCalls, outputColTransformCalls...)
@@ -1249,23 +1248,6 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			}),
 			call("promql.timestamp", nil),
 		), nil
-
-	// --------------------------------------------------------------------------------
-	// import "promql"
-	// import "csv"
-	//
-	// csv.from(file: "/home/julius/Downloads/chronograf_data.csv")
-	//        |> range(start: 2019-02-21T16:41:30Z, stop: 2019-02-21T16:51:40Z)
-	//        //|> filter(fn: (r) => r._measurement == ("demo_cpu_usage_secons_total"))
-	//        |> window(every: 10000000000ns, period: 5m, createEmpty: true)
-	//        |> filter(fn: (r) => ((r._stop) >= (2019-02-21T16:50:30Z) and (r._start) <= (2019-02-21T16:46:40Z)))
-	//        |> sum()
-	//        |> duplicate(column: "_stop", as: "_time")
-	//        |> promql.timestamp()
-	// --------------------------------------------------------------------------------
-
-	// 	// TODO:
-	// 	// - create output windows
 	default:
 		return nil, fmt.Errorf("PromQL function %q is not supported yet", c.Func.Name)
 	}

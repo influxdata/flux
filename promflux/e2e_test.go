@@ -368,15 +368,6 @@ func TestQueriesE2E(t *testing.T) {
 
 	for _, q := range queries {
 		runner.runQueryVariants(t, q.query, q.variantArgs, map[string]string{})
-
-		// 	if len(q.variants) > 0 {
-		// 		for _, variant := range q.variants {
-		// 			query := tprintf(q.query, variant)
-		// 			runner.runQuery(t, query)
-		// 		}
-		// 	} else {
-		// 		runner.runQuery(t, q.query)
-		// 	}
 	}
 }
 
