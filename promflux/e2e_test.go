@@ -41,10 +41,10 @@ var testVariantArgs = map[string][]string{
 		// "1.5",
 	},
 	// TODO: "%" and "^" not supported yet by Flux.
-	"arithBinOp":     []string{"+", "-", "*", "/", "%", "^"},
-	"compBinOp":      []string{"==", "!=", "<", ">", "<=", ">="},
-	"binOp":          []string{"+", "-", "*", "/", "%", "^", "==", "!=", "<", ">", "<=", ">="},
-	"simpleMathFunc": []string{"abs", "ceil", "floor", "exp", "sqrt", "ln", "log2", "log10", "round"},
+	"arithBinOp":           []string{"+", "-", "*", "/", "%", "^"},
+	"compBinOp":            []string{"==", "!=", "<", ">", "<=", ">="},
+	"binOp":                []string{"+", "-", "*", "/", "%", "^", "==", "!=", "<", ">", "<=", ">="},
+	"simpleMathFunc":       []string{"abs", "ceil", "floor", "exp", "sqrt", "ln", "log2", "log10", "round"},
 	"extrapolatedRateFunc": []string{"delta", "rate", "increase"},
 }
 
@@ -52,75 +52,6 @@ var queries = []struct {
 	query       string
 	variantArgs []string
 }{
-	{
-		query:       `{{.simpleAggrOp}} without() (demo_cpu_usage_seconds_total)`,
-		variantArgs: []string{"simpleAggrOp"},
-	},
-	// TODO: Need to handle & test external injections of special column names more systematically.
-	{
-		query:       `{{.simpleAggrOp}} without(_value) (demo_cpu_usage_seconds_total)`,
-		variantArgs: []string{"simpleAggrOp"},
-	},
-	{
-		query:       `{{.simpleAggrOp}} without(instance) (demo_cpu_usage_seconds_total)`,
-		variantArgs: []string{"simpleAggrOp"},
-	},
-	{
-		query:       `{{.simpleAggrOp}} without(instance, mode) (demo_cpu_usage_seconds_total)`,
-		variantArgs: []string{"simpleAggrOp"},
-	},
-	{
-		query:       `{{.simpleAggrOp}} without(nonexistent) (demo_cpu_usage_seconds_total)`,
-		variantArgs: []string{"simpleAggrOp"},
-	},
-	{
-		query:       `{{.simpleAggrOp}}_over_time(demo_cpu_usage_seconds_total[{{.range}}])`,
-		variantArgs: []string{"simpleAggrOp", "range"},
-	},
-	// TODO REMOVE EVERYTHING ABOVE THIS LINE AS ITS DUPLICATED
-}
-
-var queries2 = []struct {
-	query       string
-	variantArgs []string
-}{
-	// TODO: Move this section somewhere appropriate.
-	{
-		query: "time()",
-	},
-	{
-		query:       "1 {{.arithBinOp}} time()",
-		variantArgs: []string{"arithBinOp"},
-	},
-	{
-		query:       "time() {{.arithBinOp}} 1",
-		variantArgs: []string{"arithBinOp"},
-	},
-	{
-		query:       "time() {{.compBinOp}} bool 1",
-		variantArgs: []string{"compBinOp"},
-	},
-	{
-		query:       "1 {{.compBinOp}} bool time()",
-		variantArgs: []string{"compBinOp"},
-	},
-	{
-		query:       "time() {{.arithBinOp}} time()",
-		variantArgs: []string{"arithBinOp"},
-	},
-	{
-		query:       "time() {{.compBinOp}} bool time()",
-		variantArgs: []string{"compBinOp"},
-	},
-	{
-		query:       "time() {{.binOp}} demo_cpu_usage_seconds_total",
-		variantArgs: []string{"binOp"},
-	},
-	{
-		query:       "demo_cpu_usage_seconds_total {{.binOp}} time()",
-		variantArgs: []string{"binOp"},
-	},
-
 	{
 		query: `demo_cpu_usage_seconds_total + -(1 + 1)`,
 	},
@@ -342,6 +273,42 @@ var queries2 = []struct {
 	},
 	{
 		query: "sum by(job, instance) (rate(demo_cpu_usage_seconds_total[1m]))",
+	},
+	{
+		query: "time()",
+	},
+	// Binops involving non-const scalars.
+	{
+		query:       "1 {{.arithBinOp}} time()",
+		variantArgs: []string{"arithBinOp"},
+	},
+	{
+		query:       "time() {{.arithBinOp}} 1",
+		variantArgs: []string{"arithBinOp"},
+	},
+	{
+		query:       "time() {{.compBinOp}} bool 1",
+		variantArgs: []string{"compBinOp"},
+	},
+	{
+		query:       "1 {{.compBinOp}} bool time()",
+		variantArgs: []string{"compBinOp"},
+	},
+	{
+		query:       "time() {{.arithBinOp}} time()",
+		variantArgs: []string{"arithBinOp"},
+	},
+	{
+		query:       "time() {{.compBinOp}} bool time()",
+		variantArgs: []string{"compBinOp"},
+	},
+	{
+		query:       "time() {{.binOp}} demo_cpu_usage_seconds_total",
+		variantArgs: []string{"binOp"},
+	},
+	{
+		query:       "demo_cpu_usage_seconds_total {{.binOp}} time()",
+		variantArgs: []string{"binOp"},
 	},
 }
 
