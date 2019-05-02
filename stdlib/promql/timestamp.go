@@ -99,7 +99,10 @@ func (t *timestampTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 	cols := tbl.Cols()
 	timeIdx := execute.ColIdx(execute.DefaultTimeColLabel, cols)
 	if timeIdx < 0 {
-		return fmt.Errorf("time column not found (cols: %v): %s", cols, execute.DefaultTimeColLabel)
+		timeIdx = execute.ColIdx(execute.DefaultStopColLabel, cols)
+		if timeIdx < 0 {
+			return fmt.Errorf("neither %q nor %q column not found (cols: %v)", execute.DefaultTimeColLabel, execute.DefaultStopColLabel, cols)
+		}
 	}
 	valIdx := execute.ColIdx(execute.DefaultValueColLabel, cols)
 	if valIdx < 0 {
@@ -117,7 +120,7 @@ func (t *timestampTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 			}
 		}
 
-		// Get the "_time" of the current row as a Unix timestamp.
+		// Get the "_time" (or "_stop") of the current row as a Unix timestamp.
 		for i := 0; i < cr.Len(); i++ {
 			v := execute.ValueForRow(cr, i, timeIdx)
 			ts := float64(v.Time().Time().UnixNano()) / 1e9

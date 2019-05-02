@@ -260,7 +260,7 @@ func dropNonGroupingColsCall(groupCols []string, without bool) *ast.CallExpressi
 	}
 
 	// We want to keep value and time columns even if they are not explicitly in the grouping labels.
-	cols := append(groupCols, "_value", "_time", "_start", "_stop")
+	cols := append(groupCols, "_value", "_start", "_stop")
 	return call("keep", map[string]ast.Expression{"columns": columnList(cols...)})
 }
 
@@ -389,13 +389,13 @@ func (t *transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expres
 		mode = "except"
 		groupCols.Elements = append(
 			groupCols.Elements,
-			&ast.StringLiteral{Value: "_value"},
+			// "_time" is not always present, but if it is, we don't want to group by it.
 			&ast.StringLiteral{Value: "_time"},
+			&ast.StringLiteral{Value: "_value"},
 		)
 	} else {
 		groupCols.Elements = append(
 			groupCols.Elements,
-			//&ast.StringLiteral{Value: "_time"},
 			&ast.StringLiteral{Value: "_start"},
 			&ast.StringLiteral{Value: "_stop"},
 		)
@@ -485,8 +485,7 @@ func scalarArithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped 
 		lhs, rhs = rhs, lhs
 	}
 
-	// TODO: This sets _time, what about _stop and _start?
-	// (r) => {"_value": <lhs> <op> <rhs>, "_stop": r._stop, "_time": r._stop}
+	// (r) => {"_value": <lhs> <op> <rhs>, "_stop": r._stop}
 	return &ast.FunctionExpression{
 		Params: []*ast.Property{
 			{
@@ -507,17 +506,6 @@ func scalarArithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped 
 				},
 				{
 					Key: &ast.Identifier{Name: "_stop"},
-					Value: &ast.MemberExpression{
-						Object: &ast.Identifier{
-							Name: "r",
-						},
-						Property: &ast.Identifier{
-							Name: "_stop",
-						},
-					},
-				},
-				{
-					Key: &ast.Identifier{Name: "_time"},
 					Value: &ast.MemberExpression{
 						Object: &ast.Identifier{
 							Name: "r",
@@ -549,8 +537,7 @@ func scalarArithBinaryMathFn(mathFn string, operand ast.Expression, swapped bool
 		lhs, rhs = rhs, lhs
 	}
 
-	// TODO: This sets _time, what about _stop and _start?
-	// (r) => {"_value": <lhs> <op> <rhs>, "_stop": r._stop, "_time": r._stop}
+	// (r) => {"_value": <lhs> <op> <rhs>, "_stop": r._stop}
 	return &ast.FunctionExpression{
 		Params: []*ast.Property{
 			{
@@ -567,17 +554,6 @@ func scalarArithBinaryMathFn(mathFn string, operand ast.Expression, swapped bool
 				},
 				{
 					Key: &ast.Identifier{Name: "_stop"},
-					Value: &ast.MemberExpression{
-						Object: &ast.Identifier{
-							Name: "r",
-						},
-						Property: &ast.Identifier{
-							Name: "_stop",
-						},
-					},
-				},
-				{
-					Key: &ast.Identifier{Name: "_time"},
 					Value: &ast.MemberExpression{
 						Object: &ast.Identifier{
 							Name: "r",
@@ -645,8 +621,7 @@ func vectorArithBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 		},
 	}
 
-	// TODO: What about _start?
-	// (r) => {"_value": <lhs> <op> <rhs>, "_stop": r._stop, "_time": r._stop}
+	// (r) => {"_value": <lhs> <op> <rhs>, "_stop": r._stop}
 	return &ast.FunctionExpression{
 		Params: []*ast.Property{
 			{
@@ -667,17 +642,6 @@ func vectorArithBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 				},
 				{
 					Key: &ast.Identifier{Name: "_stop"},
-					Value: &ast.MemberExpression{
-						Object: &ast.Identifier{
-							Name: "r",
-						},
-						Property: &ast.Identifier{
-							Name: "_stop",
-						},
-					},
-				},
-				{
-					Key: &ast.Identifier{Name: "_time"},
 					Value: &ast.MemberExpression{
 						Object: &ast.Identifier{
 							Name: "r",
@@ -711,8 +675,7 @@ func vectorArithBinaryMathFn(mathFn string) *ast.FunctionExpression {
 		},
 	}
 
-	// TODO: What about _start?
-	// (r) => {"_value": <lhs> <op> <rhs>, "_stop": r._stop, "_time": r._stop}
+	// (r) => {"_value": mathFn(<lhs>, <rhs>), "_stop": r._stop}
 	return &ast.FunctionExpression{
 		Params: []*ast.Property{
 			{
@@ -729,17 +692,6 @@ func vectorArithBinaryMathFn(mathFn string) *ast.FunctionExpression {
 				},
 				{
 					Key: &ast.Identifier{Name: "_stop"},
-					Value: &ast.MemberExpression{
-						Object: &ast.Identifier{
-							Name: "r",
-						},
-						Property: &ast.Identifier{
-							Name: "_stop",
-						},
-					},
-				},
-				{
-					Key: &ast.Identifier{Name: "_time"},
 					Value: &ast.MemberExpression{
 						Object: &ast.Identifier{
 							Name: "r",
@@ -773,8 +725,7 @@ func vectorCompBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 		},
 	}
 
-	// TODO: What about _start?
-	// (r) => {"_value": <lhs> <op> <rhs>, "_stop": r._stop, "_time": r._stop}
+	// (r) => <lhs> <op> <rhs>
 	return &ast.FunctionExpression{
 		Params: []*ast.Property{
 			{
@@ -1020,7 +971,7 @@ func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 
 // Function to apply a simple one-operand function to all values in a table.
 func vectorMathFn(fn string) *ast.FunctionExpression {
-	// (r) => {"_value": <lhs> <op> <rhs>, "_stop": r._stop, "_time": r._stop}
+	// (r) => {"_value": mathFn(x: r._value), "_stop": r._stop}
 	return &ast.FunctionExpression{
 		Params: []*ast.Property{
 			{
@@ -1056,17 +1007,6 @@ func vectorMathFn(fn string) *ast.FunctionExpression {
 				},
 				{
 					Key: &ast.Identifier{Name: "_stop"},
-					Value: &ast.MemberExpression{
-						Object: &ast.Identifier{
-							Name: "r",
-						},
-						Property: &ast.Identifier{
-							Name: "_stop",
-						},
-					},
-				},
-				{
-					Key: &ast.Identifier{Name: "_time"},
 					Value: &ast.MemberExpression{
 						Object: &ast.Identifier{
 							Name: "r",
@@ -1145,12 +1085,6 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			call("toFloat", nil),
 			filterSpecialNullValuesCall,
 			dropMeasurementCall,
-			// Strictly we wouldn't need copy "_stop" to "_time" for *all* Flux functions, only "max"/"min" on
-			// the Flux side. But this keeps the code simpler by always doing it.
-			call("duplicate", map[string]ast.Expression{
-				"column": &ast.StringLiteral{Value: "_stop"},
-				"as":     &ast.StringLiteral{Value: "_time"},
-			}),
 		}
 		if fn == "count" {
 			// Count is the only function that produces a 0 instead of null value for an empty table.
@@ -1183,10 +1117,6 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			v,
 			call("map", map[string]ast.Expression{"fn": vectorMathFn(fn)}),
 			dropMeasurementCall,
-			call("duplicate", map[string]ast.Expression{
-				"column": &ast.StringLiteral{Value: "_stop"},
-				"as":     &ast.StringLiteral{Value: "_time"},
-			}),
 		), nil
 	}
 
@@ -1240,10 +1170,6 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			call("sum", nil),
 			// Remove any windows <5m long at the edges of the graph range to act like PromQL.
 			call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start, t.end.Add(-5*time.Minute))}),
-			call("duplicate", map[string]ast.Expression{
-				"column": &ast.StringLiteral{Value: "_stop"},
-				"as":     &ast.StringLiteral{Value: "_time"},
-			}),
 			call("promql.timestamp", nil),
 		), nil
 	default:
@@ -1269,10 +1195,6 @@ func (t *transpiler) transpileUnaryExpr(ue *promql.UnaryExpr) (ast.Expression, e
 					"fn": scalarArithBinaryOpFn(ast.MultiplicationOperator, &ast.FloatLiteral{Value: -1}, false)},
 				),
 				dropMeasurementCall,
-				call("duplicate", map[string]ast.Expression{
-					"column": &ast.StringLiteral{Value: "_stop"},
-					"as":     &ast.StringLiteral{Value: "_time"},
-				}),
 			), nil
 		}
 
