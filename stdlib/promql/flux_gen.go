@@ -21,11 +21,11 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 25,
-					Line:   4,
+					Column: 19,
+					Line:   5,
 				},
 				File:   "promql.flux",
-				Source: "package promql\n\nbuiltin timestamp\nbuiltin extrapolatedRate",
+				Source: "package promql\n\nbuiltin timestamp\nbuiltin extrapolatedRate\nbuiltin emptyTable",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -99,6 +99,40 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "extrapolatedRate",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 19,
+						Line:   5,
+					},
+					File:   "promql.flux",
+					Source: "builtin emptyTable",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 19,
+							Line:   5,
+						},
+						File:   "promql.flux",
+						Source: "emptyTable",
+						Start: ast.Position{
+							Column: 9,
+							Line:   5,
+						},
+					},
+				},
+				Name: "emptyTable",
 			},
 		}},
 		Imports: nil,

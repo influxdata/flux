@@ -1227,9 +1227,7 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 		), nil
 	case "time":
 		return buildPipeline(
-			call("csv.from", map[string]ast.Expression{
-				"file": &ast.StringLiteral{Value: "/home/julius/Downloads/chronograf_data.csv"},
-			}),
+			call("promql.emptyTable", nil),
 			call("range", map[string]ast.Expression{
 				"start": &ast.DateTimeLiteral{Value: t.start.Add(-5 * time.Minute)},
 				"stop":  &ast.DateTimeLiteral{Value: t.end},
@@ -1323,7 +1321,6 @@ func (t *transpiler) transpile(node promql.Node) (*ast.File, error) {
 	return &ast.File{
 		Imports: []*ast.ImportDeclaration{
 			{Path: &ast.StringLiteral{Value: "promql"}},
-			{Path: &ast.StringLiteral{Value: "csv"}},
 		},
 		Body: []ast.Statement{
 			&ast.ExpressionStatement{
