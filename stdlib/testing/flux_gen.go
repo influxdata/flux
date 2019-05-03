@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   27,
 				},
 				File:   "testing.flux",
-				Source: "package testing\n\nimport c \"csv\"\n\nbuiltin assertEquals\nbuiltin assertEmpty\nbuiltin diff\n\noption loadStorage = (csv) => c.from(csv: csv)\noption loadMem = (csv) => c.from(csv: csv)\n\ninspect = (case) => {\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n    return {\n        fn:    tc.fn,\n        input: tc.input\n        want:  tc.want |> yield(name: \"want\"),\n        got:   got |> yield(name: \"got\"),\n        diff:  dif |> yield(name: \"diff\"),\n    }\n}\n\nrun = (case) => {\n    return inspect(case: case).diff |> assertEmpty()\n}",
+				Source: "package testing\n\nimport c \"csv\"\n\nbuiltin assertEquals\nbuiltin assertEmpty\nbuiltin diff\n\noption loadStorage = (csv) => c.from(csv: csv)\noption loadMem = (csv) => c.from(csv: csv)\n\ninspect = (case) => {\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n    return {\n        fn:    tc.fn,\n        input: tc.input,\n        want:  tc.want |> yield(name: \"want\"),\n        got:   got |> yield(name: \"got\"),\n        diff:  dif |> yield(name: \"diff\"),\n    }\n}\n\nrun = (case) => {\n    return inspect(case: case).diff |> assertEmpty()\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -631,7 +631,7 @@ var pkgAST = &ast.Package{
 						Line:   23,
 					},
 					File:   "testing.flux",
-					Source: "inspect = (case) => {\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n    return {\n        fn:    tc.fn,\n        input: tc.input\n        want:  tc.want |> yield(name: \"want\"),\n        got:   got |> yield(name: \"got\"),\n        diff:  dif |> yield(name: \"diff\"),\n    }\n}",
+					Source: "inspect = (case) => {\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n    return {\n        fn:    tc.fn,\n        input: tc.input,\n        want:  tc.want |> yield(name: \"want\"),\n        got:   got |> yield(name: \"got\"),\n        diff:  dif |> yield(name: \"diff\"),\n    }\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   12,
@@ -665,7 +665,7 @@ var pkgAST = &ast.Package{
 							Line:   23,
 						},
 						File:   "testing.flux",
-						Source: "(case) => {\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n    return {\n        fn:    tc.fn,\n        input: tc.input\n        want:  tc.want |> yield(name: \"want\"),\n        got:   got |> yield(name: \"got\"),\n        diff:  dif |> yield(name: \"diff\"),\n    }\n}",
+						Source: "(case) => {\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n    return {\n        fn:    tc.fn,\n        input: tc.input,\n        want:  tc.want |> yield(name: \"want\"),\n        got:   got |> yield(name: \"got\"),\n        diff:  dif |> yield(name: \"diff\"),\n    }\n}",
 						Start: ast.Position{
 							Column: 11,
 							Line:   12,
@@ -681,7 +681,7 @@ var pkgAST = &ast.Package{
 								Line:   23,
 							},
 							File:   "testing.flux",
-							Source: "{\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n    return {\n        fn:    tc.fn,\n        input: tc.input\n        want:  tc.want |> yield(name: \"want\"),\n        got:   got |> yield(name: \"got\"),\n        diff:  dif |> yield(name: \"diff\"),\n    }\n}",
+							Source: "{\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n    return {\n        fn:    tc.fn,\n        input: tc.input,\n        want:  tc.want |> yield(name: \"want\"),\n        got:   got |> yield(name: \"got\"),\n        diff:  dif |> yield(name: \"diff\"),\n    }\n}",
 							Start: ast.Position{
 								Column: 21,
 								Line:   12,
@@ -1152,7 +1152,7 @@ var pkgAST = &ast.Package{
 										Line:   22,
 									},
 									File:   "testing.flux",
-									Source: "{\n        fn:    tc.fn,\n        input: tc.input\n        want:  tc.want |> yield(name: \"want\"),\n        got:   got |> yield(name: \"got\"),\n        diff:  dif |> yield(name: \"diff\"),\n    }",
+									Source: "{\n        fn:    tc.fn,\n        input: tc.input,\n        want:  tc.want |> yield(name: \"want\"),\n        got:   got |> yield(name: \"got\"),\n        diff:  dif |> yield(name: \"diff\"),\n    }",
 									Start: ast.Position{
 										Column: 12,
 										Line:   16,
@@ -1900,7 +1900,7 @@ var pkgAST = &ast.Package{
 									Line:   22,
 								},
 								File:   "testing.flux",
-								Source: "return {\n        fn:    tc.fn,\n        input: tc.input\n        want:  tc.want |> yield(name: \"want\"),\n        got:   got |> yield(name: \"got\"),\n        diff:  dif |> yield(name: \"diff\"),\n    }",
+								Source: "return {\n        fn:    tc.fn,\n        input: tc.input,\n        want:  tc.want |> yield(name: \"want\"),\n        got:   got |> yield(name: \"got\"),\n        diff:  dif |> yield(name: \"diff\"),\n    }",
 								Start: ast.Position{
 									Column: 5,
 									Line:   16,
