@@ -25,10 +25,9 @@ func (s triggerAwareProcedureSpec) TriggerSpec() plan.TriggerSpec {
 
 func TestTriggers(t *testing.T) {
 	testcases := []struct {
-		name    string
-		node    plan.Node
-		want    plan.TriggerSpec
-		wantErr bool
+		name string
+		node plan.Node
+		want plan.TriggerSpec
 	}{
 		{
 			name: "default trigger spec",
@@ -42,23 +41,11 @@ func TestTriggers(t *testing.T) {
 			},
 			want: plan.NarrowTransformationTriggerSpec{},
 		},
-		{
-			name:    "cannot set trigger on logical node",
-			node:    &plan.LogicalNode{},
-			wantErr: true,
-		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := plan.SetTriggerSpec(tc.node)
-			if !tc.wantErr && err != nil {
-				t.Fatalf("unexpected error setting default triggers: %v", err)
-			}
-			if tc.wantErr && err == nil {
-				t.Fatal("expected error setting default triggers, but got nothing")
-			}
-			if tc.wantErr == (err != nil) {
-				return
+			if err := plan.SetTriggerSpec(tc.node); err != nil {
+				t.Fatalf("unexpected error setting trigger spec: %v", err)
 			}
 			n := tc.node.(*plan.PhysicalPlanNode)
 			if !cmp.Equal(tc.want, n.TriggerSpec) {
