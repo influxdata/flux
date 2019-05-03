@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/querytest"
@@ -1176,5 +1177,66 @@ func TestWindowRewriteRule(t *testing.T) {
 				t.Fatalf("unexpected window trigger spec: -want/+got\n- %v\n+ %v", tc.want, got)
 			}
 		})
+	}
+}
+
+func BenchmarkFixedWindow_Process(b *testing.B) {
+	schema := gen.Schema{
+		Tags: []gen.Tag{
+			{Name: "_measurement", Cardinality: 2},
+			{Name: "_field", Cardinality: 5},
+			{Name: "t0", Cardinality: 4},
+			{Name: "t1", Cardinality: 2},
+		},
+		Period: 10 * time.Second,
+		Start: func() time.Time {
+			t, _ := time.Parse(time.RFC3339, "2019-01-01T00:00:00Z")
+			return t
+		}(),
+		NumPoints: 6 * 60, // 1 hour
+		Types: map[flux.ColType]int{
+			flux.TFloat: 1,
+		},
+	}
+	input, err := gen.Input(schema)
+	if err != nil {
+		b.Fatalf("unexpected error: %s", err)
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		d := executetest.NewDataset(executetest.RandomDatasetID())
+		c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
+		c.SetTriggerSpec(plan.DefaultTriggerSpec)
+
+		fw := universe.NewFixedWindowTransformation(
+			d,
+			c,
+			execute.Bounds{
+				Start: execute.Time(schema.Start.UnixNano()),
+				Stop:  execute.Time(schema.Start.Add(100 * 10 * time.Second).UnixNano()),
+			},
+			execute.NewWindow(
+				execute.Duration(time.Minute),
+				execute.Duration(time.Minute),
+				0,
+			),
+			execute.DefaultTimeColLabel,
+			execute.DefaultStartColLabel,
+			execute.DefaultStopColLabel,
+			true,
+		)
+
+		parentID := executetest.RandomDatasetID()
+		for input.More() {
+			res := input.Next()
+			if err := res.Tables().Do(func(table flux.Table) error {
+				return fw.Process(parentID, table)
+			}); err != nil {
+				b.Fatalf("unexpected error: %s", err)
+			}
+		}
 	}
 }

@@ -332,7 +332,7 @@ func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl flux.Table
 							return err
 						}
 					default:
-						if err := builder.AppendValue(j, execute.ValueForRow(cr, i, j)); err != nil {
+						if err := execute.AppendValueFromRow(builder, j, cr, i, j); err != nil {
 							return err
 						}
 					}

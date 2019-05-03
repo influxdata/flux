@@ -267,6 +267,47 @@ func AppendMappedRecordExplicit(i int, cr flux.ColReader, builder TableBuilder, 
 	return nil
 }
 
+// AppendValueFromRow will retrieve a value from an arrow column reader at the
+// given index and append it to a TableBuilder in the specified row.
+func AppendValueFromRow(builder TableBuilder, dst int, cr flux.ColReader, i, j int) error {
+	t := cr.Cols()[j].Type
+	switch t {
+	case flux.TString:
+		if cr.Strings(j).IsNull(i) {
+			return builder.AppendNil(dst)
+		}
+		return builder.AppendString(dst, cr.Strings(j).ValueString(i))
+	case flux.TInt:
+		if cr.Ints(j).IsNull(i) {
+			return builder.AppendNil(dst)
+		}
+		return builder.AppendInt(dst, cr.Ints(j).Value(i))
+	case flux.TUInt:
+		if cr.UInts(j).IsNull(i) {
+			return builder.AppendNil(dst)
+		}
+		return builder.AppendUInt(dst, cr.UInts(j).Value(i))
+	case flux.TFloat:
+		if cr.Floats(j).IsNull(i) {
+			return builder.AppendNil(dst)
+		}
+		return builder.AppendFloat(dst, cr.Floats(j).Value(i))
+	case flux.TBool:
+		if cr.Bools(j).IsNull(i) {
+			return builder.AppendNil(dst)
+		}
+		return builder.AppendBool(dst, cr.Bools(j).Value(i))
+	case flux.TTime:
+		if cr.Times(j).IsNull(i) {
+			return builder.AppendNil(dst)
+		}
+		return builder.AppendTime(dst, values.Time(cr.Times(j).Value(i)))
+	default:
+		PanicUnknownType(t)
+		return fmt.Errorf("invalid type: %v", t)
+	}
+}
+
 // BuilderColsMatchReader returns true if builder and cr have identical column sets (order dependent)
 func BuilderColsMatchReader(builder TableBuilder, cr flux.ColReader) bool {
 	return colsMatch(builder.Cols(), cr.Cols())
