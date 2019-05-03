@@ -11,11 +11,11 @@ builtin trimSuffix
 
 // hack to simulate an imported strings package
 strings = {
-  title:title
-  toUpper:toUpper
-  toLower:toLower
-  trim:trim
-  trimPrefix:trimPrefix
-  trimSpace:trimSpace
-  trimSuffix:trimSuffix
+  title:title,
+  toUpper:toUpper,
+  toLower:toLower,
+  trim:trim,
+  trimPrefix:trimPrefix,
+  trimSpace:trimSpace,
+  trimSuffix:trimSuffix,
 }

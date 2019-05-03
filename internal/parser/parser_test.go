@@ -16,9 +16,7 @@ import (
 	"github.com/influxdata/flux/internal/token"
 )
 
-var skip = map[string]string{
-	"two logical operations with parens": "the parser merges the two statements: https://github.com/influxdata/flux/issues/1102",
-}
+var skip = map[string]string{}
 
 var CompareOptions = []cmp.Option{
 	cmp.Transformer("", func(re *regexp.Regexp) string {
@@ -1292,14 +1290,12 @@ import "path/bar"
 							BaseNode: base("1:5", "1:11"),
 							Properties: []*ast.Property{
 								&ast.Property{
-									BaseNode: base("1:6", "1:7"),
 									Key: &ast.Identifier{
 										BaseNode: base("1:6", "1:7"),
 										Name:     "a",
 									},
 								},
 								&ast.Property{
-									BaseNode: base("1:9", "1:10"),
 									Key: &ast.Identifier{
 										BaseNode: base("1:9", "1:10"),
 										Name:     "b",
@@ -2759,6 +2755,9 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/`,
 			},
 		},
 		{
+			// The following test case demonstrates confusing behavior:
+			// The `(` at 2:1 begins a call, but a user might
+			// reasonably expect it to start a new statement.
 			name: "two logical operations with parens",
 			raw: `not (a and b)
 (a or b) and c`,
@@ -2766,45 +2765,55 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/`,
 				BaseNode: base("1:1", "2:15"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
-						BaseNode: base("1:1", "1:13"),
-						Expression: &ast.UnaryExpression{
-							BaseNode: base("1:1", "1:13"),
-							Operator: ast.NotOperator,
-							Argument: &ast.LogicalExpression{
-								BaseNode: base("1:6", "1:13"),
-								Operator: ast.AndOperator,
-								Left: &ast.Identifier{
-									BaseNode: base("1:6", "1:7"),
-									Name:     "a",
-								},
-								Right: &ast.Identifier{
-									BaseNode: base("1:12", "1:13"),
-									Name:     "b",
-								},
-							},
-						},
-					},
-					&ast.ExpressionStatement{
-						BaseNode: base("2:2", "2:15"),
+						BaseNode: base("1:1", "2:15"),
 						Expression: &ast.LogicalExpression{
-							BaseNode: base("2:2", "2:15"),
+							BaseNode: base("1:1", "2:15"),
 							Operator: ast.AndOperator,
-							Left: &ast.LogicalExpression{
-								BaseNode: base("2:2", "2:8"),
-								Operator: ast.OrOperator,
-								Left: &ast.Identifier{
-									BaseNode: base("2:2", "2:3"),
-									Name:     "a",
-								},
-								Right: &ast.Identifier{
-									BaseNode: base("2:7", "2:8"),
-									Name:     "b",
+							Left: &ast.UnaryExpression{
+								BaseNode: base("1:1", "2:9"),
+								Operator: ast.NotOperator,
+								Argument: &ast.CallExpression{
+									BaseNode: ast.BaseNode{
+										Loc: loc("1:6", "2:9"),
+										Errors: []ast.Error{
+											{Msg: `expected comma in property list, got OR ("or")`},
+										},
+									},
+									Callee: &ast.LogicalExpression{
+										BaseNode: base("1:6", "1:13"),
+										Operator: ast.AndOperator,
+										Left: &ast.Identifier{
+											BaseNode: base("1:6", "1:7"),
+											Name:     "a",
+										},
+										Right: &ast.Identifier{
+											BaseNode: base("1:12", "1:13"),
+											Name:     "b",
+										},
+									},
+									Arguments: []ast.Expression{
+										&ast.ObjectExpression{
+											Properties: []*ast.Property{
+												{
+													Key: &ast.Identifier{
+														BaseNode: base("2:2", "2:3"),
+														Name:     "a",
+													},
+												},
+												{
+													BaseNode: ast.BaseNode{
+														Loc: loc("2:4", "2:8"),
+														Errors: []ast.Error{
+															{Msg: `unexpected token for property key: OR ("or")`},
+														},
+													},
+												},
+											},
+										},
+									},
 								},
 							},
-							Right: &ast.Identifier{
-								BaseNode: base("2:14", "2:15"),
-								Name:     "c",
-							},
+							Right: &ast.Identifier{BaseNode: base("2:14", "2:15"), Name: "c"},
 						},
 					},
 				},
@@ -4981,6 +4990,257 @@ string"
 				},
 			},
 		},
+		{
+			name: "property list missing property",
+			raw:  `o = {a: "a",, b: 7}`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:20"),
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
+						BaseNode: base("1:1", "1:20"),
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "o",
+						},
+						Init: &ast.ObjectExpression{
+							BaseNode: base("1:5", "1:20"),
+							Properties: []*ast.Property{
+								{
+									BaseNode: base("1:6", "1:12"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:6", "1:7"),
+										Name:     "a",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: base("1:9", "1:12"),
+										Value:    "a",
+									},
+								},
+								{
+									BaseNode: ast.BaseNode{
+										Loc:    loc("1:13", "1:13"),
+										Errors: []ast.Error{{Msg: "missing property in property list"}},
+									},
+								},
+								{
+									BaseNode: base("1:15", "1:19"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:15", "1:16"),
+										Name:     "b",
+									},
+									Value: &ast.IntegerLiteral{
+										BaseNode: base("1:18", "1:19"),
+										Value:    7,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "property list missing key",
+			raw:  `o = {: "a"}`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:12"),
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
+						BaseNode: base("1:1", "1:12"),
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "o",
+						},
+						Init: &ast.ObjectExpression{
+							BaseNode: base("1:5", "1:12"),
+							Properties: []*ast.Property{
+								{
+									BaseNode: ast.BaseNode{
+										Loc:    loc("1:6", "1:11"),
+										Errors: []ast.Error{{Msg: "missing property key"}},
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: base("1:8", "1:11"),
+										Value:    "a",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "property list missing value",
+			raw:  `o = {a:}`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:9"),
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
+						BaseNode: base("1:1", "1:9"),
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "o",
+						},
+						Init: &ast.ObjectExpression{
+							BaseNode: base("1:5", "1:9"),
+							Properties: []*ast.Property{
+								{
+									BaseNode: ast.BaseNode{
+										Errors: []ast.Error{{Msg: "missing property value"}},
+									},
+									Key: &ast.Identifier{
+										BaseNode: base("1:6", "1:7"),
+										Name:     "a",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			// Because of the missing comma between the properties,
+			// the parser attempts to parse `"a" b` as a binary expression
+			// with a missing operator.
+			name: "property list missing comma",
+			raw:  `o = {a: "a" b: 30}`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:19"),
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
+						BaseNode: base("1:1", "1:19"),
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "o",
+						},
+						Init: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Loc:    loc("1:5", "1:19"),
+								Errors: []ast.Error{{Msg: `expected comma in property list, got COLON (":")`}},
+							},
+							Properties: []*ast.Property{
+								{
+									BaseNode: base("1:6", "1:14"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:6", "1:7"),
+										Name:     "a",
+									},
+									Value: &ast.BinaryExpression{
+										BaseNode: ast.BaseNode{
+											Loc:    loc("1:9", "1:14"),
+											Errors: []ast.Error{{Msg: "expected an operator between two expressions"}},
+										},
+										Left: &ast.StringLiteral{
+											BaseNode: base("1:9", "1:12"),
+											Value:    "a",
+										},
+										Right: &ast.Identifier{
+											BaseNode: base("1:13", "1:14"),
+											Name:     "b"},
+									},
+								},
+								{
+									BaseNode: ast.BaseNode{
+										Loc:    loc("1:14", "1:18"),
+										Errors: []ast.Error{{Msg: "missing property key"}},
+									},
+									Value: &ast.IntegerLiteral{
+										BaseNode: base("1:16", "1:18"),
+										Value:    30,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			// A trailing comma is acceptable
+			name: "property list trailing comma",
+			raw:  `o = {a: "a",}`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:14"),
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
+						BaseNode: base("1:1", "1:14"),
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "o",
+						},
+						Init: &ast.ObjectExpression{
+							BaseNode: base("1:5", "1:14"),
+							Properties: []*ast.Property{
+								{
+									BaseNode: base("1:6", "1:12"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:6", "1:7"),
+										Name:     "a",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: base("1:9", "1:12"),
+										Value:    "a",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "property list bad property",
+			raw:  `o = {a: "a", 30, b: 7}`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:23"),
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
+						BaseNode: base("1:1", "1:23"),
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "o",
+						},
+						Init: &ast.ObjectExpression{
+							BaseNode: base("1:5", "1:23"),
+							Properties: []*ast.Property{
+								{
+									BaseNode: base("1:6", "1:12"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:6", "1:7"),
+										Name:     "a",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: base("1:9", "1:12"),
+										Value:    "a",
+									},
+								},
+								{
+									BaseNode: ast.BaseNode{
+										Loc: loc("1:14", "1:16"),
+										Errors: []ast.Error{
+											{Msg: `unexpected token for property key: INT ("30")`},
+										},
+									},
+								},
+								{
+									BaseNode: base("1:18", "1:22"),
+									Key: &ast.Identifier{
+										BaseNode: base("1:18", "1:19"),
+										Name:     "b",
+									},
+									Value: &ast.IntegerLiteral{
+										BaseNode: base("1:21", "1:22"),
+										Value:    7,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 		// TODO(jsternberg): This should fill in error nodes.
 		// The current behavior is non-sensical.
 		{
@@ -5093,6 +5353,9 @@ func source(src string, loc *ast.SourceLocation) string {
 		eoffset += o + 1
 	}
 	eoffset += loc.End.Column - 1
+	if soffset >= len(src) || eoffset > len(src) || soffset > eoffset {
+		return "<invalid offsets>"
+	}
 	return src[soffset:eoffset]
 }
 

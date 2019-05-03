@@ -61,7 +61,7 @@ The parser directly implements the following grammar.
     MemberExpression               = DotExpression  | MemberBracketExpression
     DotExpression                  = "." identifer
     MemberBracketExpression        = "[" string "]" .
-    CallExpression                 = "(" ParameterList ")" .
+    CallExpression                 = "(" PropertyList ")" .
     IndexExpression                = "[" Expression "]" .
     PrimaryExpression              = identifer
                                    | int_lit
