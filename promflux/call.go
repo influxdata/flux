@@ -269,6 +269,18 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start, t.end.Add(-5*time.Minute))}),
 			call("promql.timestamp", nil),
 		), nil
+	case "changes", "resets":
+		fn := "promql." + c.Func.Name
+
+		v, err := t.transpileExpr(c.Args[0])
+		if err != nil {
+			return nil, fmt.Errorf("error transpiling function argument")
+		}
+		return buildPipeline(
+			v,
+			call(fn, nil),
+			dropMeasurementCall,
+		), nil
 	case "clamp_max", "clamp_min":
 		fn := "math.mMax"
 		if c.Func.Name == "clamp_max" {
