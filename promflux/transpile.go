@@ -95,6 +95,54 @@ func windowCutoffFn(minStop time.Time, maxStart time.Time) *ast.FunctionExpressi
 	}
 }
 
+// Function to apply a math function to all values in a table and a given float64 operand.
+func scalarArithBinaryMathFn(mathFn string, operand ast.Expression, swapped bool) *ast.FunctionExpression {
+	val := &ast.MemberExpression{
+		Object: &ast.Identifier{
+			Name: "r",
+		},
+		Property: &ast.Identifier{
+			Name: "_value",
+		},
+	}
+
+	var lhs, rhs ast.Expression = val, operand
+
+	if swapped {
+		lhs, rhs = rhs, lhs
+	}
+
+	// (r) => {"_value": mathFn("x": <lhs>, "y": <rhs>), "_stop": r._stop}
+	return &ast.FunctionExpression{
+		Params: []*ast.Property{
+			{
+				Key: &ast.Identifier{
+					Name: "r",
+				},
+			},
+		},
+		Body: &ast.ObjectExpression{
+			Properties: []*ast.Property{
+				{
+					Key:   &ast.Identifier{Name: "_value"},
+					Value: call(mathFn, map[string]ast.Expression{"x": lhs, "y": rhs}),
+				},
+				{
+					Key: &ast.Identifier{Name: "_stop"},
+					Value: &ast.MemberExpression{
+						Object: &ast.Identifier{
+							Name: "r",
+						},
+						Property: &ast.Identifier{
+							Name: "_stop",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 func columnList(strs ...string) *ast.ArrayExpression {
 	list := make([]ast.Expression, len(strs))
 	for i, str := range strs {

@@ -269,6 +269,27 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start, t.end.Add(-5*time.Minute))}),
 			call("promql.timestamp", nil),
 		), nil
+	case "clamp_max", "clamp_min":
+		fn := "math.mMax"
+		if c.Func.Name == "clamp_max" {
+			fn = "math.mMin"
+		}
+
+		v, err := t.transpileExpr(c.Args[0])
+		if err != nil {
+			return nil, fmt.Errorf("error transpiling function argument")
+		}
+		clamp, err := t.transpileExpr(c.Args[1])
+		if err != nil {
+			return nil, fmt.Errorf("error transpiling function argument")
+		}
+		return buildPipeline(
+			v,
+			call("map", map[string]ast.Expression{
+				"fn": scalarArithBinaryMathFn(fn, clamp, false),
+			}),
+			dropMeasurementCall,
+		), nil
 	default:
 		return nil, fmt.Errorf("PromQL function %q is not supported yet", c.Func.Name)
 	}
