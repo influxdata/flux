@@ -22,10 +22,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 18,
-					Line:   7,
+					Line:   8,
 				},
 				File:   "promql.flux",
-				Source: "package promql\n\nbuiltin changes\nbuiltin emptyTable\nbuiltin extrapolatedRate\nbuiltin resets\nbuiltin timestamp",
+				Source: "package promql\n\nbuiltin changes\nbuiltin emptyTable\nbuiltin extrapolatedRate\nbuiltin instantRate\nbuiltin resets\nbuiltin timestamp",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -139,11 +139,11 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 15,
+						Column: 20,
 						Line:   6,
 					},
 					File:   "promql.flux",
-					Source: "builtin resets",
+					Source: "builtin instantRate",
 					Start: ast.Position{
 						Column: 1,
 						Line:   6,
@@ -155,14 +155,48 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 15,
+							Column: 20,
 							Line:   6,
+						},
+						File:   "promql.flux",
+						Source: "instantRate",
+						Start: ast.Position{
+							Column: 9,
+							Line:   6,
+						},
+					},
+				},
+				Name: "instantRate",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 15,
+						Line:   7,
+					},
+					File:   "promql.flux",
+					Source: "builtin resets",
+					Start: ast.Position{
+						Column: 1,
+						Line:   7,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 15,
+							Line:   7,
 						},
 						File:   "promql.flux",
 						Source: "resets",
 						Start: ast.Position{
 							Column: 9,
-							Line:   6,
+							Line:   7,
 						},
 					},
 				},
@@ -174,13 +208,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   7,
+						Line:   8,
 					},
 					File:   "promql.flux",
 					Source: "builtin timestamp",
 					Start: ast.Position{
 						Column: 1,
-						Line:   7,
+						Line:   8,
 					},
 				},
 			},
@@ -190,13 +224,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   7,
+							Line:   8,
 						},
 						File:   "promql.flux",
 						Source: "timestamp",
 						Start: ast.Position{
 							Column: 9,
-							Line:   7,
+							Line:   8,
 						},
 					},
 				},

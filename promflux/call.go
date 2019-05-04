@@ -242,6 +242,24 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			}),
 			dropMeasurementCall,
 		), nil
+	case "irate", "idelta":
+		isRate := true
+
+		if c.Func.Name == "idelta" {
+			isRate = false
+		}
+
+		v, err := t.transpileExpr(c.Args[0])
+		if err != nil {
+			return nil, fmt.Errorf("error transpiling function argument")
+		}
+		return buildPipeline(
+			v,
+			call("promql.instantRate", map[string]ast.Expression{
+				"isRate": &ast.BooleanLiteral{Value: isRate},
+			}),
+			dropMeasurementCall,
+		), nil
 	case "timestamp":
 		v, err := t.transpileExpr(c.Args[0])
 		if err != nil {
