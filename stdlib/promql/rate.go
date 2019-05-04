@@ -214,17 +214,13 @@ func (t *extrapolatedRateTransformation) Process(id execute.DatasetID, tbl flux.
 	}
 
 	resultValue := lastValue - firstValue + counterCorrection
-	fmt.Println("I=== RESULT VALUE", resultValue)
 
 	// Duration between first/last samples and boundary of range.
 	durationToStart := float64(firstTime.Sub(rangeStart))
 	durationToEnd := float64(rangeEnd.Sub(lastTime))
-	fmt.Println("I=== DURATIONS TO START/END", durationToStart, durationToEnd)
 
 	sampledInterval := float64(lastTime.Sub(firstTime))
-	fmt.Println("I=== SAMPLED INTERVAL", sampledInterval)
 	averageDurationBetweenSamples := sampledInterval / float64(numVals-1)
-	fmt.Println("I=== AVG DURATION", averageDurationBetweenSamples)
 
 	if t.isCounter && resultValue > 0 && firstValue >= 0 {
 		// Counters cannot be negative. If we have any slope at
