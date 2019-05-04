@@ -158,6 +158,8 @@ func (t *transpiler) transpileExpr(node promql.Node) (ast.Expression, error) {
 		return t.transpileBinaryExpr(n)
 	case *promql.Call:
 		return t.transpileCall(n)
+	case *promql.SubqueryExpr:
+		return t.transpileSubqueryExpr(n)
 	default:
 		return nil, fmt.Errorf("PromQL node type %T is not supported yet", t)
 	}
