@@ -21,11 +21,11 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 19,
-					Line:   5,
+					Column: 18,
+					Line:   6,
 				},
 				File:   "promql.flux",
-				Source: "package promql\n\nbuiltin timestamp\nbuiltin extrapolatedRate\nbuiltin emptyTable",
+				Source: "package promql\n\nbuiltin changes\nbuiltin emptyTable\nbuiltin extrapolatedRate\nbuiltin timestamp",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -37,11 +37,11 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 18,
+						Column: 16,
 						Line:   3,
 					},
 					File:   "promql.flux",
-					Source: "builtin timestamp",
+					Source: "builtin changes",
 					Start: ast.Position{
 						Column: 1,
 						Line:   3,
@@ -53,18 +53,52 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 18,
+							Column: 16,
 							Line:   3,
 						},
 						File:   "promql.flux",
-						Source: "timestamp",
+						Source: "changes",
 						Start: ast.Position{
 							Column: 9,
 							Line:   3,
 						},
 					},
 				},
-				Name: "timestamp",
+				Name: "changes",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 19,
+						Line:   4,
+					},
+					File:   "promql.flux",
+					Source: "builtin emptyTable",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 19,
+							Line:   4,
+						},
+						File:   "promql.flux",
+						Source: "emptyTable",
+						Start: ast.Position{
+							Column: 9,
+							Line:   4,
+						},
+					},
+				},
+				Name: "emptyTable",
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -72,13 +106,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 25,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "promql.flux",
 					Source: "builtin extrapolatedRate",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -88,13 +122,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 25,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "promql.flux",
 						Source: "extrapolatedRate",
 						Start: ast.Position{
 							Column: 9,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -105,14 +139,14 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 19,
-						Line:   5,
+						Column: 18,
+						Line:   6,
 					},
 					File:   "promql.flux",
-					Source: "builtin emptyTable",
+					Source: "builtin timestamp",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   6,
 					},
 				},
 			},
@@ -121,18 +155,18 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 19,
-							Line:   5,
+							Column: 18,
+							Line:   6,
 						},
 						File:   "promql.flux",
-						Source: "emptyTable",
+						Source: "timestamp",
 						Start: ast.Position{
 							Column: 9,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},
-				Name: "emptyTable",
+				Name: "timestamp",
 			},
 		}},
 		Imports: nil,

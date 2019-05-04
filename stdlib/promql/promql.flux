@@ -1,5 +1,6 @@
 package promql
 
-builtin timestamp
-builtin extrapolatedRate
+builtin changes
 builtin emptyTable
+builtin extrapolatedRate
+builtin timestamp
