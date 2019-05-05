@@ -48,17 +48,18 @@ func dropNonGroupingColsCall(groupCols []string, without bool) *ast.CallExpressi
 		cols := make([]string, 0, len(groupCols))
 		// Remove "_value" from list of columns to drop.
 		for _, col := range groupCols {
-			if col != "_value" { // TODO: also _start, _stop?
+			if col != "_value" && col != "_stop" { // TODO: Handle this systematically instead!
 				cols = append(cols, col)
 			}
 		}
 
-		// TODO: This errors with non-existent columns. In PromQL, this is a no-op.
 		return call("drop", map[string]ast.Expression{"columns": columnList(cols...)})
 	}
 
-	// We want to keep value and time columns even if they are not explicitly in the grouping labels.
-	cols := append(groupCols, "_value", "_start", "_stop")
+	// We want to keep value and stop columns even if they are not explicitly in the grouping labels.
+	cols := append(groupCols, "_value", "_stop")
+	// TODO: This errors with non-existent columns. In PromQL, this is a no-op.
+	// Blocked on https://github.com/influxdata/flux/issues/1118.
 	return call("keep", map[string]ast.Expression{"columns": columnList(cols...)})
 }
 
@@ -135,15 +136,6 @@ func (t *transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expres
 		}),
 		// Aggregate.
 		call(aggFn.name, aggArgs),
-		// TODO: Change this in the language to drop empty tables?
-		// Remove any windows <5m long at the end of the graph range to act like PromQL.
-		// Even if those windows were filtered by a vector selector previously, they might
-		// exist as empty tables and then the Flux aggregator functions would records rows with null
-		// values for each empty table, which can then confuse further filtering etc. steps.
-		//
-		// TODO: NOTE: This actually breaks things for windows different than 5m (like a "rate(foo[1m])")
-		// and doesn't actually seem to be needed anymore?
-		//call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start, t.end.Add(-5*time.Minute))}),
 	)
 	if aggFn.dropNonGrouping {
 		// Drop labels that are not part of the grouping.

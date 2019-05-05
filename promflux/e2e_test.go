@@ -40,7 +40,6 @@ var testVariantArgs = map[string][]string{
 		// TODO: Should return +Inf.
 		// "1.5",
 	},
-	// TODO: "%" and "^" not supported yet by Flux.
 	"arithBinOp":           []string{"+", "-", "*", "/", "%", "^"},
 	"compBinOp":            []string{"==", "!=", "<", ">", "<=", ">="},
 	"binOp":                []string{"+", "-", "*", "/", "%", "^", "==", "!=", "<", ">", "<=", ">="},
