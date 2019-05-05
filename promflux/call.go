@@ -18,7 +18,7 @@ var aggregateOverTimeFns = map[string]string{
 	"min_over_time":      "min",
 	"count_over_time":    "count",
 	"stddev_over_time":   "stddev",
-	"stdvar_over_time":   "stddev", // TODO: Add stdvar() to Flux stdlib instead of special-casing this below.
+	"stdvar_over_time":   "stdvar", // TODO: Add stdvar() to Flux stdlib instead of special-casing this below.
 	"quantile_over_time": "quantile",
 }
 
@@ -141,69 +141,75 @@ var filterWindowsWithZeroValueCall = call(
 	},
 )
 
+func (t *transpiler) transpileAggregateOverTimeFunc(fn string, inArgs []ast.Expression) (ast.Expression, error) {
+	callFn := fn
+	vec := inArgs[0]
+	args := map[string]ast.Expression{}
+	var nullValue ast.Expression = &ast.FloatLiteral{Value: nullReplacement}
+
+	switch fn {
+	case "count":
+		// "count" is the only aggregation function that returns an int, so we
+		// can only replace its null values with integers, not floats.
+		nullValue = &ast.IntegerLiteral{Value: nullReplacement}
+	case "quantile":
+		vec = inArgs[1]
+		args["q"] = inArgs[0]
+		args["method"] = &ast.StringLiteral{Value: "exact_mean"}
+	case "stddev", "stdvar":
+		callFn = "stddev"
+		args["mode"] = &ast.StringLiteral{Value: "population"}
+	}
+
+	pipelineCalls := []*ast.CallExpression{
+		call(callFn, args),
+		call("fill", map[string]ast.Expression{
+			"column": &ast.StringLiteral{Value: "_value"},
+			"value":  nullValue,
+		}),
+		call("toFloat", nil),
+		filterSpecialNullValuesCall,
+		dropMeasurementCall,
+	}
+
+	switch fn {
+	case "count":
+		// Count is the only function that produces a 0 instead of null value for an empty table.
+		// In PromQL, when we count_over_time() over an empty range, the result is empty, so we need
+		// to filter away 0 values here.
+		pipelineCalls = append(pipelineCalls, filterWindowsWithZeroValueCall)
+	case "stdvar":
+		pipelineCalls = append(
+			pipelineCalls,
+			call("map", map[string]ast.Expression{
+				"fn": scalarArithBinaryMathFn("pow", &ast.FloatLiteral{Value: 2}, false),
+			}),
+		)
+	}
+
+	return buildPipeline(
+		vec,
+		pipelineCalls...,
+	), nil
+}
+
 func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
-	if fn, ok := aggregateOverTimeFns[c.Func.Name]; ok {
-		v, err := t.transpileExpr(c.Args[0])
+	// The PromQL parser already verifies argument counts and types, so we don't have to check this here.
+	args := make([]ast.Expression, len(c.Args))
+	for i, arg := range c.Args {
+		tArg, err := t.transpileExpr(arg)
 		if err != nil {
 			return nil, fmt.Errorf("error transpiling function argument: %s", err)
 		}
-
-		args := map[string]ast.Expression{}
-		if fn == "quantile" {
-			args["q"] = v
-			args["method"] = &ast.StringLiteral{Value: "exact_mean"}
-
-			v, err = t.transpileExpr(c.Args[1])
-			if err != nil {
-				return nil, fmt.Errorf("error transpiling function argument")
-			}
-		}
-
-		if fn == "stddev" {
-			args["mode"] = &ast.StringLiteral{Value: "population"}
-		}
-
-		// "toFloat" and "filter" can both not deal with null values.
-		fillCall := call("fill", map[string]ast.Expression{
-			"column": &ast.StringLiteral{Value: "_value"},
-			"value":  &ast.FloatLiteral{Value: nullReplacement},
-		})
-		// "count" is the only aggregation function that returns an int.
-		if fn == "count" {
-			fillCall = call("fill", map[string]ast.Expression{
-				"column": &ast.StringLiteral{Value: "_value"},
-				"value":  &ast.IntegerLiteral{Value: nullReplacement},
-			})
-		}
-
-		pipelineCalls := []*ast.CallExpression{
-			call(fn, args),
-			fillCall,
-			call("toFloat", nil),
-			filterSpecialNullValuesCall,
-			dropMeasurementCall,
-		}
-		if fn == "count" {
-			// Count is the only function that produces a 0 instead of null value for an empty table.
-			// In PromQL, when we count_over_time() over an empty range, the result is empty, so we need
-			// to filter away 0 values here.
-			pipelineCalls = append(pipelineCalls, filterWindowsWithZeroValueCall)
-		}
-		if c.Func.Name == "stdvar_over_time" {
-			pipelineCalls = append(
-				pipelineCalls,
-				call("map", map[string]ast.Expression{
-					"fn": scalarArithBinaryMathFn("pow", &ast.FloatLiteral{Value: 2}, false),
-				}),
-			)
-		}
-
-		return buildPipeline(
-			v,
-			pipelineCalls...,
-		), nil
+		args[i] = tArg
 	}
 
+	// {count,avg,sum,min,max,...}_over_time()
+	if fn, ok := aggregateOverTimeFns[c.Func.Name]; ok {
+		return t.transpileAggregateOverTimeFunc(fn, args)
+	}
+
+	// abs(), ceil(), round()...
 	if fn, ok := vectorMathFunctions[c.Func.Name]; ok {
 		v, err := t.transpileExpr(c.Args[0])
 		if err != nil {
