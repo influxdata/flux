@@ -1,8 +1,13 @@
 # This file describes an image that is capable of building Flux.
 
-FROM golang:1.12
+FROM golang:1.12-alpine
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-		ruby \
-		ragel=6.9-1.1+b1 \
-	&& rm -rf /var/lib/apt/lists/*
+# Note: gcc and libc-dev are only needed since go test -race requires CGO.
+RUN apk add --no-cache \
+        bash \
+        git \
+        make \
+        gcc \
+        libc-dev \
+        ruby \
+        ragel=6.10-r0

@@ -17,11 +17,13 @@ GO_ARGS=-tags '$(GO_TAGS)'
 
 # Test vars can be used by all recursive Makefiles
 export GOOS=$(shell go env GOOS)
-export GO_BUILD=env GO111MODULE=on go build $(GO_ARGS)
-export GO_TEST=env GO111MODULE=on go test $(GO_ARGS)
+export GO_BUILD=env GO111MODULE=on CGO_ENABLED=0 go build $(GO_ARGS)
+export GO_TEST=env GO111MODULE=on CGO_ENABLED=0 go test $(GO_ARGS)
+# go test -race requires CGO
+export GO_TEST_RACE=env GO111MODULE=on go test $(GO_ARGS) -race
 # Do not add GO111MODULE=on to the call to go generate so it doesn't pollute the environment.
 export GO_GENERATE=go generate $(GO_ARGS)
-export GO_VET=env GO111MODULE=on go vet $(GO_ARGS)
+export GO_VET=env GO111MODULE=on CGO_ENABLED=0 go vet $(GO_ARGS)
 
 # List of utilities to build as part of the build process
 UTILS := \
@@ -45,7 +47,7 @@ checkfmt:
 	./etc/checkfmt.sh
 
 tidy:
-	GO111MODULE=on go mod tidy
+	GO111MODULE=on CGO_ENABLED=0 go mod tidy
 
 checktidy:
 	./etc/checktidy.sh
@@ -54,14 +56,14 @@ checkgenerate:
 	./etc/checkgenerate.sh
 
 staticcheck:
-	GO111MODULE=on go mod vendor # staticcheck looks in vendor for dependencies.
-	GO111MODULE=on go run honnef.co/go/tools/cmd/staticcheck ./...
+	GO111MODULE=on CGO_ENABLED=0 go mod vendor # staticcheck looks in vendor for dependencies.
+	GO111MODULE=on CGO_ENABLED=0 go run honnef.co/go/tools/cmd/staticcheck ./...
 
 test:
 	$(GO_TEST) ./...
 
 test-race:
-	$(GO_TEST) -race -count=1 ./...
+	$(GO_TEST_RACE) -count=1 ./...
 
 vet:
 	$(GO_VET) ./...
