@@ -74,7 +74,7 @@ func (s *LastProcedureSpec) TriggerSpec() plan.TriggerSpec {
 }
 
 type LastSelector struct {
-	rows []execute.Row
+	selected bool
 }
 
 func createLastTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
@@ -82,63 +82,63 @@ func createLastTransformation(id execute.DatasetID, mode execute.AccumulationMod
 	if !ok {
 		return nil, nil, fmt.Errorf("invalid spec type %T", ps)
 	}
-	t, d := execute.NewRowSelectorTransformationAndDataset(id, mode, new(LastSelector), ps.SelectorConfig, a.Allocator())
+	t, d := execute.NewIndexSelectorTransformationAndDataset(id, mode, new(LastSelector), ps.SelectorConfig, a.Allocator())
 	return t, d, nil
 }
 
 func (s *LastSelector) reset() {
-	s.rows = nil
+	s.selected = false
 }
-func (s *LastSelector) NewBoolSelector() execute.DoBoolRowSelector {
+func (s *LastSelector) NewBoolSelector() execute.DoBoolIndexSelector {
 	s.reset()
 	return s
 }
 
-func (s *LastSelector) NewIntSelector() execute.DoIntRowSelector {
+func (s *LastSelector) NewIntSelector() execute.DoIntIndexSelector {
 	s.reset()
 	return s
 }
 
-func (s *LastSelector) NewUIntSelector() execute.DoUIntRowSelector {
+func (s *LastSelector) NewUIntSelector() execute.DoUIntIndexSelector {
 	s.reset()
 	return s
 }
 
-func (s *LastSelector) NewFloatSelector() execute.DoFloatRowSelector {
+func (s *LastSelector) NewFloatSelector() execute.DoFloatIndexSelector {
 	s.reset()
 	return s
 }
 
-func (s *LastSelector) NewStringSelector() execute.DoStringRowSelector {
+func (s *LastSelector) NewStringSelector() execute.DoStringIndexSelector {
 	s.reset()
 	return s
 }
 
-func (s *LastSelector) Rows() []execute.Row {
-	return s.rows
-}
-
-func (s *LastSelector) selectLast(vs array.Interface, cr flux.ColReader) {
-	for i := vs.Len() - 1; i >= 0; i-- {
-		if !vs.IsNull(i) {
-			s.rows = []execute.Row{execute.ReadRow(i, cr)}
-			return
+func (s *LastSelector) selectLast(vs array.Interface) []int {
+	if !s.selected {
+		sz := vs.Len()
+		for i := sz - 1; i >= 0; i-- {
+			if !vs.IsNull(i) {
+				s.selected = true
+				return []int{i}
+			}
 		}
 	}
+	return nil
 }
 
-func (s *LastSelector) DoBool(vs *array.Boolean, cr flux.ColReader) {
-	s.selectLast(vs, cr)
+func (s *LastSelector) DoBool(vs *array.Boolean) []int {
+	return s.selectLast(vs)
 }
-func (s *LastSelector) DoInt(vs *array.Int64, cr flux.ColReader) {
-	s.selectLast(vs, cr)
+func (s *LastSelector) DoInt(vs *array.Int64) []int {
+	return s.selectLast(vs)
 }
-func (s *LastSelector) DoUInt(vs *array.Uint64, cr flux.ColReader) {
-	s.selectLast(vs, cr)
+func (s *LastSelector) DoUInt(vs *array.Uint64) []int {
+	return s.selectLast(vs)
 }
-func (s *LastSelector) DoFloat(vs *array.Float64, cr flux.ColReader) {
-	s.selectLast(vs, cr)
+func (s *LastSelector) DoFloat(vs *array.Float64) []int {
+	return s.selectLast(vs)
 }
-func (s *LastSelector) DoString(vs *array.Binary, cr flux.ColReader) {
-	s.selectLast(vs, cr)
+func (s *LastSelector) DoString(vs *array.Binary) []int {
+	return s.selectLast(vs)
 }
