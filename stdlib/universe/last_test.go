@@ -28,7 +28,7 @@ func TestLast_Process(t *testing.T) {
 	testCases := []struct {
 		name string
 		data *executetest.Table
-		want []execute.Row
+		want [][]int
 	}{
 		{
 			name: "last",
@@ -53,9 +53,7 @@ func TestLast_Process(t *testing.T) {
 					{execute.Time(90), 7.0, "a", "x"},
 				},
 			},
-			want: []execute.Row{{
-				Values: []interface{}{execute.Time(90), 7.0, "a", "x"},
-			}},
+			want: [][]int{{9}},
 		},
 		{
 			name: "with null",
@@ -80,15 +78,13 @@ func TestLast_Process(t *testing.T) {
 					{execute.Time(90), nil, "a", "x"},
 				},
 			},
-			want: []execute.Row{{
-				Values: []interface{}{execute.Time(80), 3.0, "a", "y"},
-			}},
+			want: [][]int{{8}},
 		},
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			executetest.RowSelectorFuncTestHelper(
+			executetest.IndexSelectorFuncTestHelper(
 				t,
 				new(universe.LastSelector),
 				tc.data,
@@ -99,5 +95,5 @@ func TestLast_Process(t *testing.T) {
 }
 
 func BenchmarkLast(b *testing.B) {
-	executetest.RowSelectorFuncBenchmarkHelper(b, new(universe.LastSelector), NormalTable)
+	executetest.IndexSelectorFuncBenchmarkHelper(b, new(universe.LastSelector), NormalTable)
 }
