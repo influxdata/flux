@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/influxdata/flux/ast"
-	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/promql"
 )
 
@@ -146,9 +145,6 @@ func scalarArithBinaryMathFn(mathFn string, operand ast.Expression, swapped bool
 func columnList(strs ...string) *ast.ArrayExpression {
 	list := make([]ast.Expression, len(strs))
 	for i, str := range strs {
-		if str == model.MetricNameLabel {
-			str = "_measurement"
-		}
 		list[i] = &ast.StringLiteral{Value: str}
 	}
 	return &ast.ArrayExpression{
@@ -214,6 +210,8 @@ func (t *transpiler) transpileExpr(node promql.Node) (ast.Expression, error) {
 }
 
 func (t *transpiler) transpile(node promql.Node) (*ast.File, error) {
+	promql.Walk(labelNameEscaper{}, node, nil)
+
 	fluxNode, err := t.transpileExpr(node)
 	if err != nil {
 		return nil, fmt.Errorf("error transpiling expression: %s", err)

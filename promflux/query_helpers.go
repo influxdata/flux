@@ -91,8 +91,6 @@ func influxResultToPromMatrix(resultIt flux.ResultIterator) (model.Matrix, error
 
 					for j, col := range cr.Cols() {
 						switch col.Label {
-						case "_measurement":
-							met[model.MetricNameLabel] = model.LabelValue(cr.Strings(j).Value(i))
 						case "_time":
 							ts = model.TimeFromUnixNano(execute.ValueForRow(cr, i, j).Time().Time().UnixNano())
 						case "_value":
@@ -110,7 +108,8 @@ func influxResultToPromMatrix(resultIt flux.ResultIterator) (model.Matrix, error
 						case "_start", "_stop", "_field":
 							// Ignore.
 						default:
-							met[model.LabelName(col.Label)] = model.LabelValue(cr.Strings(j).Value(i))
+							ln := unescapeLabelName(col.Label)
+							met[model.LabelName(ln)] = model.LabelValue(cr.Strings(j).Value(i))
 						}
 					}
 

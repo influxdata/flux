@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/influxdata/flux/ast"
-	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/pkg/labels"
 	"github.com/prometheus/prometheus/promql"
 )
@@ -48,9 +47,6 @@ func transpileLabelMatcher(lm *labels.Matcher) *ast.BinaryExpression {
 	op, ok := labelMatchOps[lm.Type]
 	if !ok {
 		panic(fmt.Errorf("invalid label matcher type %v", lm.Type))
-	}
-	if lm.Name == model.MetricNameLabel {
-		lm.Name = "_measurement"
 	}
 	be := &ast.BinaryExpression{
 		Operator: op,
