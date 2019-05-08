@@ -1609,9 +1609,9 @@ from(bucket:"telegraf/autogen")
 
 Median is defined as:
 
-    median = (method="estimate_tdigest", compression=0.0, tables=<-) =>
-    	tables
-            |> quantile(q:0.5, method:method, compression:compression)
+    median = (method="estimate_tdigest", compression=0.0, column="_value", tables=<-) =>
+        tables
+            |> quantile(q:0.5, method: method, compression: compression, column: column)
 
 Is it simply a `quantile` with the `q` paramter always set to `0.5`.
 It therefore shares all the same properties as the quantile function.
@@ -1840,9 +1840,9 @@ from(bucket: "telegraf/autogen")
 
 Median is defined as:
 
-    median = (method="estimate_tdigest", compression=0.0, tables=<-) =>
-    	tables
-    		|> quantile(q:0.5, method:method, compression:compression)
+    median = (method="estimate_tdigest", compression=0.0, column="_value", tables=<-) =>
+        tables
+            |> quantile(q:0.5, method: method, compression: compression, column: column)
 
 Is it simply a `quantile` with the `q` paramter always set to `0.5`.
 It therefore shares all the same properties as the quantile function.
