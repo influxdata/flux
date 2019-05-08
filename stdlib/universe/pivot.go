@@ -290,7 +290,7 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 
 				// zero-out the known key columns we've already discovered.
 				for _, v := range t.colKeyMaps[groupKeyString] {
-					if err := growColumn(builder, valueColType, v, 1); err != nil {
+					if err := growColumn(builder, v, 1); err != nil {
 						return err
 					}
 				}
@@ -313,7 +313,8 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	})
 }
 
-func growColumn(builder execute.TableBuilder, colType flux.ColType, colIdx, nRows int) error {
+func growColumn(builder execute.TableBuilder, colIdx, nRows int) error {
+	colType := builder.Cols()[colIdx].Type
 	switch colType {
 	case flux.TBool:
 		return builder.GrowBools(colIdx, nRows)
