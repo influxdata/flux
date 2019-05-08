@@ -2,13 +2,13 @@ package mqtt_test
 
 import (
 	"io/ioutil"
-	
+	"net/http"
+
 	"net/http/httptest"
 	"sync"
 	"testing"
 	"time"
 
-	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin" // We need to import the builtins for the tests to work.
 	"github.com/influxdata/flux/execute"
@@ -35,7 +35,7 @@ from(bucket:"mybucket") |> mqtt.to(url: "https://localhost:8081", name:"series1"
 					},
 					{
 						ID: "toHTTP1",
-						Spec: &fhttp.ToMQTTOpSpec{
+						Spec: &fmqtt.ToMQTTOpSpec{
 							URL:          "https://localhost:8081",
 							Name:         "series1",
 							Method:       "POST",
@@ -134,7 +134,7 @@ func TestToMQTTOpSpec_UnmarshalJSON(t *testing.T) {
 	}
 }
 
-func TestToHTTP_Process(t *testing.T) {
+func TestToMQTT_Process(t *testing.T) {
 	data := []byte{}
 	wg := sync.WaitGroup{}
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -152,14 +152,14 @@ func TestToHTTP_Process(t *testing.T) {
 	}
 	testCases := []struct {
 		name string
-		spec *fhttp.ToHTTPProcedureSpec
+		spec *fmqtt.ToMQTTProcedureSpec
 		data []flux.Table
 		want wanted
 	}{
 		{
 			name: "coltable with name in _measurement",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
+			spec: &fmqtt.ToMQTTProcedureSpec{
+				Spec: &fmqtt.ToMQTTOpSpec{
 					URL:          server.URL,
 					Method:       "GET",
 					Timeout:      50 * time.Second,
@@ -203,8 +203,8 @@ func TestToHTTP_Process(t *testing.T) {
 		},
 		{
 			name: "one table with measurement name in _measurement",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
+			spec: &fmqtt.ToMQTTProcedureSpec{
+				Spec: &fmqtt.ToMQTTOpSpec{
 					URL:          server.URL,
 					Method:       "GET",
 					Timeout:      50 * time.Second,
@@ -248,8 +248,8 @@ func TestToHTTP_Process(t *testing.T) {
 		},
 		{
 			name: "one table with measurement name in _measurement and tag",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
+			spec: &fmqtt.ToMQTTProcedureSpec{
+				Spec: &fmqtt.ToMQTTOpSpec{
 					URL:          server.URL,
 					Method:       "GET",
 					Timeout:      50 * time.Second,
@@ -294,8 +294,8 @@ func TestToHTTP_Process(t *testing.T) {
 		},
 		{
 			name: "one table",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
+			spec: &fmqtt.ToMQTTProcedureSpec{
+				Spec: &fmqtt.ToMQTTOpSpec{
 					URL:          server.URL,
 					Method:       "POST",
 					Timeout:      50 * time.Second,
@@ -334,8 +334,8 @@ func TestToHTTP_Process(t *testing.T) {
 		},
 		{
 			name: "one table with unused tag",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
+			spec: &fmqtt.ToMQTTProcedureSpec{
+				Spec: &fmqtt.ToMQTTOpSpec{
 					URL:          server.URL,
 					Method:       "GET",
 					Timeout:      50 * time.Second,
@@ -380,8 +380,8 @@ one_table_w_unused_tag _value=4 41
 		},
 		{
 			name: "one table with tag",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
+			spec: &fmqtt.ToMQTTProcedureSpec{
+				Spec: &fmqtt.ToMQTTOpSpec{
 					URL:          server.URL,
 					Method:       "GET",
 					Timeout:      50 * time.Second,
@@ -427,8 +427,8 @@ one_table_w_tag,fred=elevendyone _value=4 41
 		},
 		{
 			name: "multi table",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
+			spec: &fmqtt.ToMQTTProcedureSpec{
+				Spec: &fmqtt.ToMQTTOpSpec{
 					URL:          server.URL,
 					Method:       "GET",
 					Timeout:      50 * time.Second,
@@ -488,8 +488,8 @@ one_table_w_tag,fred=elevendyone _value=4 41
 		},
 		{
 			name: "multi collist tables",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
+			spec: &fmqtt.ToMQTTProcedureSpec{
+				Spec: &fmqtt.ToMQTTOpSpec{
 					URL:          server.URL,
 					Method:       "GET",
 					Timeout:      50 * time.Second,
@@ -561,7 +561,7 @@ one_table_w_tag,fred=elevendyone _value=4 41
 				tc.want.Table,
 				nil,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					return fhttp.NewToHTTPTransformation(d, c, tc.spec)
+					return fmqtt.NewToMQTTTransformation(d, c, tc.spec)
 				},
 			)
 			wg.Wait() // wait till we are done getting the data back
