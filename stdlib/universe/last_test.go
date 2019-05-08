@@ -91,7 +91,9 @@ func TestLast_Process(t *testing.T) {
 			executetest.RowSelectorFuncTestHelper(
 				t,
 				new(universe.LastSelector),
-				tc.data,
+				&executetest.RowWiseTable{
+					Table: tc.data,
+				},
 				tc.want,
 			)
 		})

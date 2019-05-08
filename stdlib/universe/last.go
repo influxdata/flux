@@ -73,6 +73,12 @@ func (s *LastProcedureSpec) TriggerSpec() plan.TriggerSpec {
 	return plan.NarrowTransformationTriggerSpec{}
 }
 
+// LastSelector selects the last row from a Flux table.
+// Note that while 'last' and 'first' are conceptually similar, one is a
+// row selector (last) while the other is an index selector (first). The
+// reason for this is that it was easier to ensure a correct implementation
+// of 'last' by defining it as a row selector when using multiple column
+// readers to iterate over a Flux table.
 type LastSelector struct {
 	rows []execute.Row
 }
