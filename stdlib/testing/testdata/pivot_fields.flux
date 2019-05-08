@@ -1,5 +1,5 @@
 package testdata_test
- 
+
 import "testing"
 
 option now = () => (2030-01-01T00:00:00Z)
@@ -21,41 +21,48 @@ inData = "
 ,,1,2018-05-22T19:53:56Z,1.96,load15,system,host.local
 ,,1,2018-05-22T19:54:06Z,1.98,load15,system,host.local
 ,,1,2018-05-22T19:54:16Z,1.97,load15,system,host.local
-,,2,2018-05-22T19:53:26Z,1.95,load5,system,host.local
-,,2,2018-05-22T19:53:36Z,1.92,load5,system,host.local
-,,2,2018-05-22T19:53:46Z,1.92,load5,system,host.local
-,,2,2018-05-22T19:53:56Z,1.89,load5,system,host.local
-,,2,2018-05-22T19:54:06Z,1.94,load5,system,host.local
-,,2,2018-05-22T19:54:16Z,1.93,load5,system,host.local
-,,3,2018-05-22T19:53:26Z,82.9833984375,used_percent,swap,host.local
-,,3,2018-05-22T19:53:36Z,82.598876953125,used_percent,swap,host.local
-,,3,2018-05-22T19:53:46Z,82.598876953125,used_percent,swap,host.local
-,,3,2018-05-22T19:53:56Z,82.598876953125,used_percent,swap,host.local
-,,3,2018-05-22T19:54:06Z,82.598876953125,used_percent,swap,host.local
-,,3,2018-05-22T19:54:16Z,82.6416015625,used_percent,swap,host.local
+#datatype,string,long,dateTime:RFC3339,long,string,string,string
+#group,false,false,false,false,true,true,true
+#default,_result,,,,,,
+,result,table,_time,_value,_field,_measurement,host
+,,2,2018-05-22T19:53:26Z,95,load5,system,host.local
+,,2,2018-05-22T19:53:36Z,92,load5,system,host.local
+,,2,2018-05-22T19:53:46Z,92,load5,system,host.local
+,,2,2018-05-22T19:53:56Z,89,load5,system,host.local
+,,2,2018-05-22T19:54:06Z,94,load5,system,host.local
+,,2,2018-05-22T19:54:16Z,93,load5,system,host.local
+
+#datatype,string,long,dateTime:RFC3339,long,string,string,string
+#group,false,false,false,false,true,true,true
+#default,_result,,,,,,
+,result,table,_time,_value,_field,_measurement,host
+,,3,2018-05-22T19:53:26Z,82,used_percent,swap,host.local
+,,3,2018-05-22T19:53:36Z,83,used_percent,swap,host.local
+,,3,2018-05-22T19:53:46Z,84,used_percent,swap,host.local
+,,3,2018-05-22T19:53:56Z,85,used_percent,swap,host.local
+,,3,2018-05-22T19:54:06Z,82,used_percent,swap,host.local
 "
 
 outData = "
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,long
 #group,false,false,true,true,false,true,true,false
-#default,0,,,,,,,
+#default,got,,,,,,,
 ,result,table,_start,_stop,_time,_measurement,host,used_percent
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,swap,host.local,82.9833984375
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:36Z,swap,host.local,82.598876953125
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:46Z,swap,host.local,82.598876953125
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:56Z,swap,host.local,82.598876953125
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,swap,host.local,82.598876953125
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,swap,host.local,82.6416015625
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,double,double
+,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,swap,host.local,82
+,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:36Z,swap,host.local,83
+,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:46Z,swap,host.local,84
+,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:56Z,swap,host.local,85
+,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,swap,host.local,82
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,double,long
 #group,false,false,true,true,false,true,true,false,false,false
-#default,0,,,,,,,,,
+#default,got,,,,,,,,,
 ,result,table,_start,_stop,_time,_measurement,host,load1,load15,load5
-,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,system,host.local,1.83,1.98,1.95
-,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:36Z,system,host.local,1.7,1.97,1.92
-,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:46Z,system,host.local,1.74,1.97,1.92
-,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:56Z,system,host.local,1.63,1.96,1.89
-,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,system,host.local,1.91,1.98,1.94
-,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,system,host.local,1.84,1.97,1.93
+,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,system,host.local,1.83,1.98,95
+,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:36Z,system,host.local,1.7,1.97,92
+,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:46Z,system,host.local,1.74,1.97,92
+,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:56Z,system,host.local,1.63,1.96,89
+,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,system,host.local,1.91,1.98,94
+,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,system,host.local,1.84,1.97,93
 "
 
 t_pivot_fields = (table=<-) =>
