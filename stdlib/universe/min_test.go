@@ -145,7 +145,9 @@ func TestMin_Process(t *testing.T) {
 			executetest.RowSelectorFuncTestHelper(
 				t,
 				new(universe.MinSelector),
-				tc.data,
+				&executetest.RowWiseTable{
+					Table: tc.data,
+				},
 				tc.want,
 			)
 		})
