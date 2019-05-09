@@ -257,12 +257,8 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			isRate = false
 		}
 
-		v, err := t.transpileExpr(c.Args[0])
-		if err != nil {
-			return nil, fmt.Errorf("error transpiling function argument")
-		}
 		return buildPipeline(
-			v,
+			args[0],
 			call("promql.extrapolatedRate", map[string]ast.Expression{
 				"isCounter": &ast.BooleanLiteral{Value: isCounter},
 				"isRate":    &ast.BooleanLiteral{Value: isRate},
@@ -276,24 +272,16 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			isRate = false
 		}
 
-		v, err := t.transpileExpr(c.Args[0])
-		if err != nil {
-			return nil, fmt.Errorf("error transpiling function argument")
-		}
 		return buildPipeline(
-			v,
+			args[0],
 			call("promql.instantRate", map[string]ast.Expression{
 				"isRate": &ast.BooleanLiteral{Value: isRate},
 			}),
 			dropMeasurementCall,
 		), nil
 	case "timestamp":
-		v, err := t.transpileExpr(c.Args[0])
-		if err != nil {
-			return nil, fmt.Errorf("error transpiling function argument")
-		}
 		return buildPipeline(
-			v,
+			args[0],
 			call("promql.timestamp", nil),
 			dropMeasurementCall,
 		), nil
@@ -317,12 +305,8 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 	case "changes", "resets":
 		fn := "promql." + c.Func.Name
 
-		v, err := t.transpileExpr(c.Args[0])
-		if err != nil {
-			return nil, fmt.Errorf("error transpiling function argument")
-		}
 		return buildPipeline(
-			v,
+			args[0],
 			call(fn, nil),
 			dropMeasurementCall,
 		), nil
@@ -332,14 +316,8 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			fn = "math.mMin"
 		}
 
-		v, err := t.transpileExpr(c.Args[0])
-		if err != nil {
-			return nil, fmt.Errorf("error transpiling function argument")
-		}
-		clamp, err := t.transpileExpr(c.Args[1])
-		if err != nil {
-			return nil, fmt.Errorf("error transpiling function argument")
-		}
+		v := args[0]
+		clamp := args[1]
 		return buildPipeline(
 			v,
 			call("map", map[string]ast.Expression{
