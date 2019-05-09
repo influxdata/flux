@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/influxdata/flux/ast"
+	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/promql"
 )
 
@@ -203,6 +204,62 @@ func (t *transpiler) transpileAggregateOverTimeFunc(fn string, inArgs []ast.Expr
 	), nil
 }
 
+func labelJoinFn(srcLabels []*ast.StringLiteral, dst *ast.StringLiteral, sep *ast.StringLiteral) *ast.FunctionExpression {
+	// TODO: Deal with empty source labels! Use Flux conditionals to check for existence?
+	var dstLabelValue ast.Expression = &ast.MemberExpression{
+		Object: &ast.Identifier{
+			Name: "r",
+		},
+		Property: srcLabels[0],
+	}
+	for _, srcLabel := range srcLabels[1:] {
+		dstLabelValue = &ast.BinaryExpression{
+			Operator: ast.AdditionOperator,
+			Left:     dstLabelValue,
+			Right: &ast.BinaryExpression{
+				Operator: ast.AdditionOperator,
+				Left:     sep,
+				Right: &ast.MemberExpression{
+					Object: &ast.Identifier{
+						Name: "r",
+					},
+					Property: srcLabel,
+				},
+			},
+		}
+	}
+
+	// (r) => ({<dst>: <src1><sep><src2>...})
+	return &ast.FunctionExpression{
+		Params: []*ast.Property{
+			{
+				Key: &ast.Identifier{
+					Name: "r",
+				},
+			},
+		},
+		Body: &ast.ObjectExpression{
+			Properties: []*ast.Property{
+				{
+					Key:   &ast.Identifier{Name: dst.Value},
+					Value: dstLabelValue,
+				},
+				{
+					Key: &ast.Identifier{Name: "_value"},
+					Value: &ast.MemberExpression{
+						Object: &ast.Identifier{
+							Name: "r",
+						},
+						Property: &ast.Identifier{
+							Name: "_value",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 	// The PromQL parser already verifies argument counts and types, so we don't have to check this here.
 	args := make([]ast.Expression, len(c.Args))
@@ -324,6 +381,40 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 				"fn": scalarArithBinaryMathFn(fn, clamp, false),
 			}),
 			dropMeasurementCall,
+		), nil
+	case "label_join":
+		v := args[0]
+
+		dst, ok := args[1].(*ast.StringLiteral)
+		if !ok {
+			return nil, fmt.Errorf("label_join() destination label must be string literal")
+		}
+		if !model.LabelName(dst.Value).IsValid() {
+			return nil, fmt.Errorf("invalid destination label name in label_join(): %s", dst.Value)
+		}
+		dst.Value = escapeLabelName(dst.Value)
+
+		sep, ok := args[2].(*ast.StringLiteral)
+		if !ok {
+			return nil, fmt.Errorf("label_join() separator must be string literal")
+		}
+
+		srcLabels := make([]*ast.StringLiteral, len(args)-3)
+		for i := 3; i < len(args); i++ {
+			src, ok := args[i].(*ast.StringLiteral)
+			if !ok {
+				return nil, fmt.Errorf("label_join() source labels must be string literals")
+			}
+			if !model.LabelName(src.Value).IsValid() {
+				return nil, fmt.Errorf("invalid source label name in label_join(): %s", src.Value)
+			}
+			src.Value = escapeLabelName(src.Value)
+			srcLabels[i-3] = src
+		}
+
+		return buildPipeline(
+			v,
+			call("map", map[string]ast.Expression{"fn": labelJoinFn(srcLabels, dst, sep)}),
 		), nil
 	default:
 		return nil, fmt.Errorf("PromQL function %q is not supported yet", c.Func.Name)
