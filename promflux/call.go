@@ -34,6 +34,16 @@ var vectorMathFunctions = map[string]string{
 	"round": "math.round",
 }
 
+var dateFunctions = map[string]string{
+	"day_of_month":  "promql.dayOfMonth",
+	"day_of_week":   "promql.dayOfWeek",
+	"days_in_month": "promql.daysInMonth",
+	"hour":          "promql.hour",
+	"minute":        "promql.minute",
+	"month":         "promql.month",
+	"year":          "promql.year",
+}
+
 // TODO: Super temporary hack to deal with null values. Remove!
 var filterSpecialNullValuesCall = call(
 	"filter",
@@ -63,7 +73,7 @@ var filterSpecialNullValuesCall = call(
 )
 
 // Function to apply a simple one-operand function to all values in a table.
-func vectorMathFn(fn string) *ast.FunctionExpression {
+func singleArgFloatFn(fn string, argName string) *ast.FunctionExpression {
 	// (r) => {"_value": mathFn(x: r._value), "_stop": r._stop}
 	return &ast.FunctionExpression{
 		Params: []*ast.Property{
@@ -83,7 +93,7 @@ func vectorMathFn(fn string) *ast.FunctionExpression {
 							&ast.ObjectExpression{
 								Properties: []*ast.Property{
 									&ast.Property{
-										Key: &ast.Identifier{Name: "x"},
+										Key: &ast.Identifier{Name: argName},
 										Value: &ast.MemberExpression{
 											Object: &ast.Identifier{
 												Name: "r",
@@ -211,14 +221,25 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 
 	// abs(), ceil(), round()...
 	if fn, ok := vectorMathFunctions[c.Func.Name]; ok {
-		v, err := t.transpileExpr(c.Args[0])
-		if err != nil {
-			return nil, fmt.Errorf("error transpiling function argument")
+		return buildPipeline(
+			args[0],
+			call("map", map[string]ast.Expression{"fn": singleArgFloatFn(fn, "x")}),
+			dropMeasurementCall,
+		), nil
+	}
+
+	// day_of_month(), hour(), etc.
+	if fn, ok := dateFunctions[c.Func.Name]; ok {
+		var v ast.Expression
+		if len(args) == 0 {
+			v = call("time", nil)
+		} else {
+			v = args[0]
 		}
 
 		return buildPipeline(
 			v,
-			call("map", map[string]ast.Expression{"fn": vectorMathFn(fn)}),
+			call("map", map[string]ast.Expression{"fn": singleArgFloatFn(fn, "timestamp")}),
 			dropMeasurementCall,
 		), nil
 	}
