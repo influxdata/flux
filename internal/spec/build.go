@@ -10,6 +10,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/opentracing/opentracing-go"
@@ -122,7 +123,7 @@ func (i *ider) ID(t *flux.TableObject) flux.OperationID {
 	return tableID
 }
 
-func toSpec(functionCalls []values.Value, now time.Time) (*flux.Spec, error) {
+func toSpec(functionCalls []interpreter.SideEffect, now time.Time) (*flux.Spec, error) {
 	ider := &ider{
 		id:     0,
 		lookup: make(map[*flux.TableObject]flux.OperationID),
@@ -133,7 +134,7 @@ func toSpec(functionCalls []values.Value, now time.Time) (*flux.Spec, error) {
 	objs := make([]*flux.TableObject, 0, len(functionCalls))
 
 	for _, call := range functionCalls {
-		if op, ok := call.(*flux.TableObject); ok {
+		if op, ok := call.Value.(*flux.TableObject); ok {
 			dup := false
 			for _, tableObject := range objs {
 				if op.Equal(tableObject) {

@@ -1,13 +1,10 @@
 package cmd
 
 import (
-	"context"
-	"io/ioutil"
-	"os"
+	"fmt"
 
 	_ "github.com/influxdata/flux/builtin"
-	"github.com/influxdata/flux/csv"
-	"github.com/influxdata/flux/lang"
+	"github.com/influxdata/flux/repl"
 	"github.com/spf13/cobra"
 )
 
@@ -25,34 +22,14 @@ func init() {
 }
 
 func execute(cmd *cobra.Command, args []string) error {
-	scriptSource := args[0]
-
-	var script string
-	if scriptSource[0] == '@' {
-		scriptBytes, err := ioutil.ReadFile(scriptSource[1:])
-		if err != nil {
-			return err
-		}
-		script = string(scriptBytes)
-	} else {
-		script = scriptSource
-	}
-
-	c := lang.FluxCompiler{
-		Query: script,
-	}
-
-	querier, err := NewQuerier()
+	q, err := NewQuerier()
 	if err != nil {
 		return err
 	}
-	result, err := querier.Query(context.Background(), c)
-	if err != nil {
-		return err
+	r := repl.New(q)
+	if err := r.Input(args[0]); err != nil {
+		return fmt.Errorf("failed to execute query: %v", err)
 	}
-	defer result.Release()
 
-	encoder := csv.NewMultiResultEncoder(csv.DefaultEncoderConfig())
-	_, err = encoder.Encode(os.Stdout, result)
-	return err
+	return nil
 }
