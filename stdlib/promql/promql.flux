@@ -16,11 +16,11 @@ builtin year
 
 // hack to simulate an imported promql package
 promql = {
-  dayOfMonth:dayOfMonth
-  dayOfWeek:dayOfWeek
-  daysInMonth:daysInMonth
-  hour:hour
-  minute:minute
-  month:month
-  year:year
+  dayOfMonth:dayOfMonth,
+  dayOfWeek:dayOfWeek,
+  daysInMonth:daysInMonth,
+  hour:hour,
+  minute:minute,
+  month:month,
+  year:year,
 }

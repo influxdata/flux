@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   26,
 				},
 				File:   "promql.flux",
-				Source: "package promql\n\nbuiltin changes\nbuiltin dayOfMonth\nbuiltin dayOfWeek\nbuiltin daysInMonth\nbuiltin emptyTable\nbuiltin extrapolatedRate\nbuiltin hour\nbuiltin instantRate\nbuiltin minute\nbuiltin month\nbuiltin resets\nbuiltin timestamp\nbuiltin year\n\n// hack to simulate an imported promql package\npromql = {\n  dayOfMonth:dayOfMonth\n  dayOfWeek:dayOfWeek\n  daysInMonth:daysInMonth\n  hour:hour\n  minute:minute\n  month:month\n  year:year\n}",
+				Source: "package promql\n\nbuiltin changes\nbuiltin dayOfMonth\nbuiltin dayOfWeek\nbuiltin daysInMonth\nbuiltin emptyTable\nbuiltin extrapolatedRate\nbuiltin hour\nbuiltin instantRate\nbuiltin minute\nbuiltin month\nbuiltin resets\nbuiltin timestamp\nbuiltin year\n\n// hack to simulate an imported promql package\npromql = {\n  dayOfMonth:dayOfMonth,\n  dayOfWeek:dayOfWeek,\n  daysInMonth:daysInMonth,\n  hour:hour,\n  minute:minute,\n  month:month,\n  year:year,\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -483,7 +483,7 @@ var pkgAST = &ast.Package{
 						Line:   26,
 					},
 					File:   "promql.flux",
-					Source: "promql = {\n  dayOfMonth:dayOfMonth\n  dayOfWeek:dayOfWeek\n  daysInMonth:daysInMonth\n  hour:hour\n  minute:minute\n  month:month\n  year:year\n}",
+					Source: "promql = {\n  dayOfMonth:dayOfMonth,\n  dayOfWeek:dayOfWeek,\n  daysInMonth:daysInMonth,\n  hour:hour,\n  minute:minute,\n  month:month,\n  year:year,\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   18,
@@ -517,7 +517,7 @@ var pkgAST = &ast.Package{
 							Line:   26,
 						},
 						File:   "promql.flux",
-						Source: "{\n  dayOfMonth:dayOfMonth\n  dayOfWeek:dayOfWeek\n  daysInMonth:daysInMonth\n  hour:hour\n  minute:minute\n  month:month\n  year:year\n}",
+						Source: "{\n  dayOfMonth:dayOfMonth,\n  dayOfWeek:dayOfWeek,\n  daysInMonth:daysInMonth,\n  hour:hour,\n  minute:minute,\n  month:month,\n  year:year,\n}",
 						Start: ast.Position{
 							Column: 10,
 							Line:   18,
