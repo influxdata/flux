@@ -322,6 +322,10 @@ var queries = []struct {
 		query: `label_join(demo_num_cpus, "job", "-", "instance")`,
 	},
 	{
+		query:       `{{.dateFunc}}()`,
+		variantArgs: []string{"dateFunc"},
+	},
+	{
 		query:       `{{.dateFunc}}(demo_batch_last_success_timestamp_seconds)`,
 		variantArgs: []string{"dateFunc"},
 	},

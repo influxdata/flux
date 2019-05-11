@@ -205,6 +205,25 @@ func labelJoinFn(srcLabels []*ast.StringLiteral, dst *ast.StringLiteral, sep *as
 	}
 }
 
+func (t *transpiler) timeFn() *ast.PipeExpression {
+	return buildPipeline(
+		call("promql.emptyTable", nil),
+		call("range", map[string]ast.Expression{
+			"start": &ast.DateTimeLiteral{Value: t.start.Add(-5 * time.Minute)},
+			"stop":  &ast.DateTimeLiteral{Value: t.end},
+		}),
+		call("window", map[string]ast.Expression{
+			"every":       &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.resolution.Nanoseconds(), Unit: "ns"}}},
+			"period":      &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: 5, Unit: "m"}}},
+			"createEmpty": &ast.BooleanLiteral{Value: true},
+		}),
+		call("sum", nil),
+		// Remove any windows <5m long at the edges of the graph range to act like PromQL.
+		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start, t.end.Add(-5*time.Minute))}),
+		call("promql.timestamp", nil),
+	)
+}
+
 func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 	// The PromQL parser already verifies argument counts and types, so we don't have to check this here.
 	args := make([]ast.Expression, len(c.Args))
@@ -234,7 +253,7 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 	if fn, ok := dateFunctions[c.Func.Name]; ok {
 		var v ast.Expression
 		if len(args) == 0 {
-			v = call("time", nil)
+			v = t.timeFn()
 		} else {
 			v = args[0]
 		}
@@ -288,22 +307,7 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			dropMeasurementCall,
 		), nil
 	case "time":
-		return buildPipeline(
-			call("promql.emptyTable", nil),
-			call("range", map[string]ast.Expression{
-				"start": &ast.DateTimeLiteral{Value: t.start.Add(-5 * time.Minute)},
-				"stop":  &ast.DateTimeLiteral{Value: t.end},
-			}),
-			call("window", map[string]ast.Expression{
-				"every":       &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.resolution.Nanoseconds(), Unit: "ns"}}},
-				"period":      &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: 5, Unit: "m"}}},
-				"createEmpty": &ast.BooleanLiteral{Value: true},
-			}),
-			call("sum", nil),
-			// Remove any windows <5m long at the edges of the graph range to act like PromQL.
-			call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start, t.end.Add(-5*time.Minute))}),
-			call("promql.timestamp", nil),
-		), nil
+		return t.timeFn(), nil
 	case "changes", "resets":
 		fn := "promql." + c.Func.Name
 
