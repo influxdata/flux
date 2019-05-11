@@ -212,6 +212,7 @@ func (t *transpiler) transpile(node promql.Node) (*ast.File, error) {
 	}
 	return &ast.File{
 		Imports: []*ast.ImportDeclaration{
+			{Path: &ast.StringLiteral{Value: "math"}},
 			{Path: &ast.StringLiteral{Value: "promql"}},
 		},
 		Body: []ast.Statement{
