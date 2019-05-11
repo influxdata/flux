@@ -211,6 +211,15 @@ func (t *transpiler) transpile(expr promql.Expr) (*ast.File, error) {
 		return nil, fmt.Errorf("error transpiling expression: %s", err)
 	}
 
+	// Scalar constants need to be converted to vectors in the final result.
+	if yieldsFloat(expr) {
+		fluxNode = buildPipeline(
+			t.generateZeroWindows(),
+			call("map", map[string]ast.Expression{
+				"fn": setConstValueFn(fluxNode),
+			}),
+		)
+	}
 
 	return &ast.File{
 		Imports: []*ast.ImportDeclaration{

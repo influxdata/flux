@@ -139,11 +139,10 @@ var queries = []struct {
 	},
 
 	// Binary operators.
-	// {
-	// TODO: Missing root node.
-	// 	query: `1 * 2 + 4 / 6 - 10`,
-	//  variantArgs: []string{""},
-	// },
+	{
+		query:       `1 * 2 + 4 / 6 - 10`,
+		variantArgs: []string{""},
+	},
 	{
 		query:       `demo_num_cpus + (1 {{.compBinOp}} bool 2)`,
 		variantArgs: []string{"compBinOp"},
