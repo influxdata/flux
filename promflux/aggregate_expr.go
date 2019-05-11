@@ -78,6 +78,7 @@ func (t *transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expres
 	aggArgs := map[string]ast.Expression{}
 
 	if a.Op == promql.ItemTopK || a.Op == promql.ItemBottomK {
+		// TODO: Allow any constant scalars here.
 		// The PromQL parser already verifies that a.Param is a scalar.
 		n, ok := a.Param.(*promql.NumberLiteral)
 		if !ok {
@@ -90,6 +91,7 @@ func (t *transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expres
 	}
 
 	if a.Op == promql.ItemQuantile {
+		// TODO: Allow any constant scalars here.
 		// The PromQL already verifies that a.Param is a scalar.
 		n, ok := a.Param.(*promql.NumberLiteral)
 		if !ok {

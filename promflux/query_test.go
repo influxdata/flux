@@ -140,8 +140,7 @@ var queries = []struct {
 
 	// Binary operators.
 	{
-		query:       `1 * 2 + 4 / 6 - 10`,
-		variantArgs: []string{""},
+		query: `1 * 2 + 4 / 6 - 10`,
 	},
 	{
 		query:       `demo_num_cpus + (1 {{.compBinOp}} bool 2)`,
