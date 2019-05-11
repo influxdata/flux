@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/influxdata/flux/ast"
@@ -33,8 +34,18 @@ func buildPipeline(arg ast.Expression, calls ...*ast.CallExpression) *ast.PipeEx
 }
 
 func call(fn string, args map[string]ast.Expression) *ast.CallExpression {
+	var callee ast.Expression
+	switch components := strings.Split(fn, "."); len(components) {
+	case 1:
+		callee = &ast.Identifier{Name: fn}
+	case 2:
+		callee = member(components[0], components[1])
+	default:
+		panic("invalid number of dot-separated components in function name")
+	}
+
 	expr := &ast.CallExpression{
-		Callee: &ast.Identifier{Name: fn},
+		Callee: callee,
 	}
 	if len(args) > 0 {
 		props := make([]*ast.Property, 0, len(args))
