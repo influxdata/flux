@@ -31,14 +31,7 @@ var compBinOps = map[promql.ItemType]ast.OperatorKind{
 
 // Function to apply an arithmetic binary operator to all values in a table and a given float64 operand.
 func scalarArithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped bool) *ast.FunctionExpression {
-	val := &ast.MemberExpression{
-		Object: &ast.Identifier{
-			Name: "r",
-		},
-		Property: &ast.Identifier{
-			Name: "_value",
-		},
-	}
+	val := member("r", "_value")
 
 	var lhs, rhs ast.Expression = val, operand
 
@@ -66,15 +59,8 @@ func scalarArithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped 
 					},
 				},
 				{
-					Key: &ast.Identifier{Name: "_stop"},
-					Value: &ast.MemberExpression{
-						Object: &ast.Identifier{
-							Name: "r",
-						},
-						Property: &ast.Identifier{
-							Name: "_stop",
-						},
-					},
+					Key:   &ast.Identifier{Name: "_stop"},
+					Value: member("r", "_stop"),
 				},
 			},
 		},
@@ -83,14 +69,7 @@ func scalarArithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped 
 
 // Function to apply a comparison binary operator to all values in a table and a given float64 operand.
 func scalarCompBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped bool) *ast.FunctionExpression {
-	val := &ast.MemberExpression{
-		Object: &ast.Identifier{
-			Name: "r",
-		},
-		Property: &ast.Identifier{
-			Name: "_value",
-		},
-	}
+	val := member("r", "_value")
 
 	var lhs, rhs ast.Expression = val, operand
 
@@ -117,22 +96,8 @@ func scalarCompBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped b
 
 // Function to apply a binary arithmetic operator between values of two joined tables.
 func vectorArithBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
-	lhs := &ast.MemberExpression{
-		Object: &ast.Identifier{
-			Name: "r",
-		},
-		Property: &ast.Identifier{
-			Name: "_value_lhs",
-		},
-	}
-	rhs := &ast.MemberExpression{
-		Object: &ast.Identifier{
-			Name: "r",
-		},
-		Property: &ast.Identifier{
-			Name: "_value_rhs",
-		},
-	}
+	lhs := member("r", "_value_lhs")
+	rhs := member("r", "_value_rhs")
 
 	// (r) => {"_value": <lhs> <op> <rhs>, "_stop": r._stop}
 	return &ast.FunctionExpression{
@@ -154,15 +119,8 @@ func vectorArithBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 					},
 				},
 				{
-					Key: &ast.Identifier{Name: "_stop"},
-					Value: &ast.MemberExpression{
-						Object: &ast.Identifier{
-							Name: "r",
-						},
-						Property: &ast.Identifier{
-							Name: "_stop",
-						},
-					},
+					Key:   &ast.Identifier{Name: "_stop"},
+					Value: member("r", "_stop"),
 				},
 			},
 		},
@@ -171,22 +129,8 @@ func vectorArithBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 
 // Function to apply a binary arithmetic operator math function between values of two joined tables.
 func vectorArithBinaryMathFn(mathFn string) *ast.FunctionExpression {
-	lhs := &ast.MemberExpression{
-		Object: &ast.Identifier{
-			Name: "r",
-		},
-		Property: &ast.Identifier{
-			Name: "_value_lhs",
-		},
-	}
-	rhs := &ast.MemberExpression{
-		Object: &ast.Identifier{
-			Name: "r",
-		},
-		Property: &ast.Identifier{
-			Name: "_value_rhs",
-		},
-	}
+	lhs := member("r", "_value_lhs")
+	rhs := member("r", "_value_rhs")
 
 	// (r) => {"_value": mathFn(<lhs>, <rhs>), "_stop": r._stop}
 	return &ast.FunctionExpression{
@@ -204,15 +148,8 @@ func vectorArithBinaryMathFn(mathFn string) *ast.FunctionExpression {
 					Value: call(mathFn, map[string]ast.Expression{"x": lhs, "y": rhs}),
 				},
 				{
-					Key: &ast.Identifier{Name: "_stop"},
-					Value: &ast.MemberExpression{
-						Object: &ast.Identifier{
-							Name: "r",
-						},
-						Property: &ast.Identifier{
-							Name: "_stop",
-						},
-					},
+					Key:   &ast.Identifier{Name: "_stop"},
+					Value: member("r", "_stop"),
 				},
 			},
 		},
@@ -221,23 +158,6 @@ func vectorArithBinaryMathFn(mathFn string) *ast.FunctionExpression {
 
 // Function to apply a binary comparison operator between values of two joined tables.
 func vectorCompBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
-	lhs := &ast.MemberExpression{
-		Object: &ast.Identifier{
-			Name: "r",
-		},
-		Property: &ast.Identifier{
-			Name: "_value_lhs",
-		},
-	}
-	rhs := &ast.MemberExpression{
-		Object: &ast.Identifier{
-			Name: "r",
-		},
-		Property: &ast.Identifier{
-			Name: "_value_rhs",
-		},
-	}
-
 	// (r) => <lhs> <op> <rhs>
 	return &ast.FunctionExpression{
 		Params: []*ast.Property{
@@ -249,8 +169,8 @@ func vectorCompBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 		},
 		Body: &ast.BinaryExpression{
 			Operator: op,
-			Left:     lhs,
-			Right:    rhs,
+			Left:     member("r", "_value_lhs"),
+			Right:    member("r", "_value_rhs"),
 		},
 	}
 }

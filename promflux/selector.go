@@ -50,10 +50,7 @@ func transpileLabelMatcher(lm *labels.Matcher) *ast.BinaryExpression {
 	}
 	be := &ast.BinaryExpression{
 		Operator: op,
-		Left: &ast.MemberExpression{
-			Object:   &ast.Identifier{Name: "r"},
-			Property: &ast.Identifier{Name: lm.Name},
-		},
+		Left:     member("r", lm.Name),
 	}
 	if op == ast.EqualOperator || op == ast.NotEqualOperator {
 		be.Right = &ast.StringLiteral{Value: lm.Value}

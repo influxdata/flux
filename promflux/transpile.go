@@ -68,27 +68,13 @@ func windowCutoffFn(minStop time.Time, maxStart time.Time) *ast.FunctionExpressi
 			Operator: ast.AndOperator,
 			Left: &ast.BinaryExpression{
 				Operator: ast.GreaterThanEqualOperator,
-				Left: &ast.MemberExpression{
-					Object: &ast.Identifier{
-						Name: "r",
-					},
-					Property: &ast.Identifier{
-						Name: "_stop",
-					},
-				},
-				Right: &ast.DateTimeLiteral{Value: minStop},
+				Left:     member("r", "_stop"),
+				Right:    &ast.DateTimeLiteral{Value: minStop},
 			},
 			Right: &ast.BinaryExpression{
 				Operator: ast.LessThanEqualOperator,
-				Left: &ast.MemberExpression{
-					Object: &ast.Identifier{
-						Name: "r",
-					},
-					Property: &ast.Identifier{
-						Name: "_start",
-					},
-				},
-				Right: &ast.DateTimeLiteral{Value: maxStart},
+				Left:     member("r", "_start"),
+				Right:    &ast.DateTimeLiteral{Value: maxStart},
 			},
 		},
 	}
@@ -96,14 +82,7 @@ func windowCutoffFn(minStop time.Time, maxStart time.Time) *ast.FunctionExpressi
 
 // Function to apply a math function to all values in a table and a given float64 operand.
 func scalarArithBinaryMathFn(mathFn string, operand ast.Expression, swapped bool) *ast.FunctionExpression {
-	val := &ast.MemberExpression{
-		Object: &ast.Identifier{
-			Name: "r",
-		},
-		Property: &ast.Identifier{
-			Name: "_value",
-		},
-	}
+	val := member("r", "_value")
 
 	var lhs, rhs ast.Expression = val, operand
 
@@ -127,17 +106,21 @@ func scalarArithBinaryMathFn(mathFn string, operand ast.Expression, swapped bool
 					Value: call(mathFn, map[string]ast.Expression{"x": lhs, "y": rhs}),
 				},
 				{
-					Key: &ast.Identifier{Name: "_stop"},
-					Value: &ast.MemberExpression{
-						Object: &ast.Identifier{
-							Name: "r",
-						},
-						Property: &ast.Identifier{
-							Name: "_stop",
-						},
-					},
+					Key:   &ast.Identifier{Name: "_stop"},
+					Value: member("r", "_stop"),
 				},
 			},
+		},
+	}
+}
+
+func member(o, p string) *ast.MemberExpression {
+	return &ast.MemberExpression{
+		Object: &ast.Identifier{
+			Name: o,
+		},
+		Property: &ast.Identifier{
+			Name: p,
 		},
 	}
 }

@@ -59,15 +59,8 @@ var filterSpecialNullValuesCall = call(
 			},
 			Body: &ast.BinaryExpression{
 				Operator: ast.NotEqualOperator,
-				Left: &ast.MemberExpression{
-					Object: &ast.Identifier{
-						Name: "r",
-					},
-					Property: &ast.Identifier{
-						Name: "_value",
-					},
-				},
-				Right: &ast.FloatLiteral{Value: nullReplacement},
+				Left:     member("r", "_value"),
+				Right:    &ast.FloatLiteral{Value: nullReplacement},
 			},
 		},
 	},
@@ -88,37 +81,13 @@ func singleArgFloatFn(fn string, argName string) *ast.FunctionExpression {
 			Properties: []*ast.Property{
 				{
 					Key: &ast.Identifier{Name: "_value"},
-					Value: &ast.CallExpression{
-						Callee: &ast.Identifier{Name: fn},
-						Arguments: []ast.Expression{
-							&ast.ObjectExpression{
-								Properties: []*ast.Property{
-									&ast.Property{
-										Key: &ast.Identifier{Name: argName},
-										Value: &ast.MemberExpression{
-											Object: &ast.Identifier{
-												Name: "r",
-											},
-											Property: &ast.Identifier{
-												Name: "_value",
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					Value: call(fn, map[string]ast.Expression{
+						argName: member("r", "_value"),
+					}),
 				},
 				{
-					Key: &ast.Identifier{Name: "_stop"},
-					Value: &ast.MemberExpression{
-						Object: &ast.Identifier{
-							Name: "r",
-						},
-						Property: &ast.Identifier{
-							Name: "_stop",
-						},
-					},
+					Key:   &ast.Identifier{Name: "_stop"},
+					Value: member("r", "_stop"),
 				},
 			},
 		},
@@ -138,15 +107,8 @@ var filterWindowsWithZeroValueCall = call(
 			},
 			Body: &ast.BinaryExpression{
 				Operator: ast.GreaterThanOperator,
-				Left: &ast.MemberExpression{
-					Object: &ast.Identifier{
-						Name: "r",
-					},
-					Property: &ast.Identifier{
-						Name: "_value",
-					},
-				},
-				Right: &ast.FloatLiteral{Value: 0},
+				Left:     member("r", "_value"),
+				Right:    &ast.FloatLiteral{Value: 0},
 			},
 		},
 	},
@@ -206,12 +168,7 @@ func (t *transpiler) transpileAggregateOverTimeFunc(fn string, inArgs []ast.Expr
 
 func labelJoinFn(srcLabels []*ast.StringLiteral, dst *ast.StringLiteral, sep *ast.StringLiteral) *ast.FunctionExpression {
 	// TODO: Deal with empty source labels! Use Flux conditionals to check for existence?
-	var dstLabelValue ast.Expression = &ast.MemberExpression{
-		Object: &ast.Identifier{
-			Name: "r",
-		},
-		Property: srcLabels[0],
-	}
+	var dstLabelValue ast.Expression = member("r", srcLabels[0].Value)
 	for _, srcLabel := range srcLabels[1:] {
 		dstLabelValue = &ast.BinaryExpression{
 			Operator: ast.AdditionOperator,
@@ -219,12 +176,7 @@ func labelJoinFn(srcLabels []*ast.StringLiteral, dst *ast.StringLiteral, sep *as
 			Right: &ast.BinaryExpression{
 				Operator: ast.AdditionOperator,
 				Left:     sep,
-				Right: &ast.MemberExpression{
-					Object: &ast.Identifier{
-						Name: "r",
-					},
-					Property: srcLabel,
-				},
+				Right:    member("r", srcLabel.Value),
 			},
 		}
 	}
@@ -245,15 +197,8 @@ func labelJoinFn(srcLabels []*ast.StringLiteral, dst *ast.StringLiteral, sep *as
 					Value: dstLabelValue,
 				},
 				{
-					Key: &ast.Identifier{Name: "_value"},
-					Value: &ast.MemberExpression{
-						Object: &ast.Identifier{
-							Name: "r",
-						},
-						Property: &ast.Identifier{
-							Name: "_value",
-						},
-					},
+					Key:   &ast.Identifier{Name: "_value"},
+					Value: member("r", "_value"),
 				},
 			},
 		},
