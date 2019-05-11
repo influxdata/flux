@@ -16,8 +16,8 @@ var arithBinOps = map[promql.ItemType]ast.OperatorKind{
 }
 
 var arithBinOpFns = map[promql.ItemType]string{
-	promql.ItemPOW: "pow",
-	promql.ItemMOD: "mod",
+	promql.ItemPOW: "math.pow",
+	promql.ItemMOD: "math.mod",
 }
 
 var compBinOps = map[promql.ItemType]ast.OperatorKind{
