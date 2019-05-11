@@ -176,40 +176,42 @@ func yieldsTable(expr promql.Expr) bool {
 	return !yieldsFloat(expr)
 }
 
-func (t *transpiler) transpileExpr(node promql.Node) (ast.Expression, error) {
-	switch n := node.(type) {
+func (t *transpiler) transpileExpr(expr promql.Expr) (ast.Expression, error) {
+	switch e := expr.(type) {
 	case *promql.ParenExpr:
-		return t.transpileExpr(n.Expr)
+		return t.transpileExpr(e.Expr)
 	case *promql.UnaryExpr:
-		return t.transpileUnaryExpr(n)
+		return t.transpileUnaryExpr(e)
 	case *promql.NumberLiteral:
-		return &ast.FloatLiteral{Value: n.Val}, nil
+		return &ast.FloatLiteral{Value: e.Val}, nil
 	case *promql.StringLiteral:
-		return &ast.StringLiteral{Value: n.Val}, nil
+		return &ast.StringLiteral{Value: e.Val}, nil
 	case *promql.VectorSelector:
-		return t.transpileInstantVectorSelector(n), nil
+		return t.transpileInstantVectorSelector(e), nil
 	case *promql.MatrixSelector:
-		return t.transpileRangeVectorSelector(n), nil
+		return t.transpileRangeVectorSelector(e), nil
 	case *promql.AggregateExpr:
-		return t.transpileAggregateExpr(n)
+		return t.transpileAggregateExpr(e)
 	case *promql.BinaryExpr:
-		return t.transpileBinaryExpr(n)
+		return t.transpileBinaryExpr(e)
 	case *promql.Call:
-		return t.transpileCall(n)
+		return t.transpileCall(e)
 	case *promql.SubqueryExpr:
-		return t.transpileSubqueryExpr(n)
+		return t.transpileSubqueryExpr(e)
 	default:
 		return nil, fmt.Errorf("PromQL node type %T is not supported yet", t)
 	}
 }
 
-func (t *transpiler) transpile(node promql.Node) (*ast.File, error) {
-	promql.Walk(labelNameEscaper{}, node, nil)
+func (t *transpiler) transpile(expr promql.Expr) (*ast.File, error) {
+	promql.Walk(labelNameEscaper{}, expr, nil)
 
-	fluxNode, err := t.transpileExpr(node)
+	fluxNode, err := t.transpileExpr(expr)
 	if err != nil {
 		return nil, fmt.Errorf("error transpiling expression: %s", err)
 	}
+
+
 	return &ast.File{
 		Imports: []*ast.ImportDeclaration{
 			{Path: &ast.StringLiteral{Value: "math"}},
