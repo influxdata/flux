@@ -310,6 +310,10 @@ var queries = []struct {
 		variantArgs: []string{"range"},
 	},
 	{
+		query:       `predict_linear(demo_disk_usage_bytes[{{.range}}], 600)`,
+		variantArgs: []string{"range"},
+	},
+	{
 		query: "time()",
 	},
 	{

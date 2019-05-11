@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   27,
 				},
 				File:   "promql.flux",
-				Source: "package promql\n\nbuiltin changes\nbuiltin dayOfMonth\nbuiltin dayOfWeek\nbuiltin daysInMonth\nbuiltin deriv\nbuiltin emptyTable\nbuiltin extrapolatedRate\nbuiltin hour\nbuiltin instantRate\nbuiltin minute\nbuiltin month\nbuiltin resets\nbuiltin timestamp\nbuiltin year\n\n// hack to simulate an imported promql package\npromql = {\n  dayOfMonth:dayOfMonth,\n  dayOfWeek:dayOfWeek,\n  daysInMonth:daysInMonth,\n  hour:hour,\n  minute:minute,\n  month:month,\n  year:year,\n}",
+				Source: "package promql\n\nbuiltin changes\nbuiltin dayOfMonth\nbuiltin dayOfWeek\nbuiltin daysInMonth\nbuiltin linearRegression\nbuiltin emptyTable\nbuiltin extrapolatedRate\nbuiltin hour\nbuiltin instantRate\nbuiltin minute\nbuiltin month\nbuiltin resets\nbuiltin timestamp\nbuiltin year\n\n// hack to simulate an imported promql package\npromql = {\n  dayOfMonth:dayOfMonth,\n  dayOfWeek:dayOfWeek,\n  daysInMonth:daysInMonth,\n  hour:hour,\n  minute:minute,\n  month:month,\n  year:year,\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -173,11 +173,11 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 14,
+						Column: 25,
 						Line:   7,
 					},
 					File:   "promql.flux",
-					Source: "builtin deriv",
+					Source: "builtin linearRegression",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -189,18 +189,18 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 14,
+							Column: 25,
 							Line:   7,
 						},
 						File:   "promql.flux",
-						Source: "deriv",
+						Source: "linearRegression",
 						Start: ast.Position{
 							Column: 9,
 							Line:   7,
 						},
 					},
 				},
-				Name: "deriv",
+				Name: "linearRegression",
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{

@@ -335,7 +335,20 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 	case "deriv":
 		return buildPipeline(
 			args[0],
-			call("promql.deriv", nil),
+			call("promql.linearRegression", nil),
+			dropMeasurementCall,
+		), nil
+	case "predict_linear":
+		if yieldsTable(c.Args[1]) {
+			return nil, fmt.Errorf("non-const scalar expressions not supported yet")
+		}
+
+		return buildPipeline(
+			args[0],
+			call("promql.linearRegression", map[string]ast.Expression{
+				"predict": &ast.BooleanLiteral{Value: true},
+				"fromNow": args[1],
+			}),
 			dropMeasurementCall,
 		), nil
 	case "timestamp":
