@@ -1,4 +1,4 @@
-package main
+package promflux
 
 import (
 	"github.com/prometheus/prometheus/pkg/labels"

@@ -1,4 +1,4 @@
-package main
+package promflux
 
 import (
 	"github.com/influxdata/flux/ast"
