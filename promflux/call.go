@@ -94,6 +94,32 @@ func singleArgFloatFn(fn string, argName string) *ast.FunctionExpression {
 	}
 }
 
+// Function to set all values to a constant.
+func setConstValueFn(v ast.Expression) *ast.FunctionExpression {
+	// (r) => {"_value": <v>, "_stop": r._stop}
+	return &ast.FunctionExpression{
+		Params: []*ast.Property{
+			{
+				Key: &ast.Identifier{
+					Name: "r",
+				},
+			},
+		},
+		Body: &ast.ObjectExpression{
+			Properties: []*ast.Property{
+				{
+					Key:   &ast.Identifier{Name: "_value"},
+					Value: v,
+				},
+				{
+					Key:   &ast.Identifier{Name: "_stop"},
+					Value: member("r", "_stop"),
+				},
+			},
+		},
+	}
+}
+
 var filterWindowsWithZeroValueCall = call(
 	"filter",
 	map[string]ast.Expression{
@@ -205,7 +231,7 @@ func labelJoinFn(srcLabels []*ast.StringLiteral, dst *ast.StringLiteral, sep *as
 	}
 }
 
-func (t *transpiler) timeFn() *ast.PipeExpression {
+func (t *transpiler) generateZeroWindows() *ast.PipeExpression {
 	return buildPipeline(
 		call("promql.emptyTable", nil),
 		call("range", map[string]ast.Expression{
@@ -220,6 +246,12 @@ func (t *transpiler) timeFn() *ast.PipeExpression {
 		call("sum", nil),
 		// Remove any windows <5m long at the edges of the graph range to act like PromQL.
 		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start, t.end.Add(-5*time.Minute))}),
+	)
+}
+
+func (t *transpiler) timeFn() *ast.PipeExpression {
+	return buildPipeline(
+		t.generateZeroWindows(),
 		call("promql.timestamp", nil),
 	)
 }
@@ -364,6 +396,16 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 		return buildPipeline(
 			v,
 			call("map", map[string]ast.Expression{"fn": labelJoinFn(srcLabels, dst, sep)}),
+		), nil
+	case "vector":
+		if yieldsTable(c.Args[0]) {
+			return args[0], nil
+		}
+		return buildPipeline(
+			t.generateZeroWindows(),
+			call("map", map[string]ast.Expression{
+				"fn": setConstValueFn(args[0]),
+			}),
 		), nil
 	default:
 		return nil, fmt.Errorf("PromQL function %q is not supported yet", c.Func.Name)

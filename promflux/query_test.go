@@ -345,6 +345,12 @@ var queries = []struct {
 		query:       `changes(demo_batch_last_success_timestamp_seconds[{{.range}}])`,
 		variantArgs: []string{"range"},
 	},
+	{
+		query: `vector(1)`,
+	},
+	{
+		query: `vector(time())`,
+	},
 
 	// Subqueries. Comparisons are skipped since the implementation cannot guarantee completely identical results.
 	{
