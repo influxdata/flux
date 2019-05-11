@@ -332,6 +332,12 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			}),
 			dropMeasurementCall,
 		), nil
+	case "deriv":
+		return buildPipeline(
+			args[0],
+			call("promql.deriv", nil),
+			dropMeasurementCall,
+		), nil
 	case "timestamp":
 		return buildPipeline(
 			args[0],

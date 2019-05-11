@@ -306,7 +306,8 @@ var queries = []struct {
 		variantArgs: []string{"extrapolatedRateFunc", "range"},
 	},
 	{
-		query: "sum by(job, instance) (rate(demo_cpu_usage_seconds_total[1m]))",
+		query:       `deriv(demo_disk_usage_bytes[{{.range}}])`,
+		variantArgs: []string{"range"},
 	},
 	{
 		query: "time()",

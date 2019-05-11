@@ -4,6 +4,7 @@ builtin changes
 builtin dayOfMonth
 builtin dayOfWeek
 builtin daysInMonth
+builtin deriv
 builtin emptyTable
 builtin extrapolatedRate
 builtin hour
