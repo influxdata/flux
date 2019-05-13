@@ -43,7 +43,7 @@ csv.from(csv: data)`
 		panic(errors.Wrap(err, "cannot compile simple script to prepare test"))
 	}
 	for _, v := range vs {
-		if v, ok := v.(*flux.TableObject); ok {
+		if v, ok := v.Value.(*flux.TableObject); ok {
 			to = v
 			break
 		}
