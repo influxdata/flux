@@ -83,12 +83,12 @@ func (params *joinParams) Less(i, j int) bool {
 func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	spec := new(JoinOpSpec)
 
-	// On specifies the columns to join on. If 'on' is not present in the arguments
-	// to join, the default value will be set when the join tables are processed.
-	// Specifically when the schema of the output table is able to be constructed.
-	if array, ok, err := args.GetArray("on", semantic.String); err != nil {
+	// On specifies the columns to join on, and is required.
+	if array, err := args.GetRequiredArray("on", semantic.String); err != nil {
 		return nil, err
-	} else if ok {
+	} else if array.Len() == 0 {
+		return nil, errors.New("at least one column in 'on' column list is required")
+	} else {
 		spec.On, err = interpreter.ToStringArray(array)
 		if err != nil {
 			return nil, err
@@ -809,10 +809,6 @@ func (c *MergeJoinCache) buildPostJoinSchema() {
 				break
 			}
 		}
-	}
-
-	if len(c.on) == 0 {
-		c.on = shared
 	}
 
 	ncols := len(left) + len(right)
