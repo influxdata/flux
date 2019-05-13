@@ -3147,8 +3147,102 @@ Contains has the following parameters:
 | value   | bool, int, uint, float, string, time          | The value to search for.     |
 | set     | array of bool, int, uint, float, string, time | The set of values to search. |
 
+Example: 
+    `contains(value:1, set:[1,2,3])` will return `true`.
+
+#### Stream/table functions
+
+These functions allow to extract a table from a stream of tables (`tableFind`) and access its
+columns (`getColumn`) and records (`getRecord`).  
+The example below provides an overview of these functions, further information can be found in the paragraphs below.
+
+```
+data = from(bucket:"telegraf/autogen")
+    |> range(start: -5m)
+    |> filter(fn:(r) => r._measurement == "cpu")
+
+// extract the first available table for which "_field" is equal to "usage_idle"
+t = data |> tableFind(fn: (key) => key._field == "usage_idle")
+// this is the same as 'tableFind(tables: data, fn: (key) => key._field == "usage_idle")'
+
+// extract the "_value" column from the table
+values = t |> getColumn(column: "_value")
+// the same as 'getColumn(table: t, column: "_value")'
+
+// extract the first record from the table
+r0 = t |> getRecord(idx: 0)
+// the same as 'getRecord(table: t, idx: 0)'
+```
+
+##### TableFind
+
+TableFind extracts the first table in a stream of table whose group key values match a given predicate. If no table
+is found, the function errors.
+
+It has the following parameters:
+
+| Name | Type                  | Description                                                                     |
+| ---- | ----                  | -----------                                                                     |
+| fn   | (key: object) -> bool | Fn is a predicate function. The result is the first table for which fn is true. |
+
 Example:
-    `contains(value:1, set:[1,2,3])` will return `true`.   
+
+```
+t = from(bucket:"telegraf/autogen")
+    |> range(start: -5m)
+    |> filter(fn:(r) => r._measurement == "cpu")
+    |> tableFind(fn: (key) => key._field == "usage_idle")
+
+// `t` contains the first table whose group key value for `_field` is "usage_idle" after filtering.
+// `t` can be used as input to `getColumn` and `getRecord`.
+```
+
+##### GetColumn
+
+GetColumn extracts a column from a table given its label. If the label is not present in the set of columns,
+the function errors.
+
+It has the following parameters:
+
+| Name   | Type   | Description                                  |
+| ----   | ----   | -----------                                  |
+| column | string | Column is the name of the column to extract. |
+
+Example:
+
+```
+vs = from(bucket:"telegraf/autogen")
+    |> range(start: -5m)
+    |> filter(fn:(r) => r._measurement == "cpu")
+    |> tableFind(fn: (key) => key._field == "usage_idle")
+    |> getColumn(column: "_value")
+
+// use values
+x = vs[0] + vs[1]
+```
+
+##### GetRecord
+
+GetRecord extracts a record from a table given its index. If the index is out of bounds, the function errors.
+
+It has the following parameters:
+
+| Name | Type | Description                                |
+| ---- | ---- | -----------                                |
+| idx  | int  | Idx is the index of the record to extract. |
+
+Example:
+
+```
+r0 = from(bucket:"telegraf/autogen")
+    |> range(start: -5m)
+    |> filter(fn:(r) => r._measurement == "cpu")
+    |> tableFind(fn: (key) => key._field == "usage_idle")
+    |> getRecord(idx: 0)
+
+// use values
+x = r0._field + "--" + r0._measurement
+```
 
 #### Type conversion operations
 
