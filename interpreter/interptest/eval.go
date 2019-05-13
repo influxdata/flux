@@ -5,10 +5,9 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
 )
 
-func Eval(itrp *interpreter.Interpreter, scope interpreter.Scope, importer interpreter.Importer, src string) ([]values.Value, error) {
+func Eval(itrp *interpreter.Interpreter, scope interpreter.Scope, importer interpreter.Importer, src string) ([]interpreter.SideEffect, error) {
 	pkg := parser.ParseSource(src)
 	if ast.Check(pkg) > 0 {
 		return nil, ast.GetError(pkg)

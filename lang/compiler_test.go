@@ -14,6 +14,7 @@ import (
 	fcsv "github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/mock"
@@ -404,10 +405,10 @@ func getTablesFromResultOrFail(t *testing.T, result flux.Result) []*executetest.
 	return tables
 }
 
-func getTableObjects(vs []values.Value) []*flux.TableObject {
+func getTableObjects(vs []interpreter.SideEffect) []*flux.TableObject {
 	tos := make([]*flux.TableObject, 0)
 	for _, v := range vs {
-		if to, ok := v.(*flux.TableObject); ok {
+		if to, ok := v.Value.(*flux.TableObject); ok {
 			tos = append(tos, to)
 			tos = append(tos, getTableObjectsFromArray(to.Parents)...)
 		}

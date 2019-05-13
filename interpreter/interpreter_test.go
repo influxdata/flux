@@ -460,7 +460,7 @@ func TestEval(t *testing.T) {
 				t.Fatal("expected error")
 			}
 
-			if tc.want != nil && !cmp.Equal(tc.want, sideEffects, semantictest.CmpOptions...) {
+			if tc.want != nil && !cmp.Equal(tc.want, getSideEffectsValues(sideEffects), semantictest.CmpOptions...) {
 				t.Fatalf("unexpected side effect values -want/+got: \n%s", cmp.Diff(tc.want, sideEffects, semantictest.CmpOptions...))
 			}
 		})
@@ -727,10 +727,106 @@ func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
 				t.Fatal("expected to error during program evaluation")
 			}
 
-			if tc.want != nil && !cmp.Equal(tc.want, sideEffects, semantictest.CmpOptions...) {
+			if tc.want != nil && !cmp.Equal(tc.want, getSideEffectsValues(sideEffects), semantictest.CmpOptions...) {
 				t.Fatalf("unexpected side effect values -want/+got: \n%s", cmp.Diff(tc.want, sideEffects, semantictest.CmpOptions...))
 			}
 
+		})
+	}
+}
+
+// TestInterpreter_MultipleEval tests that multiple calls to `Eval` to the same interpreter behave as expected.
+func TestInterpreter_MultipleEval(t *testing.T) {
+	type scriptWithSideEffects struct {
+		script      string
+		sideEffects []interpreter.SideEffect
+	}
+
+	testCases := []struct {
+		name  string
+		lines []scriptWithSideEffects
+	}{
+		{
+			name: "1 expression statement",
+			lines: []scriptWithSideEffects{
+				{
+					script: `1+1`,
+					sideEffects: []interpreter.SideEffect{
+						{
+							Value: values.NewInt(2),
+							Node: &semantic.ExpressionStatement{
+								Expression: &semantic.BinaryExpression{
+									Left:     &semantic.IntegerLiteral{Value: 1},
+									Operator: ast.AdditionOperator,
+									Right:    &semantic.IntegerLiteral{Value: 1},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "more expression statements",
+			lines: []scriptWithSideEffects{
+				{
+					script: `1+1`,
+					sideEffects: []interpreter.SideEffect{
+						{
+							Value: values.NewInt(2),
+							Node: &semantic.ExpressionStatement{
+								Expression: &semantic.BinaryExpression{
+									Left:     &semantic.IntegerLiteral{Value: 1},
+									Operator: ast.AdditionOperator,
+									Right:    &semantic.IntegerLiteral{Value: 1},
+								},
+							},
+						},
+					},
+				},
+				{
+					script:      `foo = () => {sideEffect() return 1}`,
+					sideEffects: []interpreter.SideEffect{}, // no side effect expected.
+				},
+				{
+					script: `foo()`, // 2 side effects: the function call and the statement expression.
+					sideEffects: []interpreter.SideEffect{
+						{
+							Value: values.NewInt(0),
+							Node: &semantic.CallExpression{
+								Callee:    &semantic.IdentifierExpression{Name: "sideEffect"},
+								Arguments: &semantic.ObjectExpression{},
+							},
+						},
+						{
+							Value: values.NewInt(1),
+							Node: &semantic.ExpressionStatement{
+								Expression: &semantic.CallExpression{
+									Callee:    &semantic.IdentifierExpression{Name: "foo"},
+									Arguments: &semantic.ObjectExpression{},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			itrp := interpreter.NewInterpreter()
+			scope := testScope.Copy()
+
+			for _, line := range tc.lines {
+				if ses, err := interptest.Eval(itrp, scope, nil, line.script); err != nil {
+					t.Fatal("evaluation of builtin failed: ", err)
+				} else {
+					if !cmp.Equal(line.sideEffects, ses, semantictest.CmpOptions...) {
+						t.Fatalf("unexpected side effect values -want/+got: \n%s", cmp.Diff(line.sideEffects, ses, semantictest.CmpOptions...))
+					}
+				}
+			}
 		})
 	}
 }
@@ -806,6 +902,14 @@ func TestResolver(t *testing.T) {
 	if !cmp.Equal(want, got, semantictest.CmpOptions...) {
 		t.Errorf("unexpected resoved function: -want/+got\n%s", cmp.Diff(want, got, semantictest.CmpOptions...))
 	}
+}
+
+func getSideEffectsValues(ses []interpreter.SideEffect) []values.Value {
+	vs := make([]values.Value, len(ses))
+	for i, se := range ses {
+		vs[i] = se.Value
+	}
+	return vs
 }
 
 type function struct {
