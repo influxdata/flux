@@ -136,7 +136,6 @@ func (d *dataset) triggerTable(key flux.GroupKey) error {
 	if err != nil {
 		return err
 	}
-	b.RefCount(len(d.ts))
 	switch d.accMode {
 	case DiscardingMode:
 		for _, t := range d.ts {
