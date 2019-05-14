@@ -153,6 +153,24 @@ func TestJoin_NewQuery(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name: "no 'on' parameter",
+			Raw: `
+				a = from(bucket:"flux") |> range(start:-1h)
+				b = from(bucket:"flux") |> range(start:-1h)
+				join(tables:{a:a,b:b})
+			`,
+			WantErr: true,
+		},
+		{
+			Name: "zero-length on list",
+			Raw: `
+				a = from(bucket:"flux") |> range(start:-1h)
+				b = from(bucket:"flux") |> range(start:-1h)
+				join(tables:{a:a,b:b}, on: [])
+			`,
+			WantErr: true,
+		},
 	}
 	for _, tc := range tests {
 		tc := tc
@@ -1336,55 +1354,6 @@ func TestMergeJoin_Process(t *testing.T) {
 						{execute.Time(2), 2.0, 20.1, "a", "a", "x", "y"},
 						{execute.Time(3), 3.0, 30.0, "a", "a", "x", "x"},
 						{execute.Time(3), 3.0, 30.1, "a", "a", "x", "y"},
-					},
-				},
-			},
-		},
-		{
-			name: "inner with default on parameter",
-			spec: &universe.MergeJoinProcedureSpec{
-				TableNames: tableNames,
-			},
-			data0: []*executetest.Table{
-				{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
-						{Label: "a_tag", Type: flux.TString},
-					},
-					Data: [][]interface{}{
-						{execute.Time(1), 1.0, "a"},
-						{execute.Time(2), 2.0, "a"},
-						{execute.Time(3), 3.0, "a"},
-					},
-				},
-			},
-			data1: []*executetest.Table{
-				{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
-						{Label: "b_tag", Type: flux.TString},
-					},
-					Data: [][]interface{}{
-						{execute.Time(1), 1.0, "b"},
-						{execute.Time(2), 2.0, "b"},
-						{execute.Time(3), 3.0, "b"},
-					},
-				},
-			},
-			want: []*executetest.Table{
-				{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
-						{Label: "a_tag", Type: flux.TString},
-						{Label: "b_tag", Type: flux.TString},
-					},
-					Data: [][]interface{}{
-						{execute.Time(1), 1.0, "a", "b"},
-						{execute.Time(2), 2.0, "a", "b"},
-						{execute.Time(3), 3.0, "a", "b"},
 					},
 				},
 			},
