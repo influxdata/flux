@@ -723,6 +723,105 @@ func TestController_QueueSize(t *testing.T) {
 	}
 }
 
+// Test that rapidly starting and canceling the query and then calling done will correctly
+// cancel the query and not result in a race condition.
+func TestController_CancelDone(t *testing.T) {
+	config := config
+	config.ConcurrencyQuota = 10
+	config.QueueSize = 200
+
+	ctrl, err := control.New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer shutdown(t, ctrl)
+
+	compiler := &mock.Compiler{
+		CompileFn: func(ctx context.Context) (flux.Program, error) {
+			return &mock.Program{
+				ExecuteFn: func(ctx context.Context, q *mock.Query, alloc *memory.Allocator) {
+					// Ensure the query takes a little bit of time so the cancel actually cancels something.
+					t := time.NewTimer(time.Second)
+					defer t.Stop()
+
+					select {
+					case <-t.C:
+					case <-ctx.Done():
+					}
+				},
+			}, nil
+		},
+	}
+
+	var wg sync.WaitGroup
+	for i := 0; i < 100; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			q, err := ctrl.Query(context.Background(), compiler)
+			if err != nil {
+				t.Errorf("unexpected error: %s", err)
+				return
+			}
+			q.Cancel()
+			q.Done()
+		}()
+	}
+	wg.Wait()
+}
+
+// Test that rapidly starts and calls done on queries without reading the result.
+func TestController_DoneWithoutRead(t *testing.T) {
+	config := config
+	config.ConcurrencyQuota = 10
+	config.QueueSize = 200
+
+	ctrl, err := control.New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer shutdown(t, ctrl)
+
+	compiler := &mock.Compiler{
+		CompileFn: func(ctx context.Context) (flux.Program, error) {
+			return &mock.Program{
+				ExecuteFn: func(ctx context.Context, q *mock.Query, alloc *memory.Allocator) {
+					// Ensure the query takes a little bit of time so the cancel actually cancels something.
+					t := time.NewTimer(time.Second)
+					defer t.Stop()
+
+					select {
+					case <-t.C:
+						q.ResultsCh <- &executetest.Result{
+							Nm:   "_result",
+							Tbls: []*executetest.Table{},
+						}
+					case <-ctx.Done():
+					}
+				},
+			}, nil
+		},
+	}
+
+	var wg sync.WaitGroup
+	for i := 0; i < 100; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			q, err := ctrl.Query(context.Background(), compiler)
+			if err != nil {
+				t.Errorf("unexpected error: %s", err)
+				return
+			}
+			// If we call done without reading anything it should work just fine.
+			q.Done()
+		}()
+	}
+	wg.Wait()
+}
+
 func shutdown(t *testing.T, ctrl *control.Controller) {
 	t.Helper()
 
