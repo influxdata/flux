@@ -7,6 +7,7 @@ builtin daysInMonth
 builtin linearRegression
 builtin emptyTable
 builtin extrapolatedRate
+builtin promHistogramQuantile
 builtin hour
 builtin instantRate
 builtin minute

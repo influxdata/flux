@@ -354,6 +354,21 @@ var queries = []struct {
 	{
 		query: `vector(time())`,
 	},
+	{
+		query:       `histogram_quantile({{.quantile}}, rate(demo_api_request_duration_seconds_bucket[1m]))`,
+		variantArgs: []string{"quantile"},
+	},
+	{
+		query: `histogram_quantile(0.9, nonexistent_metric)`,
+	},
+	{
+		// Missing "le" label.
+		query: `histogram_quantile(0.9, demo_cpu_usage_seconds_total)`,
+	},
+	{
+		// Missing "le" label only in some series of the same grouping.
+		query: `histogram_quantile(0.9, {__name__=~"demo_api_request_duration_seconds_.+"})`,
+	},
 
 	// Subqueries. Comparisons are skipped since the implementation cannot guarantee completely identical results.
 	{

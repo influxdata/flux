@@ -426,6 +426,22 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 				"fn": setConstValueFn(args[0]),
 			}),
 		), nil
+	case "histogram_quantile":
+		if yieldsTable(c.Args[0]) {
+			return nil, fmt.Errorf("non-const scalar expressions not supported yet")
+		}
+
+		return buildPipeline(
+			args[1],
+			call("group", map[string]ast.Expression{
+				"columns": columnList("_time", "_value", "le"),
+				"mode":    &ast.StringLiteral{Value: "except"},
+			}),
+			call("promql.promHistogramQuantile", map[string]ast.Expression{
+				"quantile": args[0],
+			}),
+			dropMeasurementCall,
+		), nil
 	default:
 		return nil, fmt.Errorf("PromQL function %q is not supported yet", c.Func.Name)
 	}
