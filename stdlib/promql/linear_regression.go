@@ -144,7 +144,7 @@ func (t *linearRegressionTransformation) Process(id execute.DatasetID, tbl flux.
 	}
 	stopIdx := execute.ColIdx(execute.DefaultStopColLabel, cols)
 	if stopIdx < 0 {
-		return fmt.Errorf("start column not found (cols: %v): %s", cols, execute.DefaultStopColLabel)
+		return fmt.Errorf("stop column not found (cols: %v): %s", cols, execute.DefaultStopColLabel)
 	}
 	valIdx := execute.ColIdx(execute.DefaultValueColLabel, cols)
 	if valIdx < 0 {

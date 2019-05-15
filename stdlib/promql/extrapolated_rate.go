@@ -150,11 +150,11 @@ func (t *extrapolatedRateTransformation) Process(id execute.DatasetID, tbl flux.
 	}
 	startIdx := execute.ColIdx(execute.DefaultStartColLabel, cols)
 	if startIdx < 0 {
-		return fmt.Errorf("stop column not found (cols: %v): %s", cols, execute.DefaultStartColLabel)
+		return fmt.Errorf("start column not found (cols: %v): %s", cols, execute.DefaultStartColLabel)
 	}
 	stopIdx := execute.ColIdx(execute.DefaultStopColLabel, cols)
 	if stopIdx < 0 {
-		return fmt.Errorf("start column not found (cols: %v): %s", cols, execute.DefaultStopColLabel)
+		return fmt.Errorf("stop column not found (cols: %v): %s", cols, execute.DefaultStopColLabel)
 	}
 	valIdx := execute.ColIdx(execute.DefaultValueColLabel, cols)
 	if valIdx < 0 {
