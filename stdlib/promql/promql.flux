@@ -8,6 +8,7 @@ builtin linearRegression
 builtin emptyTable
 builtin extrapolatedRate
 builtin promHistogramQuantile
+builtin holtWinters
 builtin hour
 builtin instantRate
 builtin minute

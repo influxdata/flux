@@ -31,6 +31,8 @@ var testVariantArgs = map[string][]string{
 	"clampFunc":            []string{"clamp_min", "clamp_max"},
 	"instantRateFunc":      []string{"idelta"},
 	"dateFunc":             []string{"day_of_month", "day_of_week", "days_in_month", "hour", "minute", "month", "year"},
+	"smoothingFactor":      []string{"0.1", "0.5", "0.8"},
+	"trendFactor":          []string{"0.1", "0.5", "0.8"},
 }
 
 var queries = []struct {
@@ -371,6 +373,10 @@ var queries = []struct {
 	{
 		// Missing "le" label only in some series of the same grouping.
 		query: `histogram_quantile(0.9, {__name__=~"demo_api_request_duration_seconds_.+"})`,
+	},
+	{
+		query:       `holt_winters(demo_disk_usage_bytes[10m], {{.smoothingFactor}}, {{.trendFactor}})`,
+		variantArgs: []string{"smoothingFactor", "trendFactor"},
 	},
 
 	// Subqueries. Comparisons are skipped since the implementation cannot guarantee completely identical results.

@@ -351,6 +351,19 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			}),
 			dropMeasurementAndTimeCall,
 		), nil
+	case "holt_winters":
+		if yieldsTable(c.Args[1]) || yieldsTable(c.Args[2]) {
+			return nil, fmt.Errorf("non-const scalar expressions not supported yet")
+		}
+
+		return buildPipeline(
+			args[0],
+			call("promql.holtWinters", map[string]ast.Expression{
+				"smoothingFactor": args[1],
+				"trendFactor":     args[2],
+			}),
+			dropMeasurementAndTimeCall,
+		), nil
 	case "timestamp":
 		return buildPipeline(
 			args[0],
