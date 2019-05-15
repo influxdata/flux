@@ -289,6 +289,9 @@ var queries = []struct {
 		query: `timestamp(demo_num_cpus)`,
 	},
 	{
+		query: `timestamp(timestamp(demo_num_cpus))`,
+	},
+	{
 		query:       `{{.simpleMathFunc}}(demo_cpu_usage_seconds_total)`,
 		variantArgs: []string{"simpleMathFunc"},
 	},

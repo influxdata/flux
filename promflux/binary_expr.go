@@ -259,7 +259,7 @@ func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 			return buildPipeline(
 				lhs,
 				call("map", map[string]ast.Expression{"fn": scalarArithBinaryOpFn(op, rhs, swapped)}),
-				dropMeasurementCall,
+				dropMeasurementAndTimeCall,
 			), nil
 		}
 
@@ -267,7 +267,7 @@ func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 			return buildPipeline(
 				lhs,
 				call("map", map[string]ast.Expression{"fn": scalarArithBinaryMathFn(opFn, rhs, swapped)}),
-				dropMeasurementCall,
+				dropMeasurementAndTimeCall,
 			), nil
 		}
 
@@ -279,7 +279,7 @@ func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 						"fn": scalarArithBinaryOpFn(op, rhs, swapped),
 					}),
 					call("toFloat", nil),
-					dropMeasurementCall,
+					dropMeasurementAndTimeCall,
 				), nil
 			}
 			return buildPipeline(
@@ -357,7 +357,7 @@ func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 
 		postJoinCalls := append(opCalls, outputColTransformCalls...)
 		if dropMeasurement {
-			postJoinCalls = append(postJoinCalls, dropMeasurementCall)
+			postJoinCalls = append(postJoinCalls, dropMeasurementAndTimeCall)
 		}
 
 		return buildPipeline(
@@ -378,6 +378,5 @@ func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 			}),
 			postJoinCalls...,
 		), nil
-
 	}
 }

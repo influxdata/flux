@@ -146,7 +146,7 @@ func (t *transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expres
 	if aggFn.dropMeasurement && dropMeasurement {
 		pipeline = buildPipeline(
 			pipeline,
-			dropMeasurementCall,
+			dropMeasurementAndTimeCall,
 		)
 	}
 	if a.Op == promql.ItemStdvar {

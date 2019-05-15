@@ -146,12 +146,13 @@ func columnList(strs ...string) *ast.ArrayExpression {
 	}
 }
 
-var dropMeasurementCall = call(
+var dropMeasurementAndTimeCall = call(
 	"drop",
 	map[string]ast.Expression{
 		"columns": &ast.ArrayExpression{
 			Elements: []ast.Expression{
 				&ast.StringLiteral{Value: "_measurement"},
+				&ast.StringLiteral{Value: "_time"},
 			},
 		},
 	},
