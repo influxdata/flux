@@ -239,13 +239,6 @@ func (q *testQuerier) runQuery(qry string, skipComparison bool) {
 		q.t.Fatalf("Error converting Prometheus result for %q to Matrix: %s", qry, err)
 	}
 
-	fr := ast.Format(fluxFile)
-	pkg, err := flux.Parse(fr)
-	if err != nil {
-		q.t.Fatal(err)
-	}
-	_ = pkg
-
 	// Query InfluxDB.
 	req := &query.Request{
 		Authorization:  q.influxDB.Auth,
