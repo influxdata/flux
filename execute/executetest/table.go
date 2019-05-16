@@ -1,6 +1,7 @@
 package executetest
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -90,7 +91,10 @@ func (t *Table) Key() flux.GroupKey {
 func (t *Table) Do(f func(flux.ColReader) error) error {
 	if t.Err != nil {
 		return t.Err
+	} else if t.IsDone {
+		return errors.New("table already read")
 	}
+	t.IsDone = true
 
 	cols := make([]array.Interface, len(t.ColMeta))
 	for j, col := range t.ColMeta {
