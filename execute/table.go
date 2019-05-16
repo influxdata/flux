@@ -1280,6 +1280,10 @@ func (t *ColListTable) RefCount(n int) {
 	}
 }
 
+func (t *ColListTable) Done() {
+	panic("implement me")
+}
+
 func (t *ColListTable) Key() flux.GroupKey {
 	return t.key
 }

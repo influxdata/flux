@@ -20,18 +20,27 @@ type TableIterator interface {
 	Do(f func(Table) error) error
 }
 
+// Table represents a readable table. The contents of the table can
+// be read exactly once. It is possible for the data to be either
+// buffered or streamed.
 type Table interface {
+	// Key is the group key associated with this table.
 	Key() GroupKey
 
+	// Cols contains the metadata for each column within the table.
 	Cols() []ColMeta
 
 	// Do calls f to process the data contained within the table.
-	// It uses the arrow buffers.
+	// This must only be called once and implementations should return
+	// an error if this is called multiple times.
 	Do(f func(ColReader) error) error
 
-	// RefCount modifies the reference count on the table by n.
-	// When the RefCount goes to zero, the table is freed.
-	RefCount(n int)
+	// Done indicates that this table is no longer needed. If the
+	// table has already been read with Do, this happens automatically.
+	// This is also not required if the table is empty.
+	// It should be safe to always call this function and call it multiple
+	// times.
+	Done()
 
 	// Empty returns whether the table contains no records.
 	Empty() bool

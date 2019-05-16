@@ -2,6 +2,7 @@ package executetest
 
 import (
 	"fmt"
+	"testing"
 
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
@@ -32,6 +33,8 @@ type Table struct {
 	// Err contains the error that should be returned
 	// by this table when calling Do.
 	Err error
+	// IsDone indicates if this table has been used.
+	IsDone bool
 }
 
 // Normalize ensures all fields of the table are set correctly.
@@ -71,6 +74,9 @@ func (t *Table) Empty() bool {
 }
 
 func (t *Table) RefCount(n int) {}
+func (t *Table) Done() {
+	t.IsDone = true
+}
 
 func (t *Table) Cols() []flux.ColMeta {
 	return t.ColMeta
@@ -454,4 +460,87 @@ func NormalizeTables(bs []*Table) {
 func MustCopyTable(tbl flux.Table) flux.Table {
 	cpy, _ := execute.CopyTable(tbl, UnlimitedAllocator)
 	return cpy
+}
+
+type TableTest struct {
+	CreateTableFn      func() flux.Table
+	CreateEmptyTableFn func() flux.Table
+	IsDone             func(flux.Table) bool
+}
+
+func (tt *TableTest) CreateTable(t *testing.T) flux.Table {
+	t.Helper()
+
+	tbl := tt.CreateTableFn()
+	if tt.IsDone(tbl) {
+		t.Fatal("table is done before the test has started")
+	} else if tbl.Empty() {
+		t.Fatal("table is empty")
+	}
+	return tbl
+}
+
+func (tt *TableTest) CreateEmptyTable(t *testing.T) flux.Table {
+	t.Helper()
+
+	tbl := tt.CreateEmptyTableFn()
+	if !tbl.Empty() {
+		t.Fatal("table is not empty")
+	}
+	return tbl
+}
+
+// RunTableTests will run the common table tests over the table
+// implementation. The function will be called for each test.
+func RunTableTests(t *testing.T, tt TableTest) {
+	t.Run("Normal", func(t *testing.T) {
+		tbl := tt.CreateTable(t)
+		if err := tbl.Do(func(flux.ColReader) error {
+			return nil
+		}); err != nil {
+			t.Errorf("unexpected error when reading table: %s", err)
+		}
+
+		if !tt.IsDone(tbl) {
+			t.Error("table is not done after calling Do")
+		}
+	})
+	t.Run("MultipleDoCalls", func(t *testing.T) {
+		tbl := tt.CreateTable(t)
+		if err := tbl.Do(func(flux.ColReader) error {
+			return nil
+		}); err != nil {
+			t.Errorf("unexpected error when reading table: %s", err)
+		}
+
+		if err := tbl.Do(func(flux.ColReader) error {
+			return nil
+		}); err == nil {
+			t.Error("expected error when calling Do twice")
+		}
+	})
+	t.Run("MultipleDoneCalls", func(t *testing.T) {
+		tbl := tt.CreateTable(t)
+		tbl.Done()
+		if !tt.IsDone(tbl) {
+			t.Error("table is not done after calling Done")
+		}
+		tbl.Done()
+	})
+	t.Run("DoneOnly", func(t *testing.T) {
+		tbl := tt.CreateTable(t)
+		tbl.Done()
+		if !tt.IsDone(tbl) {
+			t.Error("table is not done after calling Done")
+		}
+	})
+	t.Run("DoneWhileEmpty", func(t *testing.T) {
+		tbl := tt.CreateEmptyTable(t)
+		// Table should already be done.
+		if !tt.IsDone(tbl) {
+			t.Error("empty table should be immediately done")
+		}
+		// Just ensure this doesn't panic or anything.
+		tbl.Done()
+	})
 }
