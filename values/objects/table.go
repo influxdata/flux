@@ -46,11 +46,7 @@ type Table struct {
 }
 
 func NewTable(tbl flux.Table) *Table {
-	// We need to cache the content of the table in order to make subsequent calls
-	// to getRecord/Column idempotent. If we don't cache the table, then it would be
-	// consumed by calls to `Do`, and subsequent calls to getRecord/Column would find
-	// an empty table.
-	t := &Table{Table: &cachedTable{Table: tbl}}
+	t := &Table{Table: tbl}
 	t.schema = values.NewArray(SchemaMonoType)
 	for _, c := range tbl.Cols() {
 		t.schema.Append(values.NewObjectWithValues(map[string]values.Value{
@@ -159,20 +155,4 @@ func (t *Table) String() string {
 		return fmt.Sprintf("error while formatting table: %v", err)
 	}
 	return w.String()
-}
-
-// cachedTable caches the column reader extracted from a table on `Do` for further usage.
-type cachedTable struct {
-	flux.Table
-	cr flux.ColReader
-}
-
-func (ct *cachedTable) Do(f func(flux.ColReader) error) error {
-	if ct.cr != nil {
-		return f(ct.cr)
-	}
-	return ct.Table.Do(func(cr flux.ColReader) error {
-		ct.cr = cr
-		return f(cr)
-	})
 }
