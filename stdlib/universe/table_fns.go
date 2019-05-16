@@ -99,7 +99,19 @@ func tableFindCall(args values.Object) (values.Value, error) {
 			}
 			found = pass.Bool()
 			if found {
-				t = objects.NewTable(tbl)
+				// We need to copy the table in memory and increase its refCount in order to make
+				// subsequent calls to getRecord/Column idempotent. If we don't do it, then it would be
+				// consumed by calls to `Do`, and subsequent calls to getRecord/Column would find
+				// an empty table.
+				// TODO(aff): Note that, for now, it is not enough to `tbl.RefCount(1)`, because we cannot rely on its
+				//  implementation. When a table comes from `csv.from()` it is a `csv.tableDecoder` that
+				//  does nothing when `RefCount` is called.
+				if tbl, err := execute.CopyTable(tbl, &memory.Allocator{}); err != nil {
+					return err
+				} else {
+					tbl.RefCount(1)
+					t = objects.NewTable(tbl)
+				}
 			}
 			return nil
 		}); err != nil {
