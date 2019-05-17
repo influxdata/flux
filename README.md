@@ -100,7 +100,7 @@ Here are a few examples of the language to get an idea of the syntax.
     // Join data to create wider tables and map a function over the result
     join(tables: {cpu:cpu, mem:mem}, on:["_time", "host"])
         // compute the ratio of cpu usage to mem used_percent
-        |> map(fn:(r) => {_time: r._time, _value: r._value_cpu / r._value_mem)
+        |> map(fn:(r) => {_time: r._time, _value: r._value_cpu / r._value_mem})
         // again yield this result to the client
         |> yield()
 
