@@ -35,6 +35,10 @@ var skip = map[string]string{
 	"rowfn_with_import":           "imported libraries are not visible in user-defined functions (https://github.com/influxdata/flux/issues/1000)",
 	"string_trim":                 "cannot reference a package function from within a row function",
 	"integral_columns":            "aggregates changed to operate on just a single columnm.",
+
+	"measurement_tag_keys_test":   "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
+	"aggregate_window_mean_test":  "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
+	"aggregate_window_count_test": "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
 }
 
 var querier = querytest.NewQuerier()
