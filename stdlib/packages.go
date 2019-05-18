@@ -4,7 +4,7 @@ package stdlib
 
 import (
 	_ "github.com/influxdata/flux/stdlib/csv"
-	_ "github.com/influxdata/flux/stdlib/elasticsearch"
+	_ "github.com/influxdata/flux/stdlib/elastic"
 	_ "github.com/influxdata/flux/stdlib/generate"
 	_ "github.com/influxdata/flux/stdlib/http"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb"

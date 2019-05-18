@@ -1,46 +1,46 @@
-package elasticsearch
+package elastic
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/influxdata/flux/values"
+	"reflect"
+	"time"
+
 	"github.com/olivere/elastic"
 	"github.com/olivere/elastic/config"
-	"reflect"
-
-	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
-const FromElasticKind = "fromElastic"
+const FromKind = "elastic.from"
 
-type FromElasticOpSpec struct {
+type FromOpSpec struct {
 	DataSourceName string `json:"dataSourceName,omitempty"`
 	Query          string `json:"query,omitempty"`
 }
 
 func init() {
-	fromElasticSignature := semantic.FunctionPolySignature{
+	fromSignature := semantic.FunctionPolySignature{
 		Parameters: map[string]semantic.PolyType{
 			"dataSourceName": semantic.String,
-			"query": semantic.String,
+			"query":          semantic.String,
 		},
 		Required: semantic.LabelSet{"dataSourceName", "query"},
 		Return:   flux.TableObjectType,
 	}
-	flux.RegisterPackageValue("elasticsearch", "from", flux.FunctionValue(FromElasticKind, createFromElasticOpSpec, fromElasticSignature))
-	flux.RegisterOpSpec(FromElasticKind, newFromElasticOp)
-	plan.RegisterProcedureSpec(FromElasticKind, newFromElasticProcedure, FromElasticKind)
-	execute.RegisterSource(FromElasticKind, createFromElasticSource)
+	flux.RegisterPackageValue("elastic", "from", flux.FunctionValue(FromKind, createFromOpSpec, fromSignature))
+	flux.RegisterOpSpec(FromKind, newFromOp)
+	plan.RegisterProcedureSpec(FromKind, newFromProcedure, FromKind)
+	execute.RegisterSource(FromKind, createFromSource)
 }
 
-func createFromElasticOpSpec(args flux.Arguments, administration *flux.Administration) (flux.OperationSpec, error) {
-	spec := new(FromElasticOpSpec)
+func createFromOpSpec(args flux.Arguments, administration *flux.Administration) (flux.OperationSpec, error) {
+	spec := new(FromOpSpec)
 
 	if dataSourceName, err := args.GetRequiredString("dataSourceName"); err != nil {
 		return nil, err
@@ -57,45 +57,45 @@ func createFromElasticOpSpec(args flux.Arguments, administration *flux.Administr
 	return spec, nil
 }
 
-func newFromElasticOp() flux.OperationSpec {
-	return new(FromElasticOpSpec)
+func newFromOp() flux.OperationSpec {
+	return new(FromOpSpec)
 }
 
-func (s *FromElasticOpSpec) Kind() flux.OperationKind {
-	return FromElasticKind
+func (s *FromOpSpec) Kind() flux.OperationKind {
+	return FromKind
 }
 
-type FromElasticProcedureSpec struct {
+type FromProcedureSpec struct {
 	plan.DefaultCost
 	DataSourceName string
 	Query          string
 }
 
-func newFromElasticProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	spec, ok := qs.(*FromElasticOpSpec)
+func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+	spec, ok := qs.(*FromOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
 	}
 
-	return &FromElasticProcedureSpec{
+	return &FromProcedureSpec{
 		DataSourceName: spec.DataSourceName,
 		Query:          spec.Query,
 	}, nil
 }
 
-func (s *FromElasticProcedureSpec) Kind() plan.ProcedureKind {
-	return FromElasticKind
+func (s *FromProcedureSpec) Kind() plan.ProcedureKind {
+	return FromKind
 }
 
-func (s *FromElasticProcedureSpec) Copy() plan.ProcedureSpec {
-	ns := new(FromElasticProcedureSpec)
+func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
+	ns := new(FromProcedureSpec)
 	ns.DataSourceName = s.DataSourceName
 	ns.Query = s.Query
 	return ns
 }
 
-func createFromElasticSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a execute.Administration) (execute.Source, error) {
-	spec, ok := prSpec.(*FromElasticProcedureSpec)
+func createFromSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a execute.Administration) (execute.Source, error) {
+	spec, ok := prSpec.(*FromProcedureSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", prSpec)
 	}
@@ -108,7 +108,7 @@ func createFromElasticSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, 
 type ElasticIterator struct {
 	id             execute.DatasetID
 	administration execute.Administration
-	spec           *FromElasticProcedureSpec
+	spec           *FromProcedureSpec
 	client         *elastic.Client
 	searchResult   *elastic.SearchResult
 }
