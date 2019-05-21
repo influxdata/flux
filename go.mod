@@ -17,6 +17,7 @@ require (
 	github.com/influxdata/line-protocol v0.0.0-20180522152040-32c6aa80de5e
 	github.com/influxdata/tdigest v0.0.0-20181121200506-bf2b5ad3c0a9
 	github.com/lib/pq v1.0.0
+	github.com/llvm-mirror/llvm v0.0.0-20190516224901-5563a6a769b4
 	github.com/mattn/go-runewidth v0.0.3 // indirect
 	github.com/mattn/go-tty v0.0.0-20180907095812-13ff1204f104 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
