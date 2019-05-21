@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -436,14 +437,18 @@ func (t *ToHTTPTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	if err != nil {
 		return err
 	}
+	defer func() {
+		// we need to read the entire thing before closing in order to reuse sockets.
+		_, _ = io.Copy(ioutil.Discard, resp.Body)
+		err2 := resp.Body.Close()
+		if err2 != nil {
+			err = err2
+		}
+	}()
 	if err := wg.Wait(); err != nil {
 		return err
 	}
-	if err := resp.Body.Close(); err != nil {
-		return err
-	}
-
-	return req.Body.Close()
+	return err
 }
 
 func (t *ToHTTPTransformation) UpdateWatermark(id execute.DatasetID, pt execute.Time) error {
