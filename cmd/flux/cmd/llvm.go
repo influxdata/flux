@@ -42,11 +42,12 @@ func llvmE(cmd *cobra.Command, args []string) error {
 	}
 
 	mod := llvm.Build(semPkg)
-	if ok := gollvm.VerifyModule(mod, gollvm.ReturnStatusAction); ok != nil {
-		fmt.Println(ok.Error())
+	mod.Dump()
+
+	if err = gollvm.VerifyModule(mod, gollvm.ReturnStatusAction); err != nil {
+		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	mod.Dump()
 
 	engine, err := gollvm.NewExecutionEngine(mod)
 	if err != nil {
