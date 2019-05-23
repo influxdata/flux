@@ -5,4 +5,4 @@ vendor
 .vscode
 .vs
 .tern-project
-.idea
+/coverage.txt
