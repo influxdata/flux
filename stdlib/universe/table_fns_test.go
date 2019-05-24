@@ -2,17 +2,17 @@ package universe_test
 
 import (
 	"fmt"
-	"testing"
-
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
 	"github.com/influxdata/flux/values/objects"
 	"github.com/pkg/errors"
+	"testing"
 )
 
 var (
@@ -214,7 +214,7 @@ func TestTableFind_Call(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			f := universe.NewTableFindFunction()
+			f := universe.NewTableFindFunction(flux.NewDefaultExecutionContext())
 			res, err := f.Function().Call(values.NewObjectWithValues(map[string]values.Value{
 				"tables": to,
 				"fn": values.NewFunction("",
@@ -261,6 +261,7 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 
 	s := evalOrFail(t, script, func(s interpreter.Scope) {
 		s.Set("inj", to)
+		lang.BindContextAwareValues(s, flux.NewDefaultExecutionContext())
 	})
 	tbl := mustLookup(s, "t")
 
@@ -305,6 +306,7 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 
 	s := evalOrFail(t, script, func(s interpreter.Scope) {
 		s.Set("inj", to)
+		lang.BindContextAwareValues(s, flux.NewDefaultExecutionContext())
 	})
 	tbl := mustLookup(s, "t")
 
@@ -369,6 +371,7 @@ recordOK = r._time == 2018-05-22T19:53:26Z and r._value == 1.0 and r._measuremen
 
 	s := evalOrFail(t, script, func(s interpreter.Scope) {
 		s.Set("inj", to)
+		lang.BindContextAwareValues(s, flux.NewDefaultExecutionContext())
 	})
 
 	for _, id := range []string{

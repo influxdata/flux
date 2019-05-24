@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"go.uber.org/zap/zaptest"
+
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/control"
@@ -21,7 +23,6 @@ import (
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
-	"go.uber.org/zap/zaptest"
 )
 
 func init() {
@@ -351,7 +352,7 @@ func TestController_ExecuteError(t *testing.T) {
 	compiler := &mock.Compiler{
 		CompileFn: func(ctx context.Context) (flux.Program, error) {
 			return &mock.Program{
-				StartFn: func(ctx context.Context, alloc *memory.Allocator) (*mock.Query, error) {
+				StartFn: func(ec *flux.ExecutionContext) (*mock.Query, error) {
 					return nil, errors.New("expected error")
 				},
 			}, nil
@@ -385,6 +386,7 @@ func TestController_LimitExceededError(t *testing.T) {
 	const memoryBytesQuotaPerQuery = 64
 	config := config
 	config.MemoryBytesQuotaPerQuery = memoryBytesQuotaPerQuery
+	config.Logger = zaptest.NewLogger(t)
 	ctrl, err := control.New(config)
 	if err != nil {
 		t.Fatal(err)
@@ -411,7 +413,6 @@ func TestController_LimitExceededError(t *testing.T) {
 
 			ps := plantest.CreatePlanSpec(&pts)
 			prog := &lang.Program{
-				Logger:   zaptest.NewLogger(t),
 				PlanSpec: ps,
 			}
 

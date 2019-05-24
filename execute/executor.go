@@ -27,11 +27,11 @@ type Executor interface {
 }
 
 type executor struct {
-	deps   Dependencies
+	deps   flux.ExecutionDependencies
 	logger *zap.Logger
 }
 
-func NewExecutor(deps Dependencies, logger *zap.Logger) Executor {
+func NewExecutor(deps flux.ExecutionDependencies, logger *zap.Logger) Executor {
 	if logger == nil {
 		logger = zap.NewNop()
 	}
@@ -52,7 +52,7 @@ func (ctx streamContext) Bounds() *Bounds {
 
 type executionState struct {
 	p    *plan.Spec
-	deps Dependencies
+	deps flux.ExecutionDependencies
 
 	alloc *memory.Allocator
 
@@ -344,6 +344,6 @@ func (ec executionContext) Parents() []DatasetID {
 	return ec.parents
 }
 
-func (ec executionContext) Dependencies() Dependencies {
+func (ec executionContext) Dependencies() flux.ExecutionDependencies {
 	return ec.es.deps
 }

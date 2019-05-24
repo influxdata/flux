@@ -34,6 +34,7 @@ func Parse(flux string) (*ast.Package, error) {
 }
 
 // Eval accepts a Flux script and evaluates it to produce a set of side effects (as a slice of values) and a scope.
+// ScopeMutators passed are applied to the prelude.
 func Eval(flux string, opts ...ScopeMutator) ([]interpreter.SideEffect, interpreter.Scope, error) {
 	astPkg, err := Parse(flux)
 	if err != nil {
@@ -43,6 +44,7 @@ func Eval(flux string, opts ...ScopeMutator) ([]interpreter.SideEffect, interpre
 }
 
 // EvalAST accepts a Flux AST and evaluates it to produce a set of side effects (as a slice of values) and a scope.
+// ScopeMutators passed are applied to the prelude.
 func EvalAST(astPkg *ast.Package, opts ...ScopeMutator) ([]interpreter.SideEffect, interpreter.Scope, error) {
 	semPkg, err := semantic.New(astPkg)
 	if err != nil {

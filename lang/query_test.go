@@ -1,7 +1,6 @@
 package lang_test
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -9,7 +8,6 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/memory"
 	"github.com/pkg/errors"
 )
 
@@ -18,7 +16,7 @@ func runQuery(script string) (flux.Query, error) {
 	if err != nil {
 		return nil, err
 	}
-	q, err := program.Start(context.Background(), &memory.Allocator{})
+	q, err := program.Start(flux.NewDefaultExecutionContext())
 	if err != nil {
 		return nil, err
 	}

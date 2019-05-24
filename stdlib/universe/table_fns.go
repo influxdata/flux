@@ -1,15 +1,12 @@
 package universe
 
 import (
-	"context"
 	"fmt"
-	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/influxdata/flux/values/objects"
@@ -27,102 +24,109 @@ const (
 )
 
 func init() {
-	flux.RegisterPackageValue("universe", "tableFind", NewTableFindFunction())
+	flux.RegisterPackageValue("universe", "tableFind", tableFindErrorFunction())
+	lang.RegisterContextAwareValue("tableFind", NewTableFindFunction)
 	flux.RegisterPackageValue("universe", "getColumn", NewGetColumnFunction())
 	flux.RegisterPackageValue("universe", "getRecord", NewGetRecordFunction())
 }
 
-func NewTableFindFunction() values.Value {
+func tableFindType() semantic.PolyType {
+	return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{
+			tableFindStreamArg: flux.TableObjectType,
+			tableFindFunctionArg: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{
+					tableFindFunctionGroupKeyArg: semantic.Tvar(1),
+				},
+				Required: semantic.LabelSet{tableFindFunctionGroupKeyArg},
+				Return:   semantic.Bool,
+			}),
+		},
+		Required:     semantic.LabelSet{tableFindStreamArg, tableFindFunctionArg},
+		PipeArgument: tableFindStreamArg,
+		Return:       objects.TableType,
+	})
+}
+
+func tableFindErrorFunction() values.Function {
 	return values.NewFunction("tableFind",
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				tableFindStreamArg: flux.TableObjectType,
-				tableFindFunctionArg: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-					Parameters: map[string]semantic.PolyType{
-						tableFindFunctionGroupKeyArg: semantic.Tvar(1),
-					},
-					Required: semantic.LabelSet{tableFindFunctionGroupKeyArg},
-					Return:   semantic.Bool,
-				}),
-			},
-			Required:     semantic.LabelSet{tableFindStreamArg, tableFindFunctionArg},
-			PipeArgument: tableFindStreamArg,
-			Return:       objects.TableType,
-		}),
-		tableFindCall,
+		tableFindType(),
+		func(args values.Object) (value values.Value, e error) {
+			return nil, fmt.Errorf("tableFind is not implemented, it must be bound at runtime")
+		},
 		false)
 }
 
-func tableFindCall(args values.Object) (values.Value, error) {
-	arguments := interpreter.NewArguments(args)
-	var to *flux.TableObject
-	if v, err := arguments.GetRequired(tableFindStreamArg); err != nil {
-		return nil, err
-	} else if v.Type() != flux.TableObjectMonoType {
-		return nil, fmt.Errorf("unexpected type for %v: want %v, got %v", tableFindStreamArg, "table stream", v.Type())
-	} else {
-		to = v.(*flux.TableObject)
-	}
+func NewTableFindFunction(ec *flux.ExecutionContext) values.Value {
+	return values.NewFunction("tableFind", tableFindType(), createTableFindCall(ec), false)
+}
 
-	fn, err := arguments.GetRequiredFunction(tableFindFunctionArg)
-	if err != nil {
-		return nil, fmt.Errorf("missing argument: %s", tableFindFunctionArg)
-	}
+func createTableFindCall(ec *flux.ExecutionContext) func(args values.Object) (values.Value, error) {
+	return func(args values.Object) (values.Value, error) {
+		arguments := interpreter.NewArguments(args)
+		var to *flux.TableObject
+		if v, err := arguments.GetRequired(tableFindStreamArg); err != nil {
+			return nil, err
+		} else if v.Type() != flux.TableObjectMonoType {
+			return nil, fmt.Errorf("unexpected type for %v: want %v, got %v", tableFindStreamArg, "table stream", v.Type())
+		} else {
+			to = v.(*flux.TableObject)
+		}
 
-	c := lang.TableObjectCompiler{
-		Tables: to,
-		Now:    time.Now(),
-	}
+		fn, err := arguments.GetRequiredFunction(tableFindFunctionArg)
+		if err != nil {
+			return nil, fmt.Errorf("missing argument: %s", tableFindFunctionArg)
+		}
 
-	p, err := c.Compile(context.Background())
-	if err != nil {
-		return nil, errors.Wrap(err, "error in table object compilation")
-	}
-
-	q, err := p.Start(context.Background(), &memory.Allocator{})
-	if err != nil {
-		return nil, errors.Wrap(err, "error in table object start")
-	}
-
-	var t *objects.Table
-	var found bool
-	for res := range q.Results() {
-		if err := res.Tables().Do(func(tbl flux.Table) error {
-			if found {
-				// the result is filled, you can skip other tables
-				return nil
-			}
-			gk := objectFromGroupKey(tbl.Key())
-			pass, err := fn.Call(values.NewObjectWithValues(map[string]values.Value{tableFindFunctionGroupKeyArg: gk}))
-			if err != nil {
-				return errors.Wrap(err, "failed to evaluate group key predicate function")
-			}
-			found = pass.Bool()
-			if found {
-				// We need to copy the table in memory and increase its refCount in order to make
-				// subsequent calls to getRecord/Column idempotent. If we don't do it, then it would be
-				// consumed by calls to `Do`, and subsequent calls to getRecord/Column would find
-				// an empty table.
-				// TODO(jsternberg): Tables can only be consumed once so the implementation of a table
-				// must use a buffered table and copy it when it is used. This is not done yet so the
-				// result of retrieving the table can only be consumed once.
-				// The table must also be copied into a buffer because once the table goes out of the
-				// current scope it is discarded by the processing system.
-				if tbl, err := execute.CopyTable(tbl); err != nil {
-					return err
-				} else {
-					t = objects.NewTable(tbl)
-				}
-			}
-			return nil
-		}); err != nil {
+		p, err := lang.CompileTableObject(to, ec.Now)
+		if err != nil {
 			return nil, err
 		}
+		q, err := p.Start(ec)
+		if err != nil {
+			return nil, errors.Wrap(err, "error while executing sub-program")
+		}
+
+		var t *objects.Table
+		var found bool
+		for res := range q.Results() {
+			if err := res.Tables().Do(func(tbl flux.Table) error {
+				if found {
+					// the result is filled, you can skip other tables
+					return nil
+				}
+				gk := objectFromGroupKey(tbl.Key())
+				pass, err := fn.Call(values.NewObjectWithValues(map[string]values.Value{tableFindFunctionGroupKeyArg: gk}))
+				if err != nil {
+					return errors.Wrap(err, "failed to evaluate group key predicate function")
+				}
+				found = pass.Bool()
+				if found {
+					// We need to copy the table in memory and increase its refCount in order to make
+					// subsequent calls to getRecord/Column idempotent. If we don't do it, then it would be
+					// consumed by calls to `Do`, and subsequent calls to getRecord/Column would find
+					// an empty table.
+					// TODO(jsternberg): Tables can only be consumed once so the implementation of a table
+					// must use a buffered table and copy it when it is used. This is not done yet so the
+					// result of retrieving the table can only be consumed once.
+					// The table must also be copied into a buffer because once the table goes out of the
+					// current scope it is discarded by the processing system.
+					if tbl, err := execute.CopyTable(tbl); err != nil {
+						return err
+					} else {
+						t = objects.NewTable(tbl)
+					}
+				}
+				return nil
+			}); err != nil {
+				return nil, err
+			}
+		}
+		if !found {
+			return nil, fmt.Errorf("no table found")
+		}
+		return t, nil
 	}
-	if !found {
-		return nil, fmt.Errorf("no table found")
-	}
-	return t, nil
 }
 
 func objectFromGroupKey(gk flux.GroupKey) values.Object {

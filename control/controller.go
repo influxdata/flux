@@ -25,8 +25,6 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
@@ -54,7 +52,7 @@ type Controller struct {
 
 	logger *zap.Logger
 
-	dependencies execute.Dependencies
+	dependencies flux.ExecutionDependencies
 }
 
 type Config struct {
@@ -75,7 +73,7 @@ type Config struct {
 	// The context value must be a string or an implementation of the Stringer interface.
 	MetricLabelKeys []string
 
-	ExecutorDependencies execute.Dependencies
+	ExecutorDependencies flux.ExecutionDependencies
 }
 
 func (c *Config) Validate() error {
@@ -227,17 +225,10 @@ func (c *Controller) compileQuery(q *Query, compiler flux.Compiler) error {
 	if !ok {
 		return errors.New("failed to transition query to compiling state")
 	}
-
 	prog, err := compiler.Compile(ctx)
 	if err != nil {
 		return errors.Wrap(err, "compilation failed")
 	}
-
-	if p, ok := prog.(lang.DependenciesAwareProgram); ok {
-		p.SetExecutorDependencies(c.dependencies)
-		p.SetLogger(c.logger)
-	}
-
 	q.program = prog
 	return nil
 }
@@ -280,7 +271,13 @@ func (c *Controller) executeQuery(q *Query) {
 
 	q.alloc = new(memory.Allocator)
 	q.alloc.Limit = func(v int64) *int64 { return &v }(c.memoryBytesQuotaPerQuery)
-	exec, err := q.program.Start(ctx, q.alloc)
+	ec := &flux.ExecutionContext{
+		Context:      ctx,
+		Allocator:    q.alloc,
+		Dependencies: c.dependencies,
+		Logger:       c.logger,
+	}
+	exec, err := q.program.Start(ec)
 	if err != nil {
 		q.addRuntimeError(err)
 		q.setErr(err)

@@ -19,7 +19,9 @@ import (
 const nowOption = "now"
 
 // FromScript returns a spec from a script expressed as a raw string.
-func FromScript(ctx context.Context, script string, now time.Time) (*flux.Spec, error) {
+// The given scope mutators mutate the prelude that is used by the interpreter while
+// interpreting the script. Interpretation is necessary in order to build the spec.
+func FromScript(ctx context.Context, script string, now time.Time, opts ...flux.ScopeMutator) (*flux.Spec, error) {
 	s, _ := opentracing.StartSpanFromContext(ctx, "parse")
 
 	astPkg, err := flux.Parse(script)
@@ -27,14 +29,16 @@ func FromScript(ctx context.Context, script string, now time.Time) (*flux.Spec, 
 		return nil, err
 	}
 	s.Finish()
-	return FromAST(ctx, astPkg, now)
+	return FromAST(ctx, astPkg, now, opts...)
 }
 
 // FromAST returns a spec from an AST.
-func FromAST(ctx context.Context, astPkg *ast.Package, now time.Time) (*flux.Spec, error) {
+// The given scope mutators mutate the prelude that is used by the interpreter while
+// interpreting the AST. Interpretation is necessary in order to build the spec.
+func FromAST(ctx context.Context, astPkg *ast.Package, now time.Time, opts ...flux.ScopeMutator) (*flux.Spec, error) {
 	s, _ := opentracing.StartSpanFromContext(ctx, "eval")
 
-	sideEffects, scope, err := flux.EvalAST(astPkg, flux.SetOption(nowOption, generateNowFunc(now)))
+	sideEffects, scope, err := flux.EvalAST(astPkg, append(opts, flux.SetOption(nowOption, generateNowFunc(now)))...)
 	if err != nil {
 		return nil, err
 	}

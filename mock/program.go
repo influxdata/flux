@@ -10,16 +10,16 @@ import (
 // Program is a mock program that can be returned by the mock compiler.
 // It will construct a mock query that will then be passed to ExecuteFn.
 type Program struct {
-	StartFn   func(ctx context.Context, alloc *memory.Allocator) (*Query, error)
+	StartFn   func(ec *flux.ExecutionContext) (*Query, error)
 	ExecuteFn func(ctx context.Context, q *Query, alloc *memory.Allocator)
 }
 
-func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+func (p *Program) Start(ec *flux.ExecutionContext) (flux.Query, error) {
 	startFn := p.StartFn
 	if startFn == nil {
 		var cancel func()
-		ctx, cancel = context.WithCancel(ctx)
-		startFn = func(ctx context.Context, alloc *memory.Allocator) (*Query, error) {
+		ctx, cancel := context.WithCancel(ec.Context)
+		startFn = func(ec *flux.ExecutionContext) (*Query, error) {
 			results := make(chan flux.Result)
 			q := &Query{
 				ResultsCh: results,
@@ -29,11 +29,11 @@ func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Quer
 			go func() {
 				defer close(results)
 				if p.ExecuteFn != nil {
-					p.ExecuteFn(ctx, q, alloc)
+					p.ExecuteFn(ctx, q, ec.Allocator)
 				}
 			}()
 			return q, nil
 		}
 	}
-	return startFn(ctx, alloc)
+	return startFn(ec)
 }
