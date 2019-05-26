@@ -5,7 +5,6 @@ require (
 	github.com/Masterminds/semver v1.4.2
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/apache/arrow/go/arrow v0.0.0-20190426170622-338c62a2a205
-	github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973 // indirect
 	github.com/c-bata/go-prompt v0.2.2
 	github.com/cespare/xxhash v1.1.0
 	github.com/dave/jennifer v1.2.0
@@ -19,15 +18,10 @@ require (
 	github.com/lib/pq v1.0.0
 	github.com/mattn/go-runewidth v0.0.3 // indirect
 	github.com/mattn/go-tty v0.0.0-20180907095812-13ff1204f104 // indirect
-	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/opentracing/opentracing-go v1.0.2
 	github.com/pierrec/lz4 v2.0.5+incompatible // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/pkg/term v0.0.0-20180730021639-bffc007b7fd5 // indirect
-	github.com/prometheus/client_golang v0.0.0-20171201122222-661e31bf844d
-	github.com/prometheus/client_model v0.0.0-20180712105110-5c3871d89910
-	github.com/prometheus/common v0.0.0-20180801064454-c7de2306084e // indirect
-	github.com/prometheus/procfs v0.0.0-20181005140218-185b4288413d // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/segmentio/kafka-go v0.1.0
 	github.com/spf13/cobra v0.0.3
