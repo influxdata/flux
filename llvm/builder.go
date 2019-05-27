@@ -10,8 +10,8 @@ import (
 
 func Build(pkg *semantic.Package) llvm.Module {
 	v := &builder{
-		b: llvm.NewBuilder(),
-		names: make(map[string]llvm.Value),
+		b:          llvm.NewBuilder(),
+		names:      make(map[string]llvm.Value),
 		condStates: make(map[*semantic.ConditionalExpression]condState),
 	}
 	mod := llvm.NewModule("flux_module")
@@ -30,21 +30,21 @@ func Build(pkg *semantic.Package) llvm.Module {
 	return mod
 }
 
-type builder struct{
-	f llvm.Value
+type builder struct {
+	f      llvm.Value
 	values []llvm.Value
-	b llvm.Builder
-	names map[string]llvm.Value
-	idCtr int64
+	b      llvm.Builder
+	names  map[string]llvm.Value
+	idCtr  int64
 
 	condStates map[*semantic.ConditionalExpression]condState
 }
 
 type condState struct {
-	before llvm.BasicBlock
+	before              llvm.BasicBlock
 	consEntry, consExit llvm.BasicBlock
-	altEntry, altExit llvm.BasicBlock
-	after llvm.BasicBlock
+	altEntry, altExit   llvm.BasicBlock
+	after               llvm.BasicBlock
 }
 
 func (b *builder) newID() int64 {
@@ -62,7 +62,7 @@ func (b *builder) Visit(node semantic.Node) semantic.Visitor {
 
 		cs := condState{
 			before: b.b.GetInsertBlock(),
-			after: llvm.AddBasicBlock(b.f, fmt.Sprintf("merge%d", b.newID())),
+			after:  llvm.AddBasicBlock(b.f, fmt.Sprintf("merge%d", b.newID())),
 		}
 
 		cs.consEntry = llvm.AddBasicBlock(b.f, fmt.Sprintf("true%d", b.newID()))
@@ -112,8 +112,12 @@ func (b *builder) Done(node semantic.Node) {
 			v = b.b.CreateSDiv(op1, op2, "")
 		case ast.EqualOperator:
 			v = b.b.CreateICmp(llvm.IntEQ, op1, op2, "")
+		case ast.GreaterThanOperator:
+			v = b.b.CreateICmp(llvm.IntSGT, op1, op2, "")
+		case ast.LessThanOperator:
+			v = b.b.CreateICmp(llvm.IntSLT, op1, op2, "")
 		default:
-			panic("unsupported binary operand")
+			panic("unsupported binary operand: " + n.Operator.String())
 		}
 		b.push(v)
 	case *semantic.ConditionalExpression:
@@ -135,6 +139,12 @@ func (b *builder) Done(node semantic.Node) {
 	case *semantic.IntegerLiteral:
 		v := llvm.ConstInt(llvm.Int64Type(), uint64(n.Value), false)
 		b.push(v)
+	case *semantic.File:
+		// do nothing
+	case *semantic.Package:
+		// do nothing
+	default:
+		panic("unsupported semantic node: " + n.NodeType())
 	}
 }
 
@@ -144,6 +154,6 @@ func (b *builder) push(v llvm.Value) {
 
 func (b *builder) pop() llvm.Value {
 	v := b.values[len(b.values)-1]
-	b.values = b.values[:len(b.values) - 1]
+	b.values = b.values[:len(b.values)-1]
 	return v
 }
