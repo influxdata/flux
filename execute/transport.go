@@ -68,7 +68,6 @@ func (t *consecutiveTransport) RetractTable(id DatasetID, key flux.GroupKey) err
 }
 
 func (t *consecutiveTransport) Process(id DatasetID, tbl flux.Table) error {
-	tbl.RefCount(1)
 	select {
 	case <-t.finished:
 		return t.err()
@@ -198,7 +197,7 @@ func processMessage(t Transformation, m Message) (finished bool, err error) {
 	case ProcessMsg:
 		b := m.Table()
 		err = t.Process(m.SrcDatasetID(), b)
-		b.RefCount(-1)
+		b.Done()
 	case UpdateWatermarkMsg:
 		err = t.UpdateWatermark(m.SrcDatasetID(), m.WatermarkTime())
 	case UpdateProcessingTimeMsg:
