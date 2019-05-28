@@ -136,12 +136,11 @@ func (d *dataset) triggerTable(key flux.GroupKey) error {
 	if err != nil {
 		return err
 	}
+
 	switch d.accMode {
 	case DiscardingMode:
-		for _, t := range d.ts {
-			if err := t.Process(d.id, b); err != nil {
-				return err
-			}
+		if err := d.processTable(b); err != nil {
+			return err
 		}
 		d.cache.DiscardTable(key)
 	case AccumulatingRetractingMode:
@@ -152,10 +151,31 @@ func (d *dataset) triggerTable(key flux.GroupKey) error {
 		}
 		fallthrough
 	case AccumulatingMode:
-		for _, t := range d.ts {
-			if err := t.Process(d.id, b); err != nil {
-				return err
-			}
+		if err := d.processTable(b); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (d *dataset) processTable(tbl flux.Table) error {
+	if len(d.ts) == 0 {
+		return nil
+	} else if len(d.ts) == 1 {
+		return d.ts[0].Process(d.id, tbl)
+	}
+
+	// There is more than one transformation so we need to
+	// copy the table for each transformation.
+	bufTable, err := CopyTable(tbl)
+	if err != nil {
+		return err
+	}
+	defer bufTable.Done()
+
+	for _, t := range d.ts {
+		if err := t.Process(d.id, bufTable.Copy()); err != nil {
+			return err
 		}
 	}
 	return nil

@@ -3,6 +3,7 @@ package executetest
 import (
 	"context"
 
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
@@ -45,10 +46,44 @@ func (src *FromProcedureSpec) AddTransformation(t execute.Transformation) {
 
 func (src *FromProcedureSpec) Run(ctx context.Context) {
 	id := execute.DatasetID(uuid.NewV4())
-	for _, t := range src.ts {
+
+	if len(src.ts) == 0 {
+		return
+	} else if len(src.ts) == 1 {
+		t := src.ts[0]
+
 		var max execute.Time
 		for _, tbl := range src.data {
 			t.Process(id, tbl)
+			stopIdx := execute.ColIdx(execute.DefaultStopColLabel, tbl.Cols())
+			if stopIdx >= 0 {
+				if s := tbl.Key().ValueTime(stopIdx); s > max {
+					max = s
+				}
+			}
+		}
+		t.UpdateWatermark(id, max)
+		t.Finish(id, nil)
+		return
+	}
+
+	buffers := make([]flux.BufferedTable, 0, len(src.data))
+	for _, tbl := range src.data {
+		bufTable, _ := execute.CopyTable(tbl)
+		buffers = append(buffers, bufTable.(flux.BufferedTable))
+	}
+
+	// Ensure that the buffers are released after the source has finished.
+	defer func() {
+		for _, tbl := range buffers {
+			tbl.Done()
+		}
+	}()
+
+	for _, t := range src.ts {
+		var max execute.Time
+		for _, tbl := range buffers {
+			t.Process(id, tbl.Copy())
 			stopIdx := execute.ColIdx(execute.DefaultStopColLabel, tbl.Cols())
 			if stopIdx >= 0 {
 				if s := tbl.Key().ValueTime(stopIdx); s > max {

@@ -72,6 +72,11 @@ type Schema struct {
 	// number generator. If this is null, the current time
 	// will be used.
 	Seed *int64
+
+	// Alloc assigns an allocator to use when generating the
+	// tables. If this is not set, an unlimited allocator is
+	// used.
+	Alloc *memory.Allocator
 }
 
 // Input constructs a ResultIterator with randomly generated
@@ -141,7 +146,11 @@ func Input(schema Schema) (flux.ResultIterator, error) {
 		g.Start = values.ConvertTime(ts)
 	}
 
-	cache := execute.NewTableBuilderCache(&memory.Allocator{})
+	alloc := schema.Alloc
+	if alloc == nil {
+		alloc = &memory.Allocator{}
+	}
+	cache := execute.NewTableBuilderCache(alloc)
 	cache.SetTriggerSpec(plan.DefaultTriggerSpec)
 	for {
 		if len(groups) == 0 {
