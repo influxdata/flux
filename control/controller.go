@@ -20,6 +20,7 @@ package control
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -32,6 +33,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // Controller provides a central location to manage all incoming queries.
@@ -277,6 +279,18 @@ func (c *Controller) executeQuery(q *Query) {
 		q.setErr(errors.New("impossible state transition"))
 		return
 	}
+
+	defer func() {
+		if e := recover(); e != nil {
+			err := fmt.Errorf("panic: %v", e)
+			q.setErr(err)
+
+			if entry := c.logger.Check(zapcore.InfoLevel, "controller recovered from panic"); entry != nil {
+				entry.Stack = string(debug.Stack())
+				entry.Write(zap.Error(err))
+			}
+		}
+	}()
 
 	q.alloc = new(memory.Allocator)
 	q.alloc.Limit = func(v int64) *int64 { return &v }(c.memoryBytesQuotaPerQuery)

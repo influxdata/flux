@@ -822,6 +822,37 @@ func TestController_DoneWithoutRead(t *testing.T) {
 	wg.Wait()
 }
 
+func TestController_PanicRecover(t *testing.T) {
+	ctrl, err := control.New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer shutdown(t, ctrl)
+
+	compiler := &mock.Compiler{
+		CompileFn: func(ctx context.Context) (flux.Program, error) {
+			return &mock.Program{
+				StartFn: func(ctx context.Context, alloc *memory.Allocator) (*mock.Query, error) {
+					panic("catastrophe")
+				},
+			}, nil
+		},
+	}
+
+	q, err := ctrl.Query(context.Background(), compiler)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer q.Done()
+
+	for range q.Results() {
+	}
+
+	if e := q.Err(); e == nil || !strings.Contains(e.Error(), "catastrophe") {
+		t.Fatalf(`wanted error to contain "catastrophe" but got "%v"`, e)
+	}
+}
+
 func shutdown(t *testing.T, ctrl *control.Controller) {
 	t.Helper()
 
