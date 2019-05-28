@@ -464,6 +464,9 @@ func NormalizeTables(bs []*Table) {
 }
 
 func MustCopyTable(tbl flux.Table) flux.Table {
-	cpy, _ := execute.CopyTable(tbl, UnlimitedAllocator)
+	cpy, err := execute.CopyTable(tbl)
+	if err != nil {
+		panic(err)
+	}
 	return cpy
 }

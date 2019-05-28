@@ -103,10 +103,12 @@ func tableFindCall(args values.Object) (values.Value, error) {
 				// subsequent calls to getRecord/Column idempotent. If we don't do it, then it would be
 				// consumed by calls to `Do`, and subsequent calls to getRecord/Column would find
 				// an empty table.
-				// TODO(aff): Note that, for now, it is not enough to `tbl.RefCount(1)`, because we cannot rely on its
-				//  implementation. When a table comes from `csv.from()` it is a `csv.tableDecoder` that
-				//  does nothing when `RefCount` is called.
-				if tbl, err := execute.CopyTable(tbl, &memory.Allocator{}); err != nil {
+				// TODO(jsternberg): Tables can only be consumed once so the implementation of a table
+				// must use a buffered table and copy it when it is used. This is not done yet so the
+				// result of retrieving the table can only be consumed once.
+				// The table must also be copied into a buffer because once the table goes out of the
+				// current scope it is discarded by the processing system.
+				if tbl, err := execute.CopyTable(tbl); err != nil {
 					return err
 				} else {
 					t = objects.NewTable(tbl)
