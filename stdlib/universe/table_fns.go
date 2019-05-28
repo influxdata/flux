@@ -109,7 +109,6 @@ func tableFindCall(args values.Object) (values.Value, error) {
 				if tbl, err := execute.CopyTable(tbl, &memory.Allocator{}); err != nil {
 					return err
 				} else {
-					tbl.RefCount(1)
 					t = objects.NewTable(tbl)
 				}
 			}

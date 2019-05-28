@@ -1280,6 +1280,9 @@ func (t *ColListTable) RefCount(n int) {
 	}
 }
 
+func (t *ColListTable) Retain()  { t.RefCount(1) }
+func (t *ColListTable) Release() { t.RefCount(-1) }
+
 func (t *ColListTable) Key() flux.GroupKey {
 	return t.key
 }
@@ -1300,6 +1303,8 @@ func (t *ColListTable) Len() int {
 func (t *ColListTable) Do(f func(flux.ColReader) error) error {
 	return f(t)
 }
+
+func (t *ColListTable) Done() {}
 
 func (t *ColListTable) Bools(j int) *array.Boolean {
 	CheckColType(t.colMeta[j], flux.TBool)
