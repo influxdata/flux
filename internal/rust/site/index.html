@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Flux parser test</title>
+  </head>
+  <body>
+    <textarea id="flux_src" rows="10" cols="100">
+package foo
+import "bar"
+
+a = x</textarea>
+    <div>
+    <button id="parse" >Parse</button>
+    </div>
+    <pre id="ast">
+    </pre>
+    <script src="./index.js"></script>
+  </body>
+</html>
