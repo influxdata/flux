@@ -9,7 +9,7 @@ The parser directly implements the following grammar.
     File                           = [ PackageClause ] [ ImportList ] StatementList .
     PackageClause                  = "package" identifier .
     ImportList                     = { ImportDeclaration } .
-    ImportDeclaration              = "import" [identifier] string_lit
+    ImportDeclaration              = "import" [ identifier ] string_lit
     StatementList                  = { Statement } .
     Statement                      = OptionAssignment
                                    | BuiltinStatement
@@ -27,7 +27,7 @@ The parser directly implements the following grammar.
     ReturnStatement                = "return" Expression .
     ExpressionStatement            = Expression .
     Expression                     = ConditionalExpression .
-    ConditionalExpression          = LogicalExpression
+    ConditionalExpression          = LogicalOrExpression
                                    | "if" Expression "then" Expression "else" Expression .
     ExpressionSuffix               = { PostfixOperator } { PipeExpressionSuffix } { MultiplicativeExpressionSuffix } { AdditiveExpressionSuffix } { ComparisonExpressionSuffix } { LogicalAndExpressionSuffix } { LogicalOrExpressionSuffix } .
     LogicalOrExpression            = LogicalAndExpression { LogicalOrExpressionSuffix } .

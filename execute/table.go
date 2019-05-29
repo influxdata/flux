@@ -36,43 +36,90 @@ func GroupKeyForRowOn(i int, cr flux.ColReader, on map[string]bool) flux.GroupKe
 	return NewGroupKey(cols, vs)
 }
 
-// OneTimeTable is a Table that permits reading data only once.
-// Specifically the ValueIterator may only be consumed once from any of the columns.
-type OneTimeTable interface {
-	flux.Table
-	onetime()
+// tableBuffer maintains a buffer of the data within a table.
+// It is created by reading a table and using Retain to retain
+// a reference to each ColReader that is returned.
+//
+// This implements the flux.BufferedTable interface.
+type tableBuffer struct {
+	key     flux.GroupKey
+	colMeta []flux.ColMeta
+	i       int
+	buffers []flux.ColReader
 }
 
-// CacheOneTimeTable returns a table that can be read multiple times.
-// If the table is not a OneTimeTable it is returned directly.
-// Otherwise its contents are read into a new table.
-func CacheOneTimeTable(t flux.Table, a *memory.Allocator) (flux.Table, error) {
-	_, ok := t.(OneTimeTable)
-	if !ok {
-		return t, nil
-	}
-	return CopyTable(t, a)
+func (tb *tableBuffer) Key() flux.GroupKey {
+	return tb.key
 }
 
-// CopyTable returns a copy of the table and is OneTimeTable safe.
-func CopyTable(t flux.Table, a *memory.Allocator) (flux.Table, error) {
-	builder := NewColListTableBuilder(t.Key(), a)
+func (tb *tableBuffer) Cols() []flux.ColMeta {
+	return tb.colMeta
+}
 
-	cols := t.Cols()
-	colMap := make([]int, len(cols))
-	for j, c := range cols {
-		colMap[j] = j
-		if _, err := builder.AddCol(c); err != nil {
-			return nil, err
+func (tb *tableBuffer) Do(f func(flux.ColReader) error) error {
+	defer tb.Done()
+	for ; tb.i < len(tb.buffers); tb.i++ {
+		b := tb.buffers[tb.i]
+		if err := f(b); err != nil {
+			return err
 		}
+		b.Release()
+	}
+	return nil
+}
+
+func (tb *tableBuffer) Done() {
+	for ; tb.i < len(tb.buffers); tb.i++ {
+		tb.buffers[tb.i].Release()
+	}
+}
+
+func (tb *tableBuffer) Empty() bool {
+	return len(tb.buffers) == 0
+}
+
+func (tb *tableBuffer) Copy() flux.BufferedTable {
+	for i := tb.i; i < len(tb.buffers); i++ {
+		tb.buffers[i].Retain()
+	}
+	return &tableBuffer{
+		key:     tb.key,
+		colMeta: tb.colMeta,
+		i:       tb.i,
+		buffers: tb.buffers,
+	}
+}
+
+// CopyTable returns a buffered copy of the table and consumes the
+// input table. If the input table is already buffered, it "consumes"
+// the input and returns the same table.
+//
+// The buffered table can then be copied additional times using the
+// BufferedTable.Copy method.
+//
+// This method should be used sparingly if at all. It will retain
+// each of the buffers of data coming out of a table so the entire
+// table is materialized in memory. For large datasets, this could
+// potentially cause a problem. The allocator is meant to catch when
+// this happens and prevent it.
+func CopyTable(t flux.Table) (flux.BufferedTable, error) {
+	if tbl, ok := t.(flux.BufferedTable); ok {
+		return tbl, nil
 	}
 
-	if err := AppendMappedTable(t, builder, colMap); err != nil {
+	tbl := tableBuffer{
+		key:     t.Key(),
+		colMeta: t.Cols(),
+	}
+	if err := t.Do(func(cr flux.ColReader) error {
+		cr.Retain()
+		tbl.buffers = append(tbl.buffers, cr)
+		return nil
+	}); err != nil {
+		tbl.Done()
 		return nil, err
 	}
-	// ColListTableBuilders do not error
-	nb, _ := builder.Table()
-	return nb, nil
+	return &tbl, nil
 }
 
 // AddTableCols adds the columns of b onto builder.
@@ -1280,6 +1327,9 @@ func (t *ColListTable) RefCount(n int) {
 	}
 }
 
+func (t *ColListTable) Retain()  { t.RefCount(1) }
+func (t *ColListTable) Release() { t.RefCount(-1) }
+
 func (t *ColListTable) Key() flux.GroupKey {
 	return t.key
 }
@@ -1300,6 +1350,8 @@ func (t *ColListTable) Len() int {
 func (t *ColListTable) Do(f func(flux.ColReader) error) error {
 	return f(t)
 }
+
+func (t *ColListTable) Done() {}
 
 func (t *ColListTable) Bools(j int) *array.Boolean {
 	CheckColType(t.colMeta[j], flux.TBool)
@@ -1327,7 +1379,7 @@ func (t *ColListTable) Times(j int) *array.Int64 {
 	return t.cols[j].(*timeColumn).data
 }
 
-func (t *ColListTable) Copy() *ColListTable {
+func (t *ColListTable) Copy() flux.BufferedTable {
 	cpy := new(ColListTable)
 	cpy.key = t.key
 	cpy.nrows = t.nrows

@@ -55,6 +55,10 @@ builtin unique
 builtin window
 builtin yield
 
+// stream/table index functions
+builtin tableFind
+builtin getColumn
+builtin getRecord
 
 // type conversion functions
 builtin bool
@@ -103,11 +107,9 @@ increase = (tables=<-, columns=["_value"]) =>
         |> cumulativeSum(columns: columns)
 
 // median returns the 50th percentile.
-// By default an approximate percentile is computed, this can be disabled by passing exact:true.
-// Using the exact method requires that the entire data set can fit in memory.
-median = (method="estimate_tdigest", compression=0.0, tables=<-) =>
+median = (method="estimate_tdigest", compression=0.0, column="_value", tables=<-) =>
     tables
-        |> quantile(q:0.5, method:method, compression:compression)
+        |> quantile(q:0.5, method: method, compression: compression, column: column)
 
 // stateCount computes the number of consecutive records in a given state.
 // The state is defined via the function fn. For each consecutive point for

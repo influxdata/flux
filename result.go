@@ -20,21 +20,45 @@ type TableIterator interface {
 	Do(f func(Table) error) error
 }
 
+// Table represents a set of streamed data with a common schema.
+// The contents of the table can be read exactly once.
+//
+// This data structure is not thread-safe.
 type Table interface {
+	// Key returns the set of data that is common among all rows
+	// in the table.
 	Key() GroupKey
 
+	// Cols contains metadata about the column schema.
 	Cols() []ColMeta
 
 	// Do calls f to process the data contained within the table.
-	// It uses the arrow buffers.
+	// This must only be called once and implementations should return
+	// an error if this is called multiple times.
 	Do(f func(ColReader) error) error
 
-	// RefCount modifies the reference count on the table by n.
-	// When the RefCount goes to zero, the table is freed.
-	RefCount(n int)
+	// Done indicates that this table is no longer needed and that the
+	// underlying processer that produces the table may discard any
+	// buffers that need to be processed. If the table has already been
+	// read with Do, this happens automatically.
+	// This is also not required if the table is empty.
+	// It should be safe to always call this function and call it multiple
+	// times.
+	Done()
 
 	// Empty returns whether the table contains no records.
 	Empty() bool
+}
+
+// BufferedTable is an implementation of Table that has all of its
+// data buffered.
+type BufferedTable interface {
+	Table
+
+	// Copy will return a copy of the BufferedTable without
+	// consuming the Table itself. If this Table has already
+	// been consumed by the Do method, then this will panic.
+	Copy() BufferedTable
 }
 
 // ColMeta contains the information about the column metadata.
@@ -122,7 +146,9 @@ func (t ColType) String() string {
 
 // ColReader allows access to reading arrow buffers of column data.
 // All data the ColReader exposes is guaranteed to be in memory.
-// Once an ColReader goes out of scope, all slices are considered invalid.
+// A ColReader that is produced when processing a Table will be
+// released once it goes out of scope. Retain can be used to keep
+// a reference to the buffered memory.
 type ColReader interface {
 	Key() GroupKey
 	// Cols returns a list of column metadata.
@@ -136,6 +162,13 @@ type ColReader interface {
 	Floats(j int) *array.Float64
 	Strings(j int) *array.Binary
 	Times(j int) *array.Int64
+
+	// Retain will retain this buffer to avoid having the
+	// memory consumed by it freed.
+	Retain()
+
+	// Release will release a reference to this buffer.
+	Release()
 }
 
 type GroupKey interface {

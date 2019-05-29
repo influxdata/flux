@@ -70,8 +70,6 @@ func (t *Table) Empty() bool {
 	return len(t.Data) == 0
 }
 
-func (t *Table) RefCount(n int) {}
-
 func (t *Table) Cols() []flux.ColMeta {
 	return t.ColMeta
 }
@@ -166,6 +164,8 @@ func (t *Table) Do(f func(flux.ColReader) error) error {
 	return f(cr)
 }
 
+func (t *Table) Done() {}
+
 type ColReader struct {
 	key  flux.GroupKey
 	meta []flux.ColMeta
@@ -209,6 +209,18 @@ func (cr *ColReader) Strings(j int) *array.Binary {
 
 func (cr *ColReader) Times(j int) *array.Int64 {
 	return cr.cols[j].(*array.Int64)
+}
+
+func (cr *ColReader) Retain() {
+	for _, col := range cr.cols {
+		col.Retain()
+	}
+}
+
+func (cr *ColReader) Release() {
+	for _, col := range cr.cols {
+		col.Release()
+	}
 }
 
 // RowWiseTable is a flux Table implementation that
@@ -452,6 +464,9 @@ func NormalizeTables(bs []*Table) {
 }
 
 func MustCopyTable(tbl flux.Table) flux.Table {
-	cpy, _ := execute.CopyTable(tbl, UnlimitedAllocator)
+	cpy, err := execute.CopyTable(tbl)
+	if err != nil {
+		panic(err)
+	}
 	return cpy
 }

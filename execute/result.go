@@ -67,7 +67,10 @@ func (s *result) Do(f func(flux.Table) error) error {
 			if msg.err != nil {
 				return msg.err
 			}
-			if err := f(msg.table); err != nil {
+			if err := func() error {
+				defer msg.table.Done()
+				return f(msg.table)
+			}(); err != nil {
 				return err
 			}
 		}

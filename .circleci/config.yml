@@ -30,7 +30,11 @@ jobs:
       - run: make vet
       - run: make staticcheck
       - run: make checkgenerate
-      - run: make test
+      - run: make test GO_TEST_FLAGS='-coverprofile=coverage.txt -covermode=atomic'
+      - run:
+          name: Uploading coverage report
+          command: |
+            bash <(curl -s https://codecov.io/bash)
       - save_cache:
           name: Saving GOCACHE
           key: flux-gocache-{{ .Branch }}-{{ .Revision }}

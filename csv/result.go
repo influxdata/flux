@@ -495,6 +495,8 @@ func (d *tableDecoder) Do(f func(flux.ColReader) error) error {
 	return nil
 }
 
+func (d *tableDecoder) Done() {}
+
 // advance reads the csv data until the end of the table or bufSize rows have been read.
 // Advance returns whether there is more data and any error.
 func (d *tableDecoder) advance(extraLine []string) (bool, error) {

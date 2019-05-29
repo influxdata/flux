@@ -3,8 +3,6 @@ package plan
 import (
 	"fmt"
 	"math"
-
-	"github.com/pkg/errors"
 )
 
 // PhysicalPlanner performs transforms a logical plan to a physical plan,
@@ -88,11 +86,13 @@ func validatePhysicalPlan(plan *Spec) error {
 		if validator, ok := pn.ProcedureSpec().(PostPhysicalValidator); ok {
 			return validator.PostPhysicalValidate(pn.ID())
 		}
-
-		if _, ok := pn.(*PhysicalPlanNode); !ok {
-			return errors.Errorf("logical node \"%v\" could not be converted to a physical node", pn.ID())
+		ppn, ok := pn.(*PhysicalPlanNode)
+		if !ok {
+			return fmt.Errorf("invalid physical query plan; found logical operation \"%v\"", pn.ID())
 		}
-
+		if ppn.TriggerSpec == nil {
+			return fmt.Errorf("invalid physical query plan; trigger spec not set on \"%v\"", ppn.id)
+		}
 		return nil
 	})
 	return err

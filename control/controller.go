@@ -191,6 +191,7 @@ func (c *Controller) createQuery(ctx context.Context, ct flux.CompilerType) (*Qu
 		parentCtx:          parentCtx,
 		parentSpan:         parentSpan,
 		cancel:             cancel,
+		doneCh:             make(chan struct{}),
 	}
 
 	// Lock the queries mutex for the rest of this method.
@@ -372,7 +373,8 @@ type Query struct {
 	parentSpan, currentSpan *span
 	stats                   flux.Statistics
 
-	done sync.Once
+	done   sync.Once
+	doneCh chan struct{}
 
 	program flux.Program
 	exec    flux.Query
@@ -407,27 +409,51 @@ func (q *Query) Results() <-chan flux.Result {
 // Done signals to the Controller that this query is no longer
 // being used and resources related to the query may be freed.
 func (q *Query) Done() {
-	// We are not considered to be in the run loop anymore once
-	// this is called.
+	// This must only be invoked once.
 	q.done.Do(func() {
+		// All done calls should block until the first done call succeeds.
+		defer close(q.doneCh)
+
+		// Lock the state mutex and transition to the finished state.
+		// Then force the query to cancel to tell it to stop executing.
+		// We transition to the new state first so that we do not enter
+		// the canceled state at any point (as we have not been canceled).
+		q.stateMu.Lock()
+		q.transitionTo(Finished)
+		q.cancel()
+		q.stateMu.Unlock()
+
+		// Ensure that all of the results have been drained.
+		// It is ok to read this as the user has already indicated they don't
+		// care about the results. When this is closed, it tells us an error has
+		// been set or the results have finished being pumped.
+		for range q.results {
+			// Do nothing with the results.
+		}
+
+		// No other goroutines should be modifying state at this point so we
+		// can do things that would be unsafe in another context.
 		if q.exec != nil {
+			// Mark the program as being done and copy out the error if it exists.
 			q.exec.Done()
 			if q.err == nil {
 				// TODO(jsternberg): The underlying program never returns
 				// this so maybe their interface should change?
 				q.err = q.exec.Err()
 			}
+			// Merge the metadata from the program into the controller stats.
 			stats := q.exec.Statistics()
 			q.stats.Metadata = stats.Metadata
 		}
 
+		// Retrieve the runtime errors that have been accumulated.
 		errMsgs := make([]string, 0, len(q.runtimeErrs))
 		for _, e := range q.runtimeErrs {
 			errMsgs = append(errMsgs, e.Error())
 		}
 		q.stats.RuntimeErrors = errMsgs
 
-		q.transitionTo(Finished)
+		// Mark the query as finished so it is removed from the query map.
 		q.c.finish(q)
 
 		// count query request
@@ -437,6 +463,7 @@ func (q *Query) Done() {
 			q.c.countQueryRequest(q, labelSuccess)
 		}
 	})
+	<-q.doneCh
 }
 
 // Statistics reports the statistics for the query.
