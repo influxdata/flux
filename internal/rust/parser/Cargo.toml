@@ -2,7 +2,7 @@
 name = "parser"
 version = "0.1.0"
 authors = ["Nathaniel Cook <nathaniel@influxdata.com>"]
-edition = "2019"
+edition = "2018"
 
 [dependencies]
 libc = "0.2.0"

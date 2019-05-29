@@ -22,5 +22,5 @@ fn main() {
     // Compile generated scanner
     cc::Build::new()
         .file(format!("{}/scanner.c", out_dir))
-        .compile("hello");
+        .compile("scanner");
 }

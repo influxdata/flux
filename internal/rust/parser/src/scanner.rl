@@ -175,7 +175,7 @@ enum Token {
 %% write data;
 
 // Scanner is used to tokenize Flux source.
-struct Scanner {
+struct scanner_t {
     char* p;
     char* pe;
     char* eof;
@@ -184,16 +184,18 @@ struct Scanner {
     int token;
 };
 
-void init(struct Scanner *s, char* data) {
+void init(struct scanner_t *s, char* data) {
     s->p = data;
     s->pe = data + strlen(data);
     s->eof = s->pe;
     s->ts = 0;
     s->te = 0;
     s->token = 0;
+    printf("init '%s' %d %p %p\n", s->p, (int)strlen(data), (void *)s->p, (void *)s->pe);
 }
 
-void _scan(struct Scanner *s, int cs) {
+void _scan(struct scanner_t *s, int cs) {
+    printf("_scan start %p %p '%s'\n", (void *)(s->p), (void *)(s->pe), s->p);
     %% variable p s->p;
     %% variable pe s->pe;
     %% variable eof s->eof;
@@ -204,13 +206,13 @@ void _scan(struct Scanner *s, int cs) {
 
     %% write init nocs;
     %% write exec;
+    printf("_scan stop %d %.*s\n", s->token, (int)(s->te - s->ts), s->ts);
 }
 
-void scan(struct Scanner *s) {
+void scan(struct scanner_t *s) {
     _scan(s, flux_en_main);
 }
 
-void scan_with_regex(struct Scanner *s) {
+void scan_with_regex(struct scanner_t *s) {
     _scan(s, flux_en_main_with_regex);
 }
-
