@@ -6,13 +6,13 @@ use std::str;
 
 extern "C" {
     fn scan(
-        p: *const *const c_char,
+        p: *mut *const c_char,
         data: *const c_char,
         pe: *const c_char,
         eof: *const c_char,
-        token: *const c_int,
-        token_start: *const c_int,
-        token_len: *const c_int,
+        token: *mut c_int,
+        token_start: *mut c_int,
+        token_len: *mut c_int,
     );
 }
 
@@ -56,13 +56,13 @@ impl<'a> Scanner<'a> {
         }
         unsafe {
             scan(
-                &self.p as *const *const c_char,
+                &mut self.p as *mut *const c_char,
                 self.ps as *const c_char,
                 self.pe as *const c_char,
                 self.eof as *const c_char,
-                &self.token as *const c_int,
-                &self.ts as *const c_int,
-                &self.te as *const c_int,
+                &mut self.token as *mut c_int,
+                &mut self.ts as *mut c_int,
+                &mut self.te as *mut c_int,
             );
             return Token {
                 code: self.token,

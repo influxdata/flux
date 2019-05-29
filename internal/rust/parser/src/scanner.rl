@@ -174,7 +174,7 @@ enum Token {
 
 %% write data;
 
-void _scan(int cs, char **pp, char *data, char *pe, char *eof, int *token, int *token_start, int *token_end) {
+void _scan(int cs, char **pp, const char *data, const char *pe, const char *eof, int *token, int *token_start, int *token_end) {
     char *p = *pp;
     int act;
     char *ts;
@@ -197,7 +197,7 @@ void _scan(int cs, char **pp, char *data, char *pe, char *eof, int *token, int *
     //    ts);
 }
 
-void scan(char **p, char *data, char *pe, char *eof, int *token, int *token_start, int *token_end) {
+void scan(char **p, const char *data, const char *pe, const char *eof, int *token, int *token_start, int *token_end) {
     _scan(flux_en_main, p, data, pe, eof, token, token_start, token_end);
 }
 
