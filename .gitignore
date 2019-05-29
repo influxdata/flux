@@ -5,3 +5,4 @@ vendor
 .vscode
 .vs
 .tern-project
+internal/rust/parser/target/
