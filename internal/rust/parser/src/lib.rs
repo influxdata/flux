@@ -2,71 +2,74 @@ extern crate libc;
 
 use libc::{c_char, c_int};
 use std::ffi::CString;
-
-#[repr(C)]
-struct scanner_t {
-    p: *mut c_char,
-    pe: *mut c_char,
-    eof: *mut c_char,
-    ts: *mut c_char,
-    te: *mut c_char,
-    token: c_int,
-}
+use std::str;
 
 extern "C" {
-    fn init(scanner: *mut scanner_t, str: *const c_char);
-    fn scan(scanner: *mut scanner_t);
+    fn scan(
+        p: *const *const c_char,
+        data: *const c_char,
+        pe: *const c_char,
+        eof: *const c_char,
+        token: *const c_int,
+        token_start: *const c_int,
+        token_len: *const c_int,
+    );
 }
 
-pub struct Scanner {
-    s: *mut scanner_t,
+pub struct Scanner<'a> {
+    data: &'a CString,
+    ps: *const c_char,
+    p: *const c_char,
+    pe: *const c_char,
+    eof: *const c_char,
+    token: c_int,
+    ts: c_int,
+    te: c_int,
 }
 
-impl Scanner {
+#[derive(Debug, PartialEq)]
+pub struct Token<'a> {
+    pub code: c_int,
+    pub lit: &'a str,
+}
+
+impl<'a> Scanner<'a> {
     pub fn new(data: &CString) -> Scanner {
-        let s: *mut scanner_t = &mut scanner_t {
-            p: 0 as *mut c_char,
-            pe: 0 as *mut c_char,
-            eof: 0 as *mut c_char,
-            ts: 0 as *mut c_char,
-            te: 0 as *mut c_char,
+        let ptr = data.as_ptr();
+        let bytes = data.as_bytes();
+        let end = ((ptr as usize) + bytes.len()) as *const c_char;
+        return Scanner {
+            data: data,
+            ps: ptr,
+            p: ptr,
+            pe: end,
+            eof: end,
+            ts: 0,
+            te: 0,
             token: 0,
         };
-        unsafe {
-            init(s, data.as_ptr());
-        }
-        let scanner = Scanner { s: s };
-        scanner.print("new");
-        return scanner;
     }
 
-    pub fn scan(&self) -> c_int {
-        self.print("scan");
-        unsafe {
-            //let data = CStr::from_ptr((*self.s).p);
-            //println!("data {}", data.to_str().unwrap());
-            scan(self.s);
-            if (*self.s).p == (*self.s).eof {
-                return 1; // EOF token
-            }
-            //let token = CStr::from_ptr((*self.s).ts);
-            //println!("token {}", token.to_str().unwrap());
-            return (*self.s).token;
+    pub fn scan(&mut self) -> Token {
+        if self.p == self.eof {
+            return Token { code: 1, lit: "" };
         }
-    }
-    pub fn print(&self, msg: &str) {
         unsafe {
-            println!(
-                "{} s:{:p} p:{:p} pe:{:p} eof:{:p} ts:{:p} te:{:p} token:{}",
-                msg,
-                self.s,
-                (*self.s).p,
-                (*self.s).pe,
-                (*self.s).eof,
-                (*self.s).ts,
-                (*self.s).te,
-                (*self.s).token,
+            scan(
+                &self.p as *const *const c_char,
+                self.ps as *const c_char,
+                self.pe as *const c_char,
+                self.eof as *const c_char,
+                &self.token as *const c_int,
+                &self.ts as *const c_int,
+                &self.te as *const c_int,
             );
+            return Token {
+                code: self.token,
+                lit: str::from_utf8_unchecked(
+                    &self.data.as_bytes()[(self.ts as usize)..(self.te as usize)],
+                ),
+            };
         }
     }
 }
@@ -80,10 +83,63 @@ mod tests {
     fn test_scan() {
         let text = "from(bucket:\"foo\") |> range(start: -1m)";
         let cdata = CString::new(text).expect("CString::new failed");
-        let s = Scanner::new(&cdata);
-        s.print("test");
-        //assert_eq!(s.scan(), 17);
-        //assert_eq!(s.scan(), 39);
-        assert_eq!(cdata.to_str().unwrap(), "");
+        let mut s = Scanner::new(&cdata);
+        assert_eq!(
+            s.scan(),
+            Token {
+                code: 17,
+                lit: "from"
+            }
+        );
+        assert_eq!(s.scan(), Token { code: 39, lit: "(" });
+        assert_eq!(
+            s.scan(),
+            Token {
+                code: 17,
+                lit: "bucket"
+            }
+        );
+        assert_eq!(s.scan(), Token { code: 47, lit: ":" });
+        assert_eq!(
+            s.scan(),
+            Token {
+                code: 20,
+                lit: "\"foo\""
+            }
+        );
+        assert_eq!(s.scan(), Token { code: 40, lit: ")" });
+        assert_eq!(
+            s.scan(),
+            Token {
+                code: 48,
+                lit: "|>"
+            }
+        );
+        assert_eq!(
+            s.scan(),
+            Token {
+                code: 17,
+                lit: "range"
+            }
+        );
+        assert_eq!(s.scan(), Token { code: 39, lit: "(" });
+        assert_eq!(
+            s.scan(),
+            Token {
+                code: 17,
+                lit: "start"
+            }
+        );
+        assert_eq!(s.scan(), Token { code: 47, lit: ":" });
+        assert_eq!(s.scan(), Token { code: 25, lit: "-" });
+        assert_eq!(
+            s.scan(),
+            Token {
+                code: 23,
+                lit: "1m"
+            }
+        );
+        assert_eq!(s.scan(), Token { code: 40, lit: ")" });
+        assert_eq!(s.scan(), Token { code: 1, lit: "" });
     }
 }

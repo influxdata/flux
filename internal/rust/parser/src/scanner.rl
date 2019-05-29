@@ -1,4 +1,4 @@
-#include <stdio.h>
+//#include <stdio.h>
 #include <string.h>
 
 enum Token {
@@ -106,7 +106,7 @@ enum Token {
     # in the middle of an expression and we are potentially expecting a division operator.
     main_with_regex := |*
         # If we see a regex literal, we accept that and do not go to the other scanner.
-        regex_lit => { s->token = REGEX; fbreak; };
+        regex_lit => { tok = REGEX; fbreak; };
 
         # We have to specify whitespace here so that leading whitespace doesn't cause a state transition.
         whitespace+;
@@ -117,56 +117,56 @@ enum Token {
 
     # This machine does not contain the regex literal.
     main := |*
-        single_line_comment => { s->token = COMMENT; fbreak; };
+        single_line_comment => { tok = COMMENT; fbreak; };
 
-        "and" => { s->token = AND; fbreak; };
-        "or" => { s->token = OR; fbreak; };
-        "not" => { s->token = NOT; fbreak; };
-        "empty" => { s->token = EMPTY; fbreak; };
-        "in" => { s->token = IN; fbreak; };
-        "import" => { s->token = IMPORT; fbreak; };
-        "package" => { s->token = PACKAGE; fbreak; };
-        "return" => { s->token = RETURN; fbreak; };
-        "option" => { s->token = OPTION; fbreak; };
-        "builtin" => { s->token = BUILTIN; fbreak; };
-        "test" => { s->token = TEST; fbreak; };
-        "if" => { s->token = IF; fbreak; };
-        "then" => { s->token = THEN; fbreak; };
-        "else" => { s->token = ELSE; fbreak; };
+        "and" => { tok = AND; fbreak; };
+        "or" => { tok = OR; fbreak; };
+        "not" => { tok = NOT; fbreak; };
+        "empty" => { tok = EMPTY; fbreak; };
+        "in" => { tok = IN; fbreak; };
+        "import" => { tok = IMPORT; fbreak; };
+        "package" => { tok = PACKAGE; fbreak; };
+        "return" => { tok = RETURN; fbreak; };
+        "option" => { tok = OPTION; fbreak; };
+        "builtin" => { tok = BUILTIN; fbreak; };
+        "test" => { tok = TEST; fbreak; };
+        "if" => { tok = IF; fbreak; };
+        "then" => { tok = THEN; fbreak; };
+        "else" => { tok = ELSE; fbreak; };
 
-        identifier => { s->token = IDENT; fbreak; };
-        int_lit => { s->token = INT; fbreak; };
-        float_lit => { s->token = FLOAT; fbreak; };
-        duration_lit => { s->token = DURATION; fbreak; };
-        date_time_lit => { s->token = TIME; fbreak; };
-        string_lit => { s->token = STRING; fbreak; };
+        identifier => { tok = IDENT; fbreak; };
+        int_lit => { tok = INT; fbreak; };
+        float_lit => { tok = FLOAT; fbreak; };
+        duration_lit => { tok = DURATION; fbreak; };
+        date_time_lit => { tok = TIME; fbreak; };
+        string_lit => { tok = STRING; fbreak; };
 
-        "+" => { s->token = ADD; fbreak; };
-        "-" => { s->token = SUB; fbreak; };
-        "*" => { s->token = MUL; fbreak; };
-        "/" => { s->token = DIV; fbreak; };
-        "%" => { s->token = MOD; fbreak; };
-        "==" => { s->token = EQ; fbreak; };
-        "<" => { s->token = LT; fbreak; };
-        ">" => { s->token = GT; fbreak; };
-        "<=" => { s->token = LTE; fbreak; };
-        ">=" => { s->token = GTE; fbreak; };
-        "!=" => { s->token = NEQ; fbreak; };
-        "=~" => { s->token = REGEXEQ; fbreak; };
-        "!~" => { s->token = REGEXNEQ; fbreak; };
-        "=" => { s->token = ASSIGN; fbreak; };
-        "=>" => { s->token = ARROW; fbreak; };
-        "<-" => { s->token = PIPE_RECEIVE; fbreak; };
-        "(" => { s->token = LPAREN; fbreak; };
-        ")" => { s->token = RPAREN; fbreak; };
-        "[" => { s->token = LBRACK; fbreak; };
-        "]" => { s->token = RBRACK; fbreak; };
-        "{" => { s->token = LBRACE; fbreak; };
-        "}" => { s->token = RBRACE; fbreak; };
-        ":" => { s->token = COLON; fbreak; };
-        "|>" => { s->token = PIPE_FORWARD; fbreak; };
-        "," => { s->token = COMMA; fbreak; };
-        "." => { s->token = DOT; fbreak; };
+        "+" => { tok = ADD; fbreak; };
+        "-" => { tok = SUB; fbreak; };
+        "*" => { tok = MUL; fbreak; };
+        "/" => { tok = DIV; fbreak; };
+        "%" => { tok = MOD; fbreak; };
+        "==" => { tok = EQ; fbreak; };
+        "<" => { tok = LT; fbreak; };
+        ">" => { tok = GT; fbreak; };
+        "<=" => { tok = LTE; fbreak; };
+        ">=" => { tok = GTE; fbreak; };
+        "!=" => { tok = NEQ; fbreak; };
+        "=~" => { tok = REGEXEQ; fbreak; };
+        "!~" => { tok = REGEXNEQ; fbreak; };
+        "=" => { tok = ASSIGN; fbreak; };
+        "=>" => { tok = ARROW; fbreak; };
+        "<-" => { tok = PIPE_RECEIVE; fbreak; };
+        "(" => { tok = LPAREN; fbreak; };
+        ")" => { tok = RPAREN; fbreak; };
+        "[" => { tok = LBRACK; fbreak; };
+        "]" => { tok = RBRACK; fbreak; };
+        "{" => { tok = LBRACE; fbreak; };
+        "}" => { tok = RBRACE; fbreak; };
+        ":" => { tok = COLON; fbreak; };
+        "|>" => { tok = PIPE_FORWARD; fbreak; };
+        "," => { tok = COMMA; fbreak; };
+        "." => { tok = DOT; fbreak; };
 
         whitespace+;
     *|;
@@ -174,45 +174,30 @@ enum Token {
 
 %% write data;
 
-// Scanner is used to tokenize Flux source.
-struct scanner_t {
-    char* p;
-    char* pe;
-    char* eof;
-    char* ts;
-    char* te;
-    int token;
-};
-
-void init(struct scanner_t *s, char* data) {
-    s->p = data;
-    s->pe = data + strlen(data);
-    s->eof = s->pe;
-    s->ts = 0;
-    s->te = 0;
-    s->token = 0;
-    printf("init '%s' %d %p %p\n", s->p, (int)strlen(data), (void *)s->p, (void *)s->pe);
-}
-
-void _scan(struct scanner_t *s, int cs) {
-    printf("_scan start %p %p '%s'\n", (void *)(s->p), (void *)(s->pe), s->p);
-    %% variable p s->p;
-    %% variable pe s->pe;
-    %% variable eof s->eof;
-    %% variable ts s->ts;
-    %% variable te s->te;
-
+void _scan(int cs, char **pp, char *data, char *pe, char *eof, int *token, int *token_start, int *token_end) {
+    char *p = *pp;
     int act;
+    char *ts;
+    char *te;
+    int tok;
 
     %% write init nocs;
     %% write exec;
-    printf("_scan stop %d %.*s\n", s->token, (int)(s->te - s->ts), s->ts);
+
+    // Update output args
+    *token = tok;
+    *token_start = ts - data;
+    *token_end = te - data;
+
+    *pp = p;
+
+    //printf("_scan done %d '%.*s'\n",
+    //    *token,
+    //    te - ts,
+    //    ts);
 }
 
-void scan(struct scanner_t *s) {
-    _scan(s, flux_en_main);
+void scan(char **p, char *data, char *pe, char *eof, int *token, int *token_start, int *token_end) {
+    _scan(flux_en_main, p, data, pe, eof, token, token_start, token_end);
 }
 
-void scan_with_regex(struct scanner_t *s) {
-    _scan(s, flux_en_main_with_regex);
-}
