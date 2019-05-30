@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"strings"
 
-	_ "github.com/influxdata/flux/builtin"
-
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/cmd/flux/cmd"
+	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/lang"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/parser"
 )
 
@@ -30,15 +30,18 @@ g.from(start: 1993-02-16T00:00:00Z, stop: 1993-02-16T00:03:00Z, count: 5, fn: (n
 		AST: astPkg,
 	}
 
-	querier, err := cmd.NewQuerier()
+	program, err := compiler.Compile(ctx)
 	if err != nil {
 		panic(err)
 	}
 
-	results, err := querier.Query(ctx, compiler)
+	alloc := &memory.Allocator{}
+	q, err := program.Start(ctx, alloc)
 	if err != nil {
 		panic(err)
 	}
+
+	results := flux.NewResultIteratorFromQuery(q)
 	defer results.Release()
 
 	buf := bytes.NewBuffer(nil)
