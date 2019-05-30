@@ -51,9 +51,10 @@ func BenchmarkParser(b *testing.B) {
 
 func testParser(runFn func(name string, fn func(t testing.TB))) {
 	for _, tt := range []struct {
-		name string
-		raw  string
-		want *ast.File
+		name  string
+		raw   string
+		want  *ast.File
+		nerrs int
 	}{
 		{
 			name: "package clause",
@@ -587,6 +588,7 @@ import "path/bar"
 					},
 				},
 			},
+			nerrs: 1,
 		},
 		{
 			name: "regex match operators",
@@ -1013,6 +1015,7 @@ import "path/bar"
 					},
 				},
 			},
+			nerrs: 1,
 		},
 		{
 			name: "two variables for two froms",
@@ -1479,6 +1482,7 @@ import "path/bar"
 					},
 				},
 			},
+			nerrs: 1,
 		},
 		{
 			name: "index with unbalanced parenthesis",
@@ -1510,6 +1514,7 @@ import "path/bar"
 					},
 				},
 			},
+			nerrs: 1,
 		},
 		{
 			name: "index with unexpected rparen",
@@ -1538,6 +1543,7 @@ import "path/bar"
 					},
 				},
 			},
+			nerrs: 1,
 		},
 		{
 			name: "binary expression",
@@ -2818,6 +2824,7 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/`,
 					},
 				},
 			},
+			nerrs: 2,
 		},
 		{
 			name: "arrow function called",
@@ -4755,6 +4762,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 					},
 				},
 			},
+			nerrs: 1,
 		},
 		{
 			name: "string with utf-8",
@@ -4853,6 +4861,7 @@ string"
 					},
 				},
 			},
+			nerrs: 1,
 		},
 		{
 			name: "multiple idents in parens",
@@ -4883,6 +4892,7 @@ string"
 					},
 				},
 			},
+			nerrs: 1,
 		},
 		{
 			name: "missing left hand side",
@@ -4907,6 +4917,7 @@ string"
 					},
 				},
 			},
+			nerrs: 1,
 		},
 		{
 			name: "missing right hand side",
@@ -4931,6 +4942,7 @@ string"
 					},
 				},
 			},
+			nerrs: 1,
 		},
 		{
 			name: "illegal expression",
@@ -4953,6 +4965,7 @@ string"
 					},
 				},
 			},
+			nerrs: 1,
 		},
 		{
 			name: "missing arrow in function expression",
@@ -4989,6 +5002,7 @@ string"
 					},
 				},
 			},
+			nerrs: 4,
 		},
 		{
 			name: "property list missing property",
@@ -5038,6 +5052,7 @@ string"
 					},
 				},
 			},
+			nerrs: 1,
 		},
 		{
 			name: "property list missing key",
@@ -5069,6 +5084,7 @@ string"
 					},
 				},
 			},
+			nerrs: 1,
 		},
 		{
 			name: "property list missing value",
@@ -5099,6 +5115,7 @@ string"
 					},
 				},
 			},
+			nerrs: 1,
 		},
 		{
 			// Because of the missing comma between the properties,
@@ -5156,6 +5173,7 @@ string"
 					},
 				},
 			},
+			nerrs: 3,
 		},
 		{
 			// A trailing comma is acceptable
@@ -5240,6 +5258,7 @@ string"
 					},
 				},
 			},
+			nerrs: 1,
 		},
 		// TODO(jsternberg): This should fill in error nodes.
 		// The current behavior is non-sensical.
@@ -5297,7 +5316,9 @@ string"
 					l.Source = source(tt.raw, l)
 				}
 			}), want)
-			ast.Check(result)
+			if nerrsGot := ast.Check(result); tt.nerrs != nerrsGot {
+				tb.Errorf("unexpected number of errors -want/+got: %v/%v", tt.nerrs, nerrsGot)
+			}
 			if got, want := result, want; !cmp.Equal(want, got, CompareOptions...) {
 				tb.Errorf("unexpected statement -want/+got\n%s", cmp.Diff(want, got, CompareOptions...))
 			}

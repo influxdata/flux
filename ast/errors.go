@@ -26,7 +26,6 @@ func check(n Node) int {
 		n.Errors = append(n.Errors, Error{
 			Msg: fmt.Sprintf("invalid statement %s@%d:%d-%d:%d: %s", loc.File, loc.Start.Line, loc.Start.Column, loc.End.Line, loc.End.Column, n.Text),
 		})
-		return len(n.Errors)
 	case *PipeExpression:
 		if n.Call == nil {
 			n.Errors = append(n.Errors, Error{
@@ -51,7 +50,7 @@ func check(n Node) int {
 		}
 	}
 
-	return 0
+	return len(n.Errs())
 }
 
 // GetError will return the first error within an AST.
