@@ -1,20 +1,10 @@
 extern crate libc;
 
-use libc::{c_char, c_int};
+include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+
+use libc::c_char;
 use std::ffi::CString;
 use std::str;
-
-extern "C" {
-    fn scan(
-        p: *mut *const c_char,
-        data: *const c_char,
-        pe: *const c_char,
-        eof: *const c_char,
-        token: *mut c_int,
-        token_start: *mut c_int,
-        token_len: *mut c_int,
-    );
-}
 
 pub struct Scanner<'a> {
     data: &'a CString,
@@ -22,14 +12,14 @@ pub struct Scanner<'a> {
     p: *const c_char,
     pe: *const c_char,
     eof: *const c_char,
-    token: c_int,
-    ts: c_int,
-    te: c_int,
+    token: T,
+    ts: u32,
+    te: u32,
 }
 
 #[derive(Debug, PartialEq)]
 pub struct Token<'a> {
-    pub code: c_int,
+    pub code: T,
     pub lit: &'a str,
 }
 
@@ -46,13 +36,16 @@ impl<'a> Scanner<'a> {
             eof: end,
             ts: 0,
             te: 0,
-            token: 0,
+            token: T_ILLEGAL,
         };
     }
 
     pub fn scan(&mut self) -> Token {
         if self.p == self.eof {
-            return Token { code: 1, lit: "" };
+            return Token {
+                code: T_EOF,
+                lit: "",
+            };
         }
         unsafe {
             scan(
@@ -60,9 +53,9 @@ impl<'a> Scanner<'a> {
                 self.ps as *const c_char,
                 self.pe as *const c_char,
                 self.eof as *const c_char,
-                &mut self.token as *mut c_int,
-                &mut self.ts as *mut c_int,
-                &mut self.te as *mut c_int,
+                &mut self.token as *mut u32,
+                &mut self.ts as *mut u32,
+                &mut self.te as *mut u32,
             );
             return Token {
                 code: self.token,
@@ -87,59 +80,107 @@ mod tests {
         assert_eq!(
             s.scan(),
             Token {
-                code: 17,
+                code: T_IDENT,
                 lit: "from"
             }
         );
-        assert_eq!(s.scan(), Token { code: 39, lit: "(" });
         assert_eq!(
             s.scan(),
             Token {
-                code: 17,
+                code: T_LPAREN,
+                lit: "("
+            }
+        );
+        assert_eq!(
+            s.scan(),
+            Token {
+                code: T_IDENT,
                 lit: "bucket"
             }
         );
-        assert_eq!(s.scan(), Token { code: 47, lit: ":" });
         assert_eq!(
             s.scan(),
             Token {
-                code: 20,
+                code: T_COLON,
+                lit: ":"
+            }
+        );
+        assert_eq!(
+            s.scan(),
+            Token {
+                code: T_STRING,
                 lit: "\"foo\""
             }
         );
-        assert_eq!(s.scan(), Token { code: 40, lit: ")" });
         assert_eq!(
             s.scan(),
             Token {
-                code: 48,
+                code: T_RPAREN,
+                lit: ")"
+            }
+        );
+        assert_eq!(
+            s.scan(),
+            Token {
+                code: T_PIPE_FORWARD,
                 lit: "|>"
             }
         );
         assert_eq!(
             s.scan(),
             Token {
-                code: 17,
+                code: T_IDENT,
                 lit: "range"
             }
         );
-        assert_eq!(s.scan(), Token { code: 39, lit: "(" });
         assert_eq!(
             s.scan(),
             Token {
-                code: 17,
+                code: T_LPAREN,
+                lit: "("
+            }
+        );
+        assert_eq!(
+            s.scan(),
+            Token {
+                code: T_IDENT,
                 lit: "start"
             }
         );
-        assert_eq!(s.scan(), Token { code: 47, lit: ":" });
-        assert_eq!(s.scan(), Token { code: 25, lit: "-" });
         assert_eq!(
             s.scan(),
             Token {
-                code: 23,
+                code: T_COLON,
+                lit: ":"
+            }
+        );
+        assert_eq!(
+            s.scan(),
+            Token {
+                code: T_SUB,
+                lit: "-"
+            }
+        );
+        assert_eq!(
+            s.scan(),
+            Token {
+                code: T_DURATION,
                 lit: "1m"
             }
         );
-        assert_eq!(s.scan(), Token { code: 40, lit: ")" });
-        assert_eq!(s.scan(), Token { code: 1, lit: "" });
+        assert_eq!(
+            s.scan(),
+            Token {
+                code: T_RPAREN,
+                lit: ")"
+            }
+        );
+        assert_eq!(
+            s.scan(),
+            Token {
+                code: T_EOF,
+                lit: ""
+            }
+        );
     }
 }

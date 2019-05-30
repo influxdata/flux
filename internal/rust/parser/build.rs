@@ -1,6 +1,7 @@
 // build.rs
 
 use std::env;
+use std::path::PathBuf;
 use std::process::Command;
 
 // Bring in a dependency on an externally maintained `cc` package which manages
@@ -8,19 +9,38 @@ use std::process::Command;
 extern crate cc;
 
 fn main() {
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+
+    // The bindgen::Builder is the main entry point
+    // to bindgen, and lets you build up options for
+    // the resulting bindings.
+    let bindings = bindgen::Builder::default()
+        // The input header we would like to generate
+        // bindings for.
+        .header("src/scanner.h")
+        // Finish the builder and generate the bindings.
+        .generate()
+        // Unwrap the Result and panic on failure.
+        .expect("Unable to generate bindings");
+
+    // Write the bindings to the $OUT_DIR/bindings.rs file.
+    bindings
+        .write_to_file(out_path.join("bindings.rs"))
+        .expect("Couldn't write bindings!");
+
     // Run Ragel
-    let out_dir = env::var("OUT_DIR").unwrap();
     Command::new("ragel")
         .args(&[
             "-C",
             "-o",
-            &format!("{}/scanner.c", out_dir),
+            out_path.join("scanner.c").to_str().unwrap(),
             "src/scanner.rl",
         ])
         .status()
-        .unwrap();
+        .expect("Unable to execute ragel command");
     // Compile generated scanner
     cc::Build::new()
-        .file(format!("{}/scanner.c", out_dir))
+        .include("src")
+        .file(out_path.join("scanner.c"))
         .compile("scanner");
 }
