@@ -119,7 +119,7 @@ void _scan(int cs, const char **pp, const char *data, const char *pe, const char
     int act;
     const char *ts;
     const char *te;
-    unsigned int tok;
+    unsigned int tok = ILLEGAL;
 
     %% write init nocs;
     %% write exec;

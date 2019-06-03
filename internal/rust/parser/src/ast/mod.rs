@@ -1,4 +1,3 @@
-use regex::Regex;
 use std::time::SystemTime;
 use std::vec::Vec;
 

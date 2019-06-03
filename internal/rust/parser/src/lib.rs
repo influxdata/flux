@@ -1,12 +1,15 @@
-extern crate libc;
+extern crate wasm_bindgen;
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 mod ast;
-use libc::c_char;
+
+type c_char = i8;
+
 use std::ffi::CString;
 use std::str;
 use std::str::CharIndices;
+use wasm_bindgen::prelude::*;
 
 pub struct Scanner {
     data: CString,
@@ -322,6 +325,13 @@ fn to_hex(c: char) -> Option<char> {
         c if 'A' <= c && c <= 'F' => Some((c as u8 - 'A' as u8 + 10) as char),
         _ => None,
     }
+}
+
+#[wasm_bindgen]
+pub fn parse(s: &str) -> bool {
+    //let mut p = Parser::new(s);
+    //return p.parse_file(String::from("tmp.flux"));
+    return true;
 }
 
 #[cfg(test)]
