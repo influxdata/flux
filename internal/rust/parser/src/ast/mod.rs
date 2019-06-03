@@ -11,6 +11,7 @@ pub enum Expression {
 pub enum Statement {
     Expression(ExpressionStatement),
     Return(ReturnStatement),
+    Variable(VariableAssignment),
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -45,7 +46,7 @@ pub struct Package {
 pub struct File {
     pub base: BaseNode,
     pub name: String,
-    pub package: PackageClause,
+    pub package: Option<PackageClause>,
     pub imports: Vec<ImportDeclaration>,
     pub body: Vec<Statement>,
 }
@@ -61,7 +62,7 @@ pub struct PackageClause {
 #[derive(Debug, PartialEq, Clone)]
 pub struct ImportDeclaration {
     pub base: BaseNode,
-    pub alias: Identifier,
+    pub alias: Option<Identifier>,
     pub path: StringLiteral,
 }
 
