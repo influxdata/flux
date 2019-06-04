@@ -402,31 +402,63 @@ Types are never explicitly declared as part of the syntax.
 Types are always inferred from the usage of the value.
 Type inference follows a Hindley-Milner style inference system.
 
-#### Boolean types
+#### Union types
+
+A union type defines a set of types.
+In the rest of this section a union type will be specified as follows:
+
+    T = t1 | t2 | ... | tn
+
+where `t1`, `t2`, ..., and `tn` are types.
+In the example above a value of type `T` is either of type `t1`, type `t2`, ..., or type `tn`.
+
+#### Basic types
+
+These are the types from which all other Flux data types are constructed.
+
+##### Null type
+
+The _null type_ represents a missing or unknown value.
+The _null type_ name is `null`.
+There is only one value that comprises the _null type_ and that is the _null_ value.
+
+A type `t` is nullable if it can be expressed as follows:
+
+    t = {s} | null
+
+where `{s}` defines a set of values.
+
+##### Boolean types
 
 A _boolean type_ represents a truth value, corresponding to the preassigned variables `true` and `false`.
 The boolean type name is `bool`.
+The boolean type is nullable and can be formally specified as follows:
 
-#### Numeric types
+    bool = {true, false} | null
+
+##### Numeric types
 
 A _numeric type_ represents sets of integer or floating-point values.
 
 The following numeric types exist:
 
-    uint    the set of all unsigned 64-bit integers
-    int     the set of all signed 64-bit integers
-    float   the set of all IEEE-754 64-bit floating-point numbers
+    uint    = {the set of all unsigned 64-bit integers} | null
+    int     = {the set of all signed 64-bit integers} | null
+    float   = {the set of all IEEE-754 64-bit floating-point numbers} | null
 
-#### Time types
+Note all numeric types are nullable.
+
+##### Time types
 
 A _time type_ represents a single point in time with nanosecond precision.
 The time type name is `time`.
+The time type is nullable.
 
-
-#### Duration types
+##### Duration types
 
 A _duration type_ represents a length of time with nanosecond precision.
 The duration type name is `duration`.
+The duration type is nullable.
 
 Durations can be added to times to produce a new time.
 
@@ -436,39 +468,47 @@ Examples:
     2018-07-01T00:00:00Z + 2y  // 2020-07-01T00:00:00Z
     2018-07-01T00:00:00Z + 5h  // 2018-07-01T05:00:00Z
 
-#### String types
+##### String types
 
 A _string type_ represents a possibly empty sequence of characters.
 Strings are immutable: once created they cannot be modified.
 The string type name is `string`.
+The string type is nullable.
+Note that an empty string is distinct from a _null_ value.
 
 The length of a string is its size in bytes, not the number of characters, since a single character may be multiple bytes.
 
-#### Regular expression types
+##### Regular expression types
 
 A _regular expression type_ represents the set of all patterns for regular expressions.
 The regular expression type name is `regexp`.
+The regular expression type is **not** nullable.
 
-#### Array types
+#### Composite types
+
+These are types constructed from basic types.
+Composite types are not nullable.
+
+##### Array types
 
 An _array type_ represents a sequence of values of any other type.
 All values in the array must be of the same type.
 The length of an array is the number of elements in the array.
 
-#### Object types
+##### Object types
 
 An _object type_ represents a set of unordered key and value pairs.
 The key must always be a string.
 The value may be any other type, and need not be the same as other values within the object.
 
-#### Function types
+##### Function types
 
 A _function type_ represents a set of all functions with the same argument and result types.
 
 
 [IMPL#249](https://github.com/influxdata/platform/issues/249) Specify type inference rules
 
-#### Generator types
+##### Generator types
 
 A _generator type_ represents a value that produces an unknown number of other values.
 The generated values may be of any other type but must all be the same type.
@@ -721,9 +761,13 @@ Index expressions access a value from an array based on a numeric index.
 #### Member expressions
 
 Member expressions access a property of an object.
+They are specified via an expression of the form `obj.k` or `obj["k"]`.
 The property being accessed must be either an identifer or a string literal.
 In either case the literal value is the name of the property being accessed, the identifer is not evaluated.
 It is not possible to access an object's property using an arbitrary expression.
+
+If `obj` contains an entry with property `k`, both `obj.k` and `obj["k"]` return the value associated with `k`.
+If `obj` does **not** contain an entry with property `k`, both `obj.k` and `obj["k"]` return _null_.
 
     MemberExpression        = DotExpression  | MemberBracketExpression
     DotExpression           = "." identifer
@@ -733,8 +777,7 @@ It is not possible to access an object's property using an arbitrary expression.
 
 Conditional expressions evaluate a boolean-valued condition and if the result is _true_,
 the expression following the `then` keyword is evaluated and returned.
-Otherwise the condition evaluates to _false_,
-and the expression following the `else` keyword is evaluated and returned.
+Otherwise the expression following the `else` keyword is evaluated and returned.
 In either case, the branch not taken is not evaluated;
 only side effects associated with the branch that is taken will occur.
 
@@ -743,6 +786,8 @@ only side effects associated with the branch that is taken will occur.
 Example:
 
     color = if code == 0 then "green" else if code == 1 then "yellow" else "red"
+
+Note according to the above definition, if a condition evaluates to a _null_ or unknown value, the _else_ branch is evaluated.
 
 #### Operators
 
@@ -1286,13 +1331,43 @@ Within a stream each table's group key value is unique.
 
 [IMPL#463](https://github.com/influxdata/flux/issues/463) Specify the primitive types that make up stream and table types
 
-### Missing values
+### Missing values (null)
 
-A record may be missing a value for a specific column.
-Missing values are represented with a special _null_ value.
-The _null_ value can be of any data type.
+`null` is a predeclared identifier representing a missing or unknown value.
+`null` is the only value comprising the _null type_.
 
-[IMPL#300](https://github.com/influxdata/platform/issues/300) Design how nulls behave
+Any non-boolean operator that operates on basic types, returns _null_ when at least one of its operands is _null_.
+This can be explained intuitively with the following table and by thinking of a null value as an unknown value.
+
+| Expression       | Evaluates To | Because                                                                             |
+| ---------------- | ------------ | ----------------------------------------------------------------------------------- |
+| _null_ + 5       | _null_       | Adding 5 to an unknown value is still unknown                                       |
+| _null_ * 5       | _null_       | Multiplying an unknown value by 5 is still unknown                                  |
+| _null_ == 5      | _null_       | We don't know if an unknown value is equal to 5                                     |
+| _null_ < 5       | _null_       | We don't know if an unknown value is less than 5                                    |
+| _null_ == _null_ | _null_       | We don't know if something unknown is equal to something else that is also unknown  |
+
+In other words, operating on something unknown produces something that is still unknown.
+The only place where this is not the case is in boolean logic.
+
+Because boolean types are nullable, Flux implements ternary logic as a way of handling boolean operators with _null_ operands.
+Again, by interpreting a _null_ operand as an unknown value, we have the following definitions:
+
+* not _null_ = _null_
+* _null_ or false = _null_
+* _null_ or true = true
+* _null_ or _null_ = _null_
+* _null_ and false = false
+* _null_ and true = _null_
+* _null_ and _null_ = _null_
+
+And finally, because records are represented using object types, attempting to access a column whose value is unknown or missing from a record will also return _null_.
+
+Note according to the definitions above, it is not possible to check whether or not an expression is _null_ using the `==` and `!=` operators as these operators will return _null_ if any of their operands are _null_.
+In order to perform such a check, Flux provides a built-in `exists` function defined as follows:
+
+* exists(x) returns false if x is _null_
+* exists(x) returns true if x is not _null_
 
 ### Transformations
 
@@ -1883,7 +1958,8 @@ from(bucket:"telegraf/autogen")
 
 #### Filter
 
-Filter applies a predicate function to each input record, output tables contain only records which matched the predicate.
+Filter applies a predicate function to each input record.
+Only the records for which the predicate evaluates to _true_ will be included in the output tables.
 One output table is produced for each input table.
 The output tables will have the same schema as their corresponding input tables.
 
@@ -1902,6 +1978,8 @@ from(bucket:"telegraf/autogen")
                 r._field == "usage_system" AND
                 r.service == "app-server")
 ```
+
+Note according to the definition, records for which the predicate evaluates to _null_ will not be included in the output.
 
 #### Highest/Lowest
 
