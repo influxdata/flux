@@ -1544,6 +1544,19 @@ All aggregate operations have the following properties:
 | ----   | ----   | -----------                             |
 | column | string | Column specifies a column to aggregate. |
 
+The default behavior of aggregates is to skip over _null_ values.
+An arbitrary aggregate function `fn` is expressed logically using the reduce function:
+
+    fn = (column, tables=<-) => reduce(fn: (r, accumulator) => {
+        return if exists(r.column) then ... else ...
+    }, identity: ...)
+
+For example, the `sum` transformation is logically equivalent to:
+
+    sum = (column, tables=<-) => reduce(fn: (r, accumulator) => {
+        return if exists(r.column) then accumulator + r.column else accumulator
+    }, identity: 0)
+
 ##### AggregateWindow
 
 AggregateWindow is a function that simplifies aggregating data over fixed windows of time.
