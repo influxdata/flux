@@ -59,8 +59,10 @@ enum T {
     PIPE_RECEIVE                  = 49,
 };
 
+#define WASM_EXPORT __attribute__ ((visibility("default")))
+
 // Scan reads the input and reports the next lexical token.
-void scan(const char **p, const char *data, const char *pe, const char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end);
+WASM_EXPORT void scan(const char **p, const char *data, const char *pe, const char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end);
 
 // Scan_with_regex reads the input and reports the next lexical token where a regex token is allowed.
-void scan_with_regex(const char **p, const char *data, const char *pe, const char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end);
+WASM_EXPORT void scan_with_regex(const char **p, const char *data, const char *pe, const char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end);

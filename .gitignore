@@ -6,3 +6,4 @@ vendor
 .vs
 .tern-project
 internal/rust/parser/target/
+internal/rust/parser/scanner/target/

@@ -1,15 +1,10 @@
 [package]
-name = "parser"
+name = "scanner"
 version = "0.1.0"
 authors = ["Nathaniel Cook <nathaniel@influxdata.com>"]
 edition = "2018"
 
-[lib]
-crate-type = ["cdylib"]
-
 [dependencies]
-wasm-bindgen = "0.2"
-scanner = { path = "scanner" }
 
 [build-dependencies]
 cc = "1.0"
