@@ -2,6 +2,7 @@
 extern crate serde_derive;
 
 mod ast;
+mod scanner;
 
 use scanner::*;
 use std::ffi::CString;
