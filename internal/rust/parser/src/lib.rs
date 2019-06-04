@@ -1,3 +1,5 @@
+#[macro_use]
+extern crate serde_derive;
 
 mod ast;
 
@@ -7,6 +9,12 @@ use std::str;
 use std::str::CharIndices;
 use wasm_bindgen::prelude::*;
 
+#[wasm_bindgen]
+pub fn parse(s: &str) -> JsValue {
+    let mut p = Parser::new(s);
+    let file = p.parse_file(String::from("tmp.flux"));
+    return JsValue::from_serde(&file).unwrap();
+}
 
 pub struct Parser {
     s: Scanner,
@@ -261,12 +269,6 @@ fn to_hex(c: char) -> Option<char> {
     }
 }
 
-#[wasm_bindgen]
-pub fn parse(s: &str) -> bool {
-    //let mut p = Parser::new(s);
-    //return p.parse_file(String::from("tmp.flux"));
-    return true;
-}
 
 #[cfg(test)]
 mod tests {
