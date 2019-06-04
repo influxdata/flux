@@ -7,7 +7,7 @@ import (
 	"github.com/prometheus/prometheus/promql"
 )
 
-func (t *transpiler) transpileUnaryExpr(ue *promql.UnaryExpr) (ast.Expression, error) {
+func (t *Transpiler) transpileUnaryExpr(ue *promql.UnaryExpr) (ast.Expression, error) {
 	expr, err := t.transpileExpr(ue.Expr)
 	if err != nil {
 		return nil, fmt.Errorf("error transpiling expression in unary expression: %s", err)

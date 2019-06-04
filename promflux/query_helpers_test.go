@@ -213,13 +213,13 @@ func (q *testQuerier) runQuery(qry string, skipComparison bool) {
 	if err != nil {
 		q.t.Fatalf("Error parsing PromQL expression %q: %s", qry, err)
 	}
-	tr := &transpiler{
-		bucket:     q.influxDB.Bucket.Name,
-		start:      q.start,
-		end:        q.end,
-		resolution: q.resolution,
+	tr := &Transpiler{
+		Bucket:     q.influxDB.Bucket.Name,
+		Start:      q.start,
+		End:        q.end,
+		Resolution: q.resolution,
 	}
-	fluxFile, err := tr.transpile(promqlNode)
+	fluxFile, err := tr.Transpile(promqlNode)
 	if err != nil {
 		q.t.Fatalf("Error transpiling PromQL expression %q to Flux: %s", qry, err)
 	}

@@ -9,11 +9,11 @@ import (
 	"github.com/prometheus/prometheus/promql"
 )
 
-type transpiler struct {
-	bucket     string
-	start      time.Time
-	end        time.Time
-	resolution time.Duration
+type Transpiler struct {
+	Bucket     string
+	Start      time.Time
+	End        time.Time
+	Resolution time.Duration
 }
 
 func buildPipeline(arg ast.Expression, calls ...*ast.CallExpression) *ast.PipeExpression {
@@ -177,7 +177,7 @@ func yieldsTable(expr promql.Expr) bool {
 	return !yieldsFloat(expr)
 }
 
-func (t *transpiler) transpileExpr(expr promql.Expr) (ast.Expression, error) {
+func (t *Transpiler) transpileExpr(expr promql.Expr) (ast.Expression, error) {
 	switch e := expr.(type) {
 	case *promql.ParenExpr:
 		return t.transpileExpr(e.Expr)
@@ -204,7 +204,7 @@ func (t *transpiler) transpileExpr(expr promql.Expr) (ast.Expression, error) {
 	}
 }
 
-func (t *transpiler) transpile(expr promql.Expr) (*ast.File, error) {
+func (t *Transpiler) Transpile(expr promql.Expr) (*ast.File, error) {
 	promql.Walk(labelNameEscaper{}, expr, nil)
 
 	fluxNode, err := t.transpileExpr(expr)

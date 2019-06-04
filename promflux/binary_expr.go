@@ -208,7 +208,7 @@ var matchRHSSuffixFn = &ast.FunctionExpression{
 	},
 }
 
-func (t *transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, error) {
+func (t *Transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, error) {
 	lhs, err := t.transpileExpr(b.LHS)
 	if err != nil {
 		return nil, fmt.Errorf("unable to transpile left-hand side of binary operation: %s", err)

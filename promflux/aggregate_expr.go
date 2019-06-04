@@ -63,7 +63,7 @@ func dropNonGroupingColsCall(groupCols []string, without bool) *ast.CallExpressi
 	return call("keep", map[string]ast.Expression{"columns": columnList(cols...)})
 }
 
-func (t *transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expression, error) {
+func (t *Transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expression, error) {
 	expr, err := t.transpileExpr(a.Expr)
 	if err != nil {
 		return nil, fmt.Errorf("error transpiling aggregate sub-expression: %s", err)

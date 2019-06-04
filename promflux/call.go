@@ -140,7 +140,7 @@ var filterWindowsWithZeroValueCall = call(
 	},
 )
 
-func (t *transpiler) transpileAggregateOverTimeFunc(fn string, inArgs []ast.Expression) (ast.Expression, error) {
+func (t *Transpiler) transpileAggregateOverTimeFunc(fn string, inArgs []ast.Expression) (ast.Expression, error) {
 	callFn := fn
 	vec := inArgs[0]
 	args := map[string]ast.Expression{}
@@ -231,32 +231,32 @@ func labelJoinFn(srcLabels []*ast.StringLiteral, dst *ast.StringLiteral, sep *as
 	}
 }
 
-func (t *transpiler) generateZeroWindows() *ast.PipeExpression {
+func (t *Transpiler) generateZeroWindows() *ast.PipeExpression {
 	return buildPipeline(
 		call("promql.emptyTable", nil),
 		call("range", map[string]ast.Expression{
-			"start": &ast.DateTimeLiteral{Value: t.start.Add(-5 * time.Minute)},
-			"stop":  &ast.DateTimeLiteral{Value: t.end},
+			"start": &ast.DateTimeLiteral{Value: t.Start.Add(-5 * time.Minute)},
+			"stop":  &ast.DateTimeLiteral{Value: t.End},
 		}),
 		call("window", map[string]ast.Expression{
-			"every":       &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.resolution.Nanoseconds(), Unit: "ns"}}},
+			"every":       &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Resolution.Nanoseconds(), Unit: "ns"}}},
 			"period":      &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: 5, Unit: "m"}}},
 			"createEmpty": &ast.BooleanLiteral{Value: true},
 		}),
 		call("sum", nil),
 		// Remove any windows <5m long at the edges of the graph range to act like PromQL.
-		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.start, t.end.Add(-5*time.Minute))}),
+		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.Start, t.End.Add(-5*time.Minute))}),
 	)
 }
 
-func (t *transpiler) timeFn() *ast.PipeExpression {
+func (t *Transpiler) timeFn() *ast.PipeExpression {
 	return buildPipeline(
 		t.generateZeroWindows(),
 		call("promql.timestamp", nil),
 	)
 }
 
-func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
+func (t *Transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 	// The PromQL parser already verifies argument counts and types, so we don't have to check this here.
 	args := make([]ast.Expression, len(c.Args))
 	for i, arg := range c.Args {
@@ -429,6 +429,22 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			v,
 			call("map", map[string]ast.Expression{"fn": labelJoinFn(srcLabels, dst, sep)}),
 		), nil
+	case "label_replace":
+		for _, arg := range args[1:] {
+			if _, ok := arg.(*ast.StringLiteral); !ok {
+				return nil, fmt.Errorf("non-literal string arguments not supported yet in label_replace()")
+			}
+		}
+
+		return buildPipeline(
+			args[0],
+			call("promql.labelReplace", map[string]ast.Expression{
+				"destination": args[1],
+				"replacement": args[2],
+				"source":      args[3],
+				"regex":       args[4],
+			}),
+		), nil
 	case "vector":
 		if yieldsTable(c.Args[0]) {
 			return args[0], nil
@@ -437,6 +453,15 @@ func (t *transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			t.generateZeroWindows(),
 			call("map", map[string]ast.Expression{
 				"fn": setConstValueFn(args[0]),
+			}),
+		), nil
+	case "scalar":
+		// TODO: Need to insert NaN values at time steps where there is no value in the vector.
+		// This requires new outer join support.
+		return buildPipeline(
+			args[0],
+			call("keep", map[string]ast.Expression{
+				"columns": columnList("_stop", "_value"),
 			}),
 		), nil
 	case "histogram_quantile":
