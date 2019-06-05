@@ -8,7 +8,7 @@ pipelines through common operations, such as additions, subtractions, and condit
 operations, i.e. data extraction from sources, and transformations ---outputs to sinks are transformations with a side
 effect. The results of the query are obtained from the side effects of data manipulation.
 A query can be represented in various languages.
-The engine is equipped with one executors per language. An executor can translate a
+The engine is equipped with one executor per language. An executor can translate a
 representation of a query in some language into another target language and delegate the execution to
 the executor for the target language.
 The translation process is carried out by compilers.
@@ -86,7 +86,7 @@ type Result interface {
 The executor executes a query expressed in some language and fills its results, provided an execution context.
 There can be multiple executors, one for each language supported by the engine.
 The engine is responsible for providing the executor with an
-execution context that embeds everything that is necessary for the execution of the query, included the registered values,
+execution context that embeds everything that is necessary for the execution of the query, including the registered values,
 sources and transformations. 
 
 ```go
