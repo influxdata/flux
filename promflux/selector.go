@@ -77,6 +77,7 @@ func (t *Transpiler) transpileInstantVectorSelector(v *promql.VectorSelector) *a
 		call("window", map[string]ast.Expression{
 			"every":  &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Resolution.Nanoseconds(), Unit: "ns"}}},
 			"period": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: 5, Unit: "m"}}},
+			"offset": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Start.UnixNano() % t.Resolution.Nanoseconds(), Unit: "ns"}}},
 		}),
 		// Remove any windows <5m long at the edges of the graph range to act like PromQL.
 		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.Start.Add(-v.Offset), t.End.Add(-5*time.Minute-v.Offset))}),
@@ -104,6 +105,7 @@ func (t *Transpiler) transpileRangeVectorSelector(v *promql.MatrixSelector) *ast
 		call("window", map[string]ast.Expression{
 			"every":  &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Resolution.Nanoseconds(), Unit: "ns"}}},
 			"period": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: v.Range.Nanoseconds(), Unit: "ns"}}},
+			"offset": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Start.UnixNano() % t.Resolution.Nanoseconds(), Unit: "ns"}}},
 		}),
 		// Remove any windows smaller than the specified range at the edges of the graph range.
 		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.Start.Add(-v.Offset), t.End.Add(-v.Range-v.Offset))}),

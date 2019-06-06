@@ -241,6 +241,7 @@ func (t *Transpiler) generateZeroWindows() *ast.PipeExpression {
 		call("window", map[string]ast.Expression{
 			"every":       &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Resolution.Nanoseconds(), Unit: "ns"}}},
 			"period":      &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: 5, Unit: "m"}}},
+			"offset":      &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Start.UnixNano() % t.Resolution.Nanoseconds(), Unit: "ns"}}},
 			"createEmpty": &ast.BooleanLiteral{Value: true},
 		}),
 		call("sum", nil),

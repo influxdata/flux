@@ -392,8 +392,8 @@ var queries = []struct {
 
 func TestQueries(t *testing.T) {
 	var (
-		start      = time.Unix(1550767830, 0).UTC()
-		end        = time.Unix(1550767900, 0).UTC()
+		start      = time.Unix(1550767830, 123000000).UTC()
+		end        = time.Unix(1550767900, 321000000).UTC()
 		resolution = 10 * time.Second
 	)
 

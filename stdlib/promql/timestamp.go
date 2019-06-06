@@ -123,7 +123,7 @@ func (t *timestampTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 		// Get the "_time" (or "_stop") of the current row as a Unix timestamp.
 		for i := 0; i < cr.Len(); i++ {
 			v := execute.ValueForRow(cr, i, timeIdx)
-			ts := float64(v.Time().Time().UnixNano()) / 1e9
+			ts := float64(v.Time().Time().UnixNano()/1e6) / 1e3
 			if err := builder.AppendValue(valIdx, values.NewFloat(ts)); err != nil {
 				return err
 			}
