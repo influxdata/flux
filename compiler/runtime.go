@@ -841,6 +841,7 @@ func (e *binaryEvaluator) EvalFunction(scope Scope) (values.Function, error) {
 type unaryEvaluator struct {
 	t    semantic.Type
 	node Evaluator
+	op   ast.OperatorKind
 }
 
 func (e *unaryEvaluator) Type() semantic.Type {
@@ -855,8 +856,16 @@ func (e *unaryEvaluator) EvalInt(scope Scope) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	// There is only one integer unary operator
-	return -v, nil
+	var sign int64
+	switch e.op {
+	case ast.AdditionOperator:
+		sign = 1
+	case ast.SubtractionOperator:
+		sign = -1
+	default:
+		return 0, fmt.Errorf("unknown unary operator: %s", e.op)
+	}
+	return sign * v, nil
 }
 func (e *unaryEvaluator) EvalUInt(scope Scope) (uint64, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.UInt))
@@ -866,16 +875,29 @@ func (e *unaryEvaluator) EvalFloat(scope Scope) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	// There is only one float unary operator
-	return -v, nil
+	var sign float64
+	switch e.op {
+	case ast.AdditionOperator:
+		sign = 1.0
+	case ast.SubtractionOperator:
+		sign = -1.0
+	default:
+		return 0.0, fmt.Errorf("unknown unary operator: %s", e.op)
+	}
+	return sign * v, nil
 }
 func (e *unaryEvaluator) EvalBool(scope Scope) (bool, error) {
-	v, err := e.node.EvalBool(scope)
+	v, err := eval(e.node, scope)
 	if err != nil {
 		return false, err
 	}
-	// There is only one bool unary operator
-	return !v, nil
+	switch e.op {
+	case ast.NotOperator:
+		return !v.Bool(), nil
+	case ast.ExistsOperator:
+		return !v.IsNull(), nil
+	}
+	return false, fmt.Errorf("unknown unary logical operator: %s", e.op)
 }
 func (e *unaryEvaluator) EvalTime(scope Scope) (values.Time, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Time))
@@ -885,8 +907,16 @@ func (e *unaryEvaluator) EvalDuration(scope Scope) (values.Duration, error) {
 	if err != nil {
 		return 0, err
 	}
-	// There is only one duration unary operator
-	return -v, nil
+	var sign int64
+	switch e.op {
+	case ast.AdditionOperator:
+		sign = 1
+	case ast.SubtractionOperator:
+		sign = -1
+	default:
+		return 0, fmt.Errorf("unknown unary logical operator: %s", e.op)
+	}
+	return values.Duration(sign * int64(v)), nil
 }
 func (e *unaryEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Regexp))

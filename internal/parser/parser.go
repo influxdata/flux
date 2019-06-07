@@ -170,7 +170,7 @@ func (p *parser) parseStatement() ast.Statement {
 	case token.INT, token.FLOAT, token.STRING, token.DIV,
 		token.TIME, token.DURATION, token.PIPE_RECEIVE,
 		token.LPAREN, token.LBRACK, token.LBRACE,
-		token.ADD, token.SUB, token.NOT, token.IF:
+		token.ADD, token.SUB, token.NOT, token.IF, token.EXISTS:
 		return p.parseExpressionStatement()
 	default:
 		p.consume()
@@ -399,7 +399,7 @@ func (p *parser) parseExpressionList() []ast.Expression {
 		case token.IDENT, token.INT, token.FLOAT, token.STRING, token.DIV,
 			token.TIME, token.DURATION, token.PIPE_RECEIVE,
 			token.LPAREN, token.LBRACK, token.LBRACE,
-			token.ADD, token.SUB, token.NOT:
+			token.ADD, token.SUB, token.NOT, token.EXISTS:
 			exprs = append(exprs, p.parseExpression())
 		default:
 			// TODO(jsternberg): BadExpression.
@@ -526,6 +526,9 @@ func (p *parser) parseUnaryLogicalOperator() (token.Pos, ast.OperatorKind, bool)
 	case token.NOT:
 		p.consume()
 		return pos, ast.NotOperator, true
+	case token.EXISTS:
+		p.consume()
+		return pos, ast.ExistsOperator, true
 	default:
 		return 0, 0, false
 	}

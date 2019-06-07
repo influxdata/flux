@@ -805,7 +805,8 @@ The precedence of the operators is given in the table below. Operators with a lo
 |          | `<` `<=`       |                           |
 |          | `>` `>=`       |                           |
 |          |`=~` `!~`       |                           |
-|     5    |  `not`         | Unary logical expression  |
+|     5    | `not`          | Unary logical operator    |
+|          | `exists`       | Null check operator       |
 |     6    |  `and`         |        Logical AND        |
 |     7    |  `or`          |        Logical OR         |
 |     8    | `if/then/else` |        Conditional        |
@@ -820,7 +821,7 @@ The operator precedence is encoded directly into the grammar as the following.
     LogicalOperator          = "and" | "or" .
     UnaryLogicalExpression   = ComparisonExpression
                              | UnaryLogicalOperator UnaryLogicalExpression .
-    UnaryLogicalOperator     = "not" .
+    UnaryLogicalOperator     = "not" | "exists" .
     ComparisonExpression     = MultiplicativeExpression
                              | ComparisonExpression ComparisonOperator MultiplicativeExpression .
     ComparisonOperator       = "==" | "!=" | "<" | "<=" | ">" | ">=" | "=~" | "!~" .
@@ -1364,10 +1365,10 @@ Again, by interpreting a _null_ operand as an unknown value, we have the followi
 And finally, because records are represented using object types, attempting to access a column whose value is unknown or missing from a record will also return _null_.
 
 Note according to the definitions above, it is not possible to check whether or not an expression is _null_ using the `==` and `!=` operators as these operators will return _null_ if any of their operands are _null_.
-In order to perform such a check, Flux provides a built-in `exists` function defined as follows:
+In order to perform such a check, Flux provides a built-in `exists` operator defined as follows:
 
-* exists(x) returns false if x is _null_
-* exists(x) returns true if x is not _null_
+* `exists x` returns false if `x` is _null_
+* `exists x` returns true if `x` is not _null_
 
 ### Transformations
 

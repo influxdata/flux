@@ -117,6 +117,7 @@ var opPrecedence = map[int]int{
 	getIntForOp(RegexpMatchOperator):      4,
 	getIntForOp(NotRegexpMatchOperator):   4,
 	getIntForOp(NotOperator):              5,
+	getIntForOp(ExistsOperator):           5,
 	// theses are LogicalOperatorKinds:
 	getIntForLOp(AndOperator): 6,
 	getIntForLOp(OrOperator):  7,
