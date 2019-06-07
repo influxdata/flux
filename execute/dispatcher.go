@@ -3,6 +3,7 @@ package execute
 import (
 	"context"
 	"fmt"
+	"github.com/influxdata/flux/memory"
 	"runtime/debug"
 	"sync"
 
@@ -70,6 +71,12 @@ func (d *poolDispatcher) Start(n int, ctx context.Context) {
 					default:
 						err = fmt.Errorf("%v", e)
 					}
+
+					if _, ok := err.(memory.LimitExceededError); ok {
+						d.setErr(err)
+						return
+					}
+
 					d.setErr(fmt.Errorf("panic: %v\n%s", err, debug.Stack()))
 					if entry := d.logger.Check(zapcore.InfoLevel, "Dispatcher panic"); entry != nil {
 						entry.Stack = string(debug.Stack())
