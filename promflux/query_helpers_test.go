@@ -7,7 +7,6 @@ import (
 	"log"
 	"math"
 	_ "net/http/pprof"
-	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -18,9 +17,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/influxdb/cmd/influxd/launcher"
 	"github.com/influxdata/influxdb/query"
 	"github.com/prometheus/common/model"
@@ -250,7 +247,7 @@ func (q *testQuerier) runQuery(qry string, skipComparison bool) {
 	}
 	var influxMatrix promql.Matrix
 	err = q.influxDB.QueryAndConsume(q.ctx, req, func(r flux.Result) error {
-		influxMatrix = q.influxResultToPromMatrix(r)
+		influxMatrix = InfluxResultToPromMatrix(r)
 		return nil
 	})
 	if err != nil {
@@ -281,70 +278,4 @@ func (q *testQuerier) runQuery(qry string, skipComparison bool) {
 			"\n=== Prometheus results:\n", promMatrix,
 		)
 	}
-}
-
-func (q *testQuerier) influxResultToPromMatrix(result flux.Result) promql.Matrix {
-	hashToSeries := map[uint64]*promql.Series{}
-
-	result.Tables().Do(func(tbl flux.Table) error {
-		tbl.Do(func(cr flux.ColReader) error {
-			for i := 0; i < cr.Len(); i++ {
-				builder := labels.NewBuilder(nil)
-				var val float64
-				var ts int64
-
-				for j, col := range cr.Cols() {
-					switch col.Label {
-					case "_time":
-						ts = execute.ValueForRow(cr, i, j).Time().Time().UnixNano() / 1e6
-					case "_value":
-						v := execute.ValueForRow(cr, i, j)
-						switch v.Type().Nature() {
-						case semantic.Float:
-							val = v.Float()
-						case semantic.Int:
-							// TODO: Should this be allowed to happen?
-							val = float64(v.Int())
-						case semantic.UInt:
-							// TODO: Should this be allowed to happen?
-							val = float64(v.UInt())
-						default:
-							panic("invalid value type")
-						}
-					case "_start", "_stop", "_field":
-						// Ignore.
-					default:
-						ln := unescapeLabelName(col.Label)
-						builder.Set(ln, cr.Strings(j).ValueString(i))
-					}
-				}
-
-				lbls := builder.Labels()
-
-				point := promql.Point{
-					T: ts,
-					V: val,
-				}
-				hash := lbls.Hash()
-				if ser, ok := hashToSeries[hash]; !ok {
-					hashToSeries[hash] = &promql.Series{
-						Metric: lbls,
-						Points: []promql.Point{point},
-					}
-				} else {
-					ser.Points = append(ser.Points, point)
-				}
-			}
-			return nil
-		})
-		return nil
-	})
-
-	matrix := make(promql.Matrix, 0, len(hashToSeries))
-	for _, ser := range hashToSeries {
-		// TODO: Also sort series by time? Or are these always sorted coming from InfluxDB?
-		matrix = append(matrix, *ser)
-	}
-	sort.Sort(matrix)
-	return matrix
 }
