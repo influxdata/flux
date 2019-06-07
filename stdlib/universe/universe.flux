@@ -19,6 +19,7 @@ builtin difference
 builtin distinct
 builtin drop
 builtin duplicate
+builtin exists
 builtin fill
 builtin filter
 builtin first
