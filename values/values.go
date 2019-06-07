@@ -164,84 +164,84 @@ func New(v interface{}) Value {
 }
 
 func NewNull(t semantic.Type) Value {
-	return value{
-		t: t,
-		v: nil,
+	switch t {
+	case semantic.Float:
+		return Float{Null: true}
+	case semantic.Int:
+		return Int{Null: true}
+	case semantic.UInt:
+		return UInt{Null: true}
+	case semantic.String:
+		return String{Null: true}
+	case semantic.Bool:
+		return Bool{Null: true}
+	default:
+		return value{
+			t: t,
+			v: nil,
+		}
 	}
 }
 
 func NewFromString(t semantic.Type, s string) (Value, error) {
-	var err error
-	v := value{t: t}
 	switch t {
 	case semantic.String:
-		v.v = s
+		return String{Value: s}, nil
 	case semantic.Int:
-		v.v, err = strconv.ParseInt(s, 10, 64)
+		v, err := strconv.ParseInt(s, 10, 64)
 		if err != nil {
 			return nil, err
 		}
+		return Int{Value: v}, nil
 	case semantic.UInt:
-		v.v, err = strconv.ParseUint(s, 10, 64)
+		v, err := strconv.ParseUint(s, 10, 64)
 		if err != nil {
 			return nil, err
 		}
+		return UInt{Value: v}, nil
 	case semantic.Float:
-		v.v, err = strconv.ParseFloat(s, 64)
+		v, err := strconv.ParseFloat(s, 64)
 		if err != nil {
 			return nil, err
 		}
+		return Float{Value: v}, nil
 	case semantic.Bool:
-		v.v, err = strconv.ParseBool(s)
+		v, err := strconv.ParseBool(s)
 		if err != nil {
 			return nil, err
 		}
+		return Bool{Value: v}, nil
 	case semantic.Time:
-		v.v, err = ParseTime(s)
+		v, err := ParseTime(s)
 		if err != nil {
 			return nil, err
 		}
+		return value{t: t, v: v}, nil
 	case semantic.Duration:
-		v.v, err = ParseDuration(s)
+		v, err := ParseDuration(s)
 		if err != nil {
 			return nil, err
 		}
-
+		return value{t: t, v: v}, nil
 	default:
 		return nil, errors.New("invalid type for value stringer")
 	}
-	return v, nil
 }
 
 func NewString(v string) Value {
-	return value{
-		t: semantic.String,
-		v: v,
-	}
+	return String{Value: v}
 }
 func NewInt(v int64) Value {
-	return value{
-		t: semantic.Int,
-		v: v,
-	}
+	return Int{Value: v}
 }
 func NewUInt(v uint64) Value {
-	return value{
-		t: semantic.UInt,
-		v: v,
-	}
+	return UInt{Value: v}
 }
 func NewFloat(v float64) Value {
-	return value{
-		t: semantic.Float,
-		v: v,
-	}
+	return Float{Value: v}
 }
 func NewBool(v bool) Value {
-	return value{
-		t: semantic.Bool,
-		v: v,
-	}
+	return Bool{Value: v}
 }
 func NewTime(v Time) Value {
 	return value{
