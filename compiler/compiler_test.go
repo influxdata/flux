@@ -2,6 +2,7 @@ package compiler_test
 
 import (
 	"reflect"
+	"regexp"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -629,6 +630,173 @@ func TestCompileAndEval(t *testing.T) {
 			}),
 			want: values.NewInt(5),
 		},
+		{
+			name: "filter with member expression",
+			// f = (r) => r.m == "cpu"
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "r"}},
+						},
+					},
+					Body: &semantic.BinaryExpression{
+						Operator: ast.EqualOperator,
+						Left: &semantic.MemberExpression{
+							Object:   &semantic.IdentifierExpression{Name: "r"},
+							Property: "m",
+						},
+						Right: &semantic.StringLiteral{Value: "cpu"},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"r": semantic.NewObjectType(map[string]semantic.Type{
+					"m": semantic.String,
+				}),
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewObjectWithValues(map[string]values.Value{
+					"m": values.NewString("cpu"),
+				}),
+			}),
+			want:    values.NewBool(true),
+			wantErr: false,
+		},
+		{
+			name: "regex literal filter",
+			// f = (r) => r =~ /^(c|g)pu$/
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "r"}},
+						},
+					},
+					Body: &semantic.BinaryExpression{
+						Operator: ast.RegexpMatchOperator,
+						Left:     &semantic.IdentifierExpression{Name: "r"},
+						Right: &semantic.RegexpLiteral{
+							Value: regexp.MustCompile(`^(c|g)pu$`),
+						},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"r": semantic.String,
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewString("cpu"),
+			}),
+			want:    values.NewBool(true),
+			wantErr: false,
+		},
+		{
+			name: "block statement with conditional",
+			// f = (r) => {
+			//   v = if r < 0 then -r else r
+			//   return v * v
+			// }
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "r"}},
+						},
+					},
+					Body: &semantic.Block{
+						Body: []semantic.Statement{
+							&semantic.NativeVariableAssignment{
+								Identifier: &semantic.Identifier{Name: "v"},
+								Init: &semantic.ConditionalExpression{
+									Test: &semantic.BinaryExpression{
+										Operator: ast.LessThanOperator,
+										Left:     &semantic.IdentifierExpression{Name: "r"},
+										Right:    &semantic.IntegerLiteral{Value: 0},
+									},
+									Consequent: &semantic.UnaryExpression{
+										Operator: ast.SubtractionOperator,
+										Argument: &semantic.IdentifierExpression{Name: "r"},
+									},
+									Alternate: &semantic.IdentifierExpression{Name: "r"},
+								},
+							},
+							&semantic.ReturnStatement{
+								Argument: &semantic.BinaryExpression{
+									Operator: ast.MultiplicationOperator,
+									Left:     &semantic.IdentifierExpression{Name: "v"},
+									Right:    &semantic.IdentifierExpression{Name: "v"},
+								},
+							},
+						},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"r": semantic.Int,
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewInt(-3),
+			}),
+			want:    values.NewInt(9),
+			wantErr: false,
+		},
+		{
+			name: "array literal",
+			// f = () => [1.0, 2.0, 3.0]
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{},
+					Body: &semantic.ArrayExpression{
+						Elements: []semantic.Expression{
+							&semantic.FloatLiteral{Value: 1},
+							&semantic.FloatLiteral{Value: 2},
+							&semantic.FloatLiteral{Value: 3},
+						},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(nil),
+			input:  values.NewObjectWithValues(nil),
+			want: values.NewArrayWithBacking(
+				semantic.Float,
+				[]values.Value{
+					values.NewFloat(1),
+					values.NewFloat(2),
+					values.NewFloat(3),
+				},
+			),
+			wantErr: false,
+		},
+		{
+			name: "logical expression",
+			// f = (a, b) => a or b
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "a"}},
+							{Key: &semantic.Identifier{Name: "b"}},
+						},
+					},
+					Body: &semantic.LogicalExpression{
+						Operator: ast.OrOperator,
+						Left:     &semantic.IdentifierExpression{Name: "a"},
+						Right:    &semantic.IdentifierExpression{Name: "b"},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"a": semantic.Bool,
+				"b": semantic.Bool,
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"a": values.NewBool(true),
+				"b": values.NewBool(false),
+			}),
+			want:    values.NewBool(true),
+			wantErr: false,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -639,12 +807,12 @@ func TestCompileAndEval(t *testing.T) {
 			}
 			f, err := compiler.Compile(tc.fn, tc.inType, nil)
 			if tc.wantErr != (err != nil) {
-				t.Fatalf("unexpected error %s", err)
+				t.Fatalf("unexpected error: %s", err)
 			}
 
 			got, err := f.Eval(tc.input)
 			if tc.wantErr != (err != nil) {
-				t.Errorf("unexpected error %s", err)
+				t.Errorf("unexpected error: %s", err)
 			}
 
 			if !cmp.Equal(tc.want, got, CmpOptions...) {
