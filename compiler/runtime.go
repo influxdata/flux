@@ -590,7 +590,7 @@ func (e *arrayEvaluator) EvalRegexp(scope Scope) (*regexp.Regexp, error) {
 	panic(values.UnexpectedKind(e.t.Nature(), semantic.Regexp))
 }
 func (e *arrayEvaluator) EvalArray(scope Scope) (values.Array, error) {
-	arr := values.NewArray(e.t)
+	arr := values.NewArray(e.t.ElementType())
 	for _, ev := range e.array {
 		v, err := eval(ev, scope)
 		if err != nil {
