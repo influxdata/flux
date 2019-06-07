@@ -134,7 +134,7 @@ func (r *REPL) executeLine(t string) error {
 		t = q
 	}
 
-	ses, scope, err := flux.Eval(t, func(ns interpreter.Scope) {
+	ses, scope, err := flux.EvalScript(t, func(ns interpreter.Scope) {
 		// copy values saved in the cached scope to the new interpreter's scope
 		r.scope.Range(func(k string, v values.Value) {
 			ns.Set(k, v)

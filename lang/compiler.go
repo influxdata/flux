@@ -11,6 +11,8 @@ import (
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -84,52 +86,56 @@ func Verbose(v bool) CompileOption {
 
 // Compile evaluates a Flux script producing a flux.Program.
 // now parameter must be non-zero, that is the default now time should be set before compiling.
-func Compile(q string, now time.Time, opts ...CompileOption) (*AstProgram, error) {
+func Compile(q string, now time.Time, opts ...CompileOption) (*Program, error) {
 	astPkg, err := flux.Parse(q)
 	if err != nil {
 		return nil, err
 	}
-	return CompileAST(astPkg, now, opts...), nil
+	return CompileAST(astPkg, now, opts...)
 }
 
 // CompileAST evaluates a Flux AST and produces a flux.Program.
 // now parameter must be non-zero, that is the default now time should be set before compiling.
-func CompileAST(astPkg *ast.Package, now time.Time, opts ...CompileOption) *AstProgram {
-	return &AstProgram{
-		Program: &Program{
-			opts: applyOptions(opts...),
-		},
-		Ast: astPkg,
-		Now: now,
-	}
-}
-
-// CompileTableObject evaluates a TableObject and produces a flux.Program.
-// now parameter must be non-zero, that is the default now time should be set before compiling.
-func CompileTableObject(to *flux.TableObject, now time.Time, opts ...CompileOption) (*Program, error) {
-	o := applyOptions(opts...)
-	s := spec.FromTableObject(to, now)
-	if o.verbose {
-		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
-	}
-	ps, err := buildPlan(s, o)
+func CompileAST(astPkg *ast.Package, now time.Time, opts ...CompileOption) (*Program, error) {
+	semPkg, err := semantic.New(astPkg)
 	if err != nil {
 		return nil, err
 	}
 	return &Program{
+		ReadyToStartProgram: &ReadyToStartProgram{
+			opts: applyOptions(opts...),
+		},
+		Pkg: semPkg,
+		Now: now,
+	}, nil
+}
+
+// CompileTableObject evaluates a TableObject and produces a flux.Program.
+// now parameter must be non-zero, that is the default now time should be set before compiling.
+func CompileTableObject(ctx context.Context, to *flux.TableObject, now time.Time, opts ...CompileOption) (*ReadyToStartProgram, error) {
+	o := applyOptions(opts...)
+	sp := spec.FromTableObject(to, now)
+	if o.verbose {
+		log.Println("Query Spec: ", flux.Formatted(sp, flux.FmtJSON))
+	}
+	s, _ := opentracing.StartSpanFromContext(ctx, "plan")
+	defer s.Finish()
+	ps, err := buildPlan(sp, o)
+	if err != nil {
+		return nil, err
+	}
+	return &ReadyToStartProgram{
 		opts:     o,
 		PlanSpec: ps,
 	}, nil
 }
 
 func WalkIR(astPkg *ast.Package, f func(o *flux.Operation) error) error {
-
-	if spec, err := spec.FromAST(context.Background(), astPkg, time.Now()); err != nil {
+	if sp, err := spec.FromAST(astPkg, time.Now()); err != nil {
 		return err
 	} else {
-		return spec.Walk(f)
+		return sp.Walk(f)
 	}
-
 }
 
 func buildPlan(spec *flux.Spec, opts *compileOptions) (*plan.Spec, error) {
@@ -156,7 +162,8 @@ type FluxCompiler struct {
 }
 
 func (c FluxCompiler) Compile(ctx context.Context) (flux.Program, error) {
-	// Ignore context, it will be provided upon Program Start.
+	s, _ := opentracing.StartSpanFromContext(ctx, "compile")
+	defer s.Finish()
 	return Compile(c.Query, time.Now())
 }
 
@@ -175,8 +182,9 @@ func (c ASTCompiler) Compile(ctx context.Context) (flux.Program, error) {
 	if now.IsZero() {
 		now = time.Now()
 	}
-	// Ignore context, it will be provided upon Program Start.
-	return CompileAST(c.AST, now), nil
+	s, _ := opentracing.StartSpanFromContext(ctx, "compile")
+	defer s.Finish()
+	return CompileAST(c.AST, now)
 }
 
 func (ASTCompiler) CompilerType() flux.CompilerType {
@@ -197,8 +205,7 @@ type TableObjectCompiler struct {
 }
 
 func (c *TableObjectCompiler) Compile(ctx context.Context) (flux.Program, error) {
-	// Ignore context, it will be provided upon Program Start.
-	return CompileTableObject(c.Tables, c.Now)
+	return CompileTableObject(ctx, c.Tables, c.Now)
 }
 
 func (*TableObjectCompiler) CompilerType() flux.CompilerType {
@@ -210,9 +217,9 @@ type DependenciesAwareProgram interface {
 	SetLogger(logger *zap.Logger)
 }
 
-// Program implements the flux.Program interface.
-// It will execute a compiled plan using an executor.
-type Program struct {
+// ReadyToStartProgram implements the flux.Program interface.
+// It executes a compiled plan using an executor.
+type ReadyToStartProgram struct {
 	Dependencies execute.Dependencies
 	Logger       *zap.Logger
 	PlanSpec     *plan.Spec
@@ -220,15 +227,17 @@ type Program struct {
 	opts *compileOptions
 }
 
-func (p *Program) SetExecutorDependencies(deps execute.Dependencies) {
+func (p *ReadyToStartProgram) SetExecutorDependencies(deps execute.Dependencies) {
 	p.Dependencies = deps
 }
 
-func (p *Program) SetLogger(logger *zap.Logger) {
+func (p *ReadyToStartProgram) SetLogger(logger *zap.Logger) {
 	p.Logger = logger
 }
 
-func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+func (p *ReadyToStartProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+	s, _ := opentracing.StartSpanFromContext(ctx, "start")
+	defer s.Finish()
 	ctx, cancel := context.WithCancel(ctx)
 	results := make(chan flux.Result)
 	q := &query{
@@ -257,7 +266,7 @@ func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Quer
 	return q, nil
 }
 
-func (p *Program) processResults(ctx context.Context, q *query, resultMap map[string]flux.Result) {
+func (p *ReadyToStartProgram) processResults(ctx context.Context, q *query, resultMap map[string]flux.Result) {
 	defer q.wg.Done()
 	defer close(q.results)
 
@@ -271,42 +280,50 @@ func (p *Program) processResults(ctx context.Context, q *query, resultMap map[st
 	}
 }
 
-func (p *Program) readMetadata(q *query, metaCh <-chan flux.Metadata) {
+func (p *ReadyToStartProgram) readMetadata(q *query, metaCh <-chan flux.Metadata) {
 	defer q.wg.Done()
 	for md := range metaCh {
 		q.stats.Metadata.AddAll(md)
 	}
 }
 
-// AstProgram wraps a Program with an AST that will be evaluated upon Start.
-// As such, the PlanSpec is populated after Start and evaluation errors are returned by Start.
-type AstProgram struct {
-	*Program
+// Program is a flux.Program that is not ready to start, but contains a semantic graph.
+// Upon start it evaluates the semantic graph and starts the real execution.
+// As such, evaluation errors are returned by Start.
+type Program struct {
+	*ReadyToStartProgram
 
-	Ast *ast.Package
+	Pkg *semantic.Package
 	Now time.Time
 }
 
-func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
 	if p.opts == nil {
 		p.opts = defaultOptions()
 	}
-
 	if p.Now.IsZero() {
 		p.Now = time.Now()
 	}
-	s, err := spec.FromAST(ctx, p.Ast, p.Now)
+	s, _ := opentracing.StartSpanFromContext(ctx, "eval")
+	sideEffects, _, actualNow, err := flux.EvalWithNow(p.Pkg, p.Now)
+	if err != nil {
+		s.Finish()
+		return nil, err
+	}
+	sp, err := spec.FromSideEffects(sideEffects, actualNow)
+	s.Finish()
 	if err != nil {
 		return nil, errors.Wrap(err, "error in evaluating AST while starting program")
 	}
 	if p.opts.verbose {
-		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
+		log.Println("Query Spec: ", flux.Formatted(sp, flux.FmtJSON))
 	}
-	ps, err := buildPlan(s, p.opts)
+	s, _ = opentracing.StartSpanFromContext(ctx, "plan")
+	ps, err := buildPlan(sp, p.opts)
+	s.Finish()
 	if err != nil {
 		return nil, errors.Wrap(err, "error in building plan while starting program")
 	}
 	p.PlanSpec = ps
-
-	return p.Program.Start(ctx, alloc)
+	return p.ReadyToStartProgram.Start(ctx, alloc)
 }

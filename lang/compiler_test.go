@@ -3,6 +3,7 @@ package lang_test
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"math"
 	"testing"
 	"time"
@@ -61,15 +62,64 @@ func TestFluxCompiler(t *testing.T) {
 	}
 }
 
-func TestCompilationError(t *testing.T) {
-	program, err := lang.Compile(`illegal query`, time.Unix(0, 0))
-	if err != nil {
-		// This shouldn't happen, has the script should be evaluated at program Start.
-		t.Fatal(err)
+func checkError(t *testing.T, want, got error) {
+	if got != nil {
+		if want == nil {
+			t.Fatalf("got unexpected error: %v", got)
+		} else {
+			if diff := cmp.Diff(want.Error(), got.Error()); diff != "" {
+				t.Fatalf("expected error, but got a different one: -want/+got:\n%s", diff)
+			}
+		}
+	} else if want != nil {
+		t.Error("wanted error, got none")
 	}
-	_, err = program.Start(context.Background(), &memory.Allocator{})
-	if err == nil {
-		t.Fatal("compilation error expected, got none")
+}
+
+func TestCompileStartError(t *testing.T) {
+	tcs := []struct {
+		name   string
+		script string
+		errC   error
+		errS   error
+	}{
+		{
+			name:   "fail AST",
+			script: `{1: 2}`,
+			errC:   fmt.Errorf(`unexpected token for property key: INT ("1")`),
+		},
+		{
+			name: "fail semantic",
+			script: `f = (a) => {
+  a + 1
+  a + 2
+}`,
+			errC: fmt.Errorf("missing return statement in block"),
+		},
+		{
+			name:   "fail runtime",
+			script: `1 + 2`,
+			errS: fmt.Errorf(`error in evaluating AST while starting program: ` +
+				`this Flux script returns no streaming data. ` +
+				`Consider adding a "yield" or invoking streaming functions directly, without performing an assignment`),
+		},
+		{
+			name: "legal query",
+			script: `import g "generate"
+g.from(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:53:00Z, count: 10, fn: (n) => n)`,
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			program, err := lang.Compile(tc.script, time.Unix(0, 0))
+			checkError(t, tc.errC, err)
+			if err == nil {
+				_, err = program.Start(context.Background(), &memory.Allocator{})
+				checkError(t, tc.errS, err)
+			}
+		})
+
 	}
 }
 
@@ -184,7 +234,7 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 				t.Fatalf("failed to start program: %v", err)
 			}
 
-			got := program.(*lang.AstProgram).PlanSpec
+			got := program.(*lang.Program).PlanSpec
 			want := plantest.CreatePlanSpec(&tc.want)
 			if err := plantest.ComparePlansShallow(want, got); err != nil {
 				t.Error(err)
@@ -305,7 +355,7 @@ csv.from(csv: data)
 	wantRange := getTablesFromRawOrFail(t, rangedDataRaw)
 	wantFilter := getTablesFromRawOrFail(t, filteredDataRaw)
 
-	vs, _, err := flux.Eval(script)
+	vs, _, err := flux.EvalScript(script)
 	if err != nil {
 		t.Fatal(err)
 	}

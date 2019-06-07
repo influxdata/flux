@@ -33,8 +33,8 @@ func Parse(flux string) (*ast.Package, error) {
 	return astPkg, nil
 }
 
-// Eval accepts a Flux script and evaluates it to produce a set of side effects (as a slice of values) and a scope.
-func Eval(flux string, opts ...ScopeMutator) ([]interpreter.SideEffect, interpreter.Scope, error) {
+// EvalScript accepts a Flux script and evaluates it to produce a set of side effects (as a slice of values) and a scope.
+func EvalScript(flux string, opts ...ScopeMutator) ([]interpreter.SideEffect, interpreter.Scope, error) {
 	astPkg, err := Parse(flux)
 	if err != nil {
 		return nil, nil, err
@@ -48,7 +48,11 @@ func EvalAST(astPkg *ast.Package, opts ...ScopeMutator) ([]interpreter.SideEffec
 	if err != nil {
 		return nil, nil, err
 	}
+	return Eval(semPkg, opts...)
+}
 
+// Eval accepts a semantic graph and evaluates it to produce a set of side effects (as a slice of values) and a scope.
+func Eval(semPkg *semantic.Package, opts ...ScopeMutator) ([]interpreter.SideEffect, interpreter.Scope, error) {
 	itrp := interpreter.NewInterpreter()
 	universe := Prelude()
 
@@ -62,7 +66,21 @@ func EvalAST(astPkg *ast.Package, opts ...ScopeMutator) ([]interpreter.SideEffec
 	}
 
 	return sideEffects, universe, nil
+}
 
+// EvalWithNow does the same as Eval, but it sets the now option in the evaluation scope with the given time.
+// Apart from the side effects and the scope used by the interpreter, it returns the actual now time used during the
+// evaluation (in the case that a now option overrode the now passed in).
+func EvalWithNow(semPkg *semantic.Package, now time.Time) ([]interpreter.SideEffect, interpreter.Scope, time.Time, error) {
+	sideEffects, scope, err := Eval(semPkg, SetNow(now))
+	if err != nil {
+		return nil, nil, time.Time{}, err
+	}
+	actualNow, err := GetNow(scope)
+	if err != nil {
+		return nil, nil, time.Time{}, err
+	}
+	return sideEffects, scope, actualNow, nil
 }
 
 // ScopeMutator is any function that mutates the scope of an identifier.
@@ -73,6 +91,35 @@ func SetOption(name string, v values.Value) ScopeMutator {
 	return func(scope interpreter.Scope) {
 		scope.Set(name, v)
 	}
+}
+
+const nowOption = "now"
+
+func generateNowFunc(now time.Time) values.Function {
+	timeVal := values.NewTime(values.ConvertTime(now))
+	ftype := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+		Return: semantic.Time,
+	})
+	call := func(args values.Object) (values.Value, error) {
+		return timeVal, nil
+	}
+	return values.NewFunction(nowOption, ftype, call, false)
+}
+
+func SetNow(now time.Time) ScopeMutator {
+	return SetOption(nowOption, generateNowFunc(now))
+}
+
+func GetNow(scope interpreter.Scope) (time.Time, error) {
+	nowOpt, ok := scope.Lookup(nowOption)
+	if !ok {
+		return time.Time{}, fmt.Errorf("%q option not set", nowOption)
+	}
+	nowTime, err := nowOpt.Function().Call(nil)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return nowTime.Time().Time(), nil
 }
 
 type CreateOperationSpec func(args Arguments, a *Administration) (OperationSpec, error)

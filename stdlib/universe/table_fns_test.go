@@ -38,7 +38,7 @@ data = "#datatype,string,long,dateTime:RFC3339,double,string,string
 
 csv.from(csv: data)`
 
-	vs, _, err := flux.Eval(script)
+	vs, _, err := flux.EvalScript(script)
 	if err != nil {
 		panic(errors.Wrap(err, "cannot compile simple script to prepare test"))
 	}
@@ -118,7 +118,7 @@ func mustLookup(s interpreter.Scope, valueID string) values.Value {
 func evalOrFail(t *testing.T, script string, mutator flux.ScopeMutator) interpreter.Scope {
 	t.Helper()
 
-	_, s, err := flux.Eval(script, func(s interpreter.Scope) {
+	_, s, err := flux.EvalScript(script, func(s interpreter.Scope) {
 		if mutator != nil {
 			mutator(s)
 		}

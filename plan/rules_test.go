@@ -1,7 +1,6 @@
 package plan_test
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -19,7 +18,7 @@ func TestRuleRegistration(t *testing.T) {
 	plan.RegisterLogicalRules(&simpleRule)
 
 	now := time.Now().UTC()
-	fluxSpec, err := spec.FromScript(context.Background(), `from(bucket: "telegraf") |> range(start: -5m)`, now)
+	fluxSpec, err := spec.FromScript(`from(bucket: "telegraf") |> range(start: -5m)`, now)
 	if err != nil {
 		t.Fatalf("could not compile very simple Flux query: %v", err)
 	}

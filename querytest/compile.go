@@ -35,7 +35,7 @@ func NewQueryTestHelper(t *testing.T, tc NewQueryTestCase) {
 	t.Helper()
 
 	now := time.Now().UTC()
-	got, err := spec.FromScript(context.Background(), tc.Raw, now)
+	got, err := spec.FromScript(tc.Raw, now)
 	if (err != nil) != tc.WantErr {
 		t.Errorf("error compiling spec error = %v, wantErr %v", err, tc.WantErr)
 		return

@@ -1,7 +1,6 @@
 package plan_test
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -20,7 +19,7 @@ import (
 )
 
 func compile(fluxText string, now time.Time) (*flux.Spec, error) {
-	return spec.FromScript(context.Background(), fluxText, now)
+	return spec.FromScript(fluxText, now)
 }
 
 func TestPlan_LogicalPlanFromSpec(t *testing.T) {

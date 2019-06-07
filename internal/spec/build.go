@@ -3,7 +3,6 @@
 package spec
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -13,61 +12,49 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/opentracing/opentracing-go"
 )
 
-const nowOption = "now"
-
 // FromScript returns a spec from a script expressed as a raw string.
-func FromScript(ctx context.Context, script string, now time.Time) (*flux.Spec, error) {
-	s, _ := opentracing.StartSpanFromContext(ctx, "parse")
-
+func FromScript(script string, now time.Time) (*flux.Spec, error) {
 	astPkg, err := flux.Parse(script)
 	if err != nil {
 		return nil, err
 	}
-	s.Finish()
-	return FromAST(ctx, astPkg, now)
+	return FromAST(astPkg, now)
 }
 
 // FromAST returns a spec from an AST.
-func FromAST(ctx context.Context, astPkg *ast.Package, now time.Time) (*flux.Spec, error) {
-	s, _ := opentracing.StartSpanFromContext(ctx, "eval")
-
-	sideEffects, scope, err := flux.EvalAST(astPkg, flux.SetOption(nowOption, generateNowFunc(now)))
+func FromAST(astPkg *ast.Package, now time.Time) (*flux.Spec, error) {
+	semPkg, err := semantic.New(astPkg)
 	if err != nil {
 		return nil, err
 	}
+	return FromSemantic(semPkg, now)
+}
 
-	s.Finish()
-	s, _ = opentracing.StartSpanFromContext(ctx, "compile")
-	defer s.Finish()
-
-	nowOpt, ok := scope.Lookup(nowOption)
-	if !ok {
-		return nil, fmt.Errorf("%q option not set", nowOption)
-	}
-
-	nowTime, err := nowOpt.Function().Call(nil)
+// FromSemantic returns a spec from a semantic graph.
+func FromSemantic(semPkg *semantic.Package, now time.Time) (*flux.Spec, error) {
+	sideEffects, _, now, err := flux.EvalWithNow(semPkg, now)
 	if err != nil {
 		return nil, err
 	}
+	return FromSideEffects(sideEffects, now)
+}
 
-	spec, err := toSpec(sideEffects, nowTime.Time().Time())
+func FromSideEffects(sideEffects []interpreter.SideEffect, now time.Time) (*flux.Spec, error) {
+	spec, err := toSpec(sideEffects, now)
 	if err != nil {
 		return nil, err
 	}
-
 	if len(spec.Operations) == 0 {
 		return nil,
 			errors.New("this Flux script returns no streaming data. " +
 				"Consider adding a \"yield\" or invoking streaming functions directly, without performing an assignment")
 	}
-
 	return spec, nil
 }
 
-// FromAST returns a spec from a TableObject.
+// FromTableObject returns a spec from a TableObject.
 func FromTableObject(to *flux.TableObject, now time.Time) *flux.Spec {
 	ider := &ider{
 		id:     0,
@@ -79,18 +66,6 @@ func FromTableObject(to *flux.TableObject, now time.Time) *flux.Spec {
 	visited := make(map[*flux.TableObject]bool)
 	buildSpec(to, ider, spec, visited)
 	return spec
-}
-
-func generateNowFunc(now time.Time) values.Function {
-	timeVal := values.NewTime(values.ConvertTime(now))
-	ftype := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Return: semantic.Time,
-	})
-	call := func(args values.Object) (values.Value, error) {
-		return timeVal, nil
-	}
-	sideEffect := false
-	return values.NewFunction(nowOption, ftype, call, sideEffect)
 }
 
 type ider struct {

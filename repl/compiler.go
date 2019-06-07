@@ -23,7 +23,7 @@ func (c Compiler) Compile(ctx context.Context) (flux.Program, error) {
 		return nil, err
 	}
 
-	return &lang.Program{
+	return &lang.ReadyToStartProgram{
 		PlanSpec: ps,
 	}, err
 }
