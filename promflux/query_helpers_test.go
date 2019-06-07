@@ -118,15 +118,15 @@ func (q *testQuerier) transferSamples() {
 		series := ss.At()
 		labels := series.Labels()
 		tags := make([]string, 0, len(labels))
-		measurement := ""
+		field := ""
 		for _, l := range labels {
 			if l.Name == "__name__" {
-				measurement = l.Value
+				field = l.Value
 				continue
 			}
 			tags = append(tags, escapeInfluxDBChars(l.Name)+"="+escapeInfluxDBChars(l.Value))
 		}
-		if measurement == "" {
+		if field == "" {
 			q.t.Fatalf("no metric name found in series %v", labels)
 		}
 		it := series.Iterator()
@@ -136,7 +136,7 @@ func (q *testQuerier) transferSamples() {
 				// TODO: InfluxDB line protocol does not support NaNs yet. Can we ingest NaNs somehow?
 				continue
 			}
-			_, err := buf.WriteString(fmt.Sprintf("%s,%s f64=%s %d\n", measurement, strings.Join(tags, ","), strconv.FormatFloat(val, 'f', -1, 64), ts*1e6))
+			_, err := buf.WriteString(fmt.Sprintf("prometheus,%s %s=%s %d\n", strings.Join(tags, ","), field, strconv.FormatFloat(val, 'f', -1, 64), ts*1e6))
 			if err != nil {
 				q.t.Fatal(err)
 			}

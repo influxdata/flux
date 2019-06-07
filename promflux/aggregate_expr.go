@@ -22,8 +22,8 @@ func convertibleToInt64(v float64) bool {
 }
 
 type aggregateFn struct {
-	name            string
-	dropMeasurement bool
+	name      string
+	dropField bool
 	// All PromQL aggregation operators drop non-grouping labels, but some
 	// of the (non-aggregation) Flux counterparts don't. This field indicates
 	// that the non-grouping drop needs to be explicitly added to the pipeline.
@@ -31,16 +31,16 @@ type aggregateFn struct {
 }
 
 var aggregateFns = map[promql.ItemType]aggregateFn{
-	promql.ItemSum:      {name: "sum", dropMeasurement: true, dropNonGrouping: false},
-	promql.ItemAvg:      {name: "mean", dropMeasurement: true, dropNonGrouping: false},
-	promql.ItemMax:      {name: "max", dropMeasurement: true, dropNonGrouping: true},
-	promql.ItemMin:      {name: "min", dropMeasurement: true, dropNonGrouping: true},
-	promql.ItemCount:    {name: "count", dropMeasurement: true, dropNonGrouping: false},
-	promql.ItemStddev:   {name: "stddev", dropMeasurement: true, dropNonGrouping: false},
-	promql.ItemStdvar:   {name: "stddev", dropMeasurement: true, dropNonGrouping: false},
-	promql.ItemTopK:     {name: "top", dropMeasurement: false, dropNonGrouping: false},
-	promql.ItemBottomK:  {name: "bottom", dropMeasurement: false, dropNonGrouping: false},
-	promql.ItemQuantile: {name: "quantile", dropMeasurement: true, dropNonGrouping: false},
+	promql.ItemSum:      {name: "sum", dropField: true, dropNonGrouping: false},
+	promql.ItemAvg:      {name: "mean", dropField: true, dropNonGrouping: false},
+	promql.ItemMax:      {name: "max", dropField: true, dropNonGrouping: true},
+	promql.ItemMin:      {name: "min", dropField: true, dropNonGrouping: true},
+	promql.ItemCount:    {name: "count", dropField: true, dropNonGrouping: false},
+	promql.ItemStddev:   {name: "stddev", dropField: true, dropNonGrouping: false},
+	promql.ItemStdvar:   {name: "stddev", dropField: true, dropNonGrouping: false},
+	promql.ItemTopK:     {name: "top", dropField: false, dropNonGrouping: false},
+	promql.ItemBottomK:  {name: "bottom", dropField: false, dropNonGrouping: false},
+	promql.ItemQuantile: {name: "quantile", dropField: true, dropNonGrouping: false},
 }
 
 func dropNonGroupingColsCall(groupCols []string, without bool) *ast.CallExpression {
@@ -106,7 +106,7 @@ func (t *Transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expres
 	}
 
 	mode := "by"
-	dropMeasurement := true
+	dropField := true
 	if a.Without {
 		mode = "except"
 		groupCols.Elements = append(
@@ -123,7 +123,7 @@ func (t *Transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expres
 		)
 		for _, col := range a.Grouping {
 			if col == model.MetricNameLabel {
-				dropMeasurement = false
+				dropField = false
 			}
 		}
 	}
@@ -143,10 +143,10 @@ func (t *Transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expres
 		// Drop labels that are not part of the grouping.
 		pipeline = buildPipeline(pipeline, dropNonGroupingColsCall(a.Grouping, a.Without))
 	}
-	if aggFn.dropMeasurement && dropMeasurement {
+	if aggFn.dropField && dropField {
 		pipeline = buildPipeline(
 			pipeline,
-			dropMeasurementAndTimeCall,
+			dropFieldAndTimeCall,
 		)
 	}
 	if a.Op == promql.ItemStdvar {

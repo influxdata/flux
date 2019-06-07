@@ -11,7 +11,7 @@ func TestEscapeLabelName(t *testing.T) {
 	escapedNames := map[string]string{
 		"test":     "test",
 		"_test":    "~_test",
-		"__name__": "_measurement",
+		"__name__": "_field",
 		"__foo__":  "~__foo__",
 	}
 
@@ -26,10 +26,10 @@ func TestEscapeLabelName(t *testing.T) {
 
 func TestUnescapeLabelName(t *testing.T) {
 	escapedNames := map[string]string{
-		"test":         "test",
-		"~_test":       "_test",
-		"_measurement": "__name__",
-		"~__foo__":     "__foo__",
+		"test":     "test",
+		"~_test":   "_test",
+		"_field":   "__name__",
+		"~__foo__": "__foo__",
 	}
 
 	for ln, want := range escapedNames {
@@ -56,7 +56,7 @@ func TestEscapeLabelNames(t *testing.T) {
 		},
 		{
 			labelNames: []string{"test", "_test", "__name__", "__foo__"},
-			want:       []string{"test", "~_test", "_measurement", "~__foo__"},
+			want:       []string{"test", "~_test", "_field", "~__foo__"},
 		},
 	}
 
@@ -76,35 +76,35 @@ func TestEscapeExpression(t *testing.T) {
 	}{
 		{
 			expr: `foo{bar!="baz",_value="value"}`,
-			want: `{_measurement="foo",bar!="baz",~_value="value"}`,
+			want: `{_field="foo",bar!="baz",~_value="value"}`,
 		},
 		{
 			expr: `{__name__=~".+"}`,
-			want: `{_measurement=~".+"}`,
+			want: `{_field=~".+"}`,
 		},
 		{
 			expr: `foo{bar!="baz",_value="value"}[5m]`,
-			want: `{_measurement="foo",bar!="baz",~_value="value"}[5m]`,
+			want: `{_field="foo",bar!="baz",~_value="value"}[5m]`,
 		},
 		{
 			expr: `{__name__=~".+"}[5m]`,
-			want: `{_measurement=~".+"}[5m]`,
+			want: `{_field=~".+"}[5m]`,
 		},
 		{
 			expr: `sum by(test, _value, __name__, __foo__) (foo)`,
-			want: `sum by(test, ~_value, _measurement, ~__foo__) ({_measurement="foo"})`,
+			want: `sum by(test, ~_value, _field, ~__foo__) ({_field="foo"})`,
 		},
 		{
 			expr: `sum without(test, _value, __name__, __foo__) (foo)`,
-			want: `sum without(test, ~_value, _measurement, ~__foo__) ({_measurement="foo"})`,
+			want: `sum without(test, ~_value, _field, ~__foo__) ({_field="foo"})`,
 		},
 		{
 			expr: `foo / on(test, _value, __name__, __foo__) group_left(_time) bar`,
-			want: `{_measurement="foo"} / on(test, ~_value, _measurement, ~__foo__) group_left(~_time) {_measurement="bar"}`,
+			want: `{_field="foo"} / on(test, ~_value, _field, ~__foo__) group_left(~_time) {_field="bar"}`,
 		},
 		{
 			expr: `foo / ignoring(test, _value, __name__, __foo__) group_right(_time) bar`,
-			want: `{_measurement="foo"} / ignoring(test, ~_value, _measurement, ~__foo__) group_right(~_time) {_measurement="bar"}`,
+			want: `{_field="foo"} / ignoring(test, ~_value, _field, ~__foo__) group_right(~_time) {_field="bar"}`,
 		},
 	}
 

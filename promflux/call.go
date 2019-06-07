@@ -168,7 +168,7 @@ func (t *Transpiler) transpileAggregateOverTimeFunc(fn string, inArgs []ast.Expr
 		}),
 		call("toFloat", nil),
 		filterSpecialNullValuesCall,
-		dropMeasurementAndTimeCall,
+		dropFieldAndTimeCall,
 	}
 
 	switch fn {
@@ -278,7 +278,7 @@ func (t *Transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 		return buildPipeline(
 			args[0],
 			call("map", map[string]ast.Expression{"fn": singleArgFloatFn(fn, "x")}),
-			dropMeasurementAndTimeCall,
+			dropFieldAndTimeCall,
 		), nil
 	}
 
@@ -294,7 +294,7 @@ func (t *Transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 		return buildPipeline(
 			v,
 			call("map", map[string]ast.Expression{"fn": singleArgFloatFn(fn, "timestamp")}),
-			dropMeasurementAndTimeCall,
+			dropFieldAndTimeCall,
 		), nil
 	}
 
@@ -317,7 +317,7 @@ func (t *Transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 				"isCounter": &ast.BooleanLiteral{Value: isCounter},
 				"isRate":    &ast.BooleanLiteral{Value: isRate},
 			}),
-			dropMeasurementAndTimeCall,
+			dropFieldAndTimeCall,
 		), nil
 	case "irate", "idelta":
 		isRate := true
@@ -331,13 +331,13 @@ func (t *Transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			call("promql.instantRate", map[string]ast.Expression{
 				"isRate": &ast.BooleanLiteral{Value: isRate},
 			}),
-			dropMeasurementAndTimeCall,
+			dropFieldAndTimeCall,
 		), nil
 	case "deriv":
 		return buildPipeline(
 			args[0],
 			call("promql.linearRegression", nil),
-			dropMeasurementAndTimeCall,
+			dropFieldAndTimeCall,
 		), nil
 	case "predict_linear":
 		if yieldsTable(c.Args[1]) {
@@ -350,7 +350,7 @@ func (t *Transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 				"predict": &ast.BooleanLiteral{Value: true},
 				"fromNow": args[1],
 			}),
-			dropMeasurementAndTimeCall,
+			dropFieldAndTimeCall,
 		), nil
 	case "holt_winters":
 		if yieldsTable(c.Args[1]) || yieldsTable(c.Args[2]) {
@@ -363,13 +363,13 @@ func (t *Transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 				"smoothingFactor": args[1],
 				"trendFactor":     args[2],
 			}),
-			dropMeasurementAndTimeCall,
+			dropFieldAndTimeCall,
 		), nil
 	case "timestamp":
 		return buildPipeline(
 			args[0],
 			call("promql.timestamp", nil),
-			dropMeasurementAndTimeCall,
+			dropFieldAndTimeCall,
 		), nil
 	case "time":
 		return t.timeFn(), nil
@@ -379,7 +379,7 @@ func (t *Transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 		return buildPipeline(
 			args[0],
 			call(fn, nil),
-			dropMeasurementAndTimeCall,
+			dropFieldAndTimeCall,
 		), nil
 	case "clamp_max", "clamp_min":
 		fn := "math.mMax"
@@ -394,7 +394,7 @@ func (t *Transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			call("map", map[string]ast.Expression{
 				"fn": scalarArithBinaryMathFn(fn, clamp, false),
 			}),
-			dropMeasurementAndTimeCall,
+			dropFieldAndTimeCall,
 		), nil
 	case "label_join":
 		v := args[0]
@@ -479,7 +479,7 @@ func (t *Transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			call("promql.promHistogramQuantile", map[string]ast.Expression{
 				"quantile": args[0],
 			}),
-			dropMeasurementAndTimeCall,
+			dropFieldAndTimeCall,
 		), nil
 	default:
 		return nil, fmt.Errorf("PromQL function %q is not supported yet", c.Func.Name)

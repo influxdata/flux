@@ -259,7 +259,7 @@ func (t *Transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 			return buildPipeline(
 				lhs,
 				call("map", map[string]ast.Expression{"fn": scalarArithBinaryOpFn(op, rhs, swapped)}),
-				dropMeasurementAndTimeCall,
+				dropFieldAndTimeCall,
 			), nil
 		}
 
@@ -267,7 +267,7 @@ func (t *Transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 			return buildPipeline(
 				lhs,
 				call("map", map[string]ast.Expression{"fn": scalarArithBinaryMathFn(opFn, rhs, swapped)}),
-				dropMeasurementAndTimeCall,
+				dropFieldAndTimeCall,
 			), nil
 		}
 
@@ -279,7 +279,7 @@ func (t *Transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 						"fn": scalarArithBinaryOpFn(op, rhs, swapped),
 					}),
 					call("toFloat", nil),
-					dropMeasurementAndTimeCall,
+					dropFieldAndTimeCall,
 				), nil
 			}
 			return buildPipeline(
@@ -300,7 +300,7 @@ func (t *Transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 			return nil, fmt.Errorf("vector-to-vector binary expressions without on() clause not supported yet")
 		}
 
-		dropMeasurement := true
+		dropField := true
 		var opCalls []*ast.CallExpression
 
 		if op, ok := arithBinOps[b.Op]; ok {
@@ -332,7 +332,7 @@ func (t *Transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 						}),
 					)
 				}
-				dropMeasurement = false
+				dropField = false
 			}
 		} else {
 			return nil, fmt.Errorf("vector set operations not supported yet")
@@ -356,8 +356,8 @@ func (t *Transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 		}
 
 		postJoinCalls := append(opCalls, outputColTransformCalls...)
-		if dropMeasurement {
-			postJoinCalls = append(postJoinCalls, dropMeasurementAndTimeCall)
+		if dropField {
+			postJoinCalls = append(postJoinCalls, dropFieldAndTimeCall)
 		}
 
 		return buildPipeline(

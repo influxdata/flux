@@ -8,7 +8,7 @@ import (
 func escapeLabelName(ln string) string {
 	switch {
 	case ln == "__name__":
-		return "_measurement"
+		return "_field"
 	case ln[0] == '_':
 		return "~" + ln
 	default:
@@ -18,7 +18,7 @@ func escapeLabelName(ln string) string {
 
 func unescapeLabelName(ln string) string {
 	switch {
-	case ln == "_measurement":
+	case ln == "_field":
 		return "__name__"
 	case ln[0] == '~':
 		return ln[1:]

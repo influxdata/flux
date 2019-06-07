@@ -62,6 +62,17 @@ func transpileLabelMatcher(lm *labels.Matcher) *ast.BinaryExpression {
 	return be
 }
 
+var dropMeasurementCall = call(
+	"drop",
+	map[string]ast.Expression{
+		"columns": &ast.ArrayExpression{
+			Elements: []ast.Expression{
+				&ast.StringLiteral{Value: "_measurement"},
+			},
+		},
+	},
+)
+
 func (t *Transpiler) transpileInstantVectorSelector(v *promql.VectorSelector) *ast.PipeExpression {
 	return buildPipeline(
 		// Select all Prometheus data.
@@ -87,6 +98,7 @@ func (t *Transpiler) transpileInstantVectorSelector(v *promql.VectorSelector) *a
 		call("timeShift", map[string]ast.Expression{
 			"duration": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: v.Offset.Nanoseconds(), Unit: "ns"}}},
 		}),
+		dropMeasurementCall,
 	)
 }
 
@@ -113,5 +125,6 @@ func (t *Transpiler) transpileRangeVectorSelector(v *promql.MatrixSelector) *ast
 		call("timeShift", map[string]ast.Expression{
 			"duration": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: v.Offset.Nanoseconds(), Unit: "ns"}}},
 		}),
+		dropMeasurementCall,
 	)
 }

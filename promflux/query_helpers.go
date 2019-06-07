@@ -39,7 +39,7 @@ func InfluxResultToPromMatrix(result flux.Result) promql.Matrix {
 						default:
 							panic("invalid value type")
 						}
-					case "_start", "_stop", "_field":
+					case "_start", "_stop", "_measurement":
 						// Ignore.
 					default:
 						ln := unescapeLabelName(col.Label)

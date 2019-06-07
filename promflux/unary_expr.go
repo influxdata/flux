@@ -24,7 +24,7 @@ func (t *Transpiler) transpileUnaryExpr(ue *promql.UnaryExpr) (ast.Expression, e
 				call("map", map[string]ast.Expression{
 					"fn": scalarArithBinaryOpFn(ast.MultiplicationOperator, &ast.FloatLiteral{Value: -1}, false)},
 				),
-				dropMeasurementAndTimeCall,
+				dropFieldAndTimeCall,
 			), nil
 		}
 
