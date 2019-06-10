@@ -5,6 +5,8 @@ vendor
 .vscode
 .vs
 .tern-project
+internal/rust/scanner/target/
+internal/rust/ast/target/
 internal/rust/parser/target/
 internal/rust/parser/pkg
 internal/rust/site/node_modules

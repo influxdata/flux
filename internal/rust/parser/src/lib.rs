@@ -1,11 +1,8 @@
-#[macro_use]
-extern crate serde_derive;
-
-mod ast;
-mod scanner;
+use ast;
+use scanner;
 
 use scanner::*;
-use std::ffi::{CString,CStr};
+use std::ffi::{CStr, CString};
 use std::str;
 use std::str::CharIndices;
 use wasm_bindgen::prelude::*;
@@ -181,28 +178,27 @@ impl Parser {
         }
     }
     fn parse_option_assignment(&mut self) -> ast::Statement {
-            self.expect(T_OPTION);
-            let ident = self.parse_identifier();
-            let assignment = self.parse_option_assignment_suffix(ident);
-            return ast::Statement::Option(ast::OptionStatement{
-                    base: self.base_node(),
-                    assignment: assignment,
-            })
+        self.expect(T_OPTION);
+        let ident = self.parse_identifier();
+        let assignment = self.parse_option_assignment_suffix(ident);
+        return ast::Statement::Option(ast::OptionStatement {
+            base: self.base_node(),
+            assignment: assignment,
+        });
     }
-    fn parse_option_assignment_suffix(&mut self, id: ast::Identifier) -> ast::Assignment{
+    fn parse_option_assignment_suffix(&mut self, id: ast::Identifier) -> ast::Assignment {
         let t = self.peek();
-            match t.tok {
-                tok if tok == T_ASSIGN => {
-                    let init = self.parse_assign_statement();
-                    return ast::Assignment::Variable(ast::VariableAssignment{
-                        base: self.base_node(),
-                        id: id,
-                        init: init,
-                    });
-                }
-                _ => panic!("TODO support more option assignement suffix")
-
+        match t.tok {
+            tok if tok == T_ASSIGN => {
+                let init = self.parse_assign_statement();
+                return ast::Assignment::Variable(ast::VariableAssignment {
+                    base: self.base_node(),
+                    id: id,
+                    init: init,
+                });
             }
+            _ => panic!("TODO support more option assignement suffix"),
+        }
     }
     fn parse_ident_statement(&mut self) -> ast::Statement {
         let id = self.parse_identifier();
@@ -224,7 +220,6 @@ impl Parser {
         self.expect(T_ASSIGN);
         return self.parse_expression();
     }
-
 
     fn parse_expression(&mut self) -> ast::Expression {
         return ast::Expression::Identifier(self.parse_identifier());
@@ -305,17 +300,10 @@ fn to_hex(c: char) -> Option<char> {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::ffi::CString;
-    use hello_macro_derive;
-
-    #[test]
-    fn test_derive() {
-        hello_macro_derive::hello_macro_derive();
-    }
 
     #[test]
     fn test_parse_package_clause() {
