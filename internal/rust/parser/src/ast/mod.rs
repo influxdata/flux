@@ -1,6 +1,8 @@
 
+use serde::ser::{Serialize, SerializeStruct, Serializer};
 use std::time::SystemTime;
 use std::vec::Vec;
+
 
 #[derive(Debug, PartialEq, Clone, Serialize)]
 pub enum Expression {
@@ -12,6 +14,7 @@ pub enum Statement {
     Expression(ExpressionStatement),
     Return(ReturnStatement),
     Variable(VariableAssignment),
+    Option(OptionStatement),
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize)]
@@ -32,6 +35,7 @@ pub struct BaseNode {
     //pub  Loc   : *SourceLocation,
     pub errors: Vec<String>,
 }
+
 
 // Package represents a complete package source tree
 #[derive(Debug, PartialEq, Clone, Serialize)]
@@ -346,3 +350,26 @@ pub struct DateTimeLiteral {
     pub base: BaseNode,
     pub value: SystemTime,
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_json() {
+        let base = BaseNode{
+            errors: vec![String::from("err")],
+        };
+        let j = serde_json::to_string(&base).unwrap();
+        println!("{}",j);
+        assert_eq!(j, r#"{"type":"BaseNode","errors":["err"]}"#);
+    }
+    #[test]
+    fn test_hello() {
+        BaseNode::hello_macro();
+    }
+}
+
+
+
+
+

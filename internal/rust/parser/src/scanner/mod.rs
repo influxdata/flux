@@ -1,6 +1,6 @@
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
-type c_char = i8;
+pub type c_char = i8;
 
 use std::ffi::CString;
 use std::str;

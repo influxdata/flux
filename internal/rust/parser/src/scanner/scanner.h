@@ -59,6 +59,7 @@ enum T {
     PIPE_RECEIVE                  = 49,
 };
 
+
 #define WASM_EXPORT __attribute__ ((visibility("default")))
 
 // Scan reads the input and reports the next lexical token.

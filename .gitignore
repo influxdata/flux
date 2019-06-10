@@ -6,4 +6,5 @@ vendor
 .vs
 .tern-project
 internal/rust/parser/target/
-internal/rust/parser/scanner/target/
+internal/rust/parser/pkg
+internal/rust/site/node_modules
