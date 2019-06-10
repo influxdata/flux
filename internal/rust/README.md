@@ -13,7 +13,6 @@ See [this](https://developer.mozilla.org/en-US/docs/WebAssembly/Rust_to_wasm) fo
 ## Build WASM
 
 Use `wasm-pack` to build an npm package from the compiled wasm code.
-You need clang 1.8
 
     $ cd internal/rust/parser
     $ wasm-pack build --dev --scope influxdata
