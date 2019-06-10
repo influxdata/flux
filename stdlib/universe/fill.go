@@ -239,24 +239,26 @@ func (t *fillTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 		// Set new value
 		l := cr.Len()
 
-		if t.spec.UsePrevious {
-			prevNonNull = execute.ValueForRow(cr, 0, idx)
-		}
+		if l > 0 {
+			if t.spec.UsePrevious {
+				prevNonNull = execute.ValueForRow(cr, 0, idx)
+			}
 
-		for i := 0; i < l; i++ {
-			v := execute.ValueForRow(cr, i, idx)
-			if v.IsNull() {
-				if err := builder.AppendValue(idx, prevNonNull); err != nil {
-					return err
-				}
-			} else {
-				if err := builder.AppendValue(idx, v); err != nil {
-					return err
-				}
-				if t.spec.UsePrevious {
-					prevNonNull = v
-				}
+			for i := 0; i < l; i++ {
+				v := execute.ValueForRow(cr, i, idx)
+				if v.IsNull() {
+					if err := builder.AppendValue(idx, prevNonNull); err != nil {
+						return err
+					}
+				} else {
+					if err := builder.AppendValue(idx, v); err != nil {
+						return err
+					}
+					if t.spec.UsePrevious {
+						prevNonNull = v
+					}
 
+				}
 			}
 		}
 		return nil
