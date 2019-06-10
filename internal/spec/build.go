@@ -41,6 +41,7 @@ func FromSemantic(semPkg *semantic.Package, now time.Time) (*flux.Spec, error) {
 	return FromSideEffects(sideEffects, now)
 }
 
+// FromSideEffects returns a spec from the side effects of evaluation.
 func FromSideEffects(sideEffects []interpreter.SideEffect, now time.Time) (*flux.Spec, error) {
 	spec, err := toSpec(sideEffects, now)
 	if err != nil {

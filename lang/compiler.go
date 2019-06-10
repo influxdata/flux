@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/spec"
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -85,8 +86,8 @@ func Verbose(v bool) CompileOption {
 }
 
 // Compile evaluates a Flux script producing a flux.Program.
-// now parameter must be non-zero, that is the default now time should be set before compiling.
-func Compile(q string, now time.Time, opts ...CompileOption) (*Program, error) {
+// `now` parameter should be non-zero, that is the default now time should be set before compiling.
+func Compile(q string, now time.Time, opts ...CompileOption) (*FutureProgram, error) {
 	astPkg, err := flux.Parse(q)
 	if err != nil {
 		return nil, err
@@ -95,24 +96,41 @@ func Compile(q string, now time.Time, opts ...CompileOption) (*Program, error) {
 }
 
 // CompileAST evaluates a Flux AST and produces a flux.Program.
-// now parameter must be non-zero, that is the default now time should be set before compiling.
-func CompileAST(astPkg *ast.Package, now time.Time, opts ...CompileOption) (*Program, error) {
+// `now` parameter should be non-zero, that is the default now time should be set before compiling.
+func CompileAST(astPkg *ast.Package, now time.Time, opts ...CompileOption) (*FutureProgram, error) {
+	if now.IsZero() {
+		now = time.Now()
+	}
 	semPkg, err := semantic.New(astPkg)
 	if err != nil {
 		return nil, err
 	}
-	return &Program{
-		ReadyToStartProgram: &ReadyToStartProgram{
+	// run type inference at compile time to get errors.
+	universe := flux.Prelude()
+	stdlib := flux.StdLib()
+	types, err := interpreter.InferTypes(semPkg, universe, stdlib)
+	if err != nil {
+		return nil, err
+	}
+	flux.SetNow(now)(universe)
+	return &FutureProgram{
+		Program: &Program{
 			opts: applyOptions(opts...),
 		},
-		Pkg: semPkg,
-		Now: now,
+		scope:    universe,
+		importer: stdlib,
+		types:    types,
+		Ast:      astPkg,
+		Pkg:      semPkg,
 	}, nil
 }
 
-// CompileTableObject evaluates a TableObject and produces a flux.Program.
-// now parameter must be non-zero, that is the default now time should be set before compiling.
-func CompileTableObject(ctx context.Context, to *flux.TableObject, now time.Time, opts ...CompileOption) (*ReadyToStartProgram, error) {
+// CompileTableObject evaluates a TableObject and produces a Program.
+// `now` parameter should be non-zero, that is the default now time should be set before compiling.
+func CompileTableObject(ctx context.Context, to *flux.TableObject, now time.Time, opts ...CompileOption) (*Program, error) {
+	if now.IsZero() {
+		now = time.Now()
+	}
 	o := applyOptions(opts...)
 	sp := spec.FromTableObject(to, now)
 	if o.verbose {
@@ -124,7 +142,7 @@ func CompileTableObject(ctx context.Context, to *flux.TableObject, now time.Time
 	if err != nil {
 		return nil, err
 	}
-	return &ReadyToStartProgram{
+	return &Program{
 		opts:     o,
 		PlanSpec: ps,
 	}, nil
@@ -178,13 +196,9 @@ type ASTCompiler struct {
 }
 
 func (c ASTCompiler) Compile(ctx context.Context) (flux.Program, error) {
-	now := c.Now
-	if now.IsZero() {
-		now = time.Now()
-	}
 	s, _ := opentracing.StartSpanFromContext(ctx, "compile")
 	defer s.Finish()
-	return CompileAST(c.AST, now)
+	return CompileAST(c.AST, c.Now)
 }
 
 func (ASTCompiler) CompilerType() flux.CompilerType {
@@ -217,9 +231,9 @@ type DependenciesAwareProgram interface {
 	SetLogger(logger *zap.Logger)
 }
 
-// ReadyToStartProgram implements the flux.Program interface.
+// Program implements the flux.Program interface.
 // It executes a compiled plan using an executor.
-type ReadyToStartProgram struct {
+type Program struct {
 	Dependencies execute.Dependencies
 	Logger       *zap.Logger
 	PlanSpec     *plan.Spec
@@ -227,15 +241,15 @@ type ReadyToStartProgram struct {
 	opts *compileOptions
 }
 
-func (p *ReadyToStartProgram) SetExecutorDependencies(deps execute.Dependencies) {
+func (p *Program) SetExecutorDependencies(deps execute.Dependencies) {
 	p.Dependencies = deps
 }
 
-func (p *ReadyToStartProgram) SetLogger(logger *zap.Logger) {
+func (p *Program) SetLogger(logger *zap.Logger) {
 	p.Logger = logger
 }
 
-func (p *ReadyToStartProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
 	s, _ := opentracing.StartSpanFromContext(ctx, "start")
 	defer s.Finish()
 	ctx, cancel := context.WithCancel(ctx)
@@ -266,7 +280,7 @@ func (p *ReadyToStartProgram) Start(ctx context.Context, alloc *memory.Allocator
 	return q, nil
 }
 
-func (p *ReadyToStartProgram) processResults(ctx context.Context, q *query, resultMap map[string]flux.Result) {
+func (p *Program) processResults(ctx context.Context, q *query, resultMap map[string]flux.Result) {
 	defer q.wg.Done()
 	defer close(q.results)
 
@@ -280,32 +294,38 @@ func (p *ReadyToStartProgram) processResults(ctx context.Context, q *query, resu
 	}
 }
 
-func (p *ReadyToStartProgram) readMetadata(q *query, metaCh <-chan flux.Metadata) {
+func (p *Program) readMetadata(q *query, metaCh <-chan flux.Metadata) {
 	defer q.wg.Done()
 	for md := range metaCh {
 		q.stats.Metadata.AddAll(md)
 	}
 }
 
-// Program is a flux.Program that is not ready to start, but contains a semantic graph.
-// Upon start it evaluates the semantic graph and starts the real execution.
-// As such, evaluation errors are returned by Start.
-type Program struct {
-	*ReadyToStartProgram
+// FutureProgram is a wrapper around Program that contains everything that it needs to perform evaluation, build a PlanSpec,
+// and start a Program upon Start. As such, every compile time error should be returned before instantiating the
+// FutureProgram. Evaluation errors are returned when invoking Start.
+type FutureProgram struct {
+	*Program
 
-	Pkg *semantic.Package
-	Now time.Time
+	scope    interpreter.Scope
+	importer interpreter.Importer
+	types    semantic.TypeSolution
+	Ast      *ast.Package      // exposed for inspection
+	Pkg      *semantic.Package // exposed for inspection
 }
 
-func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+func (p *FutureProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
 	if p.opts == nil {
 		p.opts = defaultOptions()
 	}
-	if p.Now.IsZero() {
-		p.Now = time.Now()
-	}
 	s, _ := opentracing.StartSpanFromContext(ctx, "eval")
-	sideEffects, _, actualNow, err := flux.EvalWithNow(p.Pkg, p.Now)
+	itrp := interpreter.NewInterpreter()
+	sideEffects, err := itrp.Eval(p.Pkg, p.scope, p.importer)
+	if err != nil {
+		s.Finish()
+		return nil, err
+	}
+	actualNow, err := flux.GetNow(p.scope)
 	if err != nil {
 		s.Finish()
 		return nil, err
@@ -325,5 +345,5 @@ func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Quer
 		return nil, errors.Wrap(err, "error in building plan while starting program")
 	}
 	p.PlanSpec = ps
-	return p.ReadyToStartProgram.Start(ctx, alloc)
+	return p.Program.Start(ctx, alloc)
 }

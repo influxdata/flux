@@ -17,6 +17,12 @@ type Interpreter struct {
 	pkg         string
 }
 
+// SideEffect contains its value, and the semantic node that generated it.
+type SideEffect struct {
+	Node  semantic.Node
+	Value values.Value
+}
+
 func NewInterpreter() *Interpreter {
 	return &Interpreter{
 		types:     make(map[semantic.Node]semantic.Type),
@@ -24,14 +30,9 @@ func NewInterpreter() *Interpreter {
 	}
 }
 
-// SideEffect contains its value, and the semantic node that generated it.
-type SideEffect struct {
-	Node  semantic.Node
-	Value values.Value
-}
-
-// Eval evaluates the expressions composing a Flux package and returns any side effects that occurred during this evaluation.
-func (itrp *Interpreter) Eval(node semantic.Node, scope Scope, importer Importer) ([]SideEffect, error) {
+// InferTypes creates a type solution for the given semantic graph, by taking into account
+// the given scope and its parents recursively.
+func InferTypes(node semantic.Node, scope Scope, importer Importer) (semantic.TypeSolution, error) {
 	var n = node
 	for s := scope; s != nil; s = s.Pop() {
 		extern := &semantic.Extern{
@@ -47,27 +48,43 @@ func (itrp *Interpreter) Eval(node semantic.Node, scope Scope, importer Importer
 		})
 		n = extern
 	}
-
 	sol, err := semantic.InferTypes(n, importer)
 	if err != nil {
 		return nil, err
 	}
+	return sol, nil
+}
 
-	semantic.Walk(semantic.CreateVisitor(func(node semantic.Node) {
-		if typ, err := sol.TypeOf(node); err == nil {
-			itrp.types[node] = typ
-		}
-		if polyType, err := sol.PolyTypeOf(node); err == nil {
-			itrp.polyTypes[node] = polyType
-		}
-	}), node)
+// Eval evaluates the expressions composing a Flux package and returns any side effects that occurred during this evaluation.
+func (itrp *Interpreter) Eval(node semantic.Node, scope Scope, importer Importer) ([]SideEffect, error) {
+	types, err := InferTypes(node, scope, importer)
+	if err != nil {
+		return nil, err
+	}
+	return itrp.EvalWithTypes(node, scope, importer, types)
+}
 
+// EvalWithTypes does the same as Eval, but it doesn't run any type inference.
+// It uses the type solution passed in as an argument, instead.
+func (itrp *Interpreter) EvalWithTypes(node semantic.Node, scope Scope, importer Importer, types semantic.TypeSolution) ([]SideEffect, error) {
+	itrp.saveTypes(node, types)
 	// reset side effect list
 	itrp.sideEffects = itrp.sideEffects[:0]
 	if err := itrp.doRoot(node, scope, importer); err != nil {
 		return nil, err
 	}
 	return itrp.sideEffects, nil
+}
+
+func (itrp *Interpreter) saveTypes(node semantic.Node, types semantic.TypeSolution) {
+	semantic.Walk(semantic.CreateVisitor(func(node semantic.Node) {
+		if typ, err := types.TypeOf(node); err == nil {
+			itrp.types[node] = typ
+		}
+		if polyType, err := types.PolyTypeOf(node); err == nil {
+			itrp.polyTypes[node] = polyType
+		}
+	}), node)
 }
 
 func (itrp *Interpreter) doRoot(node semantic.Node, scope Scope, importer Importer) error {

@@ -72,6 +72,9 @@ func Eval(semPkg *semantic.Package, opts ...ScopeMutator) ([]interpreter.SideEff
 // Apart from the side effects and the scope used by the interpreter, it returns the actual now time used during the
 // evaluation (in the case that a now option overrode the now passed in).
 func EvalWithNow(semPkg *semantic.Package, now time.Time) ([]interpreter.SideEffect, interpreter.Scope, time.Time, error) {
+	if now.IsZero() {
+		now = time.Now()
+	}
 	sideEffects, scope, err := Eval(semPkg, SetNow(now))
 	if err != nil {
 		return nil, nil, time.Time{}, err

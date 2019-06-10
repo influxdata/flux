@@ -3,8 +3,8 @@ package lang_test
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"math"
+	"strings"
 	"testing"
 	"time"
 
@@ -32,47 +32,18 @@ func init() {
 	execute.RegisterSource(influxdb.FromKind, mock.CreateMockFromSource)
 }
 
-func TestFluxCompiler(t *testing.T) {
-	ctx := context.Background()
-
-	for _, tc := range []struct {
-		q  string
-		ok bool
-	}{
-		{q: `from(bucket: "foo")`, ok: true},
-		{q: `t=""t.t`},
-		{q: `t=0t.s`},
-		{q: `x = from(bucket: "foo")`},
-		{q: `x = from(bucket: "foo") |> yield()`, ok: true},
-		{q: `from(bucket: "foo")`, ok: true},
-	} {
-		c := lang.FluxCompiler{
-			Query: tc.q,
-		}
-		program, err := c.Compile(ctx)
-		if err != nil {
-			t.Fatalf("failed to compile AST: %v", err)
-		}
-		// we need to start the program to get compile errors derived from AST evaluation
-		if _, err = program.Start(context.Background(), &memory.Allocator{}); tc.ok && err != nil {
-			t.Errorf("expected query %q to compile successfully but got error %v", tc.q, err)
-		} else if !tc.ok && err == nil {
-			t.Errorf("expected query %q to compile with error but got no error", tc.q)
-		}
-	}
-}
-
-func checkError(t *testing.T, want, got error) {
-	if got != nil {
-		if want == nil {
-			t.Fatalf("got unexpected error: %v", got)
+func checkError(t *testing.T, want string, gotErr error) {
+	if gotErr != nil {
+		got := gotErr.Error()
+		if want == "" {
+			t.Fatalf("gotErr unexpected error: %v", got)
 		} else {
-			if diff := cmp.Diff(want.Error(), got.Error()); diff != "" {
-				t.Fatalf("expected error, but got a different one: -want/+got:\n%s", diff)
+			if !strings.Contains(got, want) {
+				t.Fatalf("expected error, but got a different one.\nwant: ... %s ...\ngot: %s", want, got)
 			}
 		}
-	} else if want != nil {
-		t.Error("wanted error, got none")
+	} else if want != "" {
+		t.Error("wanted error, gotErr none")
 	}
 }
 
@@ -80,33 +51,47 @@ func TestCompileStartError(t *testing.T) {
 	tcs := []struct {
 		name   string
 		script string
-		errC   error
-		errS   error
+		errC   string
+		errS   string
 	}{
 		{
-			name:   "fail AST",
+			name:   "fail AST - ints cannot be keys",
 			script: `{1: 2}`,
-			errC:   fmt.Errorf(`unexpected token for property key: INT ("1")`),
+			errC:   `unexpected token`,
 		},
 		{
-			name: "fail semantic",
+			name: "fail semantic - return statement",
 			script: `f = (a) => {
   a + 1
   a + 2
 }`,
-			errC: fmt.Errorf("missing return statement in block"),
+			errC: "missing return statement",
 		},
 		{
-			name:   "fail runtime",
-			script: `1 + 2`,
-			errS: fmt.Errorf(`error in evaluating AST while starting program: ` +
-				`this Flux script returns no streaming data. ` +
-				`Consider adding a "yield" or invoking streaming functions directly, without performing an assignment`),
+			name:   "fail type inference - sum int and string",
+			script: `1 + "lol"`,
+			errC:   "int != string",
 		},
 		{
-			name: "legal query",
-			script: `import g "generate"
-g.from(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:53:00Z, count: 10, fn: (n) => n)`,
+			name: "fail type inference - cannot access property of string",
+			script: `t=""
+t.t`,
+			errC: `member object must be a type variable`,
+		},
+		{
+			name: "fail type inference - cannot access property of int",
+			script: `t=0
+t.s`,
+			errC: `member object must be a type variable`,
+		},
+		{
+			name:   "legal query",
+			script: `from(bucket: "foo")`,
+		},
+		{
+			name:   "fail runtime - missing streaming data",
+			script: `x = from(bucket: "foo")`,
+			errS:   `this Flux script returns no streaming data`,
 		},
 	}
 
@@ -234,7 +219,7 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 				t.Fatalf("failed to start program: %v", err)
 			}
 
-			got := program.(*lang.Program).PlanSpec
+			got := program.(*lang.FutureProgram).PlanSpec
 			want := plantest.CreatePlanSpec(&tc.want)
 			if err := plantest.ComparePlansShallow(want, got); err != nil {
 				t.Error(err)
