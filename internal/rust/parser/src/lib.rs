@@ -14,6 +14,7 @@ pub fn js_parse(s: &str) -> JsValue {
     return JsValue::from_serde(&file).unwrap();
 }
 
+// TODO uncomment when we get back to the Go build side.
 //#[no_mangle]
 //pub fn go_parse(s: *const c_char) {
 //    let buf = unsafe {

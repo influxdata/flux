@@ -39,7 +39,7 @@ A trivial web app has been created that loads the parser wasm module and call pa
     $ npm run serve
 
 Navigate to http://localhost:8080 to try it out.
-This will watch the filesystm and rebuild on changes.
+This will watch the filesystem and rebuild on changes.
 As such you should be able to run `wasm-pack` to get new changes and then refresh the browser to test.
 
 ## Test
