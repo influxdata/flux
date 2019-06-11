@@ -38,7 +38,7 @@ The parser directly implements the following grammar.
     LogicalAndOperator             = "and" .
     UnaryLogicalExpression         = ComparisonExpression
                                    | UnaryLogicalOperator UnaryLogicalExpression .
-    UnaryLogicalOperator           = "not" .
+    UnaryLogicalOperator           = "not" | "exists" .
     ComparisonExpression           = AdditiveExpression { ComparisonExpressionSuffix } .
     ComparisonExpressionSuffix     = ComparisonOperator AdditiveExpression .
     ComparisonOperator             = "==" | "!=" | "<" | "<=" | ">" | ">=" | "=~" | "!~" .

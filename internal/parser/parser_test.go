@@ -1809,6 +1809,27 @@ import "path/bar"
 			},
 		},
 		{
+			name: "unary expression with member expression",
+			raw:  `not m.b`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:8"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:8"),
+						Expression: &ast.UnaryExpression{
+							BaseNode: base("1:1", "1:8"),
+							Operator: ast.NotOperator,
+							Argument: &ast.MemberExpression{
+								BaseNode: base("1:5", "1:8"),
+								Object:   &ast.Identifier{BaseNode: base("1:5", "1:6"), Name: "m"},
+								Property: &ast.Identifier{BaseNode: base("1:7", "1:8"), Name: "b"},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "unary expressions with too many comments",
 			raw: `// define a
 a = 5.0
@@ -3221,6 +3242,101 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/`,
 							Alternate: &ast.IntegerLiteral{
 								BaseNode: base("1:25", "1:26"),
 								Value:    1,
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "conditional with unary logical operators",
+			raw:  `a = if exists b or c < d and not e == f then not exists (g - h) else exists exists i`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:85"),
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
+						BaseNode: base("1:1", "1:85"),
+						ID: &ast.Identifier{
+							BaseNode: base("1:1", "1:2"),
+							Name:     "a",
+						},
+						Init: &ast.ConditionalExpression{
+							BaseNode: base("1:5", "1:85"),
+							Test: &ast.LogicalExpression{
+								BaseNode: base("1:8", "1:40"),
+								Operator: ast.OrOperator,
+								Left: &ast.UnaryExpression{
+									BaseNode: base("1:8", "1:16"),
+									Operator: ast.ExistsOperator,
+									Argument: &ast.Identifier{
+										BaseNode: base("1:15", "1:16"),
+										Name:     "b",
+									},
+								},
+								Right: &ast.LogicalExpression{
+									BaseNode: base("1:20", "1:40"),
+									Operator: ast.AndOperator,
+									Left: &ast.BinaryExpression{
+										BaseNode: base("1:20", "1:25"),
+										Operator: ast.LessThanOperator,
+										Left: &ast.Identifier{
+											BaseNode: base("1:20", "1:21"),
+											Name:     "c",
+										},
+										Right: &ast.Identifier{
+											BaseNode: base("1:24", "1:25"),
+											Name:     "d",
+										},
+									},
+									Right: &ast.UnaryExpression{
+										BaseNode: base("1:30", "1:40"),
+										Operator: ast.NotOperator,
+										Argument: &ast.BinaryExpression{
+											BaseNode: base("1:34", "1:40"),
+											Operator: ast.EqualOperator,
+											Left: &ast.Identifier{
+												BaseNode: base("1:34", "1:35"),
+												Name:     "e",
+											},
+											Right: &ast.Identifier{
+												BaseNode: base("1:39", "1:40"),
+												Name:     "f",
+											},
+										},
+									},
+								},
+							},
+							Consequent: &ast.UnaryExpression{
+								BaseNode: base("1:46", "1:63"),
+								Operator: ast.NotOperator,
+								Argument: &ast.UnaryExpression{
+									BaseNode: base("1:50", "1:63"),
+									Operator: ast.ExistsOperator,
+									Argument: &ast.BinaryExpression{
+										BaseNode: base("1:58", "1:63"),
+										Operator: ast.SubtractionOperator,
+										Left: &ast.Identifier{
+											BaseNode: base("1:58", "1:59"),
+											Name:     "g",
+										},
+										Right: &ast.Identifier{
+											BaseNode: base("1:62", "1:63"),
+											Name:     "h",
+										},
+									},
+								},
+							},
+							Alternate: &ast.UnaryExpression{
+								BaseNode: base("1:70", "1:85"),
+								Operator: ast.ExistsOperator,
+								Argument: &ast.UnaryExpression{
+									BaseNode: base("1:77", "1:85"),
+									Operator: ast.ExistsOperator,
+									Argument: &ast.Identifier{
+										BaseNode: base("1:84", "1:85"),
+										Name:     "i",
+									},
+								},
 							},
 						},
 					},
@@ -4648,27 +4764,6 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 						Init: &ast.DateTimeLiteral{
 							BaseNode: base("1:7", "1:37"),
 							Value:    mustParseTime("2018-11-29T09:00:00.100000000Z"),
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "unary expression with member expression",
-			raw:  `not m.b`,
-			want: &ast.File{
-				BaseNode: base("1:1", "1:8"),
-				Body: []ast.Statement{
-					&ast.ExpressionStatement{
-						BaseNode: base("1:1", "1:8"),
-						Expression: &ast.UnaryExpression{
-							BaseNode: base("1:1", "1:8"),
-							Operator: ast.NotOperator,
-							Argument: &ast.MemberExpression{
-								BaseNode: base("1:5", "1:8"),
-								Object:   &ast.Identifier{BaseNode: base("1:5", "1:6"), Name: "m"},
-								Property: &ast.Identifier{BaseNode: base("1:7", "1:8"), Name: "b"},
-							},
 						},
 					},
 				},

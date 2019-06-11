@@ -237,6 +237,7 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, fun
 		return &unaryEvaluator{
 			t:    monoType(typeSol.TypeOf(n)),
 			node: node,
+			op:   n.Operator,
 		}, nil
 	case *semantic.LogicalExpression:
 		l, err := compile(n.Left, typeSol, builtIns, funcExprs)

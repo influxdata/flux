@@ -32,6 +32,10 @@ func addOption(name string, opt values.Value) {
 	testScope.Set(name, opt)
 }
 
+func addValue(name string, v values.Value) {
+	addOption(name, v)
+}
+
 func init() {
 	addFunc(&function{
 		name: "fortyTwo",
@@ -110,6 +114,7 @@ func init() {
 	optionsObject.Set("repeat", values.NewInt(100))
 
 	addOption("task", optionsObject)
+	addValue("NULL", values.NewNull(semantic.Int))
 }
 
 // TestEval tests whether a program can run to completion or not
@@ -436,6 +441,16 @@ func TestEval(t *testing.T) {
 				}),
 			},
 		},
+		{
+			name: "exists",
+			query: `
+				exists 1
+				exists NULL`,
+			want: []values.Value{
+				values.NewBool(true),
+				values.NewBool(false),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -460,8 +475,9 @@ func TestEval(t *testing.T) {
 				t.Fatal("expected error")
 			}
 
-			if tc.want != nil && !cmp.Equal(tc.want, getSideEffectsValues(sideEffects), semantictest.CmpOptions...) {
-				t.Fatalf("unexpected side effect values -want/+got: \n%s", cmp.Diff(tc.want, sideEffects, semantictest.CmpOptions...))
+			vs := getSideEffectsValues(sideEffects)
+			if tc.want != nil && !cmp.Equal(tc.want, vs, semantictest.CmpOptions...) {
+				t.Fatalf("unexpected side effect values -want/+got: \n%s", cmp.Diff(tc.want, vs, semantictest.CmpOptions...))
 			}
 		})
 	}

@@ -134,6 +134,7 @@ func TestCompileAndEval(t *testing.T) {
 		input   values.Object
 		want    values.Value
 		wantErr bool
+		skip    string
 	}{
 		{
 			name: "simple ident return",
@@ -450,6 +451,7 @@ func TestCompileAndEval(t *testing.T) {
 		},
 		{
 			name: "conditional",
+			// f = (t, c, a) => if t then c else a
 			fn: &semantic.FunctionExpression{
 				Block: &semantic.FunctionBlock{
 					Parameters: &semantic.FunctionParameters{
@@ -484,11 +486,157 @@ func TestCompileAndEval(t *testing.T) {
 			}),
 			want: values.NewString("cats"),
 		},
+		{
+			name: "unary logical operator - not",
+			// f = (a, b) => not a or b
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "a"}},
+							{Key: &semantic.Identifier{Name: "b"}},
+						},
+					},
+					Body: &semantic.LogicalExpression{
+						Operator: ast.OrOperator,
+						Left: &semantic.UnaryExpression{
+							Operator: ast.NotOperator,
+							Argument: &semantic.IdentifierExpression{
+								Name: "a",
+							},
+						},
+						Right: &semantic.IdentifierExpression{
+							Name: "b",
+						},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"a": semantic.Bool,
+				"b": semantic.Bool,
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"a": values.NewBool(true),
+				"b": values.NewBool(true),
+			}),
+			want: values.NewBool(true),
+		},
+		{
+			name: "unary logical operator - exists with null",
+			// f = (a) => exists a
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "a"}},
+						},
+					},
+					Body: &semantic.UnaryExpression{
+						Operator: ast.ExistsOperator,
+						Argument: &semantic.IdentifierExpression{
+							Name: "a",
+						},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"a": semantic.String,
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"a": values.NewNull(semantic.String),
+			}),
+			want: values.NewBool(false),
+			skip: "implement null support for compiler",
+		},
+		{
+			name: "unary logical operator - exists without null",
+			// f = (a, b) => not a and exists b
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "a"}},
+							{Key: &semantic.Identifier{Name: "b"}},
+						},
+					},
+					Body: &semantic.LogicalExpression{
+						Operator: ast.AndOperator,
+						Left: &semantic.UnaryExpression{
+							Operator: ast.NotOperator,
+							Argument: &semantic.IdentifierExpression{
+								Name: "a",
+							},
+						},
+						Right: &semantic.UnaryExpression{
+							Operator: ast.ExistsOperator,
+							Argument: &semantic.IdentifierExpression{
+								Name: "b",
+							},
+						},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"a": semantic.Bool,
+				"b": semantic.String,
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"a": values.NewBool(true),
+				"b": values.NewString("I exist"),
+			}),
+			want: values.NewBool(false),
+		},
+		{
+			name: "unary operator",
+			// f = (a) => if a < 0 then -a else +a
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "a"}},
+						},
+					},
+					Body: &semantic.ConditionalExpression{
+						Test: &semantic.BinaryExpression{
+							Operator: ast.LessThanOperator,
+							Left: &semantic.IdentifierExpression{
+								Name: "a",
+							},
+							Right: &semantic.IntegerLiteral{
+								Value: 0,
+							},
+						},
+						Consequent: &semantic.UnaryExpression{
+							Operator: ast.SubtractionOperator,
+							Argument: &semantic.IdentifierExpression{
+								Name: "a",
+							},
+						},
+						Alternate: &semantic.UnaryExpression{
+							Operator: ast.AdditionOperator,
+							Argument: &semantic.IdentifierExpression{
+								Name: "a",
+							},
+						},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"a": semantic.Int,
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"a": values.NewInt(5),
+			}),
+			want: values.NewInt(5),
+		},
 	}
 
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.skip != "" {
+				t.Skip(tc.skip)
+			}
 			f, err := compiler.Compile(tc.fn, tc.inType, nil)
 			if tc.wantErr != (err != nil) {
 				t.Fatalf("unexpected error %s", err)

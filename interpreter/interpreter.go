@@ -297,10 +297,11 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope Scope) (va
 			default:
 				return nil, fmt.Errorf("operand to unary expression is not a number value, got %v", v.Type())
 			}
+		case ast.ExistsOperator:
+			return values.NewBool(!v.IsNull()), nil
 		default:
 			return nil, fmt.Errorf("unsupported operator %q to unary expression", e.Operator)
 		}
-
 	case *semantic.BinaryExpression:
 		l, err := itrp.doExpression(e.Left, scope)
 		if err != nil {
