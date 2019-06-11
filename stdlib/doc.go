@@ -1,7 +1,7 @@
 /*
 Package stdlib represents the Flux standard library. The Flux standard library is a collection of built-in packages
 that may be imported by any Flux script. Each package in the standard library exports a collection of values most
-interesting of which are the exported funtion values. These valeus are callable in the flux query processor.  While flux may
+interesting of which are the exported function values. These values are callable in the flux query processor.  While flux may
 be extended at runtime by writing function expressions, there are some limitations for which a built-in function is
 necessary, such as the need for custom data structures, stateful procedures, complex looping and branching, and
 connection to external services.  Another reason for implementing a built-in function is to provide a function that is
