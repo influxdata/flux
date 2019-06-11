@@ -3434,7 +3434,7 @@ Example: `countStr(v: "aaaaa", substr: "a")` returns the int `5`.
 
 Reports whether v and t, interpreted as UTF-8 strings, are equal under Unicode case-folding.
 
-Example: `equalFold("Go", "go")` returns boolean `true`.
+Example: `equalFold(v: "Go", t: "go")` returns boolean `true`.
 
 ##### hasPrefix
 
@@ -3452,13 +3452,13 @@ Example: `hasSuffix(v: "go gopher", t: "go")` returns boolean `false`.
 
 Returns the index of the first instance of substr in v, or -1 if substr is not present in s.
 
-Example: `index(v: "go gopher", t: "go")` returns int `0`.
+Example: `index(v: "go gopher", substr: "go")` returns int `0`.
 
 ##### indexAny
 
 Returns the index of the first instance of any value in substr in v, or -1 if all values in substr are not present in s.
 
-Example: `indexAny("v: chicken", chars: "aeiouy")` returns int `2`.
+Example: `indexAny(v: "chicken", chars: "aeiouy")` returns int `2`.
 
 ##### isDigit
 
