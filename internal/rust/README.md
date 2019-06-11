@@ -13,11 +13,26 @@ See [this](https://developer.mozilla.org/en-US/docs/WebAssembly/Rust_to_wasm) fo
 ## Build WASM
 
 Use `wasm-pack` to build an npm package from the compiled wasm code.
+You will need to use the `clang` compiler at least version 8.
+
+### Linux
+
+Use your distributions package manager to install clang.
 
     $ cd internal/rust/parser
-    $ wasm-pack build --dev --scope influxdata
+    $ CC=clang wasm-pack build --dev --scope influxdata
 
-### Link npm modules
+### MacOS
+
+MacOS doesn't appear to have a functional version of clang that will work.
+As such we have created a Dockerfile to abstract these dependecies.
+To use it run the `build.sh` script which will run all the build command inside the docker contianer.
+
+    $ ./internal/rust/build.sh
+
+> NOTE: The docker image uses a local volume mount at `./internal/rust/.cache` to cache rust/wasm build artifacts to make builds faster inside the container.
+
+## Link npm modules
 
 This only needs to be done once to create symlinks that npm can use to consume the wasm npm package without publishing it.
 
@@ -29,7 +44,8 @@ This only needs to be done once to create symlinks that npm can use to consume t
 
 Once that is done the `parser` dependency in the simple npm site will reference the build artifacts from `wasm-pack`.
 
->NOTE: The `npm install` command will destroy the link. So if you run `npm install` again you must rerun the `npm link @influxdata/parser` command in the `site` directory.
+> NOTE: The `npm install` command will destroy the link.
+So if you run `npm install` again you must rerun the `npm link @influxdata/parser` command in the `site` directory.
 
 
 ## Run in Browser
