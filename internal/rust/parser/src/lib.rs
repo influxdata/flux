@@ -2,7 +2,7 @@ use ast;
 use scanner;
 
 use scanner::*;
-use std::ffi::{CStr, CString};
+use std::ffi::{CString};
 use std::str;
 use std::str::CharIndices;
 use wasm_bindgen::prelude::*;
@@ -242,6 +242,20 @@ impl Parser {
             value: value,
         }
     }
+    fn parse_int_literal(&mut self) -> ast::IntegerLiteral {
+        let t = self.expect(T_INT);
+        return ast::IntegerLiteral{
+            base: self.base_node(),
+            value: (&t.lit).parse::<i64>().unwrap(),
+        }
+    }
+    fn parse_float_literal(&mut self) -> ast::FloatLiteral {
+        let t = self.expect(T_FLOAT);
+        return ast::FloatLiteral{
+            base: self.base_node(),
+            value: (&t.lit).parse::<f64>().unwrap(),
+        }
+    }
 }
 
 pub fn parse_string(lit: &str) -> Result<String, String> {
@@ -304,8 +318,23 @@ fn to_hex(c: char) -> Option<char> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::ffi::CString;
 
+    #[test]
+    fn test_parse_float_literal() {
+        let mut p = Parser::new("22.5");
+        assert_eq!(p.parse_float_literal(), ast::FloatLiteral {
+            base: ast::BaseNode { errors: Vec::new() },
+            value: 22.5,
+        })
+    }
+    #[test]
+    fn test_parse_int_literal() {
+        let mut p = Parser::new("22");
+        assert_eq!(p.parse_int_literal(), ast::IntegerLiteral {
+            base: ast::BaseNode { errors: Vec::new() },
+            value: 22,
+        })
+    }
     #[test]
     fn test_parse_package_clause() {
         let mut p = Parser::new("package foo");
