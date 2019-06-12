@@ -88,6 +88,7 @@ var (
 		"influxdata/influxdb",
 		"math",
 		"strings",
+		"regexp",
 	}
 	preludeScope = &scopeSet{
 		packages: make([]*interpreter.Package, len(prelude)),
