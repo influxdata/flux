@@ -1729,19 +1729,6 @@ name(p: j)
 			},
 		},
 		{
-			name: "structural polymorphism error",
-			script: `
-john = {name: "John", age: 30, weight: 100.0}
-jane = {name: "Jane", lastName: "Smith"}
-
-fullName = (p) => p.name + " " + p.lastName
-
-fullName(p:jane)
-fullName(p:john)
-`,
-			wantErr: errors.New(`type error 8:1-8:17: missing object properties (lastName)`),
-		},
-		{
 			name: "function with polymorphic object parameter",
 			script: `
 foo = (r) => ({
@@ -2252,6 +2239,299 @@ a = exists b`,
 				},
 			},
 		},
+		{
+			name: "retrieve nonexistant value",
+			script: `r = {}
+r.a`,
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					// This will eventually resolve as null,
+					// but it stays a Tvar until the real type
+					// is retrieved.
+					tv := semantic.Tvar(5)
+					r := semantic.NewObjectPolyType(
+						map[string]semantic.PolyType{
+							"a": tv,
+						},
+						semantic.LabelSet{"a"},
+						nil,
+					)
+					switch n := node.(type) {
+					case *semantic.MemberExpression:
+						switch n.Start.Line {
+						case 2:
+							switch n.Start.Column {
+							case 1:
+								return tv
+							}
+						}
+					case *semantic.ObjectExpression:
+						return semantic.NewEmptyObjectPolyType()
+					case *semantic.IdentifierExpression:
+						switch n.Start.Line {
+						case 2:
+							switch n.Start.Column {
+							case 1:
+								return r
+							}
+						}
+					}
+					return nil
+				},
+			},
+		},
+		{
+			name: "addition with nonexistant value",
+			script: `r = {a: 1}
+r.a + r.b`,
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					r := semantic.NewObjectPolyType(
+						map[string]semantic.PolyType{
+							"a": semantic.Int,
+						},
+						nil,
+						semantic.LabelSet{"a"},
+					)
+					ra := semantic.NewObjectPolyType(
+						map[string]semantic.PolyType{
+							"a": semantic.Int,
+						},
+						semantic.LabelSet{"a"},
+						semantic.LabelSet{"a"},
+					)
+					rb := semantic.NewObjectPolyType(
+						map[string]semantic.PolyType{
+							"a": semantic.Int,
+							"b": semantic.Int,
+						},
+						semantic.LabelSet{"b"},
+						semantic.LabelSet{"a"},
+					)
+					switch n := node.(type) {
+					case *semantic.BinaryExpression:
+						return semantic.Int
+					case *semantic.MemberExpression:
+						return semantic.Int
+					case *semantic.ObjectExpression:
+						return r
+					case *semantic.Property:
+						switch n.Start.Line {
+						case 1:
+							switch n.Start.Column {
+							case 6:
+								return semantic.Int
+							}
+						}
+					case *semantic.IdentifierExpression:
+						switch n.Start.Line {
+						case 2:
+							switch n.Start.Column {
+							case 1:
+								return ra
+							case 7:
+								return rb
+							}
+						}
+					}
+					return nil
+				},
+			},
+		},
+		{
+			name: "comparison with nonexistant value",
+			script: `r = {a: 1}
+r.a < r.b`,
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					// This will eventually resolve as null,
+					// but it stays a Tvar until the real type
+					// is retrieved.
+					tv := semantic.Tvar(12)
+					r := semantic.NewObjectPolyType(
+						map[string]semantic.PolyType{
+							"a": semantic.Int,
+						},
+						nil,
+						semantic.LabelSet{"a"},
+					)
+					ra := semantic.NewObjectPolyType(
+						map[string]semantic.PolyType{
+							"a": semantic.Int,
+						},
+						semantic.LabelSet{"a"},
+						semantic.LabelSet{"a"},
+					)
+					rb := semantic.NewObjectPolyType(
+						map[string]semantic.PolyType{
+							"a": semantic.Int,
+							"b": tv,
+						},
+						semantic.LabelSet{"b"},
+						semantic.LabelSet{"a"},
+					)
+					switch n := node.(type) {
+					case *semantic.BinaryExpression:
+						return semantic.Bool
+					case *semantic.MemberExpression:
+						switch n.Start.Line {
+						case 2:
+							switch n.Start.Column {
+							case 1:
+								return semantic.Int
+							case 7:
+								return tv
+							}
+						}
+					case *semantic.ObjectExpression:
+						return r
+					case *semantic.Property:
+						switch n.Start.Line {
+						case 1:
+							switch n.Start.Column {
+							case 6:
+								return semantic.Int
+							}
+						}
+					case *semantic.IdentifierExpression:
+						switch n.Start.Line {
+						case 2:
+							switch n.Start.Column {
+							case 1:
+								return ra
+							case 7:
+								return rb
+							}
+						}
+					}
+					return nil
+				},
+			},
+		},
+		{
+			name: "addition with only null values",
+			script: `r = {}
+r.a + r.b`,
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					// This will eventually resolve as null,
+					// but it stays a Tvar until the real type
+					// is retrieved.
+					tv := semantic.Tvar(10)
+					r1 := semantic.NewObjectPolyType(
+						map[string]semantic.PolyType{
+							"a": tv,
+						},
+						semantic.LabelSet{"a"},
+						nil,
+					)
+					r2 := semantic.NewObjectPolyType(
+						map[string]semantic.PolyType{
+							"b": tv,
+						},
+						semantic.LabelSet{"b"},
+						nil,
+					)
+					switch n := node.(type) {
+					case *semantic.BinaryExpression:
+						return tv
+					case *semantic.MemberExpression:
+						switch n.Start.Line {
+						case 2:
+							switch n.Start.Column {
+							case 1:
+								return tv
+							case 7:
+								return tv
+							}
+						}
+					case *semantic.ObjectExpression:
+						return semantic.NewEmptyObjectPolyType()
+					case *semantic.IdentifierExpression:
+						switch n.Start.Line {
+						case 2:
+							switch n.Start.Column {
+							case 1:
+								return r1
+							case 7:
+								return r2
+							}
+						}
+					}
+					return nil
+				},
+			},
+		},
+		{
+			name: "comparison with only null values",
+			script: `r = {}
+r.a < r.b`,
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					// This will eventually resolve as null,
+					// but it stays a Tvar until the real type
+					// is retrieved.
+					tv1 := semantic.Tvar(8)
+					tv2 := semantic.Tvar(10)
+					r1 := semantic.NewObjectPolyType(
+						map[string]semantic.PolyType{
+							"a": tv1,
+						},
+						semantic.LabelSet{"a"},
+						nil,
+					)
+					r2 := semantic.NewObjectPolyType(
+						map[string]semantic.PolyType{
+							"b": tv2,
+						},
+						semantic.LabelSet{"b"},
+						nil,
+					)
+					switch n := node.(type) {
+					case *semantic.BinaryExpression:
+						return semantic.Bool
+					case *semantic.MemberExpression:
+						switch n.Start.Line {
+						case 2:
+							switch n.Start.Column {
+							case 1:
+								return tv1
+							case 7:
+								return tv2
+							}
+						}
+					case *semantic.ObjectExpression:
+						return semantic.NewEmptyObjectPolyType()
+					case *semantic.IdentifierExpression:
+						switch n.Start.Line {
+						case 2:
+							switch n.Start.Column {
+							case 1:
+								return r1
+							case 7:
+								return r2
+							}
+						}
+					}
+					return nil
+				},
+			},
+		},
+		{
+			name: "access nonexistant object",
+			script: `r = {a: 1}
+r.b.c + r.a
+`,
+			wantErr: errors.New("missing object properties (b)"),
+		},
+		{
+			name: "nonexistant regex in object",
+			script: `r = {a: "abc"}
+		r.a =~ r.b
+		`,
+			wantErr: errors.New("missing object properties (b)"),
+			skip:    "object cannot recognize that b is a regex and not nullable",
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
@@ -2259,6 +2539,7 @@ a = exists b`,
 			if tc.skip != "" {
 				t.Skip(tc.skip)
 			}
+
 			if tc.script != "" {
 				pkg := parser.ParseSource(tc.script)
 				if ast.Check(pkg) > 0 {
@@ -2339,6 +2620,37 @@ a = exists b`,
 			}
 			t.Log("got solution:", gotSolution)
 		})
+	}
+}
+
+func TestInferTypes_TypeOf_Null(t *testing.T) {
+	expr := &semantic.MemberExpression{
+		Object:   &semantic.IdentifierExpression{Name: "r"},
+		Property: "a",
+	}
+	node := &semantic.File{
+		Body: []semantic.Statement{
+			&semantic.NativeVariableAssignment{
+				Identifier: &semantic.Identifier{Name: "r"},
+				Init: &semantic.ObjectExpression{
+					Properties: []*semantic.Property{},
+				},
+			},
+			&semantic.ExpressionStatement{
+				Expression: expr,
+			},
+		},
+	}
+	ts, err := semantic.InferTypes(node, nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	typ, err := ts.TypeOf(expr)
+	if err != nil {
+		t.Errorf("could not resolve type of statement: %v", err)
+	} else if got, want := typ, semantic.Nil; got != want {
+		t.Errorf("unexpected type for statement, want: %v got: %v", want, got)
 	}
 }
 

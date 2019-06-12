@@ -20,7 +20,7 @@ type TypeExpression interface {
 	resolvePolyType(map[Tvar]Kind) (PolyType, error)
 }
 
-//PolyType represents a polymorphic type, meaning that the type may have multiple free type variables.
+// PolyType represents a polymorphic type, meaning that the type may have multiple free type variables.
 type PolyType interface {
 	TypeExpression
 	// occurs reports whether tv is a free variable in the type.
@@ -44,6 +44,8 @@ type Kind interface {
 	substituteKind(tv Tvar, t PolyType) Kind
 	// unifyKind unifies the two kinds producing a new merged kind and a substitution.
 	unifyKind(map[Tvar]Kind, Kind) (Kind, Substitution, error)
+	// occurs reports whether tv occurs in this kind.
+	occurs(tv Tvar) bool
 }
 
 // Tvar represents a type variable meaning its type could be any possible type.
@@ -288,6 +290,9 @@ func (k ArrayKind) resolvePolyType(kinds map[Tvar]Kind) (PolyType, error) {
 		return nil, err
 	}
 	return NewArrayPolyType(typ), nil
+}
+func (k ArrayKind) occurs(tv Tvar) bool {
+	return k.elementType.occurs(tv)
 }
 
 // pipeLabel is a hidden label on which all pipe arguments are passed according to type inference.
@@ -600,13 +605,7 @@ func (o object) String() string {
 }
 
 func (o object) occurs(tv Tvar) bool {
-	for _, p := range o.krecord.properties {
-		occurs := p.occurs(tv)
-		if occurs {
-			return true
-		}
-	}
-	return false
+	return o.krecord.occurs(tv)
 }
 
 func (o object) substituteType(tv Tvar, typ PolyType) PolyType {
@@ -697,6 +696,7 @@ func (k KClass) MonoType() (Type, bool) {
 func (k KClass) resolvePolyType(map[Tvar]Kind) (PolyType, error) {
 	return nil, errors.New("KClass has no poly type")
 }
+func (k KClass) occurs(Tvar) bool { return false }
 
 type ObjectKind struct {
 	with       *Tvar
@@ -779,9 +779,17 @@ func (l ObjectKind) unifyKind(kinds map[Tvar]Kind, k Kind) (Kind, Substitution, 
 	upper := l.upper.intersect(r.upper)
 	lower := l.lower.union(r.lower)
 
-	// Check for missing properties
+	// Ensure that all of the values that are missing are allowed to be missing.
 	diff := lower.diff(upper)
-	if len(diff) > 0 {
+	for _, lbl := range diff {
+		if ptv, ok := properties[lbl].(Tvar); ok {
+			// If this tvar is nullable, then it is allowed
+			// to be missing.
+			kind := kinds[ptv]
+			if _, ok := kind.(NullableKind); ok {
+				continue
+			}
+		}
 		return nil, nil, fmt.Errorf("missing object properties %v", diff)
 	}
 
@@ -805,9 +813,8 @@ func (l ObjectKind) unifyKind(kinds map[Tvar]Kind, k Kind) (Kind, Substitution, 
 		lower:      lower,
 		upper:      upper,
 	}
-	// Check for invalid records in lower bound
-	for _, lbl := range kr.lower {
-		t := kr.properties[lbl]
+	// Check for invalid records in the properties.
+	for lbl, t := range kr.properties {
 		i, ok := t.(invalid)
 		if ok {
 			return nil, nil, errors.Wrapf(i.err, "invalid record access %q", lbl)
@@ -858,6 +865,46 @@ func (k ObjectKind) resolvePolyType(kinds map[Tvar]Kind) (PolyType, error) {
 		}
 	}
 	return NewObjectPolyType(properties, k.lower, k.upper), nil
+}
+func (k ObjectKind) occurs(tv Tvar) bool {
+	for _, p := range k.properties {
+		occurs := p.occurs(tv)
+		if occurs {
+			return true
+		}
+	}
+	return false
+}
+
+// NullableKind indicates that it is possible for this
+// variable to be the null type if no other type is
+// more appropriate.
+type NullableKind struct {
+	T PolyType
+}
+
+func (n NullableKind) MonoType() (Type, bool) {
+	return n.T.MonoType()
+}
+func (NullableKind) freeVars(*Constraints) TvarSet { return nil }
+func (n NullableKind) resolveType(kinds map[Tvar]Kind) (Type, error) {
+	return Nil, nil
+}
+func (n NullableKind) resolvePolyType(kinds map[Tvar]Kind) (PolyType, error) {
+	return n.T, nil
+}
+func (n NullableKind) substituteKind(tv Tvar, t PolyType) Kind {
+	if ptv, ok := n.T.(Tvar); ok && ptv == tv {
+		return NullableKind{T: t}
+	}
+	return n
+}
+func (n NullableKind) unifyKind(kinds map[Tvar]Kind, k Kind) (Kind, Substitution, error) {
+	// Nullable constraint is overwritten by everything.
+	return k, nil, nil
+}
+func (n NullableKind) occurs(tv Tvar) bool {
+	return n.T.occurs(tv)
 }
 
 type Comparable struct{}
