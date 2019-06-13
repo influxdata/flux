@@ -173,10 +173,66 @@ impl Parser {
     fn parse_statement(&mut self) -> ast::Statement {
         let t = self.peek();
         match t.tok {
-            tok if tok == T_IDENT => self.parse_ident_statement(),
-            tok if tok == T_OPTION => self.parse_option_assignment(),
-            _ => panic!("TODO: support more statements"),
+            T_INT |
+            T_FLOAT |
+            T_STRING  |
+            T_DIV |
+            T_TIME |
+            T_DURATION|
+            T_PIPE_RECEIVE|
+            T_LPAREN |
+            T_LBRACK |
+            T_LBRACE|
+            T_ADD |
+            T_SUB |
+            T_NOT |
+            T_IF => self.parse_expression_statement(),
+            T_IDENT => self.parse_ident_statement(),
+            T_OPTION => self.parse_option_assignment(),
+            T_BUILTIN => self.parse_builtin_statement(),
+            T_TEST => self.parse_test_statement(),
+            T_RETURN => self.parse_return_statement(),
+            _ => {
+                self.consume();
+                ast::Statement::Bad(ast::BadStatement {
+                    base: self.base_node(),
+                    text: t.lit,
+                })
+            }
         }
+    }
+    fn parse_return_statement(&mut self) -> ast::Statement {
+        self.expect(T_RETURN);
+        ast::Statement::Return(ast::ReturnStatement {
+            base: self.base_node(),
+            argument: self.parse_expression(),
+        })
+    }
+    fn parse_test_statement(&mut self) -> ast::Statement {
+        self.expect(T_TEST);
+        let id = self.parse_identifier();
+        let assignment = self.parse_assign_statement();
+        ast::Statement::Test(ast::TestStatement {
+            base: self.base_node(),
+            assignment: ast::VariableAssignment {
+                base: self.base_node(),
+                id: id,
+                init: assignment,
+            },
+        })
+    }
+    fn parse_builtin_statement(&mut self) -> ast::Statement {
+        self.expect(T_BUILTIN);
+        ast::Statement::Builtin(ast::BuiltinStatement {
+            base: self.base_node(),
+            id: self.parse_identifier(),
+        })
+    }
+    fn parse_expression_statement(&mut self) -> ast::Statement {
+        ast::Statement::Expression(ast::ExpressionStatement {
+            base: self.base_node(),
+            expression: self.parse_expression(),
+        })
     }
     fn parse_option_assignment(&mut self) -> ast::Statement {
         self.expect(T_OPTION);
@@ -319,6 +375,46 @@ fn to_hex(c: char) -> Option<char> {
 mod tests {
     use super::*;
 
+    #[test]
+    fn test_return_statement() {
+        let mut p = Parser::new("return value");
+        assert_eq!(p.parse_statement(), ast::Statement::Return(ast::ReturnStatement {
+            base: ast::BaseNode { errors: Vec::new() },
+            argument: ast::Expression::Identifier(ast::Identifier {
+                base: ast::BaseNode { errors: Vec::new() },
+                name: String::from("value"),
+            }),
+        }))
+    }
+    #[test]
+    fn test_parse_test_statement() {
+        let mut p = Parser::new("test fun_test = obj");
+        assert_eq!(p.parse_statement(), ast::Statement::Test(ast::TestStatement {
+            base: ast::BaseNode { errors: Vec::new() },
+            assignment: ast::VariableAssignment {
+                base: ast::BaseNode { errors: Vec::new() },
+                id: ast::Identifier {
+                    base: ast::BaseNode { errors: Vec::new() },
+                    name: String::from("fun_test"),
+                },
+                init: ast::Expression::Identifier(ast::Identifier {
+                    base: ast::BaseNode { errors: Vec::new() },
+                    name: String::from("obj"),
+                })
+            }
+        }))
+    }
+    #[test]
+    fn test_parse_builtin_statement() {
+        let mut p = Parser::new("builtin from");
+        assert_eq!(p.parse_statement(), ast::Statement::Builtin(ast::BuiltinStatement {
+            base: ast::BaseNode { errors: Vec::new() },
+            id: ast::Identifier {
+                base: ast::BaseNode { errors: Vec::new() },
+                name: String::from("from"),
+            }
+        }))
+    }
     #[test]
     fn test_parse_float_literal() {
         let mut p = Parser::new("22.5");
