@@ -410,7 +410,7 @@ func TestFormat_Associativity(t *testing.T) {
 		},
 		{
 			name:   "unary with pars",
-			script: `not (b and c)`,
+			script: `not (b and c) and exists d or exists (e and f)`,
 		},
 		{
 			name:   "unary negative duration",

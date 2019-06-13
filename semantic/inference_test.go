@@ -1671,6 +1671,72 @@ foo.b
 			script:  `if 1 then 0.1 else 0.0`,
 			wantErr: errors.New(`type error 1:4-1:5: int != bool`),
 		},
+		{
+			name: "exists",
+			script: `b = 1
+a = exists b`,
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					switch n := node.(type) {
+					case *semantic.IdentifierExpression:
+						if n.Name == "a" {
+							return semantic.Bool
+						}
+						return semantic.Int
+					case *semantic.UnaryExpression:
+						return semantic.Bool
+					}
+					return nil
+				},
+			},
+		},
+		{
+			name:   "conditional expression with exists",
+			script: `if exists 1 then 3 else 30`,
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					switch node.(type) {
+					case *semantic.ConditionalExpression:
+						return semantic.Int
+					case *semantic.UnaryExpression:
+						return semantic.Bool
+					}
+					return nil
+				},
+			},
+		},
+		{
+			name:   "function with exists",
+			script: `fillNull = (v) => if exists v then v else "NULL"`,
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					// Type inference is able to deduce that the branches of the conditional
+					// must have the same type. The alternate is a StringLiteral, so v must be a string, and
+					// the result of the conditional too.
+					switch node.(type) {
+					case *semantic.FunctionExpression:
+						return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+							Parameters: map[string]semantic.PolyType{
+								"v": semantic.String,
+							},
+							Required: semantic.LabelSet{"v"},
+							Return:   semantic.String,
+						})
+					case *semantic.FunctionBlock:
+						return semantic.String
+					case *semantic.FunctionParameter:
+						return semantic.String
+					case *semantic.ConditionalExpression:
+						return semantic.String
+					case *semantic.IdentifierExpression:
+						return semantic.String
+					case *semantic.UnaryExpression:
+						return semantic.Bool
+					}
+					return nil
+				},
+			},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc

@@ -405,6 +405,28 @@ func TestFill_Process(t *testing.T) {
 				},
 			}},
 		},
+		{
+			name: "fill previous empty table",
+			spec: &universe.FillProcedureSpec{
+				DefaultCost: plan.DefaultCost{},
+				Column:      "_value",
+				UsePrevious: true,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}(nil),
+			}},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc

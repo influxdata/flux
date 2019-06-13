@@ -241,7 +241,8 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		case ast.NotOperator:
 			v.cs.AddTypeConst(t, Bool, n.Location())
 			return Bool, nil
-
+		case ast.ExistsOperator:
+			return Bool, nil
 		}
 		return t, nil
 	case *FunctionExpression:

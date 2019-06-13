@@ -1732,7 +1732,7 @@ var pkgAST = &ast.Package{
 											Name: "_measurement",
 										},
 									},
-									Operator: 14,
+									Operator: 15,
 									Right: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
@@ -3029,7 +3029,7 @@ var pkgAST = &ast.Package{
 											Name: "_measurement",
 										},
 									},
-									Operator: 14,
+									Operator: 15,
 									Right: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Errors: nil,

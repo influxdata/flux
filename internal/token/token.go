@@ -59,6 +59,7 @@ const (
 	COLON
 	PIPE_FORWARD
 	PIPE_RECEIVE
+	EXISTS
 )
 
 func (t Token) String() string {

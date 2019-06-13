@@ -805,7 +805,8 @@ The precedence of the operators is given in the table below. Operators with a lo
 |          | `<` `<=`       |                           |
 |          | `>` `>=`       |                           |
 |          |`=~` `!~`       |                           |
-|     5    |  `not`         | Unary logical expression  |
+|     5    | `not`          | Unary logical operator    |
+|          | `exists`       | Null check operator       |
 |     6    |  `and`         |        Logical AND        |
 |     7    |  `or`          |        Logical OR         |
 |     8    | `if/then/else` |        Conditional        |
@@ -820,7 +821,7 @@ The operator precedence is encoded directly into the grammar as the following.
     LogicalOperator          = "and" | "or" .
     UnaryLogicalExpression   = ComparisonExpression
                              | UnaryLogicalOperator UnaryLogicalExpression .
-    UnaryLogicalOperator     = "not" .
+    UnaryLogicalOperator     = "not" | "exists" .
     ComparisonExpression     = MultiplicativeExpression
                              | ComparisonExpression ComparisonOperator MultiplicativeExpression .
     ComparisonOperator       = "==" | "!=" | "<" | "<=" | ">" | ">=" | "=~" | "!~" .
@@ -1364,10 +1365,10 @@ Again, by interpreting a _null_ operand as an unknown value, we have the followi
 And finally, because records are represented using object types, attempting to access a column whose value is unknown or missing from a record will also return _null_.
 
 Note according to the definitions above, it is not possible to check whether or not an expression is _null_ using the `==` and `!=` operators as these operators will return _null_ if any of their operands are _null_.
-In order to perform such a check, Flux provides a built-in `exists` function defined as follows:
+In order to perform such a check, Flux provides a built-in `exists` operator defined as follows:
 
-* exists(x) returns false if x is _null_
-* exists(x) returns true if x is not _null_
+* `exists x` returns false if `x` is _null_
+* `exists x` returns true if `x` is not _null_
 
 ### Transformations
 
@@ -3405,29 +3406,143 @@ If you need to convert other columns use the `map` function directly with the `u
 
 #### String operations
 
-##### trim
+##### compare
 
-Remove leading and trailing characters specified in cutset from a string.
+Compare two strings lexicographically. Returns 0 if v==t, -1 if v < t, and +1 if v > t.
 
-Example: `trim(v: ".abc.", cutset: ".")` returns the string `abc`.
+Example: `compare(v: "a", t: "a")` returns the int `0`
 
-##### trimSpace
+##### containsStr
 
-Remove leading and trailing spaces from a string.
+Reports whether substr is in v.
 
-Example: `trimSpace(v: "  abc  ")` returns the string `abc`.
+Example: `containsStr(v: "abc", substr: "a")` returns the boolean `true`.
 
-##### trimPrefix
+##### containsAny
 
-Remove a prefix from a string. Strings that do not start with the prefix are returned unchanged.
+Reports whether any value from chars is in v.
 
-Example: `trimPrefix(v: "123_abc", prefix: "123")` returns the string `_abc`.
+Example: `containsAny(v: "abc", chars: "and")` returns the boolean `true`.
 
-##### trimSuffix
+##### countStr
 
-Remove a suffix from a string. Strings that do not end with the suffix are returned unchanged.
+Reports the number of non-overlapping instances in which substr appears in v.
 
-Example: `trimSuffix(v: "abc_123", suffix: "123")` returns the string `abc_`.
+Example: `countStr(v: "aaaaa", substr: "a")` returns the int `5`.
+
+##### equalFold
+
+Reports whether v and t, interpreted as UTF-8 strings, are equal under Unicode case-folding.
+
+Example: `equalFold(v: "Go", t: "go")` returns boolean `true`.
+
+##### hasPrefix
+
+Tests whether the string v begins with prefix.
+
+Example: `hasPrefix(v: "go gopher", t: "go")` returns boolean `true`.
+
+##### hasSuffix
+
+Tests whether the string v ends with suffix.
+
+Example: `hasSuffix(v: "go gopher", t: "go")` returns boolean `false`.
+
+##### index
+
+Returns the index of the first instance of substr in v, or -1 if substr is not present in s.
+
+Example: `index(v: "go gopher", substr: "go")` returns int `0`.
+
+##### indexAny
+
+Returns the index of the first instance of any value in substr in v, or -1 if all values in substr are not present in s.
+
+Example: `indexAny(v: "chicken", chars: "aeiouy")` returns int `2`.
+
+##### isDigit
+
+Returns whether or not v is a digit.
+
+Example: `isDigit(v: "A")` returns boolean `false`.
+
+##### isLetter
+
+Returns whether or not v is a letter.
+
+Example: `isLetter(v: "A")` returns boolean `true`.
+
+##### isLower
+
+Returns whether or not v is lowercase.
+
+Example: `isLower(v: "A")` returns boolean `false`.
+
+##### isUpper
+
+Returns whether or not v is uppercase.
+
+Example: `isUpper(v: "A")` returns boolean `true`.
+
+##### joinStr
+
+Concatenates the elements of inputted string array to create a single string with v as the separator.
+
+Example: `joinStr(arr: []string{"a", "b", "c"}, v: ",")` returns string `a,b,c`.
+
+##### lastIndex
+
+Returns the index of the last instance of substr in s, or -1 if substr is not present in v.
+
+Example: `lastIndex(v: "go gopher", t: "go")` returns int `3`.
+
+##### lastIndexAny
+
+Returns the index of the last instance of any value from chars in v, or -1 if no value from chars is present in v.
+
+Example: `lastIndexAny(v: "go gopher", t: "go")` returns int `4`.
+
+##### repeat
+
+Returns a new string consisting of i copies of the string v.
+
+Example: `repeat("v: na", i: 2)` returns string `nana`.
+
+##### replace 
+
+Returns a copy of the string v with the first i non-overlapping instances of t replaced by u.
+
+Example: `replaceAll(v: "oink oink oink", t: "oink", u: "moo", i: 2)` returns string `moo moo oink`.
+
+##### replaceAll
+
+Returns a copy of the string v with the all non-overlapping instances of t replaced by u.
+
+Example: `replaceAll(v: "oink oink oink", t: "oink", u: "moo")` returns string `moo moo moo`.
+
+##### split
+
+Slices v into all substrings separated by t and returns a slice of the substrings between those separators.
+
+Example: `split(v: "a,b,c", t: ",")` returns []string `["a" "b" "c"]`.
+
+##### splitAfter
+
+Slices v into all substrings after each instance of t and returns a slice of the substrings between those separators.
+
+Example: `splitAfter(v: "a,b,c", t: ",")` returns []string `["a," "b," "c"]`.
+
+##### splitAfterN
+
+Slices v into all substrings after each instance of t and returns a slice of the substrings between those separators. i determines the number of substrings to return.
+
+Example: `splitAfterN(v: "a,b,c", t: ",", i: 2)` returns []string `["a," "b,c"]`.
+
+##### splitN
+
+Slices v into all substrings separated by t and returns a slice of the substrings between those separators. i determines the number of substrings to return.
+
+Example: `splitN(v: "a,b,c", t: ",", i: 2)` returns []string `["a" "b,c"]`.
 
 ##### title
 
@@ -3435,17 +3550,59 @@ Convert a string to title case.
 
 Example: `title(v: "a flux of foxes")` returns the string `A Flux Of Foxes`.
 
+##### toLower
+
+Convert a string to lower case.
+
+Example: `toLower(v: "KOALA")` returns the string `koala`.
+
+##### toTitle
+
+Returns a copy of the string v with all Unicode letters mapped to their title case.
+
+Example: `toTitle("loud noises")` returns the string `LOUD NOISES`.
+
 ##### toUpper
 
 Convert a string to upper case.
 
 Example: `toUpper(v: "koala")` returns the string `KOALA`.
 
-##### toLower
+##### trim
 
-Convert a string to lower case.
+Remove leading and trailing characters specified in cutset from a string.
 
-Example: `toLower(v: "KOALA")` returns the string `koala`.
+Example: `trim(v: ".abc.", cutset: ".")` returns the string `abc`.
+
+##### trimLeft
+
+Remove leading characters specified in cutset from a string.
+
+Example: `trim(v: ".abc.", cutset: ".")` returns the string `abc.`.
+
+##### trimPrefix
+
+Remove a prefix from a string. Strings that do not start with the prefix are returned unchanged.
+
+Example: `trimPrefix(v: "123_abc", prefix: "123")` returns the string `_abc`.
+
+##### trimRight
+
+Remove trailing characters specified in cutset from a string.
+
+Example: `trim(v: ".abc.", cutset: ".")` returns the string `.abc`.
+
+##### trimSpace
+
+Remove leading and trailing spaces from a string.
+
+Example: `trimSpace(v: "  abc  ")` returns the string `abc`.
+
+##### trimSuffix
+
+Remove a suffix from a string. Strings that do not end with the suffix are returned unchanged.
+
+Example: `trimSuffix(v: "abc_123", suffix: "123")` returns the string `abc_`.
 
 ### Composite data types
 

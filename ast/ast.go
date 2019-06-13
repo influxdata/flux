@@ -694,6 +694,7 @@ const (
 	StartsWithOperator
 	InOperator
 	NotOperator
+	ExistsOperator
 	NotEmptyOperator
 	EmptyOperator
 	EqualOperator
@@ -1270,6 +1271,7 @@ var OperatorTokens = map[OperatorKind]string{
 	GreaterThanEqualOperator: ">=",
 	InOperator:               "in",
 	NotOperator:              "not",
+	ExistsOperator:           "exists",
 	NotEmptyOperator:         "not empty",
 	EmptyOperator:            "empty",
 	StartsWithOperator:       "startswith",
