@@ -43,6 +43,8 @@ type CompileOption func(*compileOptions)
 type compileOptions struct {
 	verbose bool
 
+	extern *ast.File
+
 	planOptions struct {
 		logical  []plan.LogicalOption
 		physical []plan.PhysicalOption
@@ -57,6 +59,11 @@ func WithLogPlanOpts(lopts ...plan.LogicalOption) CompileOption {
 func WithPhysPlanOpts(popts ...plan.PhysicalOption) CompileOption {
 	return func(o *compileOptions) {
 		o.planOptions.physical = append(o.planOptions.physical, popts...)
+	}
+}
+func WithExtern(extern *ast.File) CompileOption {
+	return func(o *compileOptions) {
+		o.extern = extern
 	}
 }
 
@@ -152,12 +159,14 @@ func buildPlan(spec *flux.Spec, opts *compileOptions) (*plan.Spec, error) {
 
 // FluxCompiler compiles a Flux script into a spec.
 type FluxCompiler struct {
-	Query string `json:"query"`
+	Now    time.Time
+	Extern *ast.File `json:"extern"`
+	Query  string    `json:"query"`
 }
 
 func (c FluxCompiler) Compile(ctx context.Context) (flux.Program, error) {
 	// Ignore context, it will be provided upon Program Start.
-	return Compile(c.Query, time.Now())
+	return Compile(c.Query, c.Now, WithExtern(c.Extern))
 }
 
 func (c FluxCompiler) CompilerType() flux.CompilerType {
@@ -295,6 +304,11 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	if p.Now.IsZero() {
 		p.Now = time.Now()
 	}
+
+	if p.opts.extern != nil {
+		p.Ast.Files = append([]*ast.File{p.opts.extern}, p.Ast.Files...)
+	}
+
 	s, err := spec.FromAST(ctx, p.Ast, p.Now)
 	if err != nil {
 		return nil, errors.Wrap(err, "error in evaluating AST while starting program")
