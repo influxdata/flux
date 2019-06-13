@@ -15,6 +15,9 @@ pub enum Statement {
     Expression(ExpressionStatement),
     Return(ReturnStatement),
     Variable(VariableAssignment),
+    Builtin(BuiltinStatement),
+    Test(TestStatement),
+    Bad(BadStatement),
     Option(OptionStatement),
 }
 
