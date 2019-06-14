@@ -209,11 +209,11 @@ func (s *GeneratorSource) Decode() (flux.Table, error) {
 		b.AppendTime(timeIdx, values.ConvertTime(s.Start.Add(time.Duration(i)*deltaT)))
 		in := values.NewObject()
 		in.Set("n", values.NewInt(int64(i)))
-		v, err := s.Fn.EvalInt(in)
+		v, err := s.Fn.Eval(in)
 		if err != nil {
 			return nil, err
 		}
-		if err := b.AppendInt(valueIdx, v); err != nil {
+		if err := b.AppendValue(valueIdx, v); err != nil {
 			return nil, err
 		}
 	}

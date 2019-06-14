@@ -20,6 +20,10 @@ func init() {
 }
 
 func ValueEqual(x, y values.Value) bool {
+	if x == values.Null && y == values.Null {
+		return true
+	}
+
 	switch k := x.Type().Nature(); k {
 	case semantic.Object:
 		if x.Type() != y.Type() {
@@ -139,6 +143,7 @@ func TestCompileAndEval(t *testing.T) {
 	}{
 		{
 			name: "simple ident return",
+			// f = (r) => r
 			fn: &semantic.FunctionExpression{
 				Block: &semantic.FunctionBlock{
 					Parameters: &semantic.FunctionParameters{
@@ -796,6 +801,252 @@ func TestCompileAndEval(t *testing.T) {
 			}),
 			want:    values.NewBool(true),
 			wantErr: false,
+		},
+		{
+			name: "call with nonexistant value",
+			// f = (r) => r.a + r.b
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "r"}},
+						},
+					},
+					Body: &semantic.BinaryExpression{
+						Operator: ast.AdditionOperator,
+						Left: &semantic.MemberExpression{
+							Object:   &semantic.IdentifierExpression{Name: "r"},
+							Property: "a",
+						},
+						Right: &semantic.MemberExpression{
+							Object:   &semantic.IdentifierExpression{Name: "r"},
+							Property: "b",
+						},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"r": semantic.NewObjectType(map[string]semantic.Type{
+					"a": semantic.Int,
+				}),
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewObjectWithValues(map[string]values.Value{
+					"a": values.NewInt(4),
+				}),
+			}),
+			want: values.Null,
+		},
+		{
+			name: "call with null value",
+			// f = (r) => r.a + r.b
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "r"}},
+						},
+					},
+					Body: &semantic.BinaryExpression{
+						Operator: ast.AdditionOperator,
+						Left: &semantic.MemberExpression{
+							Object:   &semantic.IdentifierExpression{Name: "r"},
+							Property: "a",
+						},
+						Right: &semantic.MemberExpression{
+							Object:   &semantic.IdentifierExpression{Name: "r"},
+							Property: "b",
+						},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"r": semantic.NewObjectType(map[string]semantic.Type{
+					"a": semantic.Int,
+					"b": semantic.Int,
+				}),
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewObjectWithValues(map[string]values.Value{
+					"a": values.NewInt(4),
+					// The object is typed as an integer,
+					// but it doesn't have an actual value
+					// because it is null.
+					"b": values.Null,
+				}),
+			}),
+			want: values.Null,
+		},
+		{
+			name: "call with null parameter",
+			// f = (r) => {
+			//   eval = (a, b) => a + b
+			//   return eval(a: r.a, b: r.b)
+			// }
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "r"}},
+						},
+					},
+					Body: &semantic.Block{
+						Body: []semantic.Statement{
+							&semantic.NativeVariableAssignment{
+								Identifier: &semantic.Identifier{Name: "eval"},
+								Init: &semantic.FunctionExpression{
+									Block: &semantic.FunctionBlock{
+										Parameters: &semantic.FunctionParameters{
+											List: []*semantic.FunctionParameter{
+												{Key: &semantic.Identifier{Name: "a"}},
+												{Key: &semantic.Identifier{Name: "b"}},
+											},
+										},
+										Body: &semantic.BinaryExpression{
+											Operator: ast.AdditionOperator,
+											Left:     &semantic.IdentifierExpression{Name: "a"},
+											Right:    &semantic.IdentifierExpression{Name: "b"},
+										},
+									},
+								},
+							},
+							&semantic.ReturnStatement{
+								Argument: &semantic.CallExpression{
+									Callee: &semantic.IdentifierExpression{Name: "eval"},
+									Arguments: &semantic.ObjectExpression{
+										Properties: []*semantic.Property{
+											{
+												Key: &semantic.Identifier{Name: "a"},
+												Value: &semantic.MemberExpression{
+													Object:   &semantic.IdentifierExpression{Name: "r"},
+													Property: "a",
+												},
+											},
+											{
+												Key: &semantic.Identifier{Name: "b"},
+												Value: &semantic.MemberExpression{
+													Object:   &semantic.IdentifierExpression{Name: "r"},
+													Property: "b",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"r": semantic.NewObjectType(map[string]semantic.Type{
+					"a": semantic.Int,
+					// "b": semantic.Nil,
+				}),
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewObjectWithValues(map[string]values.Value{
+					"a": values.NewInt(4),
+					// "b": values.Null,
+				}),
+			}),
+			want: values.Null,
+		},
+		{
+			name: "return nonexistant value",
+			// f = (r) => r.b
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "r"}},
+						},
+					},
+					Body: &semantic.MemberExpression{
+						Object:   &semantic.IdentifierExpression{Name: "r"},
+						Property: "b",
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"r": semantic.NewObjectType(map[string]semantic.Type{
+					"a": semantic.Int,
+				}),
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewObjectWithValues(map[string]values.Value{
+					"a": values.NewInt(4),
+				}),
+			}),
+			want: values.Null,
+		},
+		{
+			name: "return nonexistant and used parameter",
+			// f = (r) => {
+			//     b = (r) => r.b
+			//     return r.a + b(r: r)
+			// }
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "r"}},
+						},
+					},
+					Body: &semantic.Block{
+						Body: []semantic.Statement{
+							&semantic.NativeVariableAssignment{
+								Identifier: &semantic.Identifier{Name: "b"},
+								Init: &semantic.FunctionExpression{
+									Block: &semantic.FunctionBlock{
+										Parameters: &semantic.FunctionParameters{
+											List: []*semantic.FunctionParameter{
+												{Key: &semantic.Identifier{Name: "r"}},
+											},
+										},
+										Body: &semantic.MemberExpression{
+											Object:   &semantic.IdentifierExpression{Name: "r"},
+											Property: "b",
+										},
+									},
+								},
+							},
+							&semantic.ReturnStatement{
+								Argument: &semantic.BinaryExpression{
+									Operator: ast.AdditionOperator,
+									Left: &semantic.MemberExpression{
+										Object:   &semantic.IdentifierExpression{Name: "r"},
+										Property: "a",
+									},
+									Right: &semantic.CallExpression{
+										Callee: &semantic.IdentifierExpression{Name: "b"},
+										Arguments: &semantic.ObjectExpression{
+											Properties: []*semantic.Property{
+												{
+													Key:   &semantic.Identifier{Name: "r"},
+													Value: &semantic.IdentifierExpression{Name: "r"},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"r": semantic.NewObjectType(map[string]semantic.Type{
+					"a": semantic.Int,
+					// "b": semantic.Nil,
+				}),
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewObjectWithValues(map[string]values.Value{
+					"a": values.NewInt(4),
+					// "b": values.Null,
+				}),
+			}),
+			want: values.Null,
 		},
 	}
 

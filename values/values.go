@@ -146,6 +146,10 @@ var (
 // New constructs a new Value by inferring the type from the interface. If the interface
 // does not translate to a valid Value type, then InvalidValue is returned.
 func New(v interface{}) Value {
+	if v == nil {
+		return Null
+	}
+
 	switch v := v.(type) {
 	case string:
 		return NewString(v)
@@ -267,13 +271,79 @@ func NewRegexp(v *regexp.Regexp) Value {
 	}
 }
 
+// AssignableTo returns true if type V is assignable to type T.
+func AssignableTo(V, T semantic.Type) bool {
+	switch tn := T.Nature(); tn {
+	case semantic.Int,
+		semantic.UInt,
+		semantic.Float,
+		semantic.String,
+		semantic.Bool,
+		semantic.Time,
+		semantic.Duration:
+		vn := V.Nature()
+		return vn == tn || vn == semantic.Nil
+	case semantic.Array:
+		if V.Nature() != semantic.Array {
+			return false
+		}
+		// Exact match is required at the moment.
+		return V.ElementType() == T.ElementType()
+	case semantic.Object:
+		if V.Nature() != semantic.Object {
+			return false
+		}
+		properties := V.Properties()
+		for name, ttyp := range T.Properties() {
+			vtyp, ok := properties[name]
+			if !ok {
+				vtyp = semantic.Nil
+			}
+
+			if !AssignableTo(vtyp, ttyp) {
+				return false
+			}
+		}
+		return true
+	default:
+		return V.Nature() == T.Nature()
+	}
+}
+
 func UnexpectedKind(got, exp semantic.Nature) error {
 	return fmt.Errorf("unexpected kind: got %q expected %q", got, exp)
 }
 
 // CheckKind panics if got != exp.
 func CheckKind(got, exp semantic.Nature) {
-	if got != exp {
+	if got == exp {
+		return
+	}
+
+	// Try to see if the two natures are functionally
+	// equivalent to see if we are allowed to assign
+	// this type to the other type.
+	equiv := func(l, r semantic.Nature) bool {
+		switch l {
+		case semantic.Nil:
+			switch r {
+			case semantic.Int,
+				semantic.UInt,
+				semantic.Float,
+				semantic.String,
+				semantic.Bool,
+				semantic.Time,
+				semantic.Duration:
+				return true
+			}
+		}
+		return false
+	}
+
+	// If got and exp are not equivalent in either
+	// direction, then panic because we got the wrong
+	// kind.
+	if !equiv(got, exp) && !equiv(exp, got) {
 		panic(UnexpectedKind(got, exp))
 	}
 }
