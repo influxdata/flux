@@ -374,7 +374,12 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 	case *Property:
 		return v.lookup(n.Value)
 	case *MemberExpression:
+		// Retrieve a new type variable for the property
+		// and add a nullable kind constraint to indicate
+		// that the variable can be null.
 		ptv := v.cs.f.Fresh()
+		v.cs.AddKindConst(ptv, NullableKind{T: ptv})
+
 		t, err := v.lookup(n.Object)
 		if err != nil {
 			return nil, err

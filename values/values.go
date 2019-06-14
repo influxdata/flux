@@ -135,8 +135,13 @@ func (v value) String() string {
 	return fmt.Sprintf("%v", v.v)
 }
 
-// InvalidValue is a non nil value who's type is semantic.Invalid
-var InvalidValue = value{t: semantic.Invalid}
+var (
+	// InvalidValue is a non nil value who's type is semantic.Invalid
+	InvalidValue = value{t: semantic.Invalid}
+
+	// Null is an untyped nil value.
+	Null = value{t: semantic.Nil}
+)
 
 // New constructs a new Value by inferring the type from the interface. If the interface
 // does not translate to a valid Value type, then InvalidValue is returned.

@@ -54,27 +54,13 @@ func (s *Solution) FreshSolution() TypeSolution {
 // Specifically the structure of objects is constrained in the kind domain not the type domain.
 // See "Simple Type Inference for Structural Polymorphism" Jacques Garrigue https://caml.inria.fr/pub/papers/garrigue-structural_poly-fool02.pdf for details on this approach.
 func (sol *Solution) solve() error {
-	// Create substituion
-	subst := make(Substitution)
 	// Create map of unified kind constraints
 	kinds := make(map[Tvar]Kind, len(sol.cs.kindConst))
 
-	// Initialize unified kinds with first kind constraint
-	for tv, ks := range sol.cs.kindConst {
-		kinds[tv] = ks[0]
-	}
-
 	// Unify all kind constraints
-	for tvl, ks := range sol.cs.kindConst {
-		for _, k := range ks[1:] {
-			tvr := subst.ApplyTvar(tvl)
-			kind := kinds[tvr]
-			s, err := unifyKinds(kinds, tvl, tvr, kind, k)
-			if err != nil {
-				return err
-			}
-			subst.Merge(s)
-		}
+	subst, err := sol.unifyKinds(kinds)
+	if err != nil {
+		return err
 	}
 
 	// Unify all type constraints
@@ -106,6 +92,84 @@ func (sol *Solution) solve() error {
 	//log.Println("subst", subst)
 	//log.Println("kinds", sol.kinds)
 	return nil
+}
+
+// unifyKinds will unify the kinds from the kind constraints
+// into a single kind per type variable.
+//
+// The kinds will be unified so that kinds that depend on other
+// type variables will be unified after the kinds for the dependents
+// are unified.
+func (sol *Solution) unifyKinds(kinds map[Tvar]Kind) (Substitution, error) {
+	// Create substitution.
+	subst := make(Substitution)
+
+	// Iterate through each of the kind constraints
+	// and set the ones that only have one constraint
+	// since they do not have to be unified.
+	// Mark down which constraints we have not visited.
+	unvisited := make(map[Tvar]bool, len(sol.cs.kindConst))
+	for tv, ks := range sol.cs.kindConst {
+		if len(ks) == 1 {
+			kinds[tv] = ks[0]
+		} else {
+			unvisited[tv] = true
+		}
+	}
+
+	// Continuously iterate through the kind constraints
+	// and unify any kinds where all dependencies have
+	// already been unified.
+	for len(unvisited) > 0 {
+		// Track if we have visited at least one kind
+		// to avoid a recursive type.
+		once := false
+		for tvl := range unvisited {
+			// We may want to visit this constraint.
+			// Check if any other unvisited tvar
+			// occurs in this type.
+			ks := sol.cs.kindConst[tvl]
+			if canVisit := func() bool {
+				for tvr := range unvisited {
+					if tvl == tvr {
+						continue
+					}
+
+					for _, k := range ks {
+						if k.occurs(tvr) {
+							return false
+						}
+					}
+				}
+				return true
+			}(); !canVisit {
+				continue
+			}
+			once = true
+			delete(unvisited, tvl)
+
+			// We can visit this constraint so let's do that.
+			kinds[tvl] = ks[0]
+			for _, k := range ks[1:] {
+				tvr := subst.ApplyTvar(tvl)
+				kind := kinds[tvr]
+				s, err := unifyKinds(kinds, tvl, tvr, kind, k)
+				if err != nil {
+					return nil, err
+				}
+				subst.Merge(s)
+			}
+		}
+
+		if !once {
+			remaining := make([]Tvar, 0, len(unvisited))
+			for tv := range unvisited {
+				remaining = append(remaining, tv)
+			}
+			return nil, fmt.Errorf("unable to resolve tvars for all kinds because of a cycle: %v", remaining)
+		}
+	}
+	return subst, nil
 }
 
 func (s *Solution) TypeOf(n Node) (Type, error) {
@@ -155,7 +219,7 @@ func unifyKinds(kinds map[Tvar]Kind, tvl, tvr Tvar, l, r Kind) (Substitution, er
 	//log.Printf("unifyKinds %v = %v == %v = %v ==> %v :: %v", tvl, l, tvr, r, k, s)
 	kinds[tvr] = k
 	if tvl != tvr {
-		// The substituion now knows that tvl = tvr
+		// The substitution now knows that tvl = tvr
 		// No need to keep the kind constraints around for tvl
 		delete(kinds, tvl)
 	}
@@ -166,7 +230,6 @@ func unifyVarAndType(kinds map[Tvar]Kind, tv Tvar, t PolyType) (Substitution, er
 	if t.occurs(tv) {
 		return nil, fmt.Errorf("type var %v occurs in %v creating a cycle", tv, t)
 	}
-	unifyKindsByType(kinds, tv, t)
 	return Substitution{tv: t}, nil
 }
 
@@ -179,21 +242,6 @@ func unifyKindsByVar(kinds map[Tvar]Kind, l, r Tvar) (Substitution, error) {
 	case okl && !okr:
 		kinds[r] = kl
 		delete(kinds, l)
-	}
-	return nil, nil
-}
-
-func unifyKindsByType(kinds map[Tvar]Kind, tv Tvar, t PolyType) (Substitution, error) {
-	k, ok := kinds[tv]
-	if !ok {
-		return nil, nil
-	}
-	switch k.(type) {
-	case ObjectKind, ArrayKind:
-		_, ok := t.(Tvar)
-		if !ok {
-			return nil, errors.New("invalid type for kind")
-		}
 	}
 	return nil, nil
 }
