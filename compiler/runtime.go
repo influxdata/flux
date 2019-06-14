@@ -55,7 +55,16 @@ func (c compiledFn) validate(input values.Object) error {
 	}
 	for k, v := range sig.Parameters {
 		if properties[k] != v {
-			return fmt.Errorf("parameter %q has the wrong type, expected %v got %v", k, v, properties[k])
+			// TODO(adam): we should have more thorough and specific type checking to make this work instead of just special casing objects.
+			if v.Nature() == semantic.Object && properties[k].Nature() == semantic.Object {
+				for f := range v.Properties() {
+					if _, ok := properties[k].Properties()[f]; !ok {
+						return fmt.Errorf("parameter %q has the wrong type, expected %v got %v", k, v, properties[k])
+					}
+				}
+			} else {
+				return fmt.Errorf("parameter %q has the wrong type, expected %v got %v", k, v, properties[k])
+			}
 		}
 	}
 	return nil
@@ -486,6 +495,7 @@ func (e *declarationEvaluator) EvalFunction(scope Scope) (values.Function, error
 
 type objEvaluator struct {
 	t          semantic.Type
+	with       *identifierEvaluator
 	properties map[string]Evaluator
 }
 
@@ -522,6 +532,16 @@ func (e *objEvaluator) EvalArray(scope Scope) (values.Array, error) {
 }
 func (e *objEvaluator) EvalObject(scope Scope) (values.Object, error) {
 	obj := values.NewObject()
+	if e.with != nil {
+		with, err := e.with.EvalObject(scope)
+		if err != nil {
+			return nil, err
+		}
+		with.Range(func(name string, v values.Value) {
+			obj.Set(name, v)
+		})
+	}
+
 	for k, node := range e.properties {
 		v, err := eval(node, scope)
 		if err != nil {
@@ -529,6 +549,7 @@ func (e *objEvaluator) EvalObject(scope Scope) (values.Object, error) {
 		}
 		obj.Set(k, v)
 	}
+
 	return obj, nil
 }
 func (e *objEvaluator) EvalFunction(scope Scope) (values.Function, error) {

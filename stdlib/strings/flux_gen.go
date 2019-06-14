@@ -2921,6 +2921,7 @@ var pkgAST = &ast.Package{
 						Name: "joinStr",
 					},
 				}},
+				With: nil,
 			},
 		}},
 		Imports: nil,

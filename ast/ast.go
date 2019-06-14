@@ -880,6 +880,7 @@ func (e *ArrayExpression) Copy() Node {
 // ObjectExpression allows the declaration of an anonymous object within a declaration.
 type ObjectExpression struct {
 	BaseNode
+	With       *Identifier `json:"with,omitempty"`
 	Properties []*Property `json:"properties"`
 }
 
