@@ -172,7 +172,7 @@ func generateSplit(name string, argNames []string, fn func(string, string) []str
 				argNames[1]: semantic.String,
 			},
 			Required: semantic.LabelSet{argNames[0], argNames[1]},
-			Return:   semantic.Array,
+			Return:   semantic.NewArrayPolyType(semantic.String),
 		}),
 		func(args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)

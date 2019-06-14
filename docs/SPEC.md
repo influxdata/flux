@@ -3625,42 +3625,43 @@ Example: `compile(v: "abcd")` returns the Regex object `abcd`.
 
 Return a string holding the text of the leftmost match in v of the regular expression.
 
-Example: `findString(r: regexp.MustCompile("foo.?"), v: "seafood fool")` returns the string `food`.
+Example: `findString(r: regexp.compile("foo.?"), v: "seafood fool")` returns the string `food`.
 
 ##### findStringIndex
 
 Returns a two-element slice of integers defining the location of the leftmost match in v of the regular expression.
  
-Example: `findStringIndex(r: regexp.MustCompile("ab?"), v: "tablett")` returns the int array `[1 3]`.
+Example: `findStringIndex(r: regexp.compile("ab?"), v: "tablett")` returns the int array `[1 3]`.
 
 ##### getString
 
 Return the source text used to compile the regular expression.
 
-Example: `getString(v: compile("abcd"))` returns the Regex object `abcd`.
+Example: `getString(v: regexp.compile("abcd"))` returns the Regex object `abcd`.
 
 ##### matchRegexString
 
 Report whether the string v contains any match of the regular expression r.
 
-Example: `matchString(r: regexp.MustCompile(`(gopher){2}`), v: "gophergophergopher")`returns boolean `true`
+Example: `matchString(r: regexp.compile("(gopher){2}"), v: "gophergophergopher")` returns boolean `true`
 
 ##### replaceAllString
 
 Returns a copy of v, replacing matches of the Regexp r with the replacement string t.
 
-Example: `replaceAllString(r: regexp.MustCompile(`a(x*)b`), v: "-ab-axxb-", t: "T")` returns string `-T-T-`.
+Example: `replaceAllString(r: regexp.compile("a(x*)b"), v: "-ab-axxb-", t: "T")` returns string `-T-T-`.
 
 ##### quoteMeta
 
 Return a string that escapes all regular expression metacharacters inside the argument text; the returned string is a regular expression matching the literal text.
 
 Example: `quoteMeta("Escaping symbols like: .+*?()|[]{}^$")` returns string `Escaping symbols like: \.\+\*\?\(\)\|\[\]\{\}\^\$`. 
+
 ##### splitRegexp
 
 Slices v into substrings separated by the expression and returns a slice of the substrings between those expression matches.
 
-Example: `splitRegex(r: regexp.MustCompile("a*"), v: "abaabaccadaaae", i: 5)` returns string array `["", "b", "b", "c", "cadaaae"]`.
+Example: `splitRegex(r: regexp.compile("a*"), v: "abaabaccadaaae", i: 5)` returns string array `["", "b", "b", "c", "cadaaae"]`.
 
 ### Composite data types
 
