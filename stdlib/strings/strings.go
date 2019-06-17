@@ -453,7 +453,7 @@ func init() {
 			"joinStr",
 			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 				Parameters: map[string]semantic.PolyType{
-					"arr": semantic.Array,
+					"arr": semantic.NewArrayPolyType(semantic.String),
 					"v":   semantic.String,
 				},
 				Required: semantic.LabelSet{"arr", "v"},
@@ -466,8 +466,11 @@ func init() {
 				if !ok {
 					return nil, fmt.Errorf("missing argument %q", "arr")
 				}
-				if val.Type().Nature() != semantic.Array {
-					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v", "arr", semantic.Array, val.Type().Nature())
+				arr := val.Array()
+				if arr.Len() >= 0 {
+					if arr.Type().ElementType().Nature() != semantic.String {
+						return nil, fmt.Errorf("expected elements of argument %q to be of type %v, got type %v", "arr", semantic.String, arr.Get(0).Type().Nature())
+					}
 				}
 				argVals[0] = val
 
