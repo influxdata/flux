@@ -139,7 +139,6 @@ func TestCompileAndEval(t *testing.T) {
 		input   values.Object
 		want    values.Value
 		wantErr bool
-		skip    string
 	}{
 		{
 			name: "simple ident return",
@@ -552,7 +551,6 @@ func TestCompileAndEval(t *testing.T) {
 				"a": values.NewNull(semantic.String),
 			}),
 			want: values.NewBool(false),
-			skip: "implement null support for compiler",
 		},
 		{
 			name: "unary logical operator - exists without null",
@@ -1053,9 +1051,6 @@ func TestCompileAndEval(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.skip != "" {
-				t.Skip(tc.skip)
-			}
 			f, err := compiler.Compile(tc.fn, tc.inType, nil)
 			if tc.wantErr != (err != nil) {
 				t.Fatalf("unexpected error: %s", err)

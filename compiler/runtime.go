@@ -293,38 +293,46 @@ func (e *unaryEvaluator) Eval(scope Scope) (values.Value, error) {
 	if err != nil {
 		return nil, err
 	}
-	values.CheckKind(v.Type().Nature(), e.t.Nature())
 
-	// If the value is null, return it immediately.
-	if v.IsNull() {
-		return v, nil
-	}
+	ret, err := func(v values.Value) (values.Value, error) {
+		if e.op == ast.ExistsOperator {
+			return values.NewBool(!v.IsNull()), nil
+		}
 
-	switch e.op {
-	case ast.AdditionOperator:
-		// Do nothing.
-		return v, nil
-	case ast.SubtractionOperator, ast.NotOperator:
-		// Fallthrough to below.
-	default:
-		return nil, fmt.Errorf("unknown unary operator: %s", e.op)
-	}
+		// If the value is null, return it immediately.
+		if v.IsNull() {
+			return v, nil
+		}
 
-	// The subtraction operator falls through to here.
-	switch e.t.Nature() {
-	case semantic.Int:
-		return values.NewInt(-v.Int()), nil
-	case semantic.Float:
-		return values.NewFloat(-v.Float()), nil
-	case semantic.Bool:
-		return values.NewBool(!v.Bool()), nil
-	case semantic.Duration:
-		return values.NewDuration(-v.Duration()), nil
-	case semantic.Nil:
-		return v, nil
-	default:
-		panic(values.UnexpectedKind(e.t.Nature(), v.Type().Nature()))
+		switch e.op {
+		case ast.AdditionOperator:
+			// Do nothing.
+			return v, nil
+		case ast.SubtractionOperator, ast.NotOperator:
+			// Fallthrough to below.
+		default:
+			return nil, fmt.Errorf("unknown unary operator: %s", e.op)
+		}
+
+		// The subtraction operator falls through to here.
+		switch v.Type().Nature() {
+		case semantic.Int:
+			return values.NewInt(-v.Int()), nil
+		case semantic.Float:
+			return values.NewFloat(-v.Float()), nil
+		case semantic.Bool:
+			return values.NewBool(!v.Bool()), nil
+		case semantic.Duration:
+			return values.NewDuration(-v.Duration()), nil
+		default:
+			panic(values.UnexpectedKind(e.t.Nature(), v.Type().Nature()))
+		}
+	}(v)
+	if err != nil {
+		return nil, err
 	}
+	values.CheckKind(ret.Type().Nature(), e.t.Nature())
+	return ret, nil
 }
 
 type integerEvaluator struct {
