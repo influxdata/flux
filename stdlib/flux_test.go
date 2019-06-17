@@ -39,6 +39,10 @@ var skip = map[string]string{
 	"measurement_tag_keys_test":   "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
 	"aggregate_window_mean_test":  "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
 	"aggregate_window_count_test": "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
+
+	"extract_regexp_findStringIndex": "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
+	"partition_strings_splitN":       "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
+	"strings_replaceAll":             "strings. map fails to evaluate because missing a mysterious argument i (https://github.com/influxdata/flux/issues/1437)",
 }
 
 func TestFluxEndToEnd(t *testing.T) {
