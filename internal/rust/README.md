@@ -39,13 +39,20 @@ This only needs to be done once to create symlinks that npm can use to consume t
     $ cd internal/rust/parser/pkg
     $ npm link
     $ cd ../../site
+    $ # edit package.json and remove the `dependencies` section
     $ npm install
+    $ # edit package.json and re-add the `dependencies` section, use `git checkout package.json` to quickly revert.
     $ npm link @influxdata/parser
 
 Once that is done the `parser` dependency in the simple npm site will reference the build artifacts from `wasm-pack`.
 
 > NOTE: The `npm install` command will destroy the link.
 So if you run `npm install` again you must rerun the `npm link @influxdata/parser` command in the `site` directory.
+
+> NOTE: The `npm install` command will fail if the `@influxdata/parser` dependecy is listed because the depencies doesn't exist publicly.
+This will prevent npm from installing the needed dev dependencies.
+A quick hack is to delete the `dependencies` section from `internal/rust/site/package.json` and then run `npm install`.
+Once that has passed you can re-add the dependcies and run `npm link @influxdata/parser`.
 
 
 ## Run in Browser
