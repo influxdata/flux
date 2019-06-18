@@ -201,11 +201,63 @@ impl Parser {
             }
         }
     }
-    fn parse_return_statement(&mut self) -> ast::Statement {
-        self.expect(T_RETURN);
-        ast::Statement::Return(ast::ReturnStatement {
+    fn parse_ident_statement(&mut self) -> ast::Statement {
+        let id = self.parse_identifier();
+        let t = self.peek();
+        match t.tok {
+            tok if tok == T_ASSIGN => {
+                let init = self.parse_assign_statement();
+                return ast::Statement::Var(ast::VariableAssignment {
+                    base: self.base_node(),
+                    id: id,
+                    init: init,
+                });
+            }
+            _ => panic!("TODO: support more ident statements {:?}", t),
+        }
+    }
+    fn parse_option_assignment(&mut self) -> ast::Statement {
+        self.expect(T_OPTION);
+        let ident = self.parse_identifier();
+        let assignment = self.parse_option_assignment_suffix(ident);
+        ast::Statement::Opt(ast::OptionStatement {
             base: self.base_node(),
-            argument: self.parse_expression(),
+            assignment: assignment,
+        })
+    }
+    fn parse_option_assignment_suffix(&mut self, id: ast::Identifier) -> ast::Assignment {
+        let t = self.peek();
+        match t.tok {
+            T_ASSIGN => {
+                let init = self.parse_assign_statement();
+                ast::Assignment::Variable(ast::VariableAssignment {
+                    base: self.base_node(),
+                    id: id,
+                    init: init,
+                })
+            }
+            T_DOT => {
+                self.consume();
+                let prop = self.parse_identifier();
+                let init = self.parse_assign_statement();
+                return ast::Assignment::Member(ast::MemberAssignment {
+                    base: self.base_node(),
+                    member: ast::MemberExpression {
+                        base: self.base_node(),
+                        object: ast::Expression::Idt(id),
+                        property: ast::PropertyKey::Identifier(prop),
+                    },
+                    init: init,
+                })
+            }
+            _ => panic!("invalid option assignement suffix"),
+        }
+    }
+    fn parse_builtin_statement(&mut self) -> ast::Statement {
+        self.expect(T_BUILTIN);
+        ast::Statement::Built(ast::BuiltinStatement {
+            base: self.base_node(),
+            id: self.parse_identifier(),
         })
     }
     fn parse_test_statement(&mut self) -> ast::Statement {
@@ -221,82 +273,92 @@ impl Parser {
             },
         })
     }
-    fn parse_builtin_statement(&mut self) -> ast::Statement {
-        self.expect(T_BUILTIN);
-        ast::Statement::Builtin(ast::BuiltinStatement {
-            base: self.base_node(),
-            id: self.parse_identifier(),
-        })
-    }
-    fn parse_expression_statement(&mut self) -> ast::Statement {
-        ast::Statement::Expression(ast::ExpressionStatement {
-            base: self.base_node(),
-            expression: self.parse_expression(),
-        })
-    }
-    fn parse_option_assignment(&mut self) -> ast::Statement {
-        self.expect(T_OPTION);
-        let ident = self.parse_identifier();
-        let assignment = self.parse_option_assignment_suffix(ident);
-        return ast::Statement::Option(ast::OptionStatement {
-            base: self.base_node(),
-            assignment: assignment,
-        });
-    }
-    fn parse_option_assignment_suffix(&mut self, id: ast::Identifier) -> ast::Assignment {
-        let t = self.peek();
-        match t.tok {
-            tok if tok == T_ASSIGN => {
-                let init = self.parse_assign_statement();
-                return ast::Assignment::Variable(ast::VariableAssignment {
-                    base: self.base_node(),
-                    id: id,
-                    init: init,
-                });
-            }
-            _ => panic!("TODO support more option assignement suffix"),
-        }
-    }
-    fn parse_ident_statement(&mut self) -> ast::Statement {
-        let id = self.parse_identifier();
-        let t = self.peek();
-        match t.tok {
-            tok if tok == T_ASSIGN => {
-                let init = self.parse_assign_statement();
-                return ast::Statement::Variable(ast::VariableAssignment {
-                    base: self.base_node(),
-                    id: id,
-                    init: init,
-                });
-            }
-            _ => panic!("TODO: support more ident statements {:?}", t),
-        }
-    }
-
     fn parse_assign_statement(&mut self) -> ast::Expression {
         self.expect(T_ASSIGN);
         return self.parse_expression();
     }
-
-    fn parse_expression(&mut self) -> ast::Expression {
-        return ast::Expression::Identifier(self.parse_identifier());
+    fn parse_return_statement(&mut self) -> ast::Statement {
+        self.expect(T_RETURN);
+        ast::Statement::Ret(ast::ReturnStatement {
+            base: self.base_node(),
+            argument: self.parse_expression(),
+        })
     }
-
+    fn parse_expression_statement(&mut self) -> ast::Statement {
+        ast::Statement::Expr(ast::ExpressionStatement {
+            base: self.base_node(),
+            expression: self.parse_expression(),
+        })
+    }
+    fn parse_expression(&mut self) -> ast::Expression {
+        self.parse_conditional_expression()
+    }
+    fn parse_conditional_expression(&mut self) -> ast::Expression {
+        let t = self.peek();
+        if t.tok == T_IF {
+            self.consume();
+            let test = self.parse_expression();
+            self.expect(T_THEN);
+            let cons = self.parse_expression();
+            self.expect(T_ELSE);
+            let alt = self.parse_expression();
+            return ast::Expression::Cond(Box::new(ast::ConditionalExpression {
+                base: self.base_node(),
+                test: test,
+                consequent: cons,
+                alternate: alt,
+            }));
+        }
+        return self.parse_logical_or_expression();
+    }
+    fn parse_logical_or_expression(&mut self) -> ast::Expression {
+        // TODO: this is just to get tests passing at the moment.
+        self.parse_primary_expression()
+    }
+    fn parse_primary_expression(&mut self) -> ast::Expression {
+        // TODO: should be peek_with_regex()
+        let t = self.peek();
+        match t.tok {
+            T_IDENT => ast::Expression::Idt(
+                self.parse_identifier(),
+            ),
+            T_INT => ast::Expression::Int(
+                self.parse_int_literal(),
+            ),
+            T_FLOAT => ast::Expression::Flt(
+                self.parse_float_literal(),
+            ),
+            T_STRING => ast::Expression::Str(
+                self.parse_string_literal(),
+            ),
+            T_REGEX => ast::Expression::Regexp(
+                self.parse_regexp_literal(),
+            ),
+            T_TIME => ast::Expression::Time(
+                self.parse_time_literal(),
+            ),
+            T_DURATION => ast::Expression::Dur(
+                self.parse_duration_literal(),
+            ),
+            T_PIPE_RECEIVE => ast::Expression::PipeLit(
+                self.parse_pipe_literal(),
+            ),
+            T_LBRACK => ast::Expression::Arr(
+                Box::new(self.parse_array_literal()),
+            ),
+            T_LBRACE => ast::Expression::Obj(
+                Box::new(self.parse_object_literal()),
+            ),
+            T_LPAREN => self.parse_paren_expression(),
+            _ => panic!("invalid token for primary expression"),
+        }
+    }
     fn parse_identifier(&mut self) -> ast::Identifier {
         let t = self.expect(T_IDENT);
         return ast::Identifier {
             base: self.base_node(),
             name: t.lit,
         };
-    }
-
-    fn parse_string_literal(&mut self) -> ast::StringLiteral {
-        let t = self.expect(T_STRING);
-        let value = parse_string(t.lit.as_str()).unwrap();
-        ast::StringLiteral {
-            base: self.base_node(),
-            value: value,
-        }
     }
     fn parse_int_literal(&mut self) -> ast::IntegerLiteral {
         let t = self.expect(T_INT);
@@ -311,6 +373,35 @@ impl Parser {
             base: self.base_node(),
             value: (&t.lit).parse::<f64>().unwrap(),
         }
+    }
+    fn parse_string_literal(&mut self) -> ast::StringLiteral {
+        let t = self.expect(T_STRING);
+        let value = parse_string(t.lit.as_str()).unwrap();
+        ast::StringLiteral {
+            base: self.base_node(),
+            value: value,
+        }
+    }
+    fn parse_regexp_literal(&mut self) -> ast::RegexpLiteral {
+        unimplemented!()
+    }
+    fn parse_time_literal(&mut self) -> ast::DateTimeLiteral {
+        unimplemented!()
+    }
+    fn parse_duration_literal(&mut self) -> ast::DurationLiteral {
+        unimplemented!()
+    }
+    fn parse_pipe_literal(&mut self) -> ast::PipeLiteral {
+        unimplemented!()
+    }
+    fn parse_array_literal(&mut self) -> ast::ArrayExpression {
+        unimplemented!()
+    }
+    fn parse_object_literal(&mut self) -> ast::ObjectExpression {
+        unimplemented!()
+    }
+    fn parse_paren_expression(&mut self) -> ast::Expression {
+        unimplemented!()
     }
 }
 
@@ -375,61 +466,87 @@ fn to_hex(c: char) -> Option<char> {
 mod tests {
     use super::*;
 
+    // Assert the passed in source code is parsed to an expected list of statments
+    fn assert_stmts_eq(src: &str, want: Vec<ast::Statement>) {
+        assert_eq!(Parser::new(src).parse_statement_list(), want);
+    }
+
     #[test]
-    fn test_return_statement() {
-        let mut p = Parser::new("return value");
-        assert_eq!(p.parse_statement(), ast::Statement::Return(ast::ReturnStatement {
-            base: ast::BaseNode { errors: Vec::new() },
-            argument: ast::Expression::Identifier(ast::Identifier {
-                base: ast::BaseNode { errors: Vec::new() },
-                name: String::from("value"),
-            }),
-        }))
+    fn parse_literals() {
+        assert_stmts_eq(r#"
+            a = 100
+            b = 1.0
+            c = "s""#,
+            vec![
+                ast::Statement::Var(ast::VariableAssignment {
+                    base: ast::BaseNode { errors: Vec::new() },
+                    id: ast::Identifier {
+                        base: ast::BaseNode { errors: Vec::new() },
+                        name: String::from("a"),
+                    },
+                    init: ast::Expression::Int(ast::IntegerLiteral {
+                        base: ast::BaseNode { errors: Vec::new() },
+                        value: 100,
+                    })
+                }),
+                ast::Statement::Var(ast::VariableAssignment {
+                    base: ast::BaseNode { errors: Vec::new() },
+                    id: ast::Identifier {
+                        base: ast::BaseNode { errors: Vec::new() },
+                        name: String::from("b"),
+                    },
+                    init: ast::Expression::Flt(ast::FloatLiteral {
+                        base: ast::BaseNode { errors: Vec::new() },
+                        value: 1.0,
+                    })
+                }),
+                ast::Statement::Var(ast::VariableAssignment {
+                    base: ast::BaseNode { errors: Vec::new() },
+                    id: ast::Identifier {
+                        base: ast::BaseNode { errors: Vec::new() },
+                        name: String::from("c"),
+                    },
+                    init: ast::Expression::Str(ast::StringLiteral {
+                        base: ast::BaseNode { errors: Vec::new() },
+                        value: String::from("\"s\""),
+                    })
+                }),
+            ])
     }
     #[test]
-    fn test_parse_test_statement() {
-        let mut p = Parser::new("test fun_test = obj");
-        assert_eq!(p.parse_statement(), ast::Statement::Test(ast::TestStatement {
-            base: ast::BaseNode { errors: Vec::new() },
-            assignment: ast::VariableAssignment {
-                base: ast::BaseNode { errors: Vec::new() },
-                id: ast::Identifier {
+    fn parse_test_stmt() {
+        assert_stmts_eq(r#"
+            test sum = 25"#,
+            vec![
+                ast::Statement::Test(ast::TestStatement {
                     base: ast::BaseNode { errors: Vec::new() },
-                    name: String::from("fun_test"),
-                },
-                init: ast::Expression::Identifier(ast::Identifier {
-                    base: ast::BaseNode { errors: Vec::new() },
-                    name: String::from("obj"),
+                    assignment: ast::VariableAssignment {
+                        base: ast::BaseNode { errors: Vec::new() },
+                        id: ast::Identifier {
+                            base: ast::BaseNode { errors: Vec::new() },
+                            name: String::from("sum"),
+                        },
+                        init: ast::Expression::Int(ast::IntegerLiteral {
+                            base: ast::BaseNode { errors: Vec::new() },
+                            value: 25,
+                        })
+                    }
                 })
-            }
-        }))
+            ])
     }
     #[test]
-    fn test_parse_builtin_statement() {
-        let mut p = Parser::new("builtin from");
-        assert_eq!(p.parse_statement(), ast::Statement::Builtin(ast::BuiltinStatement {
-            base: ast::BaseNode { errors: Vec::new() },
-            id: ast::Identifier {
-                base: ast::BaseNode { errors: Vec::new() },
-                name: String::from("from"),
-            }
-        }))
-    }
-    #[test]
-    fn test_parse_float_literal() {
-        let mut p = Parser::new("22.5");
-        assert_eq!(p.parse_float_literal(), ast::FloatLiteral {
-            base: ast::BaseNode { errors: Vec::new() },
-            value: 22.5,
-        })
-    }
-    #[test]
-    fn test_parse_int_literal() {
-        let mut p = Parser::new("22");
-        assert_eq!(p.parse_int_literal(), ast::IntegerLiteral {
-            base: ast::BaseNode { errors: Vec::new() },
-            value: 22,
-        })
+    fn parse_builtin_stmt() {
+        assert_stmts_eq(r#"
+            builtin from"#,
+            vec![
+                ast::Statement::Built(ast::BuiltinStatement {
+                    base: ast::BaseNode { errors: Vec::new() },
+                    id: ast::Identifier {
+                        base: ast::BaseNode { errors: Vec::new() },
+                        name: String::from("from"),
+                    }
+                })
+            ])
     }
     #[test]
     fn test_parse_package_clause() {
@@ -475,13 +592,13 @@ x = a"#,
                         value: String::from("\"baz\""),
                     },
                 }],
-                body: vec![ast::Statement::Variable(ast::VariableAssignment {
+                body: vec![ast::Statement::Var(ast::VariableAssignment {
                     base: ast::BaseNode { errors: Vec::new() },
                     id: ast::Identifier {
                         base: ast::BaseNode { errors: Vec::new() },
                         name: String::from("x"),
                     },
-                    init: ast::Expression::Identifier(ast::Identifier {
+                    init: ast::Expression::Idt(ast::Identifier {
                         base: ast::BaseNode { errors: Vec::new() },
                         name: String::from("a"),
                     })
