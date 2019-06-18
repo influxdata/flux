@@ -41,6 +41,7 @@ func newRowFn(fn *semantic.FunctionExpression) (rowFn, error) {
 func (f *rowFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.Type) error {
 	// Prepare types and recordCols
 	propertyTypes := make(map[string]semantic.Type, len(f.references))
+	f.recordCols = make(map[string]int)
 	for j, c := range cols {
 		propertyTypes[c.Label] = ConvertToKind(c.Type)
 		f.recordCols[c.Label] = j
