@@ -26,6 +26,8 @@ outData = "
 
 t_map = (table=<-) =>
 	(table
+	    |> range(start: 2018-05-22T00:00:00Z)
+	    |> drop(columns: ["_start", "_stop"])
 		|> map(fn: (r) =>
 			({r with _value: float(v:r._value)})))
 
