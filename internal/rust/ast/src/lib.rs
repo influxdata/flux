@@ -21,29 +21,40 @@ fn serialize_to_string<T, S>(field: &T, ser: S) -> Result<S::Ok, S::Error> where
 #[derive(Debug, PartialEq, Clone, Serialize)]
 #[serde(untagged)]
 pub enum Expression {
-    Identifier(Identifier),
-    Object(ObjectExpression),
-    String(StringLiteral),
-    Regexp(RegexpLiteral),
+    Idt(Identifier),
+
+    Arr(Box<ArrayExpression>),
+    Fun(Box<FunctionExpression>),
+    Log(Box<LogicalExpression>),
+    Obj(Box<ObjectExpression>),
+    Mem(Box<MemberExpression>),
+    Idx(Box<IndexExpression>),
+    Bin(Box<BinaryExpression>),
+    Pipe(Box<PipeExpression>),
+    Call(Box<CallExpression>),
+    Cond(Box<ConditionalExpression>),
+
     Int(IntegerLiteral),
+    Flt(FloatLiteral),
+    Str(StringLiteral),
+    Dur(DurationLiteral),
     Uint(UnsignedIntegerLiteral),
-    Float(FloatLiteral),
     Bool(BooleanLiteral),
-    Duration(DurationLiteral),
-    DateTime(DateTimeLiteral),
-    Pipe(PipeLiteral),
+    Time(DateTimeLiteral),
+    Regexp(RegexpLiteral),
+    PipeLit(PipeLiteral),
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize)]
 #[serde(untagged)]
 pub enum Statement {
-    Expression(ExpressionStatement),
-    Return(ReturnStatement),
-    Variable(VariableAssignment),
-    Builtin(BuiltinStatement),
-    Test(TestStatement),
+    Expr(ExpressionStatement),
+    Var(VariableAssignment),
+    Opt(OptionStatement),
+    Ret(ReturnStatement),
     Bad(BadStatement),
-    Option(OptionStatement),
+    Test(TestStatement),
+    Built(BuiltinStatement),
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize)]
