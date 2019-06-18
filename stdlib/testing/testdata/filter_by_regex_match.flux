@@ -1,5 +1,5 @@
 package testdata_test
- 
+
 import "testing"
 import "regexp"
 
@@ -37,10 +37,12 @@ outData = "
 ,,0,2018-05-20T19:53:26Z,diskio,2018-05-22T19:54:16Z,15205755
 "
 
+re = regexp.compile(v: ".*0")
+
 t_filter_by_regex = (table=<-) =>
 table
   |> range(start: 2018-05-20T19:53:26Z)
-  |> filter(fn: (r) => r["name"] =~ /.*0/)
+  |> filter(fn: (r) => (regexp.matchRegexpString(r: re, v: r.name)))
   |> group(columns: ["_measurement", "_start"])
   |> map(fn: (r) => ({_time: r._time, io_time: r._value}))
   |> yield(name:"0")

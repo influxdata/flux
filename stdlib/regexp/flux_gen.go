@@ -22,10 +22,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 2,
-					Line:   7,
+					Line:   21,
 				},
 				File:   "regexp.flux",
-				Source: "package regexp\n\nbuiltin compile\n\nregexp = {\n    compile:compile,\n}",
+				Source: "package regexp\n\nbuiltin compile\nbuiltin quoteMeta\nbuiltin findString\nbuiltin findStringIndex\nbuiltin matchRegexpString\nbuiltin replaceAllString\nbuiltin splitRegexp\nbuiltin getString\n\nregexp = {\n    compile:compile,\n    quoteMeta:quoteMeta,\n    findString:findString,\n    findStringIndex:findStringIndex,\n    matchRegexpString:matchRegexpString,\n    replaceAllString:replaceAllString,\n    splitRegexp:splitRegexp,\n    getString:getString,\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -66,16 +66,50 @@ var pkgAST = &ast.Package{
 				},
 				Name: "compile",
 			},
-		}, &ast.VariableAssignment{
+		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 2,
-						Line:   7,
+						Column: 18,
+						Line:   4,
 					},
 					File:   "regexp.flux",
-					Source: "regexp = {\n    compile:compile,\n}",
+					Source: "builtin quoteMeta",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 18,
+							Line:   4,
+						},
+						File:   "regexp.flux",
+						Source: "quoteMeta",
+						Start: ast.Position{
+							Column: 9,
+							Line:   4,
+						},
+					},
+				},
+				Name: "quoteMeta",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 19,
+						Line:   5,
+					},
+					File:   "regexp.flux",
+					Source: "builtin findString",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -87,14 +121,218 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 7,
+							Column: 19,
 							Line:   5,
+						},
+						File:   "regexp.flux",
+						Source: "findString",
+						Start: ast.Position{
+							Column: 9,
+							Line:   5,
+						},
+					},
+				},
+				Name: "findString",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 24,
+						Line:   6,
+					},
+					File:   "regexp.flux",
+					Source: "builtin findStringIndex",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 24,
+							Line:   6,
+						},
+						File:   "regexp.flux",
+						Source: "findStringIndex",
+						Start: ast.Position{
+							Column: 9,
+							Line:   6,
+						},
+					},
+				},
+				Name: "findStringIndex",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 26,
+						Line:   7,
+					},
+					File:   "regexp.flux",
+					Source: "builtin matchRegexpString",
+					Start: ast.Position{
+						Column: 1,
+						Line:   7,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   7,
+						},
+						File:   "regexp.flux",
+						Source: "matchRegexpString",
+						Start: ast.Position{
+							Column: 9,
+							Line:   7,
+						},
+					},
+				},
+				Name: "matchRegexpString",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 25,
+						Line:   8,
+					},
+					File:   "regexp.flux",
+					Source: "builtin replaceAllString",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 25,
+							Line:   8,
+						},
+						File:   "regexp.flux",
+						Source: "replaceAllString",
+						Start: ast.Position{
+							Column: 9,
+							Line:   8,
+						},
+					},
+				},
+				Name: "replaceAllString",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 20,
+						Line:   9,
+					},
+					File:   "regexp.flux",
+					Source: "builtin splitRegexp",
+					Start: ast.Position{
+						Column: 1,
+						Line:   9,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 20,
+							Line:   9,
+						},
+						File:   "regexp.flux",
+						Source: "splitRegexp",
+						Start: ast.Position{
+							Column: 9,
+							Line:   9,
+						},
+					},
+				},
+				Name: "splitRegexp",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 18,
+						Line:   10,
+					},
+					File:   "regexp.flux",
+					Source: "builtin getString",
+					Start: ast.Position{
+						Column: 1,
+						Line:   10,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 18,
+							Line:   10,
+						},
+						File:   "regexp.flux",
+						Source: "getString",
+						Start: ast.Position{
+							Column: 9,
+							Line:   10,
+						},
+					},
+				},
+				Name: "getString",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   21,
+					},
+					File:   "regexp.flux",
+					Source: "regexp = {\n    compile:compile,\n    quoteMeta:quoteMeta,\n    findString:findString,\n    findStringIndex:findStringIndex,\n    matchRegexpString:matchRegexpString,\n    replaceAllString:replaceAllString,\n    splitRegexp:splitRegexp,\n    getString:getString,\n}",
+					Start: ast.Position{
+						Column: 1,
+						Line:   12,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   12,
 						},
 						File:   "regexp.flux",
 						Source: "regexp",
 						Start: ast.Position{
 							Column: 1,
-							Line:   5,
+							Line:   12,
 						},
 					},
 				},
@@ -106,13 +344,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   7,
+							Line:   21,
 						},
 						File:   "regexp.flux",
-						Source: "{\n    compile:compile,\n}",
+						Source: "{\n    compile:compile,\n    quoteMeta:quoteMeta,\n    findString:findString,\n    findStringIndex:findStringIndex,\n    matchRegexpString:matchRegexpString,\n    replaceAllString:replaceAllString,\n    splitRegexp:splitRegexp,\n    getString:getString,\n}",
 						Start: ast.Position{
 							Column: 10,
-							Line:   5,
+							Line:   12,
 						},
 					},
 				},
@@ -122,13 +360,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   6,
+								Line:   13,
 							},
 							File:   "regexp.flux",
 							Source: "compile:compile",
 							Start: ast.Position{
 								Column: 5,
-								Line:   6,
+								Line:   13,
 							},
 						},
 					},
@@ -138,13 +376,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   6,
+									Line:   13,
 								},
 								File:   "regexp.flux",
 								Source: "compile",
 								Start: ast.Position{
 									Column: 5,
-									Line:   6,
+									Line:   13,
 								},
 							},
 						},
@@ -156,17 +394,381 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   6,
+									Line:   13,
 								},
 								File:   "regexp.flux",
 								Source: "compile",
 								Start: ast.Position{
 									Column: 13,
-									Line:   6,
+									Line:   13,
 								},
 							},
 						},
 						Name: "compile",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   14,
+							},
+							File:   "regexp.flux",
+							Source: "quoteMeta:quoteMeta",
+							Start: ast.Position{
+								Column: 5,
+								Line:   14,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   14,
+								},
+								File:   "regexp.flux",
+								Source: "quoteMeta",
+								Start: ast.Position{
+									Column: 5,
+									Line:   14,
+								},
+							},
+						},
+						Name: "quoteMeta",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 24,
+									Line:   14,
+								},
+								File:   "regexp.flux",
+								Source: "quoteMeta",
+								Start: ast.Position{
+									Column: 15,
+									Line:   14,
+								},
+							},
+						},
+						Name: "quoteMeta",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 26,
+								Line:   15,
+							},
+							File:   "regexp.flux",
+							Source: "findString:findString",
+							Start: ast.Position{
+								Column: 5,
+								Line:   15,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   15,
+								},
+								File:   "regexp.flux",
+								Source: "findString",
+								Start: ast.Position{
+									Column: 5,
+									Line:   15,
+								},
+							},
+						},
+						Name: "findString",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 26,
+									Line:   15,
+								},
+								File:   "regexp.flux",
+								Source: "findString",
+								Start: ast.Position{
+									Column: 16,
+									Line:   15,
+								},
+							},
+						},
+						Name: "findString",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 36,
+								Line:   16,
+							},
+							File:   "regexp.flux",
+							Source: "findStringIndex:findStringIndex",
+							Start: ast.Position{
+								Column: 5,
+								Line:   16,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 20,
+									Line:   16,
+								},
+								File:   "regexp.flux",
+								Source: "findStringIndex",
+								Start: ast.Position{
+									Column: 5,
+									Line:   16,
+								},
+							},
+						},
+						Name: "findStringIndex",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 36,
+									Line:   16,
+								},
+								File:   "regexp.flux",
+								Source: "findStringIndex",
+								Start: ast.Position{
+									Column: 21,
+									Line:   16,
+								},
+							},
+						},
+						Name: "findStringIndex",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 40,
+								Line:   17,
+							},
+							File:   "regexp.flux",
+							Source: "matchRegexpString:matchRegexpString",
+							Start: ast.Position{
+								Column: 5,
+								Line:   17,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 22,
+									Line:   17,
+								},
+								File:   "regexp.flux",
+								Source: "matchRegexpString",
+								Start: ast.Position{
+									Column: 5,
+									Line:   17,
+								},
+							},
+						},
+						Name: "matchRegexpString",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   17,
+								},
+								File:   "regexp.flux",
+								Source: "matchRegexpString",
+								Start: ast.Position{
+									Column: 23,
+									Line:   17,
+								},
+							},
+						},
+						Name: "matchRegexpString",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 38,
+								Line:   18,
+							},
+							File:   "regexp.flux",
+							Source: "replaceAllString:replaceAllString",
+							Start: ast.Position{
+								Column: 5,
+								Line:   18,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 21,
+									Line:   18,
+								},
+								File:   "regexp.flux",
+								Source: "replaceAllString",
+								Start: ast.Position{
+									Column: 5,
+									Line:   18,
+								},
+							},
+						},
+						Name: "replaceAllString",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 38,
+									Line:   18,
+								},
+								File:   "regexp.flux",
+								Source: "replaceAllString",
+								Start: ast.Position{
+									Column: 22,
+									Line:   18,
+								},
+							},
+						},
+						Name: "replaceAllString",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 28,
+								Line:   19,
+							},
+							File:   "regexp.flux",
+							Source: "splitRegexp:splitRegexp",
+							Start: ast.Position{
+								Column: 5,
+								Line:   19,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 16,
+									Line:   19,
+								},
+								File:   "regexp.flux",
+								Source: "splitRegexp",
+								Start: ast.Position{
+									Column: 5,
+									Line:   19,
+								},
+							},
+						},
+						Name: "splitRegexp",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 28,
+									Line:   19,
+								},
+								File:   "regexp.flux",
+								Source: "splitRegexp",
+								Start: ast.Position{
+									Column: 17,
+									Line:   19,
+								},
+							},
+						},
+						Name: "splitRegexp",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   20,
+							},
+							File:   "regexp.flux",
+							Source: "getString:getString",
+							Start: ast.Position{
+								Column: 5,
+								Line:   20,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   20,
+								},
+								File:   "regexp.flux",
+								Source: "getString",
+								Start: ast.Position{
+									Column: 5,
+									Line:   20,
+								},
+							},
+						},
+						Name: "getString",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 24,
+									Line:   20,
+								},
+								File:   "regexp.flux",
+								Source: "getString",
+								Start: ast.Position{
+									Column: 15,
+									Line:   20,
+								},
+							},
+						},
+						Name: "getString",
 					},
 				}},
 				With: nil,
