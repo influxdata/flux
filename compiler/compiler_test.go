@@ -13,27 +13,7 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-var CmpOptions []cmp.Option
-
-func init() {
-	CmpOptions = append(semantictest.CmpOptions, cmp.Comparer(ValueEqual))
-}
-
-func ValueEqual(x, y values.Value) bool {
-	if x == values.Null && y == values.Null {
-		return true
-	}
-
-	switch k := x.Type().Nature(); k {
-	case semantic.Object:
-		if x.Type() != y.Type() {
-			return false
-		}
-		return cmp.Equal(x.Object(), y.Object(), CmpOptions...)
-	default:
-		return x.Equal(y)
-	}
-}
+var CmpOptions = semantictest.CmpOptions
 
 func TestCompilationCache(t *testing.T) {
 	add := &semantic.FunctionExpression{
@@ -1043,6 +1023,34 @@ func TestCompileAndEval(t *testing.T) {
 					"a": values.NewInt(4),
 					// "b": values.Null,
 				}),
+			}),
+			want: values.Null,
+		},
+		{
+			name: "two null values are not equal",
+			// fn = (a, b) => a == b
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "a"}},
+							{Key: &semantic.Identifier{Name: "b"}},
+						},
+					},
+					Body: &semantic.BinaryExpression{
+						Operator: ast.EqualOperator,
+						Left:     &semantic.IdentifierExpression{Name: "a"},
+						Right:    &semantic.IdentifierExpression{Name: "b"},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"a": semantic.Int,
+				"b": semantic.Int,
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"a": values.Null,
+				"b": values.Null,
 			}),
 			want: values.Null,
 		},

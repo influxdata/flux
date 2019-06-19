@@ -227,6 +227,9 @@ func TestEval(t *testing.T) {
             x == 5 or fail()
 			`,
 		},
+		// TODO(jsternberg): This test seems to not
+		// infer the type constraints correctly for m.a,
+		// but it doesn't fail.
 		{
 			name: "return map from func",
 			query: `
@@ -743,10 +746,11 @@ func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
 				t.Fatal("expected to error during program evaluation")
 			}
 
-			if tc.want != nil && !cmp.Equal(tc.want, getSideEffectsValues(sideEffects), semantictest.CmpOptions...) {
-				t.Fatalf("unexpected side effect values -want/+got: \n%s", cmp.Diff(tc.want, sideEffects, semantictest.CmpOptions...))
+			if tc.want != nil {
+				if want, got := tc.want, getSideEffectsValues(sideEffects); !cmp.Equal(want, got, semantictest.CmpOptions...) {
+					t.Fatalf("unexpected side effect values -want/+got: \n%s", cmp.Diff(want, got, semantictest.CmpOptions...))
+				}
 			}
-
 		})
 	}
 }
