@@ -64,9 +64,19 @@ func tableFindCall(args values.Object) (values.Value, error) {
 		to = v.(*flux.TableObject)
 	}
 
-	fn, err := arguments.GetRequiredFunction(tableFindFunctionArg)
-	if err != nil {
+	var fn *execute.TablePredicateFn
+	if call, err := arguments.GetRequiredFunction(tableFindFunctionArg); err != nil {
 		return nil, fmt.Errorf("missing argument: %s", tableFindFunctionArg)
+	} else {
+		predicate, err := interpreter.ResolveFunction(call)
+		if err != nil {
+			return nil, err
+		}
+
+		fn, err = execute.NewTablePredicateFn(predicate)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	c := lang.TableObjectCompiler{
@@ -88,31 +98,31 @@ func tableFindCall(args values.Object) (values.Value, error) {
 	var found bool
 	for res := range q.Results() {
 		if err := res.Tables().Do(func(tbl flux.Table) error {
+			defer tbl.Done()
 			if found {
 				// the result is filled, you can skip other tables
 				return nil
 			}
-			gk := objectFromGroupKey(tbl.Key())
-			pass, err := fn.Call(values.NewObjectWithValues(map[string]values.Value{tableFindFunctionGroupKeyArg: gk}))
+
+			if err := fn.Prepare(tbl); err != nil {
+				return err
+			}
+
+			var err error
+			found, err = fn.Eval(tbl)
 			if err != nil {
 				return errors.Wrap(err, "failed to evaluate group key predicate function")
 			}
-			found = pass.Bool()
+
 			if found {
-				// We need to copy the table in memory and increase its refCount in order to make
-				// subsequent calls to getRecord/Column idempotent. If we don't do it, then it would be
-				// consumed by calls to `Do`, and subsequent calls to getRecord/Column would find
-				// an empty table.
-				// TODO(jsternberg): Tables can only be consumed once so the implementation of a table
-				// must use a buffered table and copy it when it is used. This is not done yet so the
-				// result of retrieving the table can only be consumed once.
-				// The table must also be copied into a buffer because once the table goes out of the
-				// current scope it is discarded by the processing system.
-				if tbl, err := execute.CopyTable(tbl); err != nil {
+				t, err = objects.NewTable(tbl)
+				if err != nil {
 					return err
-				} else {
-					t = objects.NewTable(tbl)
 				}
+			} else {
+				// TODO(jsternberg): Remove the Do call when Done
+				// is implemented for all table types.
+				_ = tbl.Do(func(flux.ColReader) error { return nil })
 			}
 			return nil
 		}); err != nil {
@@ -123,14 +133,6 @@ func tableFindCall(args values.Object) (values.Value, error) {
 		return nil, fmt.Errorf("no table found")
 	}
 	return t, nil
-}
-
-func objectFromGroupKey(gk flux.GroupKey) values.Object {
-	vsMap := make(map[string]values.Value, len(gk.Cols()))
-	for j, c := range gk.Cols() {
-		vsMap[c.Label] = gk.Value(j)
-	}
-	return values.NewObjectWithValues(vsMap)
 }
 
 func NewGetColumnFunction() values.Value {
@@ -156,7 +158,7 @@ func getColumnCall(args values.Object) (values.Value, error) {
 	} else if v.Type() != objects.TableMonoType {
 		return nil, fmt.Errorf("unexpected type for %s: want %v, got %v", getColumnTableArg, objects.TableMonoType, v.Type())
 	} else {
-		tbl = v.(*objects.Table).Table
+		tbl = v.(*objects.Table).Table()
 	}
 
 	col, err := arguments.GetRequiredString(getColumnColumnArg)
@@ -251,7 +253,7 @@ func getRecordCall(args values.Object) (values.Value, error) {
 	} else if v.Type() != objects.TableMonoType {
 		return nil, fmt.Errorf("unexpected type for %s: want %v, got %v", getRecordTableArg, objects.TableMonoType, v.Type())
 	} else {
-		tbl = v.(*objects.Table).Table
+		tbl = v.(*objects.Table).Table()
 	}
 
 	rowIdx, err := arguments.GetRequiredInt(getRecordIndexArg)

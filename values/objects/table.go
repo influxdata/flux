@@ -41,12 +41,16 @@ var (
 // Table is a values.Value that represents a table in Flux.
 // (Unlike flux.TableObject which represents a stream of tables.)
 type Table struct {
-	flux.Table
+	flux.BufferedTable
 	schema values.Array
 }
 
-func NewTable(tbl flux.Table) *Table {
-	t := &Table{Table: tbl}
+func NewTable(tbl flux.Table) (*Table, error) {
+	bt, err := execute.CopyTable(tbl)
+	if err != nil {
+		return nil, err
+	}
+	t := &Table{BufferedTable: bt}
 	t.schema = values.NewArray(SchemaMonoType)
 	for _, c := range tbl.Cols() {
 		t.schema.Append(values.NewObjectWithValues(map[string]values.Value{
@@ -55,7 +59,7 @@ func NewTable(tbl flux.Table) *Table {
 			"type":    values.New(c.Type.String()),
 		}))
 	}
-	return t
+	return t, nil
 }
 
 func (t *Table) Get(name string) (values.Value, bool) {
@@ -66,7 +70,7 @@ func (t *Table) Get(name string) (values.Value, bool) {
 		}
 		return t.schema, true
 	*/
-	return nil, false
+	return values.Null, false
 }
 
 func (t *Table) Set(name string, v values.Value) {
@@ -137,12 +141,19 @@ func (t *Table) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Object, semantic.Function))
 }
 
+// Table returns a copy of the Table that can be called
+// with Do. Either Do or Done must be called on the
+// returned Table.
+func (t *Table) Table() flux.Table {
+	return t.Copy()
+}
+
 func (t *Table) Equal(other values.Value) bool {
 	ot, ok := other.(*Table)
 	if !ok || !t.schema.Equal(ot.schema) {
 		return false
 	}
-	eq, err := execute.TablesEqual(t.Table, ot.Table, &memory.Allocator{})
+	eq, err := execute.TablesEqual(t.BufferedTable, ot.BufferedTable, &memory.Allocator{})
 	if err != nil || !eq {
 		return false
 	}

@@ -2532,6 +2532,125 @@ r.b.c + r.a
 			wantErr: errors.New("missing object properties (b)"),
 			skip:    "object cannot recognize that b is a regex and not nullable",
 		},
+		{
+			name: "use variable returned from function",
+			script: `
+v = ((x) => x)(x:1)
+v
+`,
+			skip: "variable loses return type information from the function",
+		},
+		{
+			name: "same function can return different types",
+			script: `
+identity = (x) => x
+a = identity(x:1)
+b = identity(x:2.0)
+{a:a, b:b}
+`,
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					x := semantic.Tvar(3)
+					switch n := node.(type) {
+					case *semantic.FunctionExpression:
+						return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+							Parameters: map[string]semantic.PolyType{
+								"x": x,
+							},
+							Required: semantic.LabelSet{"x"},
+							Return:   x,
+						})
+					case *semantic.FunctionBlock:
+						return x
+					case *semantic.FunctionParameter:
+						return x
+					case *semantic.IdentifierExpression:
+						switch n.Start.Line {
+						case 2:
+							return x
+						case 3:
+							return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+								Parameters: map[string]semantic.PolyType{
+									"x": semantic.Int,
+								},
+								Required: semantic.LabelSet{"x"},
+								Return:   semantic.Int,
+							})
+						case 4:
+							return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+								Parameters: map[string]semantic.PolyType{
+									"x": semantic.Float,
+								},
+								Required: semantic.LabelSet{"x"},
+								Return:   semantic.Float,
+							})
+						case 5:
+							switch n.Start.Column {
+							case 4:
+								return semantic.Tvar(24)
+							case 9:
+								return semantic.Tvar(25)
+							}
+						}
+					case *semantic.CallExpression:
+						switch n.Start.Line {
+						case 3:
+							return semantic.Int
+						case 4:
+							return semantic.Float
+						}
+					case *semantic.ObjectExpression:
+						switch n.Start.Line {
+						case 3:
+							return semantic.NewObjectPolyType(
+								map[string]semantic.PolyType{
+									"x": semantic.Int,
+								},
+								nil,
+								semantic.LabelSet{"x"},
+							)
+						case 4:
+							return semantic.NewObjectPolyType(
+								map[string]semantic.PolyType{
+									"x": semantic.Float,
+								},
+								nil,
+								semantic.LabelSet{"x"},
+							)
+						case 5:
+							return semantic.NewObjectPolyType(
+								map[string]semantic.PolyType{
+									"a": semantic.Tvar(24),
+									"b": semantic.Tvar(25),
+								},
+								nil,
+								semantic.LabelSet{"a", "b"},
+							)
+						}
+					case *semantic.Property:
+						switch n.Start.Line {
+						case 3:
+							return semantic.Int
+						case 4:
+							return semantic.Float
+						case 5:
+							switch n.Start.Column {
+							case 2:
+								return semantic.Tvar(24)
+							case 7:
+								return semantic.Tvar(25)
+							}
+						}
+					}
+					return nil
+				},
+			},
+		},
+		{
+			name:   "return type conflicts with usage",
+			script: `((x) => x)(x:1).a`,
+			skip:   "type system doesn't identify this as an error",
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
