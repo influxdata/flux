@@ -2,6 +2,7 @@ module github.com/influxdata/flux
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
+	github.com/DATA-DOG/go-sqlmock v1.3.3
 	github.com/Masterminds/semver v1.4.2
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/apache/arrow/go/arrow v0.0.0-20190426170622-338c62a2a205
