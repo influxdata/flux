@@ -111,6 +111,10 @@ func CopyTable(t flux.Table) (flux.BufferedTable, error) {
 		key:     t.Key(),
 		colMeta: t.Cols(),
 	}
+	if t.Empty() {
+		return &tbl, nil
+	}
+
 	if err := t.Do(func(cr flux.ColReader) error {
 		cr.Retain()
 		tbl.buffers = append(tbl.buffers, cr)
