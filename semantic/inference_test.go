@@ -1275,12 +1275,12 @@ name(p: device)
 			},
 		},
 		{
-			skip: "skipping until type checking using with is fixed",
+			//skip: "skipping until type checking using with is fixed",
 			name: "structural polymorphism with object updates and indirection",
 			script: `
 getJim  = () => ({name: "Jim", age: 30, weight: 100.0})
 j = getJim()
-john = {j with lastName: "asdf"}
+john = {j with lastName: "Morrison"}
 
 name = (p) => p.name
 
@@ -1297,46 +1297,14 @@ name(p: john)
 						nil,
 						semantic.LabelSet{"name", "age", "weight"},
 					)
-					jimCall := semantic.NewObjectPolyType(
-						map[string]semantic.PolyType{
-							"name":   semantic.String,
-							"age":    semantic.Int,
-							"weight": semantic.Float,
+					getJim := semantic.NewFunctionPolyType(
+						semantic.FunctionPolySignature{
+							Return: jim,
 						},
-						semantic.LabelSet{"name"},
-						semantic.LabelSet{"name", "age", "weight"},
 					)
-					pJim := semantic.NewObjectPolyType(
-						map[string]semantic.PolyType{
-							"p": jimCall,
-						},
-						nil,
-						semantic.LabelSet{"p"},
-					)
-					jane := semantic.NewObjectPolyType(
-						map[string]semantic.PolyType{
-							"name": semantic.String,
-							"age":  semantic.Int,
-						},
-						nil,
-						semantic.LabelSet{"name", "age"},
-					)
-					janeCall := semantic.NewObjectPolyType(
-						map[string]semantic.PolyType{
-							"name": semantic.String,
-							"age":  semantic.Int,
-						},
-						semantic.LabelSet{"name"},
-						semantic.LabelSet{"name", "age"},
-					)
-					pJane := semantic.NewObjectPolyType(
-						map[string]semantic.PolyType{
-							"p": janeCall,
-						},
-						nil,
-						semantic.LabelSet{"p"},
-					)
-					jimb := semantic.NewObjectPolyType(
+					emptyArg := semantic.NewObjectPolyType(nil, nil, nil)
+					j := jim
+					john := semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{
 							"name":     semantic.String,
 							"age":      semantic.Int,
@@ -1346,7 +1314,7 @@ name(p: john)
 						nil,
 						semantic.LabelSet{"name", "age", "weight", "lastName"},
 					)
-					jimbCall := semantic.NewObjectPolyType(
+					johnCall := semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{
 							"name":     semantic.String,
 							"age":      semantic.Int,
@@ -1356,40 +1324,14 @@ name(p: john)
 						semantic.LabelSet{"name"},
 						semantic.LabelSet{"name", "age", "weight", "lastName"},
 					)
-					pJimb := semantic.NewObjectPolyType(
+					pJohn := semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{
-							"p": jimbCall,
+							"p": johnCall,
 						},
 						nil,
 						semantic.LabelSet{"p"},
 					)
-					device := semantic.NewObjectPolyType(
-						map[string]semantic.PolyType{
-							"name": semantic.Int,
-							"lat":  semantic.Float,
-							"lon":  semantic.Float,
-						},
-						nil,
-						semantic.LabelSet{"name", "lat", "lon"},
-					)
-					deviceCall := semantic.NewObjectPolyType(
-						map[string]semantic.PolyType{
-							"name": semantic.Int,
-							"lat":  semantic.Float,
-							"lon":  semantic.Float,
-						},
-						semantic.LabelSet{"name"},
-						semantic.LabelSet{"name", "lat", "lon"},
-					)
-					pDevice := semantic.NewObjectPolyType(
-						map[string]semantic.PolyType{
-							"p": deviceCall,
-						},
-						nil,
-						semantic.LabelSet{"p"},
-					)
-
-					tv := semantic.Tvar(50)
+					tv := semantic.Tvar(30)
 					p := semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{
 							"name": tv,
@@ -1404,160 +1346,80 @@ name(p: john)
 						Required: semantic.LabelSet{"p"},
 						Return:   tv,
 					})
-					nameCallJim := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+					nameCallJohn := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 						Parameters: map[string]semantic.PolyType{
-							"p": semantic.NewObjectPolyType(
-								map[string]semantic.PolyType{
-									"name":   semantic.String,
-									"age":    semantic.Int,
-									"weight": semantic.Float,
-								},
-								semantic.LabelSet{"name"},
-								semantic.LabelSet{"name", "age", "weight"},
-							),
+							"p": johnCall,
 						},
 						Required: semantic.LabelSet{"p"},
 						Return:   semantic.String,
 					})
-					nameCallJane := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-						Parameters: map[string]semantic.PolyType{
-							"p": semantic.NewObjectPolyType(
-								map[string]semantic.PolyType{
-									"name": semantic.String,
-									"age":  semantic.Int,
-								},
-								semantic.LabelSet{"name"},
-								semantic.LabelSet{"name", "age"},
-							),
-						},
-						Required: semantic.LabelSet{"p"},
-						Return:   semantic.String,
-					})
-					nameCallJimb := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-						Parameters: map[string]semantic.PolyType{
-							"p": semantic.NewObjectPolyType(
-								map[string]semantic.PolyType{
-									"name":     semantic.String,
-									"age":      semantic.Int,
-									"weight":   semantic.Float,
-									"lastName": semantic.String,
-								},
-								semantic.LabelSet{"name"},
-								semantic.LabelSet{"name", "age", "weight", "lastName"},
-							),
-						},
-						Required: semantic.LabelSet{"p"},
-						Return:   semantic.String,
-					})
-					nameCallDevice := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-						Parameters: map[string]semantic.PolyType{
-							"p": semantic.NewObjectPolyType(
-								map[string]semantic.PolyType{
-									"name": semantic.Int,
-									"lat":  semantic.Float,
-									"lon":  semantic.Float,
-								},
-								semantic.LabelSet{"name"},
-								semantic.LabelSet{"name", "lat", "lon"},
-							),
-						},
-						Required: semantic.LabelSet{"p"},
-						Return:   semantic.Int,
-					})
-
-					nameJim := semantic.String
-					nameJane := semantic.String
-					nameJimb := semantic.String
-					nameDevice := semantic.Int
+					nameJohn := semantic.String
 
 					switch n := node.(type) {
 					case *semantic.Property:
 						switch l, c := n.Location().Start.Line, n.Location().Start.Column; {
-						case l == 2 && c == 9:
+						case l == 2 && c == 19:
+							// name
 							return semantic.String
-						case l == 2 && c == 22:
+						case l == 2 && c == 32:
+							// age
 							return semantic.Int
-						case l == 2 && c == 31:
+						case l == 2 && c == 41:
+							// weight
 							return semantic.Float
-						case l == 3 && c == 9:
+						case l == 4 && c == 16:
+							// {... with lastName: ...}
 							return semantic.String
-						case l == 3 && c == 23:
-							return semantic.Int
-						case l == 4 && c == 18:
-							return semantic.String
-						case l == 5 && c == 11:
-							return semantic.Int
-						case l == 5 && c == 21:
-							return semantic.Float
-						case l == 5 && c == 35:
-							return semantic.Float
-						case l == 9:
-							return jimCall
-						case l == 10:
-							return janeCall
-						case l == 11:
-							return jimbCall
-						case l == 12:
-							return deviceCall
+						case l == 8:
+							// name(p: john)
+							return johnCall
 						}
 					case *semantic.ObjectExpression:
 						switch n.Location().Start.Line {
 						case 2:
 							return jim
 						case 3:
-							return jane
+							return emptyArg
 						case 4:
-							return jimb
-						case 5:
-							return device
-						case 9:
-							return pJim
-						case 10:
-							return pJane
-						case 11:
-							return pJimb
-						case 12:
-							return pDevice
+							return john
+						case 8:
+							return pJohn
 						}
 					case *semantic.FunctionExpression:
-						return name
+						switch l := n.Location().Start.Line; {
+						case l == 2:
+							return getJim
+						case l == 6:
+							return name
+						}
 					case *semantic.FunctionParameter:
 						return p
 					case *semantic.FunctionBlock:
-						return tv
+						switch l := n.Location().Start.Line; {
+						case l == 2:
+							return jim
+						case l == 6:
+							return tv
+						}
 					case *semantic.CallExpression:
-						switch n.Location().Start.Line {
-						case 9:
-							return nameJim
-						case 10:
-							return nameJane
-						case 11:
-							return nameJimb
-						case 12:
-							return nameDevice
+						switch l := n.Location().Start.Line; {
+						case l == 3:
+							return jim
+						case l == 8:
+							return nameJohn
 						}
 					case *semantic.IdentifierExpression:
 						switch l, c := n.Location().Start.Line, n.Location().Start.Column; {
+						case l == 3:
+							return getJim
 						case l == 4:
-							return jim
-						case l == 7:
+							return j
+						case l == 6:
 							return p
-						case l == 9 && c == 1:
-							return nameCallJim
-						case l == 9 && c == 9:
-							return jimCall
-						case l == 10 && c == 1:
-							return nameCallJane
-						case l == 10 && c == 9:
-							return janeCall
-						case l == 11 && c == 1:
-							return nameCallJimb
-						case l == 11 && c == 9:
-							return jimbCall
-						case l == 12 && c == 1:
-							return nameCallDevice
-						case l == 12 && c == 9:
-							return deviceCall
+						case l == 8 && c == 1:
+							return nameCallJohn
+						case l == 8 && c == 9:
+							return john
 						}
 					case *semantic.MemberExpression:
 						return tv
