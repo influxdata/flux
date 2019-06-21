@@ -232,21 +232,31 @@ func labelJoinFn(srcLabels []*ast.StringLiteral, dst *ast.StringLiteral, sep *as
 }
 
 func (t *Transpiler) generateZeroWindows() *ast.PipeExpression {
+	var windowCall *ast.CallExpression
+	var windowFilterCall *ast.CallExpression
+	if t.Resolution > 0 {
+		// For range queries:
+		// At every resolution step, load / look back up to 5m of data (PromQL lookback delta).
+		windowCall = call("window", map[string]ast.Expression{
+			"every":       &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Resolution.Nanoseconds(), Unit: "ns"}}},
+			"period":      &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: 5, Unit: "m"}}},
+			"offset":      &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Start.UnixNano() % t.Resolution.Nanoseconds(), Unit: "ns"}}},
+			"createEmpty": &ast.BooleanLiteral{Value: true},
+		})
+
+		// Remove any windows <5m long at the edges of the graph range to act like PromQL.
+		windowFilterCall = call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.Start, t.End.Add(-5*time.Minute))})
+	}
+
 	return buildPipeline(
 		call("promql.emptyTable", nil),
 		call("range", map[string]ast.Expression{
 			"start": &ast.DateTimeLiteral{Value: t.Start.Add(-5 * time.Minute)},
 			"stop":  &ast.DateTimeLiteral{Value: t.End},
 		}),
-		call("window", map[string]ast.Expression{
-			"every":       &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Resolution.Nanoseconds(), Unit: "ns"}}},
-			"period":      &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: 5, Unit: "m"}}},
-			"offset":      &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Start.UnixNano() % t.Resolution.Nanoseconds(), Unit: "ns"}}},
-			"createEmpty": &ast.BooleanLiteral{Value: true},
-		}),
+		windowCall,
 		call("sum", nil),
-		// Remove any windows <5m long at the edges of the graph range to act like PromQL.
-		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.Start, t.End.Add(-5*time.Minute))}),
+		windowFilterCall,
 	)
 }
 

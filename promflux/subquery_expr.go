@@ -21,6 +21,21 @@ func (t *Transpiler) transpileSubqueryExpr(sq *promql.SubqueryExpr) (ast.Express
 	}
 
 	// 3. Window the subexpression data according to the parent query's step and range.
+	var windowCall *ast.CallExpression
+	var windowFilterCall *ast.CallExpression
+	if t.Resolution > 0 {
+		// For range queries:
+		// At every resolution step, include the specified range of data.
+		windowCall = call("window", map[string]ast.Expression{
+			"every":  &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Resolution.Nanoseconds(), Unit: "ns"}}},
+			"period": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: sq.Range.Nanoseconds(), Unit: "ns"}}},
+			"offset": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Start.UnixNano() % t.Resolution.Nanoseconds(), Unit: "ns"}}},
+		})
+
+		// Remove any windows smaller than the specified range at the edges of the graph range.
+		windowFilterCall = call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.Start.Add(-sq.Offset), t.End.Add(-sq.Range-sq.Offset))})
+	}
+
 	return buildPipeline(
 		subquery,
 		// The resolution step evaluation timestamp needs to become the output timestamp.
@@ -28,13 +43,8 @@ func (t *Transpiler) transpileSubqueryExpr(sq *promql.SubqueryExpr) (ast.Express
 			"column": &ast.StringLiteral{Value: "_stop"},
 			"as":     &ast.StringLiteral{Value: "_time"},
 		}),
-		// At every resolution step, include the specified range of data.
-		call("window", map[string]ast.Expression{
-			"every":  &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Resolution.Nanoseconds(), Unit: "ns"}}},
-			"period": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: sq.Range.Nanoseconds(), Unit: "ns"}}},
-		}),
-		// Remove any windows smaller than the specified range at the edges of the graph range.
-		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.Start.Add(-sq.Offset), t.End.Add(-sq.Range-sq.Offset))}),
+		windowCall,
+		windowFilterCall,
 		// Apply offsets to make past data look like it's in the present.
 		call("timeShift", map[string]ast.Expression{
 			"duration": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: sq.Offset.Nanoseconds(), Unit: "ns"}}},

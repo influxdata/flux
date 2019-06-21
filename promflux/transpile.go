@@ -26,9 +26,15 @@ func buildPipeline(arg ast.Expression, calls ...*ast.CallExpression) *ast.PipeEx
 			Call:     calls[0],
 		}
 	default:
+		lastCall := calls[len(calls)-1]
+		// Skip nil call arguments.
+		if lastCall == nil {
+			return buildPipeline(arg, calls[0:len(calls)-1]...)
+		}
+
 		return &ast.PipeExpression{
 			Argument: buildPipeline(arg, calls[0:len(calls)-1]...),
-			Call:     calls[len(calls)-1],
+			Call:     lastCall,
 		}
 	}
 }

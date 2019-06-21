@@ -245,9 +245,9 @@ func (q *testQuerier) runQuery(qry string, skipComparison bool) {
 			Now: time.Now(),
 		},
 	}
-	var influxMatrix promql.Matrix
+	var influxMatrix promql.Value
 	err = q.influxDB.QueryAndConsume(q.ctx, req, func(r flux.Result) error {
-		influxMatrix = InfluxResultToPromMatrix(r)
+		influxMatrix = FluxResultToPromQLValue(r, promql.ValueTypeMatrix)
 		return nil
 	})
 	if err != nil {

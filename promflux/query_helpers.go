@@ -11,7 +11,7 @@ import (
 	"github.com/influxdata/flux/semantic"
 )
 
-func InfluxResultToPromMatrix(result flux.Result) promql.Matrix {
+func FluxResultToPromQLValue(result flux.Result, valType promql.ValueType) promql.Value {
 	hashToSeries := map[uint64]*promql.Series{}
 
 	result.Tables().Do(func(tbl flux.Table) error {
@@ -68,11 +68,47 @@ func InfluxResultToPromMatrix(result flux.Result) promql.Matrix {
 		return nil
 	})
 
-	matrix := make(promql.Matrix, 0, len(hashToSeries))
-	for _, ser := range hashToSeries {
-		// TODO: Also sort series by time? Or are these always sorted coming from InfluxDB?
-		matrix = append(matrix, *ser)
+	switch valType {
+	case promql.ValueTypeMatrix:
+		matrix := make(promql.Matrix, 0, len(hashToSeries))
+		for _, ser := range hashToSeries {
+			matrix = append(matrix, *ser)
+		}
+		sort.Sort(matrix)
+		return matrix
+	case promql.ValueTypeVector:
+		vector := make(promql.Vector, 0, len(hashToSeries))
+		for _, ser := range hashToSeries {
+			if len(ser.Points) != 1 {
+				// TODO: Make this a normal error?
+				panic("expected exactly one output point for every series for vector result")
+			}
+			vector = append(vector, promql.Sample{
+				Metric: ser.Metric,
+				Point:  ser.Points[0],
+			})
+		}
+		// TODO: Implement sorting for vectors, but this is only needed for tests.
+		// sort.Sort(vector)
+		return vector
+	case promql.ValueTypeScalar:
+		if len(hashToSeries) != 1 {
+			// TODO: Make this a normal error?
+			panic("expected exactly one output series for scalar result")
+		}
+		for _, ser := range hashToSeries {
+			if len(ser.Points) != 1 {
+				// TODO: Make this a normal error?
+				panic("expected exactly one output point for scalar result")
+			}
+			return promql.Scalar{
+				T: ser.Points[0].T,
+				V: ser.Points[0].V,
+			}
+		}
+		// Should be unreachable.
+		panic("no point found")
+	default:
+		panic("unsupported PromQL value type")
 	}
-	sort.Sort(matrix)
-	return matrix
 }

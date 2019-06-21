@@ -74,6 +74,21 @@ var dropMeasurementCall = call(
 )
 
 func (t *Transpiler) transpileInstantVectorSelector(v *promql.VectorSelector) *ast.PipeExpression {
+	var windowCall *ast.CallExpression
+	var windowFilterCall *ast.CallExpression
+	if t.Resolution > 0 {
+		// For range queries:
+		// At every resolution step, load / look back up to 5m of data (PromQL lookback delta).
+		windowCall = call("window", map[string]ast.Expression{
+			"every":  &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Resolution.Nanoseconds(), Unit: "ns"}}},
+			"period": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: 5, Unit: "m"}}},
+			"offset": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Start.UnixNano() % t.Resolution.Nanoseconds(), Unit: "ns"}}},
+		})
+
+		// Remove any windows <5m long at the edges of the graph range to act like PromQL.
+		windowFilterCall = call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.Start.Add(-v.Offset), t.End.Add(-5*time.Minute-v.Offset))})
+	}
+
 	return buildPipeline(
 		// Select all Prometheus data.
 		call("from", map[string]ast.Expression{"bucket": &ast.StringLiteral{Value: t.Bucket}}),
@@ -84,14 +99,8 @@ func (t *Transpiler) transpileInstantVectorSelector(v *promql.VectorSelector) *a
 		}),
 		// Apply label matching filters.
 		call("filter", map[string]ast.Expression{"fn": transpileLabelMatchersFn(v.LabelMatchers)}),
-		// At every resolution step, load / look back up to 5m of data (PromQL lookback delta).
-		call("window", map[string]ast.Expression{
-			"every":  &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Resolution.Nanoseconds(), Unit: "ns"}}},
-			"period": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: 5, Unit: "m"}}},
-			"offset": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Start.UnixNano() % t.Resolution.Nanoseconds(), Unit: "ns"}}},
-		}),
-		// Remove any windows <5m long at the edges of the graph range to act like PromQL.
-		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.Start.Add(-v.Offset), t.End.Add(-5*time.Minute-v.Offset))}),
+		windowCall,
+		windowFilterCall,
 		// Select the last data point after the current evaluation (resolution step) timestamp.
 		call("last", nil),
 		// Apply offsets to make past data look like it's in the present.
@@ -103,6 +112,21 @@ func (t *Transpiler) transpileInstantVectorSelector(v *promql.VectorSelector) *a
 }
 
 func (t *Transpiler) transpileRangeVectorSelector(v *promql.MatrixSelector) *ast.PipeExpression {
+	var windowCall *ast.CallExpression
+	var windowFilterCall *ast.CallExpression
+	if t.Resolution > 0 {
+		// For range queries:
+		// At every resolution step, include the specified range of data.
+		windowCall = call("window", map[string]ast.Expression{
+			"every":  &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Resolution.Nanoseconds(), Unit: "ns"}}},
+			"period": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: v.Range.Nanoseconds(), Unit: "ns"}}},
+			"offset": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Start.UnixNano() % t.Resolution.Nanoseconds(), Unit: "ns"}}},
+		})
+
+		// Remove any windows smaller than the specified range at the edges of the graph range.
+		windowFilterCall = call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.Start.Add(-v.Offset), t.End.Add(-v.Range-v.Offset))})
+	}
+
 	return buildPipeline(
 		// Select all Prometheus data.
 		call("from", map[string]ast.Expression{"bucket": &ast.StringLiteral{Value: t.Bucket}}),
@@ -113,14 +137,8 @@ func (t *Transpiler) transpileRangeVectorSelector(v *promql.MatrixSelector) *ast
 		}),
 		// Apply label matching filters.
 		call("filter", map[string]ast.Expression{"fn": transpileLabelMatchersFn(v.LabelMatchers)}),
-		// At every resolution step, include the specified range of data.
-		call("window", map[string]ast.Expression{
-			"every":  &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Resolution.Nanoseconds(), Unit: "ns"}}},
-			"period": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: v.Range.Nanoseconds(), Unit: "ns"}}},
-			"offset": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Start.UnixNano() % t.Resolution.Nanoseconds(), Unit: "ns"}}},
-		}),
-		// Remove any windows smaller than the specified range at the edges of the graph range.
-		call("filter", map[string]ast.Expression{"fn": windowCutoffFn(t.Start.Add(-v.Offset), t.End.Add(-v.Range-v.Offset))}),
+		windowCall,
+		windowFilterCall,
 		// Apply offsets to make past data look like it's in the present.
 		call("timeShift", map[string]ast.Expression{
 			"duration": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: v.Offset.Nanoseconds(), Unit: "ns"}}},
