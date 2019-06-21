@@ -10,7 +10,6 @@ func TestTypeconv_String(t *testing.T) {
 		name  	  string
 		v     	  interface{}
 		want  	  string
-		expectErr error
 	} { 
 		{
 			name : "string(v:1)",
@@ -72,7 +71,6 @@ func TestTypeconv_Int(t *testing.T) {
 		name  	  string
 		v     	  interface{}
 		want  	  int64
-		expectErr error
 	} { 
 		{
 			name : "int64(v:1)",
@@ -134,7 +132,6 @@ func TestTypeconv_UInt(t *testing.T) {
 		name  	  string
 		v     	  interface{}
 		want  	  uint64
-		expectErr error
 	} { 
 		{
 			name : "uint64(v:1)",
@@ -196,7 +193,6 @@ func TestTypeconv_Bool(t *testing.T)  {
 		name   string
 		v      interface{}
 		want   bool
-		expectErr error
 	} {
 		{ 
 			name : "bool(v:1)",
@@ -263,7 +259,6 @@ func TestTypeconv_Float(t *testing.T) {
 		name  	  string
 		v     	  interface{}
 		want  	  float64
-		expectErr error
 	} { 
 		{
 			name : "float64(v:1)",
@@ -315,7 +310,6 @@ func TestTypeconv_Time(t *testing.T) {
 		name  	  string
 		v     	  interface{}
 		want  	  values.Time
-		expectErr error
 	} { 
 		{
 			name : "time(v:1)",
@@ -357,7 +351,6 @@ func TestTypeconv_Duration(t *testing.T) {
 		name  	  string
 		v     	  interface{}
 		want  	  values.Duration
-		expectErr error
 	} { 
 		{
 			name : "duration(v:1)",
