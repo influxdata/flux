@@ -6,9 +6,6 @@
 Flux is a lightweight scripting language for querying databases (like InfluxDB) and working with data. It's part of InfluxDB 1.7 and 2.0, but can be run independently of those.
 This repo represents the language definition and an implementation of the language core.
 
->NOTE: We plan to provide a `flux` command line program that exposes a REPL and talks to various data sources.
-In the meantime see the `influx` command in [this](https://github.com/influxdata/platform) repo as it has working Flux installation against the 2.0 InfluxDB database.
-
 ## Specification
 
 A complete specification can be found in [SPEC.md](./docs/SPEC.md).
@@ -106,7 +103,7 @@ Here are a few examples of the language to get an idea of the syntax.
 
 The above examples give only a taste of what is possible with Flux. See the complete [documentation](http://docs.influxdata.com/flux/) for more complete examples and installation instructions. 
 
-## Flux Functions
+## Extending Flux
 
 1. Sign the [CLA](https://www.influxdata.com/legal/cla/).
 
