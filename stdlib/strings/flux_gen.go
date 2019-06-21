@@ -22,10 +22,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 2,
-					Line:   73,
+					Line:   77,
 				},
 				File:   "strings.flux",
-				Source: "package strings\n\n// Transformation functions\nbuiltin title\nbuiltin toUpper\nbuiltin toLower\nbuiltin trim\nbuiltin trimPrefix\nbuiltin trimSpace\nbuiltin trimSuffix\nbuiltin trimRight\nbuiltin trimLeft\nbuiltin toTitle\nbuiltin hasPrefix\nbuiltin hasSuffix\nbuiltin containsStr\nbuiltin containsAny\nbuiltin equalFold\nbuiltin compare\nbuiltin countStr\nbuiltin index\nbuiltin indexAny\nbuiltin lastIndex\nbuiltin lastIndexAny\nbuiltin isDigit\nbuiltin isLetter\nbuiltin isLower\nbuiltin isUpper\nbuiltin repeat\nbuiltin replace\nbuiltin replaceAll\nbuiltin split\nbuiltin splitAfter\nbuiltin splitN\nbuiltin splitAfterN\nbuiltin joinStr\n\n// hack to simulate an imported strings package\nstrings = {\n  title:title,\n  toUpper:toUpper,\n  toLower:toLower,\n  trim:trim,\n  trimPrefix:trimPrefix,\n  trimSpace:trimSpace,\n  trimSuffix:trimSuffix,\n  trimRight:trimRight,\n  trimLeft:trimLeft,\n  toTitle:toTitle,\n  hasPrefix:hasPrefix,\n  hasSuffix:hasSuffix,\n  containsStr:containsStr,\n  containsAny:containsAny,\n  equalFold:equalFold,\n  compare:compare,\n  countStr:countStr,\n  index:index,\n  indexAny:indexAny,\n  lastIndex:lastIndex,\n  lastIndexAny:lastIndexAny,\n  isDigit:isDigit,\n  isLetter:isLetter,\n  isLower:isLower,\n  isUpper:isUpper,\n  repeat:repeat,\n  replace:replace,\n  replaceAll:replaceAll,\n  split:split,\n  splitAfter:splitAfter,\n  splitN:splitN,\n  splitAfterN:splitAfterN,\n  joinStr:joinStr,\n}",
+				Source: "package strings\n\n// Transformation functions\nbuiltin title\nbuiltin toUpper\nbuiltin toLower\nbuiltin trim\nbuiltin trimPrefix\nbuiltin trimSpace\nbuiltin trimSuffix\nbuiltin trimRight\nbuiltin trimLeft\nbuiltin toTitle\nbuiltin hasPrefix\nbuiltin hasSuffix\nbuiltin containsStr\nbuiltin containsAny\nbuiltin equalFold\nbuiltin compare\nbuiltin countStr\nbuiltin index\nbuiltin indexAny\nbuiltin lastIndex\nbuiltin lastIndexAny\nbuiltin isDigit\nbuiltin isLetter\nbuiltin isLower\nbuiltin isUpper\nbuiltin repeat\nbuiltin replace\nbuiltin replaceAll\nbuiltin split\nbuiltin splitAfter\nbuiltin splitN\nbuiltin splitAfterN\nbuiltin joinStr\nbuiltin strlen\nbuiltin substring\n\n// hack to simulate an imported strings package\nstrings = {\n  title:title,\n  toUpper:toUpper,\n  toLower:toLower,\n  trim:trim,\n  trimPrefix:trimPrefix,\n  trimSpace:trimSpace,\n  trimSuffix:trimSuffix,\n  trimRight:trimRight,\n  trimLeft:trimLeft,\n  toTitle:toTitle,\n  hasPrefix:hasPrefix,\n  hasSuffix:hasSuffix,\n  containsStr:containsStr,\n  containsAny:containsAny,\n  equalFold:equalFold,\n  compare:compare,\n  countStr:countStr,\n  index:index,\n  indexAny:indexAny,\n  lastIndex:lastIndex,\n  lastIndexAny:lastIndexAny,\n  isDigit:isDigit,\n  isLetter:isLetter,\n  isLower:isLower,\n  isUpper:isUpper,\n  repeat:repeat,\n  replace:replace,\n  replaceAll:replaceAll,\n  split:split,\n  splitAfter:splitAfter,\n  splitN:splitN,\n  splitAfterN:splitAfterN,\n  joinStr:joinStr,\n  strlen:strlen,\n  substring:substring,\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -1154,19 +1154,87 @@ var pkgAST = &ast.Package{
 				},
 				Name: "joinStr",
 			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 15,
+						Line:   37,
+					},
+					File:   "strings.flux",
+					Source: "builtin strlen",
+					Start: ast.Position{
+						Column: 1,
+						Line:   37,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 15,
+							Line:   37,
+						},
+						File:   "strings.flux",
+						Source: "strlen",
+						Start: ast.Position{
+							Column: 9,
+							Line:   37,
+						},
+					},
+				},
+				Name: "strlen",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 18,
+						Line:   38,
+					},
+					File:   "strings.flux",
+					Source: "builtin substring",
+					Start: ast.Position{
+						Column: 1,
+						Line:   38,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 18,
+							Line:   38,
+						},
+						File:   "strings.flux",
+						Source: "substring",
+						Start: ast.Position{
+							Column: 9,
+							Line:   38,
+						},
+					},
+				},
+				Name: "substring",
+			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   73,
+						Line:   77,
 					},
 					File:   "strings.flux",
-					Source: "strings = {\n  title:title,\n  toUpper:toUpper,\n  toLower:toLower,\n  trim:trim,\n  trimPrefix:trimPrefix,\n  trimSpace:trimSpace,\n  trimSuffix:trimSuffix,\n  trimRight:trimRight,\n  trimLeft:trimLeft,\n  toTitle:toTitle,\n  hasPrefix:hasPrefix,\n  hasSuffix:hasSuffix,\n  containsStr:containsStr,\n  containsAny:containsAny,\n  equalFold:equalFold,\n  compare:compare,\n  countStr:countStr,\n  index:index,\n  indexAny:indexAny,\n  lastIndex:lastIndex,\n  lastIndexAny:lastIndexAny,\n  isDigit:isDigit,\n  isLetter:isLetter,\n  isLower:isLower,\n  isUpper:isUpper,\n  repeat:repeat,\n  replace:replace,\n  replaceAll:replaceAll,\n  split:split,\n  splitAfter:splitAfter,\n  splitN:splitN,\n  splitAfterN:splitAfterN,\n  joinStr:joinStr,\n}",
+					Source: "strings = {\n  title:title,\n  toUpper:toUpper,\n  toLower:toLower,\n  trim:trim,\n  trimPrefix:trimPrefix,\n  trimSpace:trimSpace,\n  trimSuffix:trimSuffix,\n  trimRight:trimRight,\n  trimLeft:trimLeft,\n  toTitle:toTitle,\n  hasPrefix:hasPrefix,\n  hasSuffix:hasSuffix,\n  containsStr:containsStr,\n  containsAny:containsAny,\n  equalFold:equalFold,\n  compare:compare,\n  countStr:countStr,\n  index:index,\n  indexAny:indexAny,\n  lastIndex:lastIndex,\n  lastIndexAny:lastIndexAny,\n  isDigit:isDigit,\n  isLetter:isLetter,\n  isLower:isLower,\n  isUpper:isUpper,\n  repeat:repeat,\n  replace:replace,\n  replaceAll:replaceAll,\n  split:split,\n  splitAfter:splitAfter,\n  splitN:splitN,\n  splitAfterN:splitAfterN,\n  joinStr:joinStr,\n  strlen:strlen,\n  substring:substring,\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   39,
+						Line:   41,
 					},
 				},
 			},
@@ -1176,13 +1244,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   39,
+							Line:   41,
 						},
 						File:   "strings.flux",
 						Source: "strings",
 						Start: ast.Position{
 							Column: 1,
-							Line:   39,
+							Line:   41,
 						},
 					},
 				},
@@ -1194,13 +1262,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   73,
+							Line:   77,
 						},
 						File:   "strings.flux",
-						Source: "{\n  title:title,\n  toUpper:toUpper,\n  toLower:toLower,\n  trim:trim,\n  trimPrefix:trimPrefix,\n  trimSpace:trimSpace,\n  trimSuffix:trimSuffix,\n  trimRight:trimRight,\n  trimLeft:trimLeft,\n  toTitle:toTitle,\n  hasPrefix:hasPrefix,\n  hasSuffix:hasSuffix,\n  containsStr:containsStr,\n  containsAny:containsAny,\n  equalFold:equalFold,\n  compare:compare,\n  countStr:countStr,\n  index:index,\n  indexAny:indexAny,\n  lastIndex:lastIndex,\n  lastIndexAny:lastIndexAny,\n  isDigit:isDigit,\n  isLetter:isLetter,\n  isLower:isLower,\n  isUpper:isUpper,\n  repeat:repeat,\n  replace:replace,\n  replaceAll:replaceAll,\n  split:split,\n  splitAfter:splitAfter,\n  splitN:splitN,\n  splitAfterN:splitAfterN,\n  joinStr:joinStr,\n}",
+						Source: "{\n  title:title,\n  toUpper:toUpper,\n  toLower:toLower,\n  trim:trim,\n  trimPrefix:trimPrefix,\n  trimSpace:trimSpace,\n  trimSuffix:trimSuffix,\n  trimRight:trimRight,\n  trimLeft:trimLeft,\n  toTitle:toTitle,\n  hasPrefix:hasPrefix,\n  hasSuffix:hasSuffix,\n  containsStr:containsStr,\n  containsAny:containsAny,\n  equalFold:equalFold,\n  compare:compare,\n  countStr:countStr,\n  index:index,\n  indexAny:indexAny,\n  lastIndex:lastIndex,\n  lastIndexAny:lastIndexAny,\n  isDigit:isDigit,\n  isLetter:isLetter,\n  isLower:isLower,\n  isUpper:isUpper,\n  repeat:repeat,\n  replace:replace,\n  replaceAll:replaceAll,\n  split:split,\n  splitAfter:splitAfter,\n  splitN:splitN,\n  splitAfterN:splitAfterN,\n  joinStr:joinStr,\n  strlen:strlen,\n  substring:substring,\n}",
 						Start: ast.Position{
 							Column: 11,
-							Line:   39,
+							Line:   41,
 						},
 					},
 				},
@@ -1210,13 +1278,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
-								Line:   40,
+								Line:   42,
 							},
 							File:   "strings.flux",
 							Source: "title:title",
 							Start: ast.Position{
 								Column: 3,
-								Line:   40,
+								Line:   42,
 							},
 						},
 					},
@@ -1226,13 +1294,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 8,
-									Line:   40,
+									Line:   42,
 								},
 								File:   "strings.flux",
 								Source: "title",
 								Start: ast.Position{
 									Column: 3,
-									Line:   40,
+									Line:   42,
 								},
 							},
 						},
@@ -1244,13 +1312,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   40,
+									Line:   42,
 								},
 								File:   "strings.flux",
 								Source: "title",
 								Start: ast.Position{
 									Column: 9,
-									Line:   40,
+									Line:   42,
 								},
 							},
 						},
@@ -1262,13 +1330,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   41,
+								Line:   43,
 							},
 							File:   "strings.flux",
 							Source: "toUpper:toUpper",
 							Start: ast.Position{
 								Column: 3,
-								Line:   41,
+								Line:   43,
 							},
 						},
 					},
@@ -1278,13 +1346,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   41,
+									Line:   43,
 								},
 								File:   "strings.flux",
 								Source: "toUpper",
 								Start: ast.Position{
 									Column: 3,
-									Line:   41,
+									Line:   43,
 								},
 							},
 						},
@@ -1296,13 +1364,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   41,
+									Line:   43,
 								},
 								File:   "strings.flux",
 								Source: "toUpper",
 								Start: ast.Position{
 									Column: 11,
-									Line:   41,
+									Line:   43,
 								},
 							},
 						},
@@ -1314,13 +1382,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   42,
+								Line:   44,
 							},
 							File:   "strings.flux",
 							Source: "toLower:toLower",
 							Start: ast.Position{
 								Column: 3,
-								Line:   42,
+								Line:   44,
 							},
 						},
 					},
@@ -1330,13 +1398,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   42,
+									Line:   44,
 								},
 								File:   "strings.flux",
 								Source: "toLower",
 								Start: ast.Position{
 									Column: 3,
-									Line:   42,
+									Line:   44,
 								},
 							},
 						},
@@ -1348,13 +1416,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   42,
+									Line:   44,
 								},
 								File:   "strings.flux",
 								Source: "toLower",
 								Start: ast.Position{
 									Column: 11,
-									Line:   42,
+									Line:   44,
 								},
 							},
 						},
@@ -1366,13 +1434,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 12,
-								Line:   43,
+								Line:   45,
 							},
 							File:   "strings.flux",
 							Source: "trim:trim",
 							Start: ast.Position{
 								Column: 3,
-								Line:   43,
+								Line:   45,
 							},
 						},
 					},
@@ -1382,13 +1450,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 7,
-									Line:   43,
+									Line:   45,
 								},
 								File:   "strings.flux",
 								Source: "trim",
 								Start: ast.Position{
 									Column: 3,
-									Line:   43,
+									Line:   45,
 								},
 							},
 						},
@@ -1400,13 +1468,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   43,
+									Line:   45,
 								},
 								File:   "strings.flux",
 								Source: "trim",
 								Start: ast.Position{
 									Column: 8,
-									Line:   43,
+									Line:   45,
 								},
 							},
 						},
@@ -1418,13 +1486,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 24,
-								Line:   44,
+								Line:   46,
 							},
 							File:   "strings.flux",
 							Source: "trimPrefix:trimPrefix",
 							Start: ast.Position{
 								Column: 3,
-								Line:   44,
+								Line:   46,
 							},
 						},
 					},
@@ -1434,13 +1502,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 13,
-									Line:   44,
+									Line:   46,
 								},
 								File:   "strings.flux",
 								Source: "trimPrefix",
 								Start: ast.Position{
 									Column: 3,
-									Line:   44,
+									Line:   46,
 								},
 							},
 						},
@@ -1452,13 +1520,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 24,
-									Line:   44,
+									Line:   46,
 								},
 								File:   "strings.flux",
 								Source: "trimPrefix",
 								Start: ast.Position{
 									Column: 14,
-									Line:   44,
+									Line:   46,
 								},
 							},
 						},
@@ -1470,13 +1538,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   45,
+								Line:   47,
 							},
 							File:   "strings.flux",
 							Source: "trimSpace:trimSpace",
 							Start: ast.Position{
 								Column: 3,
-								Line:   45,
+								Line:   47,
 							},
 						},
 					},
@@ -1486,13 +1554,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   45,
+									Line:   47,
 								},
 								File:   "strings.flux",
 								Source: "trimSpace",
 								Start: ast.Position{
 									Column: 3,
-									Line:   45,
+									Line:   47,
 								},
 							},
 						},
@@ -1504,13 +1572,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   45,
+									Line:   47,
 								},
 								File:   "strings.flux",
 								Source: "trimSpace",
 								Start: ast.Position{
 									Column: 13,
-									Line:   45,
+									Line:   47,
 								},
 							},
 						},
@@ -1522,13 +1590,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 24,
-								Line:   46,
+								Line:   48,
 							},
 							File:   "strings.flux",
 							Source: "trimSuffix:trimSuffix",
 							Start: ast.Position{
 								Column: 3,
-								Line:   46,
+								Line:   48,
 							},
 						},
 					},
@@ -1538,13 +1606,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 13,
-									Line:   46,
+									Line:   48,
 								},
 								File:   "strings.flux",
 								Source: "trimSuffix",
 								Start: ast.Position{
 									Column: 3,
-									Line:   46,
+									Line:   48,
 								},
 							},
 						},
@@ -1556,13 +1624,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 24,
-									Line:   46,
+									Line:   48,
 								},
 								File:   "strings.flux",
 								Source: "trimSuffix",
 								Start: ast.Position{
 									Column: 14,
-									Line:   46,
+									Line:   48,
 								},
 							},
 						},
@@ -1574,13 +1642,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   47,
+								Line:   49,
 							},
 							File:   "strings.flux",
 							Source: "trimRight:trimRight",
 							Start: ast.Position{
 								Column: 3,
-								Line:   47,
+								Line:   49,
 							},
 						},
 					},
@@ -1590,13 +1658,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   47,
+									Line:   49,
 								},
 								File:   "strings.flux",
 								Source: "trimRight",
 								Start: ast.Position{
 									Column: 3,
-									Line:   47,
+									Line:   49,
 								},
 							},
 						},
@@ -1608,13 +1676,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   47,
+									Line:   49,
 								},
 								File:   "strings.flux",
 								Source: "trimRight",
 								Start: ast.Position{
 									Column: 13,
-									Line:   47,
+									Line:   49,
 								},
 							},
 						},
@@ -1626,13 +1694,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   48,
+								Line:   50,
 							},
 							File:   "strings.flux",
 							Source: "trimLeft:trimLeft",
 							Start: ast.Position{
 								Column: 3,
-								Line:   48,
+								Line:   50,
 							},
 						},
 					},
@@ -1642,13 +1710,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   48,
+									Line:   50,
 								},
 								File:   "strings.flux",
 								Source: "trimLeft",
 								Start: ast.Position{
 									Column: 3,
-									Line:   48,
+									Line:   50,
 								},
 							},
 						},
@@ -1660,13 +1728,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   48,
+									Line:   50,
 								},
 								File:   "strings.flux",
 								Source: "trimLeft",
 								Start: ast.Position{
 									Column: 12,
-									Line:   48,
+									Line:   50,
 								},
 							},
 						},
@@ -1678,13 +1746,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   49,
+								Line:   51,
 							},
 							File:   "strings.flux",
 							Source: "toTitle:toTitle",
 							Start: ast.Position{
 								Column: 3,
-								Line:   49,
+								Line:   51,
 							},
 						},
 					},
@@ -1694,13 +1762,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   49,
+									Line:   51,
 								},
 								File:   "strings.flux",
 								Source: "toTitle",
 								Start: ast.Position{
 									Column: 3,
-									Line:   49,
+									Line:   51,
 								},
 							},
 						},
@@ -1712,13 +1780,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   49,
+									Line:   51,
 								},
 								File:   "strings.flux",
 								Source: "toTitle",
 								Start: ast.Position{
 									Column: 11,
-									Line:   49,
+									Line:   51,
 								},
 							},
 						},
@@ -1730,13 +1798,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   50,
+								Line:   52,
 							},
 							File:   "strings.flux",
 							Source: "hasPrefix:hasPrefix",
 							Start: ast.Position{
 								Column: 3,
-								Line:   50,
+								Line:   52,
 							},
 						},
 					},
@@ -1746,13 +1814,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   50,
+									Line:   52,
 								},
 								File:   "strings.flux",
 								Source: "hasPrefix",
 								Start: ast.Position{
 									Column: 3,
-									Line:   50,
+									Line:   52,
 								},
 							},
 						},
@@ -1764,13 +1832,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   50,
+									Line:   52,
 								},
 								File:   "strings.flux",
 								Source: "hasPrefix",
 								Start: ast.Position{
 									Column: 13,
-									Line:   50,
+									Line:   52,
 								},
 							},
 						},
@@ -1782,13 +1850,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   51,
+								Line:   53,
 							},
 							File:   "strings.flux",
 							Source: "hasSuffix:hasSuffix",
 							Start: ast.Position{
 								Column: 3,
-								Line:   51,
+								Line:   53,
 							},
 						},
 					},
@@ -1798,13 +1866,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   51,
+									Line:   53,
 								},
 								File:   "strings.flux",
 								Source: "hasSuffix",
 								Start: ast.Position{
 									Column: 3,
-									Line:   51,
+									Line:   53,
 								},
 							},
 						},
@@ -1816,13 +1884,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   51,
+									Line:   53,
 								},
 								File:   "strings.flux",
 								Source: "hasSuffix",
 								Start: ast.Position{
 									Column: 13,
-									Line:   51,
+									Line:   53,
 								},
 							},
 						},
@@ -1834,13 +1902,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   52,
+								Line:   54,
 							},
 							File:   "strings.flux",
 							Source: "containsStr:containsStr",
 							Start: ast.Position{
 								Column: 3,
-								Line:   52,
+								Line:   54,
 							},
 						},
 					},
@@ -1850,13 +1918,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   52,
+									Line:   54,
 								},
 								File:   "strings.flux",
 								Source: "containsStr",
 								Start: ast.Position{
 									Column: 3,
-									Line:   52,
+									Line:   54,
 								},
 							},
 						},
@@ -1868,13 +1936,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   52,
+									Line:   54,
 								},
 								File:   "strings.flux",
 								Source: "containsStr",
 								Start: ast.Position{
 									Column: 15,
-									Line:   52,
+									Line:   54,
 								},
 							},
 						},
@@ -1886,13 +1954,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   53,
+								Line:   55,
 							},
 							File:   "strings.flux",
 							Source: "containsAny:containsAny",
 							Start: ast.Position{
 								Column: 3,
-								Line:   53,
+								Line:   55,
 							},
 						},
 					},
@@ -1902,13 +1970,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   53,
+									Line:   55,
 								},
 								File:   "strings.flux",
 								Source: "containsAny",
 								Start: ast.Position{
 									Column: 3,
-									Line:   53,
+									Line:   55,
 								},
 							},
 						},
@@ -1920,13 +1988,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   53,
+									Line:   55,
 								},
 								File:   "strings.flux",
 								Source: "containsAny",
 								Start: ast.Position{
 									Column: 15,
-									Line:   53,
+									Line:   55,
 								},
 							},
 						},
@@ -1938,13 +2006,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   54,
+								Line:   56,
 							},
 							File:   "strings.flux",
 							Source: "equalFold:equalFold",
 							Start: ast.Position{
 								Column: 3,
-								Line:   54,
+								Line:   56,
 							},
 						},
 					},
@@ -1954,13 +2022,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   54,
+									Line:   56,
 								},
 								File:   "strings.flux",
 								Source: "equalFold",
 								Start: ast.Position{
 									Column: 3,
-									Line:   54,
+									Line:   56,
 								},
 							},
 						},
@@ -1972,13 +2040,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   54,
+									Line:   56,
 								},
 								File:   "strings.flux",
 								Source: "equalFold",
 								Start: ast.Position{
 									Column: 13,
-									Line:   54,
+									Line:   56,
 								},
 							},
 						},
@@ -1990,13 +2058,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   55,
+								Line:   57,
 							},
 							File:   "strings.flux",
 							Source: "compare:compare",
 							Start: ast.Position{
 								Column: 3,
-								Line:   55,
+								Line:   57,
 							},
 						},
 					},
@@ -2006,13 +2074,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   55,
+									Line:   57,
 								},
 								File:   "strings.flux",
 								Source: "compare",
 								Start: ast.Position{
 									Column: 3,
-									Line:   55,
+									Line:   57,
 								},
 							},
 						},
@@ -2024,13 +2092,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   55,
+									Line:   57,
 								},
 								File:   "strings.flux",
 								Source: "compare",
 								Start: ast.Position{
 									Column: 11,
-									Line:   55,
+									Line:   57,
 								},
 							},
 						},
@@ -2042,13 +2110,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   56,
+								Line:   58,
 							},
 							File:   "strings.flux",
 							Source: "countStr:countStr",
 							Start: ast.Position{
 								Column: 3,
-								Line:   56,
+								Line:   58,
 							},
 						},
 					},
@@ -2058,13 +2126,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   56,
+									Line:   58,
 								},
 								File:   "strings.flux",
 								Source: "countStr",
 								Start: ast.Position{
 									Column: 3,
-									Line:   56,
+									Line:   58,
 								},
 							},
 						},
@@ -2076,13 +2144,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   56,
+									Line:   58,
 								},
 								File:   "strings.flux",
 								Source: "countStr",
 								Start: ast.Position{
 									Column: 12,
-									Line:   56,
+									Line:   58,
 								},
 							},
 						},
@@ -2094,13 +2162,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
-								Line:   57,
+								Line:   59,
 							},
 							File:   "strings.flux",
 							Source: "index:index",
 							Start: ast.Position{
 								Column: 3,
-								Line:   57,
+								Line:   59,
 							},
 						},
 					},
@@ -2110,13 +2178,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 8,
-									Line:   57,
+									Line:   59,
 								},
 								File:   "strings.flux",
 								Source: "index",
 								Start: ast.Position{
 									Column: 3,
-									Line:   57,
+									Line:   59,
 								},
 							},
 						},
@@ -2128,13 +2196,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   57,
+									Line:   59,
 								},
 								File:   "strings.flux",
 								Source: "index",
 								Start: ast.Position{
 									Column: 9,
-									Line:   57,
+									Line:   59,
 								},
 							},
 						},
@@ -2146,13 +2214,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   58,
+								Line:   60,
 							},
 							File:   "strings.flux",
 							Source: "indexAny:indexAny",
 							Start: ast.Position{
 								Column: 3,
-								Line:   58,
+								Line:   60,
 							},
 						},
 					},
@@ -2162,13 +2230,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   58,
+									Line:   60,
 								},
 								File:   "strings.flux",
 								Source: "indexAny",
 								Start: ast.Position{
 									Column: 3,
-									Line:   58,
+									Line:   60,
 								},
 							},
 						},
@@ -2180,13 +2248,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   58,
+									Line:   60,
 								},
 								File:   "strings.flux",
 								Source: "indexAny",
 								Start: ast.Position{
 									Column: 12,
-									Line:   58,
+									Line:   60,
 								},
 							},
 						},
@@ -2198,13 +2266,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   59,
+								Line:   61,
 							},
 							File:   "strings.flux",
 							Source: "lastIndex:lastIndex",
 							Start: ast.Position{
 								Column: 3,
-								Line:   59,
+								Line:   61,
 							},
 						},
 					},
@@ -2214,13 +2282,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   59,
+									Line:   61,
 								},
 								File:   "strings.flux",
 								Source: "lastIndex",
 								Start: ast.Position{
 									Column: 3,
-									Line:   59,
+									Line:   61,
 								},
 							},
 						},
@@ -2232,13 +2300,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   59,
+									Line:   61,
 								},
 								File:   "strings.flux",
 								Source: "lastIndex",
 								Start: ast.Position{
 									Column: 13,
-									Line:   59,
+									Line:   61,
 								},
 							},
 						},
@@ -2250,13 +2318,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 28,
-								Line:   60,
+								Line:   62,
 							},
 							File:   "strings.flux",
 							Source: "lastIndexAny:lastIndexAny",
 							Start: ast.Position{
 								Column: 3,
-								Line:   60,
+								Line:   62,
 							},
 						},
 					},
@@ -2266,13 +2334,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   60,
+									Line:   62,
 								},
 								File:   "strings.flux",
 								Source: "lastIndexAny",
 								Start: ast.Position{
 									Column: 3,
-									Line:   60,
+									Line:   62,
 								},
 							},
 						},
@@ -2284,13 +2352,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
-									Line:   60,
+									Line:   62,
 								},
 								File:   "strings.flux",
 								Source: "lastIndexAny",
 								Start: ast.Position{
 									Column: 16,
-									Line:   60,
+									Line:   62,
 								},
 							},
 						},
@@ -2302,13 +2370,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   61,
+								Line:   63,
 							},
 							File:   "strings.flux",
 							Source: "isDigit:isDigit",
 							Start: ast.Position{
 								Column: 3,
-								Line:   61,
+								Line:   63,
 							},
 						},
 					},
@@ -2318,13 +2386,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   61,
+									Line:   63,
 								},
 								File:   "strings.flux",
 								Source: "isDigit",
 								Start: ast.Position{
 									Column: 3,
-									Line:   61,
+									Line:   63,
 								},
 							},
 						},
@@ -2336,13 +2404,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   61,
+									Line:   63,
 								},
 								File:   "strings.flux",
 								Source: "isDigit",
 								Start: ast.Position{
 									Column: 11,
-									Line:   61,
+									Line:   63,
 								},
 							},
 						},
@@ -2354,13 +2422,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   62,
+								Line:   64,
 							},
 							File:   "strings.flux",
 							Source: "isLetter:isLetter",
 							Start: ast.Position{
 								Column: 3,
-								Line:   62,
+								Line:   64,
 							},
 						},
 					},
@@ -2370,13 +2438,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   62,
+									Line:   64,
 								},
 								File:   "strings.flux",
 								Source: "isLetter",
 								Start: ast.Position{
 									Column: 3,
-									Line:   62,
+									Line:   64,
 								},
 							},
 						},
@@ -2388,13 +2456,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   62,
+									Line:   64,
 								},
 								File:   "strings.flux",
 								Source: "isLetter",
 								Start: ast.Position{
 									Column: 12,
-									Line:   62,
+									Line:   64,
 								},
 							},
 						},
@@ -2406,13 +2474,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   63,
+								Line:   65,
 							},
 							File:   "strings.flux",
 							Source: "isLower:isLower",
 							Start: ast.Position{
 								Column: 3,
-								Line:   63,
+								Line:   65,
 							},
 						},
 					},
@@ -2422,13 +2490,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   63,
+									Line:   65,
 								},
 								File:   "strings.flux",
 								Source: "isLower",
 								Start: ast.Position{
 									Column: 3,
-									Line:   63,
+									Line:   65,
 								},
 							},
 						},
@@ -2440,13 +2508,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   63,
+									Line:   65,
 								},
 								File:   "strings.flux",
 								Source: "isLower",
 								Start: ast.Position{
 									Column: 11,
-									Line:   63,
+									Line:   65,
 								},
 							},
 						},
@@ -2458,13 +2526,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   64,
+								Line:   66,
 							},
 							File:   "strings.flux",
 							Source: "isUpper:isUpper",
 							Start: ast.Position{
 								Column: 3,
-								Line:   64,
+								Line:   66,
 							},
 						},
 					},
@@ -2474,13 +2542,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   64,
+									Line:   66,
 								},
 								File:   "strings.flux",
 								Source: "isUpper",
 								Start: ast.Position{
 									Column: 3,
-									Line:   64,
+									Line:   66,
 								},
 							},
 						},
@@ -2492,13 +2560,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   64,
+									Line:   66,
 								},
 								File:   "strings.flux",
 								Source: "isUpper",
 								Start: ast.Position{
 									Column: 11,
-									Line:   64,
+									Line:   66,
 								},
 							},
 						},
@@ -2510,13 +2578,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   65,
+								Line:   67,
 							},
 							File:   "strings.flux",
 							Source: "repeat:repeat",
 							Start: ast.Position{
 								Column: 3,
-								Line:   65,
+								Line:   67,
 							},
 						},
 					},
@@ -2526,13 +2594,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 9,
-									Line:   65,
+									Line:   67,
 								},
 								File:   "strings.flux",
 								Source: "repeat",
 								Start: ast.Position{
 									Column: 3,
-									Line:   65,
+									Line:   67,
 								},
 							},
 						},
@@ -2544,13 +2612,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   65,
+									Line:   67,
 								},
 								File:   "strings.flux",
 								Source: "repeat",
 								Start: ast.Position{
 									Column: 10,
-									Line:   65,
+									Line:   67,
 								},
 							},
 						},
@@ -2562,13 +2630,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   66,
+								Line:   68,
 							},
 							File:   "strings.flux",
 							Source: "replace:replace",
 							Start: ast.Position{
 								Column: 3,
-								Line:   66,
+								Line:   68,
 							},
 						},
 					},
@@ -2578,13 +2646,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   66,
+									Line:   68,
 								},
 								File:   "strings.flux",
 								Source: "replace",
 								Start: ast.Position{
 									Column: 3,
-									Line:   66,
+									Line:   68,
 								},
 							},
 						},
@@ -2596,13 +2664,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   66,
+									Line:   68,
 								},
 								File:   "strings.flux",
 								Source: "replace",
 								Start: ast.Position{
 									Column: 11,
-									Line:   66,
+									Line:   68,
 								},
 							},
 						},
@@ -2614,13 +2682,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 24,
-								Line:   67,
+								Line:   69,
 							},
 							File:   "strings.flux",
 							Source: "replaceAll:replaceAll",
 							Start: ast.Position{
 								Column: 3,
-								Line:   67,
+								Line:   69,
 							},
 						},
 					},
@@ -2630,13 +2698,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 13,
-									Line:   67,
+									Line:   69,
 								},
 								File:   "strings.flux",
 								Source: "replaceAll",
 								Start: ast.Position{
 									Column: 3,
-									Line:   67,
+									Line:   69,
 								},
 							},
 						},
@@ -2648,13 +2716,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 24,
-									Line:   67,
+									Line:   69,
 								},
 								File:   "strings.flux",
 								Source: "replaceAll",
 								Start: ast.Position{
 									Column: 14,
-									Line:   67,
+									Line:   69,
 								},
 							},
 						},
@@ -2666,13 +2734,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
-								Line:   68,
+								Line:   70,
 							},
 							File:   "strings.flux",
 							Source: "split:split",
 							Start: ast.Position{
 								Column: 3,
-								Line:   68,
+								Line:   70,
 							},
 						},
 					},
@@ -2682,13 +2750,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 8,
-									Line:   68,
+									Line:   70,
 								},
 								File:   "strings.flux",
 								Source: "split",
 								Start: ast.Position{
 									Column: 3,
-									Line:   68,
+									Line:   70,
 								},
 							},
 						},
@@ -2700,13 +2768,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   68,
+									Line:   70,
 								},
 								File:   "strings.flux",
 								Source: "split",
 								Start: ast.Position{
 									Column: 9,
-									Line:   68,
+									Line:   70,
 								},
 							},
 						},
@@ -2718,13 +2786,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 24,
-								Line:   69,
+								Line:   71,
 							},
 							File:   "strings.flux",
 							Source: "splitAfter:splitAfter",
 							Start: ast.Position{
 								Column: 3,
-								Line:   69,
+								Line:   71,
 							},
 						},
 					},
@@ -2734,13 +2802,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 13,
-									Line:   69,
+									Line:   71,
 								},
 								File:   "strings.flux",
 								Source: "splitAfter",
 								Start: ast.Position{
 									Column: 3,
-									Line:   69,
+									Line:   71,
 								},
 							},
 						},
@@ -2752,13 +2820,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 24,
-									Line:   69,
+									Line:   71,
 								},
 								File:   "strings.flux",
 								Source: "splitAfter",
 								Start: ast.Position{
 									Column: 14,
-									Line:   69,
+									Line:   71,
 								},
 							},
 						},
@@ -2770,13 +2838,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   70,
+								Line:   72,
 							},
 							File:   "strings.flux",
 							Source: "splitN:splitN",
 							Start: ast.Position{
 								Column: 3,
-								Line:   70,
+								Line:   72,
 							},
 						},
 					},
@@ -2786,13 +2854,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 9,
-									Line:   70,
+									Line:   72,
 								},
 								File:   "strings.flux",
 								Source: "splitN",
 								Start: ast.Position{
 									Column: 3,
-									Line:   70,
+									Line:   72,
 								},
 							},
 						},
@@ -2804,13 +2872,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   70,
+									Line:   72,
 								},
 								File:   "strings.flux",
 								Source: "splitN",
 								Start: ast.Position{
 									Column: 10,
-									Line:   70,
+									Line:   72,
 								},
 							},
 						},
@@ -2822,13 +2890,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   71,
+								Line:   73,
 							},
 							File:   "strings.flux",
 							Source: "splitAfterN:splitAfterN",
 							Start: ast.Position{
 								Column: 3,
-								Line:   71,
+								Line:   73,
 							},
 						},
 					},
@@ -2838,13 +2906,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   71,
+									Line:   73,
 								},
 								File:   "strings.flux",
 								Source: "splitAfterN",
 								Start: ast.Position{
 									Column: 3,
-									Line:   71,
+									Line:   73,
 								},
 							},
 						},
@@ -2856,13 +2924,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   71,
+									Line:   73,
 								},
 								File:   "strings.flux",
 								Source: "splitAfterN",
 								Start: ast.Position{
 									Column: 15,
-									Line:   71,
+									Line:   73,
 								},
 							},
 						},
@@ -2874,13 +2942,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   72,
+								Line:   74,
 							},
 							File:   "strings.flux",
 							Source: "joinStr:joinStr",
 							Start: ast.Position{
 								Column: 3,
-								Line:   72,
+								Line:   74,
 							},
 						},
 					},
@@ -2890,13 +2958,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   72,
+									Line:   74,
 								},
 								File:   "strings.flux",
 								Source: "joinStr",
 								Start: ast.Position{
 									Column: 3,
-									Line:   72,
+									Line:   74,
 								},
 							},
 						},
@@ -2908,17 +2976,121 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   72,
+									Line:   74,
 								},
 								File:   "strings.flux",
 								Source: "joinStr",
 								Start: ast.Position{
 									Column: 11,
-									Line:   72,
+									Line:   74,
 								},
 							},
 						},
 						Name: "joinStr",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 16,
+								Line:   75,
+							},
+							File:   "strings.flux",
+							Source: "strlen:strlen",
+							Start: ast.Position{
+								Column: 3,
+								Line:   75,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 9,
+									Line:   75,
+								},
+								File:   "strings.flux",
+								Source: "strlen",
+								Start: ast.Position{
+									Column: 3,
+									Line:   75,
+								},
+							},
+						},
+						Name: "strlen",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 16,
+									Line:   75,
+								},
+								File:   "strings.flux",
+								Source: "strlen",
+								Start: ast.Position{
+									Column: 10,
+									Line:   75,
+								},
+							},
+						},
+						Name: "strlen",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 22,
+								Line:   76,
+							},
+							File:   "strings.flux",
+							Source: "substring:substring",
+							Start: ast.Position{
+								Column: 3,
+								Line:   76,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   76,
+								},
+								File:   "strings.flux",
+								Source: "substring",
+								Start: ast.Position{
+									Column: 3,
+									Line:   76,
+								},
+							},
+						},
+						Name: "substring",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 22,
+									Line:   76,
+								},
+								File:   "strings.flux",
+								Source: "substring",
+								Start: ast.Position{
+									Column: 13,
+									Line:   76,
+								},
+							},
+						},
+						Name: "substring",
 					},
 				}},
 				With: nil,

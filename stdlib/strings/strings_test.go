@@ -1,6 +1,7 @@
 package strings
 
 import (
+	"errors"
 	"github.com/influxdata/flux/semantic"
 	"strings"
 	"testing"
@@ -1249,4 +1250,155 @@ func TestJoinStr(t *testing.T) {
 		t.Errorf("input %f: expected %v, got %f", arr, want, got)
 	}
 
+}
+
+func TestStrLength(t *testing.T) {
+	testCases := []struct {
+		name string
+		v    string
+		want int
+	}{
+		{
+			name: "ASCII",
+			v:    "abc",
+			want: 3,
+		},
+		{
+			name: "alphanumeric",
+			v:    "CRJ34kf9",
+			want: 8,
+		},
+		{
+			name: "Blank",
+			v:    "",
+			want: 0,
+		},
+		{
+			name: "Space",
+			v:    "  ",
+			want: 2,
+		},
+		{
+			name: "Other Language",
+			v:    "汉字",
+			want: 2,
+		},
+		{
+			name: "Space + Other",
+			v:    "汉 字",
+			want: 3,
+		},
+		{
+			name: "Special Characters",
+			v:    "latīna",
+			want: 6,
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			testValue := strlen
+			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v)})
+			result, err := testValue.Call(testCase)
+			res := int(result.Int())
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if res != (tc.want) {
+				t.Errorf("string function result %s expected: %v, got: %s", tc.name, tc.want, result)
+			}
+		})
+	}
+}
+
+func TestSubstring(t *testing.T) {
+	testCases := []struct {
+		name string
+		v    string
+		a    int
+		b    int
+		want string
+		expectErr error
+	}{
+		{
+			name: "entire string",
+			v:    "influx",
+			a:    0,
+			b:    6,
+			want: "influx",
+			expectErr: errors.New("indices out of bounds"),
+		},
+		{
+			name: "simple substring",
+			v:    "influx",
+			a:    2,
+			b:    5,
+			want: "flu",
+			expectErr: errors.New("indices out of bounds"),
+		},
+		{
+			name: "chinese",
+			v:    "汉字汉字汉字",
+			a:    2,
+			b:    5,
+			want: "汉字汉",
+			expectErr: errors.New("indices out of bounds"),
+		},
+		{
+			name: "chinese and space",
+			v:    "汉 字汉字  汉字",
+			a:    4,
+			b:    7,
+			want: "字  ",
+			expectErr: errors.New("indices out of bounds"),
+		},
+		{
+			name: "alpha",
+			v:    "ineedmesomeabcsoup",
+			a:    -1,
+			b:    7,
+			want: "",
+			expectErr: errors.New("indices out of bounds"),
+		},
+		{
+			name: "beta",
+			v:    "ineedmesomeabcsoup",
+			a:    0,
+			b:    3389,
+			want: "",
+			expectErr: errors.New("indices out of bounds"),
+		},
+		{
+			name: "alphabet",
+			v:    "ineedmesomeabcsoup",
+			a:    -289,
+			b:    23948,
+			want: "",
+			expectErr: errors.New("indices out of bounds"),
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			testValue := substring
+			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v),
+				"a": values.NewInt(int64(tc.a)), "b": values.NewInt(int64(tc.b))})
+			result, err := testValue.Call(testCase)
+
+			if err != nil {
+				if got, want := err.Error(), tc.expectErr.Error(); got != want {
+					t.Errorf("unexpected error - want: %s, got: %s", want, got)
+				}
+				return
+			}
+
+			res := result.Str()
+
+			if res != (tc.want) {
+				t.Errorf("string function result %s expected: %v, got: %s", tc.name, tc.want, result)
+			}
+		})
+	}
 }

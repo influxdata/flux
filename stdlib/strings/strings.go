@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/semantic"
@@ -22,6 +23,8 @@ const (
 	substr     = "substr"
 	chars      = "chars"
 	integer    = "i"
+	start      = "a"
+	end        = "b"
 )
 
 func generateSingleArgStringFunction(name string, stringFn func(string) string) values.Function {
@@ -382,7 +385,70 @@ func generateUnicodeIsFunction(name string, Fn func(rune) bool) values.Function 
 	)
 }
 
+var strlen = values.NewFunction(
+		"strlen",
+		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+			Parameters: map[string]semantic.PolyType{stringArgV: semantic.String},
+			Required:   semantic.LabelSet{stringArgV},
+			Return:     semantic.Int,
+		}),
+		func(args values.Object) (values.Value, error) {
+			v, ok := args.Get(stringArgV)
+			if !ok {
+				return nil, fmt.Errorf("missing argument %q", stringArgV)
+			}
+
+			if v.Type().Nature() == semantic.String {
+				return values.NewInt(int64(utf8.RuneCountInString(v.Str()))), nil
+			}
+
+			return nil, fmt.Errorf("procedure cannot be executed")
+		}, false,
+	)
+
+var substring = values.NewFunction(
+		"substring",
+		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+			Parameters: map[string]semantic.PolyType{
+				stringArgV: semantic.String,
+				start:      semantic.Int,
+				end:        semantic.Int},
+			Required: semantic.LabelSet{stringArgV, start, end},
+			Return:   semantic.String,
+		}),
+		func(args values.Object) (values.Value, error) {
+			v, ok := args.Get(stringArgV)
+			a, okk := args.Get(start)
+			b, okkk := args.Get(end)
+			if !ok || !okk || !okkk {
+				return nil, fmt.Errorf("missing argument")
+			}
+
+			vStr := v.Str()
+			aInt := int(a.Int())
+			bInt := int(b.Int())
+			if aInt < 0 || bInt > len(vStr) {
+				return nil, fmt.Errorf("indices out of bounds")
+			}
+
+			if (v.Type().Nature() == semantic.String) && (a.Type().Nature() == semantic.Int) && (b.Type().Nature() == semantic.Int) {
+				arr := strings.Split(vStr, "")
+				var arrToJoin []string
+				for i := aInt; i < bInt; i++ {
+					arrToJoin = append(arrToJoin, arr[i])
+				}
+				newStr := strings.Join(arrToJoin, "")
+				return values.NewString(newStr), nil
+			}
+
+			return nil, fmt.Errorf("procedure cannot be executed")
+		}, false,
+	)
+
 func init() {
+	flux.RegisterPackageValue("strings", "strlen", strlen)
+	flux.RegisterPackageValue("strings", "substring", substring)
+
 	flux.RegisterPackageValue("strings", "trim",
 		generateDualArgStringFunction("trim", []string{stringArgV, cutset}, strings.Trim))
 	flux.RegisterPackageValue("strings", "trimSpace",
