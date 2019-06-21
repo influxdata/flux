@@ -13,7 +13,7 @@ The specification contains many examples to start learning Flux.
 
 ## Getting Started
 
-Currently Flux is only avaliable via InfluxDB, see http://docs.influxdata.com/flux/ for getting started.
+See http://docs.influxdata.com/flux/ for getting started.
 
 ### Basic Syntax
 
