@@ -69,9 +69,48 @@ Documentation: https://docs.python.org/3/howto/unicode.html
 Go encodes string as byte array and thus the `length` is determined by the number of bytes 
 instead of the number of characters.
 
+Functions such as `utf8.DecodeRuneInString` allow users to print out how many bytes are in each character.
+
+```
+package main
+
+import (
+	"fmt"
+	"unicode/utf8"
+)
+
+func main() {
+	str := "Hello, 世界"
+
+	for len(str) > 0 {
+		r, size := utf8.DecodeRuneInString(str)
+		fmt.Printf("%c %v\n", r, size)
+
+		str = str[size:]
+	}
+}
+
+```
+Returns
+```
+H 1
+e 1
+l 1
+l 1
+o 1
+, 1
+  1
+世 3
+界 3
+```
+
+Go does support getting the length of a string via the number of runes/characters instead of the number 
+of bytes using `utf8.RuneCountInString`.
+
 Documentation/Source:
 - https://golang.org/pkg/unicode/
 - https://coderwall.com/p/k7zvyg/dealing-with-unicode-in-go
+- https://golang.org/pkg/unicode/utf8/
 
 ### Ruby
 
