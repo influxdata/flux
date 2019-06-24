@@ -47,6 +47,8 @@ type Table interface {
 	Done()
 
 	// Empty returns whether the table contains no records.
+	// This is a hint and a table may still be empty even if this returns
+	// false.
 	Empty() bool
 }
 

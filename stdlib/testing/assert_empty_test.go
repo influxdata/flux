@@ -52,6 +52,24 @@ func TestAssertEmpty_Process(t *testing.T) {
 			}},
 			wantErr: errors.New("found 1 tables that were not empty"),
 		},
+		{
+			name: "empty but not empty",
+			data: []flux.Table{
+				nonEmptyTable{
+					Table: &executetest.Table{
+						KeyCols: []string{"t1"},
+						ColMeta: []flux.ColMeta{
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
+							{Label: "t1", Type: flux.TString},
+							{Label: "t2", Type: flux.TString},
+						},
+						Data: [][]interface{}{},
+					},
+				},
+			},
+			want: []*executetest.Table(nil),
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
@@ -67,4 +85,13 @@ func TestAssertEmpty_Process(t *testing.T) {
 			)
 		})
 	}
+}
+
+// nonEmptyTable will always return false for empty.
+type nonEmptyTable struct {
+	flux.Table
+}
+
+func (t nonEmptyTable) Empty() bool {
+	return false
 }

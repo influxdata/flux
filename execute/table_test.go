@@ -349,3 +349,41 @@ func TestCopyTable_Empty(t *testing.T) {
 		t.Fatal("expected copied table to be empty, but it wasn't")
 	}
 }
+
+// nonEmptyTable will always return false for empty.
+type nonEmptyTable struct {
+	flux.Table
+}
+
+func (t nonEmptyTable) Empty() bool {
+	return false
+}
+
+func TestCopyTable_EmptyNotEmpty(t *testing.T) {
+	in := nonEmptyTable{
+		Table: &executetest.Table{
+			GroupKey: execute.NewGroupKey(
+				[]flux.ColMeta{
+					{Label: "t0", Type: flux.TString},
+				},
+				[]values.Value{
+					values.NewString("v0"),
+				},
+			),
+			ColMeta: []flux.ColMeta{
+				{Label: "t0", Type: flux.TString},
+				{Label: "_value", Type: flux.TFloat},
+			},
+		},
+	}
+
+	cpy, err := execute.CopyTable(in)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	defer cpy.Done()
+	if !cpy.Empty() {
+		t.Fatal("expected copied table to be empty, but it wasn't")
+	}
+}

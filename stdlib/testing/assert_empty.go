@@ -86,13 +86,30 @@ func (t *AssertEmptyTransformation) RetractTable(id execute.DatasetID, key flux.
 }
 
 func (t *AssertEmptyTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	if !tbl.Empty() {
+	if tbl.Empty() {
+		// Table is empty so we succeed.
+		// TODO: The Do method must be called at the moment.
+		return tbl.Do(func(cr flux.ColReader) error {
+			return nil
+		})
+	}
+
+	// Confirm that the table is, in fact, not empty.
+	// Some implementations don't know until Do is called.
+	failed := false
+	if err := tbl.Do(func(cr flux.ColReader) error {
+		if cr.Len() > 0 {
+			failed = true
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	if failed {
 		t.failures++
 	}
-	// TODO: The Do method must be called at the moment.
-	return tbl.Do(func(cr flux.ColReader) error {
-		return nil
-	})
+	return nil
 }
 
 func (t *AssertEmptyTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
