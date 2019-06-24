@@ -4,7 +4,6 @@ import (
 	"io"
 
 	"github.com/apache/arrow/go/arrow/array"
-	"github.com/influxdata/flux/iocounter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
@@ -215,11 +214,37 @@ type ResultDecoder interface {
 	Decode(r io.Reader) (Result, error)
 }
 
+// EncoderResult encapsulates the results of encoding.  Any errors that
+// occurred during Flux evaluation are stored so they may be serialized
+// in the manner required by clients.
+type EncoderResult struct {
+	Errs         []error
+	BytesWritten int64
+}
+
+// Add merges two EncoderResults to produce a new EncoderResult.
+func (r EncoderResult) Add(other EncoderResult) EncoderResult {
+	errs := make([]error, len(r.Errs), len(r.Errs)+len(other.Errs))
+	copy(errs, r.Errs)
+	errs = append(errs, other.Errs...)
+	return EncoderResult{
+		Errs:         errs,
+		BytesWritten: r.BytesWritten + other.BytesWritten,
+	}
+}
+
 // ResultEncoder can encode a result into a writer.
 type ResultEncoder interface {
 	// Encode encodes data from the result into w.
-	// Returns the number of bytes written to w and any error.
-	Encode(w io.Writer, result Result) (int64, error)
+	// Any errors that occurred during Flux evaluation will be returned in the
+	// EncoderResult.  Encoder errors will be returned in the second return value.
+	Encode(w io.Writer, result Result) (EncoderResult, error)
+
+	// EncodeErrors takes any Flux errors that occurred during the encode step
+	// and will serialize them to the given writer.  Upon success, it will return a new
+	// EncoderResult with no errors.  If there was an error during encoding
+	// it will be returned in the second return value.
+	EncodeErrors(w io.Writer, er EncoderResult) (EncoderResult, error)
 }
 
 // MultiResultDecoder can decode multiple results from a reader.
@@ -231,9 +256,15 @@ type MultiResultDecoder interface {
 // MultiResultEncoder can encode multiple results into a writer.
 type MultiResultEncoder interface {
 	// Encode writes multiple results from r into w.
-	// Returns the number of bytes written to w and any error resulting from the encoding process.
-	// Errors obtained from the results object should be encoded to w and then discarded.
-	Encode(w io.Writer, results ResultIterator) (int64, error)
+	// Any Flux errors that occur will be stored in the returned EncoderResult unencoded.
+	// Encoding errors will be returned in the second return value.
+	Encode(w io.Writer, results ResultIterator) (EncoderResult, error)
+
+	// EncodeErrors takes any Flux errors that occurred during the encode step
+	// and will serialize them to the given writer.  Upon success, it will return a new
+	// EncoderResult with no errors.  If there was an error during encoding
+	// it will be returned in the second return value.
+	EncodeErrors(w io.Writer, er EncoderResult) (EncoderResult, error)
 }
 
 // EncoderError is an interface that any error produced from
@@ -262,46 +293,45 @@ func IsEncoderError(err error) bool {
 // If the io.Writer implements flusher, it will be flushed after each delimiter.
 type DelimitedMultiResultEncoder struct {
 	Delimiter []byte
-	Encoder   interface {
-		ResultEncoder
-		// EncodeError encodes an error on the writer.
-		EncodeError(w io.Writer, err error) error
-	}
+	Encoder   ResultEncoder
 }
 
 type flusher interface {
 	Flush()
 }
 
-func (e *DelimitedMultiResultEncoder) Encode(w io.Writer, results ResultIterator) (int64, error) {
-	wc := &iocounter.Writer{Writer: w}
+func (e *DelimitedMultiResultEncoder) Encode(w io.Writer, results ResultIterator) (EncoderResult, error) {
+	encoderResult := EncoderResult{}
 
 	for results.More() {
 		result := results.Next()
-		if _, err := e.Encoder.Encode(wc, result); err != nil {
-			// If we have an error that's from
-			// encoding specifically, return it
-			if IsEncoderError(err) {
-				return wc.Count(), err
-			}
-			// Otherwise, the error is from query execution,
-			// so we encode it instead.
-			err := e.Encoder.EncodeError(wc, err)
-			return wc.Count(), err
+		er, err := e.Encoder.Encode(w, result)
+		encoderResult = encoderResult.Add(er)
+		if err != nil {
+			return encoderResult, err
 		}
-		if _, err := wc.Write(e.Delimiter); err != nil {
-			return wc.Count(), err
+
+		if er.BytesWritten == 0 {
+			continue
+		}
+
+		n, err := w.Write(e.Delimiter)
+		encoderResult.BytesWritten += int64(n)
+		if err != nil {
+			return encoderResult, err
 		}
 		// Flush the writer after each result
 		if f, ok := w.(flusher); ok {
 			f.Flush()
 		}
 	}
-	// If we have any outlying errors in results, encode them
-	err := results.Err()
-	if err != nil {
-		err := e.Encoder.EncodeError(wc, err)
-		return wc.Count(), err
+
+	if err := results.Err(); err != nil {
+		encoderResult.Errs = append(encoderResult.Errs, err)
 	}
-	return wc.Count(), nil
+	return encoderResult, nil
+}
+
+func (e *DelimitedMultiResultEncoder) EncodeErrors(w io.Writer, er EncoderResult) (EncoderResult, error) {
+	return e.Encoder.EncodeErrors(w, er)
 }

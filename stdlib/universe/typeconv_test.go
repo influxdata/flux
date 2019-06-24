@@ -2,9 +2,10 @@ package universe
 
 import (
 	"errors"
-	"github.com/influxdata/flux/values"
 	"math"
 	"testing"
+
+	"github.com/influxdata/flux/values"
 )
 
 func TestTypeconv_String(t *testing.T) {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/memory"
+	"github.com/pkg/errors"
 )
 
 type Querier struct{}
@@ -24,7 +25,20 @@ func (q *Querier) Query(ctx context.Context, w io.Writer, c flux.Compiler, d flu
 	defer results.Release()
 
 	encoder := d.Encoder()
-	return encoder.Encode(w, results)
+	er, err := encoder.Encode(w, results)
+	if err != nil {
+		// An error occurred during encoding
+		return er.BytesWritten, errors.Wrap(err, "error encoding result")
+	}
+
+	if len(er.Errs) > 0 {
+		if er, err := encoder.EncodeErrors(w, er); err != nil {
+			return er.BytesWritten, err
+		} else {
+			return er.BytesWritten, nil
+		}
+	}
+	return er.BytesWritten, nil
 }
 
 func NewQuerier() *Querier {

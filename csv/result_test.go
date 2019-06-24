@@ -793,15 +793,17 @@ func TestResultEncoder(t *testing.T) {
 			}
 			encoder := csv.NewResultEncoder(tc.encoderConfig)
 			var got bytes.Buffer
-			n, err := encoder.Encode(&got, tc.result)
+			er, err := encoder.Encode(&got, tc.result)
 			if err != nil {
 				t.Fatal(err)
 			}
-
+			if len(er.Errs) > 0 {
+				t.Errorf("unexpected flux error: %v", er.Errs[0])
+			}
 			if g, w := got.String(), string(tc.encoded); g != w {
 				t.Errorf("unexpected encoding -want/+got:\n%s", diff.LineDiff(w, g))
 			}
-			if g, w := n, int64(len(tc.encoded)); g != w {
+			if g, w := er.BytesWritten, int64(len(tc.encoded)); g != w {
 				t.Errorf("unexpected encoding count -want/+got:\n%s", cmp.Diff(w, g))
 			}
 		})
@@ -810,11 +812,12 @@ func TestResultEncoder(t *testing.T) {
 
 func TestMultiResultEncoder(t *testing.T) {
 	testCases := []struct {
-		name    string
-		results flux.ResultIterator
-		encoded []byte
-		err     error
-		config  csv.ResultEncoderConfig
+		name          string
+		results       flux.ResultIterator
+		encoded       []byte
+		encoderResult *flux.EncoderResult
+		err           error
+		config        csv.ResultEncoderConfig
 	}{
 		{
 			name:   "single result",
@@ -979,15 +982,15 @@ func TestMultiResultEncoder(t *testing.T) {
 		{
 			name:   "error results",
 			config: csv.DefaultEncoderConfig(),
-			results: errorResultIterator{
-				Error: errors.New("test error"),
+			results: &executetest.ErrorResultIterator{
+				ResErr: errors.New("test error"),
 			},
-			encoded: toCRLF(`#datatype,string,string
-#group,true,true
-#default,,
-,error,reference
-,test error,
-`),
+			encoderResult: &flux.EncoderResult{
+				BytesWritten: 0,
+				Errs: []error{
+					errors.New("test error"),
+				},
+			},
 		},
 		{
 			name:   "returns query errors",
@@ -997,12 +1000,12 @@ func TestMultiResultEncoder(t *testing.T) {
 					Err: errors.New("execution error"),
 				},
 			}),
-			encoded: toCRLF(`#datatype,string,string
-#group,true,true
-#default,,
-,error,reference
-,execution error,
-`),
+			encoderResult: &flux.EncoderResult{
+				BytesWritten: 0,
+				Errs: []error{
+					errors.New("execution error"),
+				},
+			},
 		},
 		{
 			name:   "returns encoding errors",
@@ -1041,7 +1044,7 @@ func TestMultiResultEncoder(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			encoder := csv.NewMultiResultEncoder(tc.config)
 			var got bytes.Buffer
-			n, err := encoder.Encode(&got, tc.results)
+			er, err := encoder.Encode(&got, tc.results)
 			if err != nil && tc.err != nil {
 				if err.Error() != tc.err.Error() {
 					t.Errorf("unexpected error want: %s\n got: %s\n", tc.err.Error(), err.Error())
@@ -1055,10 +1058,239 @@ func TestMultiResultEncoder(t *testing.T) {
 			if g, w := got.String(), string(tc.encoded); g != w {
 				t.Errorf("unexpected encoding -want/+got:\n%s", diff.LineDiff(w, g))
 			}
-			if g, w := n, int64(len(tc.encoded)); g != w {
-				t.Errorf("unexpected encoding count -want/+got:\n%s", cmp.Diff(w, g))
+
+			if tc.encoderResult != nil {
+				compareEncoderResult(t, "encoder result", er, *tc.encoderResult)
+			} else {
+				if g, w := er.BytesWritten, int64(len(tc.encoded)); g != w {
+					t.Errorf("unexpected encoding count -want/+got:\n%s", cmp.Diff(w, g))
+				}
 			}
 		})
+	}
+}
+
+func TestMultiResultEncoder_EncodeErrors(t *testing.T) {
+	testCases := []struct {
+		name                string
+		results             flux.ResultIterator
+		encoderResultBefore flux.EncoderResult
+		encoderResultAfter  flux.EncoderResult
+		encoded             []byte
+	}{
+		{
+			name: "error in result",
+			results: &executetest.ErrorResultIterator{
+				ResErr: errors.New("test error"),
+			},
+			encoderResultBefore: flux.EncoderResult{
+				Errs: []error{errors.New("test error")},
+			},
+			encoderResultAfter: flux.EncoderResult{
+				BytesWritten: 87,
+			},
+			encoded: toCRLF(`#datatype,string,string
+#group,true,true
+#default,,
+,error,reference
+,test error,
+`),
+		},
+		{
+			name: "result iterator returns error",
+			results: &executetest.ErrorResultIterator{
+				Tbls: [][]*executetest.Table{{{
+					KeyCols: []string{"host"},
+					ColMeta: []flux.ColMeta{
+						{Label: "host", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"A", 42.0},
+						{"A", 43.0},
+					},
+				}}},
+				ResErr: errors.New("result error"),
+			},
+			encoderResultBefore: flux.EncoderResult{
+				Errs:         []error{errors.New("result error")},
+				BytesWritten: 139,
+			},
+			encoderResultAfter: flux.EncoderResult{
+				BytesWritten: 228,
+			},
+			encoded: toCRLF(`#datatype,string,long,string,double
+#group,false,false,true,false
+#default,_result0,,,
+,result,table,host,_value
+,,0,A,42
+,,0,A,43
+
+#datatype,string,string
+#group,true,true
+#default,,
+,error,reference
+,result error,
+`),
+		},
+		{
+			name: "table iterator returns error",
+			results: &executetest.ErrorResultIterator{
+				Tbls: [][]*executetest.Table{{{
+					KeyCols: []string{"host"},
+					ColMeta: []flux.ColMeta{
+						{Label: "host", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"A", 42.0},
+						{"A", 43.0},
+					},
+				}}},
+				TblErrs: []error{
+					errors.New("table error"),
+				},
+			},
+			encoderResultBefore: flux.EncoderResult{
+				Errs:         []error{errors.New("table error")},
+				BytesWritten: 139,
+			},
+			encoderResultAfter: flux.EncoderResult{
+				BytesWritten: 227,
+			},
+			encoded: toCRLF(`#datatype,string,long,string,double
+#group,false,false,true,false
+#default,_result0,,,
+,result,table,host,_value
+,,0,A,42
+,,0,A,43
+
+#datatype,string,string
+#group,true,true
+#default,,
+,error,reference
+,table error,
+`),
+		},
+		{
+			name: "multiple errors",
+			results: &executetest.ErrorResultIterator{
+				Tbls: [][]*executetest.Table{
+					{{
+						// First result
+						KeyCols: []string{"host"},
+						ColMeta: []flux.ColMeta{
+							{Label: "host", Type: flux.TString},
+							{Label: "_value", Type: flux.TFloat},
+						},
+						Data: [][]interface{}{
+							{"A", 42.0},
+							{"A", 43.0},
+						},
+					}},
+					{{
+						// Second result
+						KeyCols: []string{"host"},
+						ColMeta: []flux.ColMeta{
+							{Label: "host", Type: flux.TString},
+							{Label: "_value", Type: flux.TFloat},
+						},
+						Data: [][]interface{}{
+							{"B", 47.0},
+							{"B", 48.0},
+						},
+					}},
+				},
+				TblErrs: []error{
+					errors.New("table error0"),
+					errors.New("table error1"),
+				},
+				ResErr: errors.New("result error"),
+			},
+			encoderResultBefore: flux.EncoderResult{
+				Errs: []error{
+					errors.New("table error0"),
+					errors.New("table error1"),
+					errors.New("result error"),
+				},
+				BytesWritten: 278,
+			},
+			encoderResultAfter: flux.EncoderResult{
+				BytesWritten: 549,
+			},
+			encoded: toCRLF(`#datatype,string,long,string,double
+#group,false,false,true,false
+#default,_result0,,,
+,result,table,host,_value
+,,0,A,42
+,,0,A,43
+
+#datatype,string,long,string,double
+#group,false,false,true,false
+#default,_result1,,,
+,result,table,host,_value
+,,0,B,47
+,,0,B,48
+
+#datatype,string,string
+#group,true,true
+#default,,
+,error,reference
+,table error0,
+
+#datatype,string,string
+#group,true,true
+#default,,
+,error,reference
+,table error1,
+
+#datatype,string,string
+#group,true,true
+#default,,
+,error,reference
+,result error,
+`),
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			encoder := csv.NewMultiResultEncoder(csv.DefaultEncoderConfig())
+			var got bytes.Buffer
+
+			er, err := encoder.Encode(&got, tc.results)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			compareEncoderResult(t, "before encoding errors", er, tc.encoderResultBefore)
+
+			er, err = encoder.EncodeErrors(&got, er)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if g, w := got.String(), string(tc.encoded); g != w {
+				t.Errorf("unexpected encoding -want/+got:\n%s", diff.LineDiff(w, g))
+			}
+
+			compareEncoderResult(t, "after encoding errors", er, tc.encoderResultAfter)
+		})
+	}
+}
+
+func compareEncoderResult(t *testing.T, prefix string, got, want flux.EncoderResult) {
+	t.Helper()
+	if g, w := got.BytesWritten, want.BytesWritten; g != w {
+		t.Errorf("%s: unexpected encoding count -want/+got:\n%s", prefix, cmp.Diff(w, g))
+	}
+	if g, w := len(got.Errs), len(want.Errs); g != w {
+		t.Fatalf("%s: unexpected error count -want/+got:\n%s", prefix, cmp.Diff(w, g))
+	}
+	for i, e := range got.Errs {
+		if g, w := e.Error(), want.Errs[i].Error(); g != w {
+			t.Errorf("%s: unexpected error -want/+got:\n%s", prefix, cmp.Diff(w, g))
+		}
 	}
 }
 
@@ -1335,7 +1567,7 @@ func TestMultiResultDecoder(t *testing.T) {
 				t.Error("expected error")
 			}
 
-			// Normalize all of the tables for the test case.
+			// Normalize all of the []*executetest.Table for the test case.
 			for _, result := range tc.results {
 				result.Normalize()
 			}
@@ -1351,27 +1583,4 @@ var crlfPattern = regexp.MustCompile(`\r?\n`)
 
 func toCRLF(data string) []byte {
 	return []byte(crlfPattern.ReplaceAllString(data, "\r\n"))
-}
-
-type errorResultIterator struct {
-	Error error
-}
-
-func (r errorResultIterator) More() bool {
-	return false
-}
-
-func (r errorResultIterator) Next() flux.Result {
-	panic("no results")
-}
-
-func (r errorResultIterator) Release() {
-}
-
-func (r errorResultIterator) Err() error {
-	return r.Error
-}
-
-func (r errorResultIterator) Statistics() flux.Statistics {
-	return flux.Statistics{}
 }
