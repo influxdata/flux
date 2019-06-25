@@ -4,7 +4,7 @@ Create new source and sink functions in Go.
 
 ## Required guidelines
 
-- A source or sink function must conform to the following examples: 
+- Source or sink functions must conform to the following examples: 
     [sql](https://github.com/influxdata/flux/tree/master/stdlib/sql)
     [http](https://github.com/Anaisdg/flux/tree/master/stdlib/http)
 - You must submit a unit test in [testing](https://github.com/influxdata/flux/tree/master/stdlib/testing).
