@@ -2,6 +2,7 @@ package sql
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/values"
@@ -42,6 +43,33 @@ func (m *PostgresRowReader) GetNextRow() ([]values.Value, error) {
 			row[i] = values.New(col)
 		case time.Time:
 			row[i] = values.NewTime(values.ConvertTime(col))
+		case []uint8:
+			// Hack for MySQL, might need to work with charset?
+			// Can't do boolean with MySQL - stores BOOLEANs as TINYINTs (0 or 1)
+			// No way to distinguish if intended int or bool
+			switch m.columnTypes[i] {
+			case flux.TInt:
+				newInt, err := UInt8ToInt64(col)
+				if err != nil {
+					return nil, err
+				}
+				row[i] = values.NewInt(newInt)
+			case flux.TFloat:
+				newFloat, err := UInt8ToFloat(col)
+				if err != nil {
+					return nil, err
+				}
+				row[i] = values.NewFloat(newFloat)
+			// This works, but you can also just just add the DSN parameter parseTime=true (see line 136)
+			case flux.TTime:
+				t, err := time.Parse(layout, string(col))
+				if err != nil {
+					fmt.Print(err)
+				}
+				row[i] = values.NewTime(values.ConvertTime(t))
+			default:
+				row[i] = values.NewString(string(col))
+			}
 		case nil:
 			row[i] = values.NewNull(flux.SemanticType(m.columnTypes[i]))
 		default:
