@@ -22,7 +22,7 @@ To contribute to Flux, you must sign the [InfluxData Contributor License Agreeme
 1. To add a function, see required guidelines for:
    * [Flux functions](https://github.com/influxdata/flux/docs/contributing/Flux_Functions.md)
    * [Scalar functions](https://github.com/influxdata/flux/docs/contributing/Scalar_Functions.md)
-   * [Source and Sink functions](https://github.com/influxdata/flux/docs/contributing/Source_and_Sink_Functions.md)
+   * [Source and sink functions](https://github.com/influxdata/flux/docs/contributing/Source_and_Sink_Functions.md)
    * [Stream transformation functions](https://github.com/influxdata/flux/docs/contributing/Stream_Transformation_Functions.md)
 
 2. (Optional) Open a [new issue](https://github.com/influxdata/flux/issues/new) to discuss the changes you would like to make before creating a function. This often helps reduce rework.
