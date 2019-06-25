@@ -9,9 +9,6 @@ import (
 	"github.com/prometheus/prometheus/promql"
 )
 
-// TODO: Temporary hack to work around lack of null support in filter(). Remove this.
-const nullReplacement = 123456789
-
 var aggregateOverTimeFns = map[string]string{
 	"sum_over_time":      "sum",
 	"avg_over_time":      "mean",
@@ -45,8 +42,7 @@ var dateFunctions = map[string]string{
 	"year":          "promql.year",
 }
 
-// TODO: Super temporary hack to deal with null values. Remove!
-var filterSpecialNullValuesCall = call(
+var filterNullValuesCall = call(
 	"filter",
 	map[string]ast.Expression{
 		"fn": &ast.FunctionExpression{
@@ -57,10 +53,9 @@ var filterSpecialNullValuesCall = call(
 					},
 				},
 			},
-			Body: &ast.BinaryExpression{
-				Operator: ast.NotEqualOperator,
-				Left:     member("r", "_value"),
-				Right:    &ast.FloatLiteral{Value: nullReplacement},
+			Body: &ast.UnaryExpression{
+				Operator: ast.ExistsOperator,
+				Argument: member("r", "_value"),
 			},
 		},
 	},
@@ -144,13 +139,8 @@ func (t *Transpiler) transpileAggregateOverTimeFunc(fn string, inArgs []ast.Expr
 	callFn := fn
 	vec := inArgs[0]
 	args := map[string]ast.Expression{}
-	var nullValue ast.Expression = &ast.FloatLiteral{Value: nullReplacement}
 
 	switch fn {
-	case "count":
-		// "count" is the only aggregation function that returns an int, so we
-		// can only replace its null values with integers, not floats.
-		nullValue = &ast.IntegerLiteral{Value: nullReplacement}
 	case "quantile":
 		vec = inArgs[1]
 		args["q"] = inArgs[0]
@@ -162,12 +152,8 @@ func (t *Transpiler) transpileAggregateOverTimeFunc(fn string, inArgs []ast.Expr
 
 	pipelineCalls := []*ast.CallExpression{
 		call(callFn, args),
-		call("fill", map[string]ast.Expression{
-			"column": &ast.StringLiteral{Value: "_value"},
-			"value":  nullValue,
-		}),
+		filterNullValuesCall,
 		call("toFloat", nil),
-		filterSpecialNullValuesCall,
 		dropFieldAndTimeCall,
 	}
 
