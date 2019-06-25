@@ -9,7 +9,7 @@ Create new stream transformation functions in Go.
 - You must submit an end-to-end test in [testdata](https://github.com/influxdata/flux/tree/master/stdlib/testing/testdata). 
 - You must add a description of the function to [SPEC.md](./docs/SPEC.md).
 
-### Required in function 
+### Required function and methods
 
 | Name | Description|
 | :----| :-------------------------------------------------------|
