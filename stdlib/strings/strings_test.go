@@ -1402,3 +1402,12 @@ func TestSubstring(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkSubstring(b *testing.B) {
+	testValue := substring
+	testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString("townsendapplebeepancake"),
+		"a": values.NewInt(int64(10)), "b": values.NewInt(int64(22))})
+	for i := 0; i < b.N; i++ {
+		testValue.Call(testCase)
+	}
+}

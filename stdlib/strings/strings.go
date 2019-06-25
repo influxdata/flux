@@ -417,10 +417,10 @@ var substring = values.NewFunction(
 		Return:   semantic.String,
 	}),
 	func(args values.Object) (values.Value, error) {
-		v, ok := args.Get(stringArgV)
-		a, okk := args.Get(start)
-		b, okkk := args.Get(end)
-		if !ok || !okk || !okkk {
+		v, vOk := args.Get(stringArgV)
+		a, aOk := args.Get(start)
+		b, bOk := args.Get(end)
+		if !aOk || !bOk || !vOk {
 			return nil, fmt.Errorf("missing argument")
 		}
 
@@ -432,12 +432,19 @@ var substring = values.NewFunction(
 		}
 
 		if (v.Type().Nature() == semantic.String) && (a.Type().Nature() == semantic.Int) && (b.Type().Nature() == semantic.Int) {
-			arr := strings.Split(vStr, "")
-			var arrToJoin []string
-			for i := aInt; i < bInt; i++ {
-				arrToJoin = append(arrToJoin, arr[i])
+			newStr := ""
+			count := 0
+			for _, c := range vStr {
+				if count < aInt {
+					count++
+					continue
+				}
+				if count >= bInt {
+					break
+				}
+				newStr = strings.Join([]string{newStr, string(c)}, "")
+				count++
 			}
-			newStr := strings.Join(arrToJoin, "")
 			return values.NewString(newStr), nil
 		}
 
