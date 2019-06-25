@@ -238,10 +238,10 @@ lowestCurrent = (n, column="_value", groupColumns=[], tables=<-) =>
                 _sortLimit: bottom,
             )
 
-toString = (tables=<-) => tables |> map(fn:(r) => string(v:r._value))
-toInt = (tables=<-) => tables |> map(fn:(r) => int(v:r._value))
-toUInt = (tables=<-) => tables |> map(fn:(r) => uint(v:r._value))
-toFloat = (tables=<-) => tables |> map(fn:(r) => float(v:r._value))
-toBool = (tables=<-) => tables |> map(fn:(r) => bool(v:r._value))
-toTime = (tables=<-) => tables |> map(fn:(r) => time(v:r._value))
-toDuration = (tables=<-) => tables |> map(fn:(r) => duration(v:r._value))
+toString   = (tables=<-) => tables |> map(fn:(r) => ({r with _value: string(v:r._value)}))
+toInt      = (tables=<-) => tables |> map(fn:(r) => ({r with _value: int(v:r._value)}))
+toUInt     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._value)}))
+toFloat    = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))
+toBool     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))
+toTime     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))
+toDuration = (tables=<-) => tables |> map(fn:(r) => ({r with _value: duration(v:r._value)}))

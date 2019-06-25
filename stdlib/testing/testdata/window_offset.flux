@@ -26,8 +26,8 @@ inData = "
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,dateTime:RFC3339,double
 #group,false,false,true,true,true,false,false
-#default,0,,,,,,
-,result,table,_start,_stop,_measurement,_time,mean
+#default,_result,,,,,,
+,result,table,_start,_stop,_measurement,_time,_value
 ,,0,2018-05-22T19:53:00Z,2018-05-22T19:55:00Z,diskio,2018-05-22T19:53:26Z,7602668
 ,,0,2018-05-22T19:53:00Z,2018-05-22T19:55:00Z,diskio,2018-05-22T19:53:36Z,7602771
 ,,0,2018-05-22T19:53:00Z,2018-05-22T19:55:00Z,diskio,2018-05-22T19:53:46Z,7602875
@@ -37,16 +37,13 @@ outData = "
 "
 
 t_window_offset = (table=<-) =>
-	(table
+	table
 		|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
 		|> group(columns: ["_measurement"])
 		|> window(every: 1s, offset: 2s)
 		|> mean()
 		|> duplicate(column: "_start", as: "_time")
 		|> window(every: inf)
-		|> map(fn: (r) =>
-			({_time: r._time, mean: r._value}))
-		|> yield(name: "0"))
 
 test _window_offset = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window_offset})
