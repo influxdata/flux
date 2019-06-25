@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+
+	"github.com/pkg/errors"
 )
 
 // Check will inspect each node and annotate it with any AST errors.
@@ -91,7 +93,7 @@ func GetErrors(n Node) (errs []error) {
 	Walk(CreateVisitor(func(node Node) {
 		if nerrs := node.Errs(); len(nerrs) > 0 {
 			for _, err := range nerrs {
-				errs = append(errs, err)
+				errs = append(errs, errors.Wrapf(err, "loc %v", node.Location()))
 			}
 		}
 	}), n)

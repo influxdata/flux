@@ -30,7 +30,6 @@ func TestMap_NewQuery(t *testing.T) {
 					{
 						ID: "map1",
 						Spec: &universe.MapOpSpec{
-							MergeKey: true,
 							Fn: &semantic.FunctionExpression{
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
@@ -70,7 +69,6 @@ func TestMap_NewQuery(t *testing.T) {
 					{
 						ID: "map1",
 						Spec: &universe.MapOpSpec{
-							MergeKey: true,
 							Fn: &semantic.FunctionExpression{
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
@@ -176,7 +174,6 @@ func TestMap_Process(t *testing.T) {
 		{
 			name: `_value+5`,
 			spec: &universe.MapProcedureSpec{
-				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
@@ -235,76 +232,8 @@ func TestMap_Process(t *testing.T) {
 			}},
 		},
 		{
-			name: `_value+5 mergeKey=true`,
+			name: `_value+5 drop cols`,
 			spec: &universe.MapProcedureSpec{
-				MergeKey: true,
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-						},
-						Body: &semantic.ObjectExpression{
-							Properties: []*semantic.Property{
-								{
-									Key: &semantic.Identifier{Name: "_time"},
-									Value: &semantic.MemberExpression{
-										Object: &semantic.IdentifierExpression{
-											Name: "r",
-										},
-										Property: "_time",
-									},
-								},
-								{
-									Key: &semantic.Identifier{Name: "_value"},
-									Value: &semantic.BinaryExpression{
-										Operator: ast.AdditionOperator,
-										Left: &semantic.MemberExpression{
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-											Property: "_value",
-										},
-										Right: &semantic.FloatLiteral{
-											Value: 5,
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			data: []flux.Table{&executetest.Table{
-				KeyCols: []string{"_measurement", "host"},
-				ColMeta: []flux.ColMeta{
-					{Label: "_measurement", Type: flux.TString},
-					{Label: "host", Type: flux.TString},
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TFloat},
-				},
-				Data: [][]interface{}{
-					{"m", "A", execute.Time(1), 1.0},
-					{"m", "A", execute.Time(2), 6.0},
-				},
-			}},
-			want: []*executetest.Table{{
-				KeyCols: []string{"_measurement", "host"},
-				ColMeta: []flux.ColMeta{
-					{Label: "_measurement", Type: flux.TString},
-					{Label: "host", Type: flux.TString},
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TFloat},
-				},
-				Data: [][]interface{}{
-					{"m", "A", execute.Time(1), 6.0},
-					{"m", "A", execute.Time(2), 11.0},
-				},
-			}},
-		},
-		{
-			name: `_value+5 mergeKey=false drop cols`,
-			spec: &universe.MapProcedureSpec{
-				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
@@ -366,9 +295,8 @@ func TestMap_Process(t *testing.T) {
 			}},
 		},
 		{
-			name: `_value+5 mergeKey=true regroup`,
+			name: `_value+5 drop cols regroup`,
 			spec: &universe.MapProcedureSpec{
-				MergeKey: true,
 				Fn: &semantic.FunctionExpression{
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
@@ -385,6 +313,78 @@ func TestMap_Process(t *testing.T) {
 										Property: "_time",
 									},
 								},
+								{
+									Key: &semantic.Identifier{Name: "_value"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "_value",
+										},
+										Right: &semantic.FloatLiteral{
+											Value: 5,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					KeyCols: []string{"_measurement", "host"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"m", "A", execute.Time(1), 1.0},
+						{"m", "A", execute.Time(2), 6.0},
+					},
+				},
+				&executetest.Table{
+					KeyCols: []string{"_measurement", "host"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"m", "B", execute.Time(1), 1.5},
+						{"m", "B", execute.Time(2), 6.5},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 6.0},
+					{execute.Time(2), 11.0},
+					{execute.Time(1), 6.5},
+					{execute.Time(2), 11.5},
+				},
+			}},
+		},
+		{
+			name: `with _value+5 regroup`,
+			spec: &universe.MapProcedureSpec{
+				Fn: &semantic.FunctionExpression{
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.ObjectExpression{
+							With: &semantic.IdentifierExpression{Name: "r"},
+							Properties: []*semantic.Property{
 								{
 									Key: &semantic.Identifier{Name: "host"},
 									Value: &semantic.BinaryExpression{
@@ -435,36 +435,27 @@ func TestMap_Process(t *testing.T) {
 				KeyCols: []string{"_measurement", "host"},
 				ColMeta: []flux.ColMeta{
 					{Label: "_measurement", Type: flux.TString},
-					{Label: "host", Type: flux.TString},
 					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
+					{Label: "host", Type: flux.TString},
 				},
 				Data: [][]interface{}{
-					{"m", "A.local", execute.Time(1), 6.0},
-					{"m", "A.local", execute.Time(2), 11.0},
+					{"m", execute.Time(1), 6.0, "A.local"},
+					{"m", execute.Time(2), 11.0, "A.local"},
 				},
 			}},
 		},
 		{
-			name: `_value+5 mergeKey=true regroup fan out`,
+			name: `with _value+5 regroup fan out`,
 			spec: &universe.MapProcedureSpec{
-				MergeKey: true,
 				Fn: &semantic.FunctionExpression{
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 						},
 						Body: &semantic.ObjectExpression{
+							With: &semantic.IdentifierExpression{Name: "r"},
 							Properties: []*semantic.Property{
-								{
-									Key: &semantic.Identifier{Name: "_time"},
-									Value: &semantic.MemberExpression{
-										Object: &semantic.IdentifierExpression{
-											Name: "r",
-										},
-										Property: "_time",
-									},
-								},
 								{
 									Key: &semantic.Identifier{Name: "host"},
 									Value: &semantic.BinaryExpression{
@@ -526,48 +517,41 @@ func TestMap_Process(t *testing.T) {
 					KeyCols: []string{"_measurement", "host"},
 					ColMeta: []flux.ColMeta{
 						{Label: "_measurement", Type: flux.TString},
-						{Label: "host", Type: flux.TString},
 						{Label: "_time", Type: flux.TTime},
 						{Label: "_value", Type: flux.TFloat},
+						{Label: "domain", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
 					},
 					Data: [][]interface{}{
-						{"m", "A.example.com", execute.Time(1), 6.0},
+						{"m", execute.Time(1), 6.0, "example.com", "A.example.com"},
 					},
 				},
 				{
 					KeyCols: []string{"_measurement", "host"},
 					ColMeta: []flux.ColMeta{
 						{Label: "_measurement", Type: flux.TString},
-						{Label: "host", Type: flux.TString},
 						{Label: "_time", Type: flux.TTime},
 						{Label: "_value", Type: flux.TFloat},
+						{Label: "domain", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
 					},
 					Data: [][]interface{}{
-						{"m", "A.www.example.com", execute.Time(2), 11.0},
+						{"m", execute.Time(2), 11.0, "www.example.com", "A.www.example.com"},
 					},
 				},
 			},
 		},
 		{
-			name: `_value+5 mergeKey=true with nulls`,
+			name: `with _value+5 with nulls`,
 			spec: &universe.MapProcedureSpec{
-				MergeKey: true,
 				Fn: &semantic.FunctionExpression{
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 						},
 						Body: &semantic.ObjectExpression{
+							With: &semantic.IdentifierExpression{Name: "r"},
 							Properties: []*semantic.Property{
-								{
-									Key: &semantic.Identifier{Name: "_time"},
-									Value: &semantic.MemberExpression{
-										Object: &semantic.IdentifierExpression{
-											Name: "r",
-										},
-										Property: "_time",
-									},
-								},
 								{
 									Key: &semantic.Identifier{Name: "_value"},
 									Value: &semantic.BinaryExpression{
@@ -605,20 +589,19 @@ func TestMap_Process(t *testing.T) {
 				KeyCols: []string{"_measurement", "host"},
 				ColMeta: []flux.ColMeta{
 					{Label: "_measurement", Type: flux.TString},
-					{Label: "host", Type: flux.TString},
 					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
+					{Label: "host", Type: flux.TString},
 				},
 				Data: [][]interface{}{
-					{"m", nil, execute.Time(1), 6.0},
-					{"m", nil, execute.Time(2), 11.0},
+					{"m", execute.Time(1), 6.0, nil},
+					{"m", execute.Time(2), 11.0, nil},
 				},
 			}},
 		},
 		{
 			name: `_value*_value`,
 			spec: &universe.MapProcedureSpec{
-				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
@@ -682,7 +665,6 @@ func TestMap_Process(t *testing.T) {
 		{
 			name: "float(r._value) int",
 			spec: &universe.MapProcedureSpec{
-				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
@@ -745,7 +727,6 @@ func TestMap_Process(t *testing.T) {
 		{
 			name: "float(r._value) uint",
 			spec: &universe.MapProcedureSpec{
-				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
@@ -808,7 +789,6 @@ func TestMap_Process(t *testing.T) {
 		{
 			name: `float("foo") produces error`,
 			spec: &universe.MapProcedureSpec{
-				MergeKey: false,
 				Fn: &semantic.FunctionExpression{
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{

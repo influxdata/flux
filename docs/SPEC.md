@@ -2141,17 +2141,13 @@ When the output record drops a column that was part of the group key that column
 
 Map has the following properties:
 
-| Name     | Type                  | Description                                                                                               |
-| ----     | ----                  | -----------                                                                                               |
-| fn       | (r: record) -> record | Function to apply to each record.  The return value must be an object.                                    |
-| mergeKey | bool                  | MergeKey indicates if the record returned from fn should be merged with the group key.  Defaults to true. |
+| Name | Type                  | Description                                                            |
+| ---- | ----                  | -----------                                                            |
+| fn   | (r: record) -> record | Function to apply to each record.  The return value must be an object. |
 
 
-When merging, all columns on the group key will be added to the record giving precedence to any columns already present on the record.
-When not merging, only columns defined on the returned record will be present on the output records.
-
-
-[IMPL#816](https://github.com/influxdata/flux/issues/816) Remove mergeKey parameter from map
+The resulting table will only have columns present on the returned record of the map function.
+Use the `with` operator to preserve all columns from the input table in the output table.
 
 Example:
 ```
@@ -2161,7 +2157,8 @@ from(bucket:"telegraf/autogen")
                 r.service == "app-server")
     |> range(start:-12h)
     // Square the value
-    |> map(fn: (r) => r._value * r._value)
+    // The output table has all column from the input table because of the use of `with`.
+    |> map(fn: (r) => ({r with _value: r._value * r._value}))
 ```
 Example (creating a new table):
 ```
@@ -2171,10 +2168,12 @@ from(bucket:"telegraf/autogen")
                 r.service == "app-server")
     |> range(start:-12h)
     // create a new table by copying each row into a new format
-    |> map(fn: (r) => ({_time: r._time, app_server: r._service}))
+    // The output table now only has the columns `_time` and `app_server`.
+    |> map(fn: (r) => ({_time: r._time, app_server: r.service}))
 ```
 
 #### Reduce
+
 Reduce aggregates records in each table according to the reducer `fn`.  The output for each table will be the group key of the table, plus columns corresponding to each field in the reducer object.  
 
 If the reducer record contains a column with the same name as a group key column, then the group key column's value is overwritten, and the outgoing group key is changed.  However, if two reduced tables write to the same destination group key, then the function will error.
