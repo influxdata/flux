@@ -991,6 +991,7 @@ var pkgAST = &ast.Package{
 						Name: "year",
 					},
 				}},
+				With: nil,
 			},
 		}},
 		Imports: nil,
