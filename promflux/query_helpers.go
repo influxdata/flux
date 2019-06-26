@@ -11,21 +11,27 @@ import (
 	"github.com/influxdata/flux/semantic"
 )
 
+// FluxResultToPromQLValue translates a Flux result to a PromQL value
+// of the desired type. For range query results, the passed-in value type
+// should always be promql.ValueTypeMatrix (even if the root node for a
+// range query can be of scalar type, range queries always return matrices).
 func FluxResultToPromQLValue(result flux.Result, valType promql.ValueType) promql.Value {
 	hashToSeries := map[uint64]*promql.Series{}
 
 	result.Tables().Do(func(tbl flux.Table) error {
 		tbl.Do(func(cr flux.ColReader) error {
+			// Each row corresponds to one PromQL metric / series.
 			for i := 0; i < cr.Len(); i++ {
 				builder := labels.NewBuilder(nil)
 				var val float64
 				var ts int64
 
+				// Extract PromQL labels and timestamp/value from the columns.
 				for j, col := range cr.Cols() {
 					switch col.Label {
-					case "_time":
+					case execute.DefaultTimeColLabel:
 						ts = execute.ValueForRow(cr, i, j).Time().Time().UnixNano() / 1e6
-					case "_value":
+					case execute.DefaultValueColLabel:
 						v := execute.ValueForRow(cr, i, j)
 						switch v.Type().Nature() {
 						case semantic.Float:
@@ -37,10 +43,12 @@ func FluxResultToPromQLValue(result flux.Result, valType promql.ValueType) promq
 							// TODO: Should this be allowed to happen?
 							val = float64(v.UInt())
 						default:
-							panic("invalid value type")
+							panic("invalid column value type")
 						}
-					case "_start", "_stop", "_measurement":
+					case execute.DefaultStartColLabel, execute.DefaultStopColLabel, "_measurement":
 						// Ignore.
+						// Window boundaries are only interesting within the Flux pipeline.
+						// _measurement is always set to the constant "prometheus" for now.
 					default:
 						ln := unescapeLabelName(col.Label)
 						builder.Set(ln, cr.Strings(j).ValueString(i))
@@ -76,6 +84,7 @@ func FluxResultToPromQLValue(result flux.Result, valType promql.ValueType) promq
 		}
 		sort.Sort(matrix)
 		return matrix
+
 	case promql.ValueTypeVector:
 		vector := make(promql.Vector, 0, len(hashToSeries))
 		for _, ser := range hashToSeries {
@@ -91,6 +100,7 @@ func FluxResultToPromQLValue(result flux.Result, valType promql.ValueType) promq
 		// TODO: Implement sorting for vectors, but this is only needed for tests.
 		// sort.Sort(vector)
 		return vector
+
 	case promql.ValueTypeScalar:
 		if len(hashToSeries) != 1 {
 			// TODO: Make this a normal error?
@@ -106,8 +116,9 @@ func FluxResultToPromQLValue(result flux.Result, valType promql.ValueType) promq
 				V: ser.Points[0].V,
 			}
 		}
-		// Should be unreachable.
+		// Should be unreachable due to the checks above.
 		panic("no point found")
+
 	default:
 		panic("unsupported PromQL value type")
 	}

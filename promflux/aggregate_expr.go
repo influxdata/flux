@@ -16,11 +16,6 @@ const (
 	minInt64 = -9223372036854775808
 )
 
-// convertibleToInt64 returns true if v does not over-/underflow an int64.
-func convertibleToInt64(v float64) bool {
-	return v <= maxInt64 && v >= minInt64
-}
-
 type aggregateFn struct {
 	name      string
 	dropField bool
@@ -77,31 +72,30 @@ func (t *Transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expres
 	groupCols := columnList(a.Grouping...)
 	aggArgs := map[string]ast.Expression{}
 
-	if a.Op == promql.ItemTopK || a.Op == promql.ItemBottomK {
+	switch a.Op {
+	case promql.ItemTopK, promql.ItemBottomK:
 		// TODO: Allow any constant scalars here.
 		// The PromQL parser already verifies that a.Param is a scalar.
 		n, ok := a.Param.(*promql.NumberLiteral)
 		if !ok {
 			return nil, fmt.Errorf("arbitrary scalar subexpressions not supported yet")
 		}
-		if !convertibleToInt64(n.Val) {
+		if n.Val > maxInt64 || n.Val < minInt64 {
 			return nil, fmt.Errorf("scalar value %v overflows int64", n)
 		}
 		aggArgs["n"] = &ast.IntegerLiteral{Value: int64(n.Val)}
-	}
 
-	if a.Op == promql.ItemQuantile {
+	case promql.ItemQuantile:
 		// TODO: Allow any constant scalars here.
-		// The PromQL already verifies that a.Param is a scalar.
+		// The PromQL parser already verifies that a.Param is a scalar.
 		n, ok := a.Param.(*promql.NumberLiteral)
 		if !ok {
 			return nil, fmt.Errorf("arbitrary scalar subexpressions not supported yet")
 		}
 		aggArgs["q"] = &ast.FloatLiteral{Value: n.Val}
 		aggArgs["method"] = &ast.StringLiteral{Value: "exact_mean"}
-	}
 
-	if a.Op == promql.ItemStddev || a.Op == promql.ItemStdvar {
+	case promql.ItemStddev, promql.ItemStdvar:
 		aggArgs["mode"] = &ast.StringLiteral{Value: "population"}
 	}
 

@@ -9,6 +9,8 @@ import (
 	"github.com/prometheus/prometheus/promql"
 )
 
+// A Transpiler allows transpiling a PromQL expression into a Flux file
+// according to a chosen evaluation time range.
 type Transpiler struct {
 	Bucket     string
 	Start      time.Time
