@@ -3511,6 +3511,13 @@ Returns the index of the last instance of any value from chars in v, or -1 if no
 
 Example: `lastIndexAny(v: "go gopher", t: "go")` returns int `4`.
 
+##### strlen
+
+Returns the length of the given string, defined to be the number of utf code points.
+
+Example: `strlen(v: "apple")` returns the int `5`.
+Example: `strlen(v: "汉字")` returns the int `2`.
+
 ##### repeat
 
 Returns a new string consisting of i copies of the string v.
@@ -3552,6 +3559,12 @@ Example: `splitAfterN(v: "a,b,c", t: ",", i: 2)` returns []string `["a," "b,c"]`
 Slices v into all substrings separated by t and returns a slice of the substrings between those separators. i determines the number of substrings to return.
 
 Example: `splitN(v: "a,b,c", t: ",", i: 2)` returns []string `["a" "b,c"]`.
+
+##### substring 
+
+Returns substring as specified by the given indices start and end, based on utf code points.
+
+Example: `substring(v: "influx", start: 0, end: 3)` returns string `inf`.
 
 ##### title
 

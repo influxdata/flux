@@ -74,6 +74,7 @@ builtin contains
 
 // other builtins
 builtin inf
+builtin length //length function for arrays
 builtin linearBins
 builtin logarithmicBins
 

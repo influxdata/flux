@@ -34,6 +34,8 @@ builtin splitAfter
 builtin splitN
 builtin splitAfterN
 builtin joinStr
+builtin strlen
+builtin substring
 
 // hack to simulate an imported strings package
 strings = {
@@ -70,4 +72,6 @@ strings = {
   splitN:splitN,
   splitAfterN:splitAfterN,
   joinStr:joinStr,
+  strlen:strlen,
+  substring:substring,
 }
