@@ -145,6 +145,7 @@ A _correlated series set_ is a set of correlated series.  They may only be creat
 A consequence of this requirement is that all Correlated Series in a set have the same column names and types.  Correlated series sets are further constrained by requiring that no two series in the set may have the same correlation column values.  If such a case exists, the two tables should be merged.  
 
 Example: 
+
 | host 	    | region	| disk-percent | time |
 |---	    |---	    | ---          | ---  |
 |  HostA 	|   us-east	|  55          | 7:00 |
@@ -163,6 +164,7 @@ As a special case, a correlated series set may have a single table that is "corr
 A windowed series is one that is one that is bounded by a maximum and minimum value on the series' ordering column(s). By convention, flux uses the column names `_start` and `_stop` to indicate bounds: 
  
  Example: 
+ 
  | host 	| region	| disk-percent | time | _start | _stop |
  |---	    |---	    | ---          | ---  | ---    | ---   |
  |  HostA 	|   us-east	|  55          | 7:00 | 7:00   | 7:30  |
