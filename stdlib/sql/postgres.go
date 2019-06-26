@@ -87,9 +87,9 @@ func (m *PostgresRowReader) InitColumnTypes(types []*sql.ColumnType) {
 	stringTypes := make([]flux.ColType, len(types))
 	for i := 0; i < len(types); i++ {
 		switch types[i].DatabaseTypeName() {
-		case "INT", "BIGINT", "SMALLINT", "TINYINT", "INT2", "INT4", "INT8":
+		case "INT", "BIGINT", "SMALLINT", "TINYINT", "INT2", "INT4", "INT8", "SERIAL2", "SERIAL4", "SERIAL8":
 			stringTypes[i] = flux.TInt
-		case "FLOAT", "DOUBLE":
+		case "FLOAT4", "FLOAT8":
 			stringTypes[i] = flux.TFloat
 		case "DATE", "TIME", "TIMESTAMP":
 			stringTypes[i] = flux.TTime
