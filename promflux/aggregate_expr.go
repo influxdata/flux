@@ -133,6 +133,9 @@ func (t *Transpiler) transpileAggregateExpr(a *promql.AggregateExpr) (ast.Expres
 		// Aggregate.
 		call(aggFn.name, aggArgs),
 	)
+	if aggFn.name == "count" {
+		pipeline = buildPipeline(pipeline, call("toFloat", nil))
+	}
 	if aggFn.dropNonGrouping {
 		// Drop labels that are not part of the grouping.
 		pipeline = buildPipeline(pipeline, dropNonGroupingColsCall(a.Grouping, a.Without))

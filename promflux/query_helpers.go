@@ -36,12 +36,6 @@ func FluxResultToPromQLValue(result flux.Result, valType promql.ValueType) promq
 						switch v.Type().Nature() {
 						case semantic.Float:
 							val = v.Float()
-						case semantic.Int:
-							// TODO: Should this be allowed to happen?
-							val = float64(v.Int())
-						case semantic.UInt:
-							// TODO: Should this be allowed to happen?
-							val = float64(v.UInt())
 						default:
 							panic("invalid column value type")
 						}
