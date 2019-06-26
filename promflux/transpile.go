@@ -212,6 +212,28 @@ func (t *Transpiler) transpileExpr(expr promql.Expr) (ast.Expression, error) {
 	}
 }
 
+// Transpile converts a PromQL expression with the time ranges set in the transpiler
+// into a Flux file. The resulting Flux file can be executed and the result needs to
+// be transformed using FluxResultToPromQLValue() to get a result value that is fully
+// equivalent to the result of a native PromQL execution.
+//
+// During the transpilation, the transpiler recurisvely translates the PromQL AST into
+// equivalent Flux nodes. Each PromQL node translates into one or more Flux
+// constructs that as a group (corresponding to the PromQL node) have to
+// keep the following invariants:
+//
+// - The "_field" column contains the PromQL metric name, if any.
+// - The "_measurement" column is ignored (always set to constant "prometheus").
+// - The "_time" column contains the sample timestamp as long as a raw sample has been
+//   selected from storage and not processed further. Otherwise, "_time" will be
+//   empty.
+// - The "_stop" column contains the stop timestamp of windows that are equivalent to
+//   the resolution steps in PromQL. If "_time" is no longer present, "_stop" becomes
+//   the output timestamp for a sample.
+// - The "_value" column is always of float type and represents the PromQL sample value.
+// - Other columns map to PromQL label names, with escaping applied ("_foo" -> "~_foo").
+// - Tables should be grouped by all columns except for "_time" and "_value". Each Flux
+//   table represents one PromQL series, with potentially multiple samples over time.
 func (t *Transpiler) Transpile(expr promql.Expr) (*ast.File, error) {
 	promql.Walk(labelNameEscaper{}, expr, nil)
 
