@@ -1317,64 +1317,64 @@ func TestSubstring(t *testing.T) {
 	testCases := []struct {
 		name      string
 		v         string
-		a         int
-		b         int
+		start     int
+		end       int
 		want      string
 		expectErr error
 	}{
 		{
 			name:      "entire string",
 			v:         "influx",
-			a:         0,
-			b:         6,
+			start:     0,
+			end:       6,
 			want:      "influx",
 			expectErr: errors.New("indices out of bounds"),
 		},
 		{
 			name:      "simple substring",
 			v:         "influx",
-			a:         2,
-			b:         5,
+			start:     2,
+			end:       5,
 			want:      "flu",
 			expectErr: errors.New("indices out of bounds"),
 		},
 		{
 			name:      "chinese",
 			v:         "汉字汉字汉字",
-			a:         2,
-			b:         5,
+			start:     2,
+			end:       5,
 			want:      "汉字汉",
 			expectErr: errors.New("indices out of bounds"),
 		},
 		{
 			name:      "chinese and space",
 			v:         "汉 字汉字  汉字",
-			a:         4,
-			b:         7,
+			start:     4,
+			end:       7,
 			want:      "字  ",
 			expectErr: errors.New("indices out of bounds"),
 		},
 		{
 			name:      "alpha",
 			v:         "ineedmesomeabcsoup",
-			a:         -1,
-			b:         7,
+			start:     -1,
+			end:       7,
 			want:      "",
 			expectErr: errors.New("indices out of bounds"),
 		},
 		{
 			name:      "beta",
 			v:         "ineedmesomeabcsoup",
-			a:         0,
-			b:         3389,
+			start:     0,
+			end:       3389,
 			want:      "",
 			expectErr: errors.New("indices out of bounds"),
 		},
 		{
 			name:      "alphabet",
 			v:         "ineedmesomeabcsoup",
-			a:         -289,
-			b:         23948,
+			start:     -289,
+			end:       23948,
 			want:      "",
 			expectErr: errors.New("indices out of bounds"),
 		},
@@ -1384,7 +1384,7 @@ func TestSubstring(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			testValue := substring
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v),
-				"a": values.NewInt(int64(tc.a)), "b": values.NewInt(int64(tc.b))})
+				"start": values.NewInt(int64(tc.start)), "end": values.NewInt(int64(tc.end))})
 			result, err := testValue.Call(testCase)
 
 			if err != nil {
@@ -1406,7 +1406,7 @@ func TestSubstring(t *testing.T) {
 func BenchmarkSubstring(b *testing.B) {
 	testValue := substring
 	testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString("townsendapplebeepancake"),
-		"a": values.NewInt(int64(10)), "b": values.NewInt(int64(22))})
+		"start": values.NewInt(int64(0)), "end": values.NewInt(int64(5))})
 	for i := 0; i < b.N; i++ {
 		testValue.Call(testCase)
 	}

@@ -23,8 +23,8 @@ const (
 	substr     = "substr"
 	chars      = "chars"
 	integer    = "i"
-	start      = "a"
-	end        = "b"
+	start      = "start"
+	end        = "end"
 )
 
 func generateSingleArgStringFunction(name string, stringFn func(string) string) values.Function {
@@ -424,28 +424,28 @@ var substring = values.NewFunction(
 			return nil, fmt.Errorf("missing argument")
 		}
 
-		vStr := v.Str()
-		aInt := int(a.Int())
-		bInt := int(b.Int())
-		if aInt < 0 || bInt > len(vStr) {
-			return nil, fmt.Errorf("indices out of bounds")
-		}
-
 		if (v.Type().Nature() == semantic.String) && (a.Type().Nature() == semantic.Int) && (b.Type().Nature() == semantic.Int) {
-			newStr := ""
+			vStr := v.Str()
+			aInt := int(a.Int())
+			bInt := int(b.Int())
+			if aInt < 0 || bInt > len(vStr) {
+				return nil, fmt.Errorf("indices out of bounds")
+			}
+
 			count := 0
-			for _, c := range vStr {
-				if count < aInt {
-					count++
-					continue
+			byteStart := 0
+			byteEnd := 0
+			for i, c := range vStr {
+				if count == aInt {
+					byteStart = i
 				}
-				if count >= bInt {
+				if count >= bInt-1 {
+					byteEnd = i + len(string(c))
 					break
 				}
-				newStr = strings.Join([]string{newStr, string(c)}, "")
 				count++
 			}
-			return values.NewString(newStr), nil
+			return values.NewString(vStr[byteStart:byteEnd]), nil
 		}
 
 		return nil, fmt.Errorf("procedure cannot be executed")

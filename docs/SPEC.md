@@ -3513,9 +3513,10 @@ Example: `lastIndexAny(v: "go gopher", t: "go")` returns int `4`.
 
 ##### strlen
 
-Returns the length of the given string, defined to be the number of characters
+Returns the length of the given string, defined to be the number of utf code points.
 
 Example: `strlen(v: "apple")` returns the int `5`.
+Example: `strlen(v: "汉字")` returns the int `2`.
 
 ##### repeat
 
@@ -3561,9 +3562,9 @@ Example: `splitN(v: "a,b,c", t: ",", i: 2)` returns []string `["a" "b,c"]`.
 
 ##### substring 
 
-Returns substring as specified by the given indices a and b
+Returns substring as specified by the given indices start and end, based on utf code points.
 
-Example: `substring(v: "influx", a: 0, b: 3)` returns string `inf`.
+Example: `substring(v: "influx", start: 0, end: 3)` returns string `inf`.
 
 ##### title
 
