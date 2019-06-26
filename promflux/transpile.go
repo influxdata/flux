@@ -9,15 +9,6 @@ import (
 	"github.com/prometheus/prometheus/promql"
 )
 
-// A Transpiler allows transpiling a PromQL expression into a Flux file
-// according to a chosen evaluation time range.
-type Transpiler struct {
-	Bucket     string
-	Start      time.Time
-	End        time.Time
-	Resolution time.Duration
-}
-
 func buildPipeline(arg ast.Expression, calls ...*ast.CallExpression) *ast.PipeExpression {
 	switch len(calls) {
 	case 0:
@@ -185,31 +176,13 @@ func yieldsTable(expr promql.Expr) bool {
 	return !yieldsFloat(expr)
 }
 
-func (t *Transpiler) transpileExpr(expr promql.Expr) (ast.Expression, error) {
-	switch e := expr.(type) {
-	case *promql.ParenExpr:
-		return t.transpileExpr(e.Expr)
-	case *promql.UnaryExpr:
-		return t.transpileUnaryExpr(e)
-	case *promql.NumberLiteral:
-		return &ast.FloatLiteral{Value: e.Val}, nil
-	case *promql.StringLiteral:
-		return &ast.StringLiteral{Value: e.Val}, nil
-	case *promql.VectorSelector:
-		return t.transpileInstantVectorSelector(e), nil
-	case *promql.MatrixSelector:
-		return t.transpileRangeVectorSelector(e), nil
-	case *promql.AggregateExpr:
-		return t.transpileAggregateExpr(e)
-	case *promql.BinaryExpr:
-		return t.transpileBinaryExpr(e)
-	case *promql.Call:
-		return t.transpileCall(e)
-	case *promql.SubqueryExpr:
-		return t.transpileSubqueryExpr(e)
-	default:
-		return nil, fmt.Errorf("PromQL node type %T is not supported yet", t)
-	}
+// A Transpiler allows transpiling a PromQL expression into a Flux file
+// according to a chosen evaluation time range.
+type Transpiler struct {
+	Bucket     string
+	Start      time.Time
+	End        time.Time
+	Resolution time.Duration
 }
 
 // Transpile converts a PromQL expression with the time ranges set in the transpiler
@@ -270,4 +243,31 @@ func (t *Transpiler) Transpile(expr promql.Expr) (*ast.File, error) {
 			},
 		},
 	}, nil
+}
+
+func (t *Transpiler) transpileExpr(expr promql.Expr) (ast.Expression, error) {
+	switch e := expr.(type) {
+	case *promql.ParenExpr:
+		return t.transpileExpr(e.Expr)
+	case *promql.UnaryExpr:
+		return t.transpileUnaryExpr(e)
+	case *promql.NumberLiteral:
+		return &ast.FloatLiteral{Value: e.Val}, nil
+	case *promql.StringLiteral:
+		return &ast.StringLiteral{Value: e.Val}, nil
+	case *promql.VectorSelector:
+		return t.transpileInstantVectorSelector(e), nil
+	case *promql.MatrixSelector:
+		return t.transpileRangeVectorSelector(e), nil
+	case *promql.AggregateExpr:
+		return t.transpileAggregateExpr(e)
+	case *promql.BinaryExpr:
+		return t.transpileBinaryExpr(e)
+	case *promql.Call:
+		return t.transpileCall(e)
+	case *promql.SubqueryExpr:
+		return t.transpileSubqueryExpr(e)
+	default:
+		return nil, fmt.Errorf("PromQL node type %T is not supported yet", t)
+	}
 }
