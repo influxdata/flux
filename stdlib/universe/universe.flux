@@ -74,9 +74,10 @@ builtin contains
 
 // other builtins
 builtin inf
-builtin length //length function for arrays
+builtin length // length function for arrays
 builtin linearBins
 builtin logarithmicBins
+builtin sleep // sleep is the identity function with the side effect of delaying execution by a specified duration.
 
 // covariance function with automatic join
 cov = (x,y,on,pearsonr=false) =>
