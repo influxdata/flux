@@ -82,7 +82,7 @@ func (t *Transpiler) transpileInstantVectorSelector(v *promql.VectorSelector) *a
 		windowCall = call("window", map[string]ast.Expression{
 			"every":  &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Resolution.Nanoseconds(), Unit: "ns"}}},
 			"period": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: 5, Unit: "m"}}},
-			"offset": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Start.UnixNano() % t.Resolution.Nanoseconds(), Unit: "ns"}}},
+			"offset": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Start.Add(-v.Offset).UnixNano() % t.Resolution.Nanoseconds(), Unit: "ns"}}},
 		})
 
 		// Remove any windows <5m long at the edges of the graph range to act like PromQL.
