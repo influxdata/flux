@@ -1,9 +1,7 @@
 package mqtt_test
 
 import (
-	"io/ioutil"
-	
-	"net/http/httptest"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -14,8 +12,8 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/querytest"
-	fmqtt "github.com/influxdata/flux/stdlib/mqtt"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	fmqtt "github.com/influxdata/flux/stdlib/mqtt"
 )
 
 func TestToMQTT_NewQuery(t *testing.T) {
@@ -24,7 +22,7 @@ func TestToMQTT_NewQuery(t *testing.T) {
 			Name: "from with database with range",
 			Raw: `
 import "mqtt"
-from(bucket:"mybucket") |> mqtt.to(url: "https://localhost:8081", name:"series1", method:"POST",  timeout: 50s)`,
+from(bucket:"mybucket") |> mqtt.to(broker: "tcp://iot.eclipse.org:1883", topic: "test-influxdb")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
@@ -34,23 +32,18 @@ from(bucket:"mybucket") |> mqtt.to(url: "https://localhost:8081", name:"series1"
 						},
 					},
 					{
-						ID: "toHTTP1",
-						Spec: &fhttp.ToMQTTOpSpec{
-							URL:          "https://localhost:8081",
-							Name:         "series1",
-							Method:       "POST",
-							Timeout:      50 * time.Second,
+						ID: "toMQTT1",
+						Spec: &fmqtt.ToMQTTOpSpec{
+							Broker:       "tcp://iot.eclipse.org:1883",
+							Topic:        "test-influxdb",
+							ClientID:     "flux-mqtt",
 							TimeColumn:   execute.DefaultTimeColLabel,
 							ValueColumns: []string{execute.DefaultValueColLabel},
-							Headers: map[string]string{
-								"Content-Type": "application/vnd.influx",
-								"User-Agent":   "fluxd/dev",
-							},
 						},
 					},
 				},
 				Edges: []flux.Edge{
-					{Parent: "from0", Child: "toHTTP1"},
+					{Parent: "from0", Child: "toMQTT1"},
 				},
 			},
 		},
@@ -66,12 +59,9 @@ from(bucket:"mybucket") |> mqtt.to(url: "https://localhost:8081", name:"series1"
 
 func TestToMQTTOpSpec_UnmarshalJSON(t *testing.T) {
 	type fields struct {
-		URL         string
-		Method      string
-		Headers     map[string]string
-		URLParams   map[string]string
-		Timeout     time.Duration
-		NoKeepAlive bool
+		Broker  string
+		Topic   string
+		Timeout time.Duration
 	}
 	tests := []struct {
 		name    string
@@ -83,43 +73,39 @@ func TestToMQTTOpSpec_UnmarshalJSON(t *testing.T) {
 			name: "happy path",
 			bytes: []byte(`
 			{
-				"id": "toHTTP",
-				"kind": "toHTTP",
+				"id": "toMQTT",
+				"kind": "toMQTT",
 				"spec": {
-				  "url": "https://localhost:8081",
-				  "method" :"POST"
+				  "broker": "tcp://iot.eclipse.org:1883",
+				  "topic" :"test-influxdb"
 				}
 			}`),
 			fields: fields{
-				URL:    "https://localhost:8081",
-				Method: "POST",
+				Broker: "tcp://iot.eclipse.org:1883",
+				Topic:  "test-influxdb",
 			},
 		}, {
 			name: "bad address",
 			bytes: []byte(`
 		{
-			"id": "toHTTP",
-			"kind": "toHTTP",
+			"id": "toMQTT",
+			"kind": "toMQTT",
 			"spec": {
-			  "url": "https://loc	alhost:8081",
-			  "method" :"POST"
+			  "broker": "tcp://loc	alhost:8081",
+			  "topic" :"test"
 			}
 		}`),
 			fields: fields{
-				URL:    "https://localhost:8081",
-				Method: "POST",
+				Broker: "tcp://localhost:8883",
+				Topic:  "test",
 			},
 			wantErr: true,
 		}}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			o := &fmqtt.ToMQTTOpSpec{
-				URL:         tt.fields.URL,
-				Method:      tt.fields.Method,
-				Headers:     tt.fields.Headers,
-				URLParams:   tt.fields.URLParams,
-				Timeout:     tt.fields.Timeout,
-				NoKeepAlive: tt.fields.NoKeepAlive,
+				Broker: tt.fields.Broker,
+				Topic:  tt.fields.Topic,
 			}
 			op := &flux.Operation{
 				ID:   "toMQTT",
@@ -134,34 +120,49 @@ func TestToMQTTOpSpec_UnmarshalJSON(t *testing.T) {
 	}
 }
 
-func TestToHTTP_Process(t *testing.T) {
+func TestToMQTT_Process(t *testing.T) {
 	data := []byte{}
+	var knt int
 	wg := sync.WaitGroup{}
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer wg.Done()
-		serverData, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			t.Log(err)
-			t.FailNow()
-		}
+	fmt.Println("TestToMQTT")
+	opts := MQTT.NewClientOptions().AddBroker("tcp://iot.eclipse.org:1883")
+	opts.SetClientID("influxdb-test")
+	opts.SetDefaultPublishHandler(func(client MQTT.Client, msg MQTT.Message) {
+		serverData := msg.Payload()
 		data = append(data, serverData...)
-	}))
+		fmt.Printf("MSG: %s\n", msg.Payload())
+		text := fmt.Sprintf("this is result msg #%d!", knt)
+		knt++
+		token := client.Publish("nn/result", 0, false, text)
+		token.Wait()
+	})
+	c := MQTT.NewClient(opts)
+	if token := c.Connect(); token.Wait() && token.Error() != nil {
+		panic(token.Error())
+	}
+	if token := c.Subscribe("test-influxdb", 0, nil); token.Wait() &&
+		token.Error() != nil {
+		t.Log(token.Error())
+		t.FailNow()
+	}
+	defer wg.Done()
+
 	type wanted struct {
 		Table  []*executetest.Table
 		Result []byte
 	}
 	testCases := []struct {
 		name string
-		spec *fhttp.ToHTTPProcedureSpec
+		spec *fmqtt.ToMQTTProcedureSpec
 		data []flux.Table
 		want wanted
 	}{
 		{
 			name: "coltable with name in _measurement",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
-					URL:          server.URL,
-					Method:       "GET",
+			spec: &fmqtt.ToMQTTProcedureSpec{
+				Spec: &fmqtt.ToMQTTOpSpec{
+					Broker:       "tcp://iot.eclipse.org:1883",
+					Topic:        "test-influxdb",
 					Timeout:      50 * time.Second,
 					TimeColumn:   execute.DefaultTimeColLabel,
 					ValueColumns: []string{"_value"},
@@ -203,14 +204,13 @@ func TestToHTTP_Process(t *testing.T) {
 		},
 		{
 			name: "one table with measurement name in _measurement",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
-					URL:          server.URL,
-					Method:       "GET",
+			spec: &fmqtt.ToMQTTProcedureSpec{
+				Spec: &fmqtt.ToMQTTOpSpec{
+					Broker:       "tcp://iot.eclipse.org:1883",
+					Topic:        "test-influxdb",
 					Timeout:      50 * time.Second,
 					TimeColumn:   execute.DefaultTimeColLabel,
 					ValueColumns: []string{"_value"},
-					NameColumn:   "_measurement",
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -248,15 +248,14 @@ func TestToHTTP_Process(t *testing.T) {
 		},
 		{
 			name: "one table with measurement name in _measurement and tag",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
-					URL:          server.URL,
-					Method:       "GET",
+			spec: &fmqtt.ToMQTTProcedureSpec{
+				Spec: &fmqtt.ToMQTTOpSpec{
+					Broker:       "tcp://iot.eclipse.org:1883",
+					Topic:        "test-influxdb",
 					Timeout:      50 * time.Second,
 					TimeColumn:   execute.DefaultTimeColLabel,
 					ValueColumns: []string{"_value"},
 					TagColumns:   []string{"fred"},
-					NameColumn:   "_measurement",
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -294,14 +293,14 @@ func TestToHTTP_Process(t *testing.T) {
 		},
 		{
 			name: "one table",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
-					URL:          server.URL,
-					Method:       "POST",
+			spec: &fmqtt.ToMQTTProcedureSpec{
+				Spec: &fmqtt.ToMQTTOpSpec{
+					Broker:       "tcp://iot.eclipse.org:1883",
+					Topic:        "test-infuxdb",
 					Timeout:      50 * time.Second,
 					TimeColumn:   execute.DefaultTimeColLabel,
 					ValueColumns: []string{"_value"},
-					Name:         "one_table",
+					NameColumn:   "one_table",
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -334,14 +333,14 @@ func TestToHTTP_Process(t *testing.T) {
 		},
 		{
 			name: "one table with unused tag",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
-					URL:          server.URL,
-					Method:       "GET",
+			spec: &fmqtt.ToMQTTProcedureSpec{
+				Spec: &fmqtt.ToMQTTOpSpec{
+					Broker:       "tcp://iot.eclipse.org:1883",
+					Topic:        "test-influxdb",
 					Timeout:      50 * time.Second,
 					TimeColumn:   execute.DefaultTimeColLabel,
 					ValueColumns: []string{"_value"},
-					Name:         "one_table_w_unused_tag",
+					NameColumn:   "one_table_w_unused_tag",
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -380,15 +379,15 @@ one_table_w_unused_tag _value=4 41
 		},
 		{
 			name: "one table with tag",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
-					URL:          server.URL,
-					Method:       "GET",
+			spec: &fmqtt.ToMQTTProcedureSpec{
+				Spec: &fmqtt.ToMQTTOpSpec{
+					Broker:       "tcp://iot.eclipse.org:1883",
+					Topic:        "test-influxdb",
 					Timeout:      50 * time.Second,
 					TimeColumn:   execute.DefaultTimeColLabel,
 					ValueColumns: []string{"_value"},
 					TagColumns:   []string{"fred"},
-					Name:         "one_table_w_tag",
+					NameColumn:   "one_table_w_tag",
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -427,15 +426,15 @@ one_table_w_tag,fred=elevendyone _value=4 41
 		},
 		{
 			name: "multi table",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
-					URL:          server.URL,
-					Method:       "GET",
+			spec: &fmqtt.ToMQTTProcedureSpec{
+				Spec: &fmqtt.ToMQTTOpSpec{
+					Broker:       "tcp://iot.eclipse.org:1883",
+					Topic:        "test-influxdb",
 					Timeout:      50 * time.Second,
 					TimeColumn:   execute.DefaultTimeColLabel,
 					ValueColumns: []string{"_value"},
 					TagColumns:   []string{"fred"},
-					Name:         "multi_table",
+					NameColumn:   "multi_table",
 				},
 			},
 			data: []flux.Table{
@@ -488,15 +487,15 @@ one_table_w_tag,fred=elevendyone _value=4 41
 		},
 		{
 			name: "multi collist tables",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
-					URL:          server.URL,
-					Method:       "GET",
+			spec: &fmqtt.ToMQTTProcedureSpec{
+				Spec: &fmqtt.ToMQTTOpSpec{
+					Broker:       "tcp://iot.eclipse.org:1883",
+					Topic:        "test-influxdb",
 					Timeout:      50 * time.Second,
 					TimeColumn:   execute.DefaultTimeColLabel,
 					ValueColumns: []string{"_value"},
 					TagColumns:   []string{"fred"},
-					Name:         "multi_collist_tables",
+					NameColumn:   "multi_collist_tables",
 				},
 			},
 			data: []flux.Table{
@@ -551,6 +550,7 @@ one_table_w_tag,fred=elevendyone _value=4 41
 	}
 
 	for _, tc := range testCases {
+		fmt.Println("MQTT Test ... ")
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			wg.Add(len(tc.data))
@@ -561,7 +561,7 @@ one_table_w_tag,fred=elevendyone _value=4 41
 				tc.want.Table,
 				nil,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					return fhttp.NewToHTTPTransformation(d, c, tc.spec)
+					return fmqtt.NewToMQTTTransformation(d, c, tc.spec)
 				},
 			)
 			wg.Wait() // wait till we are done getting the data back
