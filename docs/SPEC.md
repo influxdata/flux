@@ -3068,6 +3068,22 @@ from(bucket: "telegraf/autogen")
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_user")
     |> difference()
 ```
+#### Elapsed
+
+Elapsed returns the elapsed time between subsequent records. 
+
+Given an input table, `elapsed` will return the same table with an additional `elapsed` column and without the first 
+record as elapsed time is not defined. 
+
+Elapsed has the following properties:
+
+| Name        | Type     | Description                                                                                                                                                 |
+| ----        | ----     | -----------                                                                                                                                                 |
+| unit        | duration | The unit in which the elapsed time is returned. Defaults to `1s`.|
+| timeColumn  | string   | Name of the `flux.TTime` column on which to compute the elapsed time. Defaults to `_time`.|
+| columnName  | string   | Name of the column of elapsed times. Defaults to `elapsed`.
+
+Elapsed errors if the timeColumn cannot be found within the given table. 
 
 #### Increase
 

@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   259,
 				},
 				File:   "universe.flux",
-				Source: "package universe\n\nimport \"system\"\n\n// now is a function option whose default behaviour is to return the current system time\noption now = system.time\n\n// Booleans\nbuiltin true\nbuiltin false\n\n// Transformation functions\nbuiltin columns\nbuiltin count\nbuiltin covariance\nbuiltin cumulativeSum\nbuiltin derivative\nbuiltin difference\nbuiltin distinct\nbuiltin drop\nbuiltin duplicate\nbuiltin fill\nbuiltin filter\nbuiltin first\nbuiltin group\nbuiltin histogram\nbuiltin histogramQuantile\nbuiltin integral\nbuiltin join\nbuiltin keep\nbuiltin keyValues\nbuiltin keys\nbuiltin last\nbuiltin limit\nbuiltin map\nbuiltin max\nbuiltin mean\nbuiltin min\nbuiltin mode\nbuiltin quantile\nbuiltin pivot\nbuiltin range\nbuiltin reduce\nbuiltin rename\nbuiltin sample\nbuiltin set\nbuiltin timeShift\nbuiltin skew\nbuiltin spread\nbuiltin sort\nbuiltin stateTracking\nbuiltin stddev\nbuiltin sum\nbuiltin union\nbuiltin unique\nbuiltin window\nbuiltin yield\n\n// stream/table index functions\nbuiltin tableFind\nbuiltin getColumn\nbuiltin getRecord\n\n// type conversion functions\nbuiltin bool\nbuiltin duration\nbuiltin float\nbuiltin int\nbuiltin string\nbuiltin time\nbuiltin uint\n\n// contains function\nbuiltin contains\n\n// other builtins\nbuiltin inf\nbuiltin length // length function for arrays\nbuiltin linearBins\nbuiltin logarithmicBins\nbuiltin sleep // sleep is the identity function with the side effect of delaying execution by a specified duration.\n\n// covariance function with automatic join\ncov = (x,y,on,pearsonr=false) =>\n    join(\n        tables:{x:x, y:y},\n        on:on,\n    )\n    |> covariance(pearsonr:pearsonr, columns:[\"_value_x\",\"_value_y\"])\n\npearsonr = (x,y,on) => cov(x:x, y:y, on:on, pearsonr:true)\n\n// AggregateWindow applies an aggregate function to fixed windows of time.\n// The procedure is to window the data, perform an aggregate operation,\n// and then undo the windowing to produce an output table for every input table.\naggregateWindow = (every, fn, column=\"_value\", timeSrc=\"_stop\",timeDst=\"_time\", createEmpty=true, tables=<-) =>\n    tables\n        |> window(every:every, createEmpty: createEmpty)\n        |> fn(column:column)\n        |> duplicate(column:timeSrc,as:timeDst)\n        |> window(every:inf, timeColumn:timeDst)\n\n// Increase returns the total non-negative difference between values in a table.\n// A main usage case is tracking changes in counter values which may wrap over time when they hit\n// a threshold or are reset. In the case of a wrap/reset,\n// we can assume that the absolute delta between two points will be at least their non-negative difference.\nincrease = (tables=<-, columns=[\"_value\"]) =>\n    tables\n        |> difference(nonNegative: true, columns:columns)\n        |> cumulativeSum(columns: columns)\n\n// median returns the 50th percentile.\nmedian = (method=\"estimate_tdigest\", compression=0.0, column=\"_value\", tables=<-) =>\n    tables\n        |> quantile(q:0.5, method: method, compression: compression, column: column)\n\n// stateCount computes the number of consecutive records in a given state.\n// The state is defined via the function fn. For each consecutive point for\n// which the expression evaluates as true, the state count will be incremented\n// When a point evaluates as false, the state count is reset.\n//\n// The state count will be added as an additional column to each record. If the\n// expression evaluates as false, the value will be -1. If the expression\n// generates an error during evaluation, the point is discarded, and does not\n// affect the state count.\nstateCount = (fn, column=\"stateCount\", tables=<-) =>\n    tables\n        |> stateTracking(countColumn:column, fn:fn)\n\n// stateDuration computes the duration of a given state.\n// The state is defined via the function fn. For each consecutive point for\n// which the expression evaluates as true, the state duration will be\n// incremented by the duration between points. When a point evaluates as false,\n// the state duration is reset.\n//\n// The state duration will be added as an additional column to each record. If the\n// expression evaluates as false, the value will be -1. If the expression\n// generates an error during evaluation, the point is discarded, and does not\n// affect the state duration.\n//\n// Note that as the first point in the given state has no previous point, its\n// state duration will be 0.\n//\n// The duration is represented as an integer in the units specified.\nstateDuration = (fn, column=\"stateDuration\", timeColumn=\"_time\", unit=1s, tables=<-) =>\n    tables\n        |> stateTracking(durationColumn:column, timeColumn:timeColumn, fn:fn, durationUnit:unit)\n\n// _sortLimit is a helper function, which sorts and limits a table.\n_sortLimit = (n, desc, columns=[\"_value\"], tables=<-) =>\n    tables\n        |> sort(columns:columns, desc:desc)\n        |> limit(n:n)\n\n// top sorts a table by columns and keeps only the top n records.\ntop = (n, columns=[\"_value\"], tables=<-) =>\n    tables\n        |> _sortLimit(n:n, columns:columns, desc:true)\n\n// top sorts a table by columns and keeps only the bottom n records.\nbottom = (n, columns=[\"_value\"], tables=<-) =>\n    tables\n        |> _sortLimit(n:n, columns:columns, desc:false)\n\n// _highestOrLowest is a helper function, which reduces all groups into a single group by specific tags and a reducer function,\n// then it selects the highest or lowest records based on the column and the _sortLimit function.\n// The default reducer assumes no reducing needs to be performed.\n_highestOrLowest = (n, _sortLimit, reducer, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> group(columns:groupColumns)\n        |> reducer()\n        |> group(columns:[])\n        |> _sortLimit(n:n, columns:[column])\n\n// highestMax returns the top N records from all groups using the maximum of each group.\nhighestMax = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                // TODO(nathanielc): Once max/min support selecting based on multiple columns change this to pass all columns.\n                reducer: (tables=<-) => tables |> max(column:column),\n                _sortLimit: top,\n            )\n\n// highestAverage returns the top N records from all groups using the average of each group.\nhighestAverage = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> mean(column:column),\n                _sortLimit: top,\n            )\n\n// highestCurrent returns the top N records from all groups using the last value of each group.\nhighestCurrent = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> last(column:column),\n                _sortLimit: top,\n            )\n\n// lowestMin returns the bottom N records from all groups using the minimum of each group.\nlowestMin = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                // TODO(nathanielc): Once max/min support selecting based on multiple columns change this to pass all columns.\n                reducer: (tables=<-) => tables |> min(column:column),\n                _sortLimit: bottom,\n            )\n\n// lowestAverage returns the bottom N records from all groups using the average of each group.\nlowestAverage = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> mean(column:column),\n                _sortLimit: bottom,\n            )\n\n// lowestCurrent returns the bottom N records from all groups using the last value of each group.\nlowestCurrent = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> last(column:column),\n                _sortLimit: bottom,\n            )\n\n// movingAverage constructs a simple moving average over windows of 'period' duration\n// eg: A 5 year moving average would be called as such:\n//    movingAverage(1y, 5y)\n movingAverage = (every, period, column=\"_value\", tables=<-) =>\n     tables\n         |> window(every: every, period: period)\n         |> mean(column:column)\n         |> duplicate(column: \"_stop\", as: \"_time\")\n         |> window(every: inf)\n\ntoString   = (tables=<-) => tables |> map(fn:(r) => ({r with _value: string(v:r._value)}))\ntoInt      = (tables=<-) => tables |> map(fn:(r) => ({r with _value: int(v:r._value)}))\ntoUInt     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._value)}))\ntoFloat    = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))\ntoBool     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))\ntoTime     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))\ntoDuration = (tables=<-) => tables |> map(fn:(r) => ({r with _value: duration(v:r._value)}))",
+				Source: "package universe\n\nimport \"system\"\n\n// now is a function option whose default behaviour is to return the current system time\noption now = system.time\n\n// Booleans\nbuiltin true\nbuiltin false\n\n// Transformation functions\nbuiltin columns\nbuiltin count\nbuiltin covariance\nbuiltin cumulativeSum\nbuiltin derivative\nbuiltin difference\nbuiltin distinct\nbuiltin drop\nbuiltin duplicate\nbuiltin elapsed\nbuiltin fill\nbuiltin filter\nbuiltin first\nbuiltin group\nbuiltin histogram\nbuiltin histogramQuantile\nbuiltin integral\nbuiltin join\nbuiltin keep\nbuiltin keyValues\nbuiltin keys\nbuiltin last\nbuiltin limit\nbuiltin map\nbuiltin max\nbuiltin mean\nbuiltin min\nbuiltin quantile\nbuiltin pivot\nbuiltin range\nbuiltin reduce\nbuiltin rename\nbuiltin sample\nbuiltin set\nbuiltin timeShift\nbuiltin skew\nbuiltin spread\nbuiltin sort\nbuiltin stateTracking\nbuiltin stddev\nbuiltin sum\nbuiltin union\nbuiltin unique\nbuiltin window\nbuiltin yield\n\n// stream/table index functions\nbuiltin tableFind\nbuiltin getColumn\nbuiltin getRecord\n\n// type conversion functions\nbuiltin bool\nbuiltin duration\nbuiltin float\nbuiltin int\nbuiltin string\nbuiltin time\nbuiltin uint\n\n// contains function\nbuiltin contains\n\n// other builtins\nbuiltin inf\nbuiltin length // length function for arrays\nbuiltin linearBins\nbuiltin logarithmicBins\nbuiltin sleep // sleep is the identity function with the side effect of delaying execution by a specified duration.\n\n// covariance function with automatic join\ncov = (x,y,on,pearsonr=false) =>\n    join(\n        tables:{x:x, y:y},\n        on:on,\n    )\n    |> covariance(pearsonr:pearsonr, columns:[\"_value_x\",\"_value_y\"])\n\npearsonr = (x,y,on) => cov(x:x, y:y, on:on, pearsonr:true)\n\n// AggregateWindow applies an aggregate function to fixed windows of time.\n// The procedure is to window the data, perform an aggregate operation,\n// and then undo the windowing to produce an output table for every input table.\naggregateWindow = (every, fn, column=\"_value\", timeSrc=\"_stop\",timeDst=\"_time\", createEmpty=true, tables=<-) =>\n    tables\n        |> window(every:every, createEmpty: createEmpty)\n        |> fn(column:column)\n        |> duplicate(column:timeSrc,as:timeDst)\n        |> window(every:inf, timeColumn:timeDst)\n\n// Increase returns the total non-negative difference between values in a table.\n// A main usage case is tracking changes in counter values which may wrap over time when they hit\n// a threshold or are reset. In the case of a wrap/reset,\n// we can assume that the absolute delta between two points will be at least their non-negative difference.\nincrease = (tables=<-, columns=[\"_value\"]) =>\n    tables\n        |> difference(nonNegative: true, columns:columns)\n        |> cumulativeSum(columns: columns)\n\n// median returns the 50th percentile.\nmedian = (method=\"estimate_tdigest\", compression=0.0, column=\"_value\", tables=<-) =>\n    tables\n        |> quantile(q:0.5, method: method, compression: compression, column: column)\n\n// stateCount computes the number of consecutive records in a given state.\n// The state is defined via the function fn. For each consecutive point for\n// which the expression evaluates as true, the state count will be incremented\n// When a point evaluates as false, the state count is reset.\n//\n// The state count will be added as an additional column to each record. If the\n// expression evaluates as false, the value will be -1. If the expression\n// generates an error during evaluation, the point is discarded, and does not\n// affect the state count.\nstateCount = (fn, column=\"stateCount\", tables=<-) =>\n    tables\n        |> stateTracking(countColumn:column, fn:fn)\n\n// stateDuration computes the duration of a given state.\n// The state is defined via the function fn. For each consecutive point for\n// which the expression evaluates as true, the state duration will be\n// incremented by the duration between points. When a point evaluates as false,\n// the state duration is reset.\n//\n// The state duration will be added as an additional column to each record. If the\n// expression evaluates as false, the value will be -1. If the expression\n// generates an error during evaluation, the point is discarded, and does not\n// affect the state duration.\n//\n// Note that as the first point in the given state has no previous point, its\n// state duration will be 0.\n//\n// The duration is represented as an integer in the units specified.\nstateDuration = (fn, column=\"stateDuration\", timeColumn=\"_time\", unit=1s, tables=<-) =>\n    tables\n        |> stateTracking(durationColumn:column, timeColumn:timeColumn, fn:fn, durationUnit:unit)\n\n// _sortLimit is a helper function, which sorts and limits a table.\n_sortLimit = (n, desc, columns=[\"_value\"], tables=<-) =>\n    tables\n        |> sort(columns:columns, desc:desc)\n        |> limit(n:n)\n\n// top sorts a table by columns and keeps only the top n records.\ntop = (n, columns=[\"_value\"], tables=<-) =>\n    tables\n        |> _sortLimit(n:n, columns:columns, desc:true)\n\n// top sorts a table by columns and keeps only the bottom n records.\nbottom = (n, columns=[\"_value\"], tables=<-) =>\n    tables\n        |> _sortLimit(n:n, columns:columns, desc:false)\n\n// _highestOrLowest is a helper function, which reduces all groups into a single group by specific tags and a reducer function,\n// then it selects the highest or lowest records based on the column and the _sortLimit function.\n// The default reducer assumes no reducing needs to be performed.\n_highestOrLowest = (n, _sortLimit, reducer, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> group(columns:groupColumns)\n        |> reducer()\n        |> group(columns:[])\n        |> _sortLimit(n:n, columns:[column])\n\n// highestMax returns the top N records from all groups using the maximum of each group.\nhighestMax = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                // TODO(nathanielc): Once max/min support selecting based on multiple columns change this to pass all columns.\n                reducer: (tables=<-) => tables |> max(column:column),\n                _sortLimit: top,\n            )\n\n// highestAverage returns the top N records from all groups using the average of each group.\nhighestAverage = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> mean(column:column),\n                _sortLimit: top,\n            )\n\n// highestCurrent returns the top N records from all groups using the last value of each group.\nhighestCurrent = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> last(column:column),\n                _sortLimit: top,\n            )\n\n// lowestMin returns the bottom N records from all groups using the minimum of each group.\nlowestMin = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                // TODO(nathanielc): Once max/min support selecting based on multiple columns change this to pass all columns.\n                reducer: (tables=<-) => tables |> min(column:column),\n                _sortLimit: bottom,\n            )\n\n// lowestAverage returns the bottom N records from all groups using the average of each group.\nlowestAverage = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> mean(column:column),\n                _sortLimit: bottom,\n            )\n\n// lowestCurrent returns the bottom N records from all groups using the last value of each group.\nlowestCurrent = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> last(column:column),\n                _sortLimit: bottom,\n            )\n\n// movingAverage constructs a simple moving average over windows of 'period' duration\n// eg: A 5 year moving average would be called as such:\n//    movingAverage(1y, 5y)\n movingAverage = (every, period, column=\"_value\", tables=<-) =>\n     tables\n         |> window(every: every, period: period)\n         |> mean(column:column)\n         |> duplicate(column: \"_stop\", as: \"_time\")\n         |> window(every: inf)\n\ntoString   = (tables=<-) => tables |> map(fn:(r) => ({r with _value: string(v:r._value)}))\ntoInt      = (tables=<-) => tables |> map(fn:(r) => ({r with _value: int(v:r._value)}))\ntoUInt     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._value)}))\ntoFloat    = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))\ntoBool     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))\ntoTime     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))\ntoDuration = (tables=<-) => tables |> map(fn:(r) => ({r with _value: duration(v:r._value)}))",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -515,11 +515,11 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 13,
+						Column: 16,
 						Line:   22,
 					},
 					File:   "universe.flux",
-					Source: "builtin fill",
+					Source: "builtin elapsed",
 					Start: ast.Position{
 						Column: 1,
 						Line:   22,
@@ -531,14 +531,48 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 13,
+							Column: 16,
 							Line:   22,
+						},
+						File:   "universe.flux",
+						Source: "elapsed",
+						Start: ast.Position{
+							Column: 9,
+							Line:   22,
+						},
+					},
+				},
+				Name: "elapsed",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 13,
+						Line:   23,
+					},
+					File:   "universe.flux",
+					Source: "builtin fill",
+					Start: ast.Position{
+						Column: 1,
+						Line:   23,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 13,
+							Line:   23,
 						},
 						File:   "universe.flux",
 						Source: "fill",
 						Start: ast.Position{
 							Column: 9,
-							Line:   22,
+							Line:   23,
 						},
 					},
 				},
@@ -550,13 +584,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   23,
+						Line:   24,
 					},
 					File:   "universe.flux",
 					Source: "builtin filter",
 					Start: ast.Position{
 						Column: 1,
-						Line:   23,
+						Line:   24,
 					},
 				},
 			},
@@ -566,13 +600,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   23,
+							Line:   24,
 						},
 						File:   "universe.flux",
 						Source: "filter",
 						Start: ast.Position{
 							Column: 9,
-							Line:   23,
+							Line:   24,
 						},
 					},
 				},
@@ -584,13 +618,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   24,
+						Line:   25,
 					},
 					File:   "universe.flux",
 					Source: "builtin first",
 					Start: ast.Position{
 						Column: 1,
-						Line:   24,
+						Line:   25,
 					},
 				},
 			},
@@ -600,13 +634,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   24,
+							Line:   25,
 						},
 						File:   "universe.flux",
 						Source: "first",
 						Start: ast.Position{
 							Column: 9,
-							Line:   24,
+							Line:   25,
 						},
 					},
 				},
@@ -618,13 +652,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   25,
+						Line:   26,
 					},
 					File:   "universe.flux",
 					Source: "builtin group",
 					Start: ast.Position{
 						Column: 1,
-						Line:   25,
+						Line:   26,
 					},
 				},
 			},
@@ -634,13 +668,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   25,
+							Line:   26,
 						},
 						File:   "universe.flux",
 						Source: "group",
 						Start: ast.Position{
 							Column: 9,
-							Line:   25,
+							Line:   26,
 						},
 					},
 				},
@@ -652,13 +686,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   26,
+						Line:   27,
 					},
 					File:   "universe.flux",
 					Source: "builtin histogram",
 					Start: ast.Position{
 						Column: 1,
-						Line:   26,
+						Line:   27,
 					},
 				},
 			},
@@ -668,13 +702,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   26,
+							Line:   27,
 						},
 						File:   "universe.flux",
 						Source: "histogram",
 						Start: ast.Position{
 							Column: 9,
-							Line:   26,
+							Line:   27,
 						},
 					},
 				},
@@ -686,13 +720,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 26,
-						Line:   27,
+						Line:   28,
 					},
 					File:   "universe.flux",
 					Source: "builtin histogramQuantile",
 					Start: ast.Position{
 						Column: 1,
-						Line:   27,
+						Line:   28,
 					},
 				},
 			},
@@ -702,13 +736,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 26,
-							Line:   27,
+							Line:   28,
 						},
 						File:   "universe.flux",
 						Source: "histogramQuantile",
 						Start: ast.Position{
 							Column: 9,
-							Line:   27,
+							Line:   28,
 						},
 					},
 				},
@@ -720,13 +754,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   28,
+						Line:   29,
 					},
 					File:   "universe.flux",
 					Source: "builtin integral",
 					Start: ast.Position{
 						Column: 1,
-						Line:   28,
+						Line:   29,
 					},
 				},
 			},
@@ -736,13 +770,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   28,
+							Line:   29,
 						},
 						File:   "universe.flux",
 						Source: "integral",
 						Start: ast.Position{
 							Column: 9,
-							Line:   28,
+							Line:   29,
 						},
 					},
 				},
@@ -754,13 +788,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   29,
+						Line:   30,
 					},
 					File:   "universe.flux",
 					Source: "builtin join",
 					Start: ast.Position{
 						Column: 1,
-						Line:   29,
+						Line:   30,
 					},
 				},
 			},
@@ -770,13 +804,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   29,
+							Line:   30,
 						},
 						File:   "universe.flux",
 						Source: "join",
 						Start: ast.Position{
 							Column: 9,
-							Line:   29,
+							Line:   30,
 						},
 					},
 				},
@@ -788,13 +822,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   30,
+						Line:   31,
 					},
 					File:   "universe.flux",
 					Source: "builtin keep",
 					Start: ast.Position{
 						Column: 1,
-						Line:   30,
+						Line:   31,
 					},
 				},
 			},
@@ -804,13 +838,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   30,
+							Line:   31,
 						},
 						File:   "universe.flux",
 						Source: "keep",
 						Start: ast.Position{
 							Column: 9,
-							Line:   30,
+							Line:   31,
 						},
 					},
 				},
@@ -822,13 +856,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   31,
+						Line:   32,
 					},
 					File:   "universe.flux",
 					Source: "builtin keyValues",
 					Start: ast.Position{
 						Column: 1,
-						Line:   31,
+						Line:   32,
 					},
 				},
 			},
@@ -838,13 +872,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   31,
+							Line:   32,
 						},
 						File:   "universe.flux",
 						Source: "keyValues",
 						Start: ast.Position{
 							Column: 9,
-							Line:   31,
+							Line:   32,
 						},
 					},
 				},
@@ -856,13 +890,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   32,
+						Line:   33,
 					},
 					File:   "universe.flux",
 					Source: "builtin keys",
 					Start: ast.Position{
 						Column: 1,
-						Line:   32,
+						Line:   33,
 					},
 				},
 			},
@@ -872,13 +906,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   32,
+							Line:   33,
 						},
 						File:   "universe.flux",
 						Source: "keys",
 						Start: ast.Position{
 							Column: 9,
-							Line:   32,
+							Line:   33,
 						},
 					},
 				},
@@ -890,13 +924,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   33,
+						Line:   34,
 					},
 					File:   "universe.flux",
 					Source: "builtin last",
 					Start: ast.Position{
 						Column: 1,
-						Line:   33,
+						Line:   34,
 					},
 				},
 			},
@@ -906,13 +940,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   33,
+							Line:   34,
 						},
 						File:   "universe.flux",
 						Source: "last",
 						Start: ast.Position{
 							Column: 9,
-							Line:   33,
+							Line:   34,
 						},
 					},
 				},
@@ -924,13 +958,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   34,
+						Line:   35,
 					},
 					File:   "universe.flux",
 					Source: "builtin limit",
 					Start: ast.Position{
 						Column: 1,
-						Line:   34,
+						Line:   35,
 					},
 				},
 			},
@@ -940,13 +974,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   34,
+							Line:   35,
 						},
 						File:   "universe.flux",
 						Source: "limit",
 						Start: ast.Position{
 							Column: 9,
-							Line:   34,
+							Line:   35,
 						},
 					},
 				},
@@ -958,13 +992,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   35,
+						Line:   36,
 					},
 					File:   "universe.flux",
 					Source: "builtin map",
 					Start: ast.Position{
 						Column: 1,
-						Line:   35,
+						Line:   36,
 					},
 				},
 			},
@@ -974,13 +1008,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   35,
+							Line:   36,
 						},
 						File:   "universe.flux",
 						Source: "map",
 						Start: ast.Position{
 							Column: 9,
-							Line:   35,
+							Line:   36,
 						},
 					},
 				},
@@ -992,13 +1026,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   36,
+						Line:   37,
 					},
 					File:   "universe.flux",
 					Source: "builtin max",
 					Start: ast.Position{
 						Column: 1,
-						Line:   36,
+						Line:   37,
 					},
 				},
 			},
@@ -1008,13 +1042,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   36,
+							Line:   37,
 						},
 						File:   "universe.flux",
 						Source: "max",
 						Start: ast.Position{
 							Column: 9,
-							Line:   36,
+							Line:   37,
 						},
 					},
 				},
@@ -1026,13 +1060,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   37,
+						Line:   38,
 					},
 					File:   "universe.flux",
 					Source: "builtin mean",
 					Start: ast.Position{
 						Column: 1,
-						Line:   37,
+						Line:   38,
 					},
 				},
 			},
@@ -1042,13 +1076,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   37,
+							Line:   38,
 						},
 						File:   "universe.flux",
 						Source: "mean",
 						Start: ast.Position{
 							Column: 9,
-							Line:   37,
+							Line:   38,
 						},
 					},
 				},
@@ -1060,13 +1094,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   38,
+						Line:   39,
 					},
 					File:   "universe.flux",
 					Source: "builtin min",
 					Start: ast.Position{
 						Column: 1,
-						Line:   38,
+						Line:   39,
 					},
 				},
 			},
@@ -1076,51 +1110,17 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   38,
+							Line:   39,
 						},
 						File:   "universe.flux",
 						Source: "min",
 						Start: ast.Position{
 							Column: 9,
-							Line:   38,
+							Line:   39,
 						},
 					},
 				},
 				Name: "min",
-			},
-		}, &ast.BuiltinStatement{
-			BaseNode: ast.BaseNode{
-				Errors: nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 13,
-						Line:   39,
-					},
-					File:   "universe.flux",
-					Source: "builtin mode",
-					Start: ast.Position{
-						Column: 1,
-						Line:   39,
-					},
-				},
-			},
-			ID: &ast.Identifier{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 13,
-							Line:   39,
-						},
-						File:   "universe.flux",
-						Source: "mode",
-						Start: ast.Position{
-							Column: 9,
-							Line:   39,
-						},
-					},
-				},
-				Name: "mode",
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
