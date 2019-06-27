@@ -63,7 +63,7 @@ var filterNullValuesCall = call(
 
 // Function to apply a simple one-operand function to all values in a table.
 func singleArgFloatFn(fn string, argName string) *ast.FunctionExpression {
-	// (r) => {"_value": mathFn(x: r._value), "_stop": r._stop}
+	// (r) => {r with _value: mathFn(x: r._value), _stop: r._stop}
 	return &ast.FunctionExpression{
 		Params: []*ast.Property{
 			{
@@ -73,6 +73,7 @@ func singleArgFloatFn(fn string, argName string) *ast.FunctionExpression {
 			},
 		},
 		Body: &ast.ObjectExpression{
+			With: &ast.Identifier{Name: "r"},
 			Properties: []*ast.Property{
 				{
 					Key: &ast.Identifier{Name: "_value"},
@@ -91,7 +92,7 @@ func singleArgFloatFn(fn string, argName string) *ast.FunctionExpression {
 
 // Function to set all values to a constant.
 func setConstValueFn(v ast.Expression) *ast.FunctionExpression {
-	// (r) => {"_value": <v>, "_stop": r._stop}
+	// (r) => {r with _value: <v>, _stop: r._stop}
 	return &ast.FunctionExpression{
 		Params: []*ast.Property{
 			{
@@ -101,6 +102,7 @@ func setConstValueFn(v ast.Expression) *ast.FunctionExpression {
 			},
 		},
 		Body: &ast.ObjectExpression{
+			With: &ast.Identifier{Name: "r"},
 			Properties: []*ast.Property{
 				{
 					Key:   &ast.Identifier{Name: "_value"},
@@ -193,7 +195,7 @@ func labelJoinFn(srcLabels []*ast.StringLiteral, dst *ast.StringLiteral, sep *as
 		}
 	}
 
-	// (r) => ({<dst>: <src1><sep><src2>...})
+	// (r) => ({r with <dst>: <src1><sep><src2>...})
 	return &ast.FunctionExpression{
 		Params: []*ast.Property{
 			{
@@ -203,6 +205,7 @@ func labelJoinFn(srcLabels []*ast.StringLiteral, dst *ast.StringLiteral, sep *as
 			},
 		},
 		Body: &ast.ObjectExpression{
+			With: &ast.Identifier{Name: "r"},
 			Properties: []*ast.Property{
 				{
 					Key:   &ast.Identifier{Name: dst.Value},

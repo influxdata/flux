@@ -39,7 +39,7 @@ func scalarArithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped 
 		lhs, rhs = rhs, lhs
 	}
 
-	// (r) => {"_value": <lhs> <op> <rhs>, "_stop": r._stop}
+	// (r) => {r with _value: <lhs> <op> <rhs>, _stop: r._stop}
 	return &ast.FunctionExpression{
 		Params: []*ast.Property{
 			{
@@ -49,6 +49,7 @@ func scalarArithBinaryOpFn(op ast.OperatorKind, operand ast.Expression, swapped 
 			},
 		},
 		Body: &ast.ObjectExpression{
+			With: &ast.Identifier{Name: "r"},
 			Properties: []*ast.Property{
 				{
 					Key: &ast.Identifier{Name: "_value"},
@@ -99,7 +100,7 @@ func vectorArithBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 	lhs := member("r", "_value_lhs")
 	rhs := member("r", "_value_rhs")
 
-	// (r) => {"_value": <lhs> <op> <rhs>, "_stop": r._stop}
+	// (r) => {r with _value: <lhs> <op> <rhs>, _stop: r._stop}
 	return &ast.FunctionExpression{
 		Params: []*ast.Property{
 			{
@@ -109,6 +110,7 @@ func vectorArithBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 			},
 		},
 		Body: &ast.ObjectExpression{
+			With: &ast.Identifier{Name: "r"},
 			Properties: []*ast.Property{
 				{
 					Key: &ast.Identifier{Name: "_value"},
@@ -132,7 +134,7 @@ func vectorArithBinaryMathFn(mathFn string) *ast.FunctionExpression {
 	lhs := member("r", "_value_lhs")
 	rhs := member("r", "_value_rhs")
 
-	// (r) => {"_value": mathFn(<lhs>, <rhs>), "_stop": r._stop}
+	// (r) => {r with _value: mathFn(<lhs>, <rhs>), _stop: r._stop}
 	return &ast.FunctionExpression{
 		Params: []*ast.Property{
 			{
@@ -142,6 +144,7 @@ func vectorArithBinaryMathFn(mathFn string) *ast.FunctionExpression {
 			},
 		},
 		Body: &ast.ObjectExpression{
+			With: &ast.Identifier{Name: "r"},
 			Properties: []*ast.Property{
 				{
 					Key:   &ast.Identifier{Name: "_value"},

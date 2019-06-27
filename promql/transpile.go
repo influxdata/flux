@@ -100,7 +100,7 @@ func scalarArithBinaryMathFn(mathFn string, operand ast.Expression, swapped bool
 		lhs, rhs = rhs, lhs
 	}
 
-	// (r) => {"_value": mathFn("x": <lhs>, "y": <rhs>), "_stop": r._stop}
+	// (r) => {r with _value: mathFn("x": <lhs>, "y": <rhs>), _stop: r._stop}
 	return &ast.FunctionExpression{
 		Params: []*ast.Property{
 			{
@@ -110,6 +110,7 @@ func scalarArithBinaryMathFn(mathFn string, operand ast.Expression, swapped bool
 			},
 		},
 		Body: &ast.ObjectExpression{
+			With: &ast.Identifier{Name: "r"},
 			Properties: []*ast.Property{
 				{
 					Key:   &ast.Identifier{Name: "_value"},
