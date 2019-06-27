@@ -34,7 +34,7 @@ t_string_trimLeft = (table=<-) =>
 	(table
 		|> range(start: 2018-05-22T19:53:26Z)
 		|> map(fn: (r) =>
-        			({_value: strings.trimLeft(v: r._value, cutset: " "), _time: r._time})))
+        			({r with _value: strings.trimLeft(v: r._value, cutset: " ")})))
 
 test _string_trimLeft = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_trimLeft})

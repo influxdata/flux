@@ -8,6 +8,7 @@ require (
 	github.com/c-bata/go-prompt v0.2.2
 	github.com/cespare/xxhash v1.1.0
 	github.com/dave/jennifer v1.2.0
+	github.com/davecgh/go-spew v1.1.1
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/google/go-cmp v0.2.0
 	github.com/goreleaser/goreleaser v0.97.0
@@ -28,6 +29,7 @@ require (
 	github.com/segmentio/kafka-go v0.1.0
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a // indirect
 	github.com/spf13/cobra v0.0.3
+	github.com/stretchr/testify v1.3.0
 	go.uber.org/zap v1.9.1
 	golang.org/x/exp v0.0.0-20190121172915-509febef88a4
 	golang.org/x/oauth2 v0.0.0-20190402181905-9f3314589c9a // indirect

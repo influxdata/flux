@@ -118,7 +118,7 @@ func generate(cmd *cobra.Command, args []string) error {
 		}
 		if testPkg != nil {
 			if ast.Check(testPkg) > 0 {
-				return errors.Wrapf(ast.GetError(testPkg), "failed to parse package %q", testPkg.Package)
+				return errors.Wrapf(ast.GetError(testPkg), "failed to parse test package %q", testPkg.Package)
 			}
 			// Track go import path
 			importPath := path.Join(pkgName, dir)

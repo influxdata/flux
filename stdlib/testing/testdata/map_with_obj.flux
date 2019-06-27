@@ -15,13 +15,13 @@ inData = "
 ,,0,2018-05-22T19:53:46Z,102,load1,system,host.local
 "
 outData = "
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,long,long,long,long,string,dateTime:RFC3339,long
-#group,false,false,true,true,true,true,true,false,false,false,false,false,false,false
-#default,got,,,,,,,,,,,,,
-,result,table,_start,_stop,_field,_measurement,host,array,boolAdd,floatAdd,intAdd,string,time,uintAdd
-,,0,1947-11-13T00:00:00Z,2030-01-01T00:00:00Z,load1,system,host.local,101,101,101,99,1,2018-05-22T19:53:26Z,101
-,,0,1947-11-13T00:00:00Z,2030-01-01T00:00:00Z,load1,system,host.local,102,102,102,100,1,2018-05-22T19:53:26Z,102
-,,0,1947-11-13T00:00:00Z,2030-01-01T00:00:00Z,load1,system,host.local,103,103,103,101,1,2018-05-22T19:53:26Z,103
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,long,long,long,long,long,string,dateTime:RFC3339,long
+#group,false,false,true,true,true,true,true,false,false,false,false,false,false,false,false,false
+#default,got,,,,,,,,,,,,,,,
+,result,table,_start,_stop,_field,_measurement,host,_time,_value,array,boolAdd,floatAdd,intAdd,string,time,uintAdd
+,,0,1947-11-13T00:00:00Z,2030-01-01T00:00:00Z,load1,system,host.local,2018-05-22T19:53:26Z,100,101,101,101,99,1,2018-05-22T19:53:26Z,101
+,,0,1947-11-13T00:00:00Z,2030-01-01T00:00:00Z,load1,system,host.local,2018-05-22T19:53:36Z,101,102,102,102,100,1,2018-05-22T19:53:26Z,102
+,,0,1947-11-13T00:00:00Z,2030-01-01T00:00:00Z,load1,system,host.local,2018-05-22T19:53:46Z,102,103,103,103,101,1,2018-05-22T19:53:26Z,103
 "
 obj = {
 	b: true,
@@ -37,7 +37,7 @@ t_map = (table=<-) =>
 	(table
 		|> range(start: obj.r)
 		|> map(fn: (r) =>
-			({
+			({r with
 				boolAdd: int(v: obj.b) + r._value,
 				intAdd: obj.i + r._value,
 				floatAdd: int(v: obj.d) + r._value,

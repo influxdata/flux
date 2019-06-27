@@ -15,13 +15,13 @@ inData = "
 "
 
 outData = "
-#datatype,string,long,string,string,string,double
-#group,false,false,true,true,true,false
-#default,_result,,,,,
-,result,table,_field,_measurement,host,newValue
-,,0,load1,system,host.local,100.0
-,,0,load1,system,host.local,101.0
-,,0,load1,system,host.local,102.0
+#datatype,string,long,double
+#group,false,false,false
+#default,_result,,
+,result,table,newValue
+,,0,100.0
+,,0,101.0
+,,0,102.0
 "
 
 t_map = (table=<-) =>
