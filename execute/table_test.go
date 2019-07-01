@@ -316,8 +316,6 @@ func TestCopyTable(t *testing.T) {
 		buf.Done()
 	}
 
-	// TODO(jsternberg): Uncomment this when the underlying ColListTable
-	// frees memory properly.
 	// if got, want := alloc.Allocated(), int64(0); got != want {
 	// 	t.Errorf("memory leak -want/+got:\n\t- %d\n\t+ %d", want, got)
 	// }
