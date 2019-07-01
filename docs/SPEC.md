@@ -1723,6 +1723,33 @@ from(bucket: "telegraf/autogen")
 	|> median()
 ```
 
+##### Moving Average
+
+Moving Average is an aggregate operation.
+For each aggregated column, it means the values of the following records for a defined window range.
+Moving Average is defined as
+```
+movingAverage = (every, period, column="_value", tables=<-) =>
+    tables
+        |> window(every: every, period: period)
+        |> mean(column:column)
+        |> duplicate(column: "_stop", as: "_time")
+        |> window(every: inf)
+```
+Moving Average has the following properties:
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| every       | duration | Every specifies the frequency of windows.
+| period      | duration | Period specifies the window size to mean.       
+| column      | string   | Column specifies a column to aggregate. Defaults to `"_value"`            
+
+Example:
+```
+// A 5 year moving average would be called as such:
+from(bucket: "telegraf/autogen"):
+    |> range(start: -7y)
+    |> movingAverage(every: 1y, period: 5y)
+```
 ##### Quantile (aggregate)
 
 Quantile is both an aggregate operation and a selector operation depending on selected options.
