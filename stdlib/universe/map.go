@@ -16,7 +16,8 @@ import (
 const MapKind = "map"
 
 type MapOpSpec struct {
-	Fn *semantic.FunctionExpression `json:"fn"`
+	Fn       *semantic.FunctionExpression `json:"fn"`
+	MergeKey bool                         `json:"mergeKey"`
 }
 
 func init() {
@@ -29,6 +30,7 @@ func init() {
 				Required: semantic.LabelSet{"r"},
 				Return:   semantic.Tvar(2),
 			}),
+			"mergeKey": semantic.Bool,
 		},
 		[]string{"fn"},
 	)
@@ -56,6 +58,14 @@ func createMapOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operatio
 		spec.Fn = fn
 	}
 
+	if m, ok, err := args.GetBool("mergeKey"); err != nil {
+		return nil, err
+	} else if ok {
+		spec.MergeKey = m
+	} else {
+		// deprecated parameter: default is now false.
+		spec.MergeKey = false
+	}
 	return spec, nil
 }
 
@@ -69,7 +79,8 @@ func (s *MapOpSpec) Kind() flux.OperationKind {
 
 type MapProcedureSpec struct {
 	plan.DefaultCost
-	Fn *semantic.FunctionExpression
+	Fn       *semantic.FunctionExpression
+	MergeKey bool
 }
 
 func newMapProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -79,7 +90,8 @@ func newMapProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proced
 	}
 
 	return &MapProcedureSpec{
-		Fn: spec.Fn,
+		Fn:       spec.Fn,
+		MergeKey: spec.MergeKey,
 	}, nil
 }
 
@@ -111,7 +123,8 @@ type mapTransformation struct {
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 
-	fn *execute.RowMapFn
+	fn       *execute.RowMapFn
+	mergeKey bool
 }
 
 func NewMapTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *MapProcedureSpec) (*mapTransformation, error) {
@@ -120,9 +133,10 @@ func NewMapTransformation(d execute.Dataset, cache execute.TableBuilderCache, sp
 		return nil, err
 	}
 	return &mapTransformation{
-		d:     d,
-		cache: cache,
-		fn:    fn,
+		d:        d,
+		cache:    cache,
+		fn:       fn,
+		mergeKey: spec.MergeKey,
 	}, nil
 }
 
@@ -161,15 +175,23 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 				// Determine on which cols to group
 				on = make(map[string]bool, len(tbl.Key().Cols()))
 				for _, c := range tbl.Key().Cols() {
-					on[c.Label] = execute.ContainsStr(keys, c.Label)
+					on[c.Label] = t.mergeKey || execute.ContainsStr(keys, c.Label)
 				}
 			}
 
 			key := groupKeyForObject(i, cr, m, on)
 			builder, created := t.cache.TableBuilder(key)
 			if created {
+				if t.mergeKey {
+					if err := execute.AddTableKeyCols(tbl.Key(), builder); err != nil {
+						return err
+					}
+				}
 				// Add columns from function in sorted order
 				for _, k := range keys {
+					if t.mergeKey && tbl.Key().HasCol(k) {
+						continue
+					}
 					if _, err := builder.AddCol(flux.ColMeta{
 						Label: k,
 						Type:  execute.ConvertFromKind(properties[k].Nature()),
@@ -181,8 +203,12 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 			for j, c := range builder.Cols() {
 				v, ok := m.Get(c.Label)
 				if !ok {
-					// This should be unreachable
-					return fmt.Errorf("could not find value for column %q", c.Label)
+					if idx := execute.ColIdx(c.Label, tbl.Key().Cols()); t.mergeKey && idx >= 0 {
+						v = tbl.Key().Value(idx)
+					} else {
+						// This should be unreachable
+						return fmt.Errorf("could not find value for column %q", c.Label)
+					}
 				}
 				if err := builder.AppendValue(j, v); err != nil {
 					return err
