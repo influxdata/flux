@@ -56,6 +56,46 @@ func TestMap_NewQuery(t *testing.T) {
 			},
 		},
 		{
+			Name: "simple static map mergeKey=true",
+			Raw:  `from(bucket:"mybucket") |> map(fn: (r) => r._value + 1, mergeKey:true)`,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: "mybucket",
+						},
+					},
+					{
+						ID: "map1",
+						Spec: &universe.MapOpSpec{
+							MergeKey: true,
+							Fn: &semantic.FunctionExpression{
+								Block: &semantic.FunctionBlock{
+									Parameters: &semantic.FunctionParameters{
+										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+									},
+									Body: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "_value",
+										},
+										Right: &semantic.IntegerLiteral{Value: 1},
+									},
+								},
+							},
+						},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "map1"},
+				},
+			},
+		},
+		{
 			Name: "resolve map",
 			Raw:  `x = 2 from(bucket:"mybucket") |> map(fn: (r) => r._value + x)`,
 			Want: &flux.Spec{
@@ -596,6 +636,256 @@ func TestMap_Process(t *testing.T) {
 				Data: [][]interface{}{
 					{"m", execute.Time(1), 6.0, nil},
 					{"m", execute.Time(2), 11.0, nil},
+				},
+			}},
+		},
+		{
+			name: `_value+5 mergeKey=true regroup`,
+			spec: &universe.MapProcedureSpec{
+				MergeKey: true,
+				Fn: &semantic.FunctionExpression{
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{
+									Key: &semantic.Identifier{Name: "_time"},
+									Value: &semantic.MemberExpression{
+										Object: &semantic.IdentifierExpression{
+											Name: "r",
+										},
+										Property: "_time",
+									},
+								},
+								{
+									Key: &semantic.Identifier{Name: "host"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "host",
+										},
+										Right: &semantic.StringLiteral{Value: ".local"},
+									},
+								},
+								{
+									Key: &semantic.Identifier{Name: "_value"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "_value",
+										},
+										Right: &semantic.FloatLiteral{
+											Value: 5,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_measurement", "host"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "host", Type: flux.TString},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{"m", "A", execute.Time(1), 1.0},
+					{"m", "A", execute.Time(2), 6.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"_measurement", "host"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "host", Type: flux.TString},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{"m", "A.local", execute.Time(1), 6.0},
+					{"m", "A.local", execute.Time(2), 11.0},
+				},
+			}},
+		},
+		{
+			name: `_value+5 mergeKey=true regroup fan out`,
+			spec: &universe.MapProcedureSpec{
+				MergeKey: true,
+				Fn: &semantic.FunctionExpression{
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{
+									Key: &semantic.Identifier{Name: "_time"},
+									Value: &semantic.MemberExpression{
+										Object: &semantic.IdentifierExpression{
+											Name: "r",
+										},
+										Property: "_time",
+									},
+								},
+								{
+									Key: &semantic.Identifier{Name: "host"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "host",
+										},
+										Right: &semantic.BinaryExpression{
+											Operator: ast.AdditionOperator,
+											Left:     &semantic.StringLiteral{Value: "."},
+											Right: &semantic.MemberExpression{
+												Object: &semantic.IdentifierExpression{
+													Name: "r",
+												},
+												Property: "domain",
+											},
+										},
+									},
+								},
+								{
+									Key: &semantic.Identifier{Name: "_value"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "_value",
+										},
+										Right: &semantic.FloatLiteral{
+											Value: 5,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_measurement", "host"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "host", Type: flux.TString},
+					{Label: "domain", Type: flux.TString},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{"m", "A", "example.com", execute.Time(1), 1.0},
+					{"m", "A", "www.example.com", execute.Time(2), 6.0},
+				},
+			}},
+			want: []*executetest.Table{
+				{
+					KeyCols: []string{"_measurement", "host"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"m", "A.example.com", execute.Time(1), 6.0},
+					},
+				},
+				{
+					KeyCols: []string{"_measurement", "host"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"m", "A.www.example.com", execute.Time(2), 11.0},
+					},
+				},
+			},
+		},
+		{
+			name: `_value+5 mergeKey=true with nulls`,
+			spec: &universe.MapProcedureSpec{
+				MergeKey: true,
+				Fn: &semantic.FunctionExpression{
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{
+									Key: &semantic.Identifier{Name: "_time"},
+									Value: &semantic.MemberExpression{
+										Object: &semantic.IdentifierExpression{
+											Name: "r",
+										},
+										Property: "_time",
+									},
+								},
+								{
+									Key: &semantic.Identifier{Name: "_value"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "_value",
+										},
+										Right: &semantic.FloatLiteral{
+											Value: 5,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_measurement", "host"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "host", Type: flux.TString},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{"m", nil, execute.Time(1), 1.0},
+					{"m", nil, execute.Time(2), 6.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"_measurement", "host"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "host", Type: flux.TString},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{"m", nil, execute.Time(1), 6.0},
+					{"m", nil, execute.Time(2), 11.0},
 				},
 			}},
 		},
