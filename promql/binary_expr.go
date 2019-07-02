@@ -348,6 +348,8 @@ func (t *Transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 				"columns": columnList(append(append(onCols, "_value"), b.VectorMatching.Include...)...),
 			}),
 
+			// TODO: Fix binary operations once new join implementation exists.
+			//
 			// // Rename x_lhs -> x.
 			// call("rename", map[string]ast.Expression{"fn": stripSuffixFn("_lhs")}),
 			// // Drop cols RHS cols, except ones we want to copy into the result via a group_x(...) clause.

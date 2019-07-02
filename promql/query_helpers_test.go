@@ -133,7 +133,7 @@ func (q *testQuerier) transferSamples() {
 		for it.Next() {
 			ts, val := it.At()
 			if math.IsNaN(val) {
-				// TODO: InfluxDB line protocol does not support NaNs yet. Can we ingest NaNs somehow?
+				// TODO: InfluxDB does not support NaNs yet, skip these for now.
 				continue
 			}
 			_, err := buf.WriteString(fmt.Sprintf("prometheus,%s %s=%s %d\n", strings.Join(tags, ","), field, strconv.FormatFloat(val, 'f', -1, 64), ts*1e6))

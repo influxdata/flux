@@ -41,9 +41,9 @@ var aggregateFns = map[promql.ItemType]aggregateFn{
 func dropNonGroupingColsCall(groupCols []string, without bool) *ast.CallExpression {
 	if without {
 		cols := make([]string, 0, len(groupCols))
-		// Remove "_value" from list of columns to drop.
+		// Remove "_value" and "_stop" from list of columns to drop.
 		for _, col := range groupCols {
-			if col != "_value" && col != "_stop" { // TODO: Handle this systematically instead!
+			if col != "_value" && col != "_stop" {
 				cols = append(cols, col)
 			}
 		}

@@ -59,7 +59,7 @@ func (s labelNameEscaper) Visit(node promql.Node, path []promql.Node) (promql.Vi
 			n.VectorMatching.Include = escapeLabelNames(n.VectorMatching.Include)
 		}
 	case *promql.Call:
-		// The only functions that take label names are label_join() and label_replace().
+		// TODO: The only functions that take label names are label_join() and label_replace().
 		// Handle these once they are implemented.
 	case *promql.MatrixSelector:
 		n.Name = ""

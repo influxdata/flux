@@ -227,7 +227,9 @@ func (t *Transpiler) generateZeroWindows() *ast.PipeExpression {
 		// For range queries:
 		// At every resolution step, load / look back up to 5m of data (PromQL lookback delta).
 		windowCall = call("window", map[string]ast.Expression{
-			"every":       &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Resolution.Nanoseconds(), Unit: "ns"}}},
+			"every": &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Resolution.Nanoseconds(), Unit: "ns"}}},
+			// TODO: We don't actually need 5-minute windows here, as we're not looking for any actual data anyway.
+			// We just care about the window's "_stop". Should we just choose the smallest possible period, like 1ns or even 0ns?
 			"period":      &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: 5, Unit: "m"}}},
 			"offset":      &ast.DurationLiteral{Values: []ast.Duration{{Magnitude: t.Start.UnixNano() % t.Resolution.Nanoseconds(), Unit: "ns"}}},
 			"createEmpty": &ast.BooleanLiteral{Value: true},
