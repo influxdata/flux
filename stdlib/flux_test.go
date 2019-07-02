@@ -50,7 +50,6 @@ func BenchmarkFluxEndToEnd(b *testing.B) {
 
 func runEndToEnd(t *testing.T, pkgs []*ast.Package) {
 	for _, pkg := range pkgs {
-		pkg := pkg.Copy().(*ast.Package)
 		name := pkg.Files[0].Name
 		t.Run(name, func(t *testing.T) {
 			n := strings.TrimSuffix(name, ".flux")
@@ -64,7 +63,6 @@ func runEndToEnd(t *testing.T, pkgs []*ast.Package) {
 
 func benchEndToEnd(b *testing.B, pkgs []*ast.Package) {
 	for _, pkg := range pkgs {
-		pkg := pkg.Copy().(*ast.Package)
 		name := pkg.Files[0].Name
 		b.Run(name, func(b *testing.B) {
 			n := strings.TrimSuffix(name, ".flux")
@@ -81,6 +79,7 @@ func benchEndToEnd(b *testing.B, pkgs []*ast.Package) {
 }
 
 func testFlux(t testing.TB, pkg *ast.Package) {
+	pkg = pkg.Copy().(*ast.Package)
 	pkg.Files = append(pkg.Files, stdlib.TestingRunCalls(pkg))
 	c := lang.ASTCompiler{AST: pkg}
 
