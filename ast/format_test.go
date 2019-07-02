@@ -75,6 +75,10 @@ func TestFormat_Nodes(t *testing.T) {
 			script: `{a: 1, b: {c: 11, d: 12}}`,
 		},
 		{
+			name:   "object with",
+			script: `{foo with a: 1, b: {c: 11, d: 12}}`,
+		},
+		{
 			name:   "implicit key object literal",
 			script: `{a, b, c}`,
 		},
