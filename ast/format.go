@@ -505,6 +505,11 @@ func (f *formatter) formatObjectExpressionBraces(n *ObjectExpression, braces boo
 		f.writeRune('{')
 	}
 
+	if n.With != nil {
+		f.formatIdentifier(n.With)
+		f.writeString(" with ")
+	}
+
 	if multiline {
 		f.writeRune('\n')
 		f.indent()
