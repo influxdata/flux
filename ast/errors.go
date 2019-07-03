@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+
+	"github.com/pkg/errors"
 )
 
 // Check will inspect each node and annotate it with any AST errors.
@@ -26,7 +28,30 @@ func check(n Node) int {
 		n.Errors = append(n.Errors, Error{
 			Msg: fmt.Sprintf("invalid statement %s@%d:%d-%d:%d: %s", loc.File, loc.Start.Line, loc.Start.Column, loc.End.Line, loc.End.Column, n.Text),
 		})
-		return len(n.Errors)
+	case *ObjectExpression:
+		hasImplicit := false
+		hasExplicit := false
+		for _, p := range n.Properties {
+			if p.BaseNode.Errors == nil {
+				if p.Value == nil {
+					hasImplicit = true
+					if s, ok := p.Key.(*StringLiteral); ok {
+						p.Errors = append(p.Errors, Error{
+							Msg: fmt.Sprintf("string literal key %q must have a value", s.Value),
+						})
+					}
+				} else {
+					hasExplicit = true
+				}
+			} else {
+				break
+			}
+		}
+		if hasImplicit && hasExplicit {
+			n.Errors = append(n.Errors, Error{
+				Msg: fmt.Sprintf("cannot mix implicit and explicit properties"),
+			})
+		}
 	case *PipeExpression:
 		if n.Call == nil {
 			n.Errors = append(n.Errors, Error{
@@ -51,7 +76,7 @@ func check(n Node) int {
 		}
 	}
 
-	return 0
+	return len(n.Errs())
 }
 
 // GetError will return the first error within an AST.
@@ -68,7 +93,7 @@ func GetErrors(n Node) (errs []error) {
 	Walk(CreateVisitor(func(node Node) {
 		if nerrs := node.Errs(); len(nerrs) > 0 {
 			for _, err := range nerrs {
-				errs = append(errs, err)
+				errs = append(errs, errors.Wrapf(err, "loc %v", node.Location()))
 			}
 		}
 	}), n)

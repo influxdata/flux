@@ -3,10 +3,12 @@ package execute_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
 )
@@ -251,5 +253,99 @@ func TestColListTable_SetNil(t *testing.T) {
 		return nil
 	}); err != nil {
 		t.Fatalf("unexpected error: %s", err)
+	}
+}
+
+func TestCopyTable(t *testing.T) {
+	alloc := &memory.Allocator{}
+
+	res, err := gen.Input(gen.Schema{
+		Tags: []gen.Tag{
+			{Name: "t0", Cardinality: 1},
+		},
+		NumPoints: 100,
+		Period:    time.Hour,
+		Types: map[flux.ColType]int{
+			flux.TFloat: 1,
+		},
+		Alloc: alloc,
+	})
+	if err != nil {
+		t.Fatalf("unable to generate tables: %s", err)
+	}
+
+	var buffers []flux.BufferedTable
+	for res.More() {
+		r := res.Next()
+		if err := r.Tables().Do(func(table flux.Table) error {
+			bt, err := execute.CopyTable(table)
+			if err != nil {
+				return err
+			}
+			buffers = append(buffers, bt)
+			return nil
+		}); err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+	}
+
+	// Ensure we can copy the table and read a point from the
+	// column reader without panicking.
+	for _, buf := range buffers {
+		cpy := buf.Copy()
+		if err := cpy.Do(func(cr flux.ColReader) error {
+			if cr.Len() == 0 {
+				return nil
+			}
+
+			_ = execute.ValueForRow(cr, 0, 0)
+			return nil
+		}); err != nil {
+			t.Errorf("unexpected error: %s", err)
+		}
+	}
+
+	// The memory should not have been freed yet.
+	if got := alloc.Allocated(); got == 0 {
+		t.Errorf("expected memory to be consumed: got=%d", got)
+	}
+
+	// Mark each of the tables as done which should free the
+	// remaining memory.
+	for _, buf := range buffers {
+		buf.Done()
+	}
+
+	// TODO(jsternberg): Uncomment this when the underlying ColListTable
+	// frees memory properly.
+	// if got, want := alloc.Allocated(), int64(0); got != want {
+	// 	t.Errorf("memory leak -want/+got:\n\t- %d\n\t+ %d", want, got)
+	// }
+}
+
+func TestCopyTable_Empty(t *testing.T) {
+	in := &executetest.Table{
+		GroupKey: execute.NewGroupKey(
+			[]flux.ColMeta{
+				{Label: "t0", Type: flux.TString},
+			},
+			[]values.Value{
+				values.NewString("v0"),
+			},
+		),
+		ColMeta: []flux.ColMeta{
+			{Label: "t0", Type: flux.TString},
+			{Label: "_value", Type: flux.TFloat},
+		},
+	}
+
+	cpy, err := execute.CopyTable(in)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	defer cpy.Done()
+	if !cpy.Empty() {
+		t.Fatal("expected copied table to be empty, but it wasn't")
 	}
 }

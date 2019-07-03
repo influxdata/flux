@@ -134,6 +134,7 @@ enum Token {
         "if" => { s.token = token.IF; fbreak; };
         "then" => { s.token = token.THEN; fbreak; };
         "else" => { s.token = token.ELSE; fbreak; };
+        "exists" => { s.token = token.EXISTS; fbreak; };
 
         identifier => { s.token = token.IDENT; fbreak; };
         int_lit => { s.token = token.INT; fbreak; };

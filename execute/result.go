@@ -42,7 +42,6 @@ func (s *result) RetractTable(DatasetID, flux.GroupKey) error {
 }
 
 func (s *result) Process(id DatasetID, tbl flux.Table) error {
-	tbl.RefCount(1)
 	select {
 	case s.tables <- resultMessage{
 		table: tbl,
@@ -69,10 +68,8 @@ func (s *result) Do(f func(flux.Table) error) error {
 				return msg.err
 			}
 			if err := f(msg.table); err != nil {
-				msg.table.RefCount(-1)
 				return err
 			}
-			msg.table.RefCount(-1)
 		}
 	}
 }

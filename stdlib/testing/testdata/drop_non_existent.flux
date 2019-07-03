@@ -1,5 +1,5 @@
 package testdata_test
- 
+
 import "testing"
 
 option now = () => (2030-01-01T00:00:00Z)
@@ -42,8 +42,6 @@ t_drop = (table=<-) =>
 		|> range(start: 2018-05-22T19:53:26Z)
 		|> drop(columns: ["non_existent"]))
 
-test _drop_non_existent = () =>
-	({input, want, fn: drop_fn})
 test _drop_non_existent = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_drop})
 

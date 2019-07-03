@@ -74,8 +74,10 @@ builtin contains
 
 // other builtins
 builtin inf
+builtin length // length function for arrays
 builtin linearBins
 builtin logarithmicBins
+builtin sleep // sleep is the identity function with the side effect of delaying execution by a specified duration.
 
 // covariance function with automatic join
 cov = (x,y,on,pearsonr=false) =>
@@ -237,10 +239,20 @@ lowestCurrent = (n, column="_value", groupColumns=[], tables=<-) =>
                 _sortLimit: bottom,
             )
 
-toString = (tables=<-) => tables |> map(fn:(r) => string(v:r._value))
-toInt = (tables=<-) => tables |> map(fn:(r) => int(v:r._value))
-toUInt = (tables=<-) => tables |> map(fn:(r) => uint(v:r._value))
-toFloat = (tables=<-) => tables |> map(fn:(r) => float(v:r._value))
-toBool = (tables=<-) => tables |> map(fn:(r) => bool(v:r._value))
-toTime = (tables=<-) => tables |> map(fn:(r) => time(v:r._value))
-toDuration = (tables=<-) => tables |> map(fn:(r) => duration(v:r._value))
+// movingAverage constructs a simple moving average over windows of 'period' duration
+// eg: A 5 year moving average would be called as such:
+//    movingAverage(1y, 5y)
+ movingAverage = (every, period, column="_value", tables=<-) =>
+     tables
+         |> window(every: every, period: period)
+         |> mean(column:column)
+         |> duplicate(column: "_stop", as: "_time")
+         |> window(every: inf)
+
+toString   = (tables=<-) => tables |> map(fn:(r) => ({r with _value: string(v:r._value)}))
+toInt      = (tables=<-) => tables |> map(fn:(r) => ({r with _value: int(v:r._value)}))
+toUInt     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._value)}))
+toFloat    = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))
+toBool     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))
+toTime     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))
+toDuration = (tables=<-) => tables |> map(fn:(r) => ({r with _value: duration(v:r._value)}))

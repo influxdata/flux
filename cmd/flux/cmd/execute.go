@@ -22,11 +22,7 @@ func init() {
 }
 
 func execute(cmd *cobra.Command, args []string) error {
-	q, err := NewQuerier()
-	if err != nil {
-		return err
-	}
-	r := repl.New(q)
+	r := repl.New(querier{})
 	if err := r.Input(args[0]); err != nil {
 		return fmt.Errorf("failed to execute query: %v", err)
 	}

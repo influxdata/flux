@@ -5,6 +5,8 @@ vendor
 .vscode
 .vs
 .tern-project
+/coverage.txt
+
 internal/rust/.cache
 internal/rust/scanner/target/
 internal/rust/ast/target/

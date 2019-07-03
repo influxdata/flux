@@ -550,6 +550,13 @@ func analyzeObjectExpression(obj *ast.ObjectExpression) (*ObjectExpression, erro
 		loc:        loc(obj.Location()),
 		Properties: make([]*Property, len(obj.Properties)),
 	}
+	if obj.With != nil {
+		w, err := analyzeIdentifierExpression(obj.With)
+		if err != nil {
+			return nil, err
+		}
+		o.With = w
+	}
 	for i, p := range obj.Properties {
 		n, err := analyzeProperty(p)
 		if err != nil {

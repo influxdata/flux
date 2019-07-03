@@ -63,7 +63,8 @@ func createMapOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operatio
 	} else if ok {
 		spec.MergeKey = m
 	} else {
-		spec.MergeKey = true
+		// deprecated parameter: default is now false.
+		spec.MergeKey = false
 	}
 	return spec, nil
 }
@@ -152,18 +153,9 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 		return err
 	}
 	// Determine keys return from function
-	properties := t.fn.Type().Properties()
-	keys := make([]string, 0, len(properties))
-	for k := range properties {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	// Determine on which cols to group
-	on := make(map[string]bool, len(tbl.Key().Cols()))
-	for _, c := range tbl.Key().Cols() {
-		on[c.Label] = t.mergeKey || execute.ContainsStr(keys, c.Label)
-	}
+	var properties map[string]semantic.Type
+	var keys []string
+	var on map[string]bool
 
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
@@ -172,6 +164,21 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 			if err != nil {
 				return errors.Wrap(err, "failed to evaluate map function")
 			}
+			if i == 0 {
+				properties = m.Type().Properties()
+				keys = make([]string, 0, len(properties))
+				for k := range properties {
+					keys = append(keys, k)
+				}
+				sort.Strings(keys)
+
+				// Determine on which cols to group
+				on = make(map[string]bool, len(tbl.Key().Cols()))
+				for _, c := range tbl.Key().Cols() {
+					on[c.Label] = t.mergeKey || execute.ContainsStr(keys, c.Label)
+				}
+			}
+
 			key := groupKeyForObject(i, cr, m, on)
 			builder, created := t.cache.TableBuilder(key)
 			if created {

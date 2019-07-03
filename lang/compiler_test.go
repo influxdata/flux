@@ -3,7 +3,9 @@ package lang_test
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"math"
+	"strings"
 	"testing"
 	"time"
 
@@ -35,29 +37,122 @@ func TestFluxCompiler(t *testing.T) {
 	ctx := context.Background()
 
 	for _, tc := range []struct {
-		q  string
-		ok bool
+		name   string
+		now    time.Time
+		extern *ast.File
+		q      string
+		err    string
 	}{
-		{q: `from(bucket: "foo")`, ok: true},
-		{q: `t=""t.t`},
-		{q: `t=0t.s`},
-		{q: `x = from(bucket: "foo")`},
-		{q: `x = from(bucket: "foo") |> yield()`, ok: true},
-		{q: `from(bucket: "foo")`, ok: true},
+		{
+			name: "simple",
+			q:    `from(bucket: "foo")`,
+		},
+		{
+			name: "syntax error",
+			q:    `t={]`,
+			err:  "expected RBRACE",
+		},
+		{
+			name: "type error",
+			q:    `t=0 t.s`,
+			err:  "type error",
+		},
+		{
+			name: "from with no streaming data",
+			q:    `x = from(bucket: "foo")`,
+			err:  "no streaming data",
+		},
+		{
+			name: "from with yield",
+			q:    `x = from(bucket: "foo") |> yield()`,
+		},
+		{
+			name: "extern",
+			extern: &ast.File{
+				Body: []ast.Statement{
+					&ast.OptionStatement{
+						Assignment: &ast.VariableAssignment{
+							ID:   &ast.Identifier{Name: "twentySix"},
+							Init: &ast.IntegerLiteral{Value: 26},
+						},
+					},
+				},
+			},
+			q: `twentySeven = twentySix + 1
+				twentySeven
+				from(bucket: "foo")`,
+		},
+		{
+			name: "extern with error",
+			extern: &ast.File{
+				Body: []ast.Statement{
+					&ast.OptionStatement{
+						Assignment: &ast.VariableAssignment{
+							ID:   &ast.Identifier{Name: "twentySix"},
+							Init: &ast.IntegerLiteral{Value: 26},
+						},
+					},
+				},
+			},
+			q: `twentySeven = twentyFive + 2
+				twentySeven
+				from(bucket: "foo")`,
+			err: "undefined identifier",
+		},
+		{
+			name: "with now",
+			now:  time.Unix(1000, 0),
+			q:    `from(bucket: "foo")`,
+		},
 	} {
-		c := lang.FluxCompiler{
-			Query: tc.q,
-		}
-		program, err := c.Compile(ctx)
-		if err != nil {
-			t.Fatalf("failed to compile AST: %v", err)
-		}
-		// we need to start the program to get compile errors derived from AST evaluation
-		if _, err = program.Start(context.Background(), &memory.Allocator{}); tc.ok && err != nil {
-			t.Errorf("expected query %q to compile successfully but got error %v", tc.q, err)
-		} else if !tc.ok && err == nil {
-			t.Errorf("expected query %q to compile with error but got no error", tc.q)
-		}
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			c := lang.FluxCompiler{
+				Now:    tc.now,
+				Extern: tc.extern,
+				Query:  tc.q,
+			}
+
+			// serialize and deserialize and make sure they are equal
+			bs, err := json.Marshal(c)
+			if err != nil {
+				t.Error(err)
+			}
+			cc := lang.FluxCompiler{}
+			err = json.Unmarshal(bs, &cc)
+			if err != nil {
+				t.Error(err)
+			}
+			if diff := cmp.Diff(c, cc); diff != "" {
+				t.Errorf("compiler serialized/deserialized does not match: -want/+got:\n%v", diff)
+			}
+
+			program, err := c.Compile(ctx)
+			if err != nil {
+				if tc.err != "" {
+					if !strings.Contains(err.Error(), tc.err) {
+						t.Fatalf(`expected query to error with "%v" but got "%v"`, tc.err, err)
+					} else {
+						return
+					}
+				}
+				t.Fatalf("failed to compile AST: %v", err)
+			}
+
+			astProg := program.(*lang.AstProgram)
+			if astProg.Now != tc.now {
+				t.Errorf(`unexpected value for now, want "%v", got "%v"`, tc.now, astProg.Now)
+			}
+
+			// we need to start the program to get compile errors derived from AST evaluation
+			if _, err = program.Start(context.Background(), &memory.Allocator{}); tc.err == "" && err != nil {
+				t.Errorf("expected query %q to start successfully but got error %v", tc.q, err)
+			} else if tc.err != "" && err == nil {
+				t.Errorf("expected query %q to start with error but got no error", tc.q)
+			} else if tc.err != "" && err != nil && !strings.Contains(err.Error(), tc.err) {
+				t.Errorf(`expected query to error with "%v" but got "%v"`, tc.err, err)
+			}
+		})
 	}
 }
 
@@ -169,6 +264,20 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 			c := lang.ASTCompiler{
 				AST: astPkg,
 				Now: tc.now,
+			}
+
+			// serialize and deserialize and make sure they are equal
+			bs, err := json.Marshal(c)
+			if err != nil {
+				t.Error(err)
+			}
+			cc := lang.ASTCompiler{}
+			err = json.Unmarshal(bs, &cc)
+			if err != nil {
+				t.Error(err)
+			}
+			if diff := cmp.Diff(c, cc); diff != "" {
+				t.Errorf("compiler serialized/deserialized does not match: -want/+got:\n%v", diff)
 			}
 
 			if tc.file != nil {

@@ -75,6 +75,10 @@ func TestFormat_Nodes(t *testing.T) {
 			script: `{a: 1, b: {c: 11, d: 12}}`,
 		},
 		{
+			name:   "object with",
+			script: `{foo with a: 1, b: {c: 11, d: 12}}`,
+		},
+		{
 			name:   "implicit key object literal",
 			script: `{a, b, c}`,
 		},
@@ -410,7 +414,7 @@ func TestFormat_Associativity(t *testing.T) {
 		},
 		{
 			name:   "unary with pars",
-			script: `not (b and c)`,
+			script: `not (b and c) and exists d or exists (e and f)`,
 		},
 		{
 			name:   "unary negative duration",
