@@ -28,11 +28,9 @@ func (t *Transpiler) transpileUnaryExpr(ue *promql.UnaryExpr) (ast.Expression, e
 			), nil
 		}
 
-		// Multiply float expression by -1.
-		return &ast.BinaryExpression{
-			Operator: ast.MultiplicationOperator,
-			Left:     expr,
-			Right:    &ast.FloatLiteral{Value: -1},
+		return &ast.UnaryExpression{
+			Operator: ast.SubtractionOperator,
+			Argument: expr,
 		}, nil
 	default:
 		// PromQL fails to parse unary operators other than +/-, so this should never happen.
