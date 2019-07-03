@@ -1,20 +1,94 @@
 package promql
 
+// changes() implements functionality equivalent to PromQL's changes() function:
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#changes
 builtin changes
+
+// dayOfMonth() implements functionality equivalent to PromQL's day_of_month() function:
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_month
 builtin dayOfMonth
+
+// dayOfWeek() implements functionality equivalent to PromQL's day_of_week() function:
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_week
 builtin dayOfWeek
+
+// daysInMonth() implements functionality equivalent to PromQL's days_in_month() function:
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#days_in_month
 builtin daysInMonth
+
+// linearRegression implements linear regression functionality required to implement
+// PromQL's deriv() and predict_linear() functions:
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#deriv
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#predict_linear
 builtin linearRegression
+
+// emptyTable() returns an empty table, which is used as a helper function to implement
+// PromQL's time() and vector() functions:
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#time
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#vector
 builtin emptyTable
+
+// extrapolatedRate() is a helper function that calculates extrapolated rates over
+// counters and is used to implement PromQL's rate(), delta(), and increase() functions.
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#rate
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#increase
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#delta
 builtin extrapolatedRate
+
+// promHistogramQuantile() implements functionality equivalent to PromQL's
+// histogram_quantile() function:
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile
 builtin promHistogramQuantile
+
+// holtWinters() implements functionality equivalent to PromQL's holt_winters()
+// function:
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#holt_winters
 builtin holtWinters
+
+// hour() implements functionality equivalent to PromQL's hour() function:
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#hour
 builtin hour
+
+// instantRate() is a helper function that calculates instant rates over
+// counters and is used to implement PromQL's irate() and idelta() functions.
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#irate
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#idelta
 builtin instantRate
+
+// minute() implements functionality equivalent to PromQL's minute() function:
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#minute
 builtin minute
+
+// month() implements functionality equivalent to PromQL's month() function:
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#month
 builtin month
+
+// resets() implements functionality equivalent to PromQL's resets() function:
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#resets
 builtin resets
+
+// timestamp() implements functionality equivalent to PromQL's timestamp() function:
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#timestamp
 builtin timestamp
+
+// year() implements functionality equivalent to PromQL's year() function:
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#year
 builtin year
 
 // hack to simulate an imported promql package
