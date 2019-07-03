@@ -21,6 +21,10 @@ func buildPipeline(arg ast.Expression, calls ...*ast.CallExpression) *ast.PipeEx
 	default:
 		lastCall := calls[len(calls)-1]
 		// Skip nil call arguments.
+		//
+		// This keeps the code simpler when constructing pipelines where some function calls
+		// are optional and thus can remain nil (using a variable that sets them to an actual
+		// call if needed), but thus can still be included in the final pipeline assembly code.
 		if lastCall == nil {
 			return buildPipeline(arg, calls[0:len(calls)-1]...)
 		}
