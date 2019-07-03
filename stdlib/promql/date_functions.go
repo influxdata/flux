@@ -28,7 +28,7 @@ func generateDateFunction(name string, dateFn func(time.Time) int) values.Functi
 				return nil, fmt.Errorf("cannot convert argument of type %v to float", v.Type().Nature())
 			}
 
-			t := time.Unix(0, int64(v.Float()*1e9)).UTC()
+			t := values.Time(v.Float() * 1e9).Time()
 			return values.NewFloat(float64(dateFn(t))), nil
 		}, false,
 	)
