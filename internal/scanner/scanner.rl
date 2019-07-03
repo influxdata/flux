@@ -1,66 +1,9 @@
-//package scanner
+package scanner
 
-//import "github.com/influxdata/flux/internal/token"
-
-enum Token {
-    ILLEGAL,
-    EOFTOK,
-    COMMENT,
-
-    // Reserved keywords.
-    AND,
-    OR,
-    NOT,
-    EMPTY,
-    IN,
-    IMPORT,
-    PACKAGE,
-    RETURN,
-    OPTION,
-    BUILTIN,
-
-    // Identifiers and literals.
-    IDENT,
-    INT,
-    FLOAT,
-    STRING,
-    REGEX,
-    TIME,
-    DURATION,
-
-    // Operators.
-    ADD,
-    SUB,
-    MUL,
-    DIV,
-    MOD,
-    EQ,
-    LT,
-    GT,
-    LTE,
-    GTE,
-    NEQ,
-    REGEXEQ,
-    REGEXNEQ,
-    ASSIGN,
-    ARROW,
-    LPAREN,
-    RPAREN,
-    LBRACK,
-    RBRACK,
-    LBRACE,
-    RBRACE,
-    COMMA,
-    DOT,
-    COLON,
-    PIPE_FORWARD,
-    PIPE_RECEIVE,
-};
+import "github.com/influxdata/flux/internal/token"
 
 %%{
     machine flux;
-
-    alphtype unsigned char;
 
     include WChar "unicode.rl";
 
@@ -176,24 +119,7 @@ enum Token {
 
 %% write data;
 
-// Scanner is used to tokenize Flux source.
-struct Scanner {
-    char* p;
-    char* pe;
-    char* eof;
-    char* ts;
-    char* te;
-    int token;
-    char* data;
-    char* checkpoint;
-    int reset;
-};
-
-int init(struct Scanner *s, char* data) {
-    s->data = data;
-}
-
-int scan(struct Scanner *s, int cs) {
+func (s *Scanner) exec(cs int) int {
     %% variable p s.p;
     %% variable pe s.pe;
     %% variable eof s.eof;
@@ -203,27 +129,6 @@ int scan(struct Scanner *s, int cs) {
     var act int
     %% write init nocs;
     %% write exec;
-
-    return cs;
+    return cs
 }
 
-int main() {
-    struct Scanner scanner = {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-    };
-    init(&scanner, "from()");
-    while (1) {
-        int es = scan(&scanner, flux_en_main);
-        printf("%d %d %d %d \"%s\"\n", es, scanner.token, scanner.ts, scanner.te, scanner.ts);
-        break;
-    }
-    return 0;
-}
