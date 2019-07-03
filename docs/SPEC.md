@@ -3527,15 +3527,15 @@ Example: `joinStr(arr: []string{"a", "b", "c"}, v: ",")` returns string `a,b,c`.
 
 ##### lastIndex
 
-Returns the index of the last instance of substr in s, or -1 if substr is not present in v.
+Returns the index of the last instance of substr in v, or -1 if substr is not present in v.
 
-Example: `lastIndex(v: "go gopher", t: "go")` returns int `3`.
+Example: `lastIndex(v: "go gopher", substr: "go")` returns int `3`.
 
 ##### lastIndexAny
 
 Returns the index of the last instance of any value from chars in v, or -1 if no value from chars is present in v.
 
-Example: `lastIndexAny(v: "go gopher", t: "go")` returns int `4`.
+Example: `lastIndexAny(v: "go gopher", substr: "go")` returns int `4`.
 
 ##### strlen
 
@@ -3554,7 +3554,7 @@ Example: `repeat("v: na", i: 2)` returns string `nana`.
 
 Returns a copy of the string v with the first i non-overlapping instances of t replaced by u.
 
-Example: `replaceAll(v: "oink oink oink", t: "oink", u: "moo", i: 2)` returns string `moo moo oink`.
+Example: `replace(v: "oink oink oink", t: "oink", u: "moo", i: 2)` returns string `moo moo oink`.
 
 ##### replaceAll
 

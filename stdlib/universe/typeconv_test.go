@@ -1,18 +1,17 @@
 package universe
 
 import (
-	"testing"
 	"errors"
 	"github.com/influxdata/flux/values"
 	"math"
+	"testing"
 )
-
 
 func TestTypeconv_String(t *testing.T) {
 	testCases := []struct {
-		name string
-		v    interface{}
-		want string
+		name      string
+		v         interface{}
+		want      string
 		expectErr error
 	}{
 		{
@@ -80,9 +79,9 @@ func TestTypeconv_String(t *testing.T) {
 
 func TestTypeconv_Int(t *testing.T) {
 	testCases := []struct {
-		name string
-		v    interface{}
-		want int64
+		name      string
+		v         interface{}
+		want      int64
 		expectErr error
 	}{
 		{
@@ -121,9 +120,9 @@ func TestTypeconv_Int(t *testing.T) {
 			want: int64(123456789),
 		},
 		{
-			name : "int64(error)",
-			v: "notanumber",
-			want: 0,
+			name:      "int64(error)",
+			v:         "notanumber",
+			want:      0,
 			expectErr: errors.New("strconv.ParseInt: parsing \"notanumber\": invalid syntax"),
 		},
 	}
@@ -135,7 +134,7 @@ func TestTypeconv_Int(t *testing.T) {
 			args := values.NewObjectWithValues(myMap)
 			c := &intConv{}
 			got, err := c.Call(args)
-			if err != nil {	
+			if err != nil {
 				if tc.expectErr != nil {
 					if want, got := tc.expectErr.Error(), err.Error(); got != want {
 						t.Errorf("unexpected error - want: %s, got: %s", want, got)
@@ -155,9 +154,9 @@ func TestTypeconv_Int(t *testing.T) {
 
 func TestTypeconv_UInt(t *testing.T) {
 	testCases := []struct {
-		name string
-		v    interface{}
-		want uint64
+		name      string
+		v         interface{}
+		want      uint64
 		expectErr error
 	}{
 		{
@@ -196,9 +195,9 @@ func TestTypeconv_UInt(t *testing.T) {
 			want: uint64(123456789),
 		},
 		{
-			name : "uint64(error)",
-			v: "NaN",
-			want: 0,
+			name:      "uint64(error)",
+			v:         "NaN",
+			want:      0,
 			expectErr: errors.New("strconv.ParseUint: parsing \"NaN\": invalid syntax"),
 		},
 	}
@@ -230,9 +229,9 @@ func TestTypeconv_UInt(t *testing.T) {
 
 func TestTypeconv_Bool(t *testing.T) {
 	testCases := []struct {
-		name string
-		v    interface{}
-		want bool
+		name      string
+		v         interface{}
+		want      bool
 		expectErr error
 	}{
 		{
@@ -276,9 +275,9 @@ func TestTypeconv_Bool(t *testing.T) {
 			want: false,
 		},
 		{
-			name : "bool(error)",
-			v: "asdf",
-			want: false,
+			name:      "bool(error)",
+			v:         "asdf",
+			want:      false,
 			expectErr: errors.New("cannot convert string \"asdf\" to bool"),
 		},
 	}
@@ -310,9 +309,9 @@ func TestTypeconv_Bool(t *testing.T) {
 
 func TestTypeconv_Float(t *testing.T) {
 	testCases := []struct {
-		name string
-		v    interface{}
-		want float64
+		name      string
+		v         interface{}
+		want      float64
 		expectErr error
 	}{
 		{
@@ -342,29 +341,29 @@ func TestTypeconv_Float(t *testing.T) {
 		},
 		{
 			name: "float64(v:6)",
-			v: int64(-753),
+			v:    int64(-753),
 			want: float64(-753),
 		},
 		{
 			name: "float64(v:7)",
-			v: "+Inf",
+			v:    "+Inf",
 			want: float64(math.Inf(+1)),
 		},
 		{
 			name: "float64(v:8)",
-			v: "-Inf",
+			v:    "-Inf",
 			want: float64(math.Inf(-1)),
 		},
 		{
-			name: "float64(v:8)",
-			v: "NaN",
-			want: float64(math.NaN()),
+			name:      "float64(v:8)",
+			v:         "NaN",
+			want:      float64(math.NaN()),
 			expectErr: errors.New("Test failed, got: NaN, want: NaN"),
 		},
 		{
-			name: "float(error)",
-			v: "ThisIsNotANumber",
-			want: float64(0),
+			name:      "float(error)",
+			v:         "ThisIsNotANumber",
+			want:      float64(0),
 			expectErr: errors.New("strconv.ParseFloat: parsing \"ThisIsNotANumber\": invalid syntax"),
 		},
 	}
@@ -389,7 +388,7 @@ func TestTypeconv_Float(t *testing.T) {
 			want := values.NewFloat(tc.want)
 			if !got.Equal(want) {
 				// NaN == NaN evaluates to false, so need a special check
-				if (math.IsNaN(tc.want) && math.IsNaN(got.Float())) {
+				if math.IsNaN(tc.want) && math.IsNaN(got.Float()) {
 					return
 				}
 				t.Errorf("Test failed, got: %v, want: %v", got, want)
@@ -400,9 +399,9 @@ func TestTypeconv_Float(t *testing.T) {
 
 func TestTypeconv_Time(t *testing.T) {
 	testCases := []struct {
-		name string
-		v    interface{}
-		want values.Time
+		name      string
+		v         interface{}
+		want      values.Time
 		expectErr error
 	}{
 		{
@@ -421,9 +420,9 @@ func TestTypeconv_Time(t *testing.T) {
 			want: values.Time(1136239445999999999),
 		},
 		{
-			name: "time(error)",
-			v: "NotATime",
-			want : values.Time(0),
+			name:      "time(error)",
+			v:         "NotATime",
+			want:      values.Time(0),
 			expectErr: errors.New("parsing time \"NotATime\" as \"2006-01-02T15:04:05.999999999Z07:00\": cannot parse \"NotATime\" as \"2006\""),
 		},
 	}
@@ -455,9 +454,9 @@ func TestTypeconv_Time(t *testing.T) {
 
 func TestTypeconv_Duration(t *testing.T) {
 	testCases := []struct {
-		name string
-		v    interface{}
-		want values.Duration
+		name      string
+		v         interface{}
+		want      values.Duration
 		expectErr error
 	}{
 		{
@@ -476,9 +475,9 @@ func TestTypeconv_Duration(t *testing.T) {
 			want: values.Duration(4000000002),
 		},
 		{
-			name: "duration(error)",
-			v: "not_a_duration",
-			want: values.Duration(0),
+			name:      "duration(error)",
+			v:         "not_a_duration",
+			want:      values.Duration(0),
 			expectErr: errors.New("time: invalid duration not_a_duration"),
 		},
 	}
