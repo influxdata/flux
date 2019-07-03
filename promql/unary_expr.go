@@ -35,7 +35,7 @@ func (t *Transpiler) transpileUnaryExpr(ue *promql.UnaryExpr) (ast.Expression, e
 			Right:    &ast.FloatLiteral{Value: -1},
 		}, nil
 	default:
-		// PromQL fails to parse this, so this should never happen.
-		panic("invalid unary expression operator type")
+		// PromQL fails to parse unary operators other than +/-, so this should never happen.
+		return nil, fmt.Errorf("invalid unary expression operator type (this should never happen)")
 	}
 }

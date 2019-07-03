@@ -240,7 +240,7 @@ func (t *Transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 		if op, ok := compBinOps[b.Op]; ok {
 			if !b.ReturnBool {
 				// This is already caught by the PromQL parser.
-				panic("scalar-to-scalar binary op is missing 'bool' modifier")
+				return nil, fmt.Errorf("scalar-to-scalar binary op is missing 'bool' modifier (this should never happen)")
 			}
 
 			return call("float", map[string]ast.Expression{
@@ -252,7 +252,7 @@ func (t *Transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 			}), nil
 		}
 
-		panic(fmt.Errorf("invalid scalar-scalar binary op %q", b.Op))
+		return nil, fmt.Errorf("invalid scalar-scalar binary op %q (this should never happen)", b.Op)
 	case yieldsFloat(b.LHS) && yieldsTable(b.RHS):
 		lhs, rhs = rhs, lhs
 		swapped = true
@@ -291,7 +291,7 @@ func (t *Transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, 
 			), nil
 		}
 
-		panic(fmt.Errorf("invalid scalar-vector binary op %q", b.Op))
+		return nil, fmt.Errorf("invalid scalar-vector binary op %q (this should never happen)", b.Op)
 	default:
 		if b.VectorMatching == nil {
 			// We end up in this branch for non-const scalar-typed PromQL nodes,
