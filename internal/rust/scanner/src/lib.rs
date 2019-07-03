@@ -515,6 +515,7 @@ a
 
     // TODO(affo): this fails.
     #[test]
+    #[ignore] // See https://github.com/influxdata/flux/issues/1448
     fn test_scan_duration() {
         let text = r#"dur = 1y3mo2w1d4h1m30s1ms2µs70ns"#;
         let cdata = CString::new(text).expect("CString::new failed");

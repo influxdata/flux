@@ -3,7 +3,7 @@
 set -e
 
 make clean
-make all
+make generate
 
 status=$(git status --porcelain)
 if [ -n "$status" ]; then
