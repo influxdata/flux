@@ -9,7 +9,6 @@ require (
 	github.com/c-bata/go-prompt v0.2.2
 	github.com/cespare/xxhash v1.1.0
 	github.com/dave/jennifer v1.2.0
-	github.com/davecgh/go-spew v1.1.1
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/google/go-cmp v0.2.0
 	github.com/goreleaser/goreleaser v0.97.0
