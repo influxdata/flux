@@ -826,34 +826,36 @@ impl Parser {
     fn parse_postfix_expression(&mut self) -> Expression {
         let mut expr = self.parse_primary_expression();
         loop {
-            // TODO(affo): find alternative way without cloning (borrowing issues).
-            let po = self.parse_postfix_operator(expr.clone());
+            let po = self.parse_postfix_operator(expr);
             match po {
-                Some(e) => expr = e,
-                None => break,
+                Ok(e) => expr = e,
+                Err(e) => return e,
             }
         }
-        expr
     }
     fn parse_postfix_operator_suffix(&mut self, expr: Expression) -> Expression {
         let mut res = expr;
         loop {
-            // TODO(affo): find alternative way without cloning (borrowing issues).
-            let po = self.parse_postfix_operator(res.clone());
+            let po = self.parse_postfix_operator(res);
             match po {
-                Some(e) => res = e,
-                None => break,
+                Ok(e) => res = e,
+                Err(e) => return e,
             }
         }
-        res
     }
-    fn parse_postfix_operator(&mut self, expr: Expression) -> Option<Expression> {
+    // parse_postfix_operator parses a postfix operator (membership, function call, indexing).
+    // It uses the given `expr` for building the postfix operator. As such, it must own `expr`,
+    // AST nodes use `Expression`s and not references to `Expression`s, indeed.
+    // It returns Result::Ok(po) containing the postfix operator created.
+    // If it fails to find a postix operator, it returns Result::Err(expr) containing the original
+    // expression passed. This allows for further reuse of the given `expr`.
+    fn parse_postfix_operator(&mut self, expr: Expression) -> Result<Expression, Expression> {
         let t = self.peek();
         match t.tok {
-            T_DOT => Some(self.parse_dot_expression(expr)),
-            T_LPAREN => Some(self.parse_call_expression(expr)),
-            T_LBRACK => Some(self.parse_index_expression(expr)),
-            _ => None,
+            T_DOT => Ok(self.parse_dot_expression(expr)),
+            T_LPAREN => Ok(self.parse_call_expression(expr)),
+            T_LBRACK => Ok(self.parse_index_expression(expr)),
+            _ => Err(expr),
         }
     }
     fn parse_dot_expression(&mut self, expr: Expression) -> Expression {
@@ -1202,7 +1204,7 @@ impl Parser {
         let mut params = Vec::new();
         let mut errs = Vec::new();
         while self.more() {
-            let mut p: Property;
+            let p: Property;
             let t = self.peek();
             match t.tok {
                 T_IDENT => p = self.parse_ident_property(),

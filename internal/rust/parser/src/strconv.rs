@@ -71,9 +71,9 @@ fn push_unescaped(s: &mut Vec<u8>, chars: &mut CharIndices) -> Result<(), String
 
 fn to_byte(c: char) -> Option<u8> {
     match c {
-        '0'...'9' => Some(c as u8 - b'0'),
-        'a'...'f' => Some(c as u8 - b'a' + 10),
-        'A'...'F' => Some(c as u8 - b'A' + 10),
+        '0'..='9' => Some(c as u8 - b'0'),
+        'a'..='f' => Some(c as u8 - b'a' + 10),
+        'A'..='F' => Some(c as u8 - b'A' + 10),
         _ => None,
     }
 }
