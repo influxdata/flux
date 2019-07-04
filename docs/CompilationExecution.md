@@ -36,9 +36,7 @@ These are the interfaces:
 import "context"
 
 // Language is a language used to express a Flux query.
-type Language interface {
-    LanguageName() String
-}
+type Language string
 
 // QueryRepresentation contains the actual content of a Flux query expressed in some Language.
 type QueryRepresentation interface {
@@ -113,3 +111,26 @@ from(...)
 This query requires the `Interpreter` to compute the results of `from(...) |> filter(...) |> group(...)` to extract the table `t`, in order to make it available to the rest of the computation.
 When the `Interpreter` encounters the `tableFind` call, it must delegate the execution to the `Engine` to get those results.
 Once obtained them, it can continue with its evaluation and, finally, delegate the execution to the `Engine` for the final results.
+
+Eventually, as a speculative analysis, we treat the evaluation of lambdas in higher-order functions like `map` and `filter`.
+For example:
+
+```
+threshold = 10
+
+t = from(...)
+    |> filter(fn:
+        (r) => {
+            v = r._value
+            v = v + 1
+            return v > threshold
+        }
+    )
+```
+
+The lambda passed to the `filter` transformation needs to be evaluated by an `Interpreter` and it requires the scope of evaluation in order to know the value of `threshold`.
+The problem is that the `Engine` executes transformations and it does not know how to interpret lambdas.
+At the moment, this happens by using the "Compiler", an on-purpose interpreter, with known issues for scoping of imports and variables.
+With this new design, this could change by allowing the `Engine` to delegate, in turn, the execution of those lambdas to the `Interpreter`.
+This has the advantage of removing the additional implementation of the Compiler, and gain the scoping of the `Interpreter`.
+This is not trivial and requires further analysis, though.
