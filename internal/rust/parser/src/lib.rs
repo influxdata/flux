@@ -833,12 +833,11 @@ impl Parser {
             }
         }
     }
-    fn parse_postfix_operator_suffix(&mut self, expr: Expression) -> Expression {
-        let mut res = expr;
+    fn parse_postfix_operator_suffix(&mut self, mut expr: Expression) -> Expression {
         loop {
-            let po = self.parse_postfix_operator(res);
+            let po = self.parse_postfix_operator(expr);
             match po {
-                Ok(e) => res = e,
+                Ok(e) => expr = e,
                 Err(e) => return e,
             }
         }
