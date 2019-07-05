@@ -1,11 +1,13 @@
 package execute_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/internal/gen"
@@ -177,6 +179,71 @@ func TestTablesEqual(t *testing.T) {
 	}
 }
 
+type TableIterator struct {
+	Tables []flux.Table
+}
+
+func (ti TableIterator) Do(f func(flux.Table) error) error {
+	for _, tbl := range ti.Tables {
+		if err := f(tbl); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func TestColListTable(t *testing.T) {
+	executetest.RunTableTests(t, executetest.TableTest{
+		NewFn: func(ctx context.Context, alloc *memory.Allocator) flux.TableIterator {
+			b1 := execute.NewColListTableBuilder(execute.NewGroupKey(
+				[]flux.ColMeta{
+					{Label: "host", Type: flux.TString},
+				},
+				[]values.Value{
+					values.NewString("a"),
+				},
+			), alloc)
+			_, _ = b1.AddCol(flux.ColMeta{Label: "_time", Type: flux.TTime})
+			_, _ = b1.AddCol(flux.ColMeta{Label: "host", Type: flux.TString})
+			_, _ = b1.AddCol(flux.ColMeta{Label: "_value", Type: flux.TFloat})
+			_ = b1.AppendTimes(0, arrow.NewInt(
+				[]int64{0, 10, 20, 30, 40, 50},
+				nil,
+			))
+			_ = b1.AppendStrings(1, arrow.NewString(
+				[]string{"a", "a", "a", "a", "a", "a"},
+				nil,
+			))
+			_ = b1.AppendFloats(2, arrow.NewFloat(
+				[]float64{4, 2, 8, 3, 4, 9},
+				nil,
+			))
+			tbl1, _ := b1.Table()
+			b1.ClearData()
+
+			b2 := execute.NewColListTableBuilder(execute.NewGroupKey(
+				[]flux.ColMeta{
+					{Label: "host", Type: flux.TString},
+				},
+				[]values.Value{
+					values.NewString("b"),
+				},
+			), alloc)
+			_, _ = b2.AddCol(flux.ColMeta{Label: "_time", Type: flux.TTime})
+			_, _ = b2.AddCol(flux.ColMeta{Label: "host", Type: flux.TString})
+			_, _ = b2.AddCol(flux.ColMeta{Label: "_value", Type: flux.TFloat})
+			tbl2, _ := b2.Table()
+			b2.ClearData()
+			return TableIterator{
+				Tables: []flux.Table{tbl1, tbl2},
+			}
+		},
+		IsDone: func(tbl flux.Table) bool {
+			return tbl.(*execute.ColListTable).IsDone()
+		},
+	})
+}
+
 func TestColListTable_AppendNil(t *testing.T) {
 	key := execute.NewGroupKey(nil, nil)
 	tb := execute.NewColListTableBuilder(key, &memory.Allocator{})
@@ -316,9 +383,10 @@ func TestCopyTable(t *testing.T) {
 		buf.Done()
 	}
 
-	// if got, want := alloc.Allocated(), int64(0); got != want {
-	// 	t.Errorf("memory leak -want/+got:\n\t- %d\n\t+ %d", want, got)
-	// }
+	// Ensure there has been no memory leak.
+	if got, want := alloc.Allocated(), int64(0); got != want {
+		t.Errorf("memory leak -want/+got:\n\t- %d\n\t+ %d", want, got)
+	}
 }
 
 func TestCopyTable_Empty(t *testing.T) {
