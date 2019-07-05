@@ -731,16 +731,30 @@ Those variables are shared between the function literal and the surrounding bloc
 #### Call expressions
 
 A call expressions invokes a function with the provided arguments.
-Arguments must be specified using the argument name, positional arguments not supported.
+Arguments must be specified using the argument name, positional arguments are not supported.
 Argument order does not matter.
 When an argument has a default value, it is not required to be specified.
 
     CallExpression = "(" PropertyList ")" .
 
+Call expressions support a short notation in case the name of the argument matches the parameter name.
+This notation can be used only when every argument matches its parameter.
+
 Examples:
 
-    f(a:1, b:9.6)
-    float(v:1)
+```
+add = (a,b) => a + b
+
+a = 1
+b = 2
+
+add(a, b)
+// is the same as
+add(a: a, b: b)
+// both FAIL: cannot mix short and long notation.
+add(a: a, b)
+add(a, b: b)
+```
 
 #### Pipe expressions
 
@@ -1392,6 +1406,44 @@ A transformation produces side effects when it is constructed from a function th
 
 Transformations are represented using function types.
 
+Some transformations, for instance `map` and `filter`, are represented using higher-order functions (functions that accepts other functions).
+When specifying the function passed in, _make sure that you use the same names for its parameters_.
+
+`filter`, for instance, accepts argument `fn` which is of type `(r: record) -> bool`.
+An invocation of `filter` must take a function with one argument named `r`:
+
+```
+from(bucket: "db")
+    |> filter(fn: (r) => ...)
+```
+
+This script would fail:
+
+```
+from(bucket: "db")
+    |> filter(fn: (v) => ...)
+
+// FAILS!: 'v' != 'r'.
+```
+
+The reason is simple: Flux does not support positional arguments, so parameter names matter.
+The transformation (in our example, `filter`) must know the name of the parameter in the given function in order to invoke it properly.
+The process happens the other way around, actually:
+our `filter` implementation supposes to invoke a function in this way:
+
+```
+fn(r: <the-record>)
+```
+
+So, you have to:
+
+```
+...
+    |> filter(fn: (r) => ...)
+...
+```
+
+
 ### Built-in transformations
 
 The following functions are preassigned in the universe block.
@@ -1584,6 +1636,9 @@ AggregateWindow has the following properties:
 | timeSrc     | string                                          | TimeSrc is the name of a column from the group key to use as the source for the aggregated time. Defaults to "_stop".                                           |
 | timeDst     | string                                          | TimeDst is the name of a new column in which the aggregated time is placed. Defaults to "_time".                                                                |
 | createEmpty | bool                                            | CreateEmpty, if true, will create empty windows and fill them with a null aggregate value.  Defaults to true.                                                   |
+
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Example:
 
 ```
@@ -2019,6 +2074,8 @@ Filter has the following properties:
 | ---- | ----                | -----------                                                                                        |
 | fn   | (r: record) -> bool | Fn is a predicate function. Records which evaluate to true, will be included in the output tables. |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Example:
 
 ```
@@ -2120,7 +2177,7 @@ LinearBins has the following properties:
 | start     | float | Start is the first value in the returned list.                                                   |
 | width     | float | Width is the distance between subsequent bin values.                                             |
 | count     | int   | Count is the number of bins to create.                                                           |
-| inifinity | bool  | Infinity when true adds an additional bin with a value of positive infinity. Defaults to `true`. |
+| infinity | bool  | Infinity when true adds an additional bin with a value of positive infinity. Defaults to `true`. |
 
 ##### LogarithmicBins
 
@@ -2133,7 +2190,7 @@ LogarithmicBins has the following properties:
 | start     | float | Start is the first value in the returned bin list.                                               |
 | factor    | float | Factor is the multiplier applied to each subsequent bin.                                         |
 | count     | int   | Count is the number of bins to create.                                                           |
-| inifinity | bool  | Infinity when true adds an additional bin with a value of positive infinity. Defaults to `true`. |
+| infinity | bool  | Infinity when true adds an additional bin with a value of positive infinity. Defaults to `true`. |
 
 #### Limit
 
@@ -2172,6 +2229,7 @@ Map has the following properties:
 | ---- | ----                  | -----------                                                            |
 | fn   | (r: record) -> record | Function to apply to each record.  The return value must be an object. |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
 The resulting table will only have columns present on the returned record of the map function.
 Use the `with` operator to preserve all columns from the input table in the output table.
@@ -2212,6 +2270,7 @@ Reduce has the following properties:
 | fn       | (r: record, accumulator: 'a) -> 'a | Function to apply to each record with a reducer object of type 'a.  |
 | identity | 'a                  | an initial value to use when creating a reducer. May be used more than once in asynchronous processing use cases.|
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
 Example (compute the sum of the value column):
 ```
@@ -2245,8 +2304,6 @@ from(bucket:"telegraf/autogen")
     |> reduce(fn: (r, accumulator) =>
             ({prod: r._value * accumulator.prod}), identity: {prod: 1.0}))
 ```
-
-
 
 #### Range
 
@@ -2299,6 +2356,8 @@ Rename has the following properties:
 | columns | object                     | Columns is a map of old column names to new names. Cannot be used with `fn`.                   |
 | fn      | (column: string) -> string | Fn defines a function mapping between old and new column names. Cannot be used with `columns`. |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Example usage:
 
 Rename a single column:
@@ -2329,6 +2388,8 @@ Drop has the following properties:
 | ----    | ----                     | -----------                                                                                           |
 | columns | []string                 | Columns is an array of column to exclude from the resulting table. Cannot be used with `fn`.          |
 | fn      | (column: string) -> bool | Fn is a predicate function, columns that evaluate to true are dropped. Cannot be used with `columns`. |
+
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
 Example Usage:
 
@@ -2361,6 +2422,8 @@ Keep has the following properties:
 | ----    | ----                     | -----------                                                                                        |
 | columns | []string                 | Columns is an array of column to exclude from the resulting table. Cannot be used with `fn`.       |
 | fn      | (column: string) -> bool | Fn is a predicate function, columns that evaluate to true are kept. Cannot be used with `columns`. |
+
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
 Example Usage:
 
@@ -2587,6 +2650,8 @@ KeyValues has the following properties:
 | keyColumns | []string                     | KeyColumns is a list of columns from which values are extracted.                                 |
 | fn         | (schema: schema) -> []string | Fn is a schema function that may by used instead of `keyColumns` to identify the set of columns. |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Additional requirements:
 
 * Only one of `keyColumns` or `fn` may be used in a single call.
@@ -2638,7 +2703,6 @@ Given the following input table with group key `["_measurement"]`:
 `keyColumns(keyColumns: ["tagB"])` produces the following error message:
 
     received table with columns [_time, _measurement, _value, tagA] not having key columns [tagB]
-
 
 #### Window
 
@@ -3140,6 +3204,8 @@ StateCount has the following parameters:
 | fn     | (r: record) -> bool | Fn is a function that returns true when the record is in the desired state.                  |
 | column | string              | Column is the name of the column to use to output the state count. Defaults to `stateCount`. |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Example:
 
 ```
@@ -3178,6 +3244,8 @@ StateDuration has the following parameters:
 | timeColumn | string              | TimeColumn is the name of the column used to extract timestamps. Defaults to `_time`.           |
 | unit       | duration            | Unit is the dimension of the output value. Defaults to `1s`.                                    |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Example:
 
 ```
@@ -3210,6 +3278,7 @@ Both are mutually exclusive.
 Similarly `org` and `orgID` are mutually exclusive and only required when writing to a remote host.
 Both `host` and `token` are optional parameters, however if `host` is specified, `token` is required.
 
+_NOTE_: make sure that `fieldFn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
 For example, given the following table:
 
@@ -3311,6 +3380,8 @@ It has the following parameters:
 | Name | Type                  | Description                                                                     |
 | ---- | ----                  | -----------                                                                     |
 | fn   | (key: object) -> bool | Fn is a predicate function. The result is the first table for which fn is true. |
+
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
 Example:
 
