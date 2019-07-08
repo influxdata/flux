@@ -57,13 +57,11 @@ enum T {
     COLON                         = 47,
     PIPE_FORWARD                  = 48,
     PIPE_RECEIVE                  = 49,
+    EXISTS                        = 50,
 };
 
 
 #define WASM_EXPORT __attribute__ ((visibility("default")))
 
-// Scan reads the input and reports the next lexical token.
-WASM_EXPORT void scan(const char **p, const char *data, const char *pe, const char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end);
-
-// Scan_with_regex reads the input and reports the next lexical token where a regex token is allowed.
-WASM_EXPORT void scan_with_regex(const char **p, const char *data, const char *pe, const char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end);
+// Scan reads the input and reports the next lexical token. Returns the execution state.
+WASM_EXPORT int scan(int with_regex, const char **p, const char *data, const char *pe, const char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end);
