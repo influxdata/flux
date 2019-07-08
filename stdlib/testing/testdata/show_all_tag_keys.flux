@@ -1138,7 +1138,7 @@ t_show_all_tag_keys = (table=<-) =>
 		|> group()
 		|> distinct()
 		|> map(fn: (r) =>
-			(r._value)))
+			({_value: r._value})))
 
 test _show_all_tag_keys = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_show_all_tag_keys})
