@@ -73,6 +73,7 @@
         "if" => { tok = IF; fbreak; };
         "then" => { tok = THEN; fbreak; };
         "else" => { tok = ELSE; fbreak; };
+        "exists" => { tok = EXISTS; fbreak; };
 
         identifier => { tok = IDENT; fbreak; };
         int_lit => { tok = INT; fbreak; };
@@ -114,7 +115,13 @@
 
 %% write data;
 
-void _scan(int cs, const char **pp, const char *data, const char *pe, const char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end) {
+int scan(int with_regex, const char **pp, const char *data, const char *pe, const char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end) {
+    int cs;
+    if (with_regex) {
+        cs = flux_en_main_with_regex;
+    } else {
+        cs = flux_en_main;
+    }
     const char *p = *pp;
     int act;
     const char *ts;
@@ -130,12 +137,5 @@ void _scan(int cs, const char **pp, const char *data, const char *pe, const char
     *token_end = te - data;
 
     *pp = p;
-}
-
-void scan(const char **p, const char *data, const char *pe, const char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end) {
-    _scan(flux_en_main, p, data, pe, eof, token, token_start, token_end);
-}
-
-void scan_with_regex(const char **p, const char *data, const char *pe, const char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end) {
-    _scan(flux_en_main_with_regex, p, data, pe, eof, token, token_start, token_end);
+    return cs == flux_error;
 }
