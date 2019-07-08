@@ -36,6 +36,7 @@ builtin map
 builtin max
 builtin mean
 builtin min
+builtin mode
 builtin quantile
 builtin pivot
 builtin range

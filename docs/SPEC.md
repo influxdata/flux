@@ -1750,6 +1750,28 @@ from(bucket: "telegraf/autogen"):
     |> range(start: -7y)
     |> movingAverage(every: 1y, period: 5y)
 ```
+
+##### Mode
+
+Mode produces the mode for a given column. Null is considered as a potential mode if it is present. If there are multiple modes, all of them are returned in a table in sorted order. 
+If there is no mode, null is returned. The following data types are supported: string, float64, int64, uint64, bool, time.
+
+Mode has the following properties: 
+
+| Name   | Type   | Description                                                                  |
+| ----   | ----   | -----------                                                                  |
+| column | string | Column is the column on which to track the mode.  Defaults to `_value`. |
+
+Example: 
+```
+from(bucket:"telegraf/autogen")
+    |> filter(fn: (r) => r._measurement == "mem" AND
+            r._field == "used_percent")
+    |> range(start:-12h)
+    |> window(every:10m)
+    |> mode(column: "host")
+```
+
 ##### Quantile (aggregate)
 
 Quantile is both an aggregate operation and a selector operation depending on selected options.
