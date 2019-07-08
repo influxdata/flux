@@ -38,11 +38,6 @@ func createElapsedOpSpec(args flux.Arguments, a *flux.Administration) (flux.Oper
 		return nil, err
 	}
 
-	err := a.AddParentFromArgs(args)
-	if err != nil {
-		return nil, err
-	}
-
 	spec := new(ElapsedOpSpec)
 
 	if unit, ok, err := args.GetDuration("unit"); err != nil {
@@ -172,29 +167,19 @@ func (t *elapsedTransformation) Process(id execute.DatasetID, tbl flux.Table) er
 		return err
 	}
 
-	ind := -1
-	for i, c := range cols {
-		found := c.Label == t.timeColumn && c.Type == flux.TTime
-
-		if found {
-			var typ flux.ColType
-			if c.Type == flux.TTime {
-				typ = flux.TInt
-			}
-
-			if numCol, err = builder.AddCol(flux.ColMeta{
-				Label: t.columnName,
-				Type:  typ,
-			}); err != nil {
-				return err
-			}
-
-			ind = i
-		}
+	timeIdx := execute.ColIdx(t.timeColumn, cols)
+	if timeIdx < 0 {
+		return fmt.Errorf("column %q does not exist", t.timeColumn)
 	}
 
-	if ind < 0 {
-		return fmt.Errorf("column %q does not exist", t.timeColumn)
+	timeCol := cols[timeIdx]
+	if timeCol.Type == flux.TTime {
+		if numCol, err = builder.AddCol(flux.ColMeta{
+			Label: t.columnName,
+			Type:  flux.TInt,
+		}); err != nil {
+			return err
+		}
 	}
 
 	prevTime := float64(0)
