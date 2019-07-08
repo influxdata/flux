@@ -2,13 +2,14 @@ package sql
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -48,7 +49,7 @@ func (o *ToSQLOpSpec) ReadArgs(args flux.Arguments) error {
 		return err
 	}
 	if len(o.DriverName) == 0 {
-		return errors.New("invalid driver name")
+		return errors.New(codes.Invalid, "invalid driver name")
 	}
 
 	o.DataSourceName, err = args.GetRequiredString("dataSourceName")
@@ -56,7 +57,7 @@ func (o *ToSQLOpSpec) ReadArgs(args flux.Arguments) error {
 		return err
 	}
 	if len(o.DataSourceName) == 0 {
-		return errors.New("invalid data source name")
+		return errors.New(codes.Invalid, "invalid data source name")
 	}
 
 	o.Table, err = args.GetRequiredString("table")
@@ -64,7 +65,7 @@ func (o *ToSQLOpSpec) ReadArgs(args flux.Arguments) error {
 		return err
 	}
 	if len(o.Table) == 0 {
-		return errors.New("invalid table name")
+		return errors.New(codes.Invalid, "invalid table name")
 	}
 
 	return err
@@ -109,7 +110,7 @@ func (o *ToSQLProcedureSpec) Copy() plan.ProcedureSpec {
 func newToSQLProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*ToSQLOpSpec)
 	if !ok && spec != nil {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	return &ToSQLProcedureSpec{Spec: spec}, nil
 }
@@ -117,7 +118,7 @@ func newToSQLProcedure(qs flux.OperationSpec, a plan.Administration) (plan.Proce
 func createToSQLTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*ToSQLProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -227,7 +228,7 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 		case flux.TBool:
 			newSQLTableCols = append(newSQLTableCols, fmt.Sprintf("%s BOOL", col.Label))
 		default:
-			return nil, nil, nil, fmt.Errorf("invalid type for column %s", col.Label)
+			return nil, nil, nil, errors.Newf(codes.Internal, "invalid type for column %s", col.Label)
 		}
 	}
 

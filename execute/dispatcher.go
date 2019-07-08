@@ -3,10 +3,11 @@ package execute
 import (
 	"context"
 	"fmt"
-	"github.com/influxdata/flux/memory"
 	"runtime/debug"
 	"sync"
 
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -64,20 +65,18 @@ func (d *poolDispatcher) Start(n int, ctx context.Context) {
 			// Setup panic handling on the worker goroutines
 			defer func() {
 				if e := recover(); e != nil {
-					var err error
-					switch e := e.(type) {
-					case error:
-						err = e
-					default:
+					err, ok := e.(error)
+					if !ok {
 						err = fmt.Errorf("%v", e)
 					}
 
-					if _, ok := err.(memory.LimitExceededError); ok {
+					if errors.Code(err) == codes.ResourceExhausted {
 						d.setErr(err)
 						return
 					}
 
-					d.setErr(fmt.Errorf("panic: %v\n%s", err, debug.Stack()))
+					err = errors.Wrap(err, codes.Internal, "panic")
+					d.setErr(err)
 					if entry := d.logger.Check(zapcore.InfoLevel, "Dispatcher panic"); entry != nil {
 						entry.Stack = string(debug.Stack())
 						entry.Write(zap.Error(err))

@@ -1,9 +1,11 @@
 package memory
 
 import (
-	"errors"
 	"fmt"
 	"sync/atomic"
+
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 // Allocator tracks the amount of memory being consumed by a query.
@@ -20,7 +22,7 @@ type Allocator struct {
 // record that it is in use.
 func (a *Allocator) Allocate(size int) error {
 	if size < 0 {
-		panic(errors.New("cannot allocate negative memory"))
+		panic(errors.New(codes.Internal, "cannot allocate negative memory"))
 	} else if size == 0 {
 		return nil
 	}
@@ -44,7 +46,7 @@ func (a *Allocator) MaxAllocated() int64 {
 // using a Reference.
 func (a *Allocator) Free(size int) {
 	if size < 0 {
-		panic(errors.New("cannot free negative memory"))
+		panic(errors.New(codes.Internal, "cannot free negative memory"))
 	}
 	atomic.AddInt64(&a.bytesAllocated, int64(-size))
 }
@@ -58,11 +60,11 @@ func (a *Allocator) count(size int) error {
 		for {
 			allocated := atomic.LoadInt64(&a.bytesAllocated)
 			if want := allocated + int64(size); want > *a.Limit {
-				return LimitExceededError{
+				return errors.Wrap(LimitExceededError{
 					Limit:     *a.Limit,
 					Allocated: allocated,
 					Wanted:    want - allocated,
-				}
+				}, codes.ResourceExhausted)
 			} else if atomic.CompareAndSwapInt64(&a.bytesAllocated, allocated, want) {
 				c = want
 				break

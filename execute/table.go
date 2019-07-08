@@ -1,7 +1,6 @@
 package execute
 
 import (
-	"errors"
 	"fmt"
 	"sort"
 	"sync/atomic"
@@ -10,6 +9,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -216,7 +217,7 @@ func AppendTable(t flux.Table, builder TableBuilder) error {
 // The colMap is a map of builder column index to cr column index.
 func AppendMappedCols(cr flux.ColReader, builder TableBuilder, colMap []int) error {
 	if len(colMap) != len(builder.Cols()) {
-		return errors.New("AppendMappedCols: colMap must have an entry for each table builder column")
+		return errors.New(codes.Internal, "AppendMappedCols: colMap must have an entry for each table builder column")
 	}
 	for j := range builder.Cols() {
 		if colMap[j] >= 0 {
@@ -243,10 +244,10 @@ func AppendCols(cr flux.ColReader, builder TableBuilder) error {
 // The indexes bj and cj are builder and col reader indexes respectively.
 func AppendCol(bj, cj int, cr flux.ColReader, builder TableBuilder) error {
 	if cj < 0 || cj > len(cr.Cols()) {
-		return errors.New("AppendCol column reader index out of bounds")
+		return errors.New(codes.Internal, "AppendCol column reader index out of bounds")
 	}
 	if bj < 0 || bj > len(builder.Cols()) {
-		return errors.New("AppendCol builder index out of bounds")
+		return errors.New(codes.Internal, "AppendCol builder index out of bounds")
 	}
 	c := cr.Cols()[cj]
 
@@ -272,7 +273,7 @@ func AppendCol(bj, cj int, cr flux.ColReader, builder TableBuilder) error {
 // AppendRecord appends the record from cr onto builder assuming matching columns.
 func AppendRecord(i int, cr flux.ColReader, builder TableBuilder) error {
 	if !BuilderColsMatchReader(builder, cr) {
-		return errors.New("AppendRecord column schema mismatch")
+		return errors.New(codes.Internal, "AppendRecord column schema mismatch")
 	}
 	for j := range builder.Cols() {
 		if err := builder.AppendValue(j, ValueForRow(cr, i, j)); err != nil {
@@ -286,7 +287,7 @@ func AppendRecord(i int, cr flux.ColReader, builder TableBuilder) error {
 // if an entry in the colMap indicates a mismatched column, the column is created with null values
 func AppendMappedRecordWithNulls(i int, cr flux.ColReader, builder TableBuilder, colMap []int) error {
 	if len(colMap) != len(builder.Cols()) {
-		return errors.New("AppendMappedRecordWithNulls: colMap must have an entry for each table builder column")
+		return errors.New(codes.Internal, "AppendMappedRecordWithNulls: colMap must have an entry for each table builder column")
 	}
 	for j := range builder.Cols() {
 		var val values.Value
@@ -1358,7 +1359,7 @@ func (t *ColListTable) Len() int {
 
 func (t *ColListTable) Do(f func(flux.ColReader) error) error {
 	if !atomic.CompareAndSwapInt32(&t.used, 0, 1) {
-		return errors.New("table already read")
+		return errors.New(codes.Internal, "table already read")
 	}
 	var err error
 	if t.nrows > 0 {

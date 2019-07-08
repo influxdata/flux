@@ -2,7 +2,6 @@ package executetest
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -10,7 +9,9 @@ import (
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -95,7 +96,7 @@ func (t *Table) Do(f func(flux.ColReader) error) error {
 	if t.Err != nil {
 		return t.Err
 	} else if t.IsDone {
-		return errors.New("table already read")
+		return errors.New(codes.Internal, "table already read")
 	}
 	t.IsDone = true
 

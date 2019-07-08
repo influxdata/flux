@@ -1,12 +1,12 @@
 package universe
 
 import (
-	"errors"
-	"fmt"
 	"sort"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -80,7 +80,7 @@ func validateGroupMode(mode string) (flux.GroupMode, error) {
 	case groupModeExcept:
 		return flux.GroupModeExcept, nil
 	default:
-		return flux.GroupModeNone, errors.New(`invalid group mode: must be "by" or "except"`)
+		return flux.GroupModeNone, errors.New(codes.Invalid, `invalid group mode: must be "by" or "except"`)
 	}
 }
 
@@ -101,7 +101,7 @@ type GroupProcedureSpec struct {
 func newGroupProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*GroupOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	mode, err := validateGroupMode(spec.Mode)
@@ -133,7 +133,7 @@ func (s *GroupProcedureSpec) Copy() plan.ProcedureSpec {
 func createGroupTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*GroupProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
