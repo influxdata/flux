@@ -6,10 +6,10 @@
   </head>
   <body>
     <textarea id="flux_src" rows="10" cols="100">
-package foo
-import "bar"
-
-a = x</textarea>
+from(bucket:"telegraf/autogen")
+        |>limit(limit:100, offset:10)
+        |> filter(fn: (r) => r.foo and r.bar or r.buz)
+</textarea>
     <div>
     <button id="parse" >Parse</button>
     </div>
