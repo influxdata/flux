@@ -70,3 +70,23 @@ func Wrapf(err error, code codes.Code, format string, a ...interface{}) error {
 		Err:  err,
 	}
 }
+
+// Code returns the error code for the given error.
+// If the error is not a flux.Error, this will return
+// Unknown for the code. If the error is a flux.Error
+// and its code is Inherit, then this will return the
+// wrapped error's code.
+func Code(err error) codes.Code {
+	for {
+		if ferr, ok := err.(*Error); ok {
+			if ferr.Code != codes.Inherit {
+				return ferr.Code
+			} else if ferr.Err == nil {
+				return codes.Unknown
+			}
+			err = ferr.Err
+		} else {
+			return codes.Unknown
+		}
+	}
+}

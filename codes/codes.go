@@ -32,6 +32,11 @@ import (
 type Code uint32
 
 const (
+	// Inherit indicates that this error should inherit the code of the wrapped
+	// error. If the wrapped error does not have a code or the error does not
+	// have a wrapped error, then this will act the same as Unknown.
+	Inherit = ^Code(0)
+
 	// OK is returned on success.
 	OK Code = 0
 

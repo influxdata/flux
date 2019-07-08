@@ -117,6 +117,58 @@ func TestError(t *testing.T) {
 	}
 }
 
+func TestErrorCode(t *testing.T) {
+	for _, tt := range []struct {
+		name string
+		err  error
+		want codes.Code
+	}{
+		{
+			name: "basic error",
+			err:  errors.New(codes.Invalid, "expected error"),
+			want: codes.Invalid,
+		},
+		{
+			name: "wrapped error",
+			err: errors.Wrap(
+				errors.New(codes.Invalid, "expected error"),
+				codes.NotFound,
+				"not found",
+			),
+			want: codes.NotFound,
+		},
+		{
+			name: "inherited error",
+			err: errors.Wrap(
+				errors.New(codes.Invalid, "expected error"),
+				codes.Inherit,
+				"inherited error",
+			),
+			want: codes.Invalid,
+		},
+		{
+			name: "inherited external error",
+			err: errors.Wrap(
+				stderrors.New("expected error"),
+				codes.Inherit,
+				"inherited error",
+			),
+			want: codes.Unknown,
+		},
+		{
+			name: "inherited with no wrapped error",
+			err:  errors.New(codes.Inherit, "inherited error"),
+			want: codes.Unknown,
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			if got, want := errors.Code(tt.err), tt.want; got != want {
+				t.Errorf("unexpected error code -want/+got:\n\t- %v\n\t+ %v", got, want)
+			}
+		})
+	}
+}
+
 func errorString(err error) string {
 	if err != nil {
 		return err.Error()
