@@ -3447,6 +3447,8 @@ Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" a
 The function `toDuration` is defined as `toDuration = (tables=<-) => tables |> map(fn:(r) => ({r with _value: duration(v:r._value)}))`.
 If you need to convert other columns use the `map` function directly with the `duration` function.
 
+TODO: implement duration as a column type in tables (https://github.com/influxdata/flux/issues/470)
+
 ##### toString
 
 Convert a value to a string.
