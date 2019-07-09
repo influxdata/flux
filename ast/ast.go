@@ -1265,7 +1265,7 @@ func (l *DateTimeLiteral) Copy() Node {
 var OperatorTokens = map[OperatorKind]string{
 	MultiplicationOperator:   "*",
 	DivisionOperator:         "/",
-	ModuloOperator: 		  "%",
+	ModuloOperator:           "%",
 	AdditionOperator:         "+",
 	SubtractionOperator:      "-",
 	LessThanEqualOperator:    "<=",

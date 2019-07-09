@@ -102,7 +102,7 @@ var opPrecedence = map[int]int{
 	// these are OperatorKinds
 	getIntForOp(MultiplicationOperator):   2,
 	getIntForOp(DivisionOperator):         2,
-	getIntForOp(ModuloOperator):		   2,
+	getIntForOp(ModuloOperator):           2,
 	getIntForOp(AdditionOperator):         3,
 	getIntForOp(SubtractionOperator):      3,
 	getIntForOp(LessThanEqualOperator):    4,
