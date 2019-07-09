@@ -1,5 +1,7 @@
 module github.com/influxdata/flux
 
+go 1.12
+
 require (
 	cloud.google.com/go v0.37.4 // indirect
 	github.com/DATA-DOG/go-sqlmock v1.3.3

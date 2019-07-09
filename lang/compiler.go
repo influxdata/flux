@@ -305,11 +305,14 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 		p.Now = time.Now()
 	}
 
+	astPkg := p.Ast
 	if p.opts.extern != nil {
-		p.Ast.Files = append([]*ast.File{p.opts.extern}, p.Ast.Files...)
+		// Duplicate the package so we can safely add the external files.
+		astPkg = astPkg.Copy().(*ast.Package)
+		astPkg.Files = append([]*ast.File{p.opts.extern}, astPkg.Files...)
 	}
 
-	s, err := spec.FromAST(ctx, p.Ast, p.Now)
+	s, err := spec.FromAST(ctx, astPkg, p.Now)
 	if err != nil {
 		return nil, errors.Wrap(err, "error in evaluating AST while starting program")
 	}

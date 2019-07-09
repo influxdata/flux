@@ -1750,6 +1750,28 @@ from(bucket: "telegraf/autogen"):
     |> range(start: -7y)
     |> movingAverage(every: 1y, period: 5y)
 ```
+
+##### Mode
+
+Mode produces the mode for a given column. Null is considered as a potential mode if it is present. If there are multiple modes, all of them are returned in a table in sorted order. 
+If there is no mode, null is returned. The following data types are supported: string, float64, int64, uint64, bool, time.
+
+Mode has the following properties: 
+
+| Name   | Type   | Description                                                                  |
+| ----   | ----   | -----------                                                                  |
+| column | string | Column is the column on which to track the mode.  Defaults to `_value`. |
+
+Example: 
+```
+from(bucket:"telegraf/autogen")
+    |> filter(fn: (r) => r._measurement == "mem" AND
+            r._field == "used_percent")
+    |> range(start:-12h)
+    |> window(every:10m)
+    |> mode(column: "host")
+```
+
 ##### Quantile (aggregate)
 
 Quantile is both an aggregate operation and a selector operation depending on selected options.
@@ -2170,7 +2192,7 @@ Map has the following properties:
 
 | Name | Type                  | Description                                                            |
 | ---- | ----                  | -----------                                                            |
-| fn   | (r: record) -> record | Function to apply to each record.  The return value must be an object. |
+| fn   | (r: record) -> record | Function to apply to each record. The return value must be an object.  |
 
 
 The resulting table will only have columns present on the returned record of the map function.
@@ -3046,6 +3068,22 @@ from(bucket: "telegraf/autogen")
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_user")
     |> difference()
 ```
+#### Elapsed
+
+Elapsed returns the elapsed time between subsequent records. 
+
+Given an input table, `elapsed` will return the same table with an additional `elapsed` column and without the first 
+record as elapsed time is not defined. 
+
+Elapsed has the following properties:
+
+| Name        | Type     | Description                                                                                                                                                 |
+| ----        | ----     | -----------                                                                                                                                                 |
+| unit        | duration | The unit in which the elapsed time is returned. Defaults to `1s`.|
+| timeColumn  | string   | Name of the `flux.TTime` column on which to compute the elapsed time. Defaults to `_time`.|
+| columnName  | string   | Name of the column of elapsed times. Defaults to `elapsed`.
+
+Elapsed errors if the timeColumn cannot be found within the given table. 
 
 #### Increase
 
@@ -3379,7 +3417,7 @@ Convert a value to a bool.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toBool()`
 
-The function `toBool` is defined as `toBool = (tables=<-) => tables |> map(fn:(r) => bool(v:r._value))`.
+The function `toBool` is defined as `toBool = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))`.
 If you need to convert other columns use the `map` function directly with the `bool` function.
 
 ##### toInt
@@ -3388,7 +3426,7 @@ Convert a value to a int.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toInt()`
 
-The function `toInt` is defined as `toInt = (tables=<-) => tables |> map(fn:(r) => int(v:r._value))`.
+The function `toInt` is defined as `toInt = (tables=<-) => tables |> map(fn:(r) => ({r with _value: int(v:r._value)}))`.
 If you need to convert other columns use the `map` function directly with the `int` function.
 
 ##### toFloat
@@ -3397,7 +3435,7 @@ Convert a value to a float.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toFloat()`
 
-The function `toFloat` is defined as `toFloat = (tables=<-) => tables |> map(fn:(r) => float(v:r._value))`.
+The function `toFloat` is defined as `toFloat = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))`.
 If you need to convert other columns use the `map` function directly with the `float` function.
 
 ##### toDuration
@@ -3406,8 +3444,10 @@ Convert a value to a duration.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toDuration()`
 
-The function `toDuration` is defined as `toDuration = (tables=<-) => tables |> map(fn:(r) => duration(v:r._value))`.
+The function `toDuration` is defined as `toDuration = (tables=<-) => tables |> map(fn:(r) => ({r with _value: duration(v:r._value)}))`.
 If you need to convert other columns use the `map` function directly with the `duration` function.
+
+TODO: implement duration as a column type in tables (https://github.com/influxdata/flux/issues/470)
 
 ##### toString
 
@@ -3415,7 +3455,7 @@ Convert a value to a string.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toString()`
 
-The function `toString` is defined as `toString = (tables=<-) => tables |> map(fn:(r) => string(v:r._value))`.
+The function `toString` is defined as `toString = (tables=<-) => tables |> map(fn:(r) => ({r with _value: string(v:r._value)}))`.
 If you need to convert other columns use the `map` function directly with the `string` function.
 
 ##### toTime
@@ -3424,7 +3464,7 @@ Convert a value to a time.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toTime()`
 
-The function `toTime` is defined as `toTime = (tables=<-) => tables |> map(fn:(r) => time(v:r._value))`.
+The function `toTime` is defined as `toTime = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))`.
 If you need to convert other columns use the `map` function directly with the `time` function.
 
 ##### toUInt
@@ -3433,7 +3473,7 @@ Convert a value to a uint.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toUInt()`
 
-The function `toUInt` is defined as `toUInt = (tables=<-) => tables |> map(fn:(r) => uint(v:r._value))`.
+The function `toUInt` is defined as `toUInt = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._value)}))`.
 If you need to convert other columns use the `map` function directly with the `uint` function.
 
 
@@ -3527,15 +3567,15 @@ Example: `joinStr(arr: []string{"a", "b", "c"}, v: ",")` returns string `a,b,c`.
 
 ##### lastIndex
 
-Returns the index of the last instance of substr in s, or -1 if substr is not present in v.
+Returns the index of the last instance of substr in v, or -1 if substr is not present in v.
 
-Example: `lastIndex(v: "go gopher", t: "go")` returns int `3`.
+Example: `lastIndex(v: "go gopher", substr: "go")` returns int `3`.
 
 ##### lastIndexAny
 
 Returns the index of the last instance of any value from chars in v, or -1 if no value from chars is present in v.
 
-Example: `lastIndexAny(v: "go gopher", t: "go")` returns int `4`.
+Example: `lastIndexAny(v: "go gopher", substr: "go")` returns int `4`.
 
 ##### strlen
 
@@ -3554,7 +3594,7 @@ Example: `repeat("v: na", i: 2)` returns string `nana`.
 
 Returns a copy of the string v with the first i non-overlapping instances of t replaced by u.
 
-Example: `replaceAll(v: "oink oink oink", t: "oink", u: "moo", i: 2)` returns string `moo moo oink`.
+Example: `replace(v: "oink oink oink", t: "oink", u: "moo", i: 2)` returns string `moo moo oink`.
 
 ##### replaceAll
 

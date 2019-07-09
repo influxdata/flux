@@ -1,11 +1,11 @@
 package regexp
 
 import (
-	"errors"
-	"fmt"
 	"regexp"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -25,7 +25,7 @@ func init() {
 			func(args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				if !ok {
-					return nil, errors.New("missing argument v")
+					return nil, errors.New(codes.Invalid, "missing argument v")
 				}
 
 				if v.Type().Nature() == semantic.String {
@@ -35,7 +35,7 @@ func init() {
 					}
 					return values.NewRegexp(re), err
 				}
-				return nil, fmt.Errorf("cannot convert argument v of type %v to Regex", v.Type().Nature())
+				return nil, errors.Newf(codes.Invalid, "cannot convert argument v of type %v to Regex", v.Type().Nature())
 			},
 			false,
 		),
@@ -49,14 +49,14 @@ func init() {
 			func(args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				if !ok {
-					return nil, errors.New("missing argument v")
+					return nil, errors.New(codes.Invalid, "missing argument v")
 				}
 
 				if v.Type().Nature() == semantic.String {
 					value := regexp.QuoteMeta(v.Str())
 					return values.NewString(value), nil
 				}
-				return nil, fmt.Errorf("cannot escape all regular expression metacharacters inside argument v of type %v", v.Type().Nature())
+				return nil, errors.Newf(codes.Invalid, "cannot escape all regular expression metacharacters inside argument v of type %v", v.Type().Nature())
 			},
 			false,
 		),
@@ -71,14 +71,14 @@ func init() {
 				v, ok := args.Get("v")
 				r, okk := args.Get("r")
 				if !ok || !okk {
-					return nil, errors.New("missing argument")
+					return nil, errors.New(codes.Invalid, "missing argument")
 				}
 
 				if v.Type().Nature() == semantic.String && r.Type().Nature() == semantic.Regexp {
 					value := r.Regexp().FindString(v.Str())
 					return values.NewString(value), nil
 				}
-				return nil, fmt.Errorf("cannot execute function containing argument r of type %v and argument v of type %v", r.Type().Nature(), v.Type().Nature())
+				return nil, errors.Newf(codes.Invalid, "cannot execute function containing argument r of type %v and argument v of type %v", r.Type().Nature(), v.Type().Nature())
 			},
 			false,
 		),
@@ -93,7 +93,7 @@ func init() {
 				v, ok := args.Get("v")
 				r, okk := args.Get("r")
 				if !ok || !okk {
-					return nil, errors.New("missing argument")
+					return nil, errors.New(codes.Invalid, "missing argument")
 				}
 
 				if v.Type().Nature() == semantic.String && r.Type().Nature() == semantic.Regexp {
@@ -104,7 +104,7 @@ func init() {
 					}
 					return arr, nil
 				}
-				return nil, fmt.Errorf("cannot execute function containing argument r of type %v and argument v of type %v", r.Type().Nature(), v.Type().Nature())
+				return nil, errors.Newf(codes.Invalid, "cannot execute function containing argument r of type %v and argument v of type %v", r.Type().Nature(), v.Type().Nature())
 			},
 			false,
 		),
@@ -119,14 +119,14 @@ func init() {
 				v, ok := args.Get("v")
 				r, okk := args.Get("r")
 				if !ok || !okk {
-					return nil, errors.New("missing argument")
+					return nil, errors.New(codes.Invalid, "missing argument")
 				}
 
 				if v.Type().Nature() == semantic.String && r.Type().Nature() == semantic.Regexp {
 					value := r.Regexp().MatchString(v.Str())
 					return values.NewBool(value), nil
 				}
-				return nil, fmt.Errorf("cannot execute function containing argument r of type %v and argument v of type %v", r.Type().Nature(), v.Type().Nature())
+				return nil, errors.Newf(codes.Invalid, "cannot execute function containing argument r of type %v and argument v of type %v", r.Type().Nature(), v.Type().Nature())
 			},
 			false,
 		),
@@ -142,14 +142,14 @@ func init() {
 				v, okk := args.Get("v")
 				t, okkk := args.Get("t")
 				if !ok || !okk || !okkk {
-					return nil, errors.New("missing argument")
+					return nil, errors.New(codes.Invalid, "missing argument")
 				}
 
 				if v.Type().Nature() == semantic.String && t.Type().Nature() == semantic.String && r.Type().Nature() == semantic.Regexp {
 					value := r.Regexp().ReplaceAllString(v.Str(), t.Str())
 					return values.NewString(value), nil
 				}
-				return nil, fmt.Errorf("cannot execute function containing argument r of type %v, argument v of type %v, and argument t of type %v", r.Type().Nature(), v.Type().Nature(), t.Type().Nature())
+				return nil, errors.Newf(codes.Invalid, "cannot execute function containing argument r of type %v, argument v of type %v, and argument t of type %v", r.Type().Nature(), v.Type().Nature(), t.Type().Nature())
 			},
 			false,
 		),
@@ -165,7 +165,7 @@ func init() {
 				v, okk := args.Get("v")
 				i, okkk := args.Get("i")
 				if !ok || !okk || !okkk {
-					return nil, errors.New("missing argument")
+					return nil, errors.New(codes.Invalid, "missing argument")
 				}
 
 				if v.Type().Nature() == semantic.String && i.Type().Nature() == semantic.Int && r.Type().Nature() == semantic.Regexp {
@@ -176,7 +176,7 @@ func init() {
 					}
 					return arr, nil
 				}
-				return nil, fmt.Errorf("cannot execute function containing argument r of type %v, argument v of type %v, and argument i of type %v", r.Type().Nature(), v.Type().Nature(), i.Type().Nature())
+				return nil, errors.Newf(codes.Invalid, "cannot execute function containing argument r of type %v, argument v of type %v, and argument i of type %v", r.Type().Nature(), v.Type().Nature(), i.Type().Nature())
 			},
 			false,
 		),
@@ -190,14 +190,14 @@ func init() {
 			func(args values.Object) (values.Value, error) {
 				r, ok := args.Get("r")
 				if !ok {
-					return nil, errors.New("missing argument")
+					return nil, errors.New(codes.Invalid, "missing argument")
 				}
 
 				if r.Type().Nature() == semantic.Regexp {
 					value := r.Regexp().String()
 					return values.NewString(value), nil
 				}
-				return nil, fmt.Errorf("cannot execute function containing argument r of type %v", r.Type().Nature())
+				return nil, errors.Newf(codes.Invalid, "cannot execute function containing argument r of type %v", r.Type().Nature())
 			},
 			false,
 		),

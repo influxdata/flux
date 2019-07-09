@@ -194,6 +194,7 @@ func Input(schema Schema) (flux.ResultIterator, error) {
 			return
 		}
 		tables = append(tables, tbl)
+		builder.ClearData()
 	})
 	if err != nil {
 		return nil, err

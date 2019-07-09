@@ -2,11 +2,13 @@ package semantic
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
 	"time"
+
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 func (p *Package) MarshalJSON() ([]byte, error) {
@@ -331,7 +333,7 @@ func (d *NativeVariableAssignment) UnmarshalJSON(data []byte) error {
 	return nil
 }
 func (d *ExternalVariableAssignment) MarshalJSON() ([]byte, error) {
-	return nil, errors.New("cannot marshal ExternalVariableAssignment")
+	return nil, errors.New(codes.Internal, "cannot marshal ExternalVariableAssignment")
 }
 func (e *CallExpression) MarshalJSON() ([]byte, error) {
 	type Alias CallExpression

@@ -9,9 +9,10 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -71,7 +72,7 @@ type executionState struct {
 func (e *executor) Execute(ctx context.Context, p *plan.Spec, a *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
 	es, err := e.createExecutionState(ctx, p, a)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to initialize execute state")
+		return nil, nil, errors.Wrap(err, codes.Inherit, "failed to initialize execute state")
 	}
 	es.logger = e.logger
 	es.do(ctx)
@@ -80,14 +81,14 @@ func (e *executor) Execute(ctx context.Context, p *plan.Spec, a *memory.Allocato
 
 func validatePlan(p *plan.Spec) error {
 	if p.Resources.ConcurrencyQuota == 0 {
-		return errors.New("plan must have a non-zero concurrency quota")
+		return errors.New(codes.Invalid, "plan must have a non-zero concurrency quota")
 	}
 	return nil
 }
 
 func (e *executor) createExecutionState(ctx context.Context, p *plan.Spec, a *memory.Allocator) (*executionState, error) {
 	if err := validatePlan(p); err != nil {
-		return nil, errors.Wrap(err, "invalid plan")
+		return nil, errors.Wrap(err, codes.Invalid, "invalid plan")
 	}
 	es := &executionState{
 		p:         p,
@@ -257,20 +258,18 @@ func (es *executionState) do(ctx context.Context) {
 			defer func() {
 				if e := recover(); e != nil {
 					// We had a panic, abort the entire execution.
-					var err error
-					switch e := e.(type) {
-					case error:
-						err = e
-					default:
+					err, ok := e.(error)
+					if !ok {
 						err = fmt.Errorf("%v", e)
 					}
 
-					if _, ok := err.(memory.LimitExceededError); ok {
+					if errors.Code(err) == codes.ResourceExhausted {
 						es.abort(err)
 						return
 					}
 
-					es.abort(fmt.Errorf("panic: %v", err))
+					err = errors.Wrap(err, codes.Internal, "panic")
+					es.abort(err)
 					if entry := es.logger.Check(zapcore.InfoLevel, "Execute source panic"); entry != nil {
 						entry.Stack = string(debug.Stack())
 						entry.Write(zap.Error(err))

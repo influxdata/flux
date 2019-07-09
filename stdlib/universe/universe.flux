@@ -19,6 +19,7 @@ builtin difference
 builtin distinct
 builtin drop
 builtin duplicate
+builtin elapsed
 builtin fill
 builtin filter
 builtin first
@@ -36,6 +37,7 @@ builtin map
 builtin max
 builtin mean
 builtin min
+builtin mode
 builtin quantile
 builtin pivot
 builtin range
@@ -74,9 +76,10 @@ builtin contains
 
 // other builtins
 builtin inf
-builtin length //length function for arrays
+builtin length // length function for arrays
 builtin linearBins
 builtin logarithmicBins
+builtin sleep // sleep is the identity function with the side effect of delaying execution by a specified duration.
 
 // covariance function with automatic join
 cov = (x,y,on,pearsonr=false) =>
@@ -254,4 +257,3 @@ toUInt     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._v
 toFloat    = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))
 toBool     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))
 toTime     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))
-toDuration = (tables=<-) => tables |> map(fn:(r) => ({r with _value: duration(v:r._value)}))

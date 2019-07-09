@@ -6,7 +6,8 @@ import (
 	"strings"
 
 	"github.com/influxdata/flux/ast"
-	"github.com/pkg/errors"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 // SolveConstraints solves the type inference problem defined by the constraints.
@@ -69,7 +70,7 @@ func (sol *Solution) solve() error {
 		r := subst.ApplyType(tc.r)
 		s, err := unifyTypes(kinds, l, r)
 		if err != nil {
-			return errors.Wrapf(err, "type error %v", tc.loc)
+			return errors.Wrapf(err, codes.Invalid, "type error %v", tc.loc)
 		}
 		subst.Merge(s)
 	}
@@ -199,7 +200,7 @@ func (s *Solution) PolyTypeOf(n Node) (PolyType, error) {
 
 func (s *Solution) AddConstraint(l, r PolyType) error {
 	if l == nil || r == nil {
-		return errors.New("cannot add type constraint on nil types")
+		return errors.New(codes.Invalid, "cannot add type constraint on nil types")
 	}
 	s.kinds = nil
 	s.cs.AddTypeConst(l, r, ast.SourceLocation{})

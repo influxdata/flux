@@ -33,15 +33,15 @@ func (r *Result) Normalize() {
 }
 
 type TableIterator struct {
-	tables []*Table
-	err    error
+	Tables []*Table
+	Err    error
 }
 
 func (ti *TableIterator) Do(f func(flux.Table) error) error {
-	if ti.err != nil {
-		return ti.err
+	if ti.Err != nil {
+		return ti.Err
 	}
-	for _, t := range ti.tables {
+	for _, t := range ti.Tables {
 		if err := f(t); err != nil {
 			return err
 		}

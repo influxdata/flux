@@ -1,6 +1,7 @@
 package execute
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/influxdata/flux"
@@ -208,9 +209,6 @@ func (f *RowPredicateFn) Eval(row int, cr flux.ColReader) (bool, error) {
 
 type RowMapFn struct {
 	rowFn
-
-	isWrap  bool
-	wrapObj *Record
 }
 
 func NewRowMapFn(fn *semantic.FunctionExpression) (*RowMapFn, error) {
@@ -229,19 +227,13 @@ func (f *RowMapFn) Prepare(cols []flux.ColMeta) error {
 		return err
 	}
 	k := f.preparedFn.Type().Nature()
-	f.isWrap = k != semantic.Object
-	if f.isWrap {
-		f.wrapObj = NewRecord(semantic.NewObjectType(map[string]semantic.Type{
-			DefaultValueColLabel: f.preparedFn.Type(),
-		}))
+	if k != semantic.Object {
+		return fmt.Errorf("map function must return an object, got %s", k.String())
 	}
 	return nil
 }
 
 func (f *RowMapFn) Type() semantic.Type {
-	if f.isWrap {
-		return f.wrapObj.Type()
-	}
 	return f.preparedFn.Type()
 }
 
@@ -249,10 +241,6 @@ func (f *RowMapFn) Eval(row int, cr flux.ColReader) (values.Object, error) {
 	v, err := f.rowFn.eval(row, cr, nil)
 	if err != nil {
 		return nil, err
-	}
-	if f.isWrap {
-		f.wrapObj.Set(DefaultValueColLabel, v)
-		return f.wrapObj, nil
 	}
 	return v.Object(), nil
 }
