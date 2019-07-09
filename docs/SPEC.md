@@ -1097,8 +1097,6 @@ November  = 11
 December  = 12
 ```
 
-[IMPL#154](https://github.com/influxdata/flux/issues/154) Add Months of the Year constants
-
 ### Time and date functions
 
 These are builtin functions that all take a single `time` argument and return an integer.

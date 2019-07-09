@@ -127,7 +127,6 @@ Others?
 ## Package `time`
 
 Constants representing months.  From the SPEC:
-[IMPL#154](https://github.com/influxdata/flux/issues/154)
 ```
 January   = 1
 February  = 2

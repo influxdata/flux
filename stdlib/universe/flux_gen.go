@@ -21,11 +21,11 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 89,
-					Line:   259,
+					Column: 15,
+					Line:   272,
 				},
 				File:   "universe.flux",
-				Source: "package universe\n\nimport \"system\"\n\n// now is a function option whose default behaviour is to return the current system time\noption now = system.time\n\n// Booleans\nbuiltin true\nbuiltin false\n\n// Transformation functions\nbuiltin columns\nbuiltin count\nbuiltin covariance\nbuiltin cumulativeSum\nbuiltin derivative\nbuiltin difference\nbuiltin distinct\nbuiltin drop\nbuiltin duplicate\nbuiltin elapsed\nbuiltin fill\nbuiltin filter\nbuiltin first\nbuiltin group\nbuiltin histogram\nbuiltin histogramQuantile\nbuiltin integral\nbuiltin join\nbuiltin keep\nbuiltin keyValues\nbuiltin keys\nbuiltin last\nbuiltin limit\nbuiltin map\nbuiltin max\nbuiltin mean\nbuiltin min\nbuiltin mode\nbuiltin quantile\nbuiltin pivot\nbuiltin range\nbuiltin reduce\nbuiltin rename\nbuiltin sample\nbuiltin set\nbuiltin timeShift\nbuiltin skew\nbuiltin spread\nbuiltin sort\nbuiltin stateTracking\nbuiltin stddev\nbuiltin sum\nbuiltin union\nbuiltin unique\nbuiltin window\nbuiltin yield\n\n// stream/table index functions\nbuiltin tableFind\nbuiltin getColumn\nbuiltin getRecord\n\n// type conversion functions\nbuiltin bool\nbuiltin duration\nbuiltin float\nbuiltin int\nbuiltin string\nbuiltin time\nbuiltin uint\n\n// contains function\nbuiltin contains\n\n// other builtins\nbuiltin inf\nbuiltin length // length function for arrays\nbuiltin linearBins\nbuiltin logarithmicBins\nbuiltin sleep // sleep is the identity function with the side effect of delaying execution by a specified duration.\n\n// covariance function with automatic join\ncov = (x,y,on,pearsonr=false) =>\n    join(\n        tables:{x:x, y:y},\n        on:on,\n    )\n    |> covariance(pearsonr:pearsonr, columns:[\"_value_x\",\"_value_y\"])\n\npearsonr = (x,y,on) => cov(x:x, y:y, on:on, pearsonr:true)\n\n// AggregateWindow applies an aggregate function to fixed windows of time.\n// The procedure is to window the data, perform an aggregate operation,\n// and then undo the windowing to produce an output table for every input table.\naggregateWindow = (every, fn, column=\"_value\", timeSrc=\"_stop\",timeDst=\"_time\", createEmpty=true, tables=<-) =>\n    tables\n        |> window(every:every, createEmpty: createEmpty)\n        |> fn(column:column)\n        |> duplicate(column:timeSrc,as:timeDst)\n        |> window(every:inf, timeColumn:timeDst)\n\n// Increase returns the total non-negative difference between values in a table.\n// A main usage case is tracking changes in counter values which may wrap over time when they hit\n// a threshold or are reset. In the case of a wrap/reset,\n// we can assume that the absolute delta between two points will be at least their non-negative difference.\nincrease = (tables=<-, columns=[\"_value\"]) =>\n    tables\n        |> difference(nonNegative: true, columns:columns)\n        |> cumulativeSum(columns: columns)\n\n// median returns the 50th percentile.\nmedian = (method=\"estimate_tdigest\", compression=0.0, column=\"_value\", tables=<-) =>\n    tables\n        |> quantile(q:0.5, method: method, compression: compression, column: column)\n\n// stateCount computes the number of consecutive records in a given state.\n// The state is defined via the function fn. For each consecutive point for\n// which the expression evaluates as true, the state count will be incremented\n// When a point evaluates as false, the state count is reset.\n//\n// The state count will be added as an additional column to each record. If the\n// expression evaluates as false, the value will be -1. If the expression\n// generates an error during evaluation, the point is discarded, and does not\n// affect the state count.\nstateCount = (fn, column=\"stateCount\", tables=<-) =>\n    tables\n        |> stateTracking(countColumn:column, fn:fn)\n\n// stateDuration computes the duration of a given state.\n// The state is defined via the function fn. For each consecutive point for\n// which the expression evaluates as true, the state duration will be\n// incremented by the duration between points. When a point evaluates as false,\n// the state duration is reset.\n//\n// The state duration will be added as an additional column to each record. If the\n// expression evaluates as false, the value will be -1. If the expression\n// generates an error during evaluation, the point is discarded, and does not\n// affect the state duration.\n//\n// Note that as the first point in the given state has no previous point, its\n// state duration will be 0.\n//\n// The duration is represented as an integer in the units specified.\nstateDuration = (fn, column=\"stateDuration\", timeColumn=\"_time\", unit=1s, tables=<-) =>\n    tables\n        |> stateTracking(durationColumn:column, timeColumn:timeColumn, fn:fn, durationUnit:unit)\n\n// _sortLimit is a helper function, which sorts and limits a table.\n_sortLimit = (n, desc, columns=[\"_value\"], tables=<-) =>\n    tables\n        |> sort(columns:columns, desc:desc)\n        |> limit(n:n)\n\n// top sorts a table by columns and keeps only the top n records.\ntop = (n, columns=[\"_value\"], tables=<-) =>\n    tables\n        |> _sortLimit(n:n, columns:columns, desc:true)\n\n// top sorts a table by columns and keeps only the bottom n records.\nbottom = (n, columns=[\"_value\"], tables=<-) =>\n    tables\n        |> _sortLimit(n:n, columns:columns, desc:false)\n\n// _highestOrLowest is a helper function, which reduces all groups into a single group by specific tags and a reducer function,\n// then it selects the highest or lowest records based on the column and the _sortLimit function.\n// The default reducer assumes no reducing needs to be performed.\n_highestOrLowest = (n, _sortLimit, reducer, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> group(columns:groupColumns)\n        |> reducer()\n        |> group(columns:[])\n        |> _sortLimit(n:n, columns:[column])\n\n// highestMax returns the top N records from all groups using the maximum of each group.\nhighestMax = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                // TODO(nathanielc): Once max/min support selecting based on multiple columns change this to pass all columns.\n                reducer: (tables=<-) => tables |> max(column:column),\n                _sortLimit: top,\n            )\n\n// highestAverage returns the top N records from all groups using the average of each group.\nhighestAverage = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> mean(column:column),\n                _sortLimit: top,\n            )\n\n// highestCurrent returns the top N records from all groups using the last value of each group.\nhighestCurrent = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> last(column:column),\n                _sortLimit: top,\n            )\n\n// lowestMin returns the bottom N records from all groups using the minimum of each group.\nlowestMin = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                // TODO(nathanielc): Once max/min support selecting based on multiple columns change this to pass all columns.\n                reducer: (tables=<-) => tables |> min(column:column),\n                _sortLimit: bottom,\n            )\n\n// lowestAverage returns the bottom N records from all groups using the average of each group.\nlowestAverage = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> mean(column:column),\n                _sortLimit: bottom,\n            )\n\n// lowestCurrent returns the bottom N records from all groups using the last value of each group.\nlowestCurrent = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> last(column:column),\n                _sortLimit: bottom,\n            )\n\n// movingAverage constructs a simple moving average over windows of 'period' duration\n// eg: A 5 year moving average would be called as such:\n//    movingAverage(1y, 5y)\n movingAverage = (every, period, column=\"_value\", tables=<-) =>\n     tables\n         |> window(every: every, period: period)\n         |> mean(column:column)\n         |> duplicate(column: \"_stop\", as: \"_time\")\n         |> window(every: inf)\n\ntoString   = (tables=<-) => tables |> map(fn:(r) => ({r with _value: string(v:r._value)}))\ntoInt      = (tables=<-) => tables |> map(fn:(r) => ({r with _value: int(v:r._value)}))\ntoUInt     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._value)}))\ntoFloat    = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))\ntoBool     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))\ntoTime     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))",
+				Source: "package universe\n\nimport \"system\"\n\n// now is a function option whose default behaviour is to return the current system time\noption now = system.time\n\n// Booleans\nbuiltin true\nbuiltin false\n\n// Transformation functions\nbuiltin columns\nbuiltin count\nbuiltin covariance\nbuiltin cumulativeSum\nbuiltin derivative\nbuiltin difference\nbuiltin distinct\nbuiltin drop\nbuiltin duplicate\nbuiltin elapsed\nbuiltin fill\nbuiltin filter\nbuiltin first\nbuiltin group\nbuiltin histogram\nbuiltin histogramQuantile\nbuiltin integral\nbuiltin join\nbuiltin keep\nbuiltin keyValues\nbuiltin keys\nbuiltin last\nbuiltin limit\nbuiltin map\nbuiltin max\nbuiltin mean\nbuiltin min\nbuiltin mode\nbuiltin quantile\nbuiltin pivot\nbuiltin range\nbuiltin reduce\nbuiltin rename\nbuiltin sample\nbuiltin set\nbuiltin timeShift\nbuiltin skew\nbuiltin spread\nbuiltin sort\nbuiltin stateTracking\nbuiltin stddev\nbuiltin sum\nbuiltin union\nbuiltin unique\nbuiltin window\nbuiltin yield\n\n// stream/table index functions\nbuiltin tableFind\nbuiltin getColumn\nbuiltin getRecord\n\n// type conversion functions\nbuiltin bool\nbuiltin duration\nbuiltin float\nbuiltin int\nbuiltin string\nbuiltin time\nbuiltin uint\n\n// contains function\nbuiltin contains\n\n// other builtins\nbuiltin inf\nbuiltin length // length function for arrays\nbuiltin linearBins\nbuiltin logarithmicBins\nbuiltin sleep // sleep is the identity function with the side effect of delaying execution by a specified duration.\n\n// covariance function with automatic join\ncov = (x,y,on,pearsonr=false) =>\n    join(\n        tables:{x:x, y:y},\n        on:on,\n    )\n    |> covariance(pearsonr:pearsonr, columns:[\"_value_x\",\"_value_y\"])\n\npearsonr = (x,y,on) => cov(x:x, y:y, on:on, pearsonr:true)\n\n// AggregateWindow applies an aggregate function to fixed windows of time.\n// The procedure is to window the data, perform an aggregate operation,\n// and then undo the windowing to produce an output table for every input table.\naggregateWindow = (every, fn, column=\"_value\", timeSrc=\"_stop\",timeDst=\"_time\", createEmpty=true, tables=<-) =>\n    tables\n        |> window(every:every, createEmpty: createEmpty)\n        |> fn(column:column)\n        |> duplicate(column:timeSrc,as:timeDst)\n        |> window(every:inf, timeColumn:timeDst)\n\n// Increase returns the total non-negative difference between values in a table.\n// A main usage case is tracking changes in counter values which may wrap over time when they hit\n// a threshold or are reset. In the case of a wrap/reset,\n// we can assume that the absolute delta between two points will be at least their non-negative difference.\nincrease = (tables=<-, columns=[\"_value\"]) =>\n    tables\n        |> difference(nonNegative: true, columns:columns)\n        |> cumulativeSum(columns: columns)\n\n// median returns the 50th percentile.\nmedian = (method=\"estimate_tdigest\", compression=0.0, column=\"_value\", tables=<-) =>\n    tables\n        |> quantile(q:0.5, method: method, compression: compression, column: column)\n\n// stateCount computes the number of consecutive records in a given state.\n// The state is defined via the function fn. For each consecutive point for\n// which the expression evaluates as true, the state count will be incremented\n// When a point evaluates as false, the state count is reset.\n//\n// The state count will be added as an additional column to each record. If the\n// expression evaluates as false, the value will be -1. If the expression\n// generates an error during evaluation, the point is discarded, and does not\n// affect the state count.\nstateCount = (fn, column=\"stateCount\", tables=<-) =>\n    tables\n        |> stateTracking(countColumn:column, fn:fn)\n\n// stateDuration computes the duration of a given state.\n// The state is defined via the function fn. For each consecutive point for\n// which the expression evaluates as true, the state duration will be\n// incremented by the duration between points. When a point evaluates as false,\n// the state duration is reset.\n//\n// The state duration will be added as an additional column to each record. If the\n// expression evaluates as false, the value will be -1. If the expression\n// generates an error during evaluation, the point is discarded, and does not\n// affect the state duration.\n//\n// Note that as the first point in the given state has no previous point, its\n// state duration will be 0.\n//\n// The duration is represented as an integer in the units specified.\nstateDuration = (fn, column=\"stateDuration\", timeColumn=\"_time\", unit=1s, tables=<-) =>\n    tables\n        |> stateTracking(durationColumn:column, timeColumn:timeColumn, fn:fn, durationUnit:unit)\n\n// _sortLimit is a helper function, which sorts and limits a table.\n_sortLimit = (n, desc, columns=[\"_value\"], tables=<-) =>\n    tables\n        |> sort(columns:columns, desc:desc)\n        |> limit(n:n)\n\n// top sorts a table by columns and keeps only the top n records.\ntop = (n, columns=[\"_value\"], tables=<-) =>\n    tables\n        |> _sortLimit(n:n, columns:columns, desc:true)\n\n// top sorts a table by columns and keeps only the bottom n records.\nbottom = (n, columns=[\"_value\"], tables=<-) =>\n    tables\n        |> _sortLimit(n:n, columns:columns, desc:false)\n\n// _highestOrLowest is a helper function, which reduces all groups into a single group by specific tags and a reducer function,\n// then it selects the highest or lowest records based on the column and the _sortLimit function.\n// The default reducer assumes no reducing needs to be performed.\n_highestOrLowest = (n, _sortLimit, reducer, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> group(columns:groupColumns)\n        |> reducer()\n        |> group(columns:[])\n        |> _sortLimit(n:n, columns:[column])\n\n// highestMax returns the top N records from all groups using the maximum of each group.\nhighestMax = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                // TODO(nathanielc): Once max/min support selecting based on multiple columns change this to pass all columns.\n                reducer: (tables=<-) => tables |> max(column:column),\n                _sortLimit: top,\n            )\n\n// highestAverage returns the top N records from all groups using the average of each group.\nhighestAverage = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> mean(column:column),\n                _sortLimit: top,\n            )\n\n// highestCurrent returns the top N records from all groups using the last value of each group.\nhighestCurrent = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> last(column:column),\n                _sortLimit: top,\n            )\n\n// lowestMin returns the bottom N records from all groups using the minimum of each group.\nlowestMin = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                // TODO(nathanielc): Once max/min support selecting based on multiple columns change this to pass all columns.\n                reducer: (tables=<-) => tables |> min(column:column),\n                _sortLimit: bottom,\n            )\n\n// lowestAverage returns the bottom N records from all groups using the average of each group.\nlowestAverage = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> mean(column:column),\n                _sortLimit: bottom,\n            )\n\n// lowestCurrent returns the bottom N records from all groups using the last value of each group.\nlowestCurrent = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> last(column:column),\n                _sortLimit: bottom,\n            )\n\n// movingAverage constructs a simple moving average over windows of 'period' duration\n// eg: A 5 year moving average would be called as such:\n//    movingAverage(1y, 5y)\n movingAverage = (every, period, column=\"_value\", tables=<-) =>\n     tables\n         |> window(every: every, period: period)\n         |> mean(column:column)\n         |> duplicate(column: \"_stop\", as: \"_time\")\n         |> window(every: inf)\n\ntoString   = (tables=<-) => tables |> map(fn:(r) => ({r with _value: string(v:r._value)}))\ntoInt      = (tables=<-) => tables |> map(fn:(r) => ({r with _value: int(v:r._value)}))\ntoUInt     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._value)}))\ntoFloat    = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))\ntoBool     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))\ntoTime     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))\n\nJanuary   = 1\nFebruary  = 2\nMarch     = 3\nApril     = 4\nMay       = 5\nJune      = 6\nJuly      = 7\nAugust    = 8\nSeptember = 9\nOctober   = 10\nNovember  = 11\nDecember  = 12",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -17183,6 +17183,630 @@ var pkgAST = &ast.Package{
 						},
 					}},
 				}},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   261,
+					},
+					File:   "universe.flux",
+					Source: "January   = 1",
+					Start: ast.Position{
+						Column: 1,
+						Line:   261,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   261,
+						},
+						File:   "universe.flux",
+						Source: "January",
+						Start: ast.Position{
+							Column: 1,
+							Line:   261,
+						},
+					},
+				},
+				Name: "January",
+			},
+			Init: &ast.IntegerLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   261,
+						},
+						File:   "universe.flux",
+						Source: "1",
+						Start: ast.Position{
+							Column: 13,
+							Line:   261,
+						},
+					},
+				},
+				Value: int64(1),
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   262,
+					},
+					File:   "universe.flux",
+					Source: "February  = 2",
+					Start: ast.Position{
+						Column: 1,
+						Line:   262,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 9,
+							Line:   262,
+						},
+						File:   "universe.flux",
+						Source: "February",
+						Start: ast.Position{
+							Column: 1,
+							Line:   262,
+						},
+					},
+				},
+				Name: "February",
+			},
+			Init: &ast.IntegerLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   262,
+						},
+						File:   "universe.flux",
+						Source: "2",
+						Start: ast.Position{
+							Column: 13,
+							Line:   262,
+						},
+					},
+				},
+				Value: int64(2),
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   263,
+					},
+					File:   "universe.flux",
+					Source: "March     = 3",
+					Start: ast.Position{
+						Column: 1,
+						Line:   263,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   263,
+						},
+						File:   "universe.flux",
+						Source: "March",
+						Start: ast.Position{
+							Column: 1,
+							Line:   263,
+						},
+					},
+				},
+				Name: "March",
+			},
+			Init: &ast.IntegerLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   263,
+						},
+						File:   "universe.flux",
+						Source: "3",
+						Start: ast.Position{
+							Column: 13,
+							Line:   263,
+						},
+					},
+				},
+				Value: int64(3),
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   264,
+					},
+					File:   "universe.flux",
+					Source: "April     = 4",
+					Start: ast.Position{
+						Column: 1,
+						Line:   264,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   264,
+						},
+						File:   "universe.flux",
+						Source: "April",
+						Start: ast.Position{
+							Column: 1,
+							Line:   264,
+						},
+					},
+				},
+				Name: "April",
+			},
+			Init: &ast.IntegerLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   264,
+						},
+						File:   "universe.flux",
+						Source: "4",
+						Start: ast.Position{
+							Column: 13,
+							Line:   264,
+						},
+					},
+				},
+				Value: int64(4),
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   265,
+					},
+					File:   "universe.flux",
+					Source: "May       = 5",
+					Start: ast.Position{
+						Column: 1,
+						Line:   265,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 4,
+							Line:   265,
+						},
+						File:   "universe.flux",
+						Source: "May",
+						Start: ast.Position{
+							Column: 1,
+							Line:   265,
+						},
+					},
+				},
+				Name: "May",
+			},
+			Init: &ast.IntegerLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   265,
+						},
+						File:   "universe.flux",
+						Source: "5",
+						Start: ast.Position{
+							Column: 13,
+							Line:   265,
+						},
+					},
+				},
+				Value: int64(5),
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   266,
+					},
+					File:   "universe.flux",
+					Source: "June      = 6",
+					Start: ast.Position{
+						Column: 1,
+						Line:   266,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 5,
+							Line:   266,
+						},
+						File:   "universe.flux",
+						Source: "June",
+						Start: ast.Position{
+							Column: 1,
+							Line:   266,
+						},
+					},
+				},
+				Name: "June",
+			},
+			Init: &ast.IntegerLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   266,
+						},
+						File:   "universe.flux",
+						Source: "6",
+						Start: ast.Position{
+							Column: 13,
+							Line:   266,
+						},
+					},
+				},
+				Value: int64(6),
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   267,
+					},
+					File:   "universe.flux",
+					Source: "July      = 7",
+					Start: ast.Position{
+						Column: 1,
+						Line:   267,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 5,
+							Line:   267,
+						},
+						File:   "universe.flux",
+						Source: "July",
+						Start: ast.Position{
+							Column: 1,
+							Line:   267,
+						},
+					},
+				},
+				Name: "July",
+			},
+			Init: &ast.IntegerLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   267,
+						},
+						File:   "universe.flux",
+						Source: "7",
+						Start: ast.Position{
+							Column: 13,
+							Line:   267,
+						},
+					},
+				},
+				Value: int64(7),
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   268,
+					},
+					File:   "universe.flux",
+					Source: "August    = 8",
+					Start: ast.Position{
+						Column: 1,
+						Line:   268,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   268,
+						},
+						File:   "universe.flux",
+						Source: "August",
+						Start: ast.Position{
+							Column: 1,
+							Line:   268,
+						},
+					},
+				},
+				Name: "August",
+			},
+			Init: &ast.IntegerLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   268,
+						},
+						File:   "universe.flux",
+						Source: "8",
+						Start: ast.Position{
+							Column: 13,
+							Line:   268,
+						},
+					},
+				},
+				Value: int64(8),
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   269,
+					},
+					File:   "universe.flux",
+					Source: "September = 9",
+					Start: ast.Position{
+						Column: 1,
+						Line:   269,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 10,
+							Line:   269,
+						},
+						File:   "universe.flux",
+						Source: "September",
+						Start: ast.Position{
+							Column: 1,
+							Line:   269,
+						},
+					},
+				},
+				Name: "September",
+			},
+			Init: &ast.IntegerLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   269,
+						},
+						File:   "universe.flux",
+						Source: "9",
+						Start: ast.Position{
+							Column: 13,
+							Line:   269,
+						},
+					},
+				},
+				Value: int64(9),
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 15,
+						Line:   270,
+					},
+					File:   "universe.flux",
+					Source: "October   = 10",
+					Start: ast.Position{
+						Column: 1,
+						Line:   270,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   270,
+						},
+						File:   "universe.flux",
+						Source: "October",
+						Start: ast.Position{
+							Column: 1,
+							Line:   270,
+						},
+					},
+				},
+				Name: "October",
+			},
+			Init: &ast.IntegerLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 15,
+							Line:   270,
+						},
+						File:   "universe.flux",
+						Source: "10",
+						Start: ast.Position{
+							Column: 13,
+							Line:   270,
+						},
+					},
+				},
+				Value: int64(10),
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 15,
+						Line:   271,
+					},
+					File:   "universe.flux",
+					Source: "November  = 11",
+					Start: ast.Position{
+						Column: 1,
+						Line:   271,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 9,
+							Line:   271,
+						},
+						File:   "universe.flux",
+						Source: "November",
+						Start: ast.Position{
+							Column: 1,
+							Line:   271,
+						},
+					},
+				},
+				Name: "November",
+			},
+			Init: &ast.IntegerLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 15,
+							Line:   271,
+						},
+						File:   "universe.flux",
+						Source: "11",
+						Start: ast.Position{
+							Column: 13,
+							Line:   271,
+						},
+					},
+				},
+				Value: int64(11),
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 15,
+						Line:   272,
+					},
+					File:   "universe.flux",
+					Source: "December  = 12",
+					Start: ast.Position{
+						Column: 1,
+						Line:   272,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 9,
+							Line:   272,
+						},
+						File:   "universe.flux",
+						Source: "December",
+						Start: ast.Position{
+							Column: 1,
+							Line:   272,
+						},
+					},
+				},
+				Name: "December",
+			},
+			Init: &ast.IntegerLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 15,
+							Line:   272,
+						},
+						File:   "universe.flux",
+						Source: "12",
+						Start: ast.Position{
+							Column: 13,
+							Line:   272,
+						},
+					},
+				},
+				Value: int64(12),
 			},
 		}},
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{

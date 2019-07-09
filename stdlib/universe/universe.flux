@@ -257,3 +257,16 @@ toUInt     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._v
 toFloat    = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))
 toBool     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))
 toTime     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))
+
+January   = 1
+February  = 2
+March     = 3
+April     = 4
+May       = 5
+June      = 6
+July      = 7
+August    = 8
+September = 9
+October   = 10
+November  = 11
+December  = 12
