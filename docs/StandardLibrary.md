@@ -144,7 +144,6 @@ December  = 12
 ```
 
 Constants representing days of the week. From the SPEC:
-[IMPL#153](https://github.com/influxdata/flux/issues/153)
 ```
 Sunday    = 0
 Monday    = 1

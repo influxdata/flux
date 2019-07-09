@@ -1075,8 +1075,6 @@ Saturday  = 6
 ```
 
 
-[IMPL#153](https://github.com/influxdata/flux/issues/153) Add Days of the Week constants
-
 ### Months of the year
 
 Months are represented as integers in the range `[1-12]`.

@@ -257,3 +257,11 @@ toUInt     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._v
 toFloat    = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))
 toBool     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))
 toTime     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))
+
+Sunday    = 0
+Monday    = 1
+Tuesday   = 2
+Wednesday = 3
+Thursday  = 4
+Friday    = 5
+Saturday  = 6
