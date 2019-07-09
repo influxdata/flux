@@ -1,5 +1,6 @@
-package main
+package rust
 
+/*
 // Example of calling into Rust from Go
 // This requires that you build Go and Rust with the musl libc.
 
@@ -13,3 +14,4 @@ func main() {
 func Parse(s string) {
 	C.go_parse(C.CString(s))
 }
+*/
