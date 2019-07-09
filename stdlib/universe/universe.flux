@@ -38,6 +38,7 @@ builtin max
 builtin mean
 builtin min
 builtin mode
+builtin movingAverage
 builtin quantile
 builtin pivot
 builtin range
@@ -241,15 +242,15 @@ lowestCurrent = (n, column="_value", groupColumns=[], tables=<-) =>
                 _sortLimit: bottom,
             )
 
-// movingAverage constructs a simple moving average over windows of 'period' duration
+// timedMovingAverage constructs a simple moving average over windows of 'period' duration
 // eg: A 5 year moving average would be called as such:
 //    movingAverage(1y, 5y)
- movingAverage = (every, period, column="_value", tables=<-) =>
-     tables
-         |> window(every: every, period: period)
-         |> mean(column:column)
-         |> duplicate(column: "_stop", as: "_time")
-         |> window(every: inf)
+timedMovingAverage = (every, period, column="_value", tables=<-) =>
+    tables
+        |> window(every: every, period: period)
+        |> mean(column:column)
+        |> duplicate(column: "_stop", as: "_time")
+        |> window(every: inf)
 
 toString   = (tables=<-) => tables |> map(fn:(r) => ({r with _value: string(v:r._value)}))
 toInt      = (tables=<-) => tables |> map(fn:(r) => ({r with _value: int(v:r._value)}))
@@ -257,4 +258,3 @@ toUInt     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._v
 toFloat    = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))
 toBool     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))
 toTime     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))
-toDuration = (tables=<-) => tables |> map(fn:(r) => ({r with _value: duration(v:r._value)}))
