@@ -416,6 +416,11 @@ func TestTypeconv_Time(t *testing.T) {
 		},
 		{
 			name: "time(v:3)",
+			v:    values.Time(1136239445),
+			want: values.Time(1136239445),
+		},
+		{
+			name: "time(v:4)",
 			v:    "2006-01-02T22:04:05.999999999Z",
 			want: values.Time(1136239445999999999),
 		},
