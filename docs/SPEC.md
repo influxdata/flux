@@ -1723,34 +1723,6 @@ from(bucket: "telegraf/autogen")
 	|> median()
 ```
 
-##### Moving Average
-
-Moving Average is an aggregate operation.
-For each aggregated column, it means the values of the following records for a defined window range.
-Moving Average is defined as
-```
-movingAverage = (every, period, column="_value", tables=<-) =>
-    tables
-        |> window(every: every, period: period)
-        |> mean(column:column)
-        |> duplicate(column: "_stop", as: "_time")
-        |> window(every: inf)
-```
-Moving Average has the following properties:
-| Name        | Type     | Description
-| ----        | ----     | -----------
-| every       | duration | Every specifies the frequency of windows.
-| period      | duration | Period specifies the window size to mean.       
-| column      | string   | Column specifies a column to aggregate. Defaults to `"_value"`            
-
-Example:
-```
-// A 5 year moving average would be called as such:
-from(bucket: "telegraf/autogen"):
-    |> range(start: -7y)
-    |> movingAverage(every: 1y, period: 5y)
-```
-
 ##### Mode
 
 Mode produces the mode for a given column. Null is considered as a potential mode if it is present. If there are multiple modes, all of them are returned in a table in sorted order. 
@@ -3117,6 +3089,75 @@ Given the following input table.
     | 00002 | 4      |
     | 00003 | 7      |
     | 00004 | 8      |
+    
+    
+####  Moving Average
+
+Moving Average computes the moving averages of a series of records.
+It means the values of a user-defined period for a defined number of points,
+
+Moving Average has the following properties:
+
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| n           | duration | N specifies the number of points to mean.       
+| columns     | []string | Columns is list of all columns that `movingAverage` should be performed on. Defaults to `["_value"]`. |
+
+Rules for taking the moving average for numeric types:
+ - the average over a period populated by `n` values is equal to their algebraic mean
+ - the average over a period populated by only null values is null
+ - moving averages that include null values skip over those values
+ - if `n` is less than the number of records in a table, `movingAverage` returns the average of the available values
+ 
+Example of moving average (`N` = 2):
+
+| _time |   A  |   B  |   C  |   D  | tag |
+|:-----:|:----:|:----:|:----:|:----:|:---:|
+|  0001 | null |   1  |   2  | null |  tv |
+|  0002 |   6  |   2  | null | null |  tv |
+|  0003 |   4  | null |   4  |   4  |  tv |
+
+Result:
+
+| _time |   A  |   B  |   C  |   D  | tag |
+|:-----:|:----:|:----:|:----:|:----:|:---:|
+|  0002 |   6  |  1.5 |   2  | null |  tv |
+|  0003 |   5  |   2  |   4  |   4  |  tv |
+
+Example of script:
+```
+// A 5 point moving average would be called as such:
+from(bucket: "telegraf/autogen"):
+    |> range(start: -7y)
+    |> movingAverage(n: 5, columns: ["_value"])
+```
+
+##### Timed Moving Average
+
+Timed Moving Average means the values of the following records for a defined number of points, for the specified column.
+```
+timedMovingAverage = (every, period, column="_value", tables=<-) =>
+    tables
+        |> window(every: every, period: period)
+        |> mean(column:column)
+        |> duplicate(column: "_stop", as: "_time")
+        |> window(every: inf)
+```
+Timed Moving Average has the following properties:
+
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| every       | duration | Every specifies the frequency of windows.
+| period      | duration | Period specifies the window size to mean.       
+| column      | string   | Column specifies a column to aggregate. Defaults to `"_value"`            
+
+Example:
+```
+// A 5 year moving average would be called as such:
+from(bucket: "telegraf/autogen"):
+    |> range(start: -7y)
+    |> timedMovingAverage(every: 1y, period: 5y)
+```
 
 #### Distinct
 
