@@ -1444,7 +1444,7 @@ var pkgAST = &ast.Package{
 								},
 							},
 						},
-						Operator: 4,
+						Operator: 5,
 					},
 				}},
 			},
@@ -1738,7 +1738,7 @@ var pkgAST = &ast.Package{
 											Name: "_measurement",
 										},
 									},
-									Operator: 15,
+									Operator: 16,
 									Right: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
@@ -2798,7 +2798,7 @@ var pkgAST = &ast.Package{
 								},
 							},
 						},
-						Operator: 4,
+						Operator: 5,
 					},
 				}},
 			},
@@ -3040,7 +3040,7 @@ var pkgAST = &ast.Package{
 											Name: "_measurement",
 										},
 									},
-									Operator: 15,
+									Operator: 16,
 									Right: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Errors: nil,

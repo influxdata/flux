@@ -134,7 +134,33 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewFloat(l / r)
 	},
 	{Operator: ast.DivisionOperator, Left: semantic.Nil, Right: semantic.Nil}: nil,
-
+	{Operator: ast.ModuloOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) Value {
+		l := lv.Int()
+		r := rv.Int()
+		if r == 0 {
+			// TODO(skhosla): reject mod with a constant 0 divisor
+			return NewInt(0)
+		}
+		return NewInt(l % r)
+	},
+	{Operator: ast.ModuloOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) Value {
+		l := lv.UInt()
+		r := rv.UInt()
+		if r == 0 {
+			// TODO(skhosla): reject mod with a constant 0 divisor
+			return NewInt(0)
+		}
+		return NewUInt(l % r)
+	},
+	{Operator: ast.ModuloOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) Value {
+		l := lv.Float()
+		r := rv.Float()
+		if r == 0 {
+			return NewFloat(math.NaN())
+		}
+		return NewFloat(math.Mod(l, r))
+	},
+	{Operator: ast.ModuloOperator, Left: semantic.Nil, Right: semantic.Nil}: nil,
 	//---------------------
 	// Comparison Operators
 	//---------------------

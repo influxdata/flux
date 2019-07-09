@@ -664,6 +664,9 @@ func (p *parser) parseMultiplicativeOperator() (ast.OperatorKind, bool) {
 	case token.DIV:
 		p.consume()
 		return ast.DivisionOperator, true
+	case token.MOD:
+		p.consume()
+		return ast.ModuloOperator, true
 	default:
 		return 0, false
 	}
