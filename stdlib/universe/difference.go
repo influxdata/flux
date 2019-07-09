@@ -161,6 +161,8 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 				typ = flux.TInt
 			case flux.TFloat:
 				typ = flux.TFloat
+			case flux.TTime:
+				return fmt.Errorf("difference does not support time columns. try the elapsed function")
 			}
 			if _, err := builder.AddCol(flux.ColMeta{
 				Label: c.Label,
