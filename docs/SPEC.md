@@ -3192,7 +3192,7 @@ Example of script:
 ```
 // A 5 point moving average would be called as such:
 from(bucket: "telegraf/autogen"):
-    |> range(start: -7y)
+    |> range(start: -7d)
     |> movingAverage(n: 5, columns: ["_value"])
 ```
 
@@ -3223,6 +3223,48 @@ from(bucket: "telegraf/autogen"):
     |> timedMovingAverage(every: 1y, period: 5y)
 ```
 
+#### Exponential Moving Average
+
+Exponential Moving Average computes the exponential moving averages of a series of records
+It is a weighted moving average that gives more weighting to recent data as opposed to older data.
+
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| n           | int      | N specifies the number of points to mean.       
+| columns     | []string | Columns is list of all columns that `exponentialMovingAverage` should be performed on. Defaults to `["_value"]`. |
+
+Rules for taking the exponential moving average for numeric types:
+ - the first value of an exponential moving average over `n` values is the algebraic mean of the first `n` values
+ - subsequent values are calculated as `y(t) = x(t) * k + y(t-1) * (1 - k)`, where 
+    - the constant `k` is defined as `k = 2 / (1 + n)`
+    - `y(t)` is defined as exponential moving average at time `t`
+    - `x(t)` is defined as the value at time `t`
+ - `exponentialMovingAverage` ignores ignores null values and does not count them in calculations
+ 
+ Example:
+ 
+ | _time |   A  |   B  |   C  | tag |
+ |:-----:|:----:|:----:|:----:|:---:|
+ |  0001 |   2  | null |   2  |  tv |
+ |  0002 | null |  10  |   4  |  tv |
+ |  0003 |   8  |  20  |   5  |  tv |
+ 
+ Result:
+ 
+ | _time |   A  |   B  |   C  | tag |
+ |:-----:|:----:|:----:|:----:|:---:|
+ |  0002 |   2  |  10  |   3  |  tv |
+ |  0003 |   6  | 16.67| 4.33 |  tv |
+ 
+ 
+Example of script:
+```
+// A 5 point exponential moving average would be called as such:
+from(bucket: "telegraf/autogen"):
+    |> range(start: -7d)
+    |> exponentialMovingAverage(n: 5, columns: ["_value"])
+```
+ 
 #### Distinct
 
 Distinct produces the unique values for a given column. Null is considered its own distinct value if it is present.

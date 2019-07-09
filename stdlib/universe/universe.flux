@@ -20,6 +20,7 @@ builtin distinct
 builtin drop
 builtin duplicate
 builtin elapsed
+builtin exponentialMovingAverage
 builtin fill
 builtin filter
 builtin first
