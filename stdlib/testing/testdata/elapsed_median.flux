@@ -31,7 +31,7 @@ outData = "
 ,,0,10
 "
 
-t_difference = (table=<-) =>
+t_elapsed = (table=<-) =>
 	(table
 		|> range(start: 2018-05-22T19:53:26Z)
         |> filter(fn: (r) => r._measurement == "mem" and r._field == "active")
@@ -41,6 +41,6 @@ t_difference = (table=<-) =>
         |> median(column: "elapsed")
     )
 
-test _difference_time = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_difference})
+test _elapsed_median = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_elapsed})
 
