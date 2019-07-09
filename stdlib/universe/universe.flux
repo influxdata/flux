@@ -19,6 +19,7 @@ builtin difference
 builtin distinct
 builtin drop
 builtin duplicate
+builtin elapsed
 builtin fill
 builtin filter
 builtin first
@@ -36,6 +37,7 @@ builtin map
 builtin max
 builtin mean
 builtin min
+builtin mode
 builtin quantile
 builtin pivot
 builtin range
