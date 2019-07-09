@@ -6,7 +6,7 @@ import (
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/semantic"
-)	
+)
 
 type BinaryFunction func(l, r Value) Value
 
