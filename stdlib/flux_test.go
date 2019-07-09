@@ -42,7 +42,6 @@ var skip = map[string]string{
 
 	"extract_regexp_findStringIndex": "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
 	"partition_strings_splitN":       "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
-	"strings_replaceAll":             "strings. map fails to evaluate because missing a mysterious argument i (https://github.com/influxdata/flux/issues/1437)",
 }
 
 func TestFluxEndToEnd(t *testing.T) {
