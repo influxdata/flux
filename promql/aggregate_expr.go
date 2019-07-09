@@ -1,4 +1,4 @@
-package promflux
+package promql
 
 import (
 	"fmt"
