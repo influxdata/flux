@@ -41,10 +41,11 @@ func createRecord(row []interface{}) (*execute.Record, error) {
 
 func TestRowMapFn_Eval(t *testing.T) {
 	testCases := []struct {
-		name string
-		f    func() (*execute.RowMapFn, error)
-		data *executetest.Table
-		want [][]interface{}
+		name       string
+		f          func() (*execute.RowMapFn, error)
+		data       *executetest.Table
+		want       [][]interface{}
+		prepareErr error
 	}{
 		{
 			name: "_value + 1.0, tag + 'b'",
@@ -119,15 +120,22 @@ func TestRowMapFn_Eval(t *testing.T) {
 						Parameters: &semantic.FunctionParameters{
 							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 						},
-						Body: &semantic.BinaryExpression{
-							Operator: ast.SubtractionOperator,
-							Left: &semantic.MemberExpression{
-								Object: &semantic.IdentifierExpression{
-									Name: "r",
+						Body: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{
+									Key: &semantic.StringLiteral{Value: "_value"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.SubtractionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "_value",
+										},
+										Right: &semantic.FloatLiteral{Value: 3.0},
+									},
 								},
-								Property: "_value",
 							},
-							Right: &semantic.FloatLiteral{Value: 3.0},
 						},
 					},
 				})
@@ -156,6 +164,36 @@ func TestRowMapFn_Eval(t *testing.T) {
 				{"_value", nil},
 			},
 		},
+		{
+			name: "error not returning object",
+			f: func() (*execute.RowMapFn, error) {
+				return execute.NewRowMapFn(&semantic.FunctionExpression{
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.BinaryExpression{
+							Operator: ast.SubtractionOperator,
+							Left: &semantic.MemberExpression{
+								Object: &semantic.IdentifierExpression{
+									Name: "r",
+								},
+								Property: "_value",
+							},
+							Right: &semantic.FloatLiteral{Value: 3.0},
+						},
+					},
+				})
+			},
+			data: &executetest.Table{
+				ColMeta: []flux.ColMeta{
+					// This is needed because the function accesses `_value` on `r`.
+					// Otherwise, it would give a different error than expected.
+					{Label: "_value", Type: flux.TFloat},
+				},
+			},
+			prepareErr: fmt.Errorf("map function must return an object, got float"),
+		},
 	}
 
 	for _, tc := range testCases {
@@ -169,7 +207,15 @@ func TestRowMapFn_Eval(t *testing.T) {
 			}
 			err = f.Prepare(tc.data.ColMeta)
 			if err != nil {
+				if tc.prepareErr != nil {
+					if !cmp.Equal(tc.prepareErr.Error(), err.Error()) {
+						t.Fatalf("unexpected prepare error -want/+got\n%s", cmp.Diff(tc.prepareErr.Error(), err.Error()))
+					}
+					return
+				}
 				t.Fatal(err)
+			} else if tc.prepareErr != nil {
+				t.Fatal("expected prepare error, got none")
 			}
 
 			// convert tc.want
@@ -183,7 +229,7 @@ func TestRowMapFn_Eval(t *testing.T) {
 			}
 
 			got := make([]*execute.Record, 0, len(tc.data.Data))
-			tc.data.Do(func(cr flux.ColReader) error {
+			if err := tc.data.Do(func(cr flux.ColReader) error {
 				for i := 0; i < cr.Len(); i++ {
 					obj, err := f.Eval(i, cr)
 					if err != nil {
@@ -198,7 +244,9 @@ func TestRowMapFn_Eval(t *testing.T) {
 				}
 
 				return nil
-			})
+			}); err != nil {
+				t.Fatal(err)
+			}
 
 			if !cmp.Equal(want, got, CmpOptions...) {
 				t.Errorf("unexpected result -want/+got\n%s", cmp.Diff(want, got, CmpOptions...))
