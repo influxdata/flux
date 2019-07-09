@@ -511,7 +511,7 @@ func init() {
 	flux.RegisterPackageValue("strings", "replace",
 		generateReplace("replace", []string{stringArgV, stringArgT, stringArgU, integer}, strings.Replace))
 	flux.RegisterPackageValue("strings", "replaceAll",
-		generateReplaceAll("replaceAll", []string{stringArgV, stringArgT, stringArgU, integer}, replaceAll))
+		generateReplaceAll("replaceAll", []string{stringArgV, stringArgT, stringArgU}, replaceAll))
 	flux.RegisterPackageValue("strings", "split",
 		generateSplit("split", []string{stringArgV, stringArgT}, strings.Split))
 	flux.RegisterPackageValue("strings", "splitAfter",
