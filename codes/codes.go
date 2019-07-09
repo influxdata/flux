@@ -35,10 +35,7 @@ const (
 	// Inherit indicates that this error should inherit the code of the wrapped
 	// error. If the wrapped error does not have a code or the error does not
 	// have a wrapped error, then this will act the same as Unknown.
-	Inherit = ^Code(0)
-
-	// OK is returned on success.
-	OK Code = 0
+	Inherit Code = 0
 
 	// Canceled indicates the operation was canceled (typically by the caller).
 	Canceled Code = 1
@@ -157,7 +154,6 @@ func (c Code) MarshalText() ([]byte, error) {
 }
 
 var strToCode = map[string]Code{
-	"ok":                  OK,
 	"canceled":            Canceled,
 	"unknown":             Unknown,
 	"invalid":             Invalid,
@@ -176,6 +172,11 @@ var strToCode = map[string]Code{
 }
 
 func (c *Code) UnmarshalText(text []byte) error {
+	if len(text) == 0 {
+		*c = Inherit
+		return nil
+	}
+
 	code, ok := strToCode[string(text)]
 	if ok {
 		*c = code
@@ -196,8 +197,8 @@ func (c *Code) UnmarshalText(text []byte) error {
 
 func (c Code) String() string {
 	switch c {
-	case OK:
-		return "ok"
+	case Inherit:
+		return ""
 	case Canceled:
 		return "canceled"
 	case Unknown:
