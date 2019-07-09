@@ -39,11 +39,6 @@ func createDifferenceOpSpec(args flux.Arguments, a *flux.Administration) (flux.O
 		return nil, err
 	}
 
-	err := a.AddParentFromArgs(args)
-	if err != nil {
-		return nil, err
-	}
-
 	spec := new(DifferenceOpSpec)
 
 	if nn, ok, err := args.GetBool("nonNegative"); err != nil {
