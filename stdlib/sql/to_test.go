@@ -59,10 +59,10 @@ func TestToSQL_Process(t *testing.T) {
 	dsn := "root@/db"
 	_, _, _ = sqlmock.NewWithDSN(dsn)
 	type wanted struct {
-		Table  []*executetest.Table
-		ColumnNames []string
+		Table        []*executetest.Table
+		ColumnNames  []string
 		ValueStrings [][]string
-		ValueArgs [][]interface{}
+		ValueArgs    [][]interface{}
 	}
 	testCases := []struct {
 		name string
@@ -110,9 +110,9 @@ func TestToSQL_Process(t *testing.T) {
 						{execute.Time(41), "c", 4.0, "elevendyone"},
 					},
 				}},
-				ColumnNames: []string{"_time", "_measurement", "_value", "fred" },
+				ColumnNames:  []string{"_time", "_measurement", "_value", "fred"},
 				ValueStrings: [][]string{{"(?,?,?,?)", "(?,?,?,?)", "(?,?,?,?)", "(?,?,?,?)", "(?,?,?,?)"}},
-				ValueArgs:[][]interface{}{{
+				ValueArgs: [][]interface{}{{
 					values.Time(int64(execute.Time(11))).Time(), "a", 2.0, "one",
 					values.Time(int64(execute.Time(21))).Time(), "a", 2.0, "one",
 					values.Time(int64(execute.Time(21))).Time(), "b", 1.0, "seven",
@@ -160,7 +160,7 @@ func TestToSQL_Process(t *testing.T) {
 						{execute.Time(41), "c", int64(4), "elevendyone"},
 					},
 				}},
-				ColumnNames: []string{"_time", "_measurement", "_value", "fred" },
+				ColumnNames:  []string{"_time", "_measurement", "_value", "fred"},
 				ValueStrings: [][]string{{"(?,?,?,?)", "(?,?,?,?)", "(?,?,?,?)", "(?,?,?,?)", "(?,?,?,?)"}},
 				ValueArgs: [][]interface{}{{
 					values.Time(int64(execute.Time(11))).Time(), "a", int64(2), "one",
@@ -210,7 +210,7 @@ func TestToSQL_Process(t *testing.T) {
 						{execute.Time(41), "c", uint64(4), "elevendyone"},
 					},
 				}},
-				ColumnNames: []string{"_time", "_measurement", "_value", "fred" },
+				ColumnNames:  []string{"_time", "_measurement", "_value", "fred"},
 				ValueStrings: [][]string{{"(?,?,?,?)", "(?,?,?,?)", "(?,?,?,?)", "(?,?,?,?)", "(?,?,?,?)"}},
 				ValueArgs: [][]interface{}{{
 					values.Time(int64(execute.Time(11))).Time(), "a", uint64(2), "one",
@@ -260,7 +260,7 @@ func TestToSQL_Process(t *testing.T) {
 						{execute.Time(41), "c", false, "elevendyone"},
 					},
 				}},
-				ColumnNames: []string{"_time", "_measurement", "_value", "fred" },
+				ColumnNames:  []string{"_time", "_measurement", "_value", "fred"},
 				ValueStrings: [][]string{{"(?,?,?,?)", "(?,?,?,?)", "(?,?,?,?)", "(?,?,?,?)", "(?,?,?,?)"}},
 				ValueArgs: [][]interface{}{{
 					values.Time(int64(execute.Time(11))).Time(), "a", true, "one",
