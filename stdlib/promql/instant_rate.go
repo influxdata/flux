@@ -127,7 +127,7 @@ func (t *instantRateTransformation) Process(id execute.DatasetID, tbl flux.Table
 	if !created {
 		return fmt.Errorf("instantRate found duplicate table with key: %v", tbl.Key())
 	}
-	if err := execute.AddTableCols(tbl, builder); err != nil {
+	if err := execute.AddTableKeyCols(key, builder); err != nil {
 		return err
 	}
 
@@ -136,17 +136,9 @@ func (t *instantRateTransformation) Process(id execute.DatasetID, tbl flux.Table
 	if timeIdx < 0 {
 		return fmt.Errorf("time column not found (cols: %v): %s", cols, execute.DefaultTimeColLabel)
 	}
-	stopIdx := execute.ColIdx(execute.DefaultStopColLabel, cols)
-	if stopIdx < 0 {
-		return fmt.Errorf("stop column not found (cols: %v): %s", cols, execute.DefaultStopColLabel)
-	}
 	valIdx := execute.ColIdx(execute.DefaultValueColLabel, cols)
 	if valIdx < 0 {
 		return fmt.Errorf("value column not found (cols: %v): %s", cols, execute.DefaultValueColLabel)
-	}
-
-	if key.Value(stopIdx).Type() != semantic.Time {
-		return fmt.Errorf("stop column is not of time type")
 	}
 
 	var (
@@ -201,10 +193,12 @@ func (t *instantRateTransformation) Process(id execute.DatasetID, tbl flux.Table
 		resultValue /= sampledInterval.Seconds()
 	}
 
-	if err := builder.AppendTime(timeIdx, key.ValueTime(stopIdx)); err != nil {
-		return err
+	outValIdx, err := builder.AddCol(flux.ColMeta{Label: execute.DefaultValueColLabel, Type: flux.TFloat})
+	if err != nil {
+		return fmt.Errorf("error appending value column: %s", err)
 	}
-	if err := builder.AppendFloat(valIdx, resultValue); err != nil {
+
+	if err := builder.AppendFloat(outValIdx, resultValue); err != nil {
 		return err
 	}
 	return execute.AppendKeyValues(key, builder)

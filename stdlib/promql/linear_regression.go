@@ -133,7 +133,7 @@ func (t *linearRegressionTransformation) Process(id execute.DatasetID, tbl flux.
 	if !created {
 		return fmt.Errorf("linearRegression found duplicate table with key: %v", tbl.Key())
 	}
-	if err := execute.AddTableCols(tbl, builder); err != nil {
+	if err := execute.AddTableKeyCols(key, builder); err != nil {
 		return err
 	}
 
@@ -211,10 +211,12 @@ func (t *linearRegressionTransformation) Process(id execute.DatasetID, tbl flux.
 		resultValue = slope*t.fromNow + intercept
 	}
 
-	if err := builder.AppendTime(timeIdx, key.ValueTime(stopIdx)); err != nil {
-		return err
+	outValIdx, err := builder.AddCol(flux.ColMeta{Label: execute.DefaultValueColLabel, Type: flux.TFloat})
+	if err != nil {
+		return fmt.Errorf("error appending value column: %s", err)
 	}
-	if err := builder.AppendFloat(valIdx, resultValue); err != nil {
+
+	if err := builder.AppendFloat(outValIdx, resultValue); err != nil {
 		return err
 	}
 	return execute.AppendKeyValues(key, builder)

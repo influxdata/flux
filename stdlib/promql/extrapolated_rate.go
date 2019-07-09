@@ -139,7 +139,7 @@ func (t *extrapolatedRateTransformation) Process(id execute.DatasetID, tbl flux.
 	if !created {
 		return fmt.Errorf("extrapolatedRate found duplicate table with key: %v", tbl.Key())
 	}
-	if err := execute.AddTableCols(tbl, builder); err != nil {
+	if err := execute.AddTableKeyCols(key, builder); err != nil {
 		return err
 	}
 
@@ -258,10 +258,12 @@ func (t *extrapolatedRateTransformation) Process(id execute.DatasetID, tbl flux.
 		resultValue = resultValue / rangeEnd.Sub(rangeStart).Seconds()
 	}
 
-	if err := builder.AppendTime(timeIdx, values.ConvertTime(rangeEnd)); err != nil {
-		return err
+	outValIdx, err := builder.AddCol(flux.ColMeta{Label: execute.DefaultValueColLabel, Type: flux.TFloat})
+	if err != nil {
+		return fmt.Errorf("error appending value column: %s", err)
 	}
-	if err := builder.AppendFloat(valIdx, resultValue); err != nil {
+
+	if err := builder.AppendFloat(outValIdx, resultValue); err != nil {
 		return err
 	}
 	return execute.AppendKeyValues(key, builder)
