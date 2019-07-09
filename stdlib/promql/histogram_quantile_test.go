@@ -11,80 +11,91 @@ import (
 	"github.com/pkg/errors"
 )
 
-var linearHist = []flux.Table{&executetest.Table{
-	KeyCols: []string{"_start", "_stop"},
-	ColMeta: []flux.ColMeta{
-		{Label: "_start", Type: flux.TTime},
-		{Label: "_stop", Type: flux.TTime},
-		{Label: "_time", Type: flux.TTime},
-		{Label: "le", Type: flux.TString},
-		{Label: "_value", Type: flux.TFloat},
-	},
-	Data: [][]interface{}{
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.1", 1.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.2", 2.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.3", 3.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.4", 4.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.5", 5.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.6", 6.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.7", 7.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.8", 8.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.9", 9.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "1.0", 10.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "+Inf", 10.0},
-	},
-}}
-var linearHistNoMax = []flux.Table{&executetest.Table{
-	KeyCols: []string{"_start", "_stop"},
-	ColMeta: []flux.ColMeta{
-		{Label: "_start", Type: flux.TTime},
-		{Label: "_stop", Type: flux.TTime},
-		{Label: "_time", Type: flux.TTime},
-		{Label: "le", Type: flux.TString},
-		{Label: "_value", Type: flux.TFloat},
-	},
-	Data: [][]interface{}{
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.2", 2.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.4", 4.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.6", 6.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.8", 8.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "1.0", 10.0},
-	},
-}}
-var unsortedOddHist = []flux.Table{&executetest.Table{
-	KeyCols: []string{"_start", "_stop"},
-	ColMeta: []flux.ColMeta{
-		{Label: "_start", Type: flux.TTime},
-		{Label: "_stop", Type: flux.TTime},
-		{Label: "_time", Type: flux.TTime},
-		{Label: "le", Type: flux.TString},
-		{Label: "_value", Type: flux.TFloat},
-	},
-	Data: [][]interface{}{
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.4", 4.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "1.0", 10.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.6", 6.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "+Inf", 10.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.2", 2.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.8", 10.0},
-	},
-}}
-var nonLinearHist = []flux.Table{&executetest.Table{
-	KeyCols: []string{"_start", "_stop"},
-	ColMeta: []flux.ColMeta{
-		{Label: "_start", Type: flux.TTime},
-		{Label: "_stop", Type: flux.TTime},
-		{Label: "_time", Type: flux.TTime},
-		{Label: "le", Type: flux.TString},
-		{Label: "_value", Type: flux.TFloat},
-	},
-	Data: [][]interface{}{
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.1", 1.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "0.5", 5.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "1.0", 10.0},
-		{execute.Time(1), execute.Time(3), execute.Time(1), "+Inf", 11.0},
-	},
-}}
+var linearHist = func() []flux.Table {
+	return []flux.Table{&executetest.Table{
+		KeyCols: []string{"_start", "_stop"},
+		ColMeta: []flux.ColMeta{
+			{Label: "_start", Type: flux.TTime},
+			{Label: "_stop", Type: flux.TTime},
+			{Label: "_time", Type: flux.TTime},
+			{Label: "le", Type: flux.TString},
+			{Label: "_value", Type: flux.TFloat},
+		},
+		Data: [][]interface{}{
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.1", 1.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.2", 2.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.3", 3.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.4", 4.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.5", 5.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.6", 6.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.7", 7.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.8", 8.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.9", 9.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "1.0", 10.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "+Inf", 10.0},
+		},
+	}}
+}
+
+var linearHistNoMax = func() []flux.Table {
+	return []flux.Table{&executetest.Table{
+		KeyCols: []string{"_start", "_stop"},
+		ColMeta: []flux.ColMeta{
+			{Label: "_start", Type: flux.TTime},
+			{Label: "_stop", Type: flux.TTime},
+			{Label: "_time", Type: flux.TTime},
+			{Label: "le", Type: flux.TString},
+			{Label: "_value", Type: flux.TFloat},
+		},
+		Data: [][]interface{}{
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.2", 2.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.4", 4.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.6", 6.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.8", 8.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "1.0", 10.0},
+		},
+	}}
+}
+
+var unsortedOddHist = func() []flux.Table {
+	return []flux.Table{&executetest.Table{
+		KeyCols: []string{"_start", "_stop"},
+		ColMeta: []flux.ColMeta{
+			{Label: "_start", Type: flux.TTime},
+			{Label: "_stop", Type: flux.TTime},
+			{Label: "_time", Type: flux.TTime},
+			{Label: "le", Type: flux.TString},
+			{Label: "_value", Type: flux.TFloat},
+		},
+		Data: [][]interface{}{
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.4", 4.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "1.0", 10.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.6", 6.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "+Inf", 10.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.2", 2.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.8", 10.0},
+		},
+	}}
+}
+
+var nonLinearHist = func() []flux.Table {
+	return []flux.Table{&executetest.Table{
+		KeyCols: []string{"_start", "_stop"},
+		ColMeta: []flux.ColMeta{
+			{Label: "_start", Type: flux.TTime},
+			{Label: "_stop", Type: flux.TTime},
+			{Label: "_time", Type: flux.TTime},
+			{Label: "le", Type: flux.TString},
+			{Label: "_value", Type: flux.TFloat},
+		},
+		Data: [][]interface{}{
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.1", 1.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "0.5", 5.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "1.0", 10.0},
+			{execute.Time(1), execute.Time(3), execute.Time(1), "+Inf", 11.0},
+		},
+	}}
+}
 
 func TestHistogramQuantile_Process(t *testing.T) {
 	testCases := []struct {
@@ -102,7 +113,7 @@ func TestHistogramQuantile_Process(t *testing.T) {
 				UpperBoundColumn: "le",
 				ValueColumn:      "_value",
 			},
-			data: linearHist,
+			data: linearHist(),
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
 				ColMeta: []flux.ColMeta{
@@ -123,7 +134,7 @@ func TestHistogramQuantile_Process(t *testing.T) {
 				UpperBoundColumn: "le",
 				ValueColumn:      "_value",
 			},
-			data: linearHist,
+			data: linearHist(),
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
 				ColMeta: []flux.ColMeta{
@@ -144,7 +155,7 @@ func TestHistogramQuantile_Process(t *testing.T) {
 				UpperBoundColumn: "le",
 				ValueColumn:      "_value",
 			},
-			data: linearHist,
+			data: linearHist(),
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
 				ColMeta: []flux.ColMeta{
@@ -165,7 +176,7 @@ func TestHistogramQuantile_Process(t *testing.T) {
 				UpperBoundColumn: "le",
 				ValueColumn:      "_value",
 			},
-			data: linearHist,
+			data: linearHist(),
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
 				ColMeta: []flux.ColMeta{
@@ -186,7 +197,7 @@ func TestHistogramQuantile_Process(t *testing.T) {
 				UpperBoundColumn: "le",
 				ValueColumn:      "_value",
 			},
-			data: linearHist,
+			data: linearHist(),
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
 				ColMeta: []flux.ColMeta{
@@ -207,7 +218,7 @@ func TestHistogramQuantile_Process(t *testing.T) {
 				UpperBoundColumn: "le",
 				ValueColumn:      "_value",
 			},
-			data: linearHist,
+			data: linearHist(),
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
 				ColMeta: []flux.ColMeta{
@@ -228,7 +239,7 @@ func TestHistogramQuantile_Process(t *testing.T) {
 				UpperBoundColumn: "le",
 				ValueColumn:      "_value",
 			},
-			data: linearHist,
+			data: linearHist(),
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
 				ColMeta: []flux.ColMeta{
@@ -249,7 +260,7 @@ func TestHistogramQuantile_Process(t *testing.T) {
 				UpperBoundColumn: "le",
 				ValueColumn:      "_value",
 			},
-			data: linearHistNoMax,
+			data: linearHistNoMax(),
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
 				ColMeta: []flux.ColMeta{
@@ -270,7 +281,7 @@ func TestHistogramQuantile_Process(t *testing.T) {
 				UpperBoundColumn: "le",
 				ValueColumn:      "_value",
 			},
-			data: unsortedOddHist,
+			data: unsortedOddHist(),
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
 				ColMeta: []flux.ColMeta{
@@ -291,7 +302,7 @@ func TestHistogramQuantile_Process(t *testing.T) {
 				UpperBoundColumn: "le",
 				ValueColumn:      "_value",
 			},
-			data: unsortedOddHist,
+			data: unsortedOddHist(),
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
 				ColMeta: []flux.ColMeta{
@@ -312,7 +323,7 @@ func TestHistogramQuantile_Process(t *testing.T) {
 				UpperBoundColumn: "le",
 				ValueColumn:      "_value",
 			},
-			data: nonLinearHist,
+			data: nonLinearHist(),
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
 				ColMeta: []flux.ColMeta{
@@ -333,7 +344,7 @@ func TestHistogramQuantile_Process(t *testing.T) {
 				UpperBoundColumn: "le",
 				ValueColumn:      "_value",
 			},
-			data: nonLinearHist,
+			data: nonLinearHist(),
 			want: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
 				ColMeta: []flux.ColMeta{
