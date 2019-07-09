@@ -79,6 +79,7 @@ func TestBinaryOperator(t *testing.T) {
 		{lhs: uint64(7), op: "%", rhs: uintNullValue, want: nil},
 		// float * float
 		{lhs: 3.6, op: "%", rhs: 8.2, want: 3.6},
+		{lhs: 8.2, op: "%", rhs: 3.7, want: 0.8},
 		{lhs: 4.5, op: "%", rhs: floatNullValue, want: nil},
 		// null * null
 		{lhs: nil, op: "%", rhs: nil, want: nil},
