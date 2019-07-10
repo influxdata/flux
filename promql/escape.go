@@ -16,7 +16,7 @@ func escapeLabelName(ln string) string {
 	}
 }
 
-func unescapeLabelName(ln string) string {
+func UnescapeLabelName(ln string) string {
 	switch {
 	case ln == "_field":
 		return "__name__"

@@ -33,7 +33,7 @@ func TestUnescapeLabelName(t *testing.T) {
 	}
 
 	for ln, want := range escapedNames {
-		got := unescapeLabelName(ln)
+		got := UnescapeLabelName(ln)
 
 		if got != want {
 			t.Fatalf("want %q, got %q", want, got)
