@@ -192,10 +192,11 @@ type Transpiler struct {
 
 // Transpile converts a PromQL expression with the time ranges set in the transpiler
 // into a Flux file. The resulting Flux file can be executed and the result needs to
-// be transformed using FluxResultToPromQLValue() to get a result value that is fully
-// equivalent to the result of a native PromQL execution.
+// be transformed using FluxResultToPromQLValue() (implemented in the InfluxDB repo)
+// to get a result value that is fully equivalent to the result of a native PromQL
+// execution.
 //
-// During the transpilation, the transpiler recurisvely translates the PromQL AST into
+// During the transpilation, the transpiler recursively translates the PromQL AST into
 // equivalent Flux nodes. Each PromQL node translates into one or more Flux
 // constructs that as a group (corresponding to the PromQL node) have to
 // keep the following invariants:
