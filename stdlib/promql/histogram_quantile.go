@@ -249,9 +249,23 @@ func (t histogramQuantileTransformation) Process(id execute.DatasetID, tbl flux.
 	return nil
 }
 
-// Taken from Prometheus.
-// TODO: Include some kind of copyright notice?
+// The following functions (bucketQuantile(), coalesceBuckets(), and
+// ensureMonotonic()) have been taken verbatim from Prometheus. The original
+// copyright notice is as follows:
 //
+// Copyright 2015 The Prometheus Authors
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 // bucketQuantile calculates the quantile 'q' based on the given buckets. The
 // buckets will be sorted by upperBound by this function (i.e. no sorting
 // needed before calling this function). The quantile value is interpolated
@@ -314,9 +328,6 @@ func bucketQuantile(q float64, buckets []bucket) float64 {
 	return bucketStart + (bucketEnd-bucketStart)*(rank/count)
 }
 
-// Taken from Prometheus.
-// TODO: Include some kind of copyright notice?
-//
 // coalesceBuckets merges buckets with the same upper bound.
 //
 // The input buckets must be sorted.
@@ -336,9 +347,6 @@ func coalesceBuckets(buckets []bucket) []bucket {
 	return buckets[:i+1]
 }
 
-// Taken from Prometheus.
-// TODO: Include some kind of copyright notice?
-//
 // The assumption that bucket counts increase monotonically with increasing
 // upperBound may be violated during:
 //
