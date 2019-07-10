@@ -94,18 +94,36 @@ func (tv Tvar) freeVars(c *Constraints) TvarSet {
 	return fvs
 }
 func (l Tvar) unifyType(kinds map[Tvar]Kind, s Substitution, r PolyType) (Substitution, error) {
-	switch r := r.(type) {
+	// Use the substitution to reduce the left and right hand sides.
+	// This ensures we never add a transitive cycle in the substitution.
+	tl, ok := l.apply(s)
+	for ok {
+		tl, ok = tl.apply(s)
+	}
+	tr, ok := r.apply(s)
+	for ok {
+		tr, ok = tr.apply(s)
+	}
+	switch tl := tl.(type) {
 	case Tvar:
-		if l == r {
+		tv, ok := tr.(Tvar)
+		if !ok {
+			return unifyVarAndType(kinds, s, tl, tr)
+		}
+		if tl == tv {
 			return s, nil
 		}
-		sub, err := unifyKindsByVar(kinds, s, l, r)
+		sub, err := unifyKindsByVar(kinds, s, tl, tv)
 		if err != nil {
 			return nil, err
 		}
-		unifyVarAndType(kinds, sub, l, r)
+		return unifyVarAndType(kinds, sub, tl, tv)
+	default:
+		if tv, ok := tr.(Tvar); ok {
+			return unifyVarAndType(kinds, s, tv, tl)
+		}
+		return tl.unifyType(kinds, s, tr)
 	}
-	return unifyVarAndType(kinds, s, l, r)
 }
 
 func (tv Tvar) resolveType(kinds map[Tvar]Kind) (Type, error) {
