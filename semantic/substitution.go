@@ -9,56 +9,17 @@ import (
 // Substitution is a mapping of type variables to a poly type.
 type Substitution map[Tvar]PolyType
 
-func (s Substitution) ApplyType(t PolyType) PolyType {
-	for tv, typ := range s {
-		t = t.substituteType(tv, typ)
-	}
-	return t
-}
-func (s Substitution) ApplyScheme(ts Scheme) Scheme {
-	for tv, typ := range s {
-		ts.T = ts.T.substituteType(tv, typ)
-	}
-	return ts
-}
-
-func (s Substitution) ApplyKind(k Kind) Kind {
-	for tv, typ := range s {
-		k = k.substituteKind(tv, typ)
-	}
-	return k
-}
-
-func (s Substitution) ApplyEnv(env *Env) *Env {
-	for tv, typ := range s {
-		env.RangeSet(func(n string, scheme Scheme) Scheme {
-			return scheme.Substitute(tv, typ)
-		})
-	}
-	return env
-}
-
 func (s Substitution) ApplyTvar(tv Tvar) Tvar {
-	switch t := s[tv].(type) {
-	case Tvar:
-		return t
-	default:
-		return tv
-	}
-}
-
-// Merge r into l.
-func (l Substitution) Merge(r Substitution) {
-	// Apply right to all of l
-	for tvL, tL := range l {
-		l[r.ApplyTvar(tvL)] = r.ApplyType(tL)
-	}
-	// Add missing keys from r to l
-	for tvR, tR := range r {
-		if _, ok := l[tvR]; !ok {
-			l[tvR] = tR
+	tp, ok := s[tv]
+	for ok {
+		tvar, kk := tp.(Tvar)
+		if !kk {
+			break
 		}
+		tv = tvar
+		tp, ok = s[tv]
 	}
+	return tv
 }
 
 func (s Substitution) String() string {

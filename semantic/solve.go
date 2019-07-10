@@ -59,34 +59,46 @@ func (sol *Solution) solve() error {
 	kinds := make(map[Tvar]Kind, len(sol.cs.kindConst))
 
 	// Unify all kind constraints
-	subst, err := sol.unifyKinds(kinds)
+	sub, err := sol.unifyKinds(kinds)
 	if err != nil {
 		return err
 	}
 
 	// Unify all type constraints
 	for _, tc := range sol.cs.typeConst {
-		l := subst.ApplyType(tc.l)
-		r := subst.ApplyType(tc.r)
-		s, err := unifyTypes(kinds, l, r)
+		l, ok := tc.l.apply(sub)
+		for ok {
+			l, ok = l.apply(sub)
+		}
+		r, ok := tc.r.apply(sub)
+		for ok {
+			r, ok = r.apply(sub)
+		}
+		sub, err = unifyTypes(kinds, sub, l, r)
 		if err != nil {
 			return errors.Wrapf(err, codes.Invalid, "type error %v", tc.loc)
 		}
-		subst.Merge(s)
 	}
 
 	// Apply substitution to kind constraints
 	sol.kinds = make(map[Tvar]Kind, len(kinds))
 	for tv, k := range kinds {
-		k = subst.ApplyKind(k)
-		tv = subst.ApplyTvar(tv)
-		sol.kinds[tv] = k
+		kind, ok := k.apply(sub)
+		for ok {
+			kind, ok = kind.apply(sub)
+		}
+		tvar := sub.ApplyTvar(tv)
+		sol.kinds[tvar] = kind
 	}
 
 	// Apply substitution to the type annotations
 	for n, ann := range sol.cs.annotations {
 		if ann.Type != nil {
-			ann.Type = subst.ApplyType(ann.Type)
+			tp, ok := ann.Type.apply(sub)
+			for ok {
+				tp, ok = tp.apply(sub)
+			}
+			ann.Type = tp
 			sol.cs.annotations[n] = ann
 		}
 	}
@@ -103,7 +115,7 @@ func (sol *Solution) solve() error {
 // are unified.
 func (sol *Solution) unifyKinds(kinds map[Tvar]Kind) (Substitution, error) {
 	// Create substitution.
-	subst := make(Substitution)
+	sub := make(Substitution, len(sol.cs.annotations))
 
 	// Iterate through each of the kind constraints
 	// and set the ones that only have one constraint
@@ -152,13 +164,13 @@ func (sol *Solution) unifyKinds(kinds map[Tvar]Kind) (Substitution, error) {
 			// We can visit this constraint so let's do that.
 			kinds[tvl] = ks[0]
 			for _, k := range ks[1:] {
-				tvr := subst.ApplyTvar(tvl)
+				tvr := sub.ApplyTvar(tvl)
 				kind := kinds[tvr]
-				s, err := unifyKinds(kinds, tvl, tvr, kind, k)
+				s, err := unifyKinds(kinds, sub, tvl, tvr, kind, k)
 				if err != nil {
 					return nil, err
 				}
-				subst.Merge(s)
+				sub = s
 			}
 		}
 
@@ -170,7 +182,7 @@ func (sol *Solution) unifyKinds(kinds map[Tvar]Kind) (Substitution, error) {
 			return nil, fmt.Errorf("unable to resolve tvars for all kinds because of a cycle: %v", remaining)
 		}
 	}
-	return subst, nil
+	return sub, nil
 }
 
 func (s *Solution) TypeOf(n Node) (Type, error) {
@@ -207,13 +219,13 @@ func (s *Solution) AddConstraint(l, r PolyType) error {
 	return s.solve()
 }
 
-func unifyTypes(kinds map[Tvar]Kind, l, r PolyType) (s Substitution, _ error) {
+func unifyTypes(kinds map[Tvar]Kind, s Substitution, l, r PolyType) (Substitution, error) {
 	//log.Printf("unifyTypes %v == %v", l, r)
-	return l.unifyType(kinds, r)
+	return l.unifyType(kinds, s, r)
 }
 
-func unifyKinds(kinds map[Tvar]Kind, tvl, tvr Tvar, l, r Kind) (Substitution, error) {
-	k, s, err := l.unifyKind(kinds, r)
+func unifyKinds(kinds map[Tvar]Kind, s Substitution, tvl, tvr Tvar, l, r Kind) (Substitution, error) {
+	k, sub, err := l.unifyKind(kinds, s, r)
 	if err != nil {
 		return nil, err
 	}
@@ -224,27 +236,35 @@ func unifyKinds(kinds map[Tvar]Kind, tvl, tvr Tvar, l, r Kind) (Substitution, er
 		// No need to keep the kind constraints around for tvl
 		delete(kinds, tvl)
 	}
-	return s, nil
+	return sub, nil
 }
 
-func unifyVarAndType(kinds map[Tvar]Kind, tv Tvar, t PolyType) (Substitution, error) {
+func unifyVarAndType(kinds map[Tvar]Kind, s Substitution, tv Tvar, t PolyType) (Substitution, error) {
 	if t.occurs(tv) {
 		return nil, fmt.Errorf("type var %v occurs in %v creating a cycle", tv, t)
 	}
-	return Substitution{tv: t}, nil
+	if tp, ok := s[tv]; ok {
+		sub, err := tp.unifyType(kinds, s, t)
+		if err != nil {
+			return nil, err
+		}
+		return sub, nil
+	}
+	s[tv] = t
+	return s, nil
 }
 
-func unifyKindsByVar(kinds map[Tvar]Kind, l, r Tvar) (Substitution, error) {
+func unifyKindsByVar(kinds map[Tvar]Kind, s Substitution, l, r Tvar) (Substitution, error) {
 	kl, okl := kinds[l]
 	kr, okr := kinds[r]
 	switch {
 	case okl && okr:
-		return unifyKinds(kinds, l, r, kl, kr)
+		return unifyKinds(kinds, s, l, r, kl, kr)
 	case okl && !okr:
 		kinds[r] = kl
 		delete(kinds, l)
 	}
-	return nil, nil
+	return s, nil
 }
 
 type kindsMap map[Tvar]Kind

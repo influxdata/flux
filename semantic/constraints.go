@@ -340,12 +340,13 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			properties[field.Key.Key()] = t
 			upper = append(upper, field.Key.Key())
 		}
-		var with *Tvar
+		var with PolyType
 		if n.With != nil {
 			t, err := v.lookup(n.With)
 			if err != nil {
 				return nil, err
 			}
+			with = t
 			tv, ok := t.(Tvar)
 			if !ok {
 				return nil, errors.New("object 'with' identifier must be a type variable")
@@ -463,16 +464,19 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 // freshType produces a copy of the type with all type variables replaced with fresh ones.
 func (v ConstraintGenerator) freshType(typ PolyType) PolyType {
 	ftv := typ.freeVars(nil)
-	subst := make(Substitution, len(ftv))
+	sub := make(Substitution, len(ftv))
 	for _, tv := range ftv {
 		f := v.cs.f.Fresh()
 		for ftv.contains(f) {
 			f = v.cs.f.Fresh()
 		}
-		subst[tv] = f
+		sub[tv] = f
 	}
-	t := subst.ApplyType(typ)
-	return t
+	tp, ok := typ.apply(sub)
+	for ok {
+		tp, ok = tp.apply(sub)
+	}
+	return tp
 }
 
 func (v ConstraintGenerator) applyKindConstraints(typ PolyType) PolyType {
@@ -545,25 +549,31 @@ func (c *Constraints) AddKindConst(tv Tvar, k Kind) {
 
 // Instantiate produces a new poly type where the free variables from the scheme have been made fresh.
 // This way each new instantiation of a scheme is independent of the other but all have the same constraint structure.
-func (c *Constraints) Instantiate(s Scheme, loc ast.SourceLocation) (t PolyType) {
+func (c *Constraints) Instantiate(s Scheme, loc ast.SourceLocation) PolyType {
 	if len(s.Free) == 0 {
 		return s.T
 	}
 	// Create a substituion for the new type variables
-	subst := make(Substitution, len(s.Free))
+	sub := make(Substitution, len(s.Free))
 	for _, tv := range s.Free {
-		fresh := c.f.Fresh()
-		subst[tv] = fresh
+		sub[tv] = c.f.Fresh()
 	}
 
 	// Add any new kind constraints
 	for _, tv := range s.Free {
 		ks, ok := c.kindConst[tv]
 		if ok {
-			ntv := subst.ApplyTvar(tv)
+			ntv, ok1 := tv.apply(sub)
+			for tvar, ok2 := ntv.(Tvar); ok2 && ok1; {
+				tv = tvar
+				ntv, ok1 = ntv.apply(sub)
+			}
 			for _, k := range ks {
-				nk := subst.ApplyKind(k)
-				c.AddKindConst(ntv, nk)
+				nk, ok := k.apply(sub)
+				for ok {
+					nk, ok = nk.apply(sub)
+				}
+				c.AddKindConst(tv, nk)
 			}
 		}
 	}
@@ -573,13 +583,23 @@ func (c *Constraints) Instantiate(s Scheme, loc ast.SourceLocation) (t PolyType)
 		fvs := tc.l.freeVars(c)
 		// Only add new constraints that constrain the left hand free vars
 		if fvs.hasIntersect(s.Free) {
-			l := subst.ApplyType(tc.l)
-			r := subst.ApplyType(tc.r)
+			l, ok := tc.l.apply(sub)
+			for ok {
+				l, ok = l.apply(sub)
+			}
+			r, ok := tc.r.apply(sub)
+			for ok {
+				r, ok = r.apply(sub)
+			}
 			c.AddTypeConst(l, r, loc)
 		}
 	}
 
-	return subst.ApplyType(s.T)
+	tp, ok := s.T.apply(sub)
+	for ok {
+		tp, ok = tp.apply(sub)
+	}
+	return tp
 }
 
 func (c *Constraints) String() string {

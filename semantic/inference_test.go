@@ -20,6 +20,85 @@ func TestInferTypes(t *testing.T) {
 		skip     string
 	}{
 		{
+			name: "call with object",
+			script: `
+f = (r) => r.a + r.b
+f(r:{a:1})`,
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					a := semantic.NewObjectPolyType(
+						map[string]semantic.PolyType{
+							"a": semantic.Int,
+							"b": semantic.Int,
+						},
+						semantic.LabelSet{"a", "b"},
+						semantic.LabelSet{"a"},
+					)
+					r := semantic.NewObjectPolyType(
+						map[string]semantic.PolyType{
+							"r": a,
+						},
+						nil,
+						semantic.LabelSet{"r"},
+					)
+					p := semantic.NewObjectPolyType(
+						map[string]semantic.PolyType{
+							"a": semantic.Tvar(17),
+							"b": semantic.Tvar(17),
+						},
+						semantic.LabelSet{"a", "b"},
+						semantic.AllLabels(),
+					)
+					f := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: map[string]semantic.PolyType{
+							"r": p,
+						},
+						Required: semantic.LabelSet{"r"},
+						Return:   semantic.Tvar(17),
+					})
+					c := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+						Parameters: map[string]semantic.PolyType{
+							"r": a,
+						},
+						Required: semantic.LabelSet{"r"},
+						Return:   semantic.Int,
+					})
+					switch n := node.(type) {
+					case *semantic.IdentifierExpression:
+						if n.Location().Start.Line == 2 {
+							return p
+						}
+						return c
+					case *semantic.MemberExpression:
+						return semantic.Tvar(17)
+					case *semantic.BinaryExpression:
+						return semantic.Tvar(17)
+					case *semantic.FunctionBlock:
+						return semantic.Tvar(17)
+					case *semantic.FunctionExpression:
+						return f
+					case *semantic.FunctionParameter:
+						return p
+					case *semantic.CallExpression:
+						return semantic.Int
+					case *semantic.ObjectExpression:
+						if n.Location().Start.Column == 3 {
+							return r
+						}
+						return a
+					case *semantic.Property:
+						if n.Key.Key() == "a" {
+							return semantic.Int
+						}
+						return a
+					case *semantic.IntegerLiteral:
+						return semantic.Int
+					}
+					return nil
+				},
+			},
+		},
+		{
 			name: "bool",
 			node: &semantic.BooleanLiteral{Value: false},
 			solution: &solutionVisitor{
