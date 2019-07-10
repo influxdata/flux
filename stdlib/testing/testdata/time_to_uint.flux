@@ -23,6 +23,8 @@ outData = "
 t_to_int = (table=<-) =>
 	(table
 		|> range(start: 2018-12-15T00:00:00Z)
+		|> drop(columns:["_value"])
+		|> duplicate(column:"_time", as: "_value")
 		|> toUInt())
 
 test _to = () =>
