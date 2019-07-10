@@ -1665,7 +1665,12 @@ Covariance has the following properties:
 Additionally exactly two columns must be provided to the `columns` property.
 
 Example:
-`from(bucket: "telegraf/autogen") |> range(start:-5m) |> covariance(columns: ["x", "y"])`
+```
+from(bucket: "telegraf/autogen") 
+    |> range(start: -5m) 
+    |> map(fn: (r) => ({r with x: r._value, y: r._value * r._value / 2})) 
+    |> covariance(columns: ["x", "y"])
+```
 
 #### Cov
 
