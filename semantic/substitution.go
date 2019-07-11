@@ -9,7 +9,21 @@ import (
 // Substitution is a mapping of type variables to a poly type.
 type Substitution map[Tvar]PolyType
 
-func (s Substitution) ApplyTvar(tv Tvar) Tvar {
+func (s Substitution) applyToType(t PolyType) PolyType {
+	tp, ok := t.apply(s)
+	for ok {
+		tp, ok = tp.apply(s)
+	}
+	return tp
+}
+func (s Substitution) applyToKind(k Kind) Kind {
+	kind, ok := k.apply(s)
+	for ok {
+		kind, ok = kind.apply(s)
+	}
+	return kind
+}
+func (s Substitution) applyToTvar(tv Tvar) Tvar {
 	tp, ok := s[tv]
 	for ok {
 		tvar, kk := tp.(Tvar)

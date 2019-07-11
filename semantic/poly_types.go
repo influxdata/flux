@@ -96,14 +96,8 @@ func (tv Tvar) freeVars(c *Constraints) TvarSet {
 func (l Tvar) unifyType(kinds map[Tvar]Kind, s Substitution, r PolyType) (Substitution, error) {
 	// Use the substitution to reduce the left and right hand sides.
 	// This ensures we never add a transitive cycle in the substitution.
-	tl, ok := l.apply(s)
-	for ok {
-		tl, ok = tl.apply(s)
-	}
-	tr, ok := r.apply(s)
-	for ok {
-		tr, ok = tr.apply(s)
-	}
+	tl := s.applyToType(l)
+	tr := s.applyToType(r)
 	switch tl := tl.(type) {
 	case Tvar:
 		tv, ok := tr.(Tvar)
@@ -448,15 +442,7 @@ func (l function) unifyType(kinds map[Tvar]Kind, s Substitution, r PolyType) (Su
 				// this must be the pipe parameter.
 				continue
 			}
-			typl, ok := tl.apply(s)
-			for ok {
-				typl, ok = typl.apply(s)
-			}
-			typr, ok := tr.apply(s)
-			for ok {
-				typr, ok = typr.apply(s)
-			}
-			sub, err := unifyTypes(kinds, s, typl, typr)
+			sub, err := unifyTypes(kinds, s, tl, tr)
 			if err != nil {
 				return nil, err
 			}
@@ -775,11 +761,7 @@ func (l ObjectKind) unifyKind(kinds map[Tvar]Kind, s Substitution, k Kind) (Kind
 		if err != nil {
 			properties[f] = invalid{err: err}
 		} else {
-			tp, ok := typL.apply(sub)
-			for ok {
-				tp, ok = tp.apply(sub)
-			}
-			properties[f] = tp
+			properties[f] = sub.applyToType(typL)
 		}
 		s = sub
 	}

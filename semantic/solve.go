@@ -66,15 +66,12 @@ func (sol *Solution) solve() error {
 
 	// Unify all type constraints
 	for _, tc := range sol.cs.typeConst {
-		l, ok := tc.l.apply(sub)
-		for ok {
-			l, ok = l.apply(sub)
-		}
-		r, ok := tc.r.apply(sub)
-		for ok {
-			r, ok = r.apply(sub)
-		}
-		sub, err = unifyTypes(kinds, sub, l, r)
+		sub, err = unifyTypes(
+			kinds,
+			sub,
+			sub.applyToType(tc.l),
+			sub.applyToType(tc.r),
+		)
 		if err != nil {
 			return errors.Wrapf(err, codes.Invalid, "type error %v", tc.loc)
 		}
@@ -83,22 +80,15 @@ func (sol *Solution) solve() error {
 	// Apply substitution to kind constraints
 	sol.kinds = make(map[Tvar]Kind, len(kinds))
 	for tv, k := range kinds {
-		kind, ok := k.apply(sub)
-		for ok {
-			kind, ok = kind.apply(sub)
-		}
-		tvar := sub.ApplyTvar(tv)
+		kind := sub.applyToKind(k)
+		tvar := sub.applyToTvar(tv)
 		sol.kinds[tvar] = kind
 	}
 
 	// Apply substitution to the type annotations
 	for n, ann := range sol.cs.annotations {
 		if ann.Type != nil {
-			tp, ok := ann.Type.apply(sub)
-			for ok {
-				tp, ok = tp.apply(sub)
-			}
-			ann.Type = tp
+			ann.Type = sub.applyToType(ann.Type)
 			sol.cs.annotations[n] = ann
 		}
 	}
@@ -164,7 +154,7 @@ func (sol *Solution) unifyKinds(kinds map[Tvar]Kind) (Substitution, error) {
 			// We can visit this constraint so let's do that.
 			kinds[tvl] = ks[0]
 			for _, k := range ks[1:] {
-				tvr := sub.ApplyTvar(tvl)
+				tvr := sub.applyToTvar(tvl)
 				kind := kinds[tvr]
 				s, err := unifyKinds(kinds, sub, tvl, tvr, kind, k)
 				if err != nil {
