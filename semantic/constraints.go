@@ -472,11 +472,7 @@ func (v ConstraintGenerator) freshType(typ PolyType) PolyType {
 		}
 		sub[tv] = f
 	}
-	tp, ok := typ.apply(sub)
-	for ok {
-		tp, ok = tp.apply(sub)
-	}
-	return tp
+	return sub.applyToType(typ)
 }
 
 func (v ConstraintGenerator) applyKindConstraints(typ PolyType) PolyType {
@@ -561,19 +557,9 @@ func (c *Constraints) Instantiate(s Scheme, loc ast.SourceLocation) PolyType {
 
 	// Add any new kind constraints
 	for _, tv := range s.Free {
-		ks, ok := c.kindConst[tv]
-		if ok {
-			ntv, ok1 := tv.apply(sub)
-			for tvar, ok2 := ntv.(Tvar); ok2 && ok1; {
-				tv = tvar
-				ntv, ok1 = ntv.apply(sub)
-			}
+		if ks, ok := c.kindConst[tv]; ok {
 			for _, k := range ks {
-				nk, ok := k.apply(sub)
-				for ok {
-					nk, ok = nk.apply(sub)
-				}
-				c.AddKindConst(tv, nk)
+				c.AddKindConst(sub.applyToTvar(tv), sub.applyToKind(k))
 			}
 		}
 	}
@@ -583,23 +569,10 @@ func (c *Constraints) Instantiate(s Scheme, loc ast.SourceLocation) PolyType {
 		fvs := tc.l.freeVars(c)
 		// Only add new constraints that constrain the left hand free vars
 		if fvs.hasIntersect(s.Free) {
-			l, ok := tc.l.apply(sub)
-			for ok {
-				l, ok = l.apply(sub)
-			}
-			r, ok := tc.r.apply(sub)
-			for ok {
-				r, ok = r.apply(sub)
-			}
-			c.AddTypeConst(l, r, loc)
+			c.AddTypeConst(sub.applyToType(tc.l), sub.applyToType(tc.r), loc)
 		}
 	}
-
-	tp, ok := s.T.apply(sub)
-	for ok {
-		tp, ok = tp.apply(sub)
-	}
-	return tp
+	return sub.applyToType(s.T)
 }
 
 func (c *Constraints) String() string {
