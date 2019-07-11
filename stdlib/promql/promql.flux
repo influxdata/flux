@@ -20,13 +20,6 @@ builtin dayOfWeek
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#days_in_month
 builtin daysInMonth
 
-// linearRegression implements linear regression functionality required to implement
-// PromQL's deriv() and predict_linear() functions:
-//
-// https://prometheus.io/docs/prometheus/latest/querying/functions/#deriv
-// https://prometheus.io/docs/prometheus/latest/querying/functions/#predict_linear
-builtin linearRegression
-
 // emptyTable() returns an empty table, which is used as a helper function to implement
 // PromQL's time() and vector() functions:
 //
@@ -41,12 +34,6 @@ builtin emptyTable
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#increase
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#delta
 builtin extrapolatedRate
-
-// promHistogramQuantile() implements functionality equivalent to PromQL's
-// histogram_quantile() function:
-//
-// https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile
-builtin promHistogramQuantile
 
 // holtWinters() implements functionality equivalent to PromQL's holt_winters()
 // function:
@@ -66,6 +53,18 @@ builtin hour
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#idelta
 builtin instantRate
 
+// labelReplace implements functionality equivalent to PromQL's label_replace() function:
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#label_replace
+builtin labelReplace
+
+// linearRegression implements linear regression functionality required to implement
+// PromQL's deriv() and predict_linear() functions:
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#deriv
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#predict_linear
+builtin linearRegression
+
 // minute() implements functionality equivalent to PromQL's minute() function:
 //
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#minute
@@ -75,6 +74,12 @@ builtin minute
 //
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#month
 builtin month
+
+// promHistogramQuantile() implements functionality equivalent to PromQL's
+// histogram_quantile() function:
+//
+// https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile
+builtin promHistogramQuantile
 
 // resets() implements functionality equivalent to PromQL's resets() function:
 //
