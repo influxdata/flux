@@ -39,6 +39,7 @@ const (
 	MUL
 	DIV
 	MOD
+	POW
 	EQ
 	LT
 	GT
@@ -101,6 +102,7 @@ var tokenStrings = []string{
 	"MUL",
 	"DIV",
 	"MOD",
+	"POW",
 	"EQ",
 	"LT",
 	"GT",

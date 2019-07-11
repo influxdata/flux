@@ -161,6 +161,22 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewFloat(math.Mod(l, r))
 	},
 	{Operator: ast.ModuloOperator, Left: semantic.Nil, Right: semantic.Nil}: nil,
+	{Operator: ast.PowerOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) Value {
+		l := lv.Int()
+		r := rv.Int()
+		return NewFloat(math.Pow(float64(l), float64(r)))
+	},
+	{Operator: ast.PowerOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) Value {
+		l := lv.UInt()
+		r := rv.UInt()
+		return NewFloat(math.Pow(float64(l), float64(r)))
+	},
+	{Operator: ast.PowerOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) Value {
+		l := lv.Float()
+		r := rv.Float()
+		return NewFloat(math.Pow(float64(l), float64(r)))
+	},
+	{Operator: ast.PowerOperator, Left: semantic.Nil, Right: semantic.Nil}: nil,
 	//---------------------
 	// Comparison Operators
 	//---------------------

@@ -57,6 +57,10 @@ func TestFormat_Nodes(t *testing.T) {
 			script: `1 + 1 - 2`,
 		},
 		{
+			name:   "binary_op 2",
+			script: `2 ^ 4`,
+		},
+		{
 			name: "arrow_fn",
 			script: `(r) =>
 	(r.user == "user1")`,
