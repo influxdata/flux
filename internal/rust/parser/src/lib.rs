@@ -58,6 +58,7 @@ fn format_token(t: T) -> &'static str {
         T_MUL => "MUL",
         T_DIV => "DIV",
         T_MOD => "MOD",
+        T_POW => "POW",
         T_EQ => "EQ",
         T_LT => "LT",
         T_GT => "GT",
@@ -751,6 +752,8 @@ impl Parser {
         match t {
             T_MUL => res = Some(OperatorKind::MultiplicationOperator),
             T_DIV => res = Some(OperatorKind::DivisionOperator),
+            T_MOD => res = Some(OperatorKind::ModuloOperator),
+            T_POW => res = Some(OperatorKind::PowerOperator),
             _ => (),
         }
         match res {
