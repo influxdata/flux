@@ -31,7 +31,12 @@ type PolyType interface {
 	// apply returns false if there were no substitutions made
 	apply(sub Substitution) (PolyType, bool)
 
-	// unifyType unifies the two types given the kind constraints and produces a substitution.
+	// unifyType unifies two parametric types by producing a substitution that
+	// when applied to both types, produces the same parametric type.
+	//
+	// If the input substitution is already a unifier for both types it returns
+	// that same substitution. Otherwise the input substitution is not a unifier
+	// for the two types, and it returns an expanded one that is.
 	unifyType(map[Tvar]Kind, Substitution, PolyType) (Substitution, error)
 
 	// Equal reports if two types are the same.
@@ -49,7 +54,12 @@ type Kind interface {
 	// apply returns false if there were no substitutions made
 	apply(sub Substitution) (Kind, bool)
 
-	// unifyKind unifies the two kinds producing a new merged kind and a substitution.
+	// unifyKind unifies two kinds producing a new merged kind and a new updated
+	// substitution.
+	//
+	// If the input substitution is already a unifier for both kinds it returns
+	// that same substitution. Otherwise the input substitution is not a unifier
+	// for the two kinds, and it returns an expanded one that is.
 	unifyKind(map[Tvar]Kind, Substitution, Kind) (Kind, Substitution, error)
 
 	// occurs reports whether tv occurs in this kind.
