@@ -414,6 +414,8 @@ func ColMap(colMap []int, builder TableBuilder, cr flux.ColReader) []int {
 	return colMap
 }
 
+// AppendKeyValues appends the key values to the right columns in the builder.
+// The builder is expected to contain the key columns.
 func AppendKeyValues(key flux.GroupKey, builder TableBuilder) error {
 	for j, c := range key.Cols() {
 		idx := ColIdx(c.Label, builder.Cols())
@@ -423,6 +425,30 @@ func AppendKeyValues(key flux.GroupKey, builder TableBuilder) error {
 
 		if err := builder.AppendValue(idx, key.Value(j)); err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+// AppendKeyValuesN runs AppendKeyValues `n` times.
+// This is different from
+// ```
+// for i := 0; i < n; i++ {
+//   AppendKeyValues(key, builder)
+// }
+// ```
+// Because it saves the overhead of calculating the column mapping `n` times.
+func AppendKeyValuesN(key flux.GroupKey, builder TableBuilder, n int) error {
+	for j, c := range key.Cols() {
+		idx := ColIdx(c.Label, builder.Cols())
+		if idx < 0 {
+			return fmt.Errorf("group key column %s not found in output table", c.Label)
+		}
+
+		for i := 0; i < n; i++ {
+			if err := builder.AppendValue(idx, key.Value(j)); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
