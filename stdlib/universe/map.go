@@ -1,16 +1,16 @@
 package universe
 
 import (
-	"fmt"
 	"sort"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 const MapKind = "map"
@@ -86,7 +86,7 @@ type MapProcedureSpec struct {
 func newMapProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*MapOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return &MapProcedureSpec{
@@ -108,7 +108,7 @@ func (s *MapProcedureSpec) Copy() plan.ProcedureSpec {
 func createMapTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*MapProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -147,35 +147,57 @@ func (t *mapTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey
 func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	// Prepare the functions for the column types.
 	cols := tbl.Cols()
-	err := t.fn.Prepare(cols)
-	if err != nil {
+	if err := t.fn.Prepare(cols); err != nil {
 		// TODO(nathanielc): Should we not fail the query for failed compilation?
 		return err
 	}
-	// Determine keys return from function
-	var properties map[string]semantic.Type
-	var keys []string
-	var on map[string]bool
 
+	// Determine the properties from type inference.
+	// TODO(jsternberg): Type inference doesn't currently get all of the properties
+	// when with is used, so this will likely return an incomplete set that we have
+	// to complete when we read the first column. This pass should get the columns
+	// that are directly referenced which are the ones capable of changing and the
+	// only ones that can be a null value.
+	properties := t.fn.Type().Properties()
+
+	var on map[string]bool
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			m, err := t.fn.Eval(i, cr)
 			if err != nil {
-				return errors.Wrap(err, "failed to evaluate map function")
+				return errors.Wrap(err, codes.Inherit, "failed to evaluate map function")
 			}
-			if i == 0 {
-				properties = m.Type().Properties()
-				keys = make([]string, 0, len(properties))
-				for k := range properties {
-					keys = append(keys, k)
-				}
-				sort.Strings(keys)
 
-				// Determine on which cols to group
+			// Merge in the types that we may have missed because type inference omitted them.
+			if i == 0 {
+				// Merge in the missing properties from the type.
+				// This will catch all of the non-referenced keys that are
+				// merged in from the merge key or with.
+				for k, typ := range m.Type().Properties() {
+					// TODO(jsternberg): Type inference can sometimes tell us something is nil
+					// when it actually has a value because of a bug in type inference.
+					// If the property is missing or null, then take whatever the first value
+					// is. This won't catch all situations, but we'll have to consider it good
+					// enough until type inference works in this scenario.
+					if t, ok := properties[k]; !ok || t == semantic.Nil {
+						properties[k] = typ
+					}
+				}
+			}
+
+			// If we haven't determined the columns to group on, do that now.
+			if on == nil {
 				on = make(map[string]bool, len(tbl.Key().Cols()))
 				for _, c := range tbl.Key().Cols() {
-					on[c.Label] = t.mergeKey || execute.ContainsStr(keys, c.Label)
+					if !t.mergeKey {
+						// If the label isn't included in the properties,
+						// then it wasn't returned by the eval.
+						if _, ok := properties[c.Label]; !ok {
+							continue
+						}
+					}
+					on[c.Label] = true
 				}
 			}
 
@@ -187,14 +209,28 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 						return err
 					}
 				}
-				// Add columns from function in sorted order
+
+				// Add columns from function in sorted order.
+				keys := make([]string, 0, len(properties))
+				for k := range properties {
+					keys = append(keys, k)
+				}
+				sort.Strings(keys)
+
 				for _, k := range keys {
 					if t.mergeKey && tbl.Key().HasCol(k) {
 						continue
 					}
+
+					n := properties[k].Nature()
+					if n == semantic.Nil {
+						// If the column is null, then do not add it as a column.
+						continue
+					}
+
 					if _, err := builder.AddCol(flux.ColMeta{
 						Label: k,
-						Type:  execute.ConvertFromKind(properties[k].Nature()),
+						Type:  execute.ConvertFromKind(n),
 					}); err != nil {
 						return err
 					}
@@ -207,7 +243,7 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 						v = tbl.Key().Value(idx)
 					} else {
 						// This should be unreachable
-						return fmt.Errorf("could not find value for column %q", c.Label)
+						return errors.Newf(codes.Internal, "could not find value for column %q", c.Label)
 					}
 				}
 				if err := builder.AppendValue(j, v); err != nil {

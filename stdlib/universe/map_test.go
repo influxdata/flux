@@ -1126,6 +1126,109 @@ func TestMap_Process(t *testing.T) {
 			}},
 			wantErr: errors.New(`failed to evaluate map function: strconv.ParseFloat: parsing "foo": invalid syntax`),
 		},
+		{
+			name: `with null record`,
+			spec: &universe.MapProcedureSpec{
+				Fn: &semantic.FunctionExpression{
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{
+									Key: &semantic.Identifier{Name: "value"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
+											Property: "_value",
+										},
+										Right: &semantic.FloatLiteral{
+											Value: 5,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), nil},
+					{execute.Time(2), 6.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{nil},
+					{11.0},
+				},
+			}},
+		},
+		{
+			name: `with null column`,
+			spec: &universe.MapProcedureSpec{
+				Fn: &semantic.FunctionExpression{
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{
+									Key: &semantic.Identifier{Name: "value"},
+									Value: &semantic.MemberExpression{
+										Object: &semantic.IdentifierExpression{
+											Name: "r",
+										},
+										Property: "_value",
+									},
+								},
+								{
+									Key: &semantic.Identifier{Name: "missing"},
+									Value: &semantic.MemberExpression{
+										Object: &semantic.IdentifierExpression{
+											Name: "r",
+										},
+										Property: "_missing",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 1.0},
+					{execute.Time(2), 6.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{1.0},
+					{6.0},
+				},
+			}},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
