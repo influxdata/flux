@@ -147,6 +147,8 @@ func TestMode_Process(t *testing.T) {
 						{execute.Time(5), 2.0, "a", true},
 						{execute.Time(6), 2.0, "a", true},
 						{execute.Time(7), 2.0, "a", nil},
+						{execute.Time(8), 2.0, "a", nil},
+						{execute.Time(9), 2.0, "a", nil},
 					},
 				},
 			},
@@ -155,8 +157,7 @@ func TestMode_Process(t *testing.T) {
 					{Label: "_value", Type: flux.TBool},
 				},
 				Data: [][]interface{}{
-					{true},
-					{false},
+					{nil},
 				},
 			}},
 		},

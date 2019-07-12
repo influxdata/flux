@@ -220,7 +220,8 @@ func (t *modeTransformation) doString(cr flux.ColReader, tbl flux.Table, builder
 	var numNil int64
 	stringMode := make(map[string]int64)
 	l := cr.Len()
-	j := srcColIdx // execute.ColIdx(t.column, tbl.Cols())
+	j := srcColIdx
+	numEntries := 0
 	for i := 0; i < l; i++ {
 		if cr.Strings(j).IsNull(i) {
 			numNil++
@@ -254,6 +255,7 @@ func (t *modeTransformation) doString(cr flux.ColReader, tbl flux.Table, builder
 			if err := builder.AppendNil(destColIdx); err != nil {
 				return err
 			}
+			numEntries = 1
 		} else if numNil == max {
 			sort.Strings(storedVals)
 			for j := range storedVals {
@@ -264,6 +266,7 @@ func (t *modeTransformation) doString(cr flux.ColReader, tbl flux.Table, builder
 			if err := builder.AppendNil(destColIdx); err != nil {
 				return err
 			}
+			numEntries = len(storedVals) + 1
 		} else {
 			sort.Strings(storedVals)
 			for j := range storedVals {
@@ -271,13 +274,14 @@ func (t *modeTransformation) doString(cr flux.ColReader, tbl flux.Table, builder
 					return err
 				}
 			}
+			numEntries = len(storedVals)
 		}
 	}
-
-	if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
-		return err
+	for i := 0; i < numEntries; i++ {
+		if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
+			return err
+		}
 	}
-
 	return nil
 }
 
@@ -286,6 +290,7 @@ func (t *modeTransformation) doBool(cr flux.ColReader, tbl flux.Table, builder e
 	boolMode := make(map[bool]int64)
 	l := cr.Len()
 	j := srcColIdx
+	numEntries := 0
 	for i := 0; i < l; i++ {
 		if cr.Bools(j).IsNull(i) {
 			numNil++
@@ -309,6 +314,7 @@ func (t *modeTransformation) doBool(cr flux.ColReader, tbl flux.Table, builder e
 		if err := builder.AppendNil(destColIdx); err != nil {
 			return err
 		}
+		numEntries = 1
 	} else {
 		storedVals := make([]bool, 0, total)
 		for val := range boolMode {
@@ -320,24 +326,17 @@ func (t *modeTransformation) doBool(cr flux.ColReader, tbl flux.Table, builder e
 			if err := builder.AppendNil(destColIdx); err != nil {
 				return err
 			}
+			numEntries = 1
 		} else if numNil == max { // if max is the same as nil, mode is nil and the other max occurrences
-			if len(storedVals) == 3 {
-				if err := builder.AppendBool(destColIdx, true); err != nil {
+			for j := range storedVals {
+				if err := builder.AppendBool(destColIdx, storedVals[j]); err != nil {
 					return err
-				}
-				if err := builder.AppendBool(destColIdx, false); err != nil {
-					return err
-				}
-			} else {
-				for j := range storedVals {
-					if err := builder.AppendBool(destColIdx, storedVals[j]); err != nil {
-						return err
-					}
 				}
 			}
 			if err := builder.AppendNil(destColIdx); err != nil {
 				return err
 			}
+			numEntries = 2
 		} else {
 			if len(storedVals) == 2 {
 				if err := builder.AppendBool(destColIdx, true); err != nil {
@@ -346,20 +345,22 @@ func (t *modeTransformation) doBool(cr flux.ColReader, tbl flux.Table, builder e
 				if err := builder.AppendBool(destColIdx, false); err != nil {
 					return err
 				}
+				numEntries = 2
 			} else {
 				for j := range storedVals {
 					if err := builder.AppendBool(destColIdx, storedVals[j]); err != nil {
 						return err
 					}
 				}
+				numEntries = 1
 			}
 		}
 	}
-
-	if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
-		return err
+	for i := 0; i < numEntries; i++ {
+		if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
+			return err
+		}
 	}
-
 	return nil
 }
 
@@ -368,6 +369,7 @@ func (t *modeTransformation) doInt(cr flux.ColReader, tbl flux.Table, builder ex
 	intMode := make(map[int64]int64)
 	l := cr.Len()
 	j := srcColIdx
+	numEntries := 0
 	for i := 0; i < l; i++ {
 		if cr.Ints(j).IsNull(i) {
 			numNil++
@@ -390,6 +392,7 @@ func (t *modeTransformation) doInt(cr flux.ColReader, tbl flux.Table, builder ex
 		if err := builder.AppendNil(destColIdx); err != nil {
 			return err
 		}
+		numEntries = 1
 	} else {
 		storedVals := make([]int64, 0, total)
 		for val := range intMode {
@@ -401,6 +404,7 @@ func (t *modeTransformation) doInt(cr flux.ColReader, tbl flux.Table, builder ex
 			if err := builder.AppendNil(destColIdx); err != nil {
 				return err
 			}
+			numEntries = 1
 		} else if numNil == max {
 			sort.Slice(storedVals, func(i, j int) bool { return storedVals[i] < storedVals[j] })
 			for j := range storedVals {
@@ -411,6 +415,7 @@ func (t *modeTransformation) doInt(cr flux.ColReader, tbl flux.Table, builder ex
 			if err := builder.AppendNil(destColIdx); err != nil {
 				return err
 			}
+			numEntries = len(storedVals) + 1
 		} else {
 			sort.Slice(storedVals, func(i, j int) bool { return storedVals[i] < storedVals[j] })
 			for j := range storedVals {
@@ -418,10 +423,13 @@ func (t *modeTransformation) doInt(cr flux.ColReader, tbl flux.Table, builder ex
 					return err
 				}
 			}
+			numEntries = len(storedVals)
 		}
 	}
-	if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
-		return err
+	for i := 0; i < numEntries; i++ {
+		if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -432,6 +440,7 @@ func (t *modeTransformation) doUInt(cr flux.ColReader, tbl flux.Table, builder e
 	var numNil int64
 	l := cr.Len()
 	j := srcColIdx
+	numEntries := 0
 	for i := 0; i < l; i++ {
 		if cr.UInts(j).IsNull(i) {
 			numNil++
@@ -454,6 +463,7 @@ func (t *modeTransformation) doUInt(cr flux.ColReader, tbl flux.Table, builder e
 		if err := builder.AppendNil(destColIdx); err != nil {
 			return err
 		}
+		numEntries = 1
 	} else {
 		storedVals := make([]uint64, 0, total)
 		for val := range uintMode {
@@ -465,6 +475,7 @@ func (t *modeTransformation) doUInt(cr flux.ColReader, tbl flux.Table, builder e
 			if err := builder.AppendNil(destColIdx); err != nil {
 				return err
 			}
+			numEntries = 1
 		} else if numNil == max {
 			sort.Slice(storedVals, func(i, j int) bool { return storedVals[i] < storedVals[j] })
 			for j := range storedVals {
@@ -475,6 +486,7 @@ func (t *modeTransformation) doUInt(cr flux.ColReader, tbl flux.Table, builder e
 			if err := builder.AppendNil(destColIdx); err != nil {
 				return err
 			}
+			numEntries = len(storedVals) + 1
 		} else {
 			sort.Slice(storedVals, func(i, j int) bool { return storedVals[i] < storedVals[j] })
 			for j := range storedVals {
@@ -482,12 +494,14 @@ func (t *modeTransformation) doUInt(cr flux.ColReader, tbl flux.Table, builder e
 					return err
 				}
 			}
+			numEntries = len(storedVals)
 		}
+	}
+	for i := 0; i < numEntries; i++ {
 		if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
 
@@ -496,6 +510,7 @@ func (t *modeTransformation) doFloat(cr flux.ColReader, tbl flux.Table, builder 
 	var numNil int64
 	l := cr.Len()
 	j := srcColIdx
+	numEntries := 0
 	for i := 0; i < l; i++ {
 		if cr.Floats(j).IsNull(i) {
 			numNil++
@@ -518,6 +533,7 @@ func (t *modeTransformation) doFloat(cr flux.ColReader, tbl flux.Table, builder 
 		if err := builder.AppendNil(destColIdx); err != nil {
 			return err
 		}
+		numEntries = 1
 	} else {
 		storedVals := make([]float64, 0, total)
 		for val := range floatMode {
@@ -529,6 +545,7 @@ func (t *modeTransformation) doFloat(cr flux.ColReader, tbl flux.Table, builder 
 			if err := builder.AppendNil(destColIdx); err != nil {
 				return err
 			}
+			numEntries = 1
 		} else if numNil == max {
 			sort.Float64s(storedVals)
 			for j := range storedVals {
@@ -539,6 +556,7 @@ func (t *modeTransformation) doFloat(cr flux.ColReader, tbl flux.Table, builder 
 			if err := builder.AppendNil(destColIdx); err != nil {
 				return err
 			}
+			numEntries = len(storedVals) + 1
 		} else {
 			sort.Float64s(storedVals)
 			for j := range storedVals {
@@ -546,10 +564,13 @@ func (t *modeTransformation) doFloat(cr flux.ColReader, tbl flux.Table, builder 
 					return err
 				}
 			}
+			numEntries = len(storedVals)
 		}
 	}
-	if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
-		return err
+	for i := 0; i < numEntries; i++ {
+		if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -560,6 +581,7 @@ func (t *modeTransformation) doTime(cr flux.ColReader, tbl flux.Table, builder e
 	var numNil int64
 	l := cr.Len()
 	j := srcColIdx
+	numEntries := 0
 	for i := 0; i < l; i++ {
 		if cr.Times(j).IsNull(i) {
 			numNil++
@@ -582,6 +604,7 @@ func (t *modeTransformation) doTime(cr flux.ColReader, tbl flux.Table, builder e
 		if err := builder.AppendNil(destColIdx); err != nil {
 			return err
 		}
+		numEntries = 1
 	} else {
 		storedVals := make([]execute.Time, 0, total)
 		for val := range timeMode {
@@ -593,6 +616,7 @@ func (t *modeTransformation) doTime(cr flux.ColReader, tbl flux.Table, builder e
 			if err := builder.AppendNil(destColIdx); err != nil {
 				return err
 			}
+			numEntries = 1
 		} else if numNil == max {
 			sort.Slice(storedVals, func(i, j int) bool { return storedVals[i] < storedVals[j] })
 			for j := range storedVals {
@@ -603,6 +627,7 @@ func (t *modeTransformation) doTime(cr flux.ColReader, tbl flux.Table, builder e
 			if err := builder.AppendNil(destColIdx); err != nil {
 				return err
 			}
+			numEntries = len(storedVals) + 1
 		} else {
 			sort.Slice(storedVals, func(i, j int) bool { return storedVals[i] < storedVals[j] })
 			for j := range storedVals {
@@ -610,10 +635,13 @@ func (t *modeTransformation) doTime(cr flux.ColReader, tbl flux.Table, builder e
 					return err
 				}
 			}
+			numEntries = len(storedVals)
 		}
 	}
-	if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
-		return err
+	for i := 0; i < numEntries; i++ {
+		if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
+			return err
+		}
 	}
 
 	return nil
