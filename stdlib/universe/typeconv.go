@@ -456,34 +456,34 @@ func (c *boolConv) Call(args values.Object) (values.Value, error) {
 	case semantic.Int:
 		switch n := v.Int(); n {
 		case 0:
-			b = true
-		case 1:
 			b = false
+		case 1:
+			b = true
 		default:
 			return nil, fmt.Errorf("cannot convert int %d to bool, must be 0 or 1", n)
 		}
 	case semantic.UInt:
 		switch n := v.UInt(); n {
 		case 0:
-			b = true
-		case 1:
 			b = false
+		case 1:
+			b = true
 		default:
 			return nil, fmt.Errorf("cannot convert uint %d to bool, must be 0 or 1", n)
 		}
 	case semantic.Float:
 		switch n := v.Float(); n {
 		case 0:
-			b = true
-		case 1:
 			b = false
+		case 1:
+			b = true
 		default:
 			return nil, fmt.Errorf("cannot convert float %f to bool, must be 0 or 1", n)
 		}
 	case semantic.Bool:
 		b = v.Bool()
 	default:
-		return nil, fmt.Errorf("cannot convert %v to float", v.Type())
+		return nil, fmt.Errorf("cannot convert %v to bool", v.Type())
 	}
 	return values.NewBool(b), nil
 }
@@ -561,6 +561,8 @@ func (c *timeConv) Call(args values.Object) (values.Value, error) {
 		t = values.Time(v.Int())
 	case semantic.UInt:
 		t = values.Time(v.UInt())
+	case semantic.Time:
+		t = v.Time()
 	default:
 		return nil, fmt.Errorf("cannot convert %v to time", v.Type())
 	}

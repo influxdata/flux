@@ -1,0 +1,19 @@
+[package]
+name = "parser"
+version = "0.1.0"
+authors = ["Nathaniel Cook <nathaniel@influxdata.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
+chrono = { version = "0.4", features = ["serde"] }
+regex = "1"
+scanner = {path = "../scanner" }
+ast = {path = "../ast" }
+
+[dev-dependencies]
+pretty_assertions = "0.6.1"
+

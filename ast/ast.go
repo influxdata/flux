@@ -685,6 +685,7 @@ const (
 	opBegin OperatorKind = iota
 	MultiplicationOperator
 	DivisionOperator
+	ModuloOperator
 	AdditionOperator
 	SubtractionOperator
 	LessThanEqualOperator
@@ -694,6 +695,7 @@ const (
 	StartsWithOperator
 	InOperator
 	NotOperator
+	ExistsOperator
 	NotEmptyOperator
 	EmptyOperator
 	EqualOperator
@@ -879,6 +881,7 @@ func (e *ArrayExpression) Copy() Node {
 // ObjectExpression allows the declaration of an anonymous object within a declaration.
 type ObjectExpression struct {
 	BaseNode
+	With       *Identifier `json:"with,omitempty"`
 	Properties []*Property `json:"properties"`
 }
 
@@ -1262,6 +1265,7 @@ func (l *DateTimeLiteral) Copy() Node {
 var OperatorTokens = map[OperatorKind]string{
 	MultiplicationOperator:   "*",
 	DivisionOperator:         "/",
+	ModuloOperator:           "%",
 	AdditionOperator:         "+",
 	SubtractionOperator:      "-",
 	LessThanEqualOperator:    "<=",
@@ -1270,6 +1274,7 @@ var OperatorTokens = map[OperatorKind]string{
 	GreaterThanEqualOperator: ">=",
 	InOperator:               "in",
 	NotOperator:              "not",
+	ExistsOperator:           "exists",
 	NotEmptyOperator:         "not empty",
 	EmptyOperator:            "empty",
 	StartsWithOperator:       "startswith",

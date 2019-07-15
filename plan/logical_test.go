@@ -459,7 +459,7 @@ func TestLogicalPlanner(t *testing.T) {
 			name: "with swappable map and filter",
 			flux: `
                 option now = () => 2018-01-01T10:00:00Z
-                from(bucket: "telegraf") |> map(fn: (r) => r._value * 2.0) |> filter(fn: (r) => r._value < 10.0) |> yield(name: "result")`,
+				from(bucket: "telegraf") |> map(fn: (r) => ({r with _value: r._value * 2.0})) |> filter(fn: (r) => r._value < 10.0) |> yield(name: "result")`,
 			wantPlan: plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from0", &influxdb.FromProcedureSpec{Bucket: "telegraf"}),
@@ -468,21 +468,25 @@ func TestLogicalPlanner(t *testing.T) {
 							Parameters: &semantic.FunctionParameters{
 								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 							},
-							Body: &semantic.BinaryExpression{Operator: ast.LessThanOperator,
-								Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-								Right: &semantic.FloatLiteral{Value: 10}},
-						},
-					}}),
+							Body: &semantic.BinaryExpression{
+								Operator: ast.LessThanOperator,
+								Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+								Right:    &semantic.FloatLiteral{Value: 10}},
+						}}}),
 					plan.CreateLogicalNode("map1", &universe.MapProcedureSpec{
 						Fn: &semantic.FunctionExpression{
 							Block: &semantic.FunctionBlock{
 								Parameters: &semantic.FunctionParameters{
 									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}}},
-								Body: &semantic.BinaryExpression{Operator: ast.MultiplicationOperator,
-									Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-									Right: &semantic.FloatLiteral{Value: 2}}}},
-						MergeKey: true,
-					}),
+								Body: &semantic.ObjectExpression{
+									With: &semantic.IdentifierExpression{Name: "r"},
+									Properties: []*semantic.Property{{
+										Key: &semantic.Identifier{Name: "_value"},
+										Value: &semantic.BinaryExpression{
+											Operator: ast.MultiplicationOperator,
+											Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+											Right:    &semantic.FloatLiteral{Value: 2}}}}},
+							}}}),
 					plan.CreateLogicalNode("yield3", &universe.YieldProcedureSpec{Name: "result"}),
 				},
 				Edges: [][2]int{
@@ -498,7 +502,7 @@ func TestLogicalPlanner(t *testing.T) {
                 option now = () => 2018-01-01T10:00:00Z
 				from(bucket: "telegraf") |>
 					filter(fn: (r) => r._value != 0) |>
-					map(fn: (r) => r._value * 10) |>
+					map(fn: (r) => ({r with _value: r._value * 10})) |>
 					filter(fn: (r) => r._value < 100) |>
 					yield(name: "result")`,
 			wantPlan: plantest.PlanSpec{
@@ -508,23 +512,30 @@ func TestLogicalPlanner(t *testing.T) {
 						Block: &semantic.FunctionBlock{
 							Parameters: &semantic.FunctionParameters{
 								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}}},
-							Body: &semantic.LogicalExpression{Operator: ast.AndOperator,
-								Left: &semantic.BinaryExpression{Operator: ast.LessThanOperator,
-									Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-									Right: &semantic.IntegerLiteral{Value: 100}},
-								Right: &semantic.BinaryExpression{Operator: ast.NotEqualOperator,
-									Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-									Right: &semantic.IntegerLiteral{}}},
+							Body: &semantic.LogicalExpression{
+								Operator: ast.AndOperator,
+								Left: &semantic.BinaryExpression{
+									Operator: ast.LessThanOperator,
+									Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+									Right:    &semantic.IntegerLiteral{Value: 100}},
+								Right: &semantic.BinaryExpression{
+									Operator: ast.NotEqualOperator,
+									Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+									Right:    &semantic.IntegerLiteral{}}},
 						}}}),
 					plan.CreateLogicalNode("map2", &universe.MapProcedureSpec{Fn: &semantic.FunctionExpression{
 						Block: &semantic.FunctionBlock{
 							Parameters: &semantic.FunctionParameters{
 								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}}},
-							Body: &semantic.BinaryExpression{Operator: ast.MultiplicationOperator,
-								Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-								Right: &semantic.IntegerLiteral{Value: 10}}}},
-						MergeKey: true,
-					}),
+							Body: &semantic.ObjectExpression{
+								With: &semantic.IdentifierExpression{Name: "r"},
+								Properties: []*semantic.Property{{
+									Key: &semantic.Identifier{Name: "_value"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.MultiplicationOperator,
+										Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+										Right:    &semantic.IntegerLiteral{Value: 10}}}}},
+						}}}),
 					plan.CreateLogicalNode("yield4", &universe.YieldProcedureSpec{Name: "result"}),
 				},
 				Edges: [][2]int{

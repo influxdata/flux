@@ -3,20 +3,18 @@ package sql
 import (
 	"database/sql"
 	"fmt"
-
-	"reflect"
-	"time"
-
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
 	_ "github.com/lib/pq"
 )
 
 const FromSQLKind = "fromSQL"
+
+// For SQL DATETIME parsing
+const layout = "2006-01-02 15:04:05.999999999"
 
 type FromSQLOpSpec struct {
 	DriverName     string `json:"driverName,omitempty"`
@@ -110,7 +108,8 @@ func createFromSQLSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 		return nil, fmt.Errorf("invalid spec type %T", prSpec)
 	}
 
-	if spec.DriverName != "postgres" && spec.DriverName != "mysql" {
+	// Allow for "sqlmock" for testing purposes in "sql_test.go"
+	if spec.DriverName != "postgres" && spec.DriverName != "mysql" && spec.DriverName != "sqlmock" {
 		return nil, fmt.Errorf("sql driver %s not supported", spec.DriverName)
 	}
 
@@ -124,11 +123,12 @@ type SQLIterator struct {
 	administration execute.Administration
 	spec           *FromSQLProcedureSpec
 	db             *sql.DB
-	rows           *sql.Rows
+	reader         *execute.RowReader
 }
 
 func (c *SQLIterator) Connect() error {
 	db, err := sql.Open(c.spec.DriverName, c.spec.DataSourceName)
+
 	if err != nil {
 		return err
 	}
@@ -145,7 +145,21 @@ func (c *SQLIterator) Fetch() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	c.rows = rows
+
+	var reader execute.RowReader
+	switch c.spec.DriverName {
+	case "mysql":
+		reader, err = NewMySQLRowReader(rows)
+	case "postgres", "sqlmock":
+		reader, err = NewPostgresRowReader(rows)
+	default:
+		return false, fmt.Errorf("unsupported driver %s", c.spec.DriverName)
+	}
+
+	if err != nil {
+		return false, err
+	}
+	c.reader = &reader
 
 	return false, nil
 }
@@ -154,86 +168,24 @@ func (c *SQLIterator) Decode() (flux.Table, error) {
 	groupKey := execute.NewGroupKey(nil, nil)
 	builder := execute.NewColListTableBuilder(groupKey, c.administration.Allocator())
 
-	firstRow := true
-	for c.rows.Next() {
-		columnNames, err := c.rows.Columns()
+	reader := *c.reader
+
+	for i, dataType := range reader.ColumnTypes() {
+		_, err := builder.AddCol(flux.ColMeta{Label: reader.ColumnNames()[i], Type: dataType})
 		if err != nil {
 			return nil, err
 		}
-		columns := make([]interface{}, len(columnNames))
-		columnPointers := make([]interface{}, len(columnNames))
-		for i := 0; i < len(columnNames); i++ {
-			columnPointers[i] = &columns[i]
-		}
-		if err := c.rows.Scan(columnPointers...); err != nil {
+	}
+
+	for reader.Next() {
+		row, err := reader.GetNextRow()
+		if err != nil {
 			return nil, err
 		}
 
-		if firstRow {
-			for i, col := range columns {
-				var dataType flux.ColType
-				switch col.(type) {
-				case bool:
-					dataType = flux.TBool
-				case int64:
-					dataType = flux.TInt
-				case uint64:
-					dataType = flux.TUInt
-				case float64:
-					dataType = flux.TFloat
-				case string:
-					dataType = flux.TString
-				case []uint8:
-					// Hack for MySQL, might need to work with charset?
-					dataType = flux.TString
-				case time.Time:
-					dataType = flux.TTime
-				default:
-					fmt.Println(i, reflect.TypeOf(col))
-					execute.PanicUnknownType(flux.TInvalid)
-				}
-
-				_, err := builder.AddCol(flux.ColMeta{Label: columnNames[i], Type: dataType})
-				if err != nil {
-					return nil, err
-				}
-			}
-			firstRow = false
-		}
-
-		for i, col := range columns {
-			switch col := col.(type) {
-			case bool:
-				if err := builder.AppendBool(i, col); err != nil {
-					return nil, err
-				}
-			case int64:
-				if err := builder.AppendInt(i, col); err != nil {
-					return nil, err
-				}
-			case uint64:
-				if err := builder.AppendUInt(i, col); err != nil {
-					return nil, err
-				}
-			case float64:
-				if err := builder.AppendFloat(i, col); err != nil {
-					return nil, err
-				}
-			case string:
-				if err := builder.AppendString(i, col); err != nil {
-					return nil, err
-				}
-			case []uint8:
-				// Hack for MySQL, might need to work with charset?
-				if err := builder.AppendString(i, string(col)); err != nil {
-					return nil, err
-				}
-			case time.Time:
-				if err := builder.AppendTime(i, values.ConvertTime(col)); err != nil {
-					return nil, err
-				}
-			default:
-				execute.PanicUnknownType(flux.TInvalid)
+		for i, col := range row {
+			if err := builder.AppendValue(i, col); err != nil {
+				return nil, err
 			}
 		}
 	}

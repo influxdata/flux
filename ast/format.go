@@ -117,6 +117,7 @@ var opPrecedence = map[int]int{
 	getIntForOp(RegexpMatchOperator):      4,
 	getIntForOp(NotRegexpMatchOperator):   4,
 	getIntForOp(NotOperator):              5,
+	getIntForOp(ExistsOperator):           5,
 	// theses are LogicalOperatorKinds:
 	getIntForLOp(AndOperator): 6,
 	getIntForLOp(OrOperator):  7,
@@ -502,6 +503,11 @@ func (f *formatter) formatObjectExpressionBraces(n *ObjectExpression, braces boo
 
 	if braces {
 		f.writeRune('{')
+	}
+
+	if n.With != nil {
+		f.formatIdentifier(n.With)
+		f.writeString(" with ")
 	}
 
 	if multiline {

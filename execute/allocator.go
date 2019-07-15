@@ -39,7 +39,7 @@ func (a *Allocator) Bools(l, c int) []bool {
 
 // AppendBools appends bools to a slice
 func (a *Allocator) AppendBools(slice []bool, vs ...bool) []bool {
-	if cap(slice)-len(slice) > len(vs) {
+	if cap(slice)-len(slice) >= len(vs) {
 		return append(slice, vs...)
 	}
 	s := append(slice, vs...)
@@ -70,7 +70,7 @@ func (a *Allocator) Ints(l, c int) []int64 {
 
 // AppendInts appends int64s to a slice
 func (a *Allocator) AppendInts(slice []int64, vs ...int64) []int64 {
-	if cap(slice)-len(slice) > len(vs) {
+	if cap(slice)-len(slice) >= len(vs) {
 		return append(slice, vs...)
 	}
 	s := append(slice, vs...)
@@ -101,7 +101,7 @@ func (a *Allocator) UInts(l, c int) []uint64 {
 
 // AppendUInts appends uint64s to a slice
 func (a *Allocator) AppendUInts(slice []uint64, vs ...uint64) []uint64 {
-	if cap(slice)-len(slice) > len(vs) {
+	if cap(slice)-len(slice) >= len(vs) {
 		return append(slice, vs...)
 	}
 	s := append(slice, vs...)
@@ -132,7 +132,7 @@ func (a *Allocator) Floats(l, c int) []float64 {
 
 // AppendFloats appends float64s to a slice
 func (a *Allocator) AppendFloats(slice []float64, vs ...float64) []float64 {
-	if cap(slice)-len(slice) > len(vs) {
+	if cap(slice)-len(slice) >= len(vs) {
 		return append(slice, vs...)
 	}
 	s := append(slice, vs...)
@@ -166,7 +166,7 @@ func (a *Allocator) Strings(l, c int) []string {
 // Only the string headers are accounted for.
 func (a *Allocator) AppendStrings(slice []string, vs ...string) []string {
 	//TODO(nathanielc): Account for actual size of strings
-	if cap(slice)-len(slice) > len(vs) {
+	if cap(slice)-len(slice) >= len(vs) {
 		return append(slice, vs...)
 	}
 	s := append(slice, vs...)
@@ -197,7 +197,7 @@ func (a *Allocator) Times(l, c int) []Time {
 
 // AppendTimes appends Times to a slice
 func (a *Allocator) AppendTimes(slice []Time, vs ...Time) []Time {
-	if cap(slice)-len(slice) > len(vs) {
+	if cap(slice)-len(slice) >= len(vs) {
 		return append(slice, vs...)
 	}
 	s := append(slice, vs...)

@@ -197,7 +197,6 @@ func processMessage(t Transformation, m Message) (finished bool, err error) {
 	case ProcessMsg:
 		b := m.Table()
 		err = t.Process(m.SrcDatasetID(), b)
-		b.Done()
 	case UpdateWatermarkMsg:
 		err = t.UpdateWatermark(m.SrcDatasetID(), m.WatermarkTime())
 	case UpdateProcessingTimeMsg:

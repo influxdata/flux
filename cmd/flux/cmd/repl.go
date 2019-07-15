@@ -2,13 +2,11 @@ package cmd
 
 import (
 	"context"
-	"math"
 
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
-	"github.com/influxdata/flux/control"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/repl"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -18,11 +16,7 @@ var replCmd = &cobra.Command{
 	Short: "Launch a Flux REPL",
 	Long:  "Launch a Flux REPL (Read-Eval-Print-Loop)",
 	Run: func(cmd *cobra.Command, args []string) {
-		q, err := NewQuerier()
-		if err != nil {
-			panic(err)
-		}
-		r := repl.New(q)
+		r := repl.New(querier{})
 		r.Run()
 	},
 }
@@ -31,30 +25,18 @@ func init() {
 	rootCmd.AddCommand(replCmd)
 }
 
-type Querier struct {
-	c *control.Controller
-}
+type querier struct{}
 
-func (q *Querier) Query(ctx context.Context, c flux.Compiler) (flux.ResultIterator, error) {
-	qry, err := q.c.Query(ctx, c)
+func (querier) Query(ctx context.Context, c flux.Compiler) (flux.ResultIterator, error) {
+	program, err := c.Compile(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	alloc := &memory.Allocator{}
+	qry, err := program.Start(ctx, alloc)
 	if err != nil {
 		return nil, err
 	}
 	return flux.NewResultIteratorFromQuery(qry), nil
-}
-
-func NewQuerier() (*Querier, error) {
-	config := control.Config{
-		ConcurrencyQuota:         1,
-		MemoryBytesQuotaPerQuery: math.MaxInt64,
-		QueueSize:                1,
-	}
-
-	c, err := control.New(config)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not create controller")
-	}
-	return &Querier{
-		c: c,
-	}, nil
 }

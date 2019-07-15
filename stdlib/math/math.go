@@ -5,9 +5,10 @@ import (
 	"math"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 var SpecialFns map[string]values.Function
@@ -23,7 +24,7 @@ func generateMathFunctionX(name string, mathFn func(float64) float64) values.Fun
 		func(args values.Object) (values.Value, error) {
 			v, ok := args.Get("x")
 			if !ok {
-				return nil, errors.New("missing argument x")
+				return nil, errors.New(codes.Invalid, "missing argument x")
 			}
 
 			if v.Type().Nature() == semantic.Float {
@@ -149,7 +150,7 @@ func init() {
 			func(args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
-					return nil, errors.New("missing argument f")
+					return nil, errors.New(codes.Invalid, "missing argument f")
 				}
 
 				if v1.Type().Nature() == semantic.Float {
@@ -168,7 +169,7 @@ func init() {
 			func(args values.Object) (values.Value, error) {
 				v1, ok := args.Get("b")
 				if !ok {
-					return nil, errors.New("missing argument b")
+					return nil, errors.New(codes.Invalid, "missing argument b")
 				}
 
 				if v1.Type().Nature() == semantic.UInt {
@@ -188,7 +189,7 @@ func init() {
 			func(args values.Object) (values.Value, error) {
 				v1, ok := args.Get("x")
 				if !ok {
-					return nil, errors.New("missing argument x")
+					return nil, errors.New(codes.Invalid, "missing argument x")
 				}
 
 				if v1.Type().Nature() == semantic.Float {
@@ -208,7 +209,7 @@ func init() {
 			func(args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
-					return nil, errors.New("missing argument f")
+					return nil, errors.New(codes.Invalid, "missing argument f")
 				}
 
 				if v1.Type().Nature() == semantic.Float {
@@ -229,7 +230,7 @@ func init() {
 			func(args values.Object) (values.Value, error) {
 				v1, ok := args.Get("x")
 				if !ok {
-					return nil, errors.New("missing argument x")
+					return nil, errors.New(codes.Invalid, "missing argument x")
 				}
 
 				if v1.Type().Nature() == semantic.Float {
@@ -250,7 +251,7 @@ func init() {
 			func(args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
-					return nil, errors.New("missing argument f")
+					return nil, errors.New(codes.Invalid, "missing argument f")
 				}
 
 				if v1.Type().Nature() == semantic.Float {
@@ -271,7 +272,7 @@ func init() {
 			func(args values.Object) (values.Value, error) {
 				v1, ok := args.Get("x")
 				if !ok {
-					return nil, errors.New("missing argument x")
+					return nil, errors.New(codes.Invalid, "missing argument x")
 				}
 
 				if v1.Type().Nature() == semantic.Float {
@@ -292,11 +293,11 @@ func init() {
 			func(args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
-					return nil, errors.New("missing argument f")
+					return nil, errors.New(codes.Invalid, "missing argument f")
 				}
 				v2, ok := args.Get("sign")
 				if !ok {
-					return nil, errors.New("missing argument sign")
+					return nil, errors.New(codes.Invalid, "missing argument sign")
 				}
 
 				if v1.Type().Nature() == semantic.Float {
@@ -320,7 +321,7 @@ func init() {
 			func(args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
-					return nil, errors.New("missing argument f")
+					return nil, errors.New(codes.Invalid, "missing argument f")
 				}
 
 				if v1.Type().Nature() == semantic.Float {
@@ -340,7 +341,7 @@ func init() {
 			func(args values.Object) (values.Value, error) {
 				v1, ok := args.Get("x")
 				if !ok {
-					return nil, errors.New("missing argument x")
+					return nil, errors.New(codes.Invalid, "missing argument x")
 				}
 
 				if v1.Type().Nature() == semantic.Float {
@@ -373,7 +374,7 @@ func init() {
 
 				v1, ok := args.Get("sign")
 				if !ok {
-					return nil, errors.New("missing argument sign")
+					return nil, errors.New(codes.Invalid, "missing argument sign")
 				}
 
 				if v1.Type().Nature() == semantic.Int {
@@ -393,11 +394,11 @@ func init() {
 			func(args values.Object) (values.Value, error) {
 				v1, ok := args.Get("n")
 				if !ok {
-					return nil, errors.New("missing argument n")
+					return nil, errors.New(codes.Invalid, "missing argument n")
 				}
 				v2, ok := args.Get("x")
 				if !ok {
-					return nil, errors.New("missing argument x")
+					return nil, errors.New(codes.Invalid, "missing argument x")
 				}
 
 				if v1.Type().Nature() == semantic.Int {
@@ -421,11 +422,11 @@ func init() {
 			func(args values.Object) (values.Value, error) {
 				v1, ok := args.Get("n")
 				if !ok {
-					return nil, errors.New("missing argument n")
+					return nil, errors.New(codes.Invalid, "missing argument n")
 				}
 				v2, ok := args.Get("x")
 				if !ok {
-					return nil, errors.New("missing argument x")
+					return nil, errors.New(codes.Invalid, "missing argument x")
 				}
 
 				if v1.Type().Nature() == semantic.Int {
@@ -449,11 +450,11 @@ func init() {
 			func(args values.Object) (values.Value, error) {
 				v1, ok := args.Get("frac")
 				if !ok {
-					return nil, errors.New("missing argument frac")
+					return nil, errors.New(codes.Invalid, "missing argument frac")
 				}
 				v2, ok := args.Get("exp")
 				if !ok {
-					return nil, errors.New("missing argument exp")
+					return nil, errors.New(codes.Invalid, "missing argument exp")
 				}
 
 				if v1.Type().Nature() == semantic.Float {
@@ -477,7 +478,7 @@ func init() {
 			func(args values.Object) (values.Value, error) {
 				v1, ok := args.Get("n")
 				if !ok {
-					return nil, errors.New("missing argument frac")
+					return nil, errors.New(codes.Invalid, "missing argument frac")
 				}
 
 				if v1.Type().Nature() == semantic.Int {

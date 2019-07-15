@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-type rowFn struct {
+type dynamicFn struct {
 	compilationCache *compiler.CompilationCache
 	inRecord         values.Object
 
@@ -24,36 +24,24 @@ type rowFn struct {
 	references []string
 }
 
-func newRowFn(fn *semantic.FunctionExpression) (rowFn, error) {
-	//if fn.Block.Parameters != nil && len(fn.Block.Parameters.List) != 1 {
-	//	return rowFn{}, errors.New("function should only have a single parameter")
-	//}
+func newDynamicFn(fn *semantic.FunctionExpression) dynamicFn {
 	scope := flux.BuiltIns()
-	return rowFn{
+	return dynamicFn{
 		compilationCache: compiler.NewCompilationCache(fn, scope),
 		inRecord:         values.NewObject(),
 		recordName:       fn.Block.Parameters.List[0].Key.Name,
 		references:       findColReferences(fn),
 		recordCols:       make(map[string]int),
-	}, nil
+	}
 }
 
-func (f *rowFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.Type) error {
+func (f *dynamicFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.Type) error {
 	// Prepare types and recordCols
 	propertyTypes := make(map[string]semantic.Type, len(f.references))
-	for _, r := range f.references {
-		found := false
-		for j, c := range cols {
-			if r == c.Label {
-				f.recordCols[r] = j
-				found = true
-				propertyTypes[r] = ConvertToKind(c.Type)
-				break
-			}
-		}
-		if !found {
-			return fmt.Errorf("function references unknown column %q", r)
-		}
+	f.recordCols = make(map[string]int)
+	for j, c := range cols {
+		propertyTypes[c.Label] = ConvertToKind(c.Type)
+		f.recordCols[c.Label] = j
 	}
 
 	f.record = NewRecord(semantic.NewObjectType(propertyTypes))
@@ -120,14 +108,64 @@ func ConvertFromKind(k semantic.Nature) flux.ColType {
 	}
 }
 
-func (f *rowFn) eval(row int, cr flux.ColReader, extraParams map[string]values.Value) (values.Value, error) {
-	// TODO(affo) will remove this once null support for lambdas is provided
-	if f.anyNilReferenceInRow(row, cr) {
-		return nil, errors.New("null reference used in row function: skipping evaluation until null support is provided")
-	}
+type tableFn struct {
+	dynamicFn
+}
 
-	for _, r := range f.references {
-		f.record.Set(r, ValueForRow(cr, row, f.recordCols[r]))
+func newTableFn(fn *semantic.FunctionExpression) tableFn {
+	return tableFn{
+		dynamicFn: newDynamicFn(fn),
+	}
+}
+
+func (f *tableFn) eval(tbl flux.Table) (values.Value, error) {
+	for r, col := range f.recordCols {
+		f.record.Set(r, tbl.Key().Value(col))
+	}
+	f.inRecord.Set(f.recordName, f.record)
+	return f.preparedFn.Eval(f.inRecord)
+}
+
+type TablePredicateFn struct {
+	tableFn
+}
+
+func NewTablePredicateFn(fn *semantic.FunctionExpression) (*TablePredicateFn, error) {
+	t := newTableFn(fn)
+	return &TablePredicateFn{tableFn: t}, nil
+}
+
+func (f *TablePredicateFn) Prepare(tbl flux.Table) error {
+	if err := f.tableFn.prepare(tbl.Key().Cols(), nil); err != nil {
+		return err
+	}
+	if f.preparedFn.Type() != semantic.Bool {
+		return errors.New("table predicate function does not evaluate to a boolean")
+	}
+	return nil
+}
+
+func (f *TablePredicateFn) Eval(tbl flux.Table) (bool, error) {
+	v, err := f.tableFn.eval(tbl)
+	if err != nil {
+		return false, err
+	}
+	return !v.IsNull() && v.Bool(), nil
+}
+
+type rowFn struct {
+	dynamicFn
+}
+
+func newRowFn(fn *semantic.FunctionExpression) (rowFn, error) {
+	return rowFn{
+		dynamicFn: newDynamicFn(fn),
+	}, nil
+}
+
+func (f *rowFn) eval(row int, cr flux.ColReader, extraParams map[string]values.Value) (values.Value, error) {
+	for r, col := range f.recordCols {
+		f.record.Set(r, ValueForRow(cr, row, col))
 	}
 	f.inRecord.Set(f.recordName, f.record)
 	for k, v := range extraParams {
@@ -135,46 +173,6 @@ func (f *rowFn) eval(row int, cr flux.ColReader, extraParams map[string]values.V
 	}
 
 	return f.preparedFn.Eval(f.inRecord)
-}
-
-func (f *rowFn) anyNilReferenceInRow(i int, cr flux.ColReader) bool {
-	for _, ref := range f.references {
-		j := ColIdx(ref, cr.Cols())
-		if j < 0 {
-			continue
-		}
-
-		switch cr.Cols()[j].Type {
-		case flux.TBool:
-			if cr.Bools(j).IsNull(i) {
-				return true
-			}
-		case flux.TInt:
-			if cr.Ints(j).IsNull(i) {
-				return true
-			}
-		case flux.TUInt:
-			if cr.UInts(j).IsNull(i) {
-				return true
-			}
-		case flux.TFloat:
-			if cr.Floats(j).IsNull(i) {
-				return true
-			}
-		case flux.TString:
-			if cr.Strings(j).IsNull(i) {
-				return true
-			}
-		case flux.TTime:
-			if cr.Times(j).IsNull(i) {
-				return true
-			}
-		default:
-			PanicUnknownType(cr.Cols()[j].Type)
-		}
-	}
-
-	return false
 }
 
 type RowPredicateFn struct {
@@ -192,8 +190,7 @@ func NewRowPredicateFn(fn *semantic.FunctionExpression) (*RowPredicateFn, error)
 }
 
 func (f *RowPredicateFn) Prepare(cols []flux.ColMeta) error {
-	err := f.rowFn.prepare(cols, nil)
-	if err != nil {
+	if err := f.rowFn.prepare(cols, nil); err != nil {
 		return err
 	}
 	if f.preparedFn.Type() != semantic.Bool {
@@ -207,14 +204,11 @@ func (f *RowPredicateFn) Eval(row int, cr flux.ColReader) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return v.Bool(), nil
+	return !v.IsNull() && v.Bool(), nil
 }
 
 type RowMapFn struct {
 	rowFn
-
-	isWrap  bool
-	wrapObj *Record
 }
 
 func NewRowMapFn(fn *semantic.FunctionExpression) (*RowMapFn, error) {
@@ -228,24 +222,18 @@ func NewRowMapFn(fn *semantic.FunctionExpression) (*RowMapFn, error) {
 }
 
 func (f *RowMapFn) Prepare(cols []flux.ColMeta) error {
-	err := f.rowFn.prepare(cols, nil)
+	err := f.dynamicFn.prepare(cols, nil)
 	if err != nil {
 		return err
 	}
 	k := f.preparedFn.Type().Nature()
-	f.isWrap = k != semantic.Object
-	if f.isWrap {
-		f.wrapObj = NewRecord(semantic.NewObjectType(map[string]semantic.Type{
-			DefaultValueColLabel: f.preparedFn.Type(),
-		}))
+	if k != semantic.Object {
+		return fmt.Errorf("map function must return an object, got %s", k.String())
 	}
 	return nil
 }
 
 func (f *RowMapFn) Type() semantic.Type {
-	if f.isWrap {
-		return f.wrapObj.Type()
-	}
 	return f.preparedFn.Type()
 }
 
@@ -253,10 +241,6 @@ func (f *RowMapFn) Eval(row int, cr flux.ColReader) (values.Object, error) {
 	v, err := f.rowFn.eval(row, cr, nil)
 	if err != nil {
 		return nil, err
-	}
-	if f.isWrap {
-		f.wrapObj.Set(DefaultValueColLabel, v)
-		return f.wrapObj, nil
 	}
 	return v.Object(), nil
 }
@@ -412,7 +396,10 @@ func (r *Record) Set(name string, v values.Value) {
 }
 func (r *Record) Get(name string) (values.Value, bool) {
 	v, ok := r.values[name]
-	return v, ok
+	if !ok {
+		return values.Null, false
+	}
+	return v, true
 }
 func (r *Record) Len() int {
 	return len(r.values)

@@ -254,10 +254,7 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope Scope) (va
 		if typ := obj.Type().Nature(); typ != semantic.Object {
 			return nil, fmt.Errorf("cannot access property %q on value of type %s", e.Property, typ)
 		}
-		v, ok := obj.Object().Get(e.Property)
-		if !ok {
-			return nil, fmt.Errorf("object has no property %q", e.Property)
-		}
+		v, _ := obj.Object().Get(e.Property)
 		if pkg, ok := v.(*Package); ok {
 			// If the property of a member expression represents a package, then the object itself must be a package.
 			return nil, fmt.Errorf("cannot access imported package %q of imported package %q", pkg.Name(), obj.(*Package).Name())
@@ -297,10 +294,11 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope Scope) (va
 			default:
 				return nil, fmt.Errorf("operand to unary expression is not a number value, got %v", v.Type())
 			}
+		case ast.ExistsOperator:
+			return values.NewBool(!v.IsNull()), nil
 		default:
 			return nil, fmt.Errorf("unsupported operator %q to unary expression", e.Operator)
 		}
-
 	case *semantic.BinaryExpression:
 		l, err := itrp.doExpression(e.Left, scope)
 		if err != nil {
@@ -312,10 +310,22 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope Scope) (va
 			return nil, err
 		}
 
+		ltyp := itrp.typeof(e.Left, l.Type())
+		rtyp := itrp.typeof(e.Right, r.Type())
+		// TODO(jsternberg): This next section needs to be removed
+		// since type inference should give the correct type.
+		if ltyp == semantic.Nil && l.Type() != semantic.Nil {
+			// There's a weird bug in type inference where it
+			// determines the type is null even when it's not.
+			ltyp = l.Type()
+		}
+		if rtyp == semantic.Nil && r.Type() != semantic.Nil {
+			rtyp = r.Type()
+		}
 		bf, err := values.LookupBinaryFunction(values.BinaryFuncSignature{
 			Operator: e.Operator,
-			Left:     l.Type(),
-			Right:    r.Type(),
+			Left:     ltyp,
+			Right:    rtyp,
 		})
 		if err != nil {
 			return nil, err
@@ -411,6 +421,15 @@ func (itrp *Interpreter) doArray(a *semantic.ArrayExpression, scope Scope) (valu
 
 func (itrp *Interpreter) doObject(m *semantic.ObjectExpression, scope Scope) (values.Value, error) {
 	obj := values.NewObject()
+	if m.With != nil {
+		with, err := itrp.doExpression(m.With, scope)
+		if err != nil {
+			return nil, err
+		}
+		with.Object().Range(func(k string, v values.Value) {
+			obj.Set(k, v)
+		})
+	}
 	for _, p := range m.Properties {
 		v, err := itrp.doExpression(p.Value, scope)
 		if err != nil {
@@ -546,6 +565,15 @@ func (itrp *Interpreter) doArguments(args *semantic.ObjectExpression, scope Scop
 	return obj, nil
 }
 
+// typeof returns the typeof a node or returns the default
+// if there is no registered type.
+func (itrp *Interpreter) typeof(n semantic.Node, def semantic.Type) semantic.Type {
+	if typ, ok := itrp.types[n]; ok {
+		return typ
+	}
+	return def
+}
+
 // Value represents any value that can be the result of evaluating any expression.
 type Value interface {
 	// Type reports the type of value
@@ -648,6 +676,13 @@ func (f function) Call(argsObj values.Object) (values.Value, error) {
 	return v, nil
 }
 func (f function) doCall(args Arguments) (values.Value, error) {
+	if f.itrp == nil {
+		f.itrp = &Interpreter{
+			types:     f.types,
+			polyTypes: f.polyTypes,
+		}
+	}
+
 	blockScope := f.scope.Nest(nil)
 	if f.e.Block.Parameters != nil {
 	PARAMETERS:

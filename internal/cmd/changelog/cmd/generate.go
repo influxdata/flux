@@ -147,34 +147,139 @@ func findPreviousRelease(r *git.Repository, v *semver.Version) (*semver.Version,
 
 // findNewCommits queries the git repository for new commits since the last tagged release.
 func findNewCommits(r *git.Repository, prevHash, currHash plumbing.Hash) ([]Commit, error) {
-	logs, err := r.Log(&git.LogOptions{
+	// Find a common merge base which will tell us all of the commits that have been
+	// merged in since the previous release that may not have been branched off of the
+	// previous release. Usually, the result of this will be the same as prevHash.
+	mergeBase, err := findMergeBase(r, prevHash, currHash)
+	if err != nil {
+		return nil, err
+	}
+
+	// Keep a queue of which commits we will process and which commits we have already
+	// seen. If we have processed a commit before, we do not want to process it again.
+	queue := []plumbing.Hash{currHash}
+	seen := make(map[plumbing.Hash]bool)
+
+	var commits []Commit
+	for len(queue) > 0 {
+		h := queue[0]
+		queue = queue[1:]
+
+		if seen[h] {
+			continue
+		}
+		seen[h] = true
+
+		if h == prevHash || h == mergeBase {
+			// Do not process this commit or its
+			// parents. We are done processing commits on this
+			// branch.
+			continue
+		}
+
+		commit, err := r.CommitObject(h)
+		if err != nil {
+			return nil, err
+		}
+
+		// Ignore merge commits when parsing commit messages.
+		if len(commit.ParentHashes) <= 1 {
+			c, err := parseCommit(commit)
+			if err == nil {
+				commits = append(commits, c)
+			} else {
+				log.Printf("invalid commit message %v: %v", commit.Hash, err)
+			}
+		}
+
+		// Iterate over the parents and add them to the queue.
+		queue = append(queue, commit.ParentHashes...)
+	}
+	return commits, nil
+}
+
+// findMergeBase finds the common parent commit the two commits have.
+//
+//
+func findMergeBase(r *git.Repository, prevHash, currHash plumbing.Hash) (plumbing.Hash, error) {
+	// Process the log from the previous hash and the current hash
+	// simultaneously to find the most recent common ancestor of the
+	// two commits.
+	prevLog, err := r.Log(&git.LogOptions{
+		From: prevHash,
+	})
+	if err != nil {
+		return plumbing.Hash{}, err
+	}
+	defer prevLog.Close()
+
+	prevCommit, err := prevLog.Next()
+	if err != nil {
+		return plumbing.Hash{}, err
+	}
+
+	currLog, err := r.Log(&git.LogOptions{
 		From: currHash,
 	})
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to load logs from %v", currHash)
+		return plumbing.Hash{}, err
 	}
-	defer logs.Close()
+	defer currLog.Close()
 
-	var commits []Commit
-	for {
-		commit, err := logs.Next()
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return nil, err
-		}
-		if commit.Hash == prevHash {
-			break
-		}
-		c, err := parseCommit(commit)
-		if err == nil {
-			commits = append(commits, c)
-		} else {
-			log.Printf("invalid commit message %v: %v", commit.Hash, err)
-		}
+	currCommit, err := currLog.Next()
+	if err != nil {
+		return plumbing.Hash{}, err
 	}
-	return commits, nil
+
+	// Keep track of which commits we have seen
+	// from each graph. If we see the same commit
+	// from both graphs, that is the common ancestor.
+	seen := map[plumbing.Hash]bool{
+		prevCommit.Hash: true,
+		currCommit.Hash: true,
+	}
+	for {
+		var (
+			commit **object.Commit
+			log    object.CommitIter
+		)
+
+		// Determine from which stream we will process the next commit.
+		if prevCommit == nil {
+			commit, log = &currCommit, currLog
+		} else if currCommit == nil {
+			commit, log = &prevCommit, prevLog
+		} else {
+			// Process the next commit from whichever branch has the most recent
+			// commit. This is not the best way to determine which branch to read
+			// from, but unfortunately, git does not give us a commit's position
+			// in the DAG as part of the metadata. The official git merge-base
+			// command uses the commit time as a heuristic to determine which
+			// branch to read from and if it is good enough for them, it is good
+			// enough for us.
+			if currCommit.Committer.When.Before(prevCommit.Committer.When) {
+				commit, log = &prevCommit, prevLog
+			} else {
+				commit, log = &currCommit, currLog
+			}
+		}
+
+		var err error
+		*commit, err = log.Next()
+		if err != nil && err != io.EOF {
+			return plumbing.Hash{}, err
+		}
+
+		var h plumbing.Hash
+		if *commit != nil {
+			h = (*commit).Hash
+		}
+
+		if seen[h] {
+			return h, nil
+		}
+		seen[h] = true
+	}
 }
 
 const (

@@ -184,7 +184,8 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			ast.AdditionOperator,
 			ast.SubtractionOperator,
 			ast.MultiplicationOperator,
-			ast.DivisionOperator:
+			ast.DivisionOperator,
+			ast.ModuloOperator:
 			v.cs.AddTypeConst(l, r, n.Location())
 			return l, nil
 		case
@@ -241,7 +242,8 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		case ast.NotOperator:
 			v.cs.AddTypeConst(t, Bool, n.Location())
 			return Bool, nil
-
+		case ast.ExistsOperator:
+			return Bool, nil
 		}
 		return t, nil
 	case *FunctionExpression:
@@ -329,7 +331,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		return ft.ret, nil
 	case *ObjectExpression:
 		properties := make(map[string]PolyType, len(n.Properties))
-		upper := make([]string, 0, len(properties))
+		upper := make(LabelSet, 0, len(properties))
 		for _, field := range n.Properties {
 			t, err := v.lookup(field.Value)
 			if err != nil {
@@ -338,16 +340,47 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			properties[field.Key.Key()] = t
 			upper = append(upper, field.Key.Key())
 		}
+		var with *Tvar
+		if n.With != nil {
+			t, err := v.lookup(n.With)
+			if err != nil {
+				return nil, err
+			}
+			tv, ok := t.(Tvar)
+			if !ok {
+				return nil, errors.New("object 'with' identifier must be a type variable")
+			}
+			for _, k := range v.cs.kindConst[tv] {
+				obj, ok := k.(ObjectKind)
+				if !ok {
+					return nil, errors.New("object 'with' identifier must have only object kind constraints")
+				}
+				if obj.upper.isAllLabels() {
+					continue
+				}
+				for _, p := range obj.upper {
+					properties[p] = obj.properties[p]
+				}
+				upper = upper.union(obj.upper)
+			}
+		}
 		v.cs.AddKindConst(nodeVar, ObjectKind{
+			with:       with,
 			properties: properties,
 			lower:      nil,
 			upper:      upper,
 		})
+
 		return nodeVar, nil
 	case *Property:
 		return v.lookup(n.Value)
 	case *MemberExpression:
+		// Retrieve a new type variable for the property
+		// and add a nullable kind constraint to indicate
+		// that the variable can be null.
 		ptv := v.cs.f.Fresh()
+		v.cs.AddKindConst(ptv, NullableKind{T: ptv})
+
 		t, err := v.lookup(n.Object)
 		if err != nil {
 			return nil, err
@@ -552,7 +585,13 @@ func (c *Constraints) Instantiate(s Scheme, loc ast.SourceLocation) (t PolyType)
 func (c *Constraints) String() string {
 	var builder strings.Builder
 	builder.WriteString("{\nannotations:\n")
-	for n, ann := range c.annotations {
+	nodes := make([]Node, 0, len(c.annotations))
+	for n := range c.annotations {
+		nodes = append(nodes, n)
+	}
+	SortNodes(nodes)
+	for _, n := range nodes {
+		ann := c.annotations[n]
 		fmt.Fprintf(&builder, "%T@%v = %v,\n", n, n.Location(), ann.Var)
 	}
 	builder.WriteString("types:\n")

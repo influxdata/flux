@@ -1,14 +1,22 @@
 package executetest
 
 import (
+	"context"
 	"fmt"
+	"testing"
+	"time"
 
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
 // Table is an implementation of execute.Table
@@ -32,6 +40,11 @@ type Table struct {
 	// Err contains the error that should be returned
 	// by this table when calling Do.
 	Err error
+	// Alloc is the allocator used to create the column readers.
+	// Memory is not tracked unless this is set.
+	Alloc *memory.Allocator
+	// IsDone indicates if this table has been used.
+	IsDone bool
 }
 
 // Normalize ensures all fields of the table are set correctly.
@@ -82,13 +95,16 @@ func (t *Table) Key() flux.GroupKey {
 func (t *Table) Do(f func(flux.ColReader) error) error {
 	if t.Err != nil {
 		return t.Err
+	} else if t.IsDone {
+		return errors.New(codes.Internal, "table already read")
 	}
+	t.IsDone = true
 
 	cols := make([]array.Interface, len(t.ColMeta))
 	for j, col := range t.ColMeta {
 		switch col.Type {
 		case flux.TBool:
-			b := arrow.NewBoolBuilder(nil)
+			b := arrow.NewBoolBuilder(t.Alloc)
 			for i := range t.Data {
 				if v := t.Data[i][j]; v != nil {
 					b.Append(v.(bool))
@@ -99,7 +115,7 @@ func (t *Table) Do(f func(flux.ColReader) error) error {
 			cols[j] = b.NewBooleanArray()
 			b.Release()
 		case flux.TFloat:
-			b := arrow.NewFloatBuilder(nil)
+			b := arrow.NewFloatBuilder(t.Alloc)
 			for i := range t.Data {
 				if v := t.Data[i][j]; v != nil {
 					b.Append(v.(float64))
@@ -110,7 +126,7 @@ func (t *Table) Do(f func(flux.ColReader) error) error {
 			cols[j] = b.NewFloat64Array()
 			b.Release()
 		case flux.TInt:
-			b := arrow.NewIntBuilder(nil)
+			b := arrow.NewIntBuilder(t.Alloc)
 			for i := range t.Data {
 				if v := t.Data[i][j]; v != nil {
 					b.Append(v.(int64))
@@ -121,7 +137,7 @@ func (t *Table) Do(f func(flux.ColReader) error) error {
 			cols[j] = b.NewInt64Array()
 			b.Release()
 		case flux.TString:
-			b := arrow.NewStringBuilder(nil)
+			b := arrow.NewStringBuilder(t.Alloc)
 			for i := range t.Data {
 				if v := t.Data[i][j]; v != nil {
 					b.AppendString(v.(string))
@@ -132,7 +148,7 @@ func (t *Table) Do(f func(flux.ColReader) error) error {
 			cols[j] = b.NewBinaryArray()
 			b.Release()
 		case flux.TTime:
-			b := arrow.NewIntBuilder(nil)
+			b := arrow.NewIntBuilder(t.Alloc)
 			for i := range t.Data {
 				if v := t.Data[i][j]; v != nil {
 					b.Append(int64(v.(values.Time)))
@@ -143,7 +159,7 @@ func (t *Table) Do(f func(flux.ColReader) error) error {
 			cols[j] = b.NewInt64Array()
 			b.Release()
 		case flux.TUInt:
-			b := arrow.NewUintBuilder(nil)
+			b := arrow.NewUintBuilder(t.Alloc)
 			for i := range t.Data {
 				if v := t.Data[i][j]; v != nil {
 					b.Append(v.(uint64))
@@ -161,10 +177,13 @@ func (t *Table) Do(f func(flux.ColReader) error) error {
 		meta: t.ColMeta,
 		cols: cols,
 	}
+	defer cr.Release()
 	return f(cr)
 }
 
-func (t *Table) Done() {}
+func (t *Table) Done() {
+	t.IsDone = true
+}
 
 type ColReader struct {
 	key  flux.GroupKey
@@ -469,4 +488,288 @@ func MustCopyTable(tbl flux.Table) flux.Table {
 		panic(err)
 	}
 	return cpy
+}
+
+type TableTest struct {
+	// NewFn returns a new TableIterator that can be processed.
+	// The table iterator that is produced should have multiple
+	// tables of different shapes and sizes to get coverage of
+	// as much of the code as possible. The TableIterator will
+	// be created once for each subtest.
+	NewFn func(ctx context.Context, alloc *memory.Allocator) flux.TableIterator
+
+	// IsDone will report if the table is considered done for reading.
+	// The call to Done should force this to be true, but it is possible
+	// for this to return true before the table has been processed.
+	IsDone func(flux.Table) bool
+}
+
+func (tt TableTest) run(t *testing.T, name string, f func(tt *tableTest)) {
+	t.Run(name, func(t *testing.T) {
+		defer func() {
+			if err := recover(); err != nil {
+				t.Errorf("panic occurred while running the test: %v", err)
+			}
+		}()
+		f(&tableTest{
+			TableTest: tt,
+			t:         t,
+			logger:    zaptest.NewLogger(t),
+			alloc:     &memory.Allocator{},
+		})
+	})
+}
+
+type tableTest struct {
+	TableTest
+	t      *testing.T
+	logger *zap.Logger
+	alloc  *memory.Allocator
+}
+
+func (tt *tableTest) do(f func(tbl flux.Table) error) {
+	tt.t.Helper()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	tables := tt.NewFn(ctx, tt.alloc)
+	if err := tables.Do(func(tbl flux.Table) error {
+		tt.logger.Debug("processing table", zap.Stringer("key", tbl.Key()))
+		if err := f(tbl); err != nil {
+			return err
+		}
+		if !tt.IsDone(tbl) {
+			tt.t.Error("table is not done after the test has finished")
+		}
+		return nil
+	}); err != nil {
+		tt.t.Errorf("unexpected error when processing tables: %s", err)
+	}
+}
+
+func (tt *tableTest) finish(allocatorUsed bool) {
+	tt.t.Helper()
+
+	if allocatorUsed {
+		// This ensures the allocator was actually used at some point
+		// to ensure that the below check is actually valid.
+		if got := tt.alloc.MaxAllocated(); got == 0 {
+			tt.t.Error("memory allocator was not used")
+		}
+	}
+
+	// Verify that all memory is correctly released if we use the table properly.
+	if got := tt.alloc.Allocated(); got != 0 {
+		tt.t.Errorf("caught memory leak: %d bytes were not released", got)
+	}
+}
+
+// RunTableTests will run the common table tests over each table
+// in the returned TableIterator. The function will be called for
+// each test.
+func RunTableTests(t *testing.T, tt TableTest) {
+	tt.run(t, "Normal", func(tt *tableTest) {
+		// Ensure that calling Do works correctly.
+		// The Done call should not be required.
+		tt.do(func(tbl flux.Table) error {
+			return tbl.Do(func(flux.ColReader) error {
+				return nil
+			})
+		})
+		tt.finish(true)
+	})
+	tt.run(t, "MultipleDoCalls", func(tt *tableTest) {
+		// When Do is called multiple times, the second use should
+		// fail with an error.
+		tt.do(func(tbl flux.Table) error {
+			if err := tbl.Do(func(flux.ColReader) error {
+				return nil
+			}); err != nil {
+				return err
+			}
+
+			// The second call should return an error.
+			if err := tbl.Do(func(flux.ColReader) error {
+				tt.t.Error("unexpected column reader on the second call to Do")
+				return nil
+			}); err == nil {
+				tt.t.Error("expected error when calling Do twice")
+			}
+			return nil
+		})
+		tt.finish(true)
+	})
+	tt.run(t, "MultipleDoneCalls", func(tt *tableTest) {
+		// Calling Done multiple times should be safe and not panic.
+		tt.do(func(tbl flux.Table) error {
+			tbl.Done()
+			if !tt.IsDone(tbl) {
+				t.Error("table is not done after calling Done")
+			}
+			tbl.Done()
+			return nil
+		})
+		tt.finish(false)
+	})
+	tt.run(t, "DoneOnly", func(tt *tableTest) {
+		// If the only thing called is Done, the table should work properly.
+		tt.do(func(tbl flux.Table) error {
+			tbl.Done()
+			if !tt.IsDone(tbl) {
+				t.Error("table is not done after calling Done")
+			}
+			return nil
+		})
+		tt.finish(false)
+	})
+	tt.run(t, "Empty", func(tt *tableTest) {
+		// If Do returns no rows, then Empty should have returned true.
+		tt.do(func(tbl flux.Table) error {
+			got, want := tbl.Empty(), true
+			if err := tbl.Do(func(cr flux.ColReader) error {
+				if cr.Len() > 0 {
+					want = false
+				}
+				return nil
+			}); err != nil {
+				return err
+			}
+
+			if got != want {
+				tt.t.Errorf("unexpected value for empty -got/+want\n\t- %v\n\t+ %v", got, want)
+			}
+			return nil
+		})
+		tt.finish(false)
+	})
+	tt.run(t, "Retain", func(tt *tableTest) {
+		// Retain should allow the column reader to be used outside of Do.
+		tt.do(func(tbl flux.Table) error {
+			if tbl.Empty() {
+				return nil
+			}
+
+			var crs []flux.ColReader
+			if err := tbl.Do(func(cr flux.ColReader) error {
+				cr.Retain()
+				crs = append(crs, cr)
+				return nil
+			}); err != nil {
+				return err
+			}
+
+			// We are outside of the Do call. The column reader should
+			// still be valid so we should be able to read a value from it.
+			checkColReaders := func() {
+				for _, cr := range crs {
+					v := execute.ValueForRow(cr, 0, 0)
+					tt.t.Logf("first value for first column is %v", v)
+				}
+
+				// If there were multiple column readers returned for a single table,
+				// we need to check that they did not share a buffer.
+				if len(crs) > 1 {
+					for i := 0; i < len(crs)-1; i++ {
+						for j := i + 1; j < len(crs); j++ {
+							if colReadersEqual(crs[i], crs[j]) {
+								tt.t.Errorf("retained column reader is the same as another column reader (%d, %d) for table %v", i, j, tbl.Key())
+							}
+						}
+					}
+				}
+			}
+			checkColReaders()
+
+			// Call Done (which should have already happened by the call to Do)
+			// and ensure that the above check still succeeds.
+			tbl.Done()
+			checkColReaders()
+
+			for _, cr := range crs {
+				cr.Release()
+			}
+			return nil
+		})
+		tt.finish(true)
+	})
+	tt.run(t, "Len", func(tt *tableTest) {
+		tt.do(func(tbl flux.Table) error {
+			return tbl.Do(func(cr flux.ColReader) error {
+				want := cr.Len()
+				for i, n := 0, len(cr.Cols()); i < n; i++ {
+					got := func(cr flux.ColReader, i int) int {
+						switch cr.Cols()[i].Type {
+						case flux.TFloat:
+							return cr.Floats(i).Len()
+						case flux.TInt:
+							return cr.Ints(i).Len()
+						case flux.TUInt:
+							return cr.UInts(i).Len()
+						case flux.TString:
+							return cr.Strings(i).Len()
+						case flux.TBool:
+							return cr.Bools(i).Len()
+						case flux.TTime:
+							return cr.Times(i).Len()
+						default:
+							panic(fmt.Errorf("unexpected column type: %v", cr.Cols()[i].Type))
+						}
+					}(cr, i)
+					if got != want {
+						tt.t.Errorf("column %d does not have the wanted length (%v) -want/+got:\n\t- %d\n\t+ %d", i, tbl.Key(), want, got)
+					}
+				}
+				return nil
+			})
+		})
+		tt.finish(true)
+	})
+}
+
+func colReadersEqual(a, b flux.ColReader) bool {
+	if a.Len() != b.Len() {
+		return false
+	}
+
+	if len(a.Cols()) != len(b.Cols()) {
+		return false
+	}
+
+	for i, n := 0, len(a.Cols()); i < n; i++ {
+		if a.Cols()[i] != b.Cols()[i] {
+			return false
+		}
+
+		// Compare the memory address for the arrow buffer.
+		// The same buffer contents with different memory addresses
+		// are considered different.
+		switch a.Cols()[i].Type {
+		case flux.TFloat:
+			if a.Floats(i) != b.Floats(i) {
+				return false
+			}
+		case flux.TInt:
+			if a.Ints(i) != b.Ints(i) {
+				return false
+			}
+		case flux.TUInt:
+			if a.UInts(i) != b.UInts(i) {
+				return false
+			}
+		case flux.TString:
+			if a.Strings(i) != b.Strings(i) {
+				return false
+			}
+		case flux.TBool:
+			if a.Bools(i) != b.Bools(i) {
+				return false
+			}
+		case flux.TTime:
+			if a.Times(i) != b.Times(i) {
+				return false
+			}
+		}
+	}
+	return true
 }
