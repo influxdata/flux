@@ -10,7 +10,6 @@ Please help us make the contribution process easier by providing feedback about 
 
 - A source or sink function must conform to the following examples: 
     [sql](https://github.com/influxdata/flux/tree/master/stdlib/sql)
-    [http](https://github.com/Anaisdg/flux/tree/master/stdlib/http)
-- You must submit a unit test in [testing](https://github.com/influxdata/flux/tree/master/stdlib/testing)
-- You must submit an end-to-end test in [testdata](https://github.com/influxdata/flux/tree/master/stdlib/testing/testdata) 
+    [http](https://github.com/influxdata/flux/tree/master/stdlib/http)
+- You must submit a unit test in the same folder as the new source_sink function implementation. 
 - You must  add a description to SPEC.md

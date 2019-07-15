@@ -9,8 +9,8 @@ Please help us make the contribution process easier by providing feedback about 
 ### **Stream Transformation Functions Guidelines**
 
 - A stream transformation function must conform to the examples in [universe](https://github.com/influxdata/flux/blob/master/stdlib/universe)
-- You must submit a unit test in [testing](https://github.com/influxdata/flux/tree/master/stdlib/testing)
-- You must submit an end-to-end test in [testdata](https://github.com/influxdata/flux/tree/master/stdlib/testing/testdata) 
+- You must submit a unit test in in the same folder as the new stream transformation function implementation.
+- You must submit an end-to-end test in [testdata](https://github.com/influxdata/flux/tree/master/stdlib/testing/testdata).Please look at [End_to_End_Testing.md](https://github.com/influxdata/flux/tree/master/docs/End_to_End_Testing.md)for details.
 - You must  add a description to SPEC.md
 - They functions must contain the following pieces:
 
