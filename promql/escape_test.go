@@ -13,6 +13,7 @@ func TestEscapeLabelName(t *testing.T) {
 		"_test":    "~_test",
 		"__name__": "_field",
 		"__foo__":  "~__foo__",
+		"":         "",
 	}
 
 	for ln, want := range escapedNames {

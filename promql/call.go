@@ -438,13 +438,40 @@ func (t *Transpiler) transpileCall(c *promql.Call) (ast.Expression, error) {
 			}
 		}
 
+		dst, ok := args[1].(*ast.StringLiteral)
+		if !ok {
+			return nil, fmt.Errorf("label_replace() destination label must be string literal")
+		}
+		if !model.LabelName(dst.Value).IsValid() {
+			return nil, fmt.Errorf("invalid destination label name in label_replace(): %s", dst.Value)
+		}
+		dst.Value = escapeLabelName(dst.Value)
+
+		repl, ok := args[2].(*ast.StringLiteral)
+		if !ok {
+			return nil, fmt.Errorf("label_replace() destination label must be string literal")
+		}
+
+		src, ok := args[3].(*ast.StringLiteral)
+		if !ok {
+			return nil, fmt.Errorf("label_replace() source label must be string literal")
+		}
+		// We explicitly do *not* check the validity of the source label here, as PromQL's label_replace()
+		// also allows invalid source labels.
+		src.Value = escapeLabelName(src.Value)
+
+		regex, ok := args[4].(*ast.StringLiteral)
+		if !ok {
+			return nil, fmt.Errorf("label_replace() source label must be string literal")
+		}
+
 		return buildPipeline(
 			args[0],
 			call("promql.labelReplace", map[string]ast.Expression{
-				"destination": args[1],
-				"replacement": args[2],
-				"source":      args[3],
-				"regex":       args[4],
+				"destination": dst,
+				"replacement": repl,
+				"source":      src,
+				"regex":       regex,
 			}),
 		), nil
 	case "vector":

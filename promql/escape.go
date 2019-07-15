@@ -7,9 +7,12 @@ import (
 
 func escapeLabelName(ln string) string {
 	switch {
+	case ln == "":
+		// This can occur in parameters to functions (e.g. label_replace() empty "src" parameter).
+		return ""
 	case ln == "__name__":
 		return "_field"
-	case ln[0] == '_':
+	case ln[0] == '_' || ln[0] == '~':
 		return "~" + ln
 	default:
 		return ln
@@ -59,8 +62,9 @@ func (s labelNameEscaper) Visit(node promql.Node, path []promql.Node) (promql.Vi
 			n.VectorMatching.Include = escapeLabelNames(n.VectorMatching.Include)
 		}
 	case *promql.Call:
-		// TODO: The only functions that take label names are label_join() and label_replace().
-		// Handle these once they are implemented.
+		// Nothing to do here - there are only two functions that take label names
+		// as string parameters (label_replace() and label_join()), and those handle
+		// escaping by themselves.
 	case *promql.MatrixSelector:
 		n.Name = ""
 		n.LabelMatchers = escapeLabelMatchers(n.LabelMatchers)
