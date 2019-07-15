@@ -1,0 +1,13 @@
+[package]
+name = "ast"
+version = "0.1.0"
+authors = ["Nathaniel Cook <nvcook42@gmail.com>"]
+edition = "2018"
+
+
+[dependencies]
+serde = "^1.0.59"
+serde_derive = "^1.0.59"
+serde_json = "1.0"
+serde-aux = "0.6.1"
+chrono = { version = "0.4", features = ["serde"] }

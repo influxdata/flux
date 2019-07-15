@@ -8,6 +8,7 @@ jobs:
       GOFLAGS: -p=8
       GOPATH: /tmp/go
       GO111MODULE: 'on' # must be quoted to force string type instead of boolean type
+      SCCACHE_CACHE_SIZE: 1G
     steps:
       - checkout
       # Populate GOCACHE.
@@ -24,6 +25,13 @@ jobs:
             - flux-gomod-{{ .Branch }}-{{ .Revision }} # Matches when retrying a single run.
             - flux-gomod-{{ .Branch }}-                # Matches a new commit on an existing branch.
             - flux-gomod-                              # Matches a new branch.
+      # Populate Rust cache
+      - restore_cache:
+          name: Restoring Rust Cache
+          keys:
+            - flux-rust-{{ .Branch }}-{{ .Revision }} # Matches when retrying a single run.
+            - flux-rust-{{ .Branch }}-                # Matches a new commit on an existing branch.
+            - flux-rust-                              # Matches a new branch.
       # Run tests
       - run: make checkfmt
       - run: make checktidy
@@ -46,6 +54,12 @@ jobs:
           key: flux-gomod-{{ .Branch }}-{{ .Revision }}
           paths:
             - /tmp/go/pkg/mod
+          when: always
+      - save_cache:
+          name: Saving Rust Cache
+          key: flux-rust-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - "~/.cache/sccache"
           when: always
   test-race:
     docker:

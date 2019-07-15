@@ -731,16 +731,30 @@ Those variables are shared between the function literal and the surrounding bloc
 #### Call expressions
 
 A call expressions invokes a function with the provided arguments.
-Arguments must be specified using the argument name, positional arguments not supported.
+Arguments must be specified using the argument name, positional arguments are not supported.
 Argument order does not matter.
 When an argument has a default value, it is not required to be specified.
 
     CallExpression = "(" PropertyList ")" .
 
+Call expressions support a short notation in case the name of the argument matches the parameter name.
+This notation can be used only when every argument matches its parameter.
+
 Examples:
 
-    f(a:1, b:9.6)
-    float(v:1)
+```
+add = (a,b) => a + b
+
+a = 1
+b = 2
+
+add(a, b)
+// is the same as
+add(a: a, b: b)
+// both FAIL: cannot mix short and long notation.
+add(a: a, b)
+add(a, b: b)
+```
 
 #### Pipe expressions
 
@@ -1392,6 +1406,44 @@ A transformation produces side effects when it is constructed from a function th
 
 Transformations are represented using function types.
 
+Some transformations, for instance `map` and `filter`, are represented using higher-order functions (functions that accepts other functions).
+When specifying the function passed in, _make sure that you use the same names for its parameters_.
+
+`filter`, for instance, accepts argument `fn` which is of type `(r: record) -> bool`.
+An invocation of `filter` must take a function with one argument named `r`:
+
+```
+from(bucket: "db")
+    |> filter(fn: (r) => ...)
+```
+
+This script would fail:
+
+```
+from(bucket: "db")
+    |> filter(fn: (v) => ...)
+
+// FAILS!: 'v' != 'r'.
+```
+
+The reason is simple: Flux does not support positional arguments, so parameter names matter.
+The transformation (in our example, `filter`) must know the name of the parameter in the given function in order to invoke it properly.
+The process happens the other way around, actually:
+our `filter` implementation supposes to invoke a function in this way:
+
+```
+fn(r: <the-record>)
+```
+
+So, you have to:
+
+```
+...
+    |> filter(fn: (r) => ...)
+...
+```
+
+
 ### Built-in transformations
 
 The following functions are preassigned in the universe block.
@@ -1584,6 +1636,9 @@ AggregateWindow has the following properties:
 | timeSrc     | string                                          | TimeSrc is the name of a column from the group key to use as the source for the aggregated time. Defaults to "_stop".                                           |
 | timeDst     | string                                          | TimeDst is the name of a new column in which the aggregated time is placed. Defaults to "_time".                                                                |
 | createEmpty | bool                                            | CreateEmpty, if true, will create empty windows and fill them with a null aggregate value.  Defaults to true.                                                   |
+
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Example:
 
 ```
@@ -1610,7 +1665,12 @@ Covariance has the following properties:
 Additionally exactly two columns must be provided to the `columns` property.
 
 Example:
-`from(bucket: "telegraf/autogen") |> range(start:-5m) |> covariance(columns: ["x", "y"])`
+```
+from(bucket: "telegraf/autogen") 
+    |> range(start: -5m) 
+    |> map(fn: (r) => ({r with x: r._value, y: r._value * r._value / 2})) 
+    |> covariance(columns: ["x", "y"])
+```
 
 #### Cov
 
@@ -1721,34 +1781,6 @@ from(bucket: "telegraf/autogen")
 	|> range(start: -5m)
 	|> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
 	|> median()
-```
-
-##### Moving Average
-
-Moving Average is an aggregate operation.
-For each aggregated column, it means the values of the following records for a defined window range.
-Moving Average is defined as
-```
-movingAverage = (every, period, column="_value", tables=<-) =>
-    tables
-        |> window(every: every, period: period)
-        |> mean(column:column)
-        |> duplicate(column: "_stop", as: "_time")
-        |> window(every: inf)
-```
-Moving Average has the following properties:
-| Name        | Type     | Description
-| ----        | ----     | -----------
-| every       | duration | Every specifies the frequency of windows.
-| period      | duration | Period specifies the window size to mean.       
-| column      | string   | Column specifies a column to aggregate. Defaults to `"_value"`            
-
-Example:
-```
-// A 5 year moving average would be called as such:
-from(bucket: "telegraf/autogen"):
-    |> range(start: -7y)
-    |> movingAverage(every: 1y, period: 5y)
 ```
 
 ##### Mode
@@ -2041,6 +2073,8 @@ Filter has the following properties:
 | ---- | ----                | -----------                                                                                        |
 | fn   | (r: record) -> bool | Fn is a predicate function. Records which evaluate to true, will be included in the output tables. |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Example:
 
 ```
@@ -2142,7 +2176,7 @@ LinearBins has the following properties:
 | start     | float | Start is the first value in the returned list.                                                   |
 | width     | float | Width is the distance between subsequent bin values.                                             |
 | count     | int   | Count is the number of bins to create.                                                           |
-| inifinity | bool  | Infinity when true adds an additional bin with a value of positive infinity. Defaults to `true`. |
+| infinity | bool  | Infinity when true adds an additional bin with a value of positive infinity. Defaults to `true`. |
 
 ##### LogarithmicBins
 
@@ -2155,7 +2189,7 @@ LogarithmicBins has the following properties:
 | start     | float | Start is the first value in the returned bin list.                                               |
 | factor    | float | Factor is the multiplier applied to each subsequent bin.                                         |
 | count     | int   | Count is the number of bins to create.                                                           |
-| inifinity | bool  | Infinity when true adds an additional bin with a value of positive infinity. Defaults to `true`. |
+| infinity | bool  | Infinity when true adds an additional bin with a value of positive infinity. Defaults to `true`. |
 
 #### Limit
 
@@ -2194,6 +2228,7 @@ Map has the following properties:
 | ---- | ----                  | -----------                                                            |
 | fn   | (r: record) -> record | Function to apply to each record. The return value must be an object.  |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
 The resulting table will only have columns present on the returned record of the map function.
 Use the `with` operator to preserve all columns from the input table in the output table.
@@ -2234,6 +2269,7 @@ Reduce has the following properties:
 | fn       | (r: record, accumulator: 'a) -> 'a | Function to apply to each record with a reducer object of type 'a.  |
 | identity | 'a                  | an initial value to use when creating a reducer. May be used more than once in asynchronous processing use cases.|
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
 Example (compute the sum of the value column):
 ```
@@ -2267,8 +2303,6 @@ from(bucket:"telegraf/autogen")
     |> reduce(fn: (r, accumulator) =>
             ({prod: r._value * accumulator.prod}), identity: {prod: 1.0}))
 ```
-
-
 
 #### Range
 
@@ -2321,6 +2355,8 @@ Rename has the following properties:
 | columns | object                     | Columns is a map of old column names to new names. Cannot be used with `fn`.                   |
 | fn      | (column: string) -> string | Fn defines a function mapping between old and new column names. Cannot be used with `columns`. |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Example usage:
 
 Rename a single column:
@@ -2351,6 +2387,8 @@ Drop has the following properties:
 | ----    | ----                     | -----------                                                                                           |
 | columns | []string                 | Columns is an array of column to exclude from the resulting table. Cannot be used with `fn`.          |
 | fn      | (column: string) -> bool | Fn is a predicate function, columns that evaluate to true are dropped. Cannot be used with `columns`. |
+
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
 Example Usage:
 
@@ -2383,6 +2421,8 @@ Keep has the following properties:
 | ----    | ----                     | -----------                                                                                        |
 | columns | []string                 | Columns is an array of column to exclude from the resulting table. Cannot be used with `fn`.       |
 | fn      | (column: string) -> bool | Fn is a predicate function, columns that evaluate to true are kept. Cannot be used with `columns`. |
+
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
 Example Usage:
 
@@ -2609,6 +2649,8 @@ KeyValues has the following properties:
 | keyColumns | []string                     | KeyColumns is a list of columns from which values are extracted.                                 |
 | fn         | (schema: schema) -> []string | Fn is a schema function that may by used instead of `keyColumns` to identify the set of columns. |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Additional requirements:
 
 * Only one of `keyColumns` or `fn` may be used in a single call.
@@ -2660,7 +2702,6 @@ Given the following input table with group key `["_measurement"]`:
 `keyColumns(keyColumns: ["tagB"])` produces the following error message:
 
     received table with columns [_time, _measurement, _value, tagA] not having key columns [tagB]
-
 
 #### Window
 
@@ -3117,7 +3158,118 @@ Given the following input table.
     | 00002 | 4      |
     | 00003 | 7      |
     | 00004 | 8      |
+    
+    
+####  Moving Average
 
+Moving Average computes the moving averages of a series of records.
+It means the values of a user-defined period for a defined number of points,
+
+Moving Average has the following properties:
+
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| n           | duration | N specifies the number of points to mean.       
+| columns     | []string | Columns is list of all columns that `movingAverage` should be performed on. Defaults to `["_value"]`. |
+
+Rules for taking the moving average for numeric types:
+ - the average over a period populated by `n` values is equal to their algebraic mean
+ - the average over a period populated by only null values is null
+ - moving averages that include null values skip over those values
+ - if `n` is less than the number of records in a table, `movingAverage` returns the average of the available values
+ 
+Example of moving average (`N` = 2):
+
+| _time |   A  |   B  |   C  |   D  | tag |
+|:-----:|:----:|:----:|:----:|:----:|:---:|
+|  0001 | null |   1  |   2  | null |  tv |
+|  0002 |   6  |   2  | null | null |  tv |
+|  0003 |   4  | null |   4  |   4  |  tv |
+
+Result:
+
+| _time |   A  |   B  |   C  |   D  | tag |
+|:-----:|:----:|:----:|:----:|:----:|:---:|
+|  0002 |   6  |  1.5 |   2  | null |  tv |
+|  0003 |   5  |   2  |   4  |   4  |  tv |
+
+Example of script:
+```
+// A 5 point moving average would be called as such:
+from(bucket: "telegraf/autogen"):
+    |> range(start: -7d)
+    |> movingAverage(n: 5, columns: ["_value"])
+```
+
+##### Timed Moving Average
+
+Timed Moving Average means the values of the following records for a defined number of points, for the specified column.
+```
+timedMovingAverage = (every, period, column="_value", tables=<-) =>
+    tables
+        |> window(every: every, period: period)
+        |> mean(column:column)
+        |> duplicate(column: "_stop", as: "_time")
+        |> window(every: inf)
+```
+Timed Moving Average has the following properties:
+
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| every       | duration | Every specifies the frequency of windows.
+| period      | duration | Period specifies the window size to mean.       
+| column      | string   | Column specifies a column to aggregate. Defaults to `"_value"`            
+
+Example:
+```
+// A 5 year moving average would be called as such:
+from(bucket: "telegraf/autogen"):
+    |> range(start: -7y)
+    |> timedMovingAverage(every: 1y, period: 5y)
+```
+
+#### Exponential Moving Average
+
+Exponential Moving Average computes the exponential moving averages of a series of records
+It is a weighted moving average that gives more weighting to recent data as opposed to older data.
+
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| n           | int      | N specifies the number of points to mean.       
+| columns     | []string | Columns is list of all columns that `exponentialMovingAverage` should be performed on. Defaults to `["_value"]`. |
+
+Rules for taking the exponential moving average for numeric types:
+ - the first value of an exponential moving average over `n` values is the algebraic mean of the first `n` values
+ - subsequent values are calculated as `y(t) = x(t) * k + y(t-1) * (1 - k)`, where 
+    - the constant `k` is defined as `k = 2 / (1 + n)`
+    - `y(t)` is defined as exponential moving average at time `t`
+    - `x(t)` is defined as the value at time `t`
+ - `exponentialMovingAverage` ignores ignores null values and does not count them in calculations
+ 
+ Example:
+ 
+ | _time |   A  |   B  |   C  | tag |
+ |:-----:|:----:|:----:|:----:|:---:|
+ |  0001 |   2  | null |   2  |  tv |
+ |  0002 | null |  10  |   4  |  tv |
+ |  0003 |   8  |  20  |   5  |  tv |
+ 
+ Result:
+ 
+ | _time |   A  |   B  |   C  | tag |
+ |:-----:|:----:|:----:|:----:|:---:|
+ |  0002 |   2  |  10  |   3  |  tv |
+ |  0003 |   6  | 16.67| 4.33 |  tv |
+ 
+ 
+Example of script:
+```
+// A 5 point exponential moving average would be called as such:
+from(bucket: "telegraf/autogen"):
+    |> range(start: -7d)
+    |> exponentialMovingAverage(n: 5, columns: ["_value"])
+```
+ 
 #### Distinct
 
 Distinct produces the unique values for a given column. Null is considered its own distinct value if it is present.
@@ -3178,6 +3330,8 @@ StateCount has the following parameters:
 | fn     | (r: record) -> bool | Fn is a function that returns true when the record is in the desired state.                  |
 | column | string              | Column is the name of the column to use to output the state count. Defaults to `stateCount`. |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Example:
 
 ```
@@ -3216,6 +3370,8 @@ StateDuration has the following parameters:
 | timeColumn | string              | TimeColumn is the name of the column used to extract timestamps. Defaults to `_time`.           |
 | unit       | duration            | Unit is the dimension of the output value. Defaults to `1s`.                                    |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Example:
 
 ```
@@ -3248,6 +3404,7 @@ Both are mutually exclusive.
 Similarly `org` and `orgID` are mutually exclusive and only required when writing to a remote host.
 Both `host` and `token` are optional parameters, however if `host` is specified, `token` is required.
 
+_NOTE_: make sure that `fieldFn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
 For example, given the following table:
 
@@ -3349,6 +3506,8 @@ It has the following parameters:
 | Name | Type                  | Description                                                                     |
 | ---- | ----                  | -----------                                                                     |
 | fn   | (key: object) -> bool | Fn is a predicate function. The result is the first table for which fn is true. |
+
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
 Example:
 

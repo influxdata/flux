@@ -9003,7 +9003,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		},
 																	},
 																},
-																Operator: 4,
+																Operator: 5,
 																Right: &ast.IntegerLiteral{
 																	BaseNode: ast.BaseNode{
 																		Errors: nil,

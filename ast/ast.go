@@ -685,6 +685,7 @@ const (
 	opBegin OperatorKind = iota
 	MultiplicationOperator
 	DivisionOperator
+	ModuloOperator
 	AdditionOperator
 	SubtractionOperator
 	LessThanEqualOperator
@@ -1264,6 +1265,7 @@ func (l *DateTimeLiteral) Copy() Node {
 var OperatorTokens = map[OperatorKind]string{
 	MultiplicationOperator:   "*",
 	DivisionOperator:         "/",
+	ModuloOperator:           "%",
 	AdditionOperator:         "+",
 	SubtractionOperator:      "-",
 	LessThanEqualOperator:    "<=",

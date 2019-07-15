@@ -6,7 +6,7 @@ SOURCES = $(shell find . -name \*.flux)
 SUBDIRS =
 
 # Default target
-all: $(SUBDIRS) $(TARGETS)
+generate: $(SUBDIRS) $(TARGETS)
 
 # Recurse into subdirs for same make goal
 $(SUBDIRS):
@@ -23,4 +23,4 @@ GO_GENERATE := go generate
 $(TARGETS): $(SOURCES)
 	$(GO_GENERATE) -x
 
-.PHONY: all clean $(SUBDIRS)
+.PHONY: generate clean $(SUBDIRS)

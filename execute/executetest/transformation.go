@@ -52,6 +52,12 @@ func ProcessTestHelper(
 ) {
 	t.Helper()
 
+	defer func() {
+		if err := recover(); err != nil {
+			t.Errorf("caught panic: %v", err)
+		}
+	}()
+
 	d := NewDataset(RandomDatasetID())
 	c := execute.NewTableBuilderCache(UnlimitedAllocator)
 	c.SetTriggerSpec(plan.DefaultTriggerSpec)

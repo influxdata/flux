@@ -30,11 +30,6 @@ inData = "
 #default,_result,,,,,,
 ,result,table,_measurement,_field,t0,_time,_value
 ,,4,m1,f4,server01,2018-12-19T22:14:10Z,100
-#datatype,string,long,string,string,string,dateTime:RFC3339,dateTime:RFC3339
-#group,false,false,true,true,true,false,false
-#default,_result,,,,,,
-,result,table,_measurement,_field,t0,_time,_value
-,,5,m1,f5,server01,2018-12-19T22:14:10Z,2018-12-19T22:14:10Z
 "
 
 outData = "
@@ -47,7 +42,6 @@ outData = "
 ,,2,2018-12-15T00:00:00Z,2030-01-01T00:00:00Z,m1,f2,server01,2018-12-19T22:13:50Z,1
 ,,3,2018-12-15T00:00:00Z,2030-01-01T00:00:00Z,m1,f3,server01,2018-12-19T22:14:00Z,1
 ,,4,2018-12-15T00:00:00Z,2030-01-01T00:00:00Z,m1,f4,server01,2018-12-19T22:14:10Z,100
-,,5,2018-12-15T00:00:00Z,2030-01-01T00:00:00Z,m1,f5,server01,2018-12-19T22:14:10Z,1545257650000000000
 "
 
 t_to_uint = (table=<-) =>

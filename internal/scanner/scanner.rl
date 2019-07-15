@@ -131,3 +131,4 @@ func (s *Scanner) exec(cs int) int {
     %% write exec;
     return cs
 }
+
