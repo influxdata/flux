@@ -822,17 +822,19 @@ The precedence of the operators is given in the table below. Operators with a lo
 |     1    |  `a()`         |       Function call       |
 |          |  `a[]`         |  Member or index access   |
 |          |   `.`          |       Member access       |
-|     2    | `*` `/`        |Multiplication and division|
-|     3    | `+` `-`        | Addition and subtraction  |
-|     4    |`==` `!=`       |   Comparison operators    |
+|     2    |   `^`          |       Exponentiation      |
+|     3    | `*` `/` `%`    | Multiplication, division, |
+|          |                | and modulo                |
+|     4    | `+` `-`        | Addition and subtraction  |
+|     5    |`==` `!=`       |   Comparison operators    |
 |          | `<` `<=`       |                           |
 |          | `>` `>=`       |                           |
 |          |`=~` `!~`       |                           |
-|     5    | `not`          | Unary logical operator    |
+|     6    | `not`          | Unary logical operator    |
 |          | `exists`       | Null check operator       |
-|     6    |  `and`         |        Logical AND        |
-|     7    |  `or`          |        Logical OR         |
-|     8    | `if/then/else` |        Conditional        |
+|     7    |  `and`         |        Logical AND        |
+|     8    |  `or`          |        Logical OR         |
+|     9    | `if/then/else` |        Conditional        |
 
 The operator precedence is encoded directly into the grammar as the following.
 
@@ -853,7 +855,7 @@ The operator precedence is encoded directly into the grammar as the following.
     AdditiveOperator         = "+" | "-" .
     MultiplicativeExpression = PipeExpression
                              | MultiplicativeExpression MultiplicativeOperator PipeExpression .
-    MultiplicativeOperator   = "*" | "/" .
+    MultiplicativeOperator   = "*" | "/" | "%" | "^".
     PipeExpression           = PostfixExpression
                              | PipeExpression PipeOperator UnaryExpression .
     PipeOperator             = "|>" .

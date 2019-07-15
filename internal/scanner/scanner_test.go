@@ -63,6 +63,7 @@ var common = []TokenPattern{
 	// We skip div because the general parser can't tell the difference
 	// between div and regex.
 	{s: `%`, tok: token.MOD, lit: `%`},
+	{s: `^`, tok: token.POW, lit: `^`},
 	{s: `==`, tok: token.EQ, lit: `==`},
 	{s: `<`, tok: token.LT, lit: `<`},
 	{s: `>`, tok: token.GT, lit: `>`},

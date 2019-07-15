@@ -34,6 +34,7 @@ func TestToken_String(t *testing.T) {
 		token.MUL:          "MUL",
 		token.DIV:          "DIV",
 		token.MOD:          "MOD",
+		token.POW:          "POW",
 		token.EQ:           "EQ",
 		token.LT:           "LT",
 		token.GT:           "GT",

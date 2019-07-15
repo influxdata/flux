@@ -256,6 +256,67 @@ import "path/bar"
 }
 
 #[test]
+fn package_and_imports_and_body_2() {
+    let mut p = Parser::new(
+        r#"
+package baz
+
+import "path/foo"
+import "path/bar"
+
+2 ^ 4"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode { errors: vec![] },
+            name: "".to_string(),
+            package: Some(PackageClause {
+                base: BaseNode { errors: vec![] },
+                name: Identifier {
+                    base: BaseNode { errors: vec![] },
+                    name: "baz".to_string()
+                }
+            }),
+            imports: vec![
+                ImportDeclaration {
+                    base: BaseNode { errors: vec![] },
+                    alias: None,
+                    path: StringLiteral {
+                        base: BaseNode { errors: vec![] },
+                        value: "path/foo".to_string()
+                    }
+                },
+                ImportDeclaration {
+                    base: BaseNode { errors: vec![] },
+                    alias: None,
+                    path: StringLiteral {
+                        base: BaseNode { errors: vec![] },
+                        value: "path/bar".to_string()
+                    }
+                }
+            ],
+            body: vec![Expr(ExpressionStatement {
+                base: BaseNode { errors: vec![] },
+                expression: Bin(Box::new(BinaryExpression {
+                    base: BaseNode { errors: vec![] },
+                    operator: PowerOperator,
+                    left: Int(IntegerLiteral {
+                        base: BaseNode { errors: vec![] },
+                        value: 2
+                    }),
+                    right: Int(IntegerLiteral {
+                        base: BaseNode { errors: vec![] },
+                        value: 4
+                    })
+                }))
+            })]
+        },
+    )
+}
+
+#[test]
 fn optional_query_metadata() {
     let mut p = Parser::new(
         r#"option task = {

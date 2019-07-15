@@ -545,7 +545,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Name: "_measurement",
 														},
 													},
-													Operator: 16,
+													Operator: 17,
 													Right: &ast.StringLiteral{
 														BaseNode: ast.BaseNode{
 															Errors: nil,
@@ -635,7 +635,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Name: "_measurement",
 														},
 													},
-													Operator: 16,
+													Operator: 17,
 													Right: &ast.StringLiteral{
 														BaseNode: ast.BaseNode{
 															Errors: nil,
@@ -882,7 +882,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Name: "host",
 												},
 											},
-											Operator: 16,
+											Operator: 17,
 											Right: &ast.StringLiteral{
 												BaseNode: ast.BaseNode{
 													Errors: nil,
@@ -2309,7 +2309,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Name: "_measurement",
 														},
 													},
-													Operator: 16,
+													Operator: 17,
 													Right: &ast.StringLiteral{
 														BaseNode: ast.BaseNode{
 															Errors: nil,
@@ -2399,7 +2399,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Name: "_measurement",
 														},
 													},
-													Operator: 16,
+													Operator: 17,
 													Right: &ast.StringLiteral{
 														BaseNode: ast.BaseNode{
 															Errors: nil,
@@ -2646,7 +2646,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Name: "host",
 												},
 											},
-											Operator: 16,
+											Operator: 17,
 											Right: &ast.StringLiteral{
 												BaseNode: ast.BaseNode{
 													Errors: nil,
@@ -4076,7 +4076,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Name: "_measurement",
 																	},
 																},
-																Operator: 16,
+																Operator: 17,
 																Right: &ast.StringLiteral{
 																	BaseNode: ast.BaseNode{
 																		Errors: nil,
@@ -4166,7 +4166,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Name: "_measurement",
 																	},
 																},
-																Operator: 16,
+																Operator: 17,
 																Right: &ast.StringLiteral{
 																	BaseNode: ast.BaseNode{
 																		Errors: nil,
@@ -4413,7 +4413,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Name: "host",
 															},
 														},
-														Operator: 16,
+														Operator: 17,
 														Right: &ast.StringLiteral{
 															BaseNode: ast.BaseNode{
 																Errors: nil,
