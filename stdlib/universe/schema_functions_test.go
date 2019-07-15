@@ -697,8 +697,44 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					{21.0, 22.0, 23.0},
 				},
 			}},
-			want:    []*executetest.Table(nil),
-			wantErr: errors.New(`keep error: column "no_exist" doesn't exist`),
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta(nil),
+				Data:    [][]interface{}(nil),
+			}},
+		},
+		{
+			name: "keep no exist along with all other columns",
+			spec: &universe.SchemaMutationProcedureSpec{
+				Mutations: []universe.SchemaMutation{
+					&universe.KeepOpSpec{
+						Columns: []string{"no_exist", "server1", "local", "server2"},
+					},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "server1", Type: flux.TFloat},
+					{Label: "local", Type: flux.TFloat},
+					{Label: "server2", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{1.0, 2.0, 3.0},
+					{11.0, 12.0, 13.0},
+					{21.0, 22.0, 23.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "server1", Type: flux.TFloat},
+					{Label: "local", Type: flux.TFloat},
+					{Label: "server2", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{1.0, 2.0, 3.0},
+					{11.0, 12.0, 13.0},
+					{21.0, 22.0, 23.0},
+				},
+			}},
 		},
 		{
 			name: "duplicate no exist",

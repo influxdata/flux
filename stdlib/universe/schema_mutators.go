@@ -205,17 +205,6 @@ func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
 	return m, nil
 }
 
-func (m *DropKeepMutator) checkKeepColumns(tableCols []flux.ColMeta) error {
-	if m.KeepCols != nil {
-		for c := range m.KeepCols {
-			if err := checkCol(c, tableCols); err != nil {
-				return errors.Wrap(err, "keep error")
-			}
-		}
-	}
-	return nil
-}
-
 func (m *DropKeepMutator) shouldDrop(col string) (bool, error) {
 	m.Input.Set(m.ParamName, values.NewString(col))
 	v, err := m.Predicate.Eval(m.Input)
@@ -257,9 +246,6 @@ func (m *DropKeepMutator) keepToDropCols(cols []flux.ColMeta) {
 }
 
 func (m *DropKeepMutator) Mutate(ctx *BuilderContext) error {
-	if err := m.checkKeepColumns(ctx.Cols()); err != nil {
-		return err
-	}
 
 	m.keepToDropCols(ctx.Cols())
 
