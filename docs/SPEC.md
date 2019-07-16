@@ -3171,7 +3171,7 @@ Moving Average has the following properties:
 
 | Name        | Type     | Description
 | ----        | ----     | -----------
-| n           | duration | N specifies the number of points to mean.       
+| n           | int      | N specifies the number of points to mean.       
 | columns     | []string | Columns is list of all columns that `movingAverage` should be performed on. Defaults to `["_value"]`. |
 
 Rules for taking the moving average for numeric types:

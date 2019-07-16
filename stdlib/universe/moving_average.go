@@ -5,11 +5,11 @@ import (
 
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 const MovingAverageKind = "movingAverage"
@@ -125,10 +125,13 @@ type movingAverageTransformation struct {
 	n       int64
 	columns []string
 
-	i      []int
-	sum    []interface{}
-	count  []int
-	window [][]interface{}
+	i             []int
+	sum           []interface{}
+	count         []int
+	window        [][]interface{}
+	periodReached []bool
+	lastVal       []interface{}
+	notEmpty      []bool
 }
 
 func NewMovingAverageTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *MovingAverageProcedureSpec) *movingAverageTransformation {
@@ -183,8 +186,11 @@ func (t *movingAverageTransformation) Process(id execute.DatasetID, tbl flux.Tab
 	t.sum = make([]interface{}, len(cols))
 	t.count = make([]int, len(cols))
 	t.window = make([][]interface{}, len(cols))
+	t.periodReached = make([]bool, len(cols))
+	t.lastVal = make([]interface{}, len(cols))
+	t.notEmpty = make([]bool, len(cols))
 
-	return tbl.Do(func(cr flux.ColReader) error {
+	err := tbl.Do(func(cr flux.ColReader) error {
 		if cr.Len() == 0 {
 			return nil
 		}
@@ -193,15 +199,15 @@ func (t *movingAverageTransformation) Process(id execute.DatasetID, tbl flux.Tab
 			var err error
 			switch c.Type {
 			case flux.TBool:
-				err = t.passThroughBool(cr.Bools(j), builder, j)
+				err = t.passThrough(&arrayContainer{cr.Bools(j)}, builder, j)
 			case flux.TInt:
-				err = t.doInt(cr.Ints(j), builder, j, doMovingAverage[j])
+				err = t.doNumeric(&arrayContainer{cr.Ints(j)}, builder, j, doMovingAverage[j])
 			case flux.TUInt:
-				err = t.doUInt(cr.UInts(j), builder, j, doMovingAverage[j])
+				err = t.doNumeric(&arrayContainer{cr.UInts(j)}, builder, j, doMovingAverage[j])
 			case flux.TFloat:
-				err = t.doFloat(cr.Floats(j), builder, j, doMovingAverage[j])
+				err = t.doNumeric(&arrayContainer{cr.Floats(j)}, builder, j, doMovingAverage[j])
 			case flux.TString:
-				err = t.passThroughString(cr.Strings(j), builder, j)
+				err = t.passThrough(&arrayContainer{cr.Strings(j)}, builder, j)
 			case flux.TTime:
 				err = t.passThroughTime(cr.Times(j), builder, j)
 			}
@@ -212,6 +218,33 @@ func (t *movingAverageTransformation) Process(id execute.DatasetID, tbl flux.Tab
 		}
 		return nil
 	})
+
+	if err != nil {
+		return err
+	}
+
+	for j := range tbl.Cols() {
+		if !t.periodReached[j] && t.notEmpty[j] {
+			if !doMovingAverage[j] {
+				if t.lastVal[j] == nil {
+					if err := builder.AppendNil(j); err != nil {
+						return err
+					}
+				} else {
+					if err := builder.AppendValue(j, values.New(t.lastVal[j])); err != nil {
+						return err
+					}
+				}
+			} else {
+				average := *(t.sum[j].(*float64)) / float64(t.count[j])
+				if err := builder.AppendFloat(j, average); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 func (t *movingAverageTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
@@ -226,208 +259,54 @@ func (t *movingAverageTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
 }
 
-func (t *movingAverageTransformation) passThroughBool(vs *array.Boolean, b execute.TableBuilder, bj int) error {
-	if int64(vs.Len()) < t.n {
-		if vs.IsNull(vs.Len() - 1) {
+func (t *movingAverageTransformation) passThrough(vs *arrayContainer, b execute.TableBuilder, bj int) error {
+	t.notEmpty[bj] = true
+	j := 0
+
+	for ; int64(t.i[bj]) < t.n && j < vs.Len(); t.i[bj]++ {
+		if vs.IsNull(j) {
+			t.lastVal[bj] = nil
+		} else {
+			t.lastVal[bj] = vs.OrigValue(j)
+		}
+		j++
+	}
+
+	if int64(t.i[bj]) == t.n && !t.periodReached[bj] {
+		if vs.IsNull(j - 1) {
 			if err := b.AppendNil(bj); err != nil {
 				return err
 			}
 		} else {
-			if err := b.AppendBool(bj, vs.Value(vs.Len()-1)); err != nil {
-				return nil
-			}
-		}
-		return nil
-	} else {
-		s := arrow.BoolSlice(vs, int(t.n-1), vs.Len())
-		defer s.Release()
-		return b.AppendBools(bj, s)
-	}
-}
-
-func (t *movingAverageTransformation) doInt(vs *array.Int64, b execute.TableBuilder, bj int, doMovingAverage bool) error {
-	if t.window[bj] == nil {
-		t.window[bj] = make([]interface{}, t.n)
-	}
-	if t.sum[bj] == nil {
-		t.sum[bj] = new(int64)
-	}
-	sumPointer := &t.sum[bj]
-	sum := (*sumPointer).(*int64)
-
-	j := 0
-
-	if vs.IsValid(j) {
-		*sum += vs.Value(j)
-		t.count[bj]++
-		t.window[bj][0] = vs.Value(j)
-	} else {
-		t.window[bj][0] = nil
-	}
-	j++
-	t.i[bj]++
-
-	l := vs.Len()
-	for ; j < l; j++ {
-
-		if !vs.IsNull(j) {
-			t.count[bj]++
-			t.window[bj][int64(t.i[bj])%t.n] = vs.Value(j)
-		} else {
-			t.window[bj][int64(t.i[bj])%t.n] = nil
-		}
-		*sum += vs.Value(j)
-
-		if int64(t.i[bj]) < t.n-1 {
-			t.i[bj]++
-			continue
-		}
-
-		if !doMovingAverage {
-			if vs.IsValid(j) {
-				if err := b.AppendInt(bj, vs.Value(j)); err != nil {
-					return err
-				}
-			} else {
-				if err := b.AppendNil(bj); err != nil {
-					return err
-				}
-			}
-		} else {
-			average := 0.0
-			if t.count[bj] != 0 {
-				average = float64(*sum) / float64(t.count[bj])
-				if err := b.AppendFloat(bj, average); err != nil {
-					return err
-				}
-			} else {
-				if err := b.AppendNil(bj); err != nil {
-					return err
-				}
-			}
-
-			next := t.window[bj][int64(t.i[bj]+1)%t.n]
-			if next != nil {
-				*sum -= next.(int64)
-				t.count[bj]--
-			}
-
-		}
-		t.i[bj]++
-	}
-	if int64(t.i[bj]) < t.n-1 {
-		if !doMovingAverage {
-			if vs.IsNull(j - 1) {
-				if err := b.AppendNil(bj); err != nil {
-					return err
-				}
-			} else {
-				if err := b.AppendInt(bj, vs.Value(j-1)); err != nil {
-					return err
-				}
-			}
-		} else {
-			average := float64(*sum) / float64(t.count[bj])
-			if err := b.AppendFloat(bj, average); err != nil {
+			if err := b.AppendValue(bj, values.New(vs.OrigValue(j-1))); err != nil {
 				return err
 			}
 		}
+		t.periodReached[bj] = true
+	}
+
+	for ; int64(t.i[bj]) >= t.n && j < vs.Len(); t.i[bj]++ {
+		if vs.IsNull(j) {
+			if err := b.AppendNil(bj); err != nil {
+				return err
+			}
+		} else {
+			if err := b.AppendValue(bj, values.New(vs.OrigValue(j))); err != nil {
+				return err
+			}
+		}
+		j++
 	}
 	return nil
 }
 
-func (t *movingAverageTransformation) doUInt(vs *array.Uint64, b execute.TableBuilder, bj int, doMovingAverage bool) error {
-	if t.window[bj] == nil {
-		t.window[bj] = make([]interface{}, t.n)
+func (t *movingAverageTransformation) doNumeric(vs *arrayContainer, b execute.TableBuilder, bj int, doMovingAverage bool) error {
+	if !doMovingAverage {
+		return t.passThrough(vs, b, bj)
 	}
-	if t.sum[bj] == nil {
-		t.sum[bj] = new(uint64)
-	}
-	sumPointer := &t.sum[bj]
-	sum := (*sumPointer).(*uint64)
 
-	j := 0
+	t.notEmpty[bj] = true
 
-	if vs.IsValid(j) {
-		*sum += vs.Value(j)
-		t.count[bj]++
-		t.window[bj][0] = vs.Value(j)
-	} else {
-		t.window[bj][0] = nil
-	}
-	j++
-	t.i[bj]++
-
-	l := vs.Len()
-	for ; j < l; j++ {
-
-		if !vs.IsNull(j) {
-			t.count[bj]++
-			t.window[bj][int64(t.i[bj])%t.n] = vs.Value(j)
-		} else {
-			t.window[bj][int64(t.i[bj])%t.n] = nil
-		}
-		*sum += vs.Value(j)
-
-		if int64(t.i[bj]) < t.n-1 {
-			t.i[bj]++
-			continue
-		}
-
-		if !doMovingAverage {
-			if vs.IsValid(j) {
-				if err := b.AppendUInt(bj, vs.Value(j)); err != nil {
-					return err
-				}
-			} else {
-				if err := b.AppendNil(bj); err != nil {
-					return err
-				}
-			}
-		} else {
-			average := 0.0
-			if t.count[bj] != 0 {
-				average = float64(*sum) / float64(t.count[bj])
-				if err := b.AppendFloat(bj, average); err != nil {
-					return err
-				}
-			} else {
-				if err := b.AppendNil(bj); err != nil {
-					return err
-				}
-			}
-
-			next := t.window[bj][int64(t.i[bj]+1)%t.n]
-			if next != nil {
-				*sum -= next.(uint64)
-				t.count[bj]--
-			}
-
-		}
-		t.i[bj]++
-	}
-	if int64(t.i[bj]) < t.n-1 {
-		if !doMovingAverage {
-			if vs.IsNull(j - 1) {
-				if err := b.AppendNil(bj); err != nil {
-					return err
-				}
-			} else {
-				if err := b.AppendUInt(bj, vs.Value(j-1)); err != nil {
-					return err
-				}
-			}
-		} else {
-			average := float64(*sum) / float64(t.count[bj])
-			if err := b.AppendFloat(bj, average); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-func (t *movingAverageTransformation) doFloat(vs *array.Float64, b execute.TableBuilder, bj int, doMovingAverage bool) error {
 	if t.window[bj] == nil {
 		t.window[bj] = make([]interface{}, t.n)
 	}
@@ -439,119 +318,91 @@ func (t *movingAverageTransformation) doFloat(vs *array.Float64, b execute.Table
 
 	j := 0
 
-	if vs.IsValid(j) {
-		*sum += vs.Value(j)
-		t.count[bj]++
-		t.window[bj][0] = vs.Value(j)
-	} else {
-		t.window[bj][0] = nil
-	}
-	j++
-	t.i[bj]++
-
-	l := vs.Len()
-	for ; j < l; j++ {
-
-		if !vs.IsNull(j) {
+	for ; int64(t.i[bj]) < t.n-1 && j < vs.Len(); t.i[bj]++ {
+		if vs.IsValid(j) {
+			*sum += vs.Value(j).Float()
 			t.count[bj]++
-			t.window[bj][int64(t.i[bj])%t.n] = vs.Value(j)
+			t.window[bj][int64(t.i[bj])%t.n] = vs.Value(j).Float()
 		} else {
 			t.window[bj][int64(t.i[bj])%t.n] = nil
 		}
-		*sum += vs.Value(j)
-
-		if int64(t.i[bj]) < t.n-1 {
-			t.i[bj]++
-			continue
-		}
-
-		if !doMovingAverage {
-			if vs.IsValid(j) {
-				if err := b.AppendFloat(bj, vs.Value(j)); err != nil {
-					return err
-				}
-			} else {
-				if err := b.AppendNil(bj); err != nil {
-					return err
-				}
-			}
-		} else {
-			average := 0.0
-			if t.count[bj] != 0 {
-				average = float64(*sum) / float64(t.count[bj])
-				if err := b.AppendFloat(bj, average); err != nil {
-					return err
-				}
-			} else {
-				if err := b.AppendNil(bj); err != nil {
-					return err
-				}
-			}
-
-			next := t.window[bj][int64(t.i[bj]+1)%t.n]
-			if next != nil {
-				*sum -= next.(float64)
-				t.count[bj]--
-			}
-
-		}
-		t.i[bj]++
+		j++
 	}
-	if int64(t.i[bj]) < t.n-1 {
-		if !doMovingAverage {
-			if vs.IsNull(j - 1) {
-				if err := b.AppendNil(bj); err != nil {
-					return err
-				}
-			} else {
-				if err := b.AppendFloat(bj, vs.Value(j-1)); err != nil {
-					return err
-				}
-			}
+
+	for ; j < vs.Len(); j++ {
+		if vs.IsValid(j) {
+			*sum += vs.Value(j).Float()
+			t.count[bj]++
+			t.window[bj][int64(t.i[bj])%t.n] = vs.Value(j).Float()
 		} else {
-			average := float64(*sum) / float64(t.count[bj])
+			t.window[bj][int64(t.i[bj])%t.n] = nil
+		}
+
+		if int64(t.i[bj]) == t.n && !t.periodReached[bj] {
+			t.periodReached[bj] = true
+		}
+
+		average := 0.0
+		if t.count[bj] != 0 {
+			average = float64(*sum) / float64(t.count[bj])
 			if err := b.AppendFloat(bj, average); err != nil {
 				return err
 			}
+		} else {
+			if err := b.AppendNil(bj); err != nil {
+				return err
+			}
 		}
+
+		next := t.window[bj][int64(t.i[bj]+1)%t.n]
+		if next != nil {
+			*sum -= next.(float64)
+			t.count[bj]--
+		}
+
+		t.i[bj]++
 	}
+
 	return nil
 }
 
-func (t *movingAverageTransformation) passThroughString(vs *array.Binary, b execute.TableBuilder, bj int) error {
-	if int64(vs.Len()) < t.n {
-		if vs.IsNull(vs.Len() - 1) {
-			if err := b.AppendNil(bj); err != nil {
-				return err
-			}
-		} else {
-			if err := b.AppendString(bj, string(vs.Value(vs.Len()-1))); err != nil {
-				return nil
-			}
-		}
-		return nil
-	} else {
-		s := arrow.StringSlice(vs, int(t.n-1), vs.Len())
-		defer s.Release()
-		return b.AppendStrings(bj, s)
-	}
-}
-
 func (t *movingAverageTransformation) passThroughTime(vs *array.Int64, b execute.TableBuilder, bj int) error {
-	if int64(vs.Len()) < t.n {
-		if vs.IsNull(vs.Len() - 1) {
+	t.notEmpty[bj] = true
+	j := 0
+
+	for ; int64(t.i[bj]) < t.n && j < vs.Len(); t.i[bj]++ {
+		if vs.IsNull(j) {
+			t.lastVal[bj] = nil
+		} else {
+			t.lastVal[bj] = execute.Time(vs.Value(j))
+		}
+		j++
+	}
+
+	if int64(t.i[bj]) == t.n && !t.periodReached[bj] {
+		if vs.IsNull(j - 1) {
 			if err := b.AppendNil(bj); err != nil {
 				return err
 			}
 		} else {
-			if err := b.AppendTime(bj, execute.Time(vs.Value(vs.Len()-1))); err != nil {
-				return nil
+			if err := b.AppendTime(bj, execute.Time(vs.Value(j-1))); err != nil {
+				return err
 			}
 		}
-		return nil
-	} else {
-		s := arrow.IntSlice(vs, int(t.n-1), vs.Len())
-		defer s.Release()
-		return b.AppendTimes(bj, s)
+		t.periodReached[bj] = true
 	}
+
+	for ; int64(t.i[bj]) >= t.n && j < vs.Len(); t.i[bj]++ {
+		if vs.IsNull(j) {
+			if err := b.AppendNil(bj); err != nil {
+				return err
+			}
+		} else {
+			if err := b.AppendTime(bj, execute.Time(vs.Value(j))); err != nil {
+				return err
+			}
+		}
+		j++
+	}
+	return nil
 }
