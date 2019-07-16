@@ -1073,7 +1073,7 @@ Example
 
     builtin from : (bucket: string, bucketID: string) -> stream
 
-### Time constants
+### Date/Time constants
 
 #### Days of the week
 
@@ -1091,7 +1091,6 @@ Saturday  = 6
 ```
 
 
-[IMPL#153](https://github.com/influxdata/flux/issues/153) Add Days of the Week constants
 
 ### Months of the year
 
@@ -1113,7 +1112,6 @@ November  = 11
 December  = 12
 ```
 
-[IMPL#154](https://github.com/influxdata/flux/issues/154) Add Months of the Year constants
 
 ### Time and date functions
 
@@ -1134,7 +1132,6 @@ These are builtin functions that all take a single `time` argument and return an
 * `month` int
     Month returns the month of the year for the provided time in the range `[1-12]`.
 
-[IMPL#155](https://github.com/influxdata/flux/issues/155) Implement Time and date functions
 
 ### System Time
 
