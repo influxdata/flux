@@ -208,7 +208,9 @@ func labelJoinFn(srcLabels []*ast.StringLiteral, dst *ast.StringLiteral, sep *as
 			With: &ast.Identifier{Name: "r"},
 			Properties: []*ast.Property{
 				{
-					Key:   &ast.Identifier{Name: dst.Value},
+					// This has to be a string literal and not an identifier, since
+					// it may contain special characters (like "~").
+					Key:   &ast.StringLiteral{Value: dst.Value},
 					Value: dstLabelValue,
 				},
 				{
