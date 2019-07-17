@@ -220,9 +220,7 @@ func (b *Uint64Array) Retain() {
 func (b *Uint64Array) Release() {
 	if atomic.AddInt64(&b.refCount, -1) == 0 {
 		if b.data != nil {
-			b.data.Release()
-			b.data = nil
-			b.rawData = nil
+			b.reset()
 		}
 	}
 }
@@ -350,9 +348,7 @@ func (b *Float64Array) Retain() {
 func (b *Float64Array) Release() {
 	if atomic.AddInt64(&b.refCount, -1) == 0 {
 		if b.data != nil {
-			b.data.Release()
-			b.data = nil
-			b.rawData = nil
+			b.reset()
 		}
 	}
 }
