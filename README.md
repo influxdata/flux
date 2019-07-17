@@ -105,4 +105,3 @@ Here are a few examples of the language to get an idea of the syntax.
         |> yield()
 
 The above examples give only a taste of what is possible with Flux. See the complete [documentation](http://docs.influxdata.com/flux/) for more complete examples and installation instructions. 
-
