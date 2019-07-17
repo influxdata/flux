@@ -204,7 +204,7 @@ func TestInt64Array_NewArray(t *testing.T) {
 		t.Fatalf("unexpected length -want/+got:\n\t- %d\n\t+ %d", want, got)
 	}
 
-	// Constructing the array creates an arrow array of length 2 with the same values.
+	// Constructing the array creates an arrow array of length 1 with the same value.
 	a := b.NewInt64Array()
 	if got, want := a.Len(), 1; got != want {
 		t.Fatalf("unexpected length -want/+got:\n\t- %d\n\t+ %d", want, got)
@@ -412,7 +412,7 @@ func TestUint64Array_NewArray(t *testing.T) {
 		t.Fatalf("unexpected length -want/+got:\n\t- %d\n\t+ %d", want, got)
 	}
 
-	// Constructing the array creates an arrow array of length 2 with the same values.
+	// Constructing the array creates an arrow array of length 1 with the same value.
 	a := b.NewUint64Array()
 	if got, want := a.Len(), 1; got != want {
 		t.Fatalf("unexpected length -want/+got:\n\t- %d\n\t+ %d", want, got)
@@ -620,7 +620,7 @@ func TestFloat64Array_NewArray(t *testing.T) {
 		t.Fatalf("unexpected length -want/+got:\n\t- %d\n\t+ %d", want, got)
 	}
 
-	// Constructing the array creates an arrow array of length 2 with the same values.
+	// Constructing the array creates an arrow array of length 1 with the same value.
 	a := b.NewFloat64Array()
 	if got, want := a.Len(), 1; got != want {
 		t.Fatalf("unexpected length -want/+got:\n\t- %d\n\t+ %d", want, got)
