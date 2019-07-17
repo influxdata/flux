@@ -112,6 +112,9 @@ func TestTruncate(t *testing.T) {
 			}
 
 			wanted, err := values.ParseTime(tc.want)
+			if err != nil {
+				t.Fatal(err)
+			}
 			if wanted != got.Time() {
 				t.Errorf("input %v: expected %v, got %v", time, wanted, got.Time())
 			}

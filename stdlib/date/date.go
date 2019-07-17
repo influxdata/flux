@@ -155,10 +155,11 @@ func init() {
 			}),
 			func(args values.Object) (values.Value, error) {
 				v, ok := args.Get("t")
-				u, unitOk := args.Get("unit")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument t")
 				}
+
+				u, unitOk := args.Get("unit")
 				if !unitOk {
 					return nil, errors.New(codes.Invalid, "missing argument unit")
 				}
