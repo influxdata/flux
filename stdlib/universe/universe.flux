@@ -11,6 +11,7 @@ builtin true
 builtin false
 
 // Transformation functions
+builtin chandeMomentumOscillator
 builtin columns
 builtin count
 builtin covariance
