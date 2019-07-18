@@ -1,18 +1,22 @@
 # Rust implementation of a Flux parser
 
-## Installing toolchain
+## Development dependencies
 
-Install Rust https://www.rust-lang.org/tools/install
+- [Install the Rust toolchain](https://www.rust-lang.org/tools/install)
 
-Install  `wasm-pack`:
+- Install `wasm-pack`:
 
-    $ cargo install wasm-pack
+  ```
+  $ cargo install wasm-pack
+  ```
 
-See [this](https://developer.mozilla.org/en-US/docs/WebAssembly/Rust_to_wasm) for a hello world example of using Rust with WASM and npm.
+- If you wish to test the WASM target locally, install [Node.js](https://nodejs.org/en/download/package-manager/) and [Yarn](https://yarnpkg.com/en/docs/install)
 
-## Build WASM
+See [this](https://developer.mozilla.org/en-US/docs/WebAssembly/Rust_to_wasm) guide for a hello world example of using Rust with WASM.
 
-Use `wasm-pack` to build an npm package from the compiled wasm code.
+## Building the WASM package
+
+Use `wasm-pack` to build an npm package from the compiled WASM code.
 You will need to use the `clang` compiler at least version 8.
 
 ### Linux
@@ -20,50 +24,66 @@ You will need to use the `clang` compiler at least version 8.
 Use your distributions package manager to install clang.
 
     $ cd internal/rust/parser
-    $ CC=clang wasm-pack build --dev --scope influxdata
+    $ CC=clang wasm-pack build --scope influxdata --dev
 
 ### MacOS
 
 MacOS doesn't appear to have a functional version of clang that will work.
-As such we have created a Dockerfile to abstract these dependecies.
-To use it run the `build.sh` script which will run all the build command inside the docker contianer.
+As such we have created a Dockerfile to abstract these dependencies.
+To use it run the `build.sh` script which will run all the build command inside the docker container.
 
-    $ ./internal/rust/build.sh
+    $ ./internal/rust/build.sh --dev
 
-> NOTE: The docker image uses a local volume mount at `./internal/rust/.cache` to cache rust/wasm build artifacts to make builds faster inside the container.
+> NOTE: The docker image uses a local volume mount at `./internal/rust/.cache` to cache Rust/WASM build artifacts to make builds faster inside the container.
 
-## Link npm modules
+## Testing the built WASM package locally
 
-This only needs to be done once to create symlinks that npm can use to consume the wasm npm package without publishing it.
+A trivial web app has been created that will load the WASM parser module, call it with a static Flux string, and then log the parsed AST.
 
-    $ cd internal/rust/parser/pkg
-    $ npm link
-    $ cd ../../site
-    $ # edit package.json and remove the `dependencies` section
-    $ npm install
-    $ # edit package.json and re-add the `dependencies` section, use `git checkout package.json` to quickly revert.
-    $ npm link @influxdata/parser
+Before running it for the first time, you'll have to follow these steps:
 
-Once that is done the `parser` dependency in the simple npm site will reference the build artifacts from `wasm-pack`.
+1. Change into the web app directory:
 
-> NOTE: The `npm install` command will destroy the link.
-So if you run `npm install` again you must rerun the `npm link @influxdata/parser` command in the `site` directory.
+   ```
+   $ cd internal/rust/site
+   ```
 
-> NOTE: The `npm install` command will fail if the `@influxdata/parser` dependecy is listed because the depencies doesn't exist publicly.
-This will prevent npm from installing the needed dev dependencies.
-A quick hack is to delete the `dependencies` section from `internal/rust/site/package.json` and then run `npm install`.
-Once that has passed you can re-add the dependcies and run `npm link @influxdata/parser`.
+2. Install its dependencies:
 
+   ```
+   $ yarn
+   ```
 
-## Run in Browser
+3. Replace the published `@influxdata/flux-parser` dependency with a symlink to your locally built WASM package:
 
-A trivial web app has been created that loads the parser wasm module and call parse on it with a static Flux string and then console logs the parsed AST.
+   ```
+   $ cd ../parser/pkg
+   $ yarn link
+   $ cd ../../site
+   $ yarn link @influxdata/flux-parser
+   ```
 
-    $ npm run serve
+Now you should be able to run the web app:
+
+    $ yarn serve
 
 Navigate to http://localhost:8080 to try it out.
 This will watch the filesystem and rebuild on changes.
 As such you should be able to run `wasm-pack` to get new changes and then refresh the browser to test.
+
+## Publishing the WASM package
+
+1. Log into yarn (`yarn login`) with an account that has access to the [influxdata npm organization](https://www.npmjs.com/org/influxdata)
+
+2. Bump the version in `internal/parser/Cargo.toml`
+
+3. Run the publish script:
+
+   ```
+   $ ./internal/rust/publish.sh
+   ```
+   
+   Note that this will create a build optimized for size using the Docker-based process.
 
 ## Test
 
