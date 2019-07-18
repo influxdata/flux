@@ -29,4 +29,4 @@ docker run \
     --name $imagename \
     -v "$DIR:$SRC_DIR" \
     -v "$DIR/.cache:/home/builder/.cache" \
-    $imagename wasm-pack build --scope @influxdata/parser --dev
+    $imagename wasm-pack build --scope influxdata "$@"

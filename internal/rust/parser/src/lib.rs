@@ -11,9 +11,10 @@ use wasm_bindgen::prelude::*;
 mod strconv;
 
 #[wasm_bindgen]
-pub fn js_parse(s: &str) -> JsValue {
+pub fn parse(s: &str) -> JsValue {
     let mut p = Parser::new(s);
-    let file = p.parse_file(String::from("tmp.flux"));
+    let file = p.parse_file(String::from(""));
+
     return JsValue::from_serde(&file).unwrap();
 }
 

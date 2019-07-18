@@ -1,6 +1,6 @@
 [package]
-name = "parser"
-version = "0.1.0"
+name = "flux-parser"
+version = "0.3.0"
 authors = ["Nathaniel Cook <nathaniel@influxdata.com>"]
 edition = "2018"
 
@@ -17,3 +17,7 @@ ast = {path = "../ast" }
 [dev-dependencies]
 pretty_assertions = "0.6.1"
 
+# https://rustwasm.github.io/docs/book/reference/code-size.html#optimizing-builds-for-code-size
+[profile.release]
+lto = true
+opt-level = 'z'
