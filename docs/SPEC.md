@@ -868,6 +868,8 @@ The operator precedence is encoded directly into the grammar as the following.
                              | CallExpression
                              | IndexExpression .
 
+Dividing by 0 or using the mod operator with a divisor of 0 will result in an error.
+
 ### Packages
 
 Flux source is organized into packages.

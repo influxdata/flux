@@ -275,7 +275,7 @@ func (e *binaryEvaluator) Eval(scope Scope) (values.Value, error) {
 	if err != nil {
 		return nil, err
 	}
-	return e.f(l, r), nil
+	return e.f(l, r)
 }
 
 type unaryEvaluator struct {

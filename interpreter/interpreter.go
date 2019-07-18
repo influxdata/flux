@@ -330,7 +330,7 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope Scope) (va
 		if err != nil {
 			return nil, err
 		}
-		return bf(l, r), nil
+		return bf(l, r)
 	case *semantic.LogicalExpression:
 		l, err := itrp.doExpression(e.Left, scope)
 		if err != nil {
