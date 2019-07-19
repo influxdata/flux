@@ -1,6 +1,7 @@
 package sql
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
@@ -126,7 +127,9 @@ type SQLIterator struct {
 	reader         *execute.RowReader
 }
 
-func (c *SQLIterator) Connect() error {
+var _ execute.SourceDecoder = (*SQLIterator)(nil)
+
+func (c *SQLIterator) Connect(ctx context.Context) error {
 	db, err := sql.Open(c.spec.DriverName, c.spec.DataSourceName)
 
 	if err != nil {
@@ -140,7 +143,7 @@ func (c *SQLIterator) Connect() error {
 	return nil
 }
 
-func (c *SQLIterator) Fetch() (bool, error) {
+func (c *SQLIterator) Fetch(ctx context.Context) (bool, error) {
 	rows, err := c.db.Query(c.spec.Query)
 	if err != nil {
 		return false, err
@@ -164,7 +167,7 @@ func (c *SQLIterator) Fetch() (bool, error) {
 	return false, nil
 }
 
-func (c *SQLIterator) Decode() (flux.Table, error) {
+func (c *SQLIterator) Decode(ctx context.Context) (flux.Table, error) {
 	groupKey := execute.NewGroupKey(nil, nil)
 	builder := execute.NewColListTableBuilder(groupKey, c.administration.Allocator())
 
