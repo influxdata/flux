@@ -100,7 +100,7 @@ func TestFromRowReader(t *testing.T) {
 
 		rr.InitColumnTypes(nil)
 
-		table, err := sqliter.Decode()
+		table, err := sqliter.Decode(context.Background())
 		if err != nil {
 			t.Fatal(err)
 		}
