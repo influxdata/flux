@@ -2,7 +2,6 @@ package date
 
 import (
 	"fmt"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -147,6 +146,30 @@ func init() {
 				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
 			}, false,
 		),
+		"truncate": values.NewFunction(
+			"truncate",
+			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{"t": semantic.Time, "unit": semantic.Duration},
+				Required:   semantic.LabelSet{"t", "unit"},
+				Return:     semantic.Time,
+			}),
+			func(args values.Object) (values.Value, error) {
+				v, ok := args.Get("t")
+				if !ok {
+					return nil, errors.New(codes.Invalid, "missing argument t")
+				}
+
+				u, unitOk := args.Get("unit")
+				if !unitOk {
+					return nil, errors.New(codes.Invalid, "missing argument unit")
+				}
+
+				if v.Type().Nature() == semantic.Time && u.Type().Nature() == semantic.Duration {
+					return values.NewTime(v.Time().Truncate(u.Duration())), nil
+				}
+				return nil, fmt.Errorf("cannot truncate argument t of type %v to unit %v", v.Type().Nature(), u)
+			}, false,
+		),
 	}
 
 	flux.RegisterPackageValue("date", "second", SpecialFns["second"])
@@ -156,4 +179,5 @@ func init() {
 	flux.RegisterPackageValue("date", "monthDay", SpecialFns["monthDay"])
 	flux.RegisterPackageValue("date", "yearDay", SpecialFns["yearDay"])
 	flux.RegisterPackageValue("date", "month", SpecialFns["month"])
+	flux.RegisterPackageValue("date", "truncate", SpecialFns["truncate"])
 }

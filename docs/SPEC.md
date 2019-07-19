@@ -1134,6 +1134,15 @@ These are builtin functions that all take a single `time` argument and return an
 * `month` int
     Month returns the month of the year for the provided time in the range `[1-12]`.
 
+#### truncate
+
+`date.truncate` takes in a time t and a Duration unit and returns the given time 
+truncated to the given unit.
+
+Examples: 
+- `truncate(t: "2019-06-03T13:59:01.000000000Z", unit: 1s)` returns time `2019-06-03T13:59:01.000000000Z`
+- `truncate(t: "2019-06-03T13:59:01.000000000Z", unit: 1m)` returns time `2019-06-03T13:59:00.000000000Z`
+- `truncate(t: "2019-06-03T13:59:01.000000000Z", unit: 1h)` returns time `2019-06-03T13:00:00.000000000Z`
 
 ### System Time
 
@@ -3568,6 +3577,18 @@ r0 = from(bucket:"telegraf/autogen")
 // use values
 x = r0._field + "--" + r0._measurement
 ```
+
+##### truncateTimeColumn 
+
+Truncates all entries in a given time column to a specified unit.
+
+Example: 
+```
+from(bucket:"telegraph/autogen")
+    |> truncateTimeColumn(unit: 1s)
+```
+
+Currently, `truncateTimeColumn` only works with the default time column `_time`.
 
 #### Type conversion operations
 
