@@ -2,7 +2,6 @@ package promql
 
 import (
 	"fmt"
-	"regexp"
 
 	"github.com/influxdata/flux/ast"
 	"github.com/prometheus/prometheus/promql"
@@ -176,39 +175,6 @@ func vectorCompBinaryOpFn(op ast.OperatorKind) *ast.FunctionExpression {
 			Right:    member("r", "_value_rhs"),
 		},
 	}
-}
-
-// Function to rename post-join LHS/RHS columns.
-func stripSuffixFn(suffix string) *ast.FunctionExpression {
-	return &ast.FunctionExpression{
-		Params: []*ast.Property{
-			{
-				Key: &ast.Identifier{
-					Name: "column",
-				},
-			},
-		},
-		Body: call("strings.trimSuffix", map[string]ast.Expression{
-			"v":      &ast.Identifier{Name: "column"},
-			"suffix": &ast.StringLiteral{Value: suffix},
-		}),
-	}
-}
-
-// Function to match post-join RHS columns.
-var matchRHSSuffixFn = &ast.FunctionExpression{
-	Params: []*ast.Property{
-		{
-			Key: &ast.Identifier{
-				Name: "column",
-			},
-		},
-	},
-	Body: &ast.BinaryExpression{
-		Operator: ast.RegexpMatchOperator,
-		Left:     &ast.Identifier{Name: "column"},
-		Right:    &ast.RegexpLiteral{Value: regexp.MustCompile("_rhs$")},
-	},
 }
 
 func (t *Transpiler) transpileBinaryExpr(b *promql.BinaryExpr) (ast.Expression, error) {
