@@ -81,6 +81,7 @@ func (b *Int64Array) reset() {
 	b.data.Release()
 	b.data = nil
 	b.rawData = nil
+	b.length = 0
 }
 
 // Retain will retain a reference to the builder.
@@ -106,9 +107,10 @@ func (b *Int64Array) Reserve(n int) {
 		if b.data == nil {
 			b.init()
 		}
-		capacity := arrow.Int64Traits.BytesRequired(n)
+		length := len(b.rawData) + n
+		capacity := arrow.Int64Traits.BytesRequired(length)
 		b.data.Reserve(capacity)
-		b.rawData = arrow.Int64Traits.CastFromBytes(b.data.Bytes())
+		b.rawData = arrow.Int64Traits.CastFromBytes(b.data.Buf())[:b.length]
 	}
 }
 
@@ -209,6 +211,7 @@ func (b *Uint64Array) reset() {
 	b.data.Release()
 	b.data = nil
 	b.rawData = nil
+	b.length = 0
 }
 
 // Retain will retain a reference to the builder.
@@ -234,9 +237,10 @@ func (b *Uint64Array) Reserve(n int) {
 		if b.data == nil {
 			b.init()
 		}
-		capacity := arrow.Uint64Traits.BytesRequired(n)
+		length := len(b.rawData) + n
+		capacity := arrow.Uint64Traits.BytesRequired(length)
 		b.data.Reserve(capacity)
-		b.rawData = arrow.Uint64Traits.CastFromBytes(b.data.Bytes())
+		b.rawData = arrow.Uint64Traits.CastFromBytes(b.data.Buf())[:b.length]
 	}
 }
 
@@ -337,6 +341,7 @@ func (b *Float64Array) reset() {
 	b.data.Release()
 	b.data = nil
 	b.rawData = nil
+	b.length = 0
 }
 
 // Retain will retain a reference to the builder.
@@ -362,9 +367,10 @@ func (b *Float64Array) Reserve(n int) {
 		if b.data == nil {
 			b.init()
 		}
-		capacity := arrow.Float64Traits.BytesRequired(n)
+		length := len(b.rawData) + n
+		capacity := arrow.Float64Traits.BytesRequired(length)
 		b.data.Reserve(capacity)
-		b.rawData = arrow.Float64Traits.CastFromBytes(b.data.Bytes())
+		b.rawData = arrow.Float64Traits.CastFromBytes(b.data.Buf())[:b.length]
 	}
 }
 

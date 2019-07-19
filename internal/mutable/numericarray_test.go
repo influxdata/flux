@@ -215,6 +215,45 @@ func TestInt64Array_NewArray(t *testing.T) {
 	a.Release()
 }
 
+func TestInt64Array_MixReserveResize(t *testing.T) {
+	mem := memory.NewCheckedAllocator(memory.NewGoAllocator())
+	defer mem.AssertSize(t, 0)
+
+	b := mutable.NewInt64Array(mem)
+	defer b.Release()
+	mem.AssertSize(t, 0)
+
+	s1 := 10
+	s2 := 15
+	total := s1 + s2
+
+	// Mix resize and reserve.
+	b.Resize(s1)
+	b.Reserve(s2)
+	if got, want := b.Len(), s1; got != want {
+		t.Fatalf("unexpected length -want/+got:\n\t- %d\n\t+ %d", want, got)
+	}
+	if got, want := b.Cap(), total; got < want {
+		t.Fatalf("unexpected capacity got < want: %d < %d", got, want)
+	}
+
+	for i := 0; i < total; i++ {
+		if i < s1 {
+			b.Set(i, int64(i))
+		} else {
+			b.Append(int64(i))
+		}
+	}
+	if got, want := b.Len(), total; got != want {
+		t.Fatalf("unexpected length -want/+got:\n\t- %d\n\t+ %d", want, got)
+	}
+	for i := 0; i < total; i++ {
+		if got, want := b.Value(i), int64(i); got != want {
+			t.Fatalf("unexpected value at index %d: %d != %d", i, want, got)
+		}
+	}
+}
+
 func TestUint64Array_Append(t *testing.T) {
 	mem := memory.NewCheckedAllocator(memory.NewGoAllocator())
 	defer mem.AssertSize(t, 0)
@@ -423,6 +462,45 @@ func TestUint64Array_NewArray(t *testing.T) {
 	a.Release()
 }
 
+func TestUint64Array_MixReserveResize(t *testing.T) {
+	mem := memory.NewCheckedAllocator(memory.NewGoAllocator())
+	defer mem.AssertSize(t, 0)
+
+	b := mutable.NewUint64Array(mem)
+	defer b.Release()
+	mem.AssertSize(t, 0)
+
+	s1 := 10
+	s2 := 15
+	total := s1 + s2
+
+	// Mix resize and reserve.
+	b.Resize(s1)
+	b.Reserve(s2)
+	if got, want := b.Len(), s1; got != want {
+		t.Fatalf("unexpected length -want/+got:\n\t- %d\n\t+ %d", want, got)
+	}
+	if got, want := b.Cap(), total; got < want {
+		t.Fatalf("unexpected capacity got < want: %d < %d", got, want)
+	}
+
+	for i := 0; i < total; i++ {
+		if i < s1 {
+			b.Set(i, uint64(i))
+		} else {
+			b.Append(uint64(i))
+		}
+	}
+	if got, want := b.Len(), total; got != want {
+		t.Fatalf("unexpected length -want/+got:\n\t- %d\n\t+ %d", want, got)
+	}
+	for i := 0; i < total; i++ {
+		if got, want := b.Value(i), uint64(i); got != want {
+			t.Fatalf("unexpected value at index %d: %d != %d", i, want, got)
+		}
+	}
+}
+
 func TestFloat64Array_Append(t *testing.T) {
 	mem := memory.NewCheckedAllocator(memory.NewGoAllocator())
 	defer mem.AssertSize(t, 0)
@@ -629,4 +707,43 @@ func TestFloat64Array_NewArray(t *testing.T) {
 		t.Fatalf("unexpected value at index 0 -want/+got:\n\t- %v\n\t+ %v", want, got)
 	}
 	a.Release()
+}
+
+func TestFloat64Array_MixReserveResize(t *testing.T) {
+	mem := memory.NewCheckedAllocator(memory.NewGoAllocator())
+	defer mem.AssertSize(t, 0)
+
+	b := mutable.NewFloat64Array(mem)
+	defer b.Release()
+	mem.AssertSize(t, 0)
+
+	s1 := 10
+	s2 := 15
+	total := s1 + s2
+
+	// Mix resize and reserve.
+	b.Resize(s1)
+	b.Reserve(s2)
+	if got, want := b.Len(), s1; got != want {
+		t.Fatalf("unexpected length -want/+got:\n\t- %d\n\t+ %d", want, got)
+	}
+	if got, want := b.Cap(), total; got < want {
+		t.Fatalf("unexpected capacity got < want: %d < %d", got, want)
+	}
+
+	for i := 0; i < total; i++ {
+		if i < s1 {
+			b.Set(i, float64(i))
+		} else {
+			b.Append(float64(i))
+		}
+	}
+	if got, want := b.Len(), total; got != want {
+		t.Fatalf("unexpected length -want/+got:\n\t- %d\n\t+ %d", want, got)
+	}
+	for i := 0; i < total; i++ {
+		if got, want := b.Value(i), float64(i); got != want {
+			t.Fatalf("unexpected value at index %d: %v != %v", i, want, got)
+		}
+	}
 }
