@@ -5703,6 +5703,27 @@ string"
 				},
 			},
 		},
+		{
+			name: "integer literal overflow",
+			raw:  `100000000000000000000000000000`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:31"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:31"),
+						Expression: &ast.IntegerLiteral{
+							BaseNode: ast.BaseNode{
+								Loc: loc("1:1", "1:31"),
+								Errors: []ast.Error{
+									{Msg: `invalid integer literal "100000000000000000000000000000": value out of range`},
+								},
+							},
+						},
+					},
+				},
+			},
+			nerrs: 1,
+		},
 	} {
 		runFn(tt.name, func(tb testing.TB) {
 			if reason, ok := skip[tt.name]; ok {

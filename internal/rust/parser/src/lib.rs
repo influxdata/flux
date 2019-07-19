@@ -951,13 +951,21 @@ impl Parser {
             name: t.lit,
         };
     }
-    // TODO(affo): handle errors for literals.
     fn parse_int_literal(&mut self) -> IntegerLiteral {
         let t = self.expect(T_INT);
-        return IntegerLiteral {
-            base: self.base_node(),
-            value: (&t.lit).parse::<i64>().unwrap(),
-        };
+        match (&t.lit).parse::<i64>() {
+            Err(_e) => {
+                self.errs.push(format!("invalid integer literal \"{}\": value out of range", t.lit));
+                IntegerLiteral {
+                    base: self.base_node(),
+                    value: 0,
+                }
+            }
+            Ok(v) => IntegerLiteral {
+                base: self.base_node(),
+                value: v,
+            }
+        }
     }
     fn parse_float_literal(&mut self) -> FloatLiteral {
         let t = self.expect(T_FLOAT);
