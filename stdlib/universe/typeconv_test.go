@@ -12,6 +12,7 @@ func TestTypeconv_String(t *testing.T) {
 		name      string
 		v         interface{}
 		want      string
+		wantNull  bool
 		expectErr error
 	}{
 		{
@@ -54,6 +55,11 @@ func TestTypeconv_String(t *testing.T) {
 			v:    int64(-541),
 			want: "-541",
 		},
+		{
+			name:     "string(v:nil)",
+			v:        nil,
+			wantNull: true,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -64,14 +70,22 @@ func TestTypeconv_String(t *testing.T) {
 			c := &stringConv{}
 			got, err := c.Call(args)
 			if err != nil {
-				if want, got := tc.expectErr.Error(), err.Error(); got != want {
+				if tc.expectErr == nil {
+					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
+				} else if want, got := tc.expectErr.Error(), err.Error(); got != want {
 					t.Errorf("unexpected error - want: %s, got: %s", want, got)
 				}
 				return
 			}
-			want := values.NewString(tc.want)
-			if !got.Equal(want) {
-				t.Errorf("Wanted: %s, got: %v", want, got)
+			if !tc.wantNull {
+				want := values.NewString(tc.want)
+				if !got.Equal(want) {
+					t.Errorf("Wanted: %s, got: %v", want, got)
+				}
+			} else {
+				if !got.IsNull() {
+					t.Errorf("Wanted: %v, got: %v", values.Null, got)
+				}
 			}
 		})
 	}
@@ -82,6 +96,7 @@ func TestTypeconv_Int(t *testing.T) {
 		name      string
 		v         interface{}
 		want      int64
+		wantNull  bool
 		expectErr error
 	}{
 		{
@@ -125,6 +140,11 @@ func TestTypeconv_Int(t *testing.T) {
 			want:      0,
 			expectErr: errors.New("strconv.ParseInt: parsing \"notanumber\": invalid syntax"),
 		},
+		{
+			name:     "int64(v:nil)",
+			v:        nil,
+			wantNull: true,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -135,18 +155,22 @@ func TestTypeconv_Int(t *testing.T) {
 			c := &intConv{}
 			got, err := c.Call(args)
 			if err != nil {
-				if tc.expectErr != nil {
-					if want, got := tc.expectErr.Error(), err.Error(); got != want {
-						t.Errorf("unexpected error - want: %s, got: %s", want, got)
-					}
-				} else {
-					t.Errorf("unexpected error: %s", err.Error())
+				if tc.expectErr == nil {
+					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
+				} else if want, got := tc.expectErr.Error(), err.Error(); got != want {
+					t.Errorf("unexpected error - want: %s, got: %s", want, got)
 				}
 				return
 			}
-			want := values.NewInt(tc.want)
-			if !got.Equal(want) {
-				t.Error("Test failed")
+			if !tc.wantNull {
+				want := values.NewInt(tc.want)
+				if !got.Equal(want) {
+					t.Errorf("Wanted: %s, got: %v", want, got)
+				}
+			} else {
+				if !got.IsNull() {
+					t.Errorf("Wanted: %v, got: %v", values.Null, got)
+				}
 			}
 		})
 	}
@@ -157,6 +181,7 @@ func TestTypeconv_UInt(t *testing.T) {
 		name      string
 		v         interface{}
 		want      uint64
+		wantNull  bool
 		expectErr error
 	}{
 		{
@@ -200,6 +225,11 @@ func TestTypeconv_UInt(t *testing.T) {
 			want:      0,
 			expectErr: errors.New("strconv.ParseUint: parsing \"NaN\": invalid syntax"),
 		},
+		{
+			name:     "uint64(v:nil)",
+			v:        nil,
+			wantNull: true,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -210,18 +240,22 @@ func TestTypeconv_UInt(t *testing.T) {
 			c := &uintConv{}
 			got, err := c.Call(args)
 			if err != nil {
-				if tc.expectErr != nil {
-					if want, got := tc.expectErr.Error(), err.Error(); got != want {
-						t.Errorf("unexpected error - want: %s, got: %s", want, got)
-					}
-				} else {
-					t.Errorf("unexpected error: %s", err.Error())
+				if tc.expectErr == nil {
+					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
+				} else if want, got := tc.expectErr.Error(), err.Error(); got != want {
+					t.Errorf("unexpected error - want: %s, got: %s", want, got)
 				}
 				return
 			}
-			want := values.NewUInt(tc.want)
-			if !got.Equal(want) {
-				t.Error("Test failed")
+			if !tc.wantNull {
+				want := values.NewUInt(tc.want)
+				if !got.Equal(want) {
+					t.Errorf("Wanted: %s, got: %v", want, got)
+				}
+			} else {
+				if !got.IsNull() {
+					t.Errorf("Wanted: %v, got: %v", values.Null, got)
+				}
 			}
 		})
 	}
@@ -232,6 +266,7 @@ func TestTypeconv_Bool(t *testing.T) {
 		name      string
 		v         interface{}
 		want      bool
+		wantNull  bool
 		expectErr error
 	}{
 		{
@@ -280,6 +315,11 @@ func TestTypeconv_Bool(t *testing.T) {
 			want:      false,
 			expectErr: errors.New("cannot convert string \"asdf\" to bool"),
 		},
+		{
+			name:     "bool(v:nil)",
+			v:        nil,
+			wantNull: true,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -290,18 +330,22 @@ func TestTypeconv_Bool(t *testing.T) {
 			c := &boolConv{}
 			got, err := c.Call(args)
 			if err != nil {
-				if tc.expectErr != nil {
-					if want, got := tc.expectErr.Error(), err.Error(); got != want {
-						t.Errorf("unexpected error - want: %s, got: %s", want, got)
-					}
-				} else {
-					t.Errorf("unexpected error: %s", err.Error())
+				if tc.expectErr == nil {
+					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
+				} else if want, got := tc.expectErr.Error(), err.Error(); got != want {
+					t.Errorf("unexpected error - want: %s, got: %s", want, got)
 				}
 				return
 			}
-			want := values.NewBool(tc.want)
-			if !got.Equal(want) {
-				t.Error("Test failed")
+			if !tc.wantNull {
+				want := values.NewBool(tc.want)
+				if !got.Equal(want) {
+					t.Errorf("Wanted: %s, got: %v", want, got)
+				}
+			} else {
+				if !got.IsNull() {
+					t.Errorf("Wanted: %v, got: %v", values.Null, got)
+				}
 			}
 		})
 	}
@@ -312,6 +356,7 @@ func TestTypeconv_Float(t *testing.T) {
 		name      string
 		v         interface{}
 		want      float64
+		wantNull  bool
 		expectErr error
 	}{
 		{
@@ -366,6 +411,11 @@ func TestTypeconv_Float(t *testing.T) {
 			want:      float64(0),
 			expectErr: errors.New("strconv.ParseFloat: parsing \"ThisIsNotANumber\": invalid syntax"),
 		},
+		{
+			name:     "float(v:nil)",
+			v:        nil,
+			wantNull: true,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -376,22 +426,26 @@ func TestTypeconv_Float(t *testing.T) {
 			c := &floatConv{}
 			got, err := c.Call(args)
 			if err != nil {
-				if tc.expectErr != nil {
-					if want, got := tc.expectErr.Error(), err.Error(); got != want {
-						t.Errorf("unexpected error - want: %s, got: %s", want, got)
-					}
-				} else {
-					t.Errorf("unexpected error: %s", err.Error())
+				if tc.expectErr == nil {
+					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
+				} else if want, got := tc.expectErr.Error(), err.Error(); got != want {
+					t.Errorf("unexpected error - want: %s, got: %s", want, got)
 				}
 				return
 			}
-			want := values.NewFloat(tc.want)
-			if !got.Equal(want) {
-				// NaN == NaN evaluates to false, so need a special check
-				if math.IsNaN(tc.want) && math.IsNaN(got.Float()) {
-					return
+			if !tc.wantNull {
+				want := values.NewFloat(tc.want)
+				if !got.Equal(want) {
+					// NaN == NaN evaluates to false, so need a special check
+					if math.IsNaN(tc.want) && math.IsNaN(got.Float()) {
+						return
+					}
+					t.Errorf("Wanted: %s, got: %v", want, got)
 				}
-				t.Errorf("Test failed, got: %v, want: %v", got, want)
+			} else {
+				if !got.IsNull() {
+					t.Errorf("Wanted: %v, got: %v", values.Null, got)
+				}
 			}
 		})
 	}
@@ -402,6 +456,7 @@ func TestTypeconv_Time(t *testing.T) {
 		name      string
 		v         interface{}
 		want      values.Time
+		wantNull  bool
 		expectErr error
 	}{
 		{
@@ -430,6 +485,11 @@ func TestTypeconv_Time(t *testing.T) {
 			want:      values.Time(0),
 			expectErr: errors.New("parsing time \"NotATime\" as \"2006-01-02T15:04:05.999999999Z07:00\": cannot parse \"NotATime\" as \"2006\""),
 		},
+		{
+			name:     "time(v:nil)",
+			v:        nil,
+			wantNull: true,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -440,18 +500,22 @@ func TestTypeconv_Time(t *testing.T) {
 			c := &timeConv{}
 			got, err := c.Call(args)
 			if err != nil {
-				if tc.expectErr != nil {
-					if want, got := tc.expectErr.Error(), err.Error(); got != want {
-						t.Errorf("unexpected error - want: %s, got: %s", want, got)
-					}
-				} else {
-					t.Errorf("unexpected error: %s", err.Error())
+				if tc.expectErr == nil {
+					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
+				} else if want, got := tc.expectErr.Error(), err.Error(); got != want {
+					t.Errorf("unexpected error - want: %s, got: %s", want, got)
 				}
 				return
 			}
-			want := values.NewTime(tc.want)
-			if !got.Equal(want) {
-				t.Errorf("Wanted: %v, got: %v", want, got)
+			if !tc.wantNull {
+				want := values.NewTime(tc.want)
+				if !got.Equal(want) {
+					t.Errorf("Wanted: %s, got: %v", want, got)
+				}
+			} else {
+				if !got.IsNull() {
+					t.Errorf("Wanted: %v, got: %v", values.Null, got)
+				}
 			}
 		})
 	}
@@ -462,6 +526,7 @@ func TestTypeconv_Duration(t *testing.T) {
 		name      string
 		v         interface{}
 		want      values.Duration
+		wantNull  bool
 		expectErr error
 	}{
 		{
@@ -485,6 +550,11 @@ func TestTypeconv_Duration(t *testing.T) {
 			want:      values.Duration(0),
 			expectErr: errors.New("time: invalid duration not_a_duration"),
 		},
+		{
+			name:     "duration(v:nil)",
+			v:        nil,
+			wantNull: true,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -495,18 +565,22 @@ func TestTypeconv_Duration(t *testing.T) {
 			c := &durationConv{}
 			got, err := c.Call(args)
 			if err != nil {
-				if tc.expectErr != nil {
-					if want, got := tc.expectErr.Error(), err.Error(); got != want {
-						t.Errorf("unexpected error - want: %s, got: %s", want, got)
-					}
-				} else {
-					t.Errorf("unexpected error: %s", err.Error())
+				if tc.expectErr == nil {
+					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
+				} else if want, got := tc.expectErr.Error(), err.Error(); got != want {
+					t.Errorf("unexpected error - want: %s, got: %s", want, got)
 				}
 				return
 			}
-			want := values.NewDuration(tc.want)
-			if !got.Equal(want) {
-				t.Errorf("Wanted: %v, got: %v", want, got)
+			if !tc.wantNull {
+				want := values.NewDuration(tc.want)
+				if !got.Equal(want) {
+					t.Errorf("Wanted: %s, got: %v", want, got)
+				}
+			} else {
+				if !got.IsNull() {
+					t.Errorf("Wanted: %v, got: %v", values.Null, got)
+				}
 			}
 		})
 	}

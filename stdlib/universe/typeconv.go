@@ -90,6 +90,8 @@ func (c *stringConv) Call(args values.Object) (values.Value, error) {
 	v, ok := args.Get(conversionArg)
 	if !ok {
 		return nil, errMissingArg
+	} else if v.IsNull() {
+		return values.Null, nil
 	}
 	switch v.Type().Nature() {
 	case semantic.String:
@@ -173,6 +175,8 @@ func (c *intConv) Call(args values.Object) (values.Value, error) {
 	v, ok := args.Get(conversionArg)
 	if !ok {
 		return nil, errMissingArg
+	} else if v.IsNull() {
+		return values.Null, nil
 	}
 	switch v.Type().Nature() {
 	case semantic.String:
@@ -264,6 +268,8 @@ func (c *uintConv) Call(args values.Object) (values.Value, error) {
 	v, ok := args.Get(conversionArg)
 	if !ok {
 		return nil, errMissingArg
+	} else if v.IsNull() {
+		return values.Null, nil
 	}
 	switch v.Type().Nature() {
 	case semantic.String:
@@ -355,6 +361,8 @@ func (c *floatConv) Call(args values.Object) (values.Value, error) {
 	v, ok := args.Get(conversionArg)
 	if !ok {
 		return nil, errMissingArg
+	} else if v.IsNull() {
+		return values.Null, nil
 	}
 	switch v.Type().Nature() {
 	case semantic.String:
@@ -442,6 +450,8 @@ func (c *boolConv) Call(args values.Object) (values.Value, error) {
 	v, ok := args.Get(conversionArg)
 	if !ok {
 		return nil, errMissingArg
+	} else if v.IsNull() {
+		return values.Null, nil
 	}
 	switch v.Type().Nature() {
 	case semantic.String:
@@ -549,6 +559,8 @@ func (c *timeConv) Call(args values.Object) (values.Value, error) {
 	v, ok := args.Get(conversionArg)
 	if !ok {
 		return nil, errMissingArg
+	} else if v.IsNull() {
+		return values.Null, nil
 	}
 	switch v.Type().Nature() {
 	case semantic.String:
@@ -630,6 +642,8 @@ func (c *durationConv) Call(args values.Object) (values.Value, error) {
 	v, ok := args.Get(conversionArg)
 	if !ok {
 		return nil, errMissingArg
+	} else if v.IsNull() {
+		return values.Null, nil
 	}
 	switch v.Type().Nature() {
 	case semantic.String:
