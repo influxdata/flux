@@ -18,9 +18,9 @@ import (
 // In executing the retrieval process, Connect is called once at the onset, and subsequent calls of Fetch() and Decode()
 // are called iteratively until the data source is fully consumed.
 type SourceDecoder interface {
-	Connect() error
-	Fetch() (bool, error)
-	Decode() (flux.Table, error)
+	Connect(ctx context.Context) error
+	Fetch(ctx context.Context) (bool, error)
+	Decode(ctx context.Context) (flux.Table, error)
 	Close() error
 }
 
@@ -36,28 +36,28 @@ type sourceIterator struct {
 	ts      []Transformation
 }
 
-func (c *sourceIterator) Do(f func(flux.Table) error) error {
-	err := c.decoder.Connect()
+func (c *sourceIterator) Do(ctx context.Context, f func(flux.Table) error) error {
+	err := c.decoder.Connect(ctx)
 	if err != nil {
 		return err
 	}
 	defer c.decoder.Close()
 
 	runOnce := true
-	more, err := c.decoder.Fetch()
+	more, err := c.decoder.Fetch(ctx)
 	if err != nil {
 		return err
 	}
 	for runOnce || more {
 		runOnce = false
-		tbl, err := c.decoder.Decode()
+		tbl, err := c.decoder.Decode(ctx)
 		if err != nil {
 			return err
 		}
 		if err := f(tbl); err != nil {
 			return err
 		}
-		more, err = c.decoder.Fetch()
+		more, err = c.decoder.Fetch(ctx)
 		if err != nil {
 			return err
 		}
@@ -71,7 +71,7 @@ func (c *sourceIterator) AddTransformation(t Transformation) {
 }
 
 func (c *sourceIterator) Run(ctx context.Context) {
-	err := c.Do(func(tbl flux.Table) error {
+	err := c.Do(ctx, func(tbl flux.Table) error {
 		for _, t := range c.ts {
 			err := t.Process(c.id, tbl)
 			if err != nil {

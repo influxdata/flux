@@ -124,10 +124,9 @@ Others?
 - `from`
 - `to`
 
-## Package `time`
+## Package `date`
 
 Constants representing months.  From the SPEC:
-[IMPL#154](https://github.com/influxdata/flux/issues/154)
 ```
 January   = 1
 February  = 2
@@ -144,7 +143,6 @@ December  = 12
 ```
 
 Constants representing days of the week. From the SPEC:
-[IMPL#153](https://github.com/influxdata/flux/issues/153)
 ```
 Sunday    = 0
 Monday    = 1
@@ -157,7 +155,6 @@ Saturday  = 6
 
 Time and date functions.  Each of these accept a `time` value and return an integer.
 From the SPEC:
-[IMPL#155](https://github.com/influxdata/flux/issues/155)
 - `second` - integer Second returns the second of the minute for the provided time in the range [0-59].
 - `minute` - integer Minute returns the minute of the hour for the provided time in the range [0-59].
 - `hour` - integer Hour returns the hour of the day for the provided time in the range [0-59].

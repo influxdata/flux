@@ -822,17 +822,19 @@ The precedence of the operators is given in the table below. Operators with a lo
 |     1    |  `a()`         |       Function call       |
 |          |  `a[]`         |  Member or index access   |
 |          |   `.`          |       Member access       |
-|     2    | `*` `/`        |Multiplication and division|
-|     3    | `+` `-`        | Addition and subtraction  |
-|     4    |`==` `!=`       |   Comparison operators    |
+|     2    |   `^`          |       Exponentiation      |
+|     3    | `*` `/` `%`    | Multiplication, division, |
+|          |                | and modulo                |
+|     4    | `+` `-`        | Addition and subtraction  |
+|     5    |`==` `!=`       |   Comparison operators    |
 |          | `<` `<=`       |                           |
 |          | `>` `>=`       |                           |
 |          |`=~` `!~`       |                           |
-|     5    | `not`          | Unary logical operator    |
+|     6    | `not`          | Unary logical operator    |
 |          | `exists`       | Null check operator       |
-|     6    |  `and`         |        Logical AND        |
-|     7    |  `or`          |        Logical OR         |
-|     8    | `if/then/else` |        Conditional        |
+|     7    |  `and`         |        Logical AND        |
+|     8    |  `or`          |        Logical OR         |
+|     9    | `if/then/else` |        Conditional        |
 
 The operator precedence is encoded directly into the grammar as the following.
 
@@ -853,7 +855,7 @@ The operator precedence is encoded directly into the grammar as the following.
     AdditiveOperator         = "+" | "-" .
     MultiplicativeExpression = PipeExpression
                              | MultiplicativeExpression MultiplicativeOperator PipeExpression .
-    MultiplicativeOperator   = "*" | "/" .
+    MultiplicativeOperator   = "*" | "/" | "%" | "^".
     PipeExpression           = PostfixExpression
                              | PipeExpression PipeOperator UnaryExpression .
     PipeOperator             = "|>" .
@@ -865,6 +867,8 @@ The operator precedence is encoded directly into the grammar as the following.
     PostfixOperator          = MemberExpression
                              | CallExpression
                              | IndexExpression .
+
+Dividing by 0 or using the mod operator with a divisor of 0 will result in an error.
 
 ### Packages
 
@@ -1071,7 +1075,7 @@ Example
 
     builtin from : (bucket: string, bucketID: string) -> stream
 
-### Time constants
+### Date/Time constants
 
 #### Days of the week
 
@@ -1089,7 +1093,6 @@ Saturday  = 6
 ```
 
 
-[IMPL#153](https://github.com/influxdata/flux/issues/153) Add Days of the Week constants
 
 ### Months of the year
 
@@ -1111,7 +1114,6 @@ November  = 11
 December  = 12
 ```
 
-[IMPL#154](https://github.com/influxdata/flux/issues/154) Add Months of the Year constants
 
 ### Time and date functions
 
@@ -1132,7 +1134,15 @@ These are builtin functions that all take a single `time` argument and return an
 * `month` int
     Month returns the month of the year for the provided time in the range `[1-12]`.
 
-[IMPL#155](https://github.com/influxdata/flux/issues/155) Implement Time and date functions
+#### truncate
+
+`date.truncate` takes in a time t and a Duration unit and returns the given time 
+truncated to the given unit.
+
+Examples: 
+- `truncate(t: "2019-06-03T13:59:01.000000000Z", unit: 1s)` returns time `2019-06-03T13:59:01.000000000Z`
+- `truncate(t: "2019-06-03T13:59:01.000000000Z", unit: 1m)` returns time `2019-06-03T13:59:00.000000000Z`
+- `truncate(t: "2019-06-03T13:59:01.000000000Z", unit: 1h)` returns time `2019-06-03T13:00:00.000000000Z`
 
 ### System Time
 
@@ -3169,7 +3179,7 @@ Moving Average has the following properties:
 
 | Name        | Type     | Description
 | ----        | ----     | -----------
-| n           | duration | N specifies the number of points to mean.       
+| n           | int      | N specifies the number of points to mean.       
 | columns     | []string | Columns is list of all columns that `movingAverage` should be performed on. Defaults to `["_value"]`. |
 
 Rules for taking the moving average for numeric types:
@@ -3567,6 +3577,18 @@ r0 = from(bucket:"telegraf/autogen")
 // use values
 x = r0._field + "--" + r0._measurement
 ```
+
+##### truncateTimeColumn 
+
+Truncates all entries in a given time column to a specified unit.
+
+Example: 
+```
+from(bucket:"telegraph/autogen")
+    |> truncateTimeColumn(unit: 1s)
+```
+
+Currently, `truncateTimeColumn` only works with the default time column `_time`.
 
 #### Type conversion operations
 

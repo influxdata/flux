@@ -232,7 +232,8 @@ type MultiResultDecoder interface {
 type MultiResultEncoder interface {
 	// Encode writes multiple results from r into w.
 	// Returns the number of bytes written to w and any error resulting from the encoding process.
-	// Errors obtained from the results object should be encoded to w and then discarded.
+	// It is up to the specific implementation for whether it will encode any errors that occur
+	// from the ResultIterator.
 	Encode(w io.Writer, results ResultIterator) (int64, error)
 }
 
@@ -273,33 +274,44 @@ type flusher interface {
 	Flush()
 }
 
+// Encode will encode the results into the writer using the Encoder and separating each entry
+// by the Delimiter. If an error occurs while processing the ResultIterator or is returned from
+// the underlying Encoder, Encode will return the error if nothing has yet been written to the
+// Writer. If something has been written to the Writer, then an error will only be returned
+// when the error is an EncoderError.
 func (e *DelimitedMultiResultEncoder) Encode(w io.Writer, results ResultIterator) (int64, error) {
 	wc := &iocounter.Writer{Writer: w}
 
 	for results.More() {
 		result := results.Next()
 		if _, err := e.Encoder.Encode(wc, result); err != nil {
-			// If we have an error that's from
-			// encoding specifically, return it
-			if IsEncoderError(err) {
+			// If we have an error that's from encoding or if we have not
+			// yet written any data to the writer, return the error.
+			if IsEncoderError(err) || wc.Count() == 0 {
 				return wc.Count(), err
 			}
-			// Otherwise, the error is from query execution,
-			// so we encode it instead.
+			// Otherwise, the error happened during query execution and we
+			// are stuck encoding it.
 			err := e.Encoder.EncodeError(wc, err)
 			return wc.Count(), err
 		}
 		if _, err := wc.Write(e.Delimiter); err != nil {
 			return wc.Count(), err
 		}
-		// Flush the writer after each result
+		// Flush the writer after each result.
 		if f, ok := w.(flusher); ok {
 			f.Flush()
 		}
 	}
+
 	// If we have any outlying errors in results, encode them
-	err := results.Err()
-	if err != nil {
+	// If we have an error in the result and we have not written
+	// to the writer, then return the error as-is. Otherwise, encode
+	// it the same way we do above.
+	if err := results.Err(); err != nil {
+		if wc.Count() == 0 {
+			return 0, err
+		}
 		err := e.Encoder.EncodeError(wc, err)
 		return wc.Count(), err
 	}

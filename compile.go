@@ -90,6 +90,7 @@ var (
 		"promql",
 		"strings",
 		"regexp",
+		"date",
 	}
 	preludeScope = &scopeSet{
 		packages: make([]*interpreter.Package, len(prelude)),

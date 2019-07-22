@@ -289,6 +289,39 @@ func TestMode_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "column outside group key",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					KeyCols: []string{"tag0"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0, "a", "b"},
+						{execute.Time(2), 2.0, "a", "b"},
+						{execute.Time(3), 2.0, "a", "d"},
+						{execute.Time(4), 2.0, "a", "d"},
+						{execute.Time(5), 2.0, "a", "c"},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				KeyCols: []string{"tag0"},
+				ColMeta: []flux.ColMeta{
+					{Label: "tag0", Type: flux.TString},
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{"a", "b"},
+					{"a", "d"},
+				},
+			}},
+		},
+		{
 			name: "column inside group key",
 			spec: &universe.ModeProcedureSpec{Column: "tag0"},
 			data: []flux.Table{

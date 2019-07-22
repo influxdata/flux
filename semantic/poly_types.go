@@ -404,12 +404,18 @@ func (l function) unifyType(kinds map[Tvar]Kind, r PolyType) (Substitution, erro
 		// Validate that every required parameter of the left function
 		// is observed in the right function, excluding pipe parameters.
 		missing := l.required.diff(r.required)
+		lst := []string{}
 		for _, lbl := range missing {
 			if _, ok := r.parameters[lbl]; !ok && lbl != l.pipeArgument {
 				// Pipe parameters are validated below
-				return nil, fmt.Errorf("missing required parameter %q", lbl)
+				lst = append(lst, lbl)
 			}
 		}
+		if len(lst) > 0 {
+			return nil, fmt.Errorf("missing required parameter(s) %q in call to function, which requires %q",
+				strings.Join(lst, ", "), l.required)
+		}
+
 		subst := make(Substitution)
 		for f, tl := range l.parameters {
 			tr, ok := r.parameters[f]
