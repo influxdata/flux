@@ -7,6 +7,11 @@ builtin weekDay
 builtin monthDay
 builtin yearDay
 builtin month
+builtin week
+builtin quarter
+builtin millisecond
+builtin microsecond
+builtin nanosecond
 builtin truncate
 
 Sunday    = 0
@@ -39,6 +44,11 @@ date = {
   monthDay:monthDay,
   yearDay:yearDay,
   month:month,
+  week:week,
+  quarter:quarter,
+  millisecond:millisecond,
+  microsecond:microsecond,
+  nanosecond:nanosecond,
   Sunday:Sunday,
   Monday:Monday,
   Tuesday:Tuesday,

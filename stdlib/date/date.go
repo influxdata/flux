@@ -2,6 +2,9 @@ package date
 
 import (
 	"fmt"
+	"math"
+	"time"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -146,6 +149,105 @@ func init() {
 				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
 			}, false,
 		),
+		"week": values.NewFunction(
+			"week",
+			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{"t": semantic.Time},
+				Required:   semantic.LabelSet{"t"},
+				Return:     semantic.Int,
+			}),
+			func(args values.Object) (values.Value, error) {
+				v1, ok := args.Get("t")
+				if !ok {
+					return nil, errors.New(codes.Invalid, "missing argument t")
+				}
+
+				if v1.Type().Nature() == semantic.Time {
+					_, week := v1.Time().Time().ISOWeek()
+					return values.NewInt(int64(week)), nil
+				}
+				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
+			}, false,
+		),
+		"quarter": values.NewFunction(
+			"quarter",
+			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{"t": semantic.Time},
+				Required:   semantic.LabelSet{"t"},
+				Return:     semantic.Int,
+			}),
+			func(args values.Object) (values.Value, error) {
+				v1, ok := args.Get("t")
+				if !ok {
+					return nil, errors.New(codes.Invalid, "missing argument t")
+				}
+
+				if v1.Type().Nature() == semantic.Time {
+					month := v1.Time().Time().Month()
+					return values.NewInt(int64(math.Ceil(float64(month) / 3.0))), nil
+				}
+				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
+			}, false,
+		),
+		"millisecond": values.NewFunction(
+			"millisecond",
+			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{"t": semantic.Time},
+				Required:   semantic.LabelSet{"t"},
+				Return:     semantic.Int,
+			}),
+			func(args values.Object) (values.Value, error) {
+				v1, ok := args.Get("t")
+				if !ok {
+					return nil, errors.New(codes.Invalid, "missing argument t")
+				}
+
+				if v1.Type().Nature() == semantic.Time {
+					millisecond := int64(time.Nanosecond) * int64(v1.Time().Time().Nanosecond()) / int64(time.Millisecond)
+					return values.NewInt(millisecond), nil
+				}
+				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
+			}, false,
+		),
+		"microsecond": values.NewFunction(
+			"microsecond",
+			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{"t": semantic.Time},
+				Required:   semantic.LabelSet{"t"},
+				Return:     semantic.Int,
+			}),
+			func(args values.Object) (values.Value, error) {
+				v1, ok := args.Get("t")
+				if !ok {
+					return nil, errors.New(codes.Invalid, "missing argument t")
+				}
+
+				if v1.Type().Nature() == semantic.Time {
+					microsecond := int64(time.Nanosecond) * int64(v1.Time().Time().Nanosecond()) / int64(time.Microsecond)
+					return values.NewInt(microsecond), nil
+				}
+				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
+			}, false,
+		),
+		"nanosecond": values.NewFunction(
+			"nanosecond",
+			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+				Parameters: map[string]semantic.PolyType{"t": semantic.Time},
+				Required:   semantic.LabelSet{"t"},
+				Return:     semantic.Int,
+			}),
+			func(args values.Object) (values.Value, error) {
+				v1, ok := args.Get("t")
+				if !ok {
+					return nil, errors.New(codes.Invalid, "missing argument t")
+				}
+
+				if v1.Type().Nature() == semantic.Time {
+					return values.NewInt(int64(v1.Time().Time().Nanosecond())), nil
+				}
+				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
+			}, false,
+		),
 		"truncate": values.NewFunction(
 			"truncate",
 			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
@@ -179,5 +281,10 @@ func init() {
 	flux.RegisterPackageValue("date", "monthDay", SpecialFns["monthDay"])
 	flux.RegisterPackageValue("date", "yearDay", SpecialFns["yearDay"])
 	flux.RegisterPackageValue("date", "month", SpecialFns["month"])
+	flux.RegisterPackageValue("date", "week", SpecialFns["week"])
+	flux.RegisterPackageValue("date", "quarter", SpecialFns["quarter"])
+	flux.RegisterPackageValue("date", "millisecond", SpecialFns["millisecond"])
+	flux.RegisterPackageValue("date", "microsecond", SpecialFns["microsecond"])
+	flux.RegisterPackageValue("date", "nanosecond", SpecialFns["nanosecond"])
 	flux.RegisterPackageValue("date", "truncate", SpecialFns["truncate"])
 }

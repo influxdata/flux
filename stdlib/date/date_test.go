@@ -1,8 +1,9 @@
 package date
 
 import (
-	"github.com/influxdata/flux/values"
 	"testing"
+
+	"github.com/influxdata/flux/values"
 )
 
 func TestTimeFns(t *testing.T) {
@@ -45,6 +46,31 @@ func TestTimeFns(t *testing.T) {
 			name: "month",
 			time: "2019-06-03T13:59:01.000000000Z",
 			want: 6,
+		},
+		{
+			name: "week",
+			time: "2019-06-03T13:59:01.000000000Z",
+			want: 23,
+		},
+		{
+			name: "quarter",
+			time: "2019-06-03T13:59:01.000000000Z",
+			want: 2,
+		},
+		{
+			name: "millisecond",
+			time: "2019-06-03T13:59:01.123456789Z",
+			want: 123,
+		},
+		{
+			name: "microsecond",
+			time: "2019-06-03T13:59:01.123456789Z",
+			want: 123456,
+		},
+		{
+			name: "nanosecond",
+			time: "2019-06-03T13:59:01.123456789Z",
+			want: 123456789,
 		},
 	}
 	for _, tc := range testCases {
