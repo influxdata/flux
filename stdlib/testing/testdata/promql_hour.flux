@@ -19,20 +19,21 @@ inData = "
 "
 
 outData = "
-#datatype,string,long,dateTime:RFC3339,string,double
-#group,false,true,false,true,false
-#default,_result,,,,
-,result,table,_time,_field,_value
-,,0,2018-01-03T00:00:00Z,metric_name,0
-,,0,2018-02-04T01:00:00Z,metric_name,1
-,,0,2018-03-05T02:00:00Z,metric_name,2
-,,0,2018-10-06T21:00:00Z,metric_name,21
-,,0,2018-11-07T22:00:00Z,metric_name,22
-,,0,2018-12-08T23:00:00Z,metric_name,23
+#datatype,string,long,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double
+#group,false,false,true,true,true,false,false
+#default,got,,,,,,
+,result,table,_field,_start,_stop,_time,_value
+,,0,metric_name,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,2018-01-03T00:00:00Z,0
+,,0,metric_name,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,2018-02-04T01:00:00Z,1
+,,0,metric_name,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,2018-03-05T02:00:00Z,2
+,,0,metric_name,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,2018-10-06T21:00:00Z,21
+,,0,metric_name,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,2018-11-07T22:00:00Z,22
+,,0,metric_name,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,2018-12-08T23:00:00Z,23
 "
 
 t_promqlHour = (table=<-) =>
 	(table
+	  |> range(start: 2018-01-01T00:00:00Z)
 	  |> promql.timestamp()
 		|> map(fn: (r) => ({r with _value: promql.promqlHour(timestamp: r._value)})))
 

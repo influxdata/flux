@@ -22,23 +22,19 @@ inData = "
 "
 
 outData = "
-#datatype,string,long,string,string,string,double
-#group,false,true,true,true,true,false
-#default,_result,,,,,
-,result,table,_field,src,dst,_value
-,,1,metric_name,source-value-10,original-destination-value,1
-,,1,metric_name,source-value-10,original-destination-value,2
-
-#datatype,string,long,string,string,string,double
-#group,false,true,true,true,true,false
-#default,_result,,,,,
-,result,table,_field,src,dst,_value
-,,1,metric_name,source-value-20,original-destination-value,3
-,,1,metric_name,source-value-20,original-destination-value,4
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
+#group,false,false,true,true,true,true,true,false
+#default,got,,,,,,,
+,result,table,_start,_stop,_field,src,dst,_value
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,metric_name,source-value-10,original-destination-value,1
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,metric_name,source-value-10,original-destination-value,2
+,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,metric_name,source-value-20,original-destination-value,3
+,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,metric_name,source-value-20,original-destination-value,4
 "
 
 t_labelReplace = (table=<-) =>
 	(table
+		|> range(start: 2018-01-01T00:00:00Z)
 		|> promql.labelReplace(source: "src", destination: "dst", regex: "non-matching-regex", replacement: "value-$1"))
 
 test _labelReplace = () =>

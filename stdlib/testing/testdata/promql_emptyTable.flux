@@ -12,7 +12,9 @@ outData = "
 ,result,table,_start,_stop,_time,_value
 "
 
-t_emptyTable = (table=<-) => table
+t_emptyTable = (table=<-) =>
+	(table
+	  |> range(start: 2018-01-01T00:00:00Z))
 
 test _emptyTable = () =>
 	({input: promql.emptyTable(), want: testing.loadMem(csv: outData), fn: t_emptyTable})
