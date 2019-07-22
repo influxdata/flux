@@ -33,13 +33,13 @@ var vectorMathFunctions = map[string]string{
 }
 
 var dateFunctions = map[string]string{
-	"day_of_month":  "promql.dayOfMonth",
-	"day_of_week":   "promql.dayOfWeek",
-	"days_in_month": "promql.daysInMonth",
-	"hour":          "promql.hour",
-	"minute":        "promql.minute",
-	"month":         "promql.month",
-	"year":          "promql.year",
+	"day_of_month":  "promql.promqlDayOfMonth",
+	"day_of_week":   "promql.promqlDayOfWeek",
+	"days_in_month": "promql.promqlDaysInMonth",
+	"hour":          "promql.promqlHour",
+	"minute":        "promql.promqlMinute",
+	"month":         "promql.promqlMonth",
+	"year":          "promql.promqlYear",
 }
 
 var filterNullValuesCall = call(

@@ -35,13 +35,13 @@ func generateDateFunction(name string, dateFn func(time.Time) int) values.Functi
 }
 
 func init() {
-	flux.RegisterPackageValue("promql", "dayOfMonth", generateDateFunction("dayOfMonth", dayOfMonthFn))
-	flux.RegisterPackageValue("promql", "dayOfWeek", generateDateFunction("dayOfWeek", dayOfWeekFn))
-	flux.RegisterPackageValue("promql", "daysInMonth", generateDateFunction("daysInMonth", daysInMonthFn))
-	flux.RegisterPackageValue("promql", "hour", generateDateFunction("hour", hourFn))
-	flux.RegisterPackageValue("promql", "minute", generateDateFunction("minute", minuteFn))
-	flux.RegisterPackageValue("promql", "month", generateDateFunction("month", monthFn))
-	flux.RegisterPackageValue("promql", "year", generateDateFunction("year", yearFn))
+	flux.RegisterPackageValue("promql", "promqlDayOfMonth", generateDateFunction("promqlDayOfMonth", dayOfMonthFn))
+	flux.RegisterPackageValue("promql", "promqlDayOfWeek", generateDateFunction("promqlDayOfWeek", dayOfWeekFn))
+	flux.RegisterPackageValue("promql", "promqlDaysInMonth", generateDateFunction("promqlDaysInMonth", daysInMonthFn))
+	flux.RegisterPackageValue("promql", "promqlHour", generateDateFunction("promqlHour", hourFn))
+	flux.RegisterPackageValue("promql", "promqlMinute", generateDateFunction("promqlMinute", minuteFn))
+	flux.RegisterPackageValue("promql", "promqlMonth", generateDateFunction("promqlMonth", monthFn))
+	flux.RegisterPackageValue("promql", "promqlYear", generateDateFunction("promqlYear", yearFn))
 }
 
 func dayOfMonthFn(t time.Time) int {

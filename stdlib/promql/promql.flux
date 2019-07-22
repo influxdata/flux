@@ -5,20 +5,20 @@ package promql
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#changes
 builtin changes
 
-// dayOfMonth() implements functionality equivalent to PromQL's day_of_month() function:
+// promqlDayOfMonth() implements functionality equivalent to PromQL's day_of_month() function:
 //
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_month
-builtin dayOfMonth
+builtin promqlDayOfMonth
 
-// dayOfWeek() implements functionality equivalent to PromQL's day_of_week() function:
+// promqlDayOfWeek() implements functionality equivalent to PromQL's day_of_week() function:
 //
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_week
-builtin dayOfWeek
+builtin promqlDayOfWeek
 
-// daysInMonth() implements functionality equivalent to PromQL's days_in_month() function:
+// promqlDaysInMonth() implements functionality equivalent to PromQL's days_in_month() function:
 //
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#days_in_month
-builtin daysInMonth
+builtin promqlDaysInMonth
 
 // emptyTable() returns an empty table, which is used as a helper function to implement
 // PromQL's time() and vector() functions:
@@ -41,10 +41,10 @@ builtin extrapolatedRate
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#holt_winters
 builtin holtWinters
 
-// hour() implements functionality equivalent to PromQL's hour() function:
+// promqlHour() implements functionality equivalent to PromQL's hour() function:
 //
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#hour
-builtin hour
+builtin promqlHour
 
 // instantRate() is a helper function that calculates instant rates over
 // counters and is used to implement PromQL's irate() and idelta() functions.
@@ -68,12 +68,12 @@ builtin linearRegression
 // minute() implements functionality equivalent to PromQL's minute() function:
 //
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#minute
-builtin minute
+builtin promqlMinute
 
 // month() implements functionality equivalent to PromQL's month() function:
 //
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#month
-builtin month
+builtin promqlMonth
 
 // promHistogramQuantile() implements functionality equivalent to PromQL's
 // histogram_quantile() function:
@@ -94,15 +94,15 @@ builtin timestamp
 // year() implements functionality equivalent to PromQL's year() function:
 //
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#year
-builtin year
+builtin promqlYear
 
 // hack to simulate an imported promql package
 promql = {
-  dayOfMonth:dayOfMonth,
-  dayOfWeek:dayOfWeek,
-  daysInMonth:daysInMonth,
-  hour:hour,
-  minute:minute,
-  month:month,
-  year:year,
+  promqlDayOfMonth:promqlDayOfMonth,
+  promqlDayOfWeek:promqlDayOfWeek,
+  promqlDaysInMonth:promqlDaysInMonth,
+  promqlHour:promqlHour,
+  promqlMinute:promqlMinute,
+  promqlMonth:promqlMonth,
+  promqlYear:promqlYear,
 }

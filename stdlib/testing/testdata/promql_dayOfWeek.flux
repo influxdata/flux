@@ -33,10 +33,10 @@ outData = "
 ,,0,2018-12-09T20:00:00Z,metric_name,0
 "
 
-t_dayOfWeek = (table=<-) =>
+t_promqlDayOfWeek = (table=<-) =>
 	(table
 	  |> promql.timestamp()
-		|> map(fn: (r) => ({r with _value: promql.dayOfWeek(timestamp: r._value)})))
+		|> map(fn: (r) => ({r with _value: promql.promqlDayOfWeek(timestamp: r._value)})))
 
-test _dayOfWeek = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dayOfWeek})
+test _promqlDayOfWeek = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_promqlDayOfWeek})

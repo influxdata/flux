@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   108,
 				},
 				File:   "promql.flux",
-				Source: "package promql\n\n// changes() implements functionality equivalent to PromQL's changes() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#changes\nbuiltin changes\n\n// dayOfMonth() implements functionality equivalent to PromQL's day_of_month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_month\nbuiltin dayOfMonth\n\n// dayOfWeek() implements functionality equivalent to PromQL's day_of_week() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_week\nbuiltin dayOfWeek\n\n// daysInMonth() implements functionality equivalent to PromQL's days_in_month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#days_in_month\nbuiltin daysInMonth\n\n// emptyTable() returns an empty table, which is used as a helper function to implement\n// PromQL's time() and vector() functions:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#time\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#vector\nbuiltin emptyTable\n\n// extrapolatedRate() is a helper function that calculates extrapolated rates over\n// counters and is used to implement PromQL's rate(), delta(), and increase() functions.\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#rate\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#increase\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#delta\nbuiltin extrapolatedRate\n\n// holtWinters() implements functionality equivalent to PromQL's holt_winters()\n// function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#holt_winters\nbuiltin holtWinters\n\n// hour() implements functionality equivalent to PromQL's hour() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#hour\nbuiltin hour\n\n// instantRate() is a helper function that calculates instant rates over\n// counters and is used to implement PromQL's irate() and idelta() functions.\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#irate\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#idelta\nbuiltin instantRate\n\n// labelReplace implements functionality equivalent to PromQL's label_replace() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#label_replace\nbuiltin labelReplace\n\n// linearRegression implements linear regression functionality required to implement\n// PromQL's deriv() and predict_linear() functions:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#deriv\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#predict_linear\nbuiltin linearRegression\n\n// minute() implements functionality equivalent to PromQL's minute() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#minute\nbuiltin minute\n\n// month() implements functionality equivalent to PromQL's month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#month\nbuiltin month\n\n// promHistogramQuantile() implements functionality equivalent to PromQL's\n// histogram_quantile() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile\nbuiltin promHistogramQuantile\n\n// resets() implements functionality equivalent to PromQL's resets() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#resets\nbuiltin resets\n\n// timestamp() implements functionality equivalent to PromQL's timestamp() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#timestamp\nbuiltin timestamp\n\n// year() implements functionality equivalent to PromQL's year() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#year\nbuiltin year\n\n// hack to simulate an imported promql package\npromql = {\n  dayOfMonth:dayOfMonth,\n  dayOfWeek:dayOfWeek,\n  daysInMonth:daysInMonth,\n  hour:hour,\n  minute:minute,\n  month:month,\n  year:year,\n}",
+				Source: "package promql\n\n// changes() implements functionality equivalent to PromQL's changes() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#changes\nbuiltin changes\n\n// promqlDayOfMonth() implements functionality equivalent to PromQL's day_of_month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_month\nbuiltin promqlDayOfMonth\n\n// promqlDayOfWeek() implements functionality equivalent to PromQL's day_of_week() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_week\nbuiltin promqlDayOfWeek\n\n// promqlDaysInMonth() implements functionality equivalent to PromQL's days_in_month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#days_in_month\nbuiltin promqlDaysInMonth\n\n// emptyTable() returns an empty table, which is used as a helper function to implement\n// PromQL's time() and vector() functions:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#time\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#vector\nbuiltin emptyTable\n\n// extrapolatedRate() is a helper function that calculates extrapolated rates over\n// counters and is used to implement PromQL's rate(), delta(), and increase() functions.\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#rate\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#increase\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#delta\nbuiltin extrapolatedRate\n\n// holtWinters() implements functionality equivalent to PromQL's holt_winters()\n// function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#holt_winters\nbuiltin holtWinters\n\n// promqlHour() implements functionality equivalent to PromQL's hour() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#hour\nbuiltin promqlHour\n\n// instantRate() is a helper function that calculates instant rates over\n// counters and is used to implement PromQL's irate() and idelta() functions.\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#irate\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#idelta\nbuiltin instantRate\n\n// labelReplace implements functionality equivalent to PromQL's label_replace() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#label_replace\nbuiltin labelReplace\n\n// linearRegression implements linear regression functionality required to implement\n// PromQL's deriv() and predict_linear() functions:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#deriv\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#predict_linear\nbuiltin linearRegression\n\n// minute() implements functionality equivalent to PromQL's minute() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#minute\nbuiltin promqlMinute\n\n// month() implements functionality equivalent to PromQL's month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#month\nbuiltin promqlMonth\n\n// promHistogramQuantile() implements functionality equivalent to PromQL's\n// histogram_quantile() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile\nbuiltin promHistogramQuantile\n\n// resets() implements functionality equivalent to PromQL's resets() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#resets\nbuiltin resets\n\n// timestamp() implements functionality equivalent to PromQL's timestamp() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#timestamp\nbuiltin timestamp\n\n// year() implements functionality equivalent to PromQL's year() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#year\nbuiltin promqlYear\n\n// hack to simulate an imported promql package\npromql = {\n  promqlDayOfMonth:promqlDayOfMonth,\n  promqlDayOfWeek:promqlDayOfWeek,\n  promqlDaysInMonth:promqlDaysInMonth,\n  promqlHour:promqlHour,\n  promqlMinute:promqlMinute,\n  promqlMonth:promqlMonth,\n  promqlYear:promqlYear,\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -71,11 +71,11 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 19,
+						Column: 25,
 						Line:   11,
 					},
 					File:   "promql.flux",
-					Source: "builtin dayOfMonth",
+					Source: "builtin promqlDayOfMonth",
 					Start: ast.Position{
 						Column: 1,
 						Line:   11,
@@ -87,29 +87,29 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 19,
+							Column: 25,
 							Line:   11,
 						},
 						File:   "promql.flux",
-						Source: "dayOfMonth",
+						Source: "promqlDayOfMonth",
 						Start: ast.Position{
 							Column: 9,
 							Line:   11,
 						},
 					},
 				},
-				Name: "dayOfMonth",
+				Name: "promqlDayOfMonth",
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 18,
+						Column: 24,
 						Line:   16,
 					},
 					File:   "promql.flux",
-					Source: "builtin dayOfWeek",
+					Source: "builtin promqlDayOfWeek",
 					Start: ast.Position{
 						Column: 1,
 						Line:   16,
@@ -121,29 +121,29 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 18,
+							Column: 24,
 							Line:   16,
 						},
 						File:   "promql.flux",
-						Source: "dayOfWeek",
+						Source: "promqlDayOfWeek",
 						Start: ast.Position{
 							Column: 9,
 							Line:   16,
 						},
 					},
 				},
-				Name: "dayOfWeek",
+				Name: "promqlDayOfWeek",
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 20,
+						Column: 26,
 						Line:   21,
 					},
 					File:   "promql.flux",
-					Source: "builtin daysInMonth",
+					Source: "builtin promqlDaysInMonth",
 					Start: ast.Position{
 						Column: 1,
 						Line:   21,
@@ -155,18 +155,18 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 20,
+							Column: 26,
 							Line:   21,
 						},
 						File:   "promql.flux",
-						Source: "daysInMonth",
+						Source: "promqlDaysInMonth",
 						Start: ast.Position{
 							Column: 9,
 							Line:   21,
 						},
 					},
 				},
-				Name: "daysInMonth",
+				Name: "promqlDaysInMonth",
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -275,11 +275,11 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 13,
+						Column: 19,
 						Line:   47,
 					},
 					File:   "promql.flux",
-					Source: "builtin hour",
+					Source: "builtin promqlHour",
 					Start: ast.Position{
 						Column: 1,
 						Line:   47,
@@ -291,18 +291,18 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 13,
+							Column: 19,
 							Line:   47,
 						},
 						File:   "promql.flux",
-						Source: "hour",
+						Source: "promqlHour",
 						Start: ast.Position{
 							Column: 9,
 							Line:   47,
 						},
 					},
 				},
-				Name: "hour",
+				Name: "promqlHour",
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -411,11 +411,11 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 15,
+						Column: 21,
 						Line:   71,
 					},
 					File:   "promql.flux",
-					Source: "builtin minute",
+					Source: "builtin promqlMinute",
 					Start: ast.Position{
 						Column: 1,
 						Line:   71,
@@ -427,29 +427,29 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 15,
+							Column: 21,
 							Line:   71,
 						},
 						File:   "promql.flux",
-						Source: "minute",
+						Source: "promqlMinute",
 						Start: ast.Position{
 							Column: 9,
 							Line:   71,
 						},
 					},
 				},
-				Name: "minute",
+				Name: "promqlMinute",
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 14,
+						Column: 20,
 						Line:   76,
 					},
 					File:   "promql.flux",
-					Source: "builtin month",
+					Source: "builtin promqlMonth",
 					Start: ast.Position{
 						Column: 1,
 						Line:   76,
@@ -461,18 +461,18 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 14,
+							Column: 20,
 							Line:   76,
 						},
 						File:   "promql.flux",
-						Source: "month",
+						Source: "promqlMonth",
 						Start: ast.Position{
 							Column: 9,
 							Line:   76,
 						},
 					},
 				},
-				Name: "month",
+				Name: "promqlMonth",
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -581,11 +581,11 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 13,
+						Column: 19,
 						Line:   97,
 					},
 					File:   "promql.flux",
-					Source: "builtin year",
+					Source: "builtin promqlYear",
 					Start: ast.Position{
 						Column: 1,
 						Line:   97,
@@ -597,18 +597,18 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 13,
+							Column: 19,
 							Line:   97,
 						},
 						File:   "promql.flux",
-						Source: "year",
+						Source: "promqlYear",
 						Start: ast.Position{
 							Column: 9,
 							Line:   97,
 						},
 					},
 				},
-				Name: "year",
+				Name: "promqlYear",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -619,7 +619,7 @@ var pkgAST = &ast.Package{
 						Line:   108,
 					},
 					File:   "promql.flux",
-					Source: "promql = {\n  dayOfMonth:dayOfMonth,\n  dayOfWeek:dayOfWeek,\n  daysInMonth:daysInMonth,\n  hour:hour,\n  minute:minute,\n  month:month,\n  year:year,\n}",
+					Source: "promql = {\n  promqlDayOfMonth:promqlDayOfMonth,\n  promqlDayOfWeek:promqlDayOfWeek,\n  promqlDaysInMonth:promqlDaysInMonth,\n  promqlHour:promqlHour,\n  promqlMinute:promqlMinute,\n  promqlMonth:promqlMonth,\n  promqlYear:promqlYear,\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   100,
@@ -653,7 +653,7 @@ var pkgAST = &ast.Package{
 							Line:   108,
 						},
 						File:   "promql.flux",
-						Source: "{\n  dayOfMonth:dayOfMonth,\n  dayOfWeek:dayOfWeek,\n  daysInMonth:daysInMonth,\n  hour:hour,\n  minute:minute,\n  month:month,\n  year:year,\n}",
+						Source: "{\n  promqlDayOfMonth:promqlDayOfMonth,\n  promqlDayOfWeek:promqlDayOfWeek,\n  promqlDaysInMonth:promqlDaysInMonth,\n  promqlHour:promqlHour,\n  promqlMinute:promqlMinute,\n  promqlMonth:promqlMonth,\n  promqlYear:promqlYear,\n}",
 						Start: ast.Position{
 							Column: 10,
 							Line:   100,
@@ -665,11 +665,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 24,
+								Column: 36,
 								Line:   101,
 							},
 							File:   "promql.flux",
-							Source: "dayOfMonth:dayOfMonth",
+							Source: "promqlDayOfMonth:promqlDayOfMonth",
 							Start: ast.Position{
 								Column: 3,
 								Line:   101,
@@ -681,18 +681,174 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 13,
+									Column: 19,
 									Line:   101,
 								},
 								File:   "promql.flux",
-								Source: "dayOfMonth",
+								Source: "promqlDayOfMonth",
 								Start: ast.Position{
 									Column: 3,
 									Line:   101,
 								},
 							},
 						},
-						Name: "dayOfMonth",
+						Name: "promqlDayOfMonth",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 36,
+									Line:   101,
+								},
+								File:   "promql.flux",
+								Source: "promqlDayOfMonth",
+								Start: ast.Position{
+									Column: 20,
+									Line:   101,
+								},
+							},
+						},
+						Name: "promqlDayOfMonth",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 34,
+								Line:   102,
+							},
+							File:   "promql.flux",
+							Source: "promqlDayOfWeek:promqlDayOfWeek",
+							Start: ast.Position{
+								Column: 3,
+								Line:   102,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 18,
+									Line:   102,
+								},
+								File:   "promql.flux",
+								Source: "promqlDayOfWeek",
+								Start: ast.Position{
+									Column: 3,
+									Line:   102,
+								},
+							},
+						},
+						Name: "promqlDayOfWeek",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 34,
+									Line:   102,
+								},
+								File:   "promql.flux",
+								Source: "promqlDayOfWeek",
+								Start: ast.Position{
+									Column: 19,
+									Line:   102,
+								},
+							},
+						},
+						Name: "promqlDayOfWeek",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 38,
+								Line:   103,
+							},
+							File:   "promql.flux",
+							Source: "promqlDaysInMonth:promqlDaysInMonth",
+							Start: ast.Position{
+								Column: 3,
+								Line:   103,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 20,
+									Line:   103,
+								},
+								File:   "promql.flux",
+								Source: "promqlDaysInMonth",
+								Start: ast.Position{
+									Column: 3,
+									Line:   103,
+								},
+							},
+						},
+						Name: "promqlDaysInMonth",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 38,
+									Line:   103,
+								},
+								File:   "promql.flux",
+								Source: "promqlDaysInMonth",
+								Start: ast.Position{
+									Column: 21,
+									Line:   103,
+								},
+							},
+						},
+						Name: "promqlDaysInMonth",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   104,
+							},
+							File:   "promql.flux",
+							Source: "promqlHour:promqlHour",
+							Start: ast.Position{
+								Column: 3,
+								Line:   104,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 13,
+									Line:   104,
+								},
+								File:   "promql.flux",
+								Source: "promqlHour",
+								Start: ast.Position{
+									Column: 3,
+									Line:   104,
+								},
+							},
+						},
+						Name: "promqlHour",
 					},
 					Value: &ast.Identifier{
 						BaseNode: ast.BaseNode{
@@ -700,31 +856,31 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 24,
-									Line:   101,
+									Line:   104,
 								},
 								File:   "promql.flux",
-								Source: "dayOfMonth",
+								Source: "promqlHour",
 								Start: ast.Position{
 									Column: 14,
-									Line:   101,
+									Line:   104,
 								},
 							},
 						},
-						Name: "dayOfMonth",
+						Name: "promqlHour",
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 22,
-								Line:   102,
+								Column: 28,
+								Line:   105,
 							},
 							File:   "promql.flux",
-							Source: "dayOfWeek:dayOfWeek",
+							Source: "promqlMinute:promqlMinute",
 							Start: ast.Position{
 								Column: 3,
-								Line:   102,
+								Line:   105,
 							},
 						},
 					},
@@ -733,36 +889,36 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 12,
-									Line:   102,
+									Column: 15,
+									Line:   105,
 								},
 								File:   "promql.flux",
-								Source: "dayOfWeek",
+								Source: "promqlMinute",
 								Start: ast.Position{
 									Column: 3,
-									Line:   102,
+									Line:   105,
 								},
 							},
 						},
-						Name: "dayOfWeek",
+						Name: "promqlMinute",
 					},
 					Value: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 22,
-									Line:   102,
+									Column: 28,
+									Line:   105,
 								},
 								File:   "promql.flux",
-								Source: "dayOfWeek",
+								Source: "promqlMinute",
 								Start: ast.Position{
-									Column: 13,
-									Line:   102,
+									Column: 16,
+									Line:   105,
 								},
 							},
 						},
-						Name: "dayOfWeek",
+						Name: "promqlMinute",
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
@@ -770,13 +926,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   103,
+								Line:   106,
 							},
 							File:   "promql.flux",
-							Source: "daysInMonth:daysInMonth",
+							Source: "promqlMonth:promqlMonth",
 							Start: ast.Position{
 								Column: 3,
-								Line:   103,
+								Line:   106,
 							},
 						},
 					},
@@ -786,17 +942,17 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   103,
+									Line:   106,
 								},
 								File:   "promql.flux",
-								Source: "daysInMonth",
+								Source: "promqlMonth",
 								Start: ast.Position{
 									Column: 3,
-									Line:   103,
+									Line:   106,
 								},
 							},
 						},
-						Name: "daysInMonth",
+						Name: "promqlMonth",
 					},
 					Value: &ast.Identifier{
 						BaseNode: ast.BaseNode{
@@ -804,225 +960,69 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   103,
+									Line:   106,
 								},
 								File:   "promql.flux",
-								Source: "daysInMonth",
+								Source: "promqlMonth",
 								Start: ast.Position{
 									Column: 15,
-									Line:   103,
-								},
-							},
-						},
-						Name: "daysInMonth",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   104,
-							},
-							File:   "promql.flux",
-							Source: "hour:hour",
-							Start: ast.Position{
-								Column: 3,
-								Line:   104,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 7,
-									Line:   104,
-								},
-								File:   "promql.flux",
-								Source: "hour",
-								Start: ast.Position{
-									Column: 3,
-									Line:   104,
-								},
-							},
-						},
-						Name: "hour",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   104,
-								},
-								File:   "promql.flux",
-								Source: "hour",
-								Start: ast.Position{
-									Column: 8,
-									Line:   104,
-								},
-							},
-						},
-						Name: "hour",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 16,
-								Line:   105,
-							},
-							File:   "promql.flux",
-							Source: "minute:minute",
-							Start: ast.Position{
-								Column: 3,
-								Line:   105,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 9,
-									Line:   105,
-								},
-								File:   "promql.flux",
-								Source: "minute",
-								Start: ast.Position{
-									Column: 3,
-									Line:   105,
-								},
-							},
-						},
-						Name: "minute",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 16,
-									Line:   105,
-								},
-								File:   "promql.flux",
-								Source: "minute",
-								Start: ast.Position{
-									Column: 10,
-									Line:   105,
-								},
-							},
-						},
-						Name: "minute",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 14,
-								Line:   106,
-							},
-							File:   "promql.flux",
-							Source: "month:month",
-							Start: ast.Position{
-								Column: 3,
-								Line:   106,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 8,
-									Line:   106,
-								},
-								File:   "promql.flux",
-								Source: "month",
-								Start: ast.Position{
-									Column: 3,
 									Line:   106,
 								},
 							},
 						},
-						Name: "month",
+						Name: "promqlMonth",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   107,
+							},
+							File:   "promql.flux",
+							Source: "promqlYear:promqlYear",
+							Start: ast.Position{
+								Column: 3,
+								Line:   107,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 13,
+									Line:   107,
+								},
+								File:   "promql.flux",
+								Source: "promqlYear",
+								Start: ast.Position{
+									Column: 3,
+									Line:   107,
+								},
+							},
+						},
+						Name: "promqlYear",
 					},
 					Value: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
+									Column: 24,
+									Line:   107,
+								},
+								File:   "promql.flux",
+								Source: "promqlYear",
+								Start: ast.Position{
 									Column: 14,
-									Line:   106,
-								},
-								File:   "promql.flux",
-								Source: "month",
-								Start: ast.Position{
-									Column: 9,
-									Line:   106,
-								},
-							},
-						},
-						Name: "month",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   107,
-							},
-							File:   "promql.flux",
-							Source: "year:year",
-							Start: ast.Position{
-								Column: 3,
-								Line:   107,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 7,
-									Line:   107,
-								},
-								File:   "promql.flux",
-								Source: "year",
-								Start: ast.Position{
-									Column: 3,
 									Line:   107,
 								},
 							},
 						},
-						Name: "year",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   107,
-								},
-								File:   "promql.flux",
-								Source: "year",
-								Start: ast.Position{
-									Column: 8,
-									Line:   107,
-								},
-							},
-						},
-						Name: "year",
+						Name: "promqlYear",
 					},
 				}},
 				With: nil,

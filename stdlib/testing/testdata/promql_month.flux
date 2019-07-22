@@ -31,10 +31,10 @@ outData = "
 ,,0,2018-12-08T20:00:00Z,metric_name,12
 "
 
-t_month = (table=<-) =>
+t_promqlMonth = (table=<-) =>
 	(table
 	  |> promql.timestamp()
-		|> map(fn: (r) => ({r with _value: promql.month(timestamp: r._value)})))
+		|> map(fn: (r) => ({r with _value: promql.promqlMonth(timestamp: r._value)})))
 
-test _month = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_month})
+test _promqlMonth = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_promqlMonth})

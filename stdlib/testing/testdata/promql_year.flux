@@ -31,10 +31,10 @@ outData = "
 ,,0,2023-12-08T20:00:00Z,metric_name,2023
 "
 
-t_year = (table=<-) =>
+t_promqlYear = (table=<-) =>
 	(table
 	  |> promql.timestamp()
-		|> map(fn: (r) => ({r with _value: promql.year(timestamp: r._value)})))
+		|> map(fn: (r) => ({r with _value: promql.promqlYear(timestamp: r._value)})))
 
-test _year = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_year})
+test _promqlYear = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_promqlYear})
