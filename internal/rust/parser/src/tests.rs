@@ -6072,6 +6072,28 @@ fn invalid_expression_in_array() {
     )
 }
 
+#[test]
+fn integer_literal_overflow() {
+    let mut p = Parser::new(r#"100000000000000000000000000000"#);
+    let parsed = p.parse_file("".to_string());
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode { errors: vec![] },
+            name: "".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Expr(ExpressionStatement {
+                base: BaseNode { errors: vec![] },
+                expression: Int(IntegerLiteral {
+                    base: BaseNode { errors: vec!["invalid integer literal \"100000000000000000000000000000\": value out of range".to_string()] },
+                    value: 0,
+                })
+            })]
+        },
+    )
+}
+
 // TODO(affo): that error is injected by ast.Check().
 #[test]
 fn multiple_idents_in_parens() {
