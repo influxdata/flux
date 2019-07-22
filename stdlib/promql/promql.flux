@@ -65,12 +65,12 @@ builtin labelReplace
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#predict_linear
 builtin linearRegression
 
-// minute() implements functionality equivalent to PromQL's minute() function:
+// promqlMinute() implements functionality equivalent to PromQL's minute() function:
 //
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#minute
 builtin promqlMinute
 
-// month() implements functionality equivalent to PromQL's month() function:
+// promqlMonth() implements functionality equivalent to PromQL's month() function:
 //
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#month
 builtin promqlMonth
@@ -91,7 +91,7 @@ builtin resets
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#timestamp
 builtin timestamp
 
-// year() implements functionality equivalent to PromQL's year() function:
+// promqlYear() implements functionality equivalent to PromQL's year() function:
 //
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#year
 builtin promqlYear
