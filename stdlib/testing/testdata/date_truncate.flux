@@ -33,6 +33,8 @@ outData = "
 
 t_time_truncate = (table=<-) =>
 	(table
+	    |> range(start: 2018-05-22T19:53:00.000000000Z)
+        |> drop(columns: ["_start", "_stop"])
 		|> map(fn: (r) => ({r with _time: date.truncate(t: r._time, unit: 1h)})))
 
 test _time_truncate = () =>
