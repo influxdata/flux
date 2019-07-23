@@ -2,13 +2,14 @@ package universe_test
 
 import (
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
-	"testing"
-	"time"
 )
 
 func TestMovingAverageOperation_Marshaling(t *testing.T) {

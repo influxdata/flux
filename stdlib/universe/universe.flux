@@ -15,6 +15,7 @@ builtin columns
 builtin count
 builtin covariance
 builtin cumulativeSum
+builtin doubleExponentialMovingAverage
 builtin derivative
 builtin difference
 builtin distinct
@@ -266,3 +267,5 @@ toUInt     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._v
 toFloat    = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))
 toBool     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))
 toTime     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))
+
+doubleEMA = doubleExponentialMovingAverage

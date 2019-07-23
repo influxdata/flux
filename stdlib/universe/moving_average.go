@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/stdlib/universe/moving_average"
 	"github.com/influxdata/flux/values"
 )
 
@@ -199,15 +200,15 @@ func (t *movingAverageTransformation) Process(id execute.DatasetID, tbl flux.Tab
 			var err error
 			switch c.Type {
 			case flux.TBool:
-				err = t.passThrough(&arrayContainer{cr.Bools(j)}, builder, j)
+				err = t.passThrough(&moving_average.ArrayContainer{Array: cr.Bools(j)}, builder, j)
 			case flux.TInt:
-				err = t.doNumeric(&arrayContainer{cr.Ints(j)}, builder, j, doMovingAverage[j])
+				err = t.doNumeric(&moving_average.ArrayContainer{Array: cr.Ints(j)}, builder, j, doMovingAverage[j])
 			case flux.TUInt:
-				err = t.doNumeric(&arrayContainer{cr.UInts(j)}, builder, j, doMovingAverage[j])
+				err = t.doNumeric(&moving_average.ArrayContainer{Array: cr.UInts(j)}, builder, j, doMovingAverage[j])
 			case flux.TFloat:
-				err = t.doNumeric(&arrayContainer{cr.Floats(j)}, builder, j, doMovingAverage[j])
+				err = t.doNumeric(&moving_average.ArrayContainer{Array: cr.Floats(j)}, builder, j, doMovingAverage[j])
 			case flux.TString:
-				err = t.passThrough(&arrayContainer{cr.Strings(j)}, builder, j)
+				err = t.passThrough(&moving_average.ArrayContainer{Array: cr.Strings(j)}, builder, j)
 			case flux.TTime:
 				err = t.passThroughTime(cr.Times(j), builder, j)
 			}
@@ -259,7 +260,7 @@ func (t *movingAverageTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
 }
 
-func (t *movingAverageTransformation) passThrough(vs *arrayContainer, b execute.TableBuilder, bj int) error {
+func (t *movingAverageTransformation) passThrough(vs *moving_average.ArrayContainer, b execute.TableBuilder, bj int) error {
 	t.notEmpty[bj] = true
 	j := 0
 
@@ -300,7 +301,7 @@ func (t *movingAverageTransformation) passThrough(vs *arrayContainer, b execute.
 	return nil
 }
 
-func (t *movingAverageTransformation) doNumeric(vs *arrayContainer, b execute.TableBuilder, bj int, doMovingAverage bool) error {
+func (t *movingAverageTransformation) doNumeric(vs *moving_average.ArrayContainer, b execute.TableBuilder, bj int, doMovingAverage bool) error {
 	if !doMovingAverage {
 		return t.passThrough(vs, b, bj)
 	}
