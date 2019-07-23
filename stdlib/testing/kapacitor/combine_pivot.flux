@@ -8,7 +8,7 @@ inData = "
 #datatype,string,long,string,dateTime:RFC3339,double,string
 #group,false,false,true,false,false,true
 #default,_result,,,,,
-,result,table,_measurement,_time,_value,user
+,result,table,_measurement,_time,_value,_field
 ,,0,memory,2018-12-19T22:13:30Z,1,user1
 ,,0,memory,2018-12-19T22:13:40Z,5,user1
 ,,0,memory,2018-12-19T22:13:50Z,3,user1
@@ -38,7 +38,9 @@ outData = "
 
 t_combine_join = (table=<-) =>
     (table
-		|> pivot(rowKey:["_time", "_measurement"], columnKey: ["user"], valueColumn: "_value"))
+        |> range(start: 2018-12-15T00:00:00Z)
+        |> drop(columns: ["_start", "_stop"])
+		|> pivot(rowKey:["_time", "_measurement"], columnKey: ["_field"], valueColumn: "_value"))
 
 test _combine_join = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_combine_join})
@@ -49,5 +51,5 @@ test _combine_join = () =>
 // stream
 //    |from()
 //      .measurement('request_latency')
-//    |combine(lambda: "user"=='user1;, lambda: "user"=='f2')
+//    |combine(lambda: "_field"=='user1;, lambda: "_field"=='user2')
 //      .as('user1', 'user2')
