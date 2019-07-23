@@ -3279,6 +3279,67 @@ from(bucket: "telegraf/autogen"):
     |> range(start: -7d)
     |> exponentialMovingAverage(n: 5, columns: ["_value"])
 ```
+
+#### Double Exponential Moving Average
+`doubleExponentialMovingAverage` or `doubleEMA`
+
+Double Exponential Moving Average computes the double exponential moving averages of a series of records
+It is a weighted moving average that gives more weighting to recent data as opposed to older data, with less lag than a single exponential moving average.
+
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| n           | int      | N specifies the number of points to mean.
+| columns     | []string | Columns is list of all columns that `doubleExponentialMovingAverage` should be performed on. Defaults to `["_value"]`.
+
+A double exponential moving average is defined as `DEMA = 2 * EMA_N - EMA of EMA_N`, where
+- `EMA` is an exponential moving average, and
+- `N = n` is the look-back period.
+
+The behavior of the exponential moving averages used for calculating the double exponential moving average is the same as defined for `exponentialMovingAverage`
+
+A proper double exponential moving average requires at least `2 * n - 1` values. If not enough values exist, `doubleExponentialMovingAverage` appends a `NaN` value to the column.
+ 
+ Example:
+ 
+ | _time |   A  |result|
+ |:-----:|:----:|:----:|
+ |  0001 |   1  |   -  |
+ |  0002 |   2  |   -  |
+ |  0003 |   3  |   -  |
+ |  0004 |   4  |   -  |
+ |  0005 |   5  |   -  |
+ |  0006 |   6  |   -  |
+ |  0007 |   7  |   -  |
+ |  0008 |   8  |   -  |
+ |  0009 |   9  |   -  |
+ |  0010 |  10  |   -  |
+ |  0011 |  11  |   -  |
+ |  0012 |  12  |   -  |
+ |  0013 |  13  |   -  |
+ |  0014 |  14  |   -  |
+ |  0015 |  15  |   -  |
+ |  0016 |  14  |   -  |
+ |  0017 |  13  |   -  |
+ |  0018 |  12  |   -  |
+ |  0019 |  11  | 13.57|
+ |  0020 |  10  | 12.70|
+ |  0021 |   9  | 11.70|
+ |  0022 |   8  | 10.61|
+ |  0023 |   7  | 9.466|
+ |  0024 |   6  | 8.286|
+ |  0025 |   5  | 7.090|
+ |  0026 |   4  | 5.890|
+ |  0027 |   3  | 4.694|
+ |  0028 |   2  | 3.506|
+ |  0029 |   1  | 2.331|
+ 
+Example of script:
+```
+// A 5 point double exponential moving average would be called as such:
+from(bucket: "telegraf/autogen"):
+    |> range(start: -7d)
+    |> doubleExponentialMovingAverage(n: 5, columns: ["_value"])
+```
  
 #### Distinct
 
