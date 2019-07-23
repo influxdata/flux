@@ -32,6 +32,8 @@ outData = "
 
 t_uni_truncate = (table=<-) =>
 	(table
+	    |> range(start: 2018-05-22T19:53:00.000000000Z)
+        |> drop(columns: ["_start", "_stop"])
 		|> truncateTimeColumn(timeColumn: "_time", unit: 1h))
 
 test _uni_truncate = () =>
