@@ -656,6 +656,8 @@ func (c *durationConv) Call(args values.Object) (values.Value, error) {
 		d = values.Duration(v.Int())
 	case semantic.UInt:
 		d = values.Duration(v.UInt())
+	case semantic.Duration:
+		d = v.Duration()
 	default:
 		return nil, fmt.Errorf("cannot convert %v to duration", v.Type())
 	}
