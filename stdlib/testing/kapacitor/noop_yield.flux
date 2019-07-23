@@ -8,7 +8,7 @@ inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string
 #group,false,false,false,false,true,true
 #default,_result,,,,,
-,result,table,_time,_value,_measurement,user
+,result,table,_time,_value,_measurement,_field
 ,,0,2018-05-22T19:53:26Z,0,CPU,user1
 ,,0,2018-05-22T19:53:36Z,1,CPU,user1
 ,,1,2018-05-22T19:53:26Z,4,CPU,user2
@@ -31,7 +31,7 @@ outData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string
 #group,false,false,false,false,true,true
 #default,_result,,,,,
-,result,table,_time,_value,_measurement,user
+,result,table,_time,_value,_measurement,_field
 ,_results,0,2018-05-22T19:53:26Z,0,CPU,user1
 ,_results,0,2018-05-22T19:53:36Z,1,CPU,user1
 ,_results,1,2018-05-22T19:53:26Z,4,CPU,user2
@@ -51,7 +51,9 @@ outData = "
 "
 
 t_noop_yield = (table=<-) =>
-    (table)
+    (table
+        |> range(start: 2018-05-15T00:00:00Z)
+        |> drop(columns: ["_start", "_stop"]))
 // yield() is implicit here
 
 test _noop_yield = () =>
