@@ -545,6 +545,11 @@ func TestTypeconv_Duration(t *testing.T) {
 			want: values.Duration(4000000002),
 		},
 		{
+			name: "duration(v:4s2ns)",
+			v:    values.Duration(4000000002),
+			want: values.Duration(4000000002),
+		},
+		{
 			name:      "duration(error)",
 			v:         "not_a_duration",
 			want:      values.Duration(0),
