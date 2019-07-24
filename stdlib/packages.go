@@ -11,7 +11,6 @@ import (
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/v1"
 	_ "github.com/influxdata/flux/stdlib/kafka"
 	_ "github.com/influxdata/flux/stdlib/math"
-	_ "github.com/influxdata/flux/stdlib/promql"
 	_ "github.com/influxdata/flux/stdlib/regexp"
 	_ "github.com/influxdata/flux/stdlib/socket"
 	_ "github.com/influxdata/flux/stdlib/sql"
