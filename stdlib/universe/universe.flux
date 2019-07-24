@@ -29,6 +29,7 @@ builtin group
 builtin histogram
 builtin histogramQuantile
 builtin holtWinters
+builtin hourSelection
 builtin integral
 builtin join
 builtin keep

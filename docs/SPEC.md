@@ -2187,6 +2187,22 @@ Example:
 
     histogramQuantile(quantile:0.9)  // compute the 90th quantile using histogram data.
 
+#### HourSelection
+
+HourSelection retains all rows in the table within the specified hour range. Hours are specified in military time.
+
+HourSelection has the following properties:
+
+| Name           | Type     | Description                                                                                   |
+| ----           | ----     | -----------                                                                                   |
+| start          | int      | Start is the hour retained data should begin (inclusive).                                     |
+| stop           | int      | Stop is the hour retain data should end (inclusive).                                          |
+| timeColumn     | string   | TimeColumn is the column that HourSelection should parse. Defaults to `_time`.                |
+
+Example:
+
+    hourSelection(start: 9, stop: 17) // retains all data that took place between 9am and 5pm
+
 ##### LinearBins
 
 LinearBins produces a list of linearly separated floats.
