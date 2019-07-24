@@ -61,7 +61,7 @@ outData = "
 double_exponential_moving_average = (table=<-) =>
     (table
         |> range(start:2018-05-22T00:00:00Z)
-        |> doubleExponentialMovingAverage(n:10))
+        |> doubleEMA(n:10))
 
 test _double_exponential_moving_average = () =>
     ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: double_exponential_moving_average})

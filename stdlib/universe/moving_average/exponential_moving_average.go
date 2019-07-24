@@ -208,10 +208,10 @@ func (r *ExponentialMovingAverage) GetEMA(bj int) []interface{} {
 }
 
 // If we don't have enough values for a proper EMA, just append the last value (which is the average of the values so far)
-func (r *ExponentialMovingAverage) Finish(cols []flux.ColMeta, builder execute.TableBuilder, doExponentialMovingAverage []bool) error {
+func (r *ExponentialMovingAverage) Finish(cols []flux.ColMeta, builder execute.TableBuilder, valueIdx int) error {
 	for j := range cols {
 		if !r.periodReached[j] {
-			if !doExponentialMovingAverage[j] {
+			if j != valueIdx {
 				if r.lastVal[j] == nil {
 					if err := builder.AppendNil(j); err != nil {
 						return err
