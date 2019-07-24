@@ -16,6 +16,7 @@ var (
 	floatNullValue  = (*float64)(nil)
 	stringNullValue = (*string)(nil)
 	timeNullValue   = (*values.Time)(nil)
+	durationNullValue = (*values.Duration)(nil)
 )
 
 func TestBinaryOperator(t *testing.T) {
@@ -37,6 +38,9 @@ func TestBinaryOperator(t *testing.T) {
 		// string + string
 		{lhs: "a", op: "+", rhs: "b", want: "ab"},
 		{lhs: "a", op: "+", rhs: stringNullValue, want: nil},
+		// duration + duration
+		{lhs: values.Duration(1), op: "+", rhs: values.Duration(2), want: values.Duration(3)},
+		{lhs: values.Duration(1), op: "+", rhs: durationNullValue, want: nil},
 		// null + null
 		{lhs: nil, op: "+", rhs: nil, want: nil},
 		// int - int
@@ -48,6 +52,9 @@ func TestBinaryOperator(t *testing.T) {
 		// float - float
 		{lhs: 4.5, op: "-", rhs: 8.0, want: -3.5},
 		{lhs: 4.5, op: "-", rhs: floatNullValue, want: nil},
+		// duration - duration
+		{lhs: values.Duration(5), op: "-", rhs: values.Duration(3), want: values.Duration(2)},
+		{lhs: values.Duration(5), op: "-", rhs: durationNullValue, want: nil},
 		// null - null
 		{lhs: nil, op: "-", rhs: nil, want: nil},
 		// int * int
