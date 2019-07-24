@@ -121,13 +121,6 @@ type chandeMomentumOscillatorTransformation struct {
 
 	n       int64
 	columns []string
-
-	i             []int
-	count         []float64
-	pValue        []float64
-	lastVal       []interface{}
-	sumUp		  float64
-	sumDown		  float64
 }
 
 func NewChandeMomentumOscillatorTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ChandeMomentumOscillatorProcedureSpec) *chandeMomentumOscillatorTransformation {
@@ -178,48 +171,70 @@ func (t *chandeMomentumOscillatorTransformation) Process(id execute.DatasetID, t
 		}
 	}
 
-	t.i = make([]int, len(cols))
-	t.count = make([]float64, len(cols))
-	t.pValue = make([]float64, len(cols))
-	t.lastVal = make([]interface{}, len(cols))
-
 	return tbl.Do(func(cr flux.ColReader) error {
 		if cr.Len() == 0 {
 			return nil
 		}
 
 		for j, c := range cr.Cols() {
-			var err error
 			if !doChandeMomentumOscillator[j] {
 				switch c.Type {
 				case flux.TTime:
-					err = builder.AppendTimes(j, cr.Times(j))
+					arr := cr.Times(j)
+					for i := int(t.n); i < arr.Len(); i++ {
+						if err := builder.AppendTime(j, execute.Time(arr.Value(i))); err != nil {
+							return err
+						}
+					}
 				case flux.TBool:
-					err = builder.AppendBools(j, cr.Bools(j))
+					arr := cr.Bools(j)
+					for i := int(t.n); i < arr.Len(); i++ {
+						if err := builder.AppendBool(j, arr.Value(i)); err != nil {
+							return err
+						}
+					}
 				case flux.TString:
-					err = builder.AppendStrings(j, cr.Strings(j))
+					arr := cr.Strings(j)
+					for i := int(t.n); i < arr.Len(); i++ {
+						if err := builder.AppendString(j, arr.ValueString(i)); err != nil {
+							return err
+						}
+					}
 				case flux.TInt:
-					err = builder.AppendInts(j, cr.Ints(j))
+					arr := cr.Ints(j)
+					for i := int(t.n); i < arr.Len(); i++ {
+						if err := builder.AppendInt(j, arr.Value(i)); err != nil {
+							return err
+						}
+					}
 				case flux.TUInt:
-					err = builder.AppendUInts(j, cr.UInts(j))
+					arr := cr.UInts(j)
+					for i := int(t.n); i < arr.Len(); i++ {
+						if err := builder.AppendUInt(j, arr.Value(i)); err != nil {
+							return err
+						}
+					}
 				case flux.TFloat:
-					err = builder.AppendFloats(j, cr.Floats(j))
-				default:
-					err = builder.AppendNil(j)
+					arr := cr.Floats(j)
+					for i := int(t.n); i < arr.Len(); i++ {
+						if err := builder.AppendFloat(j, arr.Value(i)); err != nil {
+							return err
+						}
+					}
 				}
 			} else {
-				err = t.do(cr, c, builder, j)
+				if err := t.do(int(t.n), cr, c, builder, j); err != nil {
+					return err
+				}
 			}
 
-			if err != nil {
-				return err
-			}
+			fmt.Println(builder.NCols(), builder.NRows())
 		}
 		return nil
 	})
 }
 
-func (t *chandeMomentumOscillatorTransformation) do(cr flux.ColReader, c flux.ColMeta, builder execute.TableBuilder, j int) error {
+func (t *chandeMomentumOscillatorTransformation) do(n int, cr flux.ColReader, c flux.ColMeta, builder execute.TableBuilder, j int) error {
 	var sumUp float64
 	var sumDown float64
 	sumUp = 0
@@ -239,10 +254,22 @@ func (t *chandeMomentumOscillatorTransformation) do(cr flux.ColReader, c flux.Co
 			} else if diff < 0 {
 				sumDown -= diff
 			}
-			val := 100 * (sumUp - sumDown) / (sumUp + sumDown)
-			if err := builder.AppendFloat(j, val); err != nil {
-				return err
+
+			if i >= n {
+				val := 100 * (sumUp - sumDown) / (sumUp + sumDown)
+				if err := builder.AppendFloat(j, val); err != nil {
+					return err
+				}
+
+				diffNAgo := float64(arrValues.Value(i-n+1) - arrValues.Value(i-n))
+				if diffNAgo > 0 {
+					sumUp -= diffNAgo
+				} else if diffNAgo < 0 {
+					sumDown += diffNAgo
+				}
 			}
+
+			prev = curr
 		}
 	case flux.TUInt:
 		arrValues := cr.UInts(j)
@@ -257,10 +284,22 @@ func (t *chandeMomentumOscillatorTransformation) do(cr flux.ColReader, c flux.Co
 			} else if diff < 0 {
 				sumDown -= diff
 			}
-			val := 100 * (sumUp - sumDown) / (sumUp + sumDown)
-			if err := builder.AppendFloat(j, val); err != nil {
-				return err
+
+			if i >= n {
+				val := 100 * (sumUp - sumDown) / (sumUp + sumDown)
+				if err := builder.AppendFloat(j, val); err != nil {
+					return err
+				}
+
+				diffNAgo := float64(arrValues.Value(i-n+1) - arrValues.Value(i-n))
+				if diffNAgo > 0 {
+					sumUp -= diffNAgo
+				} else if diffNAgo < 0 {
+					sumDown += diffNAgo
+				}
 			}
+
+			prev = curr
 		}
 	case flux.TFloat:
 		arrValues := cr.Floats(j)
@@ -274,10 +313,22 @@ func (t *chandeMomentumOscillatorTransformation) do(cr flux.ColReader, c flux.Co
 			} else if diff < 0 {
 				sumDown -= diff
 			}
-			val := 100 * (sumUp - sumDown) / (sumUp + sumDown)
-			if err := builder.AppendFloat(j, val); err != nil {
-				return err
+
+			if i >= n {
+				val := 100 * (sumUp - sumDown) / (sumUp + sumDown)
+				if err := builder.AppendFloat(j, val); err != nil {
+					return err
+				}
+
+				diffNAgo := float64(arrValues.Value(i-n+1) - arrValues.Value(i-n))
+				if diffNAgo > 0 {
+					sumUp -= diffNAgo
+				} else if diffNAgo < 0 {
+					sumDown += diffNAgo
+				}
 			}
+
+			prev = curr
 		}
 	}
 
