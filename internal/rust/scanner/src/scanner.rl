@@ -87,6 +87,7 @@
         "*" => { tok = MUL; fbreak; };
         "/" => { tok = DIV; fbreak; };
         "%" => { tok = MOD; fbreak; };
+        "^" => { tok = POW; fbreak; };
         "==" => { tok = EQ; fbreak; };
         "<" => { tok = LT; fbreak; };
         ">" => { tok = GT; fbreak; };

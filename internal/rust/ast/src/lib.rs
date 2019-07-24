@@ -1,3 +1,4 @@
+
 extern crate chrono;
 #[macro_use]
 extern crate serde_derive;
@@ -311,6 +312,8 @@ pub struct FunctionExpression {
 pub enum OperatorKind {
     MultiplicationOperator,
     DivisionOperator,
+    ModuloOperator,
+    PowerOperator,
     AdditionOperator,
     SubtractionOperator,
     LessThanEqualOperator,
@@ -337,6 +340,8 @@ impl ToString for OperatorKind {
         match self {
             OperatorKind::MultiplicationOperator => "*".to_string(),
             OperatorKind::DivisionOperator => "/".to_string(),
+            OperatorKind::ModuloOperator => "%".to_string(),
+            OperatorKind::PowerOperator => "^".to_string(),
             OperatorKind::AdditionOperator => "+".to_string(),
             OperatorKind::SubtractionOperator => "-".to_string(),
             OperatorKind::LessThanEqualOperator => "<=".to_string(),
@@ -374,6 +379,8 @@ impl FromStr for OperatorKind {
         match s {
             "*" => Ok(OperatorKind::MultiplicationOperator),
             "/" => Ok(OperatorKind::DivisionOperator),
+            "%" => Ok(OperatorKind::ModuloOperator),
+            "^" => Ok(OperatorKind::PowerOperator),
             "+" => Ok(OperatorKind::AdditionOperator),
             "-" => Ok(OperatorKind::SubtractionOperator),
             "<=" => Ok(OperatorKind::LessThanEqualOperator),

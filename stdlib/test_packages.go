@@ -8,6 +8,7 @@ import (
 	testdata "github.com/influxdata/flux/stdlib/pandas_tests/testdata"
 	testdata1 "github.com/influxdata/flux/stdlib/strings/testdata"
 	chronograf "github.com/influxdata/flux/stdlib/testing/chronograf"
+	kapacitor "github.com/influxdata/flux/stdlib/testing/kapacitor"
 	testdata2 "github.com/influxdata/flux/stdlib/testing/testdata"
 )
 
@@ -17,6 +18,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, testdata.FluxTestPackages...)
 	pkgs = append(pkgs, testdata1.FluxTestPackages...)
 	pkgs = append(pkgs, chronograf.FluxTestPackages...)
+	pkgs = append(pkgs, kapacitor.FluxTestPackages...)
 	pkgs = append(pkgs, testdata2.FluxTestPackages...)
 	return pkgs
 }()

@@ -3,7 +3,7 @@
     "serve": "webpack-dev-server"
   },
   "dependencies": {
-    "@influxdata/parser": "^0.1.0"
+    "@influxdata/flux-parser": "0.3.0"
   },
   "devDependencies": {
     "webpack": "^4.25.1",

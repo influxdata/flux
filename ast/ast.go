@@ -686,6 +686,7 @@ const (
 	MultiplicationOperator
 	DivisionOperator
 	ModuloOperator
+	PowerOperator
 	AdditionOperator
 	SubtractionOperator
 	LessThanEqualOperator
@@ -1266,6 +1267,7 @@ var OperatorTokens = map[OperatorKind]string{
 	MultiplicationOperator:   "*",
 	DivisionOperator:         "/",
 	ModuloOperator:           "%",
+	PowerOperator:            "^",
 	AdditionOperator:         "+",
 	SubtractionOperator:      "-",
 	LessThanEqualOperator:    "<=",

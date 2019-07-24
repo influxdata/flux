@@ -16,6 +16,7 @@ var (
 	floatNullValue  = (*float64)(nil)
 	stringNullValue = (*string)(nil)
 	timeNullValue   = (*values.Time)(nil)
+	durationNullValue = (*values.Duration)(nil)
 )
 
 func TestBinaryOperator(t *testing.T) {
@@ -23,6 +24,7 @@ func TestBinaryOperator(t *testing.T) {
 		lhs, rhs interface{}
 		op       string
 		want     interface{}
+		wantErr  error
 	}{
 		// int + int
 		{lhs: int64(6), op: "+", rhs: int64(4), want: int64(10)},
@@ -36,6 +38,9 @@ func TestBinaryOperator(t *testing.T) {
 		// string + string
 		{lhs: "a", op: "+", rhs: "b", want: "ab"},
 		{lhs: "a", op: "+", rhs: stringNullValue, want: nil},
+		// duration + duration
+		{lhs: values.Duration(1), op: "+", rhs: values.Duration(2), want: values.Duration(3)},
+		{lhs: values.Duration(1), op: "+", rhs: durationNullValue, want: nil},
 		// null + null
 		{lhs: nil, op: "+", rhs: nil, want: nil},
 		// int - int
@@ -47,6 +52,9 @@ func TestBinaryOperator(t *testing.T) {
 		// float - float
 		{lhs: 4.5, op: "-", rhs: 8.0, want: -3.5},
 		{lhs: 4.5, op: "-", rhs: floatNullValue, want: nil},
+		// duration - duration
+		{lhs: values.Duration(5), op: "-", rhs: values.Duration(3), want: values.Duration(2)},
+		{lhs: values.Duration(5), op: "-", rhs: durationNullValue, want: nil},
 		// null - null
 		{lhs: nil, op: "-", rhs: nil, want: nil},
 		// int * int
@@ -71,6 +79,8 @@ func TestBinaryOperator(t *testing.T) {
 		{lhs: 4.5, op: "/", rhs: floatNullValue, want: nil},
 		// null / null
 		{lhs: nil, op: "/", rhs: nil, want: nil},
+		// int / zero
+		{lhs: int64(8), op: "/", rhs: int64(0), want: nil, wantErr: fmt.Errorf("cannot divide by zero")},
 		// int % int
 		{lhs: int64(10), op: "%", rhs: int64(3), want: int64(1)},
 		{lhs: int64(6), op: "%", rhs: intNullValue, want: nil},
@@ -82,6 +92,19 @@ func TestBinaryOperator(t *testing.T) {
 		{lhs: 4.5, op: "%", rhs: floatNullValue, want: nil},
 		// null * null
 		{lhs: nil, op: "%", rhs: nil, want: nil},
+		// int / zero
+		{lhs: int64(2), op: "%", rhs: int64(0), want: nil, wantErr: fmt.Errorf("cannot mod zero")},
+		// int % int
+		{lhs: int64(2), op: "^", rhs: int64(4), want: float64(16)},
+		{lhs: int64(6), op: "^", rhs: intNullValue, want: nil},
+		// uint * uint
+		{lhs: uint64(3), op: "^", rhs: uint64(2), want: float64(9)},
+		{lhs: uint64(7), op: "^", rhs: uintNullValue, want: nil},
+		// float * float
+		{lhs: 3.8, op: "^", rhs: 2.0, want: 14.44},
+		{lhs: 4.5, op: "^", rhs: floatNullValue, want: nil},
+		// null * null
+		{lhs: nil, op: "^", rhs: nil, want: nil},
 		// int <= int
 		{lhs: int64(6), op: "<=", rhs: int64(4), want: false},
 		{lhs: int64(4), op: "<=", rhs: int64(4), want: true},
@@ -541,8 +564,16 @@ func TestBinaryOperator(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-
-			if want, got := Value(tt.want), fn(left, right); !ValueEqual(want, got) {
+			want := Value(tt.want)
+			got, err := fn(left, right)
+			if tt.wantErr == nil && err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Fatalf("unexpected lack of error, wanted: %s; got: %s", tt.wantErr, err)
+				}
+			} else if !ValueEqual(want, got) {
 				t.Fatalf("unexpected value -want/+got\n\t- %s\n\t+ %s", want, got)
 			}
 		})

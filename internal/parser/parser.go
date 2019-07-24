@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/internal/scanner"
@@ -667,6 +668,9 @@ func (p *parser) parseMultiplicativeOperator() (ast.OperatorKind, bool) {
 	case token.MOD:
 		p.consume()
 		return ast.ModuloOperator, true
+	case token.POW:
+		p.consume()
+		return ast.PowerOperator, true
 	default:
 		return 0, false
 	}
@@ -885,7 +889,21 @@ func (p *parser) parseIdentifier() *ast.Identifier {
 func (p *parser) parseIntLiteral() *ast.IntegerLiteral {
 	pos, lit := p.expect(token.INT)
 	// todo(jsternberg): handle errors.
-	value, _ := strconv.ParseInt(lit, 10, 64)
+	value, err := strconv.ParseInt(lit, 10, 64)
+	if err != nil {
+		// If the error message comes from strconv.ParseInt, we want
+		// to remove the first two parts from the error message as they are
+		// very Go specific and we want a generic error message.
+		msg := err.Error()
+		if strings.HasPrefix(msg, "strconv.ParseInt:") {
+			parts := strings.SplitN(err.Error(), ": ", 3)
+			msg = parts[len(parts)-1]
+		}
+		p.error(fmt.Sprintf("invalid integer literal %q: %s", lit, msg))
+
+		// Reset this to zero for consistency with the Rust implementation.
+		value = 0
+	}
 	return &ast.IntegerLiteral{
 		Value:    value,
 		BaseNode: p.posRange(pos, len(lit)),
@@ -913,12 +931,9 @@ func (p *parser) parseStringLiteral() *ast.StringLiteral {
 
 func (p *parser) parseRegexpLiteral() *ast.RegexpLiteral {
 	pos, lit := p.expect(token.REGEX)
-	// todo(jsternberg): handle errors.
 	value, err := ParseRegexp(lit)
 	if err != nil {
-		p.errs = append(p.errs, ast.Error{
-			Msg: err.Error(),
-		})
+		p.error(err.Error())
 	}
 	return &ast.RegexpLiteral{
 		Value:    value,
@@ -1481,6 +1496,12 @@ func (p *parser) baseNode(loc *ast.SourceLocation) ast.BaseNode {
 	}
 	p.errs = nil
 	return bnode
+}
+
+func (p *parser) error(msg string) {
+	p.errs = append(p.errs, ast.Error{
+		Msg: msg,
+	})
 }
 
 // locStart is a utility method for retrieving the start position

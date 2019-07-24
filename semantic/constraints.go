@@ -185,6 +185,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			ast.SubtractionOperator,
 			ast.MultiplicationOperator,
 			ast.DivisionOperator,
+			ast.PowerOperator,
 			ast.ModuloOperator:
 			v.cs.AddTypeConst(l, r, n.Location())
 			return l, nil

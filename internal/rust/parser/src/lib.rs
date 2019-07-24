@@ -11,9 +11,10 @@ use wasm_bindgen::prelude::*;
 mod strconv;
 
 #[wasm_bindgen]
-pub fn js_parse(s: &str) -> JsValue {
+pub fn parse(s: &str) -> JsValue {
     let mut p = Parser::new(s);
-    let file = p.parse_file(String::from("tmp.flux"));
+    let file = p.parse_file(String::from(""));
+
     return JsValue::from_serde(&file).unwrap();
 }
 
@@ -58,6 +59,7 @@ fn format_token(t: T) -> &'static str {
         T_MUL => "MUL",
         T_DIV => "DIV",
         T_MOD => "MOD",
+        T_POW => "POW",
         T_EQ => "EQ",
         T_LT => "LT",
         T_GT => "GT",
@@ -751,6 +753,8 @@ impl Parser {
         match t {
             T_MUL => res = Some(OperatorKind::MultiplicationOperator),
             T_DIV => res = Some(OperatorKind::DivisionOperator),
+            T_MOD => res = Some(OperatorKind::ModuloOperator),
+            T_POW => res = Some(OperatorKind::PowerOperator),
             _ => (),
         }
         match res {
@@ -948,13 +952,21 @@ impl Parser {
             name: t.lit,
         };
     }
-    // TODO(affo): handle errors for literals.
     fn parse_int_literal(&mut self) -> IntegerLiteral {
         let t = self.expect(T_INT);
-        return IntegerLiteral {
-            base: self.base_node(),
-            value: (&t.lit).parse::<i64>().unwrap(),
-        };
+        match (&t.lit).parse::<i64>() {
+            Err(_e) => {
+                self.errs.push(format!("invalid integer literal \"{}\": value out of range", t.lit));
+                IntegerLiteral {
+                    base: self.base_node(),
+                    value: 0,
+                }
+            }
+            Ok(v) => IntegerLiteral {
+                base: self.base_node(),
+                value: v,
+            }
+        }
     }
     fn parse_float_literal(&mut self) -> FloatLiteral {
         let t = self.expect(T_FLOAT);

@@ -1,6 +1,7 @@
 package universe
 
 import "system"
+import "date"
 
 // now is a function option whose default behaviour is to return the current system time
 option now = system.time
@@ -14,6 +15,7 @@ builtin columns
 builtin count
 builtin covariance
 builtin cumulativeSum
+builtin doubleExponentialMovingAverage
 builtin derivative
 builtin difference
 builtin distinct
@@ -81,7 +83,7 @@ builtin inf
 builtin length // length function for arrays
 builtin linearBins
 builtin logarithmicBins
-builtin sleep // sleep is the identity function with the side effect of delaying execution by a specified duration.
+builtin sleep // sleep is the identity function with the side effect of delaying execution by a specified duration
 
 // covariance function with automatic join
 cov = (x,y,on,pearsonr=false) =>
@@ -253,9 +255,17 @@ timedMovingAverage = (every, period, column="_value", tables=<-) =>
         |> duplicate(column: "_stop", as: "_time")
         |> window(every: inf)
 
+// truncateTimeColumn takes in a time column t and a Duration unit and truncates each value of t to the given unit via map
+// Change from _time to timeColumn once https://github.com/influxdata/flux/issues/1122 is resolved
+truncateTimeColumn = (timeColumn="_time", unit, tables=<-) =>
+    tables
+        |> map(fn:(r) => ({r with _time: date.truncate(t: r._time, unit: unit)}))
+
 toString   = (tables=<-) => tables |> map(fn:(r) => ({r with _value: string(v:r._value)}))
 toInt      = (tables=<-) => tables |> map(fn:(r) => ({r with _value: int(v:r._value)}))
 toUInt     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._value)}))
 toFloat    = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))
 toBool     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))
 toTime     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))
+
+doubleEMA = doubleExponentialMovingAverage

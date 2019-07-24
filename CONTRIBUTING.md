@@ -24,6 +24,28 @@ We really like to receive feature requests as they help us prioritize our work.
 Please be clear about your requirements. Incomplete feature requests may simply
 be closed if we don't understand what you would like to see added to Flux.
 
+## Contributing to the source code
+Flux uses Go modules and requires modules to be enabled to build from source.
+Please refer to the Go documentation on [modules](https://golang.org/cmd/go/#hdr-Modules__module_versions__and_more) for more information about how to enable module builds.
+To build and test the software, the following developer dependencies are required:
+
+* Go 1.12 or higher
+* Rust
+* Ragel 6.10 (only if making changes to the scanner)
+
+Flux follows the standard Go project structure
+
+To run all tests, `make test` can be called from the root directory.
+
+In addition to the `Makefile`, Flux supports building and testing with the standard Go tools and commands.
+If you are modifying only Go code and want to only test Go code, the standard commands can be used.
+
+```bash
+$ go test ./...
+```
+
+If you use `go generate` on the scanner package, then the Ragel version above is needed to correctly generate the files.
+
 ## Submitting a pull request
 To submit a pull request you should fork the Flux repository and make your change
 on a feature branch of your fork. Then generate a pull request from your branch
