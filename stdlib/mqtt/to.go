@@ -206,7 +206,6 @@ func (o *ToMQTTOpSpec) ReadArgs(args flux.Arguments) error {
 		}
 		sort.Strings(o.ValueColumns)
 	}
-	fmt.Println("MQTT Options set")
 	return err
 }
 
@@ -218,7 +217,6 @@ func createToMQTTOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 	if err := s.ReadArgs(args); err != nil {
 		return nil, err
 	}
-	fmt.Println("MQTT Created")
 	return s, nil
 }
 
@@ -234,7 +232,6 @@ func (o *ToMQTTOpSpec) UnmarshalJSON(b []byte) (err error) {
 	if !(u.Scheme == "tcp" || u.Scheme == "ws" || u.Scheme == "tls") {
 		return fmt.Errorf("scheme must be tcp or ws or tls but was %s", u.Scheme)
 	}
-	fmt.Println("MQTT Unmarshall")
 	return nil
 }
 
@@ -269,7 +266,6 @@ func (o *ToMQTTProcedureSpec) Copy() plan.ProcedureSpec {
 			ValueColumns: append([]string(nil), s.ValueColumns...),
 		},
 	}
-	fmt.Println("MQTT Copy")
 	return res
 }
 
@@ -278,7 +274,6 @@ func newToMQTTProcedure(qs flux.OperationSpec, a plan.Administration) (plan.Proc
 	if !ok && spec != nil {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
 	}
-	fmt.Println("MQTT Procedure")
 	return &ToMQTTProcedureSpec{Spec: spec}, nil
 }
 
@@ -290,7 +285,6 @@ func createToMQTTTransformation(id execute.DatasetID, mode execute.AccumulationM
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
 	t := NewToMQTTTransformation(d, cache, s)
-	fmt.Println("MQTT Transformation")
 	return t, d, nil
 }
 
@@ -346,7 +340,6 @@ type idxType struct {
 
 func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	// set up the MQTT options.
-	fmt.Println("Start MQTT Process")
 	opts := MQTT.NewClientOptions().AddBroker(t.spec.Spec.Broker)
 	if len(t.spec.Spec.ClientID) > 0 {
 		opts.SetClientID(t.spec.Spec.ClientID)
@@ -423,7 +416,6 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 
 	var wg syncutil.WaitGroup
 	wg.Do(func() error {
-		fmt.Println("Process.Do")
 		m.name = t.spec.Spec.Name
 		err := tbl.Do(func(er flux.ColReader) error {
 			l := er.Len()
@@ -486,7 +478,7 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	}
 	p := make([]byte, 2024)
 	var message strings.Builder
-	lines := 0
+	//lines := 0
 	// messages come in as triples: measurement & tags, values, timestamp
 	// put them all together and you have line-protocol!
 	for {
@@ -500,23 +492,26 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 			return err
 		}
 		message.WriteString(string(p[:n])) // handle leftovers
-		lines += 1
-		if lines > 2 { // post message after full row is read.
-			if len(mqttTopic) <= 0 { // No topic set? Create topic out of tags
-				mqttTopic = m.createTopic(message.String())
-			}
-			if t.spec.Spec.Format == "JSON" { // format message as a JSON
-				message = m.formatJSON(message.String())
-			}
-			token := client.Publish(mqttTopic, 0, false, message.String())
-			token.Wait()
-			lines = 0
-			message.Reset()
-		}
+		//lines += 1
+		//if lines > 2 { // post message after full row is read.
+		//if len(mqttTopic) <= 0 { // No topic set? Create topic out of tags
+		//	mqttTopic = m.createTopic(message.String())
+		//}
+		//if t.spec.Spec.Format == "JSON" { // format message as a JSON
+		//	message = m.formatJSON(message.String())
+		//}
+		//	token := client.Publish(mqttTopic, 0, false, message.String())
+		//	token.Wait()
+		//	lines = 0
+		//	message.Reset()
+		//}
 	}
 	if len(message.String()) > 0 { // if any leftover messages are there, write them out.
 		if len(mqttTopic) <= 0 { // create topic out of tags
 			mqttTopic = m.createTopic(message.String())
+		}
+		if t.spec.Spec.Format == "JSON" { // format message as a JSON
+			message = m.formatJSON(message.String())
 		}
 		token := client.Publish(mqttTopic, 0, false, message.String())
 		token.Wait()
@@ -526,7 +521,6 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		return err
 	}
 	client.Disconnect(250)
-	fmt.Println("Process.Done")
 	return nil
 
 }
