@@ -15,12 +15,20 @@ pub struct Scanner {
     token: T,
     ts: u32,
     te: u32,
+    lines: Vec<u32>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Position {
+    pub line: u32,
+    pub column: u32,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Token {
     pub tok: T,
     pub lit: String,
+    pub pos: u32,
 }
 
 impl Scanner {
@@ -37,6 +45,7 @@ impl Scanner {
             eof: end,
             ts: 0,
             te: 0,
+            lines: vec![0],
             token: T_ILLEGAL,
             checkpoint: ptr,
         };
@@ -52,15 +61,38 @@ impl Scanner {
         self._scan(true)
     }
 
+    pub fn pos(&self, offset: u32) -> Position {
+        // first, find the correct line for `offset`
+        let line = search(&self.lines, &offset);
+        let line_offset = self
+            .lines
+            .get(line)
+            .expect("the value returned is always in the vector");
+        let real_offset = offset - line_offset;
+        Position {
+            // start from 1 for humans
+            line: line as u32 + 1,
+            // start from 1 for humans
+            column: real_offset + 1,
+        }
+    }
+
+    fn eof(&self) -> Token {
+        Token {
+            tok: T_EOF,
+            lit: String::from(""),
+            pos: self.te,
+        }
+    }
+
     fn _scan(&mut self, with_regex: bool) -> Token {
         if self.p == self.eof {
-            return Token {
-                tok: T_EOF,
-                lit: String::from(""),
-            };
+            return self.eof();
         }
         self.checkpoint = self.p;
         unsafe {
+            let mut newlines: *const u32 = std::ptr::null();
+            let mut no_newlines = 0 as u32;
             let error = scan(
                 if with_regex { 1 } else { 0 },
                 &mut self.p as *mut *const CChar,
@@ -70,6 +102,8 @@ impl Scanner {
                 &mut self.token as *mut u32,
                 &mut self.ts as *mut u32,
                 &mut self.te as *mut u32,
+                &mut newlines as *mut *const u32,
+                &mut no_newlines as *mut u32,
             );
             if error != 0 {
                 // Execution failed meaning we hit a pattern that we don't support and
@@ -86,32 +120,34 @@ impl Scanner {
                         return Token {
                             tok: T_ILLEGAL,
                             lit: nc.to_string(),
+                            pos: self.ts,
                         };
                     }
                     // This should be impossible as we would have produced an EOF token
                     // instead, but going to handle this anyway as in this impossible scenario
                     // we would enter an infinite loop if we continued scanning past the token.
-                    None => {
-                        return Token {
-                            tok: T_EOF,
-                            lit: String::from(""),
-                        }
-                    }
+                    None => return self.eof(),
                 }
             }
+            // No error, we can process the returned values normally.
+            // Append the lines.
+            if !newlines.is_null() {
+                let mut newlines =
+                    std::slice::from_raw_parts(newlines, no_newlines as usize).to_owned();
+                self.lines.append(&mut newlines);
+            }
+            // Now work on the token.
             if self.token == T_ILLEGAL && self.p == self.eof {
-                return Token {
-                    tok: T_EOF,
-                    lit: String::from(""),
-                };
+                return self.eof();
             }
             let t = Token {
                 tok: self.token,
                 lit: String::from(str::from_utf8_unchecked(
                     &self.data.as_bytes()[(self.ts as usize)..(self.te as usize)],
                 )),
+                pos: self.ts,
             };
-            // skipping comments.
+            // Skipping comments.
             // TODO(affo): return comments to attach them to nodes within the AST.
             match t {
                 Token { tok: T_COMMENT, .. } => self.scan(),
@@ -129,424 +165,25 @@ impl Scanner {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::ffi::CString;
-    #[test]
-    fn test_scan() {
-        let text = "from(bucket:\"foo\") |> range(start: -1m)";
-        let cdata = CString::new(text).expect("CString::new failed");
-        let mut s = Scanner::new(cdata);
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_IDENT,
-                lit: String::from("from"),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_LPAREN,
-                lit: String::from("("),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_IDENT,
-                lit: String::from("bucket"),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_COLON,
-                lit: String::from(":"),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_STRING,
-                lit: String::from("\"foo\""),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_RPAREN,
-                lit: String::from(")"),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_PIPE_FORWARD,
-                lit: String::from("|>"),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_IDENT,
-                lit: String::from("range"),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_LPAREN,
-                lit: String::from("("),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_IDENT,
-                lit: String::from("start"),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_COLON,
-                lit: String::from(":"),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_SUB,
-                lit: String::from("-"),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_DURATION,
-                lit: String::from("1m"),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_RPAREN,
-                lit: String::from(")"),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_EOF,
-                lit: String::from(""),
-            }
-        );
+// This is a binary search that finds the index `i` such that:
+// `vs[i] <= v < vs[i+1]` (if we think of `vs` as an array).
+fn search(vs: &Vec<u32>, v: &u32) -> usize {
+    let mut i: usize = 0;
+    let mut j = vs.len();
+    while i < j {
+        let h = i + (j - i) / 2;
+        if *vs
+            .get(h)
+            .expect("this should never happen because i ≤ h < j")
+            <= *v
+        {
+            i = h + 1;
+        } else {
+            j = h;
+        }
     }
-
-    #[test]
-    fn test_scan_with_regex() {
-        let text = "a + b =~ /.*[0-9]/ / 2";
-        let cdata = CString::new(text).expect("CString::new failed");
-        let mut s = Scanner::new(cdata);
-        assert_eq!(
-            s.scan_with_regex(),
-            Token {
-                tok: T_IDENT,
-                lit: String::from("a"),
-            }
-        );
-        assert_eq!(
-            s.scan_with_regex(),
-            Token {
-                tok: T_ADD,
-                lit: String::from("+"),
-            }
-        );
-        assert_eq!(
-            s.scan_with_regex(),
-            Token {
-                tok: T_IDENT,
-                lit: String::from("b"),
-            }
-        );
-        assert_eq!(
-            s.scan_with_regex(),
-            Token {
-                tok: T_REGEXEQ,
-                lit: String::from("=~"),
-            }
-        );
-        assert_eq!(
-            s.scan_with_regex(),
-            Token {
-                tok: T_REGEX,
-                lit: String::from("/.*[0-9]/"),
-            }
-        );
-        assert_eq!(
-            s.scan_with_regex(),
-            Token {
-                tok: T_DIV,
-                lit: String::from("/"),
-            }
-        );
-        assert_eq!(
-            s.scan_with_regex(),
-            Token {
-                tok: T_INT,
-                lit: String::from("2"),
-            }
-        );
-    }
-
-    #[test]
-    fn test_scan_unread() {
-        let text = "1 / 2 / 3";
-        let cdata = CString::new(text).expect("CString::new failed");
-        let mut s = Scanner::new(cdata);
-        assert_eq!(
-            s.scan_with_regex(),
-            Token {
-                tok: T_INT,
-                lit: String::from("1"),
-            }
-        );
-        s.unread();
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_INT,
-                lit: String::from("1"),
-            }
-        );
-
-        assert_eq!(
-            s.scan_with_regex(),
-            Token {
-                tok: T_REGEX,
-                lit: String::from("/ 2 /"),
-            }
-        );
-        s.unread();
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_DIV,
-                lit: String::from("/"),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_INT,
-                lit: String::from("2"),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_DIV,
-                lit: String::from("/"),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_INT,
-                lit: String::from("3"),
-            }
-        );
-        // test unread idempotence
-        s.unread();
-        s.unread();
-        s.unread();
-        s.unread();
-
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_INT,
-                lit: String::from("3"),
-            }
-        );
-    }
-
-    #[test]
-    fn test_scan_comments() {
-        let text = r#"// this is a comment.
-a
-// comment with // nested comment.
-// one more.
-// last but not least.
-1
-// ok, that's it."#;
-        let cdata = CString::new(text).expect("CString::new failed");
-        let mut s = Scanner::new(cdata);
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_IDENT,
-                lit: String::from("a"),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_INT,
-                lit: String::from("1"),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_EOF,
-                lit: String::from(""),
-            }
-        );
-
-        // with regex
-        let cdata = CString::new(text).expect("CString::new failed");
-        let mut s = Scanner::new(cdata);
-        assert_eq!(
-            s.scan_with_regex(),
-            Token {
-                tok: T_IDENT,
-                lit: String::from("a"),
-            }
-        );
-        assert_eq!(
-            s.scan_with_regex(),
-            Token {
-                tok: T_INT,
-                lit: String::from("1"),
-            }
-        );
-        assert_eq!(
-            s.scan_with_regex(),
-            Token {
-                tok: T_EOF,
-                lit: String::from(""),
-            }
-        );
-    }
-
-    #[test]
-    fn test_scan_eof() {
-        let text = r#""#;
-        let cdata = CString::new(text).expect("CString::new failed");
-        let mut s = Scanner::new(cdata);
-        // idempotence with and without regex.
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_EOF,
-                lit: String::from(""),
-            }
-        );
-        assert_eq!(
-            s.scan_with_regex(),
-            Token {
-                tok: T_EOF,
-                lit: String::from(""),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_EOF,
-                lit: String::from(""),
-            }
-        );
-        assert_eq!(
-            s.scan_with_regex(),
-            Token {
-                tok: T_EOF,
-                lit: String::from(""),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_EOF,
-                lit: String::from(""),
-            }
-        );
-        assert_eq!(
-            s.scan_with_regex(),
-            Token {
-                tok: T_EOF,
-                lit: String::from(""),
-            }
-        );
-    }
-
-    #[test]
-    fn test_scan_eof_trailing_spaces() {
-        let mut text = String::new();
-        text.push(' ');
-        text.push('\t');
-        text.push('\n');
-        text.push('\t');
-        text.push(' ');
-        text.push('\t');
-        text.push('\t');
-        let cdata = CString::new(text.clone()).expect("CString::new failed");
-        let mut s = Scanner::new(cdata);
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_EOF,
-                lit: String::from(""),
-            }
-        );
-
-        let cdata = CString::new(text.clone()).expect("CString::new failed");
-        let mut s = Scanner::new(cdata);
-        assert_eq!(
-            s.scan_with_regex(),
-            Token {
-                tok: T_EOF,
-                lit: String::from(""),
-            }
-        );
-    }
-
-    // TODO(affo): this fails.
-    #[test]
-    #[ignore] // See https://github.com/influxdata/flux/issues/1448
-    fn test_scan_duration() {
-        let text = r#"dur = 1y3mo2w1d4h1m30s1ms2µs70ns"#;
-        let cdata = CString::new(text).expect("CString::new failed");
-        let mut s = Scanner::new(cdata);
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_IDENT,
-                lit: String::from("dur"),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_ASSIGN,
-                lit: String::from("="),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_DURATION,
-                lit: String::from("1y3mo2w1d4h1m30s1ms2µs70ns"),
-            }
-        );
-        assert_eq!(
-            s.scan(),
-            Token {
-                tok: T_EOF,
-                lit: String::from(""),
-            }
-        );
-    }
+    i - 1
 }
+
+#[cfg(test)]
+mod tests;

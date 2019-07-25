@@ -1,4 +1,5 @@
 #include "scanner.h"
+#include <stdlib.h>
 
 %%{
     machine flux;
@@ -7,7 +8,8 @@
 
     include WChar "unicode.rl";
 
-    newline = '\n';
+    # For comments on newlines tracking, see below.
+    newline = '\n' @{ push(&nls, fpc - data + 1); no_nls++; };
     any_count_line = any | newline;
 
     identifier = ( ualpha | "_" ) ( ualnum | "_" )*;
@@ -116,7 +118,38 @@
 
 %% write data;
 
-int scan(int with_regex, const char **pp, const char *data, const char *pe, const char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end) {
+// We need a strategy for tracking newlines while the state machine does its job.
+// At each newline, the state machine will push a new element containing the current offset to a list.
+
+// node_t represents a list.
+// (I don't want to bring up C++ only for lists).
+typedef struct node {
+    unsigned int val;
+    struct node * next;
+} node_t;
+
+// push pushes a new element in front of the list.
+void push(node_t **head, unsigned int val) {
+    node_t *new_node;
+    new_node = malloc(sizeof(node_t));
+    new_node->val = val;
+    new_node->next = *head;
+    *head = new_node;
+}
+
+// pop removes the first element of the list and returns its value.
+unsigned int pop(node_t **head) {
+    // This would panic if *head == NULL.
+    // But that's ok, because we shouldn't ever pass a NULL head.
+    node_t *next_node = (*head)->next;
+    unsigned int retval = (*head)->val;
+    // This is C managed memory. So, we must free it.
+    free(*head);
+    *head = next_node;
+    return retval;
+}
+
+int scan(int with_regex, const char **pp, const char *data, const char *pe, const char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end, const unsigned int **newlines, unsigned int *newlines_len) {
     int cs;
     if (with_regex) {
         cs = flux_en_main_with_regex;
@@ -128,14 +161,30 @@ int scan(int with_regex, const char **pp, const char *data, const char *pe, cons
     const char *ts;
     const char *te;
     unsigned int tok = ILLEGAL;
+    node_t* nls = NULL;
+    unsigned int no_nls = 0;
 
     %% write init nocs;
     %% write exec;
 
-    // Update output args
+    // Update output args.
     *token = tok;
     *token_start = ts - data;
     *token_end = te - data;
+    *newlines_len = no_nls;
+
+    // Now that the state machine has created a dynamic list of newline offsets (in reverse order),
+    // we can take that list and copy to an array for later use in Rust.
+    if (no_nls > 0) {
+        // We can now allocate contiguous memory given that we know the number of newlines found.
+        unsigned int *arr_nls = (unsigned int *) calloc(no_nls, sizeof(unsigned int));
+        for ( ; no_nls > 0; no_nls--) {
+            arr_nls[no_nls - 1] = pop(&nls);
+        }
+        // This array is owned by Rust.
+        // Rust will take care of freeing memory when it goes out of scope.
+        *newlines = arr_nls;
+    }
 
     *pp = p;
     return cs == flux_error;
