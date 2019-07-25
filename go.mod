@@ -4,7 +4,6 @@ go 1.12
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.3.3
-	github.com/Masterminds/semver v1.4.2
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/apache/arrow/go/arrow v0.0.0-20190426170622-338c62a2a205
 	github.com/aws/aws-sdk-go v1.16.15 // indirect
@@ -14,13 +13,12 @@ require (
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/google/go-cmp v0.2.0
 	github.com/goreleaser/goreleaser v0.97.0
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/influxdata/changelog v1.0.0
 	github.com/influxdata/line-protocol v0.0.0-20180522152040-32c6aa80de5e
 	github.com/influxdata/tdigest v0.0.0-20181121200506-bf2b5ad3c0a9
 	github.com/lib/pq v1.0.0
 	github.com/mattn/go-tty v0.0.0-20190424173100-523744f04859 // indirect
 	github.com/mattn/go-zglob v0.0.1 // indirect
-	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/opentracing/opentracing-go v1.0.2
 	github.com/pkg/errors v0.8.1
 	github.com/pkg/term v0.0.0-20190109203006-aa71e9d9e942 // indirect
@@ -34,12 +32,8 @@ require (
 	go.uber.org/multierr v1.1.0 // indirect
 	go.uber.org/zap v1.9.1
 	golang.org/x/exp v0.0.0-20190121172915-509febef88a4
-	golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3 // indirect
 	golang.org/x/oauth2 v0.0.0-20190402181905-9f3314589c9a // indirect
-	golang.org/x/sys v0.0.0-20190403152447-81d4e9dc473e // indirect
-	golang.org/x/text v0.3.1-0.20181227161524-e6919f6577db // indirect
 	golang.org/x/tools v0.0.0-20190328211700-ab21143f2384 // indirect
 	gonum.org/v1/gonum v0.0.0-20181121035319-3f7ecaa7e8ca
-	gopkg.in/src-d/go-git.v4 v4.8.1
 	honnef.co/go/tools v0.0.0-20190319011948-d116c56a00f3
 )
