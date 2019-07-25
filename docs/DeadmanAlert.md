@@ -34,15 +34,21 @@ where the deadman function is defined as follows:
 deadman = (f, period, offset) => {
 
     r = f(start: now() - offset - period, stop: now() - offset)
-        |> keys()
-        |> drop(columns: ["_value"])
+        |> group_keys()
 
     s = f(start: now() - period, stop: now())
-        |> keys()
-        |> drop(columns: ["_value"])
+        |> group_keys()
 
     return diff(r: r, s: s) |> alert(crit: (r) => true)
 }
+```
+
+Note `group_keys` takes in a stream of tables and returns the group keys of those tables in the output:
+```
+group_keys = (tables=<-) =>
+    |> keys()
+    |> limit(n:1)
+    |> drop(columns: ["_value"])
 ```
 
 Lets walk through an example where `f` returns tables grouped by (`_measurement`, `host`).
