@@ -45,8 +45,7 @@ func TestMovingAverage_Process(t *testing.T) {
 		{
 			name: "float",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				N:       2,
+				N: 2,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -87,8 +86,7 @@ func TestMovingAverage_Process(t *testing.T) {
 		{
 			name: "float with chunking",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				N:       2,
+				N: 2,
 			},
 			data: []flux.Table{&executetest.RowWiseTable{
 				Table: &executetest.Table{
@@ -131,8 +129,7 @@ func TestMovingAverage_Process(t *testing.T) {
 		{
 			name: "float with 3",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				N:       3,
+				N: 3,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -172,8 +169,7 @@ func TestMovingAverage_Process(t *testing.T) {
 		{
 			name: "float with 3 with chunking",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				N:       3,
+				N: 3,
 			},
 			data: []flux.Table{&executetest.RowWiseTable{
 				Table: &executetest.Table{
@@ -215,8 +211,7 @@ func TestMovingAverage_Process(t *testing.T) {
 		{
 			name: "int",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				N:       2,
+				N: 2,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -257,8 +252,7 @@ func TestMovingAverage_Process(t *testing.T) {
 		{
 			name: "int with chunking",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				N:       2,
+				N: 2,
 			},
 			data: []flux.Table{&executetest.RowWiseTable{
 				Table: &executetest.Table{
@@ -301,8 +295,7 @@ func TestMovingAverage_Process(t *testing.T) {
 		{
 			name: "int with 3",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				N:       3,
+				N: 3,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -342,8 +335,7 @@ func TestMovingAverage_Process(t *testing.T) {
 		{
 			name: "int with 3 with chunking",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				N:       3,
+				N: 3,
 			},
 			data: []flux.Table{&executetest.RowWiseTable{
 				Table: &executetest.Table{
@@ -385,8 +377,7 @@ func TestMovingAverage_Process(t *testing.T) {
 		{
 			name: "uint",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				N:       2,
+				N: 2,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -427,8 +418,7 @@ func TestMovingAverage_Process(t *testing.T) {
 		{
 			name: "uint with chunking",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				N:       2,
+				N: 2,
 			},
 			data: []flux.Table{&executetest.RowWiseTable{
 				Table: &executetest.Table{
@@ -471,8 +461,7 @@ func TestMovingAverage_Process(t *testing.T) {
 		{
 			name: "uint with 3",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				N:       3,
+				N: 3,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -512,8 +501,7 @@ func TestMovingAverage_Process(t *testing.T) {
 		{
 			name: "uint with 3 with chunking",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				N:       3,
+				N: 3,
 			},
 			data: []flux.Table{&executetest.RowWiseTable{
 				Table: &executetest.Table{
@@ -555,8 +543,7 @@ func TestMovingAverage_Process(t *testing.T) {
 		{
 			name: "float with tags",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				N:       3,
+				N: 3,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -598,8 +585,7 @@ func TestMovingAverage_Process(t *testing.T) {
 		{
 			name: "float with tags with chunking",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				N:       3,
+				N: 3,
 			},
 			data: []flux.Table{&executetest.RowWiseTable{
 				Table: &executetest.Table{
@@ -643,133 +629,104 @@ func TestMovingAverage_Process(t *testing.T) {
 		{
 			name: "nulls in time column",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{"x", "y"},
-				N:       2,
+				N: 2,
 			},
 			data: []flux.Table{&executetest.RowWiseTable{
 				Table: &executetest.Table{
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "x", Type: flux.TFloat},
-						{Label: "y", Type: flux.TFloat},
+						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
-						{nil, 2.0, 3.0},
-						{execute.Time(2), nil, 10.0},
-						{nil, 8.0, 20.0},
-						{execute.Time(4), 8.0, 20.0},
-						{nil, 8.0, 20.0},
-						{execute.Time(6), 10.0, 25.0},
-						{nil, 8.0, 20.0},
+						{nil, 2.0},
+						{execute.Time(2), nil},
+						{nil, 8.0},
+						{execute.Time(4), 8.0},
+						{nil, 8.0},
+						{execute.Time(6), 10.0},
+						{nil, 8.0},
 					},
 				},
 			}},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
-					{Label: "x", Type: flux.TFloat},
-					{Label: "y", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(2), 2.0, 13.0 / 2},
-					{nil, 8.0, 15.0},
-					{execute.Time(4), 8.0, 20.0},
-					{nil, 8.0, 20.0},
-					{execute.Time(6), 9.0, 22.5},
-					{nil, 9.0, 22.5},
+					{execute.Time(2), 2.0},
+					{nil, 8.0},
+					{execute.Time(4), 8.0},
+					{nil, 8.0},
+					{execute.Time(6), 9.0},
+					{nil, 9.0},
 				},
 			}},
-		},
-		{
-			name: "mean average of non-numerical column",
-			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{"x", "y"},
-				N:       2,
-			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "x", Type: flux.TFloat},
-					{Label: "y", Type: flux.TString},
-				},
-			}},
-			wantErr: fmt.Errorf("cannot take moving average of column y (type string)"),
 		},
 		{
 			name: "int nulls",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{"x", "y", "z"},
-				N:       2,
+				N: 2,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
-					{Label: "x", Type: flux.TInt},
-					{Label: "y", Type: flux.TInt},
-					{Label: "z", Type: flux.TInt},
+					{Label: "_value", Type: flux.TInt},
 				},
 				Data: [][]interface{}{
-					{execute.Time(1), nil, int64(1), int64(2)},
-					{execute.Time(2), nil, int64(2), nil},
-					{execute.Time(3), int64(4), nil, int64(4)},
-					{execute.Time(4), int64(2), nil, int64(4)},
+					{execute.Time(1), nil},
+					{execute.Time(2), nil},
+					{execute.Time(3), int64(4)},
+					{execute.Time(4), int64(2)},
 				},
 			}},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
-					{Label: "x", Type: flux.TFloat},
-					{Label: "y", Type: flux.TFloat},
-					{Label: "z", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(2), nil, 1.5, 2.0},
-					{execute.Time(3), 4.0, 2.0, 4.0},
-					{execute.Time(4), 3.0, nil, 4.0},
+					{execute.Time(2), nil},
+					{execute.Time(3), 4.0},
+					{execute.Time(4), 3.0},
 				},
 			}},
 		},
 		{
 			name: "int nulls with chunking",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{"x", "y", "z"},
-				N:       2,
+				N: 2,
 			},
 			data: []flux.Table{&executetest.RowWiseTable{
 				Table: &executetest.Table{
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
-						{Label: "x", Type: flux.TInt},
-						{Label: "y", Type: flux.TInt},
-						{Label: "z", Type: flux.TInt},
+						{Label: "_value", Type: flux.TInt},
 					},
 					Data: [][]interface{}{
-						{execute.Time(1), nil, int64(1), int64(2)},
-						{execute.Time(2), nil, int64(2), nil},
-						{execute.Time(3), int64(4), nil, int64(4)},
-						{execute.Time(4), int64(2), nil, int64(4)},
+						{execute.Time(1), nil},
+						{execute.Time(2), nil},
+						{execute.Time(3), int64(4)},
+						{execute.Time(4), int64(2)},
 					},
 				},
 			}},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
-					{Label: "x", Type: flux.TFloat},
-					{Label: "y", Type: flux.TFloat},
-					{Label: "z", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(2), nil, 1.5, 2.0},
-					{execute.Time(3), 4.0, 2.0, 4.0},
-					{execute.Time(4), 3.0, nil, 4.0},
+					{execute.Time(2), nil},
+					{execute.Time(3), 4.0},
+					{execute.Time(4), 3.0},
 				},
 			}},
 		},
 		{
 			name: "less rows than period",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				N:       5,
+				N: 5,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -803,8 +760,7 @@ func TestMovingAverage_Process(t *testing.T) {
 		{
 			name: "less rows than period with chunking",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				N:       5,
+				N: 5,
 			},
 			data: []flux.Table{&executetest.RowWiseTable{
 				Table: &executetest.Table{
@@ -838,10 +794,34 @@ func TestMovingAverage_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "invalid period",
+			spec: &universe.MovingAverageProcedureSpec{
+				N: 0,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 2.0},
+					{execute.Time(2), 4.0},
+					{execute.Time(3), 5.0},
+					{execute.Time(4), 9.0},
+					{execute.Time(5), 8.0},
+					{execute.Time(6), 11.0},
+					{execute.Time(7), 15.0},
+					{execute.Time(8), 12.0},
+					{execute.Time(9), 5.0},
+					{execute.Time(10), 7.0},
+				},
+			}},
+			wantErr: fmt.Errorf("cannot take moving average with a period of 0 (must be greater than 0)"),
+		},
+		{
 			name: "empty table",
 			spec: &universe.MovingAverageProcedureSpec{
-				Columns: []string{execute.DefaultValueColLabel},
-				N:       2,
+				N: 2,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{

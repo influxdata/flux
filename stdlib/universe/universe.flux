@@ -15,7 +15,6 @@ builtin columns
 builtin count
 builtin covariance
 builtin cumulativeSum
-builtin doubleExponentialMovingAverage
 builtin derivative
 builtin difference
 builtin distinct
@@ -255,6 +254,35 @@ timedMovingAverage = (every, period, column="_value", tables=<-) =>
         |> duplicate(column: "_stop", as: "_time")
         |> window(every: inf)
 
+// Double Exponential Moving Average computes the double exponential moving averages of the `_value` column.
+// eg: A 5 point double exponential moving average would be called as such:
+// from(bucket: "telegraf/autogen"):
+//    |> range(start: -7d)
+//    |> tripleEMA(n: 5)
+doubleEMA = (n, tables=<-) =>
+    tables
+          |> exponentialMovingAverage(n:n)
+          |> duplicate(column:"_value", as:"__ema")
+          |> exponentialMovingAverage(n:n)
+          |> map(fn: (r) => ({r with _value: 2.0*r.__ema - r._value}))
+          |> drop(columns: ["__ema"])
+
+
+// Triple Exponential Moving Average computes the triple exponential moving averages of the `_value` column.
+// eg: A 5 point triple exponential moving average would be called as such:
+// from(bucket: "telegraf/autogen"):
+//    |> range(start: -7d)
+//    |> tripleEMA(n: 5)
+tripleEMA = (n, tables=<-) =>
+	tables
+		|> exponentialMovingAverage(n:n)
+		|> duplicate(column:"_value", as:"__ema1")
+		|> exponentialMovingAverage(n:n)
+		|> duplicate(column:"_value", as:"__ema2")
+		|> exponentialMovingAverage(n:n)
+		|> map(fn: (r) => ({r with _value: 3.0*r.__ema1 - 3.0*r.__ema2 + r._value}))
+		|> drop(columns: ["__ema1", "__ema2"])
+
 // truncateTimeColumn takes in a time column t and a Duration unit and truncates each value of t to the given unit via map
 // Change from _time to timeColumn once https://github.com/influxdata/flux/issues/1122 is resolved
 truncateTimeColumn = (timeColumn="_time", unit, tables=<-) =>
@@ -267,5 +295,3 @@ toUInt     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._v
 toFloat    = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))
 toBool     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))
 toTime     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))
-
-doubleEMA = doubleExponentialMovingAverage

@@ -5,7 +5,6 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe/moving_average"
@@ -14,15 +13,13 @@ import (
 const ExponentialMovingAverageKind = "exponentialMovingAverage"
 
 type ExponentialMovingAverageOpSpec struct {
-	N       int64    `json:"n"`
-	Columns []string `json:"columns"`
+	N int64 `json:"n"`
 }
 
 func init() {
 	exponentialMovingAverageSignature := flux.FunctionSignature(
 		map[string]semantic.PolyType{
-			"n":       semantic.Int,
-			"columns": semantic.NewArrayPolyType(semantic.String),
+			"n": semantic.Int,
 		},
 		[]string{"n"},
 	)
@@ -46,18 +43,6 @@ func createExponentialMovingAverageOpSpec(args flux.Arguments, a *flux.Administr
 		spec.N = n
 	}
 
-	if cols, ok, err := args.GetArray("columns", semantic.String); err != nil {
-		return nil, err
-	} else if ok {
-		columns, err := interpreter.ToStringArray(cols)
-		if err != nil {
-			return nil, err
-		}
-		spec.Columns = columns
-	} else {
-		spec.Columns = []string{execute.DefaultValueColLabel}
-	}
-
 	return spec, nil
 }
 
@@ -71,8 +56,7 @@ func (s *ExponentialMovingAverageOpSpec) Kind() flux.OperationKind {
 
 type ExponentialMovingAverageProcedureSpec struct {
 	plan.DefaultCost
-	N       int64    `json:"n"`
-	Columns []string `json:"columns"`
+	N int64 `json:"n"`
 }
 
 func newExponentialMovingAverageProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -82,8 +66,7 @@ func newExponentialMovingAverageProcedure(qs flux.OperationSpec, pa plan.Adminis
 	}
 
 	return &ExponentialMovingAverageProcedureSpec{
-		N:       spec.N,
-		Columns: spec.Columns,
+		N: spec.N,
 	}, nil
 }
 
@@ -94,10 +77,6 @@ func (s *ExponentialMovingAverageProcedureSpec) Kind() plan.ProcedureKind {
 func (s *ExponentialMovingAverageProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(ExponentialMovingAverageProcedureSpec)
 	*ns = *s
-	if s.Columns != nil {
-		ns.Columns = make([]string, len(s.Columns))
-		copy(ns.Columns, s.Columns)
-	}
 	return ns
 }
 
@@ -123,8 +102,7 @@ type exponentialMovingAverageTransformation struct {
 
 	ema *moving_average.ExponentialMovingAverage
 
-	n       int64
-	columns []string
+	n int64
 }
 
 func NewExponentialMovingAverageTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ExponentialMovingAverageProcedureSpec) *exponentialMovingAverageTransformation {
@@ -132,8 +110,7 @@ func NewExponentialMovingAverageTransformation(d execute.Dataset, cache execute.
 		d:     d,
 		cache: cache,
 
-		n:       spec.N,
-		columns: spec.Columns,
+		n: spec.N,
 	}
 }
 
@@ -146,34 +123,32 @@ func (t *exponentialMovingAverageTransformation) Process(id execute.DatasetID, t
 	if !created {
 		return fmt.Errorf("moving average found duplicate table with key: %v", tbl.Key())
 	}
+	if t.n <= 0 {
+		return fmt.Errorf("cannot take moving average with a period of %v (must be greater than 0)", t.n)
+	}
 	cols := tbl.Cols()
-	doExponentialMovingAverage := make([]bool, len(cols))
+	valueIdx := -1
 	for j, c := range cols {
-		found := false
-		for _, label := range t.columns {
-			if c.Label == label {
-				if c.Type != flux.TInt && c.Type != flux.TUInt && c.Type != flux.TFloat {
-					return fmt.Errorf("cannot take moving average of column %s (type %s)", c.Label, c.Type.String())
-				}
-				found = true
-				break
+		if c.Label == execute.DefaultValueColLabel {
+			if c.Type != flux.TInt && c.Type != flux.TUInt && c.Type != flux.TFloat {
+				return fmt.Errorf("cannot take exponential moving average of column %s (type %s)", c.Label, c.Type.String())
 			}
-		}
-
-		if found {
+			valueIdx = j
 			mac := c
 			mac.Type = flux.TFloat
 			_, err := builder.AddCol(mac)
 			if err != nil {
 				return err
 			}
-			doExponentialMovingAverage[j] = true
 		} else {
 			_, err := builder.AddCol(c)
 			if err != nil {
 				return err
 			}
 		}
+	}
+	if valueIdx == -1 {
+		return fmt.Errorf("cannot find _value column")
 	}
 
 	t.ema = moving_average.New(int(t.n), len(cols))
@@ -184,17 +159,21 @@ func (t *exponentialMovingAverageTransformation) Process(id execute.DatasetID, t
 		}
 
 		for j, c := range cr.Cols() {
+			isValueCol := false
+			if valueIdx == j {
+				isValueCol = true
+			}
 			// use ArrayContainer to avoid having a different function for each type, where almost all the code would be the same
 			var err error
 			switch c.Type {
 			case flux.TBool:
 				err = t.ema.PassThrough(&moving_average.ArrayContainer{Array: cr.Bools(j)}, builder, j)
 			case flux.TInt:
-				err = t.ema.DoNumeric(&moving_average.ArrayContainer{Array: cr.Ints(j)}, builder, j, doExponentialMovingAverage[j], true)
+				err = t.ema.DoNumeric(&moving_average.ArrayContainer{Array: cr.Ints(j)}, builder, j, isValueCol, true)
 			case flux.TUInt:
-				err = t.ema.DoNumeric(&moving_average.ArrayContainer{Array: cr.UInts(j)}, builder, j, doExponentialMovingAverage[j], true)
+				err = t.ema.DoNumeric(&moving_average.ArrayContainer{Array: cr.UInts(j)}, builder, j, isValueCol, true)
 			case flux.TFloat:
-				err = t.ema.DoNumeric(&moving_average.ArrayContainer{Array: cr.Floats(j)}, builder, j, doExponentialMovingAverage[j], true)
+				err = t.ema.DoNumeric(&moving_average.ArrayContainer{Array: cr.Floats(j)}, builder, j, isValueCol, true)
 			case flux.TString:
 				err = t.ema.PassThrough(&moving_average.ArrayContainer{Array: cr.Strings(j)}, builder, j)
 			case flux.TTime:
@@ -212,7 +191,7 @@ func (t *exponentialMovingAverageTransformation) Process(id execute.DatasetID, t
 		return err
 	}
 
-	return t.ema.Finish(tbl.Cols(), builder, doExponentialMovingAverage)
+	return t.ema.Finish(tbl.Cols(), builder, valueIdx)
 }
 
 func (t *exponentialMovingAverageTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
