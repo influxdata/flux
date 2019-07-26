@@ -28,8 +28,6 @@ var skip = map[string]string{
 	"covariance_missing_column_2": "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
 	"drop_before_rename":          "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
 	"drop_referenced":             "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
-	"drop_non_existent":           "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
-	"keep_non_existent":           "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
 	"yield":                       "yield requires special test case (https://github.com/influxdata/flux/issues/535)",
 	"task_per_line":               "join produces inconsistent/racy results when table schemas do not match (https://github.com/influxdata/flux/issues/855)",
 	"rowfn_with_import":           "imported libraries are not visible in user-defined functions (https://github.com/influxdata/flux/issues/1000)",
