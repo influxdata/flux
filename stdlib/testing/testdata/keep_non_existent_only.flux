@@ -32,9 +32,8 @@ inData = "
 outData = "
 #datatype,string,long
 #group,false,false
-#default,_result,
+#default,_result,0
 ,result,table
-,,0
 "
 
 t_keep = (table=<-) =>

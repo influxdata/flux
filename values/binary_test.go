@@ -11,11 +11,11 @@ import (
 )
 
 var (
-	intNullValue    = (*int64)(nil)
-	uintNullValue   = (*uint64)(nil)
-	floatNullValue  = (*float64)(nil)
-	stringNullValue = (*string)(nil)
-	timeNullValue   = (*values.Time)(nil)
+	intNullValue      = (*int64)(nil)
+	uintNullValue     = (*uint64)(nil)
+	floatNullValue    = (*float64)(nil)
+	stringNullValue   = (*string)(nil)
+	timeNullValue     = (*values.Time)(nil)
 	durationNullValue = (*values.Duration)(nil)
 )
 
