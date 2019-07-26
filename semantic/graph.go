@@ -752,7 +752,8 @@ func (e *IndexExpression) Copy() Node {
 type ObjectExpression struct {
 	loc `json:"-"`
 
-	Properties []*Property `json:"properties"`
+	With       *IdentifierExpression `json:"with,omitempty"`
+	Properties []*Property           `json:"properties"`
 }
 
 func (*ObjectExpression) NodeType() string { return "ObjectExpression" }
@@ -763,6 +764,8 @@ func (e *ObjectExpression) Copy() Node {
 	}
 	ne := new(ObjectExpression)
 	*ne = *e
+
+	ne.With = e.With.Copy().(*IdentifierExpression)
 
 	if len(e.Properties) > 0 {
 		ne.Properties = make([]*Property, len(e.Properties))

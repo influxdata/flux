@@ -1,13 +1,13 @@
 package universe
 
 import (
-	"errors"
-	"fmt"
 	"math"
 	"sync"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -44,14 +44,14 @@ func createUnionOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 	}
 
 	if tables.Len() < 2 {
-		return nil, errors.New("union must have at least two streams as input")
+		return nil, errors.New(codes.Invalid, "union must have at least two streams as input")
 	}
 
 	err = nil
 	tables.Range(func(i int, parent values.Value) {
 		p, ok := parent.(*flux.TableObject)
 		if !ok {
-			err = errors.New("input to union is not a table object")
+			err = errors.New(codes.Invalid, "input to union is not a table object")
 		}
 
 		a.AddParent(p)
@@ -102,7 +102,7 @@ type unionParentState struct {
 func createUnionTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*UnionProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Invalid, "invalid spec type %T", spec)
 	}
 
 	cache := execute.NewTableBuilderCache(a.Allocator())

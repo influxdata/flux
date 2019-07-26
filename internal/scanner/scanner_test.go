@@ -51,6 +51,7 @@ var common = []TokenPattern{
 	{s: `and`, tok: token.AND, lit: `and`},
 	{s: `or`, tok: token.OR, lit: `or`},
 	{s: `not`, tok: token.NOT, lit: `not`},
+	{s: `exists`, tok: token.EXISTS, lit: `exists`},
 	{s: `empty`, tok: token.EMPTY, lit: `empty`},
 	{s: `in`, tok: token.IN, lit: `in`},
 	{s: `import`, tok: token.IMPORT, lit: `import`},
@@ -62,6 +63,7 @@ var common = []TokenPattern{
 	// We skip div because the general parser can't tell the difference
 	// between div and regex.
 	{s: `%`, tok: token.MOD, lit: `%`},
+	{s: `^`, tok: token.POW, lit: `^`},
 	{s: `==`, tok: token.EQ, lit: `==`},
 	{s: `<`, tok: token.LT, lit: `<`},
 	{s: `>`, tok: token.GT, lit: `>`},

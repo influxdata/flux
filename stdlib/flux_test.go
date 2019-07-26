@@ -10,7 +10,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/stdlib"
 )
 
@@ -35,34 +35,37 @@ var skip = map[string]string{
 	"rowfn_with_import":           "imported libraries are not visible in user-defined functions (https://github.com/influxdata/flux/issues/1000)",
 	"string_trim":                 "cannot reference a package function from within a row function",
 	"integral_columns":            "aggregates changed to operate on just a single columnm.",
-}
 
-var querier = querytest.NewQuerier()
+	"measurement_tag_keys_test":   "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
+	"aggregate_window_mean_test":  "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
+	"aggregate_window_count_test": "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
+
+	"extract_regexp_findStringIndex": "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
+	"partition_strings_splitN":       "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
+}
 
 func TestFluxEndToEnd(t *testing.T) {
-	runEndToEnd(t, querier, stdlib.FluxTestPackages)
+	runEndToEnd(t, stdlib.FluxTestPackages)
 }
 func BenchmarkFluxEndToEnd(b *testing.B) {
-	benchEndToEnd(b, querier, stdlib.FluxTestPackages)
+	benchEndToEnd(b, stdlib.FluxTestPackages)
 }
 
-func runEndToEnd(t *testing.T, querier *querytest.Querier, pkgs []*ast.Package) {
+func runEndToEnd(t *testing.T, pkgs []*ast.Package) {
 	for _, pkg := range pkgs {
-		pkg := pkg.Copy().(*ast.Package)
 		name := pkg.Files[0].Name
 		t.Run(name, func(t *testing.T) {
 			n := strings.TrimSuffix(name, ".flux")
 			if reason, ok := skip[n]; ok {
 				t.Skip(reason)
 			}
-			testFlux(t, querier, pkg)
+			testFlux(t, pkg)
 		})
 	}
 }
 
-func benchEndToEnd(b *testing.B, querier *querytest.Querier, pkgs []*ast.Package) {
+func benchEndToEnd(b *testing.B, pkgs []*ast.Package) {
 	for _, pkg := range pkgs {
-		pkg := pkg.Copy().(*ast.Package)
 		name := pkg.Files[0].Name
 		b.Run(name, func(b *testing.B) {
 			n := strings.TrimSuffix(name, ".flux")
@@ -72,30 +75,36 @@ func benchEndToEnd(b *testing.B, querier *querytest.Querier, pkgs []*ast.Package
 			b.ResetTimer()
 			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
-				testFlux(b, querier, pkg)
+				testFlux(b, pkg)
 			}
 		})
 	}
 }
 
-func testFlux(t testing.TB, querier *querytest.Querier, pkg *ast.Package) {
+func testFlux(t testing.TB, pkg *ast.Package) {
+	pkg = pkg.Copy().(*ast.Package)
 	pkg.Files = append(pkg.Files, stdlib.TestingRunCalls(pkg))
 	c := lang.ASTCompiler{AST: pkg}
 
 	// testing.run
-	doTestRun(t, querier, c)
+	doTestRun(t, c)
 
 	// testing.inspect
 	if t.Failed() {
 		// Rerun the test case using testing.inspect
 		pkg.Files[len(pkg.Files)-1] = stdlib.TestingInspectCalls(pkg)
 		c := lang.ASTCompiler{AST: pkg}
-		doTestInspect(t, querier, c)
+		doTestInspect(t, c)
 	}
 }
 
-func doTestRun(t testing.TB, querier *querytest.Querier, c flux.Compiler) {
-	r, err := querier.C.Query(context.Background(), c)
+func doTestRun(t testing.TB, c flux.Compiler) {
+	program, err := c.Compile(context.Background())
+	if err != nil {
+		t.Fatalf("unexpected error while compiling query: %v", err)
+	}
+	alloc := &memory.Allocator{}
+	r, err := program.Start(context.Background(), alloc)
 	if err != nil {
 		t.Fatalf("unexpected error while executing testing.run: %v", err)
 	}
@@ -115,10 +124,15 @@ func doTestRun(t testing.TB, querier *querytest.Querier, c flux.Compiler) {
 	}
 }
 
-func doTestInspect(t testing.TB, querier *querytest.Querier, c flux.Compiler) {
-	r, err := querier.C.Query(context.Background(), c)
+func doTestInspect(t testing.TB, c flux.Compiler) {
+	program, err := c.Compile(context.Background())
 	if err != nil {
-		t.Fatalf("unexpected error while executing testing.inspect: %v", err)
+		t.Fatalf("unexpected error while compiling query: %v", err)
+	}
+	alloc := &memory.Allocator{}
+	r, err := program.Start(context.Background(), alloc)
+	if err != nil {
+		t.Fatalf("unexpected error while executing testing.run: %v", err)
 	}
 	defer r.Done()
 

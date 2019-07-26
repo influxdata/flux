@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   166,
 				},
 				File:   "math.flux",
-				Source: "package math\n\n// builtin constants\nbuiltin pi\nbuiltin e\nbuiltin phi\nbuiltin sqrt2\nbuiltin sqrte\nbuiltin sqrtpi\nbuiltin sqrtphi\nbuiltin ln2\nbuiltin log2e\nbuiltin ln10\nbuiltin log10e\nbuiltin maxfloat\nbuiltin smallestNonzeroFloat\nbuiltin maxint\nbuiltin minint\nbuiltin maxuint\n\n// builtin functions\nbuiltin abs\nbuiltin acos\nbuiltin acosh\nbuiltin asin\nbuiltin asinh\nbuiltin atan\nbuiltin atan2\nbuiltin atanh\nbuiltin cbrt\nbuiltin ceil\nbuiltin copysign\nbuiltin cos\nbuiltin cosh\nbuiltin dim\nbuiltin erf\nbuiltin erfc\nbuiltin erfcinv\nbuiltin erfinv\nbuiltin exp\nbuiltin exp2\nbuiltin expm1\nbuiltin float64bits\nbuiltin float64frombits\nbuiltin floor\nbuiltin frexp\nbuiltin gamma\nbuiltin hypot\nbuiltin ilogb\nbuiltin mInf\nbuiltin isInf\nbuiltin isNaN\nbuiltin j0\nbuiltin j1\nbuiltin jn\nbuiltin ldexp\nbuiltin lgamma\nbuiltin log\nbuiltin log10\nbuiltin log1p\nbuiltin log2\nbuiltin logb\nbuiltin mMax\nbuiltin mMin\nbuiltin mod\nbuiltin modf\nbuiltin NaN\nbuiltin nextafter\nbuiltin pow\nbuiltin pow10\nbuiltin remainder\nbuiltin round\nbuiltin roundtoeven\nbuiltin signbit\nbuiltin sin\nbuiltin sincos\nbuiltin sinh\nbuiltin sqrt\nbuiltin tan\nbuiltin tanh\nbuiltin trunc\nbuiltin y0\nbuiltin y1\nbuiltin yn\n\n// hack to simulate an imported math package\nmath = {\npi:pi\ne:e\nphi:phi\nsqrt2:sqrt2\nsqrte:sqrte\nsqrtpi:sqrtpi\nsqrtphi:sqrtphi\nln2:ln2\nlog2e:log2e\nln10:ln10\nlog10e:log10e\nmaxfloat:maxfloat\nsmallestNonzeroFloat:smallestNonzeroFloat\nmaxint:maxint\nminint:minint\nmaxuint:maxuint\nabs:abs\nacos:acos\nacosh:acosh\nasin:asin\nasinh:asinh\natan:atan\natan2:atan2\natanh:atanh\ncbrt:cbrt\nceil:ceil\ncopysign:copysign\ncos:cos\ncosh:cosh\ndim:dim\nerf:erf\nerfc:erfc\nerfcinv:erfcinv\nerfinv:erfinv\nexp:exp\nexp2:exp2\nexpm1:expm1\nfloat64bits:float64bits\nfloor:floor\nfrexp:frexp\ngamma:gamma\nhypot:hypot\nilogb:ilogb\nmInf:mInf\nisInf:isInf\nisNaN:isNaN\nj0:j0\nj1:j1\njn:jn\nldexp:ldexp\nlgamma:lgamma\nlog:log\nlog10:log10\nlog1p:log1p\nlog2:log2\nlogb:logb\nmMax:mMax\nmMin:mMin\nmod:mod\nmodf:modf\nNaN:NaN\nnextafter:nextafter\npow:pow\npow10:pow10\nremainder:remainder\nround:round\nroundtoeven:roundtoeven\nsignbit:signbit\nsin:sin\nsincos:sincos\nsinh:sinh\nsqrt:sqrt\ntan:tan\ntanh:tanh\ntrunc:trunc\ny0:y0\ny1:y1\nyn:yn\n}",
+				Source: "package math\n\n// builtin constants\nbuiltin pi\nbuiltin e\nbuiltin phi\nbuiltin sqrt2\nbuiltin sqrte\nbuiltin sqrtpi\nbuiltin sqrtphi\nbuiltin ln2\nbuiltin log2e\nbuiltin ln10\nbuiltin log10e\nbuiltin maxfloat\nbuiltin smallestNonzeroFloat\nbuiltin maxint\nbuiltin minint\nbuiltin maxuint\n\n// builtin functions\nbuiltin abs\nbuiltin acos\nbuiltin acosh\nbuiltin asin\nbuiltin asinh\nbuiltin atan\nbuiltin atan2\nbuiltin atanh\nbuiltin cbrt\nbuiltin ceil\nbuiltin copysign\nbuiltin cos\nbuiltin cosh\nbuiltin dim\nbuiltin erf\nbuiltin erfc\nbuiltin erfcinv\nbuiltin erfinv\nbuiltin exp\nbuiltin exp2\nbuiltin expm1\nbuiltin float64bits\nbuiltin float64frombits\nbuiltin floor\nbuiltin frexp\nbuiltin gamma\nbuiltin hypot\nbuiltin ilogb\nbuiltin mInf\nbuiltin isInf\nbuiltin isNaN\nbuiltin j0\nbuiltin j1\nbuiltin jn\nbuiltin ldexp\nbuiltin lgamma\nbuiltin log\nbuiltin log10\nbuiltin log1p\nbuiltin log2\nbuiltin logb\nbuiltin mMax\nbuiltin mMin\nbuiltin mod\nbuiltin modf\nbuiltin NaN\nbuiltin nextafter\nbuiltin pow\nbuiltin pow10\nbuiltin remainder\nbuiltin round\nbuiltin roundtoeven\nbuiltin signbit\nbuiltin sin\nbuiltin sincos\nbuiltin sinh\nbuiltin sqrt\nbuiltin tan\nbuiltin tanh\nbuiltin trunc\nbuiltin y0\nbuiltin y1\nbuiltin yn\n\n// hack to simulate an imported math package\nmath = {\n  pi:pi,\n  e:e,\n  phi:phi,\n  sqrt2:sqrt2,\n  sqrte:sqrte,\n  sqrtpi:sqrtpi,\n  sqrtphi:sqrtphi,\n  ln2:ln2,\n  log2e:log2e,\n  ln10:ln10,\n  log10e:log10e,\n  maxfloat:maxfloat,\n  smallestNonzeroFloat:smallestNonzeroFloat,\n  maxint:maxint,\n  minint:minint,\n  maxuint:maxuint,\n  abs:abs,\n  acos:acos,\n  acosh:acosh,\n  asin:asin,\n  asinh:asinh,\n  atan:atan,\n  atan2:atan2,\n  atanh:atanh,\n  cbrt:cbrt,\n  ceil:ceil,\n  copysign:copysign,\n  cos:cos,\n  cosh:cosh,\n  dim:dim,\n  erf:erf,\n  erfc:erfc,\n  erfcinv:erfcinv,\n  erfinv:erfinv,\n  exp:exp,\n  exp2:exp2,\n  expm1:expm1,\n  float64bits:float64bits,\n  floor:floor,\n  frexp:frexp,\n  gamma:gamma,\n  hypot:hypot,\n  ilogb:ilogb,\n  mInf:mInf,\n  isInf:isInf,\n  isNaN:isNaN,\n  j0:j0,\n  j1:j1,\n  jn:jn,\n  ldexp:ldexp,\n  lgamma:lgamma,\n  log:log,\n  log10:log10,\n  log1p:log1p,\n  log2:log2,\n  logb:logb,\n  mMax:mMax,\n  mMin:mMin,\n  mod:mod,\n  modf:modf,\n  NaN:NaN,\n  nextafter:nextafter,\n  pow:pow,\n  pow10:pow10,\n  remainder:remainder,\n  round:round,\n  roundtoeven:roundtoeven,\n  signbit:signbit,\n  sin:sin,\n  sincos:sincos,\n  sinh:sinh,\n  sqrt:sqrt,\n  tan:tan,\n  tanh:tanh,\n  trunc:trunc,\n  y0:y0,\n  y1:y1,\n  yn:yn,\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -2727,7 +2727,7 @@ var pkgAST = &ast.Package{
 						Line:   166,
 					},
 					File:   "math.flux",
-					Source: "math = {\npi:pi\ne:e\nphi:phi\nsqrt2:sqrt2\nsqrte:sqrte\nsqrtpi:sqrtpi\nsqrtphi:sqrtphi\nln2:ln2\nlog2e:log2e\nln10:ln10\nlog10e:log10e\nmaxfloat:maxfloat\nsmallestNonzeroFloat:smallestNonzeroFloat\nmaxint:maxint\nminint:minint\nmaxuint:maxuint\nabs:abs\nacos:acos\nacosh:acosh\nasin:asin\nasinh:asinh\natan:atan\natan2:atan2\natanh:atanh\ncbrt:cbrt\nceil:ceil\ncopysign:copysign\ncos:cos\ncosh:cosh\ndim:dim\nerf:erf\nerfc:erfc\nerfcinv:erfcinv\nerfinv:erfinv\nexp:exp\nexp2:exp2\nexpm1:expm1\nfloat64bits:float64bits\nfloor:floor\nfrexp:frexp\ngamma:gamma\nhypot:hypot\nilogb:ilogb\nmInf:mInf\nisInf:isInf\nisNaN:isNaN\nj0:j0\nj1:j1\njn:jn\nldexp:ldexp\nlgamma:lgamma\nlog:log\nlog10:log10\nlog1p:log1p\nlog2:log2\nlogb:logb\nmMax:mMax\nmMin:mMin\nmod:mod\nmodf:modf\nNaN:NaN\nnextafter:nextafter\npow:pow\npow10:pow10\nremainder:remainder\nround:round\nroundtoeven:roundtoeven\nsignbit:signbit\nsin:sin\nsincos:sincos\nsinh:sinh\nsqrt:sqrt\ntan:tan\ntanh:tanh\ntrunc:trunc\ny0:y0\ny1:y1\nyn:yn\n}",
+					Source: "math = {\n  pi:pi,\n  e:e,\n  phi:phi,\n  sqrt2:sqrt2,\n  sqrte:sqrte,\n  sqrtpi:sqrtpi,\n  sqrtphi:sqrtphi,\n  ln2:ln2,\n  log2e:log2e,\n  ln10:ln10,\n  log10e:log10e,\n  maxfloat:maxfloat,\n  smallestNonzeroFloat:smallestNonzeroFloat,\n  maxint:maxint,\n  minint:minint,\n  maxuint:maxuint,\n  abs:abs,\n  acos:acos,\n  acosh:acosh,\n  asin:asin,\n  asinh:asinh,\n  atan:atan,\n  atan2:atan2,\n  atanh:atanh,\n  cbrt:cbrt,\n  ceil:ceil,\n  copysign:copysign,\n  cos:cos,\n  cosh:cosh,\n  dim:dim,\n  erf:erf,\n  erfc:erfc,\n  erfcinv:erfcinv,\n  erfinv:erfinv,\n  exp:exp,\n  exp2:exp2,\n  expm1:expm1,\n  float64bits:float64bits,\n  floor:floor,\n  frexp:frexp,\n  gamma:gamma,\n  hypot:hypot,\n  ilogb:ilogb,\n  mInf:mInf,\n  isInf:isInf,\n  isNaN:isNaN,\n  j0:j0,\n  j1:j1,\n  jn:jn,\n  ldexp:ldexp,\n  lgamma:lgamma,\n  log:log,\n  log10:log10,\n  log1p:log1p,\n  log2:log2,\n  logb:logb,\n  mMax:mMax,\n  mMin:mMin,\n  mod:mod,\n  modf:modf,\n  NaN:NaN,\n  nextafter:nextafter,\n  pow:pow,\n  pow10:pow10,\n  remainder:remainder,\n  round:round,\n  roundtoeven:roundtoeven,\n  signbit:signbit,\n  sin:sin,\n  sincos:sincos,\n  sinh:sinh,\n  sqrt:sqrt,\n  tan:tan,\n  tanh:tanh,\n  trunc:trunc,\n  y0:y0,\n  y1:y1,\n  yn:yn,\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   87,
@@ -2761,7 +2761,7 @@ var pkgAST = &ast.Package{
 							Line:   166,
 						},
 						File:   "math.flux",
-						Source: "{\npi:pi\ne:e\nphi:phi\nsqrt2:sqrt2\nsqrte:sqrte\nsqrtpi:sqrtpi\nsqrtphi:sqrtphi\nln2:ln2\nlog2e:log2e\nln10:ln10\nlog10e:log10e\nmaxfloat:maxfloat\nsmallestNonzeroFloat:smallestNonzeroFloat\nmaxint:maxint\nminint:minint\nmaxuint:maxuint\nabs:abs\nacos:acos\nacosh:acosh\nasin:asin\nasinh:asinh\natan:atan\natan2:atan2\natanh:atanh\ncbrt:cbrt\nceil:ceil\ncopysign:copysign\ncos:cos\ncosh:cosh\ndim:dim\nerf:erf\nerfc:erfc\nerfcinv:erfcinv\nerfinv:erfinv\nexp:exp\nexp2:exp2\nexpm1:expm1\nfloat64bits:float64bits\nfloor:floor\nfrexp:frexp\ngamma:gamma\nhypot:hypot\nilogb:ilogb\nmInf:mInf\nisInf:isInf\nisNaN:isNaN\nj0:j0\nj1:j1\njn:jn\nldexp:ldexp\nlgamma:lgamma\nlog:log\nlog10:log10\nlog1p:log1p\nlog2:log2\nlogb:logb\nmMax:mMax\nmMin:mMin\nmod:mod\nmodf:modf\nNaN:NaN\nnextafter:nextafter\npow:pow\npow10:pow10\nremainder:remainder\nround:round\nroundtoeven:roundtoeven\nsignbit:signbit\nsin:sin\nsincos:sincos\nsinh:sinh\nsqrt:sqrt\ntan:tan\ntanh:tanh\ntrunc:trunc\ny0:y0\ny1:y1\nyn:yn\n}",
+						Source: "{\n  pi:pi,\n  e:e,\n  phi:phi,\n  sqrt2:sqrt2,\n  sqrte:sqrte,\n  sqrtpi:sqrtpi,\n  sqrtphi:sqrtphi,\n  ln2:ln2,\n  log2e:log2e,\n  ln10:ln10,\n  log10e:log10e,\n  maxfloat:maxfloat,\n  smallestNonzeroFloat:smallestNonzeroFloat,\n  maxint:maxint,\n  minint:minint,\n  maxuint:maxuint,\n  abs:abs,\n  acos:acos,\n  acosh:acosh,\n  asin:asin,\n  asinh:asinh,\n  atan:atan,\n  atan2:atan2,\n  atanh:atanh,\n  cbrt:cbrt,\n  ceil:ceil,\n  copysign:copysign,\n  cos:cos,\n  cosh:cosh,\n  dim:dim,\n  erf:erf,\n  erfc:erfc,\n  erfcinv:erfcinv,\n  erfinv:erfinv,\n  exp:exp,\n  exp2:exp2,\n  expm1:expm1,\n  float64bits:float64bits,\n  floor:floor,\n  frexp:frexp,\n  gamma:gamma,\n  hypot:hypot,\n  ilogb:ilogb,\n  mInf:mInf,\n  isInf:isInf,\n  isNaN:isNaN,\n  j0:j0,\n  j1:j1,\n  jn:jn,\n  ldexp:ldexp,\n  lgamma:lgamma,\n  log:log,\n  log10:log10,\n  log1p:log1p,\n  log2:log2,\n  logb:logb,\n  mMax:mMax,\n  mMin:mMin,\n  mod:mod,\n  modf:modf,\n  NaN:NaN,\n  nextafter:nextafter,\n  pow:pow,\n  pow10:pow10,\n  remainder:remainder,\n  round:round,\n  roundtoeven:roundtoeven,\n  signbit:signbit,\n  sin:sin,\n  sincos:sincos,\n  sinh:sinh,\n  sqrt:sqrt,\n  tan:tan,\n  tanh:tanh,\n  trunc:trunc,\n  y0:y0,\n  y1:y1,\n  yn:yn,\n}",
 						Start: ast.Position{
 							Column: 8,
 							Line:   87,
@@ -2773,13 +2773,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 6,
+								Column: 8,
 								Line:   88,
 							},
 							File:   "math.flux",
 							Source: "pi:pi",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   88,
 							},
 						},
@@ -2789,13 +2789,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 3,
+									Column: 5,
 									Line:   88,
 								},
 								File:   "math.flux",
 								Source: "pi",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   88,
 								},
 							},
@@ -2807,13 +2807,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
+									Column: 8,
 									Line:   88,
 								},
 								File:   "math.flux",
 								Source: "pi",
 								Start: ast.Position{
-									Column: 4,
+									Column: 6,
 									Line:   88,
 								},
 							},
@@ -2825,13 +2825,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 4,
+								Column: 6,
 								Line:   89,
 							},
 							File:   "math.flux",
 							Source: "e:e",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   89,
 							},
 						},
@@ -2841,24 +2841,6 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 2,
-									Line:   89,
-								},
-								File:   "math.flux",
-								Source: "e",
-								Start: ast.Position{
-									Column: 1,
-									Line:   89,
-								},
-							},
-						},
-						Name: "e",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
 									Column: 4,
 									Line:   89,
 								},
@@ -2872,18 +2854,36 @@ var pkgAST = &ast.Package{
 						},
 						Name: "e",
 					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   89,
+								},
+								File:   "math.flux",
+								Source: "e",
+								Start: ast.Position{
+									Column: 5,
+									Line:   89,
+								},
+							},
+						},
+						Name: "e",
+					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 8,
+								Column: 10,
 								Line:   90,
 							},
 							File:   "math.flux",
 							Source: "phi:phi",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   90,
 							},
 						},
@@ -2893,13 +2893,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 4,
+									Column: 6,
 									Line:   90,
 								},
 								File:   "math.flux",
 								Source: "phi",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   90,
 								},
 							},
@@ -2911,13 +2911,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 8,
+									Column: 10,
 									Line:   90,
 								},
 								File:   "math.flux",
 								Source: "phi",
 								Start: ast.Position{
-									Column: 5,
+									Column: 7,
 									Line:   90,
 								},
 							},
@@ -2929,13 +2929,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 14,
 								Line:   91,
 							},
 							File:   "math.flux",
 							Source: "sqrt2:sqrt2",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   91,
 							},
 						},
@@ -2945,13 +2945,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
+									Column: 8,
 									Line:   91,
 								},
 								File:   "math.flux",
 								Source: "sqrt2",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   91,
 								},
 							},
@@ -2963,13 +2963,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 12,
+									Column: 14,
 									Line:   91,
 								},
 								File:   "math.flux",
 								Source: "sqrt2",
 								Start: ast.Position{
-									Column: 7,
+									Column: 9,
 									Line:   91,
 								},
 							},
@@ -2981,13 +2981,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 14,
 								Line:   92,
 							},
 							File:   "math.flux",
 							Source: "sqrte:sqrte",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   92,
 							},
 						},
@@ -2997,13 +2997,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
+									Column: 8,
 									Line:   92,
 								},
 								File:   "math.flux",
 								Source: "sqrte",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   92,
 								},
 							},
@@ -3015,13 +3015,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 12,
+									Column: 14,
 									Line:   92,
 								},
 								File:   "math.flux",
 								Source: "sqrte",
 								Start: ast.Position{
-									Column: 7,
+									Column: 9,
 									Line:   92,
 								},
 							},
@@ -3033,13 +3033,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 16,
 								Line:   93,
 							},
 							File:   "math.flux",
 							Source: "sqrtpi:sqrtpi",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   93,
 							},
 						},
@@ -3049,13 +3049,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 7,
+									Column: 9,
 									Line:   93,
 								},
 								File:   "math.flux",
 								Source: "sqrtpi",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   93,
 								},
 							},
@@ -3067,13 +3067,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 14,
+									Column: 16,
 									Line:   93,
 								},
 								File:   "math.flux",
 								Source: "sqrtpi",
 								Start: ast.Position{
-									Column: 8,
+									Column: 10,
 									Line:   93,
 								},
 							},
@@ -3085,13 +3085,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 16,
+								Column: 18,
 								Line:   94,
 							},
 							File:   "math.flux",
 							Source: "sqrtphi:sqrtphi",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   94,
 							},
 						},
@@ -3101,13 +3101,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 8,
+									Column: 10,
 									Line:   94,
 								},
 								File:   "math.flux",
 								Source: "sqrtphi",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   94,
 								},
 							},
@@ -3119,13 +3119,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 16,
+									Column: 18,
 									Line:   94,
 								},
 								File:   "math.flux",
 								Source: "sqrtphi",
 								Start: ast.Position{
-									Column: 9,
+									Column: 11,
 									Line:   94,
 								},
 							},
@@ -3137,13 +3137,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 8,
+								Column: 10,
 								Line:   95,
 							},
 							File:   "math.flux",
 							Source: "ln2:ln2",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   95,
 							},
 						},
@@ -3153,13 +3153,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 4,
+									Column: 6,
 									Line:   95,
 								},
 								File:   "math.flux",
 								Source: "ln2",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   95,
 								},
 							},
@@ -3171,13 +3171,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 8,
+									Column: 10,
 									Line:   95,
 								},
 								File:   "math.flux",
 								Source: "ln2",
 								Start: ast.Position{
-									Column: 5,
+									Column: 7,
 									Line:   95,
 								},
 							},
@@ -3189,13 +3189,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 14,
 								Line:   96,
 							},
 							File:   "math.flux",
 							Source: "log2e:log2e",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   96,
 							},
 						},
@@ -3205,13 +3205,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
+									Column: 8,
 									Line:   96,
 								},
 								File:   "math.flux",
 								Source: "log2e",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   96,
 								},
 							},
@@ -3223,13 +3223,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 12,
+									Column: 14,
 									Line:   96,
 								},
 								File:   "math.flux",
 								Source: "log2e",
 								Start: ast.Position{
-									Column: 7,
+									Column: 9,
 									Line:   96,
 								},
 							},
@@ -3241,13 +3241,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 10,
+								Column: 12,
 								Line:   97,
 							},
 							File:   "math.flux",
 							Source: "ln10:ln10",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   97,
 							},
 						},
@@ -3257,13 +3257,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 5,
+									Column: 7,
 									Line:   97,
 								},
 								File:   "math.flux",
 								Source: "ln10",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   97,
 								},
 							},
@@ -3275,13 +3275,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 10,
+									Column: 12,
 									Line:   97,
 								},
 								File:   "math.flux",
 								Source: "ln10",
 								Start: ast.Position{
-									Column: 6,
+									Column: 8,
 									Line:   97,
 								},
 							},
@@ -3293,13 +3293,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 16,
 								Line:   98,
 							},
 							File:   "math.flux",
 							Source: "log10e:log10e",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   98,
 							},
 						},
@@ -3309,13 +3309,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 7,
+									Column: 9,
 									Line:   98,
 								},
 								File:   "math.flux",
 								Source: "log10e",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   98,
 								},
 							},
@@ -3327,13 +3327,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 14,
+									Column: 16,
 									Line:   98,
 								},
 								File:   "math.flux",
 								Source: "log10e",
 								Start: ast.Position{
-									Column: 8,
+									Column: 10,
 									Line:   98,
 								},
 							},
@@ -3345,13 +3345,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 18,
+								Column: 20,
 								Line:   99,
 							},
 							File:   "math.flux",
 							Source: "maxfloat:maxfloat",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   99,
 							},
 						},
@@ -3361,13 +3361,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 9,
+									Column: 11,
 									Line:   99,
 								},
 								File:   "math.flux",
 								Source: "maxfloat",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   99,
 								},
 							},
@@ -3379,13 +3379,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 18,
+									Column: 20,
 									Line:   99,
 								},
 								File:   "math.flux",
 								Source: "maxfloat",
 								Start: ast.Position{
-									Column: 10,
+									Column: 12,
 									Line:   99,
 								},
 							},
@@ -3397,13 +3397,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 42,
+								Column: 44,
 								Line:   100,
 							},
 							File:   "math.flux",
 							Source: "smallestNonzeroFloat:smallestNonzeroFloat",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   100,
 							},
 						},
@@ -3413,13 +3413,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 21,
+									Column: 23,
 									Line:   100,
 								},
 								File:   "math.flux",
 								Source: "smallestNonzeroFloat",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   100,
 								},
 							},
@@ -3431,122 +3431,18 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 42,
+									Column: 44,
 									Line:   100,
 								},
 								File:   "math.flux",
 								Source: "smallestNonzeroFloat",
 								Start: ast.Position{
-									Column: 22,
+									Column: 24,
 									Line:   100,
 								},
 							},
 						},
 						Name: "smallestNonzeroFloat",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 14,
-								Line:   101,
-							},
-							File:   "math.flux",
-							Source: "maxint:maxint",
-							Start: ast.Position{
-								Column: 1,
-								Line:   101,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 7,
-									Line:   101,
-								},
-								File:   "math.flux",
-								Source: "maxint",
-								Start: ast.Position{
-									Column: 1,
-									Line:   101,
-								},
-							},
-						},
-						Name: "maxint",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 14,
-									Line:   101,
-								},
-								File:   "math.flux",
-								Source: "maxint",
-								Start: ast.Position{
-									Column: 8,
-									Line:   101,
-								},
-							},
-						},
-						Name: "maxint",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 14,
-								Line:   102,
-							},
-							File:   "math.flux",
-							Source: "minint:minint",
-							Start: ast.Position{
-								Column: 1,
-								Line:   102,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 7,
-									Line:   102,
-								},
-								File:   "math.flux",
-								Source: "minint",
-								Start: ast.Position{
-									Column: 1,
-									Line:   102,
-								},
-							},
-						},
-						Name: "minint",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 14,
-									Line:   102,
-								},
-								File:   "math.flux",
-								Source: "minint",
-								Start: ast.Position{
-									Column: 8,
-									Line:   102,
-								},
-							},
-						},
-						Name: "minint",
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
@@ -3554,13 +3450,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   103,
+								Line:   101,
 							},
 							File:   "math.flux",
-							Source: "maxuint:maxuint",
+							Source: "maxint:maxint",
 							Start: ast.Position{
-								Column: 1,
-								Line:   103,
+								Column: 3,
+								Line:   101,
 							},
 						},
 					},
@@ -3569,18 +3465,18 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 8,
-									Line:   103,
+									Column: 9,
+									Line:   101,
 								},
 								File:   "math.flux",
-								Source: "maxuint",
+								Source: "maxint",
 								Start: ast.Position{
-									Column: 1,
-									Line:   103,
+									Column: 3,
+									Line:   101,
 								},
 							},
 						},
-						Name: "maxuint",
+						Name: "maxint",
 					},
 					Value: &ast.Identifier{
 						BaseNode: ast.BaseNode{
@@ -3588,537 +3484,69 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   103,
+									Line:   101,
 								},
 								File:   "math.flux",
-								Source: "maxuint",
+								Source: "maxint",
 								Start: ast.Position{
+									Column: 10,
+									Line:   101,
+								},
+							},
+						},
+						Name: "maxint",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 16,
+								Line:   102,
+							},
+							File:   "math.flux",
+							Source: "minint:minint",
+							Start: ast.Position{
+								Column: 3,
+								Line:   102,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
 									Column: 9,
-									Line:   103,
-								},
-							},
-						},
-						Name: "maxuint",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 8,
-								Line:   104,
-							},
-							File:   "math.flux",
-							Source: "abs:abs",
-							Start: ast.Position{
-								Column: 1,
-								Line:   104,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 4,
-									Line:   104,
+									Line:   102,
 								},
 								File:   "math.flux",
-								Source: "abs",
+								Source: "minint",
 								Start: ast.Position{
-									Column: 1,
-									Line:   104,
+									Column: 3,
+									Line:   102,
 								},
 							},
 						},
-						Name: "abs",
+						Name: "minint",
 					},
 					Value: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 8,
-									Line:   104,
+									Column: 16,
+									Line:   102,
 								},
 								File:   "math.flux",
-								Source: "abs",
+								Source: "minint",
 								Start: ast.Position{
-									Column: 5,
-									Line:   104,
-								},
-							},
-						},
-						Name: "abs",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 10,
-								Line:   105,
-							},
-							File:   "math.flux",
-							Source: "acos:acos",
-							Start: ast.Position{
-								Column: 1,
-								Line:   105,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 5,
-									Line:   105,
-								},
-								File:   "math.flux",
-								Source: "acos",
-								Start: ast.Position{
-									Column: 1,
-									Line:   105,
-								},
-							},
-						},
-						Name: "acos",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
 									Column: 10,
-									Line:   105,
-								},
-								File:   "math.flux",
-								Source: "acos",
-								Start: ast.Position{
-									Column: 6,
-									Line:   105,
+									Line:   102,
 								},
 							},
 						},
-						Name: "acos",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   106,
-							},
-							File:   "math.flux",
-							Source: "acosh:acosh",
-							Start: ast.Position{
-								Column: 1,
-								Line:   106,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   106,
-								},
-								File:   "math.flux",
-								Source: "acosh",
-								Start: ast.Position{
-									Column: 1,
-									Line:   106,
-								},
-							},
-						},
-						Name: "acosh",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   106,
-								},
-								File:   "math.flux",
-								Source: "acosh",
-								Start: ast.Position{
-									Column: 7,
-									Line:   106,
-								},
-							},
-						},
-						Name: "acosh",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 10,
-								Line:   107,
-							},
-							File:   "math.flux",
-							Source: "asin:asin",
-							Start: ast.Position{
-								Column: 1,
-								Line:   107,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 5,
-									Line:   107,
-								},
-								File:   "math.flux",
-								Source: "asin",
-								Start: ast.Position{
-									Column: 1,
-									Line:   107,
-								},
-							},
-						},
-						Name: "asin",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   107,
-								},
-								File:   "math.flux",
-								Source: "asin",
-								Start: ast.Position{
-									Column: 6,
-									Line:   107,
-								},
-							},
-						},
-						Name: "asin",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   108,
-							},
-							File:   "math.flux",
-							Source: "asinh:asinh",
-							Start: ast.Position{
-								Column: 1,
-								Line:   108,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   108,
-								},
-								File:   "math.flux",
-								Source: "asinh",
-								Start: ast.Position{
-									Column: 1,
-									Line:   108,
-								},
-							},
-						},
-						Name: "asinh",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   108,
-								},
-								File:   "math.flux",
-								Source: "asinh",
-								Start: ast.Position{
-									Column: 7,
-									Line:   108,
-								},
-							},
-						},
-						Name: "asinh",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 10,
-								Line:   109,
-							},
-							File:   "math.flux",
-							Source: "atan:atan",
-							Start: ast.Position{
-								Column: 1,
-								Line:   109,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 5,
-									Line:   109,
-								},
-								File:   "math.flux",
-								Source: "atan",
-								Start: ast.Position{
-									Column: 1,
-									Line:   109,
-								},
-							},
-						},
-						Name: "atan",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   109,
-								},
-								File:   "math.flux",
-								Source: "atan",
-								Start: ast.Position{
-									Column: 6,
-									Line:   109,
-								},
-							},
-						},
-						Name: "atan",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   110,
-							},
-							File:   "math.flux",
-							Source: "atan2:atan2",
-							Start: ast.Position{
-								Column: 1,
-								Line:   110,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   110,
-								},
-								File:   "math.flux",
-								Source: "atan2",
-								Start: ast.Position{
-									Column: 1,
-									Line:   110,
-								},
-							},
-						},
-						Name: "atan2",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   110,
-								},
-								File:   "math.flux",
-								Source: "atan2",
-								Start: ast.Position{
-									Column: 7,
-									Line:   110,
-								},
-							},
-						},
-						Name: "atan2",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   111,
-							},
-							File:   "math.flux",
-							Source: "atanh:atanh",
-							Start: ast.Position{
-								Column: 1,
-								Line:   111,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   111,
-								},
-								File:   "math.flux",
-								Source: "atanh",
-								Start: ast.Position{
-									Column: 1,
-									Line:   111,
-								},
-							},
-						},
-						Name: "atanh",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   111,
-								},
-								File:   "math.flux",
-								Source: "atanh",
-								Start: ast.Position{
-									Column: 7,
-									Line:   111,
-								},
-							},
-						},
-						Name: "atanh",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 10,
-								Line:   112,
-							},
-							File:   "math.flux",
-							Source: "cbrt:cbrt",
-							Start: ast.Position{
-								Column: 1,
-								Line:   112,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 5,
-									Line:   112,
-								},
-								File:   "math.flux",
-								Source: "cbrt",
-								Start: ast.Position{
-									Column: 1,
-									Line:   112,
-								},
-							},
-						},
-						Name: "cbrt",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   112,
-								},
-								File:   "math.flux",
-								Source: "cbrt",
-								Start: ast.Position{
-									Column: 6,
-									Line:   112,
-								},
-							},
-						},
-						Name: "cbrt",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 10,
-								Line:   113,
-							},
-							File:   "math.flux",
-							Source: "ceil:ceil",
-							Start: ast.Position{
-								Column: 1,
-								Line:   113,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 5,
-									Line:   113,
-								},
-								File:   "math.flux",
-								Source: "ceil",
-								Start: ast.Position{
-									Column: 1,
-									Line:   113,
-								},
-							},
-						},
-						Name: "ceil",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   113,
-								},
-								File:   "math.flux",
-								Source: "ceil",
-								Start: ast.Position{
-									Column: 6,
-									Line:   113,
-								},
-							},
-						},
-						Name: "ceil",
+						Name: "minint",
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
@@ -4126,13 +3554,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   114,
+								Line:   103,
 							},
 							File:   "math.flux",
-							Source: "copysign:copysign",
+							Source: "maxuint:maxuint",
 							Start: ast.Position{
-								Column: 1,
-								Line:   114,
+								Column: 3,
+								Line:   103,
 							},
 						},
 					},
@@ -4141,18 +3569,18 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 9,
-									Line:   114,
+									Column: 10,
+									Line:   103,
 								},
 								File:   "math.flux",
-								Source: "copysign",
+								Source: "maxuint",
 								Start: ast.Position{
-									Column: 1,
-									Line:   114,
+									Column: 3,
+									Line:   103,
 								},
 							},
 						},
-						Name: "copysign",
+						Name: "maxuint",
 					},
 					Value: &ast.Identifier{
 						BaseNode: ast.BaseNode{
@@ -4160,12 +3588,584 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
+									Line:   103,
+								},
+								File:   "math.flux",
+								Source: "maxuint",
+								Start: ast.Position{
+									Column: 11,
+									Line:   103,
+								},
+							},
+						},
+						Name: "maxuint",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 10,
+								Line:   104,
+							},
+							File:   "math.flux",
+							Source: "abs:abs",
+							Start: ast.Position{
+								Column: 3,
+								Line:   104,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   104,
+								},
+								File:   "math.flux",
+								Source: "abs",
+								Start: ast.Position{
+									Column: 3,
+									Line:   104,
+								},
+							},
+						},
+						Name: "abs",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 10,
+									Line:   104,
+								},
+								File:   "math.flux",
+								Source: "abs",
+								Start: ast.Position{
+									Column: 7,
+									Line:   104,
+								},
+							},
+						},
+						Name: "abs",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   105,
+							},
+							File:   "math.flux",
+							Source: "acos:acos",
+							Start: ast.Position{
+								Column: 3,
+								Line:   105,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 7,
+									Line:   105,
+								},
+								File:   "math.flux",
+								Source: "acos",
+								Start: ast.Position{
+									Column: 3,
+									Line:   105,
+								},
+							},
+						},
+						Name: "acos",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   105,
+								},
+								File:   "math.flux",
+								Source: "acos",
+								Start: ast.Position{
+									Column: 8,
+									Line:   105,
+								},
+							},
+						},
+						Name: "acos",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   106,
+							},
+							File:   "math.flux",
+							Source: "acosh:acosh",
+							Start: ast.Position{
+								Column: 3,
+								Line:   106,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   106,
+								},
+								File:   "math.flux",
+								Source: "acosh",
+								Start: ast.Position{
+									Column: 3,
+									Line:   106,
+								},
+							},
+						},
+						Name: "acosh",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   106,
+								},
+								File:   "math.flux",
+								Source: "acosh",
+								Start: ast.Position{
+									Column: 9,
+									Line:   106,
+								},
+							},
+						},
+						Name: "acosh",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   107,
+							},
+							File:   "math.flux",
+							Source: "asin:asin",
+							Start: ast.Position{
+								Column: 3,
+								Line:   107,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 7,
+									Line:   107,
+								},
+								File:   "math.flux",
+								Source: "asin",
+								Start: ast.Position{
+									Column: 3,
+									Line:   107,
+								},
+							},
+						},
+						Name: "asin",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   107,
+								},
+								File:   "math.flux",
+								Source: "asin",
+								Start: ast.Position{
+									Column: 8,
+									Line:   107,
+								},
+							},
+						},
+						Name: "asin",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   108,
+							},
+							File:   "math.flux",
+							Source: "asinh:asinh",
+							Start: ast.Position{
+								Column: 3,
+								Line:   108,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   108,
+								},
+								File:   "math.flux",
+								Source: "asinh",
+								Start: ast.Position{
+									Column: 3,
+									Line:   108,
+								},
+							},
+						},
+						Name: "asinh",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   108,
+								},
+								File:   "math.flux",
+								Source: "asinh",
+								Start: ast.Position{
+									Column: 9,
+									Line:   108,
+								},
+							},
+						},
+						Name: "asinh",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   109,
+							},
+							File:   "math.flux",
+							Source: "atan:atan",
+							Start: ast.Position{
+								Column: 3,
+								Line:   109,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 7,
+									Line:   109,
+								},
+								File:   "math.flux",
+								Source: "atan",
+								Start: ast.Position{
+									Column: 3,
+									Line:   109,
+								},
+							},
+						},
+						Name: "atan",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   109,
+								},
+								File:   "math.flux",
+								Source: "atan",
+								Start: ast.Position{
+									Column: 8,
+									Line:   109,
+								},
+							},
+						},
+						Name: "atan",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   110,
+							},
+							File:   "math.flux",
+							Source: "atan2:atan2",
+							Start: ast.Position{
+								Column: 3,
+								Line:   110,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   110,
+								},
+								File:   "math.flux",
+								Source: "atan2",
+								Start: ast.Position{
+									Column: 3,
+									Line:   110,
+								},
+							},
+						},
+						Name: "atan2",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   110,
+								},
+								File:   "math.flux",
+								Source: "atan2",
+								Start: ast.Position{
+									Column: 9,
+									Line:   110,
+								},
+							},
+						},
+						Name: "atan2",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   111,
+							},
+							File:   "math.flux",
+							Source: "atanh:atanh",
+							Start: ast.Position{
+								Column: 3,
+								Line:   111,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   111,
+								},
+								File:   "math.flux",
+								Source: "atanh",
+								Start: ast.Position{
+									Column: 3,
+									Line:   111,
+								},
+							},
+						},
+						Name: "atanh",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   111,
+								},
+								File:   "math.flux",
+								Source: "atanh",
+								Start: ast.Position{
+									Column: 9,
+									Line:   111,
+								},
+							},
+						},
+						Name: "atanh",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   112,
+							},
+							File:   "math.flux",
+							Source: "cbrt:cbrt",
+							Start: ast.Position{
+								Column: 3,
+								Line:   112,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 7,
+									Line:   112,
+								},
+								File:   "math.flux",
+								Source: "cbrt",
+								Start: ast.Position{
+									Column: 3,
+									Line:   112,
+								},
+							},
+						},
+						Name: "cbrt",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   112,
+								},
+								File:   "math.flux",
+								Source: "cbrt",
+								Start: ast.Position{
+									Column: 8,
+									Line:   112,
+								},
+							},
+						},
+						Name: "cbrt",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   113,
+							},
+							File:   "math.flux",
+							Source: "ceil:ceil",
+							Start: ast.Position{
+								Column: 3,
+								Line:   113,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 7,
+									Line:   113,
+								},
+								File:   "math.flux",
+								Source: "ceil",
+								Start: ast.Position{
+									Column: 3,
+									Line:   113,
+								},
+							},
+						},
+						Name: "ceil",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   113,
+								},
+								File:   "math.flux",
+								Source: "ceil",
+								Start: ast.Position{
+									Column: 8,
+									Line:   113,
+								},
+							},
+						},
+						Name: "ceil",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 20,
+								Line:   114,
+							},
+							File:   "math.flux",
+							Source: "copysign:copysign",
+							Start: ast.Position{
+								Column: 3,
+								Line:   114,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 11,
 									Line:   114,
 								},
 								File:   "math.flux",
 								Source: "copysign",
 								Start: ast.Position{
-									Column: 10,
+									Column: 3,
+									Line:   114,
+								},
+							},
+						},
+						Name: "copysign",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 20,
+									Line:   114,
+								},
+								File:   "math.flux",
+								Source: "copysign",
+								Start: ast.Position{
+									Column: 12,
 									Line:   114,
 								},
 							},
@@ -4177,13 +4177,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 8,
+								Column: 10,
 								Line:   115,
 							},
 							File:   "math.flux",
 							Source: "cos:cos",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   115,
 							},
 						},
@@ -4193,13 +4193,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 4,
+									Column: 6,
 									Line:   115,
 								},
 								File:   "math.flux",
 								Source: "cos",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   115,
 								},
 							},
@@ -4211,13 +4211,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 8,
+									Column: 10,
 									Line:   115,
 								},
 								File:   "math.flux",
 								Source: "cos",
 								Start: ast.Position{
-									Column: 5,
+									Column: 7,
 									Line:   115,
 								},
 							},
@@ -4229,13 +4229,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 10,
+								Column: 12,
 								Line:   116,
 							},
 							File:   "math.flux",
 							Source: "cosh:cosh",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   116,
 							},
 						},
@@ -4245,13 +4245,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 5,
+									Column: 7,
 									Line:   116,
 								},
 								File:   "math.flux",
 								Source: "cosh",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   116,
 								},
 							},
@@ -4263,13 +4263,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 10,
+									Column: 12,
 									Line:   116,
 								},
 								File:   "math.flux",
 								Source: "cosh",
 								Start: ast.Position{
-									Column: 6,
+									Column: 8,
 									Line:   116,
 								},
 							},
@@ -4281,13 +4281,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 8,
+								Column: 10,
 								Line:   117,
 							},
 							File:   "math.flux",
 							Source: "dim:dim",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   117,
 							},
 						},
@@ -4297,13 +4297,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 4,
+									Column: 6,
 									Line:   117,
 								},
 								File:   "math.flux",
 								Source: "dim",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   117,
 								},
 							},
@@ -4315,13 +4315,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 8,
+									Column: 10,
 									Line:   117,
 								},
 								File:   "math.flux",
 								Source: "dim",
 								Start: ast.Position{
-									Column: 5,
+									Column: 7,
 									Line:   117,
 								},
 							},
@@ -4333,13 +4333,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 8,
+								Column: 10,
 								Line:   118,
 							},
 							File:   "math.flux",
 							Source: "erf:erf",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   118,
 							},
 						},
@@ -4349,13 +4349,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 4,
+									Column: 6,
 									Line:   118,
 								},
 								File:   "math.flux",
 								Source: "erf",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   118,
 								},
 							},
@@ -4367,13 +4367,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 8,
+									Column: 10,
 									Line:   118,
 								},
 								File:   "math.flux",
 								Source: "erf",
 								Start: ast.Position{
-									Column: 5,
+									Column: 7,
 									Line:   118,
 								},
 							},
@@ -4385,13 +4385,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 10,
+								Column: 12,
 								Line:   119,
 							},
 							File:   "math.flux",
 							Source: "erfc:erfc",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   119,
 							},
 						},
@@ -4401,13 +4401,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 5,
+									Column: 7,
 									Line:   119,
 								},
 								File:   "math.flux",
 								Source: "erfc",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   119,
 								},
 							},
@@ -4419,13 +4419,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 10,
+									Column: 12,
 									Line:   119,
 								},
 								File:   "math.flux",
 								Source: "erfc",
 								Start: ast.Position{
-									Column: 6,
+									Column: 8,
 									Line:   119,
 								},
 							},
@@ -4437,13 +4437,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 16,
+								Column: 18,
 								Line:   120,
 							},
 							File:   "math.flux",
 							Source: "erfcinv:erfcinv",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   120,
 							},
 						},
@@ -4453,13 +4453,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 8,
+									Column: 10,
 									Line:   120,
 								},
 								File:   "math.flux",
 								Source: "erfcinv",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   120,
 								},
 							},
@@ -4471,1786 +4471,18 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 16,
+									Column: 18,
 									Line:   120,
 								},
 								File:   "math.flux",
 								Source: "erfcinv",
 								Start: ast.Position{
-									Column: 9,
+									Column: 11,
 									Line:   120,
 								},
 							},
 						},
 						Name: "erfcinv",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 14,
-								Line:   121,
-							},
-							File:   "math.flux",
-							Source: "erfinv:erfinv",
-							Start: ast.Position{
-								Column: 1,
-								Line:   121,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 7,
-									Line:   121,
-								},
-								File:   "math.flux",
-								Source: "erfinv",
-								Start: ast.Position{
-									Column: 1,
-									Line:   121,
-								},
-							},
-						},
-						Name: "erfinv",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 14,
-									Line:   121,
-								},
-								File:   "math.flux",
-								Source: "erfinv",
-								Start: ast.Position{
-									Column: 8,
-									Line:   121,
-								},
-							},
-						},
-						Name: "erfinv",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 8,
-								Line:   122,
-							},
-							File:   "math.flux",
-							Source: "exp:exp",
-							Start: ast.Position{
-								Column: 1,
-								Line:   122,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 4,
-									Line:   122,
-								},
-								File:   "math.flux",
-								Source: "exp",
-								Start: ast.Position{
-									Column: 1,
-									Line:   122,
-								},
-							},
-						},
-						Name: "exp",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 8,
-									Line:   122,
-								},
-								File:   "math.flux",
-								Source: "exp",
-								Start: ast.Position{
-									Column: 5,
-									Line:   122,
-								},
-							},
-						},
-						Name: "exp",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 10,
-								Line:   123,
-							},
-							File:   "math.flux",
-							Source: "exp2:exp2",
-							Start: ast.Position{
-								Column: 1,
-								Line:   123,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 5,
-									Line:   123,
-								},
-								File:   "math.flux",
-								Source: "exp2",
-								Start: ast.Position{
-									Column: 1,
-									Line:   123,
-								},
-							},
-						},
-						Name: "exp2",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   123,
-								},
-								File:   "math.flux",
-								Source: "exp2",
-								Start: ast.Position{
-									Column: 6,
-									Line:   123,
-								},
-							},
-						},
-						Name: "exp2",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   124,
-							},
-							File:   "math.flux",
-							Source: "expm1:expm1",
-							Start: ast.Position{
-								Column: 1,
-								Line:   124,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   124,
-								},
-								File:   "math.flux",
-								Source: "expm1",
-								Start: ast.Position{
-									Column: 1,
-									Line:   124,
-								},
-							},
-						},
-						Name: "expm1",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   124,
-								},
-								File:   "math.flux",
-								Source: "expm1",
-								Start: ast.Position{
-									Column: 7,
-									Line:   124,
-								},
-							},
-						},
-						Name: "expm1",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 24,
-								Line:   125,
-							},
-							File:   "math.flux",
-							Source: "float64bits:float64bits",
-							Start: ast.Position{
-								Column: 1,
-								Line:   125,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   125,
-								},
-								File:   "math.flux",
-								Source: "float64bits",
-								Start: ast.Position{
-									Column: 1,
-									Line:   125,
-								},
-							},
-						},
-						Name: "float64bits",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 24,
-									Line:   125,
-								},
-								File:   "math.flux",
-								Source: "float64bits",
-								Start: ast.Position{
-									Column: 13,
-									Line:   125,
-								},
-							},
-						},
-						Name: "float64bits",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   126,
-							},
-							File:   "math.flux",
-							Source: "floor:floor",
-							Start: ast.Position{
-								Column: 1,
-								Line:   126,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   126,
-								},
-								File:   "math.flux",
-								Source: "floor",
-								Start: ast.Position{
-									Column: 1,
-									Line:   126,
-								},
-							},
-						},
-						Name: "floor",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   126,
-								},
-								File:   "math.flux",
-								Source: "floor",
-								Start: ast.Position{
-									Column: 7,
-									Line:   126,
-								},
-							},
-						},
-						Name: "floor",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   127,
-							},
-							File:   "math.flux",
-							Source: "frexp:frexp",
-							Start: ast.Position{
-								Column: 1,
-								Line:   127,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   127,
-								},
-								File:   "math.flux",
-								Source: "frexp",
-								Start: ast.Position{
-									Column: 1,
-									Line:   127,
-								},
-							},
-						},
-						Name: "frexp",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   127,
-								},
-								File:   "math.flux",
-								Source: "frexp",
-								Start: ast.Position{
-									Column: 7,
-									Line:   127,
-								},
-							},
-						},
-						Name: "frexp",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   128,
-							},
-							File:   "math.flux",
-							Source: "gamma:gamma",
-							Start: ast.Position{
-								Column: 1,
-								Line:   128,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   128,
-								},
-								File:   "math.flux",
-								Source: "gamma",
-								Start: ast.Position{
-									Column: 1,
-									Line:   128,
-								},
-							},
-						},
-						Name: "gamma",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   128,
-								},
-								File:   "math.flux",
-								Source: "gamma",
-								Start: ast.Position{
-									Column: 7,
-									Line:   128,
-								},
-							},
-						},
-						Name: "gamma",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   129,
-							},
-							File:   "math.flux",
-							Source: "hypot:hypot",
-							Start: ast.Position{
-								Column: 1,
-								Line:   129,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   129,
-								},
-								File:   "math.flux",
-								Source: "hypot",
-								Start: ast.Position{
-									Column: 1,
-									Line:   129,
-								},
-							},
-						},
-						Name: "hypot",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   129,
-								},
-								File:   "math.flux",
-								Source: "hypot",
-								Start: ast.Position{
-									Column: 7,
-									Line:   129,
-								},
-							},
-						},
-						Name: "hypot",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   130,
-							},
-							File:   "math.flux",
-							Source: "ilogb:ilogb",
-							Start: ast.Position{
-								Column: 1,
-								Line:   130,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   130,
-								},
-								File:   "math.flux",
-								Source: "ilogb",
-								Start: ast.Position{
-									Column: 1,
-									Line:   130,
-								},
-							},
-						},
-						Name: "ilogb",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   130,
-								},
-								File:   "math.flux",
-								Source: "ilogb",
-								Start: ast.Position{
-									Column: 7,
-									Line:   130,
-								},
-							},
-						},
-						Name: "ilogb",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 10,
-								Line:   131,
-							},
-							File:   "math.flux",
-							Source: "mInf:mInf",
-							Start: ast.Position{
-								Column: 1,
-								Line:   131,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 5,
-									Line:   131,
-								},
-								File:   "math.flux",
-								Source: "mInf",
-								Start: ast.Position{
-									Column: 1,
-									Line:   131,
-								},
-							},
-						},
-						Name: "mInf",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   131,
-								},
-								File:   "math.flux",
-								Source: "mInf",
-								Start: ast.Position{
-									Column: 6,
-									Line:   131,
-								},
-							},
-						},
-						Name: "mInf",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   132,
-							},
-							File:   "math.flux",
-							Source: "isInf:isInf",
-							Start: ast.Position{
-								Column: 1,
-								Line:   132,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   132,
-								},
-								File:   "math.flux",
-								Source: "isInf",
-								Start: ast.Position{
-									Column: 1,
-									Line:   132,
-								},
-							},
-						},
-						Name: "isInf",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   132,
-								},
-								File:   "math.flux",
-								Source: "isInf",
-								Start: ast.Position{
-									Column: 7,
-									Line:   132,
-								},
-							},
-						},
-						Name: "isInf",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   133,
-							},
-							File:   "math.flux",
-							Source: "isNaN:isNaN",
-							Start: ast.Position{
-								Column: 1,
-								Line:   133,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   133,
-								},
-								File:   "math.flux",
-								Source: "isNaN",
-								Start: ast.Position{
-									Column: 1,
-									Line:   133,
-								},
-							},
-						},
-						Name: "isNaN",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   133,
-								},
-								File:   "math.flux",
-								Source: "isNaN",
-								Start: ast.Position{
-									Column: 7,
-									Line:   133,
-								},
-							},
-						},
-						Name: "isNaN",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 6,
-								Line:   134,
-							},
-							File:   "math.flux",
-							Source: "j0:j0",
-							Start: ast.Position{
-								Column: 1,
-								Line:   134,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 3,
-									Line:   134,
-								},
-								File:   "math.flux",
-								Source: "j0",
-								Start: ast.Position{
-									Column: 1,
-									Line:   134,
-								},
-							},
-						},
-						Name: "j0",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   134,
-								},
-								File:   "math.flux",
-								Source: "j0",
-								Start: ast.Position{
-									Column: 4,
-									Line:   134,
-								},
-							},
-						},
-						Name: "j0",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 6,
-								Line:   135,
-							},
-							File:   "math.flux",
-							Source: "j1:j1",
-							Start: ast.Position{
-								Column: 1,
-								Line:   135,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 3,
-									Line:   135,
-								},
-								File:   "math.flux",
-								Source: "j1",
-								Start: ast.Position{
-									Column: 1,
-									Line:   135,
-								},
-							},
-						},
-						Name: "j1",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   135,
-								},
-								File:   "math.flux",
-								Source: "j1",
-								Start: ast.Position{
-									Column: 4,
-									Line:   135,
-								},
-							},
-						},
-						Name: "j1",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 6,
-								Line:   136,
-							},
-							File:   "math.flux",
-							Source: "jn:jn",
-							Start: ast.Position{
-								Column: 1,
-								Line:   136,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 3,
-									Line:   136,
-								},
-								File:   "math.flux",
-								Source: "jn",
-								Start: ast.Position{
-									Column: 1,
-									Line:   136,
-								},
-							},
-						},
-						Name: "jn",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   136,
-								},
-								File:   "math.flux",
-								Source: "jn",
-								Start: ast.Position{
-									Column: 4,
-									Line:   136,
-								},
-							},
-						},
-						Name: "jn",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   137,
-							},
-							File:   "math.flux",
-							Source: "ldexp:ldexp",
-							Start: ast.Position{
-								Column: 1,
-								Line:   137,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   137,
-								},
-								File:   "math.flux",
-								Source: "ldexp",
-								Start: ast.Position{
-									Column: 1,
-									Line:   137,
-								},
-							},
-						},
-						Name: "ldexp",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   137,
-								},
-								File:   "math.flux",
-								Source: "ldexp",
-								Start: ast.Position{
-									Column: 7,
-									Line:   137,
-								},
-							},
-						},
-						Name: "ldexp",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 14,
-								Line:   138,
-							},
-							File:   "math.flux",
-							Source: "lgamma:lgamma",
-							Start: ast.Position{
-								Column: 1,
-								Line:   138,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 7,
-									Line:   138,
-								},
-								File:   "math.flux",
-								Source: "lgamma",
-								Start: ast.Position{
-									Column: 1,
-									Line:   138,
-								},
-							},
-						},
-						Name: "lgamma",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 14,
-									Line:   138,
-								},
-								File:   "math.flux",
-								Source: "lgamma",
-								Start: ast.Position{
-									Column: 8,
-									Line:   138,
-								},
-							},
-						},
-						Name: "lgamma",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 8,
-								Line:   139,
-							},
-							File:   "math.flux",
-							Source: "log:log",
-							Start: ast.Position{
-								Column: 1,
-								Line:   139,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 4,
-									Line:   139,
-								},
-								File:   "math.flux",
-								Source: "log",
-								Start: ast.Position{
-									Column: 1,
-									Line:   139,
-								},
-							},
-						},
-						Name: "log",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 8,
-									Line:   139,
-								},
-								File:   "math.flux",
-								Source: "log",
-								Start: ast.Position{
-									Column: 5,
-									Line:   139,
-								},
-							},
-						},
-						Name: "log",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   140,
-							},
-							File:   "math.flux",
-							Source: "log10:log10",
-							Start: ast.Position{
-								Column: 1,
-								Line:   140,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   140,
-								},
-								File:   "math.flux",
-								Source: "log10",
-								Start: ast.Position{
-									Column: 1,
-									Line:   140,
-								},
-							},
-						},
-						Name: "log10",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   140,
-								},
-								File:   "math.flux",
-								Source: "log10",
-								Start: ast.Position{
-									Column: 7,
-									Line:   140,
-								},
-							},
-						},
-						Name: "log10",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   141,
-							},
-							File:   "math.flux",
-							Source: "log1p:log1p",
-							Start: ast.Position{
-								Column: 1,
-								Line:   141,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   141,
-								},
-								File:   "math.flux",
-								Source: "log1p",
-								Start: ast.Position{
-									Column: 1,
-									Line:   141,
-								},
-							},
-						},
-						Name: "log1p",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   141,
-								},
-								File:   "math.flux",
-								Source: "log1p",
-								Start: ast.Position{
-									Column: 7,
-									Line:   141,
-								},
-							},
-						},
-						Name: "log1p",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 10,
-								Line:   142,
-							},
-							File:   "math.flux",
-							Source: "log2:log2",
-							Start: ast.Position{
-								Column: 1,
-								Line:   142,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 5,
-									Line:   142,
-								},
-								File:   "math.flux",
-								Source: "log2",
-								Start: ast.Position{
-									Column: 1,
-									Line:   142,
-								},
-							},
-						},
-						Name: "log2",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   142,
-								},
-								File:   "math.flux",
-								Source: "log2",
-								Start: ast.Position{
-									Column: 6,
-									Line:   142,
-								},
-							},
-						},
-						Name: "log2",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 10,
-								Line:   143,
-							},
-							File:   "math.flux",
-							Source: "logb:logb",
-							Start: ast.Position{
-								Column: 1,
-								Line:   143,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 5,
-									Line:   143,
-								},
-								File:   "math.flux",
-								Source: "logb",
-								Start: ast.Position{
-									Column: 1,
-									Line:   143,
-								},
-							},
-						},
-						Name: "logb",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   143,
-								},
-								File:   "math.flux",
-								Source: "logb",
-								Start: ast.Position{
-									Column: 6,
-									Line:   143,
-								},
-							},
-						},
-						Name: "logb",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 10,
-								Line:   144,
-							},
-							File:   "math.flux",
-							Source: "mMax:mMax",
-							Start: ast.Position{
-								Column: 1,
-								Line:   144,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 5,
-									Line:   144,
-								},
-								File:   "math.flux",
-								Source: "mMax",
-								Start: ast.Position{
-									Column: 1,
-									Line:   144,
-								},
-							},
-						},
-						Name: "mMax",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   144,
-								},
-								File:   "math.flux",
-								Source: "mMax",
-								Start: ast.Position{
-									Column: 6,
-									Line:   144,
-								},
-							},
-						},
-						Name: "mMax",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 10,
-								Line:   145,
-							},
-							File:   "math.flux",
-							Source: "mMin:mMin",
-							Start: ast.Position{
-								Column: 1,
-								Line:   145,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 5,
-									Line:   145,
-								},
-								File:   "math.flux",
-								Source: "mMin",
-								Start: ast.Position{
-									Column: 1,
-									Line:   145,
-								},
-							},
-						},
-						Name: "mMin",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   145,
-								},
-								File:   "math.flux",
-								Source: "mMin",
-								Start: ast.Position{
-									Column: 6,
-									Line:   145,
-								},
-							},
-						},
-						Name: "mMin",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 8,
-								Line:   146,
-							},
-							File:   "math.flux",
-							Source: "mod:mod",
-							Start: ast.Position{
-								Column: 1,
-								Line:   146,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 4,
-									Line:   146,
-								},
-								File:   "math.flux",
-								Source: "mod",
-								Start: ast.Position{
-									Column: 1,
-									Line:   146,
-								},
-							},
-						},
-						Name: "mod",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 8,
-									Line:   146,
-								},
-								File:   "math.flux",
-								Source: "mod",
-								Start: ast.Position{
-									Column: 5,
-									Line:   146,
-								},
-							},
-						},
-						Name: "mod",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 10,
-								Line:   147,
-							},
-							File:   "math.flux",
-							Source: "modf:modf",
-							Start: ast.Position{
-								Column: 1,
-								Line:   147,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 5,
-									Line:   147,
-								},
-								File:   "math.flux",
-								Source: "modf",
-								Start: ast.Position{
-									Column: 1,
-									Line:   147,
-								},
-							},
-						},
-						Name: "modf",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   147,
-								},
-								File:   "math.flux",
-								Source: "modf",
-								Start: ast.Position{
-									Column: 6,
-									Line:   147,
-								},
-							},
-						},
-						Name: "modf",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 8,
-								Line:   148,
-							},
-							File:   "math.flux",
-							Source: "NaN:NaN",
-							Start: ast.Position{
-								Column: 1,
-								Line:   148,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 4,
-									Line:   148,
-								},
-								File:   "math.flux",
-								Source: "NaN",
-								Start: ast.Position{
-									Column: 1,
-									Line:   148,
-								},
-							},
-						},
-						Name: "NaN",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 8,
-									Line:   148,
-								},
-								File:   "math.flux",
-								Source: "NaN",
-								Start: ast.Position{
-									Column: 5,
-									Line:   148,
-								},
-							},
-						},
-						Name: "NaN",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 20,
-								Line:   149,
-							},
-							File:   "math.flux",
-							Source: "nextafter:nextafter",
-							Start: ast.Position{
-								Column: 1,
-								Line:   149,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   149,
-								},
-								File:   "math.flux",
-								Source: "nextafter",
-								Start: ast.Position{
-									Column: 1,
-									Line:   149,
-								},
-							},
-						},
-						Name: "nextafter",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 20,
-									Line:   149,
-								},
-								File:   "math.flux",
-								Source: "nextafter",
-								Start: ast.Position{
-									Column: 11,
-									Line:   149,
-								},
-							},
-						},
-						Name: "nextafter",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 8,
-								Line:   150,
-							},
-							File:   "math.flux",
-							Source: "pow:pow",
-							Start: ast.Position{
-								Column: 1,
-								Line:   150,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 4,
-									Line:   150,
-								},
-								File:   "math.flux",
-								Source: "pow",
-								Start: ast.Position{
-									Column: 1,
-									Line:   150,
-								},
-							},
-						},
-						Name: "pow",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 8,
-									Line:   150,
-								},
-								File:   "math.flux",
-								Source: "pow",
-								Start: ast.Position{
-									Column: 5,
-									Line:   150,
-								},
-							},
-						},
-						Name: "pow",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   151,
-							},
-							File:   "math.flux",
-							Source: "pow10:pow10",
-							Start: ast.Position{
-								Column: 1,
-								Line:   151,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   151,
-								},
-								File:   "math.flux",
-								Source: "pow10",
-								Start: ast.Position{
-									Column: 1,
-									Line:   151,
-								},
-							},
-						},
-						Name: "pow10",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   151,
-								},
-								File:   "math.flux",
-								Source: "pow10",
-								Start: ast.Position{
-									Column: 7,
-									Line:   151,
-								},
-							},
-						},
-						Name: "pow10",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 20,
-								Line:   152,
-							},
-							File:   "math.flux",
-							Source: "remainder:remainder",
-							Start: ast.Position{
-								Column: 1,
-								Line:   152,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   152,
-								},
-								File:   "math.flux",
-								Source: "remainder",
-								Start: ast.Position{
-									Column: 1,
-									Line:   152,
-								},
-							},
-						},
-						Name: "remainder",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 20,
-									Line:   152,
-								},
-								File:   "math.flux",
-								Source: "remainder",
-								Start: ast.Position{
-									Column: 11,
-									Line:   152,
-								},
-							},
-						},
-						Name: "remainder",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   153,
-							},
-							File:   "math.flux",
-							Source: "round:round",
-							Start: ast.Position{
-								Column: 1,
-								Line:   153,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   153,
-								},
-								File:   "math.flux",
-								Source: "round",
-								Start: ast.Position{
-									Column: 1,
-									Line:   153,
-								},
-							},
-						},
-						Name: "round",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   153,
-								},
-								File:   "math.flux",
-								Source: "round",
-								Start: ast.Position{
-									Column: 7,
-									Line:   153,
-								},
-							},
-						},
-						Name: "round",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 24,
-								Line:   154,
-							},
-							File:   "math.flux",
-							Source: "roundtoeven:roundtoeven",
-							Start: ast.Position{
-								Column: 1,
-								Line:   154,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   154,
-								},
-								File:   "math.flux",
-								Source: "roundtoeven",
-								Start: ast.Position{
-									Column: 1,
-									Line:   154,
-								},
-							},
-						},
-						Name: "roundtoeven",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 24,
-									Line:   154,
-								},
-								File:   "math.flux",
-								Source: "roundtoeven",
-								Start: ast.Position{
-									Column: 13,
-									Line:   154,
-								},
-							},
-						},
-						Name: "roundtoeven",
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
@@ -6258,13 +4490,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   155,
+								Line:   121,
 							},
 							File:   "math.flux",
-							Source: "signbit:signbit",
+							Source: "erfinv:erfinv",
 							Start: ast.Position{
-								Column: 1,
-								Line:   155,
+								Column: 3,
+								Line:   121,
 							},
 						},
 					},
@@ -6273,18 +4505,18 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 8,
-									Line:   155,
+									Column: 9,
+									Line:   121,
 								},
 								File:   "math.flux",
-								Source: "signbit",
+								Source: "erfinv",
 								Start: ast.Position{
-									Column: 1,
-									Line:   155,
+									Column: 3,
+									Line:   121,
 								},
 							},
 						},
-						Name: "signbit",
+						Name: "erfinv",
 					},
 					Value: &ast.Identifier{
 						BaseNode: ast.BaseNode{
@@ -6292,12 +4524,1780 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
+									Line:   121,
+								},
+								File:   "math.flux",
+								Source: "erfinv",
+								Start: ast.Position{
+									Column: 10,
+									Line:   121,
+								},
+							},
+						},
+						Name: "erfinv",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 10,
+								Line:   122,
+							},
+							File:   "math.flux",
+							Source: "exp:exp",
+							Start: ast.Position{
+								Column: 3,
+								Line:   122,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   122,
+								},
+								File:   "math.flux",
+								Source: "exp",
+								Start: ast.Position{
+									Column: 3,
+									Line:   122,
+								},
+							},
+						},
+						Name: "exp",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 10,
+									Line:   122,
+								},
+								File:   "math.flux",
+								Source: "exp",
+								Start: ast.Position{
+									Column: 7,
+									Line:   122,
+								},
+							},
+						},
+						Name: "exp",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   123,
+							},
+							File:   "math.flux",
+							Source: "exp2:exp2",
+							Start: ast.Position{
+								Column: 3,
+								Line:   123,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 7,
+									Line:   123,
+								},
+								File:   "math.flux",
+								Source: "exp2",
+								Start: ast.Position{
+									Column: 3,
+									Line:   123,
+								},
+							},
+						},
+						Name: "exp2",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   123,
+								},
+								File:   "math.flux",
+								Source: "exp2",
+								Start: ast.Position{
+									Column: 8,
+									Line:   123,
+								},
+							},
+						},
+						Name: "exp2",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   124,
+							},
+							File:   "math.flux",
+							Source: "expm1:expm1",
+							Start: ast.Position{
+								Column: 3,
+								Line:   124,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   124,
+								},
+								File:   "math.flux",
+								Source: "expm1",
+								Start: ast.Position{
+									Column: 3,
+									Line:   124,
+								},
+							},
+						},
+						Name: "expm1",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   124,
+								},
+								File:   "math.flux",
+								Source: "expm1",
+								Start: ast.Position{
+									Column: 9,
+									Line:   124,
+								},
+							},
+						},
+						Name: "expm1",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 26,
+								Line:   125,
+							},
+							File:   "math.flux",
+							Source: "float64bits:float64bits",
+							Start: ast.Position{
+								Column: 3,
+								Line:   125,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   125,
+								},
+								File:   "math.flux",
+								Source: "float64bits",
+								Start: ast.Position{
+									Column: 3,
+									Line:   125,
+								},
+							},
+						},
+						Name: "float64bits",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 26,
+									Line:   125,
+								},
+								File:   "math.flux",
+								Source: "float64bits",
+								Start: ast.Position{
+									Column: 15,
+									Line:   125,
+								},
+							},
+						},
+						Name: "float64bits",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   126,
+							},
+							File:   "math.flux",
+							Source: "floor:floor",
+							Start: ast.Position{
+								Column: 3,
+								Line:   126,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   126,
+								},
+								File:   "math.flux",
+								Source: "floor",
+								Start: ast.Position{
+									Column: 3,
+									Line:   126,
+								},
+							},
+						},
+						Name: "floor",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   126,
+								},
+								File:   "math.flux",
+								Source: "floor",
+								Start: ast.Position{
+									Column: 9,
+									Line:   126,
+								},
+							},
+						},
+						Name: "floor",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   127,
+							},
+							File:   "math.flux",
+							Source: "frexp:frexp",
+							Start: ast.Position{
+								Column: 3,
+								Line:   127,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   127,
+								},
+								File:   "math.flux",
+								Source: "frexp",
+								Start: ast.Position{
+									Column: 3,
+									Line:   127,
+								},
+							},
+						},
+						Name: "frexp",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   127,
+								},
+								File:   "math.flux",
+								Source: "frexp",
+								Start: ast.Position{
+									Column: 9,
+									Line:   127,
+								},
+							},
+						},
+						Name: "frexp",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   128,
+							},
+							File:   "math.flux",
+							Source: "gamma:gamma",
+							Start: ast.Position{
+								Column: 3,
+								Line:   128,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   128,
+								},
+								File:   "math.flux",
+								Source: "gamma",
+								Start: ast.Position{
+									Column: 3,
+									Line:   128,
+								},
+							},
+						},
+						Name: "gamma",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   128,
+								},
+								File:   "math.flux",
+								Source: "gamma",
+								Start: ast.Position{
+									Column: 9,
+									Line:   128,
+								},
+							},
+						},
+						Name: "gamma",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   129,
+							},
+							File:   "math.flux",
+							Source: "hypot:hypot",
+							Start: ast.Position{
+								Column: 3,
+								Line:   129,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   129,
+								},
+								File:   "math.flux",
+								Source: "hypot",
+								Start: ast.Position{
+									Column: 3,
+									Line:   129,
+								},
+							},
+						},
+						Name: "hypot",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   129,
+								},
+								File:   "math.flux",
+								Source: "hypot",
+								Start: ast.Position{
+									Column: 9,
+									Line:   129,
+								},
+							},
+						},
+						Name: "hypot",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   130,
+							},
+							File:   "math.flux",
+							Source: "ilogb:ilogb",
+							Start: ast.Position{
+								Column: 3,
+								Line:   130,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   130,
+								},
+								File:   "math.flux",
+								Source: "ilogb",
+								Start: ast.Position{
+									Column: 3,
+									Line:   130,
+								},
+							},
+						},
+						Name: "ilogb",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   130,
+								},
+								File:   "math.flux",
+								Source: "ilogb",
+								Start: ast.Position{
+									Column: 9,
+									Line:   130,
+								},
+							},
+						},
+						Name: "ilogb",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   131,
+							},
+							File:   "math.flux",
+							Source: "mInf:mInf",
+							Start: ast.Position{
+								Column: 3,
+								Line:   131,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 7,
+									Line:   131,
+								},
+								File:   "math.flux",
+								Source: "mInf",
+								Start: ast.Position{
+									Column: 3,
+									Line:   131,
+								},
+							},
+						},
+						Name: "mInf",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   131,
+								},
+								File:   "math.flux",
+								Source: "mInf",
+								Start: ast.Position{
+									Column: 8,
+									Line:   131,
+								},
+							},
+						},
+						Name: "mInf",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   132,
+							},
+							File:   "math.flux",
+							Source: "isInf:isInf",
+							Start: ast.Position{
+								Column: 3,
+								Line:   132,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   132,
+								},
+								File:   "math.flux",
+								Source: "isInf",
+								Start: ast.Position{
+									Column: 3,
+									Line:   132,
+								},
+							},
+						},
+						Name: "isInf",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   132,
+								},
+								File:   "math.flux",
+								Source: "isInf",
+								Start: ast.Position{
+									Column: 9,
+									Line:   132,
+								},
+							},
+						},
+						Name: "isInf",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   133,
+							},
+							File:   "math.flux",
+							Source: "isNaN:isNaN",
+							Start: ast.Position{
+								Column: 3,
+								Line:   133,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   133,
+								},
+								File:   "math.flux",
+								Source: "isNaN",
+								Start: ast.Position{
+									Column: 3,
+									Line:   133,
+								},
+							},
+						},
+						Name: "isNaN",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   133,
+								},
+								File:   "math.flux",
+								Source: "isNaN",
+								Start: ast.Position{
+									Column: 9,
+									Line:   133,
+								},
+							},
+						},
+						Name: "isNaN",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 8,
+								Line:   134,
+							},
+							File:   "math.flux",
+							Source: "j0:j0",
+							Start: ast.Position{
+								Column: 3,
+								Line:   134,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 5,
+									Line:   134,
+								},
+								File:   "math.flux",
+								Source: "j0",
+								Start: ast.Position{
+									Column: 3,
+									Line:   134,
+								},
+							},
+						},
+						Name: "j0",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   134,
+								},
+								File:   "math.flux",
+								Source: "j0",
+								Start: ast.Position{
+									Column: 6,
+									Line:   134,
+								},
+							},
+						},
+						Name: "j0",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 8,
+								Line:   135,
+							},
+							File:   "math.flux",
+							Source: "j1:j1",
+							Start: ast.Position{
+								Column: 3,
+								Line:   135,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 5,
+									Line:   135,
+								},
+								File:   "math.flux",
+								Source: "j1",
+								Start: ast.Position{
+									Column: 3,
+									Line:   135,
+								},
+							},
+						},
+						Name: "j1",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   135,
+								},
+								File:   "math.flux",
+								Source: "j1",
+								Start: ast.Position{
+									Column: 6,
+									Line:   135,
+								},
+							},
+						},
+						Name: "j1",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 8,
+								Line:   136,
+							},
+							File:   "math.flux",
+							Source: "jn:jn",
+							Start: ast.Position{
+								Column: 3,
+								Line:   136,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 5,
+									Line:   136,
+								},
+								File:   "math.flux",
+								Source: "jn",
+								Start: ast.Position{
+									Column: 3,
+									Line:   136,
+								},
+							},
+						},
+						Name: "jn",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   136,
+								},
+								File:   "math.flux",
+								Source: "jn",
+								Start: ast.Position{
+									Column: 6,
+									Line:   136,
+								},
+							},
+						},
+						Name: "jn",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   137,
+							},
+							File:   "math.flux",
+							Source: "ldexp:ldexp",
+							Start: ast.Position{
+								Column: 3,
+								Line:   137,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   137,
+								},
+								File:   "math.flux",
+								Source: "ldexp",
+								Start: ast.Position{
+									Column: 3,
+									Line:   137,
+								},
+							},
+						},
+						Name: "ldexp",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   137,
+								},
+								File:   "math.flux",
+								Source: "ldexp",
+								Start: ast.Position{
+									Column: 9,
+									Line:   137,
+								},
+							},
+						},
+						Name: "ldexp",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 16,
+								Line:   138,
+							},
+							File:   "math.flux",
+							Source: "lgamma:lgamma",
+							Start: ast.Position{
+								Column: 3,
+								Line:   138,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 9,
+									Line:   138,
+								},
+								File:   "math.flux",
+								Source: "lgamma",
+								Start: ast.Position{
+									Column: 3,
+									Line:   138,
+								},
+							},
+						},
+						Name: "lgamma",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 16,
+									Line:   138,
+								},
+								File:   "math.flux",
+								Source: "lgamma",
+								Start: ast.Position{
+									Column: 10,
+									Line:   138,
+								},
+							},
+						},
+						Name: "lgamma",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 10,
+								Line:   139,
+							},
+							File:   "math.flux",
+							Source: "log:log",
+							Start: ast.Position{
+								Column: 3,
+								Line:   139,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   139,
+								},
+								File:   "math.flux",
+								Source: "log",
+								Start: ast.Position{
+									Column: 3,
+									Line:   139,
+								},
+							},
+						},
+						Name: "log",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 10,
+									Line:   139,
+								},
+								File:   "math.flux",
+								Source: "log",
+								Start: ast.Position{
+									Column: 7,
+									Line:   139,
+								},
+							},
+						},
+						Name: "log",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   140,
+							},
+							File:   "math.flux",
+							Source: "log10:log10",
+							Start: ast.Position{
+								Column: 3,
+								Line:   140,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   140,
+								},
+								File:   "math.flux",
+								Source: "log10",
+								Start: ast.Position{
+									Column: 3,
+									Line:   140,
+								},
+							},
+						},
+						Name: "log10",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   140,
+								},
+								File:   "math.flux",
+								Source: "log10",
+								Start: ast.Position{
+									Column: 9,
+									Line:   140,
+								},
+							},
+						},
+						Name: "log10",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   141,
+							},
+							File:   "math.flux",
+							Source: "log1p:log1p",
+							Start: ast.Position{
+								Column: 3,
+								Line:   141,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   141,
+								},
+								File:   "math.flux",
+								Source: "log1p",
+								Start: ast.Position{
+									Column: 3,
+									Line:   141,
+								},
+							},
+						},
+						Name: "log1p",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   141,
+								},
+								File:   "math.flux",
+								Source: "log1p",
+								Start: ast.Position{
+									Column: 9,
+									Line:   141,
+								},
+							},
+						},
+						Name: "log1p",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   142,
+							},
+							File:   "math.flux",
+							Source: "log2:log2",
+							Start: ast.Position{
+								Column: 3,
+								Line:   142,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 7,
+									Line:   142,
+								},
+								File:   "math.flux",
+								Source: "log2",
+								Start: ast.Position{
+									Column: 3,
+									Line:   142,
+								},
+							},
+						},
+						Name: "log2",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   142,
+								},
+								File:   "math.flux",
+								Source: "log2",
+								Start: ast.Position{
+									Column: 8,
+									Line:   142,
+								},
+							},
+						},
+						Name: "log2",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   143,
+							},
+							File:   "math.flux",
+							Source: "logb:logb",
+							Start: ast.Position{
+								Column: 3,
+								Line:   143,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 7,
+									Line:   143,
+								},
+								File:   "math.flux",
+								Source: "logb",
+								Start: ast.Position{
+									Column: 3,
+									Line:   143,
+								},
+							},
+						},
+						Name: "logb",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   143,
+								},
+								File:   "math.flux",
+								Source: "logb",
+								Start: ast.Position{
+									Column: 8,
+									Line:   143,
+								},
+							},
+						},
+						Name: "logb",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   144,
+							},
+							File:   "math.flux",
+							Source: "mMax:mMax",
+							Start: ast.Position{
+								Column: 3,
+								Line:   144,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 7,
+									Line:   144,
+								},
+								File:   "math.flux",
+								Source: "mMax",
+								Start: ast.Position{
+									Column: 3,
+									Line:   144,
+								},
+							},
+						},
+						Name: "mMax",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   144,
+								},
+								File:   "math.flux",
+								Source: "mMax",
+								Start: ast.Position{
+									Column: 8,
+									Line:   144,
+								},
+							},
+						},
+						Name: "mMax",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   145,
+							},
+							File:   "math.flux",
+							Source: "mMin:mMin",
+							Start: ast.Position{
+								Column: 3,
+								Line:   145,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 7,
+									Line:   145,
+								},
+								File:   "math.flux",
+								Source: "mMin",
+								Start: ast.Position{
+									Column: 3,
+									Line:   145,
+								},
+							},
+						},
+						Name: "mMin",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   145,
+								},
+								File:   "math.flux",
+								Source: "mMin",
+								Start: ast.Position{
+									Column: 8,
+									Line:   145,
+								},
+							},
+						},
+						Name: "mMin",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 10,
+								Line:   146,
+							},
+							File:   "math.flux",
+							Source: "mod:mod",
+							Start: ast.Position{
+								Column: 3,
+								Line:   146,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   146,
+								},
+								File:   "math.flux",
+								Source: "mod",
+								Start: ast.Position{
+									Column: 3,
+									Line:   146,
+								},
+							},
+						},
+						Name: "mod",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 10,
+									Line:   146,
+								},
+								File:   "math.flux",
+								Source: "mod",
+								Start: ast.Position{
+									Column: 7,
+									Line:   146,
+								},
+							},
+						},
+						Name: "mod",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   147,
+							},
+							File:   "math.flux",
+							Source: "modf:modf",
+							Start: ast.Position{
+								Column: 3,
+								Line:   147,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 7,
+									Line:   147,
+								},
+								File:   "math.flux",
+								Source: "modf",
+								Start: ast.Position{
+									Column: 3,
+									Line:   147,
+								},
+							},
+						},
+						Name: "modf",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   147,
+								},
+								File:   "math.flux",
+								Source: "modf",
+								Start: ast.Position{
+									Column: 8,
+									Line:   147,
+								},
+							},
+						},
+						Name: "modf",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 10,
+								Line:   148,
+							},
+							File:   "math.flux",
+							Source: "NaN:NaN",
+							Start: ast.Position{
+								Column: 3,
+								Line:   148,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   148,
+								},
+								File:   "math.flux",
+								Source: "NaN",
+								Start: ast.Position{
+									Column: 3,
+									Line:   148,
+								},
+							},
+						},
+						Name: "NaN",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 10,
+									Line:   148,
+								},
+								File:   "math.flux",
+								Source: "NaN",
+								Start: ast.Position{
+									Column: 7,
+									Line:   148,
+								},
+							},
+						},
+						Name: "NaN",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 22,
+								Line:   149,
+							},
+							File:   "math.flux",
+							Source: "nextafter:nextafter",
+							Start: ast.Position{
+								Column: 3,
+								Line:   149,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   149,
+								},
+								File:   "math.flux",
+								Source: "nextafter",
+								Start: ast.Position{
+									Column: 3,
+									Line:   149,
+								},
+							},
+						},
+						Name: "nextafter",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 22,
+									Line:   149,
+								},
+								File:   "math.flux",
+								Source: "nextafter",
+								Start: ast.Position{
+									Column: 13,
+									Line:   149,
+								},
+							},
+						},
+						Name: "nextafter",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 10,
+								Line:   150,
+							},
+							File:   "math.flux",
+							Source: "pow:pow",
+							Start: ast.Position{
+								Column: 3,
+								Line:   150,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   150,
+								},
+								File:   "math.flux",
+								Source: "pow",
+								Start: ast.Position{
+									Column: 3,
+									Line:   150,
+								},
+							},
+						},
+						Name: "pow",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 10,
+									Line:   150,
+								},
+								File:   "math.flux",
+								Source: "pow",
+								Start: ast.Position{
+									Column: 7,
+									Line:   150,
+								},
+							},
+						},
+						Name: "pow",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   151,
+							},
+							File:   "math.flux",
+							Source: "pow10:pow10",
+							Start: ast.Position{
+								Column: 3,
+								Line:   151,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   151,
+								},
+								File:   "math.flux",
+								Source: "pow10",
+								Start: ast.Position{
+									Column: 3,
+									Line:   151,
+								},
+							},
+						},
+						Name: "pow10",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   151,
+								},
+								File:   "math.flux",
+								Source: "pow10",
+								Start: ast.Position{
+									Column: 9,
+									Line:   151,
+								},
+							},
+						},
+						Name: "pow10",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 22,
+								Line:   152,
+							},
+							File:   "math.flux",
+							Source: "remainder:remainder",
+							Start: ast.Position{
+								Column: 3,
+								Line:   152,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   152,
+								},
+								File:   "math.flux",
+								Source: "remainder",
+								Start: ast.Position{
+									Column: 3,
+									Line:   152,
+								},
+							},
+						},
+						Name: "remainder",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 22,
+									Line:   152,
+								},
+								File:   "math.flux",
+								Source: "remainder",
+								Start: ast.Position{
+									Column: 13,
+									Line:   152,
+								},
+							},
+						},
+						Name: "remainder",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   153,
+							},
+							File:   "math.flux",
+							Source: "round:round",
+							Start: ast.Position{
+								Column: 3,
+								Line:   153,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
+									Line:   153,
+								},
+								File:   "math.flux",
+								Source: "round",
+								Start: ast.Position{
+									Column: 3,
+									Line:   153,
+								},
+							},
+						},
+						Name: "round",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   153,
+								},
+								File:   "math.flux",
+								Source: "round",
+								Start: ast.Position{
+									Column: 9,
+									Line:   153,
+								},
+							},
+						},
+						Name: "round",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 26,
+								Line:   154,
+							},
+							File:   "math.flux",
+							Source: "roundtoeven:roundtoeven",
+							Start: ast.Position{
+								Column: 3,
+								Line:   154,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   154,
+								},
+								File:   "math.flux",
+								Source: "roundtoeven",
+								Start: ast.Position{
+									Column: 3,
+									Line:   154,
+								},
+							},
+						},
+						Name: "roundtoeven",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 26,
+									Line:   154,
+								},
+								File:   "math.flux",
+								Source: "roundtoeven",
+								Start: ast.Position{
+									Column: 15,
+									Line:   154,
+								},
+							},
+						},
+						Name: "roundtoeven",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 18,
+								Line:   155,
+							},
+							File:   "math.flux",
+							Source: "signbit:signbit",
+							Start: ast.Position{
+								Column: 3,
+								Line:   155,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 10,
 									Line:   155,
 								},
 								File:   "math.flux",
 								Source: "signbit",
 								Start: ast.Position{
-									Column: 9,
+									Column: 3,
+									Line:   155,
+								},
+							},
+						},
+						Name: "signbit",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 18,
+									Line:   155,
+								},
+								File:   "math.flux",
+								Source: "signbit",
+								Start: ast.Position{
+									Column: 11,
 									Line:   155,
 								},
 							},
@@ -6309,13 +6309,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 8,
+								Column: 10,
 								Line:   156,
 							},
 							File:   "math.flux",
 							Source: "sin:sin",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   156,
 							},
 						},
@@ -6325,13 +6325,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 4,
+									Column: 6,
 									Line:   156,
 								},
 								File:   "math.flux",
 								Source: "sin",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   156,
 								},
 							},
@@ -6343,13 +6343,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 8,
+									Column: 10,
 									Line:   156,
 								},
 								File:   "math.flux",
 								Source: "sin",
 								Start: ast.Position{
-									Column: 5,
+									Column: 7,
 									Line:   156,
 								},
 							},
@@ -6361,13 +6361,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 16,
 								Line:   157,
 							},
 							File:   "math.flux",
 							Source: "sincos:sincos",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   157,
 							},
 						},
@@ -6377,13 +6377,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 7,
+									Column: 9,
 									Line:   157,
 								},
 								File:   "math.flux",
 								Source: "sincos",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   157,
 								},
 							},
@@ -6395,226 +6395,18 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 14,
+									Column: 16,
 									Line:   157,
 								},
 								File:   "math.flux",
 								Source: "sincos",
 								Start: ast.Position{
-									Column: 8,
+									Column: 10,
 									Line:   157,
 								},
 							},
 						},
 						Name: "sincos",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 10,
-								Line:   158,
-							},
-							File:   "math.flux",
-							Source: "sinh:sinh",
-							Start: ast.Position{
-								Column: 1,
-								Line:   158,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 5,
-									Line:   158,
-								},
-								File:   "math.flux",
-								Source: "sinh",
-								Start: ast.Position{
-									Column: 1,
-									Line:   158,
-								},
-							},
-						},
-						Name: "sinh",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   158,
-								},
-								File:   "math.flux",
-								Source: "sinh",
-								Start: ast.Position{
-									Column: 6,
-									Line:   158,
-								},
-							},
-						},
-						Name: "sinh",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 10,
-								Line:   159,
-							},
-							File:   "math.flux",
-							Source: "sqrt:sqrt",
-							Start: ast.Position{
-								Column: 1,
-								Line:   159,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 5,
-									Line:   159,
-								},
-								File:   "math.flux",
-								Source: "sqrt",
-								Start: ast.Position{
-									Column: 1,
-									Line:   159,
-								},
-							},
-						},
-						Name: "sqrt",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   159,
-								},
-								File:   "math.flux",
-								Source: "sqrt",
-								Start: ast.Position{
-									Column: 6,
-									Line:   159,
-								},
-							},
-						},
-						Name: "sqrt",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 8,
-								Line:   160,
-							},
-							File:   "math.flux",
-							Source: "tan:tan",
-							Start: ast.Position{
-								Column: 1,
-								Line:   160,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 4,
-									Line:   160,
-								},
-								File:   "math.flux",
-								Source: "tan",
-								Start: ast.Position{
-									Column: 1,
-									Line:   160,
-								},
-							},
-						},
-						Name: "tan",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 8,
-									Line:   160,
-								},
-								File:   "math.flux",
-								Source: "tan",
-								Start: ast.Position{
-									Column: 5,
-									Line:   160,
-								},
-							},
-						},
-						Name: "tan",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 10,
-								Line:   161,
-							},
-							File:   "math.flux",
-							Source: "tanh:tanh",
-							Start: ast.Position{
-								Column: 1,
-								Line:   161,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 5,
-									Line:   161,
-								},
-								File:   "math.flux",
-								Source: "tanh",
-								Start: ast.Position{
-									Column: 1,
-									Line:   161,
-								},
-							},
-						},
-						Name: "tanh",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   161,
-								},
-								File:   "math.flux",
-								Source: "tanh",
-								Start: ast.Position{
-									Column: 6,
-									Line:   161,
-								},
-							},
-						},
-						Name: "tanh",
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
@@ -6622,13 +6414,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 12,
-								Line:   162,
+								Line:   158,
 							},
 							File:   "math.flux",
-							Source: "trunc:trunc",
+							Source: "sinh:sinh",
 							Start: ast.Position{
-								Column: 1,
-								Line:   162,
+								Column: 3,
+								Line:   158,
 							},
 						},
 					},
@@ -6637,18 +6429,18 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
-									Line:   162,
+									Column: 7,
+									Line:   158,
 								},
 								File:   "math.flux",
-								Source: "trunc",
+								Source: "sinh",
 								Start: ast.Position{
-									Column: 1,
-									Line:   162,
+									Column: 3,
+									Line:   158,
 								},
 							},
 						},
-						Name: "trunc",
+						Name: "sinh",
 					},
 					Value: &ast.Identifier{
 						BaseNode: ast.BaseNode{
@@ -6656,12 +6448,220 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
+									Line:   158,
+								},
+								File:   "math.flux",
+								Source: "sinh",
+								Start: ast.Position{
+									Column: 8,
+									Line:   158,
+								},
+							},
+						},
+						Name: "sinh",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   159,
+							},
+							File:   "math.flux",
+							Source: "sqrt:sqrt",
+							Start: ast.Position{
+								Column: 3,
+								Line:   159,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 7,
+									Line:   159,
+								},
+								File:   "math.flux",
+								Source: "sqrt",
+								Start: ast.Position{
+									Column: 3,
+									Line:   159,
+								},
+							},
+						},
+						Name: "sqrt",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   159,
+								},
+								File:   "math.flux",
+								Source: "sqrt",
+								Start: ast.Position{
+									Column: 8,
+									Line:   159,
+								},
+							},
+						},
+						Name: "sqrt",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 10,
+								Line:   160,
+							},
+							File:   "math.flux",
+							Source: "tan:tan",
+							Start: ast.Position{
+								Column: 3,
+								Line:   160,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   160,
+								},
+								File:   "math.flux",
+								Source: "tan",
+								Start: ast.Position{
+									Column: 3,
+									Line:   160,
+								},
+							},
+						},
+						Name: "tan",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 10,
+									Line:   160,
+								},
+								File:   "math.flux",
+								Source: "tan",
+								Start: ast.Position{
+									Column: 7,
+									Line:   160,
+								},
+							},
+						},
+						Name: "tan",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   161,
+							},
+							File:   "math.flux",
+							Source: "tanh:tanh",
+							Start: ast.Position{
+								Column: 3,
+								Line:   161,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 7,
+									Line:   161,
+								},
+								File:   "math.flux",
+								Source: "tanh",
+								Start: ast.Position{
+									Column: 3,
+									Line:   161,
+								},
+							},
+						},
+						Name: "tanh",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   161,
+								},
+								File:   "math.flux",
+								Source: "tanh",
+								Start: ast.Position{
+									Column: 8,
+									Line:   161,
+								},
+							},
+						},
+						Name: "tanh",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   162,
+							},
+							File:   "math.flux",
+							Source: "trunc:trunc",
+							Start: ast.Position{
+								Column: 3,
+								Line:   162,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 8,
 									Line:   162,
 								},
 								File:   "math.flux",
 								Source: "trunc",
 								Start: ast.Position{
-									Column: 7,
+									Column: 3,
+									Line:   162,
+								},
+							},
+						},
+						Name: "trunc",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   162,
+								},
+								File:   "math.flux",
+								Source: "trunc",
+								Start: ast.Position{
+									Column: 9,
 									Line:   162,
 								},
 							},
@@ -6673,13 +6673,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 6,
+								Column: 8,
 								Line:   163,
 							},
 							File:   "math.flux",
 							Source: "y0:y0",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   163,
 							},
 						},
@@ -6689,13 +6689,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 3,
+									Column: 5,
 									Line:   163,
 								},
 								File:   "math.flux",
 								Source: "y0",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   163,
 								},
 							},
@@ -6707,13 +6707,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
+									Column: 8,
 									Line:   163,
 								},
 								File:   "math.flux",
 								Source: "y0",
 								Start: ast.Position{
-									Column: 4,
+									Column: 6,
 									Line:   163,
 								},
 							},
@@ -6725,13 +6725,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 6,
+								Column: 8,
 								Line:   164,
 							},
 							File:   "math.flux",
 							Source: "y1:y1",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   164,
 							},
 						},
@@ -6741,13 +6741,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 3,
+									Column: 5,
 									Line:   164,
 								},
 								File:   "math.flux",
 								Source: "y1",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   164,
 								},
 							},
@@ -6759,13 +6759,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
+									Column: 8,
 									Line:   164,
 								},
 								File:   "math.flux",
 								Source: "y1",
 								Start: ast.Position{
-									Column: 4,
+									Column: 6,
 									Line:   164,
 								},
 							},
@@ -6777,13 +6777,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 6,
+								Column: 8,
 								Line:   165,
 							},
 							File:   "math.flux",
 							Source: "yn:yn",
 							Start: ast.Position{
-								Column: 1,
+								Column: 3,
 								Line:   165,
 							},
 						},
@@ -6793,13 +6793,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 3,
+									Column: 5,
 									Line:   165,
 								},
 								File:   "math.flux",
 								Source: "yn",
 								Start: ast.Position{
-									Column: 1,
+									Column: 3,
 									Line:   165,
 								},
 							},
@@ -6811,13 +6811,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
+									Column: 8,
 									Line:   165,
 								},
 								File:   "math.flux",
 								Source: "yn",
 								Start: ast.Position{
-									Column: 4,
+									Column: 6,
 									Line:   165,
 								},
 							},
@@ -6825,6 +6825,7 @@ var pkgAST = &ast.Package{
 						Name: "yn",
 					},
 				}},
+				With: nil,
 			},
 		}},
 		Imports: nil,

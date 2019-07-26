@@ -1,6 +1,7 @@
 package generate
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -153,15 +154,15 @@ func NewGeneratorSource(a *memory.Allocator) *GeneratorSource {
 	return &GeneratorSource{alloc: a}
 }
 
-func (s *GeneratorSource) Connect() error {
+func (s *GeneratorSource) Connect(ctx context.Context) error {
 	return nil
 }
 
-func (s *GeneratorSource) Fetch() (bool, error) {
+func (s *GeneratorSource) Fetch(ctx context.Context) (bool, error) {
 	return !s.done, nil
 }
 
-func (s *GeneratorSource) Decode() (flux.Table, error) {
+func (s *GeneratorSource) Decode(ctx context.Context) (flux.Table, error) {
 	defer func() {
 		s.done = true
 	}()
@@ -209,11 +210,11 @@ func (s *GeneratorSource) Decode() (flux.Table, error) {
 		b.AppendTime(timeIdx, values.ConvertTime(s.Start.Add(time.Duration(i)*deltaT)))
 		in := values.NewObject()
 		in.Set("n", values.NewInt(int64(i)))
-		v, err := s.Fn.EvalInt(in)
+		v, err := s.Fn.Eval(in)
 		if err != nil {
 			return nil, err
 		}
-		if err := b.AppendInt(valueIdx, v); err != nil {
+		if err := b.AppendValue(valueIdx, v); err != nil {
 			return nil, err
 		}
 	}

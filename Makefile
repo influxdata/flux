@@ -8,10 +8,10 @@
 #    * All cmds must be added to this top level Makefile.
 #    * All binaries are placed in ./bin, its recommended to add this directory to your PATH.
 #    * Each package that has a need to run go generate, must have its own Makefile for that purpose.
-#    * All recursive Makefiles must support the targets: all and clean.
+#    * All recursive Makefiles must support the targets: generate and clean.
 #
 
-SUBDIRS = ast/asttest internal/scanner stdlib
+SUBDIRS = ast/asttest internal/scanner stdlib internal/rust
 
 GO_ARGS=-tags '$(GO_TAGS)'
 
@@ -19,6 +19,7 @@ GO_ARGS=-tags '$(GO_TAGS)'
 export GOOS=$(shell go env GOOS)
 export GO_BUILD=env GO111MODULE=on go build $(GO_ARGS)
 export GO_TEST=env GO111MODULE=on go test $(GO_ARGS)
+export GO_TEST_FLAGS=
 # Do not add GO111MODULE=on to the call to go generate so it doesn't pollute the environment.
 export GO_GENERATE=go generate $(GO_ARGS)
 export GO_VET=env GO111MODULE=on go vet $(GO_ARGS)
@@ -27,7 +28,11 @@ export GO_VET=env GO111MODULE=on go vet $(GO_ARGS)
 UTILS := \
 	bin/$(GOOS)/cmpgen
 
-all: $(UTILS) $(SUBDIRS)
+generate: $(UTILS) $(SUBDIRS)
+
+rust: build
+
+build: internal/rust
 
 $(SUBDIRS): $(UTILS)
 	$(MAKE) -C $@ $(MAKECMDGOALS)
@@ -57,8 +62,8 @@ staticcheck:
 	GO111MODULE=on go mod vendor # staticcheck looks in vendor for dependencies.
 	GO111MODULE=on go run honnef.co/go/tools/cmd/staticcheck ./...
 
-test:
-	$(GO_TEST) ./...
+test: internal/rust
+	$(GO_TEST) $(GO_TEST_FLAGS) ./...
 
 test-race:
 	$(GO_TEST) -race -count=1 ./...
@@ -74,13 +79,12 @@ release:
 
 
 
-.PHONY: all \
+.PHONY: generate \
 	clean \
 	fmt \
 	checkfmt \
 	tidy \
 	checktidt \
-	generate \
 	checkgenerate \
 	staticcheck \
 	test \

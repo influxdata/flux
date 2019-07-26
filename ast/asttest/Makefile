@@ -6,7 +6,7 @@ SOURCES = ../ast.go gen.go ../../bin/$(GOOS)/cmpgen
 SUBDIRS =
 
 # Default target
-all: $(SUBDIRS) $(TARGETS)
+generate: $(SUBDIRS) $(TARGETS)
 
 # Recurse into subdirs for same make goal
 $(SUBDIRS):
@@ -23,4 +23,4 @@ GO_GENERATE := go generate
 $(TARGETS): $(SOURCES)
 	PATH=../../bin/${GOOS}:${PATH} $(GO_GENERATE) -x
 
-.PHONY: all clean $(SUBDIRS)
+.PHONY: generate clean $(SUBDIRS)

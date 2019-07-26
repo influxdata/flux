@@ -207,6 +207,74 @@ func TestPivot_Process(t *testing.T) {
 			},
 		},
 		{
+			name: "_field flatten case two tables different value type",
+			spec: &universe.PivotProcedureSpec{
+				RowKey:      []string{"_time"},
+				ColumnKey:   []string{"_field"},
+				ValueColumn: "_value",
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					KeyCols: []string{"_measurement"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, "m1", "f1"},
+						{execute.Time(1), 2.0, "m1", "f2"},
+						{execute.Time(2), 3.0, "m1", "f1"},
+						{execute.Time(2), 4.0, "m1", "f2"},
+					},
+				},
+				&executetest.Table{
+					KeyCols: []string{"_measurement"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TInt},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), int64(1), "m2", "f3"},
+						{execute.Time(1), int64(2), "m2", "f4"},
+						{execute.Time(2), int64(3), "m2", "f3"},
+						{execute.Time(2), int64(4), "m2", "f4"},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					KeyCols: []string{"_measurement"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "f1", Type: flux.TFloat},
+						{Label: "f2", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), "m1", 1.0, 2.0},
+						{execute.Time(2), "m1", 3.0, 4.0},
+					},
+				},
+				{
+					KeyCols: []string{"_measurement"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "f3", Type: flux.TInt},
+						{Label: "f4", Type: flux.TInt},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), "m2", int64(1), int64(2)},
+						{execute.Time(2), "m2", int64(3), int64(4)},
+					},
+				},
+			},
+		},
+		{
 			name: "duplicate rowKey + columnKey",
 			spec: &universe.PivotProcedureSpec{
 				RowKey:      []string{"_time"},

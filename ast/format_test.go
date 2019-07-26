@@ -57,6 +57,10 @@ func TestFormat_Nodes(t *testing.T) {
 			script: `1 + 1 - 2`,
 		},
 		{
+			name:   "binary_op 2",
+			script: `2 ^ 4`,
+		},
+		{
 			name: "arrow_fn",
 			script: `(r) =>
 	(r.user == "user1")`,
@@ -73,6 +77,10 @@ func TestFormat_Nodes(t *testing.T) {
 		{
 			name:   "object",
 			script: `{a: 1, b: {c: 11, d: 12}}`,
+		},
+		{
+			name:   "object with",
+			script: `{foo with a: 1, b: {c: 11, d: 12}}`,
 		},
 		{
 			name:   "implicit key object literal",
@@ -410,7 +418,7 @@ func TestFormat_Associativity(t *testing.T) {
 		},
 		{
 			name:   "unary with pars",
-			script: `not (b and c)`,
+			script: `not (b and c) and exists d or exists (e and f)`,
 		},
 		{
 			name:   "unary negative duration",

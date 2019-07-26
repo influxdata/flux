@@ -1,12 +1,12 @@
 package universe
 
 import (
-	"errors"
-	"fmt"
 	"strconv"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -70,7 +70,7 @@ func createFillOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		case semantic.Time:
 			spec.Value = val.Time().String()
 		default:
-			return nil, errors.New("value type for fill must be a valid primitive type (bool, int, uint, float, string, time)")
+			return nil, errors.New(codes.Invalid, "value type for fill must be a valid primitive type (bool, int, uint, float, string, time)")
 		}
 
 	}
@@ -80,7 +80,7 @@ func createFillOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		return nil, err
 	}
 	if prevOk == valOk {
-		return nil, errors.New("fill requires exactly one of value or usePrevious")
+		return nil, errors.New(codes.Invalid, "fill requires exactly one of value or usePrevious")
 	}
 
 	if prevOk {
@@ -108,7 +108,7 @@ type FillProcedureSpec struct {
 func newFillProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*FillOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	pspec := &FillProcedureSpec{
@@ -150,7 +150,7 @@ func newFillProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proce
 			}
 			pspec.Value = values.New(v)
 		default:
-			return nil, errors.New("unknown type in fill op-spec")
+			return nil, errors.New(codes.Internal, "unknown type in fill op-spec")
 		}
 	}
 
@@ -171,7 +171,7 @@ func (s *FillProcedureSpec) Copy() plan.ProcedureSpec {
 func createFillTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*FillProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -218,13 +218,13 @@ func (t *fillTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 	}
 	idx := execute.ColIdx(t.spec.Column, builder.Cols())
 	if idx < 0 {
-		return fmt.Errorf("fill column not found: %s", t.spec.Column)
+		return errors.Newf(codes.FailedPrecondition, "fill column not found: %s", t.spec.Column)
 	}
 
 	prevNonNull := t.spec.Value
 	if !t.spec.UsePrevious {
 		if builder.Cols()[idx].Type != flux.ColumnType(prevNonNull.Type()) {
-			return fmt.Errorf("fill column type mismatch: %s/%s", builder.Cols()[idx].Type.String(), flux.ColumnType(prevNonNull.Type()).String())
+			return errors.Newf(codes.FailedPrecondition, "fill column type mismatch: %s/%s", builder.Cols()[idx].Type.String(), flux.ColumnType(prevNonNull.Type()).String())
 		}
 	}
 	return tbl.Do(func(cr flux.ColReader) error {
@@ -239,24 +239,26 @@ func (t *fillTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 		// Set new value
 		l := cr.Len()
 
-		if t.spec.UsePrevious {
-			prevNonNull = execute.ValueForRow(cr, 0, idx)
-		}
+		if l > 0 {
+			if t.spec.UsePrevious {
+				prevNonNull = execute.ValueForRow(cr, 0, idx)
+			}
 
-		for i := 0; i < l; i++ {
-			v := execute.ValueForRow(cr, i, idx)
-			if v.IsNull() {
-				if err := builder.AppendValue(idx, prevNonNull); err != nil {
-					return err
-				}
-			} else {
-				if err := builder.AppendValue(idx, v); err != nil {
-					return err
-				}
-				if t.spec.UsePrevious {
-					prevNonNull = v
-				}
+			for i := 0; i < l; i++ {
+				v := execute.ValueForRow(cr, i, idx)
+				if v.IsNull() {
+					if err := builder.AppendValue(idx, prevNonNull); err != nil {
+						return err
+					}
+				} else {
+					if err := builder.AppendValue(idx, v); err != nil {
+						return err
+					}
+					if t.spec.UsePrevious {
+						prevNonNull = v
+					}
 
+				}
 			}
 		}
 		return nil

@@ -22,6 +22,7 @@ const (
 	IF
 	THEN
 	ELSE
+	WITH
 
 	// Identifiers and literals.
 	IDENT
@@ -38,6 +39,7 @@ const (
 	MUL
 	DIV
 	MOD
+	POW
 	EQ
 	LT
 	GT
@@ -59,6 +61,7 @@ const (
 	COLON
 	PIPE_FORWARD
 	PIPE_RECEIVE
+	EXISTS
 )
 
 func (t Token) String() string {
@@ -86,6 +89,7 @@ var tokenStrings = []string{
 	"IF",
 	"THEN",
 	"ELSE",
+	"WITH",
 	"IDENT",
 	"INT",
 	"FLOAT",
@@ -98,6 +102,7 @@ var tokenStrings = []string{
 	"MUL",
 	"DIV",
 	"MOD",
+	"POW",
 	"EQ",
 	"LT",
 	"GT",

@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/influxdata/flux/memory"
 	_ "github.com/influxdata/flux/stdlib" // Import the Flux standard library
 
 	"github.com/influxdata/flux"
@@ -20,7 +21,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/parser"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/testing"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -172,15 +172,20 @@ func executeScript(pkg *ast.Package) (string, string, error) {
 		return "", "", errors.Wrap(err, "error during test generation")
 	}
 
-	querier := querytest.NewQuerier()
 	c := lang.FluxCompiler{
 		Query: ast.Format(testPkg),
 	}
 
-	q, err := querier.C.Query(context.Background(), c)
+	program, err := c.Compile(context.Background())
 	if err != nil {
 		fmt.Println(ast.Format(testPkg))
 		return "", "", errors.Wrap(err, "error during compilation, check your script and retry")
+	}
+
+	alloc := &memory.Allocator{}
+	q, err := program.Start(context.Background(), alloc)
+	if err != nil {
+		return "", "", errors.Wrap(err, "error while executing program")
 	}
 	defer q.Done()
 	results := make(map[string]flux.Result)

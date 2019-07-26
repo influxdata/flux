@@ -15,19 +15,16 @@ import (
 
 	"github.com/c-bata/go-prompt"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
 type REPL struct {
-	interpreter *interpreter.Interpreter
-	scope       interpreter.Scope
-	querier     Querier
+	scope   interpreter.Scope
+	querier Querier
 
 	cancelMu   sync.Mutex
 	cancelFunc context.CancelFunc
@@ -39,9 +36,8 @@ type Querier interface {
 
 func New(q Querier) *REPL {
 	return &REPL{
-		interpreter: interpreter.NewInterpreter(),
-		scope:       flux.Prelude(),
-		querier:     q,
+		scope:   interpreter.NewScope(),
+		querier: q,
 	}
 }
 
@@ -113,74 +109,64 @@ func (r *REPL) completer(d prompt.Document) []prompt.Suggest {
 }
 
 func (r *REPL) Input(t string) error {
-	_, err := r.executeLine(t)
-	return err
+	return r.executeLine(t)
 }
 
 // input processes a line of input and prints the result.
 func (r *REPL) input(t string) {
-	v, err := r.executeLine(t)
-	if err != nil {
+	if err := r.executeLine(t); err != nil {
 		fmt.Println("Error:", err)
-	} else if v != nil {
-		fmt.Println(v)
 	}
 }
 
 // executeLine processes a line of input.
 // If the input evaluates to a valid value, that value is returned.
-func (r *REPL) executeLine(t string) (values.Value, error) {
+func (r *REPL) executeLine(t string) error {
 	if t == "" {
-		return nil, nil
+		return nil
 	}
 
 	if t[0] == '@' {
 		q, err := LoadQuery(t)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		t = q
 	}
 
-	astPkg := parser.ParseSource(t)
-	if ast.Check(astPkg) > 0 {
-		return nil, ast.GetError(astPkg)
-	}
-
-	semPkg, err := semantic.New(astPkg)
+	ses, scope, err := flux.Eval(t, func(ns interpreter.Scope) {
+		// copy values saved in the cached scope to the new interpreter's scope
+		r.scope.Range(func(k string, v values.Value) {
+			ns.Set(k, v)
+		})
+	})
 	if err != nil {
-		return nil, err
+		return err
 	}
+	r.scope = scope
 
-	r.scope.SetReturn(nil)
-
-	if _, err := r.interpreter.Eval(semPkg, r.scope, flux.StdLib()); err != nil {
-		return nil, err
-	}
-
-	v := r.scope.Return()
-
-	// Ignore statements that do not return a value
-	if v == nil {
-		return nil, nil
-	}
-
-	// Check for yield and execute query
-	if v.Type() == flux.TableObjectMonoType {
-		t := v.(*flux.TableObject)
-		now, ok := r.scope.Lookup("now")
-		if !ok {
-			return nil, fmt.Errorf("now option not set")
+	for _, se := range ses {
+		if _, ok := se.Node.(*semantic.ExpressionStatement); ok {
+			if se.Value.Type() == flux.TableObjectMonoType {
+				t := se.Value.(*flux.TableObject)
+				now, ok := r.scope.Lookup("now")
+				if !ok {
+					return fmt.Errorf("now option not set")
+				}
+				nowTime, err := now.Function().Call(nil)
+				if err != nil {
+					return err
+				}
+				s := spec.FromTableObject(t, nowTime.Time().Time())
+				if err := r.doQuery(s); err != nil {
+					return err
+				}
+			} else {
+				fmt.Println(se.Value)
+			}
 		}
-		nowTime, err := now.Function().Call(nil)
-		if err != nil {
-			return nil, err
-		}
-		s := spec.FromTableObject(t, nowTime.Time().Time())
-		return nil, r.doQuery(s)
 	}
-
-	return v, nil
+	return nil
 }
 
 func (r *REPL) doQuery(spec *flux.Spec) error {

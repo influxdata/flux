@@ -9,7 +9,7 @@ The parser directly implements the following grammar.
     File                           = [ PackageClause ] [ ImportList ] StatementList .
     PackageClause                  = "package" identifier .
     ImportList                     = { ImportDeclaration } .
-    ImportDeclaration              = "import" [identifier] string_lit
+    ImportDeclaration              = "import" [ identifier ] string_lit
     StatementList                  = { Statement } .
     Statement                      = OptionAssignment
                                    | BuiltinStatement
@@ -27,7 +27,7 @@ The parser directly implements the following grammar.
     ReturnStatement                = "return" Expression .
     ExpressionStatement            = Expression .
     Expression                     = ConditionalExpression .
-    ConditionalExpression          = LogicalExpression
+    ConditionalExpression          = LogicalOrExpression
                                    | "if" Expression "then" Expression "else" Expression .
     ExpressionSuffix               = { PostfixOperator } { PipeExpressionSuffix } { MultiplicativeExpressionSuffix } { AdditiveExpressionSuffix } { ComparisonExpressionSuffix } { LogicalAndExpressionSuffix } { LogicalOrExpressionSuffix } .
     LogicalOrExpression            = LogicalAndExpression { LogicalOrExpressionSuffix } .
@@ -38,7 +38,7 @@ The parser directly implements the following grammar.
     LogicalAndOperator             = "and" .
     UnaryLogicalExpression         = ComparisonExpression
                                    | UnaryLogicalOperator UnaryLogicalExpression .
-    UnaryLogicalOperator           = "not" .
+    UnaryLogicalOperator           = "not" | "exists" .
     ComparisonExpression           = AdditiveExpression { ComparisonExpressionSuffix } .
     ComparisonExpressionSuffix     = ComparisonOperator AdditiveExpression .
     ComparisonOperator             = "==" | "!=" | "<" | "<=" | ">" | ">=" | "=~" | "!~" .
@@ -73,7 +73,8 @@ The parser directly implements the following grammar.
                                    | ObjectLiteral
                                    | ArrayLiteral
                                    | ParenExpression .
-    ObjectLiteral                  = "{" PropertyList "}" .
+    ObjectLiteral                  = "{" ObjectLiteralBody "}"
+    ObjectLiteralBody              = [ ObjectBody ]
     ArrayLiteral                   = "[" ExpressionList "]" .
     ParenExpression                = "(" ParenExpressionBody .
     ParenExpressionBody            = ")" FunctionExpressionSuffix
@@ -88,9 +89,15 @@ The parser directly implements the following grammar.
     FunctionBodyExpression         = Block | Expression .
     Block                          = "{" StatementList "}" .
     ExpressionList                 = [ Expression { "," Expression } ] .
+    ObjectBody                     = identifier ObjectBodySuffix 
+                                   | string_lit PropertyListSuffix .
+    ObjectBodySuffix               = "with" PropertyList
+                                   | PropertyListSuffix .
+    PropertyListSuffix             = PropertySuffix { "," PropertyList } .
     PropertyList                   = [ Property { "," Property } ] .
-    Property                       = identifier [ ":" Expression ]
-                                   | string_lit ":" Expression .
+    Property                       = identifier PropertySuffix
+                                   | string_lit PropertySuffix .
+    PropertySuffix                 = [ ":" Expression ].
     ParameterList                  = [ Parameter { "," Parameter } ] .
     Parameter                      = identifer [ "=" Expression ] .
 

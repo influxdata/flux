@@ -85,82 +85,82 @@ builtin yn
 
 // hack to simulate an imported math package
 math = {
-pi:pi
-e:e
-phi:phi
-sqrt2:sqrt2
-sqrte:sqrte
-sqrtpi:sqrtpi
-sqrtphi:sqrtphi
-ln2:ln2
-log2e:log2e
-ln10:ln10
-log10e:log10e
-maxfloat:maxfloat
-smallestNonzeroFloat:smallestNonzeroFloat
-maxint:maxint
-minint:minint
-maxuint:maxuint
-abs:abs
-acos:acos
-acosh:acosh
-asin:asin
-asinh:asinh
-atan:atan
-atan2:atan2
-atanh:atanh
-cbrt:cbrt
-ceil:ceil
-copysign:copysign
-cos:cos
-cosh:cosh
-dim:dim
-erf:erf
-erfc:erfc
-erfcinv:erfcinv
-erfinv:erfinv
-exp:exp
-exp2:exp2
-expm1:expm1
-float64bits:float64bits
-floor:floor
-frexp:frexp
-gamma:gamma
-hypot:hypot
-ilogb:ilogb
-mInf:mInf
-isInf:isInf
-isNaN:isNaN
-j0:j0
-j1:j1
-jn:jn
-ldexp:ldexp
-lgamma:lgamma
-log:log
-log10:log10
-log1p:log1p
-log2:log2
-logb:logb
-mMax:mMax
-mMin:mMin
-mod:mod
-modf:modf
-NaN:NaN
-nextafter:nextafter
-pow:pow
-pow10:pow10
-remainder:remainder
-round:round
-roundtoeven:roundtoeven
-signbit:signbit
-sin:sin
-sincos:sincos
-sinh:sinh
-sqrt:sqrt
-tan:tan
-tanh:tanh
-trunc:trunc
-y0:y0
-y1:y1
-yn:yn
+  pi:pi,
+  e:e,
+  phi:phi,
+  sqrt2:sqrt2,
+  sqrte:sqrte,
+  sqrtpi:sqrtpi,
+  sqrtphi:sqrtphi,
+  ln2:ln2,
+  log2e:log2e,
+  ln10:ln10,
+  log10e:log10e,
+  maxfloat:maxfloat,
+  smallestNonzeroFloat:smallestNonzeroFloat,
+  maxint:maxint,
+  minint:minint,
+  maxuint:maxuint,
+  abs:abs,
+  acos:acos,
+  acosh:acosh,
+  asin:asin,
+  asinh:asinh,
+  atan:atan,
+  atan2:atan2,
+  atanh:atanh,
+  cbrt:cbrt,
+  ceil:ceil,
+  copysign:copysign,
+  cos:cos,
+  cosh:cosh,
+  dim:dim,
+  erf:erf,
+  erfc:erfc,
+  erfcinv:erfcinv,
+  erfinv:erfinv,
+  exp:exp,
+  exp2:exp2,
+  expm1:expm1,
+  float64bits:float64bits,
+  floor:floor,
+  frexp:frexp,
+  gamma:gamma,
+  hypot:hypot,
+  ilogb:ilogb,
+  mInf:mInf,
+  isInf:isInf,
+  isNaN:isNaN,
+  j0:j0,
+  j1:j1,
+  jn:jn,
+  ldexp:ldexp,
+  lgamma:lgamma,
+  log:log,
+  log10:log10,
+  log1p:log1p,
+  log2:log2,
+  logb:logb,
+  mMax:mMax,
+  mMin:mMin,
+  mod:mod,
+  modf:modf,
+  NaN:NaN,
+  nextafter:nextafter,
+  pow:pow,
+  pow10:pow10,
+  remainder:remainder,
+  round:round,
+  roundtoeven:roundtoeven,
+  signbit:signbit,
+  sin:sin,
+  sincos:sincos,
+  sinh:sinh,
+  sqrt:sqrt,
+  tan:tan,
+  tanh:tanh,
+  trunc:trunc,
+  y0:y0,
+  y1:y1,
+  yn:yn,
 }

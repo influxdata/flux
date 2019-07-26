@@ -20,21 +20,45 @@ type TableIterator interface {
 	Do(f func(Table) error) error
 }
 
+// Table represents a set of streamed data with a common schema.
+// The contents of the table can be read exactly once.
+//
+// This data structure is not thread-safe.
 type Table interface {
+	// Key returns the set of data that is common among all rows
+	// in the table.
 	Key() GroupKey
 
+	// Cols contains metadata about the column schema.
 	Cols() []ColMeta
 
 	// Do calls f to process the data contained within the table.
-	// It uses the arrow buffers.
+	// This must only be called once and implementations should return
+	// an error if this is called multiple times.
 	Do(f func(ColReader) error) error
 
-	// RefCount modifies the reference count on the table by n.
-	// When the RefCount goes to zero, the table is freed.
-	RefCount(n int)
+	// Done indicates that this table is no longer needed and that the
+	// underlying processer that produces the table may discard any
+	// buffers that need to be processed. If the table has already been
+	// read with Do, this happens automatically.
+	// This is also not required if the table is empty.
+	// It should be safe to always call this function and call it multiple
+	// times.
+	Done()
 
 	// Empty returns whether the table contains no records.
 	Empty() bool
+}
+
+// BufferedTable is an implementation of Table that has all of its
+// data buffered.
+type BufferedTable interface {
+	Table
+
+	// Copy will return a copy of the BufferedTable without
+	// consuming the Table itself. If this Table has already
+	// been consumed by the Do method, then this will panic.
+	Copy() BufferedTable
 }
 
 // ColMeta contains the information about the column metadata.
@@ -122,7 +146,9 @@ func (t ColType) String() string {
 
 // ColReader allows access to reading arrow buffers of column data.
 // All data the ColReader exposes is guaranteed to be in memory.
-// Once an ColReader goes out of scope, all slices are considered invalid.
+// A ColReader that is produced when processing a Table will be
+// released once it goes out of scope. Retain can be used to keep
+// a reference to the buffered memory.
 type ColReader interface {
 	Key() GroupKey
 	// Cols returns a list of column metadata.
@@ -136,6 +162,13 @@ type ColReader interface {
 	Floats(j int) *array.Float64
 	Strings(j int) *array.Binary
 	Times(j int) *array.Int64
+
+	// Retain will retain this buffer to avoid having the
+	// memory consumed by it freed.
+	Retain()
+
+	// Release will release a reference to this buffer.
+	Release()
 }
 
 type GroupKey interface {
@@ -199,7 +232,8 @@ type MultiResultDecoder interface {
 type MultiResultEncoder interface {
 	// Encode writes multiple results from r into w.
 	// Returns the number of bytes written to w and any error resulting from the encoding process.
-	// Errors obtained from the results object should be encoded to w and then discarded.
+	// It is up to the specific implementation for whether it will encode any errors that occur
+	// from the ResultIterator.
 	Encode(w io.Writer, results ResultIterator) (int64, error)
 }
 
@@ -240,33 +274,44 @@ type flusher interface {
 	Flush()
 }
 
+// Encode will encode the results into the writer using the Encoder and separating each entry
+// by the Delimiter. If an error occurs while processing the ResultIterator or is returned from
+// the underlying Encoder, Encode will return the error if nothing has yet been written to the
+// Writer. If something has been written to the Writer, then an error will only be returned
+// when the error is an EncoderError.
 func (e *DelimitedMultiResultEncoder) Encode(w io.Writer, results ResultIterator) (int64, error) {
 	wc := &iocounter.Writer{Writer: w}
 
 	for results.More() {
 		result := results.Next()
 		if _, err := e.Encoder.Encode(wc, result); err != nil {
-			// If we have an error that's from
-			// encoding specifically, return it
-			if IsEncoderError(err) {
+			// If we have an error that's from encoding or if we have not
+			// yet written any data to the writer, return the error.
+			if IsEncoderError(err) || wc.Count() == 0 {
 				return wc.Count(), err
 			}
-			// Otherwise, the error is from query execution,
-			// so we encode it instead.
+			// Otherwise, the error happened during query execution and we
+			// are stuck encoding it.
 			err := e.Encoder.EncodeError(wc, err)
 			return wc.Count(), err
 		}
 		if _, err := wc.Write(e.Delimiter); err != nil {
 			return wc.Count(), err
 		}
-		// Flush the writer after each result
+		// Flush the writer after each result.
 		if f, ok := w.(flusher); ok {
 			f.Flush()
 		}
 	}
+
 	// If we have any outlying errors in results, encode them
-	err := results.Err()
-	if err != nil {
+	// If we have an error in the result and we have not written
+	// to the writer, then return the error as-is. Otherwise, encode
+	// it the same way we do above.
+	if err := results.Err(); err != nil {
+		if wc.Count() == 0 {
+			return 0, err
+		}
 		err := e.Encoder.EncodeError(wc, err)
 		return wc.Count(), err
 	}

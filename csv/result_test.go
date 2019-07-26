@@ -979,29 +979,58 @@ func TestMultiResultEncoder(t *testing.T) {
 		{
 			name:   "error results",
 			config: csv.DefaultEncoderConfig(),
-			results: errorResultIterator{
-				Error: errors.New("test error"),
-			},
-			encoded: toCRLF(`#datatype,string,string
+			results: flux.NewSliceResultIterator([]flux.Result{
+				&executetest.Result{
+					Nm: "mean",
+					Tbls: []*executetest.Table{{
+						KeyCols: []string{"_start", "_stop", "_measurement", "host"},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_measurement", Type: flux.TString},
+							{Label: "host", Type: flux.TString},
+							{Label: "_value", Type: flux.TFloat},
+						},
+						Data: [][]interface{}{
+							{
+								values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+								values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+								values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+								"cpu",
+								"A",
+								40.0,
+							},
+							{
+								values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+								values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+								values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 1, 0, time.UTC)),
+								"cpu",
+								"A",
+								40.1,
+							},
+						},
+					}},
+				},
+				// errors only get encoded after something has been written to the encoder.
+				&executetest.Result{
+					Nm:  "test",
+					Err: errors.New("test error"),
+				},
+			}),
+			encoded: toCRLF(`#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
+#group,false,false,true,true,false,true,true,false
+#default,mean,,,,,,,
+,result,table,_start,_stop,_time,_measurement,host,_value
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:00Z,cpu,A,40
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:01Z,cpu,A,40.1
+
+
+#datatype,string,string
 #group,true,true
 #default,,
 ,error,reference
 ,test error,
-`),
-		},
-		{
-			name:   "returns query errors",
-			config: csv.DefaultEncoderConfig(),
-			results: flux.NewSliceResultIterator([]flux.Result{
-				&executetest.Result{
-					Err: errors.New("execution error"),
-				},
-			}),
-			encoded: toCRLF(`#datatype,string,string
-#group,true,true
-#default,,
-,error,reference
-,execution error,
 `),
 		},
 		{
@@ -1351,27 +1380,4 @@ var crlfPattern = regexp.MustCompile(`\r?\n`)
 
 func toCRLF(data string) []byte {
 	return []byte(crlfPattern.ReplaceAllString(data, "\r\n"))
-}
-
-type errorResultIterator struct {
-	Error error
-}
-
-func (r errorResultIterator) More() bool {
-	return false
-}
-
-func (r errorResultIterator) Next() flux.Result {
-	panic("no results")
-}
-
-func (r errorResultIterator) Release() {
-}
-
-func (r errorResultIterator) Err() error {
-	return r.Error
-}
-
-func (r errorResultIterator) Statistics() flux.Statistics {
-	return flux.Statistics{}
 }

@@ -100,26 +100,29 @@ var opPrecedence = map[int]int{
 	member:       1,
 	index:        1,
 	// these are OperatorKinds
-	getIntForOp(MultiplicationOperator):   2,
-	getIntForOp(DivisionOperator):         2,
-	getIntForOp(AdditionOperator):         3,
-	getIntForOp(SubtractionOperator):      3,
-	getIntForOp(LessThanEqualOperator):    4,
-	getIntForOp(LessThanOperator):         4,
-	getIntForOp(GreaterThanEqualOperator): 4,
-	getIntForOp(GreaterThanOperator):      4,
-	getIntForOp(StartsWithOperator):       4,
-	getIntForOp(InOperator):               4,
-	getIntForOp(NotEmptyOperator):         4,
-	getIntForOp(EmptyOperator):            4,
-	getIntForOp(EqualOperator):            4,
-	getIntForOp(NotEqualOperator):         4,
-	getIntForOp(RegexpMatchOperator):      4,
-	getIntForOp(NotRegexpMatchOperator):   4,
-	getIntForOp(NotOperator):              5,
+	getIntForOp(PowerOperator):            2,
+	getIntForOp(MultiplicationOperator):   3,
+	getIntForOp(DivisionOperator):         3,
+	getIntForOp(ModuloOperator):           3,
+	getIntForOp(AdditionOperator):         4,
+	getIntForOp(SubtractionOperator):      4,
+	getIntForOp(LessThanEqualOperator):    5,
+	getIntForOp(LessThanOperator):         5,
+	getIntForOp(GreaterThanEqualOperator): 5,
+	getIntForOp(GreaterThanOperator):      5,
+	getIntForOp(StartsWithOperator):       5,
+	getIntForOp(InOperator):               5,
+	getIntForOp(NotEmptyOperator):         5,
+	getIntForOp(EmptyOperator):            5,
+	getIntForOp(EqualOperator):            5,
+	getIntForOp(NotEqualOperator):         5,
+	getIntForOp(RegexpMatchOperator):      5,
+	getIntForOp(NotRegexpMatchOperator):   5,
+	getIntForOp(NotOperator):              6,
+	getIntForOp(ExistsOperator):           6,
 	// theses are LogicalOperatorKinds:
-	getIntForLOp(AndOperator): 6,
-	getIntForLOp(OrOperator):  7,
+	getIntForLOp(AndOperator): 7,
+	getIntForLOp(OrOperator):  8,
 }
 
 // formatChildWithParens applies the generic rule for parenthesis (not for binary expressions).
@@ -502,6 +505,11 @@ func (f *formatter) formatObjectExpressionBraces(n *ObjectExpression, braces boo
 
 	if braces {
 		f.writeRune('{')
+	}
+
+	if n.With != nil {
+		f.formatIdentifier(n.With)
+		f.writeString(" with ")
 	}
 
 	if multiline {

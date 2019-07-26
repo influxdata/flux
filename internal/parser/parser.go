@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/internal/scanner"
@@ -170,7 +171,7 @@ func (p *parser) parseStatement() ast.Statement {
 	case token.INT, token.FLOAT, token.STRING, token.DIV,
 		token.TIME, token.DURATION, token.PIPE_RECEIVE,
 		token.LPAREN, token.LBRACK, token.LBRACE,
-		token.ADD, token.SUB, token.NOT, token.IF:
+		token.ADD, token.SUB, token.NOT, token.IF, token.EXISTS:
 		return p.parseExpressionStatement()
 	default:
 		p.consume()
@@ -399,7 +400,7 @@ func (p *parser) parseExpressionList() []ast.Expression {
 		case token.IDENT, token.INT, token.FLOAT, token.STRING, token.DIV,
 			token.TIME, token.DURATION, token.PIPE_RECEIVE,
 			token.LPAREN, token.LBRACK, token.LBRACE,
-			token.ADD, token.SUB, token.NOT:
+			token.ADD, token.SUB, token.NOT, token.EXISTS:
 			exprs = append(exprs, p.parseExpression())
 		default:
 			// TODO(jsternberg): BadExpression.
@@ -526,6 +527,9 @@ func (p *parser) parseUnaryLogicalOperator() (token.Pos, ast.OperatorKind, bool)
 	case token.NOT:
 		p.consume()
 		return pos, ast.NotOperator, true
+	case token.EXISTS:
+		p.consume()
+		return pos, ast.ExistsOperator, true
 	default:
 		return 0, 0, false
 	}
@@ -661,6 +665,12 @@ func (p *parser) parseMultiplicativeOperator() (ast.OperatorKind, bool) {
 	case token.DIV:
 		p.consume()
 		return ast.DivisionOperator, true
+	case token.MOD:
+		p.consume()
+		return ast.ModuloOperator, true
+	case token.POW:
+		p.consume()
+		return ast.PowerOperator, true
 	default:
 		return 0, false
 	}
@@ -879,7 +889,21 @@ func (p *parser) parseIdentifier() *ast.Identifier {
 func (p *parser) parseIntLiteral() *ast.IntegerLiteral {
 	pos, lit := p.expect(token.INT)
 	// todo(jsternberg): handle errors.
-	value, _ := strconv.ParseInt(lit, 10, 64)
+	value, err := strconv.ParseInt(lit, 10, 64)
+	if err != nil {
+		// If the error message comes from strconv.ParseInt, we want
+		// to remove the first two parts from the error message as they are
+		// very Go specific and we want a generic error message.
+		msg := err.Error()
+		if strings.HasPrefix(msg, "strconv.ParseInt:") {
+			parts := strings.SplitN(err.Error(), ": ", 3)
+			msg = parts[len(parts)-1]
+		}
+		p.error(fmt.Sprintf("invalid integer literal %q: %s", lit, msg))
+
+		// Reset this to zero for consistency with the Rust implementation.
+		value = 0
+	}
 	return &ast.IntegerLiteral{
 		Value:    value,
 		BaseNode: p.posRange(pos, len(lit)),
@@ -907,12 +931,9 @@ func (p *parser) parseStringLiteral() *ast.StringLiteral {
 
 func (p *parser) parseRegexpLiteral() *ast.RegexpLiteral {
 	pos, lit := p.expect(token.REGEX)
-	// todo(jsternberg): handle errors.
 	value, err := ParseRegexp(lit)
 	if err != nil {
-		p.errs = append(p.errs, ast.Error{
-			Msg: err.Error(),
-		})
+		p.error(err.Error())
 	}
 	return &ast.RegexpLiteral{
 		Value:    value,
@@ -958,12 +979,10 @@ func (p *parser) parseArrayLiteral() ast.Expression {
 
 func (p *parser) parseObjectLiteral() ast.Expression {
 	start, _ := p.open(token.LBRACE, token.RBRACE)
-	properties := p.parsePropertyList()
+	obj := p.parseObjectBody()
 	end, rbrace := p.close(token.RBRACE)
-	return &ast.ObjectExpression{
-		Properties: properties,
-		BaseNode:   p.position(start, end+token.Pos(len(rbrace))),
-	}
+	obj.BaseNode = p.position(start, end+token.Pos(len(rbrace)))
+	return obj
 }
 
 func (p *parser) parseParenExpression() ast.Expression {
@@ -1051,8 +1070,71 @@ func (p *parser) parseParenIdentExpression(lparen token.Pos, key *ast.Identifier
 	}
 }
 
+func (p *parser) parseObjectBody() *ast.ObjectExpression {
+	switch _, tok, _ := p.peek(); tok {
+	case token.IDENT:
+		ident := p.parseIdentifier()
+		return p.parseObjectBodySuffix(ident)
+	case token.STRING:
+		str := p.parseStringLiteral()
+		properties := p.parsePropertyListSuffix(str)
+		return &ast.ObjectExpression{
+			Properties: properties,
+		}
+	default:
+		return &ast.ObjectExpression{
+			Properties: p.parsePropertyList(),
+		}
+	}
+
+}
+func (p *parser) parseObjectBodySuffix(ident *ast.Identifier) *ast.ObjectExpression {
+	switch _, tok, lit := p.peek(); tok {
+	case token.IDENT:
+		if lit != "with" {
+			// TODO(nathanielc) BadExpression since we had two idents in a row
+			return nil
+		}
+		p.consume()
+		properties := p.parsePropertyList()
+		return &ast.ObjectExpression{
+			With:       ident,
+			Properties: properties,
+		}
+	default:
+		properties := p.parsePropertyListSuffix(ident)
+		return &ast.ObjectExpression{
+			Properties: properties,
+		}
+	}
+}
+
+func (p *parser) parsePropertyListSuffix(key ast.PropertyKey) []*ast.Property {
+	var properties []*ast.Property
+	prop := p.parsePropertySuffix(key)
+	properties = append(properties, prop)
+	// if there's not more, return
+	if !p.more() {
+		return properties
+	}
+
+	switch _, tok, lit := p.peek(); tok {
+	case token.COMMA:
+		p.consume()
+
+	default:
+		p.errs = append(p.errs, ast.Error{
+			Msg: fmt.Sprintf("expected comma in property list, got %s (%q)", tok, lit),
+		})
+	}
+
+	properties = append(properties, p.parsePropertyList()...)
+	return properties
+}
+
 func (p *parser) parsePropertyList() []*ast.Property {
 	var params []*ast.Property
+	perrs := make([]ast.Error, 0)
 	for p.more() {
 		var param *ast.Property
 		switch _, tok, _ := p.peek(); tok {
@@ -1061,48 +1143,108 @@ func (p *parser) parsePropertyList() []*ast.Property {
 		case token.STRING:
 			param = p.parseStringProperty()
 		default:
-			// TODO(jsternberg): BadExpression.
-			p.consume()
-			continue
+			param = p.parseInvalidProperty()
 		}
 		params = append(params, param)
-		if _, tok, _ := p.peek(); tok == token.COMMA {
-			p.consume()
+
+		if p.more() {
+			if _, tok, lit := p.peek(); tok != token.COMMA {
+				perrs = append(perrs, ast.Error{
+					Msg: fmt.Sprintf("expected comma in property list, got %s (%q)", tok, lit),
+				})
+			} else {
+				p.consume()
+			}
 		}
 	}
+	p.errs = append(p.errs, perrs...)
 	return params
 }
 
 func (p *parser) parseStringProperty() *ast.Property {
 	key := p.parseStringLiteral()
-	p.expect(token.COLON)
-	val := p.parseExpression()
-	return &ast.Property{
-		Key:   key,
-		Value: val,
-		BaseNode: p.baseNode(p.sourceLocation(
-			locStart(key),
-			locEnd(val),
-		)),
-	}
+	return p.parsePropertySuffix(key)
 }
 
 func (p *parser) parseIdentProperty() *ast.Property {
 	key := p.parseIdentifier()
-	loc := key.Location()
+	return p.parsePropertySuffix(key)
+}
+
+func (p *parser) parsePropertySuffix(key ast.PropertyKey) *ast.Property {
 	property := &ast.Property{
-		Key:      key,
-		BaseNode: p.baseNode(&loc),
+		Key: key,
 	}
+	var loc ast.BaseNode
 	if _, tok, _ := p.peek(); tok == token.COLON {
 		p.consume()
-		property.Value = p.parseExpression()
-		property.Loc = p.sourceLocation(
+		property.Value = p.parsePropertyValue()
+		loc = p.baseNode(p.sourceLocation(
 			locStart(key),
-			locEnd(property.Value),
-		)
+			locEnd(property.Value)))
+	} else {
+		loc = p.baseNode(p.sourceLocation(locStart(key), locEnd(key)))
 	}
+
+	property.BaseNode = loc
 	return property
+}
+
+func (p *parser) parseInvalidProperty() *ast.Property {
+	prop := &ast.Property{}
+	var perrs []ast.Error
+	startPos, tok, lit := p.peek()
+	switch tok {
+	case token.COLON:
+		perrs = append(perrs, ast.Error{
+			Msg: "missing property key",
+		})
+		p.consume()
+		prop.Value = p.parsePropertyValue()
+	case token.COMMA:
+		perrs = append(perrs, ast.Error{
+			Msg: "missing property in property list",
+		})
+	default:
+		perrs = append(perrs, ast.Error{
+			Msg: fmt.Sprintf("unexpected token for property key: %s (%q)", tok, lit),
+		})
+
+		// We are not really parsing an expression, this is just a way to advance to
+		// to just before the next comma, colon, end of block, or EOF.
+		p.parseExpressionWhile(func() bool {
+			if _, tok, _ := p.peek(); tok == token.COMMA || tok == token.COLON {
+				return false
+			}
+			return p.more()
+		})
+
+		// If we stopped at a colon, attempt to parse the value
+		if _, tok, _ := p.peek(); tok == token.COLON {
+			p.consume()
+			prop.Value = p.parsePropertyValue()
+		}
+	}
+	endPos, _, _ := p.peek()
+	p.errs = append(p.errs, perrs...)
+	prop.BaseNode = p.position(startPos, endPos)
+	return prop
+}
+
+func (p *parser) parsePropertyValue() ast.Expression {
+	e := p.parseExpressionWhile(func() bool {
+		if _, tok, _ := p.peek(); tok == token.COMMA || tok == token.COLON {
+			return false
+		}
+		return p.more()
+	})
+	if e == nil {
+		// TODO: return a BadExpression here.  It would help simplify logic.
+		p.errs = append(p.errs, ast.Error{
+			Msg: "missing property value",
+		})
+	}
+	return e
 }
 
 func (p *parser) parseParameterList() []*ast.Property {
@@ -1209,26 +1351,6 @@ func (p *parser) consume() {
 // token. If a token has been buffered by peek, then the token will
 // be read if it matches or will be discarded if it is the wrong token.
 func (p *parser) expect(exp token.Token) (token.Pos, string) {
-	if p.buffered {
-		p.buffered = false
-		if p.tok == exp || p.tok == token.EOF {
-			if p.tok == token.EOF {
-				p.errs = append(p.errs, ast.Error{
-					Msg: fmt.Sprintf("expected %s, got EOF", exp),
-				})
-			}
-			return p.pos, p.lit
-		}
-		p.errs = append(p.errs, ast.Error{
-			Msg: fmt.Sprintf("expected %s, got %s (%q) at %s",
-				exp,
-				p.tok,
-				p.lit,
-				p.s.File().Position(p.pos),
-			),
-		})
-	}
-
 	for {
 		pos, tok, lit := p.scan()
 		if tok == token.EOF || tok == exp {
@@ -1374,6 +1496,12 @@ func (p *parser) baseNode(loc *ast.SourceLocation) ast.BaseNode {
 	}
 	p.errs = nil
 	return bnode
+}
+
+func (p *parser) error(msg string) {
+	p.errs = append(p.errs, ast.Error{
+		Msg: msg,
+	})
 }
 
 // locStart is a utility method for retrieving the start position
