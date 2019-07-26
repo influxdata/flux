@@ -172,63 +172,22 @@ func (t *chandeMomentumOscillatorTransformation) Process(id execute.DatasetID, t
 	}
 
 	return tbl.Do(func(cr flux.ColReader) error {
-		if cr.Len() == 0 {
+		if cr.Len() == 0 || len(cr.Cols()) == 0 {
 			return nil
 		}
 
 		for j, c := range cr.Cols() {
 			if !doChandeMomentumOscillator[j] {
-				switch c.Type {
-				case flux.TTime:
-					arr := cr.Times(j)
-					for i := int(t.n); i < arr.Len(); i++ {
-						if err := builder.AppendTime(j, execute.Time(arr.Value(i))); err != nil {
-							return err
-						}
-					}
-				case flux.TBool:
-					arr := cr.Bools(j)
-					for i := int(t.n); i < arr.Len(); i++ {
-						if err := builder.AppendBool(j, arr.Value(i)); err != nil {
-							return err
-						}
-					}
-				case flux.TString:
-					arr := cr.Strings(j)
-					for i := int(t.n); i < arr.Len(); i++ {
-						if err := builder.AppendString(j, arr.ValueString(i)); err != nil {
-							return err
-						}
-					}
-				case flux.TInt:
-					arr := cr.Ints(j)
-					for i := int(t.n); i < arr.Len(); i++ {
-						if err := builder.AppendInt(j, arr.Value(i)); err != nil {
-							return err
-						}
-					}
-				case flux.TUInt:
-					arr := cr.UInts(j)
-					for i := int(t.n); i < arr.Len(); i++ {
-						if err := builder.AppendUInt(j, arr.Value(i)); err != nil {
-							return err
-						}
-					}
-				case flux.TFloat:
-					arr := cr.Floats(j)
-					for i := int(t.n); i < arr.Len(); i++ {
-						if err := builder.AppendFloat(j, arr.Value(i)); err != nil {
-							return err
-						}
+				for i := int(t.n); i < cr.Len(); i++ {
+					if err := builder.AppendValue(j, execute.ValueForRow(cr, i, j)); err != nil {
+						return err
 					}
 				}
-			} else {
-				if err := t.do(int(t.n), cr, c, builder, j); err != nil {
-					return err
-				}
+				continue
 			}
-
-			fmt.Println(builder.NCols(), builder.NRows())
+			if err := t.do(int(t.n), cr, c, builder, j); err != nil {
+				return err
+			}
 		}
 		return nil
 	})

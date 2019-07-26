@@ -3590,7 +3590,57 @@ from(bucket: "waterhouse/autogen")
     |> window(every: inf)
     |> holtWinters(n: 10, seasonality: 4, interval: 379m)
 ```
+ 
+#### Chande Momentum Oscillator 
 
+The Chande Momentum Oscillator (CMO) is a technical momentum indicator developed by Tushar Chande. The CMO indicator is created by calculating the difference between the sum of all recent higher data points and the sum of all recent lower data points, then dividing the result by the sum of all data movement over a given time period. The result is multiplied by 100 to give the -100 to +100 range.
+
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| n           | int      | N specifies the period.
+| columns     | []string | Columns is list of all columns that `chandeMomentumOscillator` should be performed on.
+
+ Example:
+ 
+ | _time |   A  |result|
+ |:-----:|:----:|:----:|
+ |  0001 |   1  |   -  |
+ |  0002 |   2  |   -  |
+ |  0003 |   3  |   -  |
+ |  0004 |   4  |   -  |
+ |  0005 |   5  |   -  |
+ |  0006 |   6  |   -  |
+ |  0007 |   7  |   -  |
+ |  0008 |   8  |   -  |
+ |  0009 |   9  |   -  |
+ |  0010 |  10  |   -  |
+ |  0011 |  11  |  100 |
+ |  0012 |  12  |  100 |
+ |  0013 |  13  |  100 |
+ |  0014 |  14  |  100 |
+ |  0015 |  15  |  100 |
+ |  0016 |  14  |  80  |
+ |  0017 |  13  |  60  |
+ |  0018 |  12  |  40  |
+ |  0019 |  11  |  20  |
+ |  0020 |  10  |  0   |
+ |  0021 |   9  | -20  |
+ |  0022 |   8  | -40  |
+ |  0023 |   7  | -60  |
+ |  0024 |   6  | -80  |
+ |  0025 |   5  | -100 |
+ |  0026 |   4  | -100 |
+ |  0027 |   3  | -100 |
+ |  0028 |   2  | -100 |
+ |  0029 |   1  | -100 |
+ 
+ Example of script:
+ ```
+ from(bucket: "telegraf/autogen"):
+     |> range(start: -7d)
+     |> chandeMomentumOscillator(n: 10, columns: ["_value"])
+ ```
+ 
 #### Distinct
 
 Distinct produces the unique values for a given column. Null is considered its own distinct value if it is present.
