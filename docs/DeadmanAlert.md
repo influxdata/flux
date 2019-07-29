@@ -18,28 +18,28 @@ In order to be alerted when the above task stops reporting data for a group, you
 ```
 option task = {
     ...
-    every: 15m,
+    period: 1h,
+    every:  15m,
     ...
 }
-f = (start, stop) =>
-    from(bucket: "telegraf/autogen")
-        |> range(start: start, stop: stop)
-        |> filter(fn: (r) => r._measurement == "cpu")
-
-deadman(f: f, period: 1h, offset: task.every)
+from(bucket: "telegraf/autogen")
+    |> range(start: -(task.period + task.every))
+    |> filter(fn: (r) => r._measurement == "cpu")
+    |> deadman(off: task.every)
 ```
 
 where the deadman function is defined as follows:
 ```
-deadman = (f, period, offset) => {
+deadman(off, tables=<-) => {
 
-    r = f(start: now() - offset - period, stop: now() - offset)
+    r = tables
         |> group_keys()
 
-    s = f(start: now() - period, stop: now())
+    s = tables
+        |> filter(fn: (r) => r._time > now() - off)
         |> group_keys()
 
-    return diff(r: r, s: s) |> alert(crit: (r) => true)
+    return diff(r:r, s:s) |> alert(crit: (r) => true)
 }
 ```
 
@@ -51,8 +51,8 @@ group_keys = (tables=<-) =>
     |> drop(columns: ["_value"])
 ```
 
-Lets walk through an example where `f` returns tables grouped by (`_measurement`, `host`).
-Assume `f` produces the following tables over the first period:
+Lets walk through an example of a query that returns tables grouped by (`_measurement`, `host`).
+Assume that query produces the following tables over the first period:
 
 | _measurement | host | _value |
 | ------------ | ---- | ------ |
