@@ -46,7 +46,7 @@ For rationale, check out the post [The Case Against Third Party Libraries](http:
 1. Fork the Flux repository.
 2. Create a feature branch of your fork, and then add your change.
 3. Run the test suite with your change. (Changes that cause tests to fail cannot be merged.)
-4. Commit your change. (For commits visible in influxdata/flux history, use the Flux conventional commit message format: https://www.conventionalcommits.org/en/v1.0.0-beta.3/.)
+4. Commit your change. (Use the Flux conventional commit message format: https://www.conventionalcommits.org/en/v1.0.0-beta.3/.)
 5. Create a pull request from your feature branch against master of the Flux repository. In your pull request, include details of your change and test cases, if applicable.
 
 ## Useful links
