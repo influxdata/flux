@@ -4,6 +4,7 @@ package flux
 
 import (
 	_ "github.com/goreleaser/goreleaser"
+	_ "github.com/influxdata/changelog"
 	_ "honnef.co/go/tools/cmd/staticcheck"
 )
 
