@@ -87,7 +87,6 @@ var (
 		"universe",
 		"influxdata/influxdb",
 		"math",
-		"promql",
 		"strings",
 		"regexp",
 		"date",
