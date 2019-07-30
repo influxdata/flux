@@ -42,7 +42,6 @@ func (f *dynamicListFn) prepare(cols []flux.ColMeta, extraTypes map[string]seman
 		propertyTypes[c.Label] = ConvertToKind(c.Type)
 		f.recordCols[c.Label] = j
 	}
-	f.recordList.cols = f.recordCols
 
 	f.recordList = NewRecordList(semantic.NewObjectType(propertyTypes))
 	if extraTypes == nil {
@@ -52,6 +51,8 @@ func (f *dynamicListFn) prepare(cols []flux.ColMeta, extraTypes map[string]seman
 	} else {
 		extraTypes[f.recordListName] = f.recordList.Type()
 	}
+
+	f.recordList.cols = f.recordCols
 
 	fn, err := f.compilationCache.Compile(
 		semantic.NewObjectType(extraTypes),
@@ -113,6 +114,14 @@ func (f *RowListReduceFn) Prepare(cols []flux.ColMeta) error {
 		return fmt.Errorf("row list reduce function must return an object, got %s", k.String())
 	}
 	return nil
+}
+
+func (f *RowListReduceFn) Eval(values [][]values.Value, extraParams map[string]values.Value) (values.Object, error) {
+	v, err := f.rowListFn.eval(values, extraParams)
+	if err != nil {
+		return nil, err
+	}
+	return v.Object(), nil
 }
 
 type RecordList struct {
