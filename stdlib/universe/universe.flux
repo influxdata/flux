@@ -28,6 +28,7 @@ builtin first
 builtin group
 builtin histogram
 builtin histogramQuantile
+builtin holtWinters
 builtin integral
 builtin join
 builtin keep

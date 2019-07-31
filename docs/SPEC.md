@@ -3424,6 +3424,72 @@ from(bucket: "telegraf/autogen"):
     |> tripleEMA(n: 5)
 ```
  
+##### Holt Winters
+
+Holt Winters applies the Holt-Winters damped prediction method with Nelder-Mead optimization to the given dataset.
+In a table, the dataset is composed of the values in the `timeColumn` and in the value `column`.
+The Holt-Winters method predicts `n` seasonally adjusted values for the specified `column`.
+If the data presents no seasonality, the user can specify `seasonality = 0`.
+The user can request to include the fitted data (on the given dataset) in the result by setting `withFit = true`.
+The `n` predicted values occur at the `interval` specified by the user.
+If your `interval` is `6m` and `n` is `3`, you will receive three predicted values that are each six minutes apart.
+`seasonality` is the seasonal pattern parameter and delimits the length of a seasonal pattern according to `interval`.
+If your `interval` is `2m` and `s` is `3`, then the seasonal pattern occurs every six minutes, that is, every three data points.
+
+Before processing the data, Holt Winters discards rows that have a null timestamp.
+Null values are treated like missing data points and taken into account when applying Holt Winters.
+
+HoltWinters supposes to work with evenly spaced values in time, so:
+ - `interval` is used to divide the data in time buckets;
+ - if many values are in the same bucket, the first one is selected, the others are skipped;
+ - if no value is present for a bucket, a missing value is added for that bucket.
+
+By default, HoltWinters uses the first value per time bucket.
+The user can use windowing and selectors/aggregates to specify a different behavior.
+The user can also use `aggregateWindow` as a data preparation step.
+
+Parameters:
+
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| n           | int      | N specifies the number of values to predict.
+| seasonality | int      | Seasonality specifies the number of points that are in a season. Defaults to `0`.
+| interval    | duration | Interval is the interval between two data points.
+| withFit     | bool     | WithFit specifies if the fitted data should be returned. Defaults to `false`.
+| timeColumn  | string   | TimeColumn specifies the time column for the dataset. Defaults to `"_time"`.
+| column      | string   | Column specifies the value column for the dataset. Defaults to `"_value"`.
+
+
+
+Examples:
+
+```
+from(bucket: "waterhouse/autogen")
+    |> range(start: -7y)
+    |> filter(fn: (r) => r._field == "water_level")
+    |> aggregateWindow(every: 379m, fn: first).
+    |> holtWinters(n: 10, seasonality: 4, interval: 379m)
+```
+
+For now, `aggregateWindow` lacks of some parameters of `window`.
+For example, if you need `offset`, you must apply this workaround:
+
+```
+from(bucket: "waterhouse/autogen")
+    |> range(start: -7y)
+    |> filter(fn: (r) => r._field == "water_level")
+    |> window(every: 379m, offset: 348m)
+    // The selector.
+    |> first()
+    // We need to timestamp every selected record per time bucket with the beginning
+    // of the window. So, we overwrite "_time" with "_start".
+    |> duplicate(column: "_start", as: "_time")
+    // We need to "un-window", otherwise the Holt-Winters algorithm would run
+    // for each window separately.
+    |> window(every: inf)
+    |> holtWinters(n: 10, seasonality: 4, interval: 379m)
+```
+
 #### Distinct
 
 Distinct produces the unique values for a given column. Null is considered its own distinct value if it is present.
