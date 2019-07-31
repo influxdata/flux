@@ -6,11 +6,10 @@ import (
 	"io"
 	"net/url"
 	"sort"
-	"time"
 	"strings"
-	"strconv"
-	MQTT "github.com/eclipse/paho.mqtt.golang"
+	"time"
 
+	MQTT "github.com/eclipse/paho.mqtt.golang"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
@@ -33,7 +32,6 @@ func init() {
 			"broker":       semantic.String,
 			"topic":        semantic.String,
 			"message":      semantic.String,
-			"format":       semantic.String,
 			"qos":          semantic.Int,
 			"clientid":     semantic.String,
 			"username":     semantic.String,
@@ -55,36 +53,26 @@ func init() {
 
 // DefaultToMQTTUserAgent is the default user agent used by ToMqtt
 var DefaultToMQTTUserAgent = "fluxd/dev"
-//
-
-
-//func newToMQTTClient() *MQTT.Client {
-	
-	
-//}
-
-// var toMQTTKeepAliveClient = newToMQTTClient()
 
 // this is used so we can get better validation on marshaling, innerToMQTTOpSpec and ToMQTTOpSpec
 // need to have identical fields
 type innerToMQTTOpSpec ToMQTTOpSpec
 
 type ToMQTTOpSpec struct {
-	Broker       string            `json:"broker"`
-	Name         string            `json:"name"`
-	Topic        string            `json:"topic"`
-	Message      string            `json:"message"`
-	Format       string            `json:"format"`
-	ClientID     string            `json:"clientid"`
-	Username     string            `json:"username"`
-	Password     string            `json:"password"`
-	QoS          int               `json:"qos"`
-	NameColumn   string            `json:"nameColumn"` // either name or name_column must be set, if none is set try to use the "_measurement" column.
-	Timeout      time.Duration     `json:"timeout"`    // default to something reasonable if zero
-	NoKeepAlive  bool              `json:"noKeepAlive"`
-	TimeColumn   string            `json:"timeColumn"`
-	TagColumns   []string          `json:"tagColumns"`
-	ValueColumns []string          `json:"valueColumns"`
+	Broker       string        `json:"broker"`
+	Name         string        `json:"name"`
+	Topic        string        `json:"topic"`
+	Message      string        `json:"message"`
+	ClientID     string        `json:"clientid"`
+	Username     string        `json:"username"`
+	Password     string        `json:"password"`
+	QoS          int           `json:"qos"`
+	NameColumn   string        `json:"nameColumn"` // either name or name_column must be set, if none is set try to use the "_measurement" column.
+	Timeout      time.Duration `json:"timeout"`    // default to something reasonable if zero
+	NoKeepAlive  bool          `json:"noKeepAlive"`
+	TimeColumn   string        `json:"timeColumn"`
+	TagColumns   []string      `json:"tagColumns"`
+	ValueColumns []string      `json:"valueColumns"`
 }
 
 // ReadArgs loads a flux.Arguments into ToMQTTOpSpec.  It sets several default values.
@@ -97,25 +85,16 @@ func (o *ToMQTTOpSpec) ReadArgs(args flux.Arguments) error {
 		return err
 	}
 	var ok bool
-	o.Topic, ok,  err = args.GetString("topic")
+	o.Topic, ok, err = args.GetString("topic")
 	if err != nil {
 		return err
 	}
-	o.Message, ok,  err = args.GetString("message")
+	o.Message, ok, err = args.GetString("message")
 	if err != nil {
 		return err
 	}
 	if len(o.Message) > 0 && len(o.Topic) <= 0 { // if you are sending a static mesage, must define a topic.
 		return fmt.Errorf("Topic required with message %s", o.Message)
-	}
-	o.Format, ok, err = args.GetString("format")
-	if err != nil {
-		return err
-	}
-	if len(o.Format) > 0 {
-		if o.Format != "lineProtocol" && o.Format != "JSON"{
-			return fmt.Errorf("Format must be lineProtocol or JSON, not %s", o.Format)
-		}
 	}
 	o.Name, ok, err = args.GetString("name")
 	if err != nil {
@@ -138,7 +117,7 @@ func (o *ToMQTTOpSpec) ReadArgs(args flux.Arguments) error {
 	if !ok {
 		o.ClientID = "flux-mqtt"
 	}
-    
+
 	o.Username, ok, err = args.GetString("username")
 	if err != nil {
 		return err
@@ -154,7 +133,7 @@ func (o *ToMQTTOpSpec) ReadArgs(args flux.Arguments) error {
 	q, ok, err := args.GetInt("qos")
 	if err != nil {
 		return err
-	} 
+	}
 	if !ok {
 		o.QoS = 0
 	} else {
@@ -254,8 +233,8 @@ func (o *ToMQTTProcedureSpec) Copy() plan.ProcedureSpec {
 	s := o.Spec
 	res := &ToMQTTProcedureSpec{
 		Spec: &ToMQTTOpSpec{
-			Broker:          s.Broker,
-			Topic: 		  s.Topic,
+			Broker:       s.Broker,
+			Topic:        s.Topic,
 			Name:         s.Name,
 			QoS:          s.QoS,
 			Username:     s.Username,
@@ -343,7 +322,7 @@ type idxType struct {
 func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	// set up the MQTT options.
 	opts := MQTT.NewClientOptions().AddBroker(t.spec.Spec.Broker)
-	if len(t.spec.Spec.ClientID) > 0 {
+	if t.spec.Spec.ClientID != "" {
 		opts.SetClientID(t.spec.Spec.ClientID)
 	} else {
 		opts.SetClientID("flux-mqtt")
@@ -351,23 +330,22 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	if t.spec.Spec.Timeout > 0 {
 		opts.SetConnectTimeout(t.spec.Spec.Timeout)
 	}
-	if len(t.spec.Spec.Username) > 0 {
+	if t.spec.Spec.Username != "" {
 		opts.SetUsername(t.spec.Spec.Username)
 	}
-	if len(t.spec.Spec.Password) > 0 {
+	if t.spec.Spec.Password != "" {
 		opts.SetPassword(t.spec.Spec.Password)
 	}
 	mqttTopic := t.spec.Spec.Topic
 
 	client := MQTT.NewClient(opts)
-	if len(t.spec.Spec.Message) > 0 {
-		
+	if t.spec.Spec.Message != "" {
 		//create and start a client using the above ClientOptions
 		if token := client.Connect(); token.Wait() && token.Error() != nil {
 			return token.Error()
 		}
-  		token := client.Publish(t.spec.Spec.Topic, 0, false, t.spec.Spec.Message)
-  		token.Wait()
+		token := client.Publish(t.spec.Spec.Topic, 0, false, t.spec.Spec.Message)
+		token.Wait()
 		client.Disconnect(250)
 		return nil
 	}
@@ -381,8 +359,6 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	for i, col := range cols {
 		labels[col.Label] = idxType{Idx: i, Type: col.Type}
 	}
-
-	// do time
 	timeColLabel := t.spec.Spec.TimeColumn
 	timeColIdx, ok := labels[timeColLabel]
 
@@ -474,47 +450,33 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		}
 		return err
 	})
-	
-//start a client using the above ClientOptions
+
+	//start a client using the above ClientOptions
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
-	p := make([]byte, 2024) 
+	p := make([]byte, 2024)
 	var message strings.Builder
-	lines := 0
-	// messages come in as triples: measurement & tags, values, timestamp
-	// put them all together and you have line-protocol! 
 	for {
 		n, err := pr.Read(p)
-		if err != nil{
-		    if err == io.EOF {
+		if err != nil {
+			if err == io.EOF {
 				message.WriteString(string(p[:n]))
 				break
 			}
 			client.Disconnect(250)
 			return err
 		}
-		message.WriteString(string(p[:n])) // handle leftovers
-		lines += 1
-		if lines > 2 { // post message after full row is read.
-			if len(mqttTopic) <= 0 {// No topic set? Create topic out of tags
-				mqttTopic = m.createTopic(message.String())				
-			}
-			if t.spec.Spec.Format == "JSON" { // format message as a JSON
-				message = m.formatJSON(message.String())
-			}
-			token := client.Publish(mqttTopic, 0, false, message.String())
-			token.Wait()
-			lines = 0
-			message.Reset()
-		}
-	}	
-	if len(message.String()) > 0 { // if any leftover messages are there, write them out. 
-		if len(mqttTopic) <= 0 {// create topic out of tags
-			mqttTopic = m.createTopic(message.String())				
+		fmt.Printf("DEBUG: Message %s\n", (string(p[:n])))
+		message.WriteString(string(p[:n]))
+	}
+	fmt.Printf("DEBUG: Final Message %s\n", message.String())
+	if message.String() != "" {
+		if mqttTopic == "" {
+			mqttTopic = m.createTopic(message.String())
 		}
 		token := client.Publish(mqttTopic, 0, false, message.String())
-	  	token.Wait()
+		token.Wait()
 	}
 	if err := wg.Wait(); err != nil {
 		client.Disconnect(250)
@@ -524,107 +486,11 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	return nil
 
 }
-// format the message as json
-func (t *toMqttMetric) formatJSON(message string) strings.Builder {
-	var b strings.Builder
-	b.WriteString("{ \"measurement\": \"")
-	at := strings.Split(message, " ")
-	as := strings.Split(at[0], ",")
-	if len(as) > 1 {
-		b.WriteString(as[0])
-		b.WriteString("\"")
-		b.WriteString(t.parseTags(as[1]))
-	} else {
-		b.WriteString(at[0])
-		b.WriteString("\"")
-	}
-	b.WriteString(", \"values\": { ")
-	as = strings.Split(at[1], ",")
-	l := len(as) - 1
-	if l > 1 {
-		for i := 1; i < l; i++ {
-			toke := strings.Split(as[i], "=")
-			if i > 1 {
-				b.WriteString(", ")
-			}
-			b.WriteString(toke[0])
-			b.WriteString(": ")
-			if _, err := strconv.Atoi(toke[1]); err == nil {
-				b.WriteString(toke[1])
-			} else if _, err := strconv.ParseBool(toke[1]); err == nil {
-				b.WriteString("\"")
-				b.WriteString(toke[1])
-				b.WriteString("\"")
-			} else if _, err := strconv.ParseFloat(toke[1], 64); err == nil {
-				b.WriteString(toke[1])
-			} else if _, err := strconv.ParseInt(toke[1], 10, 64); err == nil {
-				b.WriteString(toke[1])
-			} else {
-				b.WriteString("\"")
-				b.WriteString(toke[1])
-				b.WriteString("\"")
-			}
-		}
-	} else {
-		as = strings.Split(at[1], "=")
-		b.WriteString("\"")
-		b.WriteString(as[0])
-		b.WriteString("\": ")
-		if _, err := strconv.Atoi(as[1]); err == nil {
-			b.WriteString(as[1])
-		} else if _, err := strconv.ParseBool(as[1]); err == nil {
-			b.WriteString("\"")
-			b.WriteString(as[1])
-			b.WriteString("\"")
-		} else if _, err := strconv.ParseFloat(as[1], 64); err == nil {
-			b.WriteString(as[1])
-		} else if _, err := strconv.ParseInt(as[1], 10, 64); err == nil {
-			b.WriteString(as[1])
-		} else {
-			b.WriteString("\"")
-			b.WriteString(as[1])
-			b.WriteString("\"")
-		}
-	}
-	b.WriteString("}, \"time\": ")
-	b.WriteString(at[2])
-	b.WriteString("}")
-	return b
 
-}
-// add all tags to the JSON
-func (t *toMqttMetric) parseTags(tags string) string{
-	var mess strings.Builder
-	mess.WriteString("\", \"tags\": { ")
-	as := strings.Split(tags, ",")
-	l := len(as) - 1
-	if l > 1 {
-		for i := 1; i < l; i++ {
-			toke := strings.Split(tags, "=")
-			if i > 1 {
-				mess.WriteString(", ")
-			}
-			mess.WriteString("\"")
-			mess.WriteString(toke[0])
-			mess.WriteString("\": \"")
-			mess.WriteString(toke[1])
-			mess.WriteString("\"")
-		}
-	} else {
-		as = strings.Split(tags, "=")
-		mess.WriteString("\"")
-		mess.WriteString(as[0])
-		mess.WriteString("\": \"")
-		mess.WriteString(as[1])
-		mess.WriteString("\"")
-	}
-	mess.WriteString("}")  
-	return mess.String()
-}
- // creates a topic consisting of measurement/tagname/tagvalue for all tags
+// creates a topic consisting of measurement/tagname/tagvalue for all tags
 func (t *toMqttMetric) createTopic(topicString string) string {
 	var top strings.Builder
-	tt := strings.Split(topicString, " ") 
+	tt := strings.Split(topicString, " ")
 	tt = strings.Split(tt[0], ",")
 	top.WriteString("/")
 	top.WriteString(tt[0])

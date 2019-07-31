@@ -1,10 +1,7 @@
 package mqtt_test
 
 import (
-	"io/ioutil"
-	
-	"net/http/httptest"
-	"sync"
+	"fmt"
 	"testing"
 	"time"
 
@@ -14,8 +11,8 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/querytest"
-	fmqtt "github.com/influxdata/flux/stdlib/mqtt"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	fmqtt "github.com/influxdata/flux/stdlib/mqtt"
 )
 
 func TestToMQTT_NewQuery(t *testing.T) {
@@ -24,7 +21,7 @@ func TestToMQTT_NewQuery(t *testing.T) {
 			Name: "from with database with range",
 			Raw: `
 import "mqtt"
-from(bucket:"mybucket") |> mqtt.to(url: "https://localhost:8081", name:"series1", method:"POST",  timeout: 50s)`,
+from(bucket:"mybucket") |> mqtt.to(broker: "tcp://iot.eclipse.org:1883", topic: "test-influxdb", timeout: 0s)`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
@@ -34,23 +31,19 @@ from(bucket:"mybucket") |> mqtt.to(url: "https://localhost:8081", name:"series1"
 						},
 					},
 					{
-						ID: "toHTTP1",
-						Spec: &fhttp.ToMQTTOpSpec{
-							URL:          "https://localhost:8081",
-							Name:         "series1",
-							Method:       "POST",
-							Timeout:      50 * time.Second,
+						ID: "toMQTT1",
+						Spec: &fmqtt.ToMQTTOpSpec{
+							Broker:       "tcp://iot.eclipse.org:1883",
+							Topic:        "test-influxdb",
+							ClientID:     "flux-mqtt",
 							TimeColumn:   execute.DefaultTimeColLabel,
+							NameColumn:   "_measurement",
 							ValueColumns: []string{execute.DefaultValueColLabel},
-							Headers: map[string]string{
-								"Content-Type": "application/vnd.influx",
-								"User-Agent":   "fluxd/dev",
-							},
 						},
 					},
 				},
 				Edges: []flux.Edge{
-					{Parent: "from0", Child: "toHTTP1"},
+					{Parent: "from0", Child: "toMQTT1"},
 				},
 			},
 		},
@@ -64,14 +57,292 @@ from(bucket:"mybucket") |> mqtt.to(url: "https://localhost:8081", name:"series1"
 	}
 }
 
+type wanted struct {
+	Table  []*executetest.Table
+	Result []byte
+}
+
+var testCases = []struct {
+	name string
+	spec *fmqtt.ToMQTTProcedureSpec
+	data []flux.Table
+	want wanted
+}{
+	{
+		name: "coltable with name in _measurement",
+		spec: &fmqtt.ToMQTTProcedureSpec{
+			Spec: &fmqtt.ToMQTTOpSpec{
+				Broker:       "tcp://iot.eclipse.org:1883",
+				Topic:        "test-influxdb",
+				Timeout:      50 * time.Second,
+				TimeColumn:   execute.DefaultTimeColLabel,
+				ValueColumns: []string{"_value"},
+				NameColumn:   "_measurement",
+			},
+		},
+		data: []flux.Table{executetest.MustCopyTable(&executetest.Table{
+			ColMeta: []flux.ColMeta{
+				{Label: "_time", Type: flux.TTime},
+				{Label: "_measurement", Type: flux.TString},
+				{Label: "_value", Type: flux.TFloat},
+				{Label: "fred", Type: flux.TString},
+			},
+			Data: [][]interface{}{
+				{execute.Time(11), "a", 2.0, "one"},
+				{execute.Time(21), "a", 2.0, "one"},
+				{execute.Time(21), "b", 1.0, "seven"},
+				{execute.Time(31), "a", 3.0, "nine"},
+				{execute.Time(41), "c", 4.0, "elevendyone"},
+			},
+		})},
+		want: wanted{
+			Table: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(11), "a", 2.0, "one"},
+					{execute.Time(21), "a", 2.0, "one"},
+					{execute.Time(21), "b", 1.0, "seven"},
+					{execute.Time(31), "a", 3.0, "nine"},
+					{execute.Time(41), "c", 4.0, "elevendyone"},
+				},
+			}},
+			Result: []byte("a _value=2 11\na _value=2 21\nb _value=1 21\na _value=3 31\nc _value=4 41\n")},
+	},
+	{
+		name: "one table with measurement name in _measurement",
+		spec: &fmqtt.ToMQTTProcedureSpec{
+			Spec: &fmqtt.ToMQTTOpSpec{
+				Broker:       "tcp://iot.eclipse.org:1883",
+				Topic:        "test-influxdb",
+				Timeout:      50 * time.Second,
+				TimeColumn:   execute.DefaultTimeColLabel,
+				NameColumn:   "_measurement",
+				ValueColumns: []string{"_value"},
+			},
+		},
+		data: []flux.Table{&executetest.Table{
+			ColMeta: []flux.ColMeta{
+				{Label: "_time", Type: flux.TTime},
+				{Label: "_measurement", Type: flux.TString},
+				{Label: "_value", Type: flux.TFloat},
+				{Label: "fred", Type: flux.TString},
+			},
+			Data: [][]interface{}{
+				{execute.Time(11), "a", 2.0, "one"},
+				{execute.Time(21), "a", 2.0, "one"},
+				{execute.Time(21), "b", 1.0, "seven"},
+				{execute.Time(31), "a", 3.0, "nine"},
+				{execute.Time(41), "c", 4.0, "elevendyone"},
+			},
+		}},
+		want: wanted{
+			Table: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(11), "a", 2.0, "one"},
+					{execute.Time(21), "a", 2.0, "one"},
+					{execute.Time(21), "b", 1.0, "seven"},
+					{execute.Time(31), "a", 3.0, "nine"},
+					{execute.Time(41), "c", 4.0, "elevendyone"},
+				},
+			}},
+			Result: []byte("a _value=2 11\na _value=2 21\nb _value=1 21\na _value=3 31\nc _value=4 41\n")},
+	},
+	{
+		name: "one table with measurement name in _measurement and tag",
+		spec: &fmqtt.ToMQTTProcedureSpec{
+			Spec: &fmqtt.ToMQTTOpSpec{
+				Broker:       "tcp://iot.eclipse.org:1883",
+				Topic:        "test-influxdb",
+				Timeout:      50 * time.Second,
+				TimeColumn:   execute.DefaultTimeColLabel,
+				ValueColumns: []string{"_value"},
+				TagColumns:   []string{"fred"},
+				NameColumn:   "_measurement",
+			},
+		},
+		data: []flux.Table{&executetest.Table{
+			ColMeta: []flux.ColMeta{
+				{Label: "_time", Type: flux.TTime},
+				{Label: "_measurement", Type: flux.TString},
+				{Label: "_value", Type: flux.TFloat},
+				{Label: "fred", Type: flux.TString},
+			},
+			Data: [][]interface{}{
+				{execute.Time(11), "a", 2.0, "one"},
+				{execute.Time(21), "a", 2.0, "one"},
+				{execute.Time(21), "b", 1.0, "seven"},
+				{execute.Time(31), "a", 3.0, "nine"},
+				{execute.Time(41), "c", 4.0, "elevendyone"},
+			},
+		}},
+		want: wanted{
+			Table: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(11), "a", 2.0, "one"},
+					{execute.Time(21), "a", 2.0, "one"},
+					{execute.Time(21), "b", 1.0, "seven"},
+					{execute.Time(31), "a", 3.0, "nine"},
+					{execute.Time(41), "c", 4.0, "elevendyone"},
+				},
+			}},
+			Result: []byte("a,fred=one _value=2 11\na,fred=one _value=2 21\nb,fred=seven _value=1 21\na,fred=nine _value=3 31\nc,fred=elevendyone _value=4 41\n")},
+	},
+	{
+		name: "one table",
+		spec: &fmqtt.ToMQTTProcedureSpec{
+			Spec: &fmqtt.ToMQTTOpSpec{
+				Broker:       "tcp://iot.eclipse.org:1883",
+				Topic:        "test-influxdb",
+				Timeout:      50 * time.Second,
+				TimeColumn:   execute.DefaultTimeColLabel,
+				ValueColumns: []string{"_value"},
+				NameColumn:   "_measurement",
+			},
+		},
+		data: []flux.Table{&executetest.Table{
+			ColMeta: []flux.ColMeta{
+				{Label: "_time", Type: flux.TTime},
+				{Label: "_measurement", Type: flux.TString},
+				{Label: "_value", Type: flux.TFloat},
+			},
+			Data: [][]interface{}{
+				{execute.Time(11), "one_table", 2.0},
+				{execute.Time(21), "one_table", 1.0},
+				{execute.Time(31), "one_table", 3.0},
+				{execute.Time(41), "one_table", 4.0},
+			},
+		}},
+		want: wanted{
+			Table: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(11), "one_table", 2.0},
+					{execute.Time(21), "one_table", 1.0},
+					{execute.Time(31), "one_table", 3.0},
+					{execute.Time(41), "one_table", 4.0},
+				},
+			}},
+			Result: []byte("one_table _value=2 11\none_table _value=1 21\none_table _value=3 31\none_table _value=4 41\n"),
+		},
+	},
+	{
+		name: "one table with unused tag",
+		spec: &fmqtt.ToMQTTProcedureSpec{
+			Spec: &fmqtt.ToMQTTOpSpec{
+				Broker:       "tcp://iot.eclipse.org:1883",
+				Topic:        "test-influxdb",
+				Timeout:      50 * time.Second,
+				TimeColumn:   execute.DefaultTimeColLabel,
+				ValueColumns: []string{"_value"},
+				NameColumn:   "_measurement",
+			},
+		},
+		data: []flux.Table{&executetest.Table{
+			ColMeta: []flux.ColMeta{
+				{Label: "_time", Type: flux.TTime},
+				{Label: "_measurement", Type: flux.TString},
+				{Label: "_value", Type: flux.TFloat},
+				{Label: "fred", Type: flux.TString},
+			},
+			Data: [][]interface{}{
+				{execute.Time(11), "one_table_w_unused_tag", 2.0, "one"},
+				{execute.Time(21), "one_table_w_unused_tag", 1.0, "seven"},
+				{execute.Time(31), "one_table_w_unused_tag", 3.0, "nine"},
+				{execute.Time(41), "one_table_w_unused_tag", 4.0, "elevendyone"},
+			},
+		}},
+		want: wanted{
+			Table: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(11), "one_table_w_unused_tag", 2.0, "one"},
+					{execute.Time(21), "one_table_w_unused_tag", 1.0, "seven"},
+					{execute.Time(31), "one_table_w_unused_tag", 3.0, "nine"},
+					{execute.Time(41), "one_table_w_unused_tag", 4.0, "elevendyone"},
+				},
+			}},
+			Result: []byte("one_table_w_unused_tag _value=2 11\none_table_w_unused_tag _value=1 21\none_table_w_unused_tag _value=3 31\none_table_w_unused_tag _value=4 41\n"),
+		},
+	},
+	{
+		name: "one table with tag",
+		spec: &fmqtt.ToMQTTProcedureSpec{
+			Spec: &fmqtt.ToMQTTOpSpec{
+				Broker:       "tcp://iot.eclipse.org:1883",
+				Topic:        "test-influxdb",
+				Timeout:      50 * time.Second,
+				TimeColumn:   execute.DefaultTimeColLabel,
+				ValueColumns: []string{"_value"},
+				TagColumns:   []string{"fred"},
+				NameColumn:   "_measurement",
+			},
+		},
+		data: []flux.Table{&executetest.Table{
+			ColMeta: []flux.ColMeta{
+				{Label: "_time", Type: flux.TTime},
+				{Label: "_measurement", Type: flux.TString},
+				{Label: "_value", Type: flux.TFloat},
+				{Label: "fred", Type: flux.TString},
+			},
+			Data: [][]interface{}{
+				{execute.Time(11), "foo", 2.0, "one"},
+				{execute.Time(21), "foo", 1.0, "seven"},
+				{execute.Time(31), "foo", 3.0, "nine"},
+				{execute.Time(41), "foo", 4.0, "elevendyone"},
+			},
+		}},
+		want: wanted{
+			Table: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
+					//
+				},
+				Data: [][]interface{}{
+					{execute.Time(11), "foo", 2.0, "one"},
+					{execute.Time(21), "foo", 1.0, "seven"},
+					{execute.Time(31), "foo", 3.0, "nine"},
+					{execute.Time(41), "foo", 4.0, "elevendyone"},
+				},
+			}},
+			Result: []byte("foo,fred=one _value=2 11\nfoo,fred=seven _value=1 21\nfoo,fred=nine _value=3 31\nfoo,fred=elevendyone _value=4 41\n"),
+		},
+	},
+}
+
 func TestToMQTTOpSpec_UnmarshalJSON(t *testing.T) {
 	type fields struct {
-		URL         string
-		Method      string
-		Headers     map[string]string
-		URLParams   map[string]string
-		Timeout     time.Duration
-		NoKeepAlive bool
+		Broker  string
+		Topic   string
+		Timeout time.Duration
 	}
 	tests := []struct {
 		name    string
@@ -83,43 +354,39 @@ func TestToMQTTOpSpec_UnmarshalJSON(t *testing.T) {
 			name: "happy path",
 			bytes: []byte(`
 			{
-				"id": "toHTTP",
-				"kind": "toHTTP",
+				"id": "toMQTT",
+				"kind": "toMQTT",
 				"spec": {
-				  "url": "https://localhost:8081",
-				  "method" :"POST"
+				  "broker": "tcp://iot.eclipse.org:1883",
+				  "topic" :"test-influxdb"
 				}
 			}`),
 			fields: fields{
-				URL:    "https://localhost:8081",
-				Method: "POST",
+				Broker: "tcp://iot.eclipse.org:1883",
+				Topic:  "test-influxdb",
 			},
 		}, {
 			name: "bad address",
 			bytes: []byte(`
 		{
-			"id": "toHTTP",
-			"kind": "toHTTP",
+			"id": "toMQTT",
+			"kind": "toMQTT",
 			"spec": {
-			  "url": "https://loc	alhost:8081",
-			  "method" :"POST"
+			  "broker": "tcp://loc	alhost:8081",
+			  "topic" :"test"
 			}
 		}`),
 			fields: fields{
-				URL:    "https://localhost:8081",
-				Method: "POST",
+				Broker: "tcp://localhost:8883",
+				Topic:  "test",
 			},
 			wantErr: true,
 		}}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			o := &fmqtt.ToMQTTOpSpec{
-				URL:         tt.fields.URL,
-				Method:      tt.fields.Method,
-				Headers:     tt.fields.Headers,
-				URLParams:   tt.fields.URLParams,
-				Timeout:     tt.fields.Timeout,
-				NoKeepAlive: tt.fields.NoKeepAlive,
+				Broker: tt.fields.Broker,
+				Topic:  tt.fields.Topic,
 			}
 			op := &flux.Operation{
 				ID:   "toMQTT",
@@ -134,442 +401,47 @@ func TestToMQTTOpSpec_UnmarshalJSON(t *testing.T) {
 	}
 }
 
-func TestToHTTP_Process(t *testing.T) {
-	data := []byte{}
-	wg := sync.WaitGroup{}
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer wg.Done()
-		serverData, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			t.Log(err)
-			t.FailNow()
+var k = 0
+
+func TestToMQTT_Process(t *testing.T) {
+	opts := MQTT.NewClientOptions().AddBroker("tcp://iot.eclipse.org:1883")
+	opts.SetClientID("influxdb-test")
+	opts.SetDefaultPublishHandler(func(client MQTT.Client, msg MQTT.Message) {
+		serverData := msg.Payload()
+		fmt.Printf("Read Message (%d): %s\n", k, serverData)
+		if string(serverData) != string(testCases[k].want.Result) {
+			t.Logf("expected %s, got %s", testCases[k].want.Result, serverData)
+			t.Fail()
 		}
-		data = append(data, serverData...)
-	}))
+		k += 1
+	})
+	c := MQTT.NewClient(opts)
+	if token := c.Connect(); token.Wait() && token.Error() != nil {
+		panic(token.Error())
+	}
+	if token := c.Subscribe("test-influxdb", 0, nil); token.Wait() &&
+		token.Error() != nil {
+		t.Log(token.Error())
+		t.FailNow()
+	}
+
 	type wanted struct {
 		Table  []*executetest.Table
 		Result []byte
-	}
-	testCases := []struct {
-		name string
-		spec *fhttp.ToHTTPProcedureSpec
-		data []flux.Table
-		want wanted
-	}{
-		{
-			name: "coltable with name in _measurement",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
-					URL:          server.URL,
-					Method:       "GET",
-					Timeout:      50 * time.Second,
-					TimeColumn:   execute.DefaultTimeColLabel,
-					ValueColumns: []string{"_value"},
-					NameColumn:   "_measurement",
-				},
-			},
-			data: []flux.Table{executetest.MustCopyTable(&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_measurement", Type: flux.TString},
-					{Label: "_value", Type: flux.TFloat},
-					{Label: "fred", Type: flux.TString},
-				},
-				Data: [][]interface{}{
-					{execute.Time(11), "a", 2.0, "one"},
-					{execute.Time(21), "a", 2.0, "one"},
-					{execute.Time(21), "b", 1.0, "seven"},
-					{execute.Time(31), "a", 3.0, "nine"},
-					{execute.Time(41), "c", 4.0, "elevendyone"},
-				},
-			})},
-			want: wanted{
-				Table: []*executetest.Table{{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_measurement", Type: flux.TString},
-						{Label: "_value", Type: flux.TFloat},
-						{Label: "fred", Type: flux.TString},
-					},
-					Data: [][]interface{}{
-						{execute.Time(11), "a", 2.0, "one"},
-						{execute.Time(21), "a", 2.0, "one"},
-						{execute.Time(21), "b", 1.0, "seven"},
-						{execute.Time(31), "a", 3.0, "nine"},
-						{execute.Time(41), "c", 4.0, "elevendyone"},
-					},
-				}},
-				Result: []byte("a _value=2 11\na _value=2 21\nb _value=1 21\na _value=3 31\nc _value=4 41\n")},
-		},
-		{
-			name: "one table with measurement name in _measurement",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
-					URL:          server.URL,
-					Method:       "GET",
-					Timeout:      50 * time.Second,
-					TimeColumn:   execute.DefaultTimeColLabel,
-					ValueColumns: []string{"_value"},
-					NameColumn:   "_measurement",
-				},
-			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_measurement", Type: flux.TString},
-					{Label: "_value", Type: flux.TFloat},
-					{Label: "fred", Type: flux.TString},
-				},
-				Data: [][]interface{}{
-					{execute.Time(11), "a", 2.0, "one"},
-					{execute.Time(21), "a", 2.0, "one"},
-					{execute.Time(21), "b", 1.0, "seven"},
-					{execute.Time(31), "a", 3.0, "nine"},
-					{execute.Time(41), "c", 4.0, "elevendyone"},
-				},
-			}},
-			want: wanted{
-				Table: []*executetest.Table{{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_measurement", Type: flux.TString},
-						{Label: "_value", Type: flux.TFloat},
-						{Label: "fred", Type: flux.TString},
-					},
-					Data: [][]interface{}{
-						{execute.Time(11), "a", 2.0, "one"},
-						{execute.Time(21), "a", 2.0, "one"},
-						{execute.Time(21), "b", 1.0, "seven"},
-						{execute.Time(31), "a", 3.0, "nine"},
-						{execute.Time(41), "c", 4.0, "elevendyone"},
-					},
-				}},
-				Result: []byte("a _value=2 11\na _value=2 21\nb _value=1 21\na _value=3 31\nc _value=4 41\n")},
-		},
-		{
-			name: "one table with measurement name in _measurement and tag",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
-					URL:          server.URL,
-					Method:       "GET",
-					Timeout:      50 * time.Second,
-					TimeColumn:   execute.DefaultTimeColLabel,
-					ValueColumns: []string{"_value"},
-					TagColumns:   []string{"fred"},
-					NameColumn:   "_measurement",
-				},
-			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_measurement", Type: flux.TString},
-					{Label: "_value", Type: flux.TFloat},
-					{Label: "fred", Type: flux.TString},
-				},
-				Data: [][]interface{}{
-					{execute.Time(11), "a", 2.0, "one"},
-					{execute.Time(21), "a", 2.0, "one"},
-					{execute.Time(21), "b", 1.0, "seven"},
-					{execute.Time(31), "a", 3.0, "nine"},
-					{execute.Time(41), "c", 4.0, "elevendyone"},
-				},
-			}},
-			want: wanted{
-				Table: []*executetest.Table{{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_measurement", Type: flux.TString},
-						{Label: "_value", Type: flux.TFloat},
-						{Label: "fred", Type: flux.TString},
-					},
-					Data: [][]interface{}{
-						{execute.Time(11), "a", 2.0, "one"},
-						{execute.Time(21), "a", 2.0, "one"},
-						{execute.Time(21), "b", 1.0, "seven"},
-						{execute.Time(31), "a", 3.0, "nine"},
-						{execute.Time(41), "c", 4.0, "elevendyone"},
-					},
-				}},
-				Result: []byte("a,fred=one _value=2 11\na,fred=one _value=2 21\nb,fred=seven _value=1 21\na,fred=nine _value=3 31\nc,fred=elevendyone _value=4 41\n")},
-		},
-		{
-			name: "one table",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
-					URL:          server.URL,
-					Method:       "POST",
-					Timeout:      50 * time.Second,
-					TimeColumn:   execute.DefaultTimeColLabel,
-					ValueColumns: []string{"_value"},
-					Name:         "one_table",
-				},
-			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TFloat},
-				},
-				Data: [][]interface{}{
-					{execute.Time(11), 2.0},
-					{execute.Time(21), 1.0},
-					{execute.Time(31), 3.0},
-					{execute.Time(41), 4.0},
-				},
-			}},
-			want: wanted{
-				Table: []*executetest.Table{{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
-					},
-					Data: [][]interface{}{
-						{execute.Time(11), 2.0},
-						{execute.Time(21), 1.0},
-						{execute.Time(31), 3.0},
-						{execute.Time(41), 4.0},
-					},
-				}},
-				Result: []byte("one_table _value=2 11\none_table _value=1 21\none_table _value=3 31\none_table _value=4 41\n"),
-			},
-		},
-		{
-			name: "one table with unused tag",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
-					URL:          server.URL,
-					Method:       "GET",
-					Timeout:      50 * time.Second,
-					TimeColumn:   execute.DefaultTimeColLabel,
-					ValueColumns: []string{"_value"},
-					Name:         "one_table_w_unused_tag",
-				},
-			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TFloat},
-					{Label: "fred", Type: flux.TString},
-				},
-				Data: [][]interface{}{
-					{execute.Time(11), 2.0, "one"},
-					{execute.Time(21), 1.0, "seven"},
-					{execute.Time(31), 3.0, "nine"},
-					{execute.Time(41), 4.0, "elevendyone"},
-				},
-			}},
-			want: wanted{
-				Table: []*executetest.Table{{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
-						{Label: "fred", Type: flux.TString},
-					},
-					Data: [][]interface{}{
-						{execute.Time(11), 2.0, "one"},
-						{execute.Time(21), 1.0, "seven"},
-						{execute.Time(31), 3.0, "nine"},
-						{execute.Time(41), 4.0, "elevendyone"},
-					},
-				}},
-				Result: []byte(`one_table_w_unused_tag _value=2 11
-one_table_w_unused_tag _value=1 21
-one_table_w_unused_tag _value=3 31
-one_table_w_unused_tag _value=4 41
-`),
-			},
-		},
-		{
-			name: "one table with tag",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
-					URL:          server.URL,
-					Method:       "GET",
-					Timeout:      50 * time.Second,
-					TimeColumn:   execute.DefaultTimeColLabel,
-					ValueColumns: []string{"_value"},
-					TagColumns:   []string{"fred"},
-					Name:         "one_table_w_tag",
-				},
-			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TFloat},
-					{Label: "fred", Type: flux.TString},
-				},
-				Data: [][]interface{}{
-					{execute.Time(11), 2.0, "one"},
-					{execute.Time(21), 1.0, "seven"},
-					{execute.Time(31), 3.0, "nine"},
-					{execute.Time(41), 4.0, "elevendyone"},
-				},
-			}},
-			want: wanted{
-				Table: []*executetest.Table{{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
-						{Label: "fred", Type: flux.TString},
-					},
-					Data: [][]interface{}{
-						{execute.Time(11), 2.0, "one"},
-						{execute.Time(21), 1.0, "seven"},
-						{execute.Time(31), 3.0, "nine"},
-						{execute.Time(41), 4.0, "elevendyone"},
-					},
-				}},
-				Result: []byte(`one_table_w_tag,fred=one _value=2 11
-one_table_w_tag,fred=seven _value=1 21
-one_table_w_tag,fred=nine _value=3 31
-one_table_w_tag,fred=elevendyone _value=4 41
-`),
-			},
-		},
-		{
-			name: "multi table",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
-					URL:          server.URL,
-					Method:       "GET",
-					Timeout:      50 * time.Second,
-					TimeColumn:   execute.DefaultTimeColLabel,
-					ValueColumns: []string{"_value"},
-					TagColumns:   []string{"fred"},
-					Name:         "multi_table",
-				},
-			},
-			data: []flux.Table{
-				&executetest.Table{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
-						{Label: "fred", Type: flux.TString},
-					},
-					Data: [][]interface{}{
-						{execute.Time(11), 2.0, "one"},
-						{execute.Time(21), 1.0, "seven"},
-						{execute.Time(31), 3.0, "nine"},
-					},
-				},
-				&executetest.Table{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
-						{Label: "fred", Type: flux.TString},
-					},
-					Data: [][]interface{}{
-						{execute.Time(51), 2.0, "one"},
-						{execute.Time(61), 1.0, "seven"},
-						{execute.Time(71), 3.0, "nine"},
-					},
-				},
-			},
-			want: wanted{
-				Table: []*executetest.Table{
-					&executetest.Table{
-						ColMeta: []flux.ColMeta{
-							{Label: "_time", Type: flux.TTime},
-							{Label: "_value", Type: flux.TFloat},
-							{Label: "fred", Type: flux.TString},
-						},
-						Data: [][]interface{}{
-							{execute.Time(11), 2.0, "one"},
-							{execute.Time(21), 1.0, "seven"},
-							{execute.Time(31), 3.0, "nine"},
-							{execute.Time(51), 2.0, "one"},
-							{execute.Time(61), 1.0, "seven"},
-							{execute.Time(71), 3.0, "nine"},
-						},
-					},
-				},
-				Result: []byte("multi_table,fred=one _value=2 11\nmulti_table,fred=seven _value=1 21\nmulti_table,fred=nine _value=3 31\n" +
-					"multi_table,fred=one _value=2 51\nmulti_table,fred=seven _value=1 61\nmulti_table,fred=nine _value=3 71\n"),
-			},
-		},
-		{
-			name: "multi collist tables",
-			spec: &fhttp.ToHTTPProcedureSpec{
-				Spec: &fhttp.ToHTTPOpSpec{
-					URL:          server.URL,
-					Method:       "GET",
-					Timeout:      50 * time.Second,
-					TimeColumn:   execute.DefaultTimeColLabel,
-					ValueColumns: []string{"_value"},
-					TagColumns:   []string{"fred"},
-					Name:         "multi_collist_tables",
-				},
-			},
-			data: []flux.Table{
-				executetest.MustCopyTable(
-					&executetest.Table{
-						ColMeta: []flux.ColMeta{
-							{Label: "_time", Type: flux.TTime},
-							{Label: "_value", Type: flux.TFloat},
-							{Label: "fred", Type: flux.TString},
-						},
-						Data: [][]interface{}{
-							{execute.Time(11), 2.0, "one"},
-							{execute.Time(21), 1.0, "seven"},
-							{execute.Time(31), 3.0, "nine"},
-						},
-					}),
-				&executetest.Table{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
-						{Label: "fred", Type: flux.TString},
-					},
-					Data: [][]interface{}{
-						{execute.Time(51), 2.0, "one"},
-						{execute.Time(61), 1.0, "seven"},
-						{execute.Time(71), 3.0, "nine"},
-					},
-				},
-			},
-			want: wanted{
-				Table: []*executetest.Table{
-					&executetest.Table{
-						ColMeta: []flux.ColMeta{
-							{Label: "_time", Type: flux.TTime},
-							{Label: "_value", Type: flux.TFloat},
-							{Label: "fred", Type: flux.TString},
-						},
-						Data: [][]interface{}{
-							{execute.Time(11), 2.0, "one"},
-							{execute.Time(21), 1.0, "seven"},
-							{execute.Time(31), 3.0, "nine"},
-							{execute.Time(51), 2.0, "one"},
-							{execute.Time(61), 1.0, "seven"},
-							{execute.Time(71), 3.0, "nine"},
-						},
-					},
-				},
-				Result: []byte("multi_collist_tables,fred=one _value=2 11\nmulti_collist_tables,fred=seven _value=1 21\nmulti_collist_tables,fred=nine _value=3 31\n" +
-					"multi_collist_tables,fred=one _value=2 51\nmulti_collist_tables,fred=seven _value=1 61\nmulti_collist_tables,fred=nine _value=3 71\n"),
-			},
-		},
 	}
 
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			wg.Add(len(tc.data))
-
 			executetest.ProcessTestHelper(
 				t,
 				tc.data,
 				tc.want.Table,
 				nil,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					return fhttp.NewToHTTPTransformation(d, c, tc.spec)
+					return fmqtt.NewToMQTTTransformation(d, c, tc.spec)
 				},
 			)
-			wg.Wait() // wait till we are done getting the data back
-			if string(data) != string(tc.want.Result) {
-				t.Logf("expected %s, got %s", tc.want.Result, data)
-				t.Fail()
-			}
-			data = data[:0]
 		})
 	}
 }
