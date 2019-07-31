@@ -3172,15 +3172,14 @@ Given the following input table.
     
 ####  Moving Average
 
-Moving Average computes the moving averages of a series of records.
-It means the values of a user-defined period for a defined number of points,
+Moving Average computes the moving average the `_value` column.
+It means the values of a user-defined period for a defined number of points.
 
 Moving Average has the following properties:
 
 | Name        | Type     | Description
 | ----        | ----     | -----------
 | n           | int      | N specifies the number of points to mean.       
-| columns     | []string | Columns is list of all columns that `movingAverage` should be performed on. Defaults to `["_value"]`. |
 
 Rules for taking the moving average for numeric types:
  - the average over a period populated by `n` values is equal to their algebraic mean
@@ -3188,7 +3187,7 @@ Rules for taking the moving average for numeric types:
  - moving averages that include null values skip over those values
  - if `n` is less than the number of records in a table, `movingAverage` returns the average of the available values
  
-Example of moving average (`N` = 2):
+Examples of moving average (`n` = 2):
 
 | _time |   A  |   B  |   C  |   D  | tag |
 |:-----:|:----:|:----:|:----:|:----:|:---:|
@@ -3208,7 +3207,7 @@ Example of script:
 // A 5 point moving average would be called as such:
 from(bucket: "telegraf/autogen"):
     |> range(start: -7d)
-    |> movingAverage(n: 5, columns: ["_value"])
+    |> movingAverage(n: 5)
 ```
 
 ##### Timed Moving Average
@@ -3240,13 +3239,12 @@ from(bucket: "telegraf/autogen"):
 
 #### Exponential Moving Average
 
-Exponential Moving Average computes the exponential moving averages of a series of records
+Exponential Moving Average computes the exponential moving average of the `_value` column.
 It is a weighted moving average that gives more weighting to recent data as opposed to older data.
 
 | Name        | Type     | Description
 | ----        | ----     | -----------
 | n           | int      | N specifies the number of points to mean.       
-| columns     | []string | Columns is list of all columns that `exponentialMovingAverage` should be performed on. Defaults to `["_value"]`. |
 
 Rules for taking the exponential moving average for numeric types:
  - the first value of an exponential moving average over `n` values is the algebraic mean of the first `n` values
@@ -3256,7 +3254,7 @@ Rules for taking the exponential moving average for numeric types:
     - `x(t)` is defined as the value at time `t`
  - `exponentialMovingAverage` ignores ignores null values and does not count them in calculations
  
- Example:
+ Examples (`n = 2`):
  
  | _time |   A  |   B  |   C  | tag |
  |:-----:|:----:|:----:|:----:|:---:|
@@ -3277,31 +3275,41 @@ Example of script:
 // A 5 point exponential moving average would be called as such:
 from(bucket: "telegraf/autogen"):
     |> range(start: -7d)
-    |> exponentialMovingAverage(n: 5, columns: ["_value"])
+    |> exponentialMovingAverage(n: 5)
 ```
 
 #### Double Exponential Moving Average
-`doubleExponentialMovingAverage` or `doubleEMA`
+`doubleEMA`
 
-Double Exponential Moving Average computes the double exponential moving averages of a series of records
+Double Exponential Moving Average computes the double exponential moving averages of the `_value` column.
 It is a weighted moving average that gives more weighting to recent data as opposed to older data, with less lag than a single exponential moving average.
 
 | Name        | Type     | Description
 | ----        | ----     | -----------
 | n           | int      | N specifies the number of points to mean.
-| columns     | []string | Columns is list of all columns that `doubleExponentialMovingAverage` should be performed on. Defaults to `["_value"]`.
 
 A double exponential moving average is defined as `DEMA = 2 * EMA_N - EMA of EMA_N`, where
 - `EMA` is an exponential moving average, and
 - `N = n` is the look-back period.
 
+In flux, `doubleEMA` is defined as
+```
+doubleEMA = (n, tables=<-) =>
+    tables
+          |> exponentialMovingAverage(n:n)
+          |> duplicate(column:"_value", as:"ema")
+          |> exponentialMovingAverage(n:n)
+          |> map(fn: (r) => ({r with _value: 2.0*r.ema - r._value}))
+          |> drop(columns: ["ema"])
+```
+
 The behavior of the exponential moving averages used for calculating the double exponential moving average is the same as defined for `exponentialMovingAverage`
 
-A proper double exponential moving average requires at least `2 * n - 1` values. If not enough values exist, `doubleExponentialMovingAverage` appends a `NaN` value to the column.
+A proper double exponential moving average requires at least `2 * n - 1` values.
  
- Example:
+ Example (`n = 10`):
  
- | _time |   A  |result|
+ | _time |_value|result|
  |:-----:|:----:|:----:|
  |  0001 |   1  |   -  |
  |  0002 |   2  |   -  |
@@ -3338,9 +3346,150 @@ Example of script:
 // A 5 point double exponential moving average would be called as such:
 from(bucket: "telegraf/autogen"):
     |> range(start: -7d)
-    |> doubleExponentialMovingAverage(n: 5, columns: ["_value"])
+    |> doubleEMA(n: 5)
+```
+
+#### Triple Exponential Moving Average
+`tripleEMA`
+
+Triple Exponential Moving Average computes the triple exponential moving averages of the `_value` column.
+It is a weighted moving average that gives more weighting to recent data as opposed to older data, with less lag than a double or single exponential moving average.
+
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| n           | int      | N specifies the number of points to mean.
+
+A triple exponential moving average is defined as `TEMA = (3 * EMA_1) - (3 * EMA_2) + EMA_3`, where
+- `EMA_1` is the exponential moving average of the original data,
+- `EMA_2` is the exponential moving average of `EMA_1`,
+- `EMA_3` is the exponential moving average of `EMA_2`, and
+- `N = n` is the look-back period.
+
+In flux, `tripleEMA` is defined as
+```
+tripleEMA = (n, tables=<-) =>
+	tables
+		|> exponentialMovingAverage(n:n)
+		|> duplicate(column:"_value", as:"ema1")
+		|> exponentialMovingAverage(n:n)
+		|> duplicate(column:"_value", as:"ema2")
+		|> exponentialMovingAverage(n:n)
+		|> map(fn: (r) => ({r with _value: 3.0*r.ema1 - 3.0*r.ema2 + r._value}))
+		|> drop(columns: ["ema1", "ema2"])
+```
+
+The behavior of the exponential moving averages used for calculating the triple exponential moving average is the same as defined for `exponentialMovingAverage`
+
+A proper double exponential moving average requires at least `3 * n - 2` values.
+ 
+ Example (`n = 4`):
+ 
+ | _time |_value|result|
+ |:-----:|:----:|:----:|
+ |  0001 |   1  |   -  |
+ |  0002 |   2  |   -  |
+ |  0003 |   3  |   -  |
+ |  0004 |   4  |   -  |
+ |  0005 |   5  |   -  |
+ |  0006 |   6  |   -  |
+ |  0007 |   7  |   -  |
+ |  0008 |   8  |   -  |
+ |  0009 |   9  |   -  |
+ |  0010 |  10  |   10 |
+ |  0011 |  11  |   11 |
+ |  0012 |  12  |   12 |
+ |  0013 |  13  |   13 |
+ |  0014 |  14  |   14 |
+ |  0015 |  15  |   15 |
+ |  0016 |  14  | 14.43|
+ |  0017 |  13  | 13.35|
+ |  0018 |  12  | 12.56|
+ |  0019 |  11  |   11 |
+ |  0020 |  10  | 9.907|
+ |  0021 |   9  | 8.866|
+ |  0022 |   8  | 7.859|
+ |  0023 |   7  | 6.871|
+ |  0024 |   6  | 5.891|
+ |  0025 |   5  | 4.913|
+ |  0026 |   4  | 3.933|
+ |  0027 |   3  | 2.950|
+ |  0028 |   2  | 1.963|
+ |  0029 |   1  | 0.973|
+ 
+Example of script:
+```
+// A 5 point triple exponential moving average would be called as such:
+from(bucket: "telegraf/autogen"):
+    |> range(start: -7d)
+    |> tripleEMA(n: 5)
 ```
  
+##### Holt Winters
+
+Holt Winters applies the Holt-Winters damped prediction method with Nelder-Mead optimization to the given dataset.
+In a table, the dataset is composed of the values in the `timeColumn` and in the value `column`.
+The Holt-Winters method predicts `n` seasonally adjusted values for the specified `column`.
+If the data presents no seasonality, the user can specify `seasonality = 0`.
+The user can request to include the fitted data (on the given dataset) in the result by setting `withFit = true`.
+The `n` predicted values occur at the `interval` specified by the user.
+If your `interval` is `6m` and `n` is `3`, you will receive three predicted values that are each six minutes apart.
+`seasonality` is the seasonal pattern parameter and delimits the length of a seasonal pattern according to `interval`.
+If your `interval` is `2m` and `s` is `3`, then the seasonal pattern occurs every six minutes, that is, every three data points.
+
+Before processing the data, Holt Winters discards rows that have a null timestamp.
+Null values are treated like missing data points and taken into account when applying Holt Winters.
+
+HoltWinters supposes to work with evenly spaced values in time, so:
+ - `interval` is used to divide the data in time buckets;
+ - if many values are in the same bucket, the first one is selected, the others are skipped;
+ - if no value is present for a bucket, a missing value is added for that bucket.
+
+By default, HoltWinters uses the first value per time bucket.
+The user can use windowing and selectors/aggregates to specify a different behavior.
+The user can also use `aggregateWindow` as a data preparation step.
+
+Parameters:
+
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| n           | int      | N specifies the number of values to predict.
+| seasonality | int      | Seasonality specifies the number of points that are in a season. Defaults to `0`.
+| interval    | duration | Interval is the interval between two data points.
+| withFit     | bool     | WithFit specifies if the fitted data should be returned. Defaults to `false`.
+| timeColumn  | string   | TimeColumn specifies the time column for the dataset. Defaults to `"_time"`.
+| column      | string   | Column specifies the value column for the dataset. Defaults to `"_value"`.
+
+
+
+Examples:
+
+```
+from(bucket: "waterhouse/autogen")
+    |> range(start: -7y)
+    |> filter(fn: (r) => r._field == "water_level")
+    |> aggregateWindow(every: 379m, fn: first).
+    |> holtWinters(n: 10, seasonality: 4, interval: 379m)
+```
+
+For now, `aggregateWindow` lacks of some parameters of `window`.
+For example, if you need `offset`, you must apply this workaround:
+
+```
+from(bucket: "waterhouse/autogen")
+    |> range(start: -7y)
+    |> filter(fn: (r) => r._field == "water_level")
+    |> window(every: 379m, offset: 348m)
+    // The selector.
+    |> first()
+    // We need to timestamp every selected record per time bucket with the beginning
+    // of the window. So, we overwrite "_time" with "_start".
+    |> duplicate(column: "_start", as: "_time")
+    // We need to "un-window", otherwise the Holt-Winters algorithm would run
+    // for each window separately.
+    |> window(every: inf)
+    |> holtWinters(n: 10, seasonality: 4, interval: 379m)
+```
+
 #### Distinct
 
 Distinct produces the unique values for a given column. Null is considered its own distinct value if it is present.

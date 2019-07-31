@@ -5596,4 +5596,1130 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 	}},
 	Package: "main",
 	Path:    "",
+}, &ast.Package{
+	BaseNode: ast.BaseNode{
+		Errors: nil,
+		Loc:    nil,
+	},
+	Files: []*ast.File{&ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 2,
+					Line:   31,
+				},
+				File:   "buckets.flux",
+				Source: "package chronograf_test\n\nimport \"testing\"\n\ninData = \"\n#datatype,string,long,string,string,string,string,long\n#group,false,false,true,false,false,false,false\n#default,_result,,0389eade5af4b000,,,,\n,result,table,organizationID,name,id,retentionPolicy,retentionPeriod\n,,0,,A,0389eade5b34b000,,0\n,,0,,B,042ed3f42d42e000,,0\n\"\n\noutData = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,_result,,\n,result,table,_value\n,,0,A\n,,0,B\n\"\n\nbuckets_fn = (table=<-) => table\n    |> rename(columns: {name: \"_value\"})\n    |> keep(columns: [\"_value\"])\n\ntest buckets = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n}",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   12,
+					},
+					File:   "buckets.flux",
+					Source: "inData = \"\n#datatype,string,long,string,string,string,string,long\n#group,false,false,true,false,false,false,false\n#default,_result,,0389eade5af4b000,,,,\n,result,table,organizationID,name,id,retentionPolicy,retentionPeriod\n,,0,,A,0389eade5b34b000,,0\n,,0,,B,042ed3f42d42e000,,0\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   5,
+						},
+						File:   "buckets.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   5,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   12,
+						},
+						File:   "buckets.flux",
+						Source: "\"\n#datatype,string,long,string,string,string,string,long\n#group,false,false,true,false,false,false,false\n#default,_result,,0389eade5af4b000,,,,\n,result,table,organizationID,name,id,retentionPolicy,retentionPeriod\n,,0,,A,0389eade5b34b000,,0\n,,0,,B,042ed3f42d42e000,,0\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   5,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string,string,string,string,long\n#group,false,false,true,false,false,false,false\n#default,_result,,0389eade5af4b000,,,,\n,result,table,organizationID,name,id,retentionPolicy,retentionPeriod\n,,0,,A,0389eade5b34b000,,0\n,,0,,B,042ed3f42d42e000,,0\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   21,
+					},
+					File:   "buckets.flux",
+					Source: "outData = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,_result,,\n,result,table,_value\n,,0,A\n,,0,B\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   14,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   14,
+						},
+						File:   "buckets.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   14,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   21,
+						},
+						File:   "buckets.flux",
+						Source: "\"\n#datatype,string,long,string\n#group,false,false,false\n#default,_result,,\n,result,table,_value\n,,0,A\n,,0,B\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   14,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string\n#group,false,false,false\n#default,_result,,\n,result,table,_value\n,,0,A\n,,0,B\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 33,
+						Line:   25,
+					},
+					File:   "buckets.flux",
+					Source: "buckets_fn = (table=<-) => table\n    |> rename(columns: {name: \"_value\"})\n    |> keep(columns: [\"_value\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   23,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 11,
+							Line:   23,
+						},
+						File:   "buckets.flux",
+						Source: "buckets_fn",
+						Start: ast.Position{
+							Column: 1,
+							Line:   23,
+						},
+					},
+				},
+				Name: "buckets_fn",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 33,
+							Line:   25,
+						},
+						File:   "buckets.flux",
+						Source: "(table=<-) => table\n    |> rename(columns: {name: \"_value\"})\n    |> keep(columns: [\"_value\"])",
+						Start: ast.Position{
+							Column: 14,
+							Line:   23,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 33,
+										Line:   23,
+									},
+									File:   "buckets.flux",
+									Source: "table",
+									Start: ast.Position{
+										Column: 28,
+										Line:   23,
+									},
+								},
+							},
+							Name: "table",
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 41,
+									Line:   24,
+								},
+								File:   "buckets.flux",
+								Source: "table\n    |> rename(columns: {name: \"_value\"})",
+								Start: ast.Position{
+									Column: 28,
+									Line:   23,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 40,
+											Line:   24,
+										},
+										File:   "buckets.flux",
+										Source: "columns: {name: \"_value\"}",
+										Start: ast.Position{
+											Column: 15,
+											Line:   24,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 40,
+												Line:   24,
+											},
+											File:   "buckets.flux",
+											Source: "columns: {name: \"_value\"}",
+											Start: ast.Position{
+												Column: 15,
+												Line:   24,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 22,
+													Line:   24,
+												},
+												File:   "buckets.flux",
+												Source: "columns",
+												Start: ast.Position{
+													Column: 15,
+													Line:   24,
+												},
+											},
+										},
+										Name: "columns",
+									},
+									Value: &ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 40,
+													Line:   24,
+												},
+												File:   "buckets.flux",
+												Source: "{name: \"_value\"}",
+												Start: ast.Position{
+													Column: 24,
+													Line:   24,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 39,
+														Line:   24,
+													},
+													File:   "buckets.flux",
+													Source: "name: \"_value\"",
+													Start: ast.Position{
+														Column: 25,
+														Line:   24,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 29,
+															Line:   24,
+														},
+														File:   "buckets.flux",
+														Source: "name",
+														Start: ast.Position{
+															Column: 25,
+															Line:   24,
+														},
+													},
+												},
+												Name: "name",
+											},
+											Value: &ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 39,
+															Line:   24,
+														},
+														File:   "buckets.flux",
+														Source: "\"_value\"",
+														Start: ast.Position{
+															Column: 31,
+															Line:   24,
+														},
+													},
+												},
+												Value: "_value",
+											},
+										}},
+										With: nil,
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   24,
+									},
+									File:   "buckets.flux",
+									Source: "rename(columns: {name: \"_value\"})",
+									Start: ast.Position{
+										Column: 8,
+										Line:   24,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 14,
+											Line:   24,
+										},
+										File:   "buckets.flux",
+										Source: "rename",
+										Start: ast.Position{
+											Column: 8,
+											Line:   24,
+										},
+									},
+								},
+								Name: "rename",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 33,
+								Line:   25,
+							},
+							File:   "buckets.flux",
+							Source: "table\n    |> rename(columns: {name: \"_value\"})\n    |> keep(columns: [\"_value\"])",
+							Start: ast.Position{
+								Column: 28,
+								Line:   23,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 32,
+										Line:   25,
+									},
+									File:   "buckets.flux",
+									Source: "columns: [\"_value\"]",
+									Start: ast.Position{
+										Column: 13,
+										Line:   25,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 32,
+											Line:   25,
+										},
+										File:   "buckets.flux",
+										Source: "columns: [\"_value\"]",
+										Start: ast.Position{
+											Column: 13,
+											Line:   25,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   25,
+											},
+											File:   "buckets.flux",
+											Source: "columns",
+											Start: ast.Position{
+												Column: 13,
+												Line:   25,
+											},
+										},
+									},
+									Name: "columns",
+								},
+								Value: &ast.ArrayExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 32,
+												Line:   25,
+											},
+											File:   "buckets.flux",
+											Source: "[\"_value\"]",
+											Start: ast.Position{
+												Column: 22,
+												Line:   25,
+											},
+										},
+									},
+									Elements: []ast.Expression{&ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 31,
+													Line:   25,
+												},
+												File:   "buckets.flux",
+												Source: "\"_value\"",
+												Start: ast.Position{
+													Column: 23,
+													Line:   25,
+												},
+											},
+										},
+										Value: "_value",
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 33,
+									Line:   25,
+								},
+								File:   "buckets.flux",
+								Source: "keep(columns: [\"_value\"])",
+								Start: ast.Position{
+									Column: 8,
+									Line:   25,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   25,
+									},
+									File:   "buckets.flux",
+									Source: "keep",
+									Start: ast.Position{
+										Column: 8,
+										Line:   25,
+									},
+								},
+							},
+							Name: "keep",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 23,
+								Line:   23,
+							},
+							File:   "buckets.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 15,
+								Line:   23,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 20,
+									Line:   23,
+								},
+								File:   "buckets.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 15,
+									Line:   23,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 23,
+								Line:   23,
+							},
+							File:   "buckets.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 21,
+								Line:   23,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   31,
+						},
+						File:   "buckets.flux",
+						Source: "buckets = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n}",
+						Start: ast.Position{
+							Column: 6,
+							Line:   27,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 13,
+								Line:   27,
+							},
+							File:   "buckets.flux",
+							Source: "buckets",
+							Start: ast.Position{
+								Column: 6,
+								Line:   27,
+							},
+						},
+					},
+					Name: "buckets",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 2,
+								Line:   31,
+							},
+							File:   "buckets.flux",
+							Source: "() => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n}",
+							Start: ast.Position{
+								Column: 16,
+								Line:   27,
+							},
+						},
+					},
+					Body: &ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 2,
+									Line:   31,
+								},
+								File:   "buckets.flux",
+								Source: "{\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n}",
+								Start: ast.Position{
+									Column: 23,
+									Line:   27,
+								},
+							},
+						},
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 44,
+										Line:   28,
+									},
+									File:   "buckets.flux",
+									Source: "input: testing.loadStorage(csv: inData)",
+									Start: ast.Position{
+										Column: 5,
+										Line:   28,
+									},
+								},
+							},
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 10,
+											Line:   28,
+										},
+										File:   "buckets.flux",
+										Source: "input",
+										Start: ast.Position{
+											Column: 5,
+											Line:   28,
+										},
+									},
+								},
+								Name: "input",
+							},
+							Value: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   28,
+											},
+											File:   "buckets.flux",
+											Source: "csv: inData",
+											Start: ast.Position{
+												Column: 32,
+												Line:   28,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 43,
+													Line:   28,
+												},
+												File:   "buckets.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 32,
+													Line:   28,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 35,
+														Line:   28,
+													},
+													File:   "buckets.flux",
+													Source: "csv",
+													Start: ast.Position{
+														Column: 32,
+														Line:   28,
+													},
+												},
+											},
+											Name: "csv",
+										},
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 43,
+														Line:   28,
+													},
+													File:   "buckets.flux",
+													Source: "inData",
+													Start: ast.Position{
+														Column: 37,
+														Line:   28,
+													},
+												},
+											},
+											Name: "inData",
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 44,
+											Line:   28,
+										},
+										File:   "buckets.flux",
+										Source: "testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 12,
+											Line:   28,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 31,
+												Line:   28,
+											},
+											File:   "buckets.flux",
+											Source: "testing.loadStorage",
+											Start: ast.Position{
+												Column: 12,
+												Line:   28,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 19,
+													Line:   28,
+												},
+												File:   "buckets.flux",
+												Source: "testing",
+												Start: ast.Position{
+													Column: 12,
+													Line:   28,
+												},
+											},
+										},
+										Name: "testing",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 31,
+													Line:   28,
+												},
+												File:   "buckets.flux",
+												Source: "loadStorage",
+												Start: ast.Position{
+													Column: 20,
+													Line:   28,
+												},
+											},
+										},
+										Name: "loadStorage",
+									},
+								},
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   29,
+									},
+									File:   "buckets.flux",
+									Source: "want: testing.loadMem(csv: outData)",
+									Start: ast.Position{
+										Column: 5,
+										Line:   29,
+									},
+								},
+							},
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 9,
+											Line:   29,
+										},
+										File:   "buckets.flux",
+										Source: "want",
+										Start: ast.Position{
+											Column: 5,
+											Line:   29,
+										},
+									},
+								},
+								Name: "want",
+							},
+							Value: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   29,
+											},
+											File:   "buckets.flux",
+											Source: "csv: outData",
+											Start: ast.Position{
+												Column: 27,
+												Line:   29,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   29,
+												},
+												File:   "buckets.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 27,
+													Line:   29,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   29,
+													},
+													File:   "buckets.flux",
+													Source: "csv",
+													Start: ast.Position{
+														Column: 27,
+														Line:   29,
+													},
+												},
+											},
+											Name: "csv",
+										},
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 39,
+														Line:   29,
+													},
+													File:   "buckets.flux",
+													Source: "outData",
+													Start: ast.Position{
+														Column: 32,
+														Line:   29,
+													},
+												},
+											},
+											Name: "outData",
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 40,
+											Line:   29,
+										},
+										File:   "buckets.flux",
+										Source: "testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 11,
+											Line:   29,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 26,
+												Line:   29,
+											},
+											File:   "buckets.flux",
+											Source: "testing.loadMem",
+											Start: ast.Position{
+												Column: 11,
+												Line:   29,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   29,
+												},
+												File:   "buckets.flux",
+												Source: "testing",
+												Start: ast.Position{
+													Column: 11,
+													Line:   29,
+												},
+											},
+										},
+										Name: "testing",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 26,
+													Line:   29,
+												},
+												File:   "buckets.flux",
+												Source: "loadMem",
+												Start: ast.Position{
+													Column: 19,
+													Line:   29,
+												},
+											},
+										},
+										Name: "loadMem",
+									},
+								},
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 19,
+										Line:   30,
+									},
+									File:   "buckets.flux",
+									Source: "fn: buckets_fn",
+									Start: ast.Position{
+										Column: 5,
+										Line:   30,
+									},
+								},
+							},
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 7,
+											Line:   30,
+										},
+										File:   "buckets.flux",
+										Source: "fn",
+										Start: ast.Position{
+											Column: 5,
+											Line:   30,
+										},
+									},
+								},
+								Name: "fn",
+							},
+							Value: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 19,
+											Line:   30,
+										},
+										File:   "buckets.flux",
+										Source: "buckets_fn",
+										Start: ast.Position{
+											Column: 9,
+											Line:   30,
+										},
+									},
+								},
+								Name: "buckets_fn",
+							},
+						}},
+						With: nil,
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   31,
+					},
+					File:   "buckets.flux",
+					Source: "test buckets = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n}",
+					Start: ast.Position{
+						Column: 1,
+						Line:   27,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "buckets.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "buckets.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Name: "buckets.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 24,
+						Line:   1,
+					},
+					File:   "buckets.flux",
+					Source: "package chronograf_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 24,
+							Line:   1,
+						},
+						File:   "buckets.flux",
+						Source: "chronograf_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "main",
+			},
+		},
+	}},
+	Package: "main",
+	Path:    "",
 }}

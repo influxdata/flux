@@ -6,7 +6,6 @@ import (
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe/moving_average"
@@ -16,15 +15,13 @@ import (
 const MovingAverageKind = "movingAverage"
 
 type MovingAverageOpSpec struct {
-	N       int64    `json:"n"`
-	Columns []string `json:"columns"`
+	N int64 `json:"n"`
 }
 
 func init() {
 	movingAverageSignature := flux.FunctionSignature(
 		map[string]semantic.PolyType{
-			"n":       semantic.Int,
-			"columns": semantic.NewArrayPolyType(semantic.String),
+			"n": semantic.Int,
 		},
 		[]string{"n"},
 	)
@@ -48,18 +45,6 @@ func createMovingAverageOpSpec(args flux.Arguments, a *flux.Administration) (flu
 		spec.N = n
 	}
 
-	if cols, ok, err := args.GetArray("columns", semantic.String); err != nil {
-		return nil, err
-	} else if ok {
-		columns, err := interpreter.ToStringArray(cols)
-		if err != nil {
-			return nil, err
-		}
-		spec.Columns = columns
-	} else {
-		spec.Columns = []string{execute.DefaultValueColLabel}
-	}
-
 	return spec, nil
 }
 
@@ -73,8 +58,7 @@ func (s *MovingAverageOpSpec) Kind() flux.OperationKind {
 
 type MovingAverageProcedureSpec struct {
 	plan.DefaultCost
-	N       int64    `json:"n"`
-	Columns []string `json:"columns"`
+	N int64 `json:"n"`
 }
 
 func newMovingAverageProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -84,8 +68,7 @@ func newMovingAverageProcedure(qs flux.OperationSpec, pa plan.Administration) (p
 	}
 
 	return &MovingAverageProcedureSpec{
-		N:       spec.N,
-		Columns: spec.Columns,
+		N: spec.N,
 	}, nil
 }
 
@@ -96,10 +79,6 @@ func (s *MovingAverageProcedureSpec) Kind() plan.ProcedureKind {
 func (s *MovingAverageProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(MovingAverageProcedureSpec)
 	*ns = *s
-	if s.Columns != nil {
-		ns.Columns = make([]string, len(s.Columns))
-		copy(ns.Columns, s.Columns)
-	}
 	return ns
 }
 
@@ -123,8 +102,7 @@ type movingAverageTransformation struct {
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 
-	n       int64
-	columns []string
+	n int64
 
 	i             []int
 	sum           []interface{}
@@ -137,10 +115,9 @@ type movingAverageTransformation struct {
 
 func NewMovingAverageTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *MovingAverageProcedureSpec) *movingAverageTransformation {
 	return &movingAverageTransformation{
-		d:       d,
-		cache:   cache,
-		n:       spec.N,
-		columns: spec.Columns,
+		d:     d,
+		cache: cache,
+		n:     spec.N,
 	}
 }
 
@@ -153,34 +130,32 @@ func (t *movingAverageTransformation) Process(id execute.DatasetID, tbl flux.Tab
 	if !created {
 		return fmt.Errorf("moving average found duplicate table with key: %v", tbl.Key())
 	}
+	if t.n <= 0 {
+		return fmt.Errorf("cannot take moving average with a period of %v (must be greater than 0)", t.n)
+	}
 	cols := tbl.Cols()
-	doMovingAverage := make([]bool, len(cols))
+	valueIdx := -1
 	for j, c := range cols {
-		found := false
-		for _, label := range t.columns {
-			if c.Label == label {
-				if c.Type != flux.TInt && c.Type != flux.TUInt && c.Type != flux.TFloat {
-					return fmt.Errorf("cannot take moving average of column %s (type %s)", c.Label, c.Type.String())
-				}
-				found = true
-				break
+		if c.Label == execute.DefaultValueColLabel {
+			if c.Type != flux.TInt && c.Type != flux.TUInt && c.Type != flux.TFloat {
+				return fmt.Errorf("cannot take moving average of column %s (type %s)", c.Label, c.Type.String())
 			}
-		}
-
-		if found {
+			valueIdx = j
 			mac := c
 			mac.Type = flux.TFloat
 			_, err := builder.AddCol(mac)
 			if err != nil {
 				return err
 			}
-			doMovingAverage[j] = true
 		} else {
 			_, err := builder.AddCol(c)
 			if err != nil {
 				return err
 			}
 		}
+	}
+	if valueIdx == -1 {
+		return fmt.Errorf("cannot find _value column")
 	}
 
 	t.i = make([]int, len(cols))
@@ -197,16 +172,20 @@ func (t *movingAverageTransformation) Process(id execute.DatasetID, tbl flux.Tab
 		}
 
 		for j, c := range cr.Cols() {
+			isValueCol := false
+			if valueIdx == j {
+				isValueCol = true
+			}
 			var err error
 			switch c.Type {
 			case flux.TBool:
 				err = t.passThrough(&moving_average.ArrayContainer{Array: cr.Bools(j)}, builder, j)
 			case flux.TInt:
-				err = t.doNumeric(&moving_average.ArrayContainer{Array: cr.Ints(j)}, builder, j, doMovingAverage[j])
+				err = t.doNumeric(&moving_average.ArrayContainer{Array: cr.Ints(j)}, builder, j, isValueCol)
 			case flux.TUInt:
-				err = t.doNumeric(&moving_average.ArrayContainer{Array: cr.UInts(j)}, builder, j, doMovingAverage[j])
+				err = t.doNumeric(&moving_average.ArrayContainer{Array: cr.UInts(j)}, builder, j, isValueCol)
 			case flux.TFloat:
-				err = t.doNumeric(&moving_average.ArrayContainer{Array: cr.Floats(j)}, builder, j, doMovingAverage[j])
+				err = t.doNumeric(&moving_average.ArrayContainer{Array: cr.Floats(j)}, builder, j, isValueCol)
 			case flux.TString:
 				err = t.passThrough(&moving_average.ArrayContainer{Array: cr.Strings(j)}, builder, j)
 			case flux.TTime:
@@ -226,7 +205,7 @@ func (t *movingAverageTransformation) Process(id execute.DatasetID, tbl flux.Tab
 
 	for j := range tbl.Cols() {
 		if !t.periodReached[j] && t.notEmpty[j] {
-			if !doMovingAverage[j] {
+			if j != valueIdx {
 				if t.lastVal[j] == nil {
 					if err := builder.AppendNil(j); err != nil {
 						return err

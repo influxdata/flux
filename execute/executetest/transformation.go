@@ -5,6 +5,8 @@ import (
 	"sort"
 	"testing"
 
+	"runtime/debug"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
@@ -54,7 +56,8 @@ func ProcessTestHelper(
 
 	defer func() {
 		if err := recover(); err != nil {
-			t.Errorf("caught panic: %v", err)
+			debug.PrintStack()
+			t.Fatalf("caught panic: %v", err)
 		}
 	}()
 

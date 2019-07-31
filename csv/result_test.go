@@ -185,6 +185,23 @@ var symmetricalTestCases = []TestCase{
 		},
 	},
 	{
+		name:          "single empty table with no columns",
+		encoderConfig: csv.DefaultEncoderConfig(),
+		encoded: toCRLF(`#datatype,string,long
+#group,false,false
+#default,_result,0
+,result,table
+`),
+		result: &executetest.Result{
+			Nm: "_result",
+			Tbls: []*executetest.Table{{
+				KeyCols:   []string(nil),
+				KeyValues: []interface{}(nil),
+				ColMeta:   []flux.ColMeta(nil),
+			}},
+		},
+	},
+	{
 		name:          "multiple tables",
 		encoderConfig: csv.DefaultEncoderConfig(),
 		encoded: toCRLF(`#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double

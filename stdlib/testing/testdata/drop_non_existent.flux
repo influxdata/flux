@@ -30,17 +30,34 @@ inData = "
 "
 
 outData = "
-#datatype,string,string
-#group,true,true
-#default,,
-,error,reference
-,\"drop error: column \"\"non_existent\"\" doesn't exist\",
+#datatype,string,long,dateTime:RFC3339,double,string,string
+#group,false,false,false,false,true,true
+#default,_result,,,,,
+,result,table,_time,_value,_field,_measurement
+,,0,2018-05-22T19:53:26Z,0,usage_guest,cpu
+,,0,2018-05-22T19:53:36Z,0,usage_guest,cpu
+,,0,2018-05-22T19:53:46Z,0,usage_guest,cpu
+,,0,2018-05-22T19:53:56Z,0,usage_guest,cpu
+,,0,2018-05-22T19:54:06Z,0,usage_guest,cpu
+,,0,2018-05-22T19:54:16Z,0,usage_guest,cpu
+,,1,2018-05-22T19:53:26Z,0,usage_guest_nice,cpu
+,,1,2018-05-22T19:53:36Z,0,usage_guest_nice,cpu
+,,1,2018-05-22T19:53:46Z,0,usage_guest_nice,cpu
+,,1,2018-05-22T19:53:56Z,0,usage_guest_nice,cpu
+,,1,2018-05-22T19:54:06Z,0,usage_guest_nice,cpu
+,,1,2018-05-22T19:54:16Z,0,usage_guest_nice,cpu
+,,2,2018-05-22T19:53:26Z,91.7364670583823,usage_idle,cpu
+,,2,2018-05-22T19:53:36Z,89.51118889861233,usage_idle,cpu
+,,2,2018-05-22T19:53:46Z,91.0977744436109,usage_idle,cpu
+,,2,2018-05-22T19:53:56Z,91.02836436336374,usage_idle,cpu
+,,2,2018-05-22T19:54:06Z,68.304576144036,usage_idle,cpu
+,,2,2018-05-22T19:54:16Z,87.88598574821853,usage_idle,cpu
 "
 
 t_drop = (table=<-) =>
 	(table
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> drop(columns: ["non_existent"]))
+	    |> range(start: 2018-05-22T19:53:26Z)
+		|> drop(columns: ["non_existent", "dropme1", "dropme2", "_start", "_stop"]))
 
 test _drop_non_existent = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_drop})

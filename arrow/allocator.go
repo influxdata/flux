@@ -10,6 +10,17 @@ type allocator struct {
 	alloc *memory.Allocator
 }
 
+func NewAllocator(a *memory.Allocator) arrowmemory.Allocator {
+	var alloc arrowmemory.Allocator = arrowmemory.NewGoAllocator()
+	if a != nil {
+		alloc = &allocator{
+			Allocator: alloc,
+			alloc:     a,
+		}
+	}
+	return alloc
+}
+
 func (a *allocator) Allocate(size int) []byte {
 	if err := a.alloc.Allocate(size); err != nil {
 		panic(err)
