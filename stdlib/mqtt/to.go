@@ -2,12 +2,12 @@ package mqtt
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/url"
 	"sort"
 	"strings"
 	"time"
+	"fmt"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 
@@ -467,10 +467,8 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 			client.Disconnect(250)
 			return err
 		}
-		fmt.Printf("DEBUG: Message %s\n", (string(p[:n])))
 		message.WriteString(string(p[:n]))
 	}
-	fmt.Printf("DEBUG: Final Message %s\n", message.String())
 	if message.String() != "" {
 		if mqttTopic == "" {
 			mqttTopic = m.createTopic(message.String())
