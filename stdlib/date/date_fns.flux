@@ -7,6 +7,7 @@ builtin weekDay
 builtin monthDay
 builtin yearDay
 builtin month
+builtin year
 builtin truncate
 
 Sunday    = 0
@@ -58,5 +59,6 @@ date = {
   October:October,
   November:November,
   December:December,
+  year:year,
   truncate:truncate,
 }
