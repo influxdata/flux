@@ -6,15 +6,16 @@ For example, say you have the following task definition:
 ```
 option task = {
     ...
-    every: 15m,
+    period: 1h,
+    every:  15m,
     ...
 }
 from(bucket: "telegraf/autogen")
-    |> range(start: -1h)
+    |> range(start: -period)
     |> filter(fn: (r) => r._measurement == "cpu")
 ```
 
-In order to be alerted when the above task stops reporting data for a group, you would define a deadman alert like so:
+In order to be alerted when the above task stops reporting data for a group, you would define a deadman alert using the `deadman` function like so:
 ```
 option task = {
     ...
@@ -23,77 +24,33 @@ option task = {
     ...
 }
 from(bucket: "telegraf/autogen")
-    |> range(start: -(task.period + task.every))
+    |> range(start: -perod)
     |> filter(fn: (r) => r._measurement == "cpu")
-    |> deadman(off: task.every)
+    |> deadman(d: task.every)
+    |> alert(crit: (r) => true)
 ```
 
-where the deadman function is defined as follows:
+where the `deadman` function is defined as follows:
 ```
-deadman(off, tables=<-) => {
-
-    r = tables
-        |> group_keys()
-
-    s = tables
-        |> filter(fn: (r) => r._time > now() - off)
-        |> group_keys()
-
-    return diff(r:r, s:s) |> alert(crit: (r) => true)
-}
+deadman = (d, tables=<-) => tables
+    |> sort(columns: ["_time"])
+    |> last()
+    |> filter(fn: (r) => r._time < now() - d)
 ```
 
-Note `group_keys` takes in a stream of tables and returns the group keys of those tables in the output:
-```
-group_keys = (tables=<-) =>
-    |> keys()
-    |> limit(n:1)
-    |> drop(columns: ["_value"])
-```
+Note the `deadman` function takes a stream of tables and a duration and returns all groups **not** observed within the interval defined by `[now() - d, now()]`.
+For example, given a stream called `tables`, grouped by (`_measurement`, `host`):
 
-Lets walk through an example of a query that returns tables grouped by (`_measurement`, `host`).
-Assume that query produces the following tables over the first period:
+| _time      | _measurement | host | _value |
+| ---------- | ------------ | ---- | ------ |
+| now() - 5s | cpu          | A    | 56     |
+| now() - 3s | cpu          | B    | 17     |
+| now() - 1s | cpu          | C    | 18     |
 
-| _measurement | host | _value |
-| ------------ | ---- | ------ |
-| cpu          | A    | 56     |
-| cpu          | B    | 17     |
+`tables |> deadman(d: 4s)` produces a non-empty result:
 
-But over the second period it doesn't receive a value for `host=A`:
+| _time      | _measurement | host | _value |
+| ---------- | ------------ | ---- | ------ |
+| now() - 5s | cpu          | A    | 56     |
 
-| _measurement | host | _value |
-| ------------ | ---- | ------ |
-| cpu          | B    | 22     |
-
-`r` is equal to:
-
-| _measurement | host |
-| ------------ | ---- |
-| cpu          | A    |
-| cpu          | B    |
-
-`s` is equal to:
-
-| _measurement | host |
-| ------------ | ---- |
-| cpu          | B    |
-
-And `diff(r:r, s:s)` is equal to:
-
-| _measurement | host |
-| ------------ | ---- |
-| cpu          | A    |
-
-As a result, a non-empty stream is passed to the alert function and an alert is triggered.
-
-Intuitively the deadman alert computes the set difference between the groups present in each of the two most recent intervals of data.
-If the difference is non-empty, this means there is at least one group that stopped reporting in the most recent interval and an alert is fired.
-
-The `diff` function takes two streams, `r` and `s`, and returns the rows of `r` that are not in `s`.
-`diff` is equivalent to set difference and is defined as follows:
-```
-diff = (r, s) => join.leftAnti(left: r, right: s)
-```
-
-where `join.leftAnti` performs a left anti-join of its input tables.
-That is, it returns all of the rows in `left` that do not join with any of the rows in `right`.
+And therefore `tables |> deadman(d: 4s) |> alert(crit: (r) => true)` triggers an alert that the group defined by `_measurement=cpu,host=A` stopped reporting data.
