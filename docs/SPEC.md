@@ -3076,6 +3076,7 @@ Difference has the following properties:
 | ----        | ----     | -----------                                                                                                                                                 |
 | nonNegative | bool     | NonNegative indicates if the difference is allowed to be negative. If a value is encountered which is less than the previous value then the result is null. |
 | columns     | []string | Columns is a list of columns on which to compute the difference. Defaults to `["_value"]`.                                                                  |
+| keepFirst   | bool     | KeepFirst indicates if the first row should be kept. If `true`, then the difference will be `null`. Defaults to `false`. 
 
 Rules for subtracting values for numeric types:
 
@@ -3110,6 +3111,16 @@ Result (`nonNegative: true`):
 |  0003 | null |   0  |   2  |  tv |
 |  0004 |   6  |   8  | null |  tv |
 |  0005 | null | null | null |  tv |
+
+Result (`nonNegative: false`, `keepFirst: true`):
+
+| _time |   A  |   B  |   C  | tag |
+|:-----:|:----:|:----:|:----:|:---:|
+|  0001 | null | null | null |  tv |
+|  0002 | null |   1  | null |  tv |
+|  0003 |  -2  |   0  |   2  |  tv |
+|  0004 |   6  |   8  |  -2  |  tv |
+|  0005 | null | null |  -1  |  tv |
 
 Example of script:
 

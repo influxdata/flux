@@ -17,6 +17,7 @@ const DifferenceKind = "difference"
 type DifferenceOpSpec struct {
 	NonNegative bool     `json:"nonNegative"`
 	Columns     []string `json:"columns"`
+	KeepFirst   bool     `json:"keepFirst"`
 }
 
 func init() {
@@ -24,6 +25,7 @@ func init() {
 		map[string]semantic.PolyType{
 			"nonNegative": semantic.Bool,
 			"columns":     semantic.NewArrayPolyType(semantic.String),
+			"keepFirst":   semantic.Bool,
 		},
 		nil,
 	)
@@ -59,6 +61,14 @@ func createDifferenceOpSpec(args flux.Arguments, a *flux.Administration) (flux.O
 		spec.Columns = []string{execute.DefaultValueColLabel}
 	}
 
+	if keepFirst, ok, err := args.GetBool("keepFirst"); err != nil {
+		return nil, err
+	} else if ok {
+		spec.KeepFirst = keepFirst
+	} else {
+		spec.KeepFirst = false
+	}
+
 	return spec, nil
 }
 
@@ -74,6 +84,7 @@ type DifferenceProcedureSpec struct {
 	plan.DefaultCost
 	NonNegative bool     `json:"non_negative"`
 	Columns     []string `json:"columns"`
+	KeepFirst   bool     `json:"keepFirst"`
 }
 
 func newDifferenceProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -85,6 +96,7 @@ func newDifferenceProcedure(qs flux.OperationSpec, pa plan.Administration) (plan
 	return &DifferenceProcedureSpec{
 		NonNegative: spec.NonNegative,
 		Columns:     spec.Columns,
+		KeepFirst:   spec.KeepFirst,
 	}, nil
 }
 
@@ -123,6 +135,7 @@ type differenceTransformation struct {
 
 	nonNegative bool
 	columns     []string
+	keepFirst   bool
 }
 
 func NewDifferenceTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *DifferenceProcedureSpec) *differenceTransformation {
@@ -131,6 +144,7 @@ func NewDifferenceTransformation(d execute.Dataset, cache execute.TableBuilderCa
 		cache:       cache,
 		nonNegative: spec.NonNegative,
 		columns:     spec.Columns,
+		keepFirst:   spec.KeepFirst,
 	}
 }
 
@@ -170,7 +184,7 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 			}); err != nil {
 				return err
 			}
-			differences[j] = newDifference(j, t.nonNegative)
+			differences[j] = newDifference(j, t.nonNegative, t.keepFirst)
 		} else {
 			_, err := builder.AddCol(c)
 			if err != nil {
@@ -181,6 +195,10 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 
 	// We need to drop the first row since its difference is undefined
 	firstIdx := 1
+	if t.keepFirst {
+		// Unless the user wants to keep the first row
+		firstIdx = 0
+	}
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 
@@ -199,6 +217,11 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 					if d != nil {
 						for i := 0; i < l; i++ {
 							if vs := cr.Ints(j); vs.IsValid(i) {
+								if d.checkKeepFirst() {
+									if err := builder.AppendNil(j); err != nil {
+										return err
+									}
+								}
 								if v, first := d.updateInt(vs.Value(i)); !first {
 									if d.nonNegative && v < 0 {
 										if err := builder.AppendNil(j); err != nil {
@@ -226,6 +249,11 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 					if d != nil {
 						for i := 0; i < l; i++ {
 							if vs := cr.UInts(j); vs.IsValid(i) {
+								if d.checkKeepFirst() {
+									if err := builder.AppendNil(j); err != nil {
+										return err
+									}
+								}
 								if v, first := d.updateUInt(vs.Value(i)); !first {
 									if d.nonNegative && v < 0 {
 										if err := builder.AppendNil(j); err != nil {
@@ -253,6 +281,11 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 					if d != nil {
 						for i := 0; i < l; i++ {
 							if vs := cr.Floats(j); vs.IsValid(i) {
+								if d.checkKeepFirst() {
+									if err := builder.AppendNil(j); err != nil {
+										return err
+									}
+								}
 								if v, first := d.updateFloat(vs.Value(i)); !first {
 									if d.nonNegative && v < 0 {
 										if err := builder.AppendNil(j); err != nil {
@@ -310,11 +343,12 @@ func (t *differenceTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
 }
 
-func newDifference(col int, nonNegative bool) *difference {
+func newDifference(col int, nonNegative bool, keepFirst bool) *difference {
 	return &difference{
 		col:         col,
 		first:       true,
 		nonNegative: nonNegative,
+		keepFirst:   keepFirst,
 	}
 }
 
@@ -322,6 +356,7 @@ type difference struct {
 	col         int
 	first       bool
 	nonNegative bool
+	keepFirst   bool
 
 	pIntValue   int64
 	pUIntValue  uint64
@@ -370,4 +405,10 @@ func (d *difference) updateFloat(v float64) (float64, bool) {
 	d.pFloatValue = v
 
 	return diff, false
+}
+
+func (d *difference) checkKeepFirst() bool {
+	c := d.keepFirst
+	d.keepFirst = false
+	return c
 }
