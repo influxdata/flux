@@ -162,6 +162,11 @@ From the SPEC:
 - `monthDay` - integer MonthDay returns the day of the month for the provided time in the range [1-31].
 - `yearDay` - integer YearDay returns the day of the year for the provided time in the range [1-366].
 - `month` - integer Month returns the month of the year for the provided time in the range [1-12].
+- `week` - integer Week returns the ISO week of the year for the provided time in the range [1-53].
+- `quarter` - integer Quarter returns the quarter of the year for the provided time in the range [1-4].
+- `millisecond` - integer Millisecond returns the millisecond of the second for the provided time in the range [0-999].
+- `microsecond` - integer Microsecond returns the microsecond of the second for the provided time in the range [0-999999].
+- `nanosecond` - integer Nanosecond returns the nanosecond of the second for the provided time in the range [0-999999999].
 
 System time function:
 - `systemTime` produces a `time` value that is the current system time.
