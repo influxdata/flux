@@ -46,6 +46,7 @@ builtin quantile
 builtin pivot
 builtin range
 builtin reduce
+builtin relativeStrengthIndex
 builtin rename
 builtin sample
 builtin set

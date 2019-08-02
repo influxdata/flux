@@ -3423,6 +3423,68 @@ from(bucket: "telegraf/autogen"):
     |> range(start: -7d)
     |> tripleEMA(n: 5)
 ```
+
+#### Relative Strength Index
+The relative strength index (RSI) is a momentum indicator that compares the magnitude of recent increases and decreases 
+over a specified time period to measure speed and change of data movements. It acts on the `_value` column.
+
+ Name        | Type     | Description
+| ----        | ----     | -----------
+| n           | int      | N specifies the sample size of the algorithm.       
+
+Rules for calculating the relative strength index for numeric types:
+ - The general process of calculating is `RSI = 100 - (100 / (1 + (AVG GAIN / AVG LOSS)))`
+ - For the first value of the RSI, `AVG GAIN` and `AVG LOSS` are simple `n`-period averages
+ - For subsequent calculations,
+    - `AVG GAIN` = `((PREVIOUS AVG GAIN) * (n - 1)) / n`
+    - `AVG LOSS` = `((PREVIOUS AVG LOSS) * (n - 1)) / n`
+ - `relativeStrengthIndex` ignores null values and skips over them
+ 
+ Example of relative strength index (`N` = 10):
+ 
+  | _time |   A  |   B  | tag |
+  |:-----:|:----:|:----:|:---:|
+  |  0001 |   1  |   1  |  tv |
+  |  0002 |   2  |   2  |  tv |
+  |  0003 |   3  |   3  |  tv |
+  |  0004 |   4  |   4  |  tv |
+  |  0005 |   5  |   5  |  tv |
+  |  0006 |   6  |   6  |  tv |
+  |  0007 |   7  |   7  |  tv |
+  |  0008 |   8  |   8  |  tv |
+  |  0009 |   9  |   9  |  tv |
+  |  0010 |  10  |  10  |  tv |
+  |  0011 |  11  |  11  |  tv |
+  |  0012 |  12  |  12  |  tv |
+  |  0013 |  13  |  13  |  tv |
+  |  0014 |  14  |  14  |  tv |
+  |  0015 |  15  |  15  |  tv |
+  |  0016 |  16  |  16  |  tv |
+  |  0017 |  17  | null |  tv |
+  |  0018 |  18  |  17  |  tv |
+  
+  Result:
+  
+  | _time |   A  |   B  | tag |
+  |:-----:|:----:|:----:|:---:|
+  |  0011 | 100  | 100  |  tv |
+  |  0012 | 100  | 100  |  tv |
+  |  0013 | 100  | 100  |  tv |
+  |  0014 | 100  | 100  |  tv |
+  |  0015 | 100  | 100  |  tv |
+  |  0016 |  90  |  90  |  tv |
+  |  0017 |  81  |  90  |  tv |
+  |  0018 | 72.9 |  81  |  tv |
+ 
+  
+ Example of script:
+```
+// A 14 point relative search index plot would be called as such:
+from(bucket: "telegraf/autogen"):
+    |> range(start: -7d)
+    |> relativeSearchIndex(n: 14)
+```
+
  
 ##### Holt Winters
 
