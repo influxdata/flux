@@ -426,6 +426,186 @@ func TestDifference_Process(t *testing.T) {
 				},
 			}},
 		},
+		{
+			name: "float with tags and keepFirst",
+			spec: &universe.DifferenceProcedureSpec{
+				Columns:   []string{execute.DefaultValueColLabel},
+				KeepFirst: true,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 2.0, "a"},
+					{execute.Time(2), 1.0, "b"},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), nil, "a"},
+					{execute.Time(2), -1.0, "b"},
+				},
+			}},
+		},
+		{
+			name: "float with tags and keepFirst and chunks",
+			spec: &universe.DifferenceProcedureSpec{
+				Columns:   []string{execute.DefaultValueColLabel},
+				KeepFirst: true,
+			},
+			data: []flux.Table{&executetest.RowWiseTable{
+				Table: &executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "t", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0, "a"},
+						{execute.Time(2), 1.0, "b"},
+					},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), nil, "a"},
+					{execute.Time(2), -1.0, "b"},
+				},
+			}},
+		},
+		{
+			name: "int with tags and keepFirst",
+			spec: &universe.DifferenceProcedureSpec{
+				Columns:   []string{execute.DefaultValueColLabel},
+				KeepFirst: true,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+					{Label: "t", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), int64(2), "a"},
+					{execute.Time(2), int64(1), "b"},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+					{Label: "t", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), nil, "a"},
+					{execute.Time(2), int64(-1), "b"},
+				},
+			}},
+		},
+		{
+			name: "int with tags and keepFirst and chunks",
+			spec: &universe.DifferenceProcedureSpec{
+				Columns:   []string{execute.DefaultValueColLabel},
+				KeepFirst: true,
+			},
+			data: []flux.Table{&executetest.RowWiseTable{
+				Table: &executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TInt},
+						{Label: "t", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), int64(2), "a"},
+						{execute.Time(2), int64(1), "b"},
+					},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+					{Label: "t", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), nil, "a"},
+					{execute.Time(2), int64(-1), "b"},
+				},
+			}},
+		},
+		{
+			name: "uint with tags and keepFirst",
+			spec: &universe.DifferenceProcedureSpec{
+				Columns:   []string{execute.DefaultValueColLabel},
+				KeepFirst: true,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TUInt},
+					{Label: "t", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), uint64(2), "a"},
+					{execute.Time(2), uint64(1), "b"},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+					{Label: "t", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), nil, "a"},
+					{execute.Time(2), int64(-1), "b"},
+				},
+			}},
+		},
+		{
+			name: "uint with tags and keepFirst and chunks",
+			spec: &universe.DifferenceProcedureSpec{
+				Columns:   []string{execute.DefaultValueColLabel},
+				KeepFirst: true,
+			},
+			data: []flux.Table{&executetest.RowWiseTable{
+				Table: &executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TUInt},
+						{Label: "t", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), uint64(2), "a"},
+						{execute.Time(2), uint64(1), "b"},
+					},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+					{Label: "t", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), nil, "a"},
+					{execute.Time(2), int64(-1), "b"},
+				},
+			}},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
