@@ -5,9 +5,9 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/moving_average"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/stdlib/universe/moving_average"
 )
 
 const ExponentialMovingAverageKind = "exponentialMovingAverage"
@@ -167,15 +167,15 @@ func (t *exponentialMovingAverageTransformation) Process(id execute.DatasetID, t
 			var err error
 			switch c.Type {
 			case flux.TBool:
-				err = t.ema.PassThrough(&moving_average.ArrayContainer{Array: cr.Bools(j)}, builder, j)
+				err = t.ema.PassThrough(moving_average.NewArrayContainer(cr.Bools(j)), builder, j)
 			case flux.TInt:
-				err = t.ema.DoNumeric(&moving_average.ArrayContainer{Array: cr.Ints(j)}, builder, j, isValueCol, true)
+				err = t.ema.DoNumeric(moving_average.NewArrayContainer(cr.Ints(j)), builder, j, isValueCol, true)
 			case flux.TUInt:
-				err = t.ema.DoNumeric(&moving_average.ArrayContainer{Array: cr.UInts(j)}, builder, j, isValueCol, true)
+				err = t.ema.DoNumeric(moving_average.NewArrayContainer(cr.UInts(j)), builder, j, isValueCol, true)
 			case flux.TFloat:
-				err = t.ema.DoNumeric(&moving_average.ArrayContainer{Array: cr.Floats(j)}, builder, j, isValueCol, true)
+				err = t.ema.DoNumeric(moving_average.NewArrayContainer(cr.Floats(j)), builder, j, isValueCol, true)
 			case flux.TString:
-				err = t.ema.PassThrough(&moving_average.ArrayContainer{Array: cr.Strings(j)}, builder, j)
+				err = t.ema.PassThrough(moving_average.NewArrayContainer(cr.Strings(j)), builder, j)
 			case flux.TTime:
 				err = t.ema.PassThroughTime(cr.Times(j), builder, j)
 			}

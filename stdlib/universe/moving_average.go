@@ -6,9 +6,9 @@ import (
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/moving_average"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/stdlib/universe/moving_average"
 	"github.com/influxdata/flux/values"
 )
 
@@ -179,15 +179,15 @@ func (t *movingAverageTransformation) Process(id execute.DatasetID, tbl flux.Tab
 			var err error
 			switch c.Type {
 			case flux.TBool:
-				err = t.passThrough(&moving_average.ArrayContainer{Array: cr.Bools(j)}, builder, j)
+				err = t.passThrough(moving_average.NewArrayContainer(cr.Bools(j)), builder, j)
 			case flux.TInt:
-				err = t.doNumeric(&moving_average.ArrayContainer{Array: cr.Ints(j)}, builder, j, isValueCol)
+				err = t.doNumeric(moving_average.NewArrayContainer(cr.Ints(j)), builder, j, isValueCol)
 			case flux.TUInt:
-				err = t.doNumeric(&moving_average.ArrayContainer{Array: cr.UInts(j)}, builder, j, isValueCol)
+				err = t.doNumeric(moving_average.NewArrayContainer(cr.UInts(j)), builder, j, isValueCol)
 			case flux.TFloat:
-				err = t.doNumeric(&moving_average.ArrayContainer{Array: cr.Floats(j)}, builder, j, isValueCol)
+				err = t.doNumeric(moving_average.NewArrayContainer(cr.Floats(j)), builder, j, isValueCol)
 			case flux.TString:
-				err = t.passThrough(&moving_average.ArrayContainer{Array: cr.Strings(j)}, builder, j)
+				err = t.passThrough(moving_average.NewArrayContainer(cr.Strings(j)), builder, j)
 			case flux.TTime:
 				err = t.passThroughTime(cr.Times(j), builder, j)
 			}
