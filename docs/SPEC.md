@@ -466,6 +466,12 @@ Examples:
     2018-07-01T00:00:00Z + 2y  // 2020-07-01T00:00:00Z
     2018-07-01T00:00:00Z + 5h  // 2018-07-01T05:00:00Z
 
+#### Binary types
+
+A _binary type_ represents a base64 encoded sequence of bytes as defined in RFC 4648.
+The binary type name is `bytes`.
+The binary type is nullable.
+
 ##### String types
 
 A _string type_ represents a possibly empty sequence of characters.
