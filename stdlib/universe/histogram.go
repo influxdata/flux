@@ -316,6 +316,10 @@ func (b linearBins) Function() values.Function {
 	return b
 }
 
+func (b linearBins) Stream() values.Stream {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Stream))
+}
+
 func (b linearBins) Equal(rhs values.Value) bool {
 	if b.Type() != rhs.Type() {
 		return false
@@ -445,6 +449,10 @@ func (b logarithmicBins) Object() values.Object {
 
 func (b logarithmicBins) Function() values.Function {
 	return b
+}
+
+func (b logarithmicBins) Stream() values.Stream {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Stream))
 }
 
 func (b logarithmicBins) Equal(rhs values.Value) bool {

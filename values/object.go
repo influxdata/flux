@@ -155,6 +155,9 @@ func (o *object) Object() Object {
 func (o *object) Function() Function {
 	panic(UnexpectedKind(semantic.Object, semantic.Function))
 }
+func (o *object) Stream() Stream {
+	panic(UnexpectedKind(semantic.Object, semantic.Stream))
+}
 func (o *object) Equal(rhs Value) bool {
 	if o.Type() != rhs.Type() {
 		return false

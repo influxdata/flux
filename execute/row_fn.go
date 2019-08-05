@@ -374,6 +374,9 @@ func (r *Record) Object() values.Object {
 func (r *Record) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Object, semantic.Function))
 }
+func (r *Record) Stream() values.Stream {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Stream))
+}
 func (r *Record) Equal(rhs values.Value) bool {
 	if r.Type() != rhs.Type() {
 		return false

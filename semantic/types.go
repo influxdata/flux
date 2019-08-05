@@ -63,6 +63,7 @@ const (
 	Array
 	Object
 	Function
+	Stream
 )
 
 var natureNames = []string{
@@ -79,6 +80,7 @@ var natureNames = []string{
 	Array:    "array",
 	Object:   "object",
 	Function: "function",
+	Stream:   "stream",
 }
 
 func (n Nature) String() string {

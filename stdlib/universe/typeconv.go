@@ -77,6 +77,9 @@ func (c *stringConv) Object() values.Object {
 func (c *stringConv) Function() values.Function {
 	return c
 }
+func (c *stringConv) Stream() values.Stream {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Stream))
+}
 func (c *stringConv) Equal(rhs values.Value) bool {
 	f, ok := rhs.(*stringConv)
 	return ok && (c == f)
@@ -161,6 +164,9 @@ func (c *intConv) Object() values.Object {
 }
 func (c *intConv) Function() values.Function {
 	return c
+}
+func (c *intConv) Stream() values.Stream {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Stream))
 }
 func (c *intConv) Equal(rhs values.Value) bool {
 	f, ok := rhs.(*intConv)
@@ -255,6 +261,9 @@ func (c *uintConv) Object() values.Object {
 func (c *uintConv) Function() values.Function {
 	return c
 }
+func (c *uintConv) Stream() values.Stream {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Stream))
+}
 func (c *uintConv) Equal(rhs values.Value) bool {
 	f, ok := rhs.(*uintConv)
 	return ok && (c == f)
@@ -348,6 +357,9 @@ func (c *floatConv) Object() values.Object {
 func (c *floatConv) Function() values.Function {
 	return c
 }
+func (c *floatConv) Stream() values.Stream {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Stream))
+}
 func (c *floatConv) Equal(rhs values.Value) bool {
 	f, ok := rhs.(*floatConv)
 	return ok && (c == f)
@@ -436,6 +448,9 @@ func (c *boolConv) Object() values.Object {
 }
 func (c *boolConv) Function() values.Function {
 	return c
+}
+func (c *boolConv) Stream() values.Stream {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Stream))
 }
 func (c *boolConv) Equal(rhs values.Value) bool {
 	f, ok := rhs.(*boolConv)
@@ -546,6 +561,9 @@ func (c *timeConv) Object() values.Object {
 func (c *timeConv) Function() values.Function {
 	return c
 }
+func (c *timeConv) Stream() values.Stream {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Stream))
+}
 func (c *timeConv) Equal(rhs values.Value) bool {
 	f, ok := rhs.(*timeConv)
 	return ok && (c == f)
@@ -628,6 +646,9 @@ func (c *durationConv) Object() values.Object {
 }
 func (c *durationConv) Function() values.Function {
 	return c
+}
+func (c *durationConv) Stream() values.Stream {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Stream))
 }
 func (c *durationConv) Equal(rhs values.Value) bool {
 	f, ok := rhs.(*durationConv)

@@ -94,6 +94,10 @@ func (f *function) Function() Function {
 	return f
 }
 
+func (f *function) Stream() Stream {
+	panic(UnexpectedKind(semantic.Object, semantic.Stream))
+}
+
 func (f *function) Equal(rhs Value) bool {
 	if f.Type() != rhs.Type() {
 		return false

@@ -100,6 +100,9 @@ func (p *Package) Object() values.Object {
 func (p *Package) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Object, semantic.Function))
 }
+func (p *Package) Stream() values.Stream {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Stream))
+}
 func (p *Package) Equal(rhs values.Value) bool {
 	if p.Type() != rhs.Type() {
 		return false

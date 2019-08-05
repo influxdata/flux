@@ -30,6 +30,7 @@ type Value interface {
 	Object() Object
 	Function() Function
 	Equal(Value) bool
+	Stream() Stream
 }
 
 type ValueStringer interface {
@@ -93,6 +94,10 @@ func (v value) Object() Object {
 func (v value) Function() Function {
 	CheckKind(v.t.Nature(), semantic.Function)
 	return v.v.(Function)
+}
+func (v value) Stream() Stream {
+	CheckKind(v.t.Nature(), semantic.Stream)
+	return v.v.(Stream)
 }
 func (v value) Equal(r Value) bool {
 	if v.Type() != r.Type() {

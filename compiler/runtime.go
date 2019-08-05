@@ -605,6 +605,9 @@ func (f *functionValue) Object() values.Object {
 func (f *functionValue) Function() values.Function {
 	return f
 }
+func (f *functionValue) Stream() values.Stream {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Stream))
+}
 func (f *functionValue) Equal(rhs values.Value) bool {
 	if f.Type() != rhs.Type() {
 		return false
