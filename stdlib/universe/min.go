@@ -99,6 +99,13 @@ type MinFloatSelector struct {
 	MinSelector
 	min float64
 }
+type MinTimeSelector struct {
+	MinIntSelector
+}
+
+func (s *MinSelector) NewTimeSelector() execute.DoTimeRowSelector {
+	return new(MinTimeSelector)
+}
 
 func (s *MinSelector) NewBoolSelector() execute.DoBoolRowSelector {
 	return nil
@@ -134,6 +141,9 @@ func (s *MinSelector) selectRow(idx int, cr flux.ColReader) {
 	}
 }
 
+func (s *MinTimeSelector) DoTime(vs *array.Int64, cr flux.ColReader) {
+	s.MinIntSelector.DoInt(vs, cr)
+}
 func (s *MinIntSelector) DoInt(vs *array.Int64, cr flux.ColReader) {
 	minIdx := -1
 	for i := 0; i < vs.Len(); i++ {
