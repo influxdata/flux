@@ -95,6 +95,11 @@ func createLastTransformation(id execute.DatasetID, mode execute.AccumulationMod
 func (s *LastSelector) reset() {
 	s.rows = nil
 }
+func (s *LastSelector) NewTimeSelector() execute.DoTimeRowSelector {
+	s.reset()
+	return s
+}
+
 func (s *LastSelector) NewBoolSelector() execute.DoBoolRowSelector {
 	s.reset()
 	return s
@@ -133,6 +138,9 @@ func (s *LastSelector) selectLast(vs array.Interface, cr flux.ColReader) {
 	}
 }
 
+func (s *LastSelector) DoTime(vs *array.Int64, cr flux.ColReader) {
+	s.selectLast(vs, cr)
+}
 func (s *LastSelector) DoBool(vs *array.Boolean, cr flux.ColReader) {
 	s.selectLast(vs, cr)
 }

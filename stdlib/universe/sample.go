@@ -140,6 +140,11 @@ func (s *SampleSelector) reset() {
 	s.offset = pos
 }
 
+func (s *SampleSelector) NewTimeSelector() execute.DoTimeIndexSelector {
+	s.reset()
+	return s
+}
+
 func (s *SampleSelector) NewBoolSelector() execute.DoBoolIndexSelector {
 	s.reset()
 	return s
@@ -175,6 +180,9 @@ func (s *SampleSelector) selectSample(l int) []int {
 	return s.selected
 }
 
+func (s *SampleSelector) DoTime(vs *array.Int64) []int {
+	return s.selectSample(vs.Len())
+}
 func (s *SampleSelector) DoBool(vs *array.Boolean) []int {
 	return s.selectSample(vs.Len())
 }

@@ -132,6 +132,8 @@ func (t *indexSelectorTransformation) Process(id DatasetID, tbl flux.Table) erro
 
 	var s interface{}
 	switch valueCol.Type {
+	case flux.TTime:
+		s = t.selector.NewTimeSelector()
 	case flux.TBool:
 		s = t.selector.NewBoolSelector()
 	case flux.TInt:
@@ -148,6 +150,9 @@ func (t *indexSelectorTransformation) Process(id DatasetID, tbl flux.Table) erro
 
 	return tbl.Do(func(cr flux.ColReader) error {
 		switch valueCol.Type {
+		case flux.TTime:
+			selected := s.(DoTimeIndexSelector).DoTime(cr.Times(valueIdx))
+			return t.appendSelected(selected, builder, cr)
 		case flux.TBool:
 			selected := s.(DoBoolIndexSelector).DoBool(cr.Bools(valueIdx))
 			return t.appendSelected(selected, builder, cr)
@@ -179,6 +184,8 @@ func (t *rowSelectorTransformation) Process(id DatasetID, tbl flux.Table) error 
 	var rower Rower
 
 	switch valueCol.Type {
+	case flux.TTime:
+		rower = t.selector.NewTimeSelector()
 	case flux.TBool:
 		rower = t.selector.NewBoolSelector()
 	case flux.TInt:
@@ -202,6 +209,8 @@ func (t *rowSelectorTransformation) Process(id DatasetID, tbl flux.Table) error 
 
 	if err := tbl.Do(func(cr flux.ColReader) error {
 		switch valueCol.Type {
+		case flux.TTime:
+			rower.(DoTimeRowSelector).DoTime(cr.Times(valueIdx), cr)
 		case flux.TBool:
 			rower.(DoBoolRowSelector).DoBool(cr.Bools(valueIdx), cr)
 		case flux.TInt:
@@ -252,11 +261,15 @@ func (t *rowSelectorTransformation) appendRows(builder TableBuilder, rows []Row)
 }
 
 type IndexSelector interface {
+	NewTimeSelector() DoTimeIndexSelector
 	NewBoolSelector() DoBoolIndexSelector
 	NewIntSelector() DoIntIndexSelector
 	NewUIntSelector() DoUIntIndexSelector
 	NewFloatSelector() DoFloatIndexSelector
 	NewStringSelector() DoStringIndexSelector
+}
+type DoTimeIndexSelector interface {
+	DoTime(*array.Int64) []int
 }
 type DoBoolIndexSelector interface {
 	DoBool(*array.Boolean) []int
@@ -275,6 +288,7 @@ type DoStringIndexSelector interface {
 }
 
 type RowSelector interface {
+	NewTimeSelector() DoTimeRowSelector
 	NewBoolSelector() DoBoolRowSelector
 	NewIntSelector() DoIntRowSelector
 	NewUIntSelector() DoUIntRowSelector
@@ -286,6 +300,10 @@ type Rower interface {
 	Rows() []Row
 }
 
+type DoTimeRowSelector interface {
+	Rower
+	DoTime(vs *array.Int64, cr flux.ColReader)
+}
 type DoBoolRowSelector interface {
 	Rower
 	DoBool(vs *array.Boolean, cr flux.ColReader)

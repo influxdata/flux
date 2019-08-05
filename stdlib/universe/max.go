@@ -99,6 +99,13 @@ type MaxFloatSelector struct {
 	MaxSelector
 	max float64
 }
+type MaxTimeSelector struct {
+	MaxIntSelector
+}
+
+func (s *MaxSelector) NewTimeSelector() execute.DoTimeRowSelector {
+	return new(MaxTimeSelector)
+}
 
 func (s *MaxSelector) NewBoolSelector() execute.DoBoolRowSelector {
 	return nil
@@ -134,6 +141,9 @@ func (s *MaxSelector) selectRow(idx int, cr flux.ColReader) {
 	}
 }
 
+func (s *MaxTimeSelector) DoTime(vs *array.Int64, cr flux.ColReader) {
+	s.MaxIntSelector.DoInt(vs, cr)
+}
 func (s *MaxIntSelector) DoInt(vs *array.Int64, cr flux.ColReader) {
 	maxIdx := -1
 	for i := 0; i < vs.Len(); i++ {

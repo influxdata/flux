@@ -92,6 +92,10 @@ func (s *FirstSelector) reset() {
 	s.selected = false
 }
 
+func (s *FirstSelector) NewTimeSelector() execute.DoTimeIndexSelector {
+	s.reset()
+	return s
+}
 func (s *FirstSelector) NewBoolSelector() execute.DoBoolIndexSelector {
 	s.reset()
 	return s
@@ -126,6 +130,9 @@ func (s *FirstSelector) selectFirst(vs array.Interface) []int {
 	return nil
 }
 
+func (s *FirstSelector) DoTime(vs *array.Int64) []int {
+	return s.selectFirst(vs)
+}
 func (s *FirstSelector) DoBool(vs *array.Boolean) []int {
 	return s.selectFirst(vs)
 }
