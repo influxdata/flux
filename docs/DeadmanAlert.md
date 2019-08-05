@@ -31,8 +31,7 @@ from(bucket: "telegraf/autogen")
 The `deadman` function is defined as follows:
 ```
 deadman = (d, tables=<-) => tables
-    |> sort(columns: ["_time"])
-    |> last()
+    |> max(column: "_time")
     |> map(fn: (r) => ( {r with dead: r._time < now() - d} ))
 ```
 
