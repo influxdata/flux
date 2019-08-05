@@ -208,26 +208,17 @@ func (t *chandeMomentumOscillatorTransformation) do(n int, cr flux.ColReader, c 
 		for i := 0; i < cr.Len(); i++ {
 			curr = arrValues.Value(i)
 			diff := float64(curr - prev)
-			if diff > 0 {
-				sumUp += diff
-			} else if diff < 0 {
-				sumDown -= diff
-			}
-
 			if i >= n {
-				val := 100 * (sumUp - sumDown) / (sumUp + sumDown)
+				diffNAgo := float64(arrValues.Value(i-n+1) - arrValues.Value(i-n))
+				val, su, sd := nextCMO(sumUp, sumDown, diff, diffNAgo)
+				sumUp = su
+				sumDown = sd
 				if err := builder.AppendFloat(j, val); err != nil {
 					return err
 				}
-
-				diffNAgo := float64(arrValues.Value(i-n+1) - arrValues.Value(i-n))
-				if diffNAgo > 0 {
-					sumUp -= diffNAgo
-				} else if diffNAgo < 0 {
-					sumDown += diffNAgo
-				}
+			} else {
+				_, sumUp, sumDown = nextCMO(sumUp, sumDown, diff, 0)
 			}
-
 			prev = curr
 		}
 	case flux.TUInt:
@@ -238,26 +229,17 @@ func (t *chandeMomentumOscillatorTransformation) do(n int, cr flux.ColReader, c 
 		for i := 0; i < cr.Len(); i++ {
 			curr = arrValues.Value(i)
 			diff := float64(curr - prev)
-			if diff > 0 {
-				sumUp += diff
-			} else if diff < 0 {
-				sumDown -= diff
-			}
-
 			if i >= n {
-				val := 100 * (sumUp - sumDown) / (sumUp + sumDown)
+				diffNAgo := float64(arrValues.Value(i-n+1) - arrValues.Value(i-n))
+				val, su, sd := nextCMO(sumUp, sumDown, diff, diffNAgo)
+				sumUp = su
+				sumDown = sd
 				if err := builder.AppendFloat(j, val); err != nil {
 					return err
 				}
-
-				diffNAgo := float64(arrValues.Value(i-n+1) - arrValues.Value(i-n))
-				if diffNAgo > 0 {
-					sumUp -= diffNAgo
-				} else if diffNAgo < 0 {
-					sumDown += diffNAgo
-				}
+			} else {
+				_, sumUp, sumDown = nextCMO(sumUp, sumDown, diff, 0)
 			}
-
 			prev = curr
 		}
 	case flux.TFloat:
@@ -267,31 +249,37 @@ func (t *chandeMomentumOscillatorTransformation) do(n int, cr flux.ColReader, c 
 		for i := 0; i < cr.Len(); i++ {
 			curr = arrValues.Value(i)
 			diff := float64(curr - prev)
-			if diff > 0 {
-				sumUp += diff
-			} else if diff < 0 {
-				sumDown -= diff
-			}
-
 			if i >= n {
-				val := 100 * (sumUp - sumDown) / (sumUp + sumDown)
+				diffNAgo := float64(arrValues.Value(i-n+1) - arrValues.Value(i-n))
+				val, su, sd := nextCMO(sumUp, sumDown, diff, diffNAgo)
+				sumUp = su
+				sumDown = sd
 				if err := builder.AppendFloat(j, val); err != nil {
 					return err
 				}
-
-				diffNAgo := float64(arrValues.Value(i-n+1) - arrValues.Value(i-n))
-				if diffNAgo > 0 {
-					sumUp -= diffNAgo
-				} else if diffNAgo < 0 {
-					sumDown += diffNAgo
-				}
+			} else {
+				_, sumUp, sumDown = nextCMO(sumUp, sumDown, diff, 0)
 			}
-
 			prev = curr
 		}
 	}
 
 	return nil
+}
+
+func nextCMO(sumUp, sumDown, diff, diffNAgo float64) (float64, float64, float64) {
+	if diff > 0 {
+		sumUp += diff
+	} else if diff < 0 {
+		sumDown -= diff
+	}
+	val := 100 * (sumUp - sumDown) / (sumUp + sumDown)
+	if diffNAgo > 0 {
+		sumUp -= diffNAgo
+	} else {
+		sumDown += diffNAgo
+	}
+	return val, sumUp, sumDown
 }
 
 func (t *chandeMomentumOscillatorTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
