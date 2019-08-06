@@ -48,6 +48,11 @@ func TestTimeFns(t *testing.T) {
 			want: 6,
 		},
 		{
+			name: "year",
+			time: "2019-06-03T13:59:01.000000000Z",
+			want: 2019,
+		},
+		{
 			name: "week",
 			time: "2019-06-03T13:59:01.000000000Z",
 			want: 23,

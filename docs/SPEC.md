@@ -1133,6 +1133,8 @@ These are builtin functions that all take a single `time` argument and return an
     YearDay returns the day of the year for the provided time in the range `[1-366]`.
 * `month` int
     Month returns the month of the year for the provided time in the range `[1-12]`.
+* `year` int
+    Year returns the year for the provided time.
 * `week` int
     Week returns the ISO week of the year for the provided time in the range `[1-53]`
 * `quarter` int

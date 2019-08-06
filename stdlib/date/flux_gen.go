@@ -22,10 +22,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 2,
-					Line:   72,
+					Line:   74,
 				},
 				File:   "date_fns.flux",
-				Source: "package date\n\nbuiltin second\nbuiltin minute\nbuiltin hour\nbuiltin weekDay\nbuiltin monthDay\nbuiltin yearDay\nbuiltin month\nbuiltin week\nbuiltin quarter\nbuiltin millisecond\nbuiltin microsecond\nbuiltin nanosecond\nbuiltin truncate\n\nSunday    = 0\nMonday    = 1\nTuesday   = 2\nWednesday = 3\nThursday  = 4\nFriday    = 5\nSaturday  = 6\n\nJanuary   = 1\nFebruary  = 2\nMarch     = 3\nApril     = 4\nMay       = 5\nJune      = 6\nJuly      = 7\nAugust    = 8\nSeptember = 9\nOctober   = 10\nNovember  = 11\nDecember  = 12\n\n// hack to simulate an imported strings package\ndate = {\n  second:second,\n  minute:minute,\n  hour:hour,\n  weekDay:weekDay,\n  monthDay:monthDay,\n  yearDay:yearDay,\n  month:month,\n  week:week,\n  quarter:quarter,\n  millisecond:millisecond,\n  microsecond:microsecond,\n  nanosecond:nanosecond,\n  Sunday:Sunday,\n  Monday:Monday,\n  Tuesday:Tuesday,\n  Wednesday:Wednesday,\n  Thursday:Thursday,\n  Friday:Friday,\n  Saturday:Saturday,\n  January:January,\n  February:February,\n  March:March,\n  April:April,\n  May:May,\n  June:June,\n  July:July,\n  August:August,\n  September:September,\n  October:October,\n  November:November,\n  December:December,\n  truncate:truncate,\n}",
+				Source: "package date\n\nbuiltin second\nbuiltin minute\nbuiltin hour\nbuiltin weekDay\nbuiltin monthDay\nbuiltin yearDay\nbuiltin month\nbuiltin year\nbuiltin week\nbuiltin quarter\nbuiltin millisecond\nbuiltin microsecond\nbuiltin nanosecond\nbuiltin truncate\n\nSunday    = 0\nMonday    = 1\nTuesday   = 2\nWednesday = 3\nThursday  = 4\nFriday    = 5\nSaturday  = 6\n\nJanuary   = 1\nFebruary  = 2\nMarch     = 3\nApril     = 4\nMay       = 5\nJune      = 6\nJuly      = 7\nAugust    = 8\nSeptember = 9\nOctober   = 10\nNovember  = 11\nDecember  = 12\n\n// hack to simulate an imported strings package\ndate = {\n  second:second,\n  minute:minute,\n  hour:hour,\n  weekDay:weekDay,\n  monthDay:monthDay,\n  yearDay:yearDay,\n  month:month,\n  year:year,\n  week:week,\n  quarter:quarter,\n  millisecond:millisecond,\n  microsecond:microsecond,\n  nanosecond:nanosecond,\n  Sunday:Sunday,\n  Monday:Monday,\n  Tuesday:Tuesday,\n  Wednesday:Wednesday,\n  Thursday:Thursday,\n  Friday:Friday,\n  Saturday:Saturday,\n  January:January,\n  February:February,\n  March:March,\n  April:April,\n  May:May,\n  June:June,\n  July:July,\n  August:August,\n  September:September,\n  October:October,\n  November:November,\n  December:December,\n  truncate:truncate,\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -279,7 +279,7 @@ var pkgAST = &ast.Package{
 						Line:   10,
 					},
 					File:   "date_fns.flux",
-					Source: "builtin week",
+					Source: "builtin year",
 					Start: ast.Position{
 						Column: 1,
 						Line:   10,
@@ -295,10 +295,44 @@ var pkgAST = &ast.Package{
 							Line:   10,
 						},
 						File:   "date_fns.flux",
-						Source: "week",
+						Source: "year",
 						Start: ast.Position{
 							Column: 9,
 							Line:   10,
+						},
+					},
+				},
+				Name: "year",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 13,
+						Line:   11,
+					},
+					File:   "date_fns.flux",
+					Source: "builtin week",
+					Start: ast.Position{
+						Column: 1,
+						Line:   11,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 13,
+							Line:   11,
+						},
+						File:   "date_fns.flux",
+						Source: "week",
+						Start: ast.Position{
+							Column: 9,
+							Line:   11,
 						},
 					},
 				},
@@ -310,13 +344,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   11,
+						Line:   12,
 					},
 					File:   "date_fns.flux",
 					Source: "builtin quarter",
 					Start: ast.Position{
 						Column: 1,
-						Line:   11,
+						Line:   12,
 					},
 				},
 			},
@@ -326,13 +360,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   11,
+							Line:   12,
 						},
 						File:   "date_fns.flux",
 						Source: "quarter",
 						Start: ast.Position{
 							Column: 9,
-							Line:   11,
+							Line:   12,
 						},
 					},
 				},
@@ -344,13 +378,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
-						Line:   12,
+						Line:   13,
 					},
 					File:   "date_fns.flux",
 					Source: "builtin millisecond",
 					Start: ast.Position{
 						Column: 1,
-						Line:   12,
+						Line:   13,
 					},
 				},
 			},
@@ -360,13 +394,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
-							Line:   12,
+							Line:   13,
 						},
 						File:   "date_fns.flux",
 						Source: "millisecond",
 						Start: ast.Position{
 							Column: 9,
-							Line:   12,
+							Line:   13,
 						},
 					},
 				},
@@ -378,13 +412,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
-						Line:   13,
+						Line:   14,
 					},
 					File:   "date_fns.flux",
 					Source: "builtin microsecond",
 					Start: ast.Position{
 						Column: 1,
-						Line:   13,
+						Line:   14,
 					},
 				},
 			},
@@ -394,13 +428,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
-							Line:   13,
+							Line:   14,
 						},
 						File:   "date_fns.flux",
 						Source: "microsecond",
 						Start: ast.Position{
 							Column: 9,
-							Line:   13,
+							Line:   14,
 						},
 					},
 				},
@@ -412,13 +446,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
-						Line:   14,
+						Line:   15,
 					},
 					File:   "date_fns.flux",
 					Source: "builtin nanosecond",
 					Start: ast.Position{
 						Column: 1,
-						Line:   14,
+						Line:   15,
 					},
 				},
 			},
@@ -428,13 +462,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   14,
+							Line:   15,
 						},
 						File:   "date_fns.flux",
 						Source: "nanosecond",
 						Start: ast.Position{
 							Column: 9,
-							Line:   14,
+							Line:   15,
 						},
 					},
 				},
@@ -446,13 +480,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   15,
+						Line:   16,
 					},
 					File:   "date_fns.flux",
 					Source: "builtin truncate",
 					Start: ast.Position{
 						Column: 1,
-						Line:   15,
+						Line:   16,
 					},
 				},
 			},
@@ -462,13 +496,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   15,
+							Line:   16,
 						},
 						File:   "date_fns.flux",
 						Source: "truncate",
 						Start: ast.Position{
 							Column: 9,
-							Line:   15,
+							Line:   16,
 						},
 					},
 				},
@@ -480,13 +514,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   17,
+						Line:   18,
 					},
 					File:   "date_fns.flux",
 					Source: "Sunday    = 0",
 					Start: ast.Position{
 						Column: 1,
-						Line:   17,
+						Line:   18,
 					},
 				},
 			},
@@ -496,13 +530,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   17,
+							Line:   18,
 						},
 						File:   "date_fns.flux",
 						Source: "Sunday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   17,
+							Line:   18,
 						},
 					},
 				},
@@ -514,13 +548,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   17,
+							Line:   18,
 						},
 						File:   "date_fns.flux",
 						Source: "0",
 						Start: ast.Position{
 							Column: 13,
-							Line:   17,
+							Line:   18,
 						},
 					},
 				},
@@ -532,13 +566,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   18,
+						Line:   19,
 					},
 					File:   "date_fns.flux",
 					Source: "Monday    = 1",
 					Start: ast.Position{
 						Column: 1,
-						Line:   18,
+						Line:   19,
 					},
 				},
 			},
@@ -548,13 +582,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   18,
+							Line:   19,
 						},
 						File:   "date_fns.flux",
 						Source: "Monday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   18,
+							Line:   19,
 						},
 					},
 				},
@@ -566,13 +600,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   18,
+							Line:   19,
 						},
 						File:   "date_fns.flux",
 						Source: "1",
 						Start: ast.Position{
 							Column: 13,
-							Line:   18,
+							Line:   19,
 						},
 					},
 				},
@@ -584,13 +618,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   19,
+						Line:   20,
 					},
 					File:   "date_fns.flux",
 					Source: "Tuesday   = 2",
 					Start: ast.Position{
 						Column: 1,
-						Line:   19,
+						Line:   20,
 					},
 				},
 			},
@@ -600,13 +634,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   19,
+							Line:   20,
 						},
 						File:   "date_fns.flux",
 						Source: "Tuesday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   19,
+							Line:   20,
 						},
 					},
 				},
@@ -618,13 +652,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   19,
+							Line:   20,
 						},
 						File:   "date_fns.flux",
 						Source: "2",
 						Start: ast.Position{
 							Column: 13,
-							Line:   19,
+							Line:   20,
 						},
 					},
 				},
@@ -636,13 +670,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   20,
+						Line:   21,
 					},
 					File:   "date_fns.flux",
 					Source: "Wednesday = 3",
 					Start: ast.Position{
 						Column: 1,
-						Line:   20,
+						Line:   21,
 					},
 				},
 			},
@@ -652,13 +686,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   20,
+							Line:   21,
 						},
 						File:   "date_fns.flux",
 						Source: "Wednesday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   20,
+							Line:   21,
 						},
 					},
 				},
@@ -670,13 +704,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   20,
+							Line:   21,
 						},
 						File:   "date_fns.flux",
 						Source: "3",
 						Start: ast.Position{
 							Column: 13,
-							Line:   20,
+							Line:   21,
 						},
 					},
 				},
@@ -688,13 +722,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   21,
+						Line:   22,
 					},
 					File:   "date_fns.flux",
 					Source: "Thursday  = 4",
 					Start: ast.Position{
 						Column: 1,
-						Line:   21,
+						Line:   22,
 					},
 				},
 			},
@@ -704,13 +738,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   21,
+							Line:   22,
 						},
 						File:   "date_fns.flux",
 						Source: "Thursday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   21,
+							Line:   22,
 						},
 					},
 				},
@@ -722,13 +756,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   21,
+							Line:   22,
 						},
 						File:   "date_fns.flux",
 						Source: "4",
 						Start: ast.Position{
 							Column: 13,
-							Line:   21,
+							Line:   22,
 						},
 					},
 				},
@@ -740,13 +774,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   22,
+						Line:   23,
 					},
 					File:   "date_fns.flux",
 					Source: "Friday    = 5",
 					Start: ast.Position{
 						Column: 1,
-						Line:   22,
+						Line:   23,
 					},
 				},
 			},
@@ -756,13 +790,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   22,
+							Line:   23,
 						},
 						File:   "date_fns.flux",
 						Source: "Friday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   22,
+							Line:   23,
 						},
 					},
 				},
@@ -774,13 +808,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   22,
+							Line:   23,
 						},
 						File:   "date_fns.flux",
 						Source: "5",
 						Start: ast.Position{
 							Column: 13,
-							Line:   22,
+							Line:   23,
 						},
 					},
 				},
@@ -792,13 +826,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   23,
+						Line:   24,
 					},
 					File:   "date_fns.flux",
 					Source: "Saturday  = 6",
 					Start: ast.Position{
 						Column: 1,
-						Line:   23,
+						Line:   24,
 					},
 				},
 			},
@@ -808,13 +842,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   23,
+							Line:   24,
 						},
 						File:   "date_fns.flux",
 						Source: "Saturday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   23,
+							Line:   24,
 						},
 					},
 				},
@@ -826,13 +860,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   23,
+							Line:   24,
 						},
 						File:   "date_fns.flux",
 						Source: "6",
 						Start: ast.Position{
 							Column: 13,
-							Line:   23,
+							Line:   24,
 						},
 					},
 				},
@@ -844,13 +878,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   25,
+						Line:   26,
 					},
 					File:   "date_fns.flux",
 					Source: "January   = 1",
 					Start: ast.Position{
 						Column: 1,
-						Line:   25,
+						Line:   26,
 					},
 				},
 			},
@@ -860,13 +894,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   25,
+							Line:   26,
 						},
 						File:   "date_fns.flux",
 						Source: "January",
 						Start: ast.Position{
 							Column: 1,
-							Line:   25,
+							Line:   26,
 						},
 					},
 				},
@@ -878,13 +912,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   25,
+							Line:   26,
 						},
 						File:   "date_fns.flux",
 						Source: "1",
 						Start: ast.Position{
 							Column: 13,
-							Line:   25,
+							Line:   26,
 						},
 					},
 				},
@@ -896,13 +930,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   26,
+						Line:   27,
 					},
 					File:   "date_fns.flux",
 					Source: "February  = 2",
 					Start: ast.Position{
 						Column: 1,
-						Line:   26,
+						Line:   27,
 					},
 				},
 			},
@@ -912,13 +946,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   26,
+							Line:   27,
 						},
 						File:   "date_fns.flux",
 						Source: "February",
 						Start: ast.Position{
 							Column: 1,
-							Line:   26,
+							Line:   27,
 						},
 					},
 				},
@@ -930,13 +964,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   26,
+							Line:   27,
 						},
 						File:   "date_fns.flux",
 						Source: "2",
 						Start: ast.Position{
 							Column: 13,
-							Line:   26,
+							Line:   27,
 						},
 					},
 				},
@@ -948,13 +982,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   27,
+						Line:   28,
 					},
 					File:   "date_fns.flux",
 					Source: "March     = 3",
 					Start: ast.Position{
 						Column: 1,
-						Line:   27,
+						Line:   28,
 					},
 				},
 			},
@@ -964,13 +998,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   27,
+							Line:   28,
 						},
 						File:   "date_fns.flux",
 						Source: "March",
 						Start: ast.Position{
 							Column: 1,
-							Line:   27,
+							Line:   28,
 						},
 					},
 				},
@@ -982,13 +1016,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   27,
+							Line:   28,
 						},
 						File:   "date_fns.flux",
 						Source: "3",
 						Start: ast.Position{
 							Column: 13,
-							Line:   27,
+							Line:   28,
 						},
 					},
 				},
@@ -1000,13 +1034,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   28,
+						Line:   29,
 					},
 					File:   "date_fns.flux",
 					Source: "April     = 4",
 					Start: ast.Position{
 						Column: 1,
-						Line:   28,
+						Line:   29,
 					},
 				},
 			},
@@ -1016,13 +1050,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   28,
+							Line:   29,
 						},
 						File:   "date_fns.flux",
 						Source: "April",
 						Start: ast.Position{
 							Column: 1,
-							Line:   28,
+							Line:   29,
 						},
 					},
 				},
@@ -1034,13 +1068,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   28,
+							Line:   29,
 						},
 						File:   "date_fns.flux",
 						Source: "4",
 						Start: ast.Position{
 							Column: 13,
-							Line:   28,
+							Line:   29,
 						},
 					},
 				},
@@ -1052,13 +1086,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   29,
+						Line:   30,
 					},
 					File:   "date_fns.flux",
 					Source: "May       = 5",
 					Start: ast.Position{
 						Column: 1,
-						Line:   29,
+						Line:   30,
 					},
 				},
 			},
@@ -1068,13 +1102,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 4,
-							Line:   29,
+							Line:   30,
 						},
 						File:   "date_fns.flux",
 						Source: "May",
 						Start: ast.Position{
 							Column: 1,
-							Line:   29,
+							Line:   30,
 						},
 					},
 				},
@@ -1086,13 +1120,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   29,
+							Line:   30,
 						},
 						File:   "date_fns.flux",
 						Source: "5",
 						Start: ast.Position{
 							Column: 13,
-							Line:   29,
+							Line:   30,
 						},
 					},
 				},
@@ -1104,13 +1138,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   30,
+						Line:   31,
 					},
 					File:   "date_fns.flux",
 					Source: "June      = 6",
 					Start: ast.Position{
 						Column: 1,
-						Line:   30,
+						Line:   31,
 					},
 				},
 			},
@@ -1120,13 +1154,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   30,
+							Line:   31,
 						},
 						File:   "date_fns.flux",
 						Source: "June",
 						Start: ast.Position{
 							Column: 1,
-							Line:   30,
+							Line:   31,
 						},
 					},
 				},
@@ -1138,13 +1172,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   30,
+							Line:   31,
 						},
 						File:   "date_fns.flux",
 						Source: "6",
 						Start: ast.Position{
 							Column: 13,
-							Line:   30,
+							Line:   31,
 						},
 					},
 				},
@@ -1156,13 +1190,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   31,
+						Line:   32,
 					},
 					File:   "date_fns.flux",
 					Source: "July      = 7",
 					Start: ast.Position{
 						Column: 1,
-						Line:   31,
+						Line:   32,
 					},
 				},
 			},
@@ -1172,13 +1206,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   31,
+							Line:   32,
 						},
 						File:   "date_fns.flux",
 						Source: "July",
 						Start: ast.Position{
 							Column: 1,
-							Line:   31,
+							Line:   32,
 						},
 					},
 				},
@@ -1190,13 +1224,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   31,
+							Line:   32,
 						},
 						File:   "date_fns.flux",
 						Source: "7",
 						Start: ast.Position{
 							Column: 13,
-							Line:   31,
+							Line:   32,
 						},
 					},
 				},
@@ -1208,13 +1242,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   32,
+						Line:   33,
 					},
 					File:   "date_fns.flux",
 					Source: "August    = 8",
 					Start: ast.Position{
 						Column: 1,
-						Line:   32,
+						Line:   33,
 					},
 				},
 			},
@@ -1224,13 +1258,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   32,
+							Line:   33,
 						},
 						File:   "date_fns.flux",
 						Source: "August",
 						Start: ast.Position{
 							Column: 1,
-							Line:   32,
+							Line:   33,
 						},
 					},
 				},
@@ -1242,13 +1276,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   32,
+							Line:   33,
 						},
 						File:   "date_fns.flux",
 						Source: "8",
 						Start: ast.Position{
 							Column: 13,
-							Line:   32,
+							Line:   33,
 						},
 					},
 				},
@@ -1260,13 +1294,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   33,
+						Line:   34,
 					},
 					File:   "date_fns.flux",
 					Source: "September = 9",
 					Start: ast.Position{
 						Column: 1,
-						Line:   33,
+						Line:   34,
 					},
 				},
 			},
@@ -1276,13 +1310,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   33,
+							Line:   34,
 						},
 						File:   "date_fns.flux",
 						Source: "September",
 						Start: ast.Position{
 							Column: 1,
-							Line:   33,
+							Line:   34,
 						},
 					},
 				},
@@ -1294,13 +1328,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   33,
+							Line:   34,
 						},
 						File:   "date_fns.flux",
 						Source: "9",
 						Start: ast.Position{
 							Column: 13,
-							Line:   33,
+							Line:   34,
 						},
 					},
 				},
@@ -1312,13 +1346,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   34,
+						Line:   35,
 					},
 					File:   "date_fns.flux",
 					Source: "October   = 10",
 					Start: ast.Position{
 						Column: 1,
-						Line:   34,
+						Line:   35,
 					},
 				},
 			},
@@ -1328,13 +1362,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   34,
+							Line:   35,
 						},
 						File:   "date_fns.flux",
 						Source: "October",
 						Start: ast.Position{
 							Column: 1,
-							Line:   34,
+							Line:   35,
 						},
 					},
 				},
@@ -1346,13 +1380,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   34,
+							Line:   35,
 						},
 						File:   "date_fns.flux",
 						Source: "10",
 						Start: ast.Position{
 							Column: 13,
-							Line:   34,
+							Line:   35,
 						},
 					},
 				},
@@ -1364,13 +1398,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   35,
+						Line:   36,
 					},
 					File:   "date_fns.flux",
 					Source: "November  = 11",
 					Start: ast.Position{
 						Column: 1,
-						Line:   35,
+						Line:   36,
 					},
 				},
 			},
@@ -1380,13 +1414,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   35,
+							Line:   36,
 						},
 						File:   "date_fns.flux",
 						Source: "November",
 						Start: ast.Position{
 							Column: 1,
-							Line:   35,
+							Line:   36,
 						},
 					},
 				},
@@ -1398,13 +1432,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   35,
+							Line:   36,
 						},
 						File:   "date_fns.flux",
 						Source: "11",
 						Start: ast.Position{
 							Column: 13,
-							Line:   35,
+							Line:   36,
 						},
 					},
 				},
@@ -1416,13 +1450,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   36,
+						Line:   37,
 					},
 					File:   "date_fns.flux",
 					Source: "December  = 12",
 					Start: ast.Position{
 						Column: 1,
-						Line:   36,
+						Line:   37,
 					},
 				},
 			},
@@ -1432,13 +1466,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   36,
+							Line:   37,
 						},
 						File:   "date_fns.flux",
 						Source: "December",
 						Start: ast.Position{
 							Column: 1,
-							Line:   36,
+							Line:   37,
 						},
 					},
 				},
@@ -1450,13 +1484,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   36,
+							Line:   37,
 						},
 						File:   "date_fns.flux",
 						Source: "12",
 						Start: ast.Position{
 							Column: 13,
-							Line:   36,
+							Line:   37,
 						},
 					},
 				},
@@ -1468,13 +1502,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   72,
+						Line:   74,
 					},
 					File:   "date_fns.flux",
-					Source: "date = {\n  second:second,\n  minute:minute,\n  hour:hour,\n  weekDay:weekDay,\n  monthDay:monthDay,\n  yearDay:yearDay,\n  month:month,\n  week:week,\n  quarter:quarter,\n  millisecond:millisecond,\n  microsecond:microsecond,\n  nanosecond:nanosecond,\n  Sunday:Sunday,\n  Monday:Monday,\n  Tuesday:Tuesday,\n  Wednesday:Wednesday,\n  Thursday:Thursday,\n  Friday:Friday,\n  Saturday:Saturday,\n  January:January,\n  February:February,\n  March:March,\n  April:April,\n  May:May,\n  June:June,\n  July:July,\n  August:August,\n  September:September,\n  October:October,\n  November:November,\n  December:December,\n  truncate:truncate,\n}",
+					Source: "date = {\n  second:second,\n  minute:minute,\n  hour:hour,\n  weekDay:weekDay,\n  monthDay:monthDay,\n  yearDay:yearDay,\n  month:month,\n  year:year,\n  week:week,\n  quarter:quarter,\n  millisecond:millisecond,\n  microsecond:microsecond,\n  nanosecond:nanosecond,\n  Sunday:Sunday,\n  Monday:Monday,\n  Tuesday:Tuesday,\n  Wednesday:Wednesday,\n  Thursday:Thursday,\n  Friday:Friday,\n  Saturday:Saturday,\n  January:January,\n  February:February,\n  March:March,\n  April:April,\n  May:May,\n  June:June,\n  July:July,\n  August:August,\n  September:September,\n  October:October,\n  November:November,\n  December:December,\n  truncate:truncate,\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   39,
+						Line:   40,
 					},
 				},
 			},
@@ -1484,13 +1518,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   39,
+							Line:   40,
 						},
 						File:   "date_fns.flux",
 						Source: "date",
 						Start: ast.Position{
 							Column: 1,
-							Line:   39,
+							Line:   40,
 						},
 					},
 				},
@@ -1502,13 +1536,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   72,
+							Line:   74,
 						},
 						File:   "date_fns.flux",
-						Source: "{\n  second:second,\n  minute:minute,\n  hour:hour,\n  weekDay:weekDay,\n  monthDay:monthDay,\n  yearDay:yearDay,\n  month:month,\n  week:week,\n  quarter:quarter,\n  millisecond:millisecond,\n  microsecond:microsecond,\n  nanosecond:nanosecond,\n  Sunday:Sunday,\n  Monday:Monday,\n  Tuesday:Tuesday,\n  Wednesday:Wednesday,\n  Thursday:Thursday,\n  Friday:Friday,\n  Saturday:Saturday,\n  January:January,\n  February:February,\n  March:March,\n  April:April,\n  May:May,\n  June:June,\n  July:July,\n  August:August,\n  September:September,\n  October:October,\n  November:November,\n  December:December,\n  truncate:truncate,\n}",
+						Source: "{\n  second:second,\n  minute:minute,\n  hour:hour,\n  weekDay:weekDay,\n  monthDay:monthDay,\n  yearDay:yearDay,\n  month:month,\n  year:year,\n  week:week,\n  quarter:quarter,\n  millisecond:millisecond,\n  microsecond:microsecond,\n  nanosecond:nanosecond,\n  Sunday:Sunday,\n  Monday:Monday,\n  Tuesday:Tuesday,\n  Wednesday:Wednesday,\n  Thursday:Thursday,\n  Friday:Friday,\n  Saturday:Saturday,\n  January:January,\n  February:February,\n  March:March,\n  April:April,\n  May:May,\n  June:June,\n  July:July,\n  August:August,\n  September:September,\n  October:October,\n  November:November,\n  December:December,\n  truncate:truncate,\n}",
 						Start: ast.Position{
 							Column: 8,
-							Line:   39,
+							Line:   40,
 						},
 					},
 				},
@@ -1518,13 +1552,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   40,
+								Line:   41,
 							},
 							File:   "date_fns.flux",
 							Source: "second:second",
 							Start: ast.Position{
 								Column: 3,
-								Line:   40,
+								Line:   41,
 							},
 						},
 					},
@@ -1534,13 +1568,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 9,
-									Line:   40,
+									Line:   41,
 								},
 								File:   "date_fns.flux",
 								Source: "second",
 								Start: ast.Position{
 									Column: 3,
-									Line:   40,
+									Line:   41,
 								},
 							},
 						},
@@ -1552,13 +1586,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   40,
+									Line:   41,
 								},
 								File:   "date_fns.flux",
 								Source: "second",
 								Start: ast.Position{
 									Column: 10,
-									Line:   40,
+									Line:   41,
 								},
 							},
 						},
@@ -1570,13 +1604,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   41,
+								Line:   42,
 							},
 							File:   "date_fns.flux",
 							Source: "minute:minute",
 							Start: ast.Position{
 								Column: 3,
-								Line:   41,
+								Line:   42,
 							},
 						},
 					},
@@ -1586,13 +1620,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 9,
-									Line:   41,
+									Line:   42,
 								},
 								File:   "date_fns.flux",
 								Source: "minute",
 								Start: ast.Position{
 									Column: 3,
-									Line:   41,
+									Line:   42,
 								},
 							},
 						},
@@ -1604,13 +1638,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   41,
+									Line:   42,
 								},
 								File:   "date_fns.flux",
 								Source: "minute",
 								Start: ast.Position{
 									Column: 10,
-									Line:   41,
+									Line:   42,
 								},
 							},
 						},
@@ -1622,13 +1656,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 12,
-								Line:   42,
+								Line:   43,
 							},
 							File:   "date_fns.flux",
 							Source: "hour:hour",
 							Start: ast.Position{
 								Column: 3,
-								Line:   42,
+								Line:   43,
 							},
 						},
 					},
@@ -1638,13 +1672,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 7,
-									Line:   42,
+									Line:   43,
 								},
 								File:   "date_fns.flux",
 								Source: "hour",
 								Start: ast.Position{
 									Column: 3,
-									Line:   42,
+									Line:   43,
 								},
 							},
 						},
@@ -1656,13 +1690,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   42,
+									Line:   43,
 								},
 								File:   "date_fns.flux",
 								Source: "hour",
 								Start: ast.Position{
 									Column: 8,
-									Line:   42,
+									Line:   43,
 								},
 							},
 						},
@@ -1674,13 +1708,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   43,
+								Line:   44,
 							},
 							File:   "date_fns.flux",
 							Source: "weekDay:weekDay",
 							Start: ast.Position{
 								Column: 3,
-								Line:   43,
+								Line:   44,
 							},
 						},
 					},
@@ -1690,13 +1724,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   43,
+									Line:   44,
 								},
 								File:   "date_fns.flux",
 								Source: "weekDay",
 								Start: ast.Position{
 									Column: 3,
-									Line:   43,
+									Line:   44,
 								},
 							},
 						},
@@ -1708,13 +1742,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   43,
+									Line:   44,
 								},
 								File:   "date_fns.flux",
 								Source: "weekDay",
 								Start: ast.Position{
 									Column: 11,
-									Line:   43,
+									Line:   44,
 								},
 							},
 						},
@@ -1726,13 +1760,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   44,
+								Line:   45,
 							},
 							File:   "date_fns.flux",
 							Source: "monthDay:monthDay",
 							Start: ast.Position{
 								Column: 3,
-								Line:   44,
+								Line:   45,
 							},
 						},
 					},
@@ -1742,13 +1776,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   44,
+									Line:   45,
 								},
 								File:   "date_fns.flux",
 								Source: "monthDay",
 								Start: ast.Position{
 									Column: 3,
-									Line:   44,
+									Line:   45,
 								},
 							},
 						},
@@ -1760,13 +1794,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   44,
+									Line:   45,
 								},
 								File:   "date_fns.flux",
 								Source: "monthDay",
 								Start: ast.Position{
 									Column: 12,
-									Line:   44,
+									Line:   45,
 								},
 							},
 						},
@@ -1778,13 +1812,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   45,
+								Line:   46,
 							},
 							File:   "date_fns.flux",
 							Source: "yearDay:yearDay",
 							Start: ast.Position{
 								Column: 3,
-								Line:   45,
+								Line:   46,
 							},
 						},
 					},
@@ -1794,13 +1828,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   45,
+									Line:   46,
 								},
 								File:   "date_fns.flux",
 								Source: "yearDay",
 								Start: ast.Position{
 									Column: 3,
-									Line:   45,
+									Line:   46,
 								},
 							},
 						},
@@ -1812,13 +1846,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   45,
+									Line:   46,
 								},
 								File:   "date_fns.flux",
 								Source: "yearDay",
 								Start: ast.Position{
 									Column: 11,
-									Line:   45,
+									Line:   46,
 								},
 							},
 						},
@@ -1830,13 +1864,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
-								Line:   46,
+								Line:   47,
 							},
 							File:   "date_fns.flux",
 							Source: "month:month",
 							Start: ast.Position{
 								Column: 3,
-								Line:   46,
+								Line:   47,
 							},
 						},
 					},
@@ -1846,13 +1880,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 8,
-									Line:   46,
+									Line:   47,
 								},
 								File:   "date_fns.flux",
 								Source: "month",
 								Start: ast.Position{
 									Column: 3,
-									Line:   46,
+									Line:   47,
 								},
 							},
 						},
@@ -1864,13 +1898,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   46,
+									Line:   47,
 								},
 								File:   "date_fns.flux",
 								Source: "month",
 								Start: ast.Position{
 									Column: 9,
-									Line:   46,
+									Line:   47,
 								},
 							},
 						},
@@ -1882,13 +1916,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 12,
-								Line:   47,
+								Line:   48,
 							},
 							File:   "date_fns.flux",
-							Source: "week:week",
+							Source: "year:year",
 							Start: ast.Position{
 								Column: 3,
-								Line:   47,
+								Line:   48,
 							},
 						},
 					},
@@ -1898,13 +1932,65 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 7,
-									Line:   47,
+									Line:   48,
+								},
+								File:   "date_fns.flux",
+								Source: "year",
+								Start: ast.Position{
+									Column: 3,
+									Line:   48,
+								},
+							},
+						},
+						Name: "year",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   48,
+								},
+								File:   "date_fns.flux",
+								Source: "year",
+								Start: ast.Position{
+									Column: 8,
+									Line:   48,
+								},
+							},
+						},
+						Name: "year",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   49,
+							},
+							File:   "date_fns.flux",
+							Source: "week:week",
+							Start: ast.Position{
+								Column: 3,
+								Line:   49,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 7,
+									Line:   49,
 								},
 								File:   "date_fns.flux",
 								Source: "week",
 								Start: ast.Position{
 									Column: 3,
-									Line:   47,
+									Line:   49,
 								},
 							},
 						},
@@ -1916,13 +2002,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   47,
+									Line:   49,
 								},
 								File:   "date_fns.flux",
 								Source: "week",
 								Start: ast.Position{
 									Column: 8,
-									Line:   47,
+									Line:   49,
 								},
 							},
 						},
@@ -1934,13 +2020,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   48,
+								Line:   50,
 							},
 							File:   "date_fns.flux",
 							Source: "quarter:quarter",
 							Start: ast.Position{
 								Column: 3,
-								Line:   48,
+								Line:   50,
 							},
 						},
 					},
@@ -1950,13 +2036,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   48,
+									Line:   50,
 								},
 								File:   "date_fns.flux",
 								Source: "quarter",
 								Start: ast.Position{
 									Column: 3,
-									Line:   48,
+									Line:   50,
 								},
 							},
 						},
@@ -1968,13 +2054,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   48,
+									Line:   50,
 								},
 								File:   "date_fns.flux",
 								Source: "quarter",
 								Start: ast.Position{
 									Column: 11,
-									Line:   48,
+									Line:   50,
 								},
 							},
 						},
@@ -1986,13 +2072,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   49,
+								Line:   51,
 							},
 							File:   "date_fns.flux",
 							Source: "millisecond:millisecond",
 							Start: ast.Position{
 								Column: 3,
-								Line:   49,
+								Line:   51,
 							},
 						},
 					},
@@ -2002,13 +2088,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   49,
+									Line:   51,
 								},
 								File:   "date_fns.flux",
 								Source: "millisecond",
 								Start: ast.Position{
 									Column: 3,
-									Line:   49,
+									Line:   51,
 								},
 							},
 						},
@@ -2020,13 +2106,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   49,
+									Line:   51,
 								},
 								File:   "date_fns.flux",
 								Source: "millisecond",
 								Start: ast.Position{
 									Column: 15,
-									Line:   49,
+									Line:   51,
 								},
 							},
 						},
@@ -2038,13 +2124,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   50,
+								Line:   52,
 							},
 							File:   "date_fns.flux",
 							Source: "microsecond:microsecond",
 							Start: ast.Position{
 								Column: 3,
-								Line:   50,
+								Line:   52,
 							},
 						},
 					},
@@ -2054,13 +2140,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   50,
+									Line:   52,
 								},
 								File:   "date_fns.flux",
 								Source: "microsecond",
 								Start: ast.Position{
 									Column: 3,
-									Line:   50,
+									Line:   52,
 								},
 							},
 						},
@@ -2072,13 +2158,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   50,
+									Line:   52,
 								},
 								File:   "date_fns.flux",
 								Source: "microsecond",
 								Start: ast.Position{
 									Column: 15,
-									Line:   50,
+									Line:   52,
 								},
 							},
 						},
@@ -2090,13 +2176,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 24,
-								Line:   51,
+								Line:   53,
 							},
 							File:   "date_fns.flux",
 							Source: "nanosecond:nanosecond",
 							Start: ast.Position{
 								Column: 3,
-								Line:   51,
+								Line:   53,
 							},
 						},
 					},
@@ -2106,13 +2192,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 13,
-									Line:   51,
+									Line:   53,
 								},
 								File:   "date_fns.flux",
 								Source: "nanosecond",
 								Start: ast.Position{
 									Column: 3,
-									Line:   51,
+									Line:   53,
 								},
 							},
 						},
@@ -2124,13 +2210,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 24,
-									Line:   51,
+									Line:   53,
 								},
 								File:   "date_fns.flux",
 								Source: "nanosecond",
 								Start: ast.Position{
 									Column: 14,
-									Line:   51,
+									Line:   53,
 								},
 							},
 						},
@@ -2142,13 +2228,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   52,
+								Line:   54,
 							},
 							File:   "date_fns.flux",
 							Source: "Sunday:Sunday",
 							Start: ast.Position{
 								Column: 3,
-								Line:   52,
+								Line:   54,
 							},
 						},
 					},
@@ -2158,13 +2244,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 9,
-									Line:   52,
+									Line:   54,
 								},
 								File:   "date_fns.flux",
 								Source: "Sunday",
 								Start: ast.Position{
 									Column: 3,
-									Line:   52,
+									Line:   54,
 								},
 							},
 						},
@@ -2176,13 +2262,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   52,
+									Line:   54,
 								},
 								File:   "date_fns.flux",
 								Source: "Sunday",
 								Start: ast.Position{
 									Column: 10,
-									Line:   52,
+									Line:   54,
 								},
 							},
 						},
@@ -2194,13 +2280,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   53,
+								Line:   55,
 							},
 							File:   "date_fns.flux",
 							Source: "Monday:Monday",
 							Start: ast.Position{
 								Column: 3,
-								Line:   53,
+								Line:   55,
 							},
 						},
 					},
@@ -2210,13 +2296,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 9,
-									Line:   53,
+									Line:   55,
 								},
 								File:   "date_fns.flux",
 								Source: "Monday",
 								Start: ast.Position{
 									Column: 3,
-									Line:   53,
+									Line:   55,
 								},
 							},
 						},
@@ -2228,13 +2314,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   53,
+									Line:   55,
 								},
 								File:   "date_fns.flux",
 								Source: "Monday",
 								Start: ast.Position{
 									Column: 10,
-									Line:   53,
+									Line:   55,
 								},
 							},
 						},
@@ -2246,13 +2332,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   54,
+								Line:   56,
 							},
 							File:   "date_fns.flux",
 							Source: "Tuesday:Tuesday",
 							Start: ast.Position{
 								Column: 3,
-								Line:   54,
+								Line:   56,
 							},
 						},
 					},
@@ -2262,13 +2348,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   54,
+									Line:   56,
 								},
 								File:   "date_fns.flux",
 								Source: "Tuesday",
 								Start: ast.Position{
 									Column: 3,
-									Line:   54,
+									Line:   56,
 								},
 							},
 						},
@@ -2280,13 +2366,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   54,
+									Line:   56,
 								},
 								File:   "date_fns.flux",
 								Source: "Tuesday",
 								Start: ast.Position{
 									Column: 11,
-									Line:   54,
+									Line:   56,
 								},
 							},
 						},
@@ -2298,13 +2384,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   55,
+								Line:   57,
 							},
 							File:   "date_fns.flux",
 							Source: "Wednesday:Wednesday",
 							Start: ast.Position{
 								Column: 3,
-								Line:   55,
+								Line:   57,
 							},
 						},
 					},
@@ -2314,13 +2400,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   55,
+									Line:   57,
 								},
 								File:   "date_fns.flux",
 								Source: "Wednesday",
 								Start: ast.Position{
 									Column: 3,
-									Line:   55,
+									Line:   57,
 								},
 							},
 						},
@@ -2332,13 +2418,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   55,
+									Line:   57,
 								},
 								File:   "date_fns.flux",
 								Source: "Wednesday",
 								Start: ast.Position{
 									Column: 13,
-									Line:   55,
+									Line:   57,
 								},
 							},
 						},
@@ -2350,13 +2436,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   56,
+								Line:   58,
 							},
 							File:   "date_fns.flux",
 							Source: "Thursday:Thursday",
 							Start: ast.Position{
 								Column: 3,
-								Line:   56,
+								Line:   58,
 							},
 						},
 					},
@@ -2366,13 +2452,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   56,
+									Line:   58,
 								},
 								File:   "date_fns.flux",
 								Source: "Thursday",
 								Start: ast.Position{
 									Column: 3,
-									Line:   56,
+									Line:   58,
 								},
 							},
 						},
@@ -2384,13 +2470,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   56,
+									Line:   58,
 								},
 								File:   "date_fns.flux",
 								Source: "Thursday",
 								Start: ast.Position{
 									Column: 12,
-									Line:   56,
+									Line:   58,
 								},
 							},
 						},
@@ -2402,13 +2488,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   57,
+								Line:   59,
 							},
 							File:   "date_fns.flux",
 							Source: "Friday:Friday",
 							Start: ast.Position{
 								Column: 3,
-								Line:   57,
+								Line:   59,
 							},
 						},
 					},
@@ -2418,13 +2504,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 9,
-									Line:   57,
+									Line:   59,
 								},
 								File:   "date_fns.flux",
 								Source: "Friday",
 								Start: ast.Position{
 									Column: 3,
-									Line:   57,
+									Line:   59,
 								},
 							},
 						},
@@ -2436,13 +2522,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   57,
+									Line:   59,
 								},
 								File:   "date_fns.flux",
 								Source: "Friday",
 								Start: ast.Position{
 									Column: 10,
-									Line:   57,
+									Line:   59,
 								},
 							},
 						},
@@ -2454,13 +2540,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   58,
+								Line:   60,
 							},
 							File:   "date_fns.flux",
 							Source: "Saturday:Saturday",
 							Start: ast.Position{
 								Column: 3,
-								Line:   58,
+								Line:   60,
 							},
 						},
 					},
@@ -2470,13 +2556,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   58,
+									Line:   60,
 								},
 								File:   "date_fns.flux",
 								Source: "Saturday",
 								Start: ast.Position{
 									Column: 3,
-									Line:   58,
+									Line:   60,
 								},
 							},
 						},
@@ -2488,13 +2574,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   58,
+									Line:   60,
 								},
 								File:   "date_fns.flux",
 								Source: "Saturday",
 								Start: ast.Position{
 									Column: 12,
-									Line:   58,
+									Line:   60,
 								},
 							},
 						},
@@ -2506,13 +2592,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   59,
+								Line:   61,
 							},
 							File:   "date_fns.flux",
 							Source: "January:January",
 							Start: ast.Position{
 								Column: 3,
-								Line:   59,
+								Line:   61,
 							},
 						},
 					},
@@ -2522,13 +2608,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   59,
+									Line:   61,
 								},
 								File:   "date_fns.flux",
 								Source: "January",
 								Start: ast.Position{
 									Column: 3,
-									Line:   59,
+									Line:   61,
 								},
 							},
 						},
@@ -2540,13 +2626,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   59,
+									Line:   61,
 								},
 								File:   "date_fns.flux",
 								Source: "January",
 								Start: ast.Position{
 									Column: 11,
-									Line:   59,
+									Line:   61,
 								},
 							},
 						},
@@ -2558,13 +2644,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   60,
+								Line:   62,
 							},
 							File:   "date_fns.flux",
 							Source: "February:February",
 							Start: ast.Position{
 								Column: 3,
-								Line:   60,
+								Line:   62,
 							},
 						},
 					},
@@ -2574,13 +2660,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   60,
+									Line:   62,
 								},
 								File:   "date_fns.flux",
 								Source: "February",
 								Start: ast.Position{
 									Column: 3,
-									Line:   60,
+									Line:   62,
 								},
 							},
 						},
@@ -2592,13 +2678,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   60,
+									Line:   62,
 								},
 								File:   "date_fns.flux",
 								Source: "February",
 								Start: ast.Position{
 									Column: 12,
-									Line:   60,
+									Line:   62,
 								},
 							},
 						},
@@ -2610,13 +2696,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
-								Line:   61,
+								Line:   63,
 							},
 							File:   "date_fns.flux",
 							Source: "March:March",
 							Start: ast.Position{
 								Column: 3,
-								Line:   61,
+								Line:   63,
 							},
 						},
 					},
@@ -2626,13 +2712,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 8,
-									Line:   61,
+									Line:   63,
 								},
 								File:   "date_fns.flux",
 								Source: "March",
 								Start: ast.Position{
 									Column: 3,
-									Line:   61,
+									Line:   63,
 								},
 							},
 						},
@@ -2644,13 +2730,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   61,
+									Line:   63,
 								},
 								File:   "date_fns.flux",
 								Source: "March",
 								Start: ast.Position{
 									Column: 9,
-									Line:   61,
+									Line:   63,
 								},
 							},
 						},
@@ -2662,13 +2748,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
-								Line:   62,
+								Line:   64,
 							},
 							File:   "date_fns.flux",
 							Source: "April:April",
 							Start: ast.Position{
 								Column: 3,
-								Line:   62,
+								Line:   64,
 							},
 						},
 					},
@@ -2678,13 +2764,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 8,
-									Line:   62,
+									Line:   64,
 								},
 								File:   "date_fns.flux",
 								Source: "April",
 								Start: ast.Position{
 									Column: 3,
-									Line:   62,
+									Line:   64,
 								},
 							},
 						},
@@ -2696,13 +2782,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   62,
+									Line:   64,
 								},
 								File:   "date_fns.flux",
 								Source: "April",
 								Start: ast.Position{
 									Column: 9,
-									Line:   62,
+									Line:   64,
 								},
 							},
 						},
@@ -2714,13 +2800,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 10,
-								Line:   63,
+								Line:   65,
 							},
 							File:   "date_fns.flux",
 							Source: "May:May",
 							Start: ast.Position{
 								Column: 3,
-								Line:   63,
+								Line:   65,
 							},
 						},
 					},
@@ -2730,13 +2816,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   63,
+									Line:   65,
 								},
 								File:   "date_fns.flux",
 								Source: "May",
 								Start: ast.Position{
 									Column: 3,
-									Line:   63,
+									Line:   65,
 								},
 							},
 						},
@@ -2748,13 +2834,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   63,
+									Line:   65,
 								},
 								File:   "date_fns.flux",
 								Source: "May",
 								Start: ast.Position{
 									Column: 7,
-									Line:   63,
+									Line:   65,
 								},
 							},
 						},
@@ -2766,13 +2852,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 12,
-								Line:   64,
+								Line:   66,
 							},
 							File:   "date_fns.flux",
 							Source: "June:June",
 							Start: ast.Position{
 								Column: 3,
-								Line:   64,
+								Line:   66,
 							},
 						},
 					},
@@ -2782,13 +2868,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 7,
-									Line:   64,
+									Line:   66,
 								},
 								File:   "date_fns.flux",
 								Source: "June",
 								Start: ast.Position{
 									Column: 3,
-									Line:   64,
+									Line:   66,
 								},
 							},
 						},
@@ -2800,13 +2886,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   64,
+									Line:   66,
 								},
 								File:   "date_fns.flux",
 								Source: "June",
 								Start: ast.Position{
 									Column: 8,
-									Line:   64,
+									Line:   66,
 								},
 							},
 						},
@@ -2818,13 +2904,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 12,
-								Line:   65,
+								Line:   67,
 							},
 							File:   "date_fns.flux",
 							Source: "July:July",
 							Start: ast.Position{
 								Column: 3,
-								Line:   65,
+								Line:   67,
 							},
 						},
 					},
@@ -2834,13 +2920,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 7,
-									Line:   65,
+									Line:   67,
 								},
 								File:   "date_fns.flux",
 								Source: "July",
 								Start: ast.Position{
 									Column: 3,
-									Line:   65,
+									Line:   67,
 								},
 							},
 						},
@@ -2852,13 +2938,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   65,
+									Line:   67,
 								},
 								File:   "date_fns.flux",
 								Source: "July",
 								Start: ast.Position{
 									Column: 8,
-									Line:   65,
+									Line:   67,
 								},
 							},
 						},
@@ -2870,13 +2956,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   66,
+								Line:   68,
 							},
 							File:   "date_fns.flux",
 							Source: "August:August",
 							Start: ast.Position{
 								Column: 3,
-								Line:   66,
+								Line:   68,
 							},
 						},
 					},
@@ -2886,13 +2972,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 9,
-									Line:   66,
+									Line:   68,
 								},
 								File:   "date_fns.flux",
 								Source: "August",
 								Start: ast.Position{
 									Column: 3,
-									Line:   66,
+									Line:   68,
 								},
 							},
 						},
@@ -2904,13 +2990,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   66,
+									Line:   68,
 								},
 								File:   "date_fns.flux",
 								Source: "August",
 								Start: ast.Position{
 									Column: 10,
-									Line:   66,
+									Line:   68,
 								},
 							},
 						},
@@ -2922,13 +3008,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   67,
+								Line:   69,
 							},
 							File:   "date_fns.flux",
 							Source: "September:September",
 							Start: ast.Position{
 								Column: 3,
-								Line:   67,
+								Line:   69,
 							},
 						},
 					},
@@ -2938,13 +3024,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   67,
+									Line:   69,
 								},
 								File:   "date_fns.flux",
 								Source: "September",
 								Start: ast.Position{
 									Column: 3,
-									Line:   67,
+									Line:   69,
 								},
 							},
 						},
@@ -2956,13 +3042,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   67,
+									Line:   69,
 								},
 								File:   "date_fns.flux",
 								Source: "September",
 								Start: ast.Position{
 									Column: 13,
-									Line:   67,
+									Line:   69,
 								},
 							},
 						},
@@ -2974,13 +3060,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   68,
+								Line:   70,
 							},
 							File:   "date_fns.flux",
 							Source: "October:October",
 							Start: ast.Position{
 								Column: 3,
-								Line:   68,
+								Line:   70,
 							},
 						},
 					},
@@ -2990,13 +3076,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   68,
+									Line:   70,
 								},
 								File:   "date_fns.flux",
 								Source: "October",
 								Start: ast.Position{
 									Column: 3,
-									Line:   68,
+									Line:   70,
 								},
 							},
 						},
@@ -3008,13 +3094,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   68,
+									Line:   70,
 								},
 								File:   "date_fns.flux",
 								Source: "October",
 								Start: ast.Position{
 									Column: 11,
-									Line:   68,
+									Line:   70,
 								},
 							},
 						},
@@ -3026,13 +3112,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   69,
+								Line:   71,
 							},
 							File:   "date_fns.flux",
 							Source: "November:November",
 							Start: ast.Position{
 								Column: 3,
-								Line:   69,
+								Line:   71,
 							},
 						},
 					},
@@ -3042,13 +3128,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   69,
+									Line:   71,
 								},
 								File:   "date_fns.flux",
 								Source: "November",
 								Start: ast.Position{
 									Column: 3,
-									Line:   69,
+									Line:   71,
 								},
 							},
 						},
@@ -3060,13 +3146,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   69,
+									Line:   71,
 								},
 								File:   "date_fns.flux",
 								Source: "November",
 								Start: ast.Position{
 									Column: 12,
-									Line:   69,
+									Line:   71,
 								},
 							},
 						},
@@ -3078,13 +3164,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   70,
+								Line:   72,
 							},
 							File:   "date_fns.flux",
 							Source: "December:December",
 							Start: ast.Position{
 								Column: 3,
-								Line:   70,
+								Line:   72,
 							},
 						},
 					},
@@ -3094,13 +3180,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   70,
+									Line:   72,
 								},
 								File:   "date_fns.flux",
 								Source: "December",
 								Start: ast.Position{
 									Column: 3,
-									Line:   70,
+									Line:   72,
 								},
 							},
 						},
@@ -3112,13 +3198,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   70,
+									Line:   72,
 								},
 								File:   "date_fns.flux",
 								Source: "December",
 								Start: ast.Position{
 									Column: 12,
-									Line:   70,
+									Line:   72,
 								},
 							},
 						},
@@ -3130,13 +3216,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   71,
+								Line:   73,
 							},
 							File:   "date_fns.flux",
 							Source: "truncate:truncate",
 							Start: ast.Position{
 								Column: 3,
-								Line:   71,
+								Line:   73,
 							},
 						},
 					},
@@ -3146,13 +3232,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   71,
+									Line:   73,
 								},
 								File:   "date_fns.flux",
 								Source: "truncate",
 								Start: ast.Position{
 									Column: 3,
-									Line:   71,
+									Line:   73,
 								},
 							},
 						},
@@ -3164,13 +3250,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   71,
+									Line:   73,
 								},
 								File:   "date_fns.flux",
 								Source: "truncate",
 								Start: ast.Position{
 									Column: 12,
-									Line:   71,
+									Line:   73,
 								},
 							},
 						},
