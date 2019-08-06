@@ -2,6 +2,7 @@ package universe
 
 import "system"
 import "date"
+import "strings"
 
 // now is a function option whose default behaviour is to return the current system time
 option now = system.time
