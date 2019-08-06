@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
@@ -175,5 +176,17 @@ a = 1
 	}
 	if !cmp.Equal(got, want, asttest.IgnoreBaseNodeOptions...) {
 		t.Errorf("ParseSource unexpected package -want/+got:\n%s", cmp.Diff(want, got, asttest.IgnoreBaseNodeOptions...))
+	}
+}
+
+func TestParseTimeLiteral(t *testing.T) {
+	inputTime := "2018-01-01"
+	got, err := parser.ParseTime(inputTime)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	want := time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC)
+	if !cmp.Equal(got.Value, want, asttest.IgnoreBaseNodeOptions...) {
+		t.Errorf("ParseTimeLiteral failed: %s", cmp.Diff(want, got, asttest.IgnoreBaseNodeOptions...))
 	}
 }
