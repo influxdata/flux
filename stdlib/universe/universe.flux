@@ -291,6 +291,13 @@ truncateTimeColumn = (timeColumn="_time", unit, tables=<-) =>
     tables
         |> map(fn:(r) => ({r with _time: date.truncate(t: r._time, unit: unit)}))
 
+// AggregateMonths applies an aggregate function to calendar months.
+aggregateMonths = (fn, column="_value", tables=<-) =>
+    tables
+        |> map(fn: (r) => ({r with monthYear: strings.joinStr(arr: [strings.substring(v: string(v: date.year(t: r._time)*100 + date.month(t: r._time)), start: 0, end: 4), strings.substring(v: string(v: date.year(t: r._time)*100 + date.month(t: r._time)), start: 4, end: 6)], v: "-")}))
+        |> group(columns: ["_time", column], mode: "except")
+        |> fn(column:column)
+
 toString   = (tables=<-) => tables |> map(fn:(r) => ({r with _value: string(v:r._value)}))
 toInt      = (tables=<-) => tables |> map(fn:(r) => ({r with _value: int(v:r._value)}))
 toUInt     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._value)}))
