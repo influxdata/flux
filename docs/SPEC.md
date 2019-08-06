@@ -3685,31 +3685,39 @@ from(bucket: "telegraf/autogen")
 
 #### To
 
-The To operation takes data from a stream and writes it to a bucket.
-To has the following properties:
+The `to` operation takes data from a stream and writes it to a bucket.
+`to` has the following properties:
 
-| Name       | Type                  | Description                                                                                                                                                                                                                        |
-| ----       | ----                  | -----------                                                                                                                                                                                                                        |
-| bucket     | string                | Bucket is the bucket name into which data will be written.                                                                                                                                                                         |
-| bucketID   | string                | BucketID is the bucket ID into which data will be written.                                                                                                                                                                         |
-| org        | string                | Org is the organization name of the bucket.                                                                                                                                                                                        |
-| orgID      | string                | OrgID is the organization ID of the bucket.                                                                                                                                                                                        |
-| host       | string                | Host is the location of a remote host to write to. Defaults to `""`.                                                                                                                                                               |
-| token      | string                | Token is the authorization token to use when writing to a remote host. Defaults to `""`.                                                                                                                                           |
-| timeColumn | string                | TimeColumn is the name of the time column of the output.  Defaults to `"_time"`.                                                                                                                                                   |
-| tagColumns | []string              | TagColumns is a list of columns to be used as tags in the output. Defaults to all columns of type string, excluding all value columns and the `_field` column if present.                                                          |
-| fieldFn    | (r: record) -> record | Function that takes a record from the input table and returns an object. For each record from the input table `fieldFn` returns on object that maps output field key to output value. Default: `(r) => ({ [r._field]: r._value })` |
-
-TODO(nathanielc): The fieldFn is not valid and needs to change. It uses dynamic object keys which is not allowed.
+| Name              | Type           | Description                                                                                                                                                                                                                        |
+| ----              | ----           | -----------                                                                                                                                                                                                                        |
+| bucket            | string         | Bucket is the bucket name into which data will be written.                                                                                                                                                                         |
+| bucketID          | string         | BucketID is the bucket ID into which data will be written.                                                                                                                                                                         |
+| org               | string         | Org is the organization name of the bucket.                                                                                                                                                                                        |
+| orgID             | string         | OrgID is the organization ID of the bucket.                                                                                                                                                                                        |
+| host              | string         | Host is the location of a remote host to write to. Defaults to `""`.                                                                                                                                                               |
+| token             | string         | Token is the authorization token to use when writing to a remote host. Defaults to `""`.                                                                                                                                           |
+| measurementColumn | string         | MeasurementColumn is the measurement into which data will be written. Defaults to `"_measurement"`.                                                                                                                                |
+| fieldColumn       | string         | FieldColumn defines the column from which the field keys and values will be taken.  Defaults to `"_field"`.                                                                                                                                   |
+| timeColumn        | string         | TimeColumn is the name of the time column of the output.  Defaults to `"_time"`.                                                                                                                                                   |
+| valueColumn       | string         | ValueColumn is the name of the value column of the output.  Defaults to `"_value"`.                                                                                                                                                 |
 
 Either `bucket` or `bucketID` is required.
 Both are mutually exclusive.
 Similarly `org` and `orgID` are mutually exclusive and only required when writing to a remote host.
 Both `host` and `token` are optional parameters, however if `host` is specified, `token` is required.
 
-_NOTE_: make sure that `fieldFn`'s parameter names match the ones specified above (see [why](#Transformations)).
+By default `to` allows data produced by an InfluxDB source to be easily rewritten to a new bucket, like so:
+```
+from(bucket: "my-bucket") |> range(start: -1h) |> to(org: "my-org", bucket: "my-other-bucket")
+```
 
-For example, given the following table:
+The `_measurement`, `_field`, `_time` and `_value` columns will be used to describe the data that 
+is written to the destination bucket.
+The special columns `_start` and `_stop` will be ignored by `to`.
+Any other columns will be used as tag keys and tag values in the data written to the destination bucket.
+If a column that would be used for tag keys and values does not have type string, then an error will be returned.
+
+For example, given the following input table:
 
 | _time | _start | _stop | _measurement | _field | _value |
 | ----- | ------ | ----- | ------------ | ------ | ------ |
@@ -3720,25 +3728,33 @@ For example, given the following table:
 The default `to` operation `to(bucket:"my-bucket", org:"my-org")` is equivalent to writing the above data using the following line protocol:
 
 ```
-_measurement=a temp=100.1 0005
-_measurement=a temp=99.3 0006
-_measurement=a temp=99.9 0007
+a temp=100.1 0005
+a temp=99.3 0006
+a temp=99.9 0007
 ```
 
 For an example overriding `to`'s default settings, given the following table:
 
-| _time | _start | _stop | tag1 | tag2 | hum | temp |
-| ----- | ------ | ----- | ---- | ---- | ---- | ---- |
-| 0005  | 0000   | 0009  | "a"  | "b"  | 55.3 | 100.1  |
-| 0006  | 0000   | 0009  | "a"  | "b"  | 55.4 | 99.3   |
-| 0007  | 0000   | 0009  | "a"  | "b"  | 55.5 | 99.9   |
+| t     | _start | _stop | tag1 | tag2 | tag3 | fld   | temp  |
+| ----- | ------ | ----- | ---- | ---- | ---- | ----- | ----- |
+| 0005  | 0000   | 0009  | "a"  | "b"  | "c"  | tempf | 100.1 |
+| 0006  | 0000   | 0009  | "a"  | "b"  | "c"  | tempf | 99.3  |
+| 0007  | 0000   | 0009  | "a"  | "b"  | "c"  | tempf | 99.9  |
 
-The operation `to(bucket:"my-bucket", org:"my-org", tagColumns:["tag1"], fieldFn: (r) => return {"hum": r.hum, "temp": r.temp})` is equivalent to writing the above data using the following line protocol:
-
+Consider this call to `to`:
 ```
-_tag1=a hum=55.3,temp=100.1 0005
-_tag1=a hum=55.4,temp=99.3 0006
-_tag1=a hum=55.5,temp=99.9 0007
+to(bucket:"my-bucket", org:"my-org",
+    measurementColumn: "tag1",
+    fieldColumn: "fld",
+    timeColumn: "t",
+    valueColumn: "temp"
+)
+```
+This is equivalent to writing the above data using the following line protocol:
+```
+a,tag2=b,tag3=c tempf=100.1 0005
+a,tag2=b,tag3=c tempf=99.3 0006
+a,tag2=b,tag3=c tempf=99.9 0007
 ```
 
 **Note:** The `to` function produces side effects.
