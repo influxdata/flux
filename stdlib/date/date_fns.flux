@@ -7,6 +7,7 @@ builtin weekDay
 builtin monthDay
 builtin yearDay
 builtin month
+builtin year
 builtin week
 builtin quarter
 builtin millisecond
@@ -44,6 +45,7 @@ date = {
   monthDay:monthDay,
   yearDay:yearDay,
   month:month,
+  year:year,
   week:week,
   quarter:quarter,
   millisecond:millisecond,
