@@ -1671,6 +1671,27 @@ from(bucket: "telegraf/autogen")
   |> aggregateWindow(every: 1m, fn:mean)
 ```
 
+##### AggregateMonths
+
+AggregateMonths is a function that simplifies aggregating data over calendar months.
+AggregateMonths groups by calendar month, executes the aggregate operation on the given column, and then returns a table with a column with the month labels and
+the specified column after being passed through the aggregate function.
+
+AggregateMonths has the following properties:
+
+| Name        | Type                                            | Description                                                                                                                                     
+| ----        | ----                                            | -----------   
+| fn          | (tables: <-stream, columns: []string) -> stream)| Fn specifies the aggregate operation to perform. Any of the functions in this Aggregate section that accept a singular `column` parameter can be provided.
+| column      | string                                          | Column specifies the column to aggregate. Defaults to "`_value`".        
+
+Example:
+
+```
+// Compute the mean `count` over each calendar month:
+from(bucket: telegraf/autogen") 
+    |> aggregateMonths(fn: mean, column: "count")
+```
+
 ##### Covariance
 
 Covariance is an aggregate operation.
