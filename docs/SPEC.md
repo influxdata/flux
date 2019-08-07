@@ -1812,8 +1812,9 @@ from(bucket: "telegraf/autogen")
 
 ##### Mode
 
-Mode produces the mode for a given column. Null is considered as a potential mode if it is present. If there are multiple modes, all of them are returned in a table in sorted order. 
+Mode produces the mode for a given column. If there are multiple modes, all of them are returned in a table in sorted order. 
 If there is no mode, null is returned. The following data types are supported: string, float64, int64, uint64, bool, time.
+Mode only considers non-null values.
 
 Mode has the following properties: 
 
