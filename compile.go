@@ -88,12 +88,6 @@ var (
 	prelude = []string{
 		"universe",
 		"influxdata/influxdb",
-		"math",
-		"strings",
-		"regexp",
-		"date",
-		"json",
-		"http",
 	}
 	preludeScope = &scopeSet{
 		packages: make([]*interpreter.Package, len(prelude)),
@@ -429,9 +423,6 @@ func (t *TableObject) PolyType() semantic.PolyType {
 func (t *TableObject) Str() string {
 	panic(values.UnexpectedKind(semantic.Object, semantic.String))
 }
-func (t *TableObject) Bytes() []byte {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Bytes))
-}
 func (t *TableObject) Int() int64 {
 	panic(values.UnexpectedKind(semantic.Object, semantic.Int))
 }
@@ -596,9 +587,6 @@ func (f *function) IsNull() bool {
 }
 func (f *function) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
-}
-func (f *function) Bytes() []byte {
-	panic(values.UnexpectedKind(semantic.Function, semantic.Bytes))
 }
 func (f *function) Int() int64 {
 	panic(values.UnexpectedKind(semantic.Function, semantic.Int))
