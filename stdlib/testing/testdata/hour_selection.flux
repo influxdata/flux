@@ -33,5 +33,5 @@ t_hourSelection = (table=<-) =>
 		|> range(start: 2018-12-01T00:00:00Z)
 		|> hourSelection(start: 15, stop: 19, timeColumn: "_time"))
 
-test _mode = () =>
+test _hourSelection = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_hourSelection})
