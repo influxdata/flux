@@ -262,7 +262,7 @@ timedMovingAverage = (every, period, column="_value", tables=<-) =>
 // eg: A 5 point double exponential moving average would be called as such:
 // from(bucket: "telegraf/autogen"):
 //    |> range(start: -7d)
-//    |> tripleEMA(n: 5)
+//    |> doubleEMA(n: 5)
 doubleEMA = (n, tables=<-) =>
     tables
           |> exponentialMovingAverage(n:n)
