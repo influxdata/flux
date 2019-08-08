@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
+	pkgErrors "github.com/pkg/errors"
 )
 
 const (
@@ -122,7 +123,10 @@ func createToSQLTransformation(id execute.DatasetID, mode execute.AccumulationMo
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
-	t := NewToSQLTransformation(d, cache, s)
+	t, err := NewToSQLTransformation(d, cache, s)
+	if err != nil {
+		return nil, nil, err
+	}
 	return t, d, nil
 }
 
@@ -138,16 +142,16 @@ func (t *ToSQLTransformation) RetractTable(id execute.DatasetID, key flux.GroupK
 	return t.d.RetractTable(key)
 }
 
-func NewToSQLTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ToSQLProcedureSpec) *ToSQLTransformation {
+func NewToSQLTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ToSQLProcedureSpec) (*ToSQLTransformation, error) {
 	db, err := sql.Open(spec.Spec.DriverName, spec.Spec.DataSourceName)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	var tx *sql.Tx
 	if spec.Spec.DriverName != "sqlmock" {
 		tx, err = db.Begin()
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 	}
 	return &ToSQLTransformation{
@@ -156,7 +160,7 @@ func NewToSQLTransformation(d execute.Dataset, cache execute.TableBuilderCache, 
 		spec:  spec,
 		db:    db,
 		tx:    tx,
-	}
+	}, nil
 }
 
 type idxType struct {
@@ -174,6 +178,7 @@ func (t *ToSQLTransformation) Process(id execute.DatasetID, tbl flux.Table) (err
 			return nil
 		}
 	}
+
 	return err
 }
 
@@ -194,7 +199,10 @@ func (t *ToSQLTransformation) Finish(id execute.DatasetID, err error) {
 			txErr = t.tx.Rollback()
 		}
 		if txErr != nil {
-			panic(txErr)
+			err = pkgErrors.Wrap(err, txErr.Error())
+		}
+		if dbErr := t.db.Close(); dbErr != nil {
+			err = pkgErrors.Wrap(err, dbErr.Error())
 		}
 	}
 	t.d.Finish(err)
@@ -224,7 +232,12 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 				newSQLTableCols = append(newSQLTableCols, fmt.Sprintf("%s text", col.Label))
 			}
 		case flux.TTime:
-			newSQLTableCols = append(newSQLTableCols, fmt.Sprintf("%s DATETIME", col.Label))
+			switch t.spec.Spec.DriverName {
+			case "mysql":
+				newSQLTableCols = append(newSQLTableCols, fmt.Sprintf("%s DATETIME", col.Label))
+			case "postgres":
+				newSQLTableCols = append(newSQLTableCols, fmt.Sprintf("%s TIMESTAMP", col.Label))
+			}
 		case flux.TBool:
 			newSQLTableCols = append(newSQLTableCols, fmt.Sprintf("%s BOOL", col.Label))
 		default:
