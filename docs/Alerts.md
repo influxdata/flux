@@ -73,6 +73,28 @@ The functions should not have side effects.
 The `check` function will also use the option `checks.write` if it is defined.
 The function `checks.write` should take in the output tables as a single parameter and output the same tables.
 
+The `check` function is defined as:
+```
+check = (name, crit, warn, info, ok, messageFn, extraTags, tables=<-) => {
+
+    checkData = tables
+        |> set(extraTags)
+        |> map(fn: (r) => ... return {r with _name: name, _level: x} )
+
+    // write the check data to system bucket
+    checkData
+        |> write()
+
+    // write the messages to the system bucket
+    checkData
+        |> drop(columns: ["_field", "_value"])
+        |> map(fn: (r) => ( {r with _field: "message", _value: messageFn(r)} ))
+
+    return checkData
+        |> map(fn: (r) => ( {r with message: messageFn(r)} ))
+}
+```
+
 Example 1:
 
 ```
