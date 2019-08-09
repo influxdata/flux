@@ -27,11 +27,12 @@
     time = digit{2} ":" digit{2} ":" digit{2} ( "." digit* )? time_offset?;
     date_time_lit = date ( "T" time )?;
 
-    # todo(jsternberg): string expressions have to be included in the string literal.
-    escaped_char = "\\" ( "n" | "r" | "t" | "\\" | '"' );
-    unicode_value = (any_count_line - "\\") | escaped_char;
+    escaped_char = "\\" ( "n" | "r" | "t" | "\\" | '"' | "${" );
+    unicode_value = (any_count_line - [\\$]) | escaped_char;
     byte_value = "\\x" xdigit{2};
-    string_lit = '"' ( unicode_value | byte_value )* :> '"';
+    dollar_value = "$" ( any_count_line - "{" );
+    string_lit_char = ( unicode_value | byte_value | dollar_value );
+    string_lit = '"' string_lit_char* "$"? :> '"';
 
     regex_escaped_char = "\\" ( "/" | "\\");
     regex_unicode_value = (any_count_line - "/") | regex_escaped_char;
@@ -111,8 +112,16 @@
         "|>" => { tok = PIPE_FORWARD; fbreak; };
         "," => { tok = COMMA; fbreak; };
         "." => { tok = DOT; fbreak; };
+        '"' => { tok = QUOTE; fbreak; };
 
         whitespace+;
+    *|;
+
+    # This is the scanner used when parsing a string expression.
+    string_expr := |*
+        "${" => { tok = STRINGEXPR; fbreak; };
+        '"' => { tok = QUOTE; fbreak; };
+        string_lit_char+ => { tok = TEXT; fbreak; };
     *|;
 }%%
 
@@ -149,12 +158,18 @@ unsigned int pop(node_t **head) {
     return retval;
 }
 
-int scan(int with_regex, const char **pp, const char *data, const char *pe, const char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end, const unsigned int **newlines, unsigned int *newlines_len) {
+int scan(int mode, const char **pp, const char *data, const char *pe, const char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end, const unsigned int **newlines, unsigned int *newlines_len) {
     int cs;
-    if (with_regex) {
-        cs = flux_en_main_with_regex;
-    } else {
+    switch (mode) {
+    case 0:
         cs = flux_en_main;
+        break;
+    case 1:
+        cs = flux_en_main_with_regex;
+        break;
+    case 2:
+        cs = flux_en_string_expr;
+        break;
     }
     const char *p = *pp;
     int act;

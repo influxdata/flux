@@ -45,6 +45,7 @@ fn push_unescaped(s: &mut Vec<u8>, chars: &mut CharIndices) -> Result<(), String
             't' => s.push(b'\t'),
             '\\' => s.push(b'\\'),
             '"' => s.push(b'"'),
+            '$' => s.push(b'$'),
             'x' => {
                 let ch1 = match chars.next() {
                     Some((_, c)) => c,

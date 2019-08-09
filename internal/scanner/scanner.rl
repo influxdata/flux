@@ -25,11 +25,12 @@ import "github.com/influxdata/flux/internal/token"
     time = digit{2} ":" digit{2} ":" digit{2} ( "." digit* )? time_offset?;
     date_time_lit = date ( "T" time )?;
 
-    # todo(jsternberg): string expressions have to be included in the string literal.
-    escaped_char = "\\" ( "n" | "r" | "t" | "\\" | '"' );
-    unicode_value = (any_count_line - "\\") | escaped_char;
+    escaped_char = "\\" ( "n" | "r" | "t" | "\\" | '"' | "${" );
+    unicode_value = (any_count_line - [\\$]) | escaped_char;
     byte_value = "\\x" xdigit{2};
-    string_lit = '"' ( unicode_value | byte_value )* :> '"';
+    dollar_value = "$" ( any_count_line - "{" );
+    string_lit_char = ( unicode_value | byte_value | dollar_value );
+    string_lit = '"' string_lit_char* "$"? :> '"';
 
     regex_escaped_char = "\\" ( "/" | "\\");
     regex_unicode_value = (any_count_line - "/") | regex_escaped_char;
@@ -113,8 +114,16 @@ import "github.com/influxdata/flux/internal/token"
         "|>" => { s.token = token.PIPE_FORWARD; fbreak; };
         "," => { s.token = token.COMMA; fbreak; };
         "." => { s.token = token.DOT; fbreak; };
+        '"' => { s.token = token.QUOTE; fbreak; };
 
         whitespace+;
+    *|;
+
+    # This is the scanner used when parsing a string expression.
+    string_expr := |*
+        "${" => { s.token = token.STRINGEXPR; fbreak; };
+        '"' => { s.token = token.QUOTE; fbreak; };
+        string_lit_char+ => { s.token = token.TEXT; fbreak; };
     *|;
 }%%
 

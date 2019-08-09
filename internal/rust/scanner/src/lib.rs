@@ -53,12 +53,17 @@ impl Scanner {
 
     // scan produces the next token from the input.
     pub fn scan(&mut self) -> Token {
-        self._scan(false)
+        self._scan(0)
     }
 
     // scan_with_regex produces the next token from the input accounting for regex.
     pub fn scan_with_regex(&mut self) -> Token {
-        self._scan(true)
+        self._scan(1)
+    }
+
+    // scan_string_expr produces the next token from the input in a string expression.
+    pub fn scan_string_expr(&mut self) -> Token {
+        self._scan(2)
     }
 
     pub fn pos(&self, offset: u32) -> Position {
@@ -85,7 +90,7 @@ impl Scanner {
         }
     }
 
-    fn _scan(&mut self, with_regex: bool) -> Token {
+    fn _scan(&mut self, mode: i32) -> Token {
         if self.p == self.eof {
             return self.eof();
         }
@@ -94,7 +99,7 @@ impl Scanner {
             let mut newlines: *const u32 = std::ptr::null();
             let mut no_newlines = 0 as u32;
             let error = scan(
-                if with_regex { 1 } else { 0 },
+                mode,
                 &mut self.p as *mut *const CChar,
                 self.ps as *const CChar,
                 self.pe as *const CChar,
