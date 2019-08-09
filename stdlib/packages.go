@@ -5,6 +5,7 @@ package stdlib
 import (
 	_ "github.com/influxdata/flux/stdlib/csv"
 	_ "github.com/influxdata/flux/stdlib/date"
+	_ "github.com/influxdata/flux/stdlib/env"
 	_ "github.com/influxdata/flux/stdlib/generate"
 	_ "github.com/influxdata/flux/stdlib/http"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb"
