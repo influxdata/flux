@@ -63,10 +63,14 @@ The parser directly implements the following grammar.
     MemberBracketExpression        = "[" string "]" .
     CallExpression                 = "(" ParameterList ")" .
     IndexExpression                = "[" Expression "]" .
+    StringExpression               = "\"" [ StringExpressionPart ] "\"" .
+    StringExpressionPart           = text | StringExpressionBlock .
+    StringExpressionBlock          = "${" Expression "}" .
     PrimaryExpression              = identifer
                                    | int_lit
                                    | float_lit
                                    | string_lit
+                                   | StringExpression
                                    | regex_lit
                                    | duration_lit
                                    | pipe_receive_lit
