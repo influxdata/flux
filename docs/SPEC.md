@@ -468,9 +468,9 @@ Examples:
 
 #### Binary types
 
-A _binary type_ represents a base64 encoded sequence of bytes as defined in RFC 4648.
-The binary type name is `bytes`.
-The binary type is nullable.
+A _bytes type_ represents a sequence of byte values.
+The bytes type name is `bytes`.
+The bytes type is nullable.
 
 ##### String types
 
@@ -998,6 +998,7 @@ The following named types are built-in.
     time     // time
     string   // utf-8 encoded string
     regexp   // regular expression
+    bytes    // sequence of byte values
     type     // a type that itself describes a type
 
 
