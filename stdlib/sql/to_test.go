@@ -279,7 +279,11 @@ func TestToSQL_Process(t *testing.T) {
 			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
 			c.SetTriggerSpec(plan.DefaultTriggerSpec)
 
-			transformation := fsql.NewToSQLTransformation(d, c, tc.spec)
+			transformation, err := fsql.NewToSQLTransformation(d, c, tc.spec)
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			a := tc.data
 			colNames, valStrings, valArgs, err := fsql.CreateInsertComponents(transformation, a)
 			if err != nil {
