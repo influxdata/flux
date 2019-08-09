@@ -1,0 +1,11 @@
+version: "3.7"
+
+services:
+  flux:
+    build:
+      context: .
+      target: dev
+    entrypoint: /bin/echo
+    command: You should run this with 'make dshell'
+    volumes:
+      - ./:/home/builder/go/src/github.com/influxdata/flux

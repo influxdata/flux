@@ -1,1 +1,13 @@
-*
+bin
+vendor
+/dist
+.netrc
+.vscode
+.vs
+.tern-project
+/coverage.txt
+/internal/rust/*/target/
+/internal/rust/parser/pkg
+/internal/rust/site/node_modules
+/internal/rust/.cache
+flux

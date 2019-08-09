@@ -17,6 +17,7 @@ GO_ARGS=-tags '$(GO_TAGS)'
 
 # Test vars can be used by all recursive Makefiles
 export GOOS=$(shell go env GOOS)
+export GO_DEPS=env GO111MODULE=on go get
 export GO_BUILD=env GO111MODULE=on go build $(GO_ARGS)
 export GO_TEST=env GO111MODULE=on go test $(GO_ARGS)
 export GO_TEST_FLAGS=
@@ -77,6 +78,19 @@ bench:
 release:
 	./release.sh
 
+deps:
+	$(GO_DEPS)
+
+depsfix:
+	go get github.com/dave/jennifer/jen
+	go get github.com/spf13/cobra
+	go get github.com/pkg/errors
+
+flux:
+	$(GO_BUILD) -o $@ ./cmd/flux
+
+dshell:
+	@docker-compose run --rm --entrypoint=bash flux
 
 
 .PHONY: generate \
@@ -93,5 +107,9 @@ release:
 	bench \
 	checkfmt \
 	release \
+	dshell \
+	deps \
+	depsfix \
 	$(SUBDIRS)
+
 
