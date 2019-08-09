@@ -59,9 +59,14 @@ enum T {
     PIPE_FORWARD                  = 49,
     PIPE_RECEIVE                  = 50,
     EXISTS                        = 51,
+
+    // String expression tokens->
+    QUOTE                         = 52,
+    STRINGEXPR                    = 53,
+    TEXT                          = 54,
 };
 
 #define WASM_EXPORT __attribute__ ((visibility("default")))
 
 // Scan reads the input and reports the next lexical token. Returns the execution state.
-WASM_EXPORT int scan(int with_regex, const char **p, const char *data, const char *pe, const char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end, const unsigned int **newlines, unsigned int *newlines_len);
+WASM_EXPORT int scan(int mode, const char **p, const char *data, const char *pe, const char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end, const unsigned int **newlines, unsigned int *newlines_len);

@@ -55,6 +55,11 @@ func (s *Scanner) Scan() (pos token.Pos, tok token.Token, lit string) {
 	return s.scan(flux_en_main)
 }
 
+// ScanStringExpr will scan the next token in a string expression context.
+func (s *Scanner) ScanStringExpr() (pos token.Pos, tok token.Token, lit string) {
+	return s.scan(flux_en_string_expr)
+}
+
 // Unread will reset the Scanner to go back to the Scanner's location
 // before the last ScanWithRegex or Scan call. If either of the ScanWithRegex methods
 // returned an EOF token, a call to Unread will not unread the discarded whitespace.

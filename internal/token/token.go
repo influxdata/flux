@@ -62,6 +62,11 @@ const (
 	PIPE_FORWARD
 	PIPE_RECEIVE
 	EXISTS
+
+	// String expression tokens.
+	QUOTE
+	STRINGEXPR
+	TEXT
 )
 
 func (t Token) String() string {

@@ -120,6 +120,8 @@ func writeNextUnescapedRune(s string, builder *strings.Builder) (width int, err 
 			r = '\\'
 		case '"':
 			r = '"'
+		case '$':
+			r = '$'
 		case 'x':
 			// Decode two hex chars as a single byte
 			if len(s[width:]) < 2 {

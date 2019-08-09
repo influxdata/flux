@@ -5221,15 +5221,16 @@ carriage return \r
 horizontal tab \t
 double quote \"
 backslash \\
+dollar sign and left brace \${
 "`,
 			want: &ast.File{
-				BaseNode: base("1:1", "6:2"),
+				BaseNode: base("1:1", "7:2"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
-						BaseNode: base("1:1", "6:2"),
+						BaseNode: base("1:1", "7:2"),
 						Expression: &ast.StringLiteral{
-							BaseNode: base("1:1", "6:2"),
-							Value:    "newline \n\ncarriage return \r\nhorizontal tab \t\ndouble quote \"\nbackslash \\\n",
+							BaseNode: base("1:1", "7:2"),
+							Value:    "newline \n\ncarriage return \r\nhorizontal tab \t\ndouble quote \"\nbackslash \\\ndollar sign and left brace ${\n",
 						},
 					},
 				},
