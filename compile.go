@@ -138,6 +138,9 @@ func (s *scopeSet) Range(f func(k string, v values.Value)) {
 
 func (s *scopeSet) LocalRange(f func(k string, v values.Value)) {
 	for _, pkg := range s.packages {
+		if pkg == nil {
+			panic(`nil package in scope; try importing "github.com/influxdata/flux/builtin"`)
+		}
 		pkg.Range(f)
 	}
 }
