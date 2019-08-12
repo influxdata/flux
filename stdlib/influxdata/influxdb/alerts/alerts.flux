@@ -1,9 +1,25 @@
 package alerts
 
-builtin check
+import "influxdata/influxdb/v1"
 
-write = (tables=<-) => tables |> to(bucket: "system")
+bucket = "_monitoring"
 
-from = () => from(bucket: "system")
+// Write persists the check statuses
+write = (tables=<-) => tables |> to(bucket: bucket)
 
-log = (tables=<-) => tables |> to(bucket: "notifications")
+// From retrieves the check statuses that have been stored.
+statuses = (start, stop=now(), fn) =>
+    from(bucket: bucket)
+        |> range(start: start, stop: stop)
+        |> filter(fn: fn)
+        |> v1.fieldsAsCols()
+
+// Log records notification events
+log = (tables=<-) => tables |> to(bucket: bucket)
+
+// Logs retrieves notification events that have been logged.
+logs = (start, stop=now(), fn) =>
+    from(bucket: bucket)
+        |> range(start: start, stop: stop)
+        |> filter(fn: fn)
+        |> v1.fieldsAsCols()

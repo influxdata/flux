@@ -21,30 +21,30 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 59,
-					Line:   9,
+					Column: 29,
+					Line:   25,
 				},
 				File:   "alerts.flux",
-				Source: "package alerts\n\nbuiltin check\n\nwrite = (tables=<-) => tables |> to(bucket: \"system\")\n\nfrom = () => from(bucket: \"system\")\n\nlog = (tables=<-) => tables |> to(bucket: \"notifications\")",
+				Source: "package alerts\n\nimport \"influxdata/influxdb/v1\"\n\nbucket = \"_monitoring\"\n\n// Write persists the check statuses\nwrite = (tables=<-) => tables |> to(bucket: bucket)\n\n// From retrieves the check statuses that have been stored.\nstatuses = (start, stop=now(), fn) =>\n    from(bucket: bucket)\n        |> range(start: start, stop: stop)\n        |> filter(fn: fn)\n        |> v1.fieldsAsCols()\n\n// Log records notification events\nlog = (tables=<-) => tables |> to(bucket: bucket)\n\n// Logs retrieves notification events that have been logged.\nlogs = (start, stop=now(), fn) =>\n    from(bucket: bucket)\n        |> range(start: start, stop: stop)\n        |> filter(fn: fn)\n        |> v1.fieldsAsCols()",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
 				},
 			},
 		},
-		Body: []ast.Statement{&ast.BuiltinStatement{
+		Body: []ast.Statement{&ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 14,
-						Line:   3,
+						Column: 23,
+						Line:   5,
 					},
 					File:   "alerts.flux",
-					Source: "builtin check",
+					Source: "bucket = \"_monitoring\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   5,
 					},
 				},
 			},
@@ -53,32 +53,50 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 14,
-							Line:   3,
+							Column: 7,
+							Line:   5,
 						},
 						File:   "alerts.flux",
-						Source: "check",
+						Source: "bucket",
 						Start: ast.Position{
-							Column: 9,
-							Line:   3,
+							Column: 1,
+							Line:   5,
 						},
 					},
 				},
-				Name: "check",
+				Name: "bucket",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 23,
+							Line:   5,
+						},
+						File:   "alerts.flux",
+						Source: "\"_monitoring\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   5,
+						},
+					},
+				},
+				Value: "_monitoring",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 54,
-						Line:   5,
+						Column: 52,
+						Line:   8,
 					},
 					File:   "alerts.flux",
-					Source: "write = (tables=<-) => tables |> to(bucket: \"system\")",
+					Source: "write = (tables=<-) => tables |> to(bucket: bucket)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   8,
 					},
 				},
 			},
@@ -88,13 +106,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   5,
+							Line:   8,
 						},
 						File:   "alerts.flux",
 						Source: "write",
 						Start: ast.Position{
 							Column: 1,
-							Line:   5,
+							Line:   8,
 						},
 					},
 				},
@@ -105,14 +123,14 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 54,
-							Line:   5,
+							Column: 52,
+							Line:   8,
 						},
 						File:   "alerts.flux",
-						Source: "(tables=<-) => tables |> to(bucket: \"system\")",
+						Source: "(tables=<-) => tables |> to(bucket: bucket)",
 						Start: ast.Position{
 							Column: 9,
-							Line:   5,
+							Line:   8,
 						},
 					},
 				},
@@ -123,13 +141,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   5,
+									Line:   8,
 								},
 								File:   "alerts.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 24,
-									Line:   5,
+									Line:   8,
 								},
 							},
 						},
@@ -139,14 +157,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 54,
-								Line:   5,
+								Column: 52,
+								Line:   8,
 							},
 							File:   "alerts.flux",
-							Source: "tables |> to(bucket: \"system\")",
+							Source: "tables |> to(bucket: bucket)",
 							Start: ast.Position{
 								Column: 24,
-								Line:   5,
+								Line:   8,
 							},
 						},
 					},
@@ -156,14 +174,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 53,
-										Line:   5,
+										Column: 51,
+										Line:   8,
 									},
 									File:   "alerts.flux",
-									Source: "bucket: \"system\"",
+									Source: "bucket: bucket",
 									Start: ast.Position{
 										Column: 37,
-										Line:   5,
+										Line:   8,
 									},
 								},
 							},
@@ -172,14 +190,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 53,
-											Line:   5,
+											Column: 51,
+											Line:   8,
 										},
 										File:   "alerts.flux",
-										Source: "bucket: \"system\"",
+										Source: "bucket: bucket",
 										Start: ast.Position{
 											Column: 37,
-											Line:   5,
+											Line:   8,
 										},
 									},
 								},
@@ -189,35 +207,35 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   5,
+												Line:   8,
 											},
 											File:   "alerts.flux",
 											Source: "bucket",
 											Start: ast.Position{
 												Column: 37,
-												Line:   5,
+												Line:   8,
 											},
 										},
 									},
 									Name: "bucket",
 								},
-								Value: &ast.StringLiteral{
+								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 53,
-												Line:   5,
+												Column: 51,
+												Line:   8,
 											},
 											File:   "alerts.flux",
-											Source: "\"system\"",
+											Source: "bucket",
 											Start: ast.Position{
 												Column: 45,
-												Line:   5,
+												Line:   8,
 											},
 										},
 									},
-									Value: "system",
+									Name: "bucket",
 								},
 							}},
 							With: nil,
@@ -226,14 +244,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 54,
-									Line:   5,
+									Column: 52,
+									Line:   8,
 								},
 								File:   "alerts.flux",
-								Source: "to(bucket: \"system\")",
+								Source: "to(bucket: bucket)",
 								Start: ast.Position{
 									Column: 34,
-									Line:   5,
+									Line:   8,
 								},
 							},
 						},
@@ -243,13 +261,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 36,
-										Line:   5,
+										Line:   8,
 									},
 									File:   "alerts.flux",
 									Source: "to",
 									Start: ast.Position{
 										Column: 34,
-										Line:   5,
+										Line:   8,
 									},
 								},
 							},
@@ -263,13 +281,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   5,
+								Line:   8,
 							},
 							File:   "alerts.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 10,
-								Line:   5,
+								Line:   8,
 							},
 						},
 					},
@@ -279,13 +297,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   5,
+									Line:   8,
 								},
 								File:   "alerts.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 10,
-									Line:   5,
+									Line:   8,
 								},
 							},
 						},
@@ -296,13 +314,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   5,
+								Line:   8,
 							},
 							File:   "alerts.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 17,
-								Line:   5,
+								Line:   8,
 							},
 						},
 					}},
@@ -313,14 +331,14 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 36,
-						Line:   7,
+						Column: 29,
+						Line:   15,
 					},
 					File:   "alerts.flux",
-					Source: "from = () => from(bucket: \"system\")",
+					Source: "statuses = (start, stop=now(), fn) =>\n    from(bucket: bucket)\n        |> range(start: start, stop: stop)\n        |> filter(fn: fn)\n        |> v1.fieldsAsCols()",
 					Start: ast.Position{
 						Column: 1,
-						Line:   7,
+						Line:   11,
 					},
 				},
 			},
@@ -329,156 +347,682 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 5,
-							Line:   7,
+							Column: 9,
+							Line:   11,
 						},
 						File:   "alerts.flux",
-						Source: "from",
+						Source: "statuses",
 						Start: ast.Position{
 							Column: 1,
-							Line:   7,
+							Line:   11,
 						},
 					},
 				},
-				Name: "from",
+				Name: "statuses",
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 36,
-							Line:   7,
+							Column: 29,
+							Line:   15,
 						},
 						File:   "alerts.flux",
-						Source: "() => from(bucket: \"system\")",
+						Source: "(start, stop=now(), fn) =>\n    from(bucket: bucket)\n        |> range(start: start, stop: stop)\n        |> filter(fn: fn)\n        |> v1.fieldsAsCols()",
 						Start: ast.Position{
-							Column: 8,
-							Line:   7,
+							Column: 12,
+							Line:   11,
 						},
 					},
 				},
-				Body: &ast.CallExpression{
-					Arguments: []ast.Expression{&ast.ObjectExpression{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 35,
-									Line:   7,
-								},
-								File:   "alerts.flux",
-								Source: "bucket: \"system\"",
-								Start: ast.Position{
-									Column: 19,
-									Line:   7,
-								},
-							},
-						},
-						Properties: []*ast.Property{&ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 35,
-										Line:   7,
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 24,
+												Line:   12,
+											},
+											File:   "alerts.flux",
+											Source: "bucket: bucket",
+											Start: ast.Position{
+												Column: 10,
+												Line:   12,
+											},
+										},
 									},
-									File:   "alerts.flux",
-									Source: "bucket: \"system\"",
-									Start: ast.Position{
-										Column: 19,
-										Line:   7,
-									},
-								},
-							},
-							Key: &ast.Identifier{
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 24,
+													Line:   12,
+												},
+												File:   "alerts.flux",
+												Source: "bucket: bucket",
+												Start: ast.Position{
+													Column: 10,
+													Line:   12,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 16,
+														Line:   12,
+													},
+													File:   "alerts.flux",
+													Source: "bucket",
+													Start: ast.Position{
+														Column: 10,
+														Line:   12,
+													},
+												},
+											},
+											Name: "bucket",
+										},
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 24,
+														Line:   12,
+													},
+													File:   "alerts.flux",
+													Source: "bucket",
+													Start: ast.Position{
+														Column: 18,
+														Line:   12,
+													},
+												},
+											},
+											Name: "bucket",
+										},
+									}},
+									With: nil,
+								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   7,
+											Line:   12,
 										},
 										File:   "alerts.flux",
-										Source: "bucket",
+										Source: "from(bucket: bucket)",
 										Start: ast.Position{
-											Column: 19,
-											Line:   7,
+											Column: 5,
+											Line:   12,
 										},
 									},
 								},
-								Name: "bucket",
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   12,
+											},
+											File:   "alerts.flux",
+											Source: "from",
+											Start: ast.Position{
+												Column: 5,
+												Line:   12,
+											},
+										},
+									},
+									Name: "from",
+								},
 							},
-							Value: &ast.StringLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 43,
+										Line:   13,
+									},
+									File:   "alerts.flux",
+									Source: "from(bucket: bucket)\n        |> range(start: start, stop: stop)",
+									Start: ast.Position{
+										Column: 5,
+										Line:   12,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 42,
+												Line:   13,
+											},
+											File:   "alerts.flux",
+											Source: "start: start, stop: stop",
+											Start: ast.Position{
+												Column: 18,
+												Line:   13,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   13,
+												},
+												File:   "alerts.flux",
+												Source: "start: start",
+												Start: ast.Position{
+													Column: 18,
+													Line:   13,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 23,
+														Line:   13,
+													},
+													File:   "alerts.flux",
+													Source: "start",
+													Start: ast.Position{
+														Column: 18,
+														Line:   13,
+													},
+												},
+											},
+											Name: "start",
+										},
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   13,
+													},
+													File:   "alerts.flux",
+													Source: "start",
+													Start: ast.Position{
+														Column: 25,
+														Line:   13,
+													},
+												},
+											},
+											Name: "start",
+										},
+									}, &ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   13,
+												},
+												File:   "alerts.flux",
+												Source: "stop: stop",
+												Start: ast.Position{
+													Column: 32,
+													Line:   13,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 36,
+														Line:   13,
+													},
+													File:   "alerts.flux",
+													Source: "stop",
+													Start: ast.Position{
+														Column: 32,
+														Line:   13,
+													},
+												},
+											},
+											Name: "stop",
+										},
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   13,
+													},
+													File:   "alerts.flux",
+													Source: "stop",
+													Start: ast.Position{
+														Column: 38,
+														Line:   13,
+													},
+												},
+											},
+											Name: "stop",
+										},
+									}},
+									With: nil,
+								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 35,
-											Line:   7,
+											Column: 43,
+											Line:   13,
 										},
 										File:   "alerts.flux",
-										Source: "\"system\"",
+										Source: "range(start: start, stop: stop)",
 										Start: ast.Position{
-											Column: 27,
-											Line:   7,
+											Column: 12,
+											Line:   13,
 										},
 									},
 								},
-								Value: "system",
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 17,
+												Line:   13,
+											},
+											File:   "alerts.flux",
+											Source: "range",
+											Start: ast.Position{
+												Column: 12,
+												Line:   13,
+											},
+										},
+									},
+									Name: "range",
+								},
 							},
-						}},
-						With: nil,
-					}},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 26,
+									Line:   14,
+								},
+								File:   "alerts.flux",
+								Source: "from(bucket: bucket)\n        |> range(start: start, stop: stop)\n        |> filter(fn: fn)",
+								Start: ast.Position{
+									Column: 5,
+									Line:   12,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   14,
+										},
+										File:   "alerts.flux",
+										Source: "fn: fn",
+										Start: ast.Position{
+											Column: 19,
+											Line:   14,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 25,
+												Line:   14,
+											},
+											File:   "alerts.flux",
+											Source: "fn: fn",
+											Start: ast.Position{
+												Column: 19,
+												Line:   14,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 21,
+													Line:   14,
+												},
+												File:   "alerts.flux",
+												Source: "fn",
+												Start: ast.Position{
+													Column: 19,
+													Line:   14,
+												},
+											},
+										},
+										Name: "fn",
+									},
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 25,
+													Line:   14,
+												},
+												File:   "alerts.flux",
+												Source: "fn",
+												Start: ast.Position{
+													Column: 23,
+													Line:   14,
+												},
+											},
+										},
+										Name: "fn",
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 26,
+										Line:   14,
+									},
+									File:   "alerts.flux",
+									Source: "filter(fn: fn)",
+									Start: ast.Position{
+										Column: 12,
+										Line:   14,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 18,
+											Line:   14,
+										},
+										File:   "alerts.flux",
+										Source: "filter",
+										Start: ast.Position{
+											Column: 12,
+											Line:   14,
+										},
+									},
+								},
+								Name: "filter",
+							},
+						},
+					},
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 36,
-								Line:   7,
+								Column: 29,
+								Line:   15,
 							},
 							File:   "alerts.flux",
-							Source: "from(bucket: \"system\")",
+							Source: "from(bucket: bucket)\n        |> range(start: start, stop: stop)\n        |> filter(fn: fn)\n        |> v1.fieldsAsCols()",
 							Start: ast.Position{
-								Column: 14,
-								Line:   7,
+								Column: 5,
+								Line:   12,
 							},
 						},
 					},
-					Callee: &ast.Identifier{
+					Call: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 29,
+									Line:   15,
+								},
+								File:   "alerts.flux",
+								Source: "v1.fieldsAsCols()",
+								Start: ast.Position{
+									Column: 12,
+									Line:   15,
+								},
+							},
+						},
+						Callee: &ast.MemberExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 27,
+										Line:   15,
+									},
+									File:   "alerts.flux",
+									Source: "v1.fieldsAsCols",
+									Start: ast.Position{
+										Column: 12,
+										Line:   15,
+									},
+								},
+							},
+							Object: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 14,
+											Line:   15,
+										},
+										File:   "alerts.flux",
+										Source: "v1",
+										Start: ast.Position{
+											Column: 12,
+											Line:   15,
+										},
+									},
+								},
+								Name: "v1",
+							},
+							Property: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 27,
+											Line:   15,
+										},
+										File:   "alerts.flux",
+										Source: "fieldsAsCols",
+										Start: ast.Position{
+											Column: 15,
+											Line:   15,
+										},
+									},
+								},
+								Name: "fieldsAsCols",
+							},
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 18,
+								Line:   11,
+							},
+							File:   "alerts.flux",
+							Source: "start",
+							Start: ast.Position{
+								Column: 13,
+								Line:   11,
+							},
+						},
+					},
+					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   7,
+									Line:   11,
 								},
 								File:   "alerts.flux",
-								Source: "from",
+								Source: "start",
 								Start: ast.Position{
-									Column: 14,
-									Line:   7,
+									Column: 13,
+									Line:   11,
 								},
 							},
 						},
-						Name: "from",
+						Name: "start",
 					},
-				},
-				Params: nil,
+					Value: nil,
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 30,
+								Line:   11,
+							},
+							File:   "alerts.flux",
+							Source: "stop=now()",
+							Start: ast.Position{
+								Column: 20,
+								Line:   11,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 24,
+									Line:   11,
+								},
+								File:   "alerts.flux",
+								Source: "stop",
+								Start: ast.Position{
+									Column: 20,
+									Line:   11,
+								},
+							},
+						},
+						Name: "stop",
+					},
+					Value: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 30,
+									Line:   11,
+								},
+								File:   "alerts.flux",
+								Source: "now()",
+								Start: ast.Position{
+									Column: 25,
+									Line:   11,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 28,
+										Line:   11,
+									},
+									File:   "alerts.flux",
+									Source: "now",
+									Start: ast.Position{
+										Column: 25,
+										Line:   11,
+									},
+								},
+							},
+							Name: "now",
+						},
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 34,
+								Line:   11,
+							},
+							File:   "alerts.flux",
+							Source: "fn",
+							Start: ast.Position{
+								Column: 32,
+								Line:   11,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 34,
+									Line:   11,
+								},
+								File:   "alerts.flux",
+								Source: "fn",
+								Start: ast.Position{
+									Column: 32,
+									Line:   11,
+								},
+							},
+						},
+						Name: "fn",
+					},
+					Value: nil,
+				}},
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 59,
-						Line:   9,
+						Column: 50,
+						Line:   18,
 					},
 					File:   "alerts.flux",
-					Source: "log = (tables=<-) => tables |> to(bucket: \"notifications\")",
+					Source: "log = (tables=<-) => tables |> to(bucket: bucket)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   9,
+						Line:   18,
 					},
 				},
 			},
@@ -488,13 +1032,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 4,
-							Line:   9,
+							Line:   18,
 						},
 						File:   "alerts.flux",
 						Source: "log",
 						Start: ast.Position{
 							Column: 1,
-							Line:   9,
+							Line:   18,
 						},
 					},
 				},
@@ -505,14 +1049,14 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 59,
-							Line:   9,
+							Column: 50,
+							Line:   18,
 						},
 						File:   "alerts.flux",
-						Source: "(tables=<-) => tables |> to(bucket: \"notifications\")",
+						Source: "(tables=<-) => tables |> to(bucket: bucket)",
 						Start: ast.Position{
 							Column: 7,
-							Line:   9,
+							Line:   18,
 						},
 					},
 				},
@@ -523,13 +1067,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
-									Line:   9,
+									Line:   18,
 								},
 								File:   "alerts.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 22,
-									Line:   9,
+									Line:   18,
 								},
 							},
 						},
@@ -539,14 +1083,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 59,
-								Line:   9,
+								Column: 50,
+								Line:   18,
 							},
 							File:   "alerts.flux",
-							Source: "tables |> to(bucket: \"notifications\")",
+							Source: "tables |> to(bucket: bucket)",
 							Start: ast.Position{
 								Column: 22,
-								Line:   9,
+								Line:   18,
 							},
 						},
 					},
@@ -556,14 +1100,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 58,
-										Line:   9,
+										Column: 49,
+										Line:   18,
 									},
 									File:   "alerts.flux",
-									Source: "bucket: \"notifications\"",
+									Source: "bucket: bucket",
 									Start: ast.Position{
 										Column: 35,
-										Line:   9,
+										Line:   18,
 									},
 								},
 							},
@@ -572,14 +1116,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 58,
-											Line:   9,
+											Column: 49,
+											Line:   18,
 										},
 										File:   "alerts.flux",
-										Source: "bucket: \"notifications\"",
+										Source: "bucket: bucket",
 										Start: ast.Position{
 											Column: 35,
-											Line:   9,
+											Line:   18,
 										},
 									},
 								},
@@ -589,35 +1133,35 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 41,
-												Line:   9,
+												Line:   18,
 											},
 											File:   "alerts.flux",
 											Source: "bucket",
 											Start: ast.Position{
 												Column: 35,
-												Line:   9,
+												Line:   18,
 											},
 										},
 									},
 									Name: "bucket",
 								},
-								Value: &ast.StringLiteral{
+								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 58,
-												Line:   9,
+												Column: 49,
+												Line:   18,
 											},
 											File:   "alerts.flux",
-											Source: "\"notifications\"",
+											Source: "bucket",
 											Start: ast.Position{
 												Column: 43,
-												Line:   9,
+												Line:   18,
 											},
 										},
 									},
-									Value: "notifications",
+									Name: "bucket",
 								},
 							}},
 							With: nil,
@@ -626,14 +1170,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 59,
-									Line:   9,
+									Column: 50,
+									Line:   18,
 								},
 								File:   "alerts.flux",
-								Source: "to(bucket: \"notifications\")",
+								Source: "to(bucket: bucket)",
 								Start: ast.Position{
 									Column: 32,
-									Line:   9,
+									Line:   18,
 								},
 							},
 						},
@@ -643,13 +1187,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 34,
-										Line:   9,
+										Line:   18,
 									},
 									File:   "alerts.flux",
 									Source: "to",
 									Start: ast.Position{
 										Column: 32,
-										Line:   9,
+										Line:   18,
 									},
 								},
 							},
@@ -663,13 +1207,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 17,
-								Line:   9,
+								Line:   18,
 							},
 							File:   "alerts.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 8,
-								Line:   9,
+								Line:   18,
 							},
 						},
 					},
@@ -679,13 +1223,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   9,
+									Line:   18,
 								},
 								File:   "alerts.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 8,
-									Line:   9,
+									Line:   18,
 								},
 							},
 						},
@@ -696,21 +1240,740 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 17,
-								Line:   9,
+								Line:   18,
 							},
 							File:   "alerts.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 15,
-								Line:   9,
+								Line:   18,
 							},
 						},
 					}},
 				}},
 			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 29,
+						Line:   25,
+					},
+					File:   "alerts.flux",
+					Source: "logs = (start, stop=now(), fn) =>\n    from(bucket: bucket)\n        |> range(start: start, stop: stop)\n        |> filter(fn: fn)\n        |> v1.fieldsAsCols()",
+					Start: ast.Position{
+						Column: 1,
+						Line:   21,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 5,
+							Line:   21,
+						},
+						File:   "alerts.flux",
+						Source: "logs",
+						Start: ast.Position{
+							Column: 1,
+							Line:   21,
+						},
+					},
+				},
+				Name: "logs",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 29,
+							Line:   25,
+						},
+						File:   "alerts.flux",
+						Source: "(start, stop=now(), fn) =>\n    from(bucket: bucket)\n        |> range(start: start, stop: stop)\n        |> filter(fn: fn)\n        |> v1.fieldsAsCols()",
+						Start: ast.Position{
+							Column: 8,
+							Line:   21,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 24,
+												Line:   22,
+											},
+											File:   "alerts.flux",
+											Source: "bucket: bucket",
+											Start: ast.Position{
+												Column: 10,
+												Line:   22,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 24,
+													Line:   22,
+												},
+												File:   "alerts.flux",
+												Source: "bucket: bucket",
+												Start: ast.Position{
+													Column: 10,
+													Line:   22,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 16,
+														Line:   22,
+													},
+													File:   "alerts.flux",
+													Source: "bucket",
+													Start: ast.Position{
+														Column: 10,
+														Line:   22,
+													},
+												},
+											},
+											Name: "bucket",
+										},
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 24,
+														Line:   22,
+													},
+													File:   "alerts.flux",
+													Source: "bucket",
+													Start: ast.Position{
+														Column: 18,
+														Line:   22,
+													},
+												},
+											},
+											Name: "bucket",
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   22,
+										},
+										File:   "alerts.flux",
+										Source: "from(bucket: bucket)",
+										Start: ast.Position{
+											Column: 5,
+											Line:   22,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   22,
+											},
+											File:   "alerts.flux",
+											Source: "from",
+											Start: ast.Position{
+												Column: 5,
+												Line:   22,
+											},
+										},
+									},
+									Name: "from",
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 43,
+										Line:   23,
+									},
+									File:   "alerts.flux",
+									Source: "from(bucket: bucket)\n        |> range(start: start, stop: stop)",
+									Start: ast.Position{
+										Column: 5,
+										Line:   22,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 42,
+												Line:   23,
+											},
+											File:   "alerts.flux",
+											Source: "start: start, stop: stop",
+											Start: ast.Position{
+												Column: 18,
+												Line:   23,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   23,
+												},
+												File:   "alerts.flux",
+												Source: "start: start",
+												Start: ast.Position{
+													Column: 18,
+													Line:   23,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 23,
+														Line:   23,
+													},
+													File:   "alerts.flux",
+													Source: "start",
+													Start: ast.Position{
+														Column: 18,
+														Line:   23,
+													},
+												},
+											},
+											Name: "start",
+										},
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   23,
+													},
+													File:   "alerts.flux",
+													Source: "start",
+													Start: ast.Position{
+														Column: 25,
+														Line:   23,
+													},
+												},
+											},
+											Name: "start",
+										},
+									}, &ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   23,
+												},
+												File:   "alerts.flux",
+												Source: "stop: stop",
+												Start: ast.Position{
+													Column: 32,
+													Line:   23,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 36,
+														Line:   23,
+													},
+													File:   "alerts.flux",
+													Source: "stop",
+													Start: ast.Position{
+														Column: 32,
+														Line:   23,
+													},
+												},
+											},
+											Name: "stop",
+										},
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   23,
+													},
+													File:   "alerts.flux",
+													Source: "stop",
+													Start: ast.Position{
+														Column: 38,
+														Line:   23,
+													},
+												},
+											},
+											Name: "stop",
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 43,
+											Line:   23,
+										},
+										File:   "alerts.flux",
+										Source: "range(start: start, stop: stop)",
+										Start: ast.Position{
+											Column: 12,
+											Line:   23,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 17,
+												Line:   23,
+											},
+											File:   "alerts.flux",
+											Source: "range",
+											Start: ast.Position{
+												Column: 12,
+												Line:   23,
+											},
+										},
+									},
+									Name: "range",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 26,
+									Line:   24,
+								},
+								File:   "alerts.flux",
+								Source: "from(bucket: bucket)\n        |> range(start: start, stop: stop)\n        |> filter(fn: fn)",
+								Start: ast.Position{
+									Column: 5,
+									Line:   22,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   24,
+										},
+										File:   "alerts.flux",
+										Source: "fn: fn",
+										Start: ast.Position{
+											Column: 19,
+											Line:   24,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 25,
+												Line:   24,
+											},
+											File:   "alerts.flux",
+											Source: "fn: fn",
+											Start: ast.Position{
+												Column: 19,
+												Line:   24,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 21,
+													Line:   24,
+												},
+												File:   "alerts.flux",
+												Source: "fn",
+												Start: ast.Position{
+													Column: 19,
+													Line:   24,
+												},
+											},
+										},
+										Name: "fn",
+									},
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 25,
+													Line:   24,
+												},
+												File:   "alerts.flux",
+												Source: "fn",
+												Start: ast.Position{
+													Column: 23,
+													Line:   24,
+												},
+											},
+										},
+										Name: "fn",
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 26,
+										Line:   24,
+									},
+									File:   "alerts.flux",
+									Source: "filter(fn: fn)",
+									Start: ast.Position{
+										Column: 12,
+										Line:   24,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 18,
+											Line:   24,
+										},
+										File:   "alerts.flux",
+										Source: "filter",
+										Start: ast.Position{
+											Column: 12,
+											Line:   24,
+										},
+									},
+								},
+								Name: "filter",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 29,
+								Line:   25,
+							},
+							File:   "alerts.flux",
+							Source: "from(bucket: bucket)\n        |> range(start: start, stop: stop)\n        |> filter(fn: fn)\n        |> v1.fieldsAsCols()",
+							Start: ast.Position{
+								Column: 5,
+								Line:   22,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 29,
+									Line:   25,
+								},
+								File:   "alerts.flux",
+								Source: "v1.fieldsAsCols()",
+								Start: ast.Position{
+									Column: 12,
+									Line:   25,
+								},
+							},
+						},
+						Callee: &ast.MemberExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 27,
+										Line:   25,
+									},
+									File:   "alerts.flux",
+									Source: "v1.fieldsAsCols",
+									Start: ast.Position{
+										Column: 12,
+										Line:   25,
+									},
+								},
+							},
+							Object: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 14,
+											Line:   25,
+										},
+										File:   "alerts.flux",
+										Source: "v1",
+										Start: ast.Position{
+											Column: 12,
+											Line:   25,
+										},
+									},
+								},
+								Name: "v1",
+							},
+							Property: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 27,
+											Line:   25,
+										},
+										File:   "alerts.flux",
+										Source: "fieldsAsCols",
+										Start: ast.Position{
+											Column: 15,
+											Line:   25,
+										},
+									},
+								},
+								Name: "fieldsAsCols",
+							},
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   21,
+							},
+							File:   "alerts.flux",
+							Source: "start",
+							Start: ast.Position{
+								Column: 9,
+								Line:   21,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   21,
+								},
+								File:   "alerts.flux",
+								Source: "start",
+								Start: ast.Position{
+									Column: 9,
+									Line:   21,
+								},
+							},
+						},
+						Name: "start",
+					},
+					Value: nil,
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 26,
+								Line:   21,
+							},
+							File:   "alerts.flux",
+							Source: "stop=now()",
+							Start: ast.Position{
+								Column: 16,
+								Line:   21,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 20,
+									Line:   21,
+								},
+								File:   "alerts.flux",
+								Source: "stop",
+								Start: ast.Position{
+									Column: 16,
+									Line:   21,
+								},
+							},
+						},
+						Name: "stop",
+					},
+					Value: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 26,
+									Line:   21,
+								},
+								File:   "alerts.flux",
+								Source: "now()",
+								Start: ast.Position{
+									Column: 21,
+									Line:   21,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 24,
+										Line:   21,
+									},
+									File:   "alerts.flux",
+									Source: "now",
+									Start: ast.Position{
+										Column: 21,
+										Line:   21,
+									},
+								},
+							},
+							Name: "now",
+						},
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 30,
+								Line:   21,
+							},
+							File:   "alerts.flux",
+							Source: "fn",
+							Start: ast.Position{
+								Column: 28,
+								Line:   21,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 30,
+									Line:   21,
+								},
+								File:   "alerts.flux",
+								Source: "fn",
+								Start: ast.Position{
+									Column: 28,
+									Line:   21,
+								},
+							},
+						},
+						Name: "fn",
+					},
+					Value: nil,
+				}},
+			},
 		}},
-		Imports: nil,
-		Name:    "alerts.flux",
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 32,
+						Line:   3,
+					},
+					File:   "alerts.flux",
+					Source: "import \"influxdata/influxdb/v1\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 32,
+							Line:   3,
+						},
+						File:   "alerts.flux",
+						Source: "\"influxdata/influxdb/v1\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/v1",
+			},
+		}},
+		Name: "alerts.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

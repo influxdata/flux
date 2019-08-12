@@ -83,6 +83,8 @@ var (
 
 	builtinPackages = make(map[string]*ast.Package)
 
+	// list of packages included in the prelude.
+	// Packages must be listed in import order
 	prelude = []string{
 		"universe",
 		"influxdata/influxdb",
@@ -177,6 +179,12 @@ func RegisterPackage(pkg *ast.Package) {
 		panic(fmt.Errorf("duplicate builtin package %q", pkg.Path))
 	}
 	builtinPackages[pkg.Path] = pkg
+	_, ok := stdlib.pkgs[pkg.Path]
+	if !ok {
+		// Lazy creation of interpreter package
+		// registration order is not known so we must create it lazily
+		stdlib.pkgs[pkg.Path] = interpreter.NewPackage(path.Base(pkg.Path))
+	}
 }
 
 // RegisterPackageValue adds a value for an identifier in a builtin package
@@ -195,6 +203,8 @@ func registerPackageValue(pkgpath, name string, value values.Value, replace bool
 	}
 	packg, ok := stdlib.pkgs[pkgpath]
 	if !ok {
+		// Lazy creation of interpreter package
+		// registration order is not known so we must create it lazily
 		packg = interpreter.NewPackage(path.Base(pkgpath))
 		stdlib.pkgs[pkgpath] = packg
 	}
@@ -258,7 +268,7 @@ func FinalizeBuiltIns() {
 }
 
 func evalBuiltInPackages() error {
-	order, err := packageOrder(builtinPackages)
+	order, err := packageOrder(prelude, builtinPackages)
 	if err != nil {
 		return err
 	}
@@ -741,8 +751,18 @@ func (imp *importer) ImportPackageObject(path string) (*interpreter.Package, boo
 }
 
 // packageOrder determines a safe order to process builtin packages such that all dependent packages are previously processed.
-func packageOrder(pkgs map[string]*ast.Package) (order []*ast.Package, err error) {
+func packageOrder(prelude []string, pkgs map[string]*ast.Package) (order []*ast.Package, err error) {
 	//TODO(nathanielc): Add import cycle detection, this is not needed until this code is promoted to work with third party imports
+
+	// Always import prelude first so other packages need not explicitly import the prelude packages.
+	for _, path := range prelude {
+		pkg := pkgs[path]
+		order, err = insertPkg(pkg, pkgs, order)
+		if err != nil {
+			return
+		}
+	}
+	// Import all other packages
 	for _, pkg := range pkgs {
 		order, err = insertPkg(pkg, pkgs, order)
 		if err != nil {
