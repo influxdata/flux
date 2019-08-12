@@ -2556,6 +2556,27 @@ from(bucket:"telegraf/autogen")
     |> sort(columns:["region", "host", "value"])
 ```
 
+#### Tail
+Tail caps the number of records in output tables to a fixed size `n`.
+One output table is produced for each input table.
+Each output table will contain the last `n` records before the last `offset` records of the input table.
+If the input table has less than `offset + n` records, all records except the last `offset` ones will be output.
+
+Tail has the following properties:
+
+| Name   | Type | Description                                                                              |
+| ----   | ---- | -----------                                                                              |
+| n      | int  | N is the maximum number of records per table to output.                                  |
+| offset | int  | Offset is the number of records to skip per table before tailing to `n`. Defaults to 0. |
+
+Example:
+
+```
+from(bucket: "telegraf/autogen")
+    |> range(start: -1h)
+    |> tail(n: 10, offset: 1)
+```
+
 #### Group
 
 Group groups records based on their values for specific columns.
