@@ -6,7 +6,7 @@ Create new stream transformation functions in Go.
 
 - Stream transformation functions must conform to the examples in [universe](https://github.com/influxdata/flux/blob/master/stdlib/universe) and include the required function and methods shown in the table below.
 - You must submit a unit test in in the same folder as the new stream transformation function implementation.
-- You must submit an end-to-end test in [testdata](https://github.com/influxdata/flux/tree/master/stdlib/testing/testdata). Please look at [End_to_End_Testing.md](https://github.com/influxdata/flux/tree/master/docs/End_to_End_Testing.md)for details.
+- You must submit an end-to-end test in [testdata](https://github.com/influxdata/flux/tree/master/stdlib/testing/testdata). Please look at [End_to_End_Testing.md](https://github.com/influxdata/flux/tree/master/docs/End_to_End_Testing.md) for details.
 - You must add a description of the function to [SPEC.md](./docs/SPEC.md).
 
 ### Required function and methods
