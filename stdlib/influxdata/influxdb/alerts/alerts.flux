@@ -24,3 +24,10 @@ logs = (start, stop=now(), fn) =>
         |> range(start: start, stop: stop)
         |> filter(fn: fn)
         |> v1.fieldsAsCols()
+
+// Deadman takes in a stream of tables and reports which tables
+// were observed strictly before t and which were observed after.
+//
+deadman = (t, tables=<-) => tables
+    |> max(column: "_time")
+    |> map(fn: (r) => ( {r with dead: r._time < t} ))
