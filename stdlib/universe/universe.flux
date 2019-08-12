@@ -52,6 +52,7 @@ builtin relativeStrengthIndex
 builtin rename
 builtin sample
 builtin set
+builtin tail
 builtin timeShift
 builtin skew
 builtin spread
