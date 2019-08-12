@@ -24,18 +24,18 @@ option task = {
 from(bucket: "telegraf/autogen")
     |> range(start: -1h)
     |> filter(fn: (r) => r._measurement == "cpu")
-    |> deadman(d: task.every)
+    |> deadman(t: now() - task.every)
     |> alert(crit: (r) => r.dead)
 ```
 
 The `deadman` function is defined as follows:
 ```
-deadman = (d, tables=<-) => tables
+deadman = (t, tables=<-) => tables
     |> max(column: "_time")
-    |> map(fn: (r) => ( {r with dead: r._time < now() - d} ))
+    |> map(fn: (r) => ( {r with dead: r._time < t} ))
 ```
 
-It takes a stream of tables and a duration `d` and reports which groups or series were observed in the interval `[now() - d, now()]` and which were not.
+It takes a stream of tables and a time `t` and reports which groups or series were observed after time `t` and which were not.
 The output stream can then be passed into an alert function to alert when a group or series has stopped reporting data.
 For example, given a stream called `tables`, grouped by (`_measurement`, `host`):
 
@@ -48,7 +48,7 @@ For example, given a stream called `tables`, grouped by (`_measurement`, `host`)
 | now() - 1s | cpu          | C    | 18     |
 | now() - 0s | cpu          | C    | 25     |
 
-`tables |> deadman(d: 4s)` produces the following stream:
+`tables |> deadman(t: now()-4s)` produces the following stream:
 
 | _time      | _measurement | host | _value | dead  |
 | ---------- | ------------ | ---- | ------ | ----- |
@@ -56,4 +56,4 @@ For example, given a stream called `tables`, grouped by (`_measurement`, `host`)
 | now() - 2s | cpu          | B    | 18     | false |
 | now() - 0s | cpu          | C    | 25     | false |
 
-And as a result `tables |> deadman(d: 4s) |> alert(crit: (r) => r.dead)` triggers an alert that the group defined by `_measurement=cpu,host=A` stopped reporting data.
+And as a result `tables |> deadman(t: now()-4s) |> alert(crit: (r) => r.dead)` triggers an alert that the group defined by `_measurement=cpu,host=A` stopped reporting data.
