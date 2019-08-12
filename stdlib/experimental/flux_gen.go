@@ -22,10 +22,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 14,
-					Line:   4,
+					Line:   7,
 				},
 				File:   "experimental.flux",
-				Source: "package experimental\n\n// An experimental version of group that has mode: \"extend\"\nbuiltin group",
+				Source: "package experimental\n\nbuiltin addDuration\nbuiltin subDuration\n\n// An experimental version of group that has mode: \"extend\"\nbuiltin group",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -37,11 +37,45 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 14,
+						Column: 20,
+						Line:   3,
+					},
+					File:   "experimental.flux",
+					Source: "builtin addDuration",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 20,
+							Line:   3,
+						},
+						File:   "experimental.flux",
+						Source: "addDuration",
+						Start: ast.Position{
+							Column: 9,
+							Line:   3,
+						},
+					},
+				},
+				Name: "addDuration",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 20,
 						Line:   4,
 					},
 					File:   "experimental.flux",
-					Source: "builtin group",
+					Source: "builtin subDuration",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -53,14 +87,48 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 14,
+							Column: 20,
 							Line:   4,
+						},
+						File:   "experimental.flux",
+						Source: "subDuration",
+						Start: ast.Position{
+							Column: 9,
+							Line:   4,
+						},
+					},
+				},
+				Name: "subDuration",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   7,
+					},
+					File:   "experimental.flux",
+					Source: "builtin group",
+					Start: ast.Position{
+						Column: 1,
+						Line:   7,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   7,
 						},
 						File:   "experimental.flux",
 						Source: "group",
 						Start: ast.Position{
 							Column: 9,
-							Line:   4,
+							Line:   7,
 						},
 					},
 				},
