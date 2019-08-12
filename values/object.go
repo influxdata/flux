@@ -91,19 +91,25 @@ func (o *object) PolyType() semantic.PolyType {
 }
 
 func (o *object) Set(k string, v Value) {
+	// update type
+	o.ptyp[k] = v.PolyType()
+	mt := v.Type()
+	if mt == nil {
+		mt = semantic.Invalid
+	}
+	o.mtyp[k] = mt
+
+	// update value
 	for i, l := range o.labels {
 		if l == k {
 			o.values[i] = v
-			o.ptyp[l] = v.PolyType()
-			o.mtyp[l] = v.Type()
 			return
 		}
 	}
 	o.labels = append(o.labels, k)
 	o.values = append(o.values, v)
-	o.ptyp[k] = v.PolyType()
-	o.mtyp[k] = v.Type()
 }
+
 func (o *object) Get(name string) (Value, bool) {
 	for i, l := range o.labels {
 		if name == l {
