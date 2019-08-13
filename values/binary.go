@@ -12,7 +12,7 @@ type BinaryFunction func(l, r Value) (Value, error)
 
 type BinaryFuncSignature struct {
 	Operator    ast.OperatorKind
-	Left, Right semantic.Type
+	Left, Right semantic.Nature
 }
 
 // LookupBinaryFunction returns an appropriate binary function that evaluates two values and returns another value.
@@ -560,6 +560,12 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.String}: nil,
 	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.Time}:   nil,
 	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.Nil}:    nil,
+	{Operator: ast.EqualOperator, Left: semantic.Array, Right: semantic.Array}: func(lv, rv Value) (Value, error) {
+		return NewBool(lv.Equal(rv)), nil
+	},
+	{Operator: ast.EqualOperator, Left: semantic.Object, Right: semantic.Object}: func(lv, rv Value) (Value, error) {
+		return NewBool(lv.Equal(rv)), nil
+	},
 
 	// NotEqualOperator
 

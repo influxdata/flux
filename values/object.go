@@ -171,7 +171,7 @@ func (o *object) Equal(rhs Value) bool {
 	}
 	for i, l := range o.labels {
 		val, ok := r.Get(l)
-		if !ok && !o.values[i].Equal(val) {
+		if ok && !o.values[i].Equal(val) {
 			return false
 		}
 	}

@@ -324,8 +324,8 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope Scope) (va
 		}
 		bf, err := values.LookupBinaryFunction(values.BinaryFuncSignature{
 			Operator: e.Operator,
-			Left:     ltyp,
-			Right:    rtyp,
+			Left:     ltyp.Nature(),
+			Right:    rtyp.Nature(),
 		})
 		if err != nil {
 			return nil, err
