@@ -558,8 +558,8 @@ func TestBinaryOperator(t *testing.T) {
 			left, right := Value(tt.lhs), Value(tt.rhs)
 			fn, err := values.LookupBinaryFunction(values.BinaryFuncSignature{
 				Operator: ast.OperatorLookup(tt.op),
-				Left:     left.Type(),
-				Right:    right.Type(),
+				Left:     left.Type().Nature(),
+				Right:    right.Type().Nature(),
 			})
 			if err != nil {
 				t.Fatal(err)

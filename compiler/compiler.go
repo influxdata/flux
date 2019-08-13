@@ -302,8 +302,8 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, builtIns Scope, fun
 		rt := r.Type()
 		f, err := values.LookupBinaryFunction(values.BinaryFuncSignature{
 			Operator: n.Operator,
-			Left:     lt,
-			Right:    rt,
+			Left:     lt.Nature(),
+			Right:    rt.Nature(),
 		})
 		if err != nil {
 			return nil, err
