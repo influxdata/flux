@@ -123,7 +123,7 @@ import "github.com/influxdata/flux/internal/token"
     string_expr := |*
         "${" => { s.token = token.STRINGEXPR; fbreak; };
         '"' => { s.token = token.QUOTE; fbreak; };
-        string_lit_char+ => { s.token = token.TEXT; fbreak; };
+        (string_lit_char - "\"")+ => { s.token = token.TEXT; fbreak; };
     *|;
 }%%
 

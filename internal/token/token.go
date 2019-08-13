@@ -129,6 +129,10 @@ var tokenStrings = []string{
 	"COLON",
 	"PIPE_FORWARD",
 	"PIPE_RECEIVE",
+	"EXISTS",
+	"QUOTE",
+	"STRINGEXPR",
+	"TEXT",
 }
 
 type Pos int

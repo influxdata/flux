@@ -53,6 +53,10 @@ func formatTestHelper(t *testing.T, testCases []formatTestCase) {
 func TestFormat_Nodes(t *testing.T) {
 	testCases := []formatTestCase{
 		{
+			name:   "string interpolation",
+			script: `"a + b = ${a + b}"`,
+		},
+		{
 			name:   "binary_op",
 			script: `1 + 1 - 2`,
 		},

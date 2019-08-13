@@ -56,6 +56,10 @@ func TestToken_String(t *testing.T) {
 		token.COLON:        "COLON",
 		token.PIPE_FORWARD: "PIPE_FORWARD",
 		token.PIPE_RECEIVE: "PIPE_RECEIVE",
+		token.EXISTS:       "EXISTS",
+		token.QUOTE:        "QUOTE",
+		token.STRINGEXPR:   "STRINGEXPR",
+		token.TEXT:         "TEXT",
 	}
 	for tok, s := range tokenStrings {
 		if got, want := tok.String(), s; got != want {
