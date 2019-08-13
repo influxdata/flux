@@ -16,6 +16,28 @@ func TestCopy(t *testing.T) {
 		node ast.Node
 	}{
 		{
+			node: &ast.StringExpression{
+				Parts: []ast.StringExpressionPart{
+					&ast.TextPart{
+						Value: "a = ",
+					},
+					&ast.InterpolatedPart{
+						Expression: &ast.Identifier{
+							Name: "a",
+						},
+					},
+					&ast.TextPart{
+						Value: " and b = ",
+					},
+					&ast.InterpolatedPart{
+						Expression: &ast.Identifier{
+							Name: "b",
+						},
+					},
+				},
+			},
+		},
+		{
 			node: &ast.Package{},
 		},
 		{

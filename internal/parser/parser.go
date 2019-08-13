@@ -18,6 +18,9 @@ type Scanner interface {
 	// ScanWithRegex will scan the next token and include any regex literals.
 	ScanWithRegex() (pos token.Pos, tok token.Token, lit string)
 
+	// ScanStringExpr will scan the next token in a string expression context
+	ScanStringExpr() (pos token.Pos, tok token.Token, lit string)
+
 	// File returns the file being processed by the Scanner.
 	File() *token.File
 
@@ -58,6 +61,15 @@ func (s *scannerSkipComments) Scan() (pos token.Pos, tok token.Token, lit string
 func (s *scannerSkipComments) ScanWithRegex() (pos token.Pos, tok token.Token, lit string) {
 	for {
 		pos, tok, lit = s.Scanner.ScanWithRegex()
+		if tok != token.COMMENT {
+			return pos, tok, lit
+		}
+	}
+}
+
+func (s *scannerSkipComments) ScanStringExpr() (pos token.Pos, tok token.Token, lit string) {
+	for {
+		pos, tok, lit = s.Scanner.ScanStringExpr()
 		if tok != token.COMMENT {
 			return pos, tok, lit
 		}
@@ -171,7 +183,7 @@ func (p *parser) parseStatement() ast.Statement {
 	case token.INT, token.FLOAT, token.STRING, token.DIV,
 		token.TIME, token.DURATION, token.PIPE_RECEIVE,
 		token.LPAREN, token.LBRACK, token.LBRACE,
-		token.ADD, token.SUB, token.NOT, token.IF, token.EXISTS:
+		token.ADD, token.SUB, token.NOT, token.IF, token.EXISTS, token.QUOTE:
 		return p.parseExpressionStatement()
 	default:
 		p.consume()
@@ -859,6 +871,8 @@ func (p *parser) parsePrimaryExpression() ast.Expression {
 		return p.parseFloatLiteral()
 	case token.STRING:
 		return p.parseStringLiteral()
+	case token.QUOTE:
+		return p.parseStringExpression()
 	case token.REGEX:
 		return p.parseRegexpLiteral()
 	case token.TIME:
@@ -875,6 +889,36 @@ func (p *parser) parsePrimaryExpression() ast.Expression {
 		return p.parseParenExpression()
 	default:
 		return nil
+	}
+}
+
+func (p *parser) parseStringExpression() *ast.StringExpression {
+	beg, _ := p.expect(token.QUOTE)
+	var parts []ast.StringExpressionPart
+	for {
+		pos, tok, lit := p.s.ScanStringExpr()
+		switch tok {
+		case token.TEXT:
+			parts = append(parts, &ast.TextPart{
+				Value:    lit,
+				BaseNode: p.posRange(pos, len(lit)),
+			})
+		case token.STRINGEXPR:
+			expr := p.parseExpression()
+			end, lit := p.expect(token.RBRACE)
+			parts = append(parts, &ast.InterpolatedPart{
+				Expression: expr,
+				BaseNode:   p.position(pos, end+token.Pos(len(lit))),
+			})
+		case token.QUOTE:
+			return &ast.StringExpression{
+				Parts:    parts,
+				BaseNode: p.position(beg, pos+token.Pos(len(lit))),
+			}
+		default:
+			// TODO bad expression
+			return nil
+		}
 	}
 }
 

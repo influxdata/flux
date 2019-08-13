@@ -91,6 +91,7 @@ func (*TestStatement) node()       {}
 func (*VariableAssignment) node()  {}
 func (*MemberAssignment) node()    {}
 
+func (*StringExpression) node()      {}
 func (*ArrayExpression) node()       {}
 func (*FunctionExpression) node()    {}
 func (*BinaryExpression) node()      {}
@@ -105,6 +106,9 @@ func (*UnaryExpression) node()       {}
 
 func (*Property) node()   {}
 func (*Identifier) node() {}
+
+func (*TextPart) node()         {}
+func (*InterpolatedPart) node() {}
 
 func (*BooleanLiteral) node()         {}
 func (*DateTimeLiteral) node()        {}
@@ -510,6 +514,7 @@ type Expression interface {
 	expression()
 }
 
+func (*StringExpression) expression()       {}
 func (*ArrayExpression) expression()        {}
 func (*FunctionExpression) expression()     {}
 func (*BinaryExpression) expression()       {}
@@ -531,6 +536,78 @@ func (*RegexpLiteral) expression()          {}
 func (*StringLiteral) expression()          {}
 func (*UnaryExpression) expression()        {}
 func (*UnsignedIntegerLiteral) expression() {}
+
+type StringExpression struct {
+	BaseNode
+
+	Parts []StringExpressionPart `json:"parts"`
+}
+
+func (*StringExpression) Type() string { return "StringExpression" }
+
+func (e *StringExpression) Copy() Node {
+	if e == nil {
+		return e
+	}
+	ne := new(StringExpression)
+	*ne = *e
+	ne.BaseNode = e.BaseNode.Copy()
+
+	if len(e.Parts) > 0 {
+		ne.Parts = make([]StringExpressionPart, len(e.Parts))
+		for i, p := range e.Parts {
+			ne.Parts[i] = p.Copy().(StringExpressionPart)
+		}
+	}
+
+	return ne
+}
+
+type StringExpressionPart interface {
+	Node
+	stringPart()
+}
+
+func (*TextPart) stringPart()         {}
+func (*InterpolatedPart) stringPart() {}
+
+type TextPart struct {
+	BaseNode
+	Value string `json:"value"`
+}
+
+func (*TextPart) Type() string { return "TextPart" }
+
+func (p *TextPart) Copy() Node {
+	if p == nil {
+		return p
+	}
+	np := new(TextPart)
+	*np = *p
+	np.BaseNode = p.BaseNode.Copy()
+	return np
+}
+
+type InterpolatedPart struct {
+	BaseNode
+	Expression Expression `json:"expression"`
+}
+
+func (*InterpolatedPart) Type() string { return "InterpolatedPart" }
+
+func (p *InterpolatedPart) Copy() Node {
+	if p == nil {
+		return p
+	}
+	np := new(InterpolatedPart)
+	*np = *p
+	np.BaseNode = p.BaseNode.Copy()
+
+	if p.Expression != nil {
+		np.Expression = p.Expression.Copy().(Expression)
+	}
+	return np
+}
 
 // CallExpression represents a function call
 type CallExpression struct {

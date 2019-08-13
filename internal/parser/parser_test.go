@@ -57,6 +57,133 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 		nerrs int
 	}{
 		{
+			name: "string interpolation",
+			raw:  `"a + b = ${a + b}"`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:19"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:19"),
+						Expression: &ast.StringExpression{
+							BaseNode: base("1:1", "1:19"),
+							Parts: []ast.StringExpressionPart{
+								&ast.TextPart{
+									BaseNode: base("1:2", "1:10"),
+									Value:    "a + b = ",
+								},
+								&ast.InterpolatedPart{
+									BaseNode: base("1:10", "1:18"),
+									Expression: &ast.BinaryExpression{
+										BaseNode: base("1:12", "1:17"),
+										Left: &ast.Identifier{
+											BaseNode: base("1:12", "1:13"),
+											Name:     "a",
+										},
+										Right: &ast.Identifier{
+											BaseNode: base("1:16", "1:17"),
+											Name:     "b",
+										},
+										Operator: ast.AdditionOperator,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "string interpolation",
+			raw:  `"a = ${a} and b = ${b}"`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:24"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:24"),
+						Expression: &ast.StringExpression{
+							BaseNode: base("1:1", "1:24"),
+							Parts: []ast.StringExpressionPart{
+								&ast.TextPart{
+									BaseNode: base("1:2", "1:6"),
+									Value:    "a = ",
+								},
+								&ast.InterpolatedPart{
+									BaseNode: base("1:6", "1:10"),
+									Expression: &ast.Identifier{
+										BaseNode: base("1:8", "1:9"),
+										Name:     "a",
+									},
+								},
+								&ast.TextPart{
+									BaseNode: base("1:10", "1:19"),
+									Value:    " and b = ",
+								},
+								&ast.InterpolatedPart{
+									BaseNode: base("1:19", "1:23"),
+									Expression: &ast.Identifier{
+										BaseNode: base("1:21", "1:22"),
+										Name:     "b",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "nested string interpolation",
+			raw:  `"we ${"can ${"add" + "strings"}"} together"`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:44"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:44"),
+						Expression: &ast.StringExpression{
+							BaseNode: base("1:1", "1:44"),
+							Parts: []ast.StringExpressionPart{
+								&ast.TextPart{
+									BaseNode: base("1:2", "1:5"),
+									Value:    "we ",
+								},
+								&ast.InterpolatedPart{
+									BaseNode: base("1:5", "1:34"),
+									Expression: &ast.StringExpression{
+										BaseNode: base("1:7", "1:33"),
+										Parts: []ast.StringExpressionPart{
+											&ast.TextPart{
+												BaseNode: base("1:8", "1:12"),
+												Value:    "can ",
+											},
+											&ast.InterpolatedPart{
+												BaseNode: base("1:12", "1:32"),
+												Expression: &ast.BinaryExpression{
+													BaseNode: base("1:14", "1:31"),
+													Left: &ast.StringLiteral{
+														BaseNode: base("1:14", "1:19"),
+														Value:    "add",
+													},
+													Right: &ast.StringLiteral{
+														BaseNode: base("1:22", "1:31"),
+														Value:    "strings",
+													},
+													Operator: ast.AdditionOperator,
+												},
+											},
+										},
+									},
+								},
+								&ast.TextPart{
+									BaseNode: base("1:34", "1:43"),
+									Value:    " together",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "package clause",
 			raw:  `package foo`,
 			want: &ast.File{
@@ -5746,6 +5873,7 @@ string"
 			result := parser.ParseFile(f, []byte(tt.raw))
 
 			want := tt.want.Copy()
+
 			ast.Walk(ast.CreateVisitor(func(node ast.Node) {
 				v := reflect.ValueOf(node)
 				loc := v.Elem().FieldByName("Loc")

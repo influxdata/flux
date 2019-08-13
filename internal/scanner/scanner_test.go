@@ -267,6 +267,98 @@ func TestScanner_UnreadEOF(t *testing.T) {
 	}
 }
 
+func TestScanner_MultipleTokens_StringExpr(t *testing.T) {
+	for _, tt := range []struct {
+		name string
+		s    string
+		want []token.Token
+	}{
+		{
+			name: "only expr",
+			s:    `"${a + b}"`,
+			want: []token.Token{
+				token.QUOTE,
+				token.STRINGEXPR,
+				token.TEXT,
+				token.QUOTE,
+			},
+		},
+		{
+			name: "with expr",
+			s:    `"a + b = ${a + b}"`,
+			want: []token.Token{
+				token.QUOTE,
+				token.TEXT,
+				token.STRINGEXPR,
+				token.TEXT,
+				token.QUOTE,
+			},
+		},
+		{
+			name: "multiple expr",
+			s:    `"a + b = ${a + b} and a - b = ${a - b}"`,
+			want: []token.Token{
+				token.QUOTE,
+				token.TEXT,
+				token.STRINGEXPR,
+				token.TEXT,
+				token.STRINGEXPR,
+				token.TEXT,
+				token.QUOTE,
+			},
+		},
+		{
+			name: "end with text",
+			s:    `"a + b = ${a + b} and a - b = ?"`,
+			want: []token.Token{
+				token.QUOTE,
+				token.TEXT,
+				token.STRINGEXPR,
+				token.TEXT,
+				token.QUOTE,
+			},
+		},
+		{
+			name: "escaped quote",
+			s:    `"these \"\" are escaped quotes"`,
+			want: []token.Token{
+				token.QUOTE,
+				token.TEXT,
+				token.QUOTE,
+			},
+		},
+		{
+			name: "not escaped quote",
+			s:    `"this " is not an escaped quote"`,
+			want: []token.Token{
+				token.QUOTE,
+				token.TEXT,
+				token.QUOTE,
+				token.TEXT,
+				token.QUOTE,
+			},
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			f := token.NewFile("query.flux", len(tt.s))
+			s := scanner.New(f, []byte(tt.s))
+
+			var got []token.Token
+			for {
+				_, tok, _ := s.ScanStringExpr()
+				if tok == token.EOF {
+					break
+				}
+				got = append(got, tok)
+			}
+
+			if !cmp.Equal(tt.want, got) {
+				t.Fatalf("unexpected tokens:\n%s", cmp.Diff(tt.want, got))
+			}
+		})
+	}
+}
+
 func TestScanner_MultipleTokens(t *testing.T) {
 	for _, tt := range []struct {
 		name string
