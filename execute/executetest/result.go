@@ -85,6 +85,23 @@ func EqualResults(want, got []flux.Result) error {
 func EqualResultIterators(want, got flux.ResultIterator) error {
 	for {
 		if w, g := want.More(), got.More(); w != g {
+			var err error
+			if w {
+				drain(want)
+				err = got.Err()
+			} else {
+				drain(got)
+				err = want.Err()
+			}
+			if err != nil {
+				var which string
+				if w {
+					which = "got"
+				} else {
+					which = "want"
+				}
+				return fmt.Errorf("%q iterator terminated early with error: %s", which, err)
+			}
 			return fmt.Errorf("unexpected number of results: want more %t, got more %t", w, g)
 		} else if w {
 			err := EqualResult(want.Next(), got.Next())
@@ -97,6 +114,13 @@ func EqualResultIterators(want, got flux.ResultIterator) error {
 			}
 			return nil
 		}
+	}
+}
+
+func drain(ri flux.ResultIterator) {
+	for ri.More() {
+		r := ri.Next()
+		r.Tables().Do(func(flux.Table) error { return nil })
 	}
 }
 
