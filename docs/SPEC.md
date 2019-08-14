@@ -3613,7 +3613,107 @@ from(bucket: "telegraf/autogen"):
     |> relativeSearchIndex(n: 14)
 ```
 
+#### Kaufman's Efficiency Ratio
+
+Kaufman's Efficiency Ratio indicator is created by taking the absolute value of the results of Chande Momentum Oscillator and dividing by 100 to give the 0 to 1 range. Higher values represent a more efficient or trending market.
+
+The default column `KaufmansER` takes in is "_value".
+
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| n           | int      | N specifies the period.
+
+ Example:
  
+ | _time |_value|result|
+ |:-----:|:----:|:----:|
+ |  0001 |   1  |   -  |
+ |  0002 |   2  |   -  |
+ |  0003 |   3  |   -  |
+ |  0004 |   4  |   -  |
+ |  0005 |   5  |   -  |
+ |  0006 |   6  |   -  |
+ |  0007 |   7  |   -  |
+ |  0008 |   8  |   -  |
+ |  0009 |   9  |   -  |
+ |  0010 |  10  |   -  |
+ |  0011 |  11  |   1  |
+ |  0012 |  12  |   1  |
+ |  0013 |  13  |   1  |
+ |  0014 |  14  |   1  |
+ |  0015 |  15  |   1  |
+ |  0016 |  14  |  0.8 |
+ |  0017 |  13  |  0.6 |
+ |  0018 |  12  |  0.4 |
+ |  0019 |  11  |  0.2 |
+ |  0020 |  10  |  0   |
+ |  0021 |   9  |  0.2 |
+ |  0022 |   8  |  0.4 |
+ |  0023 |   7  |  0.6 |
+ |  0024 |   6  |  0.8 |
+ |  0025 |   5  |   1  |
+ |  0026 |   4  |   1  |
+ |  0027 |   3  |   1  |
+ |  0028 |   2  |   1  |
+ |  0029 |   1  |   1  |
+ 
+ Example of script:
+ ```
+ from(bucket: "telegraf/autogen"):
+     |> range(start: -7d)
+     |> kaufmansER(n: 10)
+ ```
+
+#### Kaufman's Adaptive Moving Average
+
+Kaufman's Adaptive Moving Average is designed to account for market noise or volatility. This trend-following indicator can be used to identify the overall trend, time turning points and filter data movements.
+
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| n           | int      | N specifies the period.
+| column      | string | Column is the column that `KaufmansAMA` should be performed on and is assumed to be "_value" if left unspecified.
+
+ Example:
+ 
+ | _time |_value|result|
+ |:-----:|:----:|:----:|
+ |  0001 |   1  |   -  |
+ |  0002 |   2  |   -  |
+ |  0003 |   3  |   -  |
+ |  0004 |   4  |   -  |
+ |  0005 |   5  |   -  |
+ |  0006 |   6  |   -  |
+ |  0007 |   7  |   -  |
+ |  0008 |   8  |   -  |
+ |  0009 |   9  |   -  |
+ |  0010 |  10  |   -  |
+ |  0011 |  11  | 10.444444444444445 |
+ |  0012 |  12  | 11.135802469135802 |
+ |  0013 |  13  | 11.964334705075446 |
+ |  0014 |  14  | 12.869074836153025 |
+ |  0015 |  15  | 13.81615268675168  |
+ |  0016 |  14  | 13.871008014588556 |
+ |  0017 |  13  | 13.71308456353558  |
+ |  0018 |  12  | 13.553331356741122 |
+ |  0019 |  11  | 13.46599437575161  |
+ |  0020 |  10  | 13.4515677602438   |
+ |  0021 |   9  | 13.29930139347417  |
+ |  0022 |   8  | 12.805116570729282 |
+ |  0023 |   7  | 11.752584300922965 |
+ |  0024 |   6  | 10.036160535131101 |
+ |  0025 |   5  | 7.797866963961722  |
+ |  0026 |   4  | 6.109926091089845  |
+ |  0027 |   3  | 4.727736717272135  |
+ |  0028 |   2  | 3.515409287373408  |
+ |  0029 |   1  | 2.3974496040963373 |
+ 
+ Example of script:
+ ```
+ from(bucket: "telegraf/autogen"):
+     |> range(start: -7d)
+     |> kaufmansAMA(n: 10, column: "_value")
+ ```
+
 ##### Holt Winters
 
 Holt Winters applies the Holt-Winters damped prediction method with Nelder-Mead optimization to the given dataset.

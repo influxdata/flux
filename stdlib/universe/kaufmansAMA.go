@@ -2,7 +2,6 @@ package universe
 
 import (
 	"fmt"
-	"github.com/influxdata/flux/interpreter"
 	"math"
 
 	"github.com/influxdata/flux"
@@ -14,15 +13,15 @@ import (
 const kamaKind = "kaufmansAMA"
 
 type KamaOpSpec struct {
-	N       int64    `json:"n"`
-	Columns []string `json:"columns"`
+	N      int64  `json:"n"`
+	Column string `json:"column"`
 }
 
 func init() {
 	kamaSignature := flux.FunctionSignature(
 		map[string]semantic.PolyType{
-			"n":       semantic.Int,
-			"columns": semantic.NewArrayPolyType(semantic.String),
+			"n":      semantic.Int,
+			"column": semantic.String,
 		},
 		[]string{"n"},
 	)
@@ -46,16 +45,12 @@ func createkamaOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		spec.N = n
 	}
 
-	if cols, ok, err := args.GetArray("columns", semantic.String); err != nil {
+	if col, ok, err := args.GetString("column"); err != nil {
 		return nil, err
-	} else if ok {
-		columns, err := interpreter.ToStringArray(cols)
-		if err != nil {
-			return nil, err
-		}
-		spec.Columns = columns
+	} else if !ok {
+		spec.Column = execute.DefaultValueColLabel
 	} else {
-		spec.Columns = []string{execute.DefaultValueColLabel}
+		spec.Column = col
 	}
 
 	return spec, nil
@@ -71,8 +66,8 @@ func (s *KamaOpSpec) Kind() flux.OperationKind {
 
 type KamaProcedureSpec struct {
 	plan.DefaultCost
-	N       int64    `json:"n"`
-	Columns []string `json:"columns"`
+	N      int64  `json:"n"`
+	Column string `json:"column"`
 }
 
 func newkamaProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -82,8 +77,8 @@ func newkamaProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proce
 	}
 
 	return &KamaProcedureSpec{
-		N:       spec.N,
-		Columns: spec.Columns,
+		N:      spec.N,
+		Column: spec.Column,
 	}, nil
 }
 
@@ -117,8 +112,8 @@ type kamaTransformation struct {
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 
-	n       int64
-	columns []string
+	n      int64
+	column string
 }
 
 func NewkamaTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *KamaProcedureSpec) *kamaTransformation {
@@ -126,8 +121,8 @@ func NewkamaTransformation(d execute.Dataset, cache execute.TableBuilderCache, s
 		d:     d,
 		cache: cache,
 
-		n:       spec.N,
-		columns: spec.Columns,
+		n:      spec.N,
+		column: spec.Column,
 	}
 }
 
@@ -140,18 +135,18 @@ func (t *kamaTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 	if !created {
 		return fmt.Errorf("KAMA found duplicate table with key: %v", tbl.Key())
 	}
+	if t.n <= 0 {
+		return fmt.Errorf("cannot take KaufmansAMA with a period of %v (must be greater than 0)", t.n)
+	}
 	cols := tbl.Cols()
 	doKAMA := make([]bool, len(cols))
 	for j, c := range cols {
 		found := false
-		for _, label := range t.columns {
-			if c.Label == label {
-				if c.Type != flux.TInt && c.Type != flux.TUInt && c.Type != flux.TFloat {
-					return fmt.Errorf("cannot take KAMA of column %s (type %s)", c.Label, c.Type.String())
-				}
-				found = true
-				break
+		if c.Label == t.column {
+			if c.Type != flux.TInt && c.Type != flux.TUInt && c.Type != flux.TFloat {
+				return fmt.Errorf("cannot take KAMA of column %s (type %s)", c.Label, c.Type.String())
 			}
+			found = true
 		}
 
 		if found {
@@ -170,17 +165,37 @@ func (t *kamaTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 		}
 	}
 
-	return tbl.Do(func(cr flux.ColReader) error {
+	var prevValue float64
+	var currValue float64
+	var prevKAMA float64
+	var sumUp float64
+	var sumDown float64
+	var diffNAgo []float64 // keeps track of the last n diff values
+
+	var rowCount []int64
+
+	prevValue = 0
+	currValue = 0
+	prevKAMA = 0
+	sumUp = 0
+	sumDown = 0
+	diffNAgo = make([]float64, t.n)
+	rowCount = make([]int64, len(cols))
+
+	err := tbl.Do(func(cr flux.ColReader) error {
 		if cr.Len() == 0 || len(cr.Cols()) == 0 {
 			return nil
 		}
 
 		for j, c := range cr.Cols() {
 			if !doKAMA[j] {
-				for i := int(t.n); i < cr.Len(); i++ {
-					if err := builder.AppendValue(j, execute.ValueForRow(cr, i, j)); err != nil {
-						return err
+				for i := 0; i < cr.Len(); i++ {
+					if rowCount[j] >= t.n {
+						if err := builder.AppendValue(j, execute.ValueForRow(cr, i, j)); err != nil {
+							return err
+						}
 					}
+					rowCount[j]++
 				}
 			} else {
 				var values []float64
@@ -199,15 +214,61 @@ func (t *kamaTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 					arr := cr.Floats(j)
 					values = arr.Float64Values()
 				}
-				kers := t.makeKERS(values, int(t.n))
-				var kama float64
-				sc := 0.0
-				kama = values[t.n-1]
-				for i := int(t.n); i < cr.Len(); i++ {
-					sc = math.Pow(kers[i]*(2.0/(2.0+1.0)-2.0/(30.0+1.0))+2.0/(30.0+1.0), 2)
-					kama = kama + sc*(values[i]-kama)
-					if err := builder.AppendFloat(j, kama); err != nil {
-						return err
+
+				if rowCount[j] == 0 {
+					prevValue = values[0]
+					for i := 0; i < cr.Len(); i++ {
+						currValue = values[i]
+						kers, su, sd := t.nextKER(prevValue, currValue, sumUp, sumDown, diffNAgo, rowCount[j], t.n)
+						sumUp = su
+						sumDown = sd
+
+						if rowCount[j] >= t.n {
+							if rowCount[j] == t.n {
+								prevKAMA = prevValue
+							}
+							var kama float64
+							sc := 0.0
+							kama = prevKAMA
+							sc = math.Pow(kers*(2.0/(2.0+1.0)-2.0/(30.0+1.0))+2.0/(30.0+1.0), 2)
+							kama = kama + sc*(currValue-kama)
+							if err := builder.AppendFloat(j, kama); err != nil {
+								return err
+							}
+							prevKAMA = kama
+						}
+
+						diffNAgo[rowCount[j]%t.n] = currValue - prevValue
+
+						rowCount[j]++
+						prevValue = currValue
+					}
+				} else {
+					for i := 0; i < cr.Len(); i++ {
+						currValue = values[i]
+						kers, su, sd := t.nextKER(prevValue, currValue, sumUp, sumDown, diffNAgo, rowCount[j], t.n)
+						sumUp = su
+						sumDown = sd
+
+						if rowCount[j] >= t.n {
+							if rowCount[j] == t.n {
+								prevKAMA = prevValue
+							}
+							var kama float64
+							sc := 0.0
+							kama = prevKAMA
+							sc = math.Pow(kers*(2.0/(2.0+1.0)-2.0/(30.0+1.0))+2.0/(30.0+1.0), 2)
+							kama = kama + sc*(currValue-kama)
+							if err := builder.AppendFloat(j, kama); err != nil {
+								return err
+							}
+							prevKAMA = kama
+						}
+
+						diffNAgo[rowCount[j]%t.n] = currValue - prevValue
+
+						rowCount[j]++
+						prevValue = currValue
 					}
 				}
 			}
@@ -215,35 +276,19 @@ func (t *kamaTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 
 		return nil
 	})
+
+	return err
 }
 
-func (t *kamaTransformation) makeKERS(arr []float64, n int) []float64 {
-	var sumUp float64
-	var sumDown float64
-	sumUp = 0
-	sumDown = 0
-
-	var kers []float64
-
-	prev := arr[0]
-	curr := 0.0
-	for i := 0; i < len(arr); i++ {
-		curr = arr[i]
-		diff := curr - prev
-		if i >= n {
-			diffNAgo := arr[i-n+1] - arr[i-n]
-			val, su, sd := nextCMO(sumUp, sumDown, diff, diffNAgo)
-			sumUp = su
-			sumDown = sd
-			kers = append(kers, math.Abs(val)/100)
-		} else {
-			_, sumUp, sumDown = nextCMO(sumUp, sumDown, diff, 0)
-			kers = append(kers, -999)
-		}
-		prev = curr
+// gives the current KER value, after considering the current value
+func (t *kamaTransformation) nextKER(prevValue, currValue, sumUp, sumDown float64, diffNAgo []float64, count, n int64) (float64, float64, float64) {
+	diff := currValue - prevValue
+	if count >= n {
+		val, su, sd := nextCMO(sumUp, sumDown, diff, diffNAgo[(count+1)%n])
+		return math.Abs(val) / 100.0, su, sd
 	}
-
-	return kers
+	_, su, sd := nextCMO(sumUp, sumDown, diff, 0)
+	return -999, su, sd
 }
 
 func (t *kamaTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
