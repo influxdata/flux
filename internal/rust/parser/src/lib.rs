@@ -81,6 +81,10 @@ fn format_token(t: T) -> &'static str {
         T_COLON => "COLON",
         T_PIPE_FORWARD => "PIPE_FORWARD",
         T_PIPE_RECEIVE => "PIPE_RECEIVE",
+        T_EXISTS => "EXISTS",
+        T_QUOTE => "QUOTE",
+        T_STRINGEXPR => "STRINGEXPR",
+        T_TEXT => "TEXT",
         _ => panic!("unknown token {}", t),
     }
 }
@@ -323,7 +327,7 @@ impl Parser {
         let t = self.peek();
         match t.tok {
             T_INT | T_FLOAT | T_STRING | T_DIV | T_TIME | T_DURATION | T_PIPE_RECEIVE
-            | T_LPAREN | T_LBRACK | T_LBRACE | T_ADD | T_SUB | T_NOT | T_IF => {
+            | T_LPAREN | T_LBRACK | T_LBRACE | T_ADD | T_SUB | T_NOT | T_IF | T_QUOTE => {
                 self.parse_expression_statement()
             }
             T_IDENT => self.parse_ident_statement(),
@@ -926,6 +930,7 @@ impl Parser {
             T_INT => Expression::Int(self.parse_int_literal()),
             T_FLOAT => Expression::Flt(self.parse_float_literal()),
             T_STRING => Expression::Str(self.parse_string_literal()),
+            T_QUOTE => Expression::StringExp(Box::new(self.parse_string_expression())),
             T_REGEX => Expression::Regexp(self.parse_regexp_literal()),
             T_TIME => Expression::Time(self.parse_time_literal()),
             T_DURATION => Expression::Dur(self.parse_duration_literal()),
@@ -943,6 +948,43 @@ impl Parser {
                 ),
                 expression: None,
             })),
+        }
+    }
+    fn parse_string_expression(&mut self) -> StringExpression {
+        self.expect(T_QUOTE);
+        let mut parts = Vec::new();
+        loop {
+            let t = self.s.scan_string_expr();
+            match t.tok {
+                T_TEXT => {
+                    parts.push(StringExpressionPart::Text(TextPart {
+                        base: self.base_node(),
+                        value: t.lit,
+                    }));
+                }
+                T_STRINGEXPR => {
+                    let expr = self.parse_expression();
+                    self.expect(T_RBRACE);
+                    parts.push(StringExpressionPart::Expr(InterpolatedPart {
+                        base: self.base_node(),
+                        expression: expr,
+                    }));
+                }
+                T_QUOTE => {
+                    return StringExpression {
+                        base: self.base_node(),
+                        parts: parts,
+                    }
+                }
+                _ => {
+                    self.errs.push(format!("invalid token for string expression: {}", format_token(t.tok)));
+                    break;
+                }
+            }
+        }
+        return StringExpression {
+            base: self.base_node(),
+            parts: Vec::new(),
         }
     }
     fn parse_identifier(&mut self) -> Identifier {

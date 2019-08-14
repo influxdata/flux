@@ -18,6 +18,157 @@ use chrono::DateTime;
 use pretty_assertions::assert_eq;
 
 #[test]
+fn string_interpolation_simple() {
+    let mut p = Parser::new(r#""a + b = ${a + b}""#);
+    let parsed = p.parse_file("".to_string());
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode { errors: vec![] },
+            name: "".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![
+                Expr(ExpressionStatement {
+                    base: BaseNode { errors: vec![] },
+                    expression: StringExp(Box::new(StringExpression {
+                        base: BaseNode { errors: vec![] },
+                        parts: vec![
+                            StringExpressionPart::Text(TextPart {
+                                base: BaseNode { errors: vec![] },
+                                value: "a + b = ".to_string(),
+                            }),
+                            StringExpressionPart::Expr(InterpolatedPart {
+                                base: BaseNode { errors: vec![] },
+                                expression: Bin(Box::new(BinaryExpression {
+                                    base: BaseNode { errors: vec![] },
+                                    left: Idt(Identifier {
+                                        base: BaseNode { errors: vec![] },
+                                        name: "a".to_string(),
+                                    }),
+                                    right: Idt(Identifier {
+                                        base: BaseNode { errors: vec![] },
+                                        name: "b".to_string(),
+                                    }),
+                                    operator: AdditionOperator,
+                                })),
+                            }),
+                        ],
+                    })),
+                }),
+            ],
+        },
+    )
+}
+
+#[test]
+fn string_interpolation_multiple() {
+    let mut p = Parser::new(r#""a = ${a} and b = ${b}""#);
+    let parsed = p.parse_file("".to_string());
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode { errors: vec![] },
+            name: "".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![
+                Expr(ExpressionStatement {
+                    base: BaseNode { errors: vec![] },
+                    expression: StringExp(Box::new(StringExpression {
+                        base: BaseNode { errors: vec![] },
+                        parts: vec![
+                            StringExpressionPart::Text(TextPart {
+                                base: BaseNode { errors: vec![] },
+                                value: "a = ".to_string(),
+                            }),
+                            StringExpressionPart::Expr(InterpolatedPart {
+                                base: BaseNode { errors: vec![] },
+                                expression: Idt(Identifier {
+                                    base: BaseNode { errors: vec![] },
+                                    name: "a".to_string(),
+                                }),
+                            }),
+                            StringExpressionPart::Text(TextPart {
+                                base: BaseNode { errors: vec![] },
+                                value: " and b = ".to_string(),
+                            }),
+                            StringExpressionPart::Expr(InterpolatedPart {
+                                base: BaseNode { errors: vec![] },
+                                expression: Idt(Identifier {
+                                    base: BaseNode { errors: vec![] },
+                                    name: "b".to_string(),
+                                }),
+                            }),
+                        ],
+                    })),
+                }),
+            ],
+        },
+    )
+}
+
+#[test]
+fn string_interpolation_nested() {
+    let mut p = Parser::new(r#""we ${"can ${"add" + "strings"}"} together""#);
+    let parsed = p.parse_file("".to_string());
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode { errors: vec![] },
+            name: "".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![
+                Expr(ExpressionStatement {
+                    base: BaseNode { errors: vec![] },
+                    expression: StringExp(Box::new(StringExpression {
+                        base: BaseNode { errors: vec![] },
+                        parts: vec![
+                            StringExpressionPart::Text(TextPart {
+                                base: BaseNode { errors: vec![] },
+                                value: "we ".to_string(),
+                            }),
+                            StringExpressionPart::Expr(InterpolatedPart {
+                                base: BaseNode { errors: vec![] },
+                                expression: StringExp(Box::new(StringExpression {
+                                    base: BaseNode { errors: vec![] },
+                                    parts: vec![
+                                        StringExpressionPart::Text(TextPart {
+                                            base: BaseNode { errors: vec![] },
+                                            value: "can ".to_string(),
+                                        }),
+                                        StringExpressionPart::Expr(InterpolatedPart {
+                                            base: BaseNode { errors: vec![] },
+                                            expression: Bin(Box::new(BinaryExpression {
+                                                base: BaseNode { errors: vec![] },
+                                                left: Str(StringLiteral {
+                                                    base: BaseNode { errors: vec![] },
+                                                    value: "add".to_string(),
+                                                }),
+                                                right: Str(StringLiteral {
+                                                    base: BaseNode { errors: vec![] },
+                                                    value: "strings".to_string(),
+                                                }),
+                                                operator: AdditionOperator,
+                                            })),
+                                        }),
+                                    ],
+                                }))
+                            }),
+                            StringExpressionPart::Text(TextPart {
+                                base: BaseNode { errors: vec![] },
+                                value: " together".to_string(),
+                            }),
+                        ],
+                    })),
+                }),
+            ],
+        },
+    )
+}
+
+#[test]
 fn package_clause() {
     let mut p = Parser::new(r#"package foo"#);
     let parsed = p.parse_file("".to_string());

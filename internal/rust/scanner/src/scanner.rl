@@ -121,7 +121,7 @@
     string_expr := |*
         "${" => { tok = STRINGEXPR; fbreak; };
         '"' => { tok = QUOTE; fbreak; };
-        string_lit_char+ => { tok = TEXT; fbreak; };
+        (string_lit_char - "\"")+ => { tok = TEXT; fbreak; };
     *|;
 }%%
 

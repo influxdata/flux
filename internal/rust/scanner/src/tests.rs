@@ -200,6 +200,280 @@ fn test_scan_with_regex() {
 }
 
 #[test]
+fn test_scan_string_expr_simple() {
+    let text = r#""${a + b}""#;
+    let cdata = CString::new(text).expect("CString::new failed");
+    let mut s = Scanner::new(cdata);
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_QUOTE,
+            lit: String::from("\""),
+            pos: 0,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_STRINGEXPR,
+            lit: String::from("${"),
+            pos: 1,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_TEXT,
+            lit: String::from("a + b}"),
+            pos: 3,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_QUOTE,
+            lit: String::from("\""),
+            pos: 9,
+        }
+    );
+}
+
+#[test]
+fn test_scan_string_expr_start_with_text() {
+    let text = r#""a + b = ${a + b}""#;
+    let cdata = CString::new(text).expect("CString::new failed");
+    let mut s = Scanner::new(cdata);
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_QUOTE,
+            lit: String::from("\""),
+            pos: 0,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_TEXT,
+            lit: String::from("a + b = "),
+            pos: 1,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_STRINGEXPR,
+            lit: String::from("${"),
+            pos: 9,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_TEXT,
+            lit: String::from("a + b}"),
+            pos: 11,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_QUOTE,
+            lit: String::from("\""),
+            pos: 17,
+        }
+    );
+}
+
+#[test]
+fn test_scan_string_expr_multiple() {
+    let text = r#""a + b = ${a + b} and a - b = ${a - b}""#;
+    let cdata = CString::new(text).expect("CString::new failed");
+    let mut s = Scanner::new(cdata);
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_QUOTE,
+            lit: String::from("\""),
+            pos: 0,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_TEXT,
+            lit: String::from("a + b = "),
+            pos: 1,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_STRINGEXPR,
+            lit: String::from("${"),
+            pos: 9,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_TEXT,
+            lit: String::from("a + b} and a - b = "),
+            pos: 11,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_STRINGEXPR,
+            lit: String::from("${"),
+            pos: 30,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_TEXT,
+            lit: String::from("a - b}"),
+            pos: 32,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_QUOTE,
+            lit: String::from("\""),
+            pos: 38,
+        }
+    );
+}
+
+#[test]
+fn test_scan_string_expr_end_with_text() {
+    let text = r#""a + b = ${a + b} and a - b = ?""#;
+    let cdata = CString::new(text).expect("CString::new failed");
+    let mut s = Scanner::new(cdata);
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_QUOTE,
+            lit: String::from("\""),
+            pos: 0,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_TEXT,
+            lit: String::from("a + b = "),
+            pos: 1,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_STRINGEXPR,
+            lit: String::from("${"),
+            pos: 9,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_TEXT,
+            lit: String::from("a + b} and a - b = ?"),
+            pos: 11,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_QUOTE,
+            lit: String::from("\""),
+            pos: 31,
+        }
+    );
+}
+
+#[test]
+fn test_scan_string_expr_escaped_quotes() {
+    let text = r#""these \"\" are escaped quotes""#;
+    let cdata = CString::new(text).expect("CString::new failed");
+    let mut s = Scanner::new(cdata);
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_QUOTE,
+            lit: String::from("\""),
+            pos: 0,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_TEXT,
+            lit: String::from(r#"these \"\" are escaped quotes"#),
+            pos: 1,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_QUOTE,
+            lit: String::from("\""),
+            pos: 30,
+        }
+    );
+}
+
+#[test]
+fn test_scan_string_expr_not_escaped_quotes() {
+    let text = r#""this " is not an escaped quote""#;
+    let cdata = CString::new(text).expect("CString::new failed");
+    let mut s = Scanner::new(cdata);
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_QUOTE,
+            lit: String::from("\""),
+            pos: 0,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_TEXT,
+            lit: String::from("this "),
+            pos: 1,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_QUOTE,
+            lit: String::from("\""),
+            pos: 6,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_TEXT,
+            lit: String::from(" is not an escaped quote"),
+            pos: 7,
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: T_QUOTE,
+            lit: String::from("\""),
+            pos: 31,
+        }
+    );
+}
+
+#[test]
 fn test_scan_unread() {
     let text = "1 / 2 / 3";
     let cdata = CString::new(text).expect("CString::new failed");

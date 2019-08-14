@@ -5,6 +5,47 @@ use chrono::TimeZone;
 
 /*
 {
+    name: "string interpolation",
+    node: &ast.StringExpression{
+        Parts: []ast.StringExpressionPart{
+            &ast.TextPart{
+                Value: "a = ",
+            },
+            &ast.InterpolatedPart{
+                Expression: &ast.Identifier{
+                    Name: "a",
+                },
+            },
+        },
+    },
+    want: `{"type":"StringExpression","parts":[{"type":"TextPart","value":"a = "},{"type":"InterpolatedPart","expression":{"type":"Identifier","name":"a"}}]}`,
+},
+*/
+#[test]
+fn test_string_interpolation() {
+    let n = StringExpression {
+        base: BaseNode::default(),
+        parts: vec![
+            StringExpressionPart::Text(TextPart {
+                base: BaseNode::default(),
+                value: "a = ".to_string(),
+            }),
+            StringExpressionPart::Expr(InterpolatedPart {
+                base: BaseNode::default(),
+                expression: Expression::Idt(Identifier {
+                    base: BaseNode::default(),
+                    name: "a".to_string(),
+                }),
+            }),
+        ],
+    };
+    let serialized = serde_json::to_string(&n).unwrap();
+    assert_eq!(serialized, r#"{"type":"StringExpression","parts":[{"type":"TextPart","value":"a = "},{"type":"InterpolatedPart","expression":{"type":"Identifier","name":"a"}}]}"#);
+    let deserialized: StringExpression = serde_json::from_str(serialized.as_str()).unwrap();
+    assert_eq!(deserialized, n)
+}
+/*
+{
     name: "simple package",
     node: &ast.Package{
         Package: "foo",
