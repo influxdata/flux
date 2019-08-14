@@ -72,6 +72,7 @@ builtin getRecord
 
 // type conversion functions
 builtin bool
+builtin bytes
 builtin duration
 builtin float
 builtin int

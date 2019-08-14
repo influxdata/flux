@@ -566,6 +566,9 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	{Operator: ast.EqualOperator, Left: semantic.Object, Right: semantic.Object}: func(lv, rv Value) (Value, error) {
 		return NewBool(lv.Equal(rv)), nil
 	},
+	{Operator: ast.EqualOperator, Left: semantic.Bytes, Right: semantic.Bytes}: func(lv, rv Value) (Value, error) {
+		return NewBool(lv.Equal(rv)), nil
+	},
 
 	// NotEqualOperator
 
