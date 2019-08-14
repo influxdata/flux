@@ -397,17 +397,16 @@ func colsMatch(left, right []flux.ColMeta) bool {
 	return true
 }
 
-// ColMap writes a mapping of builder index to column reader index into colMap.
+// ColMap writes a mapping of builder index to cols index into colMap.
 // When colMap does not have enough capacity a new colMap is allocated.
 // The colMap is always returned
-func ColMap(colMap []int, builder TableBuilder, cr flux.ColReader) []int {
+func ColMap(colMap []int, builder TableBuilder, cols []flux.ColMeta) []int {
 	l := len(builder.Cols())
 	if cap(colMap) < l {
 		colMap = make([]int, len(builder.Cols()))
 	} else {
 		colMap = colMap[:l]
 	}
-	cols := cr.Cols()
 	for j, c := range builder.Cols() {
 		colMap[j] = ColIdx(c.Label, cols)
 	}
