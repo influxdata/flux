@@ -96,37 +96,40 @@ func (a *array) Sort(f func(i, j Value) bool) {
 }
 
 func (a *array) Str() string {
-	panic(UnexpectedKind(semantic.Object, semantic.String))
+	panic(UnexpectedKind(semantic.Array, semantic.String))
+}
+func (o *array) Bytes() []byte {
+	panic(UnexpectedKind(semantic.Array, semantic.Bytes))
 }
 func (a *array) Int() int64 {
-	panic(UnexpectedKind(semantic.Object, semantic.Int))
+	panic(UnexpectedKind(semantic.Array, semantic.Int))
 }
 func (a *array) UInt() uint64 {
-	panic(UnexpectedKind(semantic.Object, semantic.UInt))
+	panic(UnexpectedKind(semantic.Array, semantic.UInt))
 }
 func (a *array) Float() float64 {
-	panic(UnexpectedKind(semantic.Object, semantic.Float))
+	panic(UnexpectedKind(semantic.Array, semantic.Float))
 }
 func (a *array) Bool() bool {
-	panic(UnexpectedKind(semantic.Object, semantic.Bool))
+	panic(UnexpectedKind(semantic.Array, semantic.Bool))
 }
 func (a *array) Time() Time {
-	panic(UnexpectedKind(semantic.Object, semantic.Time))
+	panic(UnexpectedKind(semantic.Array, semantic.Time))
 }
 func (a *array) Duration() Duration {
-	panic(UnexpectedKind(semantic.Object, semantic.Duration))
+	panic(UnexpectedKind(semantic.Array, semantic.Duration))
 }
 func (a *array) Regexp() *regexp.Regexp {
-	panic(UnexpectedKind(semantic.Object, semantic.Regexp))
+	panic(UnexpectedKind(semantic.Array, semantic.Regexp))
 }
 func (a *array) Array() Array {
 	return a
 }
 func (a *array) Object() Object {
-	panic(UnexpectedKind(semantic.Object, semantic.Object))
+	panic(UnexpectedKind(semantic.Array, semantic.Object))
 }
 func (a *array) Function() Function {
-	panic(UnexpectedKind(semantic.Object, semantic.Function))
+	panic(UnexpectedKind(semantic.Array, semantic.Function))
 }
 func (a *array) Equal(rhs Value) bool {
 	if a.Type() != rhs.Type() {

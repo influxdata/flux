@@ -276,6 +276,10 @@ func (b linearBins) Str() string {
 	panic(values.UnexpectedKind(semantic.String, semantic.Function))
 }
 
+func (b linearBins) Bytes() []byte {
+	panic(values.UnexpectedKind(semantic.Function, semantic.Bytes))
+}
+
 func (b linearBins) Int() int64 {
 	panic(values.UnexpectedKind(semantic.Int, semantic.Function))
 }
@@ -405,6 +409,10 @@ func (b logarithmicBins) IsNull() bool {
 }
 func (b logarithmicBins) Str() string {
 	panic(values.UnexpectedKind(semantic.String, semantic.Function))
+}
+
+func (b logarithmicBins) Bytes() []byte {
+	panic(values.UnexpectedKind(semantic.Function, semantic.Bytes))
 }
 
 func (b logarithmicBins) Int() int64 {

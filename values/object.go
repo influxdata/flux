@@ -131,6 +131,9 @@ func (o *object) Range(f func(name string, v Value)) {
 func (o *object) Str() string {
 	panic(UnexpectedKind(semantic.Object, semantic.String))
 }
+func (o *object) Bytes() []byte {
+	panic(UnexpectedKind(semantic.Object, semantic.Bytes))
+}
 func (o *object) Int() int64 {
 	panic(UnexpectedKind(semantic.Object, semantic.Int))
 }

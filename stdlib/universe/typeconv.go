@@ -47,6 +47,9 @@ func (c *stringConv) IsNull() bool {
 func (c *stringConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
 }
+func (c *stringConv) Bytes() []byte {
+	panic(values.UnexpectedKind(semantic.Function, semantic.Bytes))
+}
 func (c *stringConv) Int() int64 {
 	panic(values.UnexpectedKind(semantic.Function, semantic.Int))
 }
@@ -131,6 +134,9 @@ func (c *intConv) IsNull() bool {
 }
 func (c *intConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
+}
+func (c *intConv) Bytes() []byte {
+	panic(values.UnexpectedKind(semantic.Function, semantic.Bytes))
 }
 func (c *intConv) Int() int64 {
 	panic(values.UnexpectedKind(semantic.Function, semantic.Int))
@@ -225,6 +231,9 @@ func (c *uintConv) IsNull() bool {
 func (c *uintConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
 }
+func (c *uintConv) Bytes() []byte {
+	panic(values.UnexpectedKind(semantic.Function, semantic.Bytes))
+}
 func (c *uintConv) Int() int64 {
 	panic(values.UnexpectedKind(semantic.Function, semantic.Int))
 }
@@ -318,6 +327,9 @@ func (c *floatConv) IsNull() bool {
 func (c *floatConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
 }
+func (c *floatConv) Bytes() []byte {
+	panic(values.UnexpectedKind(semantic.Function, semantic.Bytes))
+}
 func (c *floatConv) Int() int64 {
 	panic(values.UnexpectedKind(semantic.Function, semantic.Int))
 }
@@ -406,6 +418,9 @@ func (c *boolConv) IsNull() bool {
 }
 func (c *boolConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
+}
+func (c *boolConv) Bytes() []byte {
+	panic(values.UnexpectedKind(semantic.Function, semantic.Bytes))
 }
 func (c *boolConv) Int() int64 {
 	panic(values.UnexpectedKind(semantic.Function, semantic.Int))
@@ -516,6 +531,9 @@ func (c *timeConv) IsNull() bool {
 func (c *timeConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
 }
+func (c *timeConv) Bytes() []byte {
+	panic(values.UnexpectedKind(semantic.Function, semantic.Bytes))
+}
 func (c *timeConv) Int() int64 {
 	panic(values.UnexpectedKind(semantic.Function, semantic.Int))
 }
@@ -598,6 +616,9 @@ func (c *durationConv) IsNull() bool {
 }
 func (c *durationConv) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
+}
+func (c *durationConv) Bytes() []byte {
+	panic(values.UnexpectedKind(semantic.Function, semantic.Bytes))
 }
 func (c *durationConv) Int() int64 {
 	panic(values.UnexpectedKind(semantic.Function, semantic.Int))

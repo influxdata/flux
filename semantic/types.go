@@ -53,6 +53,7 @@ const (
 	Invalid Nature = iota
 	Nil
 	String
+	Bytes
 	Int
 	UInt
 	Float
@@ -69,6 +70,7 @@ var natureNames = []string{
 	Invalid:  "invalid",
 	Nil:      "nil",
 	String:   "string",
+	Bytes:    "bytes",
 	Int:      "int",
 	UInt:     "uint",
 	Float:    "float",
