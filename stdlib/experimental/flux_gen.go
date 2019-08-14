@@ -21,11 +21,11 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 19,
-					Line:   10,
+					Column: 12,
+					Line:   13,
 				},
 				File:   "experimental.flux",
-				Source: "package experimental\n\nbuiltin addDuration\nbuiltin subDuration\n\n// An experimental version of group that has mode: \"extend\"\nbuiltin group\n\n// objectKeys produces a list of the keys existing on the object\nbuiltin objectKeys",
+				Source: "package experimental\n\nbuiltin addDuration\nbuiltin subDuration\n\n// An experimental version of group that has mode: \"extend\"\nbuiltin group\n\n// objectKeys produces a list of the keys existing on the object\nbuiltin objectKeys\n\n// set adds the values from the object onto each row of a table\nbuiltin set",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -167,6 +167,40 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "objectKeys",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 12,
+						Line:   13,
+					},
+					File:   "experimental.flux",
+					Source: "builtin set",
+					Start: ast.Position{
+						Column: 1,
+						Line:   13,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 12,
+							Line:   13,
+						},
+						File:   "experimental.flux",
+						Source: "set",
+						Start: ast.Position{
+							Column: 9,
+							Line:   13,
+						},
+					},
+				},
+				Name: "set",
 			},
 		}},
 		Imports: nil,

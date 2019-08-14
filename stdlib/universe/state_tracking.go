@@ -246,6 +246,8 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Tab
 	if timeIdx < 0 {
 		return fmt.Errorf("no column %q exists", t.timeCol)
 	}
+	colMap := make([]int, len(tbl.Cols()))
+	colMap = execute.ColMap(colMap, builder, tbl.Cols())
 	// Append modified rows
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
@@ -300,8 +302,6 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Tab
 				}
 			}
 
-			colMap := make([]int, len(cr.Cols()))
-			colMap = execute.ColMap(colMap, builder, cr)
 			err = execute.AppendMappedRecordExplicit(i, cr, builder, colMap)
 			if err != nil {
 				return err

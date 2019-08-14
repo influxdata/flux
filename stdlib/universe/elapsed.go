@@ -2,11 +2,12 @@ package universe
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
-	"time"
 )
 
 const ElapsedKind = "elapsed"
@@ -184,11 +185,10 @@ func (t *elapsedTransformation) Process(id execute.DatasetID, tbl flux.Table) er
 
 	prevTime := float64(0)
 
+	colMap := execute.ColMap([]int{0}, builder, tbl.Cols())
+
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
-
-		colMap := execute.ColMap([]int{0}, builder, cr)
-
 		if l != 0 {
 			for j, c := range cols {
 
