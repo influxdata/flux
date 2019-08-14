@@ -2,6 +2,7 @@
 package values
 
 import (
+	"bytes"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -19,6 +20,7 @@ type Value interface {
 	Typer
 	IsNull() bool
 	Str() string
+	Bytes() []byte
 	Int() int64
 	UInt() uint64
 	Float() float64
@@ -53,6 +55,10 @@ func (v value) IsNull() bool {
 func (v value) Str() string {
 	CheckKind(v.t.Nature(), semantic.String)
 	return v.v.(string)
+}
+func (v value) Bytes() []byte {
+	CheckKind(v.t.Nature(), semantic.Bytes)
+	return v.v.([]byte)
 }
 func (v value) Int() int64 {
 	CheckKind(v.t.Nature(), semantic.Int)
@@ -114,6 +120,8 @@ func (v value) Equal(r Value) bool {
 		return v.Float() == r.Float()
 	case semantic.String:
 		return v.Str() == r.Str()
+	case semantic.Bytes:
+		return bytes.Equal(v.Bytes(), r.Bytes())
 	case semantic.Time:
 		return v.Time() == r.Time()
 	case semantic.Duration:
@@ -153,6 +161,8 @@ func New(v interface{}) Value {
 	switch v := v.(type) {
 	case string:
 		return NewString(v)
+	case []byte:
+		return NewBytes(v)
 	case int64:
 		return NewInt(v)
 	case uint64:
@@ -225,6 +235,12 @@ func NewFromString(t semantic.Type, s string) (Value, error) {
 func NewString(v string) Value {
 	return value{
 		t: semantic.String,
+		v: v,
+	}
+}
+func NewBytes(v []byte) Value {
+	return value{
+		t: semantic.Bytes,
 		v: v,
 	}
 }
