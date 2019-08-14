@@ -19,6 +19,7 @@ func init() {
 	flux.RegisterPackageValue("universe", "bool", &boolConv{})
 	flux.RegisterPackageValue("universe", "time", &timeConv{})
 	flux.RegisterPackageValue("universe", "duration", &durationConv{})
+	flux.RegisterPackageValue("universe", "bytes", bytes)
 }
 
 const (
@@ -684,3 +685,27 @@ func (c *durationConv) Call(args values.Object) (values.Value, error) {
 	}
 	return values.NewDuration(d), nil
 }
+
+var bytes = values.NewFunction(
+	"bytes",
+	semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{
+			conversionArg: semantic.Tvar(1),
+		},
+		Required: []string{conversionArg},
+		Return:   semantic.Bytes,
+	}),
+	func(args values.Object) (values.Value, error) {
+		v, ok := args.Get(conversionArg)
+		if !ok {
+			return nil, errMissingArg
+		}
+		switch v.Type().Nature() {
+		case semantic.String:
+			return values.NewBytes([]byte(v.Str())), nil
+		default:
+			return nil, fmt.Errorf("cannot convert %v to bytes", v.Type())
+		}
+	},
+	false,
+)

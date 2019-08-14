@@ -11,6 +11,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/alerts"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/v1"
+	_ "github.com/influxdata/flux/stdlib/json"
 	_ "github.com/influxdata/flux/stdlib/kafka"
 	_ "github.com/influxdata/flux/stdlib/math"
 	_ "github.com/influxdata/flux/stdlib/regexp"
