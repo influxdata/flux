@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/stdlib"
@@ -99,9 +100,13 @@ func testFlux(t testing.TB, pkg *ast.Package) {
 
 func doTestRun(t testing.TB, c flux.Compiler) {
 	program, err := c.Compile(context.Background())
+	if p, ok := program.(lang.DependenciesAwareProgram); ok {
+		p.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
+	}
 	if err != nil {
 		t.Fatalf("unexpected error while compiling query: %v", err)
 	}
+
 	alloc := &memory.Allocator{}
 	r, err := program.Start(context.Background(), alloc)
 	if err != nil {

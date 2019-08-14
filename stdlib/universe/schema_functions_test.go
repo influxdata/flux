@@ -1,6 +1,7 @@
 package universe_test
 
 import (
+	"context"
 	"errors"
 	"regexp"
 	"testing"
@@ -1281,7 +1282,8 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				tc.want,
 				tc.wantErr,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					tr, err := universe.NewSchemaMutationTransformation(d, c, tc.spec)
+					// verify that ctx & deps should be nil here
+					tr, err := universe.NewSchemaMutationTransformation(context.Background(), nil, tc.spec, d, c)
 					if err != nil {
 						t.Fatal(err)
 					}

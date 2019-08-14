@@ -1,7 +1,10 @@
 package secrets
 
 import (
+	"context"
+
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -34,7 +37,7 @@ func makeGetFunc() values.Function {
 }
 
 // Get retrieves the secret key identifier for a given secret.
-func Get(args values.Object) (values.Value, error) {
+func Get(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 	fargs := interpreter.NewArguments(args)
 	key, err := fargs.GetRequiredString("key")
 	if err != nil {

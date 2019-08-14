@@ -3,6 +3,8 @@
 package runtime_test
 
 import (
+	"context"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"runtime/debug"
 	"testing"
 
@@ -91,7 +93,7 @@ func TestVersion(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			runtime.SetBuildInfo(tt.bi)
 
-			got, err := runtime.Version(nil)
+			got, err := runtime.Version(context.Background(), dependenciestest.NewTestDependenciesInterface(), nil)
 			if err != nil {
 				if tt.wantErr != nil {
 					if !cmp.Equal(tt.wantErr, err) {

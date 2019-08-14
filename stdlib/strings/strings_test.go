@@ -1,12 +1,14 @@
 package strings
 
 import (
+	"context"
 	"errors"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"strings"
 	"testing"
 	"unicode"
 
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -29,7 +31,7 @@ func TestTrim(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			trim := generateDualArgStringFunction("trim", []string{stringArgV, cutset}, strings.Trim)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "cutset": values.NewString(tc.cutset)})
-			result, err := trim.Call(testCase)
+			result, err := trim.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Str()
 
 			if err != nil {
@@ -69,7 +71,7 @@ func TestTrimPrefix(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			trimPrefix := generateDualArgStringFunction("trimPrefix", []string{stringArgV, prefix}, strings.TrimPrefix)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "prefix": values.NewString(tc.prefix)})
-			result, err := trimPrefix.Call(testCase)
+			result, err := trimPrefix.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Str()
 
 			if err != nil {
@@ -109,7 +111,7 @@ func TestTrimSuffix(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			trimSuffix := generateDualArgStringFunction("trimSuffix", []string{stringArgV, suffix}, strings.TrimSuffix)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "suffix": values.NewString(tc.suffix)})
-			result, err := trimSuffix.Call(testCase)
+			result, err := trimSuffix.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Str()
 
 			if err != nil {
@@ -140,7 +142,7 @@ func TestTrimSpace(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			trimSpace := generateSingleArgStringFunction("trimSpace", strings.TrimSpace)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v)})
-			result, err := trimSpace.Call(testCase)
+			result, err := trimSpace.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Str()
 
 			if err != nil {
@@ -172,7 +174,7 @@ func TestTitle(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			title := generateSingleArgStringFunction("title", strings.Title)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v)})
-			result, err := title.Call(testCase)
+			result, err := title.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Str()
 
 			if err != nil {
@@ -204,7 +206,7 @@ func TestToUpper(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			toUpper := generateSingleArgStringFunction("toUpper", strings.ToUpper)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v)})
-			result, err := toUpper.Call(testCase)
+			result, err := toUpper.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Str()
 
 			if err != nil {
@@ -236,7 +238,7 @@ func TestToLower(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			toLower := generateSingleArgStringFunction("toLower", strings.ToLower)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v)})
-			result, err := toLower.Call(testCase)
+			result, err := toLower.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Str()
 
 			if err != nil {
@@ -270,7 +272,7 @@ func TestTrimRight(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			trim := generateDualArgStringFunction("trimRight", []string{stringArgV, cutset}, strings.TrimRight)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "cutset": values.NewString(tc.cutset)})
-			result, err := trim.Call(testCase)
+			result, err := trim.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Str()
 
 			if err != nil {
@@ -304,7 +306,7 @@ func TestTrimLeft(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			trim := generateDualArgStringFunction("trimLeft", []string{stringArgV, cutset}, strings.TrimLeft)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "cutset": values.NewString(tc.cutset)})
-			result, err := trim.Call(testCase)
+			result, err := trim.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Str()
 
 			if err != nil {
@@ -336,7 +338,7 @@ func TestToTitle(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			title := generateSingleArgStringFunction("toTitle", strings.ToTitle)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v)})
-			result, err := title.Call(testCase)
+			result, err := title.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Str()
 
 			if err != nil {
@@ -376,7 +378,7 @@ func TestHasSuffix(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			hasSuffix := generateDualArgStringFunctionReturnBool("hasSuffix", []string{stringArgV, suffix}, strings.HasSuffix)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "suffix": values.NewString(tc.suffix)})
-			result, err := hasSuffix.Call(testCase)
+			result, err := hasSuffix.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Bool()
 
 			if err != nil {
@@ -416,7 +418,7 @@ func TestHasPrefix(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			hasPrefix := generateDualArgStringFunctionReturnBool("hasPrefix", []string{stringArgV, prefix}, strings.HasPrefix)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "prefix": values.NewString(tc.prefix)})
-			result, err := hasPrefix.Call(testCase)
+			result, err := hasPrefix.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Bool()
 
 			if err != nil {
@@ -456,7 +458,7 @@ func TestContains(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			containsStr := generateDualArgStringFunctionReturnBool("containsStr", []string{stringArgV, substr}, strings.Contains)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "substr": values.NewString(tc.substr)})
-			result, err := containsStr.Call(testCase)
+			result, err := containsStr.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Bool()
 
 			if err != nil {
@@ -496,7 +498,7 @@ func TestContainsAny(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			containsAny := generateDualArgStringFunctionReturnBool("containsAny", []string{stringArgV, chars}, strings.ContainsAny)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "chars": values.NewString(tc.chars)})
-			result, err := containsAny.Call(testCase)
+			result, err := containsAny.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Bool()
 
 			if err != nil {
@@ -530,7 +532,7 @@ func TestEqualFold(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			equalFold := generateDualArgStringFunctionReturnBool("equalFold", []string{stringArgV, stringArgT}, strings.EqualFold)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "t": values.NewString(tc.t)})
-			result, err := equalFold.Call(testCase)
+			result, err := equalFold.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Bool()
 
 			if err != nil {
@@ -576,7 +578,7 @@ func TestCompare(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			compare := generateDualArgStringFunctionReturnInt("compare", []string{stringArgV, stringArgT}, strings.Compare)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "t": values.NewString(tc.t)})
-			result, err := compare.Call(testCase)
+			result, err := compare.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Int()
 
 			if err != nil {
@@ -616,7 +618,7 @@ func TestCount(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			countStr := generateDualArgStringFunctionReturnInt("countStr", []string{stringArgV, substr}, strings.Count)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "substr": values.NewString(tc.substr)})
-			result, err := countStr.Call(testCase)
+			result, err := countStr.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Int()
 
 			if err != nil {
@@ -656,7 +658,7 @@ func TestIndex(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			index := generateDualArgStringFunctionReturnInt("index", []string{stringArgV, substr}, strings.Index)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "substr": values.NewString(tc.substr)})
-			result, err := index.Call(testCase)
+			result, err := index.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Int()
 
 			if err != nil {
@@ -696,7 +698,7 @@ func TestIndexAny(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			indexAny := generateDualArgStringFunctionReturnInt("indexAny", []string{stringArgV, chars}, strings.IndexAny)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "chars": values.NewString(tc.chars)})
-			result, err := indexAny.Call(testCase)
+			result, err := indexAny.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Int()
 
 			if err != nil {
@@ -736,7 +738,7 @@ func TestLastIndex(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			lastIndex := generateDualArgStringFunctionReturnInt("lastIndex", []string{stringArgV, substr}, strings.LastIndex)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "substr": values.NewString(tc.substr)})
-			result, err := lastIndex.Call(testCase)
+			result, err := lastIndex.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Int()
 
 			if err != nil {
@@ -782,7 +784,7 @@ func TestLastIndexAny(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			lastIndexAny := generateDualArgStringFunctionReturnInt("lastIndexAny", []string{stringArgV, chars}, strings.LastIndexAny)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "chars": values.NewString(tc.chars)})
-			result, err := lastIndexAny.Call(testCase)
+			result, err := lastIndexAny.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Int()
 
 			if err != nil {
@@ -819,7 +821,7 @@ func TestIsDigit(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			digit := generateUnicodeIsFunction("isDigit", unicode.IsDigit)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v)})
-			result, err := digit.Call(testCase)
+			result, err := digit.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Bool()
 
 			if err != nil {
@@ -861,7 +863,7 @@ func TestIsLetter(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			is := generateUnicodeIsFunction("isLetter", unicode.IsLetter)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v)})
-			result, err := is.Call(testCase)
+			result, err := is.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Bool()
 
 			if err != nil {
@@ -903,7 +905,7 @@ func TestIsLower(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			is := generateUnicodeIsFunction("isLower", unicode.IsLower)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v)})
-			result, err := is.Call(testCase)
+			result, err := is.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Bool()
 
 			if err != nil {
@@ -945,7 +947,7 @@ func TestIsUpper(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			is := generateUnicodeIsFunction("isUpper", unicode.IsUpper)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v)})
-			result, err := is.Call(testCase)
+			result, err := is.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Bool()
 
 			if err != nil {
@@ -979,7 +981,7 @@ func TestRepeat(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			testValue := generateRepeat("repeat", []string{stringArgV, integer}, strings.Repeat)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "i": values.NewInt(int64(tc.i))})
-			result, err := testValue.Call(testCase)
+			result, err := testValue.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Str()
 
 			if err != nil {
@@ -1026,7 +1028,7 @@ func TestReplace(t *testing.T) {
 			testValue := generateReplace("replace", []string{stringArgV, stringArgT, stringArgU, integer}, strings.Replace)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v),
 				"t": values.NewString(tc.t), "u": values.NewString(tc.u), "i": values.NewInt(int64(tc.i))})
-			result, err := testValue.Call(testCase)
+			result, err := testValue.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Str()
 
 			if err != nil {
@@ -1070,7 +1072,7 @@ func TestReplaceAll(t *testing.T) {
 			testValue := generateReplaceAll("replaceAll", []string{stringArgV, stringArgT, stringArgU}, strings.ReplaceAll)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v),
 				"t": values.NewString(tc.t), "u": values.NewString(tc.u)})
-			result, err := testValue.Call(testCase)
+			result, err := testValue.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Str()
 
 			if err != nil {
@@ -1112,7 +1114,7 @@ func TestSplit(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			testValue := generateSplit("split", []string{stringArgV, stringArgT}, strings.Split)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "t": values.NewString(tc.t)})
-			result, err := testValue.Call(testCase)
+			result, err := testValue.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Array()
 
 			if err != nil {
@@ -1147,7 +1149,7 @@ func TestSplitAfter(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			testValue := generateSplit("splitAfter", []string{stringArgV, stringArgT}, strings.SplitAfter)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "t": values.NewString(tc.t)})
-			result, err := testValue.Call(testCase)
+			result, err := testValue.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Array()
 
 			if err != nil {
@@ -1184,7 +1186,7 @@ func TestSplitN(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			testValue := generateSplitN("splitN", []string{stringArgV, stringArgT, integer}, strings.SplitN)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "t": values.NewString(tc.t), "i": values.NewInt(int64(tc.i))})
-			result, err := testValue.Call(testCase)
+			result, err := testValue.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Array()
 
 			if err != nil {
@@ -1221,7 +1223,7 @@ func TestSplitAfterN(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			testValue := generateSplitN("splitAfterN", []string{stringArgV, stringArgT, integer}, strings.SplitAfterN)
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "t": values.NewString(tc.t), "i": values.NewInt(int64(tc.i))})
-			result, err := testValue.Call(testCase)
+			result, err := testValue.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := result.Array()
 
 			if err != nil {
@@ -1242,7 +1244,7 @@ func TestJoinStr(t *testing.T) {
 		values.NewString("a"), values.NewString("b"), values.NewString("c")})
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"arr": arr, "v": values.NewString(", ")})
 	want := strings.Join([]string{"a", "b", "c"}, ", ")
-	got, err := fluxFunc.Call(fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1299,7 +1301,7 @@ func TestStrLength(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			testValue := strlen
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v)})
-			result, err := testValue.Call(testCase)
+			result, err := testValue.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 			res := int(result.Int())
 
 			if err != nil {
@@ -1385,7 +1387,7 @@ func TestSubstring(t *testing.T) {
 			testValue := substring
 			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v),
 				"start": values.NewInt(int64(tc.start)), "end": values.NewInt(int64(tc.end))})
-			result, err := testValue.Call(testCase)
+			result, err := testValue.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 
 			if err != nil {
 				if got, want := err.Error(), tc.expectErr.Error(); got != want {
@@ -1408,6 +1410,6 @@ func BenchmarkSubstring(b *testing.B) {
 	testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString("townsendapplebeepancake"),
 		"start": values.NewInt(int64(0)), "end": values.NewInt(int64(5))})
 	for i := 0; i < b.N; i++ {
-		testValue.Call(testCase)
+		testValue.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), testCase)
 	}
 }

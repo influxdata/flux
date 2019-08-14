@@ -1,6 +1,7 @@
 package universe
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math"
@@ -8,6 +9,7 @@ import (
 	"sort"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
@@ -332,7 +334,7 @@ func (b linearBins) HasSideEffect() bool {
 	return false
 }
 
-func (b linearBins) Call(args values.Object) (values.Value, error) {
+func (b linearBins) Call(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 	startV, ok := args.Get("start")
 	if !ok {
 		return nil, errors.New("start is required")
@@ -467,7 +469,7 @@ func (b logarithmicBins) HasSideEffect() bool {
 	return false
 }
 
-func (b logarithmicBins) Call(args values.Object) (values.Value, error) {
+func (b logarithmicBins) Call(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 	startV, ok := args.Get("start")
 	if !ok {
 		return nil, errors.New("start is required")

@@ -10,6 +10,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -19,7 +20,7 @@ import (
 const nowOption = "now"
 
 // FromScript returns a spec from a script expressed as a raw string.
-func FromScript(ctx context.Context, script string, now time.Time) (*flux.Spec, error) {
+func FromScript(ctx context.Context, deps dependencies.Interface, now time.Time, script string) (*flux.Spec, error) {
 	s, _ := opentracing.StartSpanFromContext(ctx, "parse")
 
 	astPkg, err := flux.Parse(script)
@@ -27,14 +28,14 @@ func FromScript(ctx context.Context, script string, now time.Time) (*flux.Spec, 
 		return nil, err
 	}
 	s.Finish()
-	return FromAST(ctx, astPkg, now)
+	return FromAST(ctx, deps, astPkg, now)
 }
 
 // FromAST returns a spec from an AST.
-func FromAST(ctx context.Context, astPkg *ast.Package, now time.Time) (*flux.Spec, error) {
+func FromAST(ctx context.Context, deps dependencies.Interface, astPkg *ast.Package, now time.Time) (*flux.Spec, error) {
 	s, _ := opentracing.StartSpanFromContext(ctx, "eval")
 
-	sideEffects, scope, err := flux.EvalAST(astPkg, flux.SetOption(nowOption, generateNowFunc(now)))
+	sideEffects, scope, err := flux.EvalAST(ctx, deps, astPkg, flux.SetOption(nowOption, generateNowFunc(now)))
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +49,7 @@ func FromAST(ctx context.Context, astPkg *ast.Package, now time.Time) (*flux.Spe
 		return nil, fmt.Errorf("%q option not set", nowOption)
 	}
 
-	nowTime, err := nowOpt.Function().Call(nil)
+	nowTime, err := nowOpt.Function().Call(ctx, deps, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +87,7 @@ func generateNowFunc(now time.Time) values.Function {
 	ftype := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 		Return: semantic.Time,
 	})
-	call := func(args values.Object) (values.Value, error) {
+	call := func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 		return timeVal, nil
 	}
 	sideEffect := false

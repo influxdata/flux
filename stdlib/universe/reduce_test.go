@@ -1,6 +1,8 @@
 package universe_test
 
 import (
+	"context"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"testing"
 
 	"github.com/influxdata/flux"
@@ -164,7 +166,7 @@ func TestReduce_Process(t *testing.T) {
 				tc.want,
 				tc.wantErr,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					f, err := universe.NewReduceTransformation(d, c, tc.spec)
+					f, err := universe.NewReduceTransformation(context.Background(), dependenciestest.NewTestDependenciesInterface(), tc.spec, d, c)
 					if err != nil {
 						t.Fatal(err)
 					}

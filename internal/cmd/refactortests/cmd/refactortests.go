@@ -16,6 +16,7 @@ import (
 	"github.com/influxdata/flux/ast/edit"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/csv"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/lang"
@@ -177,6 +178,9 @@ func executeScript(pkg *ast.Package) (string, string, error) {
 	}
 
 	program, err := c.Compile(context.Background())
+	if p, ok := program.(lang.DependenciesAwareProgram); ok {
+		p.SetExecutorDependencies(execute.Dependencies{dependencies.InterpreterDepsKey: dependencies.NewDefaultDependencies()})
+	}
 	if err != nil {
 		fmt.Println(ast.Format(testPkg))
 		return "", "", errors.Wrap(err, codes.Inherit, "error during compilation, check your script and retry")

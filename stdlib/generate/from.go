@@ -7,6 +7,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/compiler"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
@@ -94,7 +95,7 @@ type FromGeneratorProcedureSpec struct {
 	Start time.Time
 	Stop  time.Time
 	Count int64
-	Fn    compiler.Func
+	Fn    interpreter.ResolvedFunction
 }
 
 func newFromGeneratorProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -104,15 +105,11 @@ func newFromGeneratorProcedure(qs flux.OperationSpec, pa plan.Administration) (p
 		return nil, fmt.Errorf("invalid spec type %T", qs)
 	}
 
-	fn, _, err := compiler.CompileFnParam(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope), semantic.Int, semantic.Int)
-	if err != nil {
-		return nil, err
-	}
 	return &FromGeneratorProcedureSpec{
 		Count: spec.Count,
 		Start: spec.Start,
 		Stop:  spec.Stop,
-		Fn:    fn,
+		Fn:    spec.Fn,
 	}, nil
 }
 
@@ -136,7 +133,13 @@ func createFromGeneratorSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID
 	s.Start = spec.Start
 	s.Stop = spec.Stop
 	s.Count = spec.Count
-	s.Fn = spec.Fn
+	s.deps = a.Dependencies()[dependencies.InterpreterDepsKey].(dependencies.Interface)
+
+	fn, _, err := compiler.CompileFnParam(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope), semantic.Int, semantic.Int)
+	if err != nil {
+		return nil, err
+	}
+	s.Fn = fn
 
 	return execute.CreateSourceFromDecoder(s, dsid, a)
 }
@@ -148,6 +151,7 @@ type GeneratorSource struct {
 	Count int64
 	alloc *memory.Allocator
 	Fn    compiler.Func
+	deps  dependencies.Interface
 }
 
 func NewGeneratorSource(a *memory.Allocator) *GeneratorSource {
@@ -210,7 +214,7 @@ func (s *GeneratorSource) Decode(ctx context.Context) (flux.Table, error) {
 		b.AppendTime(timeIdx, values.ConvertTime(s.Start.Add(time.Duration(i)*deltaT)))
 		in := values.NewObject()
 		in.Set("n", values.NewInt(int64(i)))
-		v, err := s.Fn.Eval(in)
+		v, err := s.Fn.Eval(ctx, s.deps, in)
 		if err != nil {
 			return nil, err
 		}

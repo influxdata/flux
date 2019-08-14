@@ -3,6 +3,8 @@ package slack_test
 import (
 	"context"
 	"encoding/json"
+	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/execute"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -10,19 +12,19 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux/memory"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	_ "github.com/influxdata/flux/builtin"
 	_ "github.com/influxdata/flux/csv"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/lang"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
 )
 
 func TestSlack(t *testing.T) {
-
-	_, scope, err := flux.Eval(`
+	ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+	_, scope, err := flux.Eval(ctx, deps, `
 import "csv"
 import "slack"
 
@@ -199,6 +201,7 @@ csv.from(csv:data) |> endpoint()`
 			if err != nil {
 				t.Fatal(err)
 			}
+			prog.SetExecutorDependencies(execute.Dependencies{dependencies.InterpreterDepsKey: dependencies.NewDefaultDependencies()})
 			query, err := prog.Start(context.Background(), &memory.Allocator{})
 
 			if err != nil {

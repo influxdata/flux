@@ -1,8 +1,10 @@
 package execute_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -55,46 +57,43 @@ func TestRowMapFn_Eval(t *testing.T) {
 		{
 			name: "_value + 1.0, tag + 'b'",
 			f: func() (*execute.RowMapFn, error) {
-				return execute.NewRowMapFn(
-					&semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.StringLiteral{Value: "_value"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
+				return execute.NewRowMapFn(&semantic.FunctionExpression{
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{
+									Key: &semantic.StringLiteral{Value: "_value"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
 											},
-											Right: &semantic.FloatLiteral{Value: 1.0},
+											Property: "_value",
 										},
+										Right: &semantic.FloatLiteral{Value: 1.0},
 									},
-									{
-										Key: &semantic.StringLiteral{Value: "tag"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "tag",
+								},
+								{
+									Key: &semantic.StringLiteral{Value: "tag"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.AdditionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
 											},
-											Right: &semantic.StringLiteral{Value: "b"},
+											Property: "tag",
 										},
+										Right: &semantic.StringLiteral{Value: "b"},
 									},
 								},
 							},
 						},
 					},
-					prelude(),
-				)
+				}, prelude())
 			},
 			data: &executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -123,33 +122,30 @@ func TestRowMapFn_Eval(t *testing.T) {
 		{
 			name: "_value - 3.0 with nulls",
 			f: func() (*execute.RowMapFn, error) {
-				return execute.NewRowMapFn(
-					&semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.StringLiteral{Value: "_value"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.SubtractionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
+				return execute.NewRowMapFn(&semantic.FunctionExpression{
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.ObjectExpression{
+							Properties: []*semantic.Property{
+								{
+									Key: &semantic.StringLiteral{Value: "_value"},
+									Value: &semantic.BinaryExpression{
+										Operator: ast.SubtractionOperator,
+										Left: &semantic.MemberExpression{
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
 											},
-											Right: &semantic.FloatLiteral{Value: 3.0},
+											Property: "_value",
 										},
+										Right: &semantic.FloatLiteral{Value: 3.0},
 									},
 								},
 							},
 						},
 					},
-					prelude(),
-				)
+				}, prelude())
 			},
 			data: &executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -178,26 +174,23 @@ func TestRowMapFn_Eval(t *testing.T) {
 		{
 			name: "error not returning object",
 			f: func() (*execute.RowMapFn, error) {
-				return execute.NewRowMapFn(
-					&semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.BinaryExpression{
-								Operator: ast.SubtractionOperator,
-								Left: &semantic.MemberExpression{
-									Object: &semantic.IdentifierExpression{
-										Name: "r",
-									},
-									Property: "_value",
+				return execute.NewRowMapFn(&semantic.FunctionExpression{
+					Block: &semantic.FunctionBlock{
+						Parameters: &semantic.FunctionParameters{
+							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+						},
+						Body: &semantic.BinaryExpression{
+							Operator: ast.SubtractionOperator,
+							Left: &semantic.MemberExpression{
+								Object: &semantic.IdentifierExpression{
+									Name: "r",
 								},
-								Right: &semantic.FloatLiteral{Value: 3.0},
+								Property: "_value",
 							},
+							Right: &semantic.FloatLiteral{Value: 3.0},
 						},
 					},
-					prelude(),
-				)
+				}, prelude())
 			},
 			data: &executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -242,10 +235,11 @@ func TestRowMapFn_Eval(t *testing.T) {
 				want[i] = r
 			}
 
+			ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
 			got := make([]*execute.Record, 0, len(tc.data.Data))
 			if err := tc.data.Do(func(cr flux.ColReader) error {
 				for i := 0; i < cr.Len(); i++ {
-					obj, err := f.Eval(i, cr)
+					obj, err := f.Eval(ctx, deps, i, cr)
 					if err != nil {
 						got = append(got, execute.NewRecord(semantic.Invalid))
 					} else {
@@ -271,24 +265,21 @@ func TestRowMapFn_Eval(t *testing.T) {
 
 func TestRowPredicateFn_Eval(t *testing.T) {
 	gt2F := func() (*execute.RowPredicateFn, error) {
-		return execute.NewRowPredicateFn(
-			&semantic.FunctionExpression{
-				Block: &semantic.FunctionBlock{
-					Parameters: &semantic.FunctionParameters{
-						List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+		return execute.NewRowPredicateFn(&semantic.FunctionExpression{
+			Block: &semantic.FunctionBlock{
+				Parameters: &semantic.FunctionParameters{
+					List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+				},
+				Body: &semantic.BinaryExpression{
+					Operator: ast.GreaterThanOperator,
+					Left: &semantic.MemberExpression{
+						Object:   &semantic.IdentifierExpression{Name: "r"},
+						Property: "_value",
 					},
-					Body: &semantic.BinaryExpression{
-						Operator: ast.GreaterThanOperator,
-						Left: &semantic.MemberExpression{
-							Object:   &semantic.IdentifierExpression{Name: "r"},
-							Property: "_value",
-						},
-						Right: &semantic.FloatLiteral{Value: 2.0},
-					},
+					Right: &semantic.FloatLiteral{Value: 2.0},
 				},
 			},
-			prelude(),
-		)
+		}, prelude())
 	}
 
 	testCases := []struct {
@@ -361,11 +352,11 @@ func TestRowPredicateFn_Eval(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-
+			ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
 			got := make([]bool, 0, len(tc.data.Data))
 			tc.data.Do(func(cr flux.ColReader) error {
 				for i := 0; i < cr.Len(); i++ {
-					b, err := f.Eval(i, cr)
+					b, err := f.Eval(ctx, deps, i, cr)
 					if err == nil {
 						got = append(got, b)
 					}

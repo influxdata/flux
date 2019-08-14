@@ -1,10 +1,12 @@
 package universe
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -29,7 +31,7 @@ var sleep = values.NewFunction(
 		Required:     semantic.LabelSet{vArg, durationArg},
 		Return:       semantic.Tvar(1),
 	}),
-	func(args values.Object) (values.Value, error) {
+	func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 		v, ok := args.Get(vArg)
 		if !ok {
 			return nil, fmt.Errorf("missing argument %q", vArg)

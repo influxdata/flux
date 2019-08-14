@@ -11,7 +11,7 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-func Compile(f *semantic.FunctionExpression, in semantic.Type, scope Scope) (Func, error) {
+func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.Type) (Func, error) {
 	if scope == nil {
 		scope = NewScope()
 	}
@@ -393,7 +393,7 @@ func (c *CompilationCache) Compile(in semantic.Type) (Func, error) {
 	if ok {
 		return f.F, f.Err
 	}
-	fun, err := Compile(c.fn, in, c.scope)
+	fun, err := Compile(c.scope, c.fn, in)
 	c.compiled[in] = funcErr{
 		F:   fun,
 		Err: err,
@@ -428,27 +428,4 @@ func CompileFnParam(fn *semantic.FunctionExpression, scope Scope, paramType, ret
 	}
 
 	return compiled, paramName, nil
-}
-
-func CompileReduceFn(fn *semantic.FunctionExpression, scope Scope, paramType semantic.Type) (Func, []string, error) {
-	compileCache := NewCompilationCache(fn, scope)
-	if len(fn.Block.Parameters.List) != 2 {
-		return nil, nil, stderrors.New("function should only have a single parameter")
-	}
-	paramList := fn.Block.Parameters.List
-	paramNames := []string{paramList[0].Key.Name, paramList[1].Key.Name}
-
-	compiled, err := compileCache.Compile(semantic.NewObjectType(map[string]semantic.Type{
-		paramNames[0]: paramType,
-		paramNames[1]: paramType,
-	}))
-	if err != nil {
-		return nil, nil, err
-	}
-
-	if compiled.Type() != paramType {
-		return nil, nil, fmt.Errorf("provided function does not evaluate to type %s", paramType.Nature())
-	}
-
-	return compiled, paramNames, nil
 }

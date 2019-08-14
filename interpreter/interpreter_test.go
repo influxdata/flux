@@ -1,13 +1,16 @@
 package interpreter_test
 
 import (
+	"context"
 	"errors"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/interpreter/interptest"
 	"github.com/influxdata/flux/parser"
@@ -43,7 +46,7 @@ func init() {
 			Required: nil,
 			Return:   semantic.Float,
 		}),
-		call: func(args values.Object) (values.Value, error) {
+		call: func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			return values.NewFloat(42.0), nil
 		},
 		hasSideEffect: false,
@@ -54,7 +57,7 @@ func init() {
 			Required: nil,
 			Return:   semantic.Float,
 		}),
-		call: func(args values.Object) (values.Value, error) {
+		call: func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			return values.NewFloat(6.0), nil
 		},
 		hasSideEffect: false,
@@ -65,7 +68,7 @@ func init() {
 			Required: nil,
 			Return:   semantic.Float,
 		}),
-		call: func(args values.Object) (values.Value, error) {
+		call: func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			return values.NewFloat(9.0), nil
 		},
 		hasSideEffect: false,
@@ -76,7 +79,7 @@ func init() {
 			Required: nil,
 			Return:   semantic.Bool,
 		}),
-		call: func(args values.Object) (values.Value, error) {
+		call: func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			return nil, errors.New("fail")
 		},
 		hasSideEffect: false,
@@ -89,7 +92,7 @@ func init() {
 			Return:       semantic.Float,
 			PipeArgument: "x",
 		}),
-		call: func(args values.Object) (values.Value, error) {
+		call: func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			v, ok := args.Get("x")
 			if !ok {
 				return nil, errors.New("missing argument x")
@@ -104,7 +107,7 @@ func init() {
 			Required: nil,
 			Return:   semantic.Int,
 		}),
-		call: func(args values.Object) (values.Value, error) {
+		call: func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			return values.NewInt(0), nil
 		},
 		hasSideEffect: true,
@@ -471,7 +474,7 @@ func TestEval(t *testing.T) {
 			// Create new interpreter for each test case
 			itrp := interpreter.NewInterpreter()
 
-			sideEffects, err := itrp.Eval(graph, testScope.Copy(), nil)
+			sideEffects, err := itrp.Eval(context.Background(), dependenciestest.NewTestDependenciesInterface(), graph, testScope.Copy(), nil)
 			if !tc.wantErr && err != nil {
 				t.Fatal(err)
 			} else if tc.wantErr && err == nil {
@@ -500,8 +503,9 @@ func TestEval_Parallel(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
 		itrp := interpreter.NewInterpreter()
-		if _, err := itrp.Eval(graph, scope, nil); err != nil {
+		if _, err := itrp.Eval(ctx, deps, graph, scope, nil); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -522,7 +526,8 @@ func TestEval_Parallel(t *testing.T) {
 	for i := 0; i < n; i++ {
 		go func() {
 			itrp := interpreter.NewInterpreter()
-			_, err := itrp.Eval(graph, scope.Nest(nil), nil)
+			ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+			_, err := itrp.Eval(ctx, deps, graph, scope.Nest(nil), nil)
 			errC <- err
 		}()
 	}
@@ -615,7 +620,7 @@ func TestNestedExternBlocks(t *testing.T) {
 		tc := tc
 		t.Run("", func(t *testing.T) {
 			itrp := interpreter.NewInterpreter()
-			_, err := itrp.Eval(tc.packageNode, tc.externScope, nil)
+			_, err := itrp.Eval(context.Background(), dependenciestest.NewTestDependenciesInterface(), tc.packageNode, tc.externScope, nil)
 			if tc.wantError != nil {
 				if err == nil {
 					t.Errorf("expected error=(%v) but got nothing", tc.wantError)
@@ -704,7 +709,7 @@ func TestInterpreter_TypeErrors(t *testing.T) {
 				t.Fatal(err)
 			}
 			itrp := interpreter.NewInterpreter()
-			if _, err := itrp.Eval(graph, values.NewScope(), nil); err == nil {
+			if _, err := itrp.Eval(context.Background(), dependenciestest.NewTestDependenciesInterface(), graph, values.NewScope(), nil); err == nil {
 				if tc.err != "" {
 					t.Error("expected type error, but program executed successfully")
 				}
@@ -777,16 +782,17 @@ func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
 			itrp := interpreter.NewInterpreter()
 			scope := testScope.Copy()
 
 			for _, builtin := range tc.builtins {
-				if _, err := interptest.Eval(itrp, scope, nil, builtin); err != nil {
+				if _, err := interptest.Eval(ctx, deps, itrp, scope, nil, builtin); err != nil {
 					t.Fatal("evaluation of builtin failed: ", err)
 				}
 			}
 
-			sideEffects, err := interptest.Eval(itrp, scope, nil, tc.program)
+			sideEffects, err := interptest.Eval(ctx, deps, itrp, scope, nil, tc.program)
 			if err != nil && !tc.wantErr {
 				t.Fatal("program evaluation failed: ", err)
 			} else if err == nil && tc.wantErr {
@@ -882,11 +888,12 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
 			itrp := interpreter.NewInterpreter()
 			scope := testScope.Copy()
 
 			for _, line := range tc.lines {
-				if ses, err := interptest.Eval(itrp, scope, nil, line.script); err != nil {
+				if ses, err := interptest.Eval(ctx, deps, itrp, scope, nil, line.script); err != nil {
 					t.Fatal("evaluation of builtin failed: ", err)
 				} else {
 					if !cmp.Equal(line.sideEffects, ses, semantictest.CmpOptions...) {
@@ -913,7 +920,7 @@ func TestResolver(t *testing.T) {
 			Required: []string{"f"},
 			Return:   semantic.Int,
 		}),
-		call: func(args values.Object) (values.Value, error) {
+		call: func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			f, ok := args.Get("f")
 			if !ok {
 				return nil, errors.New("missing argument f")
@@ -946,11 +953,11 @@ func TestResolver(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
 	itrp := interpreter.NewInterpreter()
 	ns := values.NewNestedScope(nil, values.NewObjectWithValues(s))
 
-	if _, err := itrp.Eval(graph, ns, nil); err != nil {
+	if _, err := itrp.Eval(ctx, deps, graph, ns, nil); err != nil {
 		t.Fatal(err)
 	}
 
@@ -982,7 +989,7 @@ func getSideEffectsValues(ses []interpreter.SideEffect) []values.Value {
 type function struct {
 	name          string
 	t             semantic.PolyType
-	call          func(args values.Object) (values.Value, error)
+	call          func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error)
 	hasSideEffect bool
 }
 
@@ -1044,6 +1051,6 @@ func (f *function) HasSideEffect() bool {
 	return f.hasSideEffect
 }
 
-func (f *function) Call(args values.Object) (values.Value, error) {
-	return f.call(args)
+func (f *function) Call(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+	return f.call(ctx, deps, args)
 }
