@@ -42,6 +42,8 @@ pub enum Expression {
     Call(Box<CallExpression>),
     Cond(Box<ConditionalExpression>),
 
+    StringExp(Box<StringExpression>),
+
     Int(IntegerLiteral),
     Flt(FloatLiteral),
     Str(StringLiteral),
@@ -248,6 +250,44 @@ pub struct MemberAssignment {
     pub base: BaseNode,
     pub member: MemberExpression,
     pub init: Expression,
+}
+
+// StringExpression represents an interpolated string
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
+pub struct StringExpression {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    pub base: BaseNode,
+    pub parts: Vec<StringExpressionPart>,
+}
+
+// StringExpressionPart represents part of an interpolated string
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum StringExpressionPart {
+    Text(TextPart),
+    Expr(InterpolatedPart),
+}
+
+// TextPart represents the text part of an interpolated string
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
+pub struct TextPart {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    pub base: BaseNode,
+    pub value: String,
+}
+
+// InterpolatedPart represents the expression part of an interpolated string
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
+pub struct InterpolatedPart {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    pub base: BaseNode,
+    pub expression: Expression
 }
 
 // CallExpression represents a function call
