@@ -344,6 +344,9 @@ func (r *Record) IsNull() bool {
 func (r *Record) Str() string {
 	panic(values.UnexpectedKind(semantic.Object, semantic.String))
 }
+func (r *Record) Bytes() []byte {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Bytes))
+}
 func (r *Record) Int() int64 {
 	panic(values.UnexpectedKind(semantic.Object, semantic.Int))
 }

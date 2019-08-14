@@ -575,6 +575,9 @@ func (f *functionValue) IsNull() bool                { return false }
 func (f *functionValue) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
 }
+func (f *functionValue) Bytes() []byte {
+	panic(values.UnexpectedKind(semantic.Function, semantic.Bytes))
+}
 func (f *functionValue) Int() int64 {
 	panic(values.UnexpectedKind(semantic.Function, semantic.Int))
 }

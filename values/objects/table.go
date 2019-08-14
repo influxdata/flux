@@ -101,6 +101,10 @@ func (t *Table) Str() string {
 	panic(values.UnexpectedKind(semantic.Object, semantic.String))
 }
 
+func (t *Table) Bytes() []byte {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Bytes))
+}
+
 func (t *Table) Int() int64 {
 	panic(values.UnexpectedKind(semantic.Object, semantic.Int))
 }

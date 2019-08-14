@@ -70,6 +70,9 @@ func (p *Package) IsNull() bool {
 func (p *Package) Str() string {
 	panic(values.UnexpectedKind(semantic.Object, semantic.String))
 }
+func (p *Package) Bytes() []byte {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Bytes))
+}
 func (p *Package) Int() int64 {
 	panic(values.UnexpectedKind(semantic.Object, semantic.Int))
 }

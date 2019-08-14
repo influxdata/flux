@@ -51,43 +51,47 @@ func (f *function) PolyType() semantic.PolyType {
 }
 
 func (f *function) Str() string {
-	panic(UnexpectedKind(semantic.Object, semantic.String))
+	panic(UnexpectedKind(semantic.Function, semantic.String))
+}
+
+func (f *function) Bytes() []byte {
+	panic(UnexpectedKind(semantic.Function, semantic.Bytes))
 }
 
 func (f *function) Int() int64 {
-	panic(UnexpectedKind(semantic.Object, semantic.Int))
+	panic(UnexpectedKind(semantic.Function, semantic.Int))
 }
 
 func (f *function) UInt() uint64 {
-	panic(UnexpectedKind(semantic.Object, semantic.UInt))
+	panic(UnexpectedKind(semantic.Function, semantic.UInt))
 }
 
 func (f *function) Float() float64 {
-	panic(UnexpectedKind(semantic.Object, semantic.Float))
+	panic(UnexpectedKind(semantic.Function, semantic.Float))
 }
 
 func (f *function) Bool() bool {
-	panic(UnexpectedKind(semantic.Object, semantic.Bool))
+	panic(UnexpectedKind(semantic.Function, semantic.Bool))
 }
 
 func (f *function) Time() Time {
-	panic(UnexpectedKind(semantic.Object, semantic.Time))
+	panic(UnexpectedKind(semantic.Function, semantic.Time))
 }
 
 func (f *function) Duration() Duration {
-	panic(UnexpectedKind(semantic.Object, semantic.Duration))
+	panic(UnexpectedKind(semantic.Function, semantic.Duration))
 }
 
 func (f *function) Regexp() *regexp.Regexp {
-	panic(UnexpectedKind(semantic.Object, semantic.Regexp))
+	panic(UnexpectedKind(semantic.Function, semantic.Regexp))
 }
 
 func (f *function) Array() Array {
-	panic(UnexpectedKind(semantic.Object, semantic.Function))
+	panic(UnexpectedKind(semantic.Function, semantic.Function))
 }
 
 func (f *function) Object() Object {
-	panic(UnexpectedKind(semantic.Object, semantic.Object))
+	panic(UnexpectedKind(semantic.Function, semantic.Object))
 }
 
 func (f *function) Function() Function {
