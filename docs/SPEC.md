@@ -470,7 +470,6 @@ Examples:
 
 A _bytes type_ represents a sequence of byte values.
 The bytes type name is `bytes`.
-The bytes type is nullable.
 
 ##### String types
 
