@@ -5609,7 +5609,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 2,
 					Line:   31,
 				},
-				File:   "buckets.flux",
+				File:   "buckets_test.flux",
 				Source: "package chronograf_test\n\nimport \"testing\"\n\ninData = \"\n#datatype,string,long,string,string,string,string,long\n#group,false,false,true,false,false,false,false\n#default,_result,,0389eade5af4b000,,,,\n,result,table,organizationID,name,id,retentionPolicy,retentionPeriod\n,,0,,A,0389eade5b34b000,,0\n,,0,,B,042ed3f42d42e000,,0\n\"\n\noutData = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,_result,,\n,result,table,_value\n,,0,A\n,,0,B\n\"\n\nbuckets_fn = (table=<-) => table\n    |> rename(columns: {name: \"_value\"})\n    |> keep(columns: [\"_value\"])\n\ntest buckets = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n}",
 				Start: ast.Position{
 					Column: 1,
@@ -5625,7 +5625,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   12,
 					},
-					File:   "buckets.flux",
+					File:   "buckets_test.flux",
 					Source: "inData = \"\n#datatype,string,long,string,string,string,string,long\n#group,false,false,true,false,false,false,false\n#default,_result,,0389eade5af4b000,,,,\n,result,table,organizationID,name,id,retentionPolicy,retentionPeriod\n,,0,,A,0389eade5b34b000,,0\n,,0,,B,042ed3f42d42e000,,0\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -5641,7 +5641,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   5,
 						},
-						File:   "buckets.flux",
+						File:   "buckets_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
@@ -5659,7 +5659,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   12,
 						},
-						File:   "buckets.flux",
+						File:   "buckets_test.flux",
 						Source: "\"\n#datatype,string,long,string,string,string,string,long\n#group,false,false,true,false,false,false,false\n#default,_result,,0389eade5af4b000,,,,\n,result,table,organizationID,name,id,retentionPolicy,retentionPeriod\n,,0,,A,0389eade5b34b000,,0\n,,0,,B,042ed3f42d42e000,,0\n\"",
 						Start: ast.Position{
 							Column: 10,
@@ -5677,7 +5677,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   21,
 					},
-					File:   "buckets.flux",
+					File:   "buckets_test.flux",
 					Source: "outData = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,_result,,\n,result,table,_value\n,,0,A\n,,0,B\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -5693,7 +5693,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   14,
 						},
-						File:   "buckets.flux",
+						File:   "buckets_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
@@ -5711,7 +5711,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   21,
 						},
-						File:   "buckets.flux",
+						File:   "buckets_test.flux",
 						Source: "\"\n#datatype,string,long,string\n#group,false,false,false\n#default,_result,,\n,result,table,_value\n,,0,A\n,,0,B\n\"",
 						Start: ast.Position{
 							Column: 11,
@@ -5729,7 +5729,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 33,
 						Line:   25,
 					},
-					File:   "buckets.flux",
+					File:   "buckets_test.flux",
 					Source: "buckets_fn = (table=<-) => table\n    |> rename(columns: {name: \"_value\"})\n    |> keep(columns: [\"_value\"])",
 					Start: ast.Position{
 						Column: 1,
@@ -5745,7 +5745,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 11,
 							Line:   23,
 						},
-						File:   "buckets.flux",
+						File:   "buckets_test.flux",
 						Source: "buckets_fn",
 						Start: ast.Position{
 							Column: 1,
@@ -5763,7 +5763,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 33,
 							Line:   25,
 						},
-						File:   "buckets.flux",
+						File:   "buckets_test.flux",
 						Source: "(table=<-) => table\n    |> rename(columns: {name: \"_value\"})\n    |> keep(columns: [\"_value\"])",
 						Start: ast.Position{
 							Column: 14,
@@ -5781,7 +5781,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 33,
 										Line:   23,
 									},
-									File:   "buckets.flux",
+									File:   "buckets_test.flux",
 									Source: "table",
 									Start: ast.Position{
 										Column: 28,
@@ -5798,7 +5798,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 41,
 									Line:   24,
 								},
-								File:   "buckets.flux",
+								File:   "buckets_test.flux",
 								Source: "table\n    |> rename(columns: {name: \"_value\"})",
 								Start: ast.Position{
 									Column: 28,
@@ -5815,7 +5815,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 40,
 											Line:   24,
 										},
-										File:   "buckets.flux",
+										File:   "buckets_test.flux",
 										Source: "columns: {name: \"_value\"}",
 										Start: ast.Position{
 											Column: 15,
@@ -5831,7 +5831,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 40,
 												Line:   24,
 											},
-											File:   "buckets.flux",
+											File:   "buckets_test.flux",
 											Source: "columns: {name: \"_value\"}",
 											Start: ast.Position{
 												Column: 15,
@@ -5847,7 +5847,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 22,
 													Line:   24,
 												},
-												File:   "buckets.flux",
+												File:   "buckets_test.flux",
 												Source: "columns",
 												Start: ast.Position{
 													Column: 15,
@@ -5865,7 +5865,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 40,
 													Line:   24,
 												},
-												File:   "buckets.flux",
+												File:   "buckets_test.flux",
 												Source: "{name: \"_value\"}",
 												Start: ast.Position{
 													Column: 24,
@@ -5881,7 +5881,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 39,
 														Line:   24,
 													},
-													File:   "buckets.flux",
+													File:   "buckets_test.flux",
 													Source: "name: \"_value\"",
 													Start: ast.Position{
 														Column: 25,
@@ -5897,7 +5897,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 29,
 															Line:   24,
 														},
-														File:   "buckets.flux",
+														File:   "buckets_test.flux",
 														Source: "name",
 														Start: ast.Position{
 															Column: 25,
@@ -5915,7 +5915,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 39,
 															Line:   24,
 														},
-														File:   "buckets.flux",
+														File:   "buckets_test.flux",
 														Source: "\"_value\"",
 														Start: ast.Position{
 															Column: 31,
@@ -5938,7 +5938,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   24,
 									},
-									File:   "buckets.flux",
+									File:   "buckets_test.flux",
 									Source: "rename(columns: {name: \"_value\"})",
 									Start: ast.Position{
 										Column: 8,
@@ -5954,7 +5954,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 14,
 											Line:   24,
 										},
-										File:   "buckets.flux",
+										File:   "buckets_test.flux",
 										Source: "rename",
 										Start: ast.Position{
 											Column: 8,
@@ -5973,7 +5973,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 33,
 								Line:   25,
 							},
-							File:   "buckets.flux",
+							File:   "buckets_test.flux",
 							Source: "table\n    |> rename(columns: {name: \"_value\"})\n    |> keep(columns: [\"_value\"])",
 							Start: ast.Position{
 								Column: 28,
@@ -5990,7 +5990,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 32,
 										Line:   25,
 									},
-									File:   "buckets.flux",
+									File:   "buckets_test.flux",
 									Source: "columns: [\"_value\"]",
 									Start: ast.Position{
 										Column: 13,
@@ -6006,7 +6006,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 32,
 											Line:   25,
 										},
-										File:   "buckets.flux",
+										File:   "buckets_test.flux",
 										Source: "columns: [\"_value\"]",
 										Start: ast.Position{
 											Column: 13,
@@ -6022,7 +6022,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 20,
 												Line:   25,
 											},
-											File:   "buckets.flux",
+											File:   "buckets_test.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 13,
@@ -6040,7 +6040,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 32,
 												Line:   25,
 											},
-											File:   "buckets.flux",
+											File:   "buckets_test.flux",
 											Source: "[\"_value\"]",
 											Start: ast.Position{
 												Column: 22,
@@ -6056,7 +6056,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 31,
 													Line:   25,
 												},
-												File:   "buckets.flux",
+												File:   "buckets_test.flux",
 												Source: "\"_value\"",
 												Start: ast.Position{
 													Column: 23,
@@ -6077,7 +6077,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 33,
 									Line:   25,
 								},
-								File:   "buckets.flux",
+								File:   "buckets_test.flux",
 								Source: "keep(columns: [\"_value\"])",
 								Start: ast.Position{
 									Column: 8,
@@ -6093,7 +6093,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 12,
 										Line:   25,
 									},
-									File:   "buckets.flux",
+									File:   "buckets_test.flux",
 									Source: "keep",
 									Start: ast.Position{
 										Column: 8,
@@ -6113,7 +6113,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 23,
 								Line:   23,
 							},
-							File:   "buckets.flux",
+							File:   "buckets_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 15,
@@ -6129,7 +6129,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 20,
 									Line:   23,
 								},
-								File:   "buckets.flux",
+								File:   "buckets_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 15,
@@ -6146,7 +6146,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 23,
 								Line:   23,
 							},
-							File:   "buckets.flux",
+							File:   "buckets_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 21,
@@ -6165,7 +6165,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   31,
 						},
-						File:   "buckets.flux",
+						File:   "buckets_test.flux",
 						Source: "buckets = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n}",
 						Start: ast.Position{
 							Column: 6,
@@ -6181,7 +6181,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 13,
 								Line:   27,
 							},
-							File:   "buckets.flux",
+							File:   "buckets_test.flux",
 							Source: "buckets",
 							Start: ast.Position{
 								Column: 6,
@@ -6199,7 +6199,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 2,
 								Line:   31,
 							},
-							File:   "buckets.flux",
+							File:   "buckets_test.flux",
 							Source: "() => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n}",
 							Start: ast.Position{
 								Column: 16,
@@ -6215,7 +6215,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 2,
 									Line:   31,
 								},
-								File:   "buckets.flux",
+								File:   "buckets_test.flux",
 								Source: "{\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n}",
 								Start: ast.Position{
 									Column: 23,
@@ -6231,7 +6231,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 44,
 										Line:   28,
 									},
-									File:   "buckets.flux",
+									File:   "buckets_test.flux",
 									Source: "input: testing.loadStorage(csv: inData)",
 									Start: ast.Position{
 										Column: 5,
@@ -6247,7 +6247,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 10,
 											Line:   28,
 										},
-										File:   "buckets.flux",
+										File:   "buckets_test.flux",
 										Source: "input",
 										Start: ast.Position{
 											Column: 5,
@@ -6266,7 +6266,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 43,
 												Line:   28,
 											},
-											File:   "buckets.flux",
+											File:   "buckets_test.flux",
 											Source: "csv: inData",
 											Start: ast.Position{
 												Column: 32,
@@ -6282,7 +6282,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 43,
 													Line:   28,
 												},
-												File:   "buckets.flux",
+												File:   "buckets_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 32,
@@ -6298,7 +6298,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 35,
 														Line:   28,
 													},
-													File:   "buckets.flux",
+													File:   "buckets_test.flux",
 													Source: "csv",
 													Start: ast.Position{
 														Column: 32,
@@ -6316,7 +6316,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 43,
 														Line:   28,
 													},
-													File:   "buckets.flux",
+													File:   "buckets_test.flux",
 													Source: "inData",
 													Start: ast.Position{
 														Column: 37,
@@ -6336,7 +6336,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 44,
 											Line:   28,
 										},
-										File:   "buckets.flux",
+										File:   "buckets_test.flux",
 										Source: "testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 12,
@@ -6352,7 +6352,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 31,
 												Line:   28,
 											},
-											File:   "buckets.flux",
+											File:   "buckets_test.flux",
 											Source: "testing.loadStorage",
 											Start: ast.Position{
 												Column: 12,
@@ -6368,7 +6368,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 19,
 													Line:   28,
 												},
-												File:   "buckets.flux",
+												File:   "buckets_test.flux",
 												Source: "testing",
 												Start: ast.Position{
 													Column: 12,
@@ -6386,7 +6386,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 31,
 													Line:   28,
 												},
-												File:   "buckets.flux",
+												File:   "buckets_test.flux",
 												Source: "loadStorage",
 												Start: ast.Position{
 													Column: 20,
@@ -6406,7 +6406,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 40,
 										Line:   29,
 									},
-									File:   "buckets.flux",
+									File:   "buckets_test.flux",
 									Source: "want: testing.loadMem(csv: outData)",
 									Start: ast.Position{
 										Column: 5,
@@ -6422,7 +6422,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 9,
 											Line:   29,
 										},
-										File:   "buckets.flux",
+										File:   "buckets_test.flux",
 										Source: "want",
 										Start: ast.Position{
 											Column: 5,
@@ -6441,7 +6441,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 39,
 												Line:   29,
 											},
-											File:   "buckets.flux",
+											File:   "buckets_test.flux",
 											Source: "csv: outData",
 											Start: ast.Position{
 												Column: 27,
@@ -6457,7 +6457,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 39,
 													Line:   29,
 												},
-												File:   "buckets.flux",
+												File:   "buckets_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 27,
@@ -6473,7 +6473,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 30,
 														Line:   29,
 													},
-													File:   "buckets.flux",
+													File:   "buckets_test.flux",
 													Source: "csv",
 													Start: ast.Position{
 														Column: 27,
@@ -6491,7 +6491,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 39,
 														Line:   29,
 													},
-													File:   "buckets.flux",
+													File:   "buckets_test.flux",
 													Source: "outData",
 													Start: ast.Position{
 														Column: 32,
@@ -6511,7 +6511,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 40,
 											Line:   29,
 										},
-										File:   "buckets.flux",
+										File:   "buckets_test.flux",
 										Source: "testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 11,
@@ -6527,7 +6527,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 26,
 												Line:   29,
 											},
-											File:   "buckets.flux",
+											File:   "buckets_test.flux",
 											Source: "testing.loadMem",
 											Start: ast.Position{
 												Column: 11,
@@ -6543,7 +6543,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 18,
 													Line:   29,
 												},
-												File:   "buckets.flux",
+												File:   "buckets_test.flux",
 												Source: "testing",
 												Start: ast.Position{
 													Column: 11,
@@ -6561,7 +6561,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 26,
 													Line:   29,
 												},
-												File:   "buckets.flux",
+												File:   "buckets_test.flux",
 												Source: "loadMem",
 												Start: ast.Position{
 													Column: 19,
@@ -6581,7 +6581,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 19,
 										Line:   30,
 									},
-									File:   "buckets.flux",
+									File:   "buckets_test.flux",
 									Source: "fn: buckets_fn",
 									Start: ast.Position{
 										Column: 5,
@@ -6597,7 +6597,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 7,
 											Line:   30,
 										},
-										File:   "buckets.flux",
+										File:   "buckets_test.flux",
 										Source: "fn",
 										Start: ast.Position{
 											Column: 5,
@@ -6615,7 +6615,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 19,
 											Line:   30,
 										},
-										File:   "buckets.flux",
+										File:   "buckets_test.flux",
 										Source: "buckets_fn",
 										Start: ast.Position{
 											Column: 9,
@@ -6638,7 +6638,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   31,
 					},
-					File:   "buckets.flux",
+					File:   "buckets_test.flux",
 					Source: "test buckets = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n}",
 					Start: ast.Position{
 						Column: 1,
@@ -6656,7 +6656,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   3,
 					},
-					File:   "buckets.flux",
+					File:   "buckets_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
@@ -6672,7 +6672,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   3,
 						},
-						File:   "buckets.flux",
+						File:   "buckets_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
@@ -6683,7 +6683,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Name: "buckets.flux",
+		Name: "buckets_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -6692,7 +6692,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 24,
 						Line:   1,
 					},
-					File:   "buckets.flux",
+					File:   "buckets_test.flux",
 					Source: "package chronograf_test",
 					Start: ast.Position{
 						Column: 1,
@@ -6708,7 +6708,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 24,
 							Line:   1,
 						},
-						File:   "buckets.flux",
+						File:   "buckets_test.flux",
 						Source: "chronograf_test",
 						Start: ast.Position{
 							Column: 9,
