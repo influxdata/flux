@@ -60,6 +60,7 @@ builtin sort
 builtin stateTracking
 builtin stddev
 builtin sum
+builtin tripleExponentialDerivative
 builtin union
 builtin unique
 builtin window

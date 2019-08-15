@@ -3488,6 +3488,70 @@ from(bucket: "telegraf/autogen"):
     |> tripleEMA(n: 5)
 ```
 
+#### Triple Exponential Derivative
+The triple exponential derivative indicator is an oscillator and can also be used as a momentum indicator. Triple exponential derivative calculates a triple exponential moving average of the log of the
+data input over the period of time. It prevents cycles that are shorter than the defined period from being considered by the indicator.
+Triple exponential derivative oscillates around a zero line.
+
+When used as an oscillator, a positive value indicates an overbought market while a negative value indicates an oversold market.
+When used as a momentum indicator, a positive value suggests momentum is increasing while a negative value suggests momentum is decreasing. 
+It acts on the `_value` column.
+
+ Name        | Type     | Description
+| ----        | ----     | -----------
+| n           | int      | N specifies the sample size of the algorithm.  
+
+A triple exponential derivative is defined as `TRIX[i] = ((EMA3[i] / EMA3[i - 1]) - 1) * 100`, where
+- `EMA_3` is `EMA(EMA(EMA(data)))`
+
+If there are not enough values to computer a proper triple exponential derivative, the `_value` column of the output table will be `null`, and all other columns will
+be the same as the last record of the input table.
+
+The behavior of the exponential moving averages used for calculating the triple exponential derivative is the same as defined for `exponentialMovingAverage`:
+ - `tripleExponentialDerivative` ignores null values and does not count them in calculations
+
+ Example (`n = 4`):
+ 
+ | _time |_value|result|
+ |:-----:|:----:|:----:|
+ |  0001 |   1  |   -  |
+ |  0002 |   2  |   -  |
+ |  0003 |   3  |   -  |
+ |  0004 |   4  |   -  |
+ |  0005 |   5  |   -  |
+ |  0006 |   6  |   -  |
+ |  0007 |   7  |   -  |
+ |  0008 |   8  |   -  |
+ |  0009 |   9  |   -  |
+ |  0010 |  10  |   _  |
+ |  0011 |  11  | 18.18|
+ |  0012 |  12  | 15.38|
+ |  0013 |  13  | 13.33|
+ |  0014 |  14  | 11.76|
+ |  0015 |  15  | 10.52|
+ |  0016 |  14  | 8.304|
+ |  0017 |  13  | 5.641|
+ |  0018 |  12  | 3.039|
+ |  0019 |  11  | 0.716|
+ |  0020 |  10  | -1.28|
+ |  0021 |   9  | -2.99|
+ |  0022 |   8  | -4.49|
+ |  0023 |   7  | -5.83|
+ |  0024 |   6  | -7.09|
+ |  0025 |   5  | -8.35|
+ |  0026 |   4  | -9.67|
+ |  0027 |   3  | -11.1|
+ |  0028 |   2  | -12.8|
+ |  0029 |   1  | -15.0|
+ 
+  Example of script:
+ ```
+ // A 14 point triple exponential derivative would be called as such:
+ from(bucket: "telegraf/autogen"):
+     |> range(start: -7d)
+     |> tripleExponentialDerivative(n: 14)
+ ```
+
 #### Relative Strength Index
 The relative strength index (RSI) is a momentum indicator that compares the magnitude of recent increases and decreases 
 over a specified time period to measure speed and change of data movements. It acts on the `_value` column.

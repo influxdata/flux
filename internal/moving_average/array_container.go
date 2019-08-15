@@ -79,6 +79,10 @@ func (a *ArrayContainer) Slice(i int, j int) *ArrayContainer {
 	return slice
 }
 
+func (a *ArrayContainer) Array() array.Interface {
+	return a.array
+}
+
 func (a *ArrayContainer) Release() {
 	a.array.Release()
 }
