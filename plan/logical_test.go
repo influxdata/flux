@@ -13,7 +13,6 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/stdlib/http"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/kafka"
 	"github.com/influxdata/flux/stdlib/universe"
@@ -34,21 +33,16 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 	now := time.Now().UTC()
 
 	var (
-		toHTTPOpSpec = http.ToHTTPOpSpec{
-			URL:        "/my/url",
-			Method:     "POST",
-			NameColumn: "_measurement",
-			Headers: map[string]string{
-				"Content-Type": "application/vnd.influx",
-				"User-Agent":   "fluxd/dev",
-			},
-			Timeout:      time.Second,
-			TimeColumn:   "_time",
-			ValueColumns: []string{"_value"},
-		}
 		toKafkaOpSpec = kafka.ToKafkaOpSpec{
 			Brokers:      []string{"broker"},
 			Topic:        "topic",
+			NameColumn:   "_measurement",
+			TimeColumn:   "_time",
+			ValueColumns: []string{"_value"},
+		}
+		toKafkaOpSpec2 = kafka.ToKafkaOpSpec{
+			Brokers:      []string{"broker"},
+			Topic:        "topic2",
 			NameColumn:   "_measurement",
 			TimeColumn:   "_time",
 			ValueColumns: []string{"_value"},
@@ -92,11 +86,11 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 			TableNames: []string{"a", "b"},
 			On:         []string{"_time"},
 		}
-		toHTTPSpec = &http.ToHTTPProcedureSpec{
-			Spec: &toHTTPOpSpec,
-		}
 		toKafkaSpec = &kafka.ToKafkaProcedureSpec{
 			Spec: &toKafkaOpSpec,
+		}
+		toKafkaSpec2 = &kafka.ToKafkaProcedureSpec{
+			Spec: &toKafkaOpSpec2,
 		}
 		sumSpec = &universe.SumProcedureSpec{
 			AggregateConfig: execute.AggregateConfig{
@@ -176,12 +170,12 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 		},
 		{
 			name:  `Non-yield side effect`,
-			query: `import "http" from(bucket: "my-bucket") |> range(start:-1h) |> http.to(url: "/my/url")`,
+			query: `import "kafka" from(bucket: "my-bucket") |> range(start:-1h) |> kafka.to(brokers: ["broker"], topic: "topic")`,
 			plan: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from0", fromSpec),
 					plan.CreateLogicalNode("range1", rangeSpec),
-					plan.CreateLogicalNode("toHTTP2", toHTTPSpec),
+					plan.CreateLogicalNode("toKafka2", toKafkaSpec),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -193,16 +187,15 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 		{
 			name: `Multiple non-yield side effect`,
 			query: `
-				import "http"
 				import "kafka"
-				from(bucket: "my-bucket") |> range(start:-1h) |> http.to(url: "/my/url")
+				from(bucket: "my-bucket") |> range(start:-1h) |> kafka.to(brokers: ["broker"], topic: "topic2")
 				from(bucket: "my-bucket") |> range(start:-1h) |> kafka.to(brokers: ["broker"], topic: "topic")`,
 			plan: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					// First plan
 					plan.CreateLogicalNode("from0", fromSpec),
 					plan.CreateLogicalNode("range1", rangeSpec),
-					plan.CreateLogicalNode("toHTTP2", toHTTPSpec),
+					plan.CreateLogicalNode("toKafka2", toKafkaSpec2),
 					// Second plan
 					plan.CreateLogicalNode("from3", fromSpec),
 					plan.CreateLogicalNode("range4", rangeSpec),
@@ -222,15 +215,15 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 		{
 			name: `side effect and a generated yield`,
 			query: `
-				import "http"
-				from(bucket: "my-bucket") |> range(start:-1h) |> http.to(url: "/my/url")
+				import "kafka"
+				from(bucket: "my-bucket") |> range(start:-1h) |> kafka.to(brokers: ["broker"], topic: "topic")
 				from(bucket: "my-bucket") |> range(start:-1h)`,
 			plan: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					// First plan
 					plan.CreateLogicalNode("from0", fromSpec),
 					plan.CreateLogicalNode("range1", rangeSpec),
-					plan.CreateLogicalNode("toHTTP2", toHTTPSpec),
+					plan.CreateLogicalNode("toKafka2", toKafkaSpec),
 					// Second plan
 					plan.CreateLogicalNode("from3", fromSpec),
 					plan.CreateLogicalNode("range4", rangeSpec),

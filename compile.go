@@ -92,6 +92,8 @@ var (
 		"strings",
 		"regexp",
 		"date",
+		"json",
+		"http",
 	}
 	preludeScope = &scopeSet{
 		packages: make([]*interpreter.Package, len(prelude)),

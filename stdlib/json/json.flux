@@ -7,3 +7,8 @@ package json
 // Bytes values are encodes as base64-encoded strings.
 // Function values cannot be encoded and will produce an error.
 builtin encode
+
+//hack to simulate package
+json = {
+    encode: encode,
+}
