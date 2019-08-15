@@ -127,7 +127,8 @@ func generate(cmd *cobra.Command, args []string) error {
 			}
 			// Isolate tests files into their own package
 			packs := splitTestPackages(testPkg)
-			if err := generateTestASTFile(dir, testPkg.Package, packs); err != nil {
+			// Generate test AST file using non *_test package name since this is Go code that needs to be part of the normal build.
+			if err := generateTestASTFile(dir, strings.TrimSuffix(testPkg.Package, "_test"), packs); err != nil {
 				return err
 			}
 		}
