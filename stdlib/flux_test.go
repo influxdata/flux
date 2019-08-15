@@ -34,9 +34,9 @@ var skip = map[string]string{
 	"string_trim":                 "cannot reference a package function from within a row function",
 	"integral_columns":            "aggregates changed to operate on just a single columnm.",
 
-	"measurement_tag_keys_test":   "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
-	"aggregate_window_mean_test":  "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
-	"aggregate_window_count_test": "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
+	"measurement_tag_keys":   "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
+	"aggregate_window_mean":  "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
+	"aggregate_window_count": "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
 
 	"extract_regexp_findStringIndex": "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
 	"partition_strings_splitN":       "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
@@ -51,10 +51,9 @@ func BenchmarkFluxEndToEnd(b *testing.B) {
 
 func runEndToEnd(t *testing.T, pkgs []*ast.Package) {
 	for _, pkg := range pkgs {
-		name := pkg.Files[0].Name
+		name := strings.TrimSuffix(pkg.Files[0].Name, "_test.flux")
 		t.Run(name, func(t *testing.T) {
-			n := strings.TrimSuffix(name, ".flux")
-			if reason, ok := skip[n]; ok {
+			if reason, ok := skip[name]; ok {
 				t.Skip(reason)
 			}
 			testFlux(t, pkg)

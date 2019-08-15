@@ -4,23 +4,23 @@ package stdlib
 
 import (
 	ast "github.com/influxdata/flux/ast"
-	testdata "github.com/influxdata/flux/stdlib/influxdata/influxdb/alerts/testdata"
-	fluxtests "github.com/influxdata/flux/stdlib/influxdata/influxdb/v1/fluxtests"
-	testdata1 "github.com/influxdata/flux/stdlib/pandas_tests/testdata"
-	testdata2 "github.com/influxdata/flux/stdlib/strings/testdata"
+	alerts "github.com/influxdata/flux/stdlib/influxdata/influxdb/alerts"
+	v1 "github.com/influxdata/flux/stdlib/influxdata/influxdb/v1"
+	strings "github.com/influxdata/flux/stdlib/strings"
 	chronograf "github.com/influxdata/flux/stdlib/testing/chronograf"
 	kapacitor "github.com/influxdata/flux/stdlib/testing/kapacitor"
-	testdata3 "github.com/influxdata/flux/stdlib/testing/testdata"
+	pandas "github.com/influxdata/flux/stdlib/testing/pandas"
+	testdata "github.com/influxdata/flux/stdlib/testing/testdata"
 )
 
 var FluxTestPackages = func() []*ast.Package {
 	var pkgs []*ast.Package
-	pkgs = append(pkgs, testdata.FluxTestPackages...)
-	pkgs = append(pkgs, fluxtests.FluxTestPackages...)
-	pkgs = append(pkgs, testdata1.FluxTestPackages...)
-	pkgs = append(pkgs, testdata2.FluxTestPackages...)
+	pkgs = append(pkgs, alerts.FluxTestPackages...)
+	pkgs = append(pkgs, v1.FluxTestPackages...)
+	pkgs = append(pkgs, strings.FluxTestPackages...)
 	pkgs = append(pkgs, chronograf.FluxTestPackages...)
 	pkgs = append(pkgs, kapacitor.FluxTestPackages...)
-	pkgs = append(pkgs, testdata3.FluxTestPackages...)
+	pkgs = append(pkgs, pandas.FluxTestPackages...)
+	pkgs = append(pkgs, testdata.FluxTestPackages...)
 	return pkgs
 }()
