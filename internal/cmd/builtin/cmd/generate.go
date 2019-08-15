@@ -120,6 +120,12 @@ func generate(cmd *cobra.Command, args []string) error {
 			if ast.Check(testPkg) > 0 {
 				return errors.Wrapf(ast.GetError(testPkg), "failed to parse test package %q", testPkg.Package)
 			}
+			// Validate test package file use _test.flux suffix for the file name
+			for _, f := range testPkg.Files {
+				if !strings.HasSuffix(f.Name, "_test.flux") {
+					return fmt.Errorf("flux test files must use the _test.flux suffix in their file name, found %q", path.Join(dir, f.Name))
+				}
+			}
 			// Track go import path
 			importPath := path.Join(pkgName, dir)
 			if importPath != pkgName {
