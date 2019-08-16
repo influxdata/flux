@@ -122,9 +122,7 @@ func (s *FromBigtableProcedureSpec) Copy() plan.ProcedureSpec {
 	ns.RowSet = s.RowSet
 	ns.Filter = s.Filter
 	ns.ReadOptions = make([]bigtable.ReadOption, 0)
-	for _, v := range s.ReadOptions {
-		ns.ReadOptions = append(ns.ReadOptions, v)
-	}
+	ns.ReadOptions = append(ns.ReadOptions, s.ReadOptions...)
 
 	return ns
 }
