@@ -97,7 +97,7 @@ func eval(e Evaluator, scope Scope) (values.Value, error) {
 	if err != nil {
 		return nil, err
 	}
-	//values.CheckKind(v.Type().Nature(), e.Type().Nature())
+	values.CheckKind(v.PolyType().Nature(), e.Type().Nature())
 	return v, nil
 }
 
@@ -460,6 +460,18 @@ func (e *identifierEvaluator) Type() semantic.Type {
 
 func (e *identifierEvaluator) Eval(scope Scope) (values.Value, error) {
 	v := scope.Get(e.name)
+	// Note this check pattern is slightly different than
+	// the usual one:
+	//
+	//     CheckKind(v.Type().Nature(), e.t.Nature())
+	//                  ^
+	//
+	// This is because variables hold polytypes that might
+	// be universally quantified with one or more type
+	// variables. Hence we must check the Nature of this
+	// value's **polytype** as this value will return an
+	// invalid monotype.
+	//
 	values.CheckKind(v.PolyType().Nature(), e.t.Nature())
 	return v, nil
 }
@@ -484,8 +496,7 @@ func (e *memberEvaluator) Eval(scope Scope) (values.Value, error) {
 		return nil, err
 	}
 	v, _ := o.Object().Get(e.property)
-	// TODO(nathanielc): Fix this poly type issue
-	//values.CheckKind(v.PolyType().Nature(), e.t.Nature())
+	values.CheckKind(v.PolyType().Nature(), e.t.Nature())
 	return v, nil
 }
 
