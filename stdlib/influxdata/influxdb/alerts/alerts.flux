@@ -1,12 +1,13 @@
 package alerts
 
+import "experimental"
 import "influxdata/influxdb/v1"
 import "influxdata/influxdb"
 
 bucket = "_monitoring"
 
-// Write persists the check statuses
-write = (tables=<-) => tables |> influxdb.to(bucket: bucket)
+// write optionally persists the check statuses
+option write = (tables=<-) => tables |> drop(columns: ["_start", "_stop"])
 
 // From retrieves the check statuses that have been stored.
 from = (start, stop=now(), fn) =>
@@ -31,3 +32,45 @@ logs = (start, stop=now(), fn) =>
 deadman = (t, tables=<-) => tables
     |> max(column: "_time")
     |> map(fn: (r) => ( {r with dead: r._time < t} ))
+
+// levels describing the result of a check
+levelOK = "ok"
+levelInfo = "info"
+levelWarn = "warn"
+levelCrit = "crit"
+levelUnknown = "unknown"
+
+// Check performs a check against its input using the given ok, info, warn and crit functions
+// and writes the result to a system bucket.
+check = (
+    tables=<-,
+    data={},
+    messageFn,
+    crit=(r) => false,
+    warn=(r) => false,
+    info=(r) => false,
+    ok=(r) => true
+) =>
+    tables
+        |> experimental.set(o: data.tags)
+        |> experimental.group(mode: "extend", columns: experimental.objectKeys(o: data.tags))
+        |> map(fn: (r) => ({r with
+            _measurement: "statuses",
+            _source_measurement: r._measurement,
+            _type: data._type,
+            _check_id:  data._check_id,
+            _check_name: data._check_name,
+            _level:
+                if crit(r: r) then levelCrit
+                else if warn(r: r) then levelWarn
+                else if info(r: r) then levelInfo
+                else if ok(r: r) then levelOK
+                else levelUnknown,
+            _source_timestamp: r._time,
+            _time: now(),
+        }))
+        |> map(fn: (r) => ({r with
+            _message: messageFn(r: r),
+        }))
+        |> experimental.group(mode: "extend", columns: ["_source_measurement", "_type", "_check_id", "_check_name", "_level"])
+        |> write()
