@@ -897,6 +897,10 @@ func (n NullableKind) resolveType(kinds map[Tvar]Kind) (Type, error) {
 	return Nil, nil
 }
 func (n NullableKind) resolvePolyType(kinds map[Tvar]Kind) (PolyType, error) {
+	// A nullable type variable resolves to a NullableTvar
+	if tv, ok := n.T.(Tvar); ok {
+		return NullableTvar{tv}, nil
+	}
 	return n.T, nil
 }
 func (n NullableKind) substituteKind(tv Tvar, t PolyType) Kind {
@@ -911,6 +915,35 @@ func (n NullableKind) unifyKind(kinds map[Tvar]Kind, k Kind) (Kind, Substitution
 }
 func (n NullableKind) occurs(tv Tvar) bool {
 	return n.T.occurs(tv)
+}
+
+// NullableTvar is a type variable that might be null.
+// If a type variable is constrained to be nullable (via the NullableKind),
+// in order to preserve that constraint when resolving the type, we return
+// a NullableTvar.
+//
+// TODO: This is a temporary type that will be removed once kind constraints
+// can be expressed in the language of types. Unfortunately right now, external
+// packages like the compiler don't have any notion of kind constraints.
+type NullableTvar struct {
+	Tvar
+}
+
+func (NullableTvar) Nature() Nature {
+	return Nil
+}
+
+func (NullableTvar) MonoType() (Type, bool) {
+	return Nil, true
+}
+
+func (t NullableTvar) Equal(p PolyType) bool {
+	tv, ok := p.(NullableTvar)
+	return ok && t.Tvar.Equal(tv.Tvar)
+}
+
+func (t NullableTvar) String() string {
+	return fmt.Sprintf("nullable{%v}", t.Tvar)
 }
 
 type Comparable struct{}
