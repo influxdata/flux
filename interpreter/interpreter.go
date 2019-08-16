@@ -31,22 +31,8 @@ type SideEffect struct {
 }
 
 // Eval evaluates the expressions composing a Flux package and returns any side effects that occurred during this evaluation.
-func (itrp *Interpreter) Eval(node semantic.Node, scope Scope, importer Importer) ([]SideEffect, error) {
-	var n = node
-	for s := scope; s != nil; s = s.Pop() {
-		extern := &semantic.Extern{
-			Block: &semantic.ExternBlock{
-				Node: n,
-			},
-		}
-		s.LocalRange(func(k string, v values.Value) {
-			extern.Assignments = append(extern.Assignments, &semantic.ExternalVariableAssignment{
-				Identifier: &semantic.Identifier{Name: k},
-				ExternType: v.PolyType(),
-			})
-		})
-		n = extern
-	}
+func (itrp *Interpreter) Eval(node semantic.Node, scope values.Scope, importer Importer) ([]SideEffect, error) {
+	n := values.BuildExternAssignments(node, scope)
 
 	sol, err := semantic.InferTypes(n, importer)
 	if err != nil {
@@ -70,7 +56,7 @@ func (itrp *Interpreter) Eval(node semantic.Node, scope Scope, importer Importer
 	return itrp.sideEffects, nil
 }
 
-func (itrp *Interpreter) doRoot(node semantic.Node, scope Scope, importer Importer) error {
+func (itrp *Interpreter) doRoot(node semantic.Node, scope values.Scope, importer Importer) error {
 	switch n := node.(type) {
 	case *semantic.Package:
 		return itrp.doPackage(n, scope, importer)
@@ -83,12 +69,12 @@ func (itrp *Interpreter) doRoot(node semantic.Node, scope Scope, importer Import
 	}
 }
 
-func (itrp *Interpreter) doExtern(extern *semantic.Extern, scope Scope, importer Importer) error {
+func (itrp *Interpreter) doExtern(extern *semantic.Extern, scope values.Scope, importer Importer) error {
 	// We do not care about the type declarations, they were only important for type inference.
 	return itrp.doRoot(extern.Block.Node, scope, importer)
 }
 
-func (itrp *Interpreter) doPackage(pkg *semantic.Package, scope Scope, importer Importer) error {
+func (itrp *Interpreter) doPackage(pkg *semantic.Package, scope values.Scope, importer Importer) error {
 	for _, file := range pkg.Files {
 		if err := itrp.doFile(file, scope, importer); err != nil {
 			return err
@@ -97,7 +83,7 @@ func (itrp *Interpreter) doPackage(pkg *semantic.Package, scope Scope, importer 
 	return nil
 }
 
-func (itrp *Interpreter) doFile(file *semantic.File, scope Scope, importer Importer) error {
+func (itrp *Interpreter) doFile(file *semantic.File, scope values.Scope, importer Importer) error {
 	if err := itrp.doPackageClause(file.Package); err != nil {
 		return err
 	}
@@ -136,7 +122,7 @@ func (itrp *Interpreter) doPackageClause(pkg *semantic.PackageClause) error {
 	return nil
 }
 
-func (itrp *Interpreter) doImport(dec *semantic.ImportDeclaration, scope Scope, importer Importer) error {
+func (itrp *Interpreter) doImport(dec *semantic.ImportDeclaration, scope values.Scope, importer Importer) error {
 	path := dec.Path.Value
 	pkg, ok := importer.ImportPackageObject(path)
 	if !ok {
@@ -153,7 +139,7 @@ func (itrp *Interpreter) doImport(dec *semantic.ImportDeclaration, scope Scope, 
 }
 
 // doStatement returns the resolved value of a top-level statement
-func (itrp *Interpreter) doStatement(stmt semantic.Statement, scope Scope) (values.Value, error) {
+func (itrp *Interpreter) doStatement(stmt semantic.Statement, scope values.Scope) (values.Value, error) {
 	scope.SetReturn(values.InvalidValue)
 	switch s := stmt.(type) {
 	case *semantic.OptionStatement:
@@ -186,15 +172,15 @@ func (itrp *Interpreter) doStatement(stmt semantic.Statement, scope Scope) (valu
 	return nil, nil
 }
 
-func (itrp *Interpreter) doOptionStatement(s *semantic.OptionStatement, scope Scope) (values.Value, error) {
+func (itrp *Interpreter) doOptionStatement(s *semantic.OptionStatement, scope values.Scope) (values.Value, error) {
 	return itrp.doAssignment(s.Assignment, scope)
 }
 
-func (itrp *Interpreter) doTestStatement(s *semantic.TestStatement, scope Scope) (values.Value, error) {
+func (itrp *Interpreter) doTestStatement(s *semantic.TestStatement, scope values.Scope) (values.Value, error) {
 	return itrp.doAssignment(s.Assignment, scope)
 }
 
-func (itrp *Interpreter) doVariableAssignment(dec *semantic.NativeVariableAssignment, scope Scope) (values.Value, error) {
+func (itrp *Interpreter) doVariableAssignment(dec *semantic.NativeVariableAssignment, scope values.Scope) (values.Value, error) {
 	value, err := itrp.doExpression(dec.Init, scope)
 	if err != nil {
 		return nil, err
@@ -203,7 +189,7 @@ func (itrp *Interpreter) doVariableAssignment(dec *semantic.NativeVariableAssign
 	return value, nil
 }
 
-func (itrp *Interpreter) doMemberAssignment(a *semantic.MemberAssignment, scope Scope) (values.Value, error) {
+func (itrp *Interpreter) doMemberAssignment(a *semantic.MemberAssignment, scope values.Scope) (values.Value, error) {
 	object, err := itrp.doExpression(a.Member.Object, scope)
 	if err != nil {
 		return nil, err
@@ -216,7 +202,7 @@ func (itrp *Interpreter) doMemberAssignment(a *semantic.MemberAssignment, scope 
 	return object, nil
 }
 
-func (itrp *Interpreter) doAssignment(a semantic.Assignment, scope Scope) (values.Value, error) {
+func (itrp *Interpreter) doAssignment(a semantic.Assignment, scope values.Scope) (values.Value, error) {
 	switch a := a.(type) {
 	case *semantic.NativeVariableAssignment:
 		return itrp.doVariableAssignment(a, scope)
@@ -227,7 +213,7 @@ func (itrp *Interpreter) doAssignment(a semantic.Assignment, scope Scope) (value
 	}
 }
 
-func (itrp *Interpreter) doExpression(expr semantic.Expression, scope Scope) (values.Value, error) {
+func (itrp *Interpreter) doExpression(expr semantic.Expression, scope values.Scope) (values.Value, error) {
 	switch e := expr.(type) {
 	case semantic.Literal:
 		return itrp.doLiteral(e)
@@ -402,7 +388,7 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope Scope) (va
 	}
 }
 
-func (itrp *Interpreter) doArray(a *semantic.ArrayExpression, scope Scope) (values.Value, error) {
+func (itrp *Interpreter) doArray(a *semantic.ArrayExpression, scope values.Scope) (values.Value, error) {
 	elements := make([]values.Value, len(a.Elements))
 	arrayType, ok := itrp.types[a]
 	if !ok {
@@ -419,7 +405,7 @@ func (itrp *Interpreter) doArray(a *semantic.ArrayExpression, scope Scope) (valu
 	return values.NewArrayWithBacking(elementType, elements), nil
 }
 
-func (itrp *Interpreter) doObject(m *semantic.ObjectExpression, scope Scope) (values.Value, error) {
+func (itrp *Interpreter) doObject(m *semantic.ObjectExpression, scope values.Scope) (values.Value, error) {
 	obj := values.NewObject()
 	if m.With != nil {
 		with, err := itrp.doExpression(m.With, scope)
@@ -493,7 +479,7 @@ type functionType interface {
 	Signature() semantic.FunctionPolySignature
 }
 
-func (itrp *Interpreter) doCall(call *semantic.CallExpression, scope Scope) (values.Value, error) {
+func (itrp *Interpreter) doCall(call *semantic.CallExpression, scope values.Scope) (values.Value, error) {
 	callee, err := itrp.doExpression(call.Callee, scope)
 	if err != nil {
 		return nil, err
@@ -536,7 +522,7 @@ func (itrp *Interpreter) doCall(call *semantic.CallExpression, scope Scope) (val
 	return value, nil
 }
 
-func (itrp *Interpreter) doArguments(args *semantic.ObjectExpression, scope Scope, pipeArgument string, pipe semantic.Expression) (values.Object, error) {
+func (itrp *Interpreter) doArguments(args *semantic.ObjectExpression, scope values.Scope, pipeArgument string, pipe semantic.Expression) (values.Object, error) {
 	obj := values.NewObject()
 	if pipe == nil && (args == nil || len(args.Properties) == 0) {
 		return obj, nil
@@ -586,7 +572,7 @@ type Value interface {
 
 type function struct {
 	e                *semantic.FunctionExpression
-	scope            Scope
+	scope            values.Scope
 	localIdentifiers []string
 
 	types     map[semantic.Node]semantic.Type
@@ -749,25 +735,58 @@ func (f *function) String() string {
 	return fmt.Sprintf("%v", f.PolyType())
 }
 
-// Resolver represents a value that can resolve itself
+// Resolver represents a value that can resolve itself.
+// Resolving is the action of capturing the scope at function declaration and
+// replacing any identifiers with static values from the scope where possible.
+// TODO(nathanielc): Improve implementations of scope to only preserve values
+// in the scope that are referrenced.
 type Resolver interface {
 	Resolve() (semantic.Node, error)
+	Scope() values.Scope
 }
 
-func ResolveFunction(f values.Function) (*semantic.FunctionExpression, error) {
+// ResolveFunction produces a function that can execute externally.
+func ResolveFunction(f values.Function) (ResolvedFunction, error) {
 	resolver, ok := f.(Resolver)
 	if !ok {
-		return nil, errors.New("function is not resolvable")
+		return ResolvedFunction{}, errors.New("function is not resolvable")
 	}
 	resolved, err := resolver.Resolve()
 	if err != nil {
-		return nil, err
+		return ResolvedFunction{}, err
 	}
 	fn, ok := resolved.(*semantic.FunctionExpression)
 	if !ok {
-		return nil, errors.New("resolved function is not a function")
+		return ResolvedFunction{}, errors.New("resolved function is not a function")
 	}
-	return fn, nil
+	return ResolvedFunction{
+		Fn:    fn,
+		Scope: resolver.Scope(),
+	}, nil
+}
+
+// ResolvedFunction represents a function that can be passed down to the compiler.
+// Both the function expression and scope are captured.
+// The scope cannot be serialized, which is no longer a problem in the current design
+// with excpetion of the REPL which will not be able to correct pass through the scope.
+type ResolvedFunction struct {
+	Fn    *semantic.FunctionExpression `json:"fn"`
+	Scope values.Scope                 `json:"-"`
+}
+
+func (r ResolvedFunction) Copy() ResolvedFunction {
+	var nr ResolvedFunction
+	if r.Fn != nil {
+		nr.Fn = r.Fn.Copy().(*semantic.FunctionExpression)
+	}
+	if r.Scope != nil {
+		nr.Scope = r.Scope.Copy()
+	}
+	return nr
+}
+
+func (f *function) Scope() values.Scope {
+	return f.scope
 }
 
 // Resolve rewrites the function resolving any identifiers not listed in the function params.

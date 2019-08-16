@@ -34,7 +34,7 @@ func Parse(flux string) (*ast.Package, error) {
 }
 
 // Eval accepts a Flux script and evaluates it to produce a set of side effects (as a slice of values) and a scope.
-func Eval(flux string, opts ...ScopeMutator) ([]interpreter.SideEffect, interpreter.Scope, error) {
+func Eval(flux string, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
 	astPkg, err := Parse(flux)
 	if err != nil {
 		return nil, nil, err
@@ -43,7 +43,7 @@ func Eval(flux string, opts ...ScopeMutator) ([]interpreter.SideEffect, interpre
 }
 
 // EvalAST accepts a Flux AST and evaluates it to produce a set of side effects (as a slice of values) and a scope.
-func EvalAST(astPkg *ast.Package, opts ...ScopeMutator) ([]interpreter.SideEffect, interpreter.Scope, error) {
+func EvalAST(astPkg *ast.Package, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
 	semPkg, err := semantic.New(astPkg)
 	if err != nil {
 		return nil, nil, err
@@ -66,11 +66,11 @@ func EvalAST(astPkg *ast.Package, opts ...ScopeMutator) ([]interpreter.SideEffec
 }
 
 // ScopeMutator is any function that mutates the scope of an identifier.
-type ScopeMutator = func(interpreter.Scope)
+type ScopeMutator = func(values.Scope)
 
 // SetOption returns a func that adds a var binding to a scope.
 func SetOption(name string, v values.Value) ScopeMutator {
-	return func(scope interpreter.Scope) {
+	return func(scope values.Scope) {
 		scope.Set(name, v)
 	}
 }
@@ -88,8 +88,6 @@ var (
 	prelude = []string{
 		"universe",
 		"influxdata/influxdb",
-		"json",
-		"http",
 	}
 	preludeScope = &scopeSet{
 		packages: make([]*interpreter.Package, len(prelude)),
@@ -109,16 +107,20 @@ func (s *scopeSet) Lookup(name string) (values.Value, bool) {
 	}
 	return nil, false
 }
+func (s *scopeSet) LocalLookup(name string) (values.Value, bool) {
+	// scopeSet is always a top level scope
+	return s.Lookup(name)
+}
 
 func (s *scopeSet) Set(name string, v values.Value) {
 	panic("cannot mutate the universe block")
 }
 
-func (s *scopeSet) Nest(obj values.Object) interpreter.Scope {
-	return interpreter.NewNestedScope(s, obj)
+func (s *scopeSet) Nest(obj values.Object) values.Scope {
+	return values.NewNestedScope(s, obj)
 }
 
-func (s *scopeSet) Pop() interpreter.Scope {
+func (s *scopeSet) Pop() values.Scope {
 	return nil
 }
 
@@ -153,7 +155,7 @@ func (s *scopeSet) Return() values.Value {
 	return nil
 }
 
-func (s *scopeSet) Copy() interpreter.Scope {
+func (s *scopeSet) Copy() values.Scope {
 	packages := make([]*interpreter.Package, len(s.packages))
 	for i, pkg := range s.packages {
 		packages[i] = pkg.Copy()
@@ -167,7 +169,10 @@ func StdLib() interpreter.Importer {
 }
 
 // Prelude returns a scope object representing the Flux universe block
-func Prelude() interpreter.Scope {
+func Prelude() values.Scope {
+	if !finalized {
+		panic("builtins not finalized")
+	}
 	return preludeScope.Nest(nil)
 }
 
@@ -517,18 +522,6 @@ func FunctionSignature(parameters map[string]semantic.PolyType, required []strin
 		Return:       TableObjectType,
 		PipeArgument: TablesParameter,
 	}
-}
-
-// BuiltIns returns a copy of the builtin values and their declarations.
-func BuiltIns() map[string]values.Value {
-	if !finalized {
-		panic("builtins not finalized")
-	}
-	cpy := make(map[string]values.Value, preludeScope.Size())
-	preludeScope.Range(func(k string, v values.Value) {
-		cpy[k] = v
-	})
-	return cpy
 }
 
 type Administration struct {

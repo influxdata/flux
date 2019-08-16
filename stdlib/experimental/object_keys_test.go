@@ -6,12 +6,11 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
-func addFail(scope interpreter.Scope) {
+func addFail(scope values.Scope) {
 	scope.Set("fail", values.NewFunction(
 		"fail",
 		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{

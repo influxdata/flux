@@ -7,7 +7,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
@@ -107,7 +106,7 @@ func mustParseTime(t string) values.Time {
 	}
 }
 
-func mustLookup(s interpreter.Scope, valueID string) values.Value {
+func mustLookup(s values.Scope, valueID string) values.Value {
 	v, found := s.Lookup(valueID)
 	if !found {
 		panic(fmt.Errorf("&%s not found in scope", valueID))
@@ -115,10 +114,10 @@ func mustLookup(s interpreter.Scope, valueID string) values.Value {
 	return v
 }
 
-func evalOrFail(t *testing.T, script string, mutator flux.ScopeMutator) interpreter.Scope {
+func evalOrFail(t *testing.T, script string, mutator flux.ScopeMutator) values.Scope {
 	t.Helper()
 
-	_, s, err := flux.Eval(script, func(s interpreter.Scope) {
+	_, s, err := flux.Eval(script, func(s values.Scope) {
 		if mutator != nil {
 			mutator(s)
 		}
@@ -209,7 +208,7 @@ func TestGetColumn_Call(t *testing.T) {
 // 'inj' is injected in the scope before evaluation
 t = inj |> tableFind(fn: (key) => key.user == "user1")`
 
-	s := evalOrFail(t, script, func(s interpreter.Scope) {
+	s := evalOrFail(t, script, func(s values.Scope) {
 		s.Set("inj", to)
 	})
 	tbl := mustLookup(s, "t")
@@ -253,7 +252,7 @@ func TestGetRecord_Call(t *testing.T) {
 // 'inj' is injected in the scope before evaluation
 t = inj |> tableFind(fn: (key) => key.user == "user1")`
 
-	s := evalOrFail(t, script, func(s interpreter.Scope) {
+	s := evalOrFail(t, script, func(s values.Scope) {
 		s.Set("inj", to)
 	})
 	tbl := mustLookup(s, "t")
@@ -317,7 +316,7 @@ columnOK = c[0] == 1.0
 // >>> unsupported binary expression {_value: float,_measurement: string,user: string,_time: time,} == {_value: float,_measurement: string,user: string,_time: time,}
 recordOK = r._time == 2018-05-22T19:53:26Z and r._value == 1.0 and r._measurement == "RAM" and r.user == "user1"`
 
-	s := evalOrFail(t, script, func(s interpreter.Scope) {
+	s := evalOrFail(t, script, func(s values.Scope) {
 		s.Set("inj", to)
 	})
 

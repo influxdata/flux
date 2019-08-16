@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 
 	"github.com/influxdata/flux/ast"
@@ -45,7 +46,7 @@ func (c compiledFn) buildScope(input values.Object) error {
 		return err
 	}
 	input.Range(func(k string, v values.Value) {
-		c.inputScope[k] = v
+		c.inputScope.Set(k, v)
 	})
 	return nil
 }
@@ -62,28 +63,33 @@ func (c compiledFn) Eval(input values.Object) (values.Value, error) {
 	return eval(c.root, c.inputScope)
 }
 
-type Scope map[string]values.Value
+type Scope interface {
+	values.Scope
+	Get(name string) values.Value
+}
 
-func (s Scope) Type(name string) semantic.Type {
-	return s[name].Type()
+type compilerScope struct {
+	values.Scope
 }
-func (s Scope) Set(name string, v values.Value) {
-	s[name] = v
-}
-func (s Scope) Get(name string) values.Value {
-	v := s[name]
-	if v == nil {
-		panic("attempting to access non-existant value")
+
+func (s compilerScope) Get(name string) values.Value {
+	v, ok := s.Scope.Lookup(name)
+	if !ok {
+		log.Println("Scope", values.FormattedScope(s.Scope))
+		panic(fmt.Sprintf("attempting to access non-existant value %q", name))
 	}
 	return v
 }
 
-func (s Scope) Copy() Scope {
-	n := make(Scope, len(s))
-	for k, v := range s {
-		n[k] = v
-	}
-	return n
+func NewScope() Scope {
+	return ToScope(values.NewScope())
+}
+func ToScope(s values.Scope) Scope {
+	return compilerScope{s}
+}
+
+func nestScope(scope Scope) Scope {
+	return compilerScope{scope.Nest(nil)}
 }
 
 func eval(e Evaluator, scope Scope) (values.Value, error) {
@@ -91,7 +97,7 @@ func eval(e Evaluator, scope Scope) (values.Value, error) {
 	if err != nil {
 		return nil, err
 	}
-	values.CheckKind(e.Type().Nature(), v.Type().Nature())
+	//values.CheckKind(v.Type().Nature(), e.Type().Nature())
 	return v, nil
 }
 
@@ -427,40 +433,36 @@ func (e *durationEvaluator) Eval(scope Scope) (values.Value, error) {
 }
 
 type identifierEvaluator struct {
-	t    semantic.Type
+	t    semantic.PolyType
 	name string
 }
 
 func (e *identifierEvaluator) Type() semantic.Type {
-	return e.t
+	t, ok := e.t.MonoType()
+	if !ok {
+		return semantic.Invalid
+	}
+	return t
 }
 
 func (e *identifierEvaluator) Eval(scope Scope) (values.Value, error) {
 	v := scope.Get(e.name)
-	values.CheckKind(v.Type().Nature(), e.t.Nature())
+	values.CheckKind(v.PolyType().Nature(), e.t.Nature())
 	return v, nil
 }
 
-type valueEvaluator struct {
-	value values.Value
-}
-
-func (e *valueEvaluator) Type() semantic.Type {
-	return e.value.Type()
-}
-
-func (e *valueEvaluator) Eval(scope Scope) (values.Value, error) {
-	return e.value, nil
-}
-
 type memberEvaluator struct {
-	t        semantic.Type
+	t        semantic.PolyType
 	object   Evaluator
 	property string
 }
 
 func (e *memberEvaluator) Type() semantic.Type {
-	return e.t
+	t, ok := e.t.MonoType()
+	if !ok {
+		return semantic.Invalid
+	}
+	return t
 }
 
 func (e *memberEvaluator) Eval(scope Scope) (values.Value, error) {
@@ -469,7 +471,8 @@ func (e *memberEvaluator) Eval(scope Scope) (values.Value, error) {
 		return nil, err
 	}
 	v, _ := o.Object().Get(e.property)
-	values.CheckKind(v.Type().Nature(), e.t.Nature())
+	// TODO(nathanielc): Fix this poly type issue
+	//values.CheckKind(v.PolyType().Nature(), e.t.Nature())
 	return v, nil
 }
 
@@ -554,7 +557,7 @@ func (f *functionValue) HasSideEffect() bool {
 }
 
 func (f *functionValue) Call(args values.Object) (values.Value, error) {
-	scope := f.scope.Copy()
+	scope := nestScope(f.scope)
 	for _, p := range f.params {
 		a, ok := args.Get(p.Key)
 		if !ok && p.Default != nil {

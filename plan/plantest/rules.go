@@ -5,7 +5,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic/semantictest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 )
@@ -178,9 +177,9 @@ func PhysicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
 		return nil
 	})
 
-	if !cmp.Equal(want, got, semantictest.CmpOptions...) {
+	if !cmp.Equal(want, got, CmpOptions...) {
 		t.Errorf("transformed plan not as expected, -want/+got:\n%v",
-			cmp.Diff(want, got, semantictest.CmpOptions...))
+			cmp.Diff(want, got, CmpOptions...))
 	}
 }
 
@@ -227,8 +226,8 @@ func LogicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
 		return nil
 	})
 
-	if !cmp.Equal(want, got, semantictest.CmpOptions...) {
+	if !cmp.Equal(want, got, CmpOptions...) {
 		t.Errorf("transformed plan not as expected, -want/+got:\n%v",
-			cmp.Diff(want, got, semantictest.CmpOptions...))
+			cmp.Diff(want, got, CmpOptions...))
 	}
 }

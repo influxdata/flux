@@ -5,6 +5,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
@@ -16,7 +17,7 @@ import (
 const MapKind = "map"
 
 type MapOpSpec struct {
-	Fn       *semantic.FunctionExpression `json:"fn"`
+	Fn       interpreter.ResolvedFunction `json:"fn"`
 	MergeKey bool                         `json:"mergeKey"`
 }
 
@@ -66,6 +67,7 @@ func createMapOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operatio
 		// deprecated parameter: default is now false.
 		spec.MergeKey = false
 	}
+
 	return spec, nil
 }
 
@@ -79,7 +81,7 @@ func (s *MapOpSpec) Kind() flux.OperationKind {
 
 type MapProcedureSpec struct {
 	plan.DefaultCost
-	Fn       *semantic.FunctionExpression
+	Fn       interpreter.ResolvedFunction `json:"fn"`
 	MergeKey bool
 }
 
@@ -101,7 +103,7 @@ func (s *MapProcedureSpec) Kind() plan.ProcedureKind {
 func (s *MapProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(MapProcedureSpec)
 	*ns = *s
-	ns.Fn = s.Fn.Copy().(*semantic.FunctionExpression)
+	ns.Fn = s.Fn.Copy()
 	return ns
 }
 
@@ -128,7 +130,7 @@ type mapTransformation struct {
 }
 
 func NewMapTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *MapProcedureSpec) (*mapTransformation, error) {
-	fn, err := execute.NewRowMapFn(spec.Fn)
+	fn, err := execute.NewRowMapFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	if err != nil {
 		return nil, err
 	}

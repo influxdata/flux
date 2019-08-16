@@ -83,7 +83,7 @@ func TestAccessNestedImport(t *testing.T) {
 
 	expectedError := fmt.Errorf(`cannot access imported package "a" of imported package "b"`)
 
-	_, err := interpreter.NewInterpreter().Eval(node, interpreter.NewScope(), &importer)
+	_, err := interpreter.NewInterpreter().Eval(node, values.NewScope(), &importer)
 	if err == nil {
 		t.Errorf("expected error")
 	} else if err.Error() != expectedError.Error() {
@@ -374,7 +374,7 @@ func TestInterpreter_QualifiedOption(t *testing.T) {
 		import "alert"
 		option alert.state = "Error"
 `
-	if _, err := interptest.Eval(itrp, interpreter.NewScope(), importer, pkg); err != nil {
+	if _, err := interptest.Eval(itrp, values.NewScope(), importer, pkg); err != nil {
 		t.Fatalf("failed to evaluate package: %v", err)
 	}
 	option, ok := externalPackage.Get("state")

@@ -19,17 +19,17 @@ const DuplicateKind = "duplicate"
 
 type RenameOpSpec struct {
 	Columns map[string]string            `json:"columns"`
-	Fn      *semantic.FunctionExpression `json:"fn"`
+	Fn      interpreter.ResolvedFunction `json:"fn"`
 }
 
 type DropOpSpec struct {
 	Columns   []string                     `json:"columns"`
-	Predicate *semantic.FunctionExpression `json:"fn"`
+	Predicate interpreter.ResolvedFunction `json:"fn"`
 }
 
 type KeepOpSpec struct {
 	Columns   []string                     `json:"columns"`
-	Predicate *semantic.FunctionExpression `json:"fn"`
+	Predicate interpreter.ResolvedFunction `json:"fn"`
 }
 
 type DuplicateOpSpec struct {
@@ -147,7 +147,7 @@ func createRenameOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		cols = c
 	}
 
-	var renameFn *semantic.FunctionExpression
+	var renameFn interpreter.ResolvedFunction
 	if f, ok, err := args.GetFunction("fn"); err != nil {
 		return nil, err
 	} else if ok {
@@ -158,11 +158,11 @@ func createRenameOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		}
 	}
 
-	if cols == nil && renameFn == nil {
+	if cols == nil && renameFn.Fn == nil {
 		return nil, errors.New("rename error: neither column list nor map function provided")
 	}
 
-	if cols != nil && renameFn != nil {
+	if cols != nil && renameFn.Fn != nil {
 		return nil, errors.New("rename error: both column list and map function provided")
 	}
 
@@ -205,7 +205,7 @@ func createDropOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		cols = c
 	}
 
-	var dropPredicate *semantic.FunctionExpression
+	var dropPredicate interpreter.ResolvedFunction
 	if f, ok, err := args.GetFunction("fn"); err != nil {
 		return nil, err
 	} else if ok {
@@ -217,11 +217,11 @@ func createDropOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		dropPredicate = fn
 	}
 
-	if cols == nil && dropPredicate == nil {
+	if cols == nil && dropPredicate.Fn == nil {
 		return nil, errors.New("drop error: neither column list nor predicate function provided")
 	}
 
-	if cols != nil && dropPredicate != nil {
+	if cols != nil && dropPredicate.Fn != nil {
 		return nil, errors.New("drop error: both column list and predicate provided")
 	}
 
@@ -252,7 +252,7 @@ func createKeepOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		cols = c
 	}
 
-	var keepPredicate *semantic.FunctionExpression
+	var keepPredicate interpreter.ResolvedFunction
 	if f, ok, err := args.GetFunction("fn"); err != nil {
 		return nil, err
 	} else if ok {
@@ -264,11 +264,11 @@ func createKeepOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		keepPredicate = fn
 	}
 
-	if cols == nil && keepPredicate == nil {
+	if cols == nil && keepPredicate.Fn == nil {
 		return nil, errors.New("keep error: neither column list nor predicate function provided")
 	}
 
-	if cols != nil && keepPredicate != nil {
+	if cols != nil && keepPredicate.Fn != nil {
 		return nil, errors.New("keep error: both column list and predicate provided")
 	}
 
@@ -348,7 +348,7 @@ func (s *RenameOpSpec) Copy() SchemaMutation {
 
 	return &RenameOpSpec{
 		Columns: newCols,
-		Fn:      s.Fn.Copy().(*semantic.FunctionExpression),
+		Fn:      s.Fn.Copy(),
 	}
 }
 
@@ -358,7 +358,7 @@ func (s *DropOpSpec) Copy() SchemaMutation {
 
 	return &DropOpSpec{
 		Columns:   newCols,
-		Predicate: s.Predicate.Copy().(*semantic.FunctionExpression),
+		Predicate: s.Predicate.Copy(),
 	}
 }
 
@@ -368,7 +368,7 @@ func (s *KeepOpSpec) Copy() SchemaMutation {
 
 	return &KeepOpSpec{
 		Columns:   newCols,
-		Predicate: s.Predicate.Copy().(*semantic.FunctionExpression),
+		Predicate: s.Predicate.Copy(),
 	}
 }
 

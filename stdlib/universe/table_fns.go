@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
@@ -73,7 +74,8 @@ func tableFindCall(args values.Object) (values.Value, error) {
 			return nil, err
 		}
 
-		fn, err = execute.NewTablePredicateFn(predicate)
+		// TODO(nathanielc): Capture function scope
+		fn, err = execute.NewTablePredicateFn(predicate.Fn, compiler.ToScope(predicate.Scope))
 		if err != nil {
 			return nil, err
 		}

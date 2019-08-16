@@ -33,15 +33,13 @@ outData = "
 
 myVal = "wrong"
 t_shadow_var = (table=<-) =>
-	(table
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> map(fn: (r) =>
-                    {
-                        myVal = "const"
-        			    return {r with _value: myVal}
-        			}
-        	  )
-    )
+    table
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> map(fn: (r) => {
+            myVal = "const"
+            return {r with _value: myVal}
+        })
+
 
 test _shadow_var = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shadow_var})
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shadow_var})

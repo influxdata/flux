@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"regexp"
+	"runtime/debug"
 	"strconv"
 
 	"github.com/influxdata/flux/semantic"
@@ -327,7 +328,7 @@ func AssignableTo(V, T semantic.Type) bool {
 }
 
 func UnexpectedKind(got, exp semantic.Nature) error {
-	return fmt.Errorf("unexpected kind: got %q expected %q", got, exp)
+	return fmt.Errorf("unexpected kind: got %q expected %q, trace: %s", got, exp, string(debug.Stack()))
 }
 
 // CheckKind panics if got != exp.

@@ -7,7 +7,6 @@ import (
 	"sort"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -23,11 +22,11 @@ type FunctionSuggestion struct {
 
 // Completer provides methods for suggestions in Flux queries.
 type Completer struct {
-	scope interpreter.Scope
+	scope values.Scope
 }
 
 // NewCompleter creates a new completer from scope.
-func NewCompleter(scope interpreter.Scope) Completer {
+func NewCompleter(scope values.Scope) Completer {
 	return Completer{scope: scope}
 }
 

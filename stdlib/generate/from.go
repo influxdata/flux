@@ -21,7 +21,7 @@ type FromGeneratorOpSpec struct {
 	Start time.Time                    `json:"start"`
 	Stop  time.Time                    `json:"stop"`
 	Count int64                        `json:"count"`
-	Fn    *semantic.FunctionExpression `json:"fn"`
+	Fn    interpreter.ResolvedFunction `json:"fn"`
 }
 
 func init() {
@@ -104,7 +104,7 @@ func newFromGeneratorProcedure(qs flux.OperationSpec, pa plan.Administration) (p
 		return nil, fmt.Errorf("invalid spec type %T", qs)
 	}
 
-	fn, _, err := compiler.CompileFnParam(spec.Fn, semantic.Int, semantic.Int)
+	fn, _, err := compiler.CompileFnParam(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope), semantic.Int, semantic.Int)
 	if err != nil {
 		return nil, err
 	}

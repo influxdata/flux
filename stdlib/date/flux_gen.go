@@ -21,11 +21,11 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 2,
-					Line:   74,
+					Column: 15,
+					Line:   37,
 				},
-				File:   "date_fns.flux",
-				Source: "package date\n\nbuiltin second\nbuiltin minute\nbuiltin hour\nbuiltin weekDay\nbuiltin monthDay\nbuiltin yearDay\nbuiltin month\nbuiltin year\nbuiltin week\nbuiltin quarter\nbuiltin millisecond\nbuiltin microsecond\nbuiltin nanosecond\nbuiltin truncate\n\nSunday    = 0\nMonday    = 1\nTuesday   = 2\nWednesday = 3\nThursday  = 4\nFriday    = 5\nSaturday  = 6\n\nJanuary   = 1\nFebruary  = 2\nMarch     = 3\nApril     = 4\nMay       = 5\nJune      = 6\nJuly      = 7\nAugust    = 8\nSeptember = 9\nOctober   = 10\nNovember  = 11\nDecember  = 12\n\n// hack to simulate an imported strings package\ndate = {\n  second:second,\n  minute:minute,\n  hour:hour,\n  weekDay:weekDay,\n  monthDay:monthDay,\n  yearDay:yearDay,\n  month:month,\n  year:year,\n  week:week,\n  quarter:quarter,\n  millisecond:millisecond,\n  microsecond:microsecond,\n  nanosecond:nanosecond,\n  Sunday:Sunday,\n  Monday:Monday,\n  Tuesday:Tuesday,\n  Wednesday:Wednesday,\n  Thursday:Thursday,\n  Friday:Friday,\n  Saturday:Saturday,\n  January:January,\n  February:February,\n  March:March,\n  April:April,\n  May:May,\n  June:June,\n  July:July,\n  August:August,\n  September:September,\n  October:October,\n  November:November,\n  December:December,\n  truncate:truncate,\n}",
+				File:   "date.flux",
+				Source: "package date\n\nbuiltin second\nbuiltin minute\nbuiltin hour\nbuiltin weekDay\nbuiltin monthDay\nbuiltin yearDay\nbuiltin month\nbuiltin year\nbuiltin week\nbuiltin quarter\nbuiltin millisecond\nbuiltin microsecond\nbuiltin nanosecond\nbuiltin truncate\n\nSunday    = 0\nMonday    = 1\nTuesday   = 2\nWednesday = 3\nThursday  = 4\nFriday    = 5\nSaturday  = 6\n\nJanuary   = 1\nFebruary  = 2\nMarch     = 3\nApril     = 4\nMay       = 5\nJune      = 6\nJuly      = 7\nAugust    = 8\nSeptember = 9\nOctober   = 10\nNovember  = 11\nDecember  = 12",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   3,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "builtin second",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   3,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "second",
 						Start: ast.Position{
 							Column: 9,
@@ -74,7 +74,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   4,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "builtin minute",
 					Start: ast.Position{
 						Column: 1,
@@ -90,7 +90,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   4,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "minute",
 						Start: ast.Position{
 							Column: 9,
@@ -108,7 +108,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   5,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "builtin hour",
 					Start: ast.Position{
 						Column: 1,
@@ -124,7 +124,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   5,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "hour",
 						Start: ast.Position{
 							Column: 9,
@@ -142,7 +142,7 @@ var pkgAST = &ast.Package{
 						Column: 16,
 						Line:   6,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "builtin weekDay",
 					Start: ast.Position{
 						Column: 1,
@@ -158,7 +158,7 @@ var pkgAST = &ast.Package{
 							Column: 16,
 							Line:   6,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "weekDay",
 						Start: ast.Position{
 							Column: 9,
@@ -176,7 +176,7 @@ var pkgAST = &ast.Package{
 						Column: 17,
 						Line:   7,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "builtin monthDay",
 					Start: ast.Position{
 						Column: 1,
@@ -192,7 +192,7 @@ var pkgAST = &ast.Package{
 							Column: 17,
 							Line:   7,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "monthDay",
 						Start: ast.Position{
 							Column: 9,
@@ -210,7 +210,7 @@ var pkgAST = &ast.Package{
 						Column: 16,
 						Line:   8,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "builtin yearDay",
 					Start: ast.Position{
 						Column: 1,
@@ -226,7 +226,7 @@ var pkgAST = &ast.Package{
 							Column: 16,
 							Line:   8,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "yearDay",
 						Start: ast.Position{
 							Column: 9,
@@ -244,7 +244,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   9,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "builtin month",
 					Start: ast.Position{
 						Column: 1,
@@ -260,7 +260,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   9,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "month",
 						Start: ast.Position{
 							Column: 9,
@@ -278,7 +278,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   10,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "builtin year",
 					Start: ast.Position{
 						Column: 1,
@@ -294,7 +294,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   10,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "year",
 						Start: ast.Position{
 							Column: 9,
@@ -312,7 +312,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   11,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "builtin week",
 					Start: ast.Position{
 						Column: 1,
@@ -328,7 +328,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   11,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "week",
 						Start: ast.Position{
 							Column: 9,
@@ -346,7 +346,7 @@ var pkgAST = &ast.Package{
 						Column: 16,
 						Line:   12,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "builtin quarter",
 					Start: ast.Position{
 						Column: 1,
@@ -362,7 +362,7 @@ var pkgAST = &ast.Package{
 							Column: 16,
 							Line:   12,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "quarter",
 						Start: ast.Position{
 							Column: 9,
@@ -380,7 +380,7 @@ var pkgAST = &ast.Package{
 						Column: 20,
 						Line:   13,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "builtin millisecond",
 					Start: ast.Position{
 						Column: 1,
@@ -396,7 +396,7 @@ var pkgAST = &ast.Package{
 							Column: 20,
 							Line:   13,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "millisecond",
 						Start: ast.Position{
 							Column: 9,
@@ -414,7 +414,7 @@ var pkgAST = &ast.Package{
 						Column: 20,
 						Line:   14,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "builtin microsecond",
 					Start: ast.Position{
 						Column: 1,
@@ -430,7 +430,7 @@ var pkgAST = &ast.Package{
 							Column: 20,
 							Line:   14,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "microsecond",
 						Start: ast.Position{
 							Column: 9,
@@ -448,7 +448,7 @@ var pkgAST = &ast.Package{
 						Column: 19,
 						Line:   15,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "builtin nanosecond",
 					Start: ast.Position{
 						Column: 1,
@@ -464,7 +464,7 @@ var pkgAST = &ast.Package{
 							Column: 19,
 							Line:   15,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "nanosecond",
 						Start: ast.Position{
 							Column: 9,
@@ -482,7 +482,7 @@ var pkgAST = &ast.Package{
 						Column: 17,
 						Line:   16,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "builtin truncate",
 					Start: ast.Position{
 						Column: 1,
@@ -498,7 +498,7 @@ var pkgAST = &ast.Package{
 							Column: 17,
 							Line:   16,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "truncate",
 						Start: ast.Position{
 							Column: 9,
@@ -516,7 +516,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   18,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "Sunday    = 0",
 					Start: ast.Position{
 						Column: 1,
@@ -532,7 +532,7 @@ var pkgAST = &ast.Package{
 							Column: 7,
 							Line:   18,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "Sunday",
 						Start: ast.Position{
 							Column: 1,
@@ -550,7 +550,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   18,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "0",
 						Start: ast.Position{
 							Column: 13,
@@ -568,7 +568,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   19,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "Monday    = 1",
 					Start: ast.Position{
 						Column: 1,
@@ -584,7 +584,7 @@ var pkgAST = &ast.Package{
 							Column: 7,
 							Line:   19,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "Monday",
 						Start: ast.Position{
 							Column: 1,
@@ -602,7 +602,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   19,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "1",
 						Start: ast.Position{
 							Column: 13,
@@ -620,7 +620,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   20,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "Tuesday   = 2",
 					Start: ast.Position{
 						Column: 1,
@@ -636,7 +636,7 @@ var pkgAST = &ast.Package{
 							Column: 8,
 							Line:   20,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "Tuesday",
 						Start: ast.Position{
 							Column: 1,
@@ -654,7 +654,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   20,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "2",
 						Start: ast.Position{
 							Column: 13,
@@ -672,7 +672,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   21,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "Wednesday = 3",
 					Start: ast.Position{
 						Column: 1,
@@ -688,7 +688,7 @@ var pkgAST = &ast.Package{
 							Column: 10,
 							Line:   21,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "Wednesday",
 						Start: ast.Position{
 							Column: 1,
@@ -706,7 +706,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   21,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "3",
 						Start: ast.Position{
 							Column: 13,
@@ -724,7 +724,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   22,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "Thursday  = 4",
 					Start: ast.Position{
 						Column: 1,
@@ -740,7 +740,7 @@ var pkgAST = &ast.Package{
 							Column: 9,
 							Line:   22,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "Thursday",
 						Start: ast.Position{
 							Column: 1,
@@ -758,7 +758,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   22,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "4",
 						Start: ast.Position{
 							Column: 13,
@@ -776,7 +776,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   23,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "Friday    = 5",
 					Start: ast.Position{
 						Column: 1,
@@ -792,7 +792,7 @@ var pkgAST = &ast.Package{
 							Column: 7,
 							Line:   23,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "Friday",
 						Start: ast.Position{
 							Column: 1,
@@ -810,7 +810,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   23,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "5",
 						Start: ast.Position{
 							Column: 13,
@@ -828,7 +828,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   24,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "Saturday  = 6",
 					Start: ast.Position{
 						Column: 1,
@@ -844,7 +844,7 @@ var pkgAST = &ast.Package{
 							Column: 9,
 							Line:   24,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "Saturday",
 						Start: ast.Position{
 							Column: 1,
@@ -862,7 +862,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   24,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "6",
 						Start: ast.Position{
 							Column: 13,
@@ -880,7 +880,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   26,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "January   = 1",
 					Start: ast.Position{
 						Column: 1,
@@ -896,7 +896,7 @@ var pkgAST = &ast.Package{
 							Column: 8,
 							Line:   26,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "January",
 						Start: ast.Position{
 							Column: 1,
@@ -914,7 +914,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   26,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "1",
 						Start: ast.Position{
 							Column: 13,
@@ -932,7 +932,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   27,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "February  = 2",
 					Start: ast.Position{
 						Column: 1,
@@ -948,7 +948,7 @@ var pkgAST = &ast.Package{
 							Column: 9,
 							Line:   27,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "February",
 						Start: ast.Position{
 							Column: 1,
@@ -966,7 +966,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   27,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "2",
 						Start: ast.Position{
 							Column: 13,
@@ -984,7 +984,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   28,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "March     = 3",
 					Start: ast.Position{
 						Column: 1,
@@ -1000,7 +1000,7 @@ var pkgAST = &ast.Package{
 							Column: 6,
 							Line:   28,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "March",
 						Start: ast.Position{
 							Column: 1,
@@ -1018,7 +1018,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   28,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "3",
 						Start: ast.Position{
 							Column: 13,
@@ -1036,7 +1036,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   29,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "April     = 4",
 					Start: ast.Position{
 						Column: 1,
@@ -1052,7 +1052,7 @@ var pkgAST = &ast.Package{
 							Column: 6,
 							Line:   29,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "April",
 						Start: ast.Position{
 							Column: 1,
@@ -1070,7 +1070,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   29,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "4",
 						Start: ast.Position{
 							Column: 13,
@@ -1088,7 +1088,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   30,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "May       = 5",
 					Start: ast.Position{
 						Column: 1,
@@ -1104,7 +1104,7 @@ var pkgAST = &ast.Package{
 							Column: 4,
 							Line:   30,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "May",
 						Start: ast.Position{
 							Column: 1,
@@ -1122,7 +1122,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   30,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "5",
 						Start: ast.Position{
 							Column: 13,
@@ -1140,7 +1140,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   31,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "June      = 6",
 					Start: ast.Position{
 						Column: 1,
@@ -1156,7 +1156,7 @@ var pkgAST = &ast.Package{
 							Column: 5,
 							Line:   31,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "June",
 						Start: ast.Position{
 							Column: 1,
@@ -1174,7 +1174,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   31,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "6",
 						Start: ast.Position{
 							Column: 13,
@@ -1192,7 +1192,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   32,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "July      = 7",
 					Start: ast.Position{
 						Column: 1,
@@ -1208,7 +1208,7 @@ var pkgAST = &ast.Package{
 							Column: 5,
 							Line:   32,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "July",
 						Start: ast.Position{
 							Column: 1,
@@ -1226,7 +1226,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   32,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "7",
 						Start: ast.Position{
 							Column: 13,
@@ -1244,7 +1244,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   33,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "August    = 8",
 					Start: ast.Position{
 						Column: 1,
@@ -1260,7 +1260,7 @@ var pkgAST = &ast.Package{
 							Column: 7,
 							Line:   33,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "August",
 						Start: ast.Position{
 							Column: 1,
@@ -1278,7 +1278,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   33,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "8",
 						Start: ast.Position{
 							Column: 13,
@@ -1296,7 +1296,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   34,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "September = 9",
 					Start: ast.Position{
 						Column: 1,
@@ -1312,7 +1312,7 @@ var pkgAST = &ast.Package{
 							Column: 10,
 							Line:   34,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "September",
 						Start: ast.Position{
 							Column: 1,
@@ -1330,7 +1330,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   34,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "9",
 						Start: ast.Position{
 							Column: 13,
@@ -1348,7 +1348,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   35,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "October   = 10",
 					Start: ast.Position{
 						Column: 1,
@@ -1364,7 +1364,7 @@ var pkgAST = &ast.Package{
 							Column: 8,
 							Line:   35,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "October",
 						Start: ast.Position{
 							Column: 1,
@@ -1382,7 +1382,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   35,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "10",
 						Start: ast.Position{
 							Column: 13,
@@ -1400,7 +1400,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   36,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "November  = 11",
 					Start: ast.Position{
 						Column: 1,
@@ -1416,7 +1416,7 @@ var pkgAST = &ast.Package{
 							Column: 9,
 							Line:   36,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "November",
 						Start: ast.Position{
 							Column: 1,
@@ -1434,7 +1434,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   36,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "11",
 						Start: ast.Position{
 							Column: 13,
@@ -1452,7 +1452,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   37,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "December  = 12",
 					Start: ast.Position{
 						Column: 1,
@@ -1468,7 +1468,7 @@ var pkgAST = &ast.Package{
 							Column: 9,
 							Line:   37,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "December",
 						Start: ast.Position{
 							Column: 1,
@@ -1486,7 +1486,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   37,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "12",
 						Start: ast.Position{
 							Column: 13,
@@ -1496,1778 +1496,9 @@ var pkgAST = &ast.Package{
 				},
 				Value: int64(12),
 			},
-		}, &ast.VariableAssignment{
-			BaseNode: ast.BaseNode{
-				Errors: nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 2,
-						Line:   74,
-					},
-					File:   "date_fns.flux",
-					Source: "date = {\n  second:second,\n  minute:minute,\n  hour:hour,\n  weekDay:weekDay,\n  monthDay:monthDay,\n  yearDay:yearDay,\n  month:month,\n  year:year,\n  week:week,\n  quarter:quarter,\n  millisecond:millisecond,\n  microsecond:microsecond,\n  nanosecond:nanosecond,\n  Sunday:Sunday,\n  Monday:Monday,\n  Tuesday:Tuesday,\n  Wednesday:Wednesday,\n  Thursday:Thursday,\n  Friday:Friday,\n  Saturday:Saturday,\n  January:January,\n  February:February,\n  March:March,\n  April:April,\n  May:May,\n  June:June,\n  July:July,\n  August:August,\n  September:September,\n  October:October,\n  November:November,\n  December:December,\n  truncate:truncate,\n}",
-					Start: ast.Position{
-						Column: 1,
-						Line:   40,
-					},
-				},
-			},
-			ID: &ast.Identifier{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 5,
-							Line:   40,
-						},
-						File:   "date_fns.flux",
-						Source: "date",
-						Start: ast.Position{
-							Column: 1,
-							Line:   40,
-						},
-					},
-				},
-				Name: "date",
-			},
-			Init: &ast.ObjectExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 2,
-							Line:   74,
-						},
-						File:   "date_fns.flux",
-						Source: "{\n  second:second,\n  minute:minute,\n  hour:hour,\n  weekDay:weekDay,\n  monthDay:monthDay,\n  yearDay:yearDay,\n  month:month,\n  year:year,\n  week:week,\n  quarter:quarter,\n  millisecond:millisecond,\n  microsecond:microsecond,\n  nanosecond:nanosecond,\n  Sunday:Sunday,\n  Monday:Monday,\n  Tuesday:Tuesday,\n  Wednesday:Wednesday,\n  Thursday:Thursday,\n  Friday:Friday,\n  Saturday:Saturday,\n  January:January,\n  February:February,\n  March:March,\n  April:April,\n  May:May,\n  June:June,\n  July:July,\n  August:August,\n  September:September,\n  October:October,\n  November:November,\n  December:December,\n  truncate:truncate,\n}",
-						Start: ast.Position{
-							Column: 8,
-							Line:   40,
-						},
-					},
-				},
-				Properties: []*ast.Property{&ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 16,
-								Line:   41,
-							},
-							File:   "date_fns.flux",
-							Source: "second:second",
-							Start: ast.Position{
-								Column: 3,
-								Line:   41,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 9,
-									Line:   41,
-								},
-								File:   "date_fns.flux",
-								Source: "second",
-								Start: ast.Position{
-									Column: 3,
-									Line:   41,
-								},
-							},
-						},
-						Name: "second",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 16,
-									Line:   41,
-								},
-								File:   "date_fns.flux",
-								Source: "second",
-								Start: ast.Position{
-									Column: 10,
-									Line:   41,
-								},
-							},
-						},
-						Name: "second",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 16,
-								Line:   42,
-							},
-							File:   "date_fns.flux",
-							Source: "minute:minute",
-							Start: ast.Position{
-								Column: 3,
-								Line:   42,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 9,
-									Line:   42,
-								},
-								File:   "date_fns.flux",
-								Source: "minute",
-								Start: ast.Position{
-									Column: 3,
-									Line:   42,
-								},
-							},
-						},
-						Name: "minute",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 16,
-									Line:   42,
-								},
-								File:   "date_fns.flux",
-								Source: "minute",
-								Start: ast.Position{
-									Column: 10,
-									Line:   42,
-								},
-							},
-						},
-						Name: "minute",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   43,
-							},
-							File:   "date_fns.flux",
-							Source: "hour:hour",
-							Start: ast.Position{
-								Column: 3,
-								Line:   43,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 7,
-									Line:   43,
-								},
-								File:   "date_fns.flux",
-								Source: "hour",
-								Start: ast.Position{
-									Column: 3,
-									Line:   43,
-								},
-							},
-						},
-						Name: "hour",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   43,
-								},
-								File:   "date_fns.flux",
-								Source: "hour",
-								Start: ast.Position{
-									Column: 8,
-									Line:   43,
-								},
-							},
-						},
-						Name: "hour",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 18,
-								Line:   44,
-							},
-							File:   "date_fns.flux",
-							Source: "weekDay:weekDay",
-							Start: ast.Position{
-								Column: 3,
-								Line:   44,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   44,
-								},
-								File:   "date_fns.flux",
-								Source: "weekDay",
-								Start: ast.Position{
-									Column: 3,
-									Line:   44,
-								},
-							},
-						},
-						Name: "weekDay",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 18,
-									Line:   44,
-								},
-								File:   "date_fns.flux",
-								Source: "weekDay",
-								Start: ast.Position{
-									Column: 11,
-									Line:   44,
-								},
-							},
-						},
-						Name: "weekDay",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 20,
-								Line:   45,
-							},
-							File:   "date_fns.flux",
-							Source: "monthDay:monthDay",
-							Start: ast.Position{
-								Column: 3,
-								Line:   45,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 11,
-									Line:   45,
-								},
-								File:   "date_fns.flux",
-								Source: "monthDay",
-								Start: ast.Position{
-									Column: 3,
-									Line:   45,
-								},
-							},
-						},
-						Name: "monthDay",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 20,
-									Line:   45,
-								},
-								File:   "date_fns.flux",
-								Source: "monthDay",
-								Start: ast.Position{
-									Column: 12,
-									Line:   45,
-								},
-							},
-						},
-						Name: "monthDay",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 18,
-								Line:   46,
-							},
-							File:   "date_fns.flux",
-							Source: "yearDay:yearDay",
-							Start: ast.Position{
-								Column: 3,
-								Line:   46,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   46,
-								},
-								File:   "date_fns.flux",
-								Source: "yearDay",
-								Start: ast.Position{
-									Column: 3,
-									Line:   46,
-								},
-							},
-						},
-						Name: "yearDay",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 18,
-									Line:   46,
-								},
-								File:   "date_fns.flux",
-								Source: "yearDay",
-								Start: ast.Position{
-									Column: 11,
-									Line:   46,
-								},
-							},
-						},
-						Name: "yearDay",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 14,
-								Line:   47,
-							},
-							File:   "date_fns.flux",
-							Source: "month:month",
-							Start: ast.Position{
-								Column: 3,
-								Line:   47,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 8,
-									Line:   47,
-								},
-								File:   "date_fns.flux",
-								Source: "month",
-								Start: ast.Position{
-									Column: 3,
-									Line:   47,
-								},
-							},
-						},
-						Name: "month",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 14,
-									Line:   47,
-								},
-								File:   "date_fns.flux",
-								Source: "month",
-								Start: ast.Position{
-									Column: 9,
-									Line:   47,
-								},
-							},
-						},
-						Name: "month",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   48,
-							},
-							File:   "date_fns.flux",
-							Source: "year:year",
-							Start: ast.Position{
-								Column: 3,
-								Line:   48,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 7,
-									Line:   48,
-								},
-								File:   "date_fns.flux",
-								Source: "year",
-								Start: ast.Position{
-									Column: 3,
-									Line:   48,
-								},
-							},
-						},
-						Name: "year",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   48,
-								},
-								File:   "date_fns.flux",
-								Source: "year",
-								Start: ast.Position{
-									Column: 8,
-									Line:   48,
-								},
-							},
-						},
-						Name: "year",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   49,
-							},
-							File:   "date_fns.flux",
-							Source: "week:week",
-							Start: ast.Position{
-								Column: 3,
-								Line:   49,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 7,
-									Line:   49,
-								},
-								File:   "date_fns.flux",
-								Source: "week",
-								Start: ast.Position{
-									Column: 3,
-									Line:   49,
-								},
-							},
-						},
-						Name: "week",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   49,
-								},
-								File:   "date_fns.flux",
-								Source: "week",
-								Start: ast.Position{
-									Column: 8,
-									Line:   49,
-								},
-							},
-						},
-						Name: "week",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 18,
-								Line:   50,
-							},
-							File:   "date_fns.flux",
-							Source: "quarter:quarter",
-							Start: ast.Position{
-								Column: 3,
-								Line:   50,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   50,
-								},
-								File:   "date_fns.flux",
-								Source: "quarter",
-								Start: ast.Position{
-									Column: 3,
-									Line:   50,
-								},
-							},
-						},
-						Name: "quarter",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 18,
-									Line:   50,
-								},
-								File:   "date_fns.flux",
-								Source: "quarter",
-								Start: ast.Position{
-									Column: 11,
-									Line:   50,
-								},
-							},
-						},
-						Name: "quarter",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 26,
-								Line:   51,
-							},
-							File:   "date_fns.flux",
-							Source: "millisecond:millisecond",
-							Start: ast.Position{
-								Column: 3,
-								Line:   51,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 14,
-									Line:   51,
-								},
-								File:   "date_fns.flux",
-								Source: "millisecond",
-								Start: ast.Position{
-									Column: 3,
-									Line:   51,
-								},
-							},
-						},
-						Name: "millisecond",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 26,
-									Line:   51,
-								},
-								File:   "date_fns.flux",
-								Source: "millisecond",
-								Start: ast.Position{
-									Column: 15,
-									Line:   51,
-								},
-							},
-						},
-						Name: "millisecond",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 26,
-								Line:   52,
-							},
-							File:   "date_fns.flux",
-							Source: "microsecond:microsecond",
-							Start: ast.Position{
-								Column: 3,
-								Line:   52,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 14,
-									Line:   52,
-								},
-								File:   "date_fns.flux",
-								Source: "microsecond",
-								Start: ast.Position{
-									Column: 3,
-									Line:   52,
-								},
-							},
-						},
-						Name: "microsecond",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 26,
-									Line:   52,
-								},
-								File:   "date_fns.flux",
-								Source: "microsecond",
-								Start: ast.Position{
-									Column: 15,
-									Line:   52,
-								},
-							},
-						},
-						Name: "microsecond",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 24,
-								Line:   53,
-							},
-							File:   "date_fns.flux",
-							Source: "nanosecond:nanosecond",
-							Start: ast.Position{
-								Column: 3,
-								Line:   53,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 13,
-									Line:   53,
-								},
-								File:   "date_fns.flux",
-								Source: "nanosecond",
-								Start: ast.Position{
-									Column: 3,
-									Line:   53,
-								},
-							},
-						},
-						Name: "nanosecond",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 24,
-									Line:   53,
-								},
-								File:   "date_fns.flux",
-								Source: "nanosecond",
-								Start: ast.Position{
-									Column: 14,
-									Line:   53,
-								},
-							},
-						},
-						Name: "nanosecond",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 16,
-								Line:   54,
-							},
-							File:   "date_fns.flux",
-							Source: "Sunday:Sunday",
-							Start: ast.Position{
-								Column: 3,
-								Line:   54,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 9,
-									Line:   54,
-								},
-								File:   "date_fns.flux",
-								Source: "Sunday",
-								Start: ast.Position{
-									Column: 3,
-									Line:   54,
-								},
-							},
-						},
-						Name: "Sunday",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 16,
-									Line:   54,
-								},
-								File:   "date_fns.flux",
-								Source: "Sunday",
-								Start: ast.Position{
-									Column: 10,
-									Line:   54,
-								},
-							},
-						},
-						Name: "Sunday",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 16,
-								Line:   55,
-							},
-							File:   "date_fns.flux",
-							Source: "Monday:Monday",
-							Start: ast.Position{
-								Column: 3,
-								Line:   55,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 9,
-									Line:   55,
-								},
-								File:   "date_fns.flux",
-								Source: "Monday",
-								Start: ast.Position{
-									Column: 3,
-									Line:   55,
-								},
-							},
-						},
-						Name: "Monday",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 16,
-									Line:   55,
-								},
-								File:   "date_fns.flux",
-								Source: "Monday",
-								Start: ast.Position{
-									Column: 10,
-									Line:   55,
-								},
-							},
-						},
-						Name: "Monday",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 18,
-								Line:   56,
-							},
-							File:   "date_fns.flux",
-							Source: "Tuesday:Tuesday",
-							Start: ast.Position{
-								Column: 3,
-								Line:   56,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   56,
-								},
-								File:   "date_fns.flux",
-								Source: "Tuesday",
-								Start: ast.Position{
-									Column: 3,
-									Line:   56,
-								},
-							},
-						},
-						Name: "Tuesday",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 18,
-									Line:   56,
-								},
-								File:   "date_fns.flux",
-								Source: "Tuesday",
-								Start: ast.Position{
-									Column: 11,
-									Line:   56,
-								},
-							},
-						},
-						Name: "Tuesday",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 22,
-								Line:   57,
-							},
-							File:   "date_fns.flux",
-							Source: "Wednesday:Wednesday",
-							Start: ast.Position{
-								Column: 3,
-								Line:   57,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   57,
-								},
-								File:   "date_fns.flux",
-								Source: "Wednesday",
-								Start: ast.Position{
-									Column: 3,
-									Line:   57,
-								},
-							},
-						},
-						Name: "Wednesday",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 22,
-									Line:   57,
-								},
-								File:   "date_fns.flux",
-								Source: "Wednesday",
-								Start: ast.Position{
-									Column: 13,
-									Line:   57,
-								},
-							},
-						},
-						Name: "Wednesday",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 20,
-								Line:   58,
-							},
-							File:   "date_fns.flux",
-							Source: "Thursday:Thursday",
-							Start: ast.Position{
-								Column: 3,
-								Line:   58,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 11,
-									Line:   58,
-								},
-								File:   "date_fns.flux",
-								Source: "Thursday",
-								Start: ast.Position{
-									Column: 3,
-									Line:   58,
-								},
-							},
-						},
-						Name: "Thursday",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 20,
-									Line:   58,
-								},
-								File:   "date_fns.flux",
-								Source: "Thursday",
-								Start: ast.Position{
-									Column: 12,
-									Line:   58,
-								},
-							},
-						},
-						Name: "Thursday",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 16,
-								Line:   59,
-							},
-							File:   "date_fns.flux",
-							Source: "Friday:Friday",
-							Start: ast.Position{
-								Column: 3,
-								Line:   59,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 9,
-									Line:   59,
-								},
-								File:   "date_fns.flux",
-								Source: "Friday",
-								Start: ast.Position{
-									Column: 3,
-									Line:   59,
-								},
-							},
-						},
-						Name: "Friday",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 16,
-									Line:   59,
-								},
-								File:   "date_fns.flux",
-								Source: "Friday",
-								Start: ast.Position{
-									Column: 10,
-									Line:   59,
-								},
-							},
-						},
-						Name: "Friday",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 20,
-								Line:   60,
-							},
-							File:   "date_fns.flux",
-							Source: "Saturday:Saturday",
-							Start: ast.Position{
-								Column: 3,
-								Line:   60,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 11,
-									Line:   60,
-								},
-								File:   "date_fns.flux",
-								Source: "Saturday",
-								Start: ast.Position{
-									Column: 3,
-									Line:   60,
-								},
-							},
-						},
-						Name: "Saturday",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 20,
-									Line:   60,
-								},
-								File:   "date_fns.flux",
-								Source: "Saturday",
-								Start: ast.Position{
-									Column: 12,
-									Line:   60,
-								},
-							},
-						},
-						Name: "Saturday",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 18,
-								Line:   61,
-							},
-							File:   "date_fns.flux",
-							Source: "January:January",
-							Start: ast.Position{
-								Column: 3,
-								Line:   61,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   61,
-								},
-								File:   "date_fns.flux",
-								Source: "January",
-								Start: ast.Position{
-									Column: 3,
-									Line:   61,
-								},
-							},
-						},
-						Name: "January",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 18,
-									Line:   61,
-								},
-								File:   "date_fns.flux",
-								Source: "January",
-								Start: ast.Position{
-									Column: 11,
-									Line:   61,
-								},
-							},
-						},
-						Name: "January",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 20,
-								Line:   62,
-							},
-							File:   "date_fns.flux",
-							Source: "February:February",
-							Start: ast.Position{
-								Column: 3,
-								Line:   62,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 11,
-									Line:   62,
-								},
-								File:   "date_fns.flux",
-								Source: "February",
-								Start: ast.Position{
-									Column: 3,
-									Line:   62,
-								},
-							},
-						},
-						Name: "February",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 20,
-									Line:   62,
-								},
-								File:   "date_fns.flux",
-								Source: "February",
-								Start: ast.Position{
-									Column: 12,
-									Line:   62,
-								},
-							},
-						},
-						Name: "February",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 14,
-								Line:   63,
-							},
-							File:   "date_fns.flux",
-							Source: "March:March",
-							Start: ast.Position{
-								Column: 3,
-								Line:   63,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 8,
-									Line:   63,
-								},
-								File:   "date_fns.flux",
-								Source: "March",
-								Start: ast.Position{
-									Column: 3,
-									Line:   63,
-								},
-							},
-						},
-						Name: "March",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 14,
-									Line:   63,
-								},
-								File:   "date_fns.flux",
-								Source: "March",
-								Start: ast.Position{
-									Column: 9,
-									Line:   63,
-								},
-							},
-						},
-						Name: "March",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 14,
-								Line:   64,
-							},
-							File:   "date_fns.flux",
-							Source: "April:April",
-							Start: ast.Position{
-								Column: 3,
-								Line:   64,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 8,
-									Line:   64,
-								},
-								File:   "date_fns.flux",
-								Source: "April",
-								Start: ast.Position{
-									Column: 3,
-									Line:   64,
-								},
-							},
-						},
-						Name: "April",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 14,
-									Line:   64,
-								},
-								File:   "date_fns.flux",
-								Source: "April",
-								Start: ast.Position{
-									Column: 9,
-									Line:   64,
-								},
-							},
-						},
-						Name: "April",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 10,
-								Line:   65,
-							},
-							File:   "date_fns.flux",
-							Source: "May:May",
-							Start: ast.Position{
-								Column: 3,
-								Line:   65,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   65,
-								},
-								File:   "date_fns.flux",
-								Source: "May",
-								Start: ast.Position{
-									Column: 3,
-									Line:   65,
-								},
-							},
-						},
-						Name: "May",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   65,
-								},
-								File:   "date_fns.flux",
-								Source: "May",
-								Start: ast.Position{
-									Column: 7,
-									Line:   65,
-								},
-							},
-						},
-						Name: "May",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   66,
-							},
-							File:   "date_fns.flux",
-							Source: "June:June",
-							Start: ast.Position{
-								Column: 3,
-								Line:   66,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 7,
-									Line:   66,
-								},
-								File:   "date_fns.flux",
-								Source: "June",
-								Start: ast.Position{
-									Column: 3,
-									Line:   66,
-								},
-							},
-						},
-						Name: "June",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   66,
-								},
-								File:   "date_fns.flux",
-								Source: "June",
-								Start: ast.Position{
-									Column: 8,
-									Line:   66,
-								},
-							},
-						},
-						Name: "June",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 12,
-								Line:   67,
-							},
-							File:   "date_fns.flux",
-							Source: "July:July",
-							Start: ast.Position{
-								Column: 3,
-								Line:   67,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 7,
-									Line:   67,
-								},
-								File:   "date_fns.flux",
-								Source: "July",
-								Start: ast.Position{
-									Column: 3,
-									Line:   67,
-								},
-							},
-						},
-						Name: "July",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   67,
-								},
-								File:   "date_fns.flux",
-								Source: "July",
-								Start: ast.Position{
-									Column: 8,
-									Line:   67,
-								},
-							},
-						},
-						Name: "July",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 16,
-								Line:   68,
-							},
-							File:   "date_fns.flux",
-							Source: "August:August",
-							Start: ast.Position{
-								Column: 3,
-								Line:   68,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 9,
-									Line:   68,
-								},
-								File:   "date_fns.flux",
-								Source: "August",
-								Start: ast.Position{
-									Column: 3,
-									Line:   68,
-								},
-							},
-						},
-						Name: "August",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 16,
-									Line:   68,
-								},
-								File:   "date_fns.flux",
-								Source: "August",
-								Start: ast.Position{
-									Column: 10,
-									Line:   68,
-								},
-							},
-						},
-						Name: "August",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 22,
-								Line:   69,
-							},
-							File:   "date_fns.flux",
-							Source: "September:September",
-							Start: ast.Position{
-								Column: 3,
-								Line:   69,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   69,
-								},
-								File:   "date_fns.flux",
-								Source: "September",
-								Start: ast.Position{
-									Column: 3,
-									Line:   69,
-								},
-							},
-						},
-						Name: "September",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 22,
-									Line:   69,
-								},
-								File:   "date_fns.flux",
-								Source: "September",
-								Start: ast.Position{
-									Column: 13,
-									Line:   69,
-								},
-							},
-						},
-						Name: "September",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 18,
-								Line:   70,
-							},
-							File:   "date_fns.flux",
-							Source: "October:October",
-							Start: ast.Position{
-								Column: 3,
-								Line:   70,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   70,
-								},
-								File:   "date_fns.flux",
-								Source: "October",
-								Start: ast.Position{
-									Column: 3,
-									Line:   70,
-								},
-							},
-						},
-						Name: "October",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 18,
-									Line:   70,
-								},
-								File:   "date_fns.flux",
-								Source: "October",
-								Start: ast.Position{
-									Column: 11,
-									Line:   70,
-								},
-							},
-						},
-						Name: "October",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 20,
-								Line:   71,
-							},
-							File:   "date_fns.flux",
-							Source: "November:November",
-							Start: ast.Position{
-								Column: 3,
-								Line:   71,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 11,
-									Line:   71,
-								},
-								File:   "date_fns.flux",
-								Source: "November",
-								Start: ast.Position{
-									Column: 3,
-									Line:   71,
-								},
-							},
-						},
-						Name: "November",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 20,
-									Line:   71,
-								},
-								File:   "date_fns.flux",
-								Source: "November",
-								Start: ast.Position{
-									Column: 12,
-									Line:   71,
-								},
-							},
-						},
-						Name: "November",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 20,
-								Line:   72,
-							},
-							File:   "date_fns.flux",
-							Source: "December:December",
-							Start: ast.Position{
-								Column: 3,
-								Line:   72,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 11,
-									Line:   72,
-								},
-								File:   "date_fns.flux",
-								Source: "December",
-								Start: ast.Position{
-									Column: 3,
-									Line:   72,
-								},
-							},
-						},
-						Name: "December",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 20,
-									Line:   72,
-								},
-								File:   "date_fns.flux",
-								Source: "December",
-								Start: ast.Position{
-									Column: 12,
-									Line:   72,
-								},
-							},
-						},
-						Name: "December",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 20,
-								Line:   73,
-							},
-							File:   "date_fns.flux",
-							Source: "truncate:truncate",
-							Start: ast.Position{
-								Column: 3,
-								Line:   73,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 11,
-									Line:   73,
-								},
-								File:   "date_fns.flux",
-								Source: "truncate",
-								Start: ast.Position{
-									Column: 3,
-									Line:   73,
-								},
-							},
-						},
-						Name: "truncate",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 20,
-									Line:   73,
-								},
-								File:   "date_fns.flux",
-								Source: "truncate",
-								Start: ast.Position{
-									Column: 12,
-									Line:   73,
-								},
-							},
-						},
-						Name: "truncate",
-					},
-				}},
-				With: nil,
-			},
 		}},
 		Imports: nil,
-		Name:    "date_fns.flux",
+		Name:    "date.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -3276,7 +1507,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   1,
 					},
-					File:   "date_fns.flux",
+					File:   "date.flux",
 					Source: "package date",
 					Start: ast.Position{
 						Column: 1,
@@ -3292,7 +1523,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   1,
 						},
-						File:   "date_fns.flux",
+						File:   "date.flux",
 						Source: "date",
 						Start: ast.Position{
 							Column: 9,
