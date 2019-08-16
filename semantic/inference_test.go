@@ -1097,7 +1097,7 @@ name(p: device)
 						semantic.LabelSet{"p"},
 					)
 
-					tv := semantic.Tvar(50)
+					tv := semantic.NullableTvar{semantic.Tvar(50)}
 					p := semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{
 							"name": tv,
@@ -1741,8 +1741,8 @@ foo(r:{a:1.1,b:42.0})
 `,
 			solution: &solutionVisitor{
 				f: func(node semantic.Node) semantic.PolyType {
-					tvA := semantic.Tvar(37)
-					tvB := semantic.Tvar(38)
+					tvA := semantic.NullableTvar{semantic.Tvar(37)}
+					tvB := semantic.NullableTvar{semantic.Tvar(38)}
 
 					r := semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{
@@ -2246,9 +2246,9 @@ r.a`,
 			solution: &solutionVisitor{
 				f: func(node semantic.Node) semantic.PolyType {
 					// This will eventually resolve as null,
-					// but it stays a Tvar until the real type
+					// but it stays a NullableTvar until the real type
 					// is retrieved.
-					tv := semantic.Tvar(5)
+					tv := semantic.NullableTvar{semantic.Tvar(5)}
 					r := semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{
 							"a": tv,
@@ -2345,9 +2345,9 @@ r.a < r.b`,
 			solution: &solutionVisitor{
 				f: func(node semantic.Node) semantic.PolyType {
 					// This will eventually resolve as null,
-					// but it stays a Tvar until the real type
+					// but it stays a NullableTvar until the real type
 					// is retrieved.
-					tv := semantic.Tvar(12)
+					tv := semantic.NullableTvar{semantic.Tvar(12)}
 					r := semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{
 							"a": semantic.Int,
@@ -2415,9 +2415,9 @@ r.a + r.b`,
 			solution: &solutionVisitor{
 				f: func(node semantic.Node) semantic.PolyType {
 					// This will eventually resolve as null,
-					// but it stays a Tvar until the real type
+					// but it stays a NullableTvar until the real type
 					// is retrieved.
-					tv := semantic.Tvar(10)
+					tv := semantic.NullableTvar{semantic.Tvar(10)}
 					r1 := semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{
 							"a": tv,
@@ -2469,10 +2469,10 @@ r.a < r.b`,
 			solution: &solutionVisitor{
 				f: func(node semantic.Node) semantic.PolyType {
 					// This will eventually resolve as null,
-					// but it stays a Tvar until the real type
+					// but it stays a NullableTvar until the real type
 					// is retrieved.
-					tv1 := semantic.Tvar(8)
-					tv2 := semantic.Tvar(10)
+					tv1 := semantic.NullableTvar{semantic.Tvar(8)}
+					tv2 := semantic.NullableTvar{semantic.Tvar(10)}
 					r1 := semantic.NewObjectPolyType(
 						map[string]semantic.PolyType{
 							"a": tv1,
