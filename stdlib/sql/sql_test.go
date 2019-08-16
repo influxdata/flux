@@ -98,7 +98,7 @@ func TestFromRowReader(t *testing.T) {
 		var rr execute.RowReader = &MockRowReader{row: 0}
 		sqliter := &SQLIterator{reader: &rr, administration: &MockAllocator{}}
 
-		rr.InitColumnTypes(nil)
+		rr.(*MockRowReader).InitColumnTypes(nil)
 
 		table, err := sqliter.Decode(context.Background())
 		if err != nil {
