@@ -17,6 +17,3541 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
+					Column: 97,
+					Line:   61,
+				},
+				File:   "check_test.flux",
+				Source: "package alerts_test\n\nimport \"influxdata/influxdb/alerts\"\nimport \"influxdata/influxdb/v1\"\nimport \"testing\"\n\noption now = () => 2018-05-22T19:54:20Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#group,false,false,false,false,true,true,true,true\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,0,2018-05-22T19:53:26Z,91.7364670583823,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:53:36Z,89.51118889861233,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:53:46Z,4.9,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:53:56Z,4.7,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:54:06Z,7.0,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:54:16Z,7.1,usage_idle,cpu,cpu-total,host.local\n\"\n\noutData = \"\n#datatype,string,long,string,string,string,string,string,string,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,0,000000000000000a,cpu threshold check,crit,statuses,whoa!,cpu,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,2018-05-22T19:53:40Z,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"\n\ndata = {\n    _check_id: \"000000000000000a\",\n    _check_name: \"cpu threshold check\",\n    _type: \"threshold\",\n    tags: {aaa: \"vaaa\", bbb: \"vbbb\"}\n}\n\ncrit = (r) => (r.usage_idle < 5.0)\nwarn = (r) => (r.usage_idle < 10.0)\ninfo = (r) => (r.usage_idle < 25.0)\n\nmessageFn = (r) => \"whoa!\"\n\nt_check = (table=<-) => table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")\n    |> v1.fieldsAsCols() // pivot data so there is a \"usage_idle\" column\n    |> aggregateWindow(every: 20s, fn: mean, column: \"usage_idle\")\n    |> alerts.check(\n        data: data,\n        messageFn: messageFn,\n        info: info,\n        warn: warn,\n        crit: crit,\n    )\n\ntest alerts_check = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_check}",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 40,
+							Line:   7,
+						},
+						File:   "check_test.flux",
+						Source: "now = () => 2018-05-22T19:54:20Z",
+						Start: ast.Position{
+							Column: 8,
+							Line:   7,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   7,
+							},
+							File:   "check_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   7,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 40,
+								Line:   7,
+							},
+							File:   "check_test.flux",
+							Source: "() => 2018-05-22T19:54:20Z",
+							Start: ast.Position{
+								Column: 14,
+								Line:   7,
+							},
+						},
+					},
+					Body: &ast.DateTimeLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   7,
+								},
+								File:   "check_test.flux",
+								Source: "2018-05-22T19:54:20Z",
+								Start: ast.Position{
+									Column: 20,
+									Line:   7,
+								},
+							},
+						},
+						Value: parser.MustParseTime("2018-05-22T19:54:20Z"),
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 40,
+						Line:   7,
+					},
+					File:   "check_test.flux",
+					Source: "option now = () => 2018-05-22T19:54:20Z",
+					Start: ast.Position{
+						Column: 1,
+						Line:   7,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   20,
+					},
+					File:   "check_test.flux",
+					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#group,false,false,false,false,true,true,true,true\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,0,2018-05-22T19:53:26Z,91.7364670583823,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:53:36Z,89.51118889861233,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:53:46Z,4.9,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:53:56Z,4.7,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:54:06Z,7.0,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:54:16Z,7.1,usage_idle,cpu,cpu-total,host.local\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   9,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   9,
+						},
+						File:   "check_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   9,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   20,
+						},
+						File:   "check_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#group,false,false,false,false,true,true,true,true\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,0,2018-05-22T19:53:26Z,91.7364670583823,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:53:36Z,89.51118889861233,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:53:46Z,4.9,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:53:56Z,4.7,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:54:06Z,7.0,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:54:16Z,7.1,usage_idle,cpu,cpu-total,host.local\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   9,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#group,false,false,false,false,true,true,true,true\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,0,2018-05-22T19:53:26Z,91.7364670583823,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:53:36Z,89.51118889861233,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:53:46Z,4.9,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:53:56Z,4.7,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:54:06Z,7.0,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:54:16Z,7.1,usage_idle,cpu,cpu-total,host.local\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   30,
+					},
+					File:   "check_test.flux",
+					Source: "outData = \"\n#datatype,string,long,string,string,string,string,string,string,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,0,000000000000000a,cpu threshold check,crit,statuses,whoa!,cpu,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,2018-05-22T19:53:40Z,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   22,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   22,
+						},
+						File:   "check_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   22,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   30,
+						},
+						File:   "check_test.flux",
+						Source: "\"\n#datatype,string,long,string,string,string,string,string,string,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,0,000000000000000a,cpu threshold check,crit,statuses,whoa!,cpu,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,2018-05-22T19:53:40Z,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   22,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string,string,string,string,string,string,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,0,000000000000000a,cpu threshold check,crit,statuses,whoa!,cpu,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,2018-05-22T19:53:40Z,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   37,
+					},
+					File:   "check_test.flux",
+					Source: "data = {\n    _check_id: \"000000000000000a\",\n    _check_name: \"cpu threshold check\",\n    _type: \"threshold\",\n    tags: {aaa: \"vaaa\", bbb: \"vbbb\"}\n}",
+					Start: ast.Position{
+						Column: 1,
+						Line:   32,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 5,
+							Line:   32,
+						},
+						File:   "check_test.flux",
+						Source: "data",
+						Start: ast.Position{
+							Column: 1,
+							Line:   32,
+						},
+					},
+				},
+				Name: "data",
+			},
+			Init: &ast.ObjectExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   37,
+						},
+						File:   "check_test.flux",
+						Source: "{\n    _check_id: \"000000000000000a\",\n    _check_name: \"cpu threshold check\",\n    _type: \"threshold\",\n    tags: {aaa: \"vaaa\", bbb: \"vbbb\"}\n}",
+						Start: ast.Position{
+							Column: 8,
+							Line:   32,
+						},
+					},
+				},
+				Properties: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 34,
+								Line:   33,
+							},
+							File:   "check_test.flux",
+							Source: "_check_id: \"000000000000000a\"",
+							Start: ast.Position{
+								Column: 5,
+								Line:   33,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   33,
+								},
+								File:   "check_test.flux",
+								Source: "_check_id",
+								Start: ast.Position{
+									Column: 5,
+									Line:   33,
+								},
+							},
+						},
+						Name: "_check_id",
+					},
+					Value: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 34,
+									Line:   33,
+								},
+								File:   "check_test.flux",
+								Source: "\"000000000000000a\"",
+								Start: ast.Position{
+									Column: 16,
+									Line:   33,
+								},
+							},
+						},
+						Value: "000000000000000a",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 39,
+								Line:   34,
+							},
+							File:   "check_test.flux",
+							Source: "_check_name: \"cpu threshold check\"",
+							Start: ast.Position{
+								Column: 5,
+								Line:   34,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 16,
+									Line:   34,
+								},
+								File:   "check_test.flux",
+								Source: "_check_name",
+								Start: ast.Position{
+									Column: 5,
+									Line:   34,
+								},
+							},
+						},
+						Name: "_check_name",
+					},
+					Value: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 39,
+									Line:   34,
+								},
+								File:   "check_test.flux",
+								Source: "\"cpu threshold check\"",
+								Start: ast.Position{
+									Column: 18,
+									Line:   34,
+								},
+							},
+						},
+						Value: "cpu threshold check",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 23,
+								Line:   35,
+							},
+							File:   "check_test.flux",
+							Source: "_type: \"threshold\"",
+							Start: ast.Position{
+								Column: 5,
+								Line:   35,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 10,
+									Line:   35,
+								},
+								File:   "check_test.flux",
+								Source: "_type",
+								Start: ast.Position{
+									Column: 5,
+									Line:   35,
+								},
+							},
+						},
+						Name: "_type",
+					},
+					Value: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 23,
+									Line:   35,
+								},
+								File:   "check_test.flux",
+								Source: "\"threshold\"",
+								Start: ast.Position{
+									Column: 12,
+									Line:   35,
+								},
+							},
+						},
+						Value: "threshold",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 37,
+								Line:   36,
+							},
+							File:   "check_test.flux",
+							Source: "tags: {aaa: \"vaaa\", bbb: \"vbbb\"}",
+							Start: ast.Position{
+								Column: 5,
+								Line:   36,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 9,
+									Line:   36,
+								},
+								File:   "check_test.flux",
+								Source: "tags",
+								Start: ast.Position{
+									Column: 5,
+									Line:   36,
+								},
+							},
+						},
+						Name: "tags",
+					},
+					Value: &ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 37,
+									Line:   36,
+								},
+								File:   "check_test.flux",
+								Source: "{aaa: \"vaaa\", bbb: \"vbbb\"}",
+								Start: ast.Position{
+									Column: 11,
+									Line:   36,
+								},
+							},
+						},
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 23,
+										Line:   36,
+									},
+									File:   "check_test.flux",
+									Source: "aaa: \"vaaa\"",
+									Start: ast.Position{
+										Column: 12,
+										Line:   36,
+									},
+								},
+							},
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   36,
+										},
+										File:   "check_test.flux",
+										Source: "aaa",
+										Start: ast.Position{
+											Column: 12,
+											Line:   36,
+										},
+									},
+								},
+								Name: "aaa",
+							},
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   36,
+										},
+										File:   "check_test.flux",
+										Source: "\"vaaa\"",
+										Start: ast.Position{
+											Column: 17,
+											Line:   36,
+										},
+									},
+								},
+								Value: "vaaa",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 36,
+										Line:   36,
+									},
+									File:   "check_test.flux",
+									Source: "bbb: \"vbbb\"",
+									Start: ast.Position{
+										Column: 25,
+										Line:   36,
+									},
+								},
+							},
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 28,
+											Line:   36,
+										},
+										File:   "check_test.flux",
+										Source: "bbb",
+										Start: ast.Position{
+											Column: 25,
+											Line:   36,
+										},
+									},
+								},
+								Name: "bbb",
+							},
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 36,
+											Line:   36,
+										},
+										File:   "check_test.flux",
+										Source: "\"vbbb\"",
+										Start: ast.Position{
+											Column: 30,
+											Line:   36,
+										},
+									},
+								},
+								Value: "vbbb",
+							},
+						}},
+						With: nil,
+					},
+				}},
+				With: nil,
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 34,
+						Line:   39,
+					},
+					File:   "check_test.flux",
+					Source: "crit = (r) => (r.usage_idle < 5.0",
+					Start: ast.Position{
+						Column: 1,
+						Line:   39,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 5,
+							Line:   39,
+						},
+						File:   "check_test.flux",
+						Source: "crit",
+						Start: ast.Position{
+							Column: 1,
+							Line:   39,
+						},
+					},
+				},
+				Name: "crit",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 34,
+							Line:   39,
+						},
+						File:   "check_test.flux",
+						Source: "(r) => (r.usage_idle < 5.0",
+						Start: ast.Position{
+							Column: 8,
+							Line:   39,
+						},
+					},
+				},
+				Body: &ast.BinaryExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 34,
+								Line:   39,
+							},
+							File:   "check_test.flux",
+							Source: "r.usage_idle < 5.0",
+							Start: ast.Position{
+								Column: 16,
+								Line:   39,
+							},
+						},
+					},
+					Left: &ast.MemberExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 28,
+									Line:   39,
+								},
+								File:   "check_test.flux",
+								Source: "r.usage_idle",
+								Start: ast.Position{
+									Column: 16,
+									Line:   39,
+								},
+							},
+						},
+						Object: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 17,
+										Line:   39,
+									},
+									File:   "check_test.flux",
+									Source: "r",
+									Start: ast.Position{
+										Column: 16,
+										Line:   39,
+									},
+								},
+							},
+							Name: "r",
+						},
+						Property: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 28,
+										Line:   39,
+									},
+									File:   "check_test.flux",
+									Source: "usage_idle",
+									Start: ast.Position{
+										Column: 18,
+										Line:   39,
+									},
+								},
+							},
+							Name: "usage_idle",
+						},
+					},
+					Operator: 8,
+					Right: &ast.FloatLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 34,
+									Line:   39,
+								},
+								File:   "check_test.flux",
+								Source: "5.0",
+								Start: ast.Position{
+									Column: 31,
+									Line:   39,
+								},
+							},
+						},
+						Value: 5.0,
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 10,
+								Line:   39,
+							},
+							File:   "check_test.flux",
+							Source: "r",
+							Start: ast.Position{
+								Column: 9,
+								Line:   39,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 10,
+									Line:   39,
+								},
+								File:   "check_test.flux",
+								Source: "r",
+								Start: ast.Position{
+									Column: 9,
+									Line:   39,
+								},
+							},
+						},
+						Name: "r",
+					},
+					Value: nil,
+				}},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 35,
+						Line:   40,
+					},
+					File:   "check_test.flux",
+					Source: "warn = (r) => (r.usage_idle < 10.0",
+					Start: ast.Position{
+						Column: 1,
+						Line:   40,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 5,
+							Line:   40,
+						},
+						File:   "check_test.flux",
+						Source: "warn",
+						Start: ast.Position{
+							Column: 1,
+							Line:   40,
+						},
+					},
+				},
+				Name: "warn",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 35,
+							Line:   40,
+						},
+						File:   "check_test.flux",
+						Source: "(r) => (r.usage_idle < 10.0",
+						Start: ast.Position{
+							Column: 8,
+							Line:   40,
+						},
+					},
+				},
+				Body: &ast.BinaryExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 35,
+								Line:   40,
+							},
+							File:   "check_test.flux",
+							Source: "r.usage_idle < 10.0",
+							Start: ast.Position{
+								Column: 16,
+								Line:   40,
+							},
+						},
+					},
+					Left: &ast.MemberExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 28,
+									Line:   40,
+								},
+								File:   "check_test.flux",
+								Source: "r.usage_idle",
+								Start: ast.Position{
+									Column: 16,
+									Line:   40,
+								},
+							},
+						},
+						Object: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 17,
+										Line:   40,
+									},
+									File:   "check_test.flux",
+									Source: "r",
+									Start: ast.Position{
+										Column: 16,
+										Line:   40,
+									},
+								},
+							},
+							Name: "r",
+						},
+						Property: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 28,
+										Line:   40,
+									},
+									File:   "check_test.flux",
+									Source: "usage_idle",
+									Start: ast.Position{
+										Column: 18,
+										Line:   40,
+									},
+								},
+							},
+							Name: "usage_idle",
+						},
+					},
+					Operator: 8,
+					Right: &ast.FloatLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 35,
+									Line:   40,
+								},
+								File:   "check_test.flux",
+								Source: "10.0",
+								Start: ast.Position{
+									Column: 31,
+									Line:   40,
+								},
+							},
+						},
+						Value: 10.0,
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 10,
+								Line:   40,
+							},
+							File:   "check_test.flux",
+							Source: "r",
+							Start: ast.Position{
+								Column: 9,
+								Line:   40,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 10,
+									Line:   40,
+								},
+								File:   "check_test.flux",
+								Source: "r",
+								Start: ast.Position{
+									Column: 9,
+									Line:   40,
+								},
+							},
+						},
+						Name: "r",
+					},
+					Value: nil,
+				}},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 35,
+						Line:   41,
+					},
+					File:   "check_test.flux",
+					Source: "info = (r) => (r.usage_idle < 25.0",
+					Start: ast.Position{
+						Column: 1,
+						Line:   41,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 5,
+							Line:   41,
+						},
+						File:   "check_test.flux",
+						Source: "info",
+						Start: ast.Position{
+							Column: 1,
+							Line:   41,
+						},
+					},
+				},
+				Name: "info",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 35,
+							Line:   41,
+						},
+						File:   "check_test.flux",
+						Source: "(r) => (r.usage_idle < 25.0",
+						Start: ast.Position{
+							Column: 8,
+							Line:   41,
+						},
+					},
+				},
+				Body: &ast.BinaryExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 35,
+								Line:   41,
+							},
+							File:   "check_test.flux",
+							Source: "r.usage_idle < 25.0",
+							Start: ast.Position{
+								Column: 16,
+								Line:   41,
+							},
+						},
+					},
+					Left: &ast.MemberExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 28,
+									Line:   41,
+								},
+								File:   "check_test.flux",
+								Source: "r.usage_idle",
+								Start: ast.Position{
+									Column: 16,
+									Line:   41,
+								},
+							},
+						},
+						Object: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 17,
+										Line:   41,
+									},
+									File:   "check_test.flux",
+									Source: "r",
+									Start: ast.Position{
+										Column: 16,
+										Line:   41,
+									},
+								},
+							},
+							Name: "r",
+						},
+						Property: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 28,
+										Line:   41,
+									},
+									File:   "check_test.flux",
+									Source: "usage_idle",
+									Start: ast.Position{
+										Column: 18,
+										Line:   41,
+									},
+								},
+							},
+							Name: "usage_idle",
+						},
+					},
+					Operator: 8,
+					Right: &ast.FloatLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 35,
+									Line:   41,
+								},
+								File:   "check_test.flux",
+								Source: "25.0",
+								Start: ast.Position{
+									Column: 31,
+									Line:   41,
+								},
+							},
+						},
+						Value: 25.0,
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 10,
+								Line:   41,
+							},
+							File:   "check_test.flux",
+							Source: "r",
+							Start: ast.Position{
+								Column: 9,
+								Line:   41,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 10,
+									Line:   41,
+								},
+								File:   "check_test.flux",
+								Source: "r",
+								Start: ast.Position{
+									Column: 9,
+									Line:   41,
+								},
+							},
+						},
+						Name: "r",
+					},
+					Value: nil,
+				}},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 27,
+						Line:   43,
+					},
+					File:   "check_test.flux",
+					Source: "messageFn = (r) => \"whoa!\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   43,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 10,
+							Line:   43,
+						},
+						File:   "check_test.flux",
+						Source: "messageFn",
+						Start: ast.Position{
+							Column: 1,
+							Line:   43,
+						},
+					},
+				},
+				Name: "messageFn",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 27,
+							Line:   43,
+						},
+						File:   "check_test.flux",
+						Source: "(r) => \"whoa!\"",
+						Start: ast.Position{
+							Column: 13,
+							Line:   43,
+						},
+					},
+				},
+				Body: &ast.StringLiteral{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 27,
+								Line:   43,
+							},
+							File:   "check_test.flux",
+							Source: "\"whoa!\"",
+							Start: ast.Position{
+								Column: 20,
+								Line:   43,
+							},
+						},
+					},
+					Value: "whoa!",
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 15,
+								Line:   43,
+							},
+							File:   "check_test.flux",
+							Source: "r",
+							Start: ast.Position{
+								Column: 14,
+								Line:   43,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   43,
+								},
+								File:   "check_test.flux",
+								Source: "r",
+								Start: ast.Position{
+									Column: 14,
+									Line:   43,
+								},
+							},
+						},
+						Name: "r",
+					},
+					Value: nil,
+				}},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 6,
+						Line:   58,
+					},
+					File:   "check_test.flux",
+					Source: "t_check = (table=<-) => table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")\n    |> v1.fieldsAsCols() // pivot data so there is a \"usage_idle\" column\n    |> aggregateWindow(every: 20s, fn: mean, column: \"usage_idle\")\n    |> alerts.check(\n        data: data,\n        messageFn: messageFn,\n        info: info,\n        warn: warn,\n        crit: crit,\n    )",
+					Start: ast.Position{
+						Column: 1,
+						Line:   45,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   45,
+						},
+						File:   "check_test.flux",
+						Source: "t_check",
+						Start: ast.Position{
+							Column: 1,
+							Line:   45,
+						},
+					},
+				},
+				Name: "t_check",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   58,
+						},
+						File:   "check_test.flux",
+						Source: "(table=<-) => table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")\n    |> v1.fieldsAsCols() // pivot data so there is a \"usage_idle\" column\n    |> aggregateWindow(every: 20s, fn: mean, column: \"usage_idle\")\n    |> alerts.check(\n        data: data,\n        messageFn: messageFn,\n        info: info,\n        warn: warn,\n        crit: crit,\n    )",
+						Start: ast.Position{
+							Column: 11,
+							Line:   45,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.PipeExpression{
+									Argument: &ast.PipeExpression{
+										Argument: &ast.PipeExpression{
+											Argument: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 30,
+															Line:   45,
+														},
+														File:   "check_test.flux",
+														Source: "table",
+														Start: ast.Position{
+															Column: 25,
+															Line:   45,
+														},
+													},
+												},
+												Name: "table",
+											},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 25,
+														Line:   46,
+													},
+													File:   "check_test.flux",
+													Source: "table\n    |> range(start: -1m)",
+													Start: ast.Position{
+														Column: 25,
+														Line:   45,
+													},
+												},
+											},
+											Call: &ast.CallExpression{
+												Arguments: []ast.Expression{&ast.ObjectExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 24,
+																Line:   46,
+															},
+															File:   "check_test.flux",
+															Source: "start: -1m",
+															Start: ast.Position{
+																Column: 14,
+																Line:   46,
+															},
+														},
+													},
+													Properties: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 24,
+																	Line:   46,
+																},
+																File:   "check_test.flux",
+																Source: "start: -1m",
+																Start: ast.Position{
+																	Column: 14,
+																	Line:   46,
+																},
+															},
+														},
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 19,
+																		Line:   46,
+																	},
+																	File:   "check_test.flux",
+																	Source: "start",
+																	Start: ast.Position{
+																		Column: 14,
+																		Line:   46,
+																	},
+																},
+															},
+															Name: "start",
+														},
+														Value: &ast.UnaryExpression{
+															Argument: &ast.DurationLiteral{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 24,
+																			Line:   46,
+																		},
+																		File:   "check_test.flux",
+																		Source: "1m",
+																		Start: ast.Position{
+																			Column: 22,
+																			Line:   46,
+																		},
+																	},
+																},
+																Values: []ast.Duration{ast.Duration{
+																	Magnitude: int64(1),
+																	Unit:      "m",
+																}},
+															},
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 24,
+																		Line:   46,
+																	},
+																	File:   "check_test.flux",
+																	Source: "-1m",
+																	Start: ast.Position{
+																		Column: 21,
+																		Line:   46,
+																	},
+																},
+															},
+															Operator: 6,
+														},
+													}},
+													With: nil,
+												}},
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 25,
+															Line:   46,
+														},
+														File:   "check_test.flux",
+														Source: "range(start: -1m)",
+														Start: ast.Position{
+															Column: 8,
+															Line:   46,
+														},
+													},
+												},
+												Callee: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 13,
+																Line:   46,
+															},
+															File:   "check_test.flux",
+															Source: "range",
+															Start: ast.Position{
+																Column: 8,
+																Line:   46,
+															},
+														},
+													},
+													Name: "range",
+												},
+											},
+										},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 50,
+													Line:   47,
+												},
+												File:   "check_test.flux",
+												Source: "table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")",
+												Start: ast.Position{
+													Column: 25,
+													Line:   45,
+												},
+											},
+										},
+										Call: &ast.CallExpression{
+											Arguments: []ast.Expression{&ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 49,
+															Line:   47,
+														},
+														File:   "check_test.flux",
+														Source: "fn: (r) => r._measurement == \"cpu\"",
+														Start: ast.Position{
+															Column: 15,
+															Line:   47,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 49,
+																Line:   47,
+															},
+															File:   "check_test.flux",
+															Source: "fn: (r) => r._measurement == \"cpu\"",
+															Start: ast.Position{
+																Column: 15,
+																Line:   47,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 17,
+																	Line:   47,
+																},
+																File:   "check_test.flux",
+																Source: "fn",
+																Start: ast.Position{
+																	Column: 15,
+																	Line:   47,
+																},
+															},
+														},
+														Name: "fn",
+													},
+													Value: &ast.FunctionExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 49,
+																	Line:   47,
+																},
+																File:   "check_test.flux",
+																Source: "(r) => r._measurement == \"cpu\"",
+																Start: ast.Position{
+																	Column: 19,
+																	Line:   47,
+																},
+															},
+														},
+														Body: &ast.BinaryExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 49,
+																		Line:   47,
+																	},
+																	File:   "check_test.flux",
+																	Source: "r._measurement == \"cpu\"",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   47,
+																	},
+																},
+															},
+															Left: &ast.MemberExpression{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 40,
+																			Line:   47,
+																		},
+																		File:   "check_test.flux",
+																		Source: "r._measurement",
+																		Start: ast.Position{
+																			Column: 26,
+																			Line:   47,
+																		},
+																	},
+																},
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 27,
+																				Line:   47,
+																			},
+																			File:   "check_test.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 26,
+																				Line:   47,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 40,
+																				Line:   47,
+																			},
+																			File:   "check_test.flux",
+																			Source: "_measurement",
+																			Start: ast.Position{
+																				Column: 28,
+																				Line:   47,
+																			},
+																		},
+																	},
+																	Name: "_measurement",
+																},
+															},
+															Operator: 17,
+															Right: &ast.StringLiteral{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 49,
+																			Line:   47,
+																		},
+																		File:   "check_test.flux",
+																		Source: "\"cpu\"",
+																		Start: ast.Position{
+																			Column: 44,
+																			Line:   47,
+																		},
+																	},
+																},
+																Value: "cpu",
+															},
+														},
+														Params: []*ast.Property{&ast.Property{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 21,
+																		Line:   47,
+																	},
+																	File:   "check_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 20,
+																		Line:   47,
+																	},
+																},
+															},
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 21,
+																			Line:   47,
+																		},
+																		File:   "check_test.flux",
+																		Source: "r",
+																		Start: ast.Position{
+																			Column: 20,
+																			Line:   47,
+																		},
+																	},
+																},
+																Name: "r",
+															},
+															Value: nil,
+														}},
+													},
+												}},
+												With: nil,
+											}},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 50,
+														Line:   47,
+													},
+													File:   "check_test.flux",
+													Source: "filter(fn: (r) => r._measurement == \"cpu\")",
+													Start: ast.Position{
+														Column: 8,
+														Line:   47,
+													},
+												},
+											},
+											Callee: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 14,
+															Line:   47,
+														},
+														File:   "check_test.flux",
+														Source: "filter",
+														Start: ast.Position{
+															Column: 8,
+															Line:   47,
+														},
+													},
+												},
+												Name: "filter",
+											},
+										},
+									},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   48,
+											},
+											File:   "check_test.flux",
+											Source: "table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")",
+											Start: ast.Position{
+												Column: 25,
+												Line:   45,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 50,
+														Line:   48,
+													},
+													File:   "check_test.flux",
+													Source: "fn: (r) => r._field == \"usage_idle\"",
+													Start: ast.Position{
+														Column: 15,
+														Line:   48,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 50,
+															Line:   48,
+														},
+														File:   "check_test.flux",
+														Source: "fn: (r) => r._field == \"usage_idle\"",
+														Start: ast.Position{
+															Column: 15,
+															Line:   48,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 17,
+																Line:   48,
+															},
+															File:   "check_test.flux",
+															Source: "fn",
+															Start: ast.Position{
+																Column: 15,
+																Line:   48,
+															},
+														},
+													},
+													Name: "fn",
+												},
+												Value: &ast.FunctionExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 50,
+																Line:   48,
+															},
+															File:   "check_test.flux",
+															Source: "(r) => r._field == \"usage_idle\"",
+															Start: ast.Position{
+																Column: 19,
+																Line:   48,
+															},
+														},
+													},
+													Body: &ast.BinaryExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 50,
+																	Line:   48,
+																},
+																File:   "check_test.flux",
+																Source: "r._field == \"usage_idle\"",
+																Start: ast.Position{
+																	Column: 26,
+																	Line:   48,
+																},
+															},
+														},
+														Left: &ast.MemberExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 34,
+																		Line:   48,
+																	},
+																	File:   "check_test.flux",
+																	Source: "r._field",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   48,
+																	},
+																},
+															},
+															Object: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 27,
+																			Line:   48,
+																		},
+																		File:   "check_test.flux",
+																		Source: "r",
+																		Start: ast.Position{
+																			Column: 26,
+																			Line:   48,
+																		},
+																	},
+																},
+																Name: "r",
+															},
+															Property: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 34,
+																			Line:   48,
+																		},
+																		File:   "check_test.flux",
+																		Source: "_field",
+																		Start: ast.Position{
+																			Column: 28,
+																			Line:   48,
+																		},
+																	},
+																},
+																Name: "_field",
+															},
+														},
+														Operator: 17,
+														Right: &ast.StringLiteral{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 50,
+																		Line:   48,
+																	},
+																	File:   "check_test.flux",
+																	Source: "\"usage_idle\"",
+																	Start: ast.Position{
+																		Column: 38,
+																		Line:   48,
+																	},
+																},
+															},
+															Value: "usage_idle",
+														},
+													},
+													Params: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 21,
+																	Line:   48,
+																},
+																File:   "check_test.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 20,
+																	Line:   48,
+																},
+															},
+														},
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 21,
+																		Line:   48,
+																	},
+																	File:   "check_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 20,
+																		Line:   48,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Value: nil,
+													}},
+												},
+											}},
+											With: nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 51,
+													Line:   48,
+												},
+												File:   "check_test.flux",
+												Source: "filter(fn: (r) => r._field == \"usage_idle\")",
+												Start: ast.Position{
+													Column: 8,
+													Line:   48,
+												},
+											},
+										},
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 14,
+														Line:   48,
+													},
+													File:   "check_test.flux",
+													Source: "filter",
+													Start: ast.Position{
+														Column: 8,
+														Line:   48,
+													},
+												},
+											},
+											Name: "filter",
+										},
+									},
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 47,
+											Line:   49,
+										},
+										File:   "check_test.flux",
+										Source: "table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")",
+										Start: ast.Position{
+											Column: 25,
+											Line:   45,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 46,
+													Line:   49,
+												},
+												File:   "check_test.flux",
+												Source: "fn: (r) => r.cpu == \"cpu-total\"",
+												Start: ast.Position{
+													Column: 15,
+													Line:   49,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 46,
+														Line:   49,
+													},
+													File:   "check_test.flux",
+													Source: "fn: (r) => r.cpu == \"cpu-total\"",
+													Start: ast.Position{
+														Column: 15,
+														Line:   49,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 17,
+															Line:   49,
+														},
+														File:   "check_test.flux",
+														Source: "fn",
+														Start: ast.Position{
+															Column: 15,
+															Line:   49,
+														},
+													},
+												},
+												Name: "fn",
+											},
+											Value: &ast.FunctionExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 46,
+															Line:   49,
+														},
+														File:   "check_test.flux",
+														Source: "(r) => r.cpu == \"cpu-total\"",
+														Start: ast.Position{
+															Column: 19,
+															Line:   49,
+														},
+													},
+												},
+												Body: &ast.BinaryExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 46,
+																Line:   49,
+															},
+															File:   "check_test.flux",
+															Source: "r.cpu == \"cpu-total\"",
+															Start: ast.Position{
+																Column: 26,
+																Line:   49,
+															},
+														},
+													},
+													Left: &ast.MemberExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 31,
+																	Line:   49,
+																},
+																File:   "check_test.flux",
+																Source: "r.cpu",
+																Start: ast.Position{
+																	Column: 26,
+																	Line:   49,
+																},
+															},
+														},
+														Object: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 27,
+																		Line:   49,
+																	},
+																	File:   "check_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   49,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Property: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 31,
+																		Line:   49,
+																	},
+																	File:   "check_test.flux",
+																	Source: "cpu",
+																	Start: ast.Position{
+																		Column: 28,
+																		Line:   49,
+																	},
+																},
+															},
+															Name: "cpu",
+														},
+													},
+													Operator: 17,
+													Right: &ast.StringLiteral{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 46,
+																	Line:   49,
+																},
+																File:   "check_test.flux",
+																Source: "\"cpu-total\"",
+																Start: ast.Position{
+																	Column: 35,
+																	Line:   49,
+																},
+															},
+														},
+														Value: "cpu-total",
+													},
+												},
+												Params: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 21,
+																Line:   49,
+															},
+															File:   "check_test.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 20,
+																Line:   49,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 21,
+																	Line:   49,
+																},
+																File:   "check_test.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 20,
+																	Line:   49,
+																},
+															},
+														},
+														Name: "r",
+													},
+													Value: nil,
+												}},
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 47,
+												Line:   49,
+											},
+											File:   "check_test.flux",
+											Source: "filter(fn: (r) => r.cpu == \"cpu-total\")",
+											Start: ast.Position{
+												Column: 8,
+												Line:   49,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   49,
+												},
+												File:   "check_test.flux",
+												Source: "filter",
+												Start: ast.Position{
+													Column: 8,
+													Line:   49,
+												},
+											},
+										},
+										Name: "filter",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   50,
+									},
+									File:   "check_test.flux",
+									Source: "table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")\n    |> v1.fieldsAsCols()",
+									Start: ast.Position{
+										Column: 25,
+										Line:   45,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   50,
+										},
+										File:   "check_test.flux",
+										Source: "v1.fieldsAsCols()",
+										Start: ast.Position{
+											Column: 8,
+											Line:   50,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 23,
+												Line:   50,
+											},
+											File:   "check_test.flux",
+											Source: "v1.fieldsAsCols",
+											Start: ast.Position{
+												Column: 8,
+												Line:   50,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 10,
+													Line:   50,
+												},
+												File:   "check_test.flux",
+												Source: "v1",
+												Start: ast.Position{
+													Column: 8,
+													Line:   50,
+												},
+											},
+										},
+										Name: "v1",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   50,
+												},
+												File:   "check_test.flux",
+												Source: "fieldsAsCols",
+												Start: ast.Position{
+													Column: 11,
+													Line:   50,
+												},
+											},
+										},
+										Name: "fieldsAsCols",
+									},
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 67,
+									Line:   51,
+								},
+								File:   "check_test.flux",
+								Source: "table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")\n    |> v1.fieldsAsCols() // pivot data so there is a \"usage_idle\" column\n    |> aggregateWindow(every: 20s, fn: mean, column: \"usage_idle\")",
+								Start: ast.Position{
+									Column: 25,
+									Line:   45,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 66,
+											Line:   51,
+										},
+										File:   "check_test.flux",
+										Source: "every: 20s, fn: mean, column: \"usage_idle\"",
+										Start: ast.Position{
+											Column: 24,
+											Line:   51,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 34,
+												Line:   51,
+											},
+											File:   "check_test.flux",
+											Source: "every: 20s",
+											Start: ast.Position{
+												Column: 24,
+												Line:   51,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   51,
+												},
+												File:   "check_test.flux",
+												Source: "every",
+												Start: ast.Position{
+													Column: 24,
+													Line:   51,
+												},
+											},
+										},
+										Name: "every",
+									},
+									Value: &ast.DurationLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 34,
+													Line:   51,
+												},
+												File:   "check_test.flux",
+												Source: "20s",
+												Start: ast.Position{
+													Column: 31,
+													Line:   51,
+												},
+											},
+										},
+										Values: []ast.Duration{ast.Duration{
+											Magnitude: int64(20),
+											Unit:      "s",
+										}},
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 44,
+												Line:   51,
+											},
+											File:   "check_test.flux",
+											Source: "fn: mean",
+											Start: ast.Position{
+												Column: 36,
+												Line:   51,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 38,
+													Line:   51,
+												},
+												File:   "check_test.flux",
+												Source: "fn",
+												Start: ast.Position{
+													Column: 36,
+													Line:   51,
+												},
+											},
+										},
+										Name: "fn",
+									},
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 44,
+													Line:   51,
+												},
+												File:   "check_test.flux",
+												Source: "mean",
+												Start: ast.Position{
+													Column: 40,
+													Line:   51,
+												},
+											},
+										},
+										Name: "mean",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 66,
+												Line:   51,
+											},
+											File:   "check_test.flux",
+											Source: "column: \"usage_idle\"",
+											Start: ast.Position{
+												Column: 46,
+												Line:   51,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 52,
+													Line:   51,
+												},
+												File:   "check_test.flux",
+												Source: "column",
+												Start: ast.Position{
+													Column: 46,
+													Line:   51,
+												},
+											},
+										},
+										Name: "column",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   51,
+												},
+												File:   "check_test.flux",
+												Source: "\"usage_idle\"",
+												Start: ast.Position{
+													Column: 54,
+													Line:   51,
+												},
+											},
+										},
+										Value: "usage_idle",
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 67,
+										Line:   51,
+									},
+									File:   "check_test.flux",
+									Source: "aggregateWindow(every: 20s, fn: mean, column: \"usage_idle\")",
+									Start: ast.Position{
+										Column: 8,
+										Line:   51,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   51,
+										},
+										File:   "check_test.flux",
+										Source: "aggregateWindow",
+										Start: ast.Position{
+											Column: 8,
+											Line:   51,
+										},
+									},
+								},
+								Name: "aggregateWindow",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 6,
+								Line:   58,
+							},
+							File:   "check_test.flux",
+							Source: "table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")\n    |> v1.fieldsAsCols() // pivot data so there is a \"usage_idle\" column\n    |> aggregateWindow(every: 20s, fn: mean, column: \"usage_idle\")\n    |> alerts.check(\n        data: data,\n        messageFn: messageFn,\n        info: info,\n        warn: warn,\n        crit: crit,\n    )",
+							Start: ast.Position{
+								Column: 25,
+								Line:   45,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 19,
+										Line:   57,
+									},
+									File:   "check_test.flux",
+									Source: "data: data,\n        messageFn: messageFn,\n        info: info,\n        warn: warn,\n        crit: crit",
+									Start: ast.Position{
+										Column: 9,
+										Line:   53,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 19,
+											Line:   53,
+										},
+										File:   "check_test.flux",
+										Source: "data: data",
+										Start: ast.Position{
+											Column: 9,
+											Line:   53,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   53,
+											},
+											File:   "check_test.flux",
+											Source: "data",
+											Start: ast.Position{
+												Column: 9,
+												Line:   53,
+											},
+										},
+									},
+									Name: "data",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 19,
+												Line:   53,
+											},
+											File:   "check_test.flux",
+											Source: "data",
+											Start: ast.Position{
+												Column: 15,
+												Line:   53,
+											},
+										},
+									},
+									Name: "data",
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 29,
+											Line:   54,
+										},
+										File:   "check_test.flux",
+										Source: "messageFn: messageFn",
+										Start: ast.Position{
+											Column: 9,
+											Line:   54,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 18,
+												Line:   54,
+											},
+											File:   "check_test.flux",
+											Source: "messageFn",
+											Start: ast.Position{
+												Column: 9,
+												Line:   54,
+											},
+										},
+									},
+									Name: "messageFn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 29,
+												Line:   54,
+											},
+											File:   "check_test.flux",
+											Source: "messageFn",
+											Start: ast.Position{
+												Column: 20,
+												Line:   54,
+											},
+										},
+									},
+									Name: "messageFn",
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 19,
+											Line:   55,
+										},
+										File:   "check_test.flux",
+										Source: "info: info",
+										Start: ast.Position{
+											Column: 9,
+											Line:   55,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   55,
+											},
+											File:   "check_test.flux",
+											Source: "info",
+											Start: ast.Position{
+												Column: 9,
+												Line:   55,
+											},
+										},
+									},
+									Name: "info",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 19,
+												Line:   55,
+											},
+											File:   "check_test.flux",
+											Source: "info",
+											Start: ast.Position{
+												Column: 15,
+												Line:   55,
+											},
+										},
+									},
+									Name: "info",
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 19,
+											Line:   56,
+										},
+										File:   "check_test.flux",
+										Source: "warn: warn",
+										Start: ast.Position{
+											Column: 9,
+											Line:   56,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   56,
+											},
+											File:   "check_test.flux",
+											Source: "warn",
+											Start: ast.Position{
+												Column: 9,
+												Line:   56,
+											},
+										},
+									},
+									Name: "warn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 19,
+												Line:   56,
+											},
+											File:   "check_test.flux",
+											Source: "warn",
+											Start: ast.Position{
+												Column: 15,
+												Line:   56,
+											},
+										},
+									},
+									Name: "warn",
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 19,
+											Line:   57,
+										},
+										File:   "check_test.flux",
+										Source: "crit: crit",
+										Start: ast.Position{
+											Column: 9,
+											Line:   57,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   57,
+											},
+											File:   "check_test.flux",
+											Source: "crit",
+											Start: ast.Position{
+												Column: 9,
+												Line:   57,
+											},
+										},
+									},
+									Name: "crit",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 19,
+												Line:   57,
+											},
+											File:   "check_test.flux",
+											Source: "crit",
+											Start: ast.Position{
+												Column: 15,
+												Line:   57,
+											},
+										},
+									},
+									Name: "crit",
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   58,
+								},
+								File:   "check_test.flux",
+								Source: "alerts.check(\n        data: data,\n        messageFn: messageFn,\n        info: info,\n        warn: warn,\n        crit: crit,\n    )",
+								Start: ast.Position{
+									Column: 8,
+									Line:   52,
+								},
+							},
+						},
+						Callee: &ast.MemberExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 20,
+										Line:   52,
+									},
+									File:   "check_test.flux",
+									Source: "alerts.check",
+									Start: ast.Position{
+										Column: 8,
+										Line:   52,
+									},
+								},
+							},
+							Object: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 14,
+											Line:   52,
+										},
+										File:   "check_test.flux",
+										Source: "alerts",
+										Start: ast.Position{
+											Column: 8,
+											Line:   52,
+										},
+									},
+								},
+								Name: "alerts",
+							},
+							Property: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 20,
+											Line:   52,
+										},
+										File:   "check_test.flux",
+										Source: "check",
+										Start: ast.Position{
+											Column: 15,
+											Line:   52,
+										},
+									},
+								},
+								Name: "check",
+							},
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 20,
+								Line:   45,
+							},
+							File:   "check_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 12,
+								Line:   45,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 17,
+									Line:   45,
+								},
+								File:   "check_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 12,
+									Line:   45,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 20,
+								Line:   45,
+							},
+							File:   "check_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 18,
+								Line:   45,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 97,
+							Line:   61,
+						},
+						File:   "check_test.flux",
+						Source: "alerts_check = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_check}",
+						Start: ast.Position{
+							Column: 6,
+							Line:   60,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 18,
+								Line:   60,
+							},
+							File:   "check_test.flux",
+							Source: "alerts_check",
+							Start: ast.Position{
+								Column: 6,
+								Line:   60,
+							},
+						},
+					},
+					Name: "alerts_check",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 97,
+								Line:   61,
+							},
+							File:   "check_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_check}",
+							Start: ast.Position{
+								Column: 21,
+								Line:   60,
+							},
+						},
+					},
+					Body: &ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 97,
+									Line:   61,
+								},
+								File:   "check_test.flux",
+								Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_check}",
+								Start: ast.Position{
+									Column: 6,
+									Line:   61,
+								},
+							},
+						},
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 46,
+										Line:   61,
+									},
+									File:   "check_test.flux",
+									Source: "input: testing.loadStorage(csv: inData)",
+									Start: ast.Position{
+										Column: 7,
+										Line:   61,
+									},
+								},
+							},
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 12,
+											Line:   61,
+										},
+										File:   "check_test.flux",
+										Source: "input",
+										Start: ast.Position{
+											Column: 7,
+											Line:   61,
+										},
+									},
+								},
+								Name: "input",
+							},
+							Value: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 45,
+												Line:   61,
+											},
+											File:   "check_test.flux",
+											Source: "csv: inData",
+											Start: ast.Position{
+												Column: 34,
+												Line:   61,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 45,
+													Line:   61,
+												},
+												File:   "check_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 34,
+													Line:   61,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 37,
+														Line:   61,
+													},
+													File:   "check_test.flux",
+													Source: "csv",
+													Start: ast.Position{
+														Column: 34,
+														Line:   61,
+													},
+												},
+											},
+											Name: "csv",
+										},
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 45,
+														Line:   61,
+													},
+													File:   "check_test.flux",
+													Source: "inData",
+													Start: ast.Position{
+														Column: 39,
+														Line:   61,
+													},
+												},
+											},
+											Name: "inData",
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 46,
+											Line:   61,
+										},
+										File:   "check_test.flux",
+										Source: "testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 14,
+											Line:   61,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   61,
+											},
+											File:   "check_test.flux",
+											Source: "testing.loadStorage",
+											Start: ast.Position{
+												Column: 14,
+												Line:   61,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 21,
+													Line:   61,
+												},
+												File:   "check_test.flux",
+												Source: "testing",
+												Start: ast.Position{
+													Column: 14,
+													Line:   61,
+												},
+											},
+										},
+										Name: "testing",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   61,
+												},
+												File:   "check_test.flux",
+												Source: "loadStorage",
+												Start: ast.Position{
+													Column: 22,
+													Line:   61,
+												},
+											},
+										},
+										Name: "loadStorage",
+									},
+								},
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 83,
+										Line:   61,
+									},
+									File:   "check_test.flux",
+									Source: "want: testing.loadMem(csv: outData)",
+									Start: ast.Position{
+										Column: 48,
+										Line:   61,
+									},
+								},
+							},
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 52,
+											Line:   61,
+										},
+										File:   "check_test.flux",
+										Source: "want",
+										Start: ast.Position{
+											Column: 48,
+											Line:   61,
+										},
+									},
+								},
+								Name: "want",
+							},
+							Value: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 82,
+												Line:   61,
+											},
+											File:   "check_test.flux",
+											Source: "csv: outData",
+											Start: ast.Position{
+												Column: 70,
+												Line:   61,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 82,
+													Line:   61,
+												},
+												File:   "check_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 70,
+													Line:   61,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 73,
+														Line:   61,
+													},
+													File:   "check_test.flux",
+													Source: "csv",
+													Start: ast.Position{
+														Column: 70,
+														Line:   61,
+													},
+												},
+											},
+											Name: "csv",
+										},
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 82,
+														Line:   61,
+													},
+													File:   "check_test.flux",
+													Source: "outData",
+													Start: ast.Position{
+														Column: 75,
+														Line:   61,
+													},
+												},
+											},
+											Name: "outData",
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 83,
+											Line:   61,
+										},
+										File:   "check_test.flux",
+										Source: "testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 54,
+											Line:   61,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 69,
+												Line:   61,
+											},
+											File:   "check_test.flux",
+											Source: "testing.loadMem",
+											Start: ast.Position{
+												Column: 54,
+												Line:   61,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 61,
+													Line:   61,
+												},
+												File:   "check_test.flux",
+												Source: "testing",
+												Start: ast.Position{
+													Column: 54,
+													Line:   61,
+												},
+											},
+										},
+										Name: "testing",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 69,
+													Line:   61,
+												},
+												File:   "check_test.flux",
+												Source: "loadMem",
+												Start: ast.Position{
+													Column: 62,
+													Line:   61,
+												},
+											},
+										},
+										Name: "loadMem",
+									},
+								},
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 96,
+										Line:   61,
+									},
+									File:   "check_test.flux",
+									Source: "fn: t_check",
+									Start: ast.Position{
+										Column: 85,
+										Line:   61,
+									},
+								},
+							},
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 87,
+											Line:   61,
+										},
+										File:   "check_test.flux",
+										Source: "fn",
+										Start: ast.Position{
+											Column: 85,
+											Line:   61,
+										},
+									},
+								},
+								Name: "fn",
+							},
+							Value: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 96,
+											Line:   61,
+										},
+										File:   "check_test.flux",
+										Source: "t_check",
+										Start: ast.Position{
+											Column: 89,
+											Line:   61,
+										},
+									},
+								},
+								Name: "t_check",
+							},
+						}},
+						With: nil,
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 97,
+						Line:   61,
+					},
+					File:   "check_test.flux",
+					Source: "test alerts_check = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_check}",
+					Start: ast.Position{
+						Column: 1,
+						Line:   60,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 36,
+						Line:   3,
+					},
+					File:   "check_test.flux",
+					Source: "import \"influxdata/influxdb/alerts\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 36,
+							Line:   3,
+						},
+						File:   "check_test.flux",
+						Source: "\"influxdata/influxdb/alerts\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/alerts",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 32,
+						Line:   4,
+					},
+					File:   "check_test.flux",
+					Source: "import \"influxdata/influxdb/v1\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 32,
+							Line:   4,
+						},
+						File:   "check_test.flux",
+						Source: "\"influxdata/influxdb/v1\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/v1",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   5,
+					},
+					File:   "check_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   5,
+						},
+						File:   "check_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Name: "check_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 20,
+						Line:   1,
+					},
+					File:   "check_test.flux",
+					Source: "package alerts_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 20,
+							Line:   1,
+						},
+						File:   "check_test.flux",
+						Source: "alerts_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "main",
+			},
+		},
+	}},
+	Package: "main",
+	Path:    "",
+}, &ast.Package{
+	BaseNode: ast.BaseNode{
+		Errors: nil,
+		Loc:    nil,
+	},
+	Files: []*ast.File{&ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
 					Column: 100,
 					Line:   52,
 				},

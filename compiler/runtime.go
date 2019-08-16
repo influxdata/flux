@@ -255,10 +255,10 @@ func (e *conditionalEvaluator) Eval(scope Scope) (values.Value, error) {
 		return nil, err
 	}
 
-	if t.Bool() {
-		return eval(e.consequent, scope)
-	} else {
+	if t.IsNull() || !t.Bool() {
 		return eval(e.alternate, scope)
+	} else {
+		return eval(e.consequent, scope)
 	}
 }
 
