@@ -8,11 +8,13 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/influxdata/flux/values/valuestest"
 	"github.com/pkg/errors"
 )
 
@@ -155,21 +157,24 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "drop1",
 						Spec: &universe.DropOpSpec{
-							Predicate: &semantic.FunctionExpression{
-								Block: &semantic.FunctionBlock{
-									Parameters: &semantic.FunctionParameters{
-										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
-									},
-									Body: &semantic.BinaryExpression{
-										Operator: ast.RegexpMatchOperator,
-										Left: &semantic.IdentifierExpression{
-											Name: "column",
+							Predicate: interpreter.ResolvedFunction{
+								Fn: &semantic.FunctionExpression{
+									Block: &semantic.FunctionBlock{
+										Parameters: &semantic.FunctionParameters{
+											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
 										},
-										Right: &semantic.RegexpLiteral{
-											Value: regexp.MustCompile(`reg*`),
+										Body: &semantic.BinaryExpression{
+											Operator: ast.RegexpMatchOperator,
+											Left: &semantic.IdentifierExpression{
+												Name: "column",
+											},
+											Right: &semantic.RegexpLiteral{
+												Value: regexp.MustCompile(`reg*`),
+											},
 										},
 									},
 								},
+								Scope: valuestest.NowScope(),
 							},
 						},
 					},
@@ -200,21 +205,24 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "keep1",
 						Spec: &universe.KeepOpSpec{
-							Predicate: &semantic.FunctionExpression{
-								Block: &semantic.FunctionBlock{
-									Parameters: &semantic.FunctionParameters{
-										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
-									},
-									Body: &semantic.BinaryExpression{
-										Operator: ast.RegexpMatchOperator,
-										Left: &semantic.IdentifierExpression{
-											Name: "column",
+							Predicate: interpreter.ResolvedFunction{
+								Fn: &semantic.FunctionExpression{
+									Block: &semantic.FunctionBlock{
+										Parameters: &semantic.FunctionParameters{
+											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
 										},
-										Right: &semantic.RegexpLiteral{
-											Value: regexp.MustCompile(`reg*`),
+										Body: &semantic.BinaryExpression{
+											Operator: ast.RegexpMatchOperator,
+											Left: &semantic.IdentifierExpression{
+												Name: "column",
+											},
+											Right: &semantic.RegexpLiteral{
+												Value: regexp.MustCompile(`reg*`),
+											},
 										},
 									},
 								},
+								Scope: valuestest.NowScope(),
 							},
 						},
 					},
@@ -245,15 +253,18 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "rename1",
 						Spec: &universe.RenameOpSpec{
-							Fn: &semantic.FunctionExpression{
-								Block: &semantic.FunctionBlock{
-									Parameters: &semantic.FunctionParameters{
-										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
-									},
-									Body: &semantic.StringLiteral{
-										Value: "new_name",
+							Fn: interpreter.ResolvedFunction{
+								Fn: &semantic.FunctionExpression{
+									Block: &semantic.FunctionBlock{
+										Parameters: &semantic.FunctionParameters{
+											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
+										},
+										Body: &semantic.StringLiteral{
+											Value: "new_name",
+										},
 									},
 								},
+								Scope: valuestest.NowScope(),
 							},
 						},
 					},
@@ -457,15 +468,18 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			spec: &universe.SchemaMutationProcedureSpec{
 				Mutations: []universe.SchemaMutation{
 					&universe.RenameOpSpec{
-						Fn: &semantic.FunctionExpression{
-							Block: &semantic.FunctionBlock{
-								Parameters: &semantic.FunctionParameters{
-									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
-								},
-								Body: &semantic.StringLiteral{
-									Value: "new_name",
+						Fn: interpreter.ResolvedFunction{
+							Fn: &semantic.FunctionExpression{
+								Block: &semantic.FunctionBlock{
+									Parameters: &semantic.FunctionParameters{
+										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
+									},
+									Body: &semantic.StringLiteral{
+										Value: "new_name",
+									},
 								},
 							},
+							Scope: valuestest.NowScope(),
 						},
 					},
 				},
@@ -489,21 +503,24 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			spec: &universe.SchemaMutationProcedureSpec{
 				Mutations: []universe.SchemaMutation{
 					&universe.DropOpSpec{
-						Predicate: &semantic.FunctionExpression{
-							Block: &semantic.FunctionBlock{
-								Parameters: &semantic.FunctionParameters{
-									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
-								},
-								Body: &semantic.BinaryExpression{
-									Operator: ast.RegexpMatchOperator,
-									Left: &semantic.IdentifierExpression{
-										Name: "column",
+						Predicate: interpreter.ResolvedFunction{
+							Fn: &semantic.FunctionExpression{
+								Block: &semantic.FunctionBlock{
+									Parameters: &semantic.FunctionParameters{
+										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
 									},
-									Right: &semantic.RegexpLiteral{
-										Value: regexp.MustCompile(`server*`),
+									Body: &semantic.BinaryExpression{
+										Operator: ast.RegexpMatchOperator,
+										Left: &semantic.IdentifierExpression{
+											Name: "column",
+										},
+										Right: &semantic.RegexpLiteral{
+											Value: regexp.MustCompile(`server*`),
+										},
 									},
 								},
 							},
+							Scope: valuestest.NowScope(),
 						},
 					},
 				},
@@ -536,21 +553,24 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			spec: &universe.SchemaMutationProcedureSpec{
 				Mutations: []universe.SchemaMutation{
 					&universe.KeepOpSpec{
-						Predicate: &semantic.FunctionExpression{
-							Block: &semantic.FunctionBlock{
-								Parameters: &semantic.FunctionParameters{
-									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
-								},
-								Body: &semantic.BinaryExpression{
-									Operator: ast.RegexpMatchOperator,
-									Left: &semantic.IdentifierExpression{
-										Name: "column",
+						Predicate: interpreter.ResolvedFunction{
+							Fn: &semantic.FunctionExpression{
+								Block: &semantic.FunctionBlock{
+									Parameters: &semantic.FunctionParameters{
+										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
 									},
-									Right: &semantic.RegexpLiteral{
-										Value: regexp.MustCompile(`server*`),
+									Body: &semantic.BinaryExpression{
+										Operator: ast.RegexpMatchOperator,
+										Left: &semantic.IdentifierExpression{
+											Name: "column",
+										},
+										Right: &semantic.RegexpLiteral{
+											Value: regexp.MustCompile(`server*`),
+										},
 									},
 								},
 							},
+							Scope: valuestest.NowScope(),
 						},
 					},
 				},

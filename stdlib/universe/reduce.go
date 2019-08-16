@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
@@ -16,7 +17,7 @@ import (
 const ReduceKind = "reduce"
 
 type ReduceOpSpec struct {
-	Fn          *semantic.FunctionExpression `json:"fn"`
+	Fn          interpreter.ResolvedFunction `json:"fn"`
 	ReducerType semantic.Type                `json:"reducer_type"`
 	Identity    map[string]string            `json:"identity"`
 }
@@ -92,7 +93,7 @@ func (s *ReduceOpSpec) Kind() flux.OperationKind {
 
 type ReduceProcedureSpec struct {
 	plan.DefaultCost
-	Fn          *semantic.FunctionExpression
+	Fn          interpreter.ResolvedFunction
 	ReducerType semantic.Type
 	Identity    map[string]string
 }
@@ -116,7 +117,7 @@ func (s *ReduceProcedureSpec) Kind() plan.ProcedureKind {
 func (s *ReduceProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(ReduceProcedureSpec)
 	*ns = *s
-	ns.Fn = s.Fn.Copy().(*semantic.FunctionExpression)
+	ns.Fn = s.Fn.Copy()
 	ns.ReducerType = s.ReducerType
 	for k, v := range s.Identity {
 		ns.Identity[k] = v
@@ -147,7 +148,7 @@ type reduceTransformation struct {
 }
 
 func NewReduceTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ReduceProcedureSpec) (*reduceTransformation, error) {
-	fn, err := execute.NewRowReduceFn(spec.Fn)
+	fn, err := execute.NewRowReduceFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	if err != nil {
 		return nil, err
 	}

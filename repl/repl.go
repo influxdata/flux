@@ -17,13 +17,12 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/spec"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
 type REPL struct {
-	scope   interpreter.Scope
+	scope   values.Scope
 	querier Querier
 
 	cancelMu   sync.Mutex
@@ -36,7 +35,7 @@ type Querier interface {
 
 func New(q Querier) *REPL {
 	return &REPL{
-		scope:   interpreter.NewScope(),
+		scope:   values.NewScope(),
 		querier: q,
 	}
 }
@@ -134,7 +133,7 @@ func (r *REPL) executeLine(t string) error {
 		t = q
 	}
 
-	ses, scope, err := flux.Eval(t, func(ns interpreter.Scope) {
+	ses, scope, err := flux.Eval(t, func(ns values.Scope) {
 		// copy values saved in the cached scope to the new interpreter's scope
 		r.scope.Range(func(k string, v values.Value) {
 			ns.Set(k, v)

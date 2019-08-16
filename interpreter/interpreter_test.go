@@ -16,7 +16,7 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-var testScope = interpreter.NewNestedScope(nil, values.NewObjectWithValues(
+var testScope = values.NewNestedScope(nil, values.NewObjectWithValues(
 	map[string]values.Value{
 		"true":  values.NewBool(true),
 		"false": values.NewBool(false),
@@ -490,7 +490,7 @@ func TestEval(t *testing.T) {
 func TestNestedExternBlocks(t *testing.T) {
 	testcases := []struct {
 		packageNode *semantic.Package
-		externScope interpreter.Scope
+		externScope values.Scope
 		wantError   error
 	}{
 		{
@@ -518,7 +518,7 @@ func TestNestedExternBlocks(t *testing.T) {
 					},
 				},
 			},
-			externScope: interpreter.NewNestedScope(nil, values.NewObjectWithValues(
+			externScope: values.NewNestedScope(nil, values.NewObjectWithValues(
 				map[string]values.Value{
 					// initial 'a' value with type int
 					"a": values.NewInt(0),
@@ -551,7 +551,7 @@ func TestNestedExternBlocks(t *testing.T) {
 					},
 				},
 			},
-			externScope: interpreter.NewNestedScope(nil, values.NewObjectWithValues(
+			externScope: values.NewNestedScope(nil, values.NewObjectWithValues(
 				map[string]values.Value{
 					// initial 'a' value with type string
 					"a": values.NewString("0"),
@@ -657,7 +657,7 @@ func TestInterpreter_TypeErrors(t *testing.T) {
 				t.Fatal(err)
 			}
 			itrp := interpreter.NewInterpreter()
-			if _, err := itrp.Eval(graph, interpreter.NewScope(), nil); err == nil {
+			if _, err := itrp.Eval(graph, values.NewScope(), nil); err == nil {
 				if tc.err != "" {
 					t.Error("expected type error, but program executed successfully")
 				}
@@ -884,8 +884,8 @@ func TestResolver(t *testing.T) {
 		},
 		hasSideEffect: false,
 	}
-	scope := make(map[string]values.Value)
-	scope[f.name] = f
+	s := make(map[string]values.Value)
+	s[f.name] = f
 
 	pkg := parser.ParseSource(`
 	x = 42
@@ -901,7 +901,7 @@ func TestResolver(t *testing.T) {
 	}
 
 	itrp := interpreter.NewInterpreter()
-	ns := interpreter.NewNestedScope(nil, values.NewObjectWithValues(scope))
+	ns := values.NewNestedScope(nil, values.NewObjectWithValues(s))
 
 	if _, err := itrp.Eval(graph, ns, nil); err != nil {
 		t.Fatal(err)

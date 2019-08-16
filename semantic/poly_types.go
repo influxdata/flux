@@ -398,7 +398,7 @@ func (l function) unifyType(kinds map[Tvar]Kind, r PolyType) (Substitution, erro
 		for _, param := range r.required {
 			if _, ok := l.parameters[param]; !ok && param != r.pipeArgument {
 				// Pipe paramenters are validated below
-				return nil, fmt.Errorf("function does not take a parameter %q", param)
+				return nil, fmt.Errorf("function does not take a parameter %q, required params %v", param, l.required)
 			}
 		}
 		// Validate that every required parameter of the left function

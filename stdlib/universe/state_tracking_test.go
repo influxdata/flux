@@ -8,10 +8,12 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/influxdata/flux/values/valuestest"
 	"github.com/pkg/errors"
 )
 
@@ -48,13 +50,16 @@ func TestStateTracking_NewQuery(t *testing.T) {
 							DurationColumn: "",
 							DurationUnit:   flux.Duration(time.Second),
 							TimeColumn:     "_time",
-							Fn: &semantic.FunctionExpression{
-								Block: &semantic.FunctionBlock{
-									Parameters: &semantic.FunctionParameters{
-										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+							Fn: interpreter.ResolvedFunction{
+								Fn: &semantic.FunctionExpression{
+									Block: &semantic.FunctionBlock{
+										Parameters: &semantic.FunctionParameters{
+											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+										},
+										Body: &semantic.BooleanLiteral{Value: true},
 									},
-									Body: &semantic.BooleanLiteral{Value: true},
 								},
+								Scope: valuestest.NowScope(),
 							},
 						},
 					},
@@ -88,13 +93,16 @@ func TestStateTracking_NewQuery(t *testing.T) {
 							DurationColumn: "stateDuration",
 							DurationUnit:   flux.Duration(time.Second),
 							TimeColumn:     "ts",
-							Fn: &semantic.FunctionExpression{
-								Block: &semantic.FunctionBlock{
-									Parameters: &semantic.FunctionParameters{
-										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+							Fn: interpreter.ResolvedFunction{
+								Fn: &semantic.FunctionExpression{
+									Block: &semantic.FunctionBlock{
+										Parameters: &semantic.FunctionParameters{
+											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+										},
+										Body: &semantic.BooleanLiteral{Value: true},
 									},
-									Body: &semantic.BooleanLiteral{Value: true},
 								},
+								Scope: valuestest.NowScope(),
 							},
 						},
 					},
@@ -130,20 +138,23 @@ func TestStateTrackingOperation_Marshaling(t *testing.T) {
 }
 
 func TestStateTracking_Process(t *testing.T) {
-	gt5 := &semantic.FunctionExpression{
-		Block: &semantic.FunctionBlock{
-			Parameters: &semantic.FunctionParameters{
-				List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-			},
-			Body: &semantic.BinaryExpression{
-				Operator: ast.GreaterThanOperator,
-				Left: &semantic.MemberExpression{
-					Object:   &semantic.IdentifierExpression{Name: "r"},
-					Property: "_value",
+	gt5 := interpreter.ResolvedFunction{
+		Fn: &semantic.FunctionExpression{
+			Block: &semantic.FunctionBlock{
+				Parameters: &semantic.FunctionParameters{
+					List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 				},
-				Right: &semantic.FloatLiteral{Value: 5.0},
+				Body: &semantic.BinaryExpression{
+					Operator: ast.GreaterThanOperator,
+					Left: &semantic.MemberExpression{
+						Object:   &semantic.IdentifierExpression{Name: "r"},
+						Property: "_value",
+					},
+					Right: &semantic.FloatLiteral{Value: 5.0},
+				},
 			},
 		},
+		Scope: flux.Prelude(),
 	}
 
 	testCases := []struct {

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
@@ -17,7 +18,7 @@ import (
 const StateTrackingKind = "stateTracking"
 
 type StateTrackingOpSpec struct {
-	Fn             *semantic.FunctionExpression `json:"fn"`
+	Fn             interpreter.ResolvedFunction `json:"fn"`
 	CountColumn    string                       `json:"countColumn"`
 	DurationColumn string                       `json:"durationColumn"`
 	DurationUnit   flux.Duration                `json:"durationUnit"`
@@ -107,7 +108,7 @@ func (s *StateTrackingOpSpec) Kind() flux.OperationKind {
 
 type StateTrackingProcedureSpec struct {
 	plan.DefaultCost
-	Fn *semantic.FunctionExpression
+	Fn interpreter.ResolvedFunction
 	CountColumn,
 	DurationColumn string
 	DurationUnit flux.Duration
@@ -136,7 +137,7 @@ func (s *StateTrackingProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(StateTrackingProcedureSpec)
 	*ns = *s
 
-	ns.Fn = s.Fn.Copy().(*semantic.FunctionExpression)
+	ns.Fn = s.Fn.Copy()
 
 	return ns
 }
@@ -174,7 +175,7 @@ type stateTrackingTransformation struct {
 }
 
 func NewStateTrackingTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *StateTrackingProcedureSpec) (*stateTrackingTransformation, error) {
-	fn, err := execute.NewRowPredicateFn(spec.Fn)
+	fn, err := execute.NewRowPredicateFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	if err != nil {
 		return nil, err
 	}

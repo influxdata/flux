@@ -16,7 +16,7 @@ const KeyValuesKind = "keyValues"
 
 type KeyValuesOpSpec struct {
 	KeyColumns  []string                     `json:"keyColumns"`
-	PredicateFn *semantic.FunctionExpression `json:"fn"`
+	PredicateFn interpreter.ResolvedFunction `json:"fn"`
 }
 
 func init() {
@@ -60,11 +60,11 @@ func createKeyValuesOpSpec(args flux.Arguments, a *flux.Administration) (flux.Op
 		spec.PredicateFn = fn
 	}
 
-	if spec.KeyColumns == nil && spec.PredicateFn == nil {
+	if spec.KeyColumns == nil && spec.PredicateFn.Fn == nil {
 		return nil, errors.New(codes.Invalid, "neither column list nor predicate function provided")
 	}
 
-	if spec.KeyColumns != nil && spec.PredicateFn != nil {
+	if spec.KeyColumns != nil && spec.PredicateFn.Fn != nil {
 		return nil, errors.New(codes.Invalid, "must provide exactly one of keyColumns list or predicate function")
 	}
 
@@ -82,7 +82,7 @@ func (s *KeyValuesOpSpec) Kind() flux.OperationKind {
 type KeyValuesProcedureSpec struct {
 	plan.DefaultCost
 	KeyColumns []string                     `json:"keyColumns"`
-	Predicate  *semantic.FunctionExpression `json:"fn"`
+	Predicate  interpreter.ResolvedFunction `json:"fn"`
 }
 
 func newKeyValuesProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -105,7 +105,7 @@ func (s *KeyValuesProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(KeyValuesProcedureSpec)
 	ns.KeyColumns = make([]string, len(s.KeyColumns))
 	copy(ns.KeyColumns, s.KeyColumns)
-	ns.Predicate = s.Predicate.Copy().(*semantic.FunctionExpression)
+	ns.Predicate = s.Predicate.Copy()
 	return ns
 }
 

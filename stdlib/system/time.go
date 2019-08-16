@@ -11,18 +11,14 @@ import (
 var systemTimeFuncName = "time"
 
 func init() {
-	flux.RegisterPackageValue("system", systemTimeFuncName, SystemTime())
-}
-
-// SystemTime return a function value that when called will give the current system time
-func SystemTime() values.Value {
-	name := systemTimeFuncName
-	ftype := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Return: semantic.Time,
-	})
-	call := func(args values.Object) (values.Value, error) {
-		return values.NewTime(values.ConvertTime(time.Now().UTC())), nil
-	}
-	sideEffect := false
-	return values.NewFunction(name, ftype, call, sideEffect)
+	flux.RegisterPackageValue("system", systemTimeFuncName, values.NewFunction(
+		systemTimeFuncName,
+		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+			Return: semantic.Time,
+		}),
+		func(args values.Object) (values.Value, error) {
+			return values.NewTime(values.ConvertTime(time.Now().UTC())), nil
+		},
+		false,
+	))
 }
