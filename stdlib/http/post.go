@@ -42,7 +42,7 @@ func init() {
 
 			// Add headers to request
 			header, ok := args.Get("headers")
-			if ok {
+			if ok && !header.IsNull() {
 				var rangeErr error
 				header.Object().Range(func(k string, v values.Value) {
 					if v.Type() == semantic.String {
