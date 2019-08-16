@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
@@ -14,7 +15,7 @@ import (
 const FilterKind = "filter"
 
 type FilterOpSpec struct {
-	Fn *semantic.FunctionExpression `json:"fn"`
+	Fn interpreter.ResolvedFunction `json:"fn"`
 }
 
 func init() {
@@ -68,7 +69,7 @@ func (s *FilterOpSpec) Kind() flux.OperationKind {
 
 type FilterProcedureSpec struct {
 	plan.DefaultCost
-	Fn *semantic.FunctionExpression
+	Fn interpreter.ResolvedFunction
 }
 
 func newFilterProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -87,7 +88,7 @@ func (s *FilterProcedureSpec) Kind() plan.ProcedureKind {
 }
 func (s *FilterProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(FilterProcedureSpec)
-	ns.Fn = s.Fn.Copy().(*semantic.FunctionExpression)
+	ns.Fn = s.Fn.Copy()
 	return ns
 }
 
@@ -118,7 +119,7 @@ type filterTransformation struct {
 }
 
 func NewFilterTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *FilterProcedureSpec) (*filterTransformation, error) {
-	fn, err := execute.NewRowPredicateFn(spec.Fn)
+	fn, err := execute.NewRowPredicateFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	if err != nil {
 		return nil, err
 	}
@@ -191,12 +192,12 @@ func (RemoveTrivialFilterRule) Pattern() plan.Pattern {
 
 func (RemoveTrivialFilterRule) Rewrite(filterNode plan.Node) (plan.Node, bool, error) {
 	filterSpec := filterNode.ProcedureSpec().(*FilterProcedureSpec)
-	if filterSpec.Fn == nil ||
-		filterSpec.Fn.Block == nil ||
-		filterSpec.Fn.Block.Body == nil {
+	if filterSpec.Fn.Fn == nil ||
+		filterSpec.Fn.Fn.Block == nil ||
+		filterSpec.Fn.Fn.Block.Body == nil {
 		return filterNode, false, nil
 	}
-	if boolean, ok := filterSpec.Fn.Block.Body.(*semantic.BooleanLiteral); !ok || !boolean.Value {
+	if boolean, ok := filterSpec.Fn.Fn.Block.Body.(*semantic.BooleanLiteral); !ok || !boolean.Value {
 		return filterNode, false, nil
 	}
 

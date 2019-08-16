@@ -24,8 +24,7 @@ type dynamicFn struct {
 	references []string
 }
 
-func newDynamicFn(fn *semantic.FunctionExpression) dynamicFn {
-	scope := flux.BuiltIns()
+func newDynamicFn(fn *semantic.FunctionExpression, scope compiler.Scope) dynamicFn {
 	return dynamicFn{
 		compilationCache: compiler.NewCompilationCache(fn, scope),
 		inRecord:         values.NewObject(),
@@ -112,9 +111,9 @@ type tableFn struct {
 	dynamicFn
 }
 
-func newTableFn(fn *semantic.FunctionExpression) tableFn {
+func newTableFn(fn *semantic.FunctionExpression, scope compiler.Scope) tableFn {
 	return tableFn{
-		dynamicFn: newDynamicFn(fn),
+		dynamicFn: newDynamicFn(fn, scope),
 	}
 }
 
@@ -130,8 +129,8 @@ type TablePredicateFn struct {
 	tableFn
 }
 
-func NewTablePredicateFn(fn *semantic.FunctionExpression) (*TablePredicateFn, error) {
-	t := newTableFn(fn)
+func NewTablePredicateFn(fn *semantic.FunctionExpression, scope compiler.Scope) (*TablePredicateFn, error) {
+	t := newTableFn(fn, scope)
 	return &TablePredicateFn{tableFn: t}, nil
 }
 
@@ -157,9 +156,9 @@ type rowFn struct {
 	dynamicFn
 }
 
-func newRowFn(fn *semantic.FunctionExpression) (rowFn, error) {
+func newRowFn(fn *semantic.FunctionExpression, scope compiler.Scope) (rowFn, error) {
 	return rowFn{
-		dynamicFn: newDynamicFn(fn),
+		dynamicFn: newDynamicFn(fn, scope),
 	}, nil
 }
 
@@ -179,8 +178,8 @@ type RowPredicateFn struct {
 	rowFn
 }
 
-func NewRowPredicateFn(fn *semantic.FunctionExpression) (*RowPredicateFn, error) {
-	r, err := newRowFn(fn)
+func NewRowPredicateFn(fn *semantic.FunctionExpression, scope compiler.Scope) (*RowPredicateFn, error) {
+	r, err := newRowFn(fn, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -211,8 +210,8 @@ type RowMapFn struct {
 	rowFn
 }
 
-func NewRowMapFn(fn *semantic.FunctionExpression) (*RowMapFn, error) {
-	r, err := newRowFn(fn)
+func NewRowMapFn(fn *semantic.FunctionExpression, scope compiler.Scope) (*RowMapFn, error) {
+	r, err := newRowFn(fn, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -251,8 +250,8 @@ type RowReduceFn struct {
 	wrapObj *Record
 }
 
-func NewRowReduceFn(fn *semantic.FunctionExpression) (*RowReduceFn, error) {
-	r, err := newRowFn(fn)
+func NewRowReduceFn(fn *semantic.FunctionExpression, scope compiler.Scope) (*RowReduceFn, error) {
+	r, err := newRowFn(fn, scope)
 	if err != nil {
 		return nil, err
 	}

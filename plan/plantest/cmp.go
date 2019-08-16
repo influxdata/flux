@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/semantic/semantictest"
 	"github.com/influxdata/flux/stdlib/kafka"
 	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/influxdata/flux/values/valuestest"
 	"github.com/pkg/errors"
 )
 
@@ -23,6 +24,7 @@ var CmpOptions = append(
 	cmpopts.IgnoreUnexported(universe.JoinOpSpec{}),
 	cmp.AllowUnexported(kafka.ToKafkaProcedureSpec{}),
 	cmpopts.IgnoreUnexported(kafka.ToKafkaProcedureSpec{}),
+	valuestest.ScopeComparer,
 )
 
 // ComparePlans compares two query plans using an arbitrary comparator function f

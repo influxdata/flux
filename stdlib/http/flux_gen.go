@@ -21,11 +21,11 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 2,
-					Line:   10,
+					Column: 13,
+					Line:   5,
 				},
 				File:   "http.flux",
-				Source: "package http\n\n// Post submits an HTTP post request to the specified URL with headers and data.\n// The HTTP status code is returned.\nbuiltin post\n\n//hack to simulate package\nhttp = {\n    post: post,\n}",
+				Source: "package http\n\n// Post submits an HTTP post request to the specified URL with headers and data.\n// The HTTP status code is returned.\nbuiltin post",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -65,111 +65,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "post",
-			},
-		}, &ast.VariableAssignment{
-			BaseNode: ast.BaseNode{
-				Errors: nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 2,
-						Line:   10,
-					},
-					File:   "http.flux",
-					Source: "http = {\n    post: post,\n}",
-					Start: ast.Position{
-						Column: 1,
-						Line:   8,
-					},
-				},
-			},
-			ID: &ast.Identifier{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 5,
-							Line:   8,
-						},
-						File:   "http.flux",
-						Source: "http",
-						Start: ast.Position{
-							Column: 1,
-							Line:   8,
-						},
-					},
-				},
-				Name: "http",
-			},
-			Init: &ast.ObjectExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 2,
-							Line:   10,
-						},
-						File:   "http.flux",
-						Source: "{\n    post: post,\n}",
-						Start: ast.Position{
-							Column: 8,
-							Line:   8,
-						},
-					},
-				},
-				Properties: []*ast.Property{&ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 15,
-								Line:   9,
-							},
-							File:   "http.flux",
-							Source: "post: post",
-							Start: ast.Position{
-								Column: 5,
-								Line:   9,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 9,
-									Line:   9,
-								},
-								File:   "http.flux",
-								Source: "post",
-								Start: ast.Position{
-									Column: 5,
-									Line:   9,
-								},
-							},
-						},
-						Name: "post",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 15,
-									Line:   9,
-								},
-								File:   "http.flux",
-								Source: "post",
-								Start: ast.Position{
-									Column: 11,
-									Line:   9,
-								},
-							},
-						},
-						Name: "post",
-					},
-				}},
-				With: nil,
 			},
 		}},
 		Imports: nil,

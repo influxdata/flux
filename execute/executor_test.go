@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
@@ -106,26 +107,29 @@ func TestExecutor_Execute(t *testing.T) {
 						}},
 					)),
 					plan.CreatePhysicalNode("filter", &universe.FilterProcedureSpec{
-						Fn: &semantic.FunctionExpression{
-							Block: &semantic.FunctionBlock{
-								Parameters: &semantic.FunctionParameters{
-									List: []*semantic.FunctionParameter{
-										{
-											Key: &semantic.Identifier{Name: "r"},
+						Fn: interpreter.ResolvedFunction{
+							Fn: &semantic.FunctionExpression{
+								Block: &semantic.FunctionBlock{
+									Parameters: &semantic.FunctionParameters{
+										List: []*semantic.FunctionParameter{
+											{
+												Key: &semantic.Identifier{Name: "r"},
+											},
 										},
 									},
-								},
-								Body: &semantic.BinaryExpression{
-									Operator: ast.LessThanOperator,
-									Left: &semantic.MemberExpression{
-										Property: "_value",
-										Object: &semantic.IdentifierExpression{
-											Name: "r",
+									Body: &semantic.BinaryExpression{
+										Operator: ast.LessThanOperator,
+										Left: &semantic.MemberExpression{
+											Property: "_value",
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
 										},
+										Right: &semantic.FloatLiteral{Value: 2.5},
 									},
-									Right: &semantic.FloatLiteral{Value: 2.5},
 								},
 							},
+							Scope: flux.Prelude(),
 						},
 					}),
 					plan.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
@@ -192,24 +196,27 @@ func TestExecutor_Execute(t *testing.T) {
 						},
 					)),
 					plan.CreatePhysicalNode("filter", &universe.FilterProcedureSpec{
-						Fn: &semantic.FunctionExpression{
-							Block: &semantic.FunctionBlock{
-								Parameters: &semantic.FunctionParameters{
-									List: []*semantic.FunctionParameter{
-										{
-											Key: &semantic.Identifier{Name: "r"},
+						Fn: interpreter.ResolvedFunction{
+							Scope: flux.Prelude(),
+							Fn: &semantic.FunctionExpression{
+								Block: &semantic.FunctionBlock{
+									Parameters: &semantic.FunctionParameters{
+										List: []*semantic.FunctionParameter{
+											{
+												Key: &semantic.Identifier{Name: "r"},
+											},
 										},
 									},
-								},
-								Body: &semantic.BinaryExpression{
-									Operator: ast.LessThanOperator,
-									Left: &semantic.MemberExpression{
-										Property: "_value",
-										Object: &semantic.IdentifierExpression{
-											Name: "r",
+									Body: &semantic.BinaryExpression{
+										Operator: ast.LessThanOperator,
+										Left: &semantic.MemberExpression{
+											Property: "_value",
+											Object: &semantic.IdentifierExpression{
+												Name: "r",
+											},
 										},
+										Right: &semantic.FloatLiteral{Value: 7.5},
 									},
-									Right: &semantic.FloatLiteral{Value: 7.5},
 								},
 							},
 						},
