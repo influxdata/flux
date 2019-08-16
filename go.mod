@@ -3,7 +3,7 @@ module github.com/influxdata/flux
 go 1.12
 
 require (
-	github.com/BurntSushi/toml v0.3.1 // indirect
+	cloud.google.com/go v0.43.0
 	github.com/DATA-DOG/go-sqlmock v1.3.3
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/apache/arrow/go/arrow v0.0.0-20190809133625-b98a560fc561
@@ -14,7 +14,7 @@ require (
 	github.com/go-sql-driver/mysql v1.4.0
 	github.com/golang/protobuf v1.3.1 // indirect
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
-	github.com/google/go-cmp v0.2.0
+	github.com/google/go-cmp v0.3.0
 	github.com/goreleaser/goreleaser v0.94.0
 	github.com/influxdata/changelog v1.0.0
 	github.com/influxdata/line-protocol v0.0.0-20180522152040-32c6aa80de5e
@@ -37,5 +37,6 @@ require (
 	golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4 // indirect
 	golang.org/x/tools v0.0.0-20181221154417-3ad2d988d5e2 // indirect
 	gonum.org/v1/gonum v0.0.0-20181121035319-3f7ecaa7e8ca
-	honnef.co/go/tools v0.0.0-20181108184350-ae8f1f9103cc
+	google.golang.org/api v0.7.0
+	honnef.co/go/tools v0.0.0-20190418001031-e561f6794a2a
 )

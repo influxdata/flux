@@ -1078,7 +1078,7 @@ func (i *Identifier) Copy() Node {
 // Literals must be coerced explicitly.
 type Literal interface {
 	Expression
-	literal() //lint:ignore U1000 Yes, this function is unused, but it's here to limit the implementers of the Literal interface.
+	literal()
 }
 
 func (*BooleanLiteral) literal()         {}
