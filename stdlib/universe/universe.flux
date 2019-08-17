@@ -2,6 +2,9 @@ package universe
 
 import "system"
 import "date"
+import "math"
+import "strings"
+import "regexp"
 
 // now is a function option whose default behaviour is to return the current system time
 option now = system.time
@@ -33,6 +36,7 @@ builtin holtWinters
 builtin hourSelection
 builtin integral
 builtin join
+builtin kaufmansAMA
 builtin keep
 builtin keyValues
 builtin keys
@@ -291,10 +295,16 @@ tripleEMA = (n, tables=<-) =>
 		|> drop(columns: ["__ema1", "__ema2"])
 
 // truncateTimeColumn takes in a time column t and a Duration unit and truncates each value of t to the given unit via map
-// Change from _time to timeColumn once https://github.com/influxdata/flux/issues/1122 is resolved
+// Change from _time to timeColumn once Flux Issue 1122 is resolved
 truncateTimeColumn = (timeColumn="_time", unit, tables=<-) =>
     tables
         |> map(fn:(r) => ({r with _time: date.truncate(t: r._time, unit: unit)}))
+
+// kaufmansER computes Kaufman's Efficiency Ratios of the `_value` column
+kaufmansER = (n, tables=<-) =>
+    tables
+        |> chandeMomentumOscillator(n: n)
+        |> map(fn:(r) => ({r with _value: (math.abs(x: r._value)/100.0)}))
 
 toString   = (tables=<-) => tables |> map(fn:(r) => ({r with _value: string(v:r._value)}))
 toInt      = (tables=<-) => tables |> map(fn:(r) => ({r with _value: int(v:r._value)}))

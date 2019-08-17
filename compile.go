@@ -88,10 +88,6 @@ var (
 	prelude = []string{
 		"universe",
 		"influxdata/influxdb",
-		"math",
-		"strings",
-		"regexp",
-		"date",
 		"json",
 		"http",
 	}
