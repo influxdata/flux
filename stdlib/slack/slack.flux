@@ -19,7 +19,7 @@ option defaultURL = "https://slack.com/api/chat.postMessage"
 message = (url, token, username, channel, workspace, text, iconEmoji, color) => {
     attachments = [{
         color: validateColorString(color),
-        text: text,
+        text: string(v: text),
         mrkdwn_in: ["text"],
     }]
 
@@ -45,7 +45,6 @@ endpoint = (url=defaultURL, token) =>
     (mapFn) =>
         (tables=<-) => tables
             |> map(fn: (r) => {
-                obj = mapFn(r)
-                resp = message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)
-                return {r with status: resp}
+                obj = mapFn(r: r)
+                return {r with status: message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)}
             })

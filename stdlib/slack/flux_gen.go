@@ -22,10 +22,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 15,
-					Line:   51,
+					Line:   50,
 				},
 				File:   "slack.flux",
-				Source: "package slack\n\nimport \"http\"\nimport \"json\"\n\nbuiltin validateColorString\n\noption defaultURL = \"https://slack.com/api/chat.postMessage\"\n\n// `message` sends a single message to a Slack channel.\n// url - string - URL of the slack endpoint. No default value, this must be acquired as part of the slack API setup. This URL will be secret. Don't worry about secrets for the initial implementation.\n// token - the api token string\n// username - string - Username posting the message\n// channel - string - Name of channel in which to post the message. No default\n// workspace - string - Name of the slack workspace to use if there are multiple. Defaults to empty string\n// text - string - The text to display\n// iconEmoji - string - Name of : enclose emoji to use as image of user when posting message.\n// color - string - Color to give message: one of good, warning, and danger, or any hex rgb color value ex. #439FE0.\nmessage = (url, token, username, channel, workspace, text, iconEmoji, color) => {\n    attachments = [{\n        color: validateColorString(color),\n        text: text,\n        mrkdwn_in: [\"text\"],\n    }]\n\n    data = {\n        username: username,\n        channel: channel,\n        workspace: workspace,\n        attachments: attachments,\n        icon_emoji: iconEmoji,\n    }\n    headers = {\n        \"Authorization\": token,\n        \"Content Type\": \"application/json\",\n    }\n    enc = json.encode(v:data)\n    return http.post(headers: headers, url: url, data: enc)\n}\n\n// `endpoint` creates the endpoint for the Slack external service.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `channel` and `text` fields.\nendpoint = (url=defaultURL, token) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r)\n                resp = message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)\n                return {r with status: resp}\n            })",
+				Source: "package slack\n\nimport \"http\"\nimport \"json\"\n\nbuiltin validateColorString\n\noption defaultURL = \"https://slack.com/api/chat.postMessage\"\n\n// `message` sends a single message to a Slack channel.\n// url - string - URL of the slack endpoint. No default value, this must be acquired as part of the slack API setup. This URL will be secret. Don't worry about secrets for the initial implementation.\n// token - the api token string\n// username - string - Username posting the message\n// channel - string - Name of channel in which to post the message. No default\n// workspace - string - Name of the slack workspace to use if there are multiple. Defaults to empty string\n// text - string - The text to display\n// iconEmoji - string - Name of : enclose emoji to use as image of user when posting message.\n// color - string - Color to give message: one of good, warning, and danger, or any hex rgb color value ex. #439FE0.\nmessage = (url, token, username, channel, workspace, text, iconEmoji, color) => {\n    attachments = [{\n        color: validateColorString(color),\n        text: string(v: text),\n        mrkdwn_in: [\"text\"],\n    }]\n\n    data = {\n        username: username,\n        channel: channel,\n        workspace: workspace,\n        attachments: attachments,\n        icon_emoji: iconEmoji,\n    }\n    headers = {\n        \"Authorization\": token,\n        \"Content Type\": \"application/json\",\n    }\n    enc = json.encode(v:data)\n    return http.post(headers: headers, url: url, data: enc)\n}\n\n// `endpoint` creates the endpoint for the Slack external service.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `channel` and `text` fields.\nendpoint = (url=defaultURL, token) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with status: message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)}\n            })",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -144,7 +144,7 @@ var pkgAST = &ast.Package{
 						Line:   39,
 					},
 					File:   "slack.flux",
-					Source: "message = (url, token, username, channel, workspace, text, iconEmoji, color) => {\n    attachments = [{\n        color: validateColorString(color),\n        text: text,\n        mrkdwn_in: [\"text\"],\n    }]\n\n    data = {\n        username: username,\n        channel: channel,\n        workspace: workspace,\n        attachments: attachments,\n        icon_emoji: iconEmoji,\n    }\n    headers = {\n        \"Authorization\": token,\n        \"Content Type\": \"application/json\",\n    }\n    enc = json.encode(v:data)\n    return http.post(headers: headers, url: url, data: enc)\n}",
+					Source: "message = (url, token, username, channel, workspace, text, iconEmoji, color) => {\n    attachments = [{\n        color: validateColorString(color),\n        text: string(v: text),\n        mrkdwn_in: [\"text\"],\n    }]\n\n    data = {\n        username: username,\n        channel: channel,\n        workspace: workspace,\n        attachments: attachments,\n        icon_emoji: iconEmoji,\n    }\n    headers = {\n        \"Authorization\": token,\n        \"Content Type\": \"application/json\",\n    }\n    enc = json.encode(v:data)\n    return http.post(headers: headers, url: url, data: enc)\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   19,
@@ -178,7 +178,7 @@ var pkgAST = &ast.Package{
 							Line:   39,
 						},
 						File:   "slack.flux",
-						Source: "(url, token, username, channel, workspace, text, iconEmoji, color) => {\n    attachments = [{\n        color: validateColorString(color),\n        text: text,\n        mrkdwn_in: [\"text\"],\n    }]\n\n    data = {\n        username: username,\n        channel: channel,\n        workspace: workspace,\n        attachments: attachments,\n        icon_emoji: iconEmoji,\n    }\n    headers = {\n        \"Authorization\": token,\n        \"Content Type\": \"application/json\",\n    }\n    enc = json.encode(v:data)\n    return http.post(headers: headers, url: url, data: enc)\n}",
+						Source: "(url, token, username, channel, workspace, text, iconEmoji, color) => {\n    attachments = [{\n        color: validateColorString(color),\n        text: string(v: text),\n        mrkdwn_in: [\"text\"],\n    }]\n\n    data = {\n        username: username,\n        channel: channel,\n        workspace: workspace,\n        attachments: attachments,\n        icon_emoji: iconEmoji,\n    }\n    headers = {\n        \"Authorization\": token,\n        \"Content Type\": \"application/json\",\n    }\n    enc = json.encode(v:data)\n    return http.post(headers: headers, url: url, data: enc)\n}",
 						Start: ast.Position{
 							Column: 11,
 							Line:   19,
@@ -194,7 +194,7 @@ var pkgAST = &ast.Package{
 								Line:   39,
 							},
 							File:   "slack.flux",
-							Source: "{\n    attachments = [{\n        color: validateColorString(color),\n        text: text,\n        mrkdwn_in: [\"text\"],\n    }]\n\n    data = {\n        username: username,\n        channel: channel,\n        workspace: workspace,\n        attachments: attachments,\n        icon_emoji: iconEmoji,\n    }\n    headers = {\n        \"Authorization\": token,\n        \"Content Type\": \"application/json\",\n    }\n    enc = json.encode(v:data)\n    return http.post(headers: headers, url: url, data: enc)\n}",
+							Source: "{\n    attachments = [{\n        color: validateColorString(color),\n        text: string(v: text),\n        mrkdwn_in: [\"text\"],\n    }]\n\n    data = {\n        username: username,\n        channel: channel,\n        workspace: workspace,\n        attachments: attachments,\n        icon_emoji: iconEmoji,\n    }\n    headers = {\n        \"Authorization\": token,\n        \"Content Type\": \"application/json\",\n    }\n    enc = json.encode(v:data)\n    return http.post(headers: headers, url: url, data: enc)\n}",
 							Start: ast.Position{
 								Column: 81,
 								Line:   19,
@@ -210,7 +210,7 @@ var pkgAST = &ast.Package{
 									Line:   24,
 								},
 								File:   "slack.flux",
-								Source: "attachments = [{\n        color: validateColorString(color),\n        text: text,\n        mrkdwn_in: [\"text\"],\n    }]",
+								Source: "attachments = [{\n        color: validateColorString(color),\n        text: string(v: text),\n        mrkdwn_in: [\"text\"],\n    }]",
 								Start: ast.Position{
 									Column: 5,
 									Line:   20,
@@ -244,7 +244,7 @@ var pkgAST = &ast.Package{
 										Line:   24,
 									},
 									File:   "slack.flux",
-									Source: "[{\n        color: validateColorString(color),\n        text: text,\n        mrkdwn_in: [\"text\"],\n    }]",
+									Source: "[{\n        color: validateColorString(color),\n        text: string(v: text),\n        mrkdwn_in: [\"text\"],\n    }]",
 									Start: ast.Position{
 										Column: 19,
 										Line:   20,
@@ -260,7 +260,7 @@ var pkgAST = &ast.Package{
 											Line:   24,
 										},
 										File:   "slack.flux",
-										Source: "{\n        color: validateColorString(color),\n        text: text,\n        mrkdwn_in: [\"text\"],\n    }",
+										Source: "{\n        color: validateColorString(color),\n        text: string(v: text),\n        mrkdwn_in: [\"text\"],\n    }",
 										Start: ast.Position{
 											Column: 20,
 											Line:   20,
@@ -395,11 +395,11 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 19,
+												Column: 30,
 												Line:   22,
 											},
 											File:   "slack.flux",
-											Source: "text: text",
+											Source: "text: string(v: text)",
 											Start: ast.Position{
 												Column: 9,
 												Line:   22,
@@ -424,23 +424,111 @@ var pkgAST = &ast.Package{
 										},
 										Name: "text",
 									},
-									Value: &ast.Identifier{
+									Value: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 29,
+														Line:   22,
+													},
+													File:   "slack.flux",
+													Source: "v: text",
+													Start: ast.Position{
+														Column: 22,
+														Line:   22,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 29,
+															Line:   22,
+														},
+														File:   "slack.flux",
+														Source: "v: text",
+														Start: ast.Position{
+															Column: 22,
+															Line:   22,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 23,
+																Line:   22,
+															},
+															File:   "slack.flux",
+															Source: "v",
+															Start: ast.Position{
+																Column: 22,
+																Line:   22,
+															},
+														},
+													},
+													Name: "v",
+												},
+												Value: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 29,
+																Line:   22,
+															},
+															File:   "slack.flux",
+															Source: "text",
+															Start: ast.Position{
+																Column: 25,
+																Line:   22,
+															},
+														},
+													},
+													Name: "text",
+												},
+											}},
+											With: nil,
+										}},
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 19,
+													Column: 30,
 													Line:   22,
 												},
 												File:   "slack.flux",
-												Source: "text",
+												Source: "string(v: text)",
 												Start: ast.Position{
 													Column: 15,
 													Line:   22,
 												},
 											},
 										},
-										Name: "text",
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   22,
+													},
+													File:   "slack.flux",
+													Source: "string",
+													Start: ast.Position{
+														Column: 15,
+														Line:   22,
+													},
+												},
+											},
+											Name: "string",
+										},
 									},
 								}, &ast.Property{
 									BaseNode: ast.BaseNode{
@@ -1711,10 +1799,10 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   51,
+						Line:   50,
 					},
 					File:   "slack.flux",
-					Source: "endpoint = (url=defaultURL, token) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r)\n                resp = message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)\n                return {r with status: resp}\n            })",
+					Source: "endpoint = (url=defaultURL, token) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with status: message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)}\n            })",
 					Start: ast.Position{
 						Column: 1,
 						Line:   44,
@@ -1745,10 +1833,10 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   51,
+							Line:   50,
 						},
 						File:   "slack.flux",
-						Source: "(url=defaultURL, token) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r)\n                resp = message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)\n                return {r with status: resp}\n            })",
+						Source: "(url=defaultURL, token) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with status: message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)}\n            })",
 						Start: ast.Position{
 							Column: 12,
 							Line:   44,
@@ -1761,10 +1849,10 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 15,
-								Line:   51,
+								Line:   50,
 							},
 							File:   "slack.flux",
-							Source: "(mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r)\n                resp = message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)\n                return {r with status: resp}\n            })",
+							Source: "(mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with status: message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)}\n            })",
 							Start: ast.Position{
 								Column: 5,
 								Line:   45,
@@ -1777,10 +1865,10 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   51,
+									Line:   50,
 								},
 								File:   "slack.flux",
-								Source: "(tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r)\n                resp = message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)\n                return {r with status: resp}\n            })",
+								Source: "(tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with status: message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)}\n            })",
 								Start: ast.Position{
 									Column: 9,
 									Line:   46,
@@ -1811,10 +1899,10 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
-										Line:   51,
+										Line:   50,
 									},
 									File:   "slack.flux",
-									Source: "tables\n            |> map(fn: (r) => {\n                obj = mapFn(r)\n                resp = message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)\n                return {r with status: resp}\n            })",
+									Source: "tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with status: message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)}\n            })",
 									Start: ast.Position{
 										Column: 24,
 										Line:   46,
@@ -1828,10 +1916,10 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
-												Line:   51,
+												Line:   50,
 											},
 											File:   "slack.flux",
-											Source: "fn: (r) => {\n                obj = mapFn(r)\n                resp = message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)\n                return {r with status: resp}\n            }",
+											Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with status: message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)}\n            }",
 											Start: ast.Position{
 												Column: 20,
 												Line:   47,
@@ -1844,10 +1932,10 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 14,
-													Line:   51,
+													Line:   50,
 												},
 												File:   "slack.flux",
-												Source: "fn: (r) => {\n                obj = mapFn(r)\n                resp = message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)\n                return {r with status: resp}\n            }",
+												Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with status: message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)}\n            }",
 												Start: ast.Position{
 													Column: 20,
 													Line:   47,
@@ -1878,10 +1966,10 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
-														Line:   51,
+														Line:   50,
 													},
 													File:   "slack.flux",
-													Source: "(r) => {\n                obj = mapFn(r)\n                resp = message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)\n                return {r with status: resp}\n            }",
+													Source: "(r) => {\n                obj = mapFn(r: r)\n                return {r with status: message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)}\n            }",
 													Start: ast.Position{
 														Column: 24,
 														Line:   47,
@@ -1894,10 +1982,10 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 14,
-															Line:   51,
+															Line:   50,
 														},
 														File:   "slack.flux",
-														Source: "{\n                obj = mapFn(r)\n                resp = message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)\n                return {r with status: resp}\n            }",
+														Source: "{\n                obj = mapFn(r: r)\n                return {r with status: message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)}\n            }",
 														Start: ast.Position{
 															Column: 31,
 															Line:   47,
@@ -1909,11 +1997,11 @@ var pkgAST = &ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 31,
+																Column: 34,
 																Line:   48,
 															},
 															File:   "slack.flux",
-															Source: "obj = mapFn(r)",
+															Source: "obj = mapFn(r: r)",
 															Start: ast.Position{
 																Column: 17,
 																Line:   48,
@@ -1944,11 +2032,11 @@ var pkgAST = &ast.Package{
 																Errors: nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 30,
+																		Column: 33,
 																		Line:   48,
 																	},
 																	File:   "slack.flux",
-																	Source: "r",
+																	Source: "r: r",
 																	Start: ast.Position{
 																		Column: 29,
 																		Line:   48,
@@ -1960,11 +2048,11 @@ var pkgAST = &ast.Package{
 																	Errors: nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 30,
+																			Column: 33,
 																			Line:   48,
 																		},
 																		File:   "slack.flux",
-																		Source: "r",
+																		Source: "r: r",
 																		Start: ast.Position{
 																			Column: 29,
 																			Line:   48,
@@ -1989,7 +2077,24 @@ var pkgAST = &ast.Package{
 																	},
 																	Name: "r",
 																},
-																Value: nil,
+																Value: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 33,
+																				Line:   48,
+																			},
+																			File:   "slack.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 32,
+																				Line:   48,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
 															}},
 															With: nil,
 														}},
@@ -1997,11 +2102,11 @@ var pkgAST = &ast.Package{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 31,
+																	Column: 34,
 																	Line:   48,
 																},
 																File:   "slack.flux",
-																Source: "mapFn(r)",
+																Source: "mapFn(r: r)",
 																Start: ast.Position{
 																	Column: 23,
 																	Line:   48,
@@ -2027,734 +2132,20 @@ var pkgAST = &ast.Package{
 															Name: "mapFn",
 														},
 													},
-												}, &ast.VariableAssignment{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 187,
-																Line:   49,
-															},
-															File:   "slack.flux",
-															Source: "resp = message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)",
-															Start: ast.Position{
-																Column: 17,
-																Line:   49,
-															},
-														},
-													},
-													ID: &ast.Identifier{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 21,
-																	Line:   49,
-																},
-																File:   "slack.flux",
-																Source: "resp",
-																Start: ast.Position{
-																	Column: 17,
-																	Line:   49,
-																},
-															},
-														},
-														Name: "resp",
-													},
-													Init: &ast.CallExpression{
-														Arguments: []ast.Expression{&ast.ObjectExpression{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 186,
-																		Line:   49,
-																	},
-																	File:   "slack.flux",
-																	Source: "url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color",
-																	Start: ast.Position{
-																		Column: 32,
-																		Line:   49,
-																	},
-																},
-															},
-															Properties: []*ast.Property{&ast.Property{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 40,
-																			Line:   49,
-																		},
-																		File:   "slack.flux",
-																		Source: "url: url",
-																		Start: ast.Position{
-																			Column: 32,
-																			Line:   49,
-																		},
-																	},
-																},
-																Key: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 35,
-																				Line:   49,
-																			},
-																			File:   "slack.flux",
-																			Source: "url",
-																			Start: ast.Position{
-																				Column: 32,
-																				Line:   49,
-																			},
-																		},
-																	},
-																	Name: "url",
-																},
-																Value: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 40,
-																				Line:   49,
-																			},
-																			File:   "slack.flux",
-																			Source: "url",
-																			Start: ast.Position{
-																				Column: 37,
-																				Line:   49,
-																			},
-																		},
-																	},
-																	Name: "url",
-																},
-															}, &ast.Property{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 54,
-																			Line:   49,
-																		},
-																		File:   "slack.flux",
-																		Source: "token: token",
-																		Start: ast.Position{
-																			Column: 42,
-																			Line:   49,
-																		},
-																	},
-																},
-																Key: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 47,
-																				Line:   49,
-																			},
-																			File:   "slack.flux",
-																			Source: "token",
-																			Start: ast.Position{
-																				Column: 42,
-																				Line:   49,
-																			},
-																		},
-																	},
-																	Name: "token",
-																},
-																Value: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 54,
-																				Line:   49,
-																			},
-																			File:   "slack.flux",
-																			Source: "token",
-																			Start: ast.Position{
-																				Column: 49,
-																				Line:   49,
-																			},
-																		},
-																	},
-																	Name: "token",
-																},
-															}, &ast.Property{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 78,
-																			Line:   49,
-																		},
-																		File:   "slack.flux",
-																		Source: "username: obj.username",
-																		Start: ast.Position{
-																			Column: 56,
-																			Line:   49,
-																		},
-																	},
-																},
-																Key: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 64,
-																				Line:   49,
-																			},
-																			File:   "slack.flux",
-																			Source: "username",
-																			Start: ast.Position{
-																				Column: 56,
-																				Line:   49,
-																			},
-																		},
-																	},
-																	Name: "username",
-																},
-																Value: &ast.MemberExpression{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 78,
-																				Line:   49,
-																			},
-																			File:   "slack.flux",
-																			Source: "obj.username",
-																			Start: ast.Position{
-																				Column: 66,
-																				Line:   49,
-																			},
-																		},
-																	},
-																	Object: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 69,
-																					Line:   49,
-																				},
-																				File:   "slack.flux",
-																				Source: "obj",
-																				Start: ast.Position{
-																					Column: 66,
-																					Line:   49,
-																				},
-																			},
-																		},
-																		Name: "obj",
-																	},
-																	Property: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 78,
-																					Line:   49,
-																				},
-																				File:   "slack.flux",
-																				Source: "username",
-																				Start: ast.Position{
-																					Column: 70,
-																					Line:   49,
-																				},
-																			},
-																		},
-																		Name: "username",
-																	},
-																},
-															}, &ast.Property{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 100,
-																			Line:   49,
-																		},
-																		File:   "slack.flux",
-																		Source: "channel: obj.channel",
-																		Start: ast.Position{
-																			Column: 80,
-																			Line:   49,
-																		},
-																	},
-																},
-																Key: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 87,
-																				Line:   49,
-																			},
-																			File:   "slack.flux",
-																			Source: "channel",
-																			Start: ast.Position{
-																				Column: 80,
-																				Line:   49,
-																			},
-																		},
-																	},
-																	Name: "channel",
-																},
-																Value: &ast.MemberExpression{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 100,
-																				Line:   49,
-																			},
-																			File:   "slack.flux",
-																			Source: "obj.channel",
-																			Start: ast.Position{
-																				Column: 89,
-																				Line:   49,
-																			},
-																		},
-																	},
-																	Object: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 92,
-																					Line:   49,
-																				},
-																				File:   "slack.flux",
-																				Source: "obj",
-																				Start: ast.Position{
-																					Column: 89,
-																					Line:   49,
-																				},
-																			},
-																		},
-																		Name: "obj",
-																	},
-																	Property: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 100,
-																					Line:   49,
-																				},
-																				File:   "slack.flux",
-																				Source: "channel",
-																				Start: ast.Position{
-																					Column: 93,
-																					Line:   49,
-																				},
-																			},
-																		},
-																		Name: "channel",
-																	},
-																},
-															}, &ast.Property{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 126,
-																			Line:   49,
-																		},
-																		File:   "slack.flux",
-																		Source: "workspace: obj.workspace",
-																		Start: ast.Position{
-																			Column: 102,
-																			Line:   49,
-																		},
-																	},
-																},
-																Key: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 111,
-																				Line:   49,
-																			},
-																			File:   "slack.flux",
-																			Source: "workspace",
-																			Start: ast.Position{
-																				Column: 102,
-																				Line:   49,
-																			},
-																		},
-																	},
-																	Name: "workspace",
-																},
-																Value: &ast.MemberExpression{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 126,
-																				Line:   49,
-																			},
-																			File:   "slack.flux",
-																			Source: "obj.workspace",
-																			Start: ast.Position{
-																				Column: 113,
-																				Line:   49,
-																			},
-																		},
-																	},
-																	Object: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 116,
-																					Line:   49,
-																				},
-																				File:   "slack.flux",
-																				Source: "obj",
-																				Start: ast.Position{
-																					Column: 113,
-																					Line:   49,
-																				},
-																			},
-																		},
-																		Name: "obj",
-																	},
-																	Property: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 126,
-																					Line:   49,
-																				},
-																				File:   "slack.flux",
-																				Source: "workspace",
-																				Start: ast.Position{
-																					Column: 117,
-																					Line:   49,
-																				},
-																			},
-																		},
-																		Name: "workspace",
-																	},
-																},
-															}, &ast.Property{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 142,
-																			Line:   49,
-																		},
-																		File:   "slack.flux",
-																		Source: "text: obj.text",
-																		Start: ast.Position{
-																			Column: 128,
-																			Line:   49,
-																		},
-																	},
-																},
-																Key: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 132,
-																				Line:   49,
-																			},
-																			File:   "slack.flux",
-																			Source: "text",
-																			Start: ast.Position{
-																				Column: 128,
-																				Line:   49,
-																			},
-																		},
-																	},
-																	Name: "text",
-																},
-																Value: &ast.MemberExpression{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 142,
-																				Line:   49,
-																			},
-																			File:   "slack.flux",
-																			Source: "obj.text",
-																			Start: ast.Position{
-																				Column: 134,
-																				Line:   49,
-																			},
-																		},
-																	},
-																	Object: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 137,
-																					Line:   49,
-																				},
-																				File:   "slack.flux",
-																				Source: "obj",
-																				Start: ast.Position{
-																					Column: 134,
-																					Line:   49,
-																				},
-																			},
-																		},
-																		Name: "obj",
-																	},
-																	Property: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 142,
-																					Line:   49,
-																				},
-																				File:   "slack.flux",
-																				Source: "text",
-																				Start: ast.Position{
-																					Column: 138,
-																					Line:   49,
-																				},
-																			},
-																		},
-																		Name: "text",
-																	},
-																},
-															}, &ast.Property{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 168,
-																			Line:   49,
-																		},
-																		File:   "slack.flux",
-																		Source: "iconEmoji: obj.iconEmoji",
-																		Start: ast.Position{
-																			Column: 144,
-																			Line:   49,
-																		},
-																	},
-																},
-																Key: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 153,
-																				Line:   49,
-																			},
-																			File:   "slack.flux",
-																			Source: "iconEmoji",
-																			Start: ast.Position{
-																				Column: 144,
-																				Line:   49,
-																			},
-																		},
-																	},
-																	Name: "iconEmoji",
-																},
-																Value: &ast.MemberExpression{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 168,
-																				Line:   49,
-																			},
-																			File:   "slack.flux",
-																			Source: "obj.iconEmoji",
-																			Start: ast.Position{
-																				Column: 155,
-																				Line:   49,
-																			},
-																		},
-																	},
-																	Object: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 158,
-																					Line:   49,
-																				},
-																				File:   "slack.flux",
-																				Source: "obj",
-																				Start: ast.Position{
-																					Column: 155,
-																					Line:   49,
-																				},
-																			},
-																		},
-																		Name: "obj",
-																	},
-																	Property: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 168,
-																					Line:   49,
-																				},
-																				File:   "slack.flux",
-																				Source: "iconEmoji",
-																				Start: ast.Position{
-																					Column: 159,
-																					Line:   49,
-																				},
-																			},
-																		},
-																		Name: "iconEmoji",
-																	},
-																},
-															}, &ast.Property{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 186,
-																			Line:   49,
-																		},
-																		File:   "slack.flux",
-																		Source: "color: obj.color",
-																		Start: ast.Position{
-																			Column: 170,
-																			Line:   49,
-																		},
-																	},
-																},
-																Key: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 175,
-																				Line:   49,
-																			},
-																			File:   "slack.flux",
-																			Source: "color",
-																			Start: ast.Position{
-																				Column: 170,
-																				Line:   49,
-																			},
-																		},
-																	},
-																	Name: "color",
-																},
-																Value: &ast.MemberExpression{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 186,
-																				Line:   49,
-																			},
-																			File:   "slack.flux",
-																			Source: "obj.color",
-																			Start: ast.Position{
-																				Column: 177,
-																				Line:   49,
-																			},
-																		},
-																	},
-																	Object: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 180,
-																					Line:   49,
-																				},
-																				File:   "slack.flux",
-																				Source: "obj",
-																				Start: ast.Position{
-																					Column: 177,
-																					Line:   49,
-																				},
-																			},
-																		},
-																		Name: "obj",
-																	},
-																	Property: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 186,
-																					Line:   49,
-																				},
-																				File:   "slack.flux",
-																				Source: "color",
-																				Start: ast.Position{
-																					Column: 181,
-																					Line:   49,
-																				},
-																			},
-																		},
-																		Name: "color",
-																	},
-																},
-															}},
-															With: nil,
-														}},
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 187,
-																	Line:   49,
-																},
-																File:   "slack.flux",
-																Source: "message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)",
-																Start: ast.Position{
-																	Column: 24,
-																	Line:   49,
-																},
-															},
-														},
-														Callee: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 31,
-																		Line:   49,
-																	},
-																	File:   "slack.flux",
-																	Source: "message",
-																	Start: ast.Position{
-																		Column: 24,
-																		Line:   49,
-																	},
-																},
-															},
-															Name: "message",
-														},
-													},
 												}, &ast.ReturnStatement{
 													Argument: &ast.ObjectExpression{
 														BaseNode: ast.BaseNode{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 45,
-																	Line:   50,
+																	Column: 204,
+																	Line:   49,
 																},
 																File:   "slack.flux",
-																Source: "{r with status: resp}",
+																Source: "{r with status: message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)}",
 																Start: ast.Position{
 																	Column: 24,
-																	Line:   50,
+																	Line:   49,
 																},
 															},
 														},
@@ -2763,14 +2154,14 @@ var pkgAST = &ast.Package{
 																Errors: nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 44,
-																		Line:   50,
+																		Column: 203,
+																		Line:   49,
 																	},
 																	File:   "slack.flux",
-																	Source: "status: resp",
+																	Source: "status: message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)",
 																	Start: ast.Position{
 																		Column: 32,
-																		Line:   50,
+																		Line:   49,
 																	},
 																},
 															},
@@ -2780,35 +2171,697 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 38,
-																			Line:   50,
+																			Line:   49,
 																		},
 																		File:   "slack.flux",
 																		Source: "status",
 																		Start: ast.Position{
 																			Column: 32,
-																			Line:   50,
+																			Line:   49,
 																		},
 																	},
 																},
 																Name: "status",
 															},
-															Value: &ast.Identifier{
+															Value: &ast.CallExpression{
+																Arguments: []ast.Expression{&ast.ObjectExpression{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 202,
+																				Line:   49,
+																			},
+																			File:   "slack.flux",
+																			Source: "url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color",
+																			Start: ast.Position{
+																				Column: 48,
+																				Line:   49,
+																			},
+																		},
+																	},
+																	Properties: []*ast.Property{&ast.Property{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 56,
+																					Line:   49,
+																				},
+																				File:   "slack.flux",
+																				Source: "url: url",
+																				Start: ast.Position{
+																					Column: 48,
+																					Line:   49,
+																				},
+																			},
+																		},
+																		Key: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 51,
+																						Line:   49,
+																					},
+																					File:   "slack.flux",
+																					Source: "url",
+																					Start: ast.Position{
+																						Column: 48,
+																						Line:   49,
+																					},
+																				},
+																			},
+																			Name: "url",
+																		},
+																		Value: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 56,
+																						Line:   49,
+																					},
+																					File:   "slack.flux",
+																					Source: "url",
+																					Start: ast.Position{
+																						Column: 53,
+																						Line:   49,
+																					},
+																				},
+																			},
+																			Name: "url",
+																		},
+																	}, &ast.Property{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 70,
+																					Line:   49,
+																				},
+																				File:   "slack.flux",
+																				Source: "token: token",
+																				Start: ast.Position{
+																					Column: 58,
+																					Line:   49,
+																				},
+																			},
+																		},
+																		Key: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 63,
+																						Line:   49,
+																					},
+																					File:   "slack.flux",
+																					Source: "token",
+																					Start: ast.Position{
+																						Column: 58,
+																						Line:   49,
+																					},
+																				},
+																			},
+																			Name: "token",
+																		},
+																		Value: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 70,
+																						Line:   49,
+																					},
+																					File:   "slack.flux",
+																					Source: "token",
+																					Start: ast.Position{
+																						Column: 65,
+																						Line:   49,
+																					},
+																				},
+																			},
+																			Name: "token",
+																		},
+																	}, &ast.Property{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 94,
+																					Line:   49,
+																				},
+																				File:   "slack.flux",
+																				Source: "username: obj.username",
+																				Start: ast.Position{
+																					Column: 72,
+																					Line:   49,
+																				},
+																			},
+																		},
+																		Key: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 80,
+																						Line:   49,
+																					},
+																					File:   "slack.flux",
+																					Source: "username",
+																					Start: ast.Position{
+																						Column: 72,
+																						Line:   49,
+																					},
+																				},
+																			},
+																			Name: "username",
+																		},
+																		Value: &ast.MemberExpression{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 94,
+																						Line:   49,
+																					},
+																					File:   "slack.flux",
+																					Source: "obj.username",
+																					Start: ast.Position{
+																						Column: 82,
+																						Line:   49,
+																					},
+																				},
+																			},
+																			Object: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 85,
+																							Line:   49,
+																						},
+																						File:   "slack.flux",
+																						Source: "obj",
+																						Start: ast.Position{
+																							Column: 82,
+																							Line:   49,
+																						},
+																					},
+																				},
+																				Name: "obj",
+																			},
+																			Property: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 94,
+																							Line:   49,
+																						},
+																						File:   "slack.flux",
+																						Source: "username",
+																						Start: ast.Position{
+																							Column: 86,
+																							Line:   49,
+																						},
+																					},
+																				},
+																				Name: "username",
+																			},
+																		},
+																	}, &ast.Property{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 116,
+																					Line:   49,
+																				},
+																				File:   "slack.flux",
+																				Source: "channel: obj.channel",
+																				Start: ast.Position{
+																					Column: 96,
+																					Line:   49,
+																				},
+																			},
+																		},
+																		Key: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 103,
+																						Line:   49,
+																					},
+																					File:   "slack.flux",
+																					Source: "channel",
+																					Start: ast.Position{
+																						Column: 96,
+																						Line:   49,
+																					},
+																				},
+																			},
+																			Name: "channel",
+																		},
+																		Value: &ast.MemberExpression{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 116,
+																						Line:   49,
+																					},
+																					File:   "slack.flux",
+																					Source: "obj.channel",
+																					Start: ast.Position{
+																						Column: 105,
+																						Line:   49,
+																					},
+																				},
+																			},
+																			Object: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 108,
+																							Line:   49,
+																						},
+																						File:   "slack.flux",
+																						Source: "obj",
+																						Start: ast.Position{
+																							Column: 105,
+																							Line:   49,
+																						},
+																					},
+																				},
+																				Name: "obj",
+																			},
+																			Property: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 116,
+																							Line:   49,
+																						},
+																						File:   "slack.flux",
+																						Source: "channel",
+																						Start: ast.Position{
+																							Column: 109,
+																							Line:   49,
+																						},
+																					},
+																				},
+																				Name: "channel",
+																			},
+																		},
+																	}, &ast.Property{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 142,
+																					Line:   49,
+																				},
+																				File:   "slack.flux",
+																				Source: "workspace: obj.workspace",
+																				Start: ast.Position{
+																					Column: 118,
+																					Line:   49,
+																				},
+																			},
+																		},
+																		Key: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 127,
+																						Line:   49,
+																					},
+																					File:   "slack.flux",
+																					Source: "workspace",
+																					Start: ast.Position{
+																						Column: 118,
+																						Line:   49,
+																					},
+																				},
+																			},
+																			Name: "workspace",
+																		},
+																		Value: &ast.MemberExpression{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 142,
+																						Line:   49,
+																					},
+																					File:   "slack.flux",
+																					Source: "obj.workspace",
+																					Start: ast.Position{
+																						Column: 129,
+																						Line:   49,
+																					},
+																				},
+																			},
+																			Object: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 132,
+																							Line:   49,
+																						},
+																						File:   "slack.flux",
+																						Source: "obj",
+																						Start: ast.Position{
+																							Column: 129,
+																							Line:   49,
+																						},
+																					},
+																				},
+																				Name: "obj",
+																			},
+																			Property: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 142,
+																							Line:   49,
+																						},
+																						File:   "slack.flux",
+																						Source: "workspace",
+																						Start: ast.Position{
+																							Column: 133,
+																							Line:   49,
+																						},
+																					},
+																				},
+																				Name: "workspace",
+																			},
+																		},
+																	}, &ast.Property{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 158,
+																					Line:   49,
+																				},
+																				File:   "slack.flux",
+																				Source: "text: obj.text",
+																				Start: ast.Position{
+																					Column: 144,
+																					Line:   49,
+																				},
+																			},
+																		},
+																		Key: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 148,
+																						Line:   49,
+																					},
+																					File:   "slack.flux",
+																					Source: "text",
+																					Start: ast.Position{
+																						Column: 144,
+																						Line:   49,
+																					},
+																				},
+																			},
+																			Name: "text",
+																		},
+																		Value: &ast.MemberExpression{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 158,
+																						Line:   49,
+																					},
+																					File:   "slack.flux",
+																					Source: "obj.text",
+																					Start: ast.Position{
+																						Column: 150,
+																						Line:   49,
+																					},
+																				},
+																			},
+																			Object: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 153,
+																							Line:   49,
+																						},
+																						File:   "slack.flux",
+																						Source: "obj",
+																						Start: ast.Position{
+																							Column: 150,
+																							Line:   49,
+																						},
+																					},
+																				},
+																				Name: "obj",
+																			},
+																			Property: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 158,
+																							Line:   49,
+																						},
+																						File:   "slack.flux",
+																						Source: "text",
+																						Start: ast.Position{
+																							Column: 154,
+																							Line:   49,
+																						},
+																					},
+																				},
+																				Name: "text",
+																			},
+																		},
+																	}, &ast.Property{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 184,
+																					Line:   49,
+																				},
+																				File:   "slack.flux",
+																				Source: "iconEmoji: obj.iconEmoji",
+																				Start: ast.Position{
+																					Column: 160,
+																					Line:   49,
+																				},
+																			},
+																		},
+																		Key: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 169,
+																						Line:   49,
+																					},
+																					File:   "slack.flux",
+																					Source: "iconEmoji",
+																					Start: ast.Position{
+																						Column: 160,
+																						Line:   49,
+																					},
+																				},
+																			},
+																			Name: "iconEmoji",
+																		},
+																		Value: &ast.MemberExpression{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 184,
+																						Line:   49,
+																					},
+																					File:   "slack.flux",
+																					Source: "obj.iconEmoji",
+																					Start: ast.Position{
+																						Column: 171,
+																						Line:   49,
+																					},
+																				},
+																			},
+																			Object: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 174,
+																							Line:   49,
+																						},
+																						File:   "slack.flux",
+																						Source: "obj",
+																						Start: ast.Position{
+																							Column: 171,
+																							Line:   49,
+																						},
+																					},
+																				},
+																				Name: "obj",
+																			},
+																			Property: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 184,
+																							Line:   49,
+																						},
+																						File:   "slack.flux",
+																						Source: "iconEmoji",
+																						Start: ast.Position{
+																							Column: 175,
+																							Line:   49,
+																						},
+																					},
+																				},
+																				Name: "iconEmoji",
+																			},
+																		},
+																	}, &ast.Property{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 202,
+																					Line:   49,
+																				},
+																				File:   "slack.flux",
+																				Source: "color: obj.color",
+																				Start: ast.Position{
+																					Column: 186,
+																					Line:   49,
+																				},
+																			},
+																		},
+																		Key: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 191,
+																						Line:   49,
+																					},
+																					File:   "slack.flux",
+																					Source: "color",
+																					Start: ast.Position{
+																						Column: 186,
+																						Line:   49,
+																					},
+																				},
+																			},
+																			Name: "color",
+																		},
+																		Value: &ast.MemberExpression{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 202,
+																						Line:   49,
+																					},
+																					File:   "slack.flux",
+																					Source: "obj.color",
+																					Start: ast.Position{
+																						Column: 193,
+																						Line:   49,
+																					},
+																				},
+																			},
+																			Object: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 196,
+																							Line:   49,
+																						},
+																						File:   "slack.flux",
+																						Source: "obj",
+																						Start: ast.Position{
+																							Column: 193,
+																							Line:   49,
+																						},
+																					},
+																				},
+																				Name: "obj",
+																			},
+																			Property: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 202,
+																							Line:   49,
+																						},
+																						File:   "slack.flux",
+																						Source: "color",
+																						Start: ast.Position{
+																							Column: 197,
+																							Line:   49,
+																						},
+																					},
+																				},
+																				Name: "color",
+																			},
+																		},
+																	}},
+																	With: nil,
+																}},
 																BaseNode: ast.BaseNode{
 																	Errors: nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 44,
-																			Line:   50,
+																			Column: 203,
+																			Line:   49,
 																		},
 																		File:   "slack.flux",
-																		Source: "resp",
+																		Source: "message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)",
 																		Start: ast.Position{
 																			Column: 40,
-																			Line:   50,
+																			Line:   49,
 																		},
 																	},
 																},
-																Name: "resp",
+																Callee: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 47,
+																				Line:   49,
+																			},
+																			File:   "slack.flux",
+																			Source: "message",
+																			Start: ast.Position{
+																				Column: 40,
+																				Line:   49,
+																			},
+																		},
+																	},
+																	Name: "message",
+																},
 															},
 														}},
 														With: &ast.Identifier{
@@ -2817,13 +2870,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 26,
-																		Line:   50,
+																		Line:   49,
 																	},
 																	File:   "slack.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 25,
-																		Line:   50,
+																		Line:   49,
 																	},
 																},
 															},
@@ -2834,14 +2887,14 @@ var pkgAST = &ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 45,
-																Line:   50,
+																Column: 204,
+																Line:   49,
 															},
 															File:   "slack.flux",
-															Source: "return {r with status: resp}",
+															Source: "return {r with status: message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)}",
 															Start: ast.Position{
 																Column: 17,
-																Line:   50,
+																Line:   49,
 															},
 														},
 													},
@@ -2892,10 +2945,10 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
-											Line:   51,
+											Line:   50,
 										},
 										File:   "slack.flux",
-										Source: "map(fn: (r) => {\n                obj = mapFn(r)\n                resp = message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)\n                return {r with status: resp}\n            })",
+										Source: "map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with status: message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)}\n            })",
 										Start: ast.Position{
 											Column: 16,
 											Line:   47,
