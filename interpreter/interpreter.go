@@ -827,7 +827,12 @@ func (f *function) resolveIdentifiers(n semantic.Node) (semantic.Node, error) {
 
 		v, ok := f.scope.Lookup(n.Name)
 		if ok {
-			return resolveValue(v)
+			// Attempt to resolve the value if it is possible to inline.
+			node, ok, err := resolveValue(v)
+			if !ok {
+				return n, nil
+			}
+			return node, err
 		}
 		return nil, fmt.Errorf("name %q does not exist in scope", n.Name)
 	case *semantic.Block:
@@ -961,91 +966,100 @@ func (f *function) resolveIdentifiers(n semantic.Node) (semantic.Node, error) {
 	return n, nil
 }
 
-func resolveValue(v values.Value) (semantic.Node, error) {
+func resolveValue(v values.Value) (semantic.Node, bool, error) {
 	switch k := v.Type().Nature(); k {
 	case semantic.String:
 		return &semantic.StringLiteral{
 			Value: v.Str(),
-		}, nil
+		}, true, nil
 	case semantic.Int:
 		return &semantic.IntegerLiteral{
 			Value: v.Int(),
-		}, nil
+		}, true, nil
 	case semantic.UInt:
 		return &semantic.UnsignedIntegerLiteral{
 			Value: v.UInt(),
-		}, nil
+		}, true, nil
 	case semantic.Float:
 		return &semantic.FloatLiteral{
 			Value: v.Float(),
-		}, nil
+		}, true, nil
 	case semantic.Bool:
 		return &semantic.BooleanLiteral{
 			Value: v.Bool(),
-		}, nil
+		}, true, nil
 	case semantic.Time:
 		return &semantic.DateTimeLiteral{
 			Value: v.Time().Time(),
-		}, nil
+		}, true, nil
 	case semantic.Regexp:
 		return &semantic.RegexpLiteral{
 			Value: v.Regexp(),
-		}, nil
+		}, true, nil
 	case semantic.Duration:
 		return &semantic.DurationLiteral{
 			Value: v.Duration().Duration(),
-		}, nil
+		}, true, nil
 	case semantic.Function:
 		resolver, ok := v.Function().(Resolver)
-		if !ok {
-			return nil, fmt.Errorf("function is not resolvable %T", v.Function())
+		if ok {
+			node, err := resolver.Resolve()
+			return node, true, err
 		}
-		return resolver.Resolve()
+		return nil, false, nil
 	case semantic.Array:
 		arr := v.Array()
 		node := new(semantic.ArrayExpression)
 		node.Elements = make([]semantic.Expression, arr.Len())
-		var err error
+		var (
+			err error
+			ok  = true
+		)
 		arr.Range(func(i int, el values.Value) {
-			if err != nil {
+			if err != nil || !ok {
 				return
 			}
 			var n semantic.Node
-			n, err = resolveValue(el)
+			n, ok, err = resolveValue(el)
 			if err != nil {
 				return
+			} else if ok {
+				node.Elements[i] = n.(semantic.Expression)
 			}
-			node.Elements[i] = n.(semantic.Expression)
 		})
-		if err != nil {
-			return nil, err
+		if err != nil || !ok {
+			return nil, false, err
 		}
-		return node, nil
+		return node, true, nil
 	case semantic.Object:
 		obj := v.Object()
 		node := new(semantic.ObjectExpression)
 		node.Properties = make([]*semantic.Property, 0, obj.Len())
-		var err error
+		var (
+			err error
+			ok  = true
+		)
 		obj.Range(func(k string, v values.Value) {
-			if err != nil {
+			if err != nil || !ok {
 				return
 			}
 			var n semantic.Node
-			n, err = resolveValue(v)
+			n, ok, err = resolveValue(v)
 			if err != nil {
 				return
+			} else if ok {
+				node.Properties = append(node.Properties, &semantic.Property{
+					Key:   &semantic.Identifier{Name: k},
+					Value: n.(semantic.Expression),
+				})
 			}
-			node.Properties = append(node.Properties, &semantic.Property{
-				Key:   &semantic.Identifier{Name: k},
-				Value: n.(semantic.Expression),
-			})
 		})
-		if err != nil {
-			return nil, err
+		if err != nil || !ok {
+			return nil, false, err
 		}
-		return node, nil
+		return node, true, nil
 	default:
-		return nil, fmt.Errorf("cannot resove value of type %v", k)
+		return nil, false, fmt.Errorf("cannot resove value of type %v", k)
 	}
 }
 
