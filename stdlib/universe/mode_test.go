@@ -45,6 +45,36 @@ func TestMode_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "no group key strings with null",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0, "a", "b"},
+						{execute.Time(2), 2.0, "a", "c"},
+						{execute.Time(3), 2.0, "a", "b"},
+						{execute.Time(4), 2.0, "a", "d"},
+						{execute.Time(5), 2.0, "a", nil},
+						{execute.Time(6), 2.0, "a", nil},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{"b"},
+				},
+			}},
+		},
+		{
 			name: "no group key ints",
 			spec: &universe.ModeProcedureSpec{Column: "tag1"},
 			data: []flux.Table{
@@ -60,6 +90,67 @@ func TestMode_Process(t *testing.T) {
 						{execute.Time(2), 2.0, "a", int64(2)},
 						{execute.Time(3), 2.0, "a", int64(2)},
 						{execute.Time(4), 2.0, "a", int64(1)},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					{int64(2)},
+				},
+			}},
+		},
+		{
+			name: "no group key ints with null",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TInt},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0, "a", int64(3)},
+						{execute.Time(2), 2.0, "a", int64(2)},
+						{execute.Time(3), 2.0, "a", int64(2)},
+						{execute.Time(4), 2.0, "a", int64(1)},
+						{execute.Time(5), 2.0, "a", nil},
+						{execute.Time(6), 2.0, "a", nil},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					{int64(2)},
+				},
+			}},
+		},
+		{
+			name: "no group key ints with more nulls",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TInt},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0, "a", int64(3)},
+						{execute.Time(2), 2.0, "a", int64(2)},
+						{execute.Time(3), 2.0, "a", int64(2)},
+						{execute.Time(4), 2.0, "a", int64(1)},
+						{execute.Time(5), 2.0, "a", nil},
+						{execute.Time(6), 2.0, "a", nil},
+						{execute.Time(7), 2.0, "a", nil},
 					},
 				},
 			},
@@ -101,6 +192,36 @@ func TestMode_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "no group key floats with null",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0, "a", float64(1.0)},
+						{execute.Time(2), 2.0, "a", float64(3.0)},
+						{execute.Time(3), 2.0, "a", float64(2.0)},
+						{execute.Time(4), 2.0, "a", float64(1.0)},
+						{execute.Time(5), 2.0, "a", nil},
+						{execute.Time(6), 2.0, "a", nil},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{float64(1.0)},
+				},
+			}},
+		},
+		{
 			name: "no group key uints",
 			spec: &universe.ModeProcedureSpec{Column: "tag1"},
 			data: []flux.Table{
@@ -116,6 +237,36 @@ func TestMode_Process(t *testing.T) {
 						{execute.Time(2), 2.0, "a", uint64(2)},
 						{execute.Time(3), 2.0, "a", uint64(2)},
 						{execute.Time(4), 2.0, "a", uint64(1)},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TUInt},
+				},
+				Data: [][]interface{}{
+					{uint64(2)},
+				},
+			}},
+		},
+		{
+			name: "no group key uints with null",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TUInt},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0, "a", uint64(3)},
+						{execute.Time(2), 2.0, "a", uint64(2)},
+						{execute.Time(3), 2.0, "a", uint64(2)},
+						{execute.Time(4), 2.0, "a", uint64(1)},
+						{execute.Time(5), 2.0, "a", nil},
+						{execute.Time(6), 2.0, "a", nil},
 					},
 				},
 			},
@@ -155,8 +306,7 @@ func TestMode_Process(t *testing.T) {
 					{Label: "_value", Type: flux.TBool},
 				},
 				Data: [][]interface{}{
-					{true},
-					{false},
+					{nil},
 				},
 			}},
 		},
@@ -434,8 +584,7 @@ func TestMode_Process(t *testing.T) {
 					{Label: "_value", Type: flux.TString},
 				},
 				Data: [][]interface{}{
-					{"b"},
-					{"c"},
+					{nil},
 				},
 			}},
 		},
@@ -463,6 +612,316 @@ func TestMode_Process(t *testing.T) {
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{nil},
+				},
+			}},
+		},
+		{
+			name: "more nulls than others, floats",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), 2.0, "a", nil},
+						{execute.Time(1), 2.0, "a", float64(1.0)},
+						{execute.Time(2), 2.0, "a", float64(1.0)},
+						{execute.Time(3), 2.0, "a", float64(2.0)},
+						{execute.Time(4), 2.0, "a", float64(2.0)},
+						{execute.Time(5), 2.0, "a", nil},
+						{execute.Time(6), 2.0, "a", nil},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{nil},
+				},
+			}},
+		},
+		{
+			name: "more nulls than others, ints",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TInt},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), 2.0, "a", nil},
+						{execute.Time(1), 2.0, "a", int64(1)},
+						{execute.Time(2), 2.0, "a", int64(1)},
+						{execute.Time(3), 2.0, "a", int64(2)},
+						{execute.Time(4), 2.0, "a", int64(2)},
+						{execute.Time(5), 2.0, "a", nil},
+						{execute.Time(6), 2.0, "a", nil},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					{nil},
+				},
+			}},
+		},
+		{
+			name: "more nulls than others, uints",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TUInt},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), 2.0, "a", nil},
+						{execute.Time(1), 2.0, "a", uint64(1)},
+						{execute.Time(2), 2.0, "a", uint64(1)},
+						{execute.Time(3), 2.0, "a", uint64(2)},
+						{execute.Time(4), 2.0, "a", uint64(2)},
+						{execute.Time(5), 2.0, "a", nil},
+						{execute.Time(6), 2.0, "a", nil},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TUInt},
+				},
+				Data: [][]interface{}{
+					{nil},
+				},
+			}},
+		},
+		{
+			name: "more nulls than others, times",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TTime},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), 2.0, "a", nil},
+						{execute.Time(1), 2.0, "a", execute.Time(1)},
+						{execute.Time(2), 2.0, "a", execute.Time(1)},
+						{execute.Time(3), 2.0, "a", execute.Time(2)},
+						{execute.Time(4), 2.0, "a", execute.Time(2)},
+						{execute.Time(5), 2.0, "a", nil},
+						{execute.Time(6), 2.0, "a", nil},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TTime},
+				},
+				Data: [][]interface{}{
+					{nil},
+				},
+			}},
+		},
+		{
+			name: "all nulls - time",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TTime},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), 2.0, "a", nil},
+						{execute.Time(1), 2.0, "a", nil},
+						{execute.Time(2), 2.0, "a", nil},
+						{execute.Time(3), 2.0, "a", nil},
+						{execute.Time(4), 2.0, "a", nil},
+						{execute.Time(5), 2.0, "a", nil},
+						{execute.Time(6), 2.0, "a", nil},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TTime},
+				},
+				Data: [][]interface{}{
+					{nil},
+				},
+			}},
+		},
+		{
+			name: "all nulls - strings",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), 2.0, "a", nil},
+						{execute.Time(1), 2.0, "a", nil},
+						{execute.Time(2), 2.0, "a", nil},
+						{execute.Time(3), 2.0, "a", nil},
+						{execute.Time(4), 2.0, "a", nil},
+						{execute.Time(5), 2.0, "a", nil},
+						{execute.Time(6), 2.0, "a", nil},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{nil},
+				},
+			}},
+		},
+		{
+			name: "all nulls - int",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TInt},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), 2.0, "a", nil},
+						{execute.Time(1), 2.0, "a", nil},
+						{execute.Time(2), 2.0, "a", nil},
+						{execute.Time(3), 2.0, "a", nil},
+						{execute.Time(4), 2.0, "a", nil},
+						{execute.Time(5), 2.0, "a", nil},
+						{execute.Time(6), 2.0, "a", nil},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					{nil},
+				},
+			}},
+		},
+		{
+			name: "all nulls - uints",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TUInt},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), 2.0, "a", nil},
+						{execute.Time(1), 2.0, "a", nil},
+						{execute.Time(2), 2.0, "a", nil},
+						{execute.Time(3), 2.0, "a", nil},
+						{execute.Time(4), 2.0, "a", nil},
+						{execute.Time(5), 2.0, "a", nil},
+						{execute.Time(6), 2.0, "a", nil},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TUInt},
+				},
+				Data: [][]interface{}{
+					{nil},
+				},
+			}},
+		},
+		{
+			name: "all nulls - bools",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TBool},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), 2.0, "a", nil},
+						{execute.Time(1), 2.0, "a", nil},
+						{execute.Time(2), 2.0, "a", nil},
+						{execute.Time(3), 2.0, "a", nil},
+						{execute.Time(4), 2.0, "a", nil},
+						{execute.Time(5), 2.0, "a", nil},
+						{execute.Time(6), 2.0, "a", nil},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TBool},
+				},
+				Data: [][]interface{}{
+					{nil},
+				},
+			}},
+		},
+		{
+			name: "all same value",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TInt},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0), 2.0, "a", int64(1)},
+						{execute.Time(1), 2.0, "a", int64(1)},
+						{execute.Time(2), 2.0, "a", int64(1)},
+						{execute.Time(3), 2.0, "a", int64(1)},
+						{execute.Time(4), 2.0, "a", int64(1)},
+						{execute.Time(5), 2.0, "a", int64(1)},
+						{execute.Time(6), 2.0, "a", int64(1)},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TInt},
 				},
 				Data: [][]interface{}{
 					{nil},
