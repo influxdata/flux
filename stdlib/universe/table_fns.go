@@ -74,7 +74,6 @@ func tableFindCall(args values.Object) (values.Value, error) {
 			return nil, err
 		}
 
-		// TODO(nathanielc): Capture function scope
 		fn, err = execute.NewTablePredicateFn(predicate.Fn, compiler.ToScope(predicate.Scope))
 		if err != nil {
 			return nil, err

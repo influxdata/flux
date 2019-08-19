@@ -150,7 +150,6 @@ func (s scopeFormatter) Format(state fmt.State, _ rune) {
 }
 
 // BuildExternAssignments constructs nested semantic.ExternAssignment nodes mirroring the nested structure of the scope.
-// TODO(nathanielc): This probably should be moved to a different package.
 func BuildExternAssignments(node semantic.Node, scope Scope) semantic.Node {
 	var n = node
 	for s := scope; s != nil; s = s.Pop() {
