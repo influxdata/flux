@@ -354,6 +354,19 @@ func (e *integerEvaluator) Eval(scope Scope) (values.Value, error) {
 	return values.NewInt(e.i), nil
 }
 
+type unsignedIntegerEvaluator struct {
+	t semantic.Type
+	i uint64
+}
+
+func (e *unsignedIntegerEvaluator) Type() semantic.Type {
+	return e.t
+}
+
+func (e *unsignedIntegerEvaluator) Eval(scope Scope) (values.Value, error) {
+	return values.NewUInt(e.i), nil
+}
+
 type stringEvaluator struct {
 	t semantic.Type
 	s string

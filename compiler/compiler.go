@@ -218,6 +218,11 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, scope Scope, funcEx
 			t: monoType(typeSol.TypeOf(n)),
 			i: n.Value,
 		}, nil
+	case *semantic.UnsignedIntegerLiteral:
+		return &unsignedIntegerEvaluator{
+			t: monoType(typeSol.TypeOf(n)),
+			i: n.Value,
+		}, nil
 	case *semantic.FloatLiteral:
 		return &floatEvaluator{
 			t: monoType(typeSol.TypeOf(n)),
