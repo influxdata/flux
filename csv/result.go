@@ -750,6 +750,9 @@ func newCSVEncoderError(msg string) *csvEncoderError {
 }
 
 func wrapEncodingError(err error) error {
+	if err == nil {
+		return err
+	}
 	return errors.Wrap(newCSVEncoderError(err.Error()), "csv encoder error")
 }
 
@@ -823,24 +826,23 @@ func (e *ResultEncoder) Encode(w io.Writer, result flux.Result) (int64, error) {
 			}
 		}
 
-		err := tbl.Do(func(cr flux.ColReader) error {
+		if err := tbl.Do(func(cr flux.ColReader) error {
 			record := row[recordStartIdx:]
 			l := cr.Len()
 			for i := 0; i < l; i++ {
 				for j, c := range cols[recordStartIdx:] {
 					v, err := encodeValueFrom(i, j, c, cr)
 					if err != nil {
-						return err
+						return wrapEncodingError(err)
 					}
 					record[j] = v
 				}
 				writer.Write(row)
 			}
 			writer.Flush()
-			return writer.Error()
-		})
-		if err != nil {
-			return wrapEncodingError(err)
+			return wrapEncodingError(writer.Error())
+		}); err != nil {
+			return err
 		}
 
 		tableID++
@@ -848,11 +850,7 @@ func (e *ResultEncoder) Encode(w io.Writer, result flux.Result) (int64, error) {
 		lastCols = cols
 		lastEmpty = tbl.Empty()
 		writer.Flush()
-		err = writer.Error()
-		if err != nil {
-			return wrapEncodingError(err)
-		}
-		return nil
+		return wrapEncodingError(writer.Error())
 	})
 	return writeCounter.Count(), err
 }
