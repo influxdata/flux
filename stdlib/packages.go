@@ -17,6 +17,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/math"
 	_ "github.com/influxdata/flux/stdlib/regexp"
 	_ "github.com/influxdata/flux/stdlib/runtime"
+	_ "github.com/influxdata/flux/stdlib/slack"
 	_ "github.com/influxdata/flux/stdlib/socket"
 	_ "github.com/influxdata/flux/stdlib/sql"
 	_ "github.com/influxdata/flux/stdlib/strings"
