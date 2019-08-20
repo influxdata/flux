@@ -2,9 +2,6 @@ package universe
 
 import "system"
 import "date"
-import "math"
-import "strings"
-import "regexp"
 
 // now is a function option whose default behaviour is to return the current system time
 option now = system.time
@@ -14,7 +11,7 @@ builtin true
 builtin false
 
 // Transformation functions
-builtin chandeMomentumOscillator
+
 builtin columns
 builtin count
 builtin covariance
@@ -33,10 +30,8 @@ builtin group
 builtin histogram
 builtin histogramQuantile
 builtin holtWinters
-builtin hourSelection
 builtin integral
 builtin join
-builtin kaufmansAMA
 builtin keep
 builtin keyValues
 builtin keys
@@ -56,7 +51,6 @@ builtin relativeStrengthIndex
 builtin rename
 builtin sample
 builtin set
-builtin tail
 builtin timeShift
 builtin skew
 builtin spread
@@ -64,7 +58,6 @@ builtin sort
 builtin stateTracking
 builtin stddev
 builtin sum
-builtin tripleExponentialDerivative
 builtin union
 builtin unique
 builtin window
@@ -77,7 +70,6 @@ builtin getRecord
 
 // type conversion functions
 builtin bool
-builtin bytes
 builtin duration
 builtin float
 builtin int
@@ -269,7 +261,7 @@ timedMovingAverage = (every, period, column="_value", tables=<-) =>
 // eg: A 5 point double exponential moving average would be called as such:
 // from(bucket: "telegraf/autogen"):
 //    |> range(start: -7d)
-//    |> doubleEMA(n: 5)
+//    |> tripleEMA(n: 5)
 doubleEMA = (n, tables=<-) =>
     tables
           |> exponentialMovingAverage(n:n)
@@ -295,16 +287,10 @@ tripleEMA = (n, tables=<-) =>
 		|> drop(columns: ["__ema1", "__ema2"])
 
 // truncateTimeColumn takes in a time column t and a Duration unit and truncates each value of t to the given unit via map
-// Change from _time to timeColumn once Flux Issue 1122 is resolved
+// Change from _time to timeColumn once https://github.com/influxdata/flux/issues/1122 is resolved
 truncateTimeColumn = (timeColumn="_time", unit, tables=<-) =>
     tables
         |> map(fn:(r) => ({r with _time: date.truncate(t: r._time, unit: unit)}))
-
-// kaufmansER computes Kaufman's Efficiency Ratios of the `_value` column
-kaufmansER = (n, tables=<-) =>
-    tables
-        |> chandeMomentumOscillator(n: n)
-        |> map(fn:(r) => ({r with _value: (math.abs(x: r._value)/100.0)}))
 
 toString   = (tables=<-) => tables |> map(fn:(r) => ({r with _value: string(v:r._value)}))
 toInt      = (tables=<-) => tables |> map(fn:(r) => ({r with _value: int(v:r._value)}))
@@ -312,3 +298,8 @@ toUInt     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._v
 toFloat    = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))
 toBool     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))
 toTime     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))
+
+
+simpleHeatIndex = (tables=<-) => tables 
+    |> map(fn: (r) => ({ "_time": r._time, "_value": (0.5 * (r.temperature + 61.0 + ((r.temperature - 68.0)*1.2) + (r.humidity*0.094)))}))
+
