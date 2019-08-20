@@ -15,16 +15,18 @@ import (
 )
 
 type Interpreter struct {
-	types       map[semantic.Node]semantic.Type
-	polyTypes   map[semantic.Node]semantic.PolyType
-	sideEffects []SideEffect // a list of the side effects occurred during the last call to `Eval`.
-	pkg         string
+	types           map[semantic.Node]semantic.Type
+	polyTypes       map[semantic.Node]semantic.PolyType
+	sideEffects     []SideEffect // a list of the side effects occurred during the last call to `Eval`.
+	pkg             *Package
+	modifiedOptions []optionMutation
 }
 
-func NewInterpreter() *Interpreter {
+func NewInterpreter(pkg *Package) *Interpreter {
 	return &Interpreter{
 		types:     make(map[semantic.Node]semantic.Type),
 		polyTypes: make(map[semantic.Node]semantic.PolyType),
+		pkg:       pkg,
 	}
 }
 
@@ -104,7 +106,7 @@ func (itrp *Interpreter) doFile(ctx context.Context, deps dependencies.Interface
 		if es, ok := stmt.(*semantic.ExpressionStatement); ok {
 			// Only in the main package are all unassigned package
 			// level expressions coerced into producing side effects.
-			if itrp.pkg == semantic.PackageMain {
+			if itrp.pkg.Name() == semantic.PackageMain {
 				itrp.sideEffects = append(itrp.sideEffects, SideEffect{Node: es, Value: val})
 			}
 		}
@@ -117,11 +119,11 @@ func (itrp *Interpreter) doPackageClause(pkg *semantic.PackageClause) error {
 	if pkg != nil {
 		name = pkg.Name.Name
 	}
-	if itrp.pkg == "" {
-		itrp.pkg = name
+	if itrp.pkg.name == "" {
+		itrp.pkg.name = name
 	}
-	if itrp.pkg != name {
-		return fmt.Errorf("package name mismatch %q != %q", itrp.pkg, name)
+	if itrp.pkg.name != name {
+		return fmt.Errorf("package name mismatch %q != %q", itrp.pkg.name, name)
 	}
 	return nil
 }
@@ -177,7 +179,77 @@ func (itrp *Interpreter) doStatement(ctx context.Context, deps dependencies.Inte
 }
 
 func (itrp *Interpreter) doOptionStatement(ctx context.Context, deps dependencies.Interface, s *semantic.OptionStatement, scope values.Scope) (values.Value, error) {
-	return itrp.doAssignment(ctx, deps, s.Assignment, scope)
+	switch a := s.Assignment.(type) {
+	case *semantic.NativeVariableAssignment:
+		init, err := itrp.doExpression(ctx, deps, a.Init, scope)
+		if err != nil {
+			return nil, err
+		}
+		// Use an empty string as the package name as we don't know its name.
+		// This will have one of two behaviors:
+		//     1. The option key will be found in the prelude and applied there.
+		//     2. The option key will not be found in the prelude and the
+		//        interpreter will handle adding the new option to the current package.
+		return itrp.setOption(scope, "", a.Identifier.Name, init)
+	case *semantic.MemberAssignment:
+		init, err := itrp.doExpression(ctx, deps, a.Init, scope)
+		if err != nil {
+			return nil, err
+		}
+		pkgName := a.Member.Object.(*semantic.IdentifierExpression).Name
+		return itrp.setOption(scope, pkgName, a.Member.Property, init)
+	default:
+		return nil, fmt.Errorf("unsupported assignment %T", a)
+	}
+}
+
+// setOption applies the option to an existing option or creates a new option on the current package if it doesn't already exist.
+func (itrp *Interpreter) setOption(scope values.Scope, pkg, name string, v values.Value) (values.Value, error) {
+	set, err := scope.SetOption(pkg, name, v)
+	if err != nil {
+		return nil, err
+	}
+	if !set {
+		// Option does not belong to any existing package, just set it on the local package.
+		itrp.pkg.SetOption(name, v)
+	}
+	itrp.modifiedOptions = append(itrp.modifiedOptions, optionMutation{
+		Package: pkg,
+		Name:    name,
+		Value:   v,
+	})
+	return v, nil
+}
+
+type optionMutation struct {
+	Package, Name string
+	Value         values.Value
+}
+
+func (itrp *Interpreter) mutateFunctionScope(f function) (function, error) {
+	// copy the scope so we can safely mutate it
+	f.scope = f.scope.Copy()
+	copyPackages(f.scope)
+	for _, mut := range itrp.modifiedOptions {
+		_, err := f.scope.SetOption(mut.Package, mut.Name, mut.Value)
+		if err != nil {
+			return f, err
+		}
+	}
+	return f, nil
+}
+
+// copyPackages creates a copy of the scope and any packages in scope
+func copyPackages(scope values.Scope) {
+	if scope == nil {
+		return
+	}
+	scope.LocalRange(func(k string, v values.Value) {
+		if p, ok := v.(*Package); ok {
+			scope.Set(k, p.Copy())
+		}
+	})
+	copyPackages(scope.Pop())
 }
 
 func (itrp *Interpreter) doTestStatement(ctx context.Context, deps dependencies.Interface, s *semantic.TestStatement, scope values.Scope) (values.Value, error) {
@@ -537,6 +609,16 @@ func (itrp *Interpreter) doArguments(ctx context.Context, deps dependencies.Inte
 		value, err := itrp.doExpression(ctx, deps, p.Value, scope)
 		if err != nil {
 			return nil, err
+		}
+		// This is a bit of a hack, but we know that functions cannot escape the iterpreter
+		// except as arguments to functions.
+		// As such we ensure the function passed out is aware of all option mutations.
+		if f, ok := value.(function); ok {
+			f, err := itrp.mutateFunctionScope(f)
+			if err != nil {
+				return nil, err
+			}
+			value = f
 		}
 		if _, ok := obj.Get(p.Key.Key()); ok {
 			return nil, fmt.Errorf("duplicate keyword parameter specified: %q", p.Key.Key())

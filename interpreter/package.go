@@ -12,31 +12,40 @@ import (
 type Package struct {
 	name        string
 	object      values.Object
+	options     values.Object
 	sideEffects []SideEffect
 }
 
 func NewPackageWithValues(name string, obj values.Object) *Package {
+	if obj == nil {
+		obj = values.NewObject()
+	}
 	return &Package{
-		name:   name,
-		object: obj,
+		name:    name,
+		options: values.NewObject(),
+		object:  obj,
 	}
 }
+
 func NewPackage(name string) *Package {
-	return &Package{
-		name:   name,
-		object: values.NewObject(),
-	}
+	return NewPackageWithValues(name, nil)
 }
+
 func (p *Package) Copy() *Package {
 	object := values.NewObjectWithBacking(p.object.Len())
 	p.object.Range(func(k string, v values.Value) {
 		object.Set(k, v)
+	})
+	options := values.NewObjectWithBacking(p.options.Len())
+	p.options.Range(func(k string, v values.Value) {
+		options.Set(k, v)
 	})
 	sideEffects := make([]SideEffect, len(p.sideEffects))
 	copy(sideEffects, p.sideEffects)
 	return &Package{
 		name:        p.name,
 		object:      object,
+		options:     options,
 		sideEffects: sideEffects,
 	}
 }
@@ -53,16 +62,24 @@ func (p *Package) PolyType() semantic.PolyType {
 	return p.object.PolyType()
 }
 func (p *Package) Get(name string) (values.Value, bool) {
-	return p.object.Get(name)
+	v, ok := p.object.Get(name)
+	if !ok {
+		return p.options.Get(name)
+	}
+	return v, true
 }
 func (p *Package) Set(name string, v values.Value) {
 	p.object.Set(name, v)
+}
+func (p *Package) SetOption(name string, v values.Value) {
+	p.options.Set(name, v)
 }
 func (p *Package) Len() int {
 	return p.object.Len()
 }
 func (p *Package) Range(f func(name string, v values.Value)) {
 	p.object.Range(f)
+	p.options.Range(f)
 }
 func (p *Package) IsNull() bool {
 	return false
@@ -113,11 +130,11 @@ func (p *Package) Equal(rhs values.Value) bool {
 	}
 	equal := true
 	p.Range(func(k string, v values.Value) {
-		val, ok := r.Get(k)
-		if !ok || !v.Equal(val) {
-			equal = false
+		if !equal {
 			return
 		}
+		val, ok := r.Get(k)
+		equal = ok && v.Equal(val)
 	})
 	return equal
 }
