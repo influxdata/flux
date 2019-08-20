@@ -32,12 +32,12 @@ For rationale, check out the post [The Case Against Third Party Libraries](http:
 ## Add a function
 
 1. To add a function, see required guidelines for:
-   * [Flux functions](https://github.com/influxdata/flux/docs/contributing/Flux_Functions.md)
-   * [Scalar functions](https://github.com/influxdata/flux/docs/contributing/Scalar_Functions.md)
-   * [Source and sink functions](https://github.com/influxdata/flux/docs/contributing/Source_Sink_Functions.md)
-   * [Stream transformation functions](https://github.com/influxdata/flux/docs/contributing/Stream_Transformation_Functions.md)
+   * [Flux functions](/docs/contributing/Flux_Functions.md)
+   * [Scalar functions](/docs/contributing/Scalar_Functions.md)
+   * [Source and sink functions](/docs/contributing/Source_Sink_Functions.md)
+   * [Stream transformation functions](/docs/contributing/Stream_Transformation_Functions.md)
 
-2. (Optional) Open a [new issue](https://github.com/influxdata/flux/issues/new) to discuss the changes you would like to make before creating a function. This often helps reduce rework.
+2. (Optional) Open a [new issue](/issues/new) to discuss the changes you would like to make before creating a function. This often helps reduce rework.
 
 3. After completing the required guidelines to add the function, submit a new pull request.
 
