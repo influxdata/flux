@@ -53,9 +53,13 @@ simple_max = (table=<-) =>
 	table
 		|> range(start: 2018-04-17T00:00:00Z)
 		|> max(column: "_value")`
+```
 
--Register the test with our test platform.  We will load the data, run the test, and check the output. A failed test will print a `diff`
-`test _simple_max = () =>
+-Register the test with our test platform.  
+```test _simple_max = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: simple_max})
 ```
+
+-After registering your test with our test platform, we load your data, run the test, and then check the output.
+ A failed test will print a ```diff```
 
