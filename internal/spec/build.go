@@ -17,7 +17,10 @@ import (
 	"github.com/opentracing/opentracing-go"
 )
 
-const nowOption = "now"
+const (
+	nowOption = "now"
+	nowPkg    = "universe"
+)
 
 // FromScript returns a spec from a script expressed as a raw string.
 func FromScript(ctx context.Context, deps dependencies.Interface, now time.Time, script string) (*flux.Spec, error) {
@@ -35,7 +38,7 @@ func FromScript(ctx context.Context, deps dependencies.Interface, now time.Time,
 func FromAST(ctx context.Context, deps dependencies.Interface, astPkg *ast.Package, now time.Time) (*flux.Spec, error) {
 	s, _ := opentracing.StartSpanFromContext(ctx, "eval")
 
-	sideEffects, scope, err := flux.EvalAST(ctx, deps, astPkg, flux.SetOption(nowOption, generateNowFunc(now)))
+	sideEffects, scope, err := flux.EvalAST(ctx, deps, astPkg, flux.SetOption(nowPkg, nowOption, generateNowFunc(now)))
 	if err != nil {
 		return nil, err
 	}

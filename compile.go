@@ -52,29 +52,31 @@ func EvalAST(ctx context.Context, deps dependencies.Interface, astPkg *ast.Packa
 		return nil, nil, err
 	}
 
-	itrp := interpreter.NewInterpreter()
-	universe := Prelude()
+	pkg := interpreter.NewPackage("")
+	itrp := interpreter.NewInterpreter(pkg)
+	// Create a scope for execution whose parent is a copy of the prelude and whose current scope is the package.
+	// A copy of the prelude must be used since options can be mutated.
+	scope := values.NewNestedScope(preludeScope.Copy(), pkg)
 
 	for _, opt := range opts {
-		opt(universe)
+		opt(scope)
 	}
 
-	sideEffects, err := itrp.Eval(ctx, deps, semPkg, universe, StdLib())
+	sideEffects, err := itrp.Eval(ctx, deps, semPkg, scope, StdLib())
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return sideEffects, universe, nil
-
+	return sideEffects, scope, nil
 }
 
 // ScopeMutator is any function that mutates the scope of an identifier.
 type ScopeMutator = func(values.Scope)
 
 // SetOption returns a func that adds a var binding to a scope.
-func SetOption(name string, v values.Value) ScopeMutator {
+func SetOption(pkg, name string, v values.Value) ScopeMutator {
 	return func(scope values.Scope) {
-		scope.Set(name, v)
+		scope.SetOption(pkg, name, v)
 	}
 }
 
@@ -105,6 +107,10 @@ type scopeSet struct {
 func (s *scopeSet) Lookup(name string) (values.Value, bool) {
 	for _, pkg := range s.packages {
 		if v, ok := pkg.Get(name); ok {
+			if _, ok := v.(values.Package); ok {
+				// prelude should not expose any imported packages
+				return nil, false
+			}
 			return v, ok
 		}
 	}
@@ -117,6 +123,15 @@ func (s *scopeSet) LocalLookup(name string) (values.Value, bool) {
 
 func (s *scopeSet) Set(name string, v values.Value) {
 	panic("cannot mutate the universe block")
+}
+func (s *scopeSet) SetOption(pkg, name string, v values.Value) (bool, error) {
+	for _, p := range s.packages {
+		if _, ok := p.Get(name); ok || p.Name() == pkg {
+			p.SetOption(name, v)
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func (s *scopeSet) Nest(obj values.Object) values.Scope {
@@ -137,17 +152,22 @@ func (s *scopeSet) Size() int {
 
 func (s *scopeSet) Range(f func(k string, v values.Value)) {
 	for _, pkg := range s.packages {
-		pkg.Range(f)
+		if pkg == nil {
+			panic(`nil package in scope; try importing "github.com/influxdata/flux/builtin"`)
+		}
+		pkg.Range(func(k string, v values.Value) {
+			if _, ok := v.(values.Package); ok {
+				// prelude should not expose any imported packages
+				return
+			}
+			f(k, v)
+		})
 	}
 }
 
 func (s *scopeSet) LocalRange(f func(k string, v values.Value)) {
-	for _, pkg := range s.packages {
-		if pkg == nil {
-			panic(`nil package in scope; try importing "github.com/influxdata/flux/builtin"`)
-		}
-		pkg.Range(f)
-	}
+	// scopeSet is always a top level scope
+	s.Range(f)
 }
 
 func (s *scopeSet) SetReturn(v values.Value) {
@@ -163,7 +183,9 @@ func (s *scopeSet) Copy() values.Scope {
 	for i, pkg := range s.packages {
 		packages[i] = pkg.Copy()
 	}
-	return &scopeSet{packages}
+	return &scopeSet{
+		packages: packages,
+	}
 }
 
 // StdLib returns an importer for the Flux standard library.
@@ -301,7 +323,7 @@ func evalBuiltInPackages() error {
 			return errors.Wrapf(err, codes.Inherit, "package has invalid builtins %q", astPkg.Path)
 		}
 
-		itrp := interpreter.NewInterpreter()
+		itrp := interpreter.NewInterpreter(pkg)
 		if _, err := itrp.Eval(context.Background(), dependencies.NewDefaultDependencies(), semPkg, preludeScope.Nest(pkg), stdlib); err != nil {
 			return errors.Wrapf(err, codes.Inherit, "failed to evaluate builtin package %q", astPkg.Path)
 		}

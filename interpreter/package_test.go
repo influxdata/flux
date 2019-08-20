@@ -3,8 +3,9 @@ package interpreter_test
 import (
 	"context"
 	"fmt"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"testing"
+
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/interpreter/interptest"
@@ -85,7 +86,8 @@ func TestAccessNestedImport(t *testing.T) {
 
 	expectedError := fmt.Errorf(`cannot access imported package "a" of imported package "b"`)
 	ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
-	_, err := interpreter.NewInterpreter().Eval(ctx, deps, node, values.NewScope(), &importer)
+	_, err := interpreter.NewInterpreter(interpreter.NewPackage("")).Eval(ctx, deps, node, values.NewScope(), &importer)
+
 	if err == nil {
 		t.Errorf("expected error")
 	} else if err.Error() != expectedError.Error() {
@@ -359,23 +361,45 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 }
 */
 
-func TestInterpreter_QualifiedOption(t *testing.T) {
-	externalPackage := interpreter.NewPackageWithValues("alert",
-		values.NewObjectWithValues(
-			map[string]values.Value{
-				"state": values.NewString("Warning"),
-			}))
+func TestInterpreter_SetNewOption(t *testing.T) {
+	pkg := interpreter.NewPackage("alert")
+	ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+	itrp := interpreter.NewInterpreter(pkg)
+	script := `
+		package alert
+		option state = "Warning"
+		state
+`
+	if _, err := interptest.Eval(ctx, deps, itrp, values.NewNestedScope(nil, pkg), nil, script); err != nil {
+		t.Fatalf("failed to evaluate package: %v", err)
+	}
+	option, ok := pkg.Get("state")
+	if !ok {
+		t.Errorf("missing option %q in package %s", "state", "alert")
+	}
+	if got, want := option.Type().Nature(), semantic.String; want != got {
+		t.Fatalf("unexpected option type; want=%s got=%s value: %v", want, got, option)
+	}
+	if got, want := option.Str(), "Warning"; want != got {
+		t.Errorf("unexpected option value; want=%s got=%s", want, got)
+	}
+}
+
+func TestInterpreter_SetQualifiedOption(t *testing.T) {
+	externalPackage := interpreter.NewPackage("alert")
+	externalPackage.SetOption("state", values.NewString("Warning"))
 	importer := &importer{
 		packages: map[string]*interpreter.Package{
 			"alert": externalPackage,
 		},
 	}
 	ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
-	itrp := interpreter.NewInterpreter()
+	itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
 	pkg := `
 		package foo
 		import "alert"
 		option alert.state = "Error"
+		alert.state
 `
 	if _, err := interptest.Eval(ctx, deps, itrp, values.NewScope(), importer, pkg); err != nil {
 		t.Fatalf("failed to evaluate package: %v", err)
@@ -384,8 +408,10 @@ func TestInterpreter_QualifiedOption(t *testing.T) {
 	if !ok {
 		t.Errorf("missing option %q in package %s", "state", "alert")
 	}
-	optionValue := option.Str()
-	if option.Str() != "Error" {
-		t.Errorf("unexpected option value; want=%s got=%s", "Error", optionValue)
+	if got, want := option.Type().Nature(), semantic.String; want != got {
+		t.Fatalf("unexpected option type; want=%s got=%s value: %v", want, got, option)
+	}
+	if got, want := option.Str(), "Error"; want != got {
+		t.Errorf("unexpected option value; want=%s got=%s", want, got)
 	}
 }

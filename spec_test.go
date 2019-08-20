@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"os"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -320,8 +321,10 @@ func Example_overrideDefaultOptionExternally() {
 	queryString := `
 		option now = () => 2018-07-13T00:00:00Z
 		what_time_is_it = now()`
+
 	ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
-	itrp := interpreter.NewInterpreter()
+	itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
+
 	universe := flux.Prelude()
 
 	astPkg := parser.ParseSource(queryString)
@@ -345,8 +348,9 @@ func Example_overrideDefaultOptionExternally() {
 // option that is used in a query before that query is evaluated by the interpreter.
 func Example_overrideDefaultOptionInternally() {
 	queryString := `what_time_is_it = now()`
+
 	ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
-	itrp := interpreter.NewInterpreter()
+	itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
 	universe := flux.Prelude()
 
 	astPkg := parser.ParseSource(queryString)

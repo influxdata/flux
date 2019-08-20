@@ -50,7 +50,7 @@ var ScopeComparer = cmp.Comparer(func(l, r values.Scope) bool {
 // NowScope generates scope with the prelude + the now option.
 func NowScope() values.Scope {
 	scope := flux.Prelude()
-	scope.Set("now", values.NewFunction(
+	scope.SetOption("universe", "now", values.NewFunction(
 		"now",
 		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 			Return: semantic.Time,
