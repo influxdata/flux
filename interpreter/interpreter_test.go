@@ -484,7 +484,54 @@ func TestEval(t *testing.T) {
 			}
 		})
 	}
+}
 
+// TestEval_Parallel ensures that function values returned from the interpreter can be used in parallel in multiple Eval calls.
+func TestEval_Parallel(t *testing.T) {
+	var scope = values.NewScope()
+
+	{
+		var ident = "ident = (x) => x"
+		pkg := parser.ParseSource(ident)
+		if ast.Check(pkg) > 0 {
+			t.Fatal(ast.GetError(pkg))
+		}
+		graph, err := semantic.New(pkg)
+		if err != nil {
+			t.Fatal(err)
+		}
+		itrp := interpreter.NewInterpreter()
+		if _, err := itrp.Eval(graph, scope, nil); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	script := "ident(x:1)"
+	pkg := parser.ParseSource(script)
+	if ast.Check(pkg) > 0 {
+		t.Fatal(ast.GetError(pkg))
+	}
+	graph, err := semantic.New(pkg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Spin up multiple interpreters all using the same parent scope
+	n := 100
+	errC := make(chan error, n)
+	for i := 0; i < n; i++ {
+		go func() {
+			itrp := interpreter.NewInterpreter()
+			_, err := itrp.Eval(graph, scope.Nest(nil), nil)
+			errC <- err
+		}()
+	}
+	for i := 0; i < n; i++ {
+		err := <-errC
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
 }
 
 func TestNestedExternBlocks(t *testing.T) {
