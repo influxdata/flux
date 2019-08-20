@@ -34,8 +34,8 @@ inData = "
 ```
 
 -To generate output data do one of the following
---Run the utility in https://github.com/influxdata/flux/tree/master/internal/cmd/refactortests to help generate the outData.  
---Build data manually.  
+* Run the utility in https://github.com/influxdata/flux/tree/master/internal/cmd/refactortests to help generate the outData.  
+* Build data manually.  
 ```
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,double
