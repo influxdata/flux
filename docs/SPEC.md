@@ -270,7 +270,8 @@ String literals support several escape sequences.
     \t   U+0009 horizontal tab
     \"   U+0022 double quote
     \\   U+005C backslash
-    \${  U+0024 U+007B dollar sign and opening curly bracket
+    \{   U+007B open curly bracket
+    \}   U+007D close curly bracket
 
 Additionally any byte value may be specified via a hex encoding using `\x` as the prefix.
 
@@ -280,7 +281,7 @@ Additionally any byte value may be specified via a hex encoding using `\x` as th
     hex_digit        = "0" … "9" | "A" … "F" | "a" … "f" .
     unicode_value    = unicode_char | escaped_char .
     escaped_char     = `\` ( "n" | "r" | "t" | `\` | `"` ) .
-    StringExpression = "${" Expression "}" .
+    StringExpression = "{" Expression "}" .
 
 TODO(nathanielc): With string interpolation string_lit is not longer a lexical token as part of a literal, but an entire expression in and of itself.
 
@@ -310,9 +311,10 @@ To include the literal curly brackets within a string they must be escaped.
 Interpolation example:
 
     n = 42
-    "the answer is ${n}" // the answer is 42
-    "the answer is not ${n+1}" // the answer is not 43
-    "dollar sign opening curly bracket \${" // dollar sign opening curly bracket ${
+    "the answer is {n}" // the answer is 42
+    "the answer is not {n+1}" // the answer is not 43
+    "openinng curly bracket \{" // openinng curly bracket {
+    "closing curly bracket \}" // closing curly bracket }
 
 [IMPL#251](https://github.com/influxdata/platform/issues/251) Add string interpolation support
 
@@ -465,11 +467,6 @@ Examples:
     2018-07-01T00:00:00Z + 1mo // 2018-08-01T00:00:00Z
     2018-07-01T00:00:00Z + 2y  // 2020-07-01T00:00:00Z
     2018-07-01T00:00:00Z + 5h  // 2018-07-01T05:00:00Z
-
-#### Binary types
-
-A _bytes type_ represents a sequence of byte values.
-The bytes type name is `bytes`.
 
 ##### String types
 
@@ -997,7 +994,6 @@ The following named types are built-in.
     time     // time
     string   // utf-8 encoded string
     regexp   // regular expression
-    bytes    // sequence of byte values
     type     // a type that itself describes a type
 
 
@@ -1811,9 +1807,8 @@ from(bucket: "telegraf/autogen")
 
 ##### Mode
 
-Mode produces the mode for a given column. If there are multiple modes, all of them are returned in a table in sorted order. 
+Mode produces the mode for a given column. Null is considered as a potential mode if it is present. If there are multiple modes, all of them are returned in a table in sorted order. 
 If there is no mode, null is returned. The following data types are supported: string, float64, int64, uint64, bool, time.
-Mode only considers non-null values.
 
 Mode has the following properties: 
 
@@ -2192,22 +2187,6 @@ Example:
 
     histogramQuantile(quantile:0.9)  // compute the 90th quantile using histogram data.
 
-#### HourSelection
-
-HourSelection retains all rows in the table within the specified hour range. Hours are specified in military time.
-
-HourSelection has the following properties:
-
-| Name           | Type     | Description                                                                                   |
-| ----           | ----     | -----------                                                                                   |
-| start          | int      | Start is the hour retained data should begin (inclusive).                                     |
-| stop           | int      | Stop is the hour retain data should end (inclusive).                                          |
-| timeColumn     | string   | TimeColumn is the column that HourSelection should parse. Defaults to `_time`.                |
-
-Example:
-
-    hourSelection(start: 9, stop: 17) // retains all data that took place between 9am and 5pm
-
 ##### LinearBins
 
 LinearBins produces a list of linearly separated floats.
@@ -2556,27 +2535,6 @@ from(bucket:"telegraf/autogen")
     |> sort(columns:["region", "host", "value"])
 ```
 
-#### Tail
-Tail caps the number of records in output tables to a fixed size `n`.
-One output table is produced for each input table.
-Each output table will contain the last `n` records before the last `offset` records of the input table.
-If the input table has less than `offset + n` records, all records except the last `offset` ones will be output.
-
-Tail has the following properties:
-
-| Name   | Type | Description                                                                              |
-| ----   | ---- | -----------                                                                              |
-| n      | int  | N is the maximum number of records per table to output.                                  |
-| offset | int  | Offset is the number of records to skip per table before tailing to `n`. Defaults to 0. |
-
-Example:
-
-```
-from(bucket: "telegraf/autogen")
-    |> range(start: -1h)
-    |> tail(n: 10, offset: 1)
-```
-
 #### Group
 
 Group groups records based on their values for specific columns.
@@ -2801,6 +2759,63 @@ from(bucket:"telegraf/autogen")
 window(every:1h) // window the data into 1 hour intervals
 window(intervals: intervals(every:1d, period:8h, offset:9h)) // window the data into 8 hour intervals starting at 9AM every day.
 ```
+#### Physical Environment
+
+Physical Environment operators implement sensor calculations for the physical world such as temperature, gas concentrations, etc. 
+
+##### Simple Heat Index
+
+The Simple Heat Index calculator takes a single table as input and returns a table containing the calculated Simple Heat Index according to the [simplified formula](https://www.wpc.ncep.noaa.gov/html/heatindex_equation.shtml) that does not require the Rothfusz regression. 
+
+The  input table provided *must* contain columns called `temperature` and `humidity`. 
+
+Example: 
+
+```
+humidity = from(bucket: "telegraf")
+  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+  |> filter(fn: (r) => r._measurement == "environment" and (r._field == "humidity"))
+  |> aggregateWindow(every: 30s, fn: mean)
+  
+ temperature = from(bucket: "telegraf")
+  |> range(start: v.timeRangeStart)
+  |> filter(fn: (r) => r._measurement == "temperature" and (r._field == "temp_f"))
+  |> aggregateWindow(every: 30s, fn: mean)
+  
+simpleHI = join(tables: {temperature: temperature, humidity: humidity}, on: ["_time"])
+    |>map(fn: (r) => ({temperature: r._value_temperature, humidity:r._value_humidity, _time: r._time}))
+    |> simpleHeatIndex()
+```
+Input: 
+
+|              _time             | humidity | temperature |
+|:------------------------------:|:--------:|:-----------:|
+|   2019-08-20T14:36:30Z         |  35.98   |    92.77    |
+|   2019-08-20T14:37:00Z         |  36.22   |    92.79    |
+|   2019-08-20T14:37:30Z         |  36.33   |    92.76    |
+|   2019-08-20T14:38:00Z         |  36.34   |    92.73    |
+|   2019-08-20T14:38:30Z         |  36.29   |    92.70    |
+|   2019-08-20T14:39:00Z         |  36.32   |    92.65    |
+|   2019-08-20T14:39:30Z         |  36.33   |    92.58    |
+|   2019-08-20T14:40:00Z         |  36.35   |    92.52    |
+|   2019-08-20T14:40:30Z         |  36.38   |    92.44    |
+|   2019-08-20T14:41:00Z         |  36.39   |    92.44    |
+
+Output: 
+
+|              _time             |        _value         | 
+|:------------------------------:|:---------------------:|
+|   2019-08-20T14:36:30Z         |  93.471505000000010   | 
+|   2019-08-20T14:37:00Z         |  93.437463333333310   |    
+|   2019-08-20T14:37:30Z         |  93.404683333333350   | 
+|   2019-08-20T14:38:00Z         |  93.368411999999980   |  
+|   2019-08-20T14:38:30Z         |  93.3061920           |
+|   2019-08-20T14:39:00Z         |  93.225958333333320   |
+|   2019-08-20T14:39:30Z         |  93.157701999999990   |
+|   2019-08-20T14:40:00Z         |  93.0682450           |
+|   2019-08-20T14:40:30Z         |  93.071375999999990   |
+|   2019-08-20T14:41:00Z         |  93.07137599999999    |
+
 
 #### Pivot
 
@@ -3489,70 +3504,6 @@ from(bucket: "telegraf/autogen"):
     |> tripleEMA(n: 5)
 ```
 
-#### Triple Exponential Derivative
-The triple exponential derivative indicator is an oscillator and can also be used as a momentum indicator. Triple exponential derivative calculates a triple exponential moving average of the log of the
-data input over the period of time. It prevents cycles that are shorter than the defined period from being considered by the indicator.
-Triple exponential derivative oscillates around a zero line.
-
-When used as an oscillator, a positive value indicates an overbought market while a negative value indicates an oversold market.
-When used as a momentum indicator, a positive value suggests momentum is increasing while a negative value suggests momentum is decreasing. 
-It acts on the `_value` column.
-
- Name        | Type     | Description
-| ----        | ----     | -----------
-| n           | int      | N specifies the sample size of the algorithm.  
-
-A triple exponential derivative is defined as `TRIX[i] = ((EMA3[i] / EMA3[i - 1]) - 1) * 100`, where
-- `EMA_3` is `EMA(EMA(EMA(data)))`
-
-If there are not enough values to computer a proper triple exponential derivative, the `_value` column of the output table will be `null`, and all other columns will
-be the same as the last record of the input table.
-
-The behavior of the exponential moving averages used for calculating the triple exponential derivative is the same as defined for `exponentialMovingAverage`:
- - `tripleExponentialDerivative` ignores null values and does not count them in calculations
-
- Example (`n = 4`):
- 
- | _time |_value|result|
- |:-----:|:----:|:----:|
- |  0001 |   1  |   -  |
- |  0002 |   2  |   -  |
- |  0003 |   3  |   -  |
- |  0004 |   4  |   -  |
- |  0005 |   5  |   -  |
- |  0006 |   6  |   -  |
- |  0007 |   7  |   -  |
- |  0008 |   8  |   -  |
- |  0009 |   9  |   -  |
- |  0010 |  10  |   _  |
- |  0011 |  11  | 18.18|
- |  0012 |  12  | 15.38|
- |  0013 |  13  | 13.33|
- |  0014 |  14  | 11.76|
- |  0015 |  15  | 10.52|
- |  0016 |  14  | 8.304|
- |  0017 |  13  | 5.641|
- |  0018 |  12  | 3.039|
- |  0019 |  11  | 0.716|
- |  0020 |  10  | -1.28|
- |  0021 |   9  | -2.99|
- |  0022 |   8  | -4.49|
- |  0023 |   7  | -5.83|
- |  0024 |   6  | -7.09|
- |  0025 |   5  | -8.35|
- |  0026 |   4  | -9.67|
- |  0027 |   3  | -11.1|
- |  0028 |   2  | -12.8|
- |  0029 |   1  | -15.0|
- 
-  Example of script:
- ```
- // A 14 point triple exponential derivative would be called as such:
- from(bucket: "telegraf/autogen"):
-     |> range(start: -7d)
-     |> tripleExponentialDerivative(n: 14)
- ```
-
 #### Relative Strength Index
 The relative strength index (RSI) is a momentum indicator that compares the magnitude of recent increases and decreases 
 over a specified time period to measure speed and change of data movements. It acts on the `_value` column.
@@ -3614,107 +3565,7 @@ from(bucket: "telegraf/autogen"):
     |> relativeSearchIndex(n: 14)
 ```
 
-#### Kaufman's Efficiency Ratio
-
-Kaufman's Efficiency Ratio indicator is created by taking the absolute value of the results of Chande Momentum Oscillator and dividing by 100 to give the 0 to 1 range. Higher values represent a more efficient or trending market.
-
-The default column `KaufmansER` takes in is "_value".
-
-| Name        | Type     | Description
-| ----        | ----     | -----------
-| n           | int      | N specifies the period.
-
- Example:
  
- | _time |_value|result|
- |:-----:|:----:|:----:|
- |  0001 |   1  |   -  |
- |  0002 |   2  |   -  |
- |  0003 |   3  |   -  |
- |  0004 |   4  |   -  |
- |  0005 |   5  |   -  |
- |  0006 |   6  |   -  |
- |  0007 |   7  |   -  |
- |  0008 |   8  |   -  |
- |  0009 |   9  |   -  |
- |  0010 |  10  |   -  |
- |  0011 |  11  |   1  |
- |  0012 |  12  |   1  |
- |  0013 |  13  |   1  |
- |  0014 |  14  |   1  |
- |  0015 |  15  |   1  |
- |  0016 |  14  |  0.8 |
- |  0017 |  13  |  0.6 |
- |  0018 |  12  |  0.4 |
- |  0019 |  11  |  0.2 |
- |  0020 |  10  |  0   |
- |  0021 |   9  |  0.2 |
- |  0022 |   8  |  0.4 |
- |  0023 |   7  |  0.6 |
- |  0024 |   6  |  0.8 |
- |  0025 |   5  |   1  |
- |  0026 |   4  |   1  |
- |  0027 |   3  |   1  |
- |  0028 |   2  |   1  |
- |  0029 |   1  |   1  |
- 
- Example of script:
- ```
- from(bucket: "telegraf/autogen"):
-     |> range(start: -7d)
-     |> kaufmansER(n: 10)
- ```
-
-#### Kaufman's Adaptive Moving Average
-
-Kaufman's Adaptive Moving Average is designed to account for market noise or volatility. This trend-following indicator can be used to identify the overall trend, time turning points and filter data movements.
-
-| Name        | Type     | Description
-| ----        | ----     | -----------
-| n           | int      | N specifies the period.
-| column      | string | Column is the column that `KaufmansAMA` should be performed on and is assumed to be "_value" if left unspecified.
-
- Example:
- 
- | _time |_value|result|
- |:-----:|:----:|:----:|
- |  0001 |   1  |   -  |
- |  0002 |   2  |   -  |
- |  0003 |   3  |   -  |
- |  0004 |   4  |   -  |
- |  0005 |   5  |   -  |
- |  0006 |   6  |   -  |
- |  0007 |   7  |   -  |
- |  0008 |   8  |   -  |
- |  0009 |   9  |   -  |
- |  0010 |  10  |   -  |
- |  0011 |  11  | 10.444444444444445 |
- |  0012 |  12  | 11.135802469135802 |
- |  0013 |  13  | 11.964334705075446 |
- |  0014 |  14  | 12.869074836153025 |
- |  0015 |  15  | 13.81615268675168  |
- |  0016 |  14  | 13.871008014588556 |
- |  0017 |  13  | 13.71308456353558  |
- |  0018 |  12  | 13.553331356741122 |
- |  0019 |  11  | 13.46599437575161  |
- |  0020 |  10  | 13.4515677602438   |
- |  0021 |   9  | 13.29930139347417  |
- |  0022 |   8  | 12.805116570729282 |
- |  0023 |   7  | 11.752584300922965 |
- |  0024 |   6  | 10.036160535131101 |
- |  0025 |   5  | 7.797866963961722  |
- |  0026 |   4  | 6.109926091089845  |
- |  0027 |   3  | 4.727736717272135  |
- |  0028 |   2  | 3.515409287373408  |
- |  0029 |   1  | 2.3974496040963373 |
- 
- Example of script:
- ```
- from(bucket: "telegraf/autogen"):
-     |> range(start: -7d)
-     |> kaufmansAMA(n: 10, column: "_value")
- ```
-
 ##### Holt Winters
 
 Holt Winters applies the Holt-Winters damped prediction method with Nelder-Mead optimization to the given dataset.
@@ -3780,57 +3631,7 @@ from(bucket: "waterhouse/autogen")
     |> window(every: inf)
     |> holtWinters(n: 10, seasonality: 4, interval: 379m)
 ```
- 
-#### Chande Momentum Oscillator 
 
-The Chande Momentum Oscillator (CMO) is a technical momentum indicator developed by Tushar Chande. The CMO indicator is created by calculating the difference between the sum of all recent higher data points and the sum of all recent lower data points, then dividing the result by the sum of all data movement over a given time period. The result is multiplied by 100 to give the -100 to +100 range.
-
-| Name        | Type     | Description
-| ----        | ----     | -----------
-| n           | int      | N specifies the period.
-| columns     | []string | Columns is list of all columns that `chandeMomentumOscillator` should be performed on.
-
- Example:
- 
- | _time |   A  |result|
- |:-----:|:----:|:----:|
- |  0001 |   1  |   -  |
- |  0002 |   2  |   -  |
- |  0003 |   3  |   -  |
- |  0004 |   4  |   -  |
- |  0005 |   5  |   -  |
- |  0006 |   6  |   -  |
- |  0007 |   7  |   -  |
- |  0008 |   8  |   -  |
- |  0009 |   9  |   -  |
- |  0010 |  10  |   -  |
- |  0011 |  11  |  100 |
- |  0012 |  12  |  100 |
- |  0013 |  13  |  100 |
- |  0014 |  14  |  100 |
- |  0015 |  15  |  100 |
- |  0016 |  14  |  80  |
- |  0017 |  13  |  60  |
- |  0018 |  12  |  40  |
- |  0019 |  11  |  20  |
- |  0020 |  10  |  0   |
- |  0021 |   9  | -20  |
- |  0022 |   8  | -40  |
- |  0023 |   7  | -60  |
- |  0024 |   6  | -80  |
- |  0025 |   5  | -100 |
- |  0026 |   4  | -100 |
- |  0027 |   3  | -100 |
- |  0028 |   2  | -100 |
- |  0029 |   1  | -100 |
- 
- Example of script:
- ```
- from(bucket: "telegraf/autogen"):
-     |> range(start: -7d)
-     |> chandeMomentumOscillator(n: 10, columns: ["_value"])
- ```
- 
 #### Distinct
 
 Distinct produces the unique values for a given column. Null is considered its own distinct value if it is present.
