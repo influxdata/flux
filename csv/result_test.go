@@ -2,6 +2,7 @@ package csv_test
 
 import (
 	"bytes"
+	"errors"
 	"io/ioutil"
 	"regexp"
 	"testing"
@@ -13,7 +14,6 @@ import (
 	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 type TestCase struct {
@@ -21,6 +21,7 @@ type TestCase struct {
 	skip          bool
 	encoded       []byte
 	result        *executetest.Result
+	err           error
 	decoderConfig csv.ResultDecoderConfig
 	encoderConfig csv.ResultEncoderConfig
 }
@@ -800,6 +801,16 @@ func TestResultEncoder(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "table error",
+			result: &executetest.Result{
+				Nm: "_result",
+				Tbls: []*executetest.Table{{
+					Err: errors.New("test error"),
+				}},
+			},
+			err: errors.New("test error"),
+		},
 	}
 	testCases = append(testCases, symmetricalTestCases...)
 	for _, tc := range testCases {
@@ -812,7 +823,11 @@ func TestResultEncoder(t *testing.T) {
 			var got bytes.Buffer
 			n, err := encoder.Encode(&got, tc.result)
 			if err != nil {
-				t.Fatal(err)
+				if tc.err == nil {
+					t.Fatal(err)
+				} else if g, w := err.Error(), tc.err.Error(); g != w {
+					t.Errorf("unexpected error -want/+got:\n\t- %q\n\t+ %q", g, w)
+				}
 			}
 
 			if g, w := got.String(), string(tc.encoded); g != w {
@@ -1049,6 +1064,18 @@ func TestMultiResultEncoder(t *testing.T) {
 ,error,reference
 ,test error,
 `),
+		},
+		{
+			name:   "returns table errors",
+			config: csv.DefaultEncoderConfig(),
+			results: flux.NewSliceResultIterator([]flux.Result{&executetest.Result{
+				Nm: "mean",
+				Tbls: []*executetest.Table{{
+					Err: errors.New("test error"),
+				}},
+			}}),
+			encoded: nil,
+			err:     errors.New("test error"),
 		},
 		{
 			name:   "returns encoding errors",
