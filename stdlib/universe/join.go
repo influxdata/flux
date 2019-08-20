@@ -1,6 +1,7 @@
 package universe
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"sort"
@@ -13,7 +14,6 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 const JoinKind = "join"

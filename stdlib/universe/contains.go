@@ -1,13 +1,16 @@
 package universe
 
 import (
+	"errors"
 	"fmt"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
+// MakeContainsFunc will construct the "contains()" function.
+//
 // Contains will test whether a given value is a member of the given set array.
 func MakeContainsFunc() values.Function {
 	return values.NewFunction(

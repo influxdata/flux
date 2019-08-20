@@ -1,6 +1,7 @@
 package universe
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/influxdata/flux"
@@ -9,7 +10,6 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 const RenameKind = "rename"

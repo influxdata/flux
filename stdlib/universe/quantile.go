@@ -1,6 +1,7 @@
 package universe
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"sort"
@@ -13,7 +14,6 @@ import (
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/influxdata/tdigest"
-	"github.com/pkg/errors"
 )
 
 const QuantileKind = "quantile"
@@ -68,7 +68,7 @@ func createQuantileOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 	spec.Quantile = p
 
 	if spec.Quantile < 0 || spec.Quantile > 1 {
-		return nil, errors.New("quantile must be between 0 and 1.")
+		return nil, errors.New("quantile must be between 0 and 1")
 	}
 
 	if m, ok, err := args.GetString("method"); err != nil {
@@ -84,7 +84,7 @@ func createQuantileOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 	}
 
 	if spec.Compression > 0 && spec.Method != methodEstimateTdigest {
-		return nil, errors.New("compression parameter is only valid for method estimate_tdigest.")
+		return nil, errors.New("compression parameter is only valid for method estimate_tdigest")
 	}
 
 	// Set default Compression if not exact

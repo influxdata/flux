@@ -4,7 +4,8 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/pkg/errors"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 // ResourceManagement defines how the query should consume avaliable resources.
@@ -54,7 +55,7 @@ func (p *Priority) UnmarshalText(txt []byte) error {
 	default:
 		i, err := strconv.ParseInt(s, 10, 32)
 		if err != nil {
-			return errors.Wrap(err, "invalid priority, must be an integer or 'low','high'")
+			return errors.Wrap(err, codes.Invalid, "invalid priority, must be an integer or 'low','high'")
 		}
 		*p = Priority(i)
 	}

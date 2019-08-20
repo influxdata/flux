@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/pkg/errors"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 // Operation denotes a single operation in a query.
@@ -29,7 +30,7 @@ func (o *Operation) UnmarshalJSON(data []byte) error {
 	}
 	spec, err := unmarshalOpSpec(raw.Kind, raw.Spec)
 	if err != nil {
-		return errors.Wrapf(err, "failed to unmarshal operation %q", o.ID)
+		return errors.Wrapf(err, codes.Inherit, "failed to unmarshal operation %q", o.ID)
 	}
 	o.Spec = spec
 	return nil

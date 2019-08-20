@@ -1,6 +1,7 @@
 package universe_test
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 func TestRange_NewQuery(t *testing.T) {

@@ -6,15 +6,16 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/influxdata/flux/values/objects"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -87,12 +88,12 @@ func tableFindCall(args values.Object) (values.Value, error) {
 
 	p, err := c.Compile(context.Background())
 	if err != nil {
-		return nil, errors.Wrap(err, "error in table object compilation")
+		return nil, errors.Wrap(err, codes.Inherit, "error in table object compilation")
 	}
 
 	q, err := p.Start(context.Background(), &memory.Allocator{})
 	if err != nil {
-		return nil, errors.Wrap(err, "error in table object start")
+		return nil, errors.Wrap(err, codes.Inherit, "error in table object start")
 	}
 
 	var t *objects.Table
@@ -112,7 +113,7 @@ func tableFindCall(args values.Object) (values.Value, error) {
 			var err error
 			found, err = fn.Eval(tbl)
 			if err != nil {
-				return errors.Wrap(err, "failed to evaluate group key predicate function")
+				return errors.Wrap(err, codes.Inherit, "failed to evaluate group key predicate function")
 			}
 
 			if found {

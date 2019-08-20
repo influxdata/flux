@@ -1,12 +1,15 @@
 package universe
 
 import (
+	"errors"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
+// MakeLengthFunc create the "length()" function.
+//
 // Length will return the length of the given arr array.
 func MakeLengthFunc() values.Function {
 	return values.NewFunction(

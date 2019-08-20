@@ -1,6 +1,7 @@
 package universe_test
 
 import (
+	"errors"
 	"math"
 	"testing"
 
@@ -8,7 +9,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/stdlib/universe"
-	"github.com/pkg/errors"
 )
 
 var linearHist = func() []flux.Table {

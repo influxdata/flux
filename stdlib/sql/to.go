@@ -13,7 +13,6 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	pkgErrors "github.com/pkg/errors"
 )
 
 const (
@@ -199,10 +198,10 @@ func (t *ToSQLTransformation) Finish(id execute.DatasetID, err error) {
 			txErr = t.tx.Rollback()
 		}
 		if txErr != nil {
-			err = pkgErrors.Wrap(err, txErr.Error())
+			err = errors.Wrap(err, codes.Inherit, txErr)
 		}
 		if dbErr := t.db.Close(); dbErr != nil {
-			err = pkgErrors.Wrap(err, dbErr.Error())
+			err = errors.Wrap(err, codes.Inherit, dbErr)
 		}
 	}
 	t.d.Finish(err)

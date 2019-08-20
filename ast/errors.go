@@ -6,7 +6,8 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/pkg/errors"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 // Check will inspect each node and annotate it with any AST errors.
@@ -93,7 +94,7 @@ func GetErrors(n Node) (errs []error) {
 	Walk(CreateVisitor(func(node Node) {
 		if nerrs := node.Errs(); len(nerrs) > 0 {
 			for _, err := range nerrs {
-				errs = append(errs, errors.Wrapf(err, "loc %v", node.Location()))
+				errs = append(errs, errors.Wrapf(err, codes.Inherit, "loc %v", node.Location()))
 			}
 		}
 	}), n)

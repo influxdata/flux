@@ -1,6 +1,7 @@
 package flux_test
 
 import (
+	"errors"
 	"strconv"
 	"testing"
 	"time"
@@ -9,7 +10,6 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/mock"
-	"github.com/pkg/errors"
 )
 
 // ---- Helpers.
@@ -204,7 +204,7 @@ func TestQueryResultIterator_Results(t *testing.T) {
 	}
 
 	if ri.Err() != nil {
-		t.Fatal(errors.Wrap(ri.Err(), "unexpected error in result iterator"))
+		t.Fatalf("unexpected error in result iterator: %s", ri.Err())
 	}
 
 	want := []row{

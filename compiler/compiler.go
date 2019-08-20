@@ -1,12 +1,14 @@
 package compiler
 
 import (
+	stderrors "errors"
 	"fmt"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 func Compile(f *semantic.FunctionExpression, in semantic.Type, scope Scope) (Func, error) {
@@ -20,12 +22,12 @@ func Compile(f *semantic.FunctionExpression, in semantic.Type, scope Scope) (Fun
 
 	typeSol, err := semantic.InferTypes(extern, flux.StdLib())
 	if err != nil {
-		return nil, errors.Wrapf(err, "compile function @ %v", f.Location())
+		return nil, errors.Wrapf(err, codes.Inherit, "compile function @ %v", f.Location())
 	}
 
 	pt, err := typeSol.PolyTypeOf(f)
 	if err != nil {
-		return nil, errors.Wrapf(err, "reteiving compile function @ %v", f.Location())
+		return nil, errors.Wrapf(err, codes.Inherit, "retreiving compile function @ %v", f.Location())
 	}
 	props := in.Properties()
 	parameters := make(map[string]semantic.PolyType, len(props))
@@ -37,16 +39,16 @@ func Compile(f *semantic.FunctionExpression, in semantic.Type, scope Scope) (Fun
 		Return:     typeSol.Fresh(),
 	})
 	if err := typeSol.AddConstraint(pt, fpt); err != nil {
-		return nil, errors.Wrapf(err, "cannot add type constraint @ %v", f.Location())
+		return nil, errors.Wrapf(err, codes.Inherit, "cannot add type constraint @ %v", f.Location())
 	}
 	fnType, err := typeSol.TypeOf(f)
 	if err != nil {
-		return nil, errors.Wrapf(err, "cannot compile polymorphic function @ %v", f.Location())
+		return nil, errors.Wrapf(err, codes.Inherit, "cannot compile polymorphic function @ %v", f.Location())
 	}
 
 	root, err := compile(f.Block.Body, typeSol, scope, make(map[string]*semantic.FunctionExpression))
 	if err != nil {
-		return nil, errors.Wrapf(err, "cannot compile @ %v", f.Location())
+		return nil, errors.Wrapf(err, codes.Inherit, "cannot compile @ %v", f.Location())
 	}
 	return compiledFn{
 		root:       root,
@@ -84,7 +86,7 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, scope Scope, funcEx
 			body: body,
 		}, nil
 	case *semantic.ExpressionStatement:
-		return nil, errors.New("statement does nothing, side effects are not supported by the compiler")
+		return nil, stderrors.New("statement does nothing, side effects are not supported by the compiler")
 	case *semantic.ReturnStatement:
 		node, err := compile(n.Argument, typeSol, scope, funcExprs)
 		if err != nil {
@@ -131,7 +133,7 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, scope Scope, funcEx
 			}
 			with, ok := node.(*identifierEvaluator)
 			if !ok {
-				return nil, errors.New("unknown identifier in with expression")
+				return nil, stderrors.New("unknown identifier in with expression")
 			}
 			obj.with = with
 
@@ -410,7 +412,7 @@ type funcErr struct {
 func CompileFnParam(fn *semantic.FunctionExpression, scope Scope, paramType, returnType semantic.Type) (Func, string, error) {
 	compileCache := NewCompilationCache(fn, scope)
 	if fn.Block.Parameters != nil && len(fn.Block.Parameters.List) != 1 {
-		return nil, "", errors.New("function should only have a single parameter")
+		return nil, "", stderrors.New("function should only have a single parameter")
 	}
 	paramName := fn.Block.Parameters.List[0].Key.Name
 
@@ -431,7 +433,7 @@ func CompileFnParam(fn *semantic.FunctionExpression, scope Scope, paramType, ret
 func CompileReduceFn(fn *semantic.FunctionExpression, scope Scope, paramType semantic.Type) (Func, []string, error) {
 	compileCache := NewCompilationCache(fn, scope)
 	if len(fn.Block.Parameters.List) != 2 {
-		return nil, nil, errors.New("function should only have a single parameter")
+		return nil, nil, stderrors.New("function should only have a single parameter")
 	}
 	paramList := fn.Block.Parameters.List
 	paramNames := []string{paramList[0].Key.Name, paramList[1].Key.Name}

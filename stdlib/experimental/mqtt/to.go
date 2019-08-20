@@ -2,6 +2,7 @@ package mqtt
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -10,7 +11,6 @@ import (
 	"time"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/pkg/syncutil"
@@ -18,7 +18,6 @@ import (
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	protocol "github.com/influxdata/line-protocol"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -368,7 +367,7 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	timeColIdx, ok := labels[timeColLabel]
 
 	if !ok {
-		return errors.New("Could not get time column")
+		return errors.New("could not get time column")
 	}
 	if timeColIdx.Type != flux.TTime {
 		return fmt.Errorf("column %s is not of type %s", timeColLabel, timeColIdx.Type)

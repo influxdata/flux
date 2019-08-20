@@ -7,7 +7,6 @@ import (
 	"github.com/influxdata/flux/ast/edit"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 func TestEditor(t *testing.T) {
@@ -241,7 +240,7 @@ option task = {
 			p := parser.ParseSource(tc.in)
 			if ast.Check(p) > 0 {
 				err := ast.GetError(p)
-				t.Fatal(errors.Wrapf(err, "input source has bad syntax:\n%s", tc.in))
+				t.Fatalf("input source has bad syntax: %s\n%s", err, tc.in)
 			}
 
 			edited, err := tc.edit(p)
@@ -250,7 +249,7 @@ option task = {
 			}
 
 			if err != nil {
-				t.Fatal(errors.Wrap(err, "got unexpected error from edit"))
+				t.Fatalf("got unexpected error from edit: %s", err)
 			}
 
 			if edited && tc.unchanged {
