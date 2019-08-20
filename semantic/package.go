@@ -1,7 +1,8 @@
 package semantic
 
 import (
-	"github.com/pkg/errors"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 const PackageMain = "main"
@@ -18,7 +19,7 @@ func CreatePackage(n Node, importer Importer) (PackageType, error) {
 	v := new(packageCreateVisitor)
 	Walk(v, n)
 	if v.name == "" {
-		return PackageType{}, errors.New("no package clause found")
+		return PackageType{}, errors.New(codes.Unknown, "no package clause found")
 	}
 	ts, err := InferTypes(n, importer)
 	if err != nil {

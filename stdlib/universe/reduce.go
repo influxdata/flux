@@ -1,17 +1,19 @@
 package universe
 
 import (
+	stderrors "errors"
 	"fmt"
 	"sort"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 const ReduceKind = "reduce"
@@ -70,7 +72,7 @@ func createReduceOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		o.Range(func(name string, v values.Value) {
 			stringer, ok := v.(values.ValueStringer)
 			if !ok {
-				haderr = errors.New("ne contains unencodable type")
+				haderr = stderrors.New("ne contains unencodable type")
 				return
 			}
 			spec.Identity[name] = stringer.String()
@@ -194,7 +196,7 @@ func (t *reduceTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 			// computes a new accumulator result.
 			m, err := t.fn.Eval(i, cr, map[string]values.Value{"accumulator": reducer})
 			if err != nil {
-				return errors.Wrap(err, "failed to evaluate reduce function")
+				return errors.Wrap(err, codes.Inherit, "failed to evaluate reduce function")
 			}
 			reducer = m
 		}
@@ -259,7 +261,7 @@ func (t *reduceTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 			}
 		}
 	} else {
-		return errors.New("two reducers writing result to the same table")
+		return stderrors.New("two reducers writing result to the same table")
 	}
 	return nil
 }

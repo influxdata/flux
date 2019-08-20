@@ -7,11 +7,12 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
@@ -314,14 +315,14 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 
 	s, err := spec.FromAST(ctx, astPkg, p.Now)
 	if err != nil {
-		return nil, errors.Wrap(err, "error in evaluating AST while starting program")
+		return nil, errors.Wrap(err, codes.Inherit, "error in evaluating AST while starting program")
 	}
 	if p.opts.verbose {
 		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
 	}
 	ps, err := buildPlan(s, p.opts)
 	if err != nil {
-		return nil, errors.Wrap(err, "error in building plan while starting program")
+		return nil, errors.Wrap(err, codes.Inherit, "error in building plan while starting program")
 	}
 	p.PlanSpec = ps
 

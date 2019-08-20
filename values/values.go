@@ -3,13 +3,13 @@ package values
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"regexp"
 	"runtime/debug"
 	"strconv"
 
 	"github.com/influxdata/flux/semantic"
-	"github.com/pkg/errors"
 )
 
 type Typer interface {

@@ -1,14 +1,16 @@
 package universe
 
 import (
+	stderrors "errors"
 	"fmt"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 type BuilderContext struct {
@@ -104,7 +106,7 @@ func NewRenameMutator(qs flux.OperationSpec) (*RenameMutator, error) {
 
 func (m *RenameMutator) renameCol(col *flux.ColMeta) error {
 	if col == nil {
-		return errors.New("rename error: cannot rename nil column")
+		return stderrors.New("rename error: cannot rename nil column")
 	}
 	if m.Columns != nil {
 		if newName, ok := m.Columns[col.Label]; ok {
@@ -124,7 +126,7 @@ func (m *RenameMutator) renameCol(col *flux.ColMeta) error {
 func (m *RenameMutator) checkColumns(tableCols []flux.ColMeta) error {
 	for c := range m.Columns {
 		if err := checkCol(c, tableCols); err != nil {
-			return errors.Wrap(err, "rename error")
+			return errors.Wrap(err, codes.Inherit, "rename error")
 		}
 	}
 	return nil

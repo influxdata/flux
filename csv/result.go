@@ -4,6 +4,7 @@ package csv
 import (
 	"encoding/csv"
 	"encoding/json"
+	stderrors "errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -12,11 +13,12 @@ import (
 	"unicode/utf8"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/iocounter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -224,7 +226,7 @@ func (r *resultDecoder) Do(f func(flux.Table) error) error {
 						r.eof = true
 						return nil
 					}
-					return errors.Wrap(err, "failed to read meta data")
+					return errors.Wrap(err, codes.Inherit, "failed to read meta data")
 				}
 				meta = tm
 				extraLine = nil
@@ -300,7 +302,7 @@ func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tab
 			n = len(line)
 		}
 		if n != len(line) {
-			return tableMetadata{}, errors.Wrap(csv.ErrFieldCount, "failed to read annotations")
+			return tableMetadata{}, errors.Wrap(csv.ErrFieldCount, codes.Invalid, "failed to read annotations")
 		}
 		switch annotation := strings.TrimPrefix(line[annotationIdx], commentPrefix); annotation {
 		case datatypeAnnotation:
@@ -341,12 +343,12 @@ func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tab
 		line, err := r.Read()
 		if err != nil {
 			if err == io.EOF {
-				return tableMetadata{}, errors.New("missing expected header row")
+				return tableMetadata{}, errors.New(codes.Invalid, "missing expected header row")
 			}
 			return tableMetadata{}, err
 		}
 		if n != len(line) {
-			return tableMetadata{}, errors.Wrap(csv.ErrFieldCount, "failed to read header row")
+			return tableMetadata{}, errors.Wrap(csv.ErrFieldCount, codes.Invalid, "failed to read header row")
 		}
 
 		if len(line) > 1 && line[1] == "error" {
@@ -358,9 +360,9 @@ func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tab
 				} else if err == nil && n != len(line) {
 					err = csv.ErrFieldCount
 				}
-				return tableMetadata{}, errors.Wrap(err, "failed to read error value")
+				return tableMetadata{}, errors.Wrap(err, codes.Inherit, "failed to read error value")
 			}
-			return tableMetadata{}, errors.New(line[1])
+			return tableMetadata{}, stderrors.New(line[1])
 		}
 
 		labels = line[recordStartIdx:]
@@ -373,7 +375,7 @@ func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tab
 	for j, label := range labels {
 		t, desc, err := decodeType(datatypes[j])
 		if err != nil {
-			return tableMetadata{}, errors.Wrapf(err, "column %q has invalid datatype", label)
+			return tableMetadata{}, errors.Wrapf(err, codes.Invalid, "column %q has invalid datatype", label)
 		}
 		cols[j].ColMeta.Label = label
 		cols[j].ColMeta.Type = t
@@ -398,7 +400,7 @@ func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tab
 		} else {
 			v, err := decodeValue(defaults[j], cols[j])
 			if err != nil {
-				return tableMetadata{}, errors.Wrapf(err, "column %q has invalid default value", label)
+				return tableMetadata{}, errors.Wrapf(err, codes.Invalid, "column %q has invalid default value", label)
 			}
 			defaultValues[j] = v
 		}
@@ -561,7 +563,7 @@ DONE:
 				return false, err
 			}
 		} else {
-			return false, errors.New("table was not initialized, missing group key data")
+			return false, errors.New(codes.Internal, "table was not initialized, missing group key data")
 		}
 	}
 	return false, nil
@@ -573,7 +575,7 @@ func (d *tableDecoder) init(line []string) error {
 	} else if d.meta.TableID != "" {
 		d.id = d.meta.TableID
 	} else {
-		return errors.New("missing table ID")
+		return errors.New(codes.Invalid, "missing table ID")
 	}
 	var record []string
 	if len(line) != 0 {
@@ -732,28 +734,26 @@ func (e *ResultEncoder) csvWriter(w io.Writer) *csv.Writer {
 }
 
 type csvEncoderError struct {
-	msg string
+	err error
 }
 
 func (e *csvEncoderError) Error() string {
-	return e.msg
+	return fmt.Sprintf("csv encoder error: %s", e.err.Error())
 }
 
 func (e *csvEncoderError) IsEncoderError() bool {
 	return true
 }
 
-func newCSVEncoderError(msg string) *csvEncoderError {
-	return &csvEncoderError{
-		msg: msg,
-	}
+func (e *csvEncoderError) Unwrap() error {
+	return e.err
 }
 
 func wrapEncodingError(err error) error {
 	if err == nil {
 		return err
 	}
-	return errors.Wrap(newCSVEncoderError(err.Error()), "csv encoder error")
+	return &csvEncoderError{err: err}
 }
 
 func (e *ResultEncoder) Encode(w io.Writer, result flux.Result) (int64, error) {

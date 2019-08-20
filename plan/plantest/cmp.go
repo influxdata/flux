@@ -12,7 +12,6 @@ import (
 	"github.com/influxdata/flux/stdlib/kafka"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values/valuestest"
-	"github.com/pkg/errors"
 )
 
 // CmpOptions are the options needed to compare plan.ProcedureSpecs inside plan.Spec.
@@ -73,7 +72,7 @@ func ComparePlansShallow(p, q *plan.Spec) error {
 func compareMetadata(p, q *plan.Spec) error {
 	opts := cmpopts.IgnoreFields(plan.Spec{}, "Roots")
 	if diff := cmp.Diff(p, q, opts); diff != "" {
-		return errors.Errorf("plan metadata not equal; -want/+got:\n%v", diff)
+		return fmt.Errorf("plan metadata not equal; -want/+got:\n%v", diff)
 	}
 	return nil
 }

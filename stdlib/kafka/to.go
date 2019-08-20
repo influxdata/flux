@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"sort"
@@ -17,7 +18,6 @@ import (
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	protocol "github.com/influxdata/line-protocol"
-	"github.com/pkg/errors"
 	kafka "github.com/segmentio/kafka-go"
 )
 
@@ -309,7 +309,7 @@ func (t *ToKafkaTransformation) Process(id execute.DatasetID, tbl flux.Table) (e
 	timeColLabel := t.spec.Spec.TimeColumn
 	timeColIdx, ok := labels[timeColLabel]
 	if !ok {
-		return errors.New("Could not get time column")
+		return errors.New("could not get time column")
 	}
 	if timeColIdx.Type != flux.TTime {
 		return fmt.Errorf("column %s is not of type %s", timeColLabel, timeColIdx.Type)

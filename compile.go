@@ -1,6 +1,7 @@
 package flux
 
 import (
+	stderrors "errors"
 	"fmt"
 	"path"
 	"regexp"
@@ -8,12 +9,12 @@ import (
 	"time"
 
 	"github.com/influxdata/flux/ast"
-
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -179,7 +180,7 @@ func Prelude() values.Scope {
 // RegisterPackage adds a builtin package
 func RegisterPackage(pkg *ast.Package) {
 	if finalized {
-		panic(errors.New("already finalized, cannot register builtin package"))
+		panic(stderrors.New("already finalized, cannot register builtin package"))
 	}
 	if _, ok := builtinPackages[pkg.Path]; ok {
 		panic(fmt.Errorf("duplicate builtin package %q", pkg.Path))
@@ -205,7 +206,7 @@ func ReplacePackageValue(pkgpath, name string, value values.Value) {
 
 func registerPackageValue(pkgpath, name string, value values.Value, replace bool) {
 	if finalized {
-		panic(errors.New("already finalized, cannot register builtin package value"))
+		panic(stderrors.New("already finalized, cannot register builtin package value"))
 	}
 	packg, ok := stdlib.pkgs[pkgpath]
 	if !ok {
@@ -281,26 +282,26 @@ func evalBuiltInPackages() error {
 	for _, astPkg := range order {
 		if ast.Check(astPkg) > 0 {
 			err := ast.GetError(astPkg)
-			return errors.Wrapf(err, "failed to parse builtin package %q", astPkg.Path)
+			return errors.Wrapf(err, codes.Inherit, "failed to parse builtin package %q", astPkg.Path)
 		}
 		semPkg, err := semantic.New(astPkg)
 		if err != nil {
-			return errors.Wrapf(err, "failed to create semantic graph for builtin package %q", astPkg.Path)
+			return errors.Wrapf(err, codes.Inherit, "failed to create semantic graph for builtin package %q", astPkg.Path)
 		}
 
 		pkg := stdlib.pkgs[astPkg.Path]
 		if pkg == nil {
-			return errors.Wrapf(err, "package does not exist %q", astPkg.Path)
+			return errors.Wrapf(err, codes.Inherit, "package does not exist %q", astPkg.Path)
 		}
 
 		// Validate packages before evaluating them
 		if err := validatePackageBuiltins(pkg, astPkg); err != nil {
-			return errors.Wrapf(err, "package has invalid builtins %q", astPkg.Path)
+			return errors.Wrapf(err, codes.Inherit, "package has invalid builtins %q", astPkg.Path)
 		}
 
 		itrp := interpreter.NewInterpreter()
 		if _, err := itrp.Eval(semPkg, preludeScope.Nest(pkg), stdlib); err != nil {
-			return errors.Wrapf(err, "failed to evaluate builtin package %q", astPkg.Path)
+			return errors.Wrapf(err, codes.Inherit, "failed to evaluate builtin package %q", astPkg.Path)
 		}
 	}
 	return nil

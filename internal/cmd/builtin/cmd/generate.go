@@ -13,9 +13,10 @@ import (
 
 	"github.com/dave/jennifer/jen"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/token"
 	"github.com/influxdata/flux/parser"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -102,7 +103,7 @@ func generate(cmd *cobra.Command, args []string) error {
 
 		if fluxPkg != nil {
 			if ast.Check(fluxPkg) > 0 {
-				return errors.Wrapf(ast.GetError(fluxPkg), "failed to parse package %q", fluxPkg.Package)
+				return errors.Wrapf(ast.GetError(fluxPkg), codes.Inherit, "failed to parse package %q", fluxPkg.Package)
 			}
 			// Assign import path
 			fluxPkg.Path = fluxPath
@@ -118,7 +119,7 @@ func generate(cmd *cobra.Command, args []string) error {
 		}
 		if testPkg != nil {
 			if ast.Check(testPkg) > 0 {
-				return errors.Wrapf(ast.GetError(testPkg), "failed to parse test package %q", testPkg.Package)
+				return errors.Wrapf(ast.GetError(testPkg), codes.Inherit, "failed to parse test package %q", testPkg.Package)
 			}
 			// Validate test package file use _test.flux suffix for the file name
 			for _, f := range testPkg.Files {

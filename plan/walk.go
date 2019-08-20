@@ -1,7 +1,7 @@
 package plan
 
 import (
-	"github.com/pkg/errors"
+	"errors"
 	"sort"
 )
 

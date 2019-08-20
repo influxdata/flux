@@ -1,13 +1,15 @@
 package interpreter
 
 import (
+	stderrors "errors"
 	"fmt"
 	"regexp"
 
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 type Interpreter struct {
@@ -229,7 +231,7 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope values.Sco
 		v, err := itrp.doCall(e, scope)
 		if err != nil {
 			// Determine function name
-			return nil, errors.Wrapf(err, "error calling function %q", functionName(e))
+			return nil, errors.Wrapf(err, codes.Inherit, "error calling function %q", functionName(e))
 		}
 		return v, nil
 	case *semantic.MemberExpression:
@@ -340,7 +342,7 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope values.Sco
 			return nil, err
 		}
 		if r.Type() != semantic.Bool {
-			return nil, errors.New("right operand to logical expression is not a boolean value")
+			return nil, stderrors.New("right operand to logical expression is not a boolean value")
 		}
 		right := r.Bool()
 
@@ -358,7 +360,7 @@ func (itrp *Interpreter) doExpression(expr semantic.Expression, scope values.Sco
 			return nil, err
 		}
 		if t.Type() != semantic.Bool {
-			return nil, errors.New("conditional test expression is not a boolean value")
+			return nil, stderrors.New("conditional test expression is not a boolean value")
 		}
 		if t.Bool() {
 			return itrp.doExpression(e.Consequent, scope)
@@ -539,7 +541,7 @@ func (itrp *Interpreter) doArguments(args *semantic.ObjectExpression, scope valu
 		obj.Set(p.Key.Key(), value)
 	}
 	if pipe != nil && pipeArgument == "" {
-		return nil, errors.New("pipe parameter value provided to function with no pipe parameter defined")
+		return nil, stderrors.New("pipe parameter value provided to function with no pipe parameter defined")
 	}
 	if pipe != nil {
 		value, err := itrp.doExpression(pipe, scope)
@@ -715,7 +717,7 @@ func (f *function) doCall(args Arguments) (values.Value, error) {
 			// Validate a return statement is the last statement
 			if _, ok := stmt.(*semantic.ReturnStatement); ok {
 				if i != len(n.Body)-1 {
-					return nil, errors.New("return statement is not the last statement in the block")
+					return nil, stderrors.New("return statement is not the last statement in the block")
 				}
 			}
 		}
@@ -723,7 +725,7 @@ func (f *function) doCall(args Arguments) (values.Value, error) {
 		// This check should be performed during type inference, not here.
 		v := nested.Return()
 		if v.PolyType().Nature() == semantic.Invalid {
-			return nil, errors.New("function has no return value")
+			return nil, stderrors.New("function has no return value")
 		}
 		return v, nil
 	default:
@@ -749,7 +751,7 @@ type Resolver interface {
 func ResolveFunction(f values.Function) (ResolvedFunction, error) {
 	resolver, ok := f.(Resolver)
 	if !ok {
-		return ResolvedFunction{}, errors.New("function is not resolvable")
+		return ResolvedFunction{}, stderrors.New("function is not resolvable")
 	}
 	resolved, err := resolver.Resolve()
 	if err != nil {
@@ -757,7 +759,7 @@ func ResolveFunction(f values.Function) (ResolvedFunction, error) {
 	}
 	fn, ok := resolved.(*semantic.FunctionExpression)
 	if !ok {
-		return ResolvedFunction{}, errors.New("resolved function is not a function")
+		return ResolvedFunction{}, stderrors.New("resolved function is not a function")
 	}
 	return ResolvedFunction{
 		Fn:    fn,

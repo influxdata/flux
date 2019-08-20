@@ -1,11 +1,13 @@
 package semantic
 
 import (
+	stderrors "errors"
 	"fmt"
 	"strings"
 
 	"github.com/influxdata/flux/ast"
-	"github.com/pkg/errors"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 // GenerateConstraints walks the graph and generates constraints between type vairables provided in the annotations.
@@ -75,7 +77,9 @@ func (v ConstraintGenerator) Done(node Node) {
 			v.cs.AddTypeConst(a.Var, a.Type, node.Location())
 		}
 	}
-	a.Err = errors.Wrapf(a.Err, "type error %v", node.Location())
+	if a.Err != nil {
+		a.Err = errors.Wrapf(a.Err, codes.Inherit, "type error %v", node.Location())
+	}
 	//log.Printf("typeof %T@%v %v %v %v", node, node.Location(), a.Var, a.Type, a.Err)
 	if *v.err == nil && a.Err != nil {
 		*v.err = a.Err
@@ -349,12 +353,12 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			}
 			tv, ok := t.(Tvar)
 			if !ok {
-				return nil, errors.New("object 'with' identifier must be a type variable")
+				return nil, stderrors.New("object 'with' identifier must be a type variable")
 			}
 			for _, k := range v.cs.kindConst[tv] {
 				obj, ok := k.(ObjectKind)
 				if !ok {
-					return nil, errors.New("object 'with' identifier must have only object kind constraints")
+					return nil, stderrors.New("object 'with' identifier must have only object kind constraints")
 				}
 				if obj.upper.isAllLabels() {
 					continue
@@ -388,7 +392,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		}
 		tv, ok := t.(Tvar)
 		if !ok {
-			return nil, errors.New("member object must be a type variable")
+			return nil, stderrors.New("member object must be a type variable")
 		}
 		v.cs.AddKindConst(tv, ObjectKind{
 			properties: map[string]PolyType{n.Property: ptv},
@@ -404,7 +408,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		}
 		tv, ok := t.(Tvar)
 		if !ok {
-			return nil, errors.New("array must be a type variable")
+			return nil, stderrors.New("array must be a type variable")
 		}
 		idx, err := v.lookup(n.Index)
 		if err != nil {

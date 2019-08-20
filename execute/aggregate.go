@@ -1,6 +1,7 @@
 package execute
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/apache/arrow/go/arrow/array"
@@ -8,7 +9,6 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
-	"github.com/pkg/errors"
 )
 
 type aggregateTransformation struct {

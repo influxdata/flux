@@ -1,11 +1,13 @@
 package semantic
 
 import (
+	stderrors "errors"
 	"fmt"
 	"sort"
 	"strings"
 
-	"github.com/pkg/errors"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 // TypeExpression represents an expression describing a type.
@@ -694,13 +696,13 @@ func (l KClass) unifyKind(kinds map[Tvar]Kind, r Kind) (Kind, Substitution, erro
 	return nil, nil, nil
 }
 func (k KClass) resolveType(map[Tvar]Kind) (Type, error) {
-	return nil, errors.New("KClass has no type")
+	return nil, stderrors.New("KClass has no type")
 }
 func (k KClass) MonoType() (Type, bool) {
 	return nil, false
 }
 func (k KClass) resolvePolyType(map[Tvar]Kind) (PolyType, error) {
-	return nil, errors.New("KClass has no poly type")
+	return nil, stderrors.New("KClass has no poly type")
 }
 func (k KClass) occurs(Tvar) bool { return false }
 
@@ -810,7 +812,7 @@ func (l ObjectKind) unifyKind(kinds map[Tvar]Kind, k Kind) (Kind, Substitution, 
 		with = new(Tvar)
 		*with = *l.with
 	case l.with != nil && r.with != nil:
-		return nil, nil, errors.New("cannot unify two object each having a with constraint")
+		return nil, nil, stderrors.New("cannot unify two object each having a with constraint")
 	}
 
 	kr := ObjectKind{
@@ -823,7 +825,7 @@ func (l ObjectKind) unifyKind(kinds map[Tvar]Kind, k Kind) (Kind, Substitution, 
 	for lbl, t := range kr.properties {
 		i, ok := t.(invalid)
 		if ok {
-			return nil, nil, errors.Wrapf(i.err, "invalid record access %q", lbl)
+			return nil, nil, errors.Wrapf(i.err, codes.Inherit, "invalid record access %q", lbl)
 		}
 	}
 	return kr, subst, nil

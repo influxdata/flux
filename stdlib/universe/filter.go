@@ -4,12 +4,13 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
-	"github.com/pkg/errors"
 )
 
 const FilterKind = "filter"
@@ -156,7 +157,7 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			if pass, err := t.fn.Eval(i, cr); err != nil {
-				return errors.Wrap(err, "failed to evaluate filter function")
+				return errors.Wrap(err, codes.Inherit, "failed to evaluate filter function")
 			} else if !pass {
 				// No match, skipping
 				continue

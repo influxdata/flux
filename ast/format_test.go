@@ -6,7 +6,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/parser"
-	"github.com/pkg/errors"
 )
 
 var skip = map[string]string{
@@ -36,7 +35,7 @@ func formatTestHelper(t *testing.T, testCases []formatTestCase) {
 			pkg := parser.ParseSource(tc.script)
 			if ast.Check(pkg) > 0 {
 				err := ast.GetError(pkg)
-				t.Fatal(errors.Wrapf(err, "source has bad syntax:\n%s", tc.script))
+				t.Fatalf("source has bad syntax: %s\n%s", err, tc.script)
 			}
 
 			stringResult := ast.Format(pkg.Files[0])

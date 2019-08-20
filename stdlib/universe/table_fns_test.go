@@ -1,6 +1,7 @@
 package universe_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -11,7 +12,6 @@ import (
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
 	"github.com/influxdata/flux/values/objects"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -39,7 +39,7 @@ csv.from(csv: data)`
 
 	vs, _, err := flux.Eval(script)
 	if err != nil {
-		panic(errors.Wrap(err, "cannot compile simple script to prepare test"))
+		panic(fmt.Errorf("cannot compile simple script to prepare test: %s", err))
 	}
 	for _, v := range vs {
 		if v, ok := v.Value.(*flux.TableObject); ok {

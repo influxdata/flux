@@ -1,6 +1,7 @@
 package execute
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 
@@ -8,7 +9,6 @@ import (
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 type dynamicFn struct {

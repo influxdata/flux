@@ -1,6 +1,7 @@
 package universe_test
 
 import (
+	"errors"
 	"regexp"
 	"testing"
 
@@ -15,7 +16,6 @@ import (
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values/valuestest"
-	"github.com/pkg/errors"
 )
 
 func TestSchemaMutions_NewQueries(t *testing.T) {

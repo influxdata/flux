@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pkg/errors"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 // Spec specifies a query.
@@ -46,7 +47,7 @@ func (q *Spec) Walk(f func(o *Operation) error) error {
 // Validate ensures the query is a valid DAG.
 func (q *Spec) Validate() error {
 	if q.Now.IsZero() {
-		return errors.New("now time must be set")
+		return errors.New(codes.Invalid, "now time must be set")
 	}
 	return q.prepare()
 }
@@ -85,7 +86,7 @@ func (q *Spec) prepare() error {
 		return err
 	}
 	if len(roots) == 0 {
-		return errors.New("query has no root nodes")
+		return errors.New(codes.Invalid, "query has no root nodes")
 	}
 
 	q.parents = parents
@@ -153,7 +154,7 @@ func (q *Spec) determineParentsChildrenAndRoots() (parents, children map[Operati
 func (q *Spec) visit(tMarks, pMarks map[OperationID]bool, o *Operation) error {
 	id := o.ID
 	if tMarks[id] {
-		return errors.New("found cycle in query")
+		return errors.New(codes.Invalid, "found cycle in query")
 	}
 
 	if !pMarks[id] {

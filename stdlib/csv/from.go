@@ -1,19 +1,20 @@
 package csv
 
 import (
+	"context"
+	stderrors "errors"
 	"fmt"
 	"io/ioutil"
 	"os"
-
-	"context"
 	"strings"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
-	"github.com/pkg/errors"
 )
 
 const FromCSVKind = "fromCSV"
@@ -54,16 +55,16 @@ func createFromCSVOpSpec(args flux.Arguments, a *flux.Administration) (flux.Oper
 	}
 
 	if spec.CSV == "" && spec.File == "" {
-		return nil, errors.New("must provide csv raw text or filename")
+		return nil, stderrors.New("must provide csv raw text or filename")
 	}
 
 	if spec.CSV != "" && spec.File != "" {
-		return nil, errors.New("must provide exactly one of the parameters csv or file")
+		return nil, stderrors.New("must provide exactly one of the parameters csv or file")
 	}
 
 	if spec.File != "" {
 		if _, err := os.Stat(spec.File); err != nil {
-			return nil, errors.Wrap(err, "failed to stat csv file: ")
+			return nil, errors.Wrap(err, codes.Inherit, "failed to stat csv file: ")
 		}
 	}
 
@@ -118,7 +119,7 @@ func createFromCSVSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 	if spec.File != "" {
 		csvBytes, err := ioutil.ReadFile(spec.File)
 		if err != nil {
-			return nil, errors.Wrap(err, "csv.from() failed to read file")
+			return nil, errors.Wrap(err, codes.Inherit, "csv.from() failed to read file")
 		}
 		csvText = string(csvBytes)
 	}
@@ -180,8 +181,11 @@ func (c *CSVSource) Run(ctx context.Context) {
 	}
 
 FINISH:
+	if err != nil {
+		err = errors.Wrap(err, codes.Inherit, "error in csv.from()")
+	}
+
 	for _, t := range c.ts {
-		err = errors.Wrap(err, "error in csv.from()")
 		t.Finish(c.id, err)
 	}
 }

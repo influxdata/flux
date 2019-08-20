@@ -7,7 +7,6 @@ import (
 	"github.com/influxdata/flux/iocounter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 type Result interface {
@@ -245,10 +244,10 @@ type EncoderError interface {
 	IsEncoderError() bool
 }
 
-// IsEncoderError reports whether or not the underlying cause of
+// isEncoderError reports whether or not the underlying cause of
 // an error is a valid EncoderError.
-func IsEncoderError(err error) bool {
-	encErr, ok := errors.Cause(err).(EncoderError)
+func isEncoderError(err error) bool {
+	encErr, ok := err.(EncoderError)
 	return ok && encErr.IsEncoderError()
 }
 
@@ -287,7 +286,7 @@ func (e *DelimitedMultiResultEncoder) Encode(w io.Writer, results ResultIterator
 		if _, err := e.Encoder.Encode(wc, result); err != nil {
 			// If we have an error that's from encoding or if we have not
 			// yet written any data to the writer, return the error.
-			if IsEncoderError(err) || wc.Count() == 0 {
+			if isEncoderError(err) || wc.Count() == 0 {
 				return wc.Count(), err
 			}
 			// Otherwise, the error happened during query execution and we

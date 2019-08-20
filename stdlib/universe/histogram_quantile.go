@@ -1,6 +1,7 @@
 package universe
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"sort"
@@ -9,7 +10,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
-	"github.com/pkg/errors"
 )
 
 const HistogramQuantileKind = "histogramQuantile"

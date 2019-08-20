@@ -1,4 +1,4 @@
-// This source gets input from a socket connection and produces tables given a decoder.
+// Package socket implements a source that gets input from a socket connection and produces tables given a decoder.
 // This is a good candidate for streaming use cases. For now, it produces a single table for everything
 // that it receives from the start to the end of the connection.
 package socket
@@ -13,13 +13,14 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/line"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 const FromSocketKind = "fromSocket"
@@ -154,7 +155,7 @@ func createFromSocketSource(s plan.ProcedureSpec, dsid execute.DatasetID, a exec
 
 	conn, err := net.Dial(scheme, address)
 	if err != nil {
-		return nil, errors.Wrap(err, "error in creating socket source")
+		return nil, errors.Wrap(err, codes.Inherit, "error in creating socket source")
 	}
 
 	return NewSocketSource(spec, conn, &nowTimeProvider{}, dsid)
@@ -198,7 +199,7 @@ func (ss *socketSource) Run(ctx context.Context) {
 	defer ss.rc.Close()
 	result, err := ss.decoder.Decode(ss.rc)
 	if err != nil {
-		err = errors.Wrap(err, "decode error")
+		err = errors.Wrap(err, codes.Inherit, "decode error")
 	} else {
 		err = result.Tables().Do(func(tbl flux.Table) error {
 			for _, t := range ss.ts {

@@ -1,6 +1,7 @@
 package universe
 
 import (
+	"errors"
 	"fmt"
 	"math"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
-	"github.com/pkg/errors"
 )
 
 const CovarianceKind = "covariance"
