@@ -5,6 +5,7 @@ import (
 
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/internal/mutable"
 )
 
@@ -63,7 +64,7 @@ func (r *HoltWinters) Do(vs *array.Float64) *array.Float64 {
 	r.vs = vs
 	l := vs.Len() // l is the length of both times and values
 	if l < 2 || r.seasonal && l < r.s || r.n <= 0 {
-		return mutable.NewFloat64Array(r.alloc).NewFloat64Array()
+		return arrow.NewFloat(nil, nil)
 	}
 	m := r.s
 
