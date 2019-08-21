@@ -100,7 +100,8 @@ func eval(ctx context.Context, deps dependencies.Interface, e Evaluator, scope S
 	if err != nil {
 		return nil, err
 	}
-	values.CheckKind(v.PolyType().Nature(), e.Type().Nature())
+
+	// values.CheckKind(v.PolyType().Nature(), e.Type().Nature())
 	return v, nil
 }
 
@@ -122,7 +123,7 @@ func (e *blockEvaluator) Eval(ctx context.Context, deps dependencies.Interface, 
 			return nil, err
 		}
 	}
-	values.CheckKind(e.value.Type().Nature(), e.Type().Nature())
+	// values.CheckKind(e.value.Type().Nature(), e.Type().Nature())
 	return e.value, nil
 }
 
