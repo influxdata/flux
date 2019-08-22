@@ -6,7 +6,6 @@ package influxdb
 import (
 	"fmt"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 )
@@ -25,8 +24,6 @@ func init() {
 		Required: nil,
 		Return:   flux.TableObjectType,
 	}
-
-	flux.RegisterDependency(FromKind, "bucketlookup", dependencies.BucketLookup())
 
 	flux.RegisterPackageValue("influxdata/influxdb", FromKind, flux.FunctionValue(FromKind, createFromOpSpec, fromSignature))
 	flux.RegisterOpSpec(FromKind, newFromOp)
