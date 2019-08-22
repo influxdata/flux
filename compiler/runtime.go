@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strings"
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/dependencies"
@@ -147,6 +148,51 @@ func (e *declarationEvaluator) Eval(ctx context.Context, deps dependencies.Inter
 
 	scope.Set(e.id, v)
 	return v, nil
+}
+
+type stringExpressionEvaluator struct {
+	t     semantic.Type
+	parts []Evaluator
+}
+
+func (e *stringExpressionEvaluator) Type() semantic.Type {
+	return e.t
+}
+
+func (e *stringExpressionEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
+	var b strings.Builder
+	for _, p := range e.parts {
+		v, err := p.Eval(ctx, deps, scope)
+		if err != nil {
+			return nil, err
+		}
+		b.WriteString(v.Str())
+	}
+	return values.NewString(b.String()), nil
+}
+
+type textEvaluator struct {
+	value string
+}
+
+func (*textEvaluator) Type() semantic.Type {
+	return semantic.String
+}
+
+func (e *textEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
+	return values.NewString(e.value), nil
+}
+
+type interpolatedEvaluator struct {
+	s Evaluator
+}
+
+func (*interpolatedEvaluator) Type() semantic.Type {
+	return semantic.String
+}
+
+func (e *interpolatedEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
+	return e.s.Eval(ctx, deps, scope)
 }
 
 type objEvaluator struct {

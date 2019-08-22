@@ -2,10 +2,11 @@ package compiler_test
 
 import (
 	"context"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"reflect"
 	"regexp"
 	"testing"
+
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
@@ -122,6 +123,84 @@ func TestCompileAndEval(t *testing.T) {
 		want    values.Value
 		wantErr bool
 	}{
+		{
+			name: "interpolated string expression",
+			// f = (r) => "n = ${r.n}"
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "r"}},
+						},
+					},
+					Body: &semantic.StringExpression{
+						Parts: []semantic.StringExpressionPart{
+							&semantic.TextPart{
+								Value: "n = ",
+							},
+							&semantic.InterpolatedPart{
+								Expression: &semantic.MemberExpression{
+									Object: &semantic.IdentifierExpression{
+										Name: "r",
+									},
+									Property: "n",
+								},
+							},
+						},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"r": semantic.NewObjectType(map[string]semantic.Type{
+					"n": semantic.String,
+				}),
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewObjectWithValues(map[string]values.Value{
+					"n": values.NewString("10"),
+				}),
+			}),
+			want: values.NewString("n = 10"),
+		},
+		{
+			name: "interpolated string expression error",
+			// f = (r) => "n = ${r.n}"
+			fn: &semantic.FunctionExpression{
+				Block: &semantic.FunctionBlock{
+					Parameters: &semantic.FunctionParameters{
+						List: []*semantic.FunctionParameter{
+							{Key: &semantic.Identifier{Name: "r"}},
+						},
+					},
+					Body: &semantic.StringExpression{
+						Parts: []semantic.StringExpressionPart{
+							&semantic.TextPart{
+								Value: "n = ",
+							},
+							&semantic.InterpolatedPart{
+								Expression: &semantic.MemberExpression{
+									Object: &semantic.IdentifierExpression{
+										Name: "r",
+									},
+									Property: "n",
+								},
+							},
+						},
+					},
+				},
+			},
+			inType: semantic.NewObjectType(map[string]semantic.Type{
+				"r": semantic.NewObjectType(map[string]semantic.Type{
+					"n": semantic.Int,
+				}),
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewObjectWithValues(map[string]values.Value{
+					"n": values.NewInt(10),
+				}),
+			}),
+			wantErr: true,
+		},
 		{
 			name: "simple ident return",
 			// f = (r) => r
@@ -1062,8 +1141,14 @@ func TestCompileAndEval(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			f, err := compiler.Compile(nil, tc.fn, tc.inType)
-			if tc.wantErr != (err != nil) {
+			if !tc.wantErr && err != nil {
 				t.Fatalf("unexpected error: %s", err)
+			}
+			if tc.wantErr && err == nil {
+				t.Fatal("wanted error but got nothing")
+			}
+			if tc.wantErr && err != nil {
+				return
 			}
 			ctx, deps := context.Background(), dependenciestest.Default()
 			got, err := f.Eval(ctx, deps, tc.input)

@@ -210,6 +210,31 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, scope Scope, funcEx
 			array: arr,
 			index: idx,
 		}, nil
+	case *semantic.StringExpression:
+		parts := make([]Evaluator, len(n.Parts))
+		for i, p := range n.Parts {
+			e, err := compile(p, typeSol, scope, funcExprs)
+			if err != nil {
+				return nil, err
+			}
+			parts[i] = e
+		}
+		return &stringExpressionEvaluator{
+			t:     monoType(typeSol.TypeOf(n)),
+			parts: parts,
+		}, nil
+	case *semantic.TextPart:
+		return &textEvaluator{
+			value: n.Value,
+		}, nil
+	case *semantic.InterpolatedPart:
+		e, err := compile(n.Expression, typeSol, scope, funcExprs)
+		if err != nil {
+			return nil, err
+		}
+		return &interpolatedEvaluator{
+			s: e,
+		}, nil
 	case *semantic.BooleanLiteral:
 		return &booleanEvaluator{
 			t: monoType(typeSol.TypeOf(n)),
