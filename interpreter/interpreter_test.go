@@ -130,6 +130,24 @@ func TestEval(t *testing.T) {
 		want    []values.Value
 	}{
 		{
+			name: "string interpolation",
+			query: `
+				str = "str"
+				ing = "ing"
+				"str + ing = ${str+ing}"`,
+			want: []values.Value{
+				values.NewString("str + ing = string"),
+			},
+		},
+		{
+			name: "string interpolation error",
+			query: `
+				a = 1
+				b = 2
+				"a + b = ${a + b}"`,
+			wantErr: true,
+		},
+		{
 			name:  "call builtin function",
 			query: "six()",
 			want: []values.Value{
