@@ -430,6 +430,17 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		v.cs.AddKindConst(nodeVar, ArrayKind{at.typ})
 		v.cs.AddTypeConst(nodeVar, at, n.Location())
 		return nodeVar, nil
+	case *StringExpression:
+		for _, part := range n.Parts {
+			if p, ok := part.(*InterpolatedPart); ok {
+				t, err := v.lookup(p.Expression)
+				if err != nil {
+					return nil, err
+				}
+				v.cs.AddTypeConst(t, String, p.Location())
+			}
+		}
+		return String, nil
 	case *StringLiteral:
 		return String, nil
 	case *IntegerLiteral:
@@ -458,7 +469,9 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		*TestStatement,
 		*Identifier,
 		*FunctionParameters,
-		*ExpressionStatement:
+		*ExpressionStatement,
+		*TextPart,
+		*InterpolatedPart:
 		return nil, nil
 	default:
 		return nil, fmt.Errorf("unsupported %T", n)
