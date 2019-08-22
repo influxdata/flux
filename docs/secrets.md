@@ -30,40 +30,23 @@ for example, a http.post function may reference a token in the header object by 
 http.post(header: {"Content Type": "application-json", "ApplicationSecret": {secretKey: "FLUX_HTTP_POST_KEY"}}, url: "http://some/url/", data: json_enc)
 
 ## Flux Package
-We will provide a `secrets` package that will help the user create an object with the required properties for secret lookup.  
+We will provide a `secret` package that will help the user create an object with the required properties for secret lookup.  
 A helper function is useful because we may wish to change the properties of a secret request over time, and we don't want users to have to update their code unless strictly needed.  
 
-The vault package contains: 
+The secret package contains: 
 
-- `secrets.get(key: "FLUX_SLACK_ID")`: returns an object with a single property: `{secretKey: "my-secret"}`
+- `secret.get(key: "FLUX_SLACK_ID")`: returns an object with a single property: `{secretKey: "my-secret"}`
 
 The function will provide all that's needed to do the lookup.  It may also be implemented to pre-authorize that the user can access the given key, so that errors occur earlier.  
 
-Finally, a nice-to-have, but not required behavior would be to enforce that the token-lookup object be created by the vault.Get call.  That is, the user should get an error if they construct a request object by hand.  
-
-A final implementation may look like: 
-Go code: 
-```Go
-// calling flux:  
-//     import "secret"
-//     import "http"
-//
-//     tokAK = secret.get(key: "FLUX_SLACK_ID")
-//     tokURL = secret.get(key: "FLUX_SLACK_URL")
-//     // ASSUMPTION:  the docs for http.post say you can provide a token for the URL, 
-//     // and also as a sub-object in the header
-//     http.post(url: tok2, headers: {AuthenticationKey: tokAK}, data: {message: "hello"})
-// in function call: 
-var urlstr string
-url, ok, err := args.GetObject("url")
-if ok {
-  urlstr = deps.SecretService.LoadSecret(ctx, url.Get("secretKey"))  
-}
-token, err := message.Get("token")
-
-header, err := args.GetRequiredObject("header")
-
-// hypothetical helper function
-header = ReplaceSecrets(ctx, deps.SecretService, header)
+Examples: 
 ```
+import "secret"
+import "http"
 
+tokAK = secret.get(key: "FLUX_SLACK_ID")
+tokURL = secret.get(key: "FLUX_SLACK_URL")
+// ASSUMPTION:  the docs for http.post should say you can provide a token for the URL, 
+// and also as a sub-object in the header
+http.post(url: tok2, headers: {AuthenticationKey: tokAK}, data: {message: "hello"})
+ ```
