@@ -1,6 +1,7 @@
 package testdata_test
 
 import "testing"
+import "math"
 
 option now = () => (2030-01-01T00:00:00Z)
 
