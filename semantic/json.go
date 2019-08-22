@@ -335,6 +335,97 @@ func (d *NativeVariableAssignment) UnmarshalJSON(data []byte) error {
 func (d *ExternalVariableAssignment) MarshalJSON() ([]byte, error) {
 	return nil, errors.New(codes.Internal, "cannot marshal ExternalVariableAssignment")
 }
+func (e *StringExpression) MarshalJSON() ([]byte, error) {
+	type Alias StringExpression
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  e.NodeType(),
+		Alias: (*Alias)(e),
+	}
+	return json.Marshal(raw)
+}
+func (e *StringExpression) UnmarshalJSON(data []byte) error {
+	type Alias StringExpression
+	raw := struct {
+		*Alias
+		Parts []json.RawMessage `json:"parts"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*e = *(*StringExpression)(raw.Alias)
+	}
+
+	e.Parts = make([]StringExpressionPart, len(raw.Parts))
+	for i, r := range raw.Parts {
+		part, err := unmarshalStringPart(r)
+		if err != nil {
+			return err
+		}
+		e.Parts[i] = part
+	}
+	return nil
+}
+func (e *TextPart) MarshalJSON() ([]byte, error) {
+	type Alias TextPart
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  e.NodeType(),
+		Alias: (*Alias)(e),
+	}
+	return json.Marshal(raw)
+}
+func (e *TextPart) UnmarshalJSON(data []byte) error {
+	type Alias TextPart
+	raw := struct {
+		*Alias
+		Value string `json:"value"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*e = *(*TextPart)(raw.Alias)
+	}
+	e.Value = raw.Value
+	return nil
+}
+func (e *InterpolatedPart) MarshalJSON() ([]byte, error) {
+	type Alias InterpolatedPart
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  e.NodeType(),
+		Alias: (*Alias)(e),
+	}
+	return json.Marshal(raw)
+}
+func (e *InterpolatedPart) UnmarshalJSON(data []byte) error {
+	type Alias InterpolatedPart
+	raw := struct {
+		*Alias
+		Expression json.RawMessage `json:"expression"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*e = *(*InterpolatedPart)(raw.Alias)
+	}
+
+	expr, err := unmarshalExpression(raw.Expression)
+	if err != nil {
+		return err
+	}
+	e.Expression = expr
+	return nil
+}
 func (e *CallExpression) MarshalJSON() ([]byte, error) {
 	type Alias CallExpression
 	raw := struct {
@@ -996,6 +1087,20 @@ func unmarshalPropertyKey(msg json.RawMessage) (PropertyKey, error) {
 	}
 	return k, nil
 }
+func unmarshalStringPart(msg json.RawMessage) (StringExpressionPart, error) {
+	if checkNullMsg(msg) {
+		return nil, nil
+	}
+	n, err := unmarshalNode(msg)
+	if err != nil {
+		return nil, err
+	}
+	p, ok := n.(StringExpressionPart)
+	if !ok {
+		return nil, fmt.Errorf("node %q is not a string expression part", n.NodeType())
+	}
+	return p, nil
+}
 func unmarshalAssignment(msg json.RawMessage) (Assignment, error) {
 	if checkNullMsg(msg) {
 		return nil, nil
@@ -1072,6 +1177,12 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 		node = new(Identifier)
 	case "IdentifierExpression":
 		node = new(IdentifierExpression)
+	case "StringExpression":
+		node = new(StringExpression)
+	case "TextPart":
+		node = new(TextPart)
+	case "InterpolatedPart":
+		node = new(InterpolatedPart)
 	case "StringLiteral":
 		node = new(StringLiteral)
 	case "BooleanLiteral":

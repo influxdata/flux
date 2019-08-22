@@ -307,6 +307,29 @@ func walk(v Visitor, n Node) {
 			walk(w, n.Key)
 			walk(w, n.Value)
 		}
+	case *StringExpression:
+		if n == nil {
+			return
+		}
+		w := v.Visit(n)
+		if w != nil {
+			for _, p := range n.Parts {
+				walk(w, p)
+			}
+		}
+	case *TextPart:
+		if n == nil {
+			return
+		}
+		v.Visit(n)
+	case *InterpolatedPart:
+		if n == nil {
+			return
+		}
+		w := v.Visit(n)
+		if w != nil {
+			walk(w, n.Expression)
+		}
 	case *BooleanLiteral:
 		if n == nil {
 			return

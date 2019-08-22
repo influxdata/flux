@@ -20,6 +20,28 @@ func TestJSONMarshal(t *testing.T) {
 		want string
 	}{
 		{
+			name: "string interpolation",
+			node: &semantic.StringExpression{
+				Parts: []semantic.StringExpressionPart{
+					&semantic.TextPart{
+						Value: "a + b = ",
+					},
+					&semantic.InterpolatedPart{
+						Expression: &semantic.BinaryExpression{
+							Left: &semantic.IdentifierExpression{
+								Name: "a",
+							},
+							Right: &semantic.IdentifierExpression{
+								Name: "b",
+							},
+							Operator: ast.AdditionOperator,
+						},
+					},
+				},
+			},
+			want: `{"type":"StringExpression","parts":[{"type":"TextPart","value":"a + b = "},{"type":"InterpolatedPart","expression":{"type":"BinaryExpression","operator":"+","left":{"type":"IdentifierExpression","name":"a"},"right":{"type":"IdentifierExpression","name":"b"}}}]}`,
+		},
+		{
 			name: "simple package",
 			node: &semantic.Package{
 				Package: "main",

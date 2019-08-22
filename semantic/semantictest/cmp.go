@@ -53,6 +53,9 @@ var CmpOptions = []cmp.Option{
 	cmpopts.IgnoreUnexported(semantic.RegexpLiteral{}),
 	cmpopts.IgnoreUnexported(semantic.StringLiteral{}),
 	cmpopts.IgnoreUnexported(semantic.UnsignedIntegerLiteral{}),
+	cmpopts.IgnoreUnexported(semantic.StringExpression{}),
+	cmpopts.IgnoreUnexported(semantic.TextPart{}),
+	cmpopts.IgnoreUnexported(semantic.InterpolatedPart{}),
 }
 
 func TransformValue(v values.Value) map[string]interface{} {
