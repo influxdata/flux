@@ -1,6 +1,7 @@
 package flux
 
 import (
+	"context"
 	stderrors "errors"
 	"fmt"
 	"path"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/parser"
@@ -35,16 +37,16 @@ func Parse(flux string) (*ast.Package, error) {
 }
 
 // Eval accepts a Flux script and evaluates it to produce a set of side effects (as a slice of values) and a scope.
-func Eval(flux string, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
+func Eval(ctx context.Context, deps dependencies.Interface, flux string, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
 	astPkg, err := Parse(flux)
 	if err != nil {
 		return nil, nil, err
 	}
-	return EvalAST(astPkg, opts...)
+	return EvalAST(ctx, deps, astPkg, opts...)
 }
 
 // EvalAST accepts a Flux AST and evaluates it to produce a set of side effects (as a slice of values) and a scope.
-func EvalAST(astPkg *ast.Package, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
+func EvalAST(ctx context.Context, deps dependencies.Interface, astPkg *ast.Package, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
 	semPkg, err := semantic.New(astPkg)
 	if err != nil {
 		return nil, nil, err
@@ -57,7 +59,7 @@ func EvalAST(astPkg *ast.Package, opts ...ScopeMutator) ([]interpreter.SideEffec
 		opt(universe)
 	}
 
-	sideEffects, err := itrp.Eval(semPkg, universe, StdLib())
+	sideEffects, err := itrp.Eval(ctx, deps, semPkg, universe, StdLib())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -300,7 +302,7 @@ func evalBuiltInPackages() error {
 		}
 
 		itrp := interpreter.NewInterpreter()
-		if _, err := itrp.Eval(semPkg, preludeScope.Nest(pkg), stdlib); err != nil {
+		if _, err := itrp.Eval(context.Background(), dependencies.NewDefaultDependencies(), semPkg, preludeScope.Nest(pkg), stdlib); err != nil {
 			return errors.Wrapf(err, codes.Inherit, "failed to evaluate builtin package %q", astPkg.Path)
 		}
 	}
@@ -631,8 +633,8 @@ func (f *function) HasSideEffect() bool {
 	return f.hasSideEffect
 }
 
-func (f *function) Call(argsObj values.Object) (values.Value, error) {
-	return interpreter.DoFunctionCall(f.call, argsObj)
+func (f *function) Call(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+	return interpreter.DoFunctionCall(f.call, args)
 }
 
 func (f *function) call(args interpreter.Arguments) (values.Value, error) {

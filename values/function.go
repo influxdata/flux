@@ -1,9 +1,11 @@
 package values
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -11,11 +13,11 @@ import (
 type Function interface {
 	Value
 	HasSideEffect() bool
-	Call(args Object) (Value, error)
+	Call(ctx context.Context, deps dependencies.Interface, args Object) (Value, error)
 }
 
 // NewFunction returns a new function value
-func NewFunction(name string, typ semantic.PolyType, call func(args Object) (Value, error), sideEffect bool) Function {
+func NewFunction(name string, typ semantic.PolyType, call func(ctx context.Context, deps dependencies.Interface, args Object) (Value, error), sideEffect bool) *function {
 	return &function{
 		name:          name,
 		t:             typ,
@@ -28,7 +30,7 @@ func NewFunction(name string, typ semantic.PolyType, call func(args Object) (Val
 type function struct {
 	name          string
 	t             semantic.PolyType
-	call          func(args Object) (Value, error)
+	call          func(ctx context.Context, deps dependencies.Interface, args Object) (Value, error)
 	hasSideEffect bool
 }
 
@@ -110,6 +112,6 @@ func (f *function) HasSideEffect() bool {
 	return f.hasSideEffect
 }
 
-func (f *function) Call(args Object) (Value, error) {
-	return f.call(args)
+func (f *function) Call(ctx context.Context, deps dependencies.Interface, args Object) (Value, error) {
+	return f.call(ctx, deps, args)
 }

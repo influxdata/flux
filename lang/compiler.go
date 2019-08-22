@@ -2,12 +2,14 @@ package lang
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/spec"
@@ -130,9 +132,10 @@ func CompileTableObject(to *flux.TableObject, now time.Time, opts ...CompileOpti
 	}, nil
 }
 
+// WalkIR applies the function `f` to each operation in the compiled spec.
 func WalkIR(astPkg *ast.Package, f func(o *flux.Operation) error) error {
 
-	if spec, err := spec.FromAST(context.Background(), astPkg, time.Now()); err != nil {
+	if spec, err := spec.FromAST(context.Background(), dependencies.NewDefaultDependencies(), astPkg, time.Now()); err != nil {
 		return err
 	} else {
 		return spec.Walk(f)
@@ -313,7 +316,13 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 		astPkg.Files = append([]*ast.File{p.opts.extern}, astPkg.Files...)
 	}
 
-	s, err := spec.FromAST(ctx, astPkg, p.Now)
+	deps, ok := p.Dependencies[dependencies.InterpreterDepsKey]
+	if !ok {
+		// TODO(Adam): this should be more of a noop dependency package
+		return nil, fmt.Errorf("no interpreter dependencies found")
+	}
+	depsI := deps.(dependencies.Interface)
+	s, err := spec.FromAST(ctx, depsI, astPkg, p.Now)
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in evaluating AST while starting program")
 	}

@@ -1,12 +1,14 @@
 package strings
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -35,7 +37,7 @@ func generateSingleArgStringFunction(name string, stringFn func(string) string) 
 			Required:   semantic.LabelSet{stringArgV},
 			Return:     semantic.String,
 		}),
-		func(args values.Object) (values.Value, error) {
+		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			var str string
 
 			v, ok := args.Get(stringArgV)
@@ -70,7 +72,7 @@ func generateDualArgStringFunction(name string, argNames []string, stringFn func
 			Required: semantic.LabelSet{argNames[0], argNames[1]},
 			Return:   semantic.String,
 		}),
-		func(args values.Object) (values.Value, error) {
+		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 
 			for i, name := range argNames {
@@ -107,7 +109,7 @@ func generateDualArgStringFunctionReturnBool(name string, argNames []string, str
 			Required: semantic.LabelSet{argNames[0], argNames[1]},
 			Return:   semantic.Bool,
 		}),
-		func(args values.Object) (values.Value, error) {
+		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 
 			for i, name := range argNames {
@@ -144,7 +146,7 @@ func generateDualArgStringFunctionReturnInt(name string, argNames []string, stri
 			Required: semantic.LabelSet{argNames[0], argNames[1]},
 			Return:   semantic.Int,
 		}),
-		func(args values.Object) (values.Value, error) {
+		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 
 			for i, name := range argNames {
@@ -177,7 +179,7 @@ func generateSplit(name string, argNames []string, fn func(string, string) []str
 			Required: semantic.LabelSet{argNames[0], argNames[1]},
 			Return:   semantic.NewArrayPolyType(semantic.String),
 		}),
-		func(args values.Object) (values.Value, error) {
+		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 
 			for i, name := range argNames {
@@ -216,7 +218,7 @@ func generateSplitN(name string, argNames []string, fn func(string, string, int)
 			Required: semantic.LabelSet{argNames[0], argNames[1], argNames[2]},
 			Return:   semantic.Array,
 		}),
-		func(args values.Object) (values.Value, error) {
+		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 3)
 			var argTypes = []semantic.PolyType{semantic.String, semantic.String, semantic.Int}
 
@@ -255,7 +257,7 @@ func generateRepeat(name string, argNames []string, fn func(string, int) string)
 			Required: semantic.LabelSet{argNames[0], argNames[1]},
 			Return:   semantic.String,
 		}),
-		func(args values.Object) (values.Value, error) {
+		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 			var argType = []semantic.PolyType{semantic.String, semantic.Int}
 
@@ -291,7 +293,7 @@ func generateReplace(name string, argNames []string, fn func(string, string, str
 			Required: semantic.LabelSet{argNames[0], argNames[1], argNames[2], argNames[3]},
 			Return:   semantic.String,
 		}),
-		func(args values.Object) (values.Value, error) {
+		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 4)
 			var argType = []semantic.PolyType{semantic.String, semantic.String, semantic.String, semantic.Int}
 
@@ -326,7 +328,7 @@ func generateReplaceAll(name string, argNames []string, fn func(string, string, 
 			Required: semantic.LabelSet{argNames[0], argNames[1], argNames[2]},
 			Return:   semantic.String,
 		}),
-		func(args values.Object) (values.Value, error) {
+		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 3)
 
 			for i, name := range argNames {
@@ -356,7 +358,7 @@ func generateUnicodeIsFunction(name string, Fn func(rune) bool) values.Function 
 			Required:   semantic.LabelSet{stringArgV},
 			Return:     semantic.Bool,
 		}),
-		func(args values.Object) (values.Value, error) {
+		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			var str string
 
 			v, ok := args.Get(stringArgV)
@@ -392,7 +394,7 @@ var strlen = values.NewFunction(
 		Required:   semantic.LabelSet{stringArgV},
 		Return:     semantic.Int,
 	}),
-	func(args values.Object) (values.Value, error) {
+	func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 		v, ok := args.Get(stringArgV)
 		if !ok {
 			return nil, fmt.Errorf("missing argument %q", stringArgV)
@@ -416,7 +418,7 @@ var substring = values.NewFunction(
 		Required: semantic.LabelSet{stringArgV, start, end},
 		Return:   semantic.String,
 	}),
-	func(args values.Object) (values.Value, error) {
+	func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 		v, vOk := args.Get(stringArgV)
 		a, aOk := args.Get(start)
 		b, bOk := args.Get(end)
@@ -532,7 +534,7 @@ func init() {
 				Required: semantic.LabelSet{"arr", "v"},
 				Return:   semantic.String,
 			}),
-			func(args values.Object) (values.Value, error) {
+			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 				var argVals = make([]values.Value, 2)
 
 				val, ok := args.Get("arr")

@@ -1,10 +1,13 @@
 package regexp
 
 import (
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
+	"context"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"regexp"
 	"testing"
+
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 func TestCompile(t *testing.T) {
@@ -13,7 +16,7 @@ func TestCompile(t *testing.T) {
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(v.Str())})
 	want, _ := regexp.Compile(v.Str())
 	realWant := values.NewRegexp(want)
-	got, err := fluxFunc.Call(fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,7 +30,7 @@ func TestQuoteMeta(t *testing.T) {
 	v := values.NewString("Escaping symbols like: .+*?()|[]{}^$")
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(v.Str())})
 	want := regexp.QuoteMeta(v.Str())
-	got, err := fluxFunc.Call(fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,7 +46,7 @@ func TestFindString(t *testing.T) {
 	v := values.NewString("seafood fool")
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"r": values.NewRegexp(r.Regexp()), "v": values.NewString(v.Str())})
 	want := r.Regexp().FindString(v.Str())
-	got, err := fluxFunc.Call(fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,7 +62,7 @@ func TestFindStringIndex(t *testing.T) {
 	v := values.NewString("tablett")
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"r": values.NewRegexp(r.Regexp()), "v": values.NewString(v.Str())})
 	want := r.Regexp().FindStringIndex(v.Str())
-	got, err := fluxFunc.Call(fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,7 +78,7 @@ func TestMatchRegexpString(t *testing.T) {
 	v := values.NewString("gophergophergopher")
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"r": values.NewRegexp(r.Regexp()), "v": values.NewString(v.Str())})
 	want := r.Regexp().MatchString(v.Str())
-	got, err := fluxFunc.Call(fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,7 +95,7 @@ func TestReplaceAllString(t *testing.T) {
 	tStr := values.NewString("T")
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"r": values.NewRegexp(r.Regexp()), "v": values.NewString(v.Str()), "t": values.NewString(tStr.Str())})
 	want := re.ReplaceAllString(v.Str(), tStr.Str())
-	got, err := fluxFunc.Call(fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -109,7 +112,7 @@ func TestSplitRegexp(t *testing.T) {
 	i := values.NewInt(5)
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"r": values.NewRegexp(r.Regexp()), "v": values.NewString(v.Str()), "i": values.NewInt(i.Int())})
 	want := r.Regexp().Split(v.Str(), int(i.Int()))
-	got, err := fluxFunc.Call(fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -128,7 +131,7 @@ func TestGetString(t *testing.T) {
 	r := values.NewRegexp(re)
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"r": values.NewRegexp(r.Regexp())})
 	want := re.String()
-	got, err := fluxFunc.Call(fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}

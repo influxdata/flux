@@ -1,10 +1,12 @@
 package universe
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -23,7 +25,7 @@ func MakeContainsFunc() values.Function {
 			Required: semantic.LabelSet{"value", "set"},
 			Return:   semantic.Bool,
 		}),
-		func(args values.Object) (values.Value, error) {
+		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			v, ok := args.Get("value")
 			if !ok {
 				return nil, errors.New("missing argument value")

@@ -1,12 +1,13 @@
 package universe_test
 
 import (
+	"testing"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
-	"testing"
 )
 
 func TestChandeMomentumOscillatorOperation_Marshaling(t *testing.T) {

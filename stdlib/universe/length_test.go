@@ -1,10 +1,13 @@
 package universe_test
 
 import (
+	"context"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"testing"
+
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
-	"testing"
 )
 
 type lengthCase struct {
@@ -58,6 +61,8 @@ func lengthTestHelper(t *testing.T, tc lengthCase) {
 	t.Helper()
 	length := universe.MakeLengthFunc()
 	result, err := length.Call(
+		context.Background(),
+		dependenciestest.NewTestDependenciesInterface(),
 		values.NewObjectWithValues(map[string]values.Value{
 			"arr": values.NewArrayWithBacking(semantic.Tvar(1).Nature(), tc.arr),
 		}),

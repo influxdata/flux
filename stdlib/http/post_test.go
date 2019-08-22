@@ -2,6 +2,7 @@ package http_test
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -23,7 +25,7 @@ func addFail(scope values.Scope) {
 		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 			Return: semantic.Bool,
 		}),
-		func(args values.Object) (values.Value, error) {
+		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			return nil, errors.New(codes.Aborted, "fail")
 		},
 		false,
@@ -52,7 +54,7 @@ status = http.post(url:"%s/path/a/b/c", headers: {x:"a",y:"b",z:"c"}, data: byte
 status == 204 or fail()
 `, ts.URL)
 
-	if _, _, err := flux.Eval(script, addFail); err != nil {
+	if _, _, err := flux.Eval(context.Background(), dependencies.NewDefaultDependencies(), script, addFail); err != nil {
 		t.Fatal("evaluation of http.post failed: ", err)
 	}
 	if want, got := "/path/a/b/c", req.URL.Path; want != got {

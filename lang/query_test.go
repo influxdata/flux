@@ -7,6 +7,7 @@ import (
 
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
+	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 )
@@ -16,6 +17,8 @@ func runQuery(script string) (flux.Query, error) {
 	if err != nil {
 		return nil, err
 	}
+	program.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
+
 	q, err := program.Start(context.Background(), &memory.Allocator{})
 	if err != nil {
 		return nil, err

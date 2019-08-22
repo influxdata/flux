@@ -3,6 +3,9 @@ package universe
 import (
 	"context"
 	"fmt"
+	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/execute/executetest"
+
 	"time"
 
 	"github.com/influxdata/flux"
@@ -55,7 +58,7 @@ func NewTableFindFunction() values.Value {
 		false)
 }
 
-func tableFindCall(args values.Object) (values.Value, error) {
+func tableFindCall(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 	arguments := interpreter.NewArguments(args)
 	var to *flux.TableObject
 	if v, err := arguments.GetRequired(tableFindStreamArg); err != nil {
@@ -91,6 +94,10 @@ func tableFindCall(args values.Object) (values.Value, error) {
 		return nil, errors.Wrap(err, codes.Inherit, "error in table object compilation")
 	}
 
+	if prog, ok := p.(lang.DependenciesAwareProgram); ok {
+		prog.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
+	}
+
 	q, err := p.Start(context.Background(), &memory.Allocator{})
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in table object start")
@@ -111,7 +118,7 @@ func tableFindCall(args values.Object) (values.Value, error) {
 			}
 
 			var err error
-			found, err = fn.Eval(tbl)
+			found, err = fn.Eval(ctx, deps, tbl)
 			if err != nil {
 				return errors.Wrap(err, codes.Inherit, "failed to evaluate group key predicate function")
 			}
@@ -152,7 +159,7 @@ func NewGetColumnFunction() values.Value {
 		false)
 }
 
-func getColumnCall(args values.Object) (values.Value, error) {
+func getColumnCall(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 	arguments := interpreter.NewArguments(args)
 	var tbl flux.Table
 	if v, err := arguments.GetRequired(getColumnTableArg); err != nil {
@@ -247,7 +254,7 @@ func NewGetRecordFunction() values.Value {
 		false)
 }
 
-func getRecordCall(args values.Object) (values.Value, error) {
+func getRecordCall(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 	arguments := interpreter.NewArguments(args)
 	var tbl flux.Table
 	if v, err := arguments.GetRequired(getRecordTableArg); err != nil {

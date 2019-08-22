@@ -1,10 +1,12 @@
 package complete_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/complete"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -47,7 +49,9 @@ func TestFunctionNames(t *testing.T) {
 		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 			Return: semantic.Int,
 		}),
-		func(values.Object) (values.Value, error) { return values.NewInt(5), nil },
+		func(context.Context, dependencies.Interface, values.Object) (values.Value, error) {
+			return values.NewInt(5), nil
+		},
 		false,
 	)
 	s := values.NewScope()
@@ -75,7 +79,9 @@ func TestFunctionSuggestion(t *testing.T) {
 			},
 			Return: semantic.Int,
 		}),
-		func(values.Object) (values.Value, error) { return values.NewInt(5), nil },
+		func(context.Context, dependencies.Interface, values.Object) (values.Value, error) {
+			return values.NewInt(5), nil
+		},
 		false,
 	)
 	s := values.NewScope()

@@ -15,6 +15,7 @@ import (
 
 	"github.com/c-bata/go-prompt"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/semantic"
@@ -30,7 +31,7 @@ type REPL struct {
 }
 
 type Querier interface {
-	Query(ctx context.Context, compiler flux.Compiler) (flux.ResultIterator, error)
+	Query(ctx context.Context, deps dependencies.Interface, compiler flux.Compiler) (flux.ResultIterator, error)
 }
 
 func New(q Querier) *REPL {
@@ -133,7 +134,9 @@ func (r *REPL) executeLine(t string) error {
 		t = q
 	}
 
-	ses, scope, err := flux.Eval(t, func(ns values.Scope) {
+	ctx := context.Background()
+	deps := dependencies.NewDefaultDependencies()
+	ses, scope, err := flux.Eval(ctx, deps, t, func(ns values.Scope) {
 		// copy values saved in the cached scope to the new interpreter's scope
 		r.scope.Range(func(k string, v values.Value) {
 			ns.Set(k, v)
@@ -152,12 +155,12 @@ func (r *REPL) executeLine(t string) error {
 				if !ok {
 					return fmt.Errorf("now option not set")
 				}
-				nowTime, err := now.Function().Call(nil)
+				nowTime, err := now.Function().Call(context.TODO(), dependencies.NewDefaultDependencies(), nil)
 				if err != nil {
 					return err
 				}
 				s := spec.FromTableObject(t, nowTime.Time().Time())
-				if err := r.doQuery(s); err != nil {
+				if err := r.doQuery(ctx, s, deps); err != nil {
 					return err
 				}
 			} else {
@@ -168,9 +171,9 @@ func (r *REPL) executeLine(t string) error {
 	return nil
 }
 
-func (r *REPL) doQuery(spec *flux.Spec) error {
+func (r *REPL) doQuery(cx context.Context, spec *flux.Spec, deps dependencies.Interface) error {
 	// Setup cancel context
-	ctx, cancelFunc := context.WithCancel(context.Background())
+	ctx, cancelFunc := context.WithCancel(cx)
 	r.setCancel(cancelFunc)
 	defer cancelFunc()
 	defer r.clearCancel()
@@ -179,7 +182,7 @@ func (r *REPL) doQuery(spec *flux.Spec) error {
 		Spec: spec,
 	}
 
-	results, err := r.querier.Query(ctx, replCompiler)
+	results, err := r.querier.Query(ctx, deps, replCompiler)
 	if err != nil {
 		return err
 	}

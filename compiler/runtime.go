@@ -1,24 +1,26 @@
 package compiler
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
 	"regexp"
 
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
 type Func interface {
 	Type() semantic.Type
-	Eval(input values.Object) (values.Value, error)
+	Eval(ctx context.Context, deps dependencies.Interface, input values.Object) (values.Value, error)
 }
 
 type Evaluator interface {
 	Type() semantic.Type
-	Eval(scope Scope) (values.Value, error)
+	Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error)
 }
 
 type compiledFn struct {
@@ -55,12 +57,12 @@ func (c compiledFn) Type() semantic.Type {
 	return c.fnType.FunctionSignature().Return
 }
 
-func (c compiledFn) Eval(input values.Object) (values.Value, error) {
+func (c compiledFn) Eval(ctx context.Context, deps dependencies.Interface, input values.Object) (values.Value, error) {
 	if err := c.buildScope(input); err != nil {
 		return nil, err
 	}
 
-	return eval(c.root, c.inputScope)
+	return eval(ctx, deps, c.root, c.inputScope)
 }
 
 type Scope interface {
@@ -92,8 +94,8 @@ func nestScope(scope Scope) Scope {
 	return compilerScope{scope.Nest(nil)}
 }
 
-func eval(e Evaluator, scope Scope) (values.Value, error) {
-	v, err := e.Eval(scope)
+func eval(ctx context.Context, deps dependencies.Interface, e Evaluator, scope Scope) (values.Value, error) {
+	v, err := e.Eval(ctx, deps, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -111,10 +113,10 @@ func (e *blockEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *blockEvaluator) Eval(scope Scope) (values.Value, error) {
+func (e *blockEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
 	var err error
 	for _, b := range e.body {
-		e.value, err = eval(b, scope)
+		e.value, err = eval(ctx, deps, b, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -137,8 +139,8 @@ func (e *declarationEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *declarationEvaluator) Eval(scope Scope) (values.Value, error) {
-	v, err := eval(e.init, scope)
+func (e *declarationEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
+	v, err := eval(ctx, deps, e.init, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -157,10 +159,10 @@ func (e *objEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *objEvaluator) Eval(scope Scope) (values.Value, error) {
+func (e *objEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
 	obj := values.NewObject()
 	if e.with != nil {
-		with, err := e.with.Eval(scope)
+		with, err := e.with.Eval(ctx, deps, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -170,7 +172,7 @@ func (e *objEvaluator) Eval(scope Scope) (values.Value, error) {
 	}
 
 	for k, node := range e.properties {
-		v, err := eval(node, scope)
+		v, err := eval(ctx, deps, node, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -189,10 +191,10 @@ func (e *arrayEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *arrayEvaluator) Eval(scope Scope) (values.Value, error) {
+func (e *arrayEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
 	arr := values.NewArray(e.t.ElementType())
 	for _, ev := range e.array {
-		v, err := eval(ev, scope)
+		v, err := eval(ctx, deps, ev, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -211,8 +213,8 @@ func (e *logicalEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *logicalEvaluator) Eval(scope Scope) (values.Value, error) {
-	l, err := e.left.Eval(scope)
+func (e *logicalEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
+	l, err := e.left.Eval(ctx, deps, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +233,7 @@ func (e *logicalEvaluator) Eval(scope Scope) (values.Value, error) {
 		panic(fmt.Errorf("unknown logical operator %v", e.operator))
 	}
 
-	r, err := e.right.Eval(scope)
+	r, err := e.right.Eval(ctx, deps, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -249,16 +251,16 @@ func (e *conditionalEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *conditionalEvaluator) Eval(scope Scope) (values.Value, error) {
-	t, err := eval(e.test, scope)
+func (e *conditionalEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
+	t, err := eval(ctx, deps, e.test, scope)
 	if err != nil {
 		return nil, err
 	}
 
 	if t.IsNull() || !t.Bool() {
-		return eval(e.alternate, scope)
+		return eval(ctx, deps, e.alternate, scope)
 	} else {
-		return eval(e.consequent, scope)
+		return eval(ctx, deps, e.consequent, scope)
 	}
 }
 
@@ -272,12 +274,12 @@ func (e *binaryEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *binaryEvaluator) Eval(scope Scope) (values.Value, error) {
-	l, err := eval(e.left, scope)
+func (e *binaryEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
+	l, err := eval(ctx, deps, e.left, scope)
 	if err != nil {
 		return nil, err
 	}
-	r, err := eval(e.right, scope)
+	r, err := eval(ctx, deps, e.right, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -294,8 +296,8 @@ func (e *unaryEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *unaryEvaluator) Eval(scope Scope) (values.Value, error) {
-	v, err := e.node.Eval(scope)
+func (e *unaryEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
+	v, err := e.node.Eval(ctx, deps, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -350,7 +352,7 @@ func (e *integerEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *integerEvaluator) Eval(scope Scope) (values.Value, error) {
+func (e *integerEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
 	return values.NewInt(e.i), nil
 }
 
@@ -363,7 +365,7 @@ func (e *unsignedIntegerEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *unsignedIntegerEvaluator) Eval(scope Scope) (values.Value, error) {
+func (e *unsignedIntegerEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
 	return values.NewUInt(e.i), nil
 }
 
@@ -376,7 +378,7 @@ func (e *stringEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *stringEvaluator) Eval(scope Scope) (values.Value, error) {
+func (e *stringEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
 	return values.NewString(e.s), nil
 }
 
@@ -389,7 +391,7 @@ func (e *regexpEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *regexpEvaluator) Eval(scope Scope) (values.Value, error) {
+func (e *regexpEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
 	return values.NewRegexp(e.r), nil
 }
 
@@ -402,7 +404,7 @@ func (e *booleanEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *booleanEvaluator) Eval(scope Scope) (values.Value, error) {
+func (e *booleanEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
 	return values.NewBool(e.b), nil
 }
 
@@ -415,7 +417,7 @@ func (e *floatEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *floatEvaluator) Eval(scope Scope) (values.Value, error) {
+func (e *floatEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
 	return values.NewFloat(e.f), nil
 }
 
@@ -428,7 +430,7 @@ func (e *timeEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *timeEvaluator) Eval(scope Scope) (values.Value, error) {
+func (e *timeEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
 	return values.NewTime(e.time), nil
 }
 
@@ -441,7 +443,7 @@ func (e *durationEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *durationEvaluator) Eval(scope Scope) (values.Value, error) {
+func (e *durationEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
 	return values.NewDuration(e.duration), nil
 }
 
@@ -458,7 +460,7 @@ func (e *identifierEvaluator) Type() semantic.Type {
 	return t
 }
 
-func (e *identifierEvaluator) Eval(scope Scope) (values.Value, error) {
+func (e *identifierEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
 	v := scope.Get(e.name)
 	// Note this check pattern is slightly different than
 	// the usual one:
@@ -490,8 +492,8 @@ func (e *memberEvaluator) Type() semantic.Type {
 	return t
 }
 
-func (e *memberEvaluator) Eval(scope Scope) (values.Value, error) {
-	o, err := e.object.Eval(scope)
+func (e *memberEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
+	o, err := e.object.Eval(ctx, deps, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -510,12 +512,12 @@ func (e *arrayIndexEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *arrayIndexEvaluator) Eval(scope Scope) (values.Value, error) {
-	a, err := e.array.Eval(scope)
+func (e *arrayIndexEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
+	a, err := e.array.Eval(ctx, deps, scope)
 	if err != nil {
 		return nil, err
 	}
-	i, err := e.index.Eval(scope)
+	i, err := e.index.Eval(ctx, deps, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -532,16 +534,16 @@ func (e *callEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *callEvaluator) Eval(scope Scope) (values.Value, error) {
-	args, err := e.args.Eval(scope)
+func (e *callEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
+	args, err := e.args.Eval(ctx, deps, scope)
 	if err != nil {
 		return nil, err
 	}
-	f, err := e.callee.Eval(scope)
+	f, err := e.callee.Eval(ctx, deps, scope)
 	if err != nil {
 		return nil, err
 	}
-	return f.Function().Call(args.Object())
+	return f.Function().Call(ctx, deps, args.Object())
 }
 
 type functionEvaluator struct {
@@ -554,7 +556,7 @@ func (e *functionEvaluator) Type() semantic.Type {
 	return e.t
 }
 
-func (e *functionEvaluator) Eval(scope Scope) (values.Value, error) {
+func (e *functionEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
 	return &functionValue{
 		t:      e.t,
 		body:   e.body,
@@ -580,12 +582,12 @@ func (f *functionValue) HasSideEffect() bool {
 	return false
 }
 
-func (f *functionValue) Call(args values.Object) (values.Value, error) {
+func (f *functionValue) Call(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 	scope := nestScope(f.scope)
 	for _, p := range f.params {
 		a, ok := args.Get(p.Key)
 		if !ok && p.Default != nil {
-			v, err := eval(p.Default, f.scope)
+			v, err := eval(ctx, deps, p.Default, f.scope)
 			if err != nil {
 				return nil, err
 			}
@@ -593,7 +595,7 @@ func (f *functionValue) Call(args values.Object) (values.Value, error) {
 		}
 		scope.Set(p.Key, a)
 	}
-	return eval(f.body, scope)
+	return eval(ctx, deps, f.body, scope)
 }
 
 func (f *functionValue) Type() semantic.Type         { return f.t }
@@ -649,6 +651,6 @@ func (noopEvaluator) Type() semantic.Type {
 	return semantic.Nil
 }
 
-func (noopEvaluator) Eval(scope Scope) (values.Value, error) {
+func (noopEvaluator) Eval(ctx context.Context, deps dependencies.Interface, scope Scope) (values.Value, error) {
 	return values.Null, nil
 }

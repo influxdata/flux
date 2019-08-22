@@ -1,12 +1,14 @@
 package universe
 
 import (
+	"context"
 	stderrors "errors"
 	"fmt"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
@@ -45,7 +47,7 @@ func (b *BuilderContext) ColMap() []int {
 }
 
 type SchemaMutator interface {
-	Mutate(ctx *BuilderContext) error
+	Mutate(ctx context.Context, deps dependencies.Interface, bctx *BuilderContext) error
 }
 
 type SchemaMutation interface {
@@ -104,7 +106,7 @@ func NewRenameMutator(qs flux.OperationSpec) (*RenameMutator, error) {
 	return m, nil
 }
 
-func (m *RenameMutator) renameCol(col *flux.ColMeta) error {
+func (m *RenameMutator) renameCol(ctx context.Context, deps dependencies.Interface, col *flux.ColMeta) error {
 	if col == nil {
 		return stderrors.New("rename error: cannot rename nil column")
 	}
@@ -114,7 +116,7 @@ func (m *RenameMutator) renameCol(col *flux.ColMeta) error {
 		}
 	} else if m.Fn != nil {
 		m.Input.Set(m.ParamName, values.NewString(col.Label))
-		newName, err := m.Fn.Eval(m.Input)
+		newName, err := m.Fn.Eval(ctx, deps, m.Input)
 		if err != nil {
 			return err
 		}
@@ -132,29 +134,29 @@ func (m *RenameMutator) checkColumns(tableCols []flux.ColMeta) error {
 	return nil
 }
 
-func (m *RenameMutator) Mutate(ctx *BuilderContext) error {
-	if err := m.checkColumns(ctx.Cols()); err != nil {
+func (m *RenameMutator) Mutate(ctx context.Context, deps dependencies.Interface, bctx *BuilderContext) error {
+	if err := m.checkColumns(bctx.Cols()); err != nil {
 		return err
 	}
 
-	keyCols := make([]flux.ColMeta, 0, len(ctx.Cols()))
-	keyValues := make([]values.Value, 0, len(ctx.Cols()))
+	keyCols := make([]flux.ColMeta, 0, len(bctx.Cols()))
+	keyValues := make([]values.Value, 0, len(bctx.Cols()))
 
-	for i := range ctx.Cols() {
-		keyIdx := execute.ColIdx(ctx.TableColumns[i].Label, ctx.Key().Cols())
+	for i := range bctx.Cols() {
+		keyIdx := execute.ColIdx(bctx.TableColumns[i].Label, bctx.Key().Cols())
 		keyed := keyIdx >= 0
 
-		if err := m.renameCol(&ctx.TableColumns[i]); err != nil {
+		if err := m.renameCol(ctx, deps, &bctx.TableColumns[i]); err != nil {
 			return err
 		}
 
 		if keyed {
-			keyCols = append(keyCols, ctx.TableColumns[i])
-			keyValues = append(keyValues, ctx.Key().Value(keyIdx))
+			keyCols = append(keyCols, bctx.TableColumns[i])
+			keyValues = append(keyValues, bctx.Key().Value(keyIdx))
 		}
 	}
 
-	ctx.TableKey = execute.NewGroupKey(keyCols, keyValues)
+	bctx.TableKey = execute.NewGroupKey(keyCols, keyValues)
 
 	return nil
 }
@@ -207,9 +209,9 @@ func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
 	return m, nil
 }
 
-func (m *DropKeepMutator) shouldDrop(col string) (bool, error) {
+func (m *DropKeepMutator) shouldDrop(ctx context.Context, deps dependencies.Interface, col string) (bool, error) {
 	m.Input.Set(m.ParamName, values.NewString(col))
-	v, err := m.Predicate.Eval(m.Input)
+	v, err := m.Predicate.Eval(ctx, deps, m.Input)
 	if err != nil {
 		return false, err
 	}
@@ -220,13 +222,13 @@ func (m *DropKeepMutator) shouldDrop(col string) (bool, error) {
 	return shouldDrop, nil
 }
 
-func (m *DropKeepMutator) shouldDropCol(col string) (bool, error) {
+func (m *DropKeepMutator) shouldDropCol(ctx context.Context, deps dependencies.Interface, col string) (bool, error) {
 	if m.DropCols != nil {
 		if _, exists := m.DropCols[col]; exists {
 			return true, nil
 		}
 	} else if m.Predicate != nil {
-		return m.shouldDrop(col)
+		return m.shouldDrop(ctx, deps, col)
 	}
 	return false, nil
 }
@@ -247,36 +249,36 @@ func (m *DropKeepMutator) keepToDropCols(cols []flux.ColMeta) {
 	}
 }
 
-func (m *DropKeepMutator) Mutate(ctx *BuilderContext) error {
+func (m *DropKeepMutator) Mutate(ctx context.Context, deps dependencies.Interface, bctx *BuilderContext) error {
 
-	m.keepToDropCols(ctx.Cols())
+	m.keepToDropCols(bctx.Cols())
 
-	keyCols := make([]flux.ColMeta, 0, len(ctx.Cols()))
-	keyValues := make([]values.Value, 0, len(ctx.Cols()))
-	newCols := make([]flux.ColMeta, 0, len(ctx.Cols()))
+	keyCols := make([]flux.ColMeta, 0, len(bctx.Cols()))
+	keyValues := make([]values.Value, 0, len(bctx.Cols()))
+	newCols := make([]flux.ColMeta, 0, len(bctx.Cols()))
 
-	oldColMap := ctx.ColMap()
-	newColMap := make([]int, 0, len(ctx.Cols()))
+	oldColMap := bctx.ColMap()
+	newColMap := make([]int, 0, len(bctx.Cols()))
 
-	for i, c := range ctx.Cols() {
-		if shouldDrop, err := m.shouldDropCol(c.Label); err != nil {
+	for i, c := range bctx.Cols() {
+		if shouldDrop, err := m.shouldDropCol(ctx, deps, c.Label); err != nil {
 			return err
 		} else if shouldDrop {
 			continue
 		}
 
-		keyIdx := execute.ColIdx(c.Label, ctx.Key().Cols())
+		keyIdx := execute.ColIdx(c.Label, bctx.Key().Cols())
 		if keyIdx >= 0 {
 			keyCols = append(keyCols, c)
-			keyValues = append(keyValues, ctx.Key().Value(keyIdx))
+			keyValues = append(keyValues, bctx.Key().Value(keyIdx))
 		}
 		newCols = append(newCols, c)
 		newColMap = append(newColMap, oldColMap[i])
 	}
 
-	ctx.TableColumns = newCols
-	ctx.TableKey = execute.NewGroupKey(keyCols, keyValues)
-	ctx.ColIdxMap = newColMap
+	bctx.TableColumns = newCols
+	bctx.TableKey = execute.NewGroupKey(keyCols, keyValues)
+	bctx.ColIdxMap = newColMap
 
 	return nil
 }
@@ -286,6 +288,7 @@ type DuplicateMutator struct {
 	As     string
 }
 
+// TODO: figure out what we'd like to do with the context and dependencies here
 func NewDuplicateMutator(qs flux.OperationSpec) (*DuplicateMutator, error) {
 	s, ok := qs.(*DuplicateOpSpec)
 	if !ok {
@@ -298,26 +301,26 @@ func NewDuplicateMutator(qs flux.OperationSpec) (*DuplicateMutator, error) {
 	}, nil
 }
 
-func (m *DuplicateMutator) Mutate(ctx *BuilderContext) error {
-	fromIdx := execute.ColIdx(m.Column, ctx.Cols())
+func (m *DuplicateMutator) Mutate(ctx context.Context, deps dependencies.Interface, bctx *BuilderContext) error {
+	fromIdx := execute.ColIdx(m.Column, bctx.Cols())
 	if fromIdx < 0 {
 		return fmt.Errorf(`duplicate error: column "%s" doesn't exist`, m.Column)
 	}
 
-	newCol := duplicate(ctx.TableColumns[fromIdx], m.As)
-	asIdx := execute.ColIdx(m.As, ctx.Cols())
+	newCol := duplicate(bctx.TableColumns[fromIdx], m.As)
+	asIdx := execute.ColIdx(m.As, bctx.Cols())
 	if asIdx < 0 {
-		ctx.TableColumns = append(ctx.TableColumns, newCol)
-		ctx.ColIdxMap = append(ctx.ColIdxMap, ctx.ColIdxMap[fromIdx])
-		asIdx = len(ctx.TableColumns) - 1
+		bctx.TableColumns = append(bctx.TableColumns, newCol)
+		bctx.ColIdxMap = append(bctx.ColIdxMap, bctx.ColIdxMap[fromIdx])
+		asIdx = len(bctx.TableColumns) - 1
 	} else {
-		ctx.TableColumns[asIdx] = newCol
-		ctx.ColIdxMap[asIdx] = ctx.ColIdxMap[fromIdx]
+		bctx.TableColumns[asIdx] = newCol
+		bctx.ColIdxMap[asIdx] = bctx.ColIdxMap[fromIdx]
 	}
-	asKeyIdx := execute.ColIdx(ctx.TableColumns[asIdx].Label, ctx.Key().Cols())
+	asKeyIdx := execute.ColIdx(bctx.TableColumns[asIdx].Label, bctx.Key().Cols())
 	if asKeyIdx >= 0 {
-		newKeyCols := append(ctx.Key().Cols()[:0:0], ctx.Key().Cols()...)
-		newKeyVals := append(ctx.Key().Values()[:0:0], ctx.Key().Values()...)
+		newKeyCols := append(bctx.Key().Cols()[:0:0], bctx.Key().Cols()...)
+		newKeyVals := append(bctx.Key().Values()[:0:0], bctx.Key().Values()...)
 		fromKeyIdx := execute.ColIdx(m.Column, newKeyCols)
 		if fromKeyIdx >= 0 {
 			newKeyCols[asKeyIdx] = newCol
@@ -325,7 +328,7 @@ func (m *DuplicateMutator) Mutate(ctx *BuilderContext) error {
 		} else {
 			newKeyCols = append(newKeyCols[:asKeyIdx], newKeyCols[asKeyIdx+1:]...)
 		}
-		ctx.TableKey = execute.NewGroupKey(newKeyCols, newKeyVals)
+		bctx.TableKey = execute.NewGroupKey(newKeyCols, newKeyVals)
 	}
 
 	return nil

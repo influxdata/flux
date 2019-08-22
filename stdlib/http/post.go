@@ -2,10 +2,12 @@ package http
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 
 	flux "github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -23,7 +25,7 @@ func init() {
 			Required: []string{"url"},
 			Return:   semantic.Int,
 		}),
-		func(args values.Object) (values.Value, error) {
+		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			url, ok := args.Get("url")
 			if !ok {
 				return nil, errors.New(codes.Invalid, "missing \"url\" parameter")
@@ -57,7 +59,11 @@ func init() {
 			}
 
 			// Perform request
-			response, err := http.DefaultClient.Do(req)
+			dc, err := deps.HTTPClient()
+			if err != nil {
+				return nil, errors.Wrap(err, codes.Aborted, "missing client in http.post")
+			}
+			response, err := dc.Do(req)
 			if err != nil {
 				return nil, err
 			}

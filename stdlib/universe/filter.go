@@ -1,11 +1,13 @@
 package universe
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
@@ -105,7 +107,7 @@ func createFilterTransformation(id execute.DatasetID, mode execute.AccumulationM
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
-	t, err := NewFilterTransformation(d, cache, s)
+	t, err := NewFilterTransformation(a.Context(), a.Dependencies()[dependencies.InterpreterDepsKey].(dependencies.Interface), s, d, cache)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -115,11 +117,12 @@ func createFilterTransformation(id execute.DatasetID, mode execute.AccumulationM
 type filterTransformation struct {
 	d     execute.Dataset
 	cache execute.TableBuilderCache
-
-	fn *execute.RowPredicateFn
+	ctx   context.Context
+	deps  dependencies.Interface
+	fn    *execute.RowPredicateFn
 }
 
-func NewFilterTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *FilterProcedureSpec) (*filterTransformation, error) {
+func NewFilterTransformation(ctx context.Context, deps dependencies.Interface, spec *FilterProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*filterTransformation, error) {
 	fn, err := execute.NewRowPredicateFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	if err != nil {
 		return nil, err
@@ -129,6 +132,8 @@ func NewFilterTransformation(d execute.Dataset, cache execute.TableBuilderCache,
 		d:     d,
 		cache: cache,
 		fn:    fn,
+		ctx:   ctx,
+		deps:  deps,
 	}, nil
 }
 
@@ -156,7 +161,7 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
-			if pass, err := t.fn.Eval(i, cr); err != nil {
+			if pass, err := t.fn.Eval(t.ctx, t.deps, i, cr); err != nil {
 				return errors.Wrap(err, codes.Inherit, "failed to evaluate filter function")
 			} else if !pass {
 				// No match, skipping

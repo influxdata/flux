@@ -1,11 +1,13 @@
 package universe_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
@@ -1371,7 +1373,7 @@ func TestMap_Process(t *testing.T) {
 				tc.want,
 				tc.wantErr,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					f, err := universe.NewMapTransformation(d, c, tc.spec)
+					f, err := universe.NewMapTransformation(context.Background(), dependencies.NewDefaultDependencies(), tc.spec, d, c)
 					if err != nil {
 						t.Fatal(err)
 					}

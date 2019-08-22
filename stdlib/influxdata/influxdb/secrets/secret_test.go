@@ -1,8 +1,10 @@
 package secrets_test
 
 import (
+	"context"
 	"testing"
 
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb/secrets"
 	"github.com/influxdata/flux/values"
 )
@@ -38,7 +40,8 @@ func TestGet(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			args := values.NewObjectWithValues(tt.args)
-			got, err := secrets.Get(args)
+			ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+			got, err := secrets.Get(ctx, deps, args)
 			if err != nil {
 				if tt.err == "" {
 					t.Fatalf("unexpected error: %s", err)

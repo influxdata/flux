@@ -1,6 +1,8 @@
 package compiler_test
 
 import (
+	"context"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"reflect"
 	"regexp"
 	"testing"
@@ -91,12 +93,12 @@ func TestCompilationCache(t *testing.T) {
 			if !reflect.DeepEqual(f0, f1) {
 				t.Errorf("unexpected new compilation result")
 			}
-
-			got0, err := f0.Eval(tc.input)
+			ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+			got0, err := f0.Eval(ctx, deps, tc.input)
 			if err != nil {
 				t.Fatal(err)
 			}
-			got1, err := f1.Eval(tc.input)
+			got1, err := f1.Eval(ctx, deps, tc.input)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1059,12 +1061,12 @@ func TestCompileAndEval(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			f, err := compiler.Compile(tc.fn, tc.inType, nil)
+			f, err := compiler.Compile(nil, tc.fn, tc.inType)
 			if tc.wantErr != (err != nil) {
 				t.Fatalf("unexpected error: %s", err)
 			}
-
-			got, err := f.Eval(tc.input)
+			ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+			got, err := f.Eval(ctx, deps, tc.input)
 			if tc.wantErr != (err != nil) {
 				t.Errorf("unexpected error: %s", err)
 			}
