@@ -6,26 +6,32 @@ import "influxdata/influxdb"
 
 bucket = "_monitoring"
 
-// write optionally persists the check statuses
-option write = (tables=<-) => tables |> drop(columns: ["_start", "_stop"])
+// Write persists the check statuses
+option write = (tables=<-) => tables |> experimental.to(bucket: bucket)
+
+// Log records notification events
+option log = (tables=<-) => tables |> experimental.to(bucket: bucket)
 
 // From retrieves the check statuses that have been stored.
-from = (start, stop=now(), fn) =>
+from = (start, stop=now(), fn=(r) => true) =>
     influxdb.from(bucket: bucket)
         |> range(start: start, stop: stop)
         |> filter(fn: fn)
         |> v1.fieldsAsCols()
 
-// Log records notification events
-log = (tables=<-) => tables |> experimental.to(bucket: bucket)
 
 // Notify will call the endpoint and log the results.
 notify = (tables=<-, endpoint, data={}) =>
     tables
         |> experimental.set(o: data)
         |> experimental.group(mode: "extend", columns: experimental.objectKeys(o: data))
-        |> duplicate(column: "_time", as: "_status_timestamp")
+        |> map(fn: (r) => ({r with
+            _measurement: "notifications",
+            _status_timestamp: int(v: r._time),
+            _time: now(),
+        }))
         |> endpoint()
+        |> experimental.group(mode: "extend", columns: ["_sent"])
         |> log()
 
 // Logs retrieves notification events that have been logged.
@@ -75,7 +81,7 @@ check = (
                 else if info(r: r) then levelInfo
                 else if ok(r: r) then levelOK
                 else levelUnknown,
-            _source_timestamp: r._time,
+            _source_timestamp: int(v:r._time),
             _time: now(),
         }))
         |> map(fn: (r) => ({r with
