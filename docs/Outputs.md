@@ -159,7 +159,7 @@ from(bucket: "telegraf")
 
 ### Notifications
 
-The package `influxdata/influxdb/alerts` provides a `notify` function that accepts the endpoint `name` and an `endpoint` transformation for pushing data to the external service.
+The package `influxdata/influxdb/monitor` provides a `notify` function that accepts the endpoint `name` and an `endpoint` transformation for pushing data to the external service.
 The `notify` function checks that its input has at least `_time` and `_level` as columns.
 It adds a `_endpoint:string` column with the endpoint `name` that will be part of the group key.
 It filters the `unknown` level (or non-positive level values). It writes the results of the operations to a bucket.
@@ -178,7 +178,7 @@ notify = (tables=<-, name, endpoint) => tables
 Example script using multiple notification services:
 
 ```flux
-import "influxdata/influxdb/alerts"
+import "influxdata/influxdb/monitor"
 
 import "slack"
 import "file"
@@ -191,12 +191,12 @@ pgr_ep = pgr.endpoint(routingKey: "https://route/to/pages")
 checks = from(bucket: "telegraf")
     |> range(start: -5m)
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
-    |> alerts.check(name: "cpu_usage",
+    |> monitor.check(name: "cpu_usage",
     	crit: (r) => r._value > 90,
         warn: (r) => r._value > 80,
     )
-    
-checks |> alerts.notify(name: "slack", endpoint: slack_ep(mapFn: (r) => ({channel: ..., text: ...})))
-checks |> alerts.notify(name: "fileLog", endpoint: file_ep(mapFn: (r) => ...))
-checks |> alerts.notify(name: "pagerDuty", endpoint: pgr_ep(mapFn: (r) => ...))
+
+checks |> monitor.notify(name: "slack", endpoint: slack_ep(mapFn: (r) => ({channel: ..., text: ...})))
+checks |> monitor.notify(name: "fileLog", endpoint: file_ep(mapFn: (r) => ...))
+checks |> monitor.notify(name: "pagerDuty", endpoint: pgr_ep(mapFn: (r) => ...))
 ```

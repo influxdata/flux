@@ -1,4 +1,4 @@
-package alerts
+package monitor
 
 import "experimental"
 import "influxdata/influxdb/v1"
