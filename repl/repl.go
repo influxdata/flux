@@ -25,6 +25,8 @@ import (
 type REPL struct {
 	scope   values.Scope
 	querier Querier
+	ctx     context.Context
+	deps    dependencies.Interface
 
 	cancelMu   sync.Mutex
 	cancelFunc context.CancelFunc
@@ -34,10 +36,12 @@ type Querier interface {
 	Query(ctx context.Context, deps dependencies.Interface, compiler flux.Compiler) (flux.ResultIterator, error)
 }
 
-func New(q Querier) *REPL {
+func New(ctx context.Context, deps dependencies.Interface, q Querier) *REPL {
 	return &REPL{
 		scope:   values.NewScope(),
 		querier: q,
+		ctx:     ctx,
+		deps:    deps,
 	}
 }
 
@@ -134,9 +138,7 @@ func (r *REPL) executeLine(t string) error {
 		t = q
 	}
 
-	ctx := context.Background()
-	deps := dependencies.NewCLIDependencies()
-	ses, scope, err := flux.Eval(ctx, deps, t, func(ns values.Scope) {
+	ses, scope, err := flux.Eval(r.ctx, r.deps, t, func(ns values.Scope) {
 		// copy values saved in the cached scope to the new interpreter's scope
 		r.scope.Range(func(k string, v values.Value) {
 			ns.Set(k, v)
@@ -160,7 +162,7 @@ func (r *REPL) executeLine(t string) error {
 					return err
 				}
 				s := spec.FromTableObject(t, nowTime.Time().Time())
-				if err := r.doQuery(ctx, s, deps); err != nil {
+				if err := r.doQuery(r.ctx, s, r.deps); err != nil {
 					return err
 				}
 			} else {

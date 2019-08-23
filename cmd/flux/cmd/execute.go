@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 
 	_ "github.com/influxdata/flux/builtin"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/repl"
 	"github.com/spf13/cobra"
 )
@@ -22,7 +24,7 @@ func init() {
 }
 
 func execute(cmd *cobra.Command, args []string) error {
-	r := repl.New(querier{})
+	r := repl.New(context.Background(), dependencies.NewCLIDependencies(), querier{})
 	if err := r.Input(args[0]); err != nil {
 		return fmt.Errorf("failed to execute query: %v", err)
 	}
