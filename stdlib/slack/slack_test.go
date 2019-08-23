@@ -23,7 +23,7 @@ import (
 )
 
 func TestSlack(t *testing.T) {
-	ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+	ctx, deps := context.Background(), dependenciestest.Default()
 	_, scope, err := flux.Eval(ctx, deps, `
 import "csv"
 import "slack"

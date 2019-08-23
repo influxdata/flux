@@ -166,7 +166,7 @@ func TestReduce_Process(t *testing.T) {
 				tc.want,
 				tc.wantErr,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					f, err := universe.NewReduceTransformation(context.Background(), dependenciestest.NewTestDependenciesInterface(), tc.spec, d, c)
+					f, err := universe.NewReduceTransformation(context.Background(), dependenciestest.Default(), tc.spec, d, c)
 					if err != nil {
 						t.Fatal(err)
 					}

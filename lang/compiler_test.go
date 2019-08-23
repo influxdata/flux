@@ -425,7 +425,7 @@ csv.from(csv: data)
 	wantRange := getTablesFromRawOrFail(t, rangedDataRaw)
 	wantFilter := getTablesFromRawOrFail(t, filteredDataRaw)
 
-	vs, _, err := flux.Eval(context.Background(), dependenciestest.NewTestDependenciesInterface(), script)
+	vs, _, err := flux.Eval(context.Background(), dependenciestest.Default(), script)
 	if err != nil {
 		t.Fatal(err)
 	}

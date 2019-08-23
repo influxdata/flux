@@ -295,7 +295,7 @@ func Example_option() {
 	// The now option is a function value whose default behavior is to return
 	// the current system time when called. The function now() doesn't take
 	// any arguments so can be called with nil.
-	nowTime, _ := nowFunc.Function().Call(context.TODO(), dependenciestest.NewTestDependenciesInterface(), nil)
+	nowTime, _ := nowFunc.Function().Call(context.TODO(), dependenciestest.Default(), nil)
 	fmt.Fprintf(os.Stderr, "The current system time (UTC) is: %v\n", nowTime)
 	// Output:
 }
@@ -322,7 +322,7 @@ func Example_overrideDefaultOptionExternally() {
 		option now = () => 2018-07-13T00:00:00Z
 		what_time_is_it = now()`
 
-	ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+	ctx, deps := context.Background(), dependenciestest.Default()
 	itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
 
 	universe := flux.Prelude()
@@ -349,7 +349,7 @@ func Example_overrideDefaultOptionExternally() {
 func Example_overrideDefaultOptionInternally() {
 	queryString := `what_time_is_it = now()`
 
-	ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+	ctx, deps := context.Background(), dependenciestest.Default()
 	itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
 	universe := flux.Prelude()
 

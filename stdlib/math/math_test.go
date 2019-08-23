@@ -63,7 +63,7 @@ func TestMathFunctionsX(t *testing.T) {
 			got := tc.mathFn(x)
 
 			fluxArg := values.NewObjectWithValues(map[string]values.Value{"x": values.NewFloat(x)})
-			result, err := fluxFn.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+			result, err := fluxFn.Call(context.Background(), dependenciestest.Default(), fluxArg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -104,7 +104,7 @@ func TestMathFunctionsXY(t *testing.T) {
 			got := tc.mathFn(x, y)
 
 			fluxArg := values.NewObjectWithValues(map[string]values.Value{tc.xname: values.NewFloat(x), tc.yname: values.NewFloat(y)})
-			result, err := fluxFn.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+			result, err := fluxFn.Call(context.Background(), dependenciestest.Default(), fluxArg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -122,7 +122,7 @@ func TestFloat64Bits(t *testing.T) {
 	f := rand.Float64()
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"f": values.NewFloat(f)})
 	want := math.Float64bits(f)
-	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.Default(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -137,7 +137,7 @@ func TestFloat64FromBits(t *testing.T) {
 	b := rand.Uint64()
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"b": values.NewUInt(b)})
 	want := math.Float64frombits(b)
-	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.Default(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -152,7 +152,7 @@ func TestIlogb(t *testing.T) {
 	x := rand.Float64()
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"x": values.NewFloat(x)})
 	want := math.Ilogb(x)
-	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.Default(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -167,7 +167,7 @@ func TestFrexp(t *testing.T) {
 	f := rand.Float64()
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"f": values.NewFloat(f)})
 	wantfrac, wantexp := math.Frexp(f)
-	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.Default(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -191,7 +191,7 @@ func TestLGamma(t *testing.T) {
 	x := rand.Float64()
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"x": values.NewFloat(x)})
 	wantLGamma, wantSign := math.Lgamma(x)
-	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.Default(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -215,7 +215,7 @@ func TestModf(t *testing.T) {
 	f := rand.Float64()
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"f": values.NewFloat(f)})
 	wantInt, wantFrac := math.Modf(f)
-	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.Default(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -239,7 +239,7 @@ func TestSinCos(t *testing.T) {
 	x := rand.Float64()
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"x": values.NewFloat(x)})
 	wantSin, wantCos := math.Sincos(x)
-	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.Default(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -264,7 +264,7 @@ func TestIsInf(t *testing.T) {
 	sign := rand.Int()
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"f": values.NewFloat(f), "sign": values.NewInt(int64(sign))})
 	want := math.IsInf(f, sign)
-	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.Default(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -279,7 +279,7 @@ func TestIsNaN(t *testing.T) {
 	f := rand.Float64()
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"f": values.NewFloat(f)})
 	want := math.IsNaN(f)
-	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.Default(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -294,7 +294,7 @@ func TestSignBit(t *testing.T) {
 	x := rand.Float64()
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"x": values.NewFloat(x)})
 	want := math.Signbit(x)
-	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.Default(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -309,7 +309,7 @@ func TestNaN(t *testing.T) {
 
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{})
 	want := math.NaN()
-	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.Default(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -325,7 +325,7 @@ func TestInf(t *testing.T) {
 	sign := rand.Intn(5000)
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"sign": values.NewInt(int64(sign))})
 	want := math.Inf(sign)
-	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.Default(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -341,7 +341,7 @@ func TestJn(t *testing.T) {
 	n := rand.Intn(5000)
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"x": values.NewFloat(x), "n": values.NewInt(int64(n))})
 	want := math.Jn(n, x)
-	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.Default(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -357,7 +357,7 @@ func TestYn(t *testing.T) {
 	n := rand.Intn(5000)
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"x": values.NewFloat(x), "n": values.NewInt(int64(n))})
 	want := math.Yn(n, x)
-	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.Default(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -373,7 +373,7 @@ func TestLdexp(t *testing.T) {
 	exp := rand.Intn(5000)
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"frac": values.NewFloat(frac), "exp": values.NewInt(int64(exp))})
 	want := math.Ldexp(frac, exp)
-	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.Default(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -388,7 +388,7 @@ func TestPow10(t *testing.T) {
 	n := rand.Intn(5000)
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"n": values.NewInt(int64(n))})
 	want := math.Pow10(n)
-	got, err := fluxFunc.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+	got, err := fluxFunc.Call(context.Background(), dependenciestest.Default(), fluxArg)
 	if err != nil {
 		t.Fatal(err)
 	}

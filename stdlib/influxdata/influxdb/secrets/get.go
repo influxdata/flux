@@ -4,7 +4,9 @@ import (
 	"context"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -25,13 +27,7 @@ func makeGetFunc() values.Function {
 			"key": semantic.String,
 		},
 		Required: semantic.LabelSet{"key"},
-		Return: semantic.NewObjectPolyType(
-			map[string]semantic.PolyType{
-				"secretKey": semantic.String,
-			},
-			semantic.LabelSet{"secretKey"},
-			semantic.LabelSet{"secretKey"},
-		),
+		Return:   semantic.String,
 	})
 	return values.NewFunction("get", sig, Get, false)
 }
@@ -43,5 +39,15 @@ func Get(ctx context.Context, deps dependencies.Interface, args values.Object) (
 	if err != nil {
 		return nil, err
 	}
-	return New(key), nil
+
+	ss, err := deps.SecretService()
+	if err != nil {
+		return nil, errors.Wrapf(err, codes.Inherit, "cannot retrieve secret %q", key)
+	}
+
+	value, err := ss.LoadSecret(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+	return values.NewString(value), nil
 }

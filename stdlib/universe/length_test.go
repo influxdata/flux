@@ -62,7 +62,7 @@ func lengthTestHelper(t *testing.T, tc lengthCase) {
 	length := universe.MakeLengthFunc()
 	result, err := length.Call(
 		context.Background(),
-		dependenciestest.NewTestDependenciesInterface(),
+		dependenciestest.Default(),
 		values.NewObjectWithValues(map[string]values.Value{
 			"arr": values.NewArrayWithBacking(semantic.Tvar(1).Nature(), tc.arr),
 		}),

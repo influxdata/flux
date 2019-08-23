@@ -93,7 +93,7 @@ func TestVersion(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			runtime.SetBuildInfo(tt.bi)
 
-			got, err := runtime.Version(context.Background(), dependenciestest.NewTestDependenciesInterface(), nil)
+			got, err := runtime.Version(context.Background(), dependenciestest.Default(), nil)
 			if err != nil {
 				if tt.wantErr != nil {
 					if !cmp.Equal(tt.wantErr, err) {

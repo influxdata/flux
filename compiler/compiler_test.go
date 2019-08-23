@@ -93,7 +93,7 @@ func TestCompilationCache(t *testing.T) {
 			if !reflect.DeepEqual(f0, f1) {
 				t.Errorf("unexpected new compilation result")
 			}
-			ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+			ctx, deps := context.Background(), dependenciestest.Default()
 			got0, err := f0.Eval(ctx, deps, tc.input)
 			if err != nil {
 				t.Fatal(err)
@@ -1065,7 +1065,7 @@ func TestCompileAndEval(t *testing.T) {
 			if tc.wantErr != (err != nil) {
 				t.Fatalf("unexpected error: %s", err)
 			}
-			ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+			ctx, deps := context.Background(), dependenciestest.Default()
 			got, err := f.Eval(ctx, deps, tc.input)
 			if tc.wantErr != (err != nil) {
 				t.Errorf("unexpected error: %s", err)
