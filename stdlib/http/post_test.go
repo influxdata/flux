@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -14,6 +15,7 @@ import (
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -77,5 +79,24 @@ status == 204 or fail()
 	expBody := []byte("body")
 	if !bytes.Equal(body, expBody) {
 		t.Errorf("unexpected body want: %q got: %q", string(expBody), string(body))
+	}
+}
+
+func TestPost_ValidationFail(t *testing.T) {
+	script := `
+import "http"
+
+http.post(url:"http://127.1.1.1/path/a/b/c", headers: {x:"a",y:"b",z:"c"}, data: bytes(v: "body"))
+`
+
+	deps := dependencies.NewDefaults()
+	deps.Deps.HTTPClient = http.DefaultClient
+	deps.Deps.URLValidator = url.PrivateIPValidator{}
+	_, _, err := flux.Eval(context.Background(), deps, script, addFail)
+	if err == nil {
+		t.Fatal("expected failure")
+	}
+	if !strings.Contains(err.Error(), "url is not valid") {
+		t.Errorf("unexpected cause of failure, got err: %v", err)
 	}
 }
