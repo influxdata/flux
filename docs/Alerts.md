@@ -76,12 +76,12 @@ The function `checks.write` should take in the output tables as a single paramet
 Example 1:
 
 ```
-import "influxdata/influxdb/alerts"
+import "influxdata/influxdb/monitor"
 
 from(bucket: "telegraf")
     |> range(start: -5m)
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
-    |> alerts.check(name: "cpu_usage",
+    |> monitor.check(name: "cpu_usage",
     	crit: (r) => r._value > 90,
     	warn: (r) => r._value > 80,
     )
@@ -106,12 +106,12 @@ from(bucket: "telegraf")
 Example 2:
 
 ```
-import "influxdata/influxdb/alerts"
+import "influxdata/influxdb/monitor"
 
 from(bucket: "telegraf")
     |> range(start: -5m)
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
-    |> alerts.check(name: "cpu_usage",
+    |> monitor.check(name: "cpu_usage",
     	crit: (r) => r._value > 90,
     	warn: (r) => r._value > 80,
     	// Do not reset to the ok level until the system usage drops enough.
@@ -142,12 +142,12 @@ In this way, it is possible to delay the ok signal to the notification handler.
 Example 3:
 
 ```
-import "influxdata/influxdb/alerts"
+import "influxdata/influxdb/monitor"
 
 from(bucket: "telegraf")
     |> range(start: -5m)
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
-    |> alerts.check(name: "cpu_usage",
+    |> monitor.check(name: "cpu_usage",
 		crit: (r) => r._value > 90,
 		warn: (r) => r._value > 80,
     )
@@ -175,14 +175,14 @@ The endpoint definition is defined below.
 Example:
 
 ```
-import "influxdata/influxdb/alerts"
+import "influxdata/influxdb/monitor"
 import "slack"
 
 endpoint = slack.endpoint(name: "slack", channel: "#flux")
 
 from(bucket: "system")
 	|> range(start: -5m)
-	|> alerts.notify(endpoint: endpoint)
+	|> monitor.notify(endpoint: endpoint)
 ```
 
 ### Notification Endpoints
@@ -215,7 +215,7 @@ builtin notify
 // An example using the above.
 package main
 
-import "influxdata/influxdb/alerts"
+import "influxdata/influxdb/monitor"
 import "pagerduty"
 
 endpoint = pagerduty.endpoint(
@@ -225,9 +225,9 @@ endpoint = pagerduty.endpoint(
 
 from(bucket: "system")
 	|> range(start: -5m)
-	|> alerts.notify(endpoint: endpoint)
+	|> monitor.notify(endpoint: endpoint)
 ```
-	
+
 Example output based on the input from example 2 from above:
 
 |_time|_at|_action|_status|_changed|_name|_endpoint|
@@ -268,13 +268,13 @@ clearFor = (tables=<-, n) => ...
 
 The following additional libraries will be added to the influxdb package to facilitate implementing checks and notifications.
 
-These will be included as part of `influxdata/influxdb/alerts`.
+These will be included as part of `influxdata/influxdb/monitor`.
 
 ```
 package alerts
 
 write = (tables=<-) => table |> to(bucket: "system")
-	
+
 from = (start, stop=now()) =>
 	from(bucket: "system")
 		|> range(start: start, stop: stop)
@@ -291,7 +291,7 @@ Using the above, this can be integrated with tasks fairly easily and meet the ab
 This might be the check script.
 
 ```
-import "influxdata/influxdb/alerts"
+import "influxdata/influxdb/monitor"
 
 // Injected.
 option task = {
@@ -302,13 +302,13 @@ option task = {
 from(bucket: "telegraf")
     |> range(start: -task.every)
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
-    |> alerts.check(crit: (r) => r._value > 90)
+    |> monitor.check(crit: (r) => r._value > 90)
 ```
 
 This might be the notification script.
 
 ```
-import "influxdata/influxdb/alerts"
+import "influxdata/influxdb/monitor"
 import "pagerduty"
 import "slack"
 
@@ -322,7 +322,7 @@ endpoint = slack.endpoint(
 	channel: "#flux",
 )
 
-alerts.from(start: -task.every)
+monitor.from(start: -task.every)
 	|> stateChangesOnly()
 	|> notify(endpoint: endpoint)
 ```

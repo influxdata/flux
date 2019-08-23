@@ -1,6 +1,6 @@
-package alerts_test
+package monitor_test
 
-import "influxdata/influxdb/alerts"
+import "influxdata/influxdb/monitor"
 import "influxdata/influxdb/v1"
 import "testing"
 
@@ -49,7 +49,7 @@ t_check = (table=<-) => table
     |> filter(fn: (r) => r.cpu == "cpu-total")
     |> v1.fieldsAsCols() // pivot data so there is a "usage_idle" column
     |> aggregateWindow(every: 20s, fn: mean, column: "usage_idle")
-    |> alerts.check(
+    |> monitor.check(
         data: data,
         messageFn: messageFn,
         info: info,

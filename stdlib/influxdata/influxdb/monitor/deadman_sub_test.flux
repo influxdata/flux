@@ -1,6 +1,6 @@
-package alerts_test
+package monitor_test
 
-import "influxdata/influxdb/alerts"
+import "influxdata/influxdb/monitor"
 import "testing"
 import "experimental"
 
@@ -46,7 +46,7 @@ outData = "
 
 t_deadman_sub = (table=<-) => table
     |> range(start: -5h)
-    |> alerts.deadman(t: experimental.subDuration(d: 1h, from: now()))
+    |> monitor.deadman(t: experimental.subDuration(d: 1h, from: now()))
 
 test deadman_sub = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_deadman_sub})
