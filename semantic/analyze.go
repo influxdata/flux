@@ -279,11 +279,56 @@ func analyzeExpression(expr ast.Expression) (Expression, error) {
 		return analyzeArrayExpression(expr)
 	case *ast.Identifier:
 		return analyzeIdentifierExpression(expr)
+	case *ast.StringExpression:
+		return analyzeStringExpression(expr)
 	case ast.Literal:
 		return analyzeLiteral(expr)
 	default:
 		return nil, errors.Newf(codes.Internal, "unsupported expression %T", expr)
 	}
+}
+
+func analyzeStringExpression(expr *ast.StringExpression) (Expression, error) {
+	parts := make([]StringExpressionPart, len(expr.Parts))
+	for i, p := range expr.Parts {
+		part, err := analyzeStringExpressionPart(p)
+		if err != nil {
+			return nil, err
+		}
+		parts[i] = part
+	}
+	return &StringExpression{
+		loc:   loc(expr.Location()),
+		Parts: parts,
+	}, nil
+}
+
+func analyzeStringExpressionPart(part ast.StringExpressionPart) (StringExpressionPart, error) {
+	switch p := part.(type) {
+	case *ast.TextPart:
+		return analyzeTextPart(p)
+	case *ast.InterpolatedPart:
+		return analyzeInterpolatedPart(p)
+	}
+	return nil, errors.Newf(codes.Internal, "unsupported string interpolation part %T", part)
+}
+
+func analyzeTextPart(part *ast.TextPart) (*TextPart, error) {
+	return &TextPart{
+		loc:   loc(part.Location()),
+		Value: part.Value,
+	}, nil
+}
+
+func analyzeInterpolatedPart(part *ast.InterpolatedPart) (*InterpolatedPart, error) {
+	expr, err := analyzeExpression(part.Expression)
+	if err != nil {
+		return nil, err
+	}
+	return &InterpolatedPart{
+		loc:        loc(part.Location()),
+		Expression: expr,
+	}, nil
 }
 
 func analyzeLiteral(lit ast.Literal) (Literal, error) {

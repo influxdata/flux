@@ -5,6 +5,7 @@ import (
 	stderrors "errors"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
@@ -308,6 +309,8 @@ func (itrp *Interpreter) doExpression(ctx context.Context, deps dependencies.Int
 	switch e := expr.(type) {
 	case semantic.Literal:
 		return itrp.doLiteral(e)
+	case *semantic.StringExpression:
+		return itrp.doStringExpression(ctx, deps, e, scope)
 	case *semantic.ArrayExpression:
 		return itrp.doArray(ctx, deps, e, scope)
 	case *semantic.IdentifierExpression:
@@ -480,6 +483,28 @@ func (itrp *Interpreter) doExpression(ctx context.Context, deps dependencies.Int
 	default:
 		return nil, fmt.Errorf("unsupported expression %T", expr)
 	}
+}
+
+func (itrp *Interpreter) doStringExpression(ctx context.Context, deps dependencies.Interface, s *semantic.StringExpression, scope values.Scope) (values.Value, error) {
+	var b strings.Builder
+	for _, p := range s.Parts {
+		part, err := itrp.doStringPart(ctx, deps, p, scope)
+		if err != nil {
+			return nil, err
+		}
+		b.WriteString(part.Str())
+	}
+	return values.NewString(b.String()), nil
+}
+
+func (itrp *Interpreter) doStringPart(ctx context.Context, deps dependencies.Interface, part semantic.StringExpressionPart, scope values.Scope) (values.Value, error) {
+	switch p := part.(type) {
+	case *semantic.TextPart:
+		return values.NewString(p.Value), nil
+	case *semantic.InterpolatedPart:
+		return itrp.doExpression(ctx, deps, p.Expression, scope)
+	}
+	return nil, fmt.Errorf("expecting interpolated string part")
 }
 
 func (itrp *Interpreter) doArray(ctx context.Context, deps dependencies.Interface, a *semantic.ArrayExpression, scope values.Scope) (values.Value, error) {

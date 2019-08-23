@@ -41,6 +41,7 @@ func (*MemberAssignment) node()           {}
 func (*NativeVariableAssignment) node()   {}
 func (*ExternalVariableAssignment) node() {}
 
+func (*StringExpression) node()      {}
 func (*ArrayExpression) node()       {}
 func (*FunctionExpression) node()    {}
 func (*BinaryExpression) node()      {}
@@ -55,6 +56,9 @@ func (*UnaryExpression) node()       {}
 
 func (*Identifier) node() {}
 func (*Property) node()   {}
+
+func (*TextPart) node()         {}
+func (*InterpolatedPart) node() {}
 
 func (*FunctionParameters) node() {}
 func (*FunctionParameter) node()  {}
@@ -95,6 +99,7 @@ type Expression interface {
 	expression()
 }
 
+func (*StringExpression) expression()       {}
 func (*ArrayExpression) expression()        {}
 func (*BinaryExpression) expression()       {}
 func (*BooleanLiteral) expression()         {}
@@ -488,6 +493,77 @@ func (e *ExternBlock) Copy() Node {
 	}
 
 	return ne
+}
+
+type StringExpression struct {
+	loc `json:"-"`
+
+	Parts []StringExpressionPart `json:"parts"`
+}
+
+func (*StringExpression) NodeType() string {
+	return "StringExpression"
+}
+func (e *StringExpression) Copy() Node {
+	if e == nil {
+		return e
+	}
+	ne := new(StringExpression)
+	*ne = *e
+
+	parts := make([]StringExpressionPart, len(e.Parts))
+	for i, p := range e.Parts {
+		parts[i] = p.Copy().(StringExpressionPart)
+	}
+	ne.Parts = parts
+	return ne
+}
+
+type StringExpressionPart interface {
+	Node
+
+	stringPart()
+}
+
+func (*TextPart) stringPart()         {}
+func (*InterpolatedPart) stringPart() {}
+
+type TextPart struct {
+	loc   `json:"-"`
+	Value string `json:"value"`
+}
+
+func (*TextPart) NodeType() string {
+	return "TextPart"
+}
+func (p *TextPart) Copy() Node {
+	if p == nil {
+		return p
+	}
+	np := new(TextPart)
+	*np = *p
+	return np
+}
+
+type InterpolatedPart struct {
+	loc        `json:"-"`
+	Expression Expression `json:"expression"`
+}
+
+func (*InterpolatedPart) NodeType() string {
+	return "InterpolatedPart"
+}
+func (p *InterpolatedPart) Copy() Node {
+	if p == nil {
+		return p
+	}
+	np := new(InterpolatedPart)
+	*np = *p
+
+	if p.Expression != nil {
+		np.Expression = p.Expression.Copy().(Expression)
+	}
+	return np
 }
 
 type ArrayExpression struct {
