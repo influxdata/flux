@@ -1,9 +1,11 @@
 package dependenciestest
 
 import (
-	"github.com/influxdata/flux/dependencies"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/mock"
 )
 
 type RoundTripFunc func(req *http.Request) *http.Response
@@ -30,16 +32,23 @@ func defaultTestFunction(req *http.Request) *http.Response {
 }
 
 type defaultDependencies struct {
-	httpclient *http.Client
+	httpclient    *http.Client
+	secretservice dependencies.SecretService
 }
 
 func (d defaultDependencies) HTTPClient() (*http.Client, error) {
 	return d.httpclient, nil
 }
 
+func (d defaultDependencies) SecretService() (dependencies.SecretService, error) {
+	return d.secretservice, nil
+}
+
 func NewTestDependenciesInterface() dependencies.Interface {
-	return &defaultDependencies{&http.Client{
-		Transport: RoundTripFunc(defaultTestFunction),
-	},
+	return defaultDependencies{
+		httpclient: &http.Client{
+			Transport: RoundTripFunc(defaultTestFunction),
+		},
+		secretservice: mock.SecretService{},
 	}
 }

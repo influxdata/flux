@@ -135,7 +135,7 @@ func (r *REPL) executeLine(t string) error {
 	}
 
 	ctx := context.Background()
-	deps := dependencies.NewDefaultDependencies()
+	deps := dependencies.NewCLIDependencies()
 	ses, scope, err := flux.Eval(ctx, deps, t, func(ns values.Scope) {
 		// copy values saved in the cached scope to the new interpreter's scope
 		r.scope.Range(func(k string, v values.Value) {
