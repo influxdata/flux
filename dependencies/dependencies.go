@@ -1,10 +1,7 @@
 package dependencies
 
 import (
-	"net"
 	"net/http"
-	"runtime"
-	"time"
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -46,22 +43,9 @@ func NewDefaultDependencies() Interface {
 	}
 }
 
-func NewCLIDependencies() Interface {
+func NewDependenciesInterface(hc *http.Client, ss SecretService) Interface {
 	return &DefaultDependencies{
-		httpclient: &http.Client{
-			Transport: &http.Transport{
-				Proxy: http.ProxyFromEnvironment,
-				DialContext: (&net.Dialer{
-					Timeout:   30 * time.Second,
-					KeepAlive: 30 * time.Second,
-				}).DialContext,
-				MaxIdleConns:          100,
-				IdleConnTimeout:       90 * time.Second,
-				TLSHandshakeTimeout:   10 * time.Second,
-				ExpectContinueTimeout: 1 * time.Second,
-				MaxIdleConnsPerHost:   runtime.GOMAXPROCS(0) + 1,
-			},
-		},
-		secretservice: EnvironmentSecretService{},
+		httpclient:    hc,
+		secretservice: ss,
 	}
 }

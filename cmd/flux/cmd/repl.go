@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
@@ -20,7 +21,7 @@ var replCmd = &cobra.Command{
 	Long:  "Launch a Flux REPL (Read-Eval-Print-Loop)",
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
-		deps := dependencies.NewCLIDependencies()
+		deps := dependencies.NewDependenciesInterface(http.DefaultClient, dependencies.EnvironmentSecretService{})
 		r := repl.New(ctx, deps, querier{})
 		r.Run()
 	},
