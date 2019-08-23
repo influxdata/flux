@@ -230,11 +230,26 @@ func (itrp *Interpreter) mutateFunctionScope(f function) (function, error) {
 	// copy the scope so we can safely mutate it
 	f.scope = f.scope.Copy()
 	copyPackages(f.scope)
+	mutatedPkg := false
 	for _, mut := range itrp.modifiedOptions {
+		// Check if the function is defined in the scope of package that was mutated
+		if f.pkg.Name() == mut.Package {
+			if !mutatedPkg {
+				f.pkg = f.pkg.Copy()
+			}
+			mutatedPkg = true
+			f.pkg.SetOption(mut.Name, mut.Value)
+			continue
+		}
+		// Apply the option to the scope
 		_, err := f.scope.SetOption(mut.Package, mut.Name, mut.Value)
 		if err != nil {
 			return f, err
 		}
+	}
+	if mutatedPkg {
+		// Reapply the package values to the scope.
+		f.scope = values.NewNestedScope(f.scope.Pop(), f.pkg)
 	}
 	return f, nil
 }
@@ -289,7 +304,7 @@ func (itrp *Interpreter) doAssignment(ctx context.Context, deps dependencies.Int
 	}
 }
 
-func (itrp *Interpreter) doExpression(ctx context.Context, deps dependencies.Interface, expr semantic.Expression, scope values.Scope) (values.Value, error) {
+func (itrp *Interpreter) doExpression(ctx context.Context, deps dependencies.Interface, expr semantic.Expression, scope values.Scope) (ret values.Value, err error) {
 	switch e := expr.(type) {
 	case semantic.Literal:
 		return itrp.doLiteral(e)
@@ -458,6 +473,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, deps dependencies.Int
 		return function{
 			e:         e,
 			scope:     scope,
+			pkg:       itrp.pkg,
 			types:     types,
 			polyTypes: polyTypes,
 		}, nil
@@ -583,6 +599,10 @@ func (itrp *Interpreter) doCall(ctx context.Context, deps dependencies.Interface
 				itrp.polyTypes[node] = polyType
 			}
 		}), af.e)
+		af, err = itrp.mutateFunctionScope(af)
+		if err != nil {
+			return nil, err
+		}
 		af.itrp = itrp
 		f = af
 	}
@@ -664,6 +684,7 @@ type Value interface {
 type function struct {
 	e     *semantic.FunctionExpression
 	scope values.Scope
+	pkg   *Package
 
 	types     map[semantic.Node]semantic.Type
 	polyTypes map[semantic.Node]semantic.PolyType

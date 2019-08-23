@@ -6,6 +6,8 @@ import "testing"
 
 option now = () => 2018-05-22T19:54:20Z
 
+option monitor.write = (tables=<-) => tables |> drop(columns:["_start", "_stop"])
+
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
 #group,false,false,false,false,true,true,true,true
@@ -20,13 +22,13 @@ inData = "
 "
 
 outData = "
-#datatype,string,long,string,string,string,string,string,string,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,double
+#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double
 #group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false
 #default,got,,,,,,,,,,,,,,,
 ,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle
-,,0,000000000000000a,cpu threshold check,crit,statuses,whoa!,cpu,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001
-,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,2018-05-22T19:53:40Z,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732
-,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05
+,,0,000000000000000a,cpu threshold check,crit,statuses,whoa!,cpu,1527018840000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001
+,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732
+,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05
 "
 
 data = {
@@ -57,5 +59,5 @@ t_check = (table=<-) => table
         crit: crit,
     )
 
-test alerts_check = () =>
+test monitor_check = () =>
     ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_check})
