@@ -22,7 +22,7 @@ import (
 )
 
 func compile(fluxText string, now time.Time) (*flux.Spec, error) {
-	return spec.FromScript(context.Background(), dependenciestest.NewTestDependenciesInterface(), now, fluxText)
+	return spec.FromScript(context.Background(), dependenciestest.Default(), now, fluxText)
 }
 
 func TestPlan_LogicalPlanFromSpec(t *testing.T) {

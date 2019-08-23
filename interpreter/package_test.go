@@ -85,7 +85,7 @@ func TestAccessNestedImport(t *testing.T) {
 	}
 
 	expectedError := fmt.Errorf(`cannot access imported package "a" of imported package "b"`)
-	ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+	ctx, deps := context.Background(), dependenciestest.Default()
 	_, err := interpreter.NewInterpreter(interpreter.NewPackage("")).Eval(ctx, deps, node, values.NewScope(), &importer)
 
 	if err == nil {
@@ -338,13 +338,13 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 					path = k
 					pkg = v
 				}
-				itrp := interpreter.NewInterpreter(context.Background(), executetest.NewTestDependenciesInterface())
+				itrp := interpreter.NewInterpreter(context.Background(), executetest.Default())
 				if _, err := interptest.Eval(itrp, scope, importer, pkg); err != nil {
 					t.Fatal(err)
 				}
 				importer.packages[path] = itrp.Package()
 			}
-			itrp := interpreter.NewInterpreter(context.Background(), executetest.NewTestDependenciesInterface())
+			itrp := interpreter.NewInterpreter(context.Background(), executetest.Default())
 			if err := interptest.Eval(itrp, scope, importer, tc.pkg); err != nil {
 				t.Fatal(err)
 			}
@@ -363,7 +363,7 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 
 func TestInterpreter_SetNewOption(t *testing.T) {
 	pkg := interpreter.NewPackage("alert")
-	ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+	ctx, deps := context.Background(), dependenciestest.Default()
 	itrp := interpreter.NewInterpreter(pkg)
 	script := `
 		package alert
@@ -393,7 +393,7 @@ func TestInterpreter_SetQualifiedOption(t *testing.T) {
 			"alert": externalPackage,
 		},
 	}
-	ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+	ctx, deps := context.Background(), dependenciestest.Default()
 	itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
 	pkg := `
 		package foo

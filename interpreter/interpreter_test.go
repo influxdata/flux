@@ -475,7 +475,7 @@ func TestEval(t *testing.T) {
 			// Create new interpreter for each test case
 			itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
 
-			sideEffects, err := itrp.Eval(context.Background(), dependenciestest.NewTestDependenciesInterface(), graph, testScope.Copy(), nil)
+			sideEffects, err := itrp.Eval(context.Background(), dependenciestest.Default(), graph, testScope.Copy(), nil)
 			if !tc.wantErr && err != nil {
 				t.Fatal(err)
 			} else if tc.wantErr && err == nil {
@@ -504,7 +504,7 @@ func TestEval_Parallel(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+		ctx, deps := context.Background(), dependenciestest.Default()
 		itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
 		if _, err := itrp.Eval(ctx, deps, graph, scope, nil); err != nil {
 			t.Fatal(err)
@@ -527,7 +527,7 @@ func TestEval_Parallel(t *testing.T) {
 	for i := 0; i < n; i++ {
 		go func() {
 			itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
-			ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+			ctx, deps := context.Background(), dependenciestest.Default()
 			_, err := itrp.Eval(ctx, deps, graph, scope.Nest(nil), nil)
 			errC <- err
 		}()
@@ -621,7 +621,7 @@ func TestNestedExternBlocks(t *testing.T) {
 		tc := tc
 		t.Run("", func(t *testing.T) {
 			itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
-			_, err := itrp.Eval(context.Background(), dependenciestest.NewTestDependenciesInterface(), tc.packageNode, tc.externScope, nil)
+			_, err := itrp.Eval(context.Background(), dependenciestest.Default(), tc.packageNode, tc.externScope, nil)
 			if tc.wantError != nil {
 				if err == nil {
 					t.Errorf("expected error=(%v) but got nothing", tc.wantError)
@@ -710,7 +710,7 @@ func TestInterpreter_TypeErrors(t *testing.T) {
 				t.Fatal(err)
 			}
 			itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
-			if _, err := itrp.Eval(context.Background(), dependenciestest.NewTestDependenciesInterface(), graph, values.NewScope(), nil); err == nil {
+			if _, err := itrp.Eval(context.Background(), dependenciestest.Default(), graph, values.NewScope(), nil); err == nil {
 				if tc.err != "" {
 					t.Error("expected type error, but program executed successfully")
 				}
@@ -783,7 +783,7 @@ func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+			ctx, deps := context.Background(), dependenciestest.Default()
 			itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
 			scope := testScope.Copy()
 
@@ -889,7 +889,7 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+			ctx, deps := context.Background(), dependenciestest.Default()
 			itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
 			scope := testScope.Copy()
 
@@ -955,7 +955,7 @@ func TestResolver(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+	ctx, deps := context.Background(), dependenciestest.Default()
 	itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
 
 	ns := values.NewNestedScope(nil, values.NewObjectWithValues(s))

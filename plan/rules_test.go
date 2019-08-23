@@ -20,7 +20,7 @@ func TestRuleRegistration(t *testing.T) {
 	plan.RegisterLogicalRules(&simpleRule)
 
 	now := time.Now().UTC()
-	fluxSpec, err := spec.FromScript(context.Background(), dependenciestest.NewTestDependenciesInterface(), now, `from(bucket: "telegraf") |> range(start: -5m)`)
+	fluxSpec, err := spec.FromScript(context.Background(), dependenciestest.Default(), now, `from(bucket: "telegraf") |> range(start: -5m)`)
 	if err != nil {
 		t.Fatalf("could not compile very simple Flux query: %v", err)
 	}

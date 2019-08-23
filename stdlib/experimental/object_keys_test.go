@@ -33,7 +33,7 @@ import "experimental"
 o = {a: 1, b: 2, c: 3}
 experimental.objectKeys(o: o) == ["a", "b", "c"] or fail()
 `
-	if _, _, err := flux.Eval(context.Background(), dependenciestest.NewTestDependenciesInterface(), script, addFail); err != nil {
+	if _, _, err := flux.Eval(context.Background(), dependenciestest.Default(), script, addFail); err != nil {
 		t.Fatal("evaluation of objectKeys failed: ", err)
 	}
 }

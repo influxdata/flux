@@ -1003,7 +1003,7 @@ func TestFilter_Process(t *testing.T) {
 				tc.want,
 				nil,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					f, err := universe.NewFilterTransformation(context.Background(), dependenciestest.NewTestDependenciesInterface(), tc.spec, d, c)
+					f, err := universe.NewFilterTransformation(context.Background(), dependenciestest.Default(), tc.spec, d, c)
 					if err != nil {
 						t.Fatal(err)
 					}

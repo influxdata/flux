@@ -107,7 +107,7 @@ func TestContains_NewQuery(t *testing.T) {
 func containsTestHelper(t *testing.T, tc containsCase) {
 	t.Helper()
 	contains := universe.MakeContainsFunc()
-	result, err := contains.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(),
+	result, err := contains.Call(context.Background(), dependenciestest.Default(),
 		values.NewObjectWithValues(map[string]values.Value{
 			"value": tc.value,
 			"set":   values.NewArrayWithBacking(tc.value.Type(), tc.set),

@@ -7,5 +7,5 @@ import (
 )
 
 func NewTestExecuteDependencies() execute.Dependencies {
-	return execute.Dependencies{dependencies.InterpreterDepsKey: dependenciestest.NewTestDependenciesInterface()}
+	return execute.Dependencies{dependencies.InterpreterDepsKey: dependenciestest.Default()}
 }

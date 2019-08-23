@@ -89,7 +89,7 @@ func TestTimeFns(t *testing.T) {
 				t.Fatal(err)
 			}
 			fluxArg := values.NewObjectWithValues(map[string]values.Value{"t": values.NewTime(time)})
-			got, err := fluxFn.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+			got, err := fluxFn.Call(context.Background(), dependenciestest.Default(), fluxArg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -139,7 +139,7 @@ func TestTruncate(t *testing.T) {
 				t.Fatal(err)
 			}
 			fluxArg := values.NewObjectWithValues(map[string]values.Value{"t": values.NewTime(time), "unit": values.NewDuration(values.Duration(unit))})
-			got, err := fluxFn.Call(context.Background(), dependenciestest.NewTestDependenciesInterface(), fluxArg)
+			got, err := fluxFn.Call(context.Background(), dependenciestest.Default(), fluxArg)
 			if err != nil {
 				t.Fatal(err)
 			}

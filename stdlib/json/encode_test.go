@@ -45,7 +45,7 @@ o = {
 }
 json.encode(v: o) == bytes(v:"{\"a\":1,\"b\":{\"x\":[1,2],\"y\":\"string\",\"z\":60000000000},\"c\":1.1,\"d\":false,\"e\":\".*\",\"f\":\"2019-08-14T10:03:12Z\"}")  or fail()
 `
-	if _, _, err := flux.Eval(context.Background(), dependenciestest.NewTestDependenciesInterface(), script, addFail); err != nil {
+	if _, _, err := flux.Eval(context.Background(), dependenciestest.Default(), script, addFail); err != nil {
 		t.Fatal("evaluation of json.encode failed: ", err)
 	}
 }

@@ -13,5 +13,5 @@ func (s SecretService) LoadSecret(ctx context.Context, k string) (string, error)
 	if ok {
 		return v, nil
 	}
-	return "", errors.New(codes.NotFound, "key not found")
+	return "", errors.Newf(codes.NotFound, "secret key %q not found", k)
 }

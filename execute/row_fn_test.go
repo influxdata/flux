@@ -235,7 +235,7 @@ func TestRowMapFn_Eval(t *testing.T) {
 				want[i] = r
 			}
 
-			ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+			ctx, deps := context.Background(), dependenciestest.Default()
 			got := make([]*execute.Record, 0, len(tc.data.Data))
 			if err := tc.data.Do(func(cr flux.ColReader) error {
 				for i := 0; i < cr.Len(); i++ {
@@ -352,7 +352,7 @@ func TestRowPredicateFn_Eval(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			ctx, deps := context.Background(), dependenciestest.NewTestDependenciesInterface()
+			ctx, deps := context.Background(), dependenciestest.Default()
 			got := make([]bool, 0, len(tc.data.Data))
 			tc.data.Do(func(cr flux.ColReader) error {
 				for i := 0; i < cr.Len(); i++ {
