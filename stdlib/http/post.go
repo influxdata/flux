@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"net/http"
+	"net/url"
 
 	flux "github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -26,10 +27,24 @@ func init() {
 			Return:   semantic.Int,
 		}),
 		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
-			url, ok := args.Get("url")
+			// Get and validate URL
+			uV, ok := args.Get("url")
 			if !ok {
 				return nil, errors.New(codes.Invalid, "missing \"url\" parameter")
 			}
+			u, err := url.Parse(uV.Str())
+			if err != nil {
+				return nil, err
+			}
+			validator, err := deps.URLValidator()
+			if err != nil {
+				return nil, err
+			}
+			if err := validator.Validate(u); err != nil {
+				return nil, err
+			}
+
+			// Construct data
 			var data []byte
 			dataV, ok := args.Get("data")
 			if ok {
@@ -37,7 +52,7 @@ func init() {
 			}
 
 			// Construct HTTP request
-			req, err := http.NewRequest("POST", url.Str(), bytes.NewReader(data))
+			req, err := http.NewRequest("POST", uV.Str(), bytes.NewReader(data))
 			if err != nil {
 				return nil, err
 			}
