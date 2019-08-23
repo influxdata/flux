@@ -201,7 +201,7 @@ csv.from(csv:data) |> endpoint()`
 			if err != nil {
 				t.Fatal(err)
 			}
-			prog.SetExecutorDependencies(execute.Dependencies{dependencies.InterpreterDepsKey: dependencies.NewCLIDependencies()})
+			prog.SetExecutorDependencies(execute.Dependencies{dependencies.InterpreterDepsKey: dependencies.NewDependenciesInterface(http.DefaultClient, nil)})
 			query, err := prog.Start(context.Background(), &memory.Allocator{})
 
 			if err != nil {
