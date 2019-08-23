@@ -338,8 +338,10 @@ func (b *Float64Array) init() {
 }
 
 func (b *Float64Array) reset() {
-	b.data.Release()
-	b.data = nil
+	if b.data != nil {
+		b.data.Release()
+		b.data = nil
+	}
 	b.rawData = nil
 	b.length = 0
 }
