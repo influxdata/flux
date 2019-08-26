@@ -157,7 +157,7 @@ func (r *REPL) executeLine(t string) error {
 				if !ok {
 					return fmt.Errorf("now option not set")
 				}
-				nowTime, err := now.Function().Call(context.TODO(), dependencies.NewDefaultDependencies(), nil)
+				nowTime, err := now.Function().Call(context.TODO(), dependencies.NewDefaults(), nil)
 				if err != nil {
 					return err
 				}

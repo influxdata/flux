@@ -3,14 +3,15 @@ package slack_test
 import (
 	"context"
 	"encoding/json"
-	"github.com/influxdata/flux/dependencies"
-	"github.com/influxdata/flux/execute"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/execute"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
@@ -201,7 +202,7 @@ csv.from(csv:data) |> endpoint()`
 			if err != nil {
 				t.Fatal(err)
 			}
-			prog.SetExecutorDependencies(execute.Dependencies{dependencies.InterpreterDepsKey: dependencies.NewDependenciesInterface(http.DefaultClient, nil)})
+			prog.SetExecutorDependencies(execute.Dependencies{dependencies.InterpreterDepsKey: dependencies.NewDefaults()})
 			query, err := prog.Start(context.Background(), &memory.Allocator{})
 
 			if err != nil {

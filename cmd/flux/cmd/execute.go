@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/dependencies"
@@ -25,7 +24,9 @@ func init() {
 }
 
 func execute(cmd *cobra.Command, args []string) error {
-	r := repl.New(context.Background(), dependencies.NewDependenciesInterface(http.DefaultClient, dependencies.EnvironmentSecretService{}), querier{})
+	deps := dependencies.NewDefaults()
+	deps.Deps.SecretService = dependencies.EnvironmentSecretService{}
+	r := repl.New(context.Background(), deps, querier{})
 	if err := r.Input(args[0]); err != nil {
 		return fmt.Errorf("failed to execute query: %v", err)
 	}

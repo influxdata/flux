@@ -135,7 +135,7 @@ func CompileTableObject(to *flux.TableObject, now time.Time, opts ...CompileOpti
 // WalkIR applies the function `f` to each operation in the compiled spec.
 func WalkIR(astPkg *ast.Package, f func(o *flux.Operation) error) error {
 
-	if spec, err := spec.FromAST(context.Background(), dependencies.NewDefaultDependencies(), astPkg, time.Now()); err != nil {
+	if spec, err := spec.FromAST(context.Background(), dependencies.NewEmpty(), astPkg, time.Now()); err != nil {
 		return err
 	} else {
 		return spec.Walk(f)

@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
@@ -39,7 +39,7 @@ data = "#datatype,string,long,dateTime:RFC3339,double,string,string
 
 csv.from(csv: data)`
 
-	vs, _, err := flux.Eval(context.Background(), dependencies.NewDefaultDependencies(), script)
+	vs, _, err := flux.Eval(context.Background(), dependenciestest.Default(), script)
 	if err != nil {
 		panic(fmt.Errorf("cannot compile simple script to prepare test: %s", err))
 	}
@@ -119,7 +119,7 @@ func mustLookup(s values.Scope, valueID string) values.Value {
 func evalOrFail(t *testing.T, script string, mutator flux.ScopeMutator) values.Scope {
 	t.Helper()
 
-	_, s, err := flux.Eval(context.Background(), dependencies.NewDefaultDependencies(), script, func(s values.Scope) {
+	_, s, err := flux.Eval(context.Background(), dependenciestest.Default(), script, func(s values.Scope) {
 		if mutator != nil {
 			mutator(s)
 		}
@@ -167,7 +167,7 @@ func TestTableFind_Call(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, scope, err := flux.Eval(context.Background(), dependencies.NewDefaultDependencies(), tc.fn)
+			_, scope, err := flux.Eval(context.Background(), dependenciestest.Default(), tc.fn)
 			if err != nil {
 				t.Fatalf("error compiling function: %v", err)
 			}
@@ -178,7 +178,7 @@ func TestTableFind_Call(t *testing.T) {
 			}
 
 			f := universe.NewTableFindFunction()
-			res, err := f.Function().Call(context.Background(), dependencies.NewDefaultDependencies(),
+			res, err := f.Function().Call(context.Background(), dependenciestest.Default(),
 				values.NewObjectWithValues(map[string]values.Value{
 					"tables": to,
 					"fn":     fn,
@@ -217,7 +217,7 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 	tbl := mustLookup(s, "t")
 
 	f := universe.NewGetColumnFunction()
-	res, err := f.Function().Call(context.Background(), dependencies.NewDefaultDependencies(),
+	res, err := f.Function().Call(context.Background(), dependenciestest.Default(),
 		values.NewObjectWithValues(map[string]values.Value{
 			"table":  tbl.(*objects.Table),
 			"column": values.New("user"),
@@ -235,7 +235,7 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 
 	// test for error
 	f = universe.NewGetColumnFunction()
-	_, err = f.Function().Call(context.Background(), dependencies.NewDefaultDependencies(),
+	_, err = f.Function().Call(context.Background(), dependenciestest.Default(),
 		values.NewObjectWithValues(map[string]values.Value{
 			"table":  tbl.(*objects.Table),
 			"column": values.New("idk"),
@@ -263,7 +263,7 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 	tbl := mustLookup(s, "t")
 
 	f := universe.NewGetRecordFunction()
-	res, err := f.Function().Call(context.Background(), dependencies.NewDefaultDependencies(),
+	res, err := f.Function().Call(context.Background(), dependenciestest.Default(),
 		values.NewObjectWithValues(map[string]values.Value{
 			"table": tbl.(*objects.Table),
 			"idx":   values.New(int64(1)),
@@ -286,7 +286,7 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 
 	// test for error
 	f = universe.NewGetRecordFunction()
-	_, err = f.Function().Call(context.Background(), dependencies.NewDefaultDependencies(),
+	_, err = f.Function().Call(context.Background(), dependenciestest.Default(),
 		values.NewObjectWithValues(map[string]values.Value{
 			"table": tbl.(*objects.Table),
 			"idx":   values.New(int64(42)),

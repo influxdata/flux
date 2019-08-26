@@ -4,9 +4,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies"
-	"github.com/influxdata/flux/internal/errors"
 )
 
 type RoundTripFunc func(req *http.Request) *http.Response
@@ -32,33 +30,10 @@ func defaultTestFunction(req *http.Request) *http.Response {
 	}
 }
 
-var _ dependencies.Interface = (*Interface)(nil)
-
-type Interface struct {
-	Services struct {
-		HTTPClient    *http.Client
-		SecretService dependencies.SecretService
-	}
-}
-
-func (d *Interface) HTTPClient() (*http.Client, error) {
-	if d.Services.HTTPClient != nil {
-		return d.Services.HTTPClient, nil
-	}
-	return nil, errors.New(codes.Unimplemented, "http client is not set")
-}
-
-func (d *Interface) SecretService() (dependencies.SecretService, error) {
-	if d.Services.SecretService != nil {
-		return d.Services.SecretService, nil
-	}
-	return nil, errors.New(codes.Unimplemented, "secret service is not set")
-}
-
-func Default() *Interface {
-	var deps Interface
-	deps.Services.HTTPClient = &http.Client{
+func Default() dependencies.Dependencies {
+	var deps dependencies.Dependencies
+	deps.Deps.HTTPClient = &http.Client{
 		Transport: RoundTripFunc(defaultTestFunction),
 	}
-	return &deps
+	return deps
 }

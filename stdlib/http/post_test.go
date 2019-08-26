@@ -54,7 +54,7 @@ status = http.post(url:"%s/path/a/b/c", headers: {x:"a",y:"b",z:"c"}, data: byte
 status == 204 or fail()
 `, ts.URL)
 
-	if _, _, err := flux.Eval(context.Background(), dependencies.NewDependenciesInterface(http.DefaultClient, nil), script, addFail); err != nil {
+	if _, _, err := flux.Eval(context.Background(), dependencies.NewDefaults(), script, addFail); err != nil {
 		t.Fatal("evaluation of http.post failed: ", err)
 	}
 	if want, got := "/path/a/b/c", req.URL.Path; want != got {
