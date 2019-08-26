@@ -50,5 +50,14 @@ endpoint = (url=defaultURL, token="") =>
         (tables=<-) => tables
             |> map(fn: (r) => {
                 obj = mapFn(r: r)
-                return {r with status: message(url: url, token: token, username: obj.username, channel: obj.channel, workspace: obj.workspace, text: obj.text, iconEmoji: obj.iconEmoji, color: obj.color)}
+                return {r with _sent: string(v: 2 == message(
+                    url: url,
+                    token: token,
+                    username: obj.username,
+                    channel: obj.channel,
+                    workspace: obj.workspace,
+                    text: obj.text,
+                    iconEmoji: obj.iconEmoji,
+                    color: obj.color,
+                ) / 100)}
             })
