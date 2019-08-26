@@ -210,7 +210,7 @@ csv.from(csv:data) |> endpoint()`
 			}
 			res := <-query.Results()
 			_ = res
-			var HasStatus bool
+			var HasStatus, HasSent bool
 			err = res.Tables().Do(func(table flux.Table) error {
 				return table.Do(func(reader flux.ColReader) error {
 					if reader == nil {
@@ -222,7 +222,12 @@ csv.from(csv:data) |> endpoint()`
 							if reader.Ints(i).Int64Values()[0] != 200 {
 								t.Fatalf("expected status 200 but got %d", reader.Ints(i).Int64Values()[0])
 							}
-
+						}
+						if meta.Label == "_sent" {
+							HasSent = true
+							if v := reader.Strings(i).Value(0); string(v) != "true" {
+								t.Fatalf("expecting _sent=true but got _sent=%v", string(v))
+							}
 						}
 					}
 					return nil
@@ -230,6 +235,9 @@ csv.from(csv:data) |> endpoint()`
 			})
 			if !HasStatus {
 				t.Fatal("expected a status column but didnt get one")
+			}
+			if !HasSent {
+				t.Fatal("expected a _sent column but didnt get one")
 			}
 			if err != nil {
 				t.Fatal(err)
