@@ -179,7 +179,7 @@ func executeScript(pkg *ast.Package) (string, string, error) {
 
 	program, err := c.Compile(context.Background())
 	if p, ok := program.(lang.DependenciesAwareProgram); ok {
-		p.SetExecutorDependencies(execute.Dependencies{dependencies.InterpreterDepsKey: dependencies.NewDefaultDependencies()})
+		p.SetExecutorDependencies(execute.Dependencies{dependencies.InterpreterDepsKey: dependencies.NewEmpty()})
 	}
 	if err != nil {
 		fmt.Println(ast.Format(testPkg))

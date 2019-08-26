@@ -13,7 +13,7 @@ import (
 
 func TestGet(t *testing.T) {
 	deps := dependenciestest.Default()
-	deps.Services.SecretService = &mock.SecretService{
+	deps.Deps.SecretService = &mock.SecretService{
 		"mykey": "myvalue",
 	}
 
@@ -49,7 +49,7 @@ func TestGet(t *testing.T) {
 			args: map[string]values.Value{
 				"key": values.NewString("mykey"),
 			},
-			err: "cannot retrieve secret \"mykey\": secret service is not set",
+			err: "cannot retrieve secret \"mykey\": secret service uninitialized in dependencies",
 		},
 		{
 			name:    "missing argument",
@@ -60,7 +60,7 @@ func TestGet(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			deps := dependenciestest.Default()
-			deps.Services.SecretService = tt.secrets
+			deps.Deps.SecretService = tt.secrets
 
 			args := values.NewObjectWithValues(tt.args)
 			got, err := secrets.Get(context.Background(), deps, args)

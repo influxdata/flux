@@ -8,7 +8,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
@@ -376,7 +376,7 @@ func TestStateTracking_Process(t *testing.T) {
 				tc.want,
 				tc.wantErr,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					tx, err := universe.NewStateTrackingTransformation(context.Background(), dependencies.NewDefaultDependencies(), tc.spec, d, c)
+					tx, err := universe.NewStateTrackingTransformation(context.Background(), dependenciestest.Default(), tc.spec, d, c)
 					if err != nil {
 						t.Fatal(err)
 					}
