@@ -282,11 +282,6 @@ Additionally any byte value may be specified via a hex encoding using `\x` as th
     escaped_char     = `\` ( "n" | "r" | "t" | `\` | `"` ) .
     StringExpression = "${" Expression "}" .
 
-TODO(nathanielc): With string interpolation string_lit is not longer a lexical token as part of a literal, but an entire expression in and of itself.
-
-
-[IMPL#252](https://github.com/influxdata/platform/issues/252) Parse string literals
-
 
 Examples:
 
@@ -297,12 +292,12 @@ Examples:
     "\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e" // the explicit UTF-8 encoding of the previous line
 
 String literals are also interpolated for embedded expressions to be evaluated as strings.
-Embedded expressions are enclosed in curly brackets "{}".
+Embedded expressions are enclosed within the literals `${` and `}` respectively.
 The expressions are evaluated in the scope containing the string literal.
 The result of an expression is formatted as a string and replaces the string content between the brackets.
 All types are formatted as strings according to their literal representation.
 A function "printf" exists to allow more precise control over formatting of various types.
-To include the literal curly brackets within a string they must be escaped.
+To include the literal `${` within a string it must be escaped.
 
 
 [IMPL#248](https://github.com/influxdata/platform/issues/248) Add printf function
@@ -314,7 +309,7 @@ Interpolation example:
     "the answer is not ${n+1}" // the answer is not 43
     "dollar sign opening curly bracket \${" // dollar sign opening curly bracket ${
 
-[IMPL#251](https://github.com/influxdata/platform/issues/251) Add string interpolation support
+[IMPL#1775](https://github.com/influxdata/flux/issues/1775) Interpolate arbitrary expressions in string literals
 
 
 #### Regular expression literals
