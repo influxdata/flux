@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/mock"
 )
 
 type RoundTripFunc func(req *http.Request) *http.Response
@@ -34,6 +35,10 @@ func Default() dependencies.Dependencies {
 	var deps dependencies.Dependencies
 	deps.Deps.HTTPClient = &http.Client{
 		Transport: RoundTripFunc(defaultTestFunction),
+	}
+	deps.Deps.SecretService = &mock.SecretService{
+		"password": "mysecretpassword",
+		"token":    "mysecrettoken",
 	}
 	return deps
 }
