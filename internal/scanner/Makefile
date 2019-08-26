@@ -1,7 +1,7 @@
 # List any generated files here
-TARGETS = scanner.gen.go unicode.rl
+TARGETS = scanner.gen.go
 # List any source files used to generate the targets here
-SOURCES = gen.go scanner.rl unicode2ragel.rb
+SOURCES = gen.go scanner.rl unicode.rl
 # List any directories that have their own Makefile here
 SUBDIRS =
 
@@ -11,6 +11,9 @@ generate: $(SUBDIRS) $(TARGETS)
 # Recurse into subdirs for same make goal
 $(SUBDIRS):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
+
+unicode.rl: unicode2ragel.rb
+	ruby unicode2ragel.rb -e utf8 -o unicode.rl
 
 # Clean all targets recursively
 clean: $(SUBDIRS)
