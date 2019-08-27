@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependencies/secret"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb/secrets"
 	"github.com/influxdata/flux/values"
@@ -19,7 +19,7 @@ func TestGet(t *testing.T) {
 
 	for _, tt := range []struct {
 		name    string
-		secrets dependencies.SecretService
+		secrets secret.Service
 		args    map[string]values.Value
 		want    values.Value
 		err     string

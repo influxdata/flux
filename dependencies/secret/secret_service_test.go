@@ -1,4 +1,4 @@
-package dependencies_test
+package secret_test
 
 import (
 	"context"

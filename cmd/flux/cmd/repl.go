@@ -6,6 +6,7 @@ import (
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/dependencies/secret"
 	fexecute "github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
@@ -21,7 +22,7 @@ var replCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 		deps := dependencies.NewDefaults()
-		deps.Deps.SecretService = dependencies.EnvironmentSecretService{}
+		deps.Deps.SecretService = secret.EnvironmentSecretService{}
 		r := repl.New(ctx, deps, querier{})
 		r.Run()
 	},

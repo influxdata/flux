@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/secret"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/internal/errors"
 )
@@ -12,11 +13,11 @@ const InterpreterDepsKey = "interpreter"
 
 type Interface interface {
 	HTTPClient() (*http.Client, error)
-	SecretService() (SecretService, error)
+	SecretService() (secret.Service, error)
 	URLValidator() (url.Validator, error)
 }
 
-// Dependencies implemnents the Interface.
+// Dependencies implements the Interface.
 // Any deps which are nil will produce an explicit error.
 type Dependencies struct {
 	Deps Deps
@@ -24,7 +25,7 @@ type Dependencies struct {
 
 type Deps struct {
 	HTTPClient    *http.Client
-	SecretService SecretService
+	SecretService secret.Service
 	URLValidator  url.Validator
 }
 
@@ -35,7 +36,7 @@ func (d Dependencies) HTTPClient() (*http.Client, error) {
 	return nil, errors.New(codes.Unimplemented, "http client uninitialized in dependencies")
 }
 
-func (d Dependencies) SecretService() (SecretService, error) {
+func (d Dependencies) SecretService() (secret.Service, error) {
 	if d.Deps.SecretService != nil {
 		return d.Deps.SecretService, nil
 	}
