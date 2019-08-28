@@ -401,7 +401,6 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		})
 		return ptv, nil
 	case *IndexExpression:
-		ptv := v.cs.f.Fresh()
 		t, err := v.lookup(n.Array)
 		if err != nil {
 			return nil, err
@@ -414,9 +413,9 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		if err != nil {
 			return nil, err
 		}
-		v.cs.AddKindConst(tv, ArrayKind{ptv})
 		v.cs.AddTypeConst(idx, Int, n.Index.Location())
-		return ptv, nil
+		v.cs.AddTypeConst(tv, array{nodeVar}, n.Location())
+		return nodeVar, nil
 	case *ArrayExpression:
 		elt := v.cs.f.Fresh()
 		at := array{elt}
@@ -427,7 +426,6 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			}
 			v.cs.AddTypeConst(t, elt, el.Location())
 		}
-		v.cs.AddKindConst(nodeVar, ArrayKind{at.typ})
 		v.cs.AddTypeConst(nodeVar, at, n.Location())
 		return nodeVar, nil
 	case *StringExpression:
