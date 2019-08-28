@@ -383,8 +383,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		// Retrieve a new type variable for the property
 		// and add a nullable kind constraint to indicate
 		// that the variable can be null.
-		ptv := v.cs.f.Fresh()
-		v.cs.AddKindConst(ptv, NullableKind{T: ptv})
+		v.cs.AddKindConst(nodeVar, NullableKind{T: nodeVar})
 
 		t, err := v.lookup(n.Object)
 		if err != nil {
@@ -395,11 +394,11 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			return nil, stderrors.New("member object must be a type variable")
 		}
 		v.cs.AddKindConst(tv, ObjectKind{
-			properties: map[string]PolyType{n.Property: ptv},
+			properties: map[string]PolyType{n.Property: nodeVar},
 			lower:      LabelSet{n.Property},
 			upper:      AllLabels(),
 		})
-		return ptv, nil
+		return nodeVar, nil
 	case *IndexExpression:
 		t, err := v.lookup(n.Array)
 		if err != nil {
