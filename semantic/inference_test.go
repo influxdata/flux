@@ -41,6 +41,27 @@ func TestInferTypes(t *testing.T) {
 			},
 		},
 		{
+			name: "instantiate array",
+			script: `
+				a = [0, 1]
+				x = a[0]`,
+			solution: &solutionVisitor{
+				f: func(node semantic.Node) semantic.PolyType {
+					switch node.(type) {
+					case *semantic.IntegerLiteral:
+						return semantic.Int
+					case *semantic.ArrayExpression:
+						return semantic.NewArrayPolyType(semantic.Int)
+					case *semantic.IdentifierExpression:
+						return semantic.NewArrayPolyType(semantic.Int)
+					case *semantic.IndexExpression:
+						return semantic.Int
+					}
+					return nil
+				},
+			},
+		},
+		{
 			name: "array expression",
 			node: &semantic.ArrayExpression{
 				Elements: []semantic.Expression{
