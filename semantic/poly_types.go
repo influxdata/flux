@@ -78,10 +78,17 @@ func (a Tvar) substituteType(b Tvar, t PolyType) PolyType {
 func (tv Tvar) freeVars(c *Constraints) TvarSet {
 	fvs := TvarSet{tv}
 	if c != nil {
-		ks, ok := c.kindConst[tv]
-		if ok {
-			for _, k := range ks {
-				fvs = fvs.union(k.freeVars(c))
+		for tvar, kinds := range c.kindConst {
+			if tvar == tv {
+				for _, k := range kinds {
+					fvs = fvs.union(k.freeVars(c))
+				}
+				continue
+			}
+			for _, k := range kinds {
+				if k.freeVars(nil).contains(tv) {
+					fvs = fvs.union(TvarSet{tvar})
+				}
 			}
 		}
 	}
