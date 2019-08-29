@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"math"
 	"strings"
 	"testing"
@@ -15,6 +14,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	_ "github.com/influxdata/flux/builtin"
 	fcsv "github.com/influxdata/flux/csv"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
@@ -362,6 +362,353 @@ func (rule removeCount) Pattern() plan.Pattern {
 }
 func (rule removeCount) Rewrite(node plan.Node) (plan.Node, bool, error) {
 	return node.Predecessors()[0], true, nil
+}
+
+func TestCompileOptions_FromFluxOptions(t *testing.T) {
+	nowFn := func() time.Time {
+		return parser.MustParseTime("2018-10-10T00:00:00Z").Value
+	}
+
+	plan.RegisterPhysicalRules(&plantest.MergeFromRangePhysicalRule{})
+	plan.RegisterLogicalRules(&removeCount{})
+
+	tcs := []struct {
+		name    string
+		files   []string
+		want    *plan.Spec
+		wantErr string
+	}{
+		{
+			name: "no planner option set",
+			files: []string{`
+import "planner"
+
+from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
+			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
+				Nodes: []plan.Node{
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
+				Now:       nowFn(),
+			}),
+		},
+		{
+			name: "remove push down range",
+			files: []string{`
+import "planner"
+
+option planner.disablePhysicalRules = ["fromRangeRule"]
+
+from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
+			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
+				Nodes: []plan.Node{
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+				},
+				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
+				Now:       nowFn(),
+			}),
+		},
+		{
+			name: "remove push down range and count",
+			files: []string{`
+import "planner"
+
+option planner.disablePhysicalRules = ["fromRangeRule"]
+option planner.disableLogicalRules = ["removeCountRule"]
+
+from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
+			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
+				Nodes: []plan.Node{
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.CountProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+					{3, 4},
+				},
+				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
+				Now:       nowFn(),
+			}),
+		},
+		{
+			name: "remove push down range and count - with non existent rule",
+			files: []string{`
+import "planner"
+
+option planner.disablePhysicalRules = ["fromRangeRule", "non_existent"]
+option planner.disableLogicalRules = ["removeCountRule", "non_existent"]
+
+from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
+			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
+				Nodes: []plan.Node{
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.CountProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+					{3, 4},
+				},
+				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
+				Now:       nowFn(),
+			}),
+		},
+		{
+			name: "remove non existent rules does not produce any effect",
+			files: []string{`
+import "planner"
+
+option planner.disablePhysicalRules = ["foo", "bar", "mew", "buz", "foxtrot"]
+option planner.disableLogicalRules = ["foo", "bar", "mew", "buz", "foxtrot"]
+
+from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
+			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
+				Nodes: []plan.Node{
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
+				Now:       nowFn(),
+			}),
+		},
+		{
+			name: "empty planner option does not produce any effect",
+			files: []string{`
+import "planner"
+
+option planner.disablePhysicalRules = [""]
+option planner.disableLogicalRules = [""]
+
+from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
+			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
+				Nodes: []plan.Node{
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
+				Now:       nowFn(),
+			}),
+		},
+		{
+			name: "logical planner option must be an array",
+			files: []string{`
+import "planner"
+
+option planner.disableLogicalRules = "not an array"
+
+// remember to return streaming data
+from(bucket: "does_not_matter")`},
+			wantErr: `'planner.disableLogicalRules' must be an array of string, got string`,
+		},
+		{
+			name: "physical planner option must be an array",
+			files: []string{`
+import "planner"
+
+option planner.disablePhysicalRules = "not an array"
+
+// remember to return streaming data
+from(bucket: "does_not_matter")`},
+			wantErr: `'planner.disablePhysicalRules' must be an array of string, got string`,
+		},
+		{
+			name: "logical planner option must be an array of strings",
+			files: []string{`
+import "planner"
+
+option planner.disableLogicalRules = [1.0]
+
+// remember to return streaming data
+from(bucket: "does_not_matter")`},
+			wantErr: `'planner.disableLogicalRules' must be an array of string, got an array of float`,
+		},
+		{
+			name: "physical planner option must be an array of strings",
+			files: []string{`
+import "planner"
+
+option planner.disablePhysicalRules = [1.0]
+
+// remember to return streaming data
+from(bucket: "does_not_matter")`},
+			wantErr: `'planner.disablePhysicalRules' must be an array of string, got an array of float`,
+		},
+		{
+			name: "planner is an object defined by the user",
+			files: []string{`
+planner = {
+	disablePhysicalRules: ["fromRangeRule"],
+	disableLogicalRules: ["removeCountRule"]
+}
+
+from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
+			// This shouldn't change the plan.
+			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
+				Nodes: []plan.Node{
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
+				Now:       nowFn(),
+			}),
+		},
+		{
+			name: "use planner option with alias",
+			files: []string{`
+import pl "planner"
+
+option pl.disablePhysicalRules = ["fromRangeRule"]
+option pl.disableLogicalRules = ["removeCountRule"]
+
+from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
+			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
+				Nodes: []plan.Node{
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.CountProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+					{3, 4},
+				},
+				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
+				Now:       nowFn(),
+			}),
+		},
+		{
+			name: "multiple files - splitting options setting",
+			files: []string{
+				`package main
+import pl "planner"
+
+option pl.disablePhysicalRules = ["fromRangeRule"]
+
+from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`,
+				`package foo
+import "planner"
+
+option planner.disableLogicalRules = ["removeCountRule"]`},
+			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
+				Nodes: []plan.Node{
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.CountProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+					{3, 4},
+				},
+				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
+				Now:       nowFn(),
+			}),
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			if strings.HasPrefix(tc.name, "multiple files") {
+				t.Skip("how should options behave with multiple files?")
+			}
+			if len(tc.files) == 0 {
+				t.Fatal("the test should have at least one file")
+			}
+			astPkg, err := flux.Parse(tc.files[0])
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if len(tc.files) > 1 {
+				for _, file := range tc.files[1:] {
+					otherPkg, err := flux.Parse(file)
+					if err != nil {
+						t.Fatal(err)
+					}
+					astPkg.Files = append(astPkg.Files, otherPkg.Files...)
+				}
+			}
+
+			program := lang.CompileAST(astPkg, nowFn())
+			program.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
+
+			if _, err := program.Start(context.Background(), &memory.Allocator{}); err != nil {
+				if tc.wantErr == "" {
+					t.Fatalf("failed to start program: %v", err)
+				} else if got := getRootErr(err); tc.wantErr != got.Error() {
+					t.Fatalf("expected wrong error -want/+got:\n\t- %s\n\t+ %s", tc.wantErr, got)
+				}
+				return
+			} else if tc.wantErr != "" {
+				t.Fatalf("expected error, got none")
+			}
+
+			if err := plantest.ComparePlansShallow(tc.want, program.PlanSpec); err != nil {
+				t.Errorf("unexpected plans: %v", err)
+			}
+		})
+	}
+}
+
+func getRootErr(err error) error {
+	if err == nil {
+		return err
+	}
+	fe, ok := err.(*flux.Error)
+	if !ok {
+		return err
+	}
+	if fe == nil {
+		return fe
+	}
+	if fe.Err == nil {
+		return fe
+	}
+	return getRootErr(fe.Err)
 }
 
 // TestTableObjectCompiler evaluates a simple `from |> range |> filter` script on csv data, and
