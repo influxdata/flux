@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"math"
 	"strings"
 	"testing"
@@ -15,6 +14,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	_ "github.com/influxdata/flux/builtin"
 	fcsv "github.com/influxdata/flux/csv"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
@@ -362,6 +362,279 @@ func (rule removeCount) Pattern() plan.Pattern {
 }
 func (rule removeCount) Rewrite(node plan.Node) (plan.Node, bool, error) {
 	return node.Predecessors()[0], true, nil
+}
+
+func TestCompileOptions_FromFluxOptions(t *testing.T) {
+	nowFn := func() time.Time {
+		return parser.MustParseTime("2018-10-10T00:00:00Z").Value
+	}
+
+	plan.RegisterPhysicalRules(&plantest.MergeFromRangePhysicalRule{})
+	plan.RegisterLogicalRules(&removeCount{})
+
+	tcs := []struct {
+		name    string
+		raw     string
+		want    *plan.Spec
+		wantErr string
+	}{
+		{
+			name: "no planner option set",
+			raw:  `from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`,
+			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
+				Nodes: []plan.Node{
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
+				Now:       nowFn(),
+			}),
+		},
+		{
+			name: "remove push down range",
+			raw: `
+option planner = {
+	disable: {physical: ["fromRangeRule"]}
+}
+
+from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`,
+			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
+				Nodes: []plan.Node{
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+				},
+				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
+				Now:       nowFn(),
+			}),
+		},
+		{
+			name: "remove push down range and count",
+			raw: `
+option planner = {
+	disable: {
+		physical: ["fromRangeRule"],
+		logical: ["removeCountRule"]
+	}
+}
+
+from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`,
+			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
+				Nodes: []plan.Node{
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.CountProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+					{3, 4},
+				},
+				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
+				Now:       nowFn(),
+			}),
+		},
+		{
+			name: "remove non existent rules does not produce any effect",
+			raw: `
+option planner = {
+	disable: {
+		physical: ["foo", "bar"],
+		logical: ["mew", "buz", "foxtrot"]
+	}
+}
+
+from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`,
+			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
+				Nodes: []plan.Node{
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
+				Now:       nowFn(),
+			}),
+		},
+		{
+			name: "empty planner option does not produce any effect",
+			raw: `
+option planner = {}
+
+from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`,
+			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
+				Nodes: []plan.Node{
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
+				Now:       nowFn(),
+			}),
+		},
+		{
+			name: "planner option must be an object",
+			raw: `
+option planner = "not an object"
+
+// remember to return streaming data
+from(bucket: "does_not_matter")`,
+			wantErr: `option 'planner' must be an object, got string`,
+		},
+		{
+			name: "planner option must contain only disable",
+			raw: `
+option planner = {
+	enable: "error",
+	disable: [""]
+}
+
+// remember to return streaming data
+from(bucket: "does_not_matter")`,
+			wantErr: `the only available field for option 'planner' is 'disable'`,
+		},
+		{
+			name: "disable must be an object",
+			raw: `
+option planner = {
+	disable: "not an array"
+}
+
+// remember to return streaming data
+from(bucket: "does_not_matter")`,
+			wantErr: `'planner.disable' must be an object, got string`,
+		},
+		{
+			name: "disable must contain only physical and logical",
+			raw: `
+option planner = {
+	disable: {
+		logical: "log",
+		physical: "phys",
+		intruder: "error"
+	}
+}
+
+// remember to return streaming data
+from(bucket: "does_not_matter")`,
+			wantErr: `the only available fields for option 'planner.disable' are 'logical' and 'physical'`,
+		},
+		{
+			name: "logical must be an array",
+			raw: `
+option planner = {
+	disable: {
+		logical: "not an array",
+	}
+}
+
+// remember to return streaming data
+from(bucket: "does_not_matter")`,
+			wantErr: `'planner.disable.logical' must be an array, got string`,
+		},
+		{
+			name: "physical must be an array",
+			raw: `
+option planner = {
+	disable: {
+		physical: "not an array",
+	}
+}
+
+// remember to return streaming data
+from(bucket: "does_not_matter")`,
+			wantErr: `'planner.disable.physical' must be an array, got string`,
+		},
+		{
+			name: "logical must be an array of strings",
+			raw: `
+option planner = {
+	disable: {
+		logical: [1, 2, 3],
+	}
+}
+
+// remember to return streaming data
+from(bucket: "does_not_matter")`,
+			wantErr: `'planner.disable.logical' must contain strings, got int`,
+		},
+		{
+			name: "physical must be an array of strings",
+			raw: `
+option planner = {
+	disable: {
+		physical: [1.0, 2.0, 3.0],
+	}
+}
+
+// remember to return streaming data
+from(bucket: "does_not_matter")`,
+			wantErr: `'planner.disable.physical' must contain strings, got float`,
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			program, err := lang.Compile(tc.raw, nowFn())
+			if err != nil {
+				t.Fatalf("failed to compile script: %v", err)
+			}
+			program.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
+
+			if _, err := program.Start(context.Background(), &memory.Allocator{}); err != nil {
+				if tc.wantErr == "" {
+					t.Fatalf("failed to start program: %v", err)
+				} else if got := getRootErr(err); tc.wantErr != got.Error() {
+					t.Fatalf("expected wrong error -want/+got:\n\t- %s\n\t+ %s", tc.wantErr, got)
+				}
+				return
+			} else if tc.wantErr != "" {
+				t.Fatalf("expected error, got none")
+			}
+
+			if err := plantest.ComparePlansShallow(tc.want, program.PlanSpec); err != nil {
+				t.Errorf("unexpected plans: %v", err)
+			}
+		})
+	}
+}
+
+func getRootErr(err error) error {
+	if err == nil {
+		return err
+	}
+	fe, ok := err.(*flux.Error)
+	if !ok {
+		return err
+	}
+	if fe == nil {
+		return fe
+	}
+	if fe.Err == nil {
+		return fe
+	}
+	return getRootErr(fe.Err)
 }
 
 // TestTableObjectCompiler evaluates a simple `from |> range |> filter` script on csv data, and

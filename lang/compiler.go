@@ -6,6 +6,8 @@ import (
 	"log"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
@@ -13,9 +15,12 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/spec"
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"go.uber.org/zap"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
+	"github.com/opentracing/opentracing-go"
 )
 
 const (
@@ -48,10 +53,12 @@ type compileOptions struct {
 
 	extern *ast.File
 
-	planOptions struct {
-		logical  []plan.LogicalOption
-		physical []plan.PhysicalOption
-	}
+	planOptions planOptions
+}
+
+type planOptions struct {
+	logical  []plan.LogicalOption
+	physical []plan.PhysicalOption
 }
 
 func WithLogPlanOpts(lopts ...plan.LogicalOption) CompileOption {
@@ -118,7 +125,10 @@ func CompileAST(astPkg *ast.Package, now time.Time, opts ...CompileOption) *AstP
 // now parameter must be non-zero, that is the default now time should be set before compiling.
 func CompileTableObject(to *flux.TableObject, now time.Time, opts ...CompileOption) (*Program, error) {
 	o := applyOptions(opts...)
-	s := spec.FromTableObject(to, now)
+	s, err := spec.FromTableObject(to, now)
+	if err != nil {
+		return nil, err
+	}
 	if o.verbose {
 		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
 	}
@@ -130,17 +140,6 @@ func CompileTableObject(to *flux.TableObject, now time.Time, opts ...CompileOpti
 		opts:     o,
 		PlanSpec: ps,
 	}, nil
-}
-
-// WalkIR applies the function `f` to each operation in the compiled spec.
-func WalkIR(astPkg *ast.Package, f func(o *flux.Operation) error) error {
-
-	if spec, err := spec.FromAST(context.Background(), dependencies.NewEmpty(), astPkg, time.Now()); err != nil {
-		return err
-	} else {
-		return spec.Walk(f)
-	}
-
 }
 
 func buildPlan(spec *flux.Spec, opts *compileOptions) (*plan.Spec, error) {
@@ -309,11 +308,8 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 		p.Now = time.Now()
 	}
 
-	astPkg := p.Ast
 	if p.opts.extern != nil {
-		// Duplicate the package so we can safely add the external files.
-		astPkg = astPkg.Copy().(*ast.Package)
-		astPkg.Files = append([]*ast.File{p.opts.extern}, astPkg.Files...)
+		p.Ast.Files = append([]*ast.File{p.opts.extern}, p.Ast.Files...)
 	}
 
 	deps, ok := p.Dependencies[dependencies.InterpreterDepsKey]
@@ -322,12 +318,19 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 		return nil, fmt.Errorf("no interpreter dependencies found")
 	}
 	depsI := deps.(dependencies.Interface)
-	s, err := spec.FromAST(ctx, depsI, astPkg, p.Now)
+	ses, scope, err := p.eval(ctx, depsI)
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in evaluating AST while starting program")
 	}
+	s, err := spec.FromEvaluation(ses, p.Now)
+	if err != nil {
+		return nil, errors.Wrap(err, codes.Inherit, "error in query specification while starting program")
+	}
 	if p.opts.verbose {
 		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
+	}
+	if err := p.updateOpts(scope); err != nil {
+		return nil, errors.Wrap(err, codes.Inherit, "error in reading options while starting program")
 	}
 	ps, err := buildPlan(s, p.opts)
 	if err != nil {
@@ -336,4 +339,128 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	p.PlanSpec = ps
 
 	return p.Program.Start(ctx, alloc)
+}
+
+func (p *AstProgram) eval(ctx context.Context, deps dependencies.Interface) ([]interpreter.SideEffect, values.Scope, error) {
+	s, _ := opentracing.StartSpanFromContext(ctx, "eval")
+
+	sideEffects, scope, err := flux.EvalAST(ctx, deps, p.Ast, flux.SetNowOption(p.Now))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	s.Finish()
+	s, _ = opentracing.StartSpanFromContext(ctx, "compile")
+	defer s.Finish()
+
+	nowOpt, ok := scope.Lookup(flux.NowOption)
+	if !ok {
+		return nil, nil, fmt.Errorf("%q option not set", flux.NowOption)
+	}
+
+	nowTime, err := nowOpt.Function().Call(ctx, deps, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	p.Now = nowTime.Time().Time()
+	return sideEffects, scope, nil
+}
+
+func (p *AstProgram) updateOpts(scope values.Scope) error {
+	planOpts, err := getPlanOptions(scope)
+	if err != nil {
+		return err
+	}
+	p.opts.planOptions.logical = append(p.opts.planOptions.logical, planOpts.logical...)
+	p.opts.planOptions.physical = append(p.opts.planOptions.physical, planOpts.physical...)
+	return nil
+}
+
+func getPlanOptions(scope values.Scope) (planOptions, error) {
+	planOpt, ok := scope.Lookup("planner")
+	if !ok {
+		// No option specified.
+		return planOptions{}, nil
+	}
+	if planOpt.Type().Nature() != semantic.Object {
+		return planOptions{}, fmt.Errorf("option 'planner' must be an object, got %s", planOpt.Type().Nature().String())
+	}
+	var err error
+	var wrongKeysErr = fmt.Errorf("the only available field for option 'planner' is 'disable'")
+	if planOpt.Object().Len() > 3 {
+		return planOptions{}, wrongKeysErr
+	}
+	planOpt.Object().Range(func(name string, v values.Value) {
+		// TODO(affo): we could add 'enable' and 'only'.
+		//  In order to do this we should add the possibility to enable rules by name in the planner, first.
+		if name != "disable" {
+			err = wrongKeysErr
+		}
+	})
+	if err != nil {
+		return planOptions{}, err
+	}
+
+	la, pa, err := getRuleArraysForKey("disable", planOpt)
+	if err != nil {
+		return planOptions{}, err
+	}
+
+	ls := make([]plan.LogicalOption, la.Array().Len())
+	ps := make([]plan.PhysicalOption, pa.Array().Len())
+	la.Array().Range(func(i int, v values.Value) {
+		ls[i] = plan.RemoveLogicalRule(v.Str())
+	})
+	pa.Array().Range(func(i int, v values.Value) {
+		ps[i] = plan.RemovePhysicalRule(v.Str())
+	})
+	return planOptions{
+		logical:  ls,
+		physical: ps,
+	}, nil
+}
+
+func getRuleArraysForKey(key string, planOpt values.Value) (values.Array, values.Array, error) {
+	lv := values.NewArray(semantic.String)
+	pv := values.NewArray(semantic.String)
+	obj, found := planOpt.Object().Get(key)
+	if !found {
+		// no rule for this key
+		return lv, pv, nil
+	}
+	if obj.Type().Nature() != semantic.Object {
+		return lv, pv, fmt.Errorf("'planner.%s' must be an object, got %s", key, obj.Type().Nature().String())
+	}
+	var wrongKeysErr = fmt.Errorf("the only available fields for option 'planner.%s' are 'logical' and 'physical'", key)
+	var err error
+	if obj.Object().Len() > 2 {
+		return nil, nil, wrongKeysErr
+	}
+	obj.Object().Range(func(name string, v values.Value) {
+		switch name {
+		case "logical":
+			if v.Type().Nature() != semantic.Array {
+				err = fmt.Errorf("'planner.%s.logical' must be an array, got %s", key, v.Type().Nature().String())
+				return
+			}
+			if v.Array().Type().ElementType().Nature() != semantic.String {
+				err = fmt.Errorf("'planner.%s.logical' must contain strings, got %s", key, v.Array().Type().ElementType().Nature().String())
+				return
+			}
+			lv = v.Array()
+		case "physical":
+			if v.Type().Nature() != semantic.Array {
+				err = fmt.Errorf("'planner.%s.physical' must be an array, got %s", key, v.Type().Nature().String())
+				return
+			}
+			if v.Array().Type().ElementType().Nature() != semantic.String {
+				err = fmt.Errorf("'planner.%s.physical' must contain strings, got %s", key, v.Array().Type().ElementType().Nature().String())
+				return
+			}
+			pv = v.Array()
+		default:
+			err = wrongKeysErr
+		}
+	})
+	return lv, pv, err
 }

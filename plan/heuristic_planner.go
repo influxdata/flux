@@ -21,6 +21,20 @@ func (p *heuristicPlanner) addRules(rules ...Rule) {
 	}
 }
 
+func (p *heuristicPlanner) removeRule(ruleName string) bool {
+	var removed bool
+	for _, rulesPerKind := range p.rules {
+		for i, rule := range rulesPerKind {
+			if rule.Name() == ruleName {
+				k := rule.Pattern().Root()
+				p.rules[k] = append(p.rules[k][:i], p.rules[k][i+1:]...)
+				removed = true
+			}
+		}
+	}
+	return removed
+}
+
 func (p *heuristicPlanner) clearRules() {
 	p.rules = make(map[ProcedureKind][]Rule)
 }

@@ -161,7 +161,10 @@ func (r *REPL) executeLine(t string) error {
 				if err != nil {
 					return err
 				}
-				s := spec.FromTableObject(t, nowTime.Time().Time())
+				s, err := spec.FromTableObject(t, nowTime.Time().Time())
+				if err != nil {
+					return err
+				}
 				if err := r.doQuery(r.ctx, s, r.deps); err != nil {
 					return err
 				}

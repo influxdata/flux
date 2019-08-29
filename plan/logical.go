@@ -75,6 +75,13 @@ func AddLogicalRules(rules ...Rule) LogicalOption {
 	})
 }
 
+func RemoveLogicalRule(rule string) LogicalOption {
+	return logicalOption(func(lp *logicalPlanner) {
+		// We ignore the fact that the given rule name could not match any rule.
+		lp.removeRule(rule)
+	})
+}
+
 // Disables integrity checks in the logical planner
 func DisableIntegrityChecks() LogicalOption {
 	return logicalOption(func(lp *logicalPlanner) {

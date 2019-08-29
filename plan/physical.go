@@ -134,6 +134,13 @@ func OnlyPhysicalRules(rules ...Rule) PhysicalOption {
 	})
 }
 
+func RemovePhysicalRule(rule string) PhysicalOption {
+	return physicalOption(func(pp *physicalPlanner) {
+		// We ignore the fact that the given rule name could not match any rule.
+		pp.removeRule(rule)
+	})
+}
+
 // Disables validation in the physical planner
 func DisableValidation() PhysicalOption {
 	return physicalOption(func(p *physicalPlanner) {
