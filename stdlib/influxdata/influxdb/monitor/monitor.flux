@@ -19,6 +19,38 @@ from = (start, stop=now(), fn=(r) => true) =>
         |> filter(fn: fn)
         |> v1.fieldsAsCols()
 
+// StateChanges takes a stream of tables, fromLevel, and toLevel and returns
+// a stream of tables where status has gone from fromLevel to toLevel.
+//
+// StateChanges only operates on data with data containing r._measurement == "statuses"
+// and where r._level exists.
+stateChanges = (fromLevel="any", toLevel, tables=<-) => {
+    toStatuses = tables
+        |> filter(fn: (r) => r._level == toLevel and r._measurement == "statuses")
+        |> map(fn: (r) => ({r with level_value: 1}))
+        |> duplicate(column: "_level", as: "l2")
+        |> drop(columns: ["_level"])
+        |> rename(columns: {"l2": "_level"})
+
+    levelFilter = if fromLevel == "any" then (r) => r._level != toLevel and exists r._level
+                   else (r) => r._level == fromLevel
+
+    fromStatuses = tables
+        |> filter(fn: levelFilter)
+        |> map(fn: (r) => ({r with level_value: 0}))
+        |> duplicate(column: "_level", as: "l2")
+        |> drop(columns: ["_level"])
+        |> rename(columns: {"l2": "_level"})
+
+     allStatuses = union(tables: [toStatuses, fromStatuses])
+        |> sort(columns: ["_time"])
+
+    return allStatuses
+        |> difference(columns: ["level_value"])
+        |> filter(fn: (r) => r.level_value > 0)
+        |> drop(columns: ["level_value"])
+        |> experimental.group(mode: "extend", columns: ["_level"])
+}
 
 // Notify will call the endpoint and log the results.
 notify = (tables=<-, endpoint, data={}) =>
