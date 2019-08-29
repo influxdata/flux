@@ -417,6 +417,11 @@ func TestBinaryOperator(t *testing.T) {
 		{lhs: nil, op: ">", rhs: values.Time(0), want: nil},
 		// null < null
 		{lhs: nil, op: ">", rhs: nil, want: nil},
+		// bool == bool
+		{lhs: true, op: "==", rhs: true, want: true},
+		{lhs: true, op: "==", rhs: false, want: false},
+		{lhs: false, op: "==", rhs: true, want: false},
+		{lhs: false, op: "==", rhs: false, want: true},
 		// int == int
 		{lhs: int64(4), op: "==", rhs: int64(4), want: true},
 		{lhs: int64(6), op: "==", rhs: int64(4), want: false},
@@ -482,6 +487,11 @@ func TestBinaryOperator(t *testing.T) {
 		{lhs: nil, op: "==", rhs: "a", want: nil},
 		// null == time
 		{lhs: nil, op: "==", rhs: values.Time(0), want: nil},
+		// bool != bool
+		{lhs: true, op: "!=", rhs: true, want: false},
+		{lhs: true, op: "!=", rhs: false, want: true},
+		{lhs: false, op: "!=", rhs: true, want: true},
+		{lhs: false, op: "!=", rhs: false, want: false},
 		// int != int
 		{lhs: int64(4), op: "!=", rhs: int64(4), want: false},
 		{lhs: int64(6), op: "!=", rhs: int64(4), want: true},
