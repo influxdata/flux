@@ -681,6 +681,8 @@ func (b *ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 				return -1, err
 			}
 		}
+	case flux.TDuration:
+		return -1, fmt.Errorf("duration columns not supported yet")
 	default:
 		PanicUnknownType(c.Type)
 	}

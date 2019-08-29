@@ -28,7 +28,7 @@ func TestColumnType(t *testing.T) {
 		{typ: semantic.Float, want: flux.TFloat},
 		{typ: semantic.Bool, want: flux.TBool},
 		{typ: semantic.Time, want: flux.TTime},
-		{typ: semantic.Duration, want: flux.TInvalid},
+		{typ: semantic.Duration, want: flux.TDuration},
 		{typ: semantic.Regexp, want: flux.TInvalid},
 		{typ: semantic.NewArrayType(semantic.String), want: flux.TInvalid},
 		{typ: semantic.NewObjectType(map[string]semantic.Type{
