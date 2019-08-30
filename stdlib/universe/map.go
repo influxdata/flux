@@ -165,7 +165,9 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 	// to complete when we read the first column. This pass should get the columns
 	// that are directly referenced which are the ones capable of changing and the
 	// only ones that can be a null value.
-	properties := t.fn.Type().Properties()
+	// TODO (adam): these are a pointer to a property list that is definitely shared by the type checking code (semantic/types.go NewObjectType)
+	unsafeProperties := t.fn.Type().Properties()
+	properties := make(map[string]semantic.Type)
 
 	var on map[string]bool
 	return tbl.Do(func(cr flux.ColReader) error {
@@ -187,8 +189,10 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 					// If the property is missing or null, then take whatever the first value
 					// is. This won't catch all situations, but we'll have to consider it good
 					// enough until type inference works in this scenario.
-					if t, ok := properties[k]; !ok || t == semantic.Nil {
+					if t, ok := unsafeProperties[k]; !ok || t == semantic.Nil {
 						properties[k] = typ
+					} else {
+						properties[k] = unsafeProperties[k]
 					}
 				}
 			}
