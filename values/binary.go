@@ -493,6 +493,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		r := rv.Bool()
 		return NewBool(l == r), nil
 	},
+	{Operator: ast.EqualOperator, Left: semantic.Bool, Right: semantic.Nil}: nil,
 	{Operator: ast.EqualOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
 		l := lv.Int()
 		r := rv.Int()
@@ -559,6 +560,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewBool(l.Equal(r)), nil
 	},
 	{Operator: ast.EqualOperator, Left: semantic.Time, Right: semantic.Nil}:   nil,
+	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.Bool}:   nil,
 	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.Int}:    nil,
 	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.UInt}:   nil,
 	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.Float}:  nil,
@@ -582,6 +584,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		r := rv.Bool()
 		return NewBool(l != r), nil
 	},
+	{Operator: ast.NotEqualOperator, Left: semantic.Bool, Right: semantic.Nil}: nil,
 	{Operator: ast.NotEqualOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
 		l := lv.Int()
 		r := rv.Int()
@@ -648,6 +651,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewBool(!l.Equal(r)), nil
 	},
 	{Operator: ast.NotEqualOperator, Left: semantic.Time, Right: semantic.Nil}:   nil,
+	{Operator: ast.NotEqualOperator, Left: semantic.Nil, Right: semantic.Bool}:   nil,
 	{Operator: ast.NotEqualOperator, Left: semantic.Nil, Right: semantic.Int}:    nil,
 	{Operator: ast.NotEqualOperator, Left: semantic.Nil, Right: semantic.UInt}:   nil,
 	{Operator: ast.NotEqualOperator, Left: semantic.Nil, Right: semantic.Float}:  nil,
