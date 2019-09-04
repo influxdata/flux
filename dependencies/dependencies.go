@@ -1,7 +1,9 @@
 package dependencies
 
 import (
+	"net"
 	"net/http"
+	"time"
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/secret"
@@ -50,12 +52,31 @@ func (d Dependencies) URLValidator() (url.Validator, error) {
 	return nil, errors.New(codes.Unimplemented, "url validator uninitialized in dependencies")
 }
 
+// newDefaultTransport creates a new transport with sane defaults.
+func newDefaultTransport() *http.Transport {
+	// These defaults are copied from http.DefaultTransport.
+	return &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			// DualStack is deprecated
+		}).DialContext,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+		// Fields below are NOT part of Go's defaults
+		MaxIdleConnsPerHost: 100,
+	}
+}
+
 // NewDefaults produces a set of dependencies.
 // Not all dependencies have valid defaults and will not be set.
 func NewDefaults() Dependencies {
 	return Dependencies{
 		Deps: Deps{
-			HTTPClient:    http.DefaultClient,
+			HTTPClient:    &http.Client{Transport: newDefaultTransport()},
 			SecretService: nil,
 			URLValidator:  url.PassValidator{},
 		},
