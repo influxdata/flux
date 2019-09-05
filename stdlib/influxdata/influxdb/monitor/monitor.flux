@@ -16,6 +16,7 @@ option log = (tables=<-) => tables |> experimental.to(bucket: bucket)
 from = (start, stop=now(), fn=(r) => true) =>
     influxdb.from(bucket: bucket)
         |> range(start: start, stop: stop)
+        |> filter(fn: (r) => r._measurement == "statuses")
         |> filter(fn: fn)
         |> v1.fieldsAsCols()
 
@@ -70,6 +71,7 @@ notify = (tables=<-, endpoint, data={}) =>
 logs = (start, stop=now(), fn) =>
     influxdb.from(bucket: bucket)
         |> range(start: start, stop: stop)
+        |> filter(fn: (r) => r._measurement == "notifications")
         |> filter(fn: fn)
         |> v1.fieldsAsCols()
 
