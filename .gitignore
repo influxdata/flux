@@ -1,6 +1,7 @@
 bin
 vendor
 /dist
+.DS_Store
 .netrc
 .vscode
 .vs
