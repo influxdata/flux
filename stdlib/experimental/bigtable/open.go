@@ -2,7 +2,10 @@ package bigtable
 
 import (
 	"fmt"
+	"context"
+
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -19,7 +22,7 @@ var open = values.NewFunction(
 		Required:   semantic.LabelSet{project, instance},
 		Return:     semantic.Object,
 	}),
-	func(args values.Object) (values.Value, error) {
+	func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 		p, ok := args.Get(project)
 		if !ok {
 			return nil, fmt.Errorf("missing argument %q", project)

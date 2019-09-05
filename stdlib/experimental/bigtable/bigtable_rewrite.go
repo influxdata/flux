@@ -13,7 +13,7 @@ func AddFilterToNode(queryNode plan.Node, filterNode plan.Node) (plan.Node, bool
 	querySpec := queryNode.ProcedureSpec().(*FromBigtableProcedureSpec)
 	filterSpec := filterNode.ProcedureSpec().(*universe.FilterProcedureSpec)
 
-	switch body := filterSpec.Fn.Block.Body.(type) {
+	switch body := filterSpec.Fn.Fn.Block.Body.(type) {
 	case *semantic.BinaryExpression:
 		switch body.Operator {
 		case ast.EqualOperator:

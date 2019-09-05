@@ -12,7 +12,6 @@ require (
 	github.com/dave/jennifer v1.2.0
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/go-sql-driver/mysql v1.4.0
-	github.com/golang/protobuf v1.3.1 // indirect
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/google/go-cmp v0.3.0
 	github.com/goreleaser/goreleaser v0.94.0
@@ -32,10 +31,8 @@ require (
 	go.uber.org/atomic v1.3.2 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
 	go.uber.org/zap v1.9.1
-	golang.org/x/exp v0.0.0-20181112044915-a3060d491354
-	golang.org/x/net v0.0.0-20190613194153-d28f0bde5980 // indirect
-	golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4 // indirect
-	golang.org/x/tools v0.0.0-20181221154417-3ad2d988d5e2 // indirect
+	golang.org/x/exp v0.0.0-20190510132918-efd6b22b2522
+	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
 	gonum.org/v1/gonum v0.0.0-20181121035319-3f7ecaa7e8ca
 	google.golang.org/api v0.7.0
 	honnef.co/go/tools v0.0.0-20190418001031-e561f6794a2a
