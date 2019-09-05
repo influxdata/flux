@@ -9,8 +9,8 @@ import (
 	"github.com/influxdata/flux/plan"
 )
 
-// Transformation represents functions that control how the execution
-// engine will take in flux Table and perform the necessary data processing
+// Transformation represents the execution engine will taking in data
+// from a Dataset and perform the necessary data processing on it
 type Transformation interface {
 	RetractTable(id DatasetID, key flux.GroupKey) error
 	// Process takes in a DatasetID referring to a list of all transformations
