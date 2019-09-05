@@ -1,8 +1,8 @@
 package bigtable
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies"
