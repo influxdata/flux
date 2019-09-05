@@ -6,6 +6,10 @@ import "experimental"
 // The HTTP status code is returned.
 builtin post
 
+// basicAuth will take a username/password combination and return the authorization
+// header value.
+builtin basicAuth
+
 endpoint =  (url) =>
     (mapFn) =>
         (tables=<-) =>
