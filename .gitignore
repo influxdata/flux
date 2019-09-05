@@ -10,3 +10,4 @@ vendor
 /internal/rust/parser/pkg
 /internal/rust/site/node_modules
 /internal/rust/.cache
+.DS_Store
