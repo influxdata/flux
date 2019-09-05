@@ -47,6 +47,7 @@ const (
 	uintDatatype   = "unsignedLong"
 
 	timeDataTypeWithFmt = "dateTime:RFC3339"
+	durationDataTypeWithFmt = "duration"
 
 	nullValue = ""
 )
@@ -964,6 +965,8 @@ func writeDatatypes(writer *csv.Writer, row []string, cols []colMeta) error {
 			row[j] = stringDatatype
 		case flux.TTime:
 			row[j] = timeDataTypeWithFmt
+		case flux.TDuration:
+			row[j] = durationDataTypeWithFmt
 		default:
 			return fmt.Errorf("unknown column type %v", c.Type)
 		}

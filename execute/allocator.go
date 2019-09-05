@@ -11,6 +11,7 @@ const (
 	float64Size = 8
 	stringSize  = 16
 	timeSize    = 8
+	durationSize = 8
 )
 
 // Allocator tracks the amount of memory being consumed by a query.
@@ -217,5 +218,36 @@ func (a *Allocator) GrowTimes(slice []Time, n int) []Time {
 	copy(s, slice)
 	diff := cap(s) - cap(slice)
 	a.account(diff, timeSize)
+	return s
+}
+
+// Durations makes a slice of Duration values
+func (a *Allocator) Durations(l, c int) []Duration {
+	a.account(c, durationSize)
+	return make([]Duration, l, c)
+}
+
+// AppendTimes appends Durations to a slice
+func (a *Allocator) AppendDurations(slice []Duration, vs ...Duration) []Duration {
+	if cap(slice)-len(slice) >= len(vs) {
+		return append(slice, vs...)
+	}
+	s := append(slice, vs...)
+	diff := cap(s) - cap(slice)
+	a.account(diff, durationSize)
+	return s
+}
+
+func (a *Allocator) GrowDurations(slice []Duration, n int) []Duration {
+	newCap := len(slice) + n
+	if newCap < cap(slice) {
+		return slice[:newCap]
+	}
+	// grow capacity same way as built-in append
+	newCap = newCap*3/2 + 1
+	s := make([]Duration, len(slice)+n, newCap)
+	copy(s, slice)
+	diff := cap(s) - cap(slice)
+	a.account(diff, durationSize)
 	return s
 }

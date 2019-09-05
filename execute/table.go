@@ -682,7 +682,14 @@ func (b *ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 			}
 		}
 	case flux.TDuration:
-		return -1, fmt.Errorf("duration columns not supported yet")
+		b.cols = append(b.cols, &durationColumnBuilder{
+			columnBuilderBase: colBase,
+		})
+		if b.NRows() > 0 {
+			if err := b.GrowDurations(newIdx, b.NRows()); err != nil {
+				return -1, err
+			}
+		}
 	default:
 		PanicUnknownType(c.Type)
 	}
@@ -1075,7 +1082,6 @@ func (b *ColListTableBuilder) AppendTimes(j int, vs *array.Int64) error {
 	}
 	b.nrows = len(col.data)
 	return nil
-
 }
 
 func (b *ColListTableBuilder) GrowTimes(j, n int) error {
@@ -1093,6 +1099,59 @@ func (b *ColListTableBuilder) GrowTimes(j, n int) error {
 	}
 	return nil
 
+}
+
+func (b *ColListTableBuilder) SetDuration(i int, j int, value Duration) error {
+	if err := b.checkCol(j, flux.TDuration); err != nil {
+		return err
+	}
+	b.cols[j].(*durationColumnBuilder).data[i] = value
+	b.cols[j].SetNil(i, false)
+	return nil
+}
+
+func (b *ColListTableBuilder) AppendDuration(j int, value Duration) error {
+	if err := b.checkCol(j, flux.TDuration); err != nil {
+		return err
+	}
+	col := b.cols[j].(*durationColumnBuilder)
+	col.data = b.alloc.AppendDurations(col.data, value)
+	b.nrows = len(col.data)
+	return nil
+}
+
+func (b *ColListTableBuilder) AppendDurations(j int, vs *array.Int64) error {
+	if err := b.checkCol(j, flux.TDuration); err != nil {
+		return err
+	}
+	col := b.cols[j].(*durationColumnBuilder)
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsNull(i) {
+			if err := b.AppendNil(j); err != nil {
+				return err
+			}
+		} else if err := b.AppendDuration(j, values.Duration(vs.Value(i))); err != nil {
+			return err
+		}
+	}
+	b.nrows = len(col.data)
+	return nil
+}
+
+func (b *ColListTableBuilder) GrowDurations(j, n int) error {
+	if err := b.checkCol(j, flux.TDuration); err != nil {
+		return err
+	}
+	col := b.cols[j].(*durationColumnBuilder)
+	i := len(col.data)
+	col.data = b.alloc.GrowDurations(col.data, n)
+	b.nrows = len(col.data)
+	for ; i < b.nrows; i++ {
+		if err := b.SetNil(i, j); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (b *ColListTableBuilder) SetValue(i, j int, v values.Value) error {
@@ -1113,6 +1172,8 @@ func (b *ColListTableBuilder) SetValue(i, j int, v values.Value) error {
 		return b.SetString(i, j, v.Str())
 	case semantic.Time:
 		return b.SetTime(i, j, v.Time())
+	case semantic.Duration:
+		return b.SetDuration(i, j, v.Duration())
 	default:
 		panic(fmt.Errorf("unexpected value type %v", v.Type()))
 	}
@@ -1136,6 +1197,8 @@ func (b *ColListTableBuilder) AppendValue(j int, v values.Value) error {
 		return b.AppendString(j, v.Str())
 	case semantic.Time:
 		return b.AppendTime(j, v.Time())
+	case semantic.Duration:
+		return b.AppendDuration(j, v.Duration())
 	default:
 		panic(fmt.Errorf("unexpected value type %v", v.Type()))
 	}
@@ -1181,6 +1244,10 @@ func (b *ColListTableBuilder) AppendNil(j int) error {
 		}
 	case flux.TTime:
 		if err := b.AppendTime(j, 0); err != nil {
+			return err
+		}
+	case flux.TDuration:
+		if err := b.AppendDuration(j, 0); err != nil {
 			return err
 		}
 	default:
@@ -1234,6 +1301,11 @@ func (b *ColListTableBuilder) Times(j int) []values.Time {
 	return b.cols[j].(*timeColumnBuilder).data
 }
 
+func (b *ColListTableBuilder) Durations(j int) []values.Duration {
+	CheckColType(b.colMeta[j], flux.TDuration)
+	return b.cols[j].(*durationColumnBuilder).data
+}
+
 // GetRow takes a row index and returns the record located at that index in the cache
 func (b *ColListTableBuilder) GetRow(row int) values.Object {
 	record := values.NewObject()
@@ -1255,6 +1327,8 @@ func (b *ColListTableBuilder) GetRow(row int) values.Object {
 				val = values.NewString(b.cols[j].(*stringColumnBuilder).data[row])
 			case flux.TTime:
 				val = values.NewTime(b.cols[j].(*timeColumnBuilder).data[row])
+			case flux.TDuration:
+				val = values.NewDuration(b.cols[j].(*durationColumnBuilder).data[row])
 			}
 		}
 		record.Set(col.Label, val)
@@ -1311,6 +1385,9 @@ func (b *ColListTableBuilder) SliceColumns(start, stop int) error {
 			col.data = col.data[start:stop]
 		case flux.TTime:
 			col := b.cols[i].(*timeColumnBuilder)
+			col.data = col.data[start:stop]
+		case flux.TDuration:
+			col := b.cols[i].(*durationColumnBuilder)
 			col.data = col.data[start:stop]
 		default:
 			panic(fmt.Errorf("unexpected column type %v", c.Meta().Type))
@@ -1427,6 +1504,10 @@ func (t *ColListTable) Times(j int) *array.Int64 {
 	CheckColType(t.colMeta[j], flux.TTime)
 	return t.cols[j].(*timeColumn).data
 }
+func (t *ColListTable) Durations(j int) *array.Int64 {
+	CheckColType(t.colMeta[j], flux.TDuration)
+	return t.cols[j].(*durationColumn).data
+}
 
 // GetRow takes a row index and returns the record located at that index in the cache
 func (t *ColListTable) GetRow(row int) values.Object {
@@ -1446,6 +1527,8 @@ func (t *ColListTable) GetRow(row int) values.Object {
 			val = values.NewString(t.cols[j].(*stringColumnBuilder).data[row])
 		case flux.TTime:
 			val = values.NewTime(t.cols[j].(*timeColumnBuilder).data[row])
+		case flux.TDuration:
+			val = values.NewDuration(t.cols[j].(*durationColumnBuilder).data[row])
 		}
 		record.Set(col.Label, val)
 	}
@@ -2041,6 +2124,79 @@ func (c *timeColumnBuilder) Less(i, j int) bool {
 }
 
 func (c *timeColumnBuilder) Swap(i, j int) {
+	c.columnBuilderBase.Swap(i, j)
+	c.data[i], c.data[j] = c.data[j], c.data[i]
+}
+
+type durationColumn struct {
+	flux.ColMeta
+	data *array.Int64
+}
+
+func (c *durationColumn) Meta() flux.ColMeta {
+	return c.ColMeta
+}
+
+func (c *durationColumn) Clear() {
+	if c.data != nil {
+		c.data.Release()
+		c.data = nil
+	}
+}
+
+func (c *durationColumn) Copy() column {
+	c.data.Retain()
+	return &durationColumn{
+		ColMeta: c.ColMeta,
+		data: c.data,
+	}
+}
+
+type durationColumnBuilder struct {
+	columnBuilderBase
+	data []Duration
+}
+
+func (c *durationColumnBuilder) Clear() {
+	c.alloc.Free(cap(c.data), timeSize)
+	c.data = c.data[0:0]
+}
+
+func (c *durationColumnBuilder) Copy() column {
+	b := arrow.NewIntBuilder(c.alloc.Allocator)
+	b.Reserve(len(c.data))
+	for i, v := range c.data {
+		if c.nils[i] {
+			b.UnsafeAppendBoolToBitmap(false)
+			continue
+		}
+		b.UnsafeAppend(int64(v))
+	}
+	col := &durationColumn{
+		ColMeta: c.ColMeta,
+		data: b.NewInt64Array(),
+	}
+	b.Release()
+	return col
+}
+
+func (c *durationColumnBuilder) Len() int {
+	return len(c.data)
+}
+
+func (c *durationColumnBuilder) Equal(i, j int) bool {
+	return c.EqualFunc(i, j, func(i, j int) bool {
+		return c.data[i] == c.data[j]
+	})
+}
+
+func (c *durationColumnBuilder) Less(i, j int) bool {
+	return c.LessFunc(i, j, func(i, j int) bool {
+		return c.data[i] < c.data[j]
+	})
+}
+
+func (c *durationColumnBuilder) Swap(i, j int) {
 	c.columnBuilderBase.Swap(i, j)
 	c.data[i], c.data[j] = c.data[j], c.data[i]
 }
