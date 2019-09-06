@@ -10,6 +10,18 @@ builtin dedupKey
 option defaultURL = "https://events.pagerduty.com/v2/enqueue"
 
 
+// severity levels on status objects can be one of the following: ok,info,warn,crit,unknown
+// but pagerduty only accepts critical, error, warning or info.
+// formatSeverity turns a level from the status object into a pagerduty severity
+formatSeverity = (severity) => {
+    sev = strings.toLower(v:severity) 
+    if sev == "warn" then "warning"
+    else if sev == "crit" then "critical"
+    else if sev == "info" then "info"
+    else if sev == "ok" then "info"
+    else "unknown"
+}
+
 // `actionFromSeverity` converts a severity to an action; "ok" becomes "resolve" everything else converts to "trigger".
 actionFromSeverity = (severity)=> if strings.toLower(v:severity) == "ok" then "resolve" else "trigger"
 
@@ -45,7 +57,7 @@ sendEvent = (pagerdutyURL=defaultURL,
             summary: summary,
             timestamp: timestamp,
             source: source,
-            severity: severity,
+            severity: formatSeverity(severity),
             component: component,
             group: group,
             class: class,

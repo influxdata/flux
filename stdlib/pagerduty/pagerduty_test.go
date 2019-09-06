@@ -151,7 +151,7 @@ func TestPagerdutySendEvent(t *testing.T) {
 			clientURL:     "http://fakepagerduty.com",
 			class:         "deploy",
 			group:         "app-stack",
-			severity:      "warning",
+			severity:      "warn",
 			component:     "influxdb",
 			source:        "monitoringtool:vendor:region",
 			summary:       "this is a testing summary",
