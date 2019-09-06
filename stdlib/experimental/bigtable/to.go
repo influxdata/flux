@@ -4,15 +4,14 @@ import (
 	"cloud.google.com/go/bigtable"
 	"context"
 	"fmt"
-	"google.golang.org/api/option"
-	"strings"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"google.golang.org/api/option"
+	"strings"
 )
 
 const ToBigtableKind = "toBigtable"
@@ -66,12 +65,12 @@ func (o *ToBigtableOpSpec) ReadArgs(args flux.Arguments) error {
 	}
 
 	var ok bool
-	o.Table, ok, err = args.GetString("rowkeyCol")
+	o.RowkeyCol, ok, err = args.GetString("rowkeyCol")
 	if err != nil {
 		return err
 	}
 	if !ok {
-		o.Table = "_time"
+		o.RowkeyCol = "_time"
 	}
 
 	return err
@@ -154,7 +153,7 @@ func (t *ToBigtableTransformation) RetractTable(id execute.DatasetID, key flux.G
 }
 
 func NewToBigtableTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ToBigtableProcedureSpec) (*ToBigtableTransformation, error) {
-	client, err := bigtable.NewAdminClient(context.Background(), spec.Spec.Project, spec.Spec.Instance)
+	client, err := bigtable.NewAdminClient(context.Background(), spec.Spec.Project, spec.Spec.Instance, option.WithCredentialsJSON([]byte(spec.Spec.Token)))
 	if err != nil {
 		return nil, err
 	}
@@ -184,9 +183,6 @@ func isKeyCol(list []flux.ColMeta, target flux.ColMeta) bool {
 }
 
 func (t *ToBigtableTransformation) Process(id execute.DatasetID, tbl flux.Table) (err error) {
-	if tbl.Empty() {
-		return nil
-	}
 	return tbl.Do(func(cr flux.ColReader) error {
 		cols := tbl.Cols()
 		keyCols := tbl.Key()
@@ -195,8 +191,9 @@ func (t *ToBigtableTransformation) Process(id execute.DatasetID, tbl flux.Table)
 
 		var keyValueNamesStr []string
 		// get the values in the key columns as strings so we can concatenate them
-		for i := range keyValueNames {
-			keyValueNamesStr[i] = keyValueNames[i].Str()
+
+		for i := 0; i < len(keyValueNames); i++ {
+			keyValueNamesStr = append(keyValueNamesStr, keyValueNames[i].Str())
 		}
 
 		rows := cr.Len()
@@ -206,12 +203,14 @@ func (t *ToBigtableTransformation) Process(id execute.DatasetID, tbl flux.Table)
 		if err != nil {
 			return err
 		}
+
 		newTbl := newCli.Open(t.spec.Spec.Table)
 		muts := make([]*bigtable.Mutation, rows)
 		rowKeys := make([]string, rows)
 
 		rowKeyColIdx := execute.ColIdx(t.spec.Spec.RowkeyCol, tbl.Cols())
 		rowKeyType := tbl.Cols()[rowKeyColIdx].Type
+
 		for i := 0; i < rows; i++ {
 			for j := 0; j < len(cols); j++ {
 				// if this is a key column, we need to skip it
@@ -222,7 +221,8 @@ func (t *ToBigtableTransformation) Process(id execute.DatasetID, tbl flux.Table)
 				muts[i] = bigtable.NewMutation()
 
 				v := execute.ValueForRow(cr, i, j)
-				muts[i].Set(familyName, cols[j].Label, bigtable.Now(), v.Bytes())
+				byteVal := v.Bytes()
+				muts[i].Set(familyName, cols[j].Label, bigtable.Now(), byteVal)
 
 				switch rowKeyType {
 				case flux.TBool:
