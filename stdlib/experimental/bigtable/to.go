@@ -4,6 +4,9 @@ import (
 	"cloud.google.com/go/bigtable"
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -11,8 +14,6 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"google.golang.org/api/option"
-	"strconv"
-	"strings"
 )
 
 const ToBigtableKind = "toBigtable"
