@@ -7,12 +7,13 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
 func init() {
-	flux.RegisterPackageValue("universe", "sleep", sleep)
+	flux.RegisterPackageValue("universe", "sleep", sleepFunc)
 }
 
 const (
@@ -20,7 +21,7 @@ const (
 	durationArg = "duration"
 )
 
-var sleep = values.NewFunction(
+var sleepFunc = values.NewFunction(
 	"sleep",
 	semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 		Parameters: map[string]semantic.PolyType{
@@ -32,21 +33,37 @@ var sleep = values.NewFunction(
 		Return:       semantic.Tvar(1),
 	}),
 	func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
-		v, ok := args.Get(vArg)
-		if !ok {
-			return nil, fmt.Errorf("missing argument %q", vArg)
-		}
-		d, ok := args.Get(durationArg)
-		if !ok {
-			return nil, fmt.Errorf("missing argument %q", durationArg)
-		}
-
-		if d.Type().Nature() == semantic.Duration {
-			dur := d.Duration()
-			time.Sleep(time.Duration(dur))
-		}
-		return v, nil
+		return interpreter.DoFunctionCallContext(sleep, ctx, args)
 	},
 	// sleeping is a side effect
 	true,
 )
+
+func sleep(ctx context.Context, args interpreter.Arguments) (values.Value, error) {
+	v, err := args.GetRequired(vArg)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO(jsternberg): There should be a GetRequiredDuration, but
+	// that would cause a breaking change and the commit this is getting
+	// added to is meant to be a patch fix. Come back here later when
+	// Arguments can be refactored in a breaking way to make it not an
+	// interface.
+	d, err := args.GetRequired(durationArg)
+	if err != nil {
+		return nil, err
+	} else if d.Type().Nature() != semantic.Duration {
+		return nil, fmt.Errorf("keyword argument %q should be of kind %v, but got %v", durationArg, semantic.Duration, v.PolyType().Nature())
+	}
+
+	timer := time.NewTimer(d.Duration().Duration())
+	defer timer.Stop()
+
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case <-timer.C:
+		return v, nil
+	}
+}

@@ -582,9 +582,22 @@ func functionName(call *semantic.CallExpression) string {
 	}
 }
 
+// DoFunctionCall will call DoFunctionCallContext with a background context.
 func DoFunctionCall(f func(args Arguments) (values.Value, error), argsObj values.Object) (values.Value, error) {
+	return DoFunctionCallContext(func(_ context.Context, args Arguments) (values.Value, error) {
+		return f(args)
+	}, context.Background(), argsObj)
+}
+
+// DoFunctionCallContext will treat the argsObj as the arguments to a function.
+// It will then invoke that function with the Arguments and return the
+// value from the function.
+//
+// This function verifies that all of the arguments have been consumed
+// by the function call.
+func DoFunctionCallContext(f func(ctx context.Context, args Arguments) (values.Value, error), ctx context.Context, argsObj values.Object) (values.Value, error) {
 	args := NewArguments(argsObj)
-	v, err := f(args)
+	v, err := f(ctx, args)
 	if err != nil {
 		return nil, err
 	}
