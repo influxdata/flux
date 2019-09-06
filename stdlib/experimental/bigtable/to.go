@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"google.golang.org/api/option"
+	"strconv"
 	"strings"
 )
 
@@ -197,7 +198,7 @@ func (t *ToBigtableTransformation) Process(id execute.DatasetID, tbl flux.Table)
 		}
 
 		rows := cr.Len()
-		familyName := strings.Join(keyValueNamesStr, "|")
+		familyName := strings.Join(keyValueNamesStr, "-")
 
 		newCli, err := bigtable.NewClient(context.Background(), t.spec.Spec.Project, t.spec.Spec.Instance, option.WithCredentialsJSON([]byte(t.spec.Spec.Token)))
 		if err != nil {
@@ -221,23 +222,43 @@ func (t *ToBigtableTransformation) Process(id execute.DatasetID, tbl flux.Table)
 				muts[i] = bigtable.NewMutation()
 
 				v := execute.ValueForRow(cr, i, j)
-				byteVal := v.Bytes()
-				muts[i].Set(familyName, cols[j].Label, bigtable.Now(), byteVal)
-
-				switch rowKeyType {
-				case flux.TBool:
-					rowKeys[i] = fmt.Sprintf("%v", cr.Bools(rowKeyColIdx).Value(i))
-				case flux.TFloat:
-					rowKeys[i] = fmt.Sprintf("%v", cr.Floats(rowKeyColIdx).Value(i))
-				case flux.TInt:
-					rowKeys[i] = fmt.Sprintf("%v", cr.Ints(rowKeyColIdx).Value(i))
-				case flux.TString:
-					rowKeys[i] = fmt.Sprintf("%v", cr.Strings(rowKeyColIdx).Value(i))
-				case flux.TUInt:
-					rowKeys[i] = fmt.Sprintf("%v", cr.UInts(rowKeyColIdx).Value(i))
-				case flux.TTime:
-					rowKeys[i] = fmt.Sprintf("%v", cr.Times(rowKeyColIdx).Value(i))
+				var str string
+				switch v.Type().Nature() {
+				case semantic.String:
+					str = v.Str()
+				case semantic.Int:
+					str = strconv.FormatInt(v.Int(), 10)
+				case semantic.UInt:
+					str = strconv.FormatUint(v.UInt(), 10)
+				case semantic.Float:
+					str = strconv.FormatFloat(v.Float(), 'f', -1, 64)
+				case semantic.Bool:
+					str = strconv.FormatBool(v.Bool())
+				case semantic.Time:
+					str = v.Time().String()
+				case semantic.Duration:
+					str = v.Duration().String()
+				default:
+					return fmt.Errorf("cannot convert %v to string", v.Type())
 				}
+
+				muts[i].Set(familyName, cols[j].Label, bigtable.Now(), []byte(str))
+			}
+
+			// set the rowkey value for the current row
+			switch rowKeyType {
+			case flux.TBool:
+				rowKeys[i] = fmt.Sprintf("%v", cr.Bools(rowKeyColIdx).Value(i))
+			case flux.TFloat:
+				rowKeys[i] = fmt.Sprintf("%v", cr.Floats(rowKeyColIdx).Value(i))
+			case flux.TInt:
+				rowKeys[i] = fmt.Sprintf("%v", cr.Ints(rowKeyColIdx).Value(i))
+			case flux.TString:
+				rowKeys[i] = fmt.Sprintf("%v", cr.Strings(rowKeyColIdx).Value(i))
+			case flux.TUInt:
+				rowKeys[i] = fmt.Sprintf("%v", cr.UInts(rowKeyColIdx).Value(i))
+			case flux.TTime:
+				rowKeys[i] = fmt.Sprintf("%v", cr.Times(rowKeyColIdx).Value(i))
 			}
 		}
 
