@@ -316,7 +316,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, deps dependencies.Int
 	case *semantic.IdentifierExpression:
 		value, ok := scope.Lookup(e.Name)
 		if !ok {
-			return nil, fmt.Errorf("undefined identifier %q", e.Name)
+			return nil, errors.Newf(codes.Invalid, "undefined identifier %q", e.Name)
 		}
 		return value, nil
 	case *semantic.CallExpression:

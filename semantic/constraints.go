@@ -165,7 +165,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 	case *IdentifierExpression:
 		scheme, ok := v.env.Lookup(n.Name)
 		if !ok {
-			return nil, fmt.Errorf("undefined identifier %q", n.Name)
+			return nil, errors.Newf(codes.Invalid, "undefined identifier %q", n.Name)
 		}
 		t := v.cs.Instantiate(scheme, n.Location())
 		return t, nil
