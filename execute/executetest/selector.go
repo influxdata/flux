@@ -30,6 +30,7 @@ func RowSelectorFuncTestHelper(t *testing.T, selector execute.RowSelector, data 
 	}
 }
 
+//lint:ignore U1000 Not sure why we need this...someone write a better reason :) .
 var rows []execute.Row
 
 func RowSelectorFuncBenchmarkHelper(b *testing.B, selector execute.RowSelector, data flux.Table) {
