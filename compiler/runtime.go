@@ -545,7 +545,7 @@ func (e *memberEvaluator) Eval(ctx context.Context, deps dependencies.Interface,
 		return nil, err
 	}
 	v, _ := o.Object().Get(e.property)
-	values.CheckKind(v.PolyType().Nature(), e.t.Nature())
+	// values.CheckKind(v.PolyType().Nature(), e.t.Nature())
 	return v, nil
 }
 
