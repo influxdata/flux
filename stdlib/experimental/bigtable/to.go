@@ -269,6 +269,7 @@ func (t *ToBigtableTransformation) Process(id execute.DatasetID, tbl flux.Table)
 		for _, rowErr := range rowErrs {
 			return fmt.Errorf("error writing row: %v", rowErr)
 		}
+
 		return nil
 	})
 }
@@ -282,5 +283,8 @@ func (t *ToBigtableTransformation) UpdateProcessingTime(id execute.DatasetID, pt
 }
 
 func (t *ToBigtableTransformation) Finish(id execute.DatasetID, err error) {
+	if cliErr := t.client.Close(); cliErr != nil {
+		err = errors.Wrap(err, codes.Inherit, cliErr)
+	}
 	t.d.Finish(err)
 }
