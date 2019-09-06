@@ -12,18 +12,19 @@ option defaultURL = "https://events.pagerduty.com/v2/enqueue"
 
 // severity levels on status objects can be one of the following: ok,info,warn,crit,unknown
 // but pagerduty only accepts critical, error, warning or info.
-// formatSeverity turns a level from the status object into a pagerduty severity
-formatSeverity = (severity) => {
-    sev = strings.toLower(v:severity) 
-    if sev == "warn" then "warning"
-    else if sev == "crit" then "critical"
-    else if sev == "info" then "info"
-    else if sev == "ok" then "info"
-    else "unknown"
+// severityFromLevel turns a level from the status object into a pagerduty severity
+severityFromLevel = (level) => {
+    lvl = strings.toLower(v:level)
+    sev = if lvl == "warn" then "warning" 
+        else if lvl == "crit" then "critical" 
+        else if lvl == "info" then "info" 
+        else if lvl == "ok" then "info" 
+        else "error"
+    return sev
 }
 
-// `actionFromSeverity` converts a severity to an action; "ok" becomes "resolve" everything else converts to "trigger".
-actionFromSeverity = (severity)=> if strings.toLower(v:severity) == "ok" then "resolve" else "trigger"
+// `actionFromLevel` converts a monitoring level to an action; "ok" becomes "resolve" everything else converts to "trigger".
+actionFromLevel = (level)=> if strings.toLower(v:level) == "ok" then "resolve" else "trigger"
 
 // `sendEvent` sends an event to PagerDuty, the description of some of these parameters taken from the pagerduty documentation at https://v2.developer.pagerduty.com/docs/send-an-event-events-api-v2
 // `pagerdutyURL` - sring - URL of the pagerduty endpoint.  Defaults to: `option defaultURL = "https://events.pagerduty.com/v2/enqueue"`
@@ -35,6 +36,7 @@ actionFromSeverity = (severity)=> if strings.toLower(v:severity) == "ok" then "r
 // `class` - string - The class/type of the event, for example ping failure or cpu load.
 // `group` - string - Logical grouping of components of a service, for example app-stack.
 // `severity` - string - The perceived severity of the status the event is describing with respect to the affected system. This can be critical, error, warning or info.
+// `eventAction` - string - The type of event to send to PagerDuty (ex. trigger, resolve, acknowledge)
 // `component` - string - Component of the source machine that is responsible for the event, for example mysql or eth0.
 // `source` - string - The unique location of the affected system, preferably a hostname or FQDN.
 // `summary` - string - A brief text summary of the event, used to generate the summaries/titles of any associated alerts. The maximum permitted length of this property is 1024 characters.
@@ -48,6 +50,7 @@ sendEvent = (pagerdutyURL=defaultURL,
     class,
     group,
     severity,
+    eventAction,
     component,
     source,
     summary,
@@ -57,7 +60,7 @@ sendEvent = (pagerdutyURL=defaultURL,
             summary: summary,
             timestamp: timestamp,
             source: source,
-            severity: formatSeverity(severity),
+            severity: severity,
             component: component,
             group: group,
             class: class,
@@ -66,7 +69,7 @@ sendEvent = (pagerdutyURL=defaultURL,
         payload: payload,
         routing_key: routingKey,
         dedup_key: dedupKey,
-        event_action: actionFromSeverity(severity: severity),
+        event_action: eventAction,
         client: client,
         client_url: clientURL,
     }
@@ -84,7 +87,7 @@ sendEvent = (pagerdutyURL=defaultURL,
 // `url` - string - URL of the slack endpoint. Defaults to: "https://events.pagerduty.com/v2/enqueue".
 // `token` - string - token for the pagerduty endpoint.
 // The returned factory function accepts a `mapFn` parameter.
-// The `mapFn` parameter must be a function that returns an object with `routingKey`, `client`, `client_url`,`class`,`group`, `severity`, `component`, `source`, `summary`, and `timestamp` as defined in the sendEvent function.
+// The `mapFn` parameter must be a function that returns an object with `routingKey`, `client`, `client_url`, `class`, `group`, `severity`, `eventAction`, `component`, `source`, `summary`, and `timestamp` as defined in the sendEvent function.
 // Note that while sendEvent accepts a dedup key, endpoint gets the dedupkey from the groupkey of the input table instead of it being handled by the `mapFn`.
 endpoint = (url=defaultURL, token="") =>
     (mapFn) =>
@@ -102,6 +105,7 @@ endpoint = (url=defaultURL, token="") =>
                     class: obj.class,
                     group: obj.group,
                     severity: obj.severity, 
+                    eventAction: obj.eventAction,
                     component: obj.component, 
                     source: obj.source, 
                     summary: obj.summary, 
