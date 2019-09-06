@@ -140,9 +140,10 @@ func TestPagerdutySendEvent(t *testing.T) {
 		summary       string
 		timestamp     string
 		eventAction   string
+		level         string
 	}{
 		{
-			name:          "testCase1",
+			name:          "warning",
 			otherGroupKey: "foo",
 			pagerdutyURL:  s.URL,
 			token:         "fakeToken1",
@@ -157,9 +158,28 @@ func TestPagerdutySendEvent(t *testing.T) {
 			summary:       "this is a testing summary",
 			timestamp:     "2015-07-17T08:42:58.315+0000",
 			eventAction:   "trigger",
+			level:         "warn",
 		},
 		{
-			name:          "testCase2",
+			name:          "critical",
+			otherGroupKey: "foo",
+			pagerdutyURL:  s.URL,
+			token:         "fakeToken1",
+			routingKey:    "fakeRoutingKey",
+			client:        "fakeClient1",
+			clientURL:     "http://fakepagerduty.com",
+			class:         "deploy",
+			group:         "app-stack",
+			severity:      "critical",
+			component:     "influxdb",
+			source:        "monitoringtool:vendor:region",
+			summary:       "this is a testing summary",
+			timestamp:     "2015-07-17T08:42:58.315+0000",
+			eventAction:   "trigger",
+			level:         "crit",
+		},
+		{
+			name:          "resolve",
 			otherGroupKey: "foo2",
 			pagerdutyURL:  s.URL,
 			token:         "fakeToken2",
@@ -168,12 +188,13 @@ func TestPagerdutySendEvent(t *testing.T) {
 			clientURL:     "http://fakepagerduty.com",
 			class:         "deploy",
 			group:         "app-stack",
-			severity:      "ok",
+			severity:      "info",
 			component:     "postgres",
 			source:        "monitoringtool:vendor:region",
 			summary:       "this is another testing summary",
 			timestamp:     "2016-07-17T08:42:58.315+0000",
 			eventAction:   "resolve",
+			level:         "ok",
 		},
 	}
 
@@ -184,13 +205,16 @@ func TestPagerdutySendEvent(t *testing.T) {
 import "pagerduty"
 
 endpoint = pagerduty.endpoint(url:url, token:token)(mapFn: (r) => {
+	sev = pagerduty.severityFromLevel(level: r.wlevel)
+	action = pagerduty.actionFromLevel(level: r.wlevel)
     return {
 		routingKey:r.froutingKey,
 		client:r.qclient,
 		clientURL:r.qclientURL,
 		class:r.wclass,
 		group:r.wgroup,
-		severity:r.wseverity,
+		severity: sev,
+		eventAction:action,
 		component:r.wcomponent,
 		source:r.wsource,
 		summary:r.wsummary,
@@ -226,14 +250,14 @@ csv.from(csv:data) |> endpoint()
 						Value: `#datatype,string,string,string,string,string,string,string,string,string,string,string,string,string,string,long
 #group,false,false,false,true,false,false,false,false,false,false,false,false,true,true,true
 #default,_result,,,,,,,,,,,,,,
-,result,,froutingKey,qclient,qclientURL,wclass,wgroup,wseverity,wcomponent,wsource,wsummary,wtimestamp,name,otherGroupKey,groupKey2
+,result,,froutingKey,qclient,qclientURL,wclass,wgroup,wlevel,wcomponent,wsource,wsummary,wtimestamp,name,otherGroupKey,groupKey2
 ,,,` + strings.Join([]string{
 							tc.routingKey,
 							tc.client,
 							tc.clientURL,
 							tc.class,
 							tc.group,
-							tc.severity,
+							tc.level,
 							tc.component,
 							tc.source,
 							tc.summary,
