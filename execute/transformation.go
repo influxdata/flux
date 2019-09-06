@@ -9,17 +9,17 @@ import (
 	"github.com/influxdata/flux/plan"
 )
 
-// Transformation represents functions that will taking in data from a Dataset
-// and perform the necessary data processing on it
+// Transformation represents functions that stream a set of tables, performs
+// data processing on them and produces an output stream of tables
 type Transformation interface {
 	RetractTable(id DatasetID, key flux.GroupKey) error
-	// Process takes in a DatasetID referring to a list of all transformations
-	// to be processsed and performs data processing on them
+	// Process takes in one flux Table, performs data processing on it and
+	// writes that table to a DataCache
 	Process(id DatasetID, tbl flux.Table) error
 	UpdateWatermark(id DatasetID, t Time) error
 	UpdateProcessingTime(id DatasetID, t Time) error
 	// Finish indicates that the Transformation is done processing. It is
-	// the last method called on the transformation
+	// the last method called on the Transformation
 	Finish(id DatasetID, err error)
 }
 
