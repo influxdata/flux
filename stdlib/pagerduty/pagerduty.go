@@ -157,7 +157,7 @@ func (t *DedupKeyTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 
 	// because pagerduty restricts the dedupKey size we are hashing to reduce chance of collisions, by distributing the key more evenly
 	dedupKeyHash := sha256.Sum256([]byte(dedupKey))
-	dedupKeyHashHex := hex.Dump(dedupKeyHash[:])
+	dedupKeyHashHex := hex.EncodeToString(dedupKeyHash[:])
 
 	err = tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
