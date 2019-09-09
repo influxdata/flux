@@ -9,5 +9,6 @@ func (ess EnvironmentSecretService) LoadSecret(ctx context.Context, k string) (s
 	return os.Getenv(k), nil
 }
 
+// Secret service that retrieve the system environment variables.
 type EnvironmentSecretService struct {
 }

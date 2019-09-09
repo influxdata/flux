@@ -22,7 +22,7 @@ var replCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 		deps := dependencies.NewDefaults()
-		deps.Deps.SecretService = secret.EnvironmentSecretService{}
+		deps.Deps.SecretService = secret.EmptySecretService{}
 		r := repl.New(ctx, deps, querier{})
 		r.Run()
 	},

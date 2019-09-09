@@ -189,7 +189,7 @@ func (t *filterTransformation) Finish(id execute.DatasetID, err error) {
 type RemoveTrivialFilterRule struct{}
 
 func (RemoveTrivialFilterRule) Name() string {
-	return "MergeFilterAnyRule"
+	return "RemoveTrivialFilterRule"
 }
 
 func (RemoveTrivialFilterRule) Pattern() plan.Pattern {

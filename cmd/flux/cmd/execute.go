@@ -26,7 +26,7 @@ func init() {
 
 func execute(cmd *cobra.Command, args []string) error {
 	deps := dependencies.NewDefaults()
-	deps.Deps.SecretService = secret.EnvironmentSecretService{}
+	deps.Deps.SecretService = secret.EmptySecretService{}
 	r := repl.New(context.Background(), deps, querier{})
 	if err := r.Input(args[0]); err != nil {
 		return fmt.Errorf("failed to execute query: %v", err)
