@@ -37,7 +37,7 @@ data = "
 ,result,_routingKey,_client,_clientURL,_class,_group,_severity,_source,_summary,_timestamp
 ,,fakeRoutingKey,fakeClient,fakeClientURL,fakeClass,fakeGroup,fakeSeverity,fakeSource,fakeSummary,fakeTimestamp
 "
-process = pagerduty.endpoint(url:url, token:token)( mapFn: 
+process = pagerduty.endpoint(url:url)( mapFn:
 	(r) => {
 		return {routingKey:r._routingKey,client:r._client,clientURL:r._clientURL,class:r._class,group:r._group,eventAction:r._eventAction,severity:r._severity,source:r._source,summary:r._summary,timestamp:r._timestamp}
 	}
@@ -45,7 +45,6 @@ process = pagerduty.endpoint(url:url, token:token)( mapFn:
 csv.from(csv:data) |> process()
 `, func(s values.Scope) {
 		s.Set("url", values.New("http://fakeurl.com/fakeyfake"))
-		s.Set("token", values.New("faketoken"))
 	})
 
 	if err != nil {
@@ -65,9 +64,9 @@ func NewServer(t *testing.T) *Server {
 	s := new(Server)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sr := Request{
-			URL:           r.URL.String(),
-			Authorization: r.Header.Get("Authorization"),
+			URL: r.URL.String(),
 		}
+
 		dec := json.NewDecoder(r.Body)
 		err := dec.Decode(&sr.PostData)
 		if err != nil {
@@ -95,9 +94,8 @@ func (s *Server) Close() {
 }
 
 type Request struct {
-	URL           string
-	Authorization string
-	PostData      PostData
+	URL      string
+	PostData PostData
 }
 
 type Payload struct {
@@ -111,7 +109,6 @@ type Payload struct {
 }
 
 type PostData struct {
-	Token       string  `json:"token"`
 	RoutingKey  string  `json:"routing_key"`
 	Client      string  `json:"client"`
 	ClientURL   string  `json:"client_url"`
@@ -128,7 +125,6 @@ func TestPagerdutySendEvent(t *testing.T) {
 		name          string
 		otherGroupKey string
 		pagerdutyURL  string
-		token         string
 		routingKey    string
 		client        string
 		clientURL     string
@@ -146,7 +142,6 @@ func TestPagerdutySendEvent(t *testing.T) {
 			name:          "warning",
 			otherGroupKey: "foo",
 			pagerdutyURL:  s.URL,
-			token:         "fakeToken1",
 			routingKey:    "fakeRoutingKey",
 			client:        "fakeClient1",
 			clientURL:     "http://fakepagerduty.com",
@@ -164,7 +159,6 @@ func TestPagerdutySendEvent(t *testing.T) {
 			name:          "critical",
 			otherGroupKey: "foo",
 			pagerdutyURL:  s.URL,
-			token:         "fakeToken1",
 			routingKey:    "fakeRoutingKey",
 			client:        "fakeClient1",
 			clientURL:     "http://fakepagerduty.com",
@@ -182,7 +176,6 @@ func TestPagerdutySendEvent(t *testing.T) {
 			name:          "resolve",
 			otherGroupKey: "foo2",
 			pagerdutyURL:  s.URL,
-			token:         "fakeToken2",
 			routingKey:    "fakeRoutingKey",
 			client:        "fakeClient2",
 			clientURL:     "http://fakepagerduty.com",
@@ -204,7 +197,7 @@ func TestPagerdutySendEvent(t *testing.T) {
 			fluxString := `import "csv"
 import "pagerduty"
 
-endpoint = pagerduty.endpoint(url:url, token:token)(mapFn: (r) => {
+endpoint = pagerduty.endpoint(url:url)(mapFn: (r) => {
 	sev = pagerduty.severityFromLevel(level: r.wlevel)
 	action = pagerduty.actionFromLevel(level: r.wlevel)
     return {
@@ -232,14 +225,6 @@ csv.from(csv:data) |> endpoint()
 					},
 					Init: &ast.StringLiteral{
 						Value: tc.pagerdutyURL,
-					},
-				},
-				&ast.VariableAssignment{
-					ID: &ast.Identifier{
-						Name: "token",
-					},
-					Init: &ast.StringLiteral{
-						Value: tc.token,
 					},
 				},
 				&ast.VariableAssignment{
@@ -319,9 +304,6 @@ csv.from(csv:data) |> endpoint()
 				t.Fatal("received no requests")
 			}
 			req := reqs[len(reqs)-1]
-			if req.Authorization != "Token token="+tc.token {
-				t.Errorf("token incorrect got %s, expected %s", req.Authorization, "Token "+tc.token)
-			}
 
 			if req.PostData.Client != tc.client {
 				t.Errorf("got client %s, expected %s", req.PostData.Client, tc.client)

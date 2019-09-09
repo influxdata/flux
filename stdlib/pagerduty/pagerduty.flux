@@ -28,7 +28,6 @@ actionFromLevel = (level)=> if strings.toLower(v:level) == "ok" then "resolve" e
 
 // `sendEvent` sends an event to PagerDuty, the description of some of these parameters taken from the pagerduty documentation at https://v2.developer.pagerduty.com/docs/send-an-event-events-api-v2
 // `pagerdutyURL` - sring - URL of the pagerduty endpoint.  Defaults to: `option defaultURL = "https://events.pagerduty.com/v2/enqueue"`
-// `token` - string - auth for pagerduty.
 // `routingKey` - string - routingKey.
 // `client` - string - name of the client sending the alert.
 // `clientURL` - string - url of the client sending the alert.
@@ -42,7 +41,6 @@ actionFromLevel = (level)=> if strings.toLower(v:level) == "ok" then "resolve" e
 // `summary` - string - A brief text summary of the event, used to generate the summaries/titles of any associated alerts. The maximum permitted length of this property is 1024 characters.
 // `timestamp` - string - The time at which the emitting tool detected or generated the event, in RFC 3339 nano format.
 sendEvent = (pagerdutyURL=defaultURL,
-    token="",
     routingKey,
     client,
     clientURL,
@@ -75,7 +73,6 @@ sendEvent = (pagerdutyURL=defaultURL,
     }
 
     headers = {
-        "Authorization": "Token token=" + token,
         "Accept": "application/vnd.pagerduty+json;version=2",
         "Content-Type": "application/json",
     }
@@ -84,12 +81,11 @@ sendEvent = (pagerdutyURL=defaultURL,
 }
 
 // `endpoint` creates the endpoint for the PagerDuty external service.
-// `url` - string - URL of the slack endpoint. Defaults to: "https://events.pagerduty.com/v2/enqueue".
-// `token` - string - token for the pagerduty endpoint.
+// `url` - string - URL of the Pagerduty endpoint. Defaults to: "https://events.pagerduty.com/v2/enqueue".
 // The returned factory function accepts a `mapFn` parameter.
 // The `mapFn` parameter must be a function that returns an object with `routingKey`, `client`, `client_url`, `class`, `group`, `severity`, `eventAction`, `component`, `source`, `summary`, and `timestamp` as defined in the sendEvent function.
 // Note that while sendEvent accepts a dedup key, endpoint gets the dedupkey from the groupkey of the input table instead of it being handled by the `mapFn`.
-endpoint = (url=defaultURL, token="") =>
+endpoint = (url=defaultURL) =>
     (mapFn) =>
         (tables=<-) => tables
             |> dedupKey()
@@ -97,18 +93,17 @@ endpoint = (url=defaultURL, token="") =>
                 obj = mapFn(r: r)
                 
                 return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,
-                    token: token, 
-                    routingKey: obj.routingKey, 
-                    client: obj.client, 
-                    clientURL: obj.clientURL, 
+                    routingKey: obj.routingKey,
+                    client: obj.client,
+                    clientURL: obj.clientURL,
                     dedupKey: r._pagerdutyDedupKey,
                     class: obj.class,
                     group: obj.group,
-                    severity: obj.severity, 
+                    severity: obj.severity,
                     eventAction: obj.eventAction,
-                    component: obj.component, 
-                    source: obj.source, 
-                    summary: obj.summary, 
+                    component: obj.component,
+                    source: obj.source,
+                    summary: obj.summary,
                     timestamp: obj.timestamp,
                 ) / 100))}
             })
