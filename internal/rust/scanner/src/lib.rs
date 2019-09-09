@@ -82,6 +82,14 @@ impl Scanner {
         }
     }
 
+    pub fn offset(&self, pos: Position) -> u32 {
+        self.lines
+            .get(pos.line as usize - 1)
+            .expect("line not found")
+            + pos.column
+            - 1
+    }
+
     fn eof(&self) -> Token {
         Token {
             tok: T_EOF,

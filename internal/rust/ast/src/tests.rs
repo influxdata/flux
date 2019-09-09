@@ -1210,3 +1210,68 @@ fn test_json_datetime_literal() {
     let deserialized: DateTimeLiteral = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
 }
+
+#[test]
+fn test_object_expression_with_source_locations_and_errors() {
+    let n = ObjectExpression {
+        base: BaseNode {
+            location: SourceLocation {
+                file: Some("foo.flux".to_string()),
+                start: Position { line: 1, column: 1 },
+                end: Position {
+                    line: 1,
+                    column: 13,
+                },
+                source: Some("{a: \"hello\"}".to_string()),
+            },
+            errors: vec![],
+        },
+        with: None,
+        properties: vec![Property {
+            base: BaseNode {
+                location: SourceLocation {
+                    file: Some("foo.flux".to_string()),
+                    start: Position { line: 1, column: 2 },
+                    end: Position {
+                        line: 1,
+                        column: 12,
+                    },
+                    source: Some("a: \"hello\"".to_string()),
+                },
+                errors: vec!["an error".to_string()],
+            },
+            key: PropertyKey::Identifier(Identifier {
+                base: BaseNode {
+                    location: SourceLocation {
+                        file: Some("foo.flux".to_string()),
+                        start: Position { line: 1, column: 2 },
+                        end: Position { line: 1, column: 3 },
+                        source: Some("a".to_string()),
+                    },
+                    errors: vec![],
+                },
+                name: "a".to_string(),
+            }),
+            value: Some(Expression::Str(StringLiteral {
+                base: BaseNode {
+                    location: SourceLocation {
+                        file: Some("foo.flux".to_string()),
+                        start: Position { line: 1, column: 5 },
+                        end: Position {
+                            line: 1,
+                            column: 12,
+                        },
+                        source: Some("\"hello\"".to_string()),
+                    },
+                    errors: vec!["an error".to_string(), "another error".to_string()],
+                },
+                value: "hello".to_string(),
+            })),
+        }],
+    };
+    let serialized = serde_json::to_string(&n).unwrap();
+    assert_eq!(serialized, r#"{"type":"ObjectExpression","location":{"file":"foo.flux","start":{"line":1,"column":1},"end":{"line":1,"column":13},"source":"{a: \"hello\"}"},"properties":[{"type":"Property","location":{"file":"foo.flux","start":{"line":1,"column":2},"end":{"line":1,"column":12},"source":"a: \"hello\""},"errors":[{"msg":"an error"}],"key":{"type":"Identifier","location":{"file":"foo.flux","start":{"line":1,"column":2},"end":{"line":1,"column":3},"source":"a"},"name":"a"},"value":{"type":"StringLiteral","location":{"file":"foo.flux","start":{"line":1,"column":5},"end":{"line":1,"column":12},"source":"\"hello\""},"errors":[{"msg":"an error"},{"msg":"another error"}],"value":"hello"}}]}"#);
+    // TODO(affo): leaving proper error deserialization for the future.
+    // let deserialized: ObjectExpression = serde_json::from_str(serialized.as_str()).unwrap();
+    // assert_eq!(deserialized, n)
+}

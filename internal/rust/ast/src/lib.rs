@@ -1,19 +1,92 @@
-
 extern crate chrono;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_aux;
 
+use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 use std::vec::Vec;
+
+use scanner;
 
 use chrono::prelude::DateTime;
 use chrono::FixedOffset;
 
 use serde::de::{Deserialize, Deserializer, Error, Visitor};
-use serde::ser::{Serialize, Serializer};
+use serde::ser::{Serialize, SerializeSeq, Serializer};
 use serde_aux::prelude::*;
+
+// Position is the AST counterpart of Scanner's Position.
+// It adds serde capabilities.
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct Position {
+    pub line: u32,
+    pub column: u32,
+}
+
+impl Position {
+    pub fn is_valid(&self) -> bool {
+        self.line > 0 && self.column > 0
+    }
+
+    pub fn invalid() -> Self {
+        Position { line: 0, column: 0 }
+    }
+}
+
+impl From<&scanner::Position> for Position {
+    fn from(item: &scanner::Position) -> Self {
+        Position {
+            line: item.line,
+            column: item.column,
+        }
+    }
+}
+
+impl From<&Position> for scanner::Position {
+    fn from(item: &Position) -> Self {
+        scanner::Position {
+            line: item.line,
+            column: item.column,
+        }
+    }
+}
+
+impl Default for Position {
+    fn default() -> Self {
+        return Self::invalid();
+    }
+}
+
+// SourceLocation represents the location of a node in the AST
+#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
+pub struct SourceLocation {
+    pub file: Option<String>,   // File is the optional file name.
+    pub start: Position,        // Start is the location in the source the node starts.
+    pub end: Position,          // End is the location in the source the node ends.
+    pub source: Option<String>, // Source is optional raw source.
+}
+
+impl SourceLocation {
+    pub fn is_valid(&self) -> bool {
+        self.start.is_valid() && self.end.is_valid()
+    }
+}
+
+impl fmt::Display for SourceLocation {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let fname = match &self.file {
+            Some(s) => s.clone(),
+            None => "".to_string(),
+        };
+        write!(
+            f,
+            "{}@{}:{}-{}:{}",
+            fname, self.start.line, self.start.column, self.end.line, self.end.column
+        )
+    }
+}
 
 // serialize_to_string serializes an object that implements ToString to its string representation.
 fn serialize_to_string<T, S>(field: &T, ser: S) -> Result<S::Ok, S::Error>
@@ -57,6 +130,37 @@ pub enum Expression {
     Bad(Box<BadExpression>),
 }
 
+impl Expression {
+    // `base` is an utility method that returns the BaseNode for an Expression.
+    pub fn base(&self) -> &BaseNode {
+        match self {
+            Expression::Idt(wrapped) => &wrapped.base,
+            Expression::Arr(wrapped) => &wrapped.base,
+            Expression::Fun(wrapped) => &wrapped.base,
+            Expression::Log(wrapped) => &wrapped.base,
+            Expression::Obj(wrapped) => &wrapped.base,
+            Expression::Mem(wrapped) => &wrapped.base,
+            Expression::Idx(wrapped) => &wrapped.base,
+            Expression::Bin(wrapped) => &wrapped.base,
+            Expression::Un(wrapped) => &wrapped.base,
+            Expression::Pipe(wrapped) => &wrapped.base,
+            Expression::Call(wrapped) => &wrapped.base,
+            Expression::Cond(wrapped) => &wrapped.base,
+            Expression::Int(wrapped) => &wrapped.base,
+            Expression::Flt(wrapped) => &wrapped.base,
+            Expression::Str(wrapped) => &wrapped.base,
+            Expression::Dur(wrapped) => &wrapped.base,
+            Expression::Uint(wrapped) => &wrapped.base,
+            Expression::Bool(wrapped) => &wrapped.base,
+            Expression::Time(wrapped) => &wrapped.base,
+            Expression::Regexp(wrapped) => &wrapped.base,
+            Expression::PipeLit(wrapped) => &wrapped.base,
+            Expression::Bad(wrapped) => &wrapped.base,
+            Expression::StringExp(wrapped) => &wrapped.base,
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Statement {
@@ -69,6 +173,21 @@ pub enum Statement {
     Built(BuiltinStatement),
 }
 
+impl Statement {
+    // `base` is an utility method that returns the BaseNode for a Statement.
+    pub fn base(&self) -> &BaseNode {
+        match self {
+            Statement::Expr(wrapped) => &wrapped.base,
+            Statement::Var(wrapped) => &wrapped.base,
+            Statement::Opt(wrapped) => &wrapped.base,
+            Statement::Ret(wrapped) => &wrapped.base,
+            Statement::Bad(wrapped) => &wrapped.base,
+            Statement::Test(wrapped) => &wrapped.base,
+            Statement::Built(wrapped) => &wrapped.base,
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Assignment {
@@ -76,11 +195,31 @@ pub enum Assignment {
     Member(MemberAssignment),
 }
 
+impl Assignment {
+    // `base` is an utility method that returns the BaseNode for an Assignment.
+    pub fn base(&self) -> &BaseNode {
+        match self {
+            Assignment::Variable(wrapped) => &wrapped.base,
+            Assignment::Member(wrapped) => &wrapped.base,
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum PropertyKey {
     Identifier(Identifier),
     StringLiteral(StringLiteral),
+}
+
+impl PropertyKey {
+    // `base` is an utility method that returns the BaseNode for a PropertyKey.
+    pub fn base(&self) -> &BaseNode {
+        match self {
+            PropertyKey::Identifier(wrapped) => &wrapped.base,
+            PropertyKey::StringLiteral(wrapped) => &wrapped.base,
+        }
+    }
 }
 
 // This matches the grammar, and not ast.go:
@@ -94,17 +233,43 @@ pub enum FunctionBody {
     Expr(Expression),
 }
 
+impl FunctionBody {
+    // `base` is an utility method that returns the BaseNode for a FunctionBody.
+    pub fn base(&self) -> &BaseNode {
+        match self {
+            FunctionBody::Block(wrapped) => &wrapped.base,
+            FunctionBody::Expr(wrapped) => &wrapped.base(),
+        }
+    }
+}
+
+fn serialize_errors<S>(errors: &Vec<String>, ser: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let mut seq = ser.serialize_seq(Some(errors.len()))?;
+    for e in errors {
+        let mut me = HashMap::new();
+        me.insert("msg".to_string(), e);
+        seq.serialize_element(&me)?;
+    }
+    seq.end()
+}
+
 // BaseNode holds the attributes every expression or statement should have
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
 pub struct BaseNode {
-    //pub  Loc   : *SourceLocation,
+    #[serde(default)]
+    pub location: SourceLocation,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(serialize_with = "serialize_errors")]
+    #[serde(default)]
     pub errors: Vec<String>,
 }
 
 impl BaseNode {
     pub fn is_empty(&self) -> bool {
-        self.errors.is_empty()
+        self.errors.is_empty() && !self.location.is_valid()
     }
 }
 
@@ -114,6 +279,7 @@ impl BaseNode {
 pub struct Package {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     #[serde(skip_serializing_if = "String::is_empty")]
     #[serde(default)]
@@ -128,6 +294,7 @@ pub struct Package {
 pub struct File {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     #[serde(skip_serializing_if = "String::is_empty")]
     #[serde(default)]
@@ -144,6 +311,7 @@ pub struct File {
 pub struct PackageClause {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub name: Identifier,
 }
@@ -154,6 +322,7 @@ pub struct PackageClause {
 pub struct ImportDeclaration {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     #[serde(rename = "as")]
     pub alias: Option<Identifier>,
@@ -166,6 +335,7 @@ pub struct ImportDeclaration {
 pub struct Block {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub body: Vec<Statement>,
 }
@@ -177,6 +347,7 @@ pub struct Block {
 pub struct BadStatement {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub text: String,
 }
@@ -187,6 +358,7 @@ pub struct BadStatement {
 pub struct ExpressionStatement {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub expression: Expression,
 }
@@ -197,6 +369,7 @@ pub struct ExpressionStatement {
 pub struct ReturnStatement {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub argument: Expression,
 }
@@ -207,6 +380,7 @@ pub struct ReturnStatement {
 pub struct OptionStatement {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub assignment: Assignment,
 }
@@ -217,6 +391,7 @@ pub struct OptionStatement {
 pub struct BuiltinStatement {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub id: Identifier,
 }
@@ -227,6 +402,7 @@ pub struct BuiltinStatement {
 pub struct TestStatement {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub assignment: VariableAssignment,
 }
@@ -237,6 +413,7 @@ pub struct TestStatement {
 pub struct VariableAssignment {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub id: Identifier,
     pub init: Expression,
@@ -247,6 +424,7 @@ pub struct VariableAssignment {
 pub struct MemberAssignment {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub member: MemberExpression,
     pub init: Expression,
@@ -296,6 +474,7 @@ pub struct InterpolatedPart {
 pub struct CallExpression {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub callee: Expression,
     pub arguments: Vec<Expression>,
@@ -306,6 +485,7 @@ pub struct CallExpression {
 pub struct PipeExpression {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub argument: Expression,
     pub call: CallExpression,
@@ -317,6 +497,7 @@ pub struct PipeExpression {
 pub struct MemberExpression {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub object: Expression,
     pub property: PropertyKey,
@@ -328,6 +509,7 @@ pub struct MemberExpression {
 pub struct IndexExpression {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub array: Expression,
     pub index: Expression,
@@ -338,6 +520,7 @@ pub struct IndexExpression {
 pub struct FunctionExpression {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub params: Vec<Property>,
     pub body: FunctionBody,
@@ -480,6 +663,7 @@ impl<'de> Deserialize<'de> for OperatorKind {
 pub struct BinaryExpression {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub operator: OperatorKind,
     pub left: Expression,
@@ -492,6 +676,7 @@ pub struct BinaryExpression {
 pub struct UnaryExpression {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub operator: OperatorKind,
     pub argument: Expression,
@@ -572,6 +757,7 @@ impl<'de> Deserialize<'de> for LogicalOperatorKind {
 pub struct LogicalExpression {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub operator: LogicalOperatorKind,
     pub left: Expression,
@@ -584,6 +770,7 @@ pub struct LogicalExpression {
 pub struct ArrayExpression {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub elements: Vec<Expression>,
 }
@@ -594,6 +781,7 @@ pub struct ArrayExpression {
 pub struct ObjectExpression {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub with: Option<Identifier>,
@@ -607,6 +795,7 @@ pub struct ObjectExpression {
 pub struct ConditionalExpression {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub test: Expression,
     pub consequent: Expression,
@@ -620,6 +809,7 @@ pub struct ConditionalExpression {
 pub struct BadExpression {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub text: String,
     pub expression: Option<Expression>,
@@ -632,6 +822,7 @@ pub struct BadExpression {
 pub struct Property {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub key: PropertyKey,
     // `value` is optional, because of the shortcut: {a} <--> {a: a}
@@ -644,6 +835,7 @@ pub struct Property {
 pub struct Identifier {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub name: String,
 }
@@ -654,6 +846,7 @@ pub struct Identifier {
 pub struct PipeLiteral {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
 }
 
@@ -663,6 +856,7 @@ pub struct PipeLiteral {
 pub struct StringLiteral {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub value: String,
 }
@@ -673,6 +867,7 @@ pub struct StringLiteral {
 pub struct BooleanLiteral {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub value: bool,
 }
@@ -683,6 +878,7 @@ pub struct BooleanLiteral {
 pub struct FloatLiteral {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub value: f64,
 }
@@ -693,6 +889,7 @@ pub struct FloatLiteral {
 pub struct IntegerLiteral {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     #[serde(serialize_with = "serialize_to_string")]
     #[serde(deserialize_with = "deserialize_str_i64")]
@@ -705,6 +902,7 @@ pub struct IntegerLiteral {
 pub struct UnsignedIntegerLiteral {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     #[serde(serialize_with = "serialize_to_string")]
     #[serde(deserialize_with = "deserialize_str_u64")]
@@ -783,6 +981,7 @@ where
 pub struct RegexpLiteral {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub value: String,
 }
@@ -803,6 +1002,7 @@ pub struct Duration {
 pub struct DurationLiteral {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub values: Vec<Duration>,
 }
@@ -817,6 +1017,7 @@ pub struct DurationLiteral {
 pub struct DateTimeLiteral {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub value: DateTime<FixedOffset>,
 }

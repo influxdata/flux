@@ -368,165 +368,6 @@ import "path/bar"
 			},
 		},
 		{
-			name: "package and imports and body",
-			raw: `
-package baz
-
-import "path/foo"
-import "path/bar"
-
-3 % 8`,
-			want: &ast.File{
-				BaseNode: base("2:1", "7:6"),
-				Package: &ast.PackageClause{
-					BaseNode: base("2:1", "2:12"),
-					Name: &ast.Identifier{
-						BaseNode: base("2:9", "2:12"),
-						Name:     "baz",
-					},
-				},
-				Imports: []*ast.ImportDeclaration{
-					{
-						BaseNode: base("4:1", "4:18"),
-						Path: &ast.StringLiteral{
-							BaseNode: base("4:8", "4:18"),
-							Value:    "path/foo",
-						},
-					},
-					{
-						BaseNode: base("5:1", "5:18"),
-						Path: &ast.StringLiteral{
-							BaseNode: base("5:8", "5:18"),
-							Value:    "path/bar",
-						},
-					},
-				},
-				Body: []ast.Statement{
-					&ast.ExpressionStatement{
-						BaseNode: base("7:1", "7:6"),
-						Expression: &ast.BinaryExpression{
-							BaseNode: base("7:1", "7:6"),
-							Operator: ast.ModuloOperator,
-							Left: &ast.IntegerLiteral{
-								BaseNode: base("7:1", "7:2"),
-								Value:    3,
-							},
-							Right: &ast.IntegerLiteral{
-								BaseNode: base("7:5", "7:6"),
-								Value:    8,
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "package and imports and body",
-			raw: `
-package baz
-
-import "path/foo"
-import "path/bar"
-
-8 ^ 3`,
-			want: &ast.File{
-				BaseNode: base("2:1", "7:6"),
-				Package: &ast.PackageClause{
-					BaseNode: base("2:1", "2:12"),
-					Name: &ast.Identifier{
-						BaseNode: base("2:9", "2:12"),
-						Name:     "baz",
-					},
-				},
-				Imports: []*ast.ImportDeclaration{
-					{
-						BaseNode: base("4:1", "4:18"),
-						Path: &ast.StringLiteral{
-							BaseNode: base("4:8", "4:18"),
-							Value:    "path/foo",
-						},
-					},
-					{
-						BaseNode: base("5:1", "5:18"),
-						Path: &ast.StringLiteral{
-							BaseNode: base("5:8", "5:18"),
-							Value:    "path/bar",
-						},
-					},
-				},
-				Body: []ast.Statement{
-					&ast.ExpressionStatement{
-						BaseNode: base("7:1", "7:6"),
-						Expression: &ast.BinaryExpression{
-							BaseNode: base("7:1", "7:6"),
-							Operator: ast.PowerOperator,
-							Left: &ast.IntegerLiteral{
-								BaseNode: base("7:1", "7:2"),
-								Value:    8,
-							},
-							Right: &ast.IntegerLiteral{
-								BaseNode: base("7:5", "7:6"),
-								Value:    3,
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "package and imports and body",
-			raw: `
-package baz
-
-import "path/foo"
-import "path/bar"
-
-8.3 % 3.1`,
-			want: &ast.File{
-				BaseNode: base("2:1", "7:10"),
-				Package: &ast.PackageClause{
-					BaseNode: base("2:1", "2:12"),
-					Name: &ast.Identifier{
-						BaseNode: base("2:9", "2:12"),
-						Name:     "baz",
-					},
-				},
-				Imports: []*ast.ImportDeclaration{
-					{
-						BaseNode: base("4:1", "4:18"),
-						Path: &ast.StringLiteral{
-							BaseNode: base("4:8", "4:18"),
-							Value:    "path/foo",
-						},
-					},
-					{
-						BaseNode: base("5:1", "5:18"),
-						Path: &ast.StringLiteral{
-							BaseNode: base("5:8", "5:18"),
-							Value:    "path/bar",
-						},
-					},
-				},
-				Body: []ast.Statement{
-					&ast.ExpressionStatement{
-						BaseNode: base("7:1", "7:10"),
-						Expression: &ast.BinaryExpression{
-							BaseNode: base("7:1", "7:10"),
-							Operator: ast.ModuloOperator,
-							Left: &ast.FloatLiteral{
-								BaseNode: base("7:1", "7:4"),
-								Value:    8.3,
-							},
-							Right: &ast.FloatLiteral{
-								BaseNode: base("7:7", "7:10"),
-								Value:    3.1,
-							},
-						},
-					},
-				},
-			},
-		},
-		{
 			name: "optional query metadata",
 			raw: `option task = {
 				name: "foo",
@@ -2503,6 +2344,78 @@ a = 5.0
 									BaseNode: base("2:38", "2:42"),
 									Name:     "fail",
 								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "modulo op - ints",
+			raw:  `3 % 8`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:6"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:6"),
+						Expression: &ast.BinaryExpression{
+							BaseNode: base("1:1", "1:6"),
+							Operator: ast.ModuloOperator,
+							Left: &ast.IntegerLiteral{
+								BaseNode: base("1:1", "1:2"),
+								Value:    3,
+							},
+							Right: &ast.IntegerLiteral{
+								BaseNode: base("1:5", "1:6"),
+								Value:    8,
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "modulo op - floats",
+			raw:  `8.3 % 3.1`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:10"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:10"),
+						Expression: &ast.BinaryExpression{
+							BaseNode: base("1:1", "1:10"),
+							Operator: ast.ModuloOperator,
+							Left: &ast.FloatLiteral{
+								BaseNode: base("1:1", "1:4"),
+								Value:    8.3,
+							},
+							Right: &ast.FloatLiteral{
+								BaseNode: base("1:7", "1:10"),
+								Value:    3.1,
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "power op",
+			raw:  `8 ^ 3`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:6"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:6"),
+						Expression: &ast.BinaryExpression{
+							BaseNode: base("1:1", "1:6"),
+							Operator: ast.PowerOperator,
+							Left: &ast.IntegerLiteral{
+								BaseNode: base("1:1", "1:2"),
+								Value:    8,
+							},
+							Right: &ast.IntegerLiteral{
+								BaseNode: base("1:5", "1:6"),
+								Value:    3,
 							},
 						},
 					},

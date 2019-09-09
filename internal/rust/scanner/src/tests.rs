@@ -1108,3 +1108,166 @@ c = 1 + 2
         }
     );
 }
+
+#[test]
+fn test_scan_offset() {
+    let text = r#"ms = "multiline
+string
+"
+
+// comment
+
+c = 1 + 2
+
+
+
+
+"#;
+    let cdata = CString::new(text).expect("CString::new failed");
+    let mut s = Scanner::new(cdata);
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: T_IDENT,
+            lit: String::from("ms"),
+            pos: 0,
+        }
+    );
+    assert_eq!(0, s.offset(Position { line: 1, column: 1 }));
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: T_ASSIGN,
+            lit: String::from("="),
+            pos: 3,
+        }
+    );
+    assert_eq!(3, s.offset(Position { line: 1, column: 4 }));
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: T_STRING,
+            lit: String::from("\"multiline\nstring\n\""),
+            pos: 5,
+        }
+    );
+    assert_eq!(5, s.offset(Position { line: 1, column: 6 }));
+    assert_eq!(16, s.offset(Position { line: 2, column: 1 }));
+    assert_eq!(20, s.offset(Position { line: 2, column: 5 }));
+    assert_eq!(23, s.offset(Position { line: 3, column: 1 }));
+    assert_eq!(24, s.offset(Position { line: 3, column: 2 }));
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: T_IDENT,
+            lit: String::from("c"),
+            pos: 38,
+        }
+    );
+    assert_eq!(38, s.offset(Position { line: 7, column: 1 }));
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: T_ASSIGN,
+            lit: String::from("="),
+            pos: 40,
+        }
+    );
+    assert_eq!(40, s.offset(Position { line: 7, column: 3 }));
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: T_INT,
+            lit: String::from("1"),
+            pos: 42,
+        }
+    );
+    assert_eq!(42, s.offset(Position { line: 7, column: 5 }));
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: T_ADD,
+            lit: String::from("+"),
+            pos: 44,
+        }
+    );
+    assert_eq!(44, s.offset(Position { line: 7, column: 7 }));
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: T_INT,
+            lit: String::from("2"),
+            pos: 46,
+        }
+    );
+    assert_eq!(46, s.offset(Position { line: 7, column: 9 }));
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: T_EOF,
+            lit: String::from(""),
+            pos: 52,
+        }
+    );
+    assert_eq!(48, s.offset(Position { line: 8, column: 1 }));
+    assert_eq!(49, s.offset(Position { line: 9, column: 1 }));
+    assert_eq!(
+        50,
+        s.offset(Position {
+            line: 10,
+            column: 1,
+        })
+    );
+    assert_eq!(
+        51,
+        s.offset(Position {
+            line: 11,
+            column: 1,
+        })
+    );
+    assert_eq!(
+        52,
+        s.offset(Position {
+            line: 12,
+            column: 1,
+        })
+    );
+
+    // Ok, now re-assert every offset without scanning.
+    // The scanner should keep the position unchanged.
+    assert_eq!(0, s.offset(Position { line: 1, column: 1 }));
+    assert_eq!(3, s.offset(Position { line: 1, column: 4 }));
+    assert_eq!(5, s.offset(Position { line: 1, column: 6 }));
+    assert_eq!(16, s.offset(Position { line: 2, column: 1 }));
+    assert_eq!(20, s.offset(Position { line: 2, column: 5 }));
+    assert_eq!(23, s.offset(Position { line: 3, column: 1 }));
+    assert_eq!(24, s.offset(Position { line: 3, column: 2 }));
+    assert_eq!(38, s.offset(Position { line: 7, column: 1 }));
+    assert_eq!(40, s.offset(Position { line: 7, column: 3 }));
+    assert_eq!(42, s.offset(Position { line: 7, column: 5 }));
+    assert_eq!(44, s.offset(Position { line: 7, column: 7 }));
+    assert_eq!(46, s.offset(Position { line: 7, column: 9 }));
+    assert_eq!(48, s.offset(Position { line: 8, column: 1 }));
+    assert_eq!(49, s.offset(Position { line: 9, column: 1 }));
+    assert_eq!(
+        50,
+        s.offset(Position {
+            line: 10,
+            column: 1,
+        })
+    );
+    assert_eq!(
+        51,
+        s.offset(Position {
+            line: 11,
+            column: 1,
+        })
+    );
+    assert_eq!(
+        52,
+        s.offset(Position {
+            line: 12,
+            column: 1,
+        })
+    );
+}
