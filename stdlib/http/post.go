@@ -3,6 +3,8 @@ package http
 import (
 	"bytes"
 	"context"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 
@@ -13,6 +15,8 @@ import (
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
+
+const maxFlushSize = 1 << 30 // 1 gig
 
 func init() {
 	flux.RegisterPackageValue("http", "post", values.NewFunction(
@@ -83,7 +87,19 @@ func init() {
 			if err != nil {
 				return nil, err
 			}
-			defer response.Body.Close()
+			defer func() {
+				defer func() {
+					// we need to read the entire thing before closing in order to reuse sockets.
+					// we are limiting this to 1 gig.  If someone tries to download more than a gig, it can take a while, so it might be worth to quit after a gig
+					bodyReader := io.LimitReader(response.Body, maxFlushSize)
+					_, _ = io.Copy(ioutil.Discard, bodyReader)
+					err2 := response.Body.Close()
+					if err2 != nil {
+						err = err2
+					}
+				}()
+				response.Body.Close()
+			}()
 
 			// return status code
 			return values.NewInt(int64(response.StatusCode)), nil
