@@ -96,6 +96,9 @@ pub struct Parser {
     // blocks maintains a count of the end tokens for nested blocks
     // that we have entered.
     blocks: HashMap<T, i32>,
+
+    fname: String,
+    source: String,
 }
 
 impl Parser {
@@ -107,6 +110,8 @@ impl Parser {
             t: None,
             errs: Vec::new(),
             blocks: HashMap::new(),
+            fname: "".to_string(),
+            source: src.to_string(),
         }
     }
 
@@ -176,14 +181,17 @@ impl Parser {
                         .push(format!("expected {}, got EOF", format_token(exp)));
                     return t;
                 }
-                // TODO(affo): refactor when location is supported.
-                _ => self.errs.push(format!(
-                    "expected {}, got {} ({}) at {}",
-                    format_token(exp),
-                    format_token(t.tok),
-                    t.lit,
-                    "position",
-                )),
+                _ => {
+                    let pos = self.pos(t.pos);
+                    self.errs.push(format!(
+                        "expected {}, got {} ({}) at {}:{}",
+                        format_token(exp),
+                        format_token(t.tok),
+                        t.lit,
+                        pos.line,
+                        pos.column,
+                    ));
+                }
             }
         }
     }
@@ -258,36 +266,103 @@ impl Parser {
         return tok;
     }
 
-    fn base_node(&mut self) -> BaseNode {
-        let errs = self.errs.clone();
+    fn base_node(&mut self, location: SourceLocation) -> BaseNode {
+        let errors = self.errs.clone();
         self.errs = vec![];
-        BaseNode { errors: errs }
+        BaseNode { location, errors }
+    }
+
+    fn base_node_from_token(&mut self, tok: &Token) -> BaseNode {
+        self.base_node_from_tokens(tok, tok)
+    }
+
+    fn base_node_from_tokens(&mut self, start: &Token, end: &Token) -> BaseNode {
+        let start = self.pos(start.pos);
+        let end = self.pos(end.pos + end.lit.len() as u32);
+        self.base_node(self.source_location(&start, &end))
+    }
+
+    fn base_node_from_other_start(&mut self, start: &BaseNode, end: &Token) -> BaseNode {
+        self.base_node(self.source_location(
+            &start.location.start,
+            &self.pos(end.pos + end.lit.len() as u32),
+        ))
+    }
+
+    fn base_node_from_other_end(&mut self, start: &Token, end: &BaseNode) -> BaseNode {
+        self.base_node(self.source_location(&self.pos(start.pos), &end.location.end))
+    }
+
+    fn base_node_from_others(&mut self, start: &BaseNode, end: &BaseNode) -> BaseNode {
+        self.base_node_from_pos(&start.location.start, &end.location.end)
+    }
+
+    fn base_node_from_pos(&mut self, start: &ast::Position, end: &ast::Position) -> BaseNode {
+        self.base_node(self.source_location(start, end))
+    }
+
+    fn source_location(&self, start: &ast::Position, end: &ast::Position) -> SourceLocation {
+        if !start.is_valid() || !end.is_valid() {
+            return SourceLocation::default();
+        }
+        let s_off = self.s.offset(scanner::Position::from(start)) as usize;
+        let e_off = self.s.offset(scanner::Position::from(end)) as usize;
+        SourceLocation {
+            file: Some(self.fname.clone()),
+            start: start.clone(),
+            end: end.clone(),
+            source: Some(self.source[s_off..e_off].to_string()),
+        }
+    }
+
+    fn pos(&self, p: u32) -> ast::Position {
+        ast::Position::from(&self.s.pos(p))
     }
 
     pub fn parse_file(&mut self, fname: String) -> File {
+        self.fname = fname;
+        let t = self.peek();
+        let mut end = ast::Position::invalid();
         let pkg = self.parse_package_clause();
+        match &pkg {
+            Some(pkg) => end = pkg.base.location.end.clone(),
+            _ => (),
+        }
         let imports = self.parse_import_list();
+        match imports.last() {
+            Some(import) => end = import.base.location.end.clone(),
+            _ => (),
+        }
         let body = self.parse_statement_list();
+        match body.last() {
+            Some(stmt) => end = stmt.base().location.end.clone(),
+            _ => (),
+        }
         File {
-            base: self.base_node(),
-            name: fname,
+            base: BaseNode {
+                location: self.source_location(&self.pos(t.pos), &end),
+                errors: vec![],
+            },
+            name: self.fname.clone(),
             package: pkg,
             imports,
             body,
         }
     }
+
     fn parse_package_clause(&mut self) -> Option<PackageClause> {
         let t = self.peek();
         if t.tok == T_PACKAGE {
             self.consume();
             let ident = self.parse_identifier();
             return Some(PackageClause {
-                base: self.base_node(),
+                base: self.base_node_from_other_end(&t, &ident.base),
                 name: ident,
             });
         }
         return None;
     }
+
     fn parse_import_list(&mut self) -> Vec<ImportDeclaration> {
         let mut imports: Vec<ImportDeclaration> = Vec::new();
         loop {
@@ -298,8 +373,9 @@ impl Parser {
             imports.push(self.parse_import_declaration())
         }
     }
+
     fn parse_import_declaration(&mut self) -> ImportDeclaration {
-        self.expect(T_IMPORT);
+        let t = self.expect(T_IMPORT);
         let alias = if self.peek().tok == T_IDENT {
             Some(self.parse_identifier())
         } else {
@@ -307,7 +383,7 @@ impl Parser {
         };
         let path = self.parse_string_literal();
         return ImportDeclaration {
-            base: self.base_node(),
+            base: self.base_node_from_other_end(&t, &path.base),
             alias: alias,
             path: path,
         };
@@ -337,45 +413,19 @@ impl Parser {
             T_RETURN => self.parse_return_statement(),
             _ => {
                 self.consume();
-                // TODO(affo): refactor when location is supported.
-                // TODO(affo): in the Go codebase this is slightly different. The error
-                // is appended on ast.Check.
-                self.errs
-                    .push(format!("invalid statement @position: {}", t.lit));
                 Statement::Bad(BadStatement {
-                    base: self.base_node(),
+                    base: self.base_node_from_token(&t),
                     text: t.lit,
                 })
             }
         }
     }
-    fn parse_ident_statement(&mut self) -> Statement {
-        let id = self.parse_identifier();
-        let t = self.peek();
-        match t.tok {
-            T_ASSIGN => {
-                let init = self.parse_assign_statement();
-                return Statement::Var(VariableAssignment {
-                    base: self.base_node(),
-                    id,
-                    init,
-                });
-            }
-            _ => {
-                let expr = self.parse_expression_suffix(Expression::Idt(id));
-                Statement::Expr(ExpressionStatement {
-                    base: self.base_node(),
-                    expression: expr,
-                })
-            }
-        }
-    }
     fn parse_option_assignment(&mut self) -> Statement {
-        self.expect(T_OPTION);
+        let t = self.expect(T_OPTION);
         let ident = self.parse_identifier();
         let assignment = self.parse_option_assignment_suffix(ident);
         Statement::Opt(OptionStatement {
-            base: self.base_node(),
+            base: self.base_node_from_other_end(&t, assignment.base()),
             assignment,
         })
     }
@@ -385,7 +435,7 @@ impl Parser {
             T_ASSIGN => {
                 let init = self.parse_assign_statement();
                 Assignment::Variable(VariableAssignment {
-                    base: self.base_node(),
+                    base: self.base_node_from_others(&id.base, init.base()),
                     id,
                     init,
                 })
@@ -395,9 +445,9 @@ impl Parser {
                 let prop = self.parse_identifier();
                 let init = self.parse_assign_statement();
                 return Assignment::Member(MemberAssignment {
-                    base: self.base_node(),
+                    base: self.base_node_from_others(&id.base, init.base()),
                     member: MemberExpression {
-                        base: self.base_node(),
+                        base: self.base_node_from_others(&id.base, &prop.base),
                         object: Expression::Idt(id),
                         property: PropertyKey::Identifier(prop),
                     },
@@ -408,52 +458,73 @@ impl Parser {
         }
     }
     fn parse_builtin_statement(&mut self) -> Statement {
-        self.expect(T_BUILTIN);
+        let t = self.expect(T_BUILTIN);
+        let id = self.parse_identifier();
         Statement::Built(BuiltinStatement {
-            base: self.base_node(),
-            id: self.parse_identifier(),
+            base: self.base_node_from_other_end(&t, &id.base),
+            id,
         })
     }
     fn parse_test_statement(&mut self) -> Statement {
-        self.expect(T_TEST);
+        let t = self.expect(T_TEST);
         let id = self.parse_identifier();
         let assignment = self.parse_assign_statement();
         Statement::Test(TestStatement {
-            base: self.base_node(),
+            base: self.base_node_from_other_end(&t, assignment.base()),
             assignment: VariableAssignment {
-                base: self.base_node(),
+                base: self.base_node_from_others(&id.base, assignment.base()),
                 id: id,
                 init: assignment,
             },
         })
+    }
+    fn parse_ident_statement(&mut self) -> Statement {
+        let id = self.parse_identifier();
+        let t = self.peek();
+        match t.tok {
+            T_ASSIGN => {
+                let init = self.parse_assign_statement();
+                return Statement::Var(VariableAssignment {
+                    base: self.base_node_from_others(&id.base, init.base()),
+                    id,
+                    init,
+                });
+            }
+            _ => {
+                let expr = self.parse_expression_suffix(Expression::Idt(id));
+                Statement::Expr(ExpressionStatement {
+                    base: self.base_node(expr.base().location.clone()),
+                    expression: expr,
+                })
+            }
+        }
     }
     fn parse_assign_statement(&mut self) -> Expression {
         self.expect(T_ASSIGN);
         return self.parse_expression();
     }
     fn parse_return_statement(&mut self) -> Statement {
-        self.expect(T_RETURN);
+        let t = self.expect(T_RETURN);
+        let expr = self.parse_expression();
         Statement::Ret(ReturnStatement {
-            base: self.base_node(),
-            argument: self.parse_expression(),
+            base: self.base_node_from_other_end(&t, expr.base()),
+            argument: expr,
         })
     }
     fn parse_expression_statement(&mut self) -> Statement {
-        let mut stmt = ExpressionStatement {
-            base: BaseNode::default(),
-            expression: self.parse_expression(),
+        let expr = self.parse_expression();
+        let stmt = ExpressionStatement {
+            base: self.base_node(expr.base().location.clone()),
+            expression: expr,
         };
-        // construct base node after errors are caused by parse_expression.
-        stmt.base = self.base_node();
         Statement::Expr(stmt)
     }
     fn parse_block(&mut self) -> Block {
-        let _start = self.open(T_LBRACE, T_RBRACE);
+        let start = self.open(T_LBRACE, T_RBRACE);
         let stmts = self.parse_statement_list();
-        let _end = self.close(T_RBRACE);
-        // TODO(affo): use start and end for positioning
+        let end = self.close(T_RBRACE);
         return Block {
-            base: self.base_node(),
+            base: self.base_node_from_tokens(&start, &end),
             body: stmts,
         };
     }
@@ -485,10 +556,13 @@ impl Parser {
                     // We got a BadExpression, push the error and consume the token.
                     // TODO(jsternberg): We should pretend the token is
                     //  an operator and create a binary expression. For now, skip past it.
-                    // TODO(affo): refactor when location is supported.
                     let invalid_t = self.scan();
+                    let loc = self.source_location(
+                        &self.pos(invalid_t.pos),
+                        &self.pos(invalid_t.pos + invalid_t.lit.len() as u32),
+                    );
                     self.errs
-                        .push(format!("invalid expression @position: {}", invalid_t.lit));
+                        .push(format!("invalid expression {}: {}", loc, invalid_t.lit));
                     continue;
                 }
                 _ => (),
@@ -496,7 +570,7 @@ impl Parser {
             match expr {
                 Some(ex) => {
                     expr = Some(Expression::Bin(Box::new(BinaryExpression {
-                        base: self.base_node(),
+                        base: self.base_node_from_others(ex.base(), e.base()),
                         operator: OperatorKind::InvalidOperator,
                         left: ex,
                         right: e,
@@ -548,7 +622,7 @@ impl Parser {
             self.expect(T_ELSE);
             let alt = self.parse_expression();
             return Expression::Cond(Box::new(ConditionalExpression {
-                base: self.base_node(),
+                base: self.base_node_from_other_end(&t, alt.base()),
                 test,
                 consequent: cons,
                 alternate: alt,
@@ -568,7 +642,7 @@ impl Parser {
                 Some(or_op) => {
                     let rhs = self.parse_logical_and_expression();
                     res = Expression::Log(Box::new(LogicalExpression {
-                        base: self.base_node(),
+                        base: self.base_node_from_others(res.base(), rhs.base()),
                         operator: or_op,
                         left: res,
                         right: rhs,
@@ -600,7 +674,7 @@ impl Parser {
                 Some(and_op) => {
                     let rhs = self.parse_logical_unary_expression();
                     res = Expression::Log(Box::new(LogicalExpression {
-                        base: self.base_node(),
+                        base: self.base_node_from_others(res.base(), rhs.base()),
                         operator: and_op,
                         left: res,
                         right: rhs,
@@ -621,12 +695,13 @@ impl Parser {
         }
     }
     fn parse_logical_unary_expression(&mut self) -> Expression {
+        let t = self.peek();
         let op = self.parse_logical_unary_operator();
         match op {
             Some(op) => {
                 let expr = self.parse_logical_unary_expression();
                 Expression::Un(Box::new(UnaryExpression {
-                    base: self.base_node(),
+                    base: self.base_node_from_other_end(&t, expr.base()),
                     operator: op,
                     argument: expr,
                 }))
@@ -660,7 +735,7 @@ impl Parser {
                 Some(op) => {
                     let rhs = self.parse_additive_expression();
                     res = Expression::Bin(Box::new(BinaryExpression {
-                        base: self.base_node(),
+                        base: self.base_node_from_others(res.base(), rhs.base()),
                         operator: op,
                         left: res,
                         right: rhs,
@@ -703,7 +778,7 @@ impl Parser {
                 Some(op) => {
                     let rhs = self.parse_multiplicative_expression();
                     res = Expression::Bin(Box::new(BinaryExpression {
-                        base: self.base_node(),
+                        base: self.base_node_from_others(res.base(), rhs.base()),
                         operator: op,
                         left: res,
                         right: rhs,
@@ -740,7 +815,7 @@ impl Parser {
                 Some(op) => {
                     let rhs = self.parse_pipe_expression();
                     res = Expression::Bin(Box::new(BinaryExpression {
-                        base: self.base_node(),
+                        base: self.base_node_from_others(res.base(), rhs.base()),
                         operator: op,
                         left: res,
                         right: rhs,
@@ -783,7 +858,7 @@ impl Parser {
             match rhs {
                 Expression::Call(b) => {
                     res = Expression::Pipe(Box::new(PipeExpression {
-                        base: self.base_node(),
+                        base: self.base_node_from_others(res.base(), &b.base),
                         argument: res,
                         call: *b,
                     }));
@@ -791,15 +866,16 @@ impl Parser {
                 _ => {
                     // TODO(affo): this is slightly different from Go parser (cannot create nil expressions).
                     // wrap the expression in a blank call expression in which the callee is what we parsed.
+                    // TODO(affo): add errors got from ast.Check on rhs.
                     self.errs
                         .push(String::from("pipe destination must be a function call"));
                     let call = CallExpression {
-                        base: self.base_node(),
+                        base: self.base_node(rhs.base().location.clone()),
                         callee: rhs,
                         arguments: vec![],
                     };
                     res = Expression::Pipe(Box::new(PipeExpression {
-                        base: self.base_node(),
+                        base: self.base_node_from_others(res.base(), &call.base),
                         argument: res,
                         call: call,
                     }));
@@ -817,12 +893,13 @@ impl Parser {
         res
     }
     fn parse_unary_expression(&mut self) -> Expression {
+        let t = self.peek();
         let op = self.parse_additive_operator();
         match op {
             Some(op) => {
                 let expr = self.parse_unary_expression();
                 return Expression::Un(Box::new(UnaryExpression {
-                    base: self.base_node(),
+                    base: self.base_node_from_other_end(&t, expr.base()),
                     operator: op,
                     argument: expr,
                 }));
@@ -869,7 +946,7 @@ impl Parser {
         self.expect(T_DOT);
         let id = self.parse_identifier();
         Expression::Mem(Box::new(MemberExpression {
-            base: self.base_node(),
+            base: self.base_node_from_others(expr.base(), &id.base),
             object: expr,
             property: PropertyKey::Identifier(id),
         }))
@@ -877,46 +954,49 @@ impl Parser {
     fn parse_call_expression(&mut self, expr: Expression) -> Expression {
         self.open(T_LPAREN, T_RPAREN);
         let params = self.parse_property_list();
-        self.close(T_RPAREN);
-        let mut args = vec![];
-        if params.len() > 0 {
-            args.push(Expression::Obj(Box::new(ObjectExpression {
-                base: self.base_node(),
-                with: None,
-                properties: params,
-            })));
-        }
-        Expression::Call(Box::new(CallExpression {
-            base: self.base_node(),
+        let end = self.close(T_RPAREN);
+        let mut call = CallExpression {
+            base: self.base_node_from_other_start(expr.base(), &end),
             callee: expr,
-            arguments: args,
-        }))
+            arguments: vec![],
+        };
+        if params.len() > 0 {
+            call.arguments
+                .push(Expression::Obj(Box::new(ObjectExpression {
+                    base: self.base_node_from_others(
+                        &params.first().expect("len > 0, impossible").base,
+                        &params.last().expect("len > 0, impossible").base,
+                    ),
+                    with: None,
+                    properties: params,
+                })));
+        }
+        Expression::Call(Box::new(call))
     }
     fn parse_index_expression(&mut self, expr: Expression) -> Expression {
-        self.open(T_LBRACK, T_RBRACK);
+        let start = self.open(T_LBRACK, T_RBRACK);
         let iexpr = self.parse_expression_while_more(None, &[]);
-        self.close(T_RBRACK);
+        let end = self.close(T_RBRACK);
         match iexpr {
             Some(Expression::Str(sl)) => Expression::Mem(Box::new(MemberExpression {
-                base: self.base_node(),
+                base: self.base_node_from_other_start(expr.base(), &end),
                 object: expr,
                 property: PropertyKey::StringLiteral(sl),
             })),
             Some(e) => Expression::Idx(Box::new(IndexExpression {
-                base: self.base_node(),
+                base: self.base_node_from_other_start(expr.base(), &end),
                 array: expr,
                 index: e,
             })),
             // Return a bad node.
             None => {
-                let mut base = self.base_node();
-                base.errors
+                self.errs
                     .push(String::from("no expression included in brackets"));
                 Expression::Idx(Box::new(IndexExpression {
-                    base,
+                    base: self.base_node_from_other_start(expr.base(), &end),
                     array: expr,
                     index: Expression::Int(IntegerLiteral {
-                        base: self.base_node(),
+                        base: self.base_node_from_tokens(&start, &end),
                         value: -1,
                     }),
                 }))
@@ -941,7 +1021,13 @@ impl Parser {
             // We got a bad token, do not consume it, but use it in the message.
             // Other methods will match BadExpression and consume the token if needed.
             _ => Expression::Bad(Box::new(BadExpression {
-                base: self.base_node(),
+                // Do not use `self.base_node_*` in order not to steal errors.
+                // The BadExpression is an error per se. We want to leave errors to parents.
+                base: BaseNode {
+                    location: self
+                        .source_location(&self.pos(t.pos), &self.pos(t.pos + t.lit.len() as u32)),
+                    errors: vec![],
+                },
                 text: format!(
                     "invalid token for primary expression: {}",
                     format_token(t.tok)
@@ -951,46 +1037,49 @@ impl Parser {
         }
     }
     fn parse_string_expression(&mut self) -> StringExpression {
-        self.expect(T_QUOTE);
+        let start = self.expect(T_QUOTE);
         let mut parts = Vec::new();
         loop {
             let t = self.s.scan_string_expr();
             match t.tok {
                 T_TEXT => {
                     parts.push(StringExpressionPart::Text(TextPart {
-                        base: self.base_node(),
+                        base: self.base_node_from_token(&t),
                         value: t.lit,
                     }));
                 }
                 T_STRINGEXPR => {
                     let expr = self.parse_expression();
-                    self.expect(T_RBRACE);
+                    let end = self.expect(T_RBRACE);
                     parts.push(StringExpressionPart::Expr(InterpolatedPart {
-                        base: self.base_node(),
+                        base: self.base_node_from_tokens(&t, &end),
                         expression: expr,
                     }));
                 }
                 T_QUOTE => {
                     return StringExpression {
-                        base: self.base_node(),
+                        base: self.base_node_from_tokens(&start, &t),
                         parts: parts,
                     }
                 }
                 _ => {
-                    self.errs.push(format!("invalid token for string expression: {}", format_token(t.tok)));
+                    self.errs.push(format!(
+                        "invalid token for string expression: {}",
+                        format_token(t.tok)
+                    ));
                     break;
                 }
             }
         }
         return StringExpression {
-            base: self.base_node(),
+            base: self.base_node_from_tokens(&start, &start),
             parts: Vec::new(),
-        }
+        };
     }
     fn parse_identifier(&mut self) -> Identifier {
         let t = self.expect(T_IDENT);
         return Identifier {
-            base: self.base_node(),
+            base: self.base_node_from_token(&t),
             name: t.lit,
         };
     }
@@ -998,22 +1087,25 @@ impl Parser {
         let t = self.expect(T_INT);
         match (&t.lit).parse::<i64>() {
             Err(_e) => {
-                self.errs.push(format!("invalid integer literal \"{}\": value out of range", t.lit));
+                self.errs.push(format!(
+                    "invalid integer literal \"{}\": value out of range",
+                    t.lit
+                ));
                 IntegerLiteral {
-                    base: self.base_node(),
+                    base: self.base_node_from_token(&t),
                     value: 0,
                 }
             }
             Ok(v) => IntegerLiteral {
-                base: self.base_node(),
+                base: self.base_node_from_token(&t),
                 value: v,
-            }
+            },
         }
     }
     fn parse_float_literal(&mut self) -> FloatLiteral {
         let t = self.expect(T_FLOAT);
         return FloatLiteral {
-            base: self.base_node(),
+            base: self.base_node_from_token(&t),
             value: (&t.lit).parse::<f64>().unwrap(),
         };
     }
@@ -1021,7 +1113,7 @@ impl Parser {
         let t = self.expect(T_STRING);
         let value = strconv::parse_string(t.lit.as_str()).unwrap();
         StringLiteral {
-            base: self.base_node(),
+            base: self.base_node_from_token(&t),
             value: value,
         }
     }
@@ -1032,12 +1124,12 @@ impl Parser {
             Err(e) => {
                 self.errs.push(e);
                 RegexpLiteral {
-                    base: self.base_node(),
+                    base: self.base_node_from_token(&t),
                     value: "".to_string(),
                 }
             }
             Ok(v) => RegexpLiteral {
-                base: self.base_node(),
+                base: self.base_node_from_token(&t),
                 value: v,
             },
         }
@@ -1046,7 +1138,7 @@ impl Parser {
         let t = self.expect(T_TIME);
         let value = strconv::parse_time(t.lit.as_str()).unwrap();
         DateTimeLiteral {
-            base: self.base_node(),
+            base: self.base_node_from_token(&t),
             value: value,
         }
     }
@@ -1054,53 +1146,61 @@ impl Parser {
         let t = self.expect(T_DURATION);
         let values = strconv::parse_duration(t.lit.as_str()).unwrap();
         DurationLiteral {
-            base: self.base_node(),
+            base: self.base_node_from_token(&t),
             values: values,
         }
     }
     fn parse_pipe_literal(&mut self) -> PipeLiteral {
-        self.expect(T_PIPE_RECEIVE);
+        let t = self.expect(T_PIPE_RECEIVE);
         PipeLiteral {
-            base: self.base_node(),
+            base: self.base_node_from_token(&t),
         }
     }
     fn parse_array_literal(&mut self) -> ArrayExpression {
-        self.open(T_LBRACK, T_RBRACK);
+        let start = self.open(T_LBRACK, T_RBRACK);
         let exprs = self.parse_expression_list();
-        self.close(T_RBRACK);
+        let end = self.close(T_RBRACK);
         ArrayExpression {
-            base: self.base_node(),
+            base: self.base_node_from_tokens(&start, &end),
             elements: exprs,
         }
     }
     fn parse_object_literal(&mut self) -> ObjectExpression {
-        self.open(T_LBRACE, T_RBRACE);
+        let start = self.open(T_LBRACE, T_RBRACE);
         let mut obj = self.parse_object_body();
-        self.close(T_RBRACE);
-        obj.base = self.base_node();
+        let end = self.close(T_RBRACE);
+        obj.base = self.base_node_from_tokens(&start, &end);
         obj
     }
     fn parse_paren_expression(&mut self) -> Expression {
-        self.open(T_LPAREN, T_RPAREN);
-        self.parse_paren_body_expression()
+        let lparen = self.open(T_LPAREN, T_RPAREN);
+        self.parse_paren_body_expression(lparen)
     }
-    fn parse_paren_body_expression(&mut self) -> Expression {
+    fn parse_paren_body_expression(&mut self, lparen: Token) -> Expression {
         let t = self.peek();
         match t.tok {
             T_RPAREN => {
                 self.close(T_RPAREN);
-                self.parse_function_expression(Vec::new())
+                self.parse_function_expression(lparen, Vec::new())
             }
             T_IDENT => {
                 let ident = self.parse_identifier();
-                self.parse_paren_ident_expression(ident)
+                self.parse_paren_ident_expression(lparen, ident)
             }
             _ => {
                 let mut expr = self.parse_expression_while_more(None, &[]);
                 match expr {
                     None => {
                         expr = Some(Expression::Bad(Box::new(BadExpression {
-                            base: BaseNode::default(),
+                            // Do not use `self.base_node_*` in order not to steal errors.
+                            // The BadExpression is an error per se. We want to leave errors to parents.
+                            base: BaseNode {
+                                location: self.source_location(
+                                    &self.pos(t.pos),
+                                    &self.pos(t.pos + t.lit.len() as u32),
+                                ),
+                                errors: vec![],
+                            },
                             text: format!("{}", t.lit),
                             expression: None,
                         })));
@@ -1112,7 +1212,7 @@ impl Parser {
             }
         }
     }
-    fn parse_paren_ident_expression(&mut self, key: Identifier) -> Expression {
+    fn parse_paren_ident_expression(&mut self, lparen: Token, key: Identifier) -> Expression {
         let t = self.peek();
         match t.tok {
             T_RPAREN => {
@@ -1122,11 +1222,11 @@ impl Parser {
                     T_ARROW => {
                         let mut params = Vec::new();
                         params.push(Property {
-                            base: self.base_node(),
+                            base: self.base_node(key.base.location.clone()),
                             key: PropertyKey::Identifier(key),
                             value: None,
                         });
-                        self.parse_function_expression(params)
+                        self.parse_function_expression(lparen, params)
                     }
                     _ => Expression::Idt(key),
                 }
@@ -1136,7 +1236,7 @@ impl Parser {
                 let value = self.parse_expression();
                 let mut params = Vec::new();
                 params.push(Property {
-                    base: self.base_node(),
+                    base: self.base_node_from_others(&key.base, value.base()),
                     key: PropertyKey::Identifier(key),
                     value: Some(value),
                 });
@@ -1145,20 +1245,20 @@ impl Parser {
                     params.append(others);
                 }
                 self.close(T_RPAREN);
-                self.parse_function_expression(params)
+                self.parse_function_expression(lparen, params)
             }
             T_COMMA => {
                 self.consume();
                 let mut params = Vec::new();
                 params.push(Property {
-                    base: self.base_node(),
+                    base: self.base_node(key.base.location.clone()),
                     key: PropertyKey::Identifier(key),
                     value: None,
                 });
                 let others = &mut self.parse_parameter_list();
                 params.append(others);
                 self.close(T_RPAREN);
-                self.parse_function_expression(params)
+                self.parse_function_expression(lparen, params)
             }
             _ => {
                 let mut expr = self.parse_expression_suffix(Expression::Idt(key));
@@ -1167,15 +1267,18 @@ impl Parser {
                     match rhs {
                         Expression::Bad(_) => {
                             let invalid_t = self.scan();
-                            // TODO(affo): refactor when location is supported.
+                            let loc = self.source_location(
+                                &self.pos(invalid_t.pos),
+                                &self.pos(invalid_t.pos + invalid_t.lit.len() as u32),
+                            );
                             self.errs
-                                .push(format!("invalid expression @position: {}", invalid_t.lit));
+                                .push(format!("invalid expression {}: {}", loc, invalid_t.lit));
                             continue;
                         }
                         _ => (),
                     };
                     expr = Expression::Bin(Box::new(BinaryExpression {
-                        base: self.base_node(),
+                        base: self.base_node_from_others(expr.base(), rhs.base()),
                         operator: OperatorKind::InvalidOperator,
                         left: expr,
                         right: rhs,
@@ -1197,12 +1300,14 @@ impl Parser {
                 let s = self.parse_string_literal();
                 let props = self.parse_property_list_suffix(PropertyKey::StringLiteral(s));
                 ObjectExpression {
+                    // `base` will be overridden by `parse_object_literal`.
                     base: BaseNode::default(),
                     with: None,
                     properties: props,
                 }
             }
             _ => ObjectExpression {
+                // `base` will be overridden by `parse_object_literal`.
                 base: BaseNode::default(),
                 with: None,
                 properties: self.parse_property_list(),
@@ -1219,6 +1324,7 @@ impl Parser {
                 self.consume();
                 let props = self.parse_property_list();
                 ObjectExpression {
+                    // `base` will be overridden by `parse_object_literal`.
                     base: BaseNode::default(),
                     with: Some(ident),
                     properties: props,
@@ -1227,6 +1333,7 @@ impl Parser {
             _ => {
                 let props = self.parse_property_list_suffix(PropertyKey::Identifier(ident));
                 ObjectExpression {
+                    // `base` will be overridden by `parse_object_literal`.
                     base: BaseNode::default(),
                     with: None,
                     properties: props,
@@ -1296,28 +1403,25 @@ impl Parser {
             self.consume();
             value = self.parse_property_value();
         };
+        let value_base = match &value {
+            Some(v) => v.base(),
+            None => key.base(),
+        };
         Property {
-            base: self.base_node(),
+            base: self.base_node_from_others(key.base(), value_base),
             key: key,
             value: value,
         }
     }
     fn parse_invalid_property(&mut self) -> Property {
         let mut errs = Vec::new();
-        let mut prop = Property {
-            base: BaseNode::default(),
-            key: PropertyKey::StringLiteral(StringLiteral {
-                base: BaseNode::default(),
-                value: "<invalid>".to_string(),
-            }),
-            value: None,
-        };
+        let mut value = None;
         let t = self.peek();
         match t.tok {
             T_COLON => {
                 errs.push(String::from("missing property key"));
                 self.consume();
-                prop.value = self.parse_property_value();
+                value = self.parse_property_value();
             }
             T_COMMA => errs.push(String::from("missing property in property list")),
             _ => {
@@ -1334,13 +1438,20 @@ impl Parser {
                 // If we stopped at a colon, attempt to parse the value
                 if self.peek().tok == T_COLON {
                     self.consume();
-                    prop.value = self.parse_property_value();
+                    value = self.parse_property_value();
                 }
             }
         }
         self.errs.append(&mut errs);
-        prop.base = self.base_node();
-        prop
+        let end = self.peek();
+        Property {
+            base: self.base_node_from_pos(&self.pos(t.pos), &self.pos(end.pos)),
+            key: PropertyKey::StringLiteral(StringLiteral {
+                base: self.base_node_from_pos(&self.pos(t.pos), &self.pos(t.pos)),
+                value: "<invalid>".to_string(),
+            }),
+            value,
+        }
     }
     fn parse_property_value(&mut self) -> Option<Expression> {
         let res = self.parse_expression_while_more(None, &[T_COMMA, T_COLON]);
@@ -1364,34 +1475,49 @@ impl Parser {
     }
     fn parse_parameter(&mut self) -> Property {
         let key = self.parse_identifier();
-        let mut prop = Property {
-            base: self.base_node(),
-            key: PropertyKey::Identifier(key),
-            value: None,
-        };
+        let mut base: BaseNode;
+        let mut value = None;
         if self.peek().tok == T_ASSIGN {
             self.consume();
-            prop.value = Some(self.parse_expression());
+            let v = self.parse_expression();
+            base = self.base_node_from_others(&key.base, v.base());
+            value = Some(v);
+        } else {
+            base = self.base_node(key.base.location.clone())
         }
-        prop
+        Property {
+            base,
+            key: PropertyKey::Identifier(key),
+            value,
+        }
     }
-    fn parse_function_expression(&mut self, params: Vec<Property>) -> Expression {
+    fn parse_function_expression(&mut self, lparen: Token, params: Vec<Property>) -> Expression {
         self.expect(T_ARROW);
-        self.parse_function_body_expression(params)
+        self.parse_function_body_expression(lparen, params)
     }
-    fn parse_function_body_expression(&mut self, params: Vec<Property>) -> Expression {
+    fn parse_function_body_expression(
+        &mut self,
+        lparen: Token,
+        params: Vec<Property>,
+    ) -> Expression {
         let t = self.peek();
         match t.tok {
-            T_LBRACE => Expression::Fun(Box::new(FunctionExpression {
-                base: self.base_node(),
-                params,
-                body: FunctionBody::Block(self.parse_block()),
-            })),
-            _ => Expression::Fun(Box::new(FunctionExpression {
-                base: self.base_node(),
-                params,
-                body: FunctionBody::Expr(self.parse_expression()),
-            })),
+            T_LBRACE => {
+                let block = self.parse_block();
+                Expression::Fun(Box::new(FunctionExpression {
+                    base: self.base_node_from_other_end(&lparen, &block.base),
+                    params,
+                    body: FunctionBody::Block(block),
+                }))
+            }
+            _ => {
+                let expr = self.parse_expression();
+                Expression::Fun(Box::new(FunctionExpression {
+                    base: self.base_node_from_other_end(&lparen, expr.base()),
+                    params,
+                    body: FunctionBody::Expr(expr),
+                }))
+            }
         }
     }
 }
