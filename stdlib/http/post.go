@@ -56,6 +56,7 @@ func init() {
 			if err != nil {
 				return nil, err
 			}
+			req = req.WithContext(ctx)
 
 			// Add headers to request
 			header, ok := args.Get("headers")
