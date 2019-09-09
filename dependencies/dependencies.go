@@ -63,7 +63,7 @@ func newDefaultTransport() *http.Transport {
 			// DualStack is deprecated
 		}).DialContext,
 		MaxIdleConns:          100,
-		IdleConnTimeout:       90 * time.Second,
+		IdleConnTimeout:       10 * time.Second,
 		TLSHandshakeTimeout:   10 * time.Second,
 		ExpectContinueTimeout: 1 * time.Second,
 		// Fields below are NOT part of Go's defaults
