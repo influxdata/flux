@@ -5,6 +5,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/memory"
+	"github.com/opentracing/opentracing-go"
 )
 
 // query implements the flux.Query interface.
@@ -12,6 +13,7 @@ type query struct {
 	results chan flux.Result
 	stats   flux.Statistics
 	alloc   *memory.Allocator
+	span    opentracing.Span
 	cancel  func()
 	err     error
 	wg      sync.WaitGroup
@@ -24,6 +26,10 @@ func (q *query) Results() <-chan flux.Result {
 func (q *query) Done() {
 	q.cancel()
 	q.wg.Wait()
+	if q.span != nil {
+		q.span.Finish()
+		q.span = nil
+	}
 }
 
 func (q *query) Cancel() {
