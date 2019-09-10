@@ -15,4 +15,5 @@ export GO111MODULE=on
 
 version=$(go run github.com/influxdata/changelog nextver)
 git tag -s -m "Release $version" $version
+git push origin "$version"
 go run github.com/goreleaser/goreleaser release --rm-dist --release-notes <(go run github.com/influxdata/changelog generate --version $version --commit-url https://github.com/influxdata/flux/commit)
