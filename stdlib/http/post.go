@@ -3,6 +3,8 @@ package http
 import (
 	"bytes"
 	"context"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 
@@ -10,9 +12,16 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/iocounter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/log"
 )
+
+// maxResponseBody is the maximum response body we will read before just discarding
+// the rest. This allows sockets to be reused.
+const maxResponseBody = 512 * 1024 // 512 KB
 
 func init() {
 	flux.RegisterPackageValue("http", "post", values.NewFunction(
@@ -56,7 +65,6 @@ func init() {
 			if err != nil {
 				return nil, err
 			}
-			req = req.WithContext(ctx)
 
 			// Add headers to request
 			header, ok := args.Get("headers")
@@ -79,14 +87,39 @@ func init() {
 			if err != nil {
 				return nil, errors.Wrap(err, codes.Aborted, "missing client in http.post")
 			}
-			response, err := dc.Do(req)
+
+			statusCode, err := func(req *http.Request) (int, error) {
+				s, cctx := opentracing.StartSpanFromContext(ctx, "http.post")
+				s.SetTag("url", req.URL.String())
+				defer s.Finish()
+
+				req = req.WithContext(cctx)
+				response, err := dc.Do(req)
+				if err != nil {
+					return 0, err
+				}
+
+				// Read the response body but limit how much we will read.
+				// This is to allow a socket to be reused after it is closed.
+				wc := iocounter.Writer{Writer: ioutil.Discard}
+				r := io.LimitedReader{
+					R: response.Body,
+					N: maxResponseBody,
+				}
+				_, _ = io.Copy(&wc, &r)
+				_ = response.Body.Close()
+				s.LogFields(
+					log.Int("statusCode", response.StatusCode),
+					log.Int64("responseSize", wc.Count()),
+				)
+				return response.StatusCode, nil
+			}(req)
 			if err != nil {
 				return nil, err
 			}
-			defer response.Body.Close()
 
 			// return status code
-			return values.NewInt(int64(response.StatusCode)), nil
+			return values.NewInt(int64(statusCode)), nil
 		},
 		true, // post has side-effects
 	))

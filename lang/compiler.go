@@ -15,6 +15,7 @@ import (
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
 
@@ -122,7 +123,7 @@ func CompileTableObject(to *flux.TableObject, now time.Time, opts ...CompileOpti
 	if o.verbose {
 		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
 	}
-	ps, err := buildPlan(s, o)
+	ps, err := buildPlan(context.Background(), s, o)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +144,10 @@ func WalkIR(astPkg *ast.Package, f func(o *flux.Operation) error) error {
 
 }
 
-func buildPlan(spec *flux.Spec, opts *compileOptions) (*plan.Spec, error) {
+func buildPlan(ctx context.Context, spec *flux.Spec, opts *compileOptions) (*plan.Spec, error) {
+	s, _ := opentracing.StartSpanFromContext(ctx, "plan")
+	defer s.Finish()
+
 	pb := plan.PlannerBuilder{}
 
 	planOptions := opts.planOptions
@@ -243,10 +247,14 @@ func (p *Program) SetLogger(logger *zap.Logger) {
 
 func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
 	ctx, cancel := context.WithCancel(ctx)
+
+	// This span gets closed by the query when it is done.
+	s, cctx := opentracing.StartSpanFromContext(ctx, "execute")
 	results := make(chan flux.Result)
 	q := &query{
 		results: results,
 		alloc:   alloc,
+		span:    s,
 		cancel:  cancel,
 		stats: flux.Statistics{
 			Metadata: make(flux.Metadata),
@@ -254,14 +262,15 @@ func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Quer
 	}
 
 	e := execute.NewExecutor(p.Dependencies, p.Logger)
-	resultMap, md, err := e.Execute(ctx, p.PlanSpec, q.alloc)
+	resultMap, md, err := e.Execute(cctx, p.PlanSpec, q.alloc)
 	if err != nil {
+		s.Finish()
 		return nil, err
 	}
 
 	// There was no error so send the results downstream.
 	q.wg.Add(1)
-	go p.processResults(ctx, q, resultMap)
+	go p.processResults(cctx, q, resultMap)
 
 	// Begin reading from the metadata channel.
 	q.wg.Add(1)
@@ -329,7 +338,7 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	if p.opts.verbose {
 		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
 	}
-	ps, err := buildPlan(s, p.opts)
+	ps, err := buildPlan(ctx, s, p.opts)
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in building plan while starting program")
 	}

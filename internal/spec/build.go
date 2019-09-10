@@ -36,15 +36,15 @@ func FromScript(ctx context.Context, deps dependencies.Interface, now time.Time,
 
 // FromAST returns a spec from an AST.
 func FromAST(ctx context.Context, deps dependencies.Interface, astPkg *ast.Package, now time.Time) (*flux.Spec, error) {
-	s, _ := opentracing.StartSpanFromContext(ctx, "eval")
+	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
 
-	sideEffects, scope, err := flux.EvalAST(ctx, deps, astPkg, flux.SetOption(nowPkg, nowOption, generateNowFunc(now)))
+	sideEffects, scope, err := flux.EvalAST(cctx, deps, astPkg, flux.SetOption(nowPkg, nowOption, generateNowFunc(now)))
 	if err != nil {
 		return nil, err
 	}
 
 	s.Finish()
-	s, _ = opentracing.StartSpanFromContext(ctx, "compile")
+	s, cctx = opentracing.StartSpanFromContext(ctx, "compile")
 	defer s.Finish()
 
 	nowOpt, ok := scope.Lookup(nowOption)
@@ -57,7 +57,7 @@ func FromAST(ctx context.Context, deps dependencies.Interface, astPkg *ast.Packa
 		return nil, err
 	}
 
-	spec, err := toSpec(sideEffects, nowTime.Time().Time())
+	spec, err := toSpec(cctx, sideEffects, nowTime.Time().Time())
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +127,7 @@ func (i *ider) ID(t *flux.TableObject) flux.OperationID {
 	return tableID
 }
 
-func toSpec(functionCalls []interpreter.SideEffect, now time.Time) (*flux.Spec, error) {
+func toSpec(ctx context.Context, functionCalls []interpreter.SideEffect, now time.Time) (*flux.Spec, error) {
 	ider := &ider{
 		id:     0,
 		lookup: make(map[*flux.TableObject]flux.OperationID),
@@ -139,21 +139,38 @@ func toSpec(functionCalls []interpreter.SideEffect, now time.Time) (*flux.Spec, 
 
 	for _, call := range functionCalls {
 		if op, ok := call.Value.(*flux.TableObject); ok {
-			dup := false
-			for _, tableObject := range objs {
-				if op.Equal(tableObject) {
-					dup = true
-					break
-				}
-			}
-			if !dup {
-				buildSpec(op, ider, spec, seen)
+			s, cctx := opentracing.StartSpanFromContext(ctx, "toSpec")
+			s.SetTag("opKind", op.Kind)
+			s.SetTag("loc", call.Node.Location().String())
+
+			if !isDuplicateTableObject(cctx, op, objs) {
+				buildSpecWithTrace(cctx, op, ider, spec, seen)
 				objs = append(objs, op)
 			}
+			s.Finish()
 		}
 	}
 
 	return spec, nil
+}
+
+func isDuplicateTableObject(ctx context.Context, op *flux.TableObject, objs []*flux.TableObject) bool {
+	s, _ := opentracing.StartSpanFromContext(ctx, "isDuplicate")
+	defer s.Finish()
+
+	for _, tableObject := range objs {
+		if op.Equal(tableObject) {
+			return true
+		}
+	}
+	return false
+}
+
+func buildSpecWithTrace(ctx context.Context, t *flux.TableObject, ider flux.IDer, spec *flux.Spec, visited map[*flux.TableObject]bool) {
+	s, _ := opentracing.StartSpanFromContext(ctx, "buildSpec")
+	s.SetTag("opKind", t.Kind)
+	buildSpec(t, ider, spec, visited)
+	s.Finish()
 }
 
 func buildSpec(t *flux.TableObject, ider flux.IDer, spec *flux.Spec, visited map[*flux.TableObject]bool) {
@@ -162,7 +179,7 @@ func buildSpec(t *flux.TableObject, ider flux.IDer, spec *flux.Spec, visited map
 	t.Parents.Range(func(i int, v values.Value) {
 		p := v.(*flux.TableObject)
 		if !visited[p] {
-			// rescurse up parents
+			// recurse up parents
 			buildSpec(p, ider, spec, visited)
 		}
 	})
