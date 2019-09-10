@@ -977,14 +977,23 @@ impl Parser {
                     }
                 }
                 _ => {
-                    self.errs.push(format!("invalid token for string expression: {}", format_token(t.tok)));
-                    break;
+                    let loc = self
+                        .source_location(&self.pos(t.pos), &self.pos(t.pos + t.lit.len() as u32));
+                    self.errs.push(format!(
+                        "got unexpected token in string expression {}@{}:{}-{}:{}: {}",
+                        self.fname,
+                        loc.start.line,
+                        loc.start.column,
+                        loc.end.line,
+                        loc.end.column,
+                        format_token(t.tok)
+                    ));
+                    return StringExpression {
+                        base: self.base_node_from_tokens(&start, &t),
+                        parts: Vec::new(),
+                    };
                 }
             }
-        }
-        return StringExpression {
-            base: self.base_node(),
-            parts: Vec::new(),
         }
     }
     fn parse_identifier(&mut self) -> Identifier {

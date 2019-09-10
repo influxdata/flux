@@ -917,7 +917,13 @@ func (p *parser) parseStringExpression() *ast.StringExpression {
 			}
 		default:
 			// TODO bad expression
-			return nil
+			loc := p.loc(pos, pos+token.Pos(len(lit)))
+			p.errs = append(p.errs, ast.Error{
+				Msg: fmt.Sprintf("got unexpected token in string expression %s@%d:%d-%d:%d: %s", loc.File, loc.Start.Line, loc.Start.Column, loc.End.Line, loc.End.Column, tok),
+			})
+			return &ast.StringExpression{
+				BaseNode: p.position(beg, pos+token.Pos(len(lit))),
+			}
 		}
 	}
 }

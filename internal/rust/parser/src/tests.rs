@@ -169,6 +169,68 @@ fn string_interpolation_nested() {
 }
 
 #[test]
+fn bad_string_expression() {
+    let mut p = Parser::new(r#"fn = (a) => "${a}"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 18),
+                errors: vec![]
+            },
+            name: "".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Var(VariableAssignment {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 18),
+                    errors: vec![]
+                },
+                id: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 3),
+                        errors: vec![]
+                    },
+                    name: "fn".to_string(),
+                },
+                init: Fun(Box::new(FunctionExpression {
+                    base: BaseNode {
+                        location: loc.get(1, 6, 1, 18),
+                        errors: vec![]
+                    },
+                    params: vec![Property {
+                        base: BaseNode {
+                            location: loc.get(1, 7, 1, 8),
+                            errors: vec![]
+                        },
+                        key: PkIdt(Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 7, 1, 8),
+                                errors: vec![]
+                            },
+                            name: "a".to_string()
+                        }),
+                        value: None
+                    }],
+                    body: FExpr(StringExp(Box::new(StringExpression {
+                        base: BaseNode {
+                            location: loc.get(1, 13, 1, 18),
+                            errors: vec![
+                                "got unexpected token in string expression @1:18-1:18: EOF"
+                                    .to_string()
+                            ]
+                        },
+                        parts: vec![],
+                    })))
+                })),
+            })],
+        },
+    )
+}
+
+#[test]
 fn package_clause() {
     let mut p = Parser::new(r#"package foo"#);
     let parsed = p.parse_file("".to_string());

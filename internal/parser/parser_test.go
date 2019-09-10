@@ -184,6 +184,33 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 			},
 		},
 		{
+			name: "bad string expression",
+			raw:  `fn = (a) => "${a}`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:18"),
+				Body: []ast.Statement{&ast.VariableAssignment{
+					BaseNode: base("1:1", "1:18"),
+					ID:       &ast.Identifier{BaseNode: base("1:1", "1:3"), Name: "fn"},
+					Init: &ast.FunctionExpression{
+						BaseNode: base("1:6", "1:18"),
+						Params: []*ast.Property{{
+							BaseNode: base("1:7", "1:8"),
+							Key:      &ast.Identifier{BaseNode: base("1:7", "1:8"), Name: "a"},
+						}},
+						Body: &ast.StringExpression{
+							BaseNode: ast.BaseNode{
+								Loc: loc("1:13", "1:18"),
+								Errors: []ast.Error{
+									{Msg: "got unexpected token in string expression @1:18-1:18: EOF"},
+								},
+							},
+						},
+					},
+				}},
+			},
+			nerrs: 1,
+		},
+		{
 			name: "package clause",
 			raw:  `package foo`,
 			want: &ast.File{
