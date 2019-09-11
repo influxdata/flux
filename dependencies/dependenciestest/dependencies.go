@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/mock"
 )
 
@@ -40,5 +41,6 @@ func Default() dependencies.Dependencies {
 		"password": "mysecretpassword",
 		"token":    "mysecrettoken",
 	}
+	deps.Deps.FilesystemService = filesystem.SystemFS
 	return deps
 }
