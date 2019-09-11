@@ -165,6 +165,8 @@ func getPrecedences(parent, child Node) (int, int) {
 		pvp = getPrecedence(member)
 	case *IndexExpression:
 		pvp = getPrecedence(index)
+	case *ParenExpression:
+		return getPrecedences(parent.Expression, child)
 	}
 
 	switch child := child.(type) {
@@ -180,6 +182,8 @@ func getPrecedences(parent, child Node) (int, int) {
 		pvc = getPrecedence(member)
 	case *IndexExpression:
 		pvc = getPrecedence(index)
+	case *ParenExpression:
+		return getPrecedences(parent, child.Expression)
 	}
 
 	return pvp, pvc
@@ -598,6 +602,10 @@ func (f *formatter) formatInterpolatedPart(n *InterpolatedPart) {
 	f.writeString("}")
 }
 
+func (f *formatter) formatParenExpression(n *ParenExpression) {
+	f.formatNode(n.Expression)
+}
+
 func (f *formatter) formatStringLiteral(n *StringLiteral) {
 	if n.Loc != nil && n.Loc.Source != "" {
 		// Preserve the exact literal if we have it
@@ -731,6 +739,8 @@ func (f *formatter) formatNode(n Node) {
 		f.formatTextPart(n)
 	case *InterpolatedPart:
 		f.formatInterpolatedPart(n)
+	case *ParenExpression:
+		f.formatParenExpression(n)
 	case *StringLiteral:
 		f.formatStringLiteral(n)
 	case *BooleanLiteral:

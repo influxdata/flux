@@ -17,11 +17,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 106,
+					Column: 107,
 					Line:   99,
 				},
 				File:   "aggregate_window_count_test.flux",
-				Source: "package chronograf_test\n \nimport \"testing\"\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.local,67.1\n,,0,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.local,67.4\n,,0,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.local,67.5\n,,0,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.local,67.6\n,,0,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,0,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,1,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.local,92.2\n\n,,2,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,3,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,device,host,_value\n,,0,2018-05-22T00:00:00Z,cpu,percentage,core1,host.local,89.7\n,,0,2018-05-22T00:00:10Z,cpu,percentage,core1,host.local,73.4\n,,0,2018-05-22T00:00:20Z,cpu,percentage,core1,host.local,88.8\n,,0,2018-05-22T00:00:30Z,cpu,percentage,core1,host.local,91.0\n,,0,2018-05-22T00:00:40Z,cpu,percentage,core1,host.local,81.1\n,,0,2018-05-22T00:00:50Z,cpu,percentage,core1,host.local,87.8\n,,1,2018-05-22T00:00:00Z,cpu,percentage,core2,host.local,70.3\n,,1,2018-05-22T00:00:10Z,cpu,percentage,core2,host.local,80.4\n,,1,2018-05-22T00:00:20Z,cpu,percentage,core2,host.local,95.6\n,,1,2018-05-22T00:00:30Z,cpu,percentage,core2,host.local,94.4\n,,1,2018-05-22T00:00:40Z,cpu,percentage,core2,host.local,91.2\n,,1,2018-05-22T00:00:50Z,cpu,percentage,core2,host.local,90.6\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,host,_value\n,,0,2018-05-22T00:00:00Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:10Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:20Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:30Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:40Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:50Z,mem,percentage,host.local,82.5\n,,1,2018-05-22T00:00:00Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:10Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:20Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:30Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:40Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:50Z,mem,percentage,host.remote,35\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,long\n#group,false,false,true,true,false,true,true,true,true,true,false\n#default,_result,,,,,,,,,,\n,result,table,_start,_stop,_time,_field,_measurement,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:00:30Z,percentage,disk,disk1s1,apfs,host.local,3\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:01:00Z,percentage,disk,disk1s1,apfs,host.local,3\n,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:00:30Z,percentage,disk,disk2s1,apfs,host.local,3\n,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:01:00Z,percentage,disk,disk2s1,apfs,host.local,3\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,long\n#group,false,false,true,true,false,true,true,true,true,false\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_field,_measurement,device,host,_value\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:00:30Z,percentage,cpu,core1,host.local,3\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:01:00Z,percentage,cpu,core1,host.local,3\n,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:00:30Z,percentage,cpu,core2,host.local,3\n,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:01:00Z,percentage,cpu,core2,host.local,3\n\"\n\nagg_window_count_fn = (table=<-) => table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"cpu\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> aggregateWindow(every: 30s, fn: count)\n\ntest agg_window_count = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_count_fn}",
+				Source: "package chronograf_test\n \nimport \"testing\"\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.local,67.1\n,,0,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.local,67.4\n,,0,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.local,67.5\n,,0,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.local,67.6\n,,0,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,0,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,1,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.local,92.2\n\n,,2,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,3,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,device,host,_value\n,,0,2018-05-22T00:00:00Z,cpu,percentage,core1,host.local,89.7\n,,0,2018-05-22T00:00:10Z,cpu,percentage,core1,host.local,73.4\n,,0,2018-05-22T00:00:20Z,cpu,percentage,core1,host.local,88.8\n,,0,2018-05-22T00:00:30Z,cpu,percentage,core1,host.local,91.0\n,,0,2018-05-22T00:00:40Z,cpu,percentage,core1,host.local,81.1\n,,0,2018-05-22T00:00:50Z,cpu,percentage,core1,host.local,87.8\n,,1,2018-05-22T00:00:00Z,cpu,percentage,core2,host.local,70.3\n,,1,2018-05-22T00:00:10Z,cpu,percentage,core2,host.local,80.4\n,,1,2018-05-22T00:00:20Z,cpu,percentage,core2,host.local,95.6\n,,1,2018-05-22T00:00:30Z,cpu,percentage,core2,host.local,94.4\n,,1,2018-05-22T00:00:40Z,cpu,percentage,core2,host.local,91.2\n,,1,2018-05-22T00:00:50Z,cpu,percentage,core2,host.local,90.6\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,host,_value\n,,0,2018-05-22T00:00:00Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:10Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:20Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:30Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:40Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:50Z,mem,percentage,host.local,82.5\n,,1,2018-05-22T00:00:00Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:10Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:20Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:30Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:40Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:50Z,mem,percentage,host.remote,35\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,long\n#group,false,false,true,true,false,true,true,true,true,true,false\n#default,_result,,,,,,,,,,\n,result,table,_start,_stop,_time,_field,_measurement,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:00:30Z,percentage,disk,disk1s1,apfs,host.local,3\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:01:00Z,percentage,disk,disk1s1,apfs,host.local,3\n,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:00:30Z,percentage,disk,disk2s1,apfs,host.local,3\n,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:01:00Z,percentage,disk,disk2s1,apfs,host.local,3\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,long\n#group,false,false,true,true,false,true,true,true,true,false\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_field,_measurement,device,host,_value\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:00:30Z,percentage,cpu,core1,host.local,3\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:01:00Z,percentage,cpu,core1,host.local,3\n,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:00:30Z,percentage,cpu,core2,host.local,3\n,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:01:00Z,percentage,cpu,core2,host.local,3\n\"\n\nagg_window_count_fn = (table=<-) => table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"cpu\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> aggregateWindow(every: 30s, fn: count)\n\ntest agg_window_count = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_count_fn})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -1211,11 +1211,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 106,
+							Column: 107,
 							Line:   99,
 						},
 						File:   "aggregate_window_count_test.flux",
-						Source: "agg_window_count = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_count_fn}",
+						Source: "agg_window_count = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_count_fn})",
 						Start: ast.Position{
 							Column: 6,
 							Line:   98,
@@ -1245,85 +1245,85 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 106,
+								Column: 107,
 								Line:   99,
 							},
 							File:   "aggregate_window_count_test.flux",
-							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_count_fn}",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_count_fn})",
 							Start: ast.Position{
 								Column: 25,
 								Line:   98,
 							},
 						},
 					},
-					Body: &ast.ObjectExpression{
+					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 106,
+									Column: 107,
 									Line:   99,
 								},
 								File:   "aggregate_window_count_test.flux",
-								Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_count_fn}",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_count_fn})",
 								Start: ast.Position{
-									Column: 3,
+									Column: 2,
 									Line:   99,
 								},
 							},
 						},
-						Properties: []*ast.Property{&ast.Property{
+						Expression: &ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 43,
+										Column: 106,
 										Line:   99,
 									},
 									File:   "aggregate_window_count_test.flux",
-									Source: "input: testing.loadStorage(csv: inData)",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_count_fn}",
 									Start: ast.Position{
-										Column: 4,
+										Column: 3,
 										Line:   99,
 									},
 								},
 							},
-							Key: &ast.Identifier{
+							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 9,
+											Column: 43,
 											Line:   99,
 										},
 										File:   "aggregate_window_count_test.flux",
-										Source: "input",
+										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 4,
 											Line:   99,
 										},
 									},
 								},
-								Name: "input",
-							},
-							Value: &ast.CallExpression{
-								Arguments: []ast.Expression{&ast.ObjectExpression{
+								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 42,
+												Column: 9,
 												Line:   99,
 											},
 											File:   "aggregate_window_count_test.flux",
-											Source: "csv: inData",
+											Source: "input",
 											Start: ast.Position{
-												Column: 31,
+												Column: 4,
 												Line:   99,
 											},
 										},
 									},
-									Properties: []*ast.Property{&ast.Property{
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -1339,25 +1339,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 34,
-														Line:   99,
-													},
-													File:   "aggregate_window_count_test.flux",
-													Source: "csv",
-													Start: ast.Position{
-														Column: 31,
-														Line:   99,
-													},
-												},
-											},
-											Name: "csv",
-										},
-										Value: &ast.Identifier{
+										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
@@ -1366,68 +1348,68 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Line:   99,
 													},
 													File:   "aggregate_window_count_test.flux",
-													Source: "inData",
+													Source: "csv: inData",
 													Start: ast.Position{
-														Column: 36,
+														Column: 31,
 														Line:   99,
 													},
 												},
 											},
-											Name: "inData",
-										},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   99,
+														},
+														File:   "aggregate_window_count_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   99,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   99,
+														},
+														File:   "aggregate_window_count_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   99,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
 									}},
-									With: nil,
-								}},
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 43,
-											Line:   99,
-										},
-										File:   "aggregate_window_count_test.flux",
-										Source: "testing.loadStorage(csv: inData)",
-										Start: ast.Position{
-											Column: 11,
-											Line:   99,
-										},
-									},
-								},
-								Callee: &ast.MemberExpression{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 30,
+												Column: 43,
 												Line:   99,
 											},
 											File:   "aggregate_window_count_test.flux",
-											Source: "testing.loadStorage",
+											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 11,
 												Line:   99,
 											},
 										},
 									},
-									Object: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 18,
-													Line:   99,
-												},
-												File:   "aggregate_window_count_test.flux",
-												Source: "testing",
-												Start: ast.Position{
-													Column: 11,
-													Line:   99,
-												},
-											},
-										},
-										Name: "testing",
-									},
-									Property: &ast.Identifier{
+									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -1436,69 +1418,87 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Line:   99,
 												},
 												File:   "aggregate_window_count_test.flux",
-												Source: "loadStorage",
+												Source: "testing.loadStorage",
 												Start: ast.Position{
-													Column: 19,
+													Column: 11,
 													Line:   99,
 												},
 											},
 										},
-										Name: "loadStorage",
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   99,
+													},
+													File:   "aggregate_window_count_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   99,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   99,
+													},
+													File:   "aggregate_window_count_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   99,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
 									},
 								},
-							},
-						}, &ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 80,
-										Line:   99,
-									},
-									File:   "aggregate_window_count_test.flux",
-									Source: "want: testing.loadMem(csv: outData)",
-									Start: ast.Position{
-										Column: 45,
-										Line:   99,
-									},
-								},
-							},
-							Key: &ast.Identifier{
+							}, &ast.Property{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 49,
+											Column: 80,
 											Line:   99,
 										},
 										File:   "aggregate_window_count_test.flux",
-										Source: "want",
+										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 45,
 											Line:   99,
 										},
 									},
 								},
-								Name: "want",
-							},
-							Value: &ast.CallExpression{
-								Arguments: []ast.Expression{&ast.ObjectExpression{
+								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 79,
+												Column: 49,
 												Line:   99,
 											},
 											File:   "aggregate_window_count_test.flux",
-											Source: "csv: outData",
+											Source: "want",
 											Start: ast.Position{
-												Column: 67,
+												Column: 45,
 												Line:   99,
 											},
 										},
 									},
-									Properties: []*ast.Property{&ast.Property{
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -1514,25 +1514,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 70,
-														Line:   99,
-													},
-													File:   "aggregate_window_count_test.flux",
-													Source: "csv",
-													Start: ast.Position{
-														Column: 67,
-														Line:   99,
-													},
-												},
-											},
-											Name: "csv",
-										},
-										Value: &ast.Identifier{
+										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
@@ -1541,68 +1523,68 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Line:   99,
 													},
 													File:   "aggregate_window_count_test.flux",
-													Source: "outData",
+													Source: "csv: outData",
 													Start: ast.Position{
-														Column: 72,
+														Column: 67,
 														Line:   99,
 													},
 												},
 											},
-											Name: "outData",
-										},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   99,
+														},
+														File:   "aggregate_window_count_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   99,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   99,
+														},
+														File:   "aggregate_window_count_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   99,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
 									}},
-									With: nil,
-								}},
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 80,
-											Line:   99,
-										},
-										File:   "aggregate_window_count_test.flux",
-										Source: "testing.loadMem(csv: outData)",
-										Start: ast.Position{
-											Column: 51,
-											Line:   99,
-										},
-									},
-								},
-								Callee: &ast.MemberExpression{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 66,
+												Column: 80,
 												Line:   99,
 											},
 											File:   "aggregate_window_count_test.flux",
-											Source: "testing.loadMem",
+											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 51,
 												Line:   99,
 											},
 										},
 									},
-									Object: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 58,
-													Line:   99,
-												},
-												File:   "aggregate_window_count_test.flux",
-												Source: "testing",
-												Start: ast.Position{
-													Column: 51,
-													Line:   99,
-												},
-											},
-										},
-										Name: "testing",
-									},
-									Property: &ast.Identifier{
+									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -1611,52 +1593,52 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Line:   99,
 												},
 												File:   "aggregate_window_count_test.flux",
-												Source: "loadMem",
+												Source: "testing.loadMem",
 												Start: ast.Position{
-													Column: 59,
+													Column: 51,
 													Line:   99,
 												},
 											},
 										},
-										Name: "loadMem",
-									},
-								},
-							},
-						}, &ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 105,
-										Line:   99,
-									},
-									File:   "aggregate_window_count_test.flux",
-									Source: "fn: agg_window_count_fn",
-									Start: ast.Position{
-										Column: 82,
-										Line:   99,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 84,
-											Line:   99,
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   99,
+													},
+													File:   "aggregate_window_count_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   99,
+													},
+												},
+											},
+											Name: "testing",
 										},
-										File:   "aggregate_window_count_test.flux",
-										Source: "fn",
-										Start: ast.Position{
-											Column: 82,
-											Line:   99,
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   99,
+													},
+													File:   "aggregate_window_count_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   99,
+													},
+												},
+											},
+											Name: "loadMem",
 										},
 									},
 								},
-								Name: "fn",
-							},
-							Value: &ast.Identifier{
+							}, &ast.Property{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
@@ -1665,17 +1647,52 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Line:   99,
 										},
 										File:   "aggregate_window_count_test.flux",
-										Source: "agg_window_count_fn",
+										Source: "fn: agg_window_count_fn",
 										Start: ast.Position{
-											Column: 86,
+											Column: 82,
 											Line:   99,
 										},
 									},
 								},
-								Name: "agg_window_count_fn",
-							},
-						}},
-						With: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   99,
+											},
+											File:   "aggregate_window_count_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   99,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 105,
+												Line:   99,
+											},
+											File:   "aggregate_window_count_test.flux",
+											Source: "agg_window_count_fn",
+											Start: ast.Position{
+												Column: 86,
+												Line:   99,
+											},
+										},
+									},
+									Name: "agg_window_count_fn",
+								},
+							}},
+							With: nil,
+						},
 					},
 					Params: nil,
 				},
@@ -1684,11 +1701,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 106,
+						Column: 107,
 						Line:   99,
 					},
 					File:   "aggregate_window_count_test.flux",
-					Source: "test agg_window_count = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_count_fn}",
+					Source: "test agg_window_count = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_count_fn})",
 					Start: ast.Position{
 						Column: 1,
 						Line:   98,
@@ -1781,11 +1798,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 105,
+					Column: 106,
 					Line:   97,
 				},
 				File:   "aggregate_window_mean_test.flux",
-				Source: "package chronograf_test\n \nimport \"testing\"\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.local,67.1\n,,0,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.local,67.4\n,,0,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.local,67.5\n,,0,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.local,67.6\n,,0,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,0,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,1,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.local,92.2\n\n,,2,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,3,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,device,host,_value\n,,0,2018-05-22T00:00:00Z,cpu,percentage,core1,host.local,89.7\n,,0,2018-05-22T00:00:10Z,cpu,percentage,core1,host.local,73.4\n,,0,2018-05-22T00:00:20Z,cpu,percentage,core1,host.local,88.8\n,,0,2018-05-22T00:00:30Z,cpu,percentage,core1,host.local,91.0\n,,0,2018-05-22T00:00:40Z,cpu,percentage,core1,host.local,81.1\n,,0,2018-05-22T00:00:50Z,cpu,percentage,core1,host.local,87.8\n,,1,2018-05-22T00:00:00Z,cpu,percentage,core2,host.local,70.3\n,,1,2018-05-22T00:00:10Z,cpu,percentage,core2,host.local,80.4\n,,1,2018-05-22T00:00:20Z,cpu,percentage,core2,host.local,95.6\n,,1,2018-05-22T00:00:30Z,cpu,percentage,core2,host.local,94.4\n,,1,2018-05-22T00:00:40Z,cpu,percentage,core2,host.local,91.2\n,,1,2018-05-22T00:00:50Z,cpu,percentage,core2,host.local,90.6\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,host,_value\n,,0,2018-05-22T00:00:00Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:10Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:20Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:30Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:40Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:50Z,mem,percentage,host.local,82.5\n,,1,2018-05-22T00:00:00Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:10Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:20Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:30Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:40Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:50Z,mem,percentage,host.remote,35\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,false,true,true,true,true,true,false\n#default,_result,,,,,,,,,,\n,result,table,_start,_stop,_time,_field,_measurement,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:00:30Z,percentage,disk,disk1s1,apfs,host.remote,30\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:01:00Z,percentage,disk,disk1s1,apfs,host.remote,30\n,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:00:30Z,percentage,disk,disk2s1,apfs,host.remote,35\n,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:01:00Z,percentage,disk,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_field,_measurement,host,_value\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:00:30Z,percentage,mem,host.remote,35\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:01:00Z,percentage,mem,host.remote,35\n\"\n\nagg_window_mean_fn = (table=<-) => table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")\n    |> aggregateWindow(every: 30s, fn: mean)\n\ntest agg_window_mean = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_mean_fn}",
+				Source: "package chronograf_test\n \nimport \"testing\"\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.local,67.1\n,,0,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.local,67.4\n,,0,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.local,67.5\n,,0,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.local,67.6\n,,0,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,0,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,1,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.local,92.2\n\n,,2,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,3,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,device,host,_value\n,,0,2018-05-22T00:00:00Z,cpu,percentage,core1,host.local,89.7\n,,0,2018-05-22T00:00:10Z,cpu,percentage,core1,host.local,73.4\n,,0,2018-05-22T00:00:20Z,cpu,percentage,core1,host.local,88.8\n,,0,2018-05-22T00:00:30Z,cpu,percentage,core1,host.local,91.0\n,,0,2018-05-22T00:00:40Z,cpu,percentage,core1,host.local,81.1\n,,0,2018-05-22T00:00:50Z,cpu,percentage,core1,host.local,87.8\n,,1,2018-05-22T00:00:00Z,cpu,percentage,core2,host.local,70.3\n,,1,2018-05-22T00:00:10Z,cpu,percentage,core2,host.local,80.4\n,,1,2018-05-22T00:00:20Z,cpu,percentage,core2,host.local,95.6\n,,1,2018-05-22T00:00:30Z,cpu,percentage,core2,host.local,94.4\n,,1,2018-05-22T00:00:40Z,cpu,percentage,core2,host.local,91.2\n,,1,2018-05-22T00:00:50Z,cpu,percentage,core2,host.local,90.6\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,host,_value\n,,0,2018-05-22T00:00:00Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:10Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:20Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:30Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:40Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:50Z,mem,percentage,host.local,82.5\n,,1,2018-05-22T00:00:00Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:10Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:20Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:30Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:40Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:50Z,mem,percentage,host.remote,35\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,false,true,true,true,true,true,false\n#default,_result,,,,,,,,,,\n,result,table,_start,_stop,_time,_field,_measurement,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:00:30Z,percentage,disk,disk1s1,apfs,host.remote,30\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:01:00Z,percentage,disk,disk1s1,apfs,host.remote,30\n,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:00:30Z,percentage,disk,disk2s1,apfs,host.remote,35\n,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:01:00Z,percentage,disk,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_field,_measurement,host,_value\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:00:30Z,percentage,mem,host.remote,35\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:01:00Z,percentage,mem,host.remote,35\n\"\n\nagg_window_mean_fn = (table=<-) => table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")\n    |> aggregateWindow(every: 30s, fn: mean)\n\ntest agg_window_mean = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_mean_fn})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -2975,11 +2992,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 105,
+							Column: 106,
 							Line:   97,
 						},
 						File:   "aggregate_window_mean_test.flux",
-						Source: "agg_window_mean = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_mean_fn}",
+						Source: "agg_window_mean = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_mean_fn})",
 						Start: ast.Position{
 							Column: 6,
 							Line:   96,
@@ -3009,85 +3026,85 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 105,
+								Column: 106,
 								Line:   97,
 							},
 							File:   "aggregate_window_mean_test.flux",
-							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_mean_fn}",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_mean_fn})",
 							Start: ast.Position{
 								Column: 24,
 								Line:   96,
 							},
 						},
 					},
-					Body: &ast.ObjectExpression{
+					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 105,
+									Column: 106,
 									Line:   97,
 								},
 								File:   "aggregate_window_mean_test.flux",
-								Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_mean_fn}",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_mean_fn})",
 								Start: ast.Position{
-									Column: 3,
+									Column: 2,
 									Line:   97,
 								},
 							},
 						},
-						Properties: []*ast.Property{&ast.Property{
+						Expression: &ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 43,
+										Column: 105,
 										Line:   97,
 									},
 									File:   "aggregate_window_mean_test.flux",
-									Source: "input: testing.loadStorage(csv: inData)",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_mean_fn}",
 									Start: ast.Position{
-										Column: 4,
+										Column: 3,
 										Line:   97,
 									},
 								},
 							},
-							Key: &ast.Identifier{
+							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 9,
+											Column: 43,
 											Line:   97,
 										},
 										File:   "aggregate_window_mean_test.flux",
-										Source: "input",
+										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 4,
 											Line:   97,
 										},
 									},
 								},
-								Name: "input",
-							},
-							Value: &ast.CallExpression{
-								Arguments: []ast.Expression{&ast.ObjectExpression{
+								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 42,
+												Column: 9,
 												Line:   97,
 											},
 											File:   "aggregate_window_mean_test.flux",
-											Source: "csv: inData",
+											Source: "input",
 											Start: ast.Position{
-												Column: 31,
+												Column: 4,
 												Line:   97,
 											},
 										},
 									},
-									Properties: []*ast.Property{&ast.Property{
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -3103,25 +3120,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 34,
-														Line:   97,
-													},
-													File:   "aggregate_window_mean_test.flux",
-													Source: "csv",
-													Start: ast.Position{
-														Column: 31,
-														Line:   97,
-													},
-												},
-											},
-											Name: "csv",
-										},
-										Value: &ast.Identifier{
+										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
@@ -3130,68 +3129,68 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Line:   97,
 													},
 													File:   "aggregate_window_mean_test.flux",
-													Source: "inData",
+													Source: "csv: inData",
 													Start: ast.Position{
-														Column: 36,
+														Column: 31,
 														Line:   97,
 													},
 												},
 											},
-											Name: "inData",
-										},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   97,
+														},
+														File:   "aggregate_window_mean_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   97,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   97,
+														},
+														File:   "aggregate_window_mean_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   97,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
 									}},
-									With: nil,
-								}},
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 43,
-											Line:   97,
-										},
-										File:   "aggregate_window_mean_test.flux",
-										Source: "testing.loadStorage(csv: inData)",
-										Start: ast.Position{
-											Column: 11,
-											Line:   97,
-										},
-									},
-								},
-								Callee: &ast.MemberExpression{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 30,
+												Column: 43,
 												Line:   97,
 											},
 											File:   "aggregate_window_mean_test.flux",
-											Source: "testing.loadStorage",
+											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 11,
 												Line:   97,
 											},
 										},
 									},
-									Object: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 18,
-													Line:   97,
-												},
-												File:   "aggregate_window_mean_test.flux",
-												Source: "testing",
-												Start: ast.Position{
-													Column: 11,
-													Line:   97,
-												},
-											},
-										},
-										Name: "testing",
-									},
-									Property: &ast.Identifier{
+									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -3200,69 +3199,87 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Line:   97,
 												},
 												File:   "aggregate_window_mean_test.flux",
-												Source: "loadStorage",
+												Source: "testing.loadStorage",
 												Start: ast.Position{
-													Column: 19,
+													Column: 11,
 													Line:   97,
 												},
 											},
 										},
-										Name: "loadStorage",
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   97,
+													},
+													File:   "aggregate_window_mean_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   97,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   97,
+													},
+													File:   "aggregate_window_mean_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   97,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
 									},
 								},
-							},
-						}, &ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 80,
-										Line:   97,
-									},
-									File:   "aggregate_window_mean_test.flux",
-									Source: "want: testing.loadMem(csv: outData)",
-									Start: ast.Position{
-										Column: 45,
-										Line:   97,
-									},
-								},
-							},
-							Key: &ast.Identifier{
+							}, &ast.Property{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 49,
+											Column: 80,
 											Line:   97,
 										},
 										File:   "aggregate_window_mean_test.flux",
-										Source: "want",
+										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 45,
 											Line:   97,
 										},
 									},
 								},
-								Name: "want",
-							},
-							Value: &ast.CallExpression{
-								Arguments: []ast.Expression{&ast.ObjectExpression{
+								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 79,
+												Column: 49,
 												Line:   97,
 											},
 											File:   "aggregate_window_mean_test.flux",
-											Source: "csv: outData",
+											Source: "want",
 											Start: ast.Position{
-												Column: 67,
+												Column: 45,
 												Line:   97,
 											},
 										},
 									},
-									Properties: []*ast.Property{&ast.Property{
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -3278,25 +3295,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 70,
-														Line:   97,
-													},
-													File:   "aggregate_window_mean_test.flux",
-													Source: "csv",
-													Start: ast.Position{
-														Column: 67,
-														Line:   97,
-													},
-												},
-											},
-											Name: "csv",
-										},
-										Value: &ast.Identifier{
+										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
@@ -3305,68 +3304,68 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Line:   97,
 													},
 													File:   "aggregate_window_mean_test.flux",
-													Source: "outData",
+													Source: "csv: outData",
 													Start: ast.Position{
-														Column: 72,
+														Column: 67,
 														Line:   97,
 													},
 												},
 											},
-											Name: "outData",
-										},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   97,
+														},
+														File:   "aggregate_window_mean_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   97,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   97,
+														},
+														File:   "aggregate_window_mean_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   97,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
 									}},
-									With: nil,
-								}},
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 80,
-											Line:   97,
-										},
-										File:   "aggregate_window_mean_test.flux",
-										Source: "testing.loadMem(csv: outData)",
-										Start: ast.Position{
-											Column: 51,
-											Line:   97,
-										},
-									},
-								},
-								Callee: &ast.MemberExpression{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 66,
+												Column: 80,
 												Line:   97,
 											},
 											File:   "aggregate_window_mean_test.flux",
-											Source: "testing.loadMem",
+											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 51,
 												Line:   97,
 											},
 										},
 									},
-									Object: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 58,
-													Line:   97,
-												},
-												File:   "aggregate_window_mean_test.flux",
-												Source: "testing",
-												Start: ast.Position{
-													Column: 51,
-													Line:   97,
-												},
-											},
-										},
-										Name: "testing",
-									},
-									Property: &ast.Identifier{
+									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -3375,52 +3374,52 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Line:   97,
 												},
 												File:   "aggregate_window_mean_test.flux",
-												Source: "loadMem",
+												Source: "testing.loadMem",
 												Start: ast.Position{
-													Column: 59,
+													Column: 51,
 													Line:   97,
 												},
 											},
 										},
-										Name: "loadMem",
-									},
-								},
-							},
-						}, &ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 104,
-										Line:   97,
-									},
-									File:   "aggregate_window_mean_test.flux",
-									Source: "fn: agg_window_mean_fn",
-									Start: ast.Position{
-										Column: 82,
-										Line:   97,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 84,
-											Line:   97,
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   97,
+													},
+													File:   "aggregate_window_mean_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   97,
+													},
+												},
+											},
+											Name: "testing",
 										},
-										File:   "aggregate_window_mean_test.flux",
-										Source: "fn",
-										Start: ast.Position{
-											Column: 82,
-											Line:   97,
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   97,
+													},
+													File:   "aggregate_window_mean_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   97,
+													},
+												},
+											},
+											Name: "loadMem",
 										},
 									},
 								},
-								Name: "fn",
-							},
-							Value: &ast.Identifier{
+							}, &ast.Property{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
@@ -3429,17 +3428,52 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Line:   97,
 										},
 										File:   "aggregate_window_mean_test.flux",
-										Source: "agg_window_mean_fn",
+										Source: "fn: agg_window_mean_fn",
 										Start: ast.Position{
-											Column: 86,
+											Column: 82,
 											Line:   97,
 										},
 									},
 								},
-								Name: "agg_window_mean_fn",
-							},
-						}},
-						With: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   97,
+											},
+											File:   "aggregate_window_mean_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   97,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 104,
+												Line:   97,
+											},
+											File:   "aggregate_window_mean_test.flux",
+											Source: "agg_window_mean_fn",
+											Start: ast.Position{
+												Column: 86,
+												Line:   97,
+											},
+										},
+									},
+									Name: "agg_window_mean_fn",
+								},
+							}},
+							With: nil,
+						},
 					},
 					Params: nil,
 				},
@@ -3448,11 +3482,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 105,
+						Column: 106,
 						Line:   97,
 					},
 					File:   "aggregate_window_mean_test.flux",
-					Source: "test agg_window_mean = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_mean_fn}",
+					Source: "test agg_window_mean = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_mean_fn})",
 					Start: ast.Position{
 						Column: 1,
 						Line:   96,
@@ -3545,11 +3579,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 107,
+					Column: 108,
 					Line:   105,
 				},
 				File:   "aggregate_window_median_test.flux",
-				Source: "package chronograf_test\n \nimport \"testing\"\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.local,67.1\n,,0,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.local,67.4\n,,0,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.local,67.5\n,,0,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.local,67.6\n,,0,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,0,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,1,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.local,92.2\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,long\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,2,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,3,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,device,host,_value\n,,0,2018-05-22T00:00:00Z,cpu,percentage,core1,host.local,89.7\n,,0,2018-05-22T00:00:10Z,cpu,percentage,core1,host.local,73.4\n,,0,2018-05-22T00:00:20Z,cpu,percentage,core1,host.local,88.8\n,,0,2018-05-22T00:00:30Z,cpu,percentage,core1,host.local,91.0\n,,0,2018-05-22T00:00:40Z,cpu,percentage,core1,host.local,81.1\n,,0,2018-05-22T00:00:50Z,cpu,percentage,core1,host.local,87.8\n,,1,2018-05-22T00:00:00Z,cpu,percentage,core2,host.local,70.3\n,,1,2018-05-22T00:00:10Z,cpu,percentage,core2,host.local,80.4\n,,1,2018-05-22T00:00:20Z,cpu,percentage,core2,host.local,95.6\n,,1,2018-05-22T00:00:30Z,cpu,percentage,core2,host.local,94.4\n,,1,2018-05-22T00:00:40Z,cpu,percentage,core2,host.local,91.2\n,,1,2018-05-22T00:00:50Z,cpu,percentage,core2,host.local,90.6\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,host,_value\n,,0,2018-05-22T00:00:00Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:10Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:20Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:30Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:40Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:50Z,mem,percentage,host.local,82.5\n,,1,2018-05-22T00:00:00Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:10Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:20Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:30Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:40Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:50Z,mem,percentage,host.remote,35\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_field,_measurement,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:00:30Z,percentage,disk,disk1s1,apfs,host.remote,30\n,,0,2018-05-22T00:00:30Z,2018-05-22T00:01:00Z,percentage,disk,disk1s1,apfs,host.remote,30\n,,1,2018-05-22T00:00:00Z,2018-05-22T00:00:30Z,percentage,disk,disk2s1,apfs,host.remote,35\n,,1,2018-05-22T00:00:30Z,2018-05-22T00:01:00Z,percentage,disk,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,false,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,host,_value\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:00:30Z,percentage,mem,host.remote,35\n,,0,2018-05-22T00:00:30Z,2018-05-22T00:01:00Z,percentage,mem,host.remote,35\n\"\n\nagg_window_median_fn = (table=<-) => table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")\n    |> window(period: 30s)\n    |> toFloat()\n    |> median()\n    |> group(columns: [\"_value\", \"_time\", \"_start\", \"_stop\"], mode: \"except\")\n\ntest agg_window_median = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn}",
+				Source: "package chronograf_test\n \nimport \"testing\"\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.local,67.1\n,,0,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.local,67.4\n,,0,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.local,67.5\n,,0,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.local,67.6\n,,0,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,0,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,1,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.local,92.2\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,long\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,2,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,3,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,device,host,_value\n,,0,2018-05-22T00:00:00Z,cpu,percentage,core1,host.local,89.7\n,,0,2018-05-22T00:00:10Z,cpu,percentage,core1,host.local,73.4\n,,0,2018-05-22T00:00:20Z,cpu,percentage,core1,host.local,88.8\n,,0,2018-05-22T00:00:30Z,cpu,percentage,core1,host.local,91.0\n,,0,2018-05-22T00:00:40Z,cpu,percentage,core1,host.local,81.1\n,,0,2018-05-22T00:00:50Z,cpu,percentage,core1,host.local,87.8\n,,1,2018-05-22T00:00:00Z,cpu,percentage,core2,host.local,70.3\n,,1,2018-05-22T00:00:10Z,cpu,percentage,core2,host.local,80.4\n,,1,2018-05-22T00:00:20Z,cpu,percentage,core2,host.local,95.6\n,,1,2018-05-22T00:00:30Z,cpu,percentage,core2,host.local,94.4\n,,1,2018-05-22T00:00:40Z,cpu,percentage,core2,host.local,91.2\n,,1,2018-05-22T00:00:50Z,cpu,percentage,core2,host.local,90.6\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,host,_value\n,,0,2018-05-22T00:00:00Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:10Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:20Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:30Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:40Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:50Z,mem,percentage,host.local,82.5\n,,1,2018-05-22T00:00:00Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:10Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:20Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:30Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:40Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:50Z,mem,percentage,host.remote,35\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_field,_measurement,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:00:30Z,percentage,disk,disk1s1,apfs,host.remote,30\n,,0,2018-05-22T00:00:30Z,2018-05-22T00:01:00Z,percentage,disk,disk1s1,apfs,host.remote,30\n,,1,2018-05-22T00:00:00Z,2018-05-22T00:00:30Z,percentage,disk,disk2s1,apfs,host.remote,35\n,,1,2018-05-22T00:00:30Z,2018-05-22T00:01:00Z,percentage,disk,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,false,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,host,_value\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:00:30Z,percentage,mem,host.remote,35\n,,0,2018-05-22T00:00:30Z,2018-05-22T00:01:00Z,percentage,mem,host.remote,35\n\"\n\nagg_window_median_fn = (table=<-) => table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")\n    |> window(period: 30s)\n    |> toFloat()\n    |> median()\n    |> group(columns: [\"_value\", \"_time\", \"_start\", \"_stop\"], mode: \"except\")\n\ntest agg_window_median = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -5036,11 +5070,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 107,
+							Column: 108,
 							Line:   105,
 						},
 						File:   "aggregate_window_median_test.flux",
-						Source: "agg_window_median = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn}",
+						Source: "agg_window_median = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn})",
 						Start: ast.Position{
 							Column: 6,
 							Line:   104,
@@ -5070,85 +5104,85 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 107,
+								Column: 108,
 								Line:   105,
 							},
 							File:   "aggregate_window_median_test.flux",
-							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn}",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn})",
 							Start: ast.Position{
 								Column: 26,
 								Line:   104,
 							},
 						},
 					},
-					Body: &ast.ObjectExpression{
+					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 107,
+									Column: 108,
 									Line:   105,
 								},
 								File:   "aggregate_window_median_test.flux",
-								Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn}",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn})",
 								Start: ast.Position{
-									Column: 3,
+									Column: 2,
 									Line:   105,
 								},
 							},
 						},
-						Properties: []*ast.Property{&ast.Property{
+						Expression: &ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 43,
+										Column: 107,
 										Line:   105,
 									},
 									File:   "aggregate_window_median_test.flux",
-									Source: "input: testing.loadStorage(csv: inData)",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn}",
 									Start: ast.Position{
-										Column: 4,
+										Column: 3,
 										Line:   105,
 									},
 								},
 							},
-							Key: &ast.Identifier{
+							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 9,
+											Column: 43,
 											Line:   105,
 										},
 										File:   "aggregate_window_median_test.flux",
-										Source: "input",
+										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 4,
 											Line:   105,
 										},
 									},
 								},
-								Name: "input",
-							},
-							Value: &ast.CallExpression{
-								Arguments: []ast.Expression{&ast.ObjectExpression{
+								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 42,
+												Column: 9,
 												Line:   105,
 											},
 											File:   "aggregate_window_median_test.flux",
-											Source: "csv: inData",
+											Source: "input",
 											Start: ast.Position{
-												Column: 31,
+												Column: 4,
 												Line:   105,
 											},
 										},
 									},
-									Properties: []*ast.Property{&ast.Property{
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -5164,25 +5198,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 34,
-														Line:   105,
-													},
-													File:   "aggregate_window_median_test.flux",
-													Source: "csv",
-													Start: ast.Position{
-														Column: 31,
-														Line:   105,
-													},
-												},
-											},
-											Name: "csv",
-										},
-										Value: &ast.Identifier{
+										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
@@ -5191,68 +5207,68 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Line:   105,
 													},
 													File:   "aggregate_window_median_test.flux",
-													Source: "inData",
+													Source: "csv: inData",
 													Start: ast.Position{
-														Column: 36,
+														Column: 31,
 														Line:   105,
 													},
 												},
 											},
-											Name: "inData",
-										},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   105,
+														},
+														File:   "aggregate_window_median_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   105,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   105,
+														},
+														File:   "aggregate_window_median_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   105,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
 									}},
-									With: nil,
-								}},
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 43,
-											Line:   105,
-										},
-										File:   "aggregate_window_median_test.flux",
-										Source: "testing.loadStorage(csv: inData)",
-										Start: ast.Position{
-											Column: 11,
-											Line:   105,
-										},
-									},
-								},
-								Callee: &ast.MemberExpression{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 30,
+												Column: 43,
 												Line:   105,
 											},
 											File:   "aggregate_window_median_test.flux",
-											Source: "testing.loadStorage",
+											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 11,
 												Line:   105,
 											},
 										},
 									},
-									Object: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 18,
-													Line:   105,
-												},
-												File:   "aggregate_window_median_test.flux",
-												Source: "testing",
-												Start: ast.Position{
-													Column: 11,
-													Line:   105,
-												},
-											},
-										},
-										Name: "testing",
-									},
-									Property: &ast.Identifier{
+									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -5261,69 +5277,87 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Line:   105,
 												},
 												File:   "aggregate_window_median_test.flux",
-												Source: "loadStorage",
+												Source: "testing.loadStorage",
 												Start: ast.Position{
-													Column: 19,
+													Column: 11,
 													Line:   105,
 												},
 											},
 										},
-										Name: "loadStorage",
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   105,
+													},
+													File:   "aggregate_window_median_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   105,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   105,
+													},
+													File:   "aggregate_window_median_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   105,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
 									},
 								},
-							},
-						}, &ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 80,
-										Line:   105,
-									},
-									File:   "aggregate_window_median_test.flux",
-									Source: "want: testing.loadMem(csv: outData)",
-									Start: ast.Position{
-										Column: 45,
-										Line:   105,
-									},
-								},
-							},
-							Key: &ast.Identifier{
+							}, &ast.Property{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 49,
+											Column: 80,
 											Line:   105,
 										},
 										File:   "aggregate_window_median_test.flux",
-										Source: "want",
+										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 45,
 											Line:   105,
 										},
 									},
 								},
-								Name: "want",
-							},
-							Value: &ast.CallExpression{
-								Arguments: []ast.Expression{&ast.ObjectExpression{
+								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 79,
+												Column: 49,
 												Line:   105,
 											},
 											File:   "aggregate_window_median_test.flux",
-											Source: "csv: outData",
+											Source: "want",
 											Start: ast.Position{
-												Column: 67,
+												Column: 45,
 												Line:   105,
 											},
 										},
 									},
-									Properties: []*ast.Property{&ast.Property{
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -5339,25 +5373,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 70,
-														Line:   105,
-													},
-													File:   "aggregate_window_median_test.flux",
-													Source: "csv",
-													Start: ast.Position{
-														Column: 67,
-														Line:   105,
-													},
-												},
-											},
-											Name: "csv",
-										},
-										Value: &ast.Identifier{
+										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
@@ -5366,68 +5382,68 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Line:   105,
 													},
 													File:   "aggregate_window_median_test.flux",
-													Source: "outData",
+													Source: "csv: outData",
 													Start: ast.Position{
-														Column: 72,
+														Column: 67,
 														Line:   105,
 													},
 												},
 											},
-											Name: "outData",
-										},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   105,
+														},
+														File:   "aggregate_window_median_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   105,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   105,
+														},
+														File:   "aggregate_window_median_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   105,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
 									}},
-									With: nil,
-								}},
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 80,
-											Line:   105,
-										},
-										File:   "aggregate_window_median_test.flux",
-										Source: "testing.loadMem(csv: outData)",
-										Start: ast.Position{
-											Column: 51,
-											Line:   105,
-										},
-									},
-								},
-								Callee: &ast.MemberExpression{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 66,
+												Column: 80,
 												Line:   105,
 											},
 											File:   "aggregate_window_median_test.flux",
-											Source: "testing.loadMem",
+											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 51,
 												Line:   105,
 											},
 										},
 									},
-									Object: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 58,
-													Line:   105,
-												},
-												File:   "aggregate_window_median_test.flux",
-												Source: "testing",
-												Start: ast.Position{
-													Column: 51,
-													Line:   105,
-												},
-											},
-										},
-										Name: "testing",
-									},
-									Property: &ast.Identifier{
+									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -5436,52 +5452,52 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Line:   105,
 												},
 												File:   "aggregate_window_median_test.flux",
-												Source: "loadMem",
+												Source: "testing.loadMem",
 												Start: ast.Position{
-													Column: 59,
+													Column: 51,
 													Line:   105,
 												},
 											},
 										},
-										Name: "loadMem",
-									},
-								},
-							},
-						}, &ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 106,
-										Line:   105,
-									},
-									File:   "aggregate_window_median_test.flux",
-									Source: "fn: agg_window_median_fn",
-									Start: ast.Position{
-										Column: 82,
-										Line:   105,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 84,
-											Line:   105,
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   105,
+													},
+													File:   "aggregate_window_median_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   105,
+													},
+												},
+											},
+											Name: "testing",
 										},
-										File:   "aggregate_window_median_test.flux",
-										Source: "fn",
-										Start: ast.Position{
-											Column: 82,
-											Line:   105,
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   105,
+													},
+													File:   "aggregate_window_median_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   105,
+													},
+												},
+											},
+											Name: "loadMem",
 										},
 									},
 								},
-								Name: "fn",
-							},
-							Value: &ast.Identifier{
+							}, &ast.Property{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
@@ -5490,17 +5506,52 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Line:   105,
 										},
 										File:   "aggregate_window_median_test.flux",
-										Source: "agg_window_median_fn",
+										Source: "fn: agg_window_median_fn",
 										Start: ast.Position{
-											Column: 86,
+											Column: 82,
 											Line:   105,
 										},
 									},
 								},
-								Name: "agg_window_median_fn",
-							},
-						}},
-						With: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   105,
+											},
+											File:   "aggregate_window_median_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   105,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 106,
+												Line:   105,
+											},
+											File:   "aggregate_window_median_test.flux",
+											Source: "agg_window_median_fn",
+											Start: ast.Position{
+												Column: 86,
+												Line:   105,
+											},
+										},
+									},
+									Name: "agg_window_median_fn",
+								},
+							}},
+							With: nil,
+						},
 					},
 					Params: nil,
 				},
@@ -5509,11 +5560,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 107,
+						Column: 108,
 						Line:   105,
 					},
 					File:   "aggregate_window_median_test.flux",
-					Source: "test agg_window_median = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn}",
+					Source: "test agg_window_median = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn})",
 					Start: ast.Position{
 						Column: 1,
 						Line:   104,
@@ -5606,11 +5657,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 2,
+					Column: 3,
 					Line:   31,
 				},
 				File:   "buckets_test.flux",
-				Source: "package chronograf_test\n\nimport \"testing\"\n\ninData = \"\n#datatype,string,long,string,string,string,string,long\n#group,false,false,true,false,false,false,false\n#default,_result,,0389eade5af4b000,,,,\n,result,table,organizationID,name,id,retentionPolicy,retentionPeriod\n,,0,,A,0389eade5b34b000,,0\n,,0,,B,042ed3f42d42e000,,0\n\"\n\noutData = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,_result,,\n,result,table,_value\n,,0,A\n,,0,B\n\"\n\nbuckets_fn = (table=<-) => table\n    |> rename(columns: {name: \"_value\"})\n    |> keep(columns: [\"_value\"])\n\ntest buckets = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n}",
+				Source: "package chronograf_test\n\nimport \"testing\"\n\ninData = \"\n#datatype,string,long,string,string,string,string,long\n#group,false,false,true,false,false,false,false\n#default,_result,,0389eade5af4b000,,,,\n,result,table,organizationID,name,id,retentionPolicy,retentionPeriod\n,,0,,A,0389eade5b34b000,,0\n,,0,,B,042ed3f42d42e000,,0\n\"\n\noutData = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,_result,,\n,result,table,_value\n,,0,A\n,,0,B\n\"\n\nbuckets_fn = (table=<-) => table\n    |> rename(columns: {name: \"_value\"})\n    |> keep(columns: [\"_value\"])\n\ntest buckets = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -6162,11 +6213,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 2,
+							Column: 3,
 							Line:   31,
 						},
 						File:   "buckets_test.flux",
-						Source: "buckets = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n}",
+						Source: "buckets = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n})",
 						Start: ast.Position{
 							Column: 6,
 							Line:   27,
@@ -6196,85 +6247,85 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 2,
+								Column: 3,
 								Line:   31,
 							},
 							File:   "buckets_test.flux",
-							Source: "() => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n}",
+							Source: "() => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n})",
 							Start: ast.Position{
 								Column: 16,
 								Line:   27,
 							},
 						},
 					},
-					Body: &ast.ObjectExpression{
+					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 2,
+									Column: 3,
 									Line:   31,
 								},
 								File:   "buckets_test.flux",
-								Source: "{\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n}",
+								Source: "({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n})",
 								Start: ast.Position{
-									Column: 23,
+									Column: 22,
 									Line:   27,
 								},
 							},
 						},
-						Properties: []*ast.Property{&ast.Property{
+						Expression: &ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 44,
-										Line:   28,
+										Column: 2,
+										Line:   31,
 									},
 									File:   "buckets_test.flux",
-									Source: "input: testing.loadStorage(csv: inData)",
+									Source: "{\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n}",
 									Start: ast.Position{
-										Column: 5,
-										Line:   28,
+										Column: 23,
+										Line:   27,
 									},
 								},
 							},
-							Key: &ast.Identifier{
+							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 10,
+											Column: 44,
 											Line:   28,
 										},
 										File:   "buckets_test.flux",
-										Source: "input",
+										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 5,
 											Line:   28,
 										},
 									},
 								},
-								Name: "input",
-							},
-							Value: &ast.CallExpression{
-								Arguments: []ast.Expression{&ast.ObjectExpression{
+								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 43,
+												Column: 10,
 												Line:   28,
 											},
 											File:   "buckets_test.flux",
-											Source: "csv: inData",
+											Source: "input",
 											Start: ast.Position{
-												Column: 32,
+												Column: 5,
 												Line:   28,
 											},
 										},
 									},
-									Properties: []*ast.Property{&ast.Property{
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -6290,25 +6341,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 35,
-														Line:   28,
-													},
-													File:   "buckets_test.flux",
-													Source: "csv",
-													Start: ast.Position{
-														Column: 32,
-														Line:   28,
-													},
-												},
-											},
-											Name: "csv",
-										},
-										Value: &ast.Identifier{
+										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
@@ -6317,68 +6350,68 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Line:   28,
 													},
 													File:   "buckets_test.flux",
-													Source: "inData",
+													Source: "csv: inData",
 													Start: ast.Position{
-														Column: 37,
+														Column: 32,
 														Line:   28,
 													},
 												},
 											},
-											Name: "inData",
-										},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 35,
+															Line:   28,
+														},
+														File:   "buckets_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 32,
+															Line:   28,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 43,
+															Line:   28,
+														},
+														File:   "buckets_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 37,
+															Line:   28,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
 									}},
-									With: nil,
-								}},
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 44,
-											Line:   28,
-										},
-										File:   "buckets_test.flux",
-										Source: "testing.loadStorage(csv: inData)",
-										Start: ast.Position{
-											Column: 12,
-											Line:   28,
-										},
-									},
-								},
-								Callee: &ast.MemberExpression{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 31,
+												Column: 44,
 												Line:   28,
 											},
 											File:   "buckets_test.flux",
-											Source: "testing.loadStorage",
+											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 12,
 												Line:   28,
 											},
 										},
 									},
-									Object: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 19,
-													Line:   28,
-												},
-												File:   "buckets_test.flux",
-												Source: "testing",
-												Start: ast.Position{
-													Column: 12,
-													Line:   28,
-												},
-											},
-										},
-										Name: "testing",
-									},
-									Property: &ast.Identifier{
+									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -6387,69 +6420,87 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Line:   28,
 												},
 												File:   "buckets_test.flux",
-												Source: "loadStorage",
+												Source: "testing.loadStorage",
 												Start: ast.Position{
-													Column: 20,
+													Column: 12,
 													Line:   28,
 												},
 											},
 										},
-										Name: "loadStorage",
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 19,
+														Line:   28,
+													},
+													File:   "buckets_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 12,
+														Line:   28,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 31,
+														Line:   28,
+													},
+													File:   "buckets_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 20,
+														Line:   28,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
 									},
 								},
-							},
-						}, &ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 40,
-										Line:   29,
-									},
-									File:   "buckets_test.flux",
-									Source: "want: testing.loadMem(csv: outData)",
-									Start: ast.Position{
-										Column: 5,
-										Line:   29,
-									},
-								},
-							},
-							Key: &ast.Identifier{
+							}, &ast.Property{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 9,
+											Column: 40,
 											Line:   29,
 										},
 										File:   "buckets_test.flux",
-										Source: "want",
+										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 5,
 											Line:   29,
 										},
 									},
 								},
-								Name: "want",
-							},
-							Value: &ast.CallExpression{
-								Arguments: []ast.Expression{&ast.ObjectExpression{
+								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 39,
+												Column: 9,
 												Line:   29,
 											},
 											File:   "buckets_test.flux",
-											Source: "csv: outData",
+											Source: "want",
 											Start: ast.Position{
-												Column: 27,
+												Column: 5,
 												Line:   29,
 											},
 										},
 									},
-									Properties: []*ast.Property{&ast.Property{
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -6465,25 +6516,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 30,
-														Line:   29,
-													},
-													File:   "buckets_test.flux",
-													Source: "csv",
-													Start: ast.Position{
-														Column: 27,
-														Line:   29,
-													},
-												},
-											},
-											Name: "csv",
-										},
-										Value: &ast.Identifier{
+										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
@@ -6492,68 +6525,68 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Line:   29,
 													},
 													File:   "buckets_test.flux",
-													Source: "outData",
+													Source: "csv: outData",
 													Start: ast.Position{
-														Column: 32,
+														Column: 27,
 														Line:   29,
 													},
 												},
 											},
-											Name: "outData",
-										},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 30,
+															Line:   29,
+														},
+														File:   "buckets_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 27,
+															Line:   29,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 39,
+															Line:   29,
+														},
+														File:   "buckets_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 32,
+															Line:   29,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
 									}},
-									With: nil,
-								}},
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 40,
-											Line:   29,
-										},
-										File:   "buckets_test.flux",
-										Source: "testing.loadMem(csv: outData)",
-										Start: ast.Position{
-											Column: 11,
-											Line:   29,
-										},
-									},
-								},
-								Callee: &ast.MemberExpression{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 26,
+												Column: 40,
 												Line:   29,
 											},
 											File:   "buckets_test.flux",
-											Source: "testing.loadMem",
+											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 11,
 												Line:   29,
 											},
 										},
 									},
-									Object: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 18,
-													Line:   29,
-												},
-												File:   "buckets_test.flux",
-												Source: "testing",
-												Start: ast.Position{
-													Column: 11,
-													Line:   29,
-												},
-											},
-										},
-										Name: "testing",
-									},
-									Property: &ast.Identifier{
+									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -6562,52 +6595,52 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Line:   29,
 												},
 												File:   "buckets_test.flux",
-												Source: "loadMem",
+												Source: "testing.loadMem",
 												Start: ast.Position{
-													Column: 19,
+													Column: 11,
 													Line:   29,
 												},
 											},
 										},
-										Name: "loadMem",
-									},
-								},
-							},
-						}, &ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 19,
-										Line:   30,
-									},
-									File:   "buckets_test.flux",
-									Source: "fn: buckets_fn",
-									Start: ast.Position{
-										Column: 5,
-										Line:   30,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 7,
-											Line:   30,
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   29,
+													},
+													File:   "buckets_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   29,
+													},
+												},
+											},
+											Name: "testing",
 										},
-										File:   "buckets_test.flux",
-										Source: "fn",
-										Start: ast.Position{
-											Column: 5,
-											Line:   30,
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 26,
+														Line:   29,
+													},
+													File:   "buckets_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 19,
+														Line:   29,
+													},
+												},
+											},
+											Name: "loadMem",
 										},
 									},
 								},
-								Name: "fn",
-							},
-							Value: &ast.Identifier{
+							}, &ast.Property{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
@@ -6616,17 +6649,52 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Line:   30,
 										},
 										File:   "buckets_test.flux",
-										Source: "buckets_fn",
+										Source: "fn: buckets_fn",
 										Start: ast.Position{
-											Column: 9,
+											Column: 5,
 											Line:   30,
 										},
 									},
 								},
-								Name: "buckets_fn",
-							},
-						}},
-						With: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 7,
+												Line:   30,
+											},
+											File:   "buckets_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 5,
+												Line:   30,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 19,
+												Line:   30,
+											},
+											File:   "buckets_test.flux",
+											Source: "buckets_fn",
+											Start: ast.Position{
+												Column: 9,
+												Line:   30,
+											},
+										},
+									},
+									Name: "buckets_fn",
+								},
+							}},
+							With: nil,
+						},
 					},
 					Params: nil,
 				},
@@ -6635,11 +6703,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 2,
+						Column: 3,
 						Line:   31,
 					},
 					File:   "buckets_test.flux",
-					Source: "test buckets = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n}",
+					Source: "test buckets = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n})",
 					Start: ast.Position{
 						Column: 1,
 						Line:   27,

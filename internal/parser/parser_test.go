@@ -2261,28 +2261,31 @@ a = 5.0
 							BaseNode: base("2:13", "2:43"),
 							Operator: ast.OrOperator,
 							Left: &ast.UnaryExpression{
-								BaseNode: base("2:13", "2:32"),
+								BaseNode: base("2:13", "2:33"),
 								Operator: ast.NotOperator,
-								Argument: &ast.BinaryExpression{
-									BaseNode: base("2:18", "2:32"),
-									Operator: ast.EqualOperator,
-									Left: &ast.CallExpression{
-										BaseNode: base("2:18", "2:21"),
-										Callee: &ast.Identifier{
-											BaseNode: base("2:18", "2:19"),
-											Name:     "f",
+								Argument: &ast.ParenExpression{
+									BaseNode: base("2:17", "2:33"),
+									Expression: &ast.BinaryExpression{
+										BaseNode: base("2:18", "2:32"),
+										Operator: ast.EqualOperator,
+										Left: &ast.CallExpression{
+											BaseNode: base("2:18", "2:21"),
+											Callee: &ast.Identifier{
+												BaseNode: base("2:18", "2:19"),
+												Name:     "f",
+											},
 										},
-									},
-									Right: &ast.BinaryExpression{
-										BaseNode: base("2:25", "2:32"),
-										Operator: ast.MultiplicationOperator,
-										Left: &ast.FloatLiteral{
-											BaseNode: base("2:25", "2:28"),
-											Value:    6,
-										},
-										Right: &ast.Identifier{
-											BaseNode: base("2:31", "2:32"),
-											Name:     "x",
+										Right: &ast.BinaryExpression{
+											BaseNode: base("2:25", "2:32"),
+											Operator: ast.MultiplicationOperator,
+											Left: &ast.FloatLiteral{
+												BaseNode: base("2:25", "2:28"),
+												Value:    6,
+											},
+											Right: &ast.Identifier{
+												BaseNode: base("2:31", "2:32"),
+												Name:     "x",
+											},
 										},
 									},
 								},
@@ -2304,45 +2307,51 @@ a = 5.0
 			raw: `
             (not (f() == 6.0 * x) or fail())`,
 			want: &ast.File{
-				BaseNode: base("2:13", "2:44"),
+				BaseNode: base("2:13", "2:45"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
-						BaseNode: base("2:14", "2:44"),
-						Expression: &ast.LogicalExpression{
-							BaseNode: base("2:14", "2:44"),
-							Operator: ast.OrOperator,
-							Left: &ast.UnaryExpression{
-								BaseNode: base("2:14", "2:33"),
-								Operator: ast.NotOperator,
-								Argument: &ast.BinaryExpression{
-									BaseNode: base("2:19", "2:33"),
-									Operator: ast.EqualOperator,
-									Left: &ast.CallExpression{
-										BaseNode: base("2:19", "2:22"),
-										Callee: &ast.Identifier{
-											BaseNode: base("2:19", "2:20"),
-											Name:     "f",
-										},
-									},
-									Right: &ast.BinaryExpression{
-										BaseNode: base("2:26", "2:33"),
-										Operator: ast.MultiplicationOperator,
-										Left: &ast.FloatLiteral{
-											BaseNode: base("2:26", "2:29"),
-											Value:    6,
-										},
-										Right: &ast.Identifier{
-											BaseNode: base("2:32", "2:33"),
-											Name:     "x",
+						BaseNode: base("2:13", "2:45"),
+						Expression: &ast.ParenExpression{
+							BaseNode: base("2:13", "2:45"),
+							Expression: &ast.LogicalExpression{
+								BaseNode: base("2:14", "2:44"),
+								Operator: ast.OrOperator,
+								Left: &ast.UnaryExpression{
+									BaseNode: base("2:14", "2:34"),
+									Operator: ast.NotOperator,
+									Argument: &ast.ParenExpression{
+										BaseNode: base("2:18", "2:34"),
+										Expression: &ast.BinaryExpression{
+											BaseNode: base("2:19", "2:33"),
+											Operator: ast.EqualOperator,
+											Left: &ast.CallExpression{
+												BaseNode: base("2:19", "2:22"),
+												Callee: &ast.Identifier{
+													BaseNode: base("2:19", "2:20"),
+													Name:     "f",
+												},
+											},
+											Right: &ast.BinaryExpression{
+												BaseNode: base("2:26", "2:33"),
+												Operator: ast.MultiplicationOperator,
+												Left: &ast.FloatLiteral{
+													BaseNode: base("2:26", "2:29"),
+													Value:    6,
+												},
+												Right: &ast.Identifier{
+													BaseNode: base("2:32", "2:33"),
+													Name:     "x",
+												},
+											},
 										},
 									},
 								},
-							},
-							Right: &ast.CallExpression{
-								BaseNode: base("2:38", "2:44"),
-								Callee: &ast.Identifier{
-									BaseNode: base("2:38", "2:42"),
-									Name:     "fail",
+								Right: &ast.CallExpression{
+									BaseNode: base("2:38", "2:44"),
+									Callee: &ast.Identifier{
+										BaseNode: base("2:38", "2:42"),
+										Name:     "fail",
+									},
 								},
 							},
 						},
@@ -2522,27 +2531,30 @@ a = 5.0
 			name: "binary operator precedence - double subtraction with parens",
 			raw:  `1 - (2 - 3)`,
 			want: &ast.File{
-				BaseNode: base("1:1", "1:11"),
+				BaseNode: base("1:1", "1:12"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
-						BaseNode: base("1:1", "1:11"),
+						BaseNode: base("1:1", "1:12"),
 						Expression: &ast.BinaryExpression{
-							BaseNode: base("1:1", "1:11"),
+							BaseNode: base("1:1", "1:12"),
 							Operator: ast.SubtractionOperator,
 							Left: &ast.IntegerLiteral{
 								BaseNode: base("1:1", "1:2"),
 								Value:    1,
 							},
-							Right: &ast.BinaryExpression{
-								BaseNode: base("1:6", "1:11"),
-								Operator: ast.SubtractionOperator,
-								Left: &ast.IntegerLiteral{
-									BaseNode: base("1:6", "1:7"),
-									Value:    2,
-								},
-								Right: &ast.IntegerLiteral{
-									BaseNode: base("1:10", "1:11"),
-									Value:    3,
+							Right: &ast.ParenExpression{
+								BaseNode: base("1:5", "1:12"),
+								Expression: &ast.BinaryExpression{
+									BaseNode: base("1:6", "1:11"),
+									Operator: ast.SubtractionOperator,
+									Left: &ast.IntegerLiteral{
+										BaseNode: base("1:6", "1:7"),
+										Value:    2,
+									},
+									Right: &ast.IntegerLiteral{
+										BaseNode: base("1:10", "1:11"),
+										Value:    3,
+									},
 								},
 							},
 						},
@@ -2586,27 +2598,30 @@ a = 5.0
 			name: "binary operator precedence - double sum with parens",
 			raw:  `1 + (2 + 3)`,
 			want: &ast.File{
-				BaseNode: base("1:1", "1:11"),
+				BaseNode: base("1:1", "1:12"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
-						BaseNode: base("1:1", "1:11"),
+						BaseNode: base("1:1", "1:12"),
 						Expression: &ast.BinaryExpression{
-							BaseNode: base("1:1", "1:11"),
+							BaseNode: base("1:1", "1:12"),
 							Operator: ast.AdditionOperator,
 							Left: &ast.IntegerLiteral{
 								BaseNode: base("1:1", "1:2"),
 								Value:    1,
 							},
-							Right: &ast.BinaryExpression{
-								BaseNode: base("1:6", "1:11"),
-								Operator: ast.AdditionOperator,
-								Left: &ast.IntegerLiteral{
-									BaseNode: base("1:6", "1:7"),
-									Value:    2,
-								},
-								Right: &ast.IntegerLiteral{
-									BaseNode: base("1:10", "1:11"),
-									Value:    3,
+							Right: &ast.ParenExpression{
+								BaseNode: base("1:5", "1:12"),
+								Expression: &ast.BinaryExpression{
+									BaseNode: base("1:6", "1:11"),
+									Operator: ast.AdditionOperator,
+									Left: &ast.IntegerLiteral{
+										BaseNode: base("1:6", "1:7"),
+										Value:    2,
+									},
+									Right: &ast.IntegerLiteral{
+										BaseNode: base("1:10", "1:11"),
+										Value:    3,
+									},
 								},
 							},
 						},
@@ -3053,23 +3068,26 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/`,
 			name: "logical operators precedence 7",
 			raw:  `not (a or b)`,
 			want: &ast.File{
-				BaseNode: base("1:1", "1:12"),
+				BaseNode: base("1:1", "1:13"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
-						BaseNode: base("1:1", "1:12"),
+						BaseNode: base("1:1", "1:13"),
 						Expression: &ast.UnaryExpression{
-							BaseNode: base("1:1", "1:12"),
+							BaseNode: base("1:1", "1:13"),
 							Operator: ast.NotOperator,
-							Argument: &ast.LogicalExpression{
-								BaseNode: base("1:6", "1:12"),
-								Operator: ast.OrOperator,
-								Left: &ast.Identifier{
-									BaseNode: base("1:6", "1:7"),
-									Name:     "a",
-								},
-								Right: &ast.Identifier{
-									BaseNode: base("1:11", "1:12"),
-									Name:     "b",
+							Argument: &ast.ParenExpression{
+								BaseNode: base("1:5", "1:13"),
+								Expression: &ast.LogicalExpression{
+									BaseNode: base("1:6", "1:12"),
+									Operator: ast.OrOperator,
+									Left: &ast.Identifier{
+										BaseNode: base("1:6", "1:7"),
+										Name:     "a",
+									},
+									Right: &ast.Identifier{
+										BaseNode: base("1:11", "1:12"),
+										Name:     "b",
+									},
 								},
 							},
 						},
@@ -3081,23 +3099,26 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/`,
 			name: "logical operators precedence 8",
 			raw:  `not (a and b)`,
 			want: &ast.File{
-				BaseNode: base("1:1", "1:13"),
+				BaseNode: base("1:1", "1:14"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
-						BaseNode: base("1:1", "1:13"),
+						BaseNode: base("1:1", "1:14"),
 						Expression: &ast.UnaryExpression{
-							BaseNode: base("1:1", "1:13"),
+							BaseNode: base("1:1", "1:14"),
 							Operator: ast.NotOperator,
-							Argument: &ast.LogicalExpression{
-								BaseNode: base("1:6", "1:13"),
-								Operator: ast.AndOperator,
-								Left: &ast.Identifier{
-									BaseNode: base("1:6", "1:7"),
-									Name:     "a",
-								},
-								Right: &ast.Identifier{
-									BaseNode: base("1:12", "1:13"),
-									Name:     "b",
+							Argument: &ast.ParenExpression{
+								BaseNode: base("1:5", "1:14"),
+								Expression: &ast.LogicalExpression{
+									BaseNode: base("1:6", "1:13"),
+									Operator: ast.AndOperator,
+									Left: &ast.Identifier{
+										BaseNode: base("1:6", "1:7"),
+										Name:     "a",
+									},
+									Right: &ast.Identifier{
+										BaseNode: base("1:12", "1:13"),
+										Name:     "b",
+									},
 								},
 							},
 						},
@@ -3112,20 +3133,23 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/`,
 				BaseNode: base("1:1", "1:15"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
-						BaseNode: base("1:2", "1:15"),
+						BaseNode: base("1:1", "1:15"),
 						Expression: &ast.LogicalExpression{
-							BaseNode: base("1:2", "1:15"),
+							BaseNode: base("1:1", "1:15"),
 							Operator: ast.AndOperator,
-							Left: &ast.LogicalExpression{
-								BaseNode: base("1:2", "1:8"),
-								Operator: ast.OrOperator,
-								Left: &ast.Identifier{
-									BaseNode: base("1:2", "1:3"),
-									Name:     "a",
-								},
-								Right: &ast.Identifier{
-									BaseNode: base("1:7", "1:8"),
-									Name:     "b",
+							Left: &ast.ParenExpression{
+								BaseNode: base("1:1", "1:9"),
+								Expression: &ast.LogicalExpression{
+									BaseNode: base("1:2", "1:8"),
+									Operator: ast.OrOperator,
+									Left: &ast.Identifier{
+										BaseNode: base("1:2", "1:3"),
+										Name:     "a",
+									},
+									Right: &ast.Identifier{
+										BaseNode: base("1:7", "1:8"),
+										Name:     "b",
+									},
 								},
 							},
 							Right: &ast.Identifier{
@@ -3141,27 +3165,30 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/`,
 			name: "logical operators precedence 10",
 			raw:  `a and (b or c)`,
 			want: &ast.File{
-				BaseNode: base("1:1", "1:14"),
+				BaseNode: base("1:1", "1:15"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
-						BaseNode: base("1:1", "1:14"),
+						BaseNode: base("1:1", "1:15"),
 						Expression: &ast.LogicalExpression{
-							BaseNode: base("1:1", "1:14"),
+							BaseNode: base("1:1", "1:15"),
 							Operator: ast.AndOperator,
 							Left: &ast.Identifier{
 								BaseNode: base("1:1", "1:2"),
 								Name:     "a",
 							},
-							Right: &ast.LogicalExpression{
-								BaseNode: base("1:8", "1:14"),
-								Operator: ast.OrOperator,
-								Left: &ast.Identifier{
-									BaseNode: base("1:8", "1:9"),
-									Name:     "b",
-								},
-								Right: &ast.Identifier{
-									BaseNode: base("1:13", "1:14"),
-									Name:     "c",
+							Right: &ast.ParenExpression{
+								BaseNode: base("1:7", "1:15"),
+								Expression: &ast.LogicalExpression{
+									BaseNode: base("1:8", "1:14"),
+									Operator: ast.OrOperator,
+									Left: &ast.Identifier{
+										BaseNode: base("1:8", "1:9"),
+										Name:     "b",
+									},
+									Right: &ast.Identifier{
+										BaseNode: base("1:13", "1:14"),
+										Name:     "c",
+									},
 								},
 							},
 						},
@@ -3189,21 +3216,24 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/`,
 								Operator: ast.NotOperator,
 								Argument: &ast.CallExpression{
 									BaseNode: ast.BaseNode{
-										Loc: loc("1:6", "2:9"),
+										Loc: loc("1:5", "2:9"),
 										Errors: []ast.Error{
 											{Msg: `expected comma in property list, got OR ("or")`},
 										},
 									},
-									Callee: &ast.LogicalExpression{
-										BaseNode: base("1:6", "1:13"),
-										Operator: ast.AndOperator,
-										Left: &ast.Identifier{
-											BaseNode: base("1:6", "1:7"),
-											Name:     "a",
-										},
-										Right: &ast.Identifier{
-											BaseNode: base("1:12", "1:13"),
-											Name:     "b",
+									Callee: &ast.ParenExpression{
+										BaseNode: base("1:5", "1:14"),
+										Expression: &ast.LogicalExpression{
+											BaseNode: base("1:6", "1:13"),
+											Operator: ast.AndOperator,
+											Left: &ast.Identifier{
+												BaseNode: base("1:6", "1:7"),
+												Name:     "a",
+											},
+											Right: &ast.Identifier{
+												BaseNode: base("1:12", "1:13"),
+												Name:     "b",
+											},
 										},
 									},
 									Arguments: []ast.Expression{
@@ -3311,16 +3341,16 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/`,
 			name: "arrow function return map",
 			raw:  `toMap = (r) =>({r:r})`,
 			want: &ast.File{
-				BaseNode: base("1:1", "1:21"),
+				BaseNode: base("1:1", "1:22"),
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
-						BaseNode: base("1:1", "1:21"),
+						BaseNode: base("1:1", "1:22"),
 						ID: &ast.Identifier{
 							BaseNode: base("1:1", "1:6"),
 							Name:     "toMap",
 						},
 						Init: &ast.FunctionExpression{
-							BaseNode: base("1:9", "1:21"),
+							BaseNode: base("1:9", "1:22"),
 							Params: []*ast.Property{
 								{
 									BaseNode: base("1:10", "1:11"),
@@ -3330,18 +3360,21 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/`,
 									},
 								},
 							},
-							Body: &ast.ObjectExpression{
-								BaseNode: base("1:16", "1:21"),
-								Properties: []*ast.Property{
-									{
-										BaseNode: base("1:17", "1:20"),
-										Key: &ast.Identifier{
-											BaseNode: base("1:17", "1:18"),
-											Name:     "r",
-										},
-										Value: &ast.Identifier{
-											BaseNode: base("1:19", "1:20"),
-											Name:     "r",
+							Body: &ast.ParenExpression{
+								BaseNode: base("1:15", "1:22"),
+								Expression: &ast.ObjectExpression{
+									BaseNode: base("1:16", "1:21"),
+									Properties: []*ast.Property{
+										{
+											BaseNode: base("1:17", "1:20"),
+											Key: &ast.Identifier{
+												BaseNode: base("1:17", "1:18"),
+												Name:     "r",
+											},
+											Value: &ast.Identifier{
+												BaseNode: base("1:19", "1:20"),
+												Name:     "r",
+											},
 										},
 									},
 								},
@@ -3697,21 +3730,24 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/`,
 								},
 							},
 							Consequent: &ast.UnaryExpression{
-								BaseNode: base("1:46", "1:63"),
+								BaseNode: base("1:46", "1:64"),
 								Operator: ast.NotOperator,
 								Argument: &ast.UnaryExpression{
-									BaseNode: base("1:50", "1:63"),
+									BaseNode: base("1:50", "1:64"),
 									Operator: ast.ExistsOperator,
-									Argument: &ast.BinaryExpression{
-										BaseNode: base("1:58", "1:63"),
-										Operator: ast.SubtractionOperator,
-										Left: &ast.Identifier{
-											BaseNode: base("1:58", "1:59"),
-											Name:     "g",
-										},
-										Right: &ast.Identifier{
-											BaseNode: base("1:62", "1:63"),
-											Name:     "h",
+									Argument: &ast.ParenExpression{
+										BaseNode: base("1:57", "1:64"),
+										Expression: &ast.BinaryExpression{
+											BaseNode: base("1:58", "1:63"),
+											Operator: ast.SubtractionOperator,
+											Left: &ast.Identifier{
+												BaseNode: base("1:58", "1:59"),
+												Name:     "g",
+											},
+											Right: &ast.Identifier{
+												BaseNode: base("1:62", "1:63"),
+												Name:     "h",
+											},
 										},
 									},
 								},
@@ -4951,31 +4987,34 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 													},
 												},
 												Body: &ast.BinaryExpression{
-													BaseNode: base("10:45", "10:85"),
+													BaseNode: base("10:44", "10:85"),
 													Operator: ast.DivisionOperator,
-													Left: &ast.BinaryExpression{
-														BaseNode: base("10:45", "10:70"),
-														Operator: ast.SubtractionOperator,
-														Left: &ast.MemberExpression{
-															BaseNode: base("10:45", "10:56"),
-															Object: &ast.Identifier{
-																BaseNode: base("10:45", "10:46"),
-																Name:     "a",
+													Left: &ast.ParenExpression{
+														BaseNode: base("10:44", "10:71"),
+														Expression: &ast.BinaryExpression{
+															BaseNode: base("10:45", "10:70"),
+															Operator: ast.SubtractionOperator,
+															Left: &ast.MemberExpression{
+																BaseNode: base("10:45", "10:56"),
+																Object: &ast.Identifier{
+																	BaseNode: base("10:45", "10:46"),
+																	Name:     "a",
+																},
+																Property: &ast.StringLiteral{
+																	BaseNode: base("10:47", "10:55"),
+																	Value:    "_field",
+																},
 															},
-															Property: &ast.StringLiteral{
-																BaseNode: base("10:47", "10:55"),
-																Value:    "_field",
-															},
-														},
-														Right: &ast.MemberExpression{
-															BaseNode: base("10:59", "10:70"),
-															Object: &ast.Identifier{
-																BaseNode: base("10:59", "10:60"),
-																Name:     "b",
-															},
-															Property: &ast.StringLiteral{
-																BaseNode: base("10:61", "10:69"),
-																Value:    "_field",
+															Right: &ast.MemberExpression{
+																BaseNode: base("10:59", "10:70"),
+																Object: &ast.Identifier{
+																	BaseNode: base("10:59", "10:60"),
+																	Name:     "b",
+																},
+																Property: &ast.StringLiteral{
+																	BaseNode: base("10:61", "10:69"),
+																	Value:    "_field",
+																},
 															},
 														},
 													},
@@ -5353,26 +5392,27 @@ string"
 			name: "multiple idents in parens",
 			raw:  `(a b)`,
 			want: &ast.File{
-				// TODO(jsternberg): Parens aren't recorded correctly
-				// in the source and are mostly ignored.
-				BaseNode: base("1:1", "1:5"),
+				BaseNode: base("1:1", "1:6"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
-						BaseNode: base("1:2", "1:5"),
-						Expression: &ast.BinaryExpression{
-							BaseNode: ast.BaseNode{
-								Loc: loc("1:2", "1:5"),
-								Errors: []ast.Error{
-									{Msg: "expected an operator between two expressions"},
+						BaseNode: base("1:1", "1:6"),
+						Expression: &ast.ParenExpression{
+							BaseNode: base("1:1", "1:6"),
+							Expression: &ast.BinaryExpression{
+								BaseNode: ast.BaseNode{
+									Loc: loc("1:2", "1:5"),
+									Errors: []ast.Error{
+										{Msg: "expected an operator between two expressions"},
+									},
 								},
-							},
-							Left: &ast.Identifier{
-								BaseNode: base("1:2", "1:3"),
-								Name:     "a",
-							},
-							Right: &ast.Identifier{
-								BaseNode: base("1:4", "1:5"),
-								Name:     "b",
+								Left: &ast.Identifier{
+									BaseNode: base("1:2", "1:3"),
+									Name:     "a",
+								},
+								Right: &ast.Identifier{
+									BaseNode: base("1:4", "1:5"),
+									Name:     "b",
+								},
 							},
 						},
 					},
@@ -5384,20 +5424,26 @@ string"
 			name: "missing left hand side",
 			raw:  `(*b)`,
 			want: &ast.File{
-				// TODO(jsternberg): Parens aren't recorded correctly
-				// in the source and are mostly ignored.
+				BaseNode: base("1:1", "1:5"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
-						Expression: &ast.BinaryExpression{
-							BaseNode: ast.BaseNode{
-								Errors: []ast.Error{
-									{Msg: "missing left hand side of expression"},
+						BaseNode: base("1:1", "1:5"),
+						Expression: &ast.ParenExpression{
+							BaseNode: base("1:1", "1:5"),
+							Expression: &ast.BinaryExpression{
+								Left: nil,
+								// TODO(affo): when one operand in the BinaryExpression is nil, the location is not reported.
+								//  This is because of locStart/locEnd implementation.
+								BaseNode: ast.BaseNode{
+									Errors: []ast.Error{
+										{Msg: "missing left hand side of expression"},
+									},
 								},
-							},
-							Operator: ast.MultiplicationOperator,
-							Right: &ast.Identifier{
-								BaseNode: base("1:3", "1:4"),
-								Name:     "b",
+								Operator: ast.MultiplicationOperator,
+								Right: &ast.Identifier{
+									BaseNode: base("1:3", "1:4"),
+									Name:     "b",
+								},
 							},
 						},
 					},
@@ -5409,20 +5455,26 @@ string"
 			name: "missing right hand side",
 			raw:  `(a*)`,
 			want: &ast.File{
-				// TODO(jsternberg): Parens aren't recorded correctly
-				// in the source and are mostly ignored.
+				BaseNode: base("1:1", "1:5"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
-						Expression: &ast.BinaryExpression{
-							BaseNode: ast.BaseNode{
-								Errors: []ast.Error{
-									{Msg: "missing right hand side of expression"},
+						BaseNode: base("1:1", "1:5"),
+						Expression: &ast.ParenExpression{
+							BaseNode: base("1:1", "1:5"),
+							Expression: &ast.BinaryExpression{
+								Right: nil,
+								// TODO(affo): when one operand in the BinaryExpression is nil, the location is not reported.
+								//  This is because of locStart/locEnd implementation.
+								BaseNode: ast.BaseNode{
+									Errors: []ast.Error{
+										{Msg: "missing right hand side of expression"},
+									},
 								},
-							},
-							Operator: ast.MultiplicationOperator,
-							Left: &ast.Identifier{
-								BaseNode: base("1:2", "1:3"),
-								Name:     "a",
+								Operator: ast.MultiplicationOperator,
+								Left: &ast.Identifier{
+									BaseNode: base("1:2", "1:3"),
+									Name:     "a",
+								},
 							},
 						},
 					},
@@ -5434,20 +5486,23 @@ string"
 			name: "illegal expression",
 			raw:  `(@)`,
 			want: &ast.File{
-				// TODO(jsternberg): Parens aren't recorded correctly
-				// in the source and are mostly ignored.
+				BaseNode: base("1:1", "1:4"),
 				Body: []ast.Statement{
 					&ast.ExpressionStatement{
-						BaseNode: ast.BaseNode{
-							Errors: []ast.Error{
-								{Msg: "invalid expression @1:2-1:3: @"},
-							},
-						},
+						BaseNode: base("1:1", "1:4"),
 						// TODO(jsternberg): This should be a BadExpression.
 						// We are adding this though to ensure that
 						// parseExpressionWhile does not end up in an infinite
 						// loop.
-						Expression: nil,
+						Expression: &ast.ParenExpression{
+							BaseNode: ast.BaseNode{
+								Loc: loc("1:1", "1:4"),
+								Errors: []ast.Error{
+									{Msg: "invalid expression @1:2-1:3: @"},
+								},
+							},
+							Expression: nil,
+						},
 					},
 				},
 			},

@@ -1050,8 +1050,11 @@ func (p *parser) parseParenBodyExpression(lparen token.Pos) ast.Expression {
 		return p.parseParenIdentExpression(lparen, ident)
 	default:
 		expr := p.parseExpressionWhile(p.more)
-		p.close(token.RPAREN)
-		return expr
+		rparen, lit := p.close(token.RPAREN)
+		return &ast.ParenExpression{
+			BaseNode:   p.position(lparen, rparen+token.Pos(len(lit))),
+			Expression: expr,
+		}
 	}
 }
 
@@ -1115,8 +1118,11 @@ func (p *parser) parseParenIdentExpression(lparen token.Pos, key *ast.Identifier
 				Right: rhs,
 			}
 		}
-		p.close(token.RPAREN)
-		return expr
+		rparen, lit := p.close(token.RPAREN)
+		return &ast.ParenExpression{
+			BaseNode:   p.position(lparen, rparen+token.Pos(len(lit))),
+			Expression: expr,
+		}
 	}
 }
 

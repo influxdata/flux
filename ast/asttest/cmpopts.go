@@ -35,6 +35,7 @@ var IgnoreBaseNodeOptions = []cmp.Option{
 	cmpopts.IgnoreFields(ast.OptionStatement{}, "BaseNode"),
 	cmpopts.IgnoreFields(ast.Package{}, "BaseNode"),
 	cmpopts.IgnoreFields(ast.PackageClause{}, "BaseNode"),
+	cmpopts.IgnoreFields(ast.ParenExpression{}, "BaseNode"),
 	cmpopts.IgnoreFields(ast.PipeExpression{}, "BaseNode"),
 	cmpopts.IgnoreFields(ast.PipeLiteral{}, "BaseNode"),
 	cmpopts.IgnoreFields(ast.Property{}, "BaseNode"),
