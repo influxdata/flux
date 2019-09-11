@@ -22,9 +22,7 @@ jobs:
       - restore_cache:
           name: Restoring GOPATH/pkg/mod
           keys:
-            - flux-gomod-{{ .Branch }}-{{ .Revision }} # Matches when retrying a single run.
-            - flux-gomod-{{ .Branch }}-                # Matches a new commit on an existing branch.
-            - flux-gomod-                              # Matches a new branch.
+            - flux-gomod-{{checksum "go.sum"}}
       # Populate Rust cache
       - restore_cache:
           name: Restoring Rust Cache
@@ -51,10 +49,9 @@ jobs:
           when: always
       - save_cache:
           name: Saving GOPATH/pkg/mod
-          key: flux-gomod-{{ .Branch }}-{{ .Revision }}
+          key: flux-gomod-{{checksum "go.sum"}}
           paths:
             - /tmp/go/pkg/mod
-          when: always
       - save_cache:
           name: Saving Rust Cache
           key: flux-rust-{{ .Branch }}-{{ .Revision }}
@@ -75,9 +72,7 @@ jobs:
       - restore_cache:
           name: Restoring GOPATH/pkg/mod
           keys:
-            - flux-gomod-{{ .Branch }}-{{ .Revision }} # Matches when retrying a single run.
-            - flux-gomod-{{ .Branch }}-                # Matches a new commit on an existing branch.
-            - flux-gomod-                              # Matches a new branch.
+            - flux-gomod-{{checksum "go.sum"}}
       # Run tests
       - run: make test-race
       # No need to save the pkg/mod cache since the other job does it
