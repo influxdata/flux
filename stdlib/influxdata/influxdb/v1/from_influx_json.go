@@ -12,6 +12,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/influxql"
 	"github.com/influxdata/flux/internal/errors"
@@ -120,8 +121,14 @@ func createFromInfluxJSONSource(prSpec plan.ProcedureSpec, dsid execute.DatasetI
 
 	var jsonReader io.Reader
 
+	deps := a.Dependencies()[dependencies.InterpreterDepsKey].(dependencies.Dependencies)
+	fs, err := deps.FilesystemService()
+	if err != nil {
+		return nil, err
+	}
+
 	if spec.File != "" {
-		f, err := os.Open(spec.File)
+		f, err := fs.Open(spec.File)
 		if err != nil {
 			return nil, err
 		}
