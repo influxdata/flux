@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/secret"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/internal/errors"
@@ -15,6 +16,7 @@ const InterpreterDepsKey = "interpreter"
 
 type Interface interface {
 	HTTPClient() (*http.Client, error)
+	FilesystemService() (filesystem.Service, error)
 	SecretService() (secret.Service, error)
 	URLValidator() (url.Validator, error)
 }
@@ -26,9 +28,10 @@ type Dependencies struct {
 }
 
 type Deps struct {
-	HTTPClient    *http.Client
-	SecretService secret.Service
-	URLValidator  url.Validator
+	HTTPClient        *http.Client
+	FilesystemService filesystem.Service
+	SecretService     secret.Service
+	URLValidator      url.Validator
 }
 
 func (d Dependencies) HTTPClient() (*http.Client, error) {
@@ -36,6 +39,13 @@ func (d Dependencies) HTTPClient() (*http.Client, error) {
 		return d.Deps.HTTPClient, nil
 	}
 	return nil, errors.New(codes.Unimplemented, "http client uninitialized in dependencies")
+}
+
+func (d Dependencies) FilesystemService() (filesystem.Service, error) {
+	if d.Deps.FilesystemService != nil {
+		return d.Deps.FilesystemService, nil
+	}
+	return nil, errors.New(codes.Unimplemented, "filesystem service uninitialized in dependencies")
 }
 
 func (d Dependencies) SecretService() (secret.Service, error) {
@@ -76,9 +86,11 @@ func newDefaultTransport() *http.Transport {
 func NewDefaults() Dependencies {
 	return Dependencies{
 		Deps: Deps{
-			HTTPClient:    &http.Client{Transport: newDefaultTransport()},
-			SecretService: nil,
-			URLValidator:  url.PassValidator{},
+			HTTPClient: &http.Client{Transport: newDefaultTransport()},
+			// Default to having no filesystem and no secrets.
+			FilesystemService: nil,
+			SecretService:     nil,
+			URLValidator:      url.PassValidator{},
 		},
 	}
 }
