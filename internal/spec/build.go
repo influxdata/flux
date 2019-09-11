@@ -159,7 +159,7 @@ func isDuplicateTableObject(ctx context.Context, op *flux.TableObject, objs []*f
 	defer s.Finish()
 
 	for _, tableObject := range objs {
-		if op.Equal(tableObject) {
+		if op == tableObject {
 			return true
 		}
 	}
