@@ -31,7 +31,7 @@ func init() {
 		"regex":       semantic.String,
 		"replacement": semantic.String,
 	}, []string{"source", "destination", "regex", "replacement"})
-	flux.RegisterPackageValue("promql", "labelReplace", flux.FunctionValue(LabelReplaceKind, createLabelReplaceOpSpec, labelReplaceSignature))
+	flux.RegisterPackageValue("internal/promql", "labelReplace", flux.FunctionValue(LabelReplaceKind, createLabelReplaceOpSpec, labelReplaceSignature))
 	flux.RegisterOpSpec(LabelReplaceKind, func() flux.OperationSpec { return &LabelReplaceOpSpec{} })
 	plan.RegisterProcedureSpec(LabelReplaceKind, newLabelReplaceProcedure, LabelReplaceKind)
 	execute.RegisterTransformation(LabelReplaceKind, createLabelReplaceTransformation)

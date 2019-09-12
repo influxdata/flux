@@ -28,7 +28,7 @@ func init() {
 		nil,
 	)
 
-	flux.RegisterPackageValue("promql", "holtWinters", flux.FunctionValue(HoltWintersKind, createHoltWintersOpSpec, holtWintersSignature))
+	flux.RegisterPackageValue("internal/promql", "holtWinters", flux.FunctionValue(HoltWintersKind, createHoltWintersOpSpec, holtWintersSignature))
 	flux.RegisterOpSpec(HoltWintersKind, newHoltWintersOp)
 	plan.RegisterProcedureSpec(HoltWintersKind, newHoltWintersProcedure, HoltWintersKind)
 	execute.RegisterTransformation(HoltWintersKind, createHoltWintersTransformation)

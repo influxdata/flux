@@ -25,7 +25,7 @@ func init() {
 		"fromNow": semantic.Float,
 	}, nil)
 
-	flux.RegisterPackageValue("promql", LinearRegressionKind, flux.FunctionValue(LinearRegressionKind, createLinearRegressionOpSpec, linearRegressionSignature))
+	flux.RegisterPackageValue("internal/promql", LinearRegressionKind, flux.FunctionValue(LinearRegressionKind, createLinearRegressionOpSpec, linearRegressionSignature))
 	flux.RegisterOpSpec(LinearRegressionKind, newLinearRegressionOp)
 	plan.RegisterProcedureSpec(LinearRegressionKind, newLinearRegressionProcedure, LinearRegressionKind)
 	execute.RegisterTransformation(LinearRegressionKind, createLinearRegressionTransformation)

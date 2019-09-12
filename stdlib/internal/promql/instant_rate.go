@@ -28,7 +28,7 @@ func init() {
 		nil,
 	)
 
-	flux.RegisterPackageValue("promql", InstantRateKind, flux.FunctionValue(InstantRateKind, createInstantRateOpSpec, instantRateSignature))
+	flux.RegisterPackageValue("internal/promql", InstantRateKind, flux.FunctionValue(InstantRateKind, createInstantRateOpSpec, instantRateSignature))
 	flux.RegisterOpSpec(InstantRateKind, newInstantRateOp)
 	plan.RegisterProcedureSpec(InstantRateKind, newInstantRateProcedure, InstantRateKind)
 	execute.RegisterTransformation(InstantRateKind, createInstantRateTransformation)

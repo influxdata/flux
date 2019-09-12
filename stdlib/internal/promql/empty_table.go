@@ -23,7 +23,7 @@ func init() {
 	emptyTableSignature := semantic.FunctionPolySignature{
 		Return: flux.TableObjectType,
 	}
-	flux.RegisterPackageValue("promql", "emptyTable", flux.FunctionValue(EmptyTableKind, createEmptyTableOpSpec, emptyTableSignature))
+	flux.RegisterPackageValue("internal/promql", "emptyTable", flux.FunctionValue(EmptyTableKind, createEmptyTableOpSpec, emptyTableSignature))
 	flux.RegisterOpSpec(EmptyTableKind, newEmptyTableOp)
 	plan.RegisterProcedureSpec(EmptyTableKind, newEmptyTableProcedure, EmptyTableKind)
 	execute.RegisterSource(EmptyTableKind, createEmptyTableSource)

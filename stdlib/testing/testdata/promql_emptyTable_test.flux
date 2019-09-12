@@ -1,7 +1,7 @@
 package testdata_test
 
 import "testing"
-import "promql"
+import "internal/promql"
 
 option now = () => (2030-01-01T00:00:00Z)
 

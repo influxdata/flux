@@ -16,7 +16,7 @@ type ChangesOpSpec struct{}
 func init() {
 	changesSignature := flux.FunctionSignature(nil, nil)
 
-	flux.RegisterPackageValue("promql", ChangesKind, flux.FunctionValue(ChangesKind, createChangesOpSpec, changesSignature))
+	flux.RegisterPackageValue("internal/promql", ChangesKind, flux.FunctionValue(ChangesKind, createChangesOpSpec, changesSignature))
 	flux.RegisterOpSpec(ChangesKind, newChangesOp)
 	plan.RegisterProcedureSpec(ChangesKind, newChangesProcedure, ChangesKind)
 	execute.RegisterTransformation(ChangesKind, createChangesTransformation)
