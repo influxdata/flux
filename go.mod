@@ -17,17 +17,20 @@ require (
 	github.com/goreleaser/goreleaser v0.94.0
 	github.com/influxdata/changelog v1.0.0
 	github.com/influxdata/line-protocol v0.0.0-20180522152040-32c6aa80de5e
+	github.com/influxdata/promql/v2 v2.12.0
 	github.com/influxdata/tdigest v0.0.0-20181121200506-bf2b5ad3c0a9
 	github.com/lib/pq v1.0.0
 	github.com/mattn/go-runewidth v0.0.3 // indirect
 	github.com/mattn/go-tty v0.0.0-20180907095812-13ff1204f104 // indirect
 	github.com/opentracing/opentracing-go v1.0.2
 	github.com/pierrec/lz4 v2.0.5+incompatible // indirect
+	github.com/pkg/errors v0.8.1
 	github.com/pkg/term v0.0.0-20180730021639-bffc007b7fd5 // indirect
+	github.com/prometheus/common v0.6.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/segmentio/kafka-go v0.1.0
 	github.com/spf13/cobra v0.0.3
-	github.com/stretchr/testify v1.3.0
+	github.com/stretchr/testify v1.4.0
 	go.uber.org/atomic v1.3.2 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
 	go.uber.org/zap v1.9.1
