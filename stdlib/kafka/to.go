@@ -7,18 +7,20 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/url"
 	"sort"
 	"time"
 
 	"github.com/cespare/xxhash"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/pkg/syncutil"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	protocol "github.com/influxdata/line-protocol"
-	kafka "github.com/segmentio/kafka-go"
+	"github.com/influxdata/line-protocol"
+	"github.com/segmentio/kafka-go"
 )
 
 const (
@@ -223,8 +225,9 @@ func createToKafkaTransformation(id execute.DatasetID, mode execute.Accumulation
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
-	t := NewToKafkaTransformation(d, cache, s)
-	return t, d, nil
+	deps := a.Dependencies()[dependencies.InterpreterDepsKey].(dependencies.Interface)
+	t, err := NewToKafkaTransformation(d, deps, cache, s)
+	return t, d, err
 }
 
 type ToKafkaTransformation struct {
@@ -236,12 +239,25 @@ type ToKafkaTransformation struct {
 func (t *ToKafkaTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
-func NewToKafkaTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ToKafkaProcedureSpec) *ToKafkaTransformation {
+func NewToKafkaTransformation(d execute.Dataset, deps dependencies.Interface, cache execute.TableBuilderCache, spec *ToKafkaProcedureSpec) (*ToKafkaTransformation, error) {
+	validator, err := deps.URLValidator()
+	if err != nil {
+		return nil, err
+	}
+	for _, b := range spec.Spec.Brokers {
+		u, err := url.Parse(b)
+		if err != nil {
+			return nil, fmt.Errorf("invalid kafka broker url: %v", err)
+		}
+		if err := validator.Validate(u); err != nil {
+			return nil, fmt.Errorf("kafka broker url did not pass validation: %v", err)
+		}
+	}
 	return &ToKafkaTransformation{
 		d:     d,
 		cache: cache,
 		spec:  spec,
-	}
+	}, nil
 }
 
 type toKafkaMetric struct {

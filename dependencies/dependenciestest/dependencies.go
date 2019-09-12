@@ -6,6 +6,7 @@ import (
 
 	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/dependencies/filesystem"
+	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/mock"
 )
 
@@ -42,5 +43,6 @@ func Default() dependencies.Dependencies {
 		"token":    "mysecrettoken",
 	}
 	deps.Deps.FilesystemService = filesystem.SystemFS
+	deps.Deps.URLValidator = url.PassValidator{}
 	return deps
 }
