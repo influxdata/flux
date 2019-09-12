@@ -33,7 +33,7 @@ func init() {
 		"valueColumn":      semantic.String,
 	}, nil)
 
-	flux.RegisterPackageValue("promql", HistogramQuantileKind, flux.FunctionValue(HistogramQuantileKind, createHistogramQuantileOpSpec, histogramQuantileSignature))
+	flux.RegisterPackageValue("internal/promql", HistogramQuantileKind, flux.FunctionValue(HistogramQuantileKind, createHistogramQuantileOpSpec, histogramQuantileSignature))
 	flux.RegisterOpSpec(HistogramQuantileKind, newHistogramQuantileOp)
 	plan.RegisterProcedureSpec(HistogramQuantileKind, newHistogramQuantileProcedure, HistogramQuantileKind)
 	execute.RegisterTransformation(HistogramQuantileKind, createHistogramQuantileTransformation)

@@ -19,7 +19,7 @@ type TimestampOpSpec struct{}
 
 func init() {
 	timestampSignature := flux.FunctionSignature(nil, nil)
-	flux.RegisterPackageValue("promql", "timestamp", flux.FunctionValue(TimestampKind, createTimestampOpSpec, timestampSignature))
+	flux.RegisterPackageValue("internal/promql", "timestamp", flux.FunctionValue(TimestampKind, createTimestampOpSpec, timestampSignature))
 	flux.RegisterOpSpec(TimestampKind, func() flux.OperationSpec { return &TimestampOpSpec{} })
 	plan.RegisterProcedureSpec(TimestampKind, newTimestampProcedure, TimestampKind)
 	execute.RegisterTransformation(TimestampKind, createTimestampTransformation)

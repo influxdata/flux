@@ -234,7 +234,7 @@ func (t *Transpiler) Transpile(expr promql.Expr) (*ast.File, error) {
 	return &ast.File{
 		Imports: []*ast.ImportDeclaration{
 			{Path: &ast.StringLiteral{Value: "math"}},
-			{Path: &ast.StringLiteral{Value: "promql"}},
+			{Path: &ast.StringLiteral{Value: "internal/promql"}},
 		},
 		Body: []ast.Statement{
 			&ast.ExpressionStatement{

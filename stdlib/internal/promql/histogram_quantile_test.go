@@ -7,7 +7,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/stdlib/promql"
+	"github.com/influxdata/flux/stdlib/internal/promql"
 	"github.com/pkg/errors"
 )
 

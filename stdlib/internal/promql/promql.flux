@@ -1,3 +1,4 @@
+// THIS PACKAGE IS NOT MEANT FOR EXTERNAL USE.
 package promql
 
 // changes() implements functionality equivalent to PromQL's changes() function:

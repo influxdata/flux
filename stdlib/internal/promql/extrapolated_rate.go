@@ -30,7 +30,7 @@ func init() {
 		nil,
 	)
 
-	flux.RegisterPackageValue("promql", ExtrapolatedRateKind, flux.FunctionValue(ExtrapolatedRateKind, createExtrapolatedRateOpSpec, extrapolatedRateSignature))
+	flux.RegisterPackageValue("internal/promql", ExtrapolatedRateKind, flux.FunctionValue(ExtrapolatedRateKind, createExtrapolatedRateOpSpec, extrapolatedRateSignature))
 	flux.RegisterOpSpec(ExtrapolatedRateKind, newExtrapolatedRateOp)
 	plan.RegisterProcedureSpec(ExtrapolatedRateKind, newExtrapolatedRateProcedure, ExtrapolatedRateKind)
 	execute.RegisterTransformation(ExtrapolatedRateKind, createExtrapolatedRateTransformation)

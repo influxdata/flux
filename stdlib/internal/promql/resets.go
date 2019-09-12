@@ -15,7 +15,7 @@ type ResetsOpSpec struct{}
 func init() {
 	resetsSignature := flux.FunctionSignature(nil, nil)
 
-	flux.RegisterPackageValue("promql", ResetsKind, flux.FunctionValue(ResetsKind, createResetsOpSpec, resetsSignature))
+	flux.RegisterPackageValue("internal/promql", ResetsKind, flux.FunctionValue(ResetsKind, createResetsOpSpec, resetsSignature))
 	flux.RegisterOpSpec(ResetsKind, newResetsOp)
 	plan.RegisterProcedureSpec(ResetsKind, newResetsProcedure, ResetsKind)
 	execute.RegisterTransformation(ResetsKind, createResetsTransformation)
