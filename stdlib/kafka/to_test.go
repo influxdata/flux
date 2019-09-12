@@ -9,12 +9,14 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin" // We need to import the builtins for the tests to work.
+	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	fkafka "github.com/influxdata/flux/stdlib/kafka"
-	kafka "github.com/segmentio/kafka-go"
+	"github.com/segmentio/kafka-go"
 )
 
 // type kafkaClientMock = func
@@ -532,7 +534,8 @@ func TestToKafka_Process(t *testing.T) {
 				tc.want.Table,
 				nil,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					return fkafka.NewToKafkaTransformation(d, c, tc.spec)
+					t, _ := fkafka.NewToKafkaTransformation(d, dependenciestest.Default(), c, tc.spec)
+					return t
 				},
 			)
 			if !cmp.Equal(tc.want.Result, data.data, cmpopts.EquateNaNs()) {
@@ -540,6 +543,82 @@ func TestToKafka_Process(t *testing.T) {
 				t.Fail()
 			}
 			data.reset()
+		})
+	}
+}
+
+func TestToKafka_NewTransformation(t *testing.T) {
+	testCases := []struct {
+		name      string
+		spec      *fkafka.ToKafkaProcedureSpec
+		validator url.Validator
+		wantErr   string
+	}{
+		{
+			name: "ok",
+			spec: &fkafka.ToKafkaProcedureSpec{
+				Spec: &fkafka.ToKafkaOpSpec{
+					Brokers:      []string{"brokerurl:8989"},
+					Topic:        "totallynotfaketopic",
+					TimeColumn:   execute.DefaultTimeColLabel,
+					ValueColumns: []string{"_value"},
+					NameColumn:   "_measurement",
+				},
+			},
+		},
+		{
+			name: "invalid url",
+			spec: &fkafka.ToKafkaProcedureSpec{
+				Spec: &fkafka.ToKafkaOpSpec{
+					Brokers: []string{":this:is:invalid:"},
+				},
+			},
+			wantErr: "invalid kafka broker url: parse :this:is:invalid:: missing protocol scheme",
+		},
+		{
+			name: "no lookup",
+			spec: &fkafka.ToKafkaProcedureSpec{
+				Spec: &fkafka.ToKafkaOpSpec{
+					Brokers: []string{"notfound"},
+				},
+			},
+			validator: url.PrivateIPValidator{},
+			wantErr:   "kafka broker url did not pass validation: lookup : no such host",
+		},
+		{
+			name: "private url",
+			spec: &fkafka.ToKafkaProcedureSpec{
+				Spec: &fkafka.ToKafkaOpSpec{
+					Brokers: []string{"http://localhost"},
+				},
+			},
+			validator: url.PrivateIPValidator{},
+			wantErr:   "kafka broker url did not pass validation: url is not valid, it connects to a private IP",
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			d := executetest.NewDataset(executetest.RandomDatasetID())
+			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
+			deps := dependenciestest.Default()
+			if tc.validator != nil {
+				deps.Deps.URLValidator = tc.validator
+			}
+			_, err := fkafka.NewToKafkaTransformation(d, deps, c, tc.spec)
+			if err != nil {
+				if tc.wantErr != "" {
+					if got := err.Error(); tc.wantErr != got {
+						t.Fatalf("got wrong err -want/+got:\n\t- %s\n\t+ %s", tc.wantErr, got)
+					}
+					return
+				} else {
+					t.Fatal(err)
+				}
+			}
 		})
 	}
 }
