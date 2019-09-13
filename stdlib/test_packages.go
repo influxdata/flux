@@ -14,6 +14,7 @@ import (
 	kapacitor "github.com/influxdata/flux/stdlib/testing/kapacitor"
 	pandas "github.com/influxdata/flux/stdlib/testing/pandas"
 	testdata "github.com/influxdata/flux/stdlib/testing/testdata"
+	universe "github.com/influxdata/flux/stdlib/universe"
 )
 
 var FluxTestPackages = func() []*ast.Package {
@@ -28,5 +29,6 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, kapacitor.FluxTestPackages...)
 	pkgs = append(pkgs, pandas.FluxTestPackages...)
 	pkgs = append(pkgs, testdata.FluxTestPackages...)
+	pkgs = append(pkgs, universe.FluxTestPackages...)
 	return pkgs
 }()

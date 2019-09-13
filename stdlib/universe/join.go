@@ -281,6 +281,21 @@ func (t *mergeJoinTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
+	// If a table is missing any of the "on" columns, then it won't be part of the output:
+	//   - A missing column is treated as a null value
+	//   - Null values are not considered as equal to each other in joins
+	numOnCols := 0
+	for _, c := range tbl.Cols() {
+		if t.cache.on[c.Label] {
+			numOnCols++
+		}
+	}
+	if numOnCols < len(t.cache.on) {
+		// Discard this table
+		tbl.Done()
+		return nil
+	}
+
 	if err := t.cache.insertIntoBuffer(id, tbl); err != nil {
 		return err
 	}
@@ -957,13 +972,12 @@ func (c *MergeJoinCache) postJoinGroupKey(keys map[execute.DatasetID]flux.GroupK
 
 // advance advances the row pointer of a sorted table that is being joined
 func (c *MergeJoinCache) advance(offset int, table *execute.ColListTableBuilder) (subset, flux.GroupKey) {
-	// TODO(jlapacik): this is a temporary hack
-	// remove when ColListTableBuilder implements ColReader
 	tbl, _ := table.Table()
 	cr := tbl.(flux.ColReader)
 	if n := cr.Len(); n == offset {
 		return subset{Start: n, Stop: n}, nil
 	}
+
 	start := offset
 	key := execute.GroupKeyForRowOn(start, cr, c.on)
 	sequence := subset{Start: start}
