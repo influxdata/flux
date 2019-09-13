@@ -2,7 +2,6 @@ package arrow
 
 import (
 	"github.com/apache/arrow/go/arrow/array"
-	arrowmemory "github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux/memory"
 )
 
@@ -24,12 +23,5 @@ func BoolSlice(arr *array.Boolean, i, j int) *array.Boolean {
 }
 
 func NewBoolBuilder(a *memory.Allocator) *array.BooleanBuilder {
-	var alloc arrowmemory.Allocator = arrowmemory.NewGoAllocator()
-	if a != nil {
-		alloc = &allocator{
-			Allocator: alloc,
-			alloc:     a,
-		}
-	}
-	return array.NewBooleanBuilder(alloc)
+	return array.NewBooleanBuilder(a)
 }

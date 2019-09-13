@@ -3,7 +3,6 @@ package arrow
 import (
 	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
-	arrowmemory "github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux/memory"
 )
 
@@ -30,12 +29,5 @@ func StringSlice(arr *array.Binary, i, j int) *array.Binary {
 }
 
 func NewStringBuilder(a *memory.Allocator) *array.BinaryBuilder {
-	var alloc arrowmemory.Allocator = arrowmemory.NewGoAllocator()
-	if a != nil {
-		alloc = &allocator{
-			Allocator: alloc,
-			alloc:     a,
-		}
-	}
-	return array.NewBinaryBuilder(alloc, arrow.BinaryTypes.String)
+	return array.NewBinaryBuilder(a, arrow.BinaryTypes.String)
 }
