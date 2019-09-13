@@ -45,6 +45,9 @@ bin/$(GOOS)/cmpgen: ./ast/asttest/cmpgen/main.go
 
 fmt: $(SOURCES_NO_VENDOR)
 	go fmt ./...
+	cd internal/rust/ast; cargo fmt
+	cd internal/rust/parser; cargo fmt
+	cd internal/rust/scanner; cargo fmt
 
 checkfmt:
 	./etc/checkfmt.sh
