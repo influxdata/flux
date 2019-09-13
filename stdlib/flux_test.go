@@ -65,10 +65,9 @@ func runEndToEnd(t *testing.T, pkgs []*ast.Package) {
 
 func benchEndToEnd(b *testing.B, pkgs []*ast.Package) {
 	for _, pkg := range pkgs {
-		name := pkg.Files[0].Name
+		name := strings.TrimSuffix(pkg.Files[0].Name, "_test.flux")
 		b.Run(name, func(b *testing.B) {
-			n := strings.TrimSuffix(name, ".flux")
-			if reason, ok := skip[n]; ok {
+			if reason, ok := skip[name]; ok {
 				b.Skip(reason)
 			}
 			b.ResetTimer()
