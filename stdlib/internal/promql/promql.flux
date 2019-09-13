@@ -1,6 +1,9 @@
 // THIS PACKAGE IS NOT MEANT FOR EXTERNAL USE.
 package promql
 
+import "math" 
+import "universe"
+
 // changes() implements functionality equivalent to PromQL's changes() function:
 //
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#changes
@@ -96,3 +99,19 @@ builtin timestamp
 //
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#year
 builtin promqlYear
+
+// quantile() accounts checks for quantile values that are out of range, above 1.0 or 
+// below 0.0, by either returning positive infinity or negative infinity in the `_value` 
+// column respectively. q must be a float 
+
+quantile = (q, tables=<-, method="exact_mean") => 
+    // value is in normal range. We can use the normal quantile function
+    if q <= 1 and q >= 0 then 
+    (tables
+        |> universe.quantile(q: q, method: method))
+    else if q < 0 then
+    (tables
+        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))
+    else 
+    (tables
+        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))

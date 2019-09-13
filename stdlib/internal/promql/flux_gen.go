@@ -21,11 +21,11 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 19,
-					Line:   98,
+					Column: 96,
+					Line:   117,
 				},
 				File:   "promql.flux",
-				Source: "package promql\n\n// changes() implements functionality equivalent to PromQL's changes() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#changes\nbuiltin changes\n\n// promqlDayOfMonth() implements functionality equivalent to PromQL's day_of_month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_month\nbuiltin promqlDayOfMonth\n\n// promqlDayOfWeek() implements functionality equivalent to PromQL's day_of_week() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_week\nbuiltin promqlDayOfWeek\n\n// promqlDaysInMonth() implements functionality equivalent to PromQL's days_in_month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#days_in_month\nbuiltin promqlDaysInMonth\n\n// emptyTable() returns an empty table, which is used as a helper function to implement\n// PromQL's time() and vector() functions:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#time\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#vector\nbuiltin emptyTable\n\n// extrapolatedRate() is a helper function that calculates extrapolated rates over\n// counters and is used to implement PromQL's rate(), delta(), and increase() functions.\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#rate\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#increase\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#delta\nbuiltin extrapolatedRate\n\n// holtWinters() implements functionality equivalent to PromQL's holt_winters()\n// function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#holt_winters\nbuiltin holtWinters\n\n// promqlHour() implements functionality equivalent to PromQL's hour() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#hour\nbuiltin promqlHour\n\n// instantRate() is a helper function that calculates instant rates over\n// counters and is used to implement PromQL's irate() and idelta() functions.\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#irate\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#idelta\nbuiltin instantRate\n\n// labelReplace implements functionality equivalent to PromQL's label_replace() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#label_replace\nbuiltin labelReplace\n\n// linearRegression implements linear regression functionality required to implement\n// PromQL's deriv() and predict_linear() functions:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#deriv\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#predict_linear\nbuiltin linearRegression\n\n// promqlMinute() implements functionality equivalent to PromQL's minute() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#minute\nbuiltin promqlMinute\n\n// promqlMonth() implements functionality equivalent to PromQL's month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#month\nbuiltin promqlMonth\n\n// promHistogramQuantile() implements functionality equivalent to PromQL's\n// histogram_quantile() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile\nbuiltin promHistogramQuantile\n\n// resets() implements functionality equivalent to PromQL's resets() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#resets\nbuiltin resets\n\n// timestamp() implements functionality equivalent to PromQL's timestamp() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#timestamp\nbuiltin timestamp\n\n// promqlYear() implements functionality equivalent to PromQL's year() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#year\nbuiltin promqlYear",
+				Source: "package promql\n\nimport \"math\" \nimport \"universe\"\n\n// changes() implements functionality equivalent to PromQL's changes() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#changes\nbuiltin changes\n\n// promqlDayOfMonth() implements functionality equivalent to PromQL's day_of_month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_month\nbuiltin promqlDayOfMonth\n\n// promqlDayOfWeek() implements functionality equivalent to PromQL's day_of_week() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_week\nbuiltin promqlDayOfWeek\n\n// promqlDaysInMonth() implements functionality equivalent to PromQL's days_in_month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#days_in_month\nbuiltin promqlDaysInMonth\n\n// emptyTable() returns an empty table, which is used as a helper function to implement\n// PromQL's time() and vector() functions:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#time\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#vector\nbuiltin emptyTable\n\n// extrapolatedRate() is a helper function that calculates extrapolated rates over\n// counters and is used to implement PromQL's rate(), delta(), and increase() functions.\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#rate\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#increase\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#delta\nbuiltin extrapolatedRate\n\n// holtWinters() implements functionality equivalent to PromQL's holt_winters()\n// function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#holt_winters\nbuiltin holtWinters\n\n// promqlHour() implements functionality equivalent to PromQL's hour() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#hour\nbuiltin promqlHour\n\n// instantRate() is a helper function that calculates instant rates over\n// counters and is used to implement PromQL's irate() and idelta() functions.\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#irate\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#idelta\nbuiltin instantRate\n\n// labelReplace implements functionality equivalent to PromQL's label_replace() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#label_replace\nbuiltin labelReplace\n\n// linearRegression implements linear regression functionality required to implement\n// PromQL's deriv() and predict_linear() functions:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#deriv\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#predict_linear\nbuiltin linearRegression\n\n// promqlMinute() implements functionality equivalent to PromQL's minute() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#minute\nbuiltin promqlMinute\n\n// promqlMonth() implements functionality equivalent to PromQL's month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#month\nbuiltin promqlMonth\n\n// promHistogramQuantile() implements functionality equivalent to PromQL's\n// histogram_quantile() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile\nbuiltin promHistogramQuantile\n\n// resets() implements functionality equivalent to PromQL's resets() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#resets\nbuiltin resets\n\n// timestamp() implements functionality equivalent to PromQL's timestamp() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#timestamp\nbuiltin timestamp\n\n// promqlYear() implements functionality equivalent to PromQL's year() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#year\nbuiltin promqlYear\n\n// quantile() accounts checks for quantile values that are out of range, above 1.0 or \n// below 0.0, by either returning positive infinity or negative infinity in the `_value` \n// column respectively. q must be a float \n\nquantile = (q, tables=<-, method=\"exact_mean\") => \n    // value is in normal range. We can use the normal quantile function\n    if q <= 1 and q >= 0 then \n    (tables\n        |> universe.quantile(q: q, method: method))\n    else if q < 0 then\n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))\n    else \n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))",
 				Start: ast.Position{
 					Column: 1,
 					Line:   2,
@@ -38,13 +38,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   7,
+						Line:   10,
 					},
 					File:   "promql.flux",
 					Source: "builtin changes",
 					Start: ast.Position{
 						Column: 1,
-						Line:   7,
+						Line:   10,
 					},
 				},
 			},
@@ -54,13 +54,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   7,
+							Line:   10,
 						},
 						File:   "promql.flux",
 						Source: "changes",
 						Start: ast.Position{
 							Column: 9,
-							Line:   7,
+							Line:   10,
 						},
 					},
 				},
@@ -72,13 +72,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 25,
-						Line:   12,
+						Line:   15,
 					},
 					File:   "promql.flux",
 					Source: "builtin promqlDayOfMonth",
 					Start: ast.Position{
 						Column: 1,
-						Line:   12,
+						Line:   15,
 					},
 				},
 			},
@@ -88,13 +88,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 25,
-							Line:   12,
+							Line:   15,
 						},
 						File:   "promql.flux",
 						Source: "promqlDayOfMonth",
 						Start: ast.Position{
 							Column: 9,
-							Line:   12,
+							Line:   15,
 						},
 					},
 				},
@@ -106,13 +106,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 24,
-						Line:   17,
+						Line:   20,
 					},
 					File:   "promql.flux",
 					Source: "builtin promqlDayOfWeek",
 					Start: ast.Position{
 						Column: 1,
-						Line:   17,
+						Line:   20,
 					},
 				},
 			},
@@ -122,13 +122,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 24,
-							Line:   17,
+							Line:   20,
 						},
 						File:   "promql.flux",
 						Source: "promqlDayOfWeek",
 						Start: ast.Position{
 							Column: 9,
-							Line:   17,
+							Line:   20,
 						},
 					},
 				},
@@ -140,13 +140,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 26,
-						Line:   22,
+						Line:   25,
 					},
 					File:   "promql.flux",
 					Source: "builtin promqlDaysInMonth",
 					Start: ast.Position{
 						Column: 1,
-						Line:   22,
+						Line:   25,
 					},
 				},
 			},
@@ -156,13 +156,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 26,
-							Line:   22,
+							Line:   25,
 						},
 						File:   "promql.flux",
 						Source: "promqlDaysInMonth",
 						Start: ast.Position{
 							Column: 9,
-							Line:   22,
+							Line:   25,
 						},
 					},
 				},
@@ -174,13 +174,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
-						Line:   29,
+						Line:   32,
 					},
 					File:   "promql.flux",
 					Source: "builtin emptyTable",
 					Start: ast.Position{
 						Column: 1,
-						Line:   29,
+						Line:   32,
 					},
 				},
 			},
@@ -190,13 +190,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   29,
+							Line:   32,
 						},
 						File:   "promql.flux",
 						Source: "emptyTable",
 						Start: ast.Position{
 							Column: 9,
-							Line:   29,
+							Line:   32,
 						},
 					},
 				},
@@ -208,13 +208,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 25,
-						Line:   37,
+						Line:   40,
 					},
 					File:   "promql.flux",
 					Source: "builtin extrapolatedRate",
 					Start: ast.Position{
 						Column: 1,
-						Line:   37,
+						Line:   40,
 					},
 				},
 			},
@@ -224,13 +224,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 25,
-							Line:   37,
+							Line:   40,
 						},
 						File:   "promql.flux",
 						Source: "extrapolatedRate",
 						Start: ast.Position{
 							Column: 9,
-							Line:   37,
+							Line:   40,
 						},
 					},
 				},
@@ -242,13 +242,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
-						Line:   43,
+						Line:   46,
 					},
 					File:   "promql.flux",
 					Source: "builtin holtWinters",
 					Start: ast.Position{
 						Column: 1,
-						Line:   43,
+						Line:   46,
 					},
 				},
 			},
@@ -258,13 +258,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
-							Line:   43,
+							Line:   46,
 						},
 						File:   "promql.flux",
 						Source: "holtWinters",
 						Start: ast.Position{
 							Column: 9,
-							Line:   43,
+							Line:   46,
 						},
 					},
 				},
@@ -276,13 +276,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
-						Line:   48,
+						Line:   51,
 					},
 					File:   "promql.flux",
 					Source: "builtin promqlHour",
 					Start: ast.Position{
 						Column: 1,
-						Line:   48,
+						Line:   51,
 					},
 				},
 			},
@@ -292,13 +292,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   48,
+							Line:   51,
 						},
 						File:   "promql.flux",
 						Source: "promqlHour",
 						Start: ast.Position{
 							Column: 9,
-							Line:   48,
+							Line:   51,
 						},
 					},
 				},
@@ -310,13 +310,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
-						Line:   55,
+						Line:   58,
 					},
 					File:   "promql.flux",
 					Source: "builtin instantRate",
 					Start: ast.Position{
 						Column: 1,
-						Line:   55,
+						Line:   58,
 					},
 				},
 			},
@@ -326,13 +326,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
-							Line:   55,
+							Line:   58,
 						},
 						File:   "promql.flux",
 						Source: "instantRate",
 						Start: ast.Position{
 							Column: 9,
-							Line:   55,
+							Line:   58,
 						},
 					},
 				},
@@ -344,13 +344,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 21,
-						Line:   60,
+						Line:   63,
 					},
 					File:   "promql.flux",
 					Source: "builtin labelReplace",
 					Start: ast.Position{
 						Column: 1,
-						Line:   60,
+						Line:   63,
 					},
 				},
 			},
@@ -360,13 +360,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 21,
-							Line:   60,
+							Line:   63,
 						},
 						File:   "promql.flux",
 						Source: "labelReplace",
 						Start: ast.Position{
 							Column: 9,
-							Line:   60,
+							Line:   63,
 						},
 					},
 				},
@@ -378,13 +378,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 25,
-						Line:   67,
+						Line:   70,
 					},
 					File:   "promql.flux",
 					Source: "builtin linearRegression",
 					Start: ast.Position{
 						Column: 1,
-						Line:   67,
+						Line:   70,
 					},
 				},
 			},
@@ -394,13 +394,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 25,
-							Line:   67,
+							Line:   70,
 						},
 						File:   "promql.flux",
 						Source: "linearRegression",
 						Start: ast.Position{
 							Column: 9,
-							Line:   67,
+							Line:   70,
 						},
 					},
 				},
@@ -412,13 +412,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 21,
-						Line:   72,
+						Line:   75,
 					},
 					File:   "promql.flux",
 					Source: "builtin promqlMinute",
 					Start: ast.Position{
 						Column: 1,
-						Line:   72,
+						Line:   75,
 					},
 				},
 			},
@@ -428,13 +428,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 21,
-							Line:   72,
+							Line:   75,
 						},
 						File:   "promql.flux",
 						Source: "promqlMinute",
 						Start: ast.Position{
 							Column: 9,
-							Line:   72,
+							Line:   75,
 						},
 					},
 				},
@@ -446,13 +446,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
-						Line:   77,
+						Line:   80,
 					},
 					File:   "promql.flux",
 					Source: "builtin promqlMonth",
 					Start: ast.Position{
 						Column: 1,
-						Line:   77,
+						Line:   80,
 					},
 				},
 			},
@@ -462,13 +462,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
-							Line:   77,
+							Line:   80,
 						},
 						File:   "promql.flux",
 						Source: "promqlMonth",
 						Start: ast.Position{
 							Column: 9,
-							Line:   77,
+							Line:   80,
 						},
 					},
 				},
@@ -480,13 +480,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 30,
-						Line:   83,
+						Line:   86,
 					},
 					File:   "promql.flux",
 					Source: "builtin promHistogramQuantile",
 					Start: ast.Position{
 						Column: 1,
-						Line:   83,
+						Line:   86,
 					},
 				},
 			},
@@ -496,13 +496,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 30,
-							Line:   83,
+							Line:   86,
 						},
 						File:   "promql.flux",
 						Source: "promHistogramQuantile",
 						Start: ast.Position{
 							Column: 9,
-							Line:   83,
+							Line:   86,
 						},
 					},
 				},
@@ -514,13 +514,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   88,
+						Line:   91,
 					},
 					File:   "promql.flux",
 					Source: "builtin resets",
 					Start: ast.Position{
 						Column: 1,
-						Line:   88,
+						Line:   91,
 					},
 				},
 			},
@@ -530,13 +530,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   88,
+							Line:   91,
 						},
 						File:   "promql.flux",
 						Source: "resets",
 						Start: ast.Position{
 							Column: 9,
-							Line:   88,
+							Line:   91,
 						},
 					},
 				},
@@ -548,13 +548,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   93,
+						Line:   96,
 					},
 					File:   "promql.flux",
 					Source: "builtin timestamp",
 					Start: ast.Position{
 						Column: 1,
-						Line:   93,
+						Line:   96,
 					},
 				},
 			},
@@ -564,13 +564,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   93,
+							Line:   96,
 						},
 						File:   "promql.flux",
 						Source: "timestamp",
 						Start: ast.Position{
 							Column: 9,
-							Line:   93,
+							Line:   96,
 						},
 					},
 				},
@@ -582,13 +582,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
-						Line:   98,
+						Line:   101,
 					},
 					File:   "promql.flux",
 					Source: "builtin promqlYear",
 					Start: ast.Position{
 						Column: 1,
-						Line:   98,
+						Line:   101,
 					},
 				},
 			},
@@ -598,21 +598,1704 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   98,
+							Line:   101,
 						},
 						File:   "promql.flux",
 						Source: "promqlYear",
 						Start: ast.Position{
 							Column: 9,
-							Line:   98,
+							Line:   101,
 						},
 					},
 				},
 				Name: "promqlYear",
 			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 96,
+						Line:   117,
+					},
+					File:   "promql.flux",
+					Source: "quantile = (q, tables=<-, method=\"exact_mean\") => \n    // value is in normal range. We can use the normal quantile function\n    if q <= 1 and q >= 0 then \n    (tables\n        |> universe.quantile(q: q, method: method))\n    else if q < 0 then\n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))\n    else \n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))",
+					Start: ast.Position{
+						Column: 1,
+						Line:   107,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 9,
+							Line:   107,
+						},
+						File:   "promql.flux",
+						Source: "quantile",
+						Start: ast.Position{
+							Column: 1,
+							Line:   107,
+						},
+					},
+				},
+				Name: "quantile",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 96,
+							Line:   117,
+						},
+						File:   "promql.flux",
+						Source: "(q, tables=<-, method=\"exact_mean\") => \n    // value is in normal range. We can use the normal quantile function\n    if q <= 1 and q >= 0 then \n    (tables\n        |> universe.quantile(q: q, method: method))\n    else if q < 0 then\n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))\n    else \n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))",
+						Start: ast.Position{
+							Column: 12,
+							Line:   107,
+						},
+					},
+				},
+				Body: &ast.ConditionalExpression{
+					Alternate: &ast.ConditionalExpression{
+						Alternate: &ast.ParenExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 96,
+										Line:   117,
+									},
+									File:   "promql.flux",
+									Source: "(tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))",
+									Start: ast.Position{
+										Column: 5,
+										Line:   116,
+									},
+								},
+							},
+							Expression: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   116,
+											},
+											File:   "promql.flux",
+											Source: "tables",
+											Start: ast.Position{
+												Column: 6,
+												Line:   116,
+											},
+										},
+									},
+									Name: "tables",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 95,
+											Line:   117,
+										},
+										File:   "promql.flux",
+										Source: "tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
+										Start: ast.Position{
+											Column: 6,
+											Line:   116,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 94,
+													Line:   117,
+												},
+												File:   "promql.flux",
+												Source: "identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator",
+												Start: ast.Position{
+													Column: 19,
+													Line:   117,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 57,
+														Line:   117,
+													},
+													File:   "promql.flux",
+													Source: "identity: {_value: math.mInf(sign: 1)}",
+													Start: ast.Position{
+														Column: 19,
+														Line:   117,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 27,
+															Line:   117,
+														},
+														File:   "promql.flux",
+														Source: "identity",
+														Start: ast.Position{
+															Column: 19,
+															Line:   117,
+														},
+													},
+												},
+												Name: "identity",
+											},
+											Value: &ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 57,
+															Line:   117,
+														},
+														File:   "promql.flux",
+														Source: "{_value: math.mInf(sign: 1)}",
+														Start: ast.Position{
+															Column: 29,
+															Line:   117,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 56,
+																Line:   117,
+															},
+															File:   "promql.flux",
+															Source: "_value: math.mInf(sign: 1)",
+															Start: ast.Position{
+																Column: 30,
+																Line:   117,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 36,
+																	Line:   117,
+																},
+																File:   "promql.flux",
+																Source: "_value",
+																Start: ast.Position{
+																	Column: 30,
+																	Line:   117,
+																},
+															},
+														},
+														Name: "_value",
+													},
+													Value: &ast.CallExpression{
+														Arguments: []ast.Expression{&ast.ObjectExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 55,
+																		Line:   117,
+																	},
+																	File:   "promql.flux",
+																	Source: "sign: 1",
+																	Start: ast.Position{
+																		Column: 48,
+																		Line:   117,
+																	},
+																},
+															},
+															Properties: []*ast.Property{&ast.Property{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 55,
+																			Line:   117,
+																		},
+																		File:   "promql.flux",
+																		Source: "sign: 1",
+																		Start: ast.Position{
+																			Column: 48,
+																			Line:   117,
+																		},
+																	},
+																},
+																Key: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 52,
+																				Line:   117,
+																			},
+																			File:   "promql.flux",
+																			Source: "sign",
+																			Start: ast.Position{
+																				Column: 48,
+																				Line:   117,
+																			},
+																		},
+																	},
+																	Name: "sign",
+																},
+																Value: &ast.IntegerLiteral{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 55,
+																				Line:   117,
+																			},
+																			File:   "promql.flux",
+																			Source: "1",
+																			Start: ast.Position{
+																				Column: 54,
+																				Line:   117,
+																			},
+																		},
+																	},
+																	Value: int64(1),
+																},
+															}},
+															With: nil,
+														}},
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 56,
+																	Line:   117,
+																},
+																File:   "promql.flux",
+																Source: "math.mInf(sign: 1)",
+																Start: ast.Position{
+																	Column: 38,
+																	Line:   117,
+																},
+															},
+														},
+														Callee: &ast.MemberExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 47,
+																		Line:   117,
+																	},
+																	File:   "promql.flux",
+																	Source: "math.mInf",
+																	Start: ast.Position{
+																		Column: 38,
+																		Line:   117,
+																	},
+																},
+															},
+															Object: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 42,
+																			Line:   117,
+																		},
+																		File:   "promql.flux",
+																		Source: "math",
+																		Start: ast.Position{
+																			Column: 38,
+																			Line:   117,
+																		},
+																	},
+																},
+																Name: "math",
+															},
+															Property: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 47,
+																			Line:   117,
+																		},
+																		File:   "promql.flux",
+																		Source: "mInf",
+																		Start: ast.Position{
+																			Column: 43,
+																			Line:   117,
+																		},
+																	},
+																},
+																Name: "mInf",
+															},
+														},
+													},
+												}},
+												With: nil,
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 94,
+														Line:   117,
+													},
+													File:   "promql.flux",
+													Source: "fn: (r, accumulator) => accumulator",
+													Start: ast.Position{
+														Column: 59,
+														Line:   117,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 61,
+															Line:   117,
+														},
+														File:   "promql.flux",
+														Source: "fn",
+														Start: ast.Position{
+															Column: 59,
+															Line:   117,
+														},
+													},
+												},
+												Name: "fn",
+											},
+											Value: &ast.FunctionExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 94,
+															Line:   117,
+														},
+														File:   "promql.flux",
+														Source: "(r, accumulator) => accumulator",
+														Start: ast.Position{
+															Column: 63,
+															Line:   117,
+														},
+													},
+												},
+												Body: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 94,
+																Line:   117,
+															},
+															File:   "promql.flux",
+															Source: "accumulator",
+															Start: ast.Position{
+																Column: 83,
+																Line:   117,
+															},
+														},
+													},
+													Name: "accumulator",
+												},
+												Params: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 65,
+																Line:   117,
+															},
+															File:   "promql.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 64,
+																Line:   117,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 65,
+																	Line:   117,
+																},
+																File:   "promql.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 64,
+																	Line:   117,
+																},
+															},
+														},
+														Name: "r",
+													},
+													Value: nil,
+												}, &ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 78,
+																Line:   117,
+															},
+															File:   "promql.flux",
+															Source: "accumulator",
+															Start: ast.Position{
+																Column: 67,
+																Line:   117,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 78,
+																	Line:   117,
+																},
+																File:   "promql.flux",
+																Source: "accumulator",
+																Start: ast.Position{
+																	Column: 67,
+																	Line:   117,
+																},
+															},
+														},
+														Name: "accumulator",
+													},
+													Value: nil,
+												}},
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 95,
+												Line:   117,
+											},
+											File:   "promql.flux",
+											Source: "reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
+											Start: ast.Position{
+												Column: 12,
+												Line:   117,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   117,
+												},
+												File:   "promql.flux",
+												Source: "reduce",
+												Start: ast.Position{
+													Column: 12,
+													Line:   117,
+												},
+											},
+										},
+										Name: "reduce",
+									},
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 96,
+									Line:   117,
+								},
+								File:   "promql.flux",
+								Source: "if q < 0 then\n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))\n    else \n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))",
+								Start: ast.Position{
+									Column: 10,
+									Line:   112,
+								},
+							},
+						},
+						Consequent: &ast.ParenExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 97,
+										Line:   114,
+									},
+									File:   "promql.flux",
+									Source: "(tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))",
+									Start: ast.Position{
+										Column: 5,
+										Line:   113,
+									},
+								},
+							},
+							Expression: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   113,
+											},
+											File:   "promql.flux",
+											Source: "tables",
+											Start: ast.Position{
+												Column: 6,
+												Line:   113,
+											},
+										},
+									},
+									Name: "tables",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 96,
+											Line:   114,
+										},
+										File:   "promql.flux",
+										Source: "tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)",
+										Start: ast.Position{
+											Column: 6,
+											Line:   113,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 95,
+													Line:   114,
+												},
+												File:   "promql.flux",
+												Source: "identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator",
+												Start: ast.Position{
+													Column: 19,
+													Line:   114,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   114,
+													},
+													File:   "promql.flux",
+													Source: "identity: {_value: math.mInf(sign: -1)}",
+													Start: ast.Position{
+														Column: 19,
+														Line:   114,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 27,
+															Line:   114,
+														},
+														File:   "promql.flux",
+														Source: "identity",
+														Start: ast.Position{
+															Column: 19,
+															Line:   114,
+														},
+													},
+												},
+												Name: "identity",
+											},
+											Value: &ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 58,
+															Line:   114,
+														},
+														File:   "promql.flux",
+														Source: "{_value: math.mInf(sign: -1)}",
+														Start: ast.Position{
+															Column: 29,
+															Line:   114,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 57,
+																Line:   114,
+															},
+															File:   "promql.flux",
+															Source: "_value: math.mInf(sign: -1)",
+															Start: ast.Position{
+																Column: 30,
+																Line:   114,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 36,
+																	Line:   114,
+																},
+																File:   "promql.flux",
+																Source: "_value",
+																Start: ast.Position{
+																	Column: 30,
+																	Line:   114,
+																},
+															},
+														},
+														Name: "_value",
+													},
+													Value: &ast.CallExpression{
+														Arguments: []ast.Expression{&ast.ObjectExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 56,
+																		Line:   114,
+																	},
+																	File:   "promql.flux",
+																	Source: "sign: -1",
+																	Start: ast.Position{
+																		Column: 48,
+																		Line:   114,
+																	},
+																},
+															},
+															Properties: []*ast.Property{&ast.Property{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 56,
+																			Line:   114,
+																		},
+																		File:   "promql.flux",
+																		Source: "sign: -1",
+																		Start: ast.Position{
+																			Column: 48,
+																			Line:   114,
+																		},
+																	},
+																},
+																Key: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 52,
+																				Line:   114,
+																			},
+																			File:   "promql.flux",
+																			Source: "sign",
+																			Start: ast.Position{
+																				Column: 48,
+																				Line:   114,
+																			},
+																		},
+																	},
+																	Name: "sign",
+																},
+																Value: &ast.UnaryExpression{
+																	Argument: &ast.IntegerLiteral{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 56,
+																					Line:   114,
+																				},
+																				File:   "promql.flux",
+																				Source: "1",
+																				Start: ast.Position{
+																					Column: 55,
+																					Line:   114,
+																				},
+																			},
+																		},
+																		Value: int64(1),
+																	},
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 56,
+																				Line:   114,
+																			},
+																			File:   "promql.flux",
+																			Source: "-1",
+																			Start: ast.Position{
+																				Column: 54,
+																				Line:   114,
+																			},
+																		},
+																	},
+																	Operator: 6,
+																},
+															}},
+															With: nil,
+														}},
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 57,
+																	Line:   114,
+																},
+																File:   "promql.flux",
+																Source: "math.mInf(sign: -1)",
+																Start: ast.Position{
+																	Column: 38,
+																	Line:   114,
+																},
+															},
+														},
+														Callee: &ast.MemberExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 47,
+																		Line:   114,
+																	},
+																	File:   "promql.flux",
+																	Source: "math.mInf",
+																	Start: ast.Position{
+																		Column: 38,
+																		Line:   114,
+																	},
+																},
+															},
+															Object: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 42,
+																			Line:   114,
+																		},
+																		File:   "promql.flux",
+																		Source: "math",
+																		Start: ast.Position{
+																			Column: 38,
+																			Line:   114,
+																		},
+																	},
+																},
+																Name: "math",
+															},
+															Property: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 47,
+																			Line:   114,
+																		},
+																		File:   "promql.flux",
+																		Source: "mInf",
+																		Start: ast.Position{
+																			Column: 43,
+																			Line:   114,
+																		},
+																	},
+																},
+																Name: "mInf",
+															},
+														},
+													},
+												}},
+												With: nil,
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 95,
+														Line:   114,
+													},
+													File:   "promql.flux",
+													Source: "fn: (r, accumulator) => accumulator",
+													Start: ast.Position{
+														Column: 60,
+														Line:   114,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 62,
+															Line:   114,
+														},
+														File:   "promql.flux",
+														Source: "fn",
+														Start: ast.Position{
+															Column: 60,
+															Line:   114,
+														},
+													},
+												},
+												Name: "fn",
+											},
+											Value: &ast.FunctionExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 95,
+															Line:   114,
+														},
+														File:   "promql.flux",
+														Source: "(r, accumulator) => accumulator",
+														Start: ast.Position{
+															Column: 64,
+															Line:   114,
+														},
+													},
+												},
+												Body: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 95,
+																Line:   114,
+															},
+															File:   "promql.flux",
+															Source: "accumulator",
+															Start: ast.Position{
+																Column: 84,
+																Line:   114,
+															},
+														},
+													},
+													Name: "accumulator",
+												},
+												Params: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 66,
+																Line:   114,
+															},
+															File:   "promql.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 65,
+																Line:   114,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 66,
+																	Line:   114,
+																},
+																File:   "promql.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 65,
+																	Line:   114,
+																},
+															},
+														},
+														Name: "r",
+													},
+													Value: nil,
+												}, &ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 79,
+																Line:   114,
+															},
+															File:   "promql.flux",
+															Source: "accumulator",
+															Start: ast.Position{
+																Column: 68,
+																Line:   114,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 79,
+																	Line:   114,
+																},
+																File:   "promql.flux",
+																Source: "accumulator",
+																Start: ast.Position{
+																	Column: 68,
+																	Line:   114,
+																},
+															},
+														},
+														Name: "accumulator",
+													},
+													Value: nil,
+												}},
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 96,
+												Line:   114,
+											},
+											File:   "promql.flux",
+											Source: "reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)",
+											Start: ast.Position{
+												Column: 12,
+												Line:   114,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   114,
+												},
+												File:   "promql.flux",
+												Source: "reduce",
+												Start: ast.Position{
+													Column: 12,
+													Line:   114,
+												},
+											},
+										},
+										Name: "reduce",
+									},
+								},
+							},
+						},
+						Test: &ast.BinaryExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 18,
+										Line:   112,
+									},
+									File:   "promql.flux",
+									Source: "q < 0",
+									Start: ast.Position{
+										Column: 13,
+										Line:   112,
+									},
+								},
+							},
+							Left: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 14,
+											Line:   112,
+										},
+										File:   "promql.flux",
+										Source: "q",
+										Start: ast.Position{
+											Column: 13,
+											Line:   112,
+										},
+									},
+								},
+								Name: "q",
+							},
+							Operator: 8,
+							Right: &ast.IntegerLiteral{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 18,
+											Line:   112,
+										},
+										File:   "promql.flux",
+										Source: "0",
+										Start: ast.Position{
+											Column: 17,
+											Line:   112,
+										},
+									},
+								},
+								Value: int64(0),
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 96,
+								Line:   117,
+							},
+							File:   "promql.flux",
+							Source: "if q <= 1 and q >= 0 then \n    (tables\n        |> universe.quantile(q: q, method: method))\n    else if q < 0 then\n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))\n    else \n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))",
+							Start: ast.Position{
+								Column: 5,
+								Line:   109,
+							},
+						},
+					},
+					Consequent: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 52,
+									Line:   111,
+								},
+								File:   "promql.flux",
+								Source: "(tables\n        |> universe.quantile(q: q, method: method))",
+								Start: ast.Position{
+									Column: 5,
+									Line:   110,
+								},
+							},
+						},
+						Expression: &ast.PipeExpression{
+							Argument: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 12,
+											Line:   110,
+										},
+										File:   "promql.flux",
+										Source: "tables",
+										Start: ast.Position{
+											Column: 6,
+											Line:   110,
+										},
+									},
+								},
+								Name: "tables",
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 51,
+										Line:   111,
+									},
+									File:   "promql.flux",
+									Source: "tables\n        |> universe.quantile(q: q, method: method)",
+									Start: ast.Position{
+										Column: 6,
+										Line:   110,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 50,
+												Line:   111,
+											},
+											File:   "promql.flux",
+											Source: "q: q, method: method",
+											Start: ast.Position{
+												Column: 30,
+												Line:   111,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 34,
+													Line:   111,
+												},
+												File:   "promql.flux",
+												Source: "q: q",
+												Start: ast.Position{
+													Column: 30,
+													Line:   111,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 31,
+														Line:   111,
+													},
+													File:   "promql.flux",
+													Source: "q",
+													Start: ast.Position{
+														Column: 30,
+														Line:   111,
+													},
+												},
+											},
+											Name: "q",
+										},
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 34,
+														Line:   111,
+													},
+													File:   "promql.flux",
+													Source: "q",
+													Start: ast.Position{
+														Column: 33,
+														Line:   111,
+													},
+												},
+											},
+											Name: "q",
+										},
+									}, &ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 50,
+													Line:   111,
+												},
+												File:   "promql.flux",
+												Source: "method: method",
+												Start: ast.Position{
+													Column: 36,
+													Line:   111,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   111,
+													},
+													File:   "promql.flux",
+													Source: "method",
+													Start: ast.Position{
+														Column: 36,
+														Line:   111,
+													},
+												},
+											},
+											Name: "method",
+										},
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 50,
+														Line:   111,
+													},
+													File:   "promql.flux",
+													Source: "method",
+													Start: ast.Position{
+														Column: 44,
+														Line:   111,
+													},
+												},
+											},
+											Name: "method",
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 51,
+											Line:   111,
+										},
+										File:   "promql.flux",
+										Source: "universe.quantile(q: q, method: method)",
+										Start: ast.Position{
+											Column: 12,
+											Line:   111,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 29,
+												Line:   111,
+											},
+											File:   "promql.flux",
+											Source: "universe.quantile",
+											Start: ast.Position{
+												Column: 12,
+												Line:   111,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 20,
+													Line:   111,
+												},
+												File:   "promql.flux",
+												Source: "universe",
+												Start: ast.Position{
+													Column: 12,
+													Line:   111,
+												},
+											},
+										},
+										Name: "universe",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   111,
+												},
+												File:   "promql.flux",
+												Source: "quantile",
+												Start: ast.Position{
+													Column: 21,
+													Line:   111,
+												},
+											},
+										},
+										Name: "quantile",
+									},
+								},
+							},
+						},
+					},
+					Test: &ast.LogicalExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 25,
+									Line:   109,
+								},
+								File:   "promql.flux",
+								Source: "q <= 1 and q >= 0",
+								Start: ast.Position{
+									Column: 8,
+									Line:   109,
+								},
+							},
+						},
+						Left: &ast.BinaryExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 14,
+										Line:   109,
+									},
+									File:   "promql.flux",
+									Source: "q <= 1",
+									Start: ast.Position{
+										Column: 8,
+										Line:   109,
+									},
+								},
+							},
+							Left: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 9,
+											Line:   109,
+										},
+										File:   "promql.flux",
+										Source: "q",
+										Start: ast.Position{
+											Column: 8,
+											Line:   109,
+										},
+									},
+								},
+								Name: "q",
+							},
+							Operator: 7,
+							Right: &ast.IntegerLiteral{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 14,
+											Line:   109,
+										},
+										File:   "promql.flux",
+										Source: "1",
+										Start: ast.Position{
+											Column: 13,
+											Line:   109,
+										},
+									},
+								},
+								Value: int64(1),
+							},
+						},
+						Operator: 1,
+						Right: &ast.BinaryExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   109,
+									},
+									File:   "promql.flux",
+									Source: "q >= 0",
+									Start: ast.Position{
+										Column: 19,
+										Line:   109,
+									},
+								},
+							},
+							Left: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 20,
+											Line:   109,
+										},
+										File:   "promql.flux",
+										Source: "q",
+										Start: ast.Position{
+											Column: 19,
+											Line:   109,
+										},
+									},
+								},
+								Name: "q",
+							},
+							Operator: 9,
+							Right: &ast.IntegerLiteral{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   109,
+										},
+										File:   "promql.flux",
+										Source: "0",
+										Start: ast.Position{
+											Column: 24,
+											Line:   109,
+										},
+									},
+								},
+								Value: int64(0),
+							},
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   107,
+							},
+							File:   "promql.flux",
+							Source: "q",
+							Start: ast.Position{
+								Column: 13,
+								Line:   107,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   107,
+								},
+								File:   "promql.flux",
+								Source: "q",
+								Start: ast.Position{
+									Column: 13,
+									Line:   107,
+								},
+							},
+						},
+						Name: "q",
+					},
+					Value: nil,
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 25,
+								Line:   107,
+							},
+							File:   "promql.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 16,
+								Line:   107,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 22,
+									Line:   107,
+								},
+								File:   "promql.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 16,
+									Line:   107,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 25,
+								Line:   107,
+							},
+							File:   "promql.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 23,
+								Line:   107,
+							},
+						},
+					}},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 46,
+								Line:   107,
+							},
+							File:   "promql.flux",
+							Source: "method=\"exact_mean\"",
+							Start: ast.Position{
+								Column: 27,
+								Line:   107,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 33,
+									Line:   107,
+								},
+								File:   "promql.flux",
+								Source: "method",
+								Start: ast.Position{
+									Column: 27,
+									Line:   107,
+								},
+							},
+						},
+						Name: "method",
+					},
+					Value: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 46,
+									Line:   107,
+								},
+								File:   "promql.flux",
+								Source: "\"exact_mean\"",
+								Start: ast.Position{
+									Column: 34,
+									Line:   107,
+								},
+							},
+						},
+						Value: "exact_mean",
+					},
+				}},
+			},
 		}},
-		Imports: nil,
-		Name:    "promql.flux",
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   4,
+					},
+					File:   "promql.flux",
+					Source: "import \"math\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   4,
+						},
+						File:   "promql.flux",
+						Source: "\"math\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "math",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 18,
+						Line:   5,
+					},
+					File:   "promql.flux",
+					Source: "import \"universe\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 18,
+							Line:   5,
+						},
+						File:   "promql.flux",
+						Source: "\"universe\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				Value: "universe",
+			},
+		}},
+		Name: "promql.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
