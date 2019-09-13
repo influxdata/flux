@@ -678,6 +678,37 @@ func (e *InterpolatedPart) UnmarshalJSON(data []byte) error {
 	e.Expression = expr
 	return nil
 }
+func (e *ParenExpression) MarshalJSON() ([]byte, error) {
+	type Alias ParenExpression
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  e.Type(),
+		Alias: (*Alias)(e),
+	}
+	return json.Marshal(raw)
+}
+func (e *ParenExpression) UnmarshalJSON(data []byte) error {
+	type Alias ParenExpression
+	raw := struct {
+		*Alias
+		Expression json.RawMessage `json:"expression"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*e = *(*ParenExpression)(raw.Alias)
+	}
+
+	expr, err := unmarshalExpression(raw.Expression)
+	if err != nil {
+		return err
+	}
+	e.Expression = expr
+	return nil
+}
 func (e *ArrayExpression) MarshalJSON() ([]byte, error) {
 	type Alias ArrayExpression
 	raw := struct {
@@ -1140,6 +1171,8 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 		node = new(TextPart)
 	case "InterpolatedPart":
 		node = new(InterpolatedPart)
+	case "ParenExpression":
+		node = new(ParenExpression)
 	case "StringLiteral":
 		node = new(StringLiteral)
 	case "BooleanLiteral":

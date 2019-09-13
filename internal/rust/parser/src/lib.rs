@@ -1213,8 +1213,11 @@ impl Parser {
                     }
                     Some(_) => (),
                 };
-                self.close(T_RPAREN);
-                expr.expect("must be Some at this point")
+                let rparen = self.close(T_RPAREN);
+                Expression::Paren(Box::new(ParenExpression {
+                    base: self.base_node_from_tokens(&lparen, &rparen),
+                    expression: expr.expect("must be Some at this point"),
+                }))
             }
         }
     }
@@ -1290,8 +1293,11 @@ impl Parser {
                         right: rhs,
                     }));
                 }
-                self.close(T_RPAREN);
-                expr
+                let rparen = self.close(T_RPAREN);
+                Expression::Paren(Box::new(ParenExpression {
+                    base: self.base_node_from_tokens(&lparen, &rparen),
+                    expression: expr,
+                }))
             }
         }
     }

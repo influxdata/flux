@@ -17,11 +17,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 94,
+					Column: 95,
 					Line:   38,
 				},
 				File:   "http_endpoint_test.flux",
-				Source: "package http_test\n\nimport \"testing\"\nimport \"http\"\nimport \"json\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true,true\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path,_sent\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/,true\n,,0,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,/,true\n,,0,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/,true\n\"\n\nendpoint = http.endpoint(url:\"http://localhost:7777\")\n\npost = (table=<-) =>\n    table\n        |> range(start:2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> endpoint(mapFn:(r) => ({data: json.encode(v: r)}))()\n\ntest _post = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: post}",
+				Source: "package http_test\n\nimport \"testing\"\nimport \"http\"\nimport \"json\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true,true\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path,_sent\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/,true\n,,0,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,/,true\n,,0,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/,true\n\"\n\nendpoint = http.endpoint(url:\"http://localhost:7777\")\n\npost = (table=<-) =>\n    table\n        |> range(start:2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> endpoint(mapFn:(r) => ({data: json.encode(v: r)}))()\n\ntest _post = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: post})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -34,11 +34,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 41,
+							Column: 42,
 							Line:   7,
 						},
 						File:   "http_endpoint_test.flux",
-						Source: "now = () => (2030-01-01T00:00:00Z",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
 						Start: ast.Position{
 							Column: 8,
 							Line:   7,
@@ -68,34 +68,51 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 41,
+								Column: 42,
 								Line:   7,
 							},
 							File:   "http_endpoint_test.flux",
-							Source: "() => (2030-01-01T00:00:00Z",
+							Source: "() => (2030-01-01T00:00:00Z)",
 							Start: ast.Position{
 								Column: 14,
 								Line:   7,
 							},
 						},
 					},
-					Body: &ast.DateTimeLiteral{
+					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 41,
+									Column: 42,
 									Line:   7,
 								},
 								File:   "http_endpoint_test.flux",
-								Source: "2030-01-01T00:00:00Z",
+								Source: "(2030-01-01T00:00:00Z)",
 								Start: ast.Position{
-									Column: 21,
+									Column: 20,
 									Line:   7,
 								},
 							},
 						},
-						Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   7,
+									},
+									File:   "http_endpoint_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   7,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
 					},
 					Params: nil,
 				},
@@ -104,11 +121,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 41,
+						Column: 42,
 						Line:   7,
 					},
 					File:   "http_endpoint_test.flux",
-					Source: "option now = () => (2030-01-01T00:00:00Z",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -781,11 +798,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 60,
+											Column: 61,
 											Line:   35,
 										},
 										File:   "http_endpoint_test.flux",
-										Source: "mapFn:(r) => ({data: json.encode(v: r)}",
+										Source: "mapFn:(r) => ({data: json.encode(v: r)})",
 										Start: ast.Position{
 											Column: 21,
 											Line:   35,
@@ -797,11 +814,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 60,
+												Column: 61,
 												Line:   35,
 											},
 											File:   "http_endpoint_test.flux",
-											Source: "mapFn:(r) => ({data: json.encode(v: r)}",
+											Source: "mapFn:(r) => ({data: json.encode(v: r)})",
 											Start: ast.Position{
 												Column: 21,
 												Line:   35,
@@ -831,85 +848,85 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 60,
+													Column: 61,
 													Line:   35,
 												},
 												File:   "http_endpoint_test.flux",
-												Source: "(r) => ({data: json.encode(v: r)}",
+												Source: "(r) => ({data: json.encode(v: r)})",
 												Start: ast.Position{
 													Column: 27,
 													Line:   35,
 												},
 											},
 										},
-										Body: &ast.ObjectExpression{
+										Body: &ast.ParenExpression{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 60,
+														Column: 61,
 														Line:   35,
 													},
 													File:   "http_endpoint_test.flux",
-													Source: "{data: json.encode(v: r)}",
+													Source: "({data: json.encode(v: r)})",
 													Start: ast.Position{
-														Column: 35,
+														Column: 34,
 														Line:   35,
 													},
 												},
 											},
-											Properties: []*ast.Property{&ast.Property{
+											Expression: &ast.ObjectExpression{
 												BaseNode: ast.BaseNode{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 59,
+															Column: 60,
 															Line:   35,
 														},
 														File:   "http_endpoint_test.flux",
-														Source: "data: json.encode(v: r)",
+														Source: "{data: json.encode(v: r)}",
 														Start: ast.Position{
-															Column: 36,
+															Column: 35,
 															Line:   35,
 														},
 													},
 												},
-												Key: &ast.Identifier{
+												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 40,
+																Column: 59,
 																Line:   35,
 															},
 															File:   "http_endpoint_test.flux",
-															Source: "data",
+															Source: "data: json.encode(v: r)",
 															Start: ast.Position{
 																Column: 36,
 																Line:   35,
 															},
 														},
 													},
-													Name: "data",
-												},
-												Value: &ast.CallExpression{
-													Arguments: []ast.Expression{&ast.ObjectExpression{
+													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 58,
+																	Column: 40,
 																	Line:   35,
 																},
 																File:   "http_endpoint_test.flux",
-																Source: "v: r",
+																Source: "data",
 																Start: ast.Position{
-																	Column: 54,
+																	Column: 36,
 																	Line:   35,
 																},
 															},
 														},
-														Properties: []*ast.Property{&ast.Property{
+														Name: "data",
+													},
+													Value: &ast.CallExpression{
+														Arguments: []ast.Expression{&ast.ObjectExpression{
 															BaseNode: ast.BaseNode{
 																Errors: nil,
 																Loc: &ast.SourceLocation{
@@ -925,25 +942,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	},
 																},
 															},
-															Key: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 55,
-																			Line:   35,
-																		},
-																		File:   "http_endpoint_test.flux",
-																		Source: "v",
-																		Start: ast.Position{
-																			Column: 54,
-																			Line:   35,
-																		},
-																	},
-																},
-																Name: "v",
-															},
-															Value: &ast.Identifier{
+															Properties: []*ast.Property{&ast.Property{
 																BaseNode: ast.BaseNode{
 																	Errors: nil,
 																	Loc: &ast.SourceLocation{
@@ -952,68 +951,68 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Line:   35,
 																		},
 																		File:   "http_endpoint_test.flux",
-																		Source: "r",
+																		Source: "v: r",
 																		Start: ast.Position{
-																			Column: 57,
+																			Column: 54,
 																			Line:   35,
 																		},
 																	},
 																},
-																Name: "r",
-															},
+																Key: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 55,
+																				Line:   35,
+																			},
+																			File:   "http_endpoint_test.flux",
+																			Source: "v",
+																			Start: ast.Position{
+																				Column: 54,
+																				Line:   35,
+																			},
+																		},
+																	},
+																	Name: "v",
+																},
+																Value: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 58,
+																				Line:   35,
+																			},
+																			File:   "http_endpoint_test.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 57,
+																				Line:   35,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+															}},
+															With: nil,
 														}},
-														With: nil,
-													}},
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 59,
-																Line:   35,
-															},
-															File:   "http_endpoint_test.flux",
-															Source: "json.encode(v: r)",
-															Start: ast.Position{
-																Column: 42,
-																Line:   35,
-															},
-														},
-													},
-													Callee: &ast.MemberExpression{
 														BaseNode: ast.BaseNode{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 53,
+																	Column: 59,
 																	Line:   35,
 																},
 																File:   "http_endpoint_test.flux",
-																Source: "json.encode",
+																Source: "json.encode(v: r)",
 																Start: ast.Position{
 																	Column: 42,
 																	Line:   35,
 																},
 															},
 														},
-														Object: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 46,
-																		Line:   35,
-																	},
-																	File:   "http_endpoint_test.flux",
-																	Source: "json",
-																	Start: ast.Position{
-																		Column: 42,
-																		Line:   35,
-																	},
-																},
-															},
-															Name: "json",
-														},
-														Property: &ast.Identifier{
+														Callee: &ast.MemberExpression{
 															BaseNode: ast.BaseNode{
 																Errors: nil,
 																Loc: &ast.SourceLocation{
@@ -1022,19 +1021,54 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Line:   35,
 																	},
 																	File:   "http_endpoint_test.flux",
-																	Source: "encode",
+																	Source: "json.encode",
 																	Start: ast.Position{
-																		Column: 47,
+																		Column: 42,
 																		Line:   35,
 																	},
 																},
 															},
-															Name: "encode",
+															Object: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 46,
+																			Line:   35,
+																		},
+																		File:   "http_endpoint_test.flux",
+																		Source: "json",
+																		Start: ast.Position{
+																			Column: 42,
+																			Line:   35,
+																		},
+																	},
+																},
+																Name: "json",
+															},
+															Property: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 53,
+																			Line:   35,
+																		},
+																		File:   "http_endpoint_test.flux",
+																		Source: "encode",
+																		Start: ast.Position{
+																			Column: 47,
+																			Line:   35,
+																		},
+																	},
+																},
+																Name: "encode",
+															},
 														},
 													},
-												},
-											}},
-											With: nil,
+												}},
+												With: nil,
+											},
 										},
 										Params: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
@@ -1169,11 +1203,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 94,
+							Column: 95,
 							Line:   38,
 						},
 						File:   "http_endpoint_test.flux",
-						Source: "_post = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: post}",
+						Source: "_post = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: post})",
 						Start: ast.Position{
 							Column: 6,
 							Line:   37,
@@ -1203,85 +1237,85 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 94,
+								Column: 95,
 								Line:   38,
 							},
 							File:   "http_endpoint_test.flux",
-							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: post}",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: post})",
 							Start: ast.Position{
 								Column: 14,
 								Line:   37,
 							},
 						},
 					},
-					Body: &ast.ObjectExpression{
+					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 94,
+									Column: 95,
 									Line:   38,
 								},
 								File:   "http_endpoint_test.flux",
-								Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: post}",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: post})",
 								Start: ast.Position{
-									Column: 6,
+									Column: 5,
 									Line:   38,
 								},
 							},
 						},
-						Properties: []*ast.Property{&ast.Property{
+						Expression: &ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 46,
+										Column: 94,
 										Line:   38,
 									},
 									File:   "http_endpoint_test.flux",
-									Source: "input: testing.loadStorage(csv: inData)",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: post}",
 									Start: ast.Position{
-										Column: 7,
+										Column: 6,
 										Line:   38,
 									},
 								},
 							},
-							Key: &ast.Identifier{
+							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 12,
+											Column: 46,
 											Line:   38,
 										},
 										File:   "http_endpoint_test.flux",
-										Source: "input",
+										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 7,
 											Line:   38,
 										},
 									},
 								},
-								Name: "input",
-							},
-							Value: &ast.CallExpression{
-								Arguments: []ast.Expression{&ast.ObjectExpression{
+								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 45,
+												Column: 12,
 												Line:   38,
 											},
 											File:   "http_endpoint_test.flux",
-											Source: "csv: inData",
+											Source: "input",
 											Start: ast.Position{
-												Column: 34,
+												Column: 7,
 												Line:   38,
 											},
 										},
 									},
-									Properties: []*ast.Property{&ast.Property{
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -1297,25 +1331,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 37,
-														Line:   38,
-													},
-													File:   "http_endpoint_test.flux",
-													Source: "csv",
-													Start: ast.Position{
-														Column: 34,
-														Line:   38,
-													},
-												},
-											},
-											Name: "csv",
-										},
-										Value: &ast.Identifier{
+										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
@@ -1324,68 +1340,68 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Line:   38,
 													},
 													File:   "http_endpoint_test.flux",
-													Source: "inData",
+													Source: "csv: inData",
 													Start: ast.Position{
-														Column: 39,
+														Column: 34,
 														Line:   38,
 													},
 												},
 											},
-											Name: "inData",
-										},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   38,
+														},
+														File:   "http_endpoint_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   38,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 45,
+															Line:   38,
+														},
+														File:   "http_endpoint_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 39,
+															Line:   38,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
 									}},
-									With: nil,
-								}},
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 46,
-											Line:   38,
-										},
-										File:   "http_endpoint_test.flux",
-										Source: "testing.loadStorage(csv: inData)",
-										Start: ast.Position{
-											Column: 14,
-											Line:   38,
-										},
-									},
-								},
-								Callee: &ast.MemberExpression{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 33,
+												Column: 46,
 												Line:   38,
 											},
 											File:   "http_endpoint_test.flux",
-											Source: "testing.loadStorage",
+											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 14,
 												Line:   38,
 											},
 										},
 									},
-									Object: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 21,
-													Line:   38,
-												},
-												File:   "http_endpoint_test.flux",
-												Source: "testing",
-												Start: ast.Position{
-													Column: 14,
-													Line:   38,
-												},
-											},
-										},
-										Name: "testing",
-									},
-									Property: &ast.Identifier{
+									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -1394,69 +1410,87 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Line:   38,
 												},
 												File:   "http_endpoint_test.flux",
-												Source: "loadStorage",
+												Source: "testing.loadStorage",
 												Start: ast.Position{
-													Column: 22,
+													Column: 14,
 													Line:   38,
 												},
 											},
 										},
-										Name: "loadStorage",
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   38,
+													},
+													File:   "http_endpoint_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   38,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   38,
+													},
+													File:   "http_endpoint_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   38,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
 									},
 								},
-							},
-						}, &ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 83,
-										Line:   38,
-									},
-									File:   "http_endpoint_test.flux",
-									Source: "want: testing.loadMem(csv: outData)",
-									Start: ast.Position{
-										Column: 48,
-										Line:   38,
-									},
-								},
-							},
-							Key: &ast.Identifier{
+							}, &ast.Property{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 52,
+											Column: 83,
 											Line:   38,
 										},
 										File:   "http_endpoint_test.flux",
-										Source: "want",
+										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 48,
 											Line:   38,
 										},
 									},
 								},
-								Name: "want",
-							},
-							Value: &ast.CallExpression{
-								Arguments: []ast.Expression{&ast.ObjectExpression{
+								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 82,
+												Column: 52,
 												Line:   38,
 											},
 											File:   "http_endpoint_test.flux",
-											Source: "csv: outData",
+											Source: "want",
 											Start: ast.Position{
-												Column: 70,
+												Column: 48,
 												Line:   38,
 											},
 										},
 									},
-									Properties: []*ast.Property{&ast.Property{
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -1472,25 +1506,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 73,
-														Line:   38,
-													},
-													File:   "http_endpoint_test.flux",
-													Source: "csv",
-													Start: ast.Position{
-														Column: 70,
-														Line:   38,
-													},
-												},
-											},
-											Name: "csv",
-										},
-										Value: &ast.Identifier{
+										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
@@ -1499,68 +1515,68 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Line:   38,
 													},
 													File:   "http_endpoint_test.flux",
-													Source: "outData",
+													Source: "csv: outData",
 													Start: ast.Position{
-														Column: 75,
+														Column: 70,
 														Line:   38,
 													},
 												},
 											},
-											Name: "outData",
-										},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 73,
+															Line:   38,
+														},
+														File:   "http_endpoint_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 70,
+															Line:   38,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 82,
+															Line:   38,
+														},
+														File:   "http_endpoint_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 75,
+															Line:   38,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
 									}},
-									With: nil,
-								}},
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 83,
-											Line:   38,
-										},
-										File:   "http_endpoint_test.flux",
-										Source: "testing.loadMem(csv: outData)",
-										Start: ast.Position{
-											Column: 54,
-											Line:   38,
-										},
-									},
-								},
-								Callee: &ast.MemberExpression{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 69,
+												Column: 83,
 												Line:   38,
 											},
 											File:   "http_endpoint_test.flux",
-											Source: "testing.loadMem",
+											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 54,
 												Line:   38,
 											},
 										},
 									},
-									Object: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 61,
-													Line:   38,
-												},
-												File:   "http_endpoint_test.flux",
-												Source: "testing",
-												Start: ast.Position{
-													Column: 54,
-													Line:   38,
-												},
-											},
-										},
-										Name: "testing",
-									},
-									Property: &ast.Identifier{
+									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -1569,52 +1585,52 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Line:   38,
 												},
 												File:   "http_endpoint_test.flux",
-												Source: "loadMem",
+												Source: "testing.loadMem",
 												Start: ast.Position{
-													Column: 62,
+													Column: 54,
 													Line:   38,
 												},
 											},
 										},
-										Name: "loadMem",
-									},
-								},
-							},
-						}, &ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 93,
-										Line:   38,
-									},
-									File:   "http_endpoint_test.flux",
-									Source: "fn: post",
-									Start: ast.Position{
-										Column: 85,
-										Line:   38,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 87,
-											Line:   38,
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 61,
+														Line:   38,
+													},
+													File:   "http_endpoint_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 54,
+														Line:   38,
+													},
+												},
+											},
+											Name: "testing",
 										},
-										File:   "http_endpoint_test.flux",
-										Source: "fn",
-										Start: ast.Position{
-											Column: 85,
-											Line:   38,
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 69,
+														Line:   38,
+													},
+													File:   "http_endpoint_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 62,
+														Line:   38,
+													},
+												},
+											},
+											Name: "loadMem",
 										},
 									},
 								},
-								Name: "fn",
-							},
-							Value: &ast.Identifier{
+							}, &ast.Property{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
@@ -1623,17 +1639,52 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Line:   38,
 										},
 										File:   "http_endpoint_test.flux",
-										Source: "post",
+										Source: "fn: post",
 										Start: ast.Position{
-											Column: 89,
+											Column: 85,
 											Line:   38,
 										},
 									},
 								},
-								Name: "post",
-							},
-						}},
-						With: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 87,
+												Line:   38,
+											},
+											File:   "http_endpoint_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 85,
+												Line:   38,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 93,
+												Line:   38,
+											},
+											File:   "http_endpoint_test.flux",
+											Source: "post",
+											Start: ast.Position{
+												Column: 89,
+												Line:   38,
+											},
+										},
+									},
+									Name: "post",
+								},
+							}},
+							With: nil,
+						},
 					},
 					Params: nil,
 				},
@@ -1642,11 +1693,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 94,
+						Column: 95,
 						Line:   38,
 					},
 					File:   "http_endpoint_test.flux",
-					Source: "test _post = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: post}",
+					Source: "test _post = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: post})",
 					Start: ast.Position{
 						Column: 1,
 						Line:   37,

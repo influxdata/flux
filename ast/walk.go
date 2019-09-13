@@ -306,6 +306,14 @@ func walk(v Visitor, node Node) {
 		if w != nil {
 			walk(w, n.Expression)
 		}
+	case *ParenExpression:
+		if n == nil {
+			return
+		}
+		w := v.Visit(n)
+		if w != nil {
+			walk(w, n.Expression)
+		}
 	case *Identifier:
 		if n == nil {
 			return

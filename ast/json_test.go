@@ -35,6 +35,24 @@ func TestJSONMarshal(t *testing.T) {
 			want: `{"type":"StringExpression","parts":[{"type":"TextPart","value":"a = "},{"type":"InterpolatedPart","expression":{"type":"Identifier","name":"a"}}]}`,
 		},
 		{
+			name: "paren expression",
+			node: &ast.ParenExpression{
+				Expression: &ast.StringExpression{
+					Parts: []ast.StringExpressionPart{
+						&ast.TextPart{
+							Value: "a = ",
+						},
+						&ast.InterpolatedPart{
+							Expression: &ast.Identifier{
+								Name: "a",
+							},
+						},
+					},
+				},
+			},
+			want: `{"type":"ParenExpression","expression":{"type":"StringExpression","parts":[{"type":"TextPart","value":"a = "},{"type":"InterpolatedPart","expression":{"type":"Identifier","name":"a"}}]}}`,
+		},
+		{
 			name: "simple package",
 			node: &ast.Package{
 				Package: "foo",

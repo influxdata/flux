@@ -281,6 +281,9 @@ func analyzeExpression(expr ast.Expression) (Expression, error) {
 		return analyzeIdentifierExpression(expr)
 	case *ast.StringExpression:
 		return analyzeStringExpression(expr)
+	case *ast.ParenExpression:
+		// Unwrap the parenthesis and analyze underlying Expression.
+		return analyzeExpression(expr.Expression)
 	case ast.Literal:
 		return analyzeLiteral(expr)
 	default:

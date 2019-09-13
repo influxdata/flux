@@ -92,6 +92,7 @@ func (*VariableAssignment) node()  {}
 func (*MemberAssignment) node()    {}
 
 func (*StringExpression) node()      {}
+func (*ParenExpression) node()       {}
 func (*ArrayExpression) node()       {}
 func (*FunctionExpression) node()    {}
 func (*BinaryExpression) node()      {}
@@ -515,6 +516,7 @@ type Expression interface {
 }
 
 func (*StringExpression) expression()       {}
+func (*ParenExpression) expression()        {}
 func (*ArrayExpression) expression()        {}
 func (*FunctionExpression) expression()     {}
 func (*BinaryExpression) expression()       {}
@@ -607,6 +609,27 @@ func (p *InterpolatedPart) Copy() Node {
 		np.Expression = p.Expression.Copy().(Expression)
 	}
 	return np
+}
+
+type ParenExpression struct {
+	BaseNode
+	Expression Expression `json:"expression"`
+}
+
+func (*ParenExpression) Type() string { return "ParenExpression" }
+
+func (e *ParenExpression) Copy() Node {
+	if e == nil {
+		return e
+	}
+	ne := new(ParenExpression)
+	*ne = *e
+	ne.BaseNode = e.BaseNode.Copy()
+
+	if e.Expression != nil {
+		ne.Expression = e.Expression.Copy().(Expression)
+	}
+	return ne
 }
 
 // CallExpression represents a function call

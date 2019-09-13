@@ -114,8 +114,8 @@ pub enum Expression {
     Pipe(Box<PipeExpression>),
     Call(Box<CallExpression>),
     Cond(Box<ConditionalExpression>),
-
     StringExp(Box<StringExpression>),
+    Paren(Box<ParenExpression>),
 
     Int(IntegerLiteral),
     Flt(FloatLiteral),
@@ -157,6 +157,7 @@ impl Expression {
             Expression::PipeLit(wrapped) => &wrapped.base,
             Expression::Bad(wrapped) => &wrapped.base,
             Expression::StringExp(wrapped) => &wrapped.base,
+            Expression::Paren(wrapped) => &wrapped.base,
         }
     }
 }
@@ -465,7 +466,17 @@ pub struct InterpolatedPart {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     pub base: BaseNode,
-    pub expression: Expression
+    pub expression: Expression,
+}
+
+// ParenExpression represents an expression wrapped in parenthesis
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
+pub struct ParenExpression {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    pub base: BaseNode,
+    pub expression: Expression,
 }
 
 // CallExpression represents a function call
