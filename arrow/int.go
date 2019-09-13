@@ -2,7 +2,6 @@ package arrow
 
 import (
 	"github.com/apache/arrow/go/arrow/array"
-	arrowmemory "github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux/memory"
 )
 
@@ -24,12 +23,5 @@ func IntSlice(arr *array.Int64, i, j int) *array.Int64 {
 }
 
 func NewIntBuilder(a *memory.Allocator) *array.Int64Builder {
-	var alloc arrowmemory.Allocator = arrowmemory.NewGoAllocator()
-	if a != nil {
-		alloc = &allocator{
-			Allocator: alloc,
-			alloc:     a,
-		}
-	}
-	return array.NewInt64Builder(alloc)
+	return array.NewInt64Builder(a)
 }

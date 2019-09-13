@@ -2,7 +2,6 @@ package arrow
 
 import (
 	"github.com/apache/arrow/go/arrow/array"
-	arrowmemory "github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux/memory"
 )
 
@@ -24,12 +23,5 @@ func UintSlice(arr *array.Uint64, i, j int) *array.Uint64 {
 }
 
 func NewUintBuilder(a *memory.Allocator) *array.Uint64Builder {
-	var alloc arrowmemory.Allocator = arrowmemory.NewGoAllocator()
-	if a != nil {
-		alloc = &allocator{
-			Allocator: alloc,
-			alloc:     a,
-		}
-	}
-	return array.NewUint64Builder(alloc)
+	return array.NewUint64Builder(a)
 }

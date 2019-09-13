@@ -4,9 +4,17 @@ import (
 	"fmt"
 	"sync/atomic"
 
+	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 )
+
+// DefaultAllocator is the default memory allocator for Flux.
+//
+// This implements the memory.Allocator interface from arrow.
+var DefaultAllocator = memory.DefaultAllocator
+
+var _ memory.Allocator = (*Allocator)(nil)
 
 // Allocator tracks the amount of memory being consumed by a query.
 type Allocator struct {
@@ -14,16 +22,60 @@ type Allocator struct {
 	// can assign. If this is null, there is no limit.
 	Limit *int64
 
+	// Allocator is the underlying memory allocator used to
+	// allocate and free memory.
+	// If this is unset, the DefaultAllocator is used.
+	Allocator memory.Allocator
+
 	bytesAllocated int64
 	maxAllocated   int64
 }
 
 // Allocate will ensure that the requested memory is available and
 // record that it is in use.
-func (a *Allocator) Allocate(size int) error {
+func (a *Allocator) Allocate(size int) []byte {
+	if a == nil {
+		return DefaultAllocator.Allocate(size)
+	}
+
 	if size < 0 {
 		panic(errors.New(codes.Internal, "cannot allocate negative memory"))
 	} else if size == 0 {
+		return nil
+	}
+
+	// Account for the size requested.
+	if err := a.count(size); err != nil {
+		panic(err)
+	}
+
+	// Allocate the amount of memory.
+	// TODO(jsternberg): It's technically possible for this to allocate
+	// more memory than we requested. How do we deal with that since we
+	// likely want to use that feature?
+	alloc := a.allocator()
+	return alloc.Allocate(size)
+}
+
+func (a *Allocator) Reallocate(size int, b []byte) []byte {
+	if a == nil {
+		return DefaultAllocator.Reallocate(size, b)
+	}
+
+	sizediff := size - cap(b)
+	if err := a.Account(sizediff); err != nil {
+		panic(err)
+	}
+
+	alloc := a.allocator()
+	return alloc.Reallocate(size, b)
+}
+
+// Account will manually account for the amount of memory being used.
+// This is typically used for memory that is allocated outside of the
+// Allocator that must be recorded in some way.
+func (a *Allocator) Account(size int) error {
+	if size == 0 {
 		return nil
 	}
 	return a.count(size)
@@ -44,10 +96,20 @@ func (a *Allocator) MaxAllocated() int64 {
 // by Allocate. Not all code is capable of using this though so this
 // method provides a low-level way of releasing the memory without
 // using a Reference.
-func (a *Allocator) Free(size int) {
-	if size < 0 {
-		panic(errors.New(codes.Internal, "cannot free negative memory"))
+// Free will release the memory associated with the byte slice.
+func (a *Allocator) Free(b []byte) {
+	if a == nil {
+		DefaultAllocator.Free(b)
+		return
 	}
+
+	size := len(b)
+
+	// Release the memory to the allocator first.
+	alloc := a.allocator()
+	alloc.Free(b)
+
+	// Release the memory in our accounting.
 	atomic.AddInt64(&a.bytesAllocated, int64(-size))
 }
 
@@ -84,6 +146,14 @@ func (a *Allocator) count(size int) error {
 		}
 	}
 	return nil
+}
+
+// allocator returns the underlying memory.Allocator that should be used.
+func (a *Allocator) allocator() memory.Allocator {
+	if a.Allocator == nil {
+		return DefaultAllocator
+	}
+	return a.Allocator
 }
 
 // LimitExceededError is an error when the allocation limit is exceeded.

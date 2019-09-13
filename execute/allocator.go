@@ -22,11 +22,11 @@ type Allocator struct {
 
 // Free informs the allocator that memory has been freed.
 func (a *Allocator) Free(n, size int) {
-	a.Allocator.Free(n * size)
+	_ = a.Allocator.Account(-n * size)
 }
 
 func (a *Allocator) account(n, size int) {
-	if err := a.Allocator.Allocate(n * size); err != nil {
+	if err := a.Allocator.Account(n * size); err != nil {
 		panic(err)
 	}
 }
