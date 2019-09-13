@@ -311,6 +311,7 @@ func (t *DiffTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 	// to prematurely declare the other table as finished so we
 	// don't do more work on something that failed anyway.
 	if t.finished[id] {
+		tbl.Done()
 		return nil
 	}
 
@@ -402,6 +403,9 @@ func (t *DiffTransformation) createSchema(builder execute.TableBuilder, want, go
 }
 
 func (t *DiffTransformation) diff(key flux.GroupKey, want, got *tableBuffer) error {
+	defer want.Release()
+	defer got.Release()
+
 	// Find the smallest size for the tables. We will only iterate
 	// over these rows.
 	sz := want.sz
