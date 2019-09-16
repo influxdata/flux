@@ -24,6 +24,9 @@ const (
 	tableKindKey    = "kind"
 	tableParentsKey = "parents"
 	tableSpecKey    = "spec"
+
+	NowOption = "now"
+	nowPkg    = "universe"
 )
 
 // Parse parses a Flux script and produces an ast.Package.
@@ -78,6 +81,23 @@ func SetOption(pkg, name string, v values.Value) ScopeMutator {
 	return func(scope values.Scope) {
 		scope.SetOption(pkg, name, v)
 	}
+}
+
+// SetNowOption returns a ScopeMutator that sets the `now` option to the given time.
+func SetNowOption(now time.Time) ScopeMutator {
+	return SetOption(nowPkg, NowOption, generateNowFunc(now))
+}
+
+func generateNowFunc(now time.Time) values.Function {
+	timeVal := values.NewTime(values.ConvertTime(now))
+	ftype := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+		Return: semantic.Time,
+	})
+	call := func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+		return timeVal, nil
+	}
+	sideEffect := false
+	return values.NewFunction(NowOption, ftype, call, sideEffect)
 }
 
 type CreateOperationSpec func(args Arguments, a *Administration) (OperationSpec, error)

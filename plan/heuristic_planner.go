@@ -5,12 +5,14 @@ import "sort"
 // heuristicPlanner applies a set of rules to the nodes in a Spec
 // until a fixed point is reached and no more rules can be applied.
 type heuristicPlanner struct {
-	rules map[ProcedureKind][]Rule
+	rules         map[ProcedureKind][]Rule
+	disabledRules map[string]bool
 }
 
 func newHeuristicPlanner() *heuristicPlanner {
 	return &heuristicPlanner{
-		rules: make(map[ProcedureKind][]Rule),
+		rules:         make(map[ProcedureKind][]Rule),
+		disabledRules: make(map[string]bool),
 	}
 }
 
@@ -18,6 +20,12 @@ func (p *heuristicPlanner) addRules(rules ...Rule) {
 	for _, rule := range rules {
 		ruleSlice := p.rules[rule.Pattern().Root()]
 		p.rules[rule.Pattern().Root()] = append(ruleSlice, rule)
+	}
+}
+
+func (p *heuristicPlanner) removeRules(ruleNames ...string) {
+	for _, n := range ruleNames {
+		p.disabledRules[n] = true
 	}
 }
 
@@ -31,6 +39,9 @@ func (p *heuristicPlanner) matchRules(node Node) (Node, bool, error) {
 	anyChanged := false
 
 	for _, rule := range p.rules[AnyKind] {
+		if p.disabledRules[rule.Name()] {
+			continue
+		}
 		if rule.Pattern().Match(node) {
 			newNode, changed, err := rule.Rewrite(node)
 			if err != nil {
@@ -42,6 +53,9 @@ func (p *heuristicPlanner) matchRules(node Node) (Node, bool, error) {
 	}
 
 	for _, rule := range p.rules[node.Kind()] {
+		if p.disabledRules[rule.Name()] {
+			continue
+		}
 		if rule.Pattern().Match(node) {
 			newNode, changed, err := rule.Rewrite(node)
 			if err != nil {

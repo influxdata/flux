@@ -6,6 +6,8 @@ import (
 	"log"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
@@ -15,8 +17,9 @@ import (
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	"github.com/opentracing/opentracing-go"
-	"go.uber.org/zap"
 )
 
 const (
@@ -117,9 +120,12 @@ func CompileAST(astPkg *ast.Package, now time.Time, opts ...CompileOption) *AstP
 
 // CompileTableObject evaluates a TableObject and produces a flux.Program.
 // now parameter must be non-zero, that is the default now time should be set before compiling.
-func CompileTableObject(to *flux.TableObject, now time.Time, opts ...CompileOption) (*Program, error) {
+func CompileTableObject(ctx context.Context, to *flux.TableObject, now time.Time, opts ...CompileOption) (*Program, error) {
 	o := applyOptions(opts...)
-	s := spec.FromTableObject(to, now)
+	s, err := spec.FromTableObject(ctx, to, now)
+	if err != nil {
+		return nil, err
+	}
 	if o.verbose {
 		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
 	}
@@ -133,21 +139,9 @@ func CompileTableObject(to *flux.TableObject, now time.Time, opts ...CompileOpti
 	}, nil
 }
 
-// WalkIR applies the function `f` to each operation in the compiled spec.
-func WalkIR(astPkg *ast.Package, f func(o *flux.Operation) error) error {
-
-	if spec, err := spec.FromAST(context.Background(), dependencies.NewEmpty(), astPkg, time.Now()); err != nil {
-		return err
-	} else {
-		return spec.Walk(f)
-	}
-
-}
-
 func buildPlan(ctx context.Context, spec *flux.Spec, opts *compileOptions) (*plan.Spec, error) {
 	s, _ := opentracing.StartSpanFromContext(ctx, "plan")
 	defer s.Finish()
-
 	pb := plan.PlannerBuilder{}
 
 	planOptions := opts.planOptions
@@ -215,7 +209,7 @@ type TableObjectCompiler struct {
 
 func (c *TableObjectCompiler) Compile(ctx context.Context) (flux.Program, error) {
 	// Ignore context, it will be provided upon Program Start.
-	return CompileTableObject(c.Tables, c.Now)
+	return CompileTableObject(ctx, c.Tables, c.Now)
 }
 
 func (*TableObjectCompiler) CompilerType() flux.CompilerType {
@@ -313,36 +307,145 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	if p.opts == nil {
 		p.opts = defaultOptions()
 	}
-
 	if p.Now.IsZero() {
 		p.Now = time.Now()
 	}
-
-	astPkg := p.Ast
 	if p.opts.extern != nil {
-		// Duplicate the package so we can safely add the external files.
-		astPkg = astPkg.Copy().(*ast.Package)
-		astPkg.Files = append([]*ast.File{p.opts.extern}, astPkg.Files...)
+		p.Ast.Files = append([]*ast.File{p.opts.extern}, p.Ast.Files...)
 	}
-
 	deps, ok := p.Dependencies[dependencies.InterpreterDepsKey]
 	if !ok {
 		// TODO(Adam): this should be more of a noop dependency package
 		return nil, fmt.Errorf("no interpreter dependencies found")
 	}
 	depsI := deps.(dependencies.Interface)
-	s, err := spec.FromAST(ctx, depsI, astPkg, p.Now)
+
+	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
+	sideEffects, scope, err := flux.EvalAST(cctx, depsI, p.Ast, flux.SetNowOption(p.Now))
+	if err != nil {
+		return nil, err
+	}
+	s.Finish()
+
+	s, cctx = opentracing.StartSpanFromContext(ctx, "compile")
+	nowOpt, ok := scope.Lookup(flux.NowOption)
+	if !ok {
+		return nil, fmt.Errorf("%q option not set", flux.NowOption)
+	}
+	nowTime, err := nowOpt.Function().Call(ctx, depsI, nil)
+	if err != nil {
+		return nil, err
+	}
+	p.Now = nowTime.Time().Time()
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in evaluating AST while starting program")
 	}
-	if p.opts.verbose {
-		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
+	sp, err := spec.FromEvaluation(cctx, sideEffects, p.Now)
+	if err != nil {
+		return nil, errors.Wrap(err, codes.Inherit, "error in query specification while starting program")
 	}
-	ps, err := buildPlan(ctx, s, p.opts)
+	s.Finish()
+
+	s, cctx = opentracing.StartSpanFromContext(ctx, "plan")
+	if p.opts.verbose {
+		log.Println("Query Spec: ", flux.Formatted(sp, flux.FmtJSON))
+	}
+	if err := p.updateOpts(scope); err != nil {
+		return nil, errors.Wrap(err, codes.Inherit, "error in reading options while starting program")
+	}
+	ps, err := buildPlan(cctx, sp, p.opts)
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in building plan while starting program")
 	}
 	p.PlanSpec = ps
+	s.Finish()
 
-	return p.Program.Start(ctx, alloc)
+	s, cctx = opentracing.StartSpanFromContext(ctx, "start-program")
+	defer s.Finish()
+	return p.Program.Start(cctx, alloc)
+}
+
+func (p *AstProgram) updateOpts(scope values.Scope) error {
+	n := getPlannerPkgName(p.Ast)
+	if n == "" {
+		// No import for 'planner'. Nothing to update.
+		return nil
+	}
+	lo, po, err := getPlanOptions(scope, n)
+	if err != nil {
+		return err
+	}
+	if lo != nil {
+		p.opts.planOptions.logical = append(p.opts.planOptions.logical, lo)
+	}
+	if po != nil {
+		p.opts.planOptions.physical = append(p.opts.planOptions.physical, po)
+	}
+	return nil
+}
+
+func getPlannerPkgName(pkg *ast.Package) string {
+	for _, f := range pkg.Files {
+		for _, imp := range f.Imports {
+			if path := imp.Path.Value; path == "planner" {
+				name := path
+				if alias := imp.As; alias != nil {
+					name = alias.Name
+				}
+				return name
+			}
+		}
+	}
+	return ""
+}
+
+func getPlanOptions(scope values.Scope, pkgName string) (plan.LogicalOption, plan.PhysicalOption, error) {
+	// find the 'planner' package
+	plannerPkg, ok := scope.Lookup(pkgName)
+	if !ok {
+		// No import for planner, this is useless.
+		return nil, nil, nil
+	}
+	if plannerPkg.Type().Nature() != semantic.Object {
+		// No import for planner, this is useless.
+		return nil, nil, nil
+	}
+
+	ls, err := getRules(plannerPkg.Object(), "disableLogicalRules")
+	if err != nil {
+		return nil, nil, err
+	}
+	ps, err := getRules(plannerPkg.Object(), "disablePhysicalRules")
+	if err != nil {
+		return nil, nil, err
+	}
+	return plan.RemoveLogicalRules(ls...), plan.RemovePhysicalRules(ps...), nil
+}
+
+func getRules(plannerPkg values.Object, optionName string) ([]string, error) {
+	value, ok := plannerPkg.Get(optionName)
+	if !ok {
+		// No value in package.
+		return []string{}, nil
+	}
+
+	// TODO(affo): the rules are arrays of strings as defined in the 'planner' package.
+	//  During evaluation, the interpreter should raise an error if the user tries to assign
+	//  an option of a type to another. So we should be able to rely on the fact that the type
+	//  for value is fixed. At the moment is it not so.
+	//  So, we have to check and return an error to avoid a panic.
+	//  See (https://github.com/influxdata/flux/issues/1829).
+	if t := value.Type().Nature(); t != semantic.Array {
+		return nil, fmt.Errorf("'planner.%s' must be an array of string, got %s", optionName, t.String())
+	}
+	rules := value.Array()
+	if et := rules.Type().ElementType().Nature(); et != semantic.String {
+		return nil, fmt.Errorf("'planner.%s' must be an array of string, got an array of %s", optionName, et.String())
+	}
+	noRules := rules.Len()
+	rs := make([]string, noRules)
+	rules.Range(func(i int, v values.Value) {
+		rs[i] = v.Str()
+	})
+	return rs, nil
 }
