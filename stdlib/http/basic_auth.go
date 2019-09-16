@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -31,7 +30,7 @@ var basicAuthFunc = values.NewFunction(
 		Required: semantic.LabelSet{basicAuthUsernameArg, basicAuthPasswordArg},
 		Return:   semantic.String,
 	}),
-	func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+	func(ctx context.Context, args values.Object) (values.Value, error) {
 		return interpreter.DoFunctionCall(BasicAuth, args)
 	},
 	false,

@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/complete"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -49,7 +48,7 @@ func TestFunctionNames(t *testing.T) {
 		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 			Return: semantic.Int,
 		}),
-		func(context.Context, dependencies.Interface, values.Object) (values.Value, error) {
+		func(context.Context, values.Object) (values.Value, error) {
 			return values.NewInt(5), nil
 		},
 		false,
@@ -79,7 +78,7 @@ func TestFunctionSuggestion(t *testing.T) {
 			},
 			Return: semantic.Int,
 		}),
-		func(context.Context, dependencies.Interface, values.Object) (values.Value, error) {
+		func(context.Context, values.Object) (values.Value, error) {
 			return values.NewInt(5), nil
 		},
 		false,

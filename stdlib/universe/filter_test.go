@@ -2,13 +2,13 @@ package universe_test
 
 import (
 	"context"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"regexp"
 	"testing"
 	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
@@ -1003,7 +1003,8 @@ func TestFilter_Process(t *testing.T) {
 				tc.want,
 				nil,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					f, err := universe.NewFilterTransformation(context.Background(), dependenciestest.Default(), tc.spec, d, c)
+					ctx := dependenciestest.Default().Inject(context.Background())
+					f, err := universe.NewFilterTransformation(ctx, tc.spec, d, c)
 					if err != nil {
 						t.Fatal(err)
 					}

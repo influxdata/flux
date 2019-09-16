@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
@@ -448,7 +447,6 @@ type schemaMutationTransformation struct {
 	d        execute.Dataset
 	cache    execute.TableBuilderCache
 	ctx      context.Context
-	deps     dependencies.Interface
 	mutators []SchemaMutator
 }
 
@@ -456,14 +454,14 @@ func createSchemaMutationTransformation(id execute.DatasetID, mode execute.Accum
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
 
-	t, err := NewSchemaMutationTransformation(a.Context(), a.Dependencies()[dependencies.InterpreterDepsKey].(dependencies.Interface), spec, d, cache)
+	t, err := NewSchemaMutationTransformation(a.Context(), spec, d, cache)
 	if err != nil {
 		return nil, nil, err
 	}
 	return t, d, nil
 }
 
-func NewSchemaMutationTransformation(ctx context.Context, deps dependencies.Interface, spec plan.ProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*schemaMutationTransformation, error) {
+func NewSchemaMutationTransformation(ctx context.Context, spec plan.ProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*schemaMutationTransformation, error) {
 	s, ok := spec.(*SchemaMutationProcedureSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", spec)
@@ -483,14 +481,13 @@ func NewSchemaMutationTransformation(ctx context.Context, deps dependencies.Inte
 		cache:    cache,
 		mutators: mutators,
 		ctx:      ctx,
-		deps:     deps,
 	}, nil
 }
 
 func (t *schemaMutationTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	ctx := NewBuilderContext(tbl)
 	for _, m := range t.mutators {
-		err := m.Mutate(t.ctx, t.deps, ctx)
+		err := m.Mutate(t.ctx, ctx)
 		if err != nil {
 			return err
 		}

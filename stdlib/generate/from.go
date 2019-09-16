@@ -7,7 +7,6 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/compiler"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
@@ -133,8 +132,6 @@ func createFromGeneratorSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID
 	s.Start = spec.Start
 	s.Stop = spec.Stop
 	s.Count = spec.Count
-	s.deps = a.Dependencies()[dependencies.InterpreterDepsKey].(dependencies.Interface)
-
 	fn, _, err := compiler.CompileFnParam(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope), semantic.Int, semantic.Int)
 	if err != nil {
 		return nil, err
@@ -151,7 +148,6 @@ type GeneratorSource struct {
 	Count int64
 	alloc *memory.Allocator
 	Fn    compiler.Func
-	deps  dependencies.Interface
 }
 
 func NewGeneratorSource(a *memory.Allocator) *GeneratorSource {
@@ -214,7 +210,7 @@ func (s *GeneratorSource) Decode(ctx context.Context) (flux.Table, error) {
 		b.AppendTime(timeIdx, values.ConvertTime(s.Start.Add(time.Duration(i)*deltaT)))
 		in := values.NewObject()
 		in.Set("n", values.NewInt(int64(i)))
-		v, err := s.Fn.Eval(ctx, s.deps, in)
+		v, err := s.Fn.Eval(ctx, in)
 		if err != nil {
 			return nil, err
 		}

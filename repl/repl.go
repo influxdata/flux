@@ -15,7 +15,6 @@ import (
 
 	"github.com/c-bata/go-prompt"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/semantic"
@@ -26,17 +25,17 @@ type REPL struct {
 	scope   values.Scope
 	querier Querier
 	ctx     context.Context
-	deps    dependencies.Interface
+	deps    flux.Dependencies
 
 	cancelMu   sync.Mutex
 	cancelFunc context.CancelFunc
 }
 
 type Querier interface {
-	Query(ctx context.Context, deps dependencies.Interface, compiler flux.Compiler) (flux.ResultIterator, error)
+	Query(ctx context.Context, deps flux.Dependencies, compiler flux.Compiler) (flux.ResultIterator, error)
 }
 
-func New(ctx context.Context, deps dependencies.Interface, q Querier) *REPL {
+func New(ctx context.Context, deps flux.Dependencies, q Querier) *REPL {
 	return &REPL{
 		scope:   values.NewScope(),
 		querier: q,
@@ -138,7 +137,7 @@ func (r *REPL) executeLine(t string) error {
 		t = q
 	}
 
-	ses, scope, err := flux.Eval(r.ctx, r.deps, t, func(ns values.Scope) {
+	ses, scope, err := flux.Eval(r.ctx, t, func(ns values.Scope) {
 		// copy values saved in the cached scope to the new interpreter's scope
 		r.scope.Range(func(k string, v values.Value) {
 			ns.Set(k, v)
@@ -157,7 +156,8 @@ func (r *REPL) executeLine(t string) error {
 				if !ok {
 					return fmt.Errorf("now option not set")
 				}
-				nowTime, err := now.Function().Call(context.TODO(), dependencies.NewDefaults(), nil)
+				ctx := r.deps.Inject(context.TODO())
+				nowTime, err := now.Function().Call(ctx, nil)
 				if err != nil {
 					return err
 				}
@@ -176,7 +176,7 @@ func (r *REPL) executeLine(t string) error {
 	return nil
 }
 
-func (r *REPL) doQuery(cx context.Context, spec *flux.Spec, deps dependencies.Interface) error {
+func (r *REPL) doQuery(cx context.Context, spec *flux.Spec, deps flux.Dependencies) error {
 	// Setup cancel context
 	ctx, cancelFunc := context.WithCancel(cx)
 	r.setCancel(cancelFunc)

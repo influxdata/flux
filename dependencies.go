@@ -1,6 +1,7 @@
-package dependencies
+package flux
 
 import (
+	"context"
 	"net"
 	"net/http"
 	"time"
@@ -12,54 +13,72 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 )
 
-const InterpreterDepsKey = "interpreter"
+// Dependency is an interface that must be implemented by every injectable dependency.
+// On Inject, the dependency is injected into the context and the resulting one is returned.
+// Every dependency must provide a function to extract it from the context.
+type Dependency interface {
+	Inject(ctx context.Context) context.Context
+}
 
-type Interface interface {
+type key int
+
+const dependenciesKey key = iota
+
+type Dependencies interface {
+	Dependency
 	HTTPClient() (*http.Client, error)
 	FilesystemService() (filesystem.Service, error)
 	SecretService() (secret.Service, error)
 	URLValidator() (url.Validator, error)
 }
 
-// Dependencies implements the Interface.
+// Deps implements Dependencies.
 // Any deps which are nil will produce an explicit error.
-type Dependencies struct {
-	Deps Deps
+type Deps struct {
+	Deps WrappedDeps
 }
 
-type Deps struct {
+type WrappedDeps struct {
 	HTTPClient        *http.Client
 	FilesystemService filesystem.Service
 	SecretService     secret.Service
 	URLValidator      url.Validator
 }
 
-func (d Dependencies) HTTPClient() (*http.Client, error) {
+func (d Deps) HTTPClient() (*http.Client, error) {
 	if d.Deps.HTTPClient != nil {
 		return d.Deps.HTTPClient, nil
 	}
 	return nil, errors.New(codes.Unimplemented, "http client uninitialized in dependencies")
 }
 
-func (d Dependencies) FilesystemService() (filesystem.Service, error) {
+func (d Deps) FilesystemService() (filesystem.Service, error) {
 	if d.Deps.FilesystemService != nil {
 		return d.Deps.FilesystemService, nil
 	}
 	return nil, errors.New(codes.Unimplemented, "filesystem service uninitialized in dependencies")
 }
 
-func (d Dependencies) SecretService() (secret.Service, error) {
+func (d Deps) SecretService() (secret.Service, error) {
 	if d.Deps.SecretService != nil {
 		return d.Deps.SecretService, nil
 	}
 	return nil, errors.New(codes.Unimplemented, "secret service uninitialized in dependencies")
 }
 
-func (d Dependencies) URLValidator() (url.Validator, error) {
+func (d Deps) URLValidator() (url.Validator, error) {
 	if d.Deps.URLValidator != nil {
 		return d.Deps.URLValidator, nil
 	}
 	return nil, errors.New(codes.Unimplemented, "url validator uninitialized in dependencies")
+}
+
+func (d Deps) Inject(ctx context.Context) context.Context {
+	return context.WithValue(ctx, dependenciesKey, d)
+}
+
+func GetDependencies(ctx context.Context) Dependencies {
+	return ctx.Value(dependenciesKey).(Dependencies)
 }
 
 // newDefaultTransport creates a new transport with sane defaults.
@@ -81,11 +100,11 @@ func newDefaultTransport() *http.Transport {
 	}
 }
 
-// NewDefaults produces a set of dependencies.
+// NewDefaultDependencies produces a set of dependencies.
 // Not all dependencies have valid defaults and will not be set.
-func NewDefaults() Dependencies {
-	return Dependencies{
-		Deps: Deps{
+func NewDefaultDependencies() Deps {
+	return Deps{
+		Deps: WrappedDeps{
 			HTTPClient: &http.Client{Transport: newDefaultTransport()},
 			// Default to having no filesystem and no secrets.
 			FilesystemService: nil,
@@ -95,8 +114,8 @@ func NewDefaults() Dependencies {
 	}
 }
 
-// NewEmpty produces an empty set of dependencies.
+// NewEmptyDependencies produces an empty set of dependencies.
 // Accessing any dependency will result in an error.
-func NewEmpty() Interface {
-	return Dependencies{}
+func NewEmptyDependencies() Dependencies {
+	return Deps{}
 }

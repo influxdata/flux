@@ -61,9 +61,10 @@ func TestGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			deps := dependenciestest.Default()
 			deps.Deps.SecretService = tt.secrets
+			ctx := deps.Inject(context.Background())
 
 			args := values.NewObjectWithValues(tt.args)
-			got, err := secrets.Get(context.Background(), deps, args)
+			got, err := secrets.Get(ctx, args)
 			if err != nil {
 				if tt.err != "" {
 					if want, got := tt.err, err.Error(); want != got {

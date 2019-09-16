@@ -32,11 +32,10 @@ check = from(bucket: "telegraf")
 check |> yield(name: "checkResult")
 check |> yield(name: "mean")
 `
-	ctx := context.Background()
-	deps := dependenciestest.Default()
+	ctx := dependenciestest.Default().Inject(context.Background())
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		if _, err := spec.FromScript(ctx, deps, time.Now(), query); err != nil {
+		if _, err := spec.FromScript(ctx, time.Now(), query); err != nil {
 			b.Fatal(err)
 		}
 	}

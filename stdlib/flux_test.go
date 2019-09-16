@@ -99,15 +99,13 @@ func testFlux(t testing.TB, pkg *ast.Package) {
 
 func doTestRun(t testing.TB, c flux.Compiler) {
 	program, err := c.Compile(context.Background())
-	if p, ok := program.(lang.DependenciesAwareProgram); ok {
-		p.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
-	}
 	if err != nil {
 		t.Fatalf("unexpected error while compiling query: %v", err)
 	}
 
+	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
 	alloc := &memory.Allocator{}
-	r, err := program.Start(context.Background(), alloc)
+	r, err := program.Start(ctx, alloc)
 	if err != nil {
 		t.Fatalf("unexpected error while executing testing.run: %v", err)
 	}
@@ -129,14 +127,12 @@ func doTestRun(t testing.TB, c flux.Compiler) {
 
 func doTestInspect(t testing.TB, c flux.Compiler) {
 	program, err := c.Compile(context.Background())
-	if p, ok := program.(lang.DependenciesAwareProgram); ok {
-		p.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
-	}
 	if err != nil {
 		t.Fatalf("unexpected error while compiling query: %v", err)
 	}
+	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
 	alloc := &memory.Allocator{}
-	r, err := program.Start(context.Background(), alloc)
+	r, err := program.Start(ctx, alloc)
 	if err != nil {
 		t.Fatalf("unexpected error while executing testing.inspect: %v", err)
 	}

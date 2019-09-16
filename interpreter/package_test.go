@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/dependencies/dependenciestest"
-
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/interpreter/interptest"
 	"github.com/influxdata/flux/semantic"
@@ -85,8 +84,8 @@ func TestAccessNestedImport(t *testing.T) {
 	}
 
 	expectedError := fmt.Errorf(`cannot access imported package "a" of imported package "b"`)
-	ctx, deps := context.Background(), dependenciestest.Default()
-	_, err := interpreter.NewInterpreter(interpreter.NewPackage("")).Eval(ctx, deps, node, values.NewScope(), &importer)
+	ctx := dependenciestest.Default().Inject(context.Background())
+	_, err := interpreter.NewInterpreter(interpreter.NewPackage("")).Eval(ctx, node, values.NewScope(), &importer)
 
 	if err == nil {
 		t.Errorf("expected error")
@@ -363,14 +362,14 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 
 func TestInterpreter_SetNewOption(t *testing.T) {
 	pkg := interpreter.NewPackage("alert")
-	ctx, deps := context.Background(), dependenciestest.Default()
+	ctx := dependenciestest.Default().Inject(context.Background())
 	itrp := interpreter.NewInterpreter(pkg)
 	script := `
 		package alert
 		option state = "Warning"
 		state
 `
-	if _, err := interptest.Eval(ctx, deps, itrp, values.NewNestedScope(nil, pkg), nil, script); err != nil {
+	if _, err := interptest.Eval(ctx, itrp, values.NewNestedScope(nil, pkg), nil, script); err != nil {
 		t.Fatalf("failed to evaluate package: %v", err)
 	}
 	option, ok := pkg.Get("state")
@@ -393,7 +392,7 @@ func TestInterpreter_SetQualifiedOption(t *testing.T) {
 			"alert": externalPackage,
 		},
 	}
-	ctx, deps := context.Background(), dependenciestest.Default()
+	ctx := dependenciestest.Default().Inject(context.Background())
 	itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
 	pkg := `
 		package foo
@@ -401,7 +400,7 @@ func TestInterpreter_SetQualifiedOption(t *testing.T) {
 		option alert.state = "Error"
 		alert.state
 `
-	if _, err := interptest.Eval(ctx, deps, itrp, values.NewScope(), importer, pkg); err != nil {
+	if _, err := interptest.Eval(ctx, itrp, values.NewScope(), importer, pkg); err != nil {
 		t.Fatalf("failed to evaluate package: %v", err)
 	}
 	option, ok := externalPackage.Get("state")

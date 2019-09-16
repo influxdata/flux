@@ -10,7 +10,6 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/csv"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -118,7 +117,7 @@ func createFromCSVSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 	csvText := spec.CSV
 	// if spec.File non-empty then spec.CSV is empty
 	if spec.File != "" {
-		deps := a.Dependencies()[dependencies.InterpreterDepsKey].(dependencies.Dependencies)
+		deps := flux.GetDependencies(a.Context())
 		fs, err := deps.FilesystemService()
 		if err != nil {
 			return nil, err

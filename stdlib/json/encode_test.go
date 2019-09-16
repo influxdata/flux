@@ -2,13 +2,12 @@ package json_test
 
 import (
 	"context"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"testing"
 
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -20,7 +19,7 @@ func addFail(scope values.Scope) {
 		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 			Return: semantic.Bool,
 		}),
-		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+		func(ctx context.Context, args values.Object) (values.Value, error) {
 			return nil, errors.New(codes.Aborted, "fail")
 		},
 		false,
@@ -45,7 +44,8 @@ o = {
 }
 json.encode(v: o) == bytes(v:"{\"a\":1,\"b\":{\"x\":[1,2],\"y\":\"string\",\"z\":60000000000},\"c\":1.1,\"d\":false,\"e\":\".*\",\"f\":\"2019-08-14T10:03:12Z\"}")  or fail()
 `
-	if _, _, err := flux.Eval(context.Background(), dependenciestest.Default(), script, addFail); err != nil {
+	ctx := dependenciestest.Default().Inject(context.Background())
+	if _, _, err := flux.Eval(ctx, script, addFail); err != nil {
 		t.Fatal("evaluation of json.encode failed: ", err)
 	}
 }

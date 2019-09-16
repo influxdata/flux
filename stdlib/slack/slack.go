@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -46,7 +45,7 @@ var validateColorStringFluxFn = values.NewFunction(
 		Required:   semantic.LabelSet{"color"},
 		Return:     semantic.String,
 	}),
-	func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+	func(ctx context.Context, args values.Object) (values.Value, error) {
 		v, ok := args.Get("color")
 
 		if !ok {

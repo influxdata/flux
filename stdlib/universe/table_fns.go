@@ -3,9 +3,6 @@ package universe
 import (
 	"context"
 	"fmt"
-	"github.com/influxdata/flux/dependencies"
-	"github.com/influxdata/flux/execute/executetest"
-
 	"time"
 
 	"github.com/influxdata/flux"
@@ -15,7 +12,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/influxdata/flux/values/objects"
@@ -58,7 +54,7 @@ func NewTableFindFunction() values.Value {
 		false)
 }
 
-func tableFindCall(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+func tableFindCall(ctx context.Context, args values.Object) (values.Value, error) {
 	arguments := interpreter.NewArguments(args)
 	var to *flux.TableObject
 	if v, err := arguments.GetRequired(tableFindStreamArg); err != nil {
@@ -89,16 +85,15 @@ func tableFindCall(ctx context.Context, deps dependencies.Interface, args values
 		Now:    time.Now(),
 	}
 
-	p, err := c.Compile(context.Background())
+	p, err := c.Compile(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in table object compilation")
 	}
-
-	if prog, ok := p.(lang.DependenciesAwareProgram); ok {
-		prog.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
+	deps := lang.GetExecutionDependencies(ctx)
+	if p, ok := p.(lang.LoggingProgram); ok {
+		p.SetLogger(deps.Logger)
 	}
-
-	q, err := p.Start(context.Background(), &memory.Allocator{})
+	q, err := p.Start(ctx, deps.Allocator)
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in table object start")
 	}
@@ -118,7 +113,7 @@ func tableFindCall(ctx context.Context, deps dependencies.Interface, args values
 			}
 
 			var err error
-			found, err = fn.Eval(ctx, deps, tbl)
+			found, err = fn.Eval(ctx, tbl)
 			if err != nil {
 				return errors.Wrap(err, codes.Inherit, "failed to evaluate group key predicate function")
 			}
@@ -159,7 +154,7 @@ func NewGetColumnFunction() values.Value {
 		false)
 }
 
-func getColumnCall(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+func getColumnCall(ctx context.Context, args values.Object) (values.Value, error) {
 	arguments := interpreter.NewArguments(args)
 	var tbl flux.Table
 	if v, err := arguments.GetRequired(getColumnTableArg); err != nil {
@@ -254,7 +249,7 @@ func NewGetRecordFunction() values.Value {
 		false)
 }
 
-func getRecordCall(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+func getRecordCall(ctx context.Context, args values.Object) (values.Value, error) {
 	arguments := interpreter.NewArguments(args)
 	var tbl flux.Table
 	if v, err := arguments.GetRequired(getRecordTableArg); err != nil {

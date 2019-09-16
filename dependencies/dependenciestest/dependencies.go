@@ -1,10 +1,10 @@
 package dependenciestest
 
 import (
+	"github.com/influxdata/flux"
 	"io/ioutil"
 	"net/http"
 
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/mock"
@@ -33,8 +33,8 @@ func defaultTestFunction(req *http.Request) *http.Response {
 	}
 }
 
-func Default() dependencies.Dependencies {
-	var deps dependencies.Dependencies
+func Default() flux.Deps {
+	var deps flux.Deps
 	deps.Deps.HTTPClient = &http.Client{
 		Transport: RoundTripFunc(defaultTestFunction),
 	}

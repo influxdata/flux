@@ -13,7 +13,6 @@ import (
 
 	"github.com/cespare/xxhash"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/pkg/syncutil"
 	"github.com/influxdata/flux/plan"
@@ -225,7 +224,7 @@ func createToKafkaTransformation(id execute.DatasetID, mode execute.Accumulation
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
-	deps := a.Dependencies()[dependencies.InterpreterDepsKey].(dependencies.Interface)
+	deps := flux.GetDependencies(a.Context())
 	t, err := NewToKafkaTransformation(d, deps, cache, s)
 	return t, d, err
 }
@@ -239,7 +238,7 @@ type ToKafkaTransformation struct {
 func (t *ToKafkaTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
-func NewToKafkaTransformation(d execute.Dataset, deps dependencies.Interface, cache execute.TableBuilderCache, spec *ToKafkaProcedureSpec) (*ToKafkaTransformation, error) {
+func NewToKafkaTransformation(d execute.Dataset, deps flux.Dependencies, cache execute.TableBuilderCache, spec *ToKafkaProcedureSpec) (*ToKafkaTransformation, error) {
 	validator, err := deps.URLValidator()
 	if err != nil {
 		return nil, err

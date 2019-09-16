@@ -1,9 +1,11 @@
 package bigtable
 
 import (
-	"cloud.google.com/go/bigtable"
 	"context"
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
@@ -16,8 +18,8 @@ import (
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
+
+	"cloud.google.com/go/bigtable"
 )
 
 var rRowKey *semantic.MemberExpression = &semantic.MemberExpression{
@@ -423,9 +425,5 @@ func (a *MockAllocator) Allocator() *memory.Allocator {
 }
 
 func (a *MockAllocator) Parents() []execute.DatasetID {
-	return nil
-}
-
-func (a *MockAllocator) Dependencies() execute.Dependencies {
 	return nil
 }
