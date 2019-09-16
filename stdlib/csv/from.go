@@ -14,6 +14,7 @@ import (
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 )
@@ -130,15 +131,16 @@ func createFromCSVSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 		}
 		csvText = string(csvBytes)
 	}
-	csvSource := CSVSource{id: dsid, tx: csvText}
+	csvSource := CSVSource{id: dsid, tx: csvText, alloc: a.Allocator()}
 
 	return &csvSource, nil
 }
 
 type CSVSource struct {
-	id execute.DatasetID
-	tx string
-	ts []execute.Transformation
+	id    execute.DatasetID
+	tx    string
+	ts    []execute.Transformation
+	alloc *memory.Allocator
 }
 
 func (c *CSVSource) AddTransformation(t execute.Transformation) {
@@ -155,7 +157,7 @@ func (c *CSVSource) Run(ctx context.Context) {
 		// transformation. Unlike other sources, tables from csv sources
 		// are not read-only. They contain mutable state and therefore
 		// cannot be shared among goroutines.
-		decoder := csv.NewResultDecoder(csv.ResultDecoderConfig{})
+		decoder := csv.NewResultDecoder(csv.ResultDecoderConfig{Allocator: c.alloc})
 		result, decodeErr := decoder.Decode(strings.NewReader(c.tx))
 		if decodeErr != nil {
 			err = decodeErr

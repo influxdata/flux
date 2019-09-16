@@ -9,6 +9,7 @@ import (
 	"io"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 	"unicode/utf8"
 
@@ -73,6 +74,9 @@ type ResultDecoderConfig struct {
 	// MaxBufferCount is the maximum number of rows that will be buffered when decoding.
 	// If 0, then a value of 1000 will be used.
 	MaxBufferCount int
+	// Allocator is the memory allocator that will be used during decoding.
+	// The default is to use an unlimited allocator when this is not set.
+	Allocator *memory.Allocator
 }
 
 func (d *ResultDecoder) Decode(r io.Reader) (flux.Result, error) {
@@ -356,9 +360,9 @@ func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tab
 			line, err := r.Read()
 			if err != nil || n != len(line) {
 				if err == io.EOF {
-					err = io.ErrUnexpectedEOF
+					return tableMetadata{}, errors.Wrap(io.ErrUnexpectedEOF, codes.Invalid)
 				} else if err == nil && n != len(line) {
-					err = csv.ErrFieldCount
+					return tableMetadata{}, errors.Wrap(csv.ErrFieldCount, codes.Invalid)
 				}
 				return tableMetadata{}, errors.Wrap(err, codes.Inherit, "failed to read error value")
 			}
@@ -423,12 +427,13 @@ type tableDecoder struct {
 
 	meta tableMetadata
 
+	used  int32
+	empty bool
+
 	initialized bool
 	id          string
 
 	builder *execute.ColListTableBuilder
-
-	empty bool
 
 	done chan struct{}
 
@@ -464,6 +469,14 @@ func newTable(
 }
 
 func (d *tableDecoder) Do(f func(flux.ColReader) error) error {
+	if !atomic.CompareAndSwapInt32(&d.used, 0, 1) {
+		return errors.New(codes.Internal, "table already read")
+	}
+
+	// Ensure that the builder releases all internal memory
+	// when we are completely done.
+	defer d.builder.Release()
+
 	// Send off first batch from first advance call.
 	if table, err := d.builder.Table(); err != nil {
 		return err
@@ -497,7 +510,9 @@ func (d *tableDecoder) Do(f func(flux.ColReader) error) error {
 	return nil
 }
 
-func (d *tableDecoder) Done() {}
+func (d *tableDecoder) Done() {
+	_ = d.Do(func(flux.ColReader) error { return nil })
+}
 
 // advance reads the csv data until the end of the table or bufSize rows have been read.
 // Advance returns whether there is more data and any error.
@@ -602,7 +617,11 @@ func (d *tableDecoder) init(line []string) error {
 	}
 
 	key := execute.NewGroupKey(keyCols, keyValues)
-	d.builder = execute.NewColListTableBuilder(key, newUnlimitedAllocator())
+	alloc := d.c.Allocator
+	if alloc == nil {
+		alloc = &memory.Allocator{}
+	}
+	d.builder = execute.NewColListTableBuilder(key, alloc)
 	for _, c := range d.meta.Cols {
 		_, err := d.builder.AddCol(c.ColMeta)
 		if err != nil {
@@ -647,10 +666,6 @@ func (d *tableDecoder) Cols() []flux.ColMeta {
 type colMeta struct {
 	flux.ColMeta
 	fmt string
-}
-
-func newUnlimitedAllocator() *memory.Allocator {
-	return &memory.Allocator{}
 }
 
 type ResultEncoder struct {

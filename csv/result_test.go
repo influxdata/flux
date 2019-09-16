@@ -2,9 +2,11 @@ package csv_test
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io/ioutil"
 	"regexp"
+	"strings"
 	"testing"
 	"time"
 
@@ -13,6 +15,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
 )
 
@@ -1418,6 +1421,53 @@ func TestMultiResultDecoder(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestTable(t *testing.T) {
+	executetest.RunTableTests(t, executetest.TableTest{
+		NewFn: func(ctx context.Context, alloc *memory.Allocator) flux.TableIterator {
+			decoder := csv.NewResultDecoder(csv.ResultDecoderConfig{
+				// Set this to a low value so we can have a table with
+				// multiple buffers.
+				MaxBufferCount: 5,
+				Allocator:      alloc,
+			})
+			r, err := decoder.Decode(strings.NewReader(`#datatype,string,long,dateTime:RFC3339,string,double
+#group,false,false,false,true,false
+#default,_result,0,,A,
+,result,table,_time,host,_value
+,,,2018-04-17T00:00:00Z,,1.0
+,,,2018-04-17T01:00:00Z,,2.0
+,,,2018-04-17T02:00:00Z,,3.0
+,,,2018-04-17T03:00:00Z,,4.0
+
+#datatype,string,long,dateTime:RFC3339,string,double
+#group,false,false,false,true,false
+#default,_result,1,,B,
+,result,table,_time,host,_value
+
+#datatype,string,long,dateTime:RFC3339,string,double
+#group,false,false,false,true,false
+#default,_result,2,,C,
+,result,table,_time,host,_value
+,,,2018-04-17T00:00:00Z,,1.0
+,,,2018-04-17T01:00:00Z,,2.0
+,,,2018-04-17T02:00:00Z,,3.0
+,,,2018-04-17T03:00:00Z,,4.0
+,,,2018-04-17T04:00:00Z,,1.0
+,,,2018-04-17T05:00:00Z,,2.0
+,,,2018-04-17T06:00:00Z,,3.0
+,,,2018-04-17T07:00:00Z,,4.0
+`))
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			return r.Tables()
+		},
+		IsDone: func(tbl flux.Table) bool {
+			return tbl.(interface{ IsDone() bool }).IsDone()
+		},
+	})
 }
 
 var crlfPattern = regexp.MustCompile(`\r?\n`)

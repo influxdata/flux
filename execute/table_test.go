@@ -219,7 +219,7 @@ func TestColListTable(t *testing.T) {
 				nil,
 			))
 			tbl1, _ := b1.Table()
-			b1.ClearData()
+			b1.Release()
 
 			b2 := execute.NewColListTableBuilder(execute.NewGroupKey(
 				[]flux.ColMeta{
@@ -233,7 +233,7 @@ func TestColListTable(t *testing.T) {
 			_, _ = b2.AddCol(flux.ColMeta{Label: "host", Type: flux.TString})
 			_, _ = b2.AddCol(flux.ColMeta{Label: "_value", Type: flux.TFloat})
 			tbl2, _ := b2.Table()
-			b2.ClearData()
+			b2.Release()
 			return TableIterator{
 				Tables: []flux.Table{tbl1, tbl2},
 			}
