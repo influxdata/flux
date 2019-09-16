@@ -575,8 +575,11 @@ type TableBuilder interface {
 	// Sort the rows of the by the values of the columns in the order listed.
 	Sort(cols []string, desc bool)
 
-	// Clear removes all rows, while preserving the column meta data.
+	// ClearData removes all rows, while preserving the column meta data.
 	ClearData()
+
+	// Release releases any extraneous memory that has been retained.
+	Release()
 
 	// Table returns the table that has been built.
 	// Further modifications of the builder will not effect the returned table.
@@ -1326,6 +1329,13 @@ func (b *ColListTableBuilder) ClearData() {
 	b.nrows = 0
 }
 
+func (b *ColListTableBuilder) Release() {
+	for _, c := range b.cols {
+		c.Release()
+	}
+	b.nrows = 0
+}
+
 func (b *ColListTableBuilder) Sort(cols []string, desc bool) {
 	colIdxs := make([]int, 0, len(cols))
 	for _, label := range cols {
@@ -1497,6 +1507,7 @@ type column interface {
 type columnBuilder interface {
 	Meta() flux.ColMeta
 	Clear()
+	Release()
 	Copy() column
 	Len() int
 	IsNil(i int) bool
@@ -1597,8 +1608,12 @@ type boolColumnBuilder struct {
 }
 
 func (c *boolColumnBuilder) Clear() {
-	c.alloc.Free(cap(c.data), boolSize)
 	c.data = c.data[0:0]
+}
+
+func (c *boolColumnBuilder) Release() {
+	c.alloc.Free(cap(c.data), boolSize)
+	c.data = nil
 }
 
 func (c *boolColumnBuilder) Copy() column {
@@ -1678,8 +1693,12 @@ type intColumnBuilder struct {
 }
 
 func (c *intColumnBuilder) Clear() {
-	c.alloc.Free(cap(c.data), int64Size)
 	c.data = c.data[0:0]
+}
+
+func (c *intColumnBuilder) Release() {
+	c.alloc.Free(cap(c.data), int64Size)
+	c.data = nil
 }
 
 func (c *intColumnBuilder) Copy() column {
@@ -1756,8 +1775,12 @@ type uintColumnBuilder struct {
 }
 
 func (c *uintColumnBuilder) Clear() {
-	c.alloc.Free(cap(c.data), uint64Size)
 	c.data = c.data[0:0]
+}
+
+func (c *uintColumnBuilder) Release() {
+	c.alloc.Free(cap(c.data), uint64Size)
+	c.data = nil
 }
 
 func (c *uintColumnBuilder) Copy() column {
@@ -1835,8 +1858,12 @@ type floatColumnBuilder struct {
 }
 
 func (c *floatColumnBuilder) Clear() {
-	c.alloc.Free(cap(c.data), float64Size)
 	c.data = c.data[0:0]
+}
+
+func (c *floatColumnBuilder) Release() {
+	c.alloc.Free(cap(c.data), float64Size)
+	c.data = nil
 }
 
 func (c *floatColumnBuilder) Copy() column {
@@ -1914,8 +1941,12 @@ type stringColumnBuilder struct {
 }
 
 func (c *stringColumnBuilder) Clear() {
-	c.alloc.Free(cap(c.data), stringSize)
 	c.data = c.data[0:0]
+}
+
+func (c *stringColumnBuilder) Release() {
+	c.alloc.Free(cap(c.data), stringSize)
+	c.data = nil
 }
 
 func (c *stringColumnBuilder) Copy() column {
@@ -2000,8 +2031,12 @@ type timeColumnBuilder struct {
 }
 
 func (c *timeColumnBuilder) Clear() {
-	c.alloc.Free(cap(c.data), timeSize)
 	c.data = c.data[0:0]
+}
+
+func (c *timeColumnBuilder) Release() {
+	c.alloc.Free(cap(c.data), timeSize)
+	c.data = nil
 }
 
 func (c *timeColumnBuilder) Copy() column {
@@ -2121,7 +2156,7 @@ func (d *tableBuilderCache) DiscardTable(key flux.GroupKey) {
 func (d *tableBuilderCache) ExpireTable(key flux.GroupKey) {
 	b, ok := d.tables.Delete(key)
 	if ok {
-		b.(tableState).builder.ClearData()
+		b.(tableState).builder.Release()
 	}
 }
 
