@@ -71,6 +71,9 @@ test: internal/rust
 test-race:
 	$(GO_TEST) -race -count=1 ./...
 
+test-bench:
+	$(GO_TEST) -run=NONE -bench=. -benchtime=1x ./...
+
 vet:
 	$(GO_VET) ./...
 
@@ -92,6 +95,7 @@ release:
 	staticcheck \
 	test \
 	test-race \
+	test-bench \
 	vet \
 	bench \
 	checkfmt \
