@@ -76,6 +76,22 @@ jobs:
       # Run tests
       - run: make test-race
       # No need to save the pkg/mod cache since the other job does it
+  test-bench:
+    docker:
+      - image: nathanielc/flux-build:latest
+    environment:
+      GOPATH: /tmp/go
+      GOFLAGS: -p=8
+      GO111MODULE: 'on' # must be quoted to force string type instead of boolean type
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restoring GOPATH/pkg/mod
+          keys:
+            - flux-gomod-{{checksum "go.sum"}}
+      # Run tests
+      - run: make test-bench
+      # No need to save the pkg/mod cache since the other job does it
 
 workflows:
   version: 2
