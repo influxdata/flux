@@ -99,3 +99,4 @@ workflows:
     jobs:
       - test
       - test-race
+      - test-bench
