@@ -94,6 +94,6 @@ func BenchmarkSpread(b *testing.B) {
 		b,
 		new(universe.SpreadAgg),
 		data,
-		28.227196461851847,
+		31.463516750575685,
 	)
 }

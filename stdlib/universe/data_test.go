@@ -24,7 +24,7 @@ const (
 var NormalData []float64
 
 // NormalTable is a table of data whose value col is NormalData.
-var NormalTable flux.Table
+var NormalTable flux.BufferedTable
 
 func init() {
 	dist := distuv.Normal{
@@ -117,5 +117,6 @@ func init() {
 	_ = normalTableBuilder.AppendStrings(4, t1Arrow)
 	_ = normalTableBuilder.AppendStrings(5, t2Arrow)
 
-	NormalTable, _ = normalTableBuilder.Table()
+	table, _ := normalTableBuilder.Table()
+	NormalTable = executetest.MustCopyTable(table).(flux.BufferedTable)
 }

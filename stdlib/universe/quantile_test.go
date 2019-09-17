@@ -753,6 +753,6 @@ func BenchmarkQuantile(b *testing.B) {
 			Compression: 1000,
 		},
 		data,
-		13.843815760607427,
+		13.842132136909889,
 	)
 }

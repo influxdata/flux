@@ -122,6 +122,6 @@ func BenchmarkStddev(b *testing.B) {
 		b,
 		&universe.StddevAgg{Mode: "sample"},
 		data,
-		2.998926113076968,
+		3.0024593913384368,
 	)
 }
