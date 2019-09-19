@@ -6,7 +6,6 @@ import (
 	"context"
 	"runtime/debug"
 
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/values"
 )
 
@@ -18,7 +17,7 @@ const modulePath = "github.com/influxdata/flux"
 var readBuildInfo = debug.ReadBuildInfo
 
 // Version returns the flux runtime version as a string.
-func Version(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+func Version(ctx context.Context, args values.Object) (values.Value, error) {
 	bi, ok := readBuildInfo()
 	if !ok {
 		return nil, errBuildInfoNotPresent

@@ -9,7 +9,6 @@ import (
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -38,7 +37,7 @@ type SideEffect struct {
 }
 
 // Eval evaluates the expressions composing a Flux package and returns any side effects that occurred during this evaluation.
-func (itrp *Interpreter) Eval(ctx context.Context, deps dependencies.Interface, node semantic.Node, scope values.Scope, importer Importer) ([]SideEffect, error) {
+func (itrp *Interpreter) Eval(ctx context.Context, node semantic.Node, scope values.Scope, importer Importer) ([]SideEffect, error) {
 	n := values.BuildExternAssignments(node, scope)
 
 	sol, err := semantic.InferTypes(n, importer)
@@ -57,40 +56,40 @@ func (itrp *Interpreter) Eval(ctx context.Context, deps dependencies.Interface, 
 
 	// reset side effect list
 	itrp.sideEffects = itrp.sideEffects[:0]
-	if err := itrp.doRoot(ctx, deps, node, scope, importer); err != nil {
+	if err := itrp.doRoot(ctx, node, scope, importer); err != nil {
 		return nil, err
 	}
 	return itrp.sideEffects, nil
 }
 
-func (itrp *Interpreter) doRoot(ctx context.Context, deps dependencies.Interface, node semantic.Node, scope values.Scope, importer Importer) error {
+func (itrp *Interpreter) doRoot(ctx context.Context, node semantic.Node, scope values.Scope, importer Importer) error {
 	switch n := node.(type) {
 	case *semantic.Package:
-		return itrp.doPackage(ctx, deps, n, scope, importer)
+		return itrp.doPackage(ctx, n, scope, importer)
 	case *semantic.File:
-		return itrp.doFile(ctx, deps, n, scope, importer)
+		return itrp.doFile(ctx, n, scope, importer)
 	case *semantic.Extern:
-		return itrp.doExtern(ctx, deps, n, scope, importer)
+		return itrp.doExtern(ctx, n, scope, importer)
 	default:
 		return fmt.Errorf("unsupported root node %T", node)
 	}
 }
 
-func (itrp *Interpreter) doExtern(ctx context.Context, deps dependencies.Interface, extern *semantic.Extern, scope values.Scope, importer Importer) error {
+func (itrp *Interpreter) doExtern(ctx context.Context, extern *semantic.Extern, scope values.Scope, importer Importer) error {
 	// We do not care about the type declarations, they were only important for type inference.
-	return itrp.doRoot(ctx, deps, extern.Block.Node, scope, importer)
+	return itrp.doRoot(ctx, extern.Block.Node, scope, importer)
 }
 
-func (itrp *Interpreter) doPackage(ctx context.Context, deps dependencies.Interface, pkg *semantic.Package, scope values.Scope, importer Importer) error {
+func (itrp *Interpreter) doPackage(ctx context.Context, pkg *semantic.Package, scope values.Scope, importer Importer) error {
 	for _, file := range pkg.Files {
-		if err := itrp.doFile(ctx, deps, file, scope, importer); err != nil {
+		if err := itrp.doFile(ctx, file, scope, importer); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (itrp *Interpreter) doFile(ctx context.Context, deps dependencies.Interface, file *semantic.File, scope values.Scope, importer Importer) error {
+func (itrp *Interpreter) doFile(ctx context.Context, file *semantic.File, scope values.Scope, importer Importer) error {
 	if err := itrp.doPackageClause(file.Package); err != nil {
 		return err
 	}
@@ -100,7 +99,7 @@ func (itrp *Interpreter) doFile(ctx context.Context, deps dependencies.Interface
 		}
 	}
 	for _, stmt := range file.Body {
-		val, err := itrp.doStatement(ctx, deps, stmt, scope)
+		val, err := itrp.doStatement(ctx, stmt, scope)
 		if err != nil {
 			return err
 		}
@@ -146,29 +145,29 @@ func (itrp *Interpreter) doImport(dec *semantic.ImportDeclaration, scope values.
 }
 
 // doStatement returns the resolved value of a top-level statement
-func (itrp *Interpreter) doStatement(ctx context.Context, deps dependencies.Interface, stmt semantic.Statement, scope values.Scope) (values.Value, error) {
+func (itrp *Interpreter) doStatement(ctx context.Context, stmt semantic.Statement, scope values.Scope) (values.Value, error) {
 	scope.SetReturn(values.InvalidValue)
 	switch s := stmt.(type) {
 	case *semantic.OptionStatement:
-		return itrp.doOptionStatement(ctx, deps, s, scope)
+		return itrp.doOptionStatement(ctx, s, scope)
 	case *semantic.BuiltinStatement:
 		// Nothing to do
 		return nil, nil
 	case *semantic.TestStatement:
-		return itrp.doTestStatement(ctx, deps, s, scope)
+		return itrp.doTestStatement(ctx, s, scope)
 	case *semantic.NativeVariableAssignment:
-		return itrp.doVariableAssignment(ctx, deps, s, scope)
+		return itrp.doVariableAssignment(ctx, s, scope)
 	case *semantic.MemberAssignment:
-		return itrp.doMemberAssignment(ctx, deps, s, scope)
+		return itrp.doMemberAssignment(ctx, s, scope)
 	case *semantic.ExpressionStatement:
-		v, err := itrp.doExpression(ctx, deps, s.Expression, scope)
+		v, err := itrp.doExpression(ctx, s.Expression, scope)
 		if err != nil {
 			return nil, err
 		}
 		scope.SetReturn(v)
 		return v, nil
 	case *semantic.ReturnStatement:
-		v, err := itrp.doExpression(ctx, deps, s.Argument, scope)
+		v, err := itrp.doExpression(ctx, s.Argument, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -179,10 +178,10 @@ func (itrp *Interpreter) doStatement(ctx context.Context, deps dependencies.Inte
 	return nil, nil
 }
 
-func (itrp *Interpreter) doOptionStatement(ctx context.Context, deps dependencies.Interface, s *semantic.OptionStatement, scope values.Scope) (values.Value, error) {
+func (itrp *Interpreter) doOptionStatement(ctx context.Context, s *semantic.OptionStatement, scope values.Scope) (values.Value, error) {
 	switch a := s.Assignment.(type) {
 	case *semantic.NativeVariableAssignment:
-		init, err := itrp.doExpression(ctx, deps, a.Init, scope)
+		init, err := itrp.doExpression(ctx, a.Init, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -193,7 +192,7 @@ func (itrp *Interpreter) doOptionStatement(ctx context.Context, deps dependencie
 		//        interpreter will handle adding the new option to the current package.
 		return itrp.setOption(scope, "", a.Identifier.Name, init)
 	case *semantic.MemberAssignment:
-		init, err := itrp.doExpression(ctx, deps, a.Init, scope)
+		init, err := itrp.doExpression(ctx, a.Init, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -268,12 +267,12 @@ func copyPackages(scope values.Scope) {
 	copyPackages(scope.Pop())
 }
 
-func (itrp *Interpreter) doTestStatement(ctx context.Context, deps dependencies.Interface, s *semantic.TestStatement, scope values.Scope) (values.Value, error) {
-	return itrp.doAssignment(ctx, deps, s.Assignment, scope)
+func (itrp *Interpreter) doTestStatement(ctx context.Context, s *semantic.TestStatement, scope values.Scope) (values.Value, error) {
+	return itrp.doAssignment(ctx, s.Assignment, scope)
 }
 
-func (itrp *Interpreter) doVariableAssignment(ctx context.Context, deps dependencies.Interface, dec *semantic.NativeVariableAssignment, scope values.Scope) (values.Value, error) {
-	value, err := itrp.doExpression(ctx, deps, dec.Init, scope)
+func (itrp *Interpreter) doVariableAssignment(ctx context.Context, dec *semantic.NativeVariableAssignment, scope values.Scope) (values.Value, error) {
+	value, err := itrp.doExpression(ctx, dec.Init, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -281,12 +280,12 @@ func (itrp *Interpreter) doVariableAssignment(ctx context.Context, deps dependen
 	return value, nil
 }
 
-func (itrp *Interpreter) doMemberAssignment(ctx context.Context, deps dependencies.Interface, a *semantic.MemberAssignment, scope values.Scope) (values.Value, error) {
-	object, err := itrp.doExpression(ctx, deps, a.Member.Object, scope)
+func (itrp *Interpreter) doMemberAssignment(ctx context.Context, a *semantic.MemberAssignment, scope values.Scope) (values.Value, error) {
+	object, err := itrp.doExpression(ctx, a.Member.Object, scope)
 	if err != nil {
 		return nil, err
 	}
-	init, err := itrp.doExpression(ctx, deps, a.Init, scope)
+	init, err := itrp.doExpression(ctx, a.Init, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -294,25 +293,25 @@ func (itrp *Interpreter) doMemberAssignment(ctx context.Context, deps dependenci
 	return object, nil
 }
 
-func (itrp *Interpreter) doAssignment(ctx context.Context, deps dependencies.Interface, a semantic.Assignment, scope values.Scope) (values.Value, error) {
+func (itrp *Interpreter) doAssignment(ctx context.Context, a semantic.Assignment, scope values.Scope) (values.Value, error) {
 	switch a := a.(type) {
 	case *semantic.NativeVariableAssignment:
-		return itrp.doVariableAssignment(ctx, deps, a, scope)
+		return itrp.doVariableAssignment(ctx, a, scope)
 	case *semantic.MemberAssignment:
-		return itrp.doMemberAssignment(ctx, deps, a, scope)
+		return itrp.doMemberAssignment(ctx, a, scope)
 	default:
 		return nil, fmt.Errorf("unsupported assignment %T", a)
 	}
 }
 
-func (itrp *Interpreter) doExpression(ctx context.Context, deps dependencies.Interface, expr semantic.Expression, scope values.Scope) (ret values.Value, err error) {
+func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Expression, scope values.Scope) (ret values.Value, err error) {
 	switch e := expr.(type) {
 	case semantic.Literal:
 		return itrp.doLiteral(e)
 	case *semantic.StringExpression:
-		return itrp.doStringExpression(ctx, deps, e, scope)
+		return itrp.doStringExpression(ctx, e, scope)
 	case *semantic.ArrayExpression:
-		return itrp.doArray(ctx, deps, e, scope)
+		return itrp.doArray(ctx, e, scope)
 	case *semantic.IdentifierExpression:
 		value, ok := scope.Lookup(e.Name)
 		if !ok {
@@ -320,14 +319,14 @@ func (itrp *Interpreter) doExpression(ctx context.Context, deps dependencies.Int
 		}
 		return value, nil
 	case *semantic.CallExpression:
-		v, err := itrp.doCall(ctx, deps, e, scope)
+		v, err := itrp.doCall(ctx, e, scope)
 		if err != nil {
 			// Determine function name
 			return nil, errors.Wrapf(err, codes.Inherit, "error calling function %q", functionName(e))
 		}
 		return v, nil
 	case *semantic.MemberExpression:
-		obj, err := itrp.doExpression(ctx, deps, e.Object, scope)
+		obj, err := itrp.doExpression(ctx, e.Object, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -341,19 +340,19 @@ func (itrp *Interpreter) doExpression(ctx context.Context, deps dependencies.Int
 		}
 		return v, nil
 	case *semantic.IndexExpression:
-		arr, err := itrp.doExpression(ctx, deps, e.Array, scope)
+		arr, err := itrp.doExpression(ctx, e.Array, scope)
 		if err != nil {
 			return nil, err
 		}
-		idx, err := itrp.doExpression(ctx, deps, e.Index, scope)
+		idx, err := itrp.doExpression(ctx, e.Index, scope)
 		if err != nil {
 			return nil, err
 		}
 		return arr.Array().Get(int(idx.Int())), nil
 	case *semantic.ObjectExpression:
-		return itrp.doObject(ctx, deps, e, scope)
+		return itrp.doObject(ctx, e, scope)
 	case *semantic.UnaryExpression:
-		v, err := itrp.doExpression(ctx, deps, e.Argument, scope)
+		v, err := itrp.doExpression(ctx, e.Argument, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -380,12 +379,12 @@ func (itrp *Interpreter) doExpression(ctx context.Context, deps dependencies.Int
 			return nil, fmt.Errorf("unsupported operator %q to unary expression", e.Operator)
 		}
 	case *semantic.BinaryExpression:
-		l, err := itrp.doExpression(ctx, deps, e.Left, scope)
+		l, err := itrp.doExpression(ctx, e.Left, scope)
 		if err != nil {
 			return nil, err
 		}
 
-		r, err := itrp.doExpression(ctx, deps, e.Right, scope)
+		r, err := itrp.doExpression(ctx, e.Right, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -412,7 +411,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, deps dependencies.Int
 		}
 		return bf(l, r)
 	case *semantic.LogicalExpression:
-		l, err := itrp.doExpression(ctx, deps, e.Left, scope)
+		l, err := itrp.doExpression(ctx, e.Left, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -429,7 +428,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, deps dependencies.Int
 			return values.NewBool(true), nil
 		}
 
-		r, err := itrp.doExpression(ctx, deps, e.Right, scope)
+		r, err := itrp.doExpression(ctx, e.Right, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -447,7 +446,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, deps dependencies.Int
 			return nil, fmt.Errorf("invalid logical operator %v", e.Operator)
 		}
 	case *semantic.ConditionalExpression:
-		t, err := itrp.doExpression(ctx, deps, e.Test, scope)
+		t, err := itrp.doExpression(ctx, e.Test, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -455,9 +454,9 @@ func (itrp *Interpreter) doExpression(ctx context.Context, deps dependencies.Int
 			return nil, stderrors.New("conditional test expression is not a boolean value")
 		}
 		if t.Bool() {
-			return itrp.doExpression(ctx, deps, e.Consequent, scope)
+			return itrp.doExpression(ctx, e.Consequent, scope)
 		} else {
-			return itrp.doExpression(ctx, deps, e.Alternate, scope)
+			return itrp.doExpression(ctx, e.Alternate, scope)
 		}
 	case *semantic.FunctionExpression:
 		// Capture type information
@@ -485,10 +484,10 @@ func (itrp *Interpreter) doExpression(ctx context.Context, deps dependencies.Int
 	}
 }
 
-func (itrp *Interpreter) doStringExpression(ctx context.Context, deps dependencies.Interface, s *semantic.StringExpression, scope values.Scope) (values.Value, error) {
+func (itrp *Interpreter) doStringExpression(ctx context.Context, s *semantic.StringExpression, scope values.Scope) (values.Value, error) {
 	var b strings.Builder
 	for _, p := range s.Parts {
-		part, err := itrp.doStringPart(ctx, deps, p, scope)
+		part, err := itrp.doStringPart(ctx, p, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -497,17 +496,17 @@ func (itrp *Interpreter) doStringExpression(ctx context.Context, deps dependenci
 	return values.NewString(b.String()), nil
 }
 
-func (itrp *Interpreter) doStringPart(ctx context.Context, deps dependencies.Interface, part semantic.StringExpressionPart, scope values.Scope) (values.Value, error) {
+func (itrp *Interpreter) doStringPart(ctx context.Context, part semantic.StringExpressionPart, scope values.Scope) (values.Value, error) {
 	switch p := part.(type) {
 	case *semantic.TextPart:
 		return values.NewString(p.Value), nil
 	case *semantic.InterpolatedPart:
-		return itrp.doExpression(ctx, deps, p.Expression, scope)
+		return itrp.doExpression(ctx, p.Expression, scope)
 	}
 	return nil, fmt.Errorf("expecting interpolated string part")
 }
 
-func (itrp *Interpreter) doArray(ctx context.Context, deps dependencies.Interface, a *semantic.ArrayExpression, scope values.Scope) (values.Value, error) {
+func (itrp *Interpreter) doArray(ctx context.Context, a *semantic.ArrayExpression, scope values.Scope) (values.Value, error) {
 	elements := make([]values.Value, len(a.Elements))
 	arrayType, ok := itrp.types[a]
 	if !ok {
@@ -515,7 +514,7 @@ func (itrp *Interpreter) doArray(ctx context.Context, deps dependencies.Interfac
 	}
 	elementType := arrayType.ElementType()
 	for i, el := range a.Elements {
-		v, err := itrp.doExpression(ctx, deps, el, scope)
+		v, err := itrp.doExpression(ctx, el, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -524,10 +523,10 @@ func (itrp *Interpreter) doArray(ctx context.Context, deps dependencies.Interfac
 	return values.NewArrayWithBacking(elementType, elements), nil
 }
 
-func (itrp *Interpreter) doObject(ctx context.Context, deps dependencies.Interface, m *semantic.ObjectExpression, scope values.Scope) (values.Value, error) {
+func (itrp *Interpreter) doObject(ctx context.Context, m *semantic.ObjectExpression, scope values.Scope) (values.Value, error) {
 	obj := values.NewObject()
 	if m.With != nil {
-		with, err := itrp.doExpression(ctx, deps, m.With, scope)
+		with, err := itrp.doExpression(ctx, m.With, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -536,7 +535,7 @@ func (itrp *Interpreter) doObject(ctx context.Context, deps dependencies.Interfa
 		})
 	}
 	for _, p := range m.Properties {
-		v, err := itrp.doExpression(ctx, deps, p.Value, scope)
+		v, err := itrp.doExpression(ctx, p.Value, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -611,8 +610,8 @@ type functionType interface {
 	Signature() semantic.FunctionPolySignature
 }
 
-func (itrp *Interpreter) doCall(ctx context.Context, deps dependencies.Interface, call *semantic.CallExpression, scope values.Scope) (values.Value, error) {
-	callee, err := itrp.doExpression(ctx, deps, call.Callee, scope)
+func (itrp *Interpreter) doCall(ctx context.Context, call *semantic.CallExpression, scope values.Scope) (values.Value, error) {
+	callee, err := itrp.doExpression(ctx, call.Callee, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -622,7 +621,7 @@ func (itrp *Interpreter) doCall(ctx context.Context, deps dependencies.Interface
 	}
 	f := callee.Function()
 	sig := ft.(functionType).Signature()
-	argObj, err := itrp.doArguments(ctx, deps, call.Arguments, scope, sig.PipeArgument, call.Pipe)
+	argObj, err := itrp.doArguments(ctx, call.Arguments, scope, sig.PipeArgument, call.Pipe)
 	if err != nil {
 		return nil, err
 	}
@@ -646,7 +645,7 @@ func (itrp *Interpreter) doCall(ctx context.Context, deps dependencies.Interface
 	}
 
 	// Call the function
-	value, err := f.Call(ctx, deps, argObj)
+	value, err := f.Call(ctx, argObj)
 	if err != nil {
 		return nil, err
 	}
@@ -658,13 +657,13 @@ func (itrp *Interpreter) doCall(ctx context.Context, deps dependencies.Interface
 	return value, nil
 }
 
-func (itrp *Interpreter) doArguments(ctx context.Context, deps dependencies.Interface, args *semantic.ObjectExpression, scope values.Scope, pipeArgument string, pipe semantic.Expression) (values.Object, error) {
+func (itrp *Interpreter) doArguments(ctx context.Context, args *semantic.ObjectExpression, scope values.Scope, pipeArgument string, pipe semantic.Expression) (values.Object, error) {
 	obj := values.NewObject()
 	if pipe == nil && (args == nil || len(args.Properties) == 0) {
 		return obj, nil
 	}
 	for _, p := range args.Properties {
-		value, err := itrp.doExpression(ctx, deps, p.Value, scope)
+		value, err := itrp.doExpression(ctx, p.Value, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -688,7 +687,7 @@ func (itrp *Interpreter) doArguments(ctx context.Context, deps dependencies.Inte
 		return nil, stderrors.New("pipe parameter value provided to function with no pipe parameter defined")
 	}
 	if pipe != nil {
-		value, err := itrp.doExpression(ctx, deps, pipe, scope)
+		value, err := itrp.doExpression(ctx, pipe, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -803,9 +802,9 @@ func (f function) HasSideEffect() bool {
 	return false
 }
 
-func (f function) Call(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+func (f function) Call(ctx context.Context, args values.Object) (values.Value, error) {
 	argsNew := newArguments(args)
-	v, err := f.doCall(ctx, deps, argsNew)
+	v, err := f.doCall(ctx, argsNew)
 	if err != nil {
 		return nil, err
 	}
@@ -814,7 +813,7 @@ func (f function) Call(ctx context.Context, deps dependencies.Interface, args va
 	}
 	return v, nil
 }
-func (f function) doCall(ctx context.Context, deps dependencies.Interface, args Arguments) (values.Value, error) {
+func (f function) doCall(ctx context.Context, args Arguments) (values.Value, error) {
 	if f.itrp == nil {
 		f.itrp = &Interpreter{
 			types:     f.types,
@@ -834,7 +833,7 @@ func (f function) doCall(ctx context.Context, deps dependencies.Interface, args 
 							// Use default value
 							var err error
 							// evaluate default expressions outside the block scope
-							v, err = f.itrp.doExpression(ctx, deps, d.Value, f.scope)
+							v, err = f.itrp.doExpression(ctx, d.Value, f.scope)
 							if err != nil {
 								return nil, err
 							}
@@ -853,11 +852,11 @@ func (f function) doCall(ctx context.Context, deps dependencies.Interface, args 
 	}
 	switch n := f.e.Block.Body.(type) {
 	case semantic.Expression:
-		return f.itrp.doExpression(ctx, deps, n, blockScope)
+		return f.itrp.doExpression(ctx, n, blockScope)
 	case *semantic.Block:
 		nested := blockScope.Nest(nil)
 		for i, stmt := range n.Body {
-			_, err := f.itrp.doStatement(ctx, deps, stmt, nested)
+			_, err := f.itrp.doStatement(ctx, stmt, nested)
 			if err != nil {
 				return nil, err
 			}

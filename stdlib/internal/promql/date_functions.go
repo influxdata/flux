@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
@@ -20,7 +19,7 @@ func generateDateFunction(name string, dateFn func(time.Time) int) values.Functi
 			Required:   semantic.LabelSet{"timestamp"},
 			Return:     semantic.Float,
 		}),
-		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+		func(ctx context.Context, args values.Object) (values.Value, error) {
 			v, ok := args.Get("timestamp")
 			if !ok {
 				return nil, errors.New("missing argument timestamp")

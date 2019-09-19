@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/lang/langtest"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
@@ -38,8 +39,8 @@ data = "#datatype,string,long,dateTime:RFC3339,double,string,string
 "
 
 csv.from(csv: data)`
-
-	vs, _, err := flux.Eval(context.Background(), dependenciestest.Default(), script)
+	ctx := dependenciestest.Default().Inject(context.Background())
+	vs, _, err := flux.Eval(ctx, script)
 	if err != nil {
 		panic(fmt.Errorf("cannot compile simple script to prepare test: %s", err))
 	}
@@ -119,7 +120,9 @@ func mustLookup(s values.Scope, valueID string) values.Value {
 func evalOrFail(t *testing.T, script string, mutator flux.ScopeMutator) values.Scope {
 	t.Helper()
 
-	_, s, err := flux.Eval(context.Background(), dependenciestest.Default(), script, func(s values.Scope) {
+	ctx := dependenciestest.Default().Inject(context.Background())
+	ctx = langtest.DefaultExecutionDependencies().Inject(ctx)
+	_, s, err := flux.Eval(ctx, script, func(s values.Scope) {
 		if mutator != nil {
 			mutator(s)
 		}
@@ -167,7 +170,9 @@ func TestTableFind_Call(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, scope, err := flux.Eval(context.Background(), dependenciestest.Default(), tc.fn)
+			ctx := dependenciestest.Default().Inject(context.Background())
+			ctx = langtest.DefaultExecutionDependencies().Inject(ctx)
+			_, scope, err := flux.Eval(ctx, tc.fn)
 			if err != nil {
 				t.Fatalf("error compiling function: %v", err)
 			}
@@ -178,7 +183,7 @@ func TestTableFind_Call(t *testing.T) {
 			}
 
 			f := universe.NewTableFindFunction()
-			res, err := f.Function().Call(context.Background(), dependenciestest.Default(),
+			res, err := f.Function().Call(ctx,
 				values.NewObjectWithValues(map[string]values.Value{
 					"tables": to,
 					"fn":     fn,
@@ -217,7 +222,9 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 	tbl := mustLookup(s, "t")
 
 	f := universe.NewGetColumnFunction()
-	res, err := f.Function().Call(context.Background(), dependenciestest.Default(),
+	ctx := dependenciestest.Default().Inject(context.Background())
+	ctx = langtest.DefaultExecutionDependencies().Inject(ctx)
+	res, err := f.Function().Call(ctx,
 		values.NewObjectWithValues(map[string]values.Value{
 			"table":  tbl.(*objects.Table),
 			"column": values.New("user"),
@@ -235,7 +242,7 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 
 	// test for error
 	f = universe.NewGetColumnFunction()
-	_, err = f.Function().Call(context.Background(), dependenciestest.Default(),
+	_, err = f.Function().Call(ctx,
 		values.NewObjectWithValues(map[string]values.Value{
 			"table":  tbl.(*objects.Table),
 			"column": values.New("idk"),
@@ -251,8 +258,6 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 }
 
 func TestGetRecord_Call(t *testing.T) {
-	t.Skip("table cannot be used more than once")
-
 	script := `
 // 'inj' is injected in the scope before evaluation
 t = inj |> tableFind(fn: (key) => key.user == "user1")`
@@ -263,7 +268,9 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 	tbl := mustLookup(s, "t")
 
 	f := universe.NewGetRecordFunction()
-	res, err := f.Function().Call(context.Background(), dependenciestest.Default(),
+	ctx := dependenciestest.Default().Inject(context.Background())
+	ctx = langtest.DefaultExecutionDependencies().Inject(ctx)
+	res, err := f.Function().Call(ctx,
 		values.NewObjectWithValues(map[string]values.Value{
 			"table": tbl.(*objects.Table),
 			"idx":   values.New(int64(1)),
@@ -277,7 +284,7 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 		"_time":        values.New(mustParseTime("2018-05-22T19:53:36.000000000Z")),
 		"_value":       values.New(1.0),
 		"_measurement": values.New("CPU"),
-		"user":         values.New("user"),
+		"user":         values.New("user1"),
 	})
 
 	if diff := cmp.Diff(want, got); diff != "" {
@@ -286,7 +293,7 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 
 	// test for error
 	f = universe.NewGetRecordFunction()
-	_, err = f.Function().Call(context.Background(), dependenciestest.Default(),
+	_, err = f.Function().Call(ctx,
 		values.NewObjectWithValues(map[string]values.Value{
 			"table": tbl.(*objects.Table),
 			"idx":   values.New(int64(42)),
@@ -304,8 +311,6 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 // We have to write this test as a non-standard e2e test, because
 // our framework doesn't allow comparison between "simple" values, but only streams of tables.
 func TestIndexFns_EndToEnd(t *testing.T) {
-	t.Skip("table cannot be used more than once")
-
 	// TODO(affo): uncomment schema-testing lines (in the `script` too) once we decide to expose the schema.
 	script := `
 // 'inj' is injected in the scope before evaluation

@@ -8,7 +8,6 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -25,7 +24,7 @@ func init() {
 				Required:   semantic.LabelSet{"t"},
 				Return:     semantic.Int,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument t")
@@ -44,7 +43,7 @@ func init() {
 				Required:   semantic.LabelSet{"t"},
 				Return:     semantic.Int,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument t")
@@ -63,7 +62,7 @@ func init() {
 				Required:   semantic.LabelSet{"t"},
 				Return:     semantic.Int,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument t")
@@ -82,7 +81,7 @@ func init() {
 				Required:   semantic.LabelSet{"t"},
 				Return:     semantic.Int,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument t")
@@ -101,7 +100,7 @@ func init() {
 				Required:   semantic.LabelSet{"t"},
 				Return:     semantic.Int,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument t")
@@ -120,7 +119,7 @@ func init() {
 				Required:   semantic.LabelSet{"t"},
 				Return:     semantic.Int,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument t")
@@ -139,7 +138,7 @@ func init() {
 				Required:   semantic.LabelSet{"t"},
 				Return:     semantic.Int,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument t")
@@ -158,7 +157,7 @@ func init() {
 				Required:   semantic.LabelSet{"t"},
 				Return:     semantic.Int,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument t")
@@ -177,7 +176,7 @@ func init() {
 				Required:   semantic.LabelSet{"t"},
 				Return:     semantic.Int,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument t")
@@ -197,7 +196,7 @@ func init() {
 				Required:   semantic.LabelSet{"t"},
 				Return:     semantic.Int,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument t")
@@ -217,7 +216,7 @@ func init() {
 				Required:   semantic.LabelSet{"t"},
 				Return:     semantic.Int,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument t")
@@ -237,7 +236,7 @@ func init() {
 				Required:   semantic.LabelSet{"t"},
 				Return:     semantic.Int,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument t")
@@ -257,7 +256,7 @@ func init() {
 				Required:   semantic.LabelSet{"t"},
 				Return:     semantic.Int,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument t")
@@ -276,7 +275,7 @@ func init() {
 				Required:   semantic.LabelSet{"t", "unit"},
 				Return:     semantic.Time,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("t")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument t")

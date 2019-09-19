@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -29,7 +28,7 @@ func addDuration(name string) values.Value {
 		Required: semantic.LabelSet{"d", "to"},
 		Return:   semantic.Time,
 	})
-	fn := func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+	fn := func(ctx context.Context, args values.Object) (values.Value, error) {
 		d, ok := args.Get("d")
 		if !ok {
 			return nil, fmt.Errorf("%s requires 'd' parameter", name)
@@ -52,7 +51,7 @@ func subDuration(name string) values.Value {
 		Required: semantic.LabelSet{"d", "from"},
 		Return:   semantic.Time,
 	})
-	fn := func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+	fn := func(ctx context.Context, args values.Object) (values.Value, error) {
 		d, ok := args.Get("d")
 		if !ok {
 			return nil, fmt.Errorf("%s requires 'd' parameter", name)

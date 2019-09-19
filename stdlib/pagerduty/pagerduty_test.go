@@ -10,24 +10,19 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux/dependencies"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/memory"
-
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/lang"
-
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/ast"
+	_ "github.com/influxdata/flux/builtin"
 	_ "github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/lang"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
-
-	_ "github.com/influxdata/flux/builtin"
 )
 
 func TestPagerduty(t *testing.T) {
-	ctx, deps := context.Background(), dependenciestest.Default()
-	_, _, err := flux.Eval(ctx, deps, `
+	ctx := dependenciestest.Default().Inject(context.Background())
+	_, _, err := flux.Eval(ctx, `
 import "csv"
 import "pagerduty"
 data = "
@@ -257,8 +252,8 @@ csv.from(csv:data) |> endpoint()
 			if err != nil {
 				t.Error(err)
 			}
-			prog.SetExecutorDependencies(execute.Dependencies{dependencies.InterpreterDepsKey: dependencies.NewDefaults()})
-			query, err := prog.Start(context.Background(), &memory.Allocator{})
+			ctx := flux.NewDefaultDependencies().Inject(context.Background())
+			query, err := prog.Start(ctx, &memory.Allocator{})
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -8,7 +8,6 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
@@ -47,7 +46,7 @@ func (b *BuilderContext) ColMap() []int {
 }
 
 type SchemaMutator interface {
-	Mutate(ctx context.Context, deps dependencies.Interface, bctx *BuilderContext) error
+	Mutate(ctx context.Context, bctx *BuilderContext) error
 }
 
 type SchemaMutation interface {
@@ -106,7 +105,7 @@ func NewRenameMutator(qs flux.OperationSpec) (*RenameMutator, error) {
 	return m, nil
 }
 
-func (m *RenameMutator) renameCol(ctx context.Context, deps dependencies.Interface, col *flux.ColMeta) error {
+func (m *RenameMutator) renameCol(ctx context.Context, col *flux.ColMeta) error {
 	if col == nil {
 		return stderrors.New("rename error: cannot rename nil column")
 	}
@@ -116,7 +115,7 @@ func (m *RenameMutator) renameCol(ctx context.Context, deps dependencies.Interfa
 		}
 	} else if m.Fn != nil {
 		m.Input.Set(m.ParamName, values.NewString(col.Label))
-		newName, err := m.Fn.Eval(ctx, deps, m.Input)
+		newName, err := m.Fn.Eval(ctx, m.Input)
 		if err != nil {
 			return err
 		}
@@ -134,7 +133,7 @@ func (m *RenameMutator) checkColumns(tableCols []flux.ColMeta) error {
 	return nil
 }
 
-func (m *RenameMutator) Mutate(ctx context.Context, deps dependencies.Interface, bctx *BuilderContext) error {
+func (m *RenameMutator) Mutate(ctx context.Context, bctx *BuilderContext) error {
 	if err := m.checkColumns(bctx.Cols()); err != nil {
 		return err
 	}
@@ -146,7 +145,7 @@ func (m *RenameMutator) Mutate(ctx context.Context, deps dependencies.Interface,
 		keyIdx := execute.ColIdx(bctx.TableColumns[i].Label, bctx.Key().Cols())
 		keyed := keyIdx >= 0
 
-		if err := m.renameCol(ctx, deps, &bctx.TableColumns[i]); err != nil {
+		if err := m.renameCol(ctx, &bctx.TableColumns[i]); err != nil {
 			return err
 		}
 
@@ -209,9 +208,9 @@ func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
 	return m, nil
 }
 
-func (m *DropKeepMutator) shouldDrop(ctx context.Context, deps dependencies.Interface, col string) (bool, error) {
+func (m *DropKeepMutator) shouldDrop(ctx context.Context, col string) (bool, error) {
 	m.Input.Set(m.ParamName, values.NewString(col))
-	v, err := m.Predicate.Eval(ctx, deps, m.Input)
+	v, err := m.Predicate.Eval(ctx, m.Input)
 	if err != nil {
 		return false, err
 	}
@@ -222,13 +221,13 @@ func (m *DropKeepMutator) shouldDrop(ctx context.Context, deps dependencies.Inte
 	return shouldDrop, nil
 }
 
-func (m *DropKeepMutator) shouldDropCol(ctx context.Context, deps dependencies.Interface, col string) (bool, error) {
+func (m *DropKeepMutator) shouldDropCol(ctx context.Context, col string) (bool, error) {
 	if m.DropCols != nil {
 		if _, exists := m.DropCols[col]; exists {
 			return true, nil
 		}
 	} else if m.Predicate != nil {
-		return m.shouldDrop(ctx, deps, col)
+		return m.shouldDrop(ctx, col)
 	}
 	return false, nil
 }
@@ -249,7 +248,7 @@ func (m *DropKeepMutator) keepToDropCols(cols []flux.ColMeta) {
 	}
 }
 
-func (m *DropKeepMutator) Mutate(ctx context.Context, deps dependencies.Interface, bctx *BuilderContext) error {
+func (m *DropKeepMutator) Mutate(ctx context.Context, bctx *BuilderContext) error {
 
 	m.keepToDropCols(bctx.Cols())
 
@@ -261,7 +260,7 @@ func (m *DropKeepMutator) Mutate(ctx context.Context, deps dependencies.Interfac
 	newColMap := make([]int, 0, len(bctx.Cols()))
 
 	for i, c := range bctx.Cols() {
-		if shouldDrop, err := m.shouldDropCol(ctx, deps, c.Label); err != nil {
+		if shouldDrop, err := m.shouldDropCol(ctx, c.Label); err != nil {
 			return err
 		} else if shouldDrop {
 			continue
@@ -301,7 +300,7 @@ func NewDuplicateMutator(qs flux.OperationSpec) (*DuplicateMutator, error) {
 	}, nil
 }
 
-func (m *DuplicateMutator) Mutate(ctx context.Context, deps dependencies.Interface, bctx *BuilderContext) error {
+func (m *DuplicateMutator) Mutate(ctx context.Context, bctx *BuilderContext) error {
 	fromIdx := execute.ColIdx(m.Column, bctx.Cols())
 	if fromIdx < 0 {
 		return fmt.Errorf(`duplicate error: column "%s" doesn't exist`, m.Column)

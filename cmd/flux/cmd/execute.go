@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/secret"
 	"github.com/influxdata/flux/repl"
@@ -26,10 +26,11 @@ func init() {
 }
 
 func execute(cmd *cobra.Command, args []string) error {
-	deps := dependencies.NewDefaults()
+	deps := flux.NewDefaultDependencies()
 	deps.Deps.SecretService = secret.EmptySecretService{}
 	deps.Deps.FilesystemService = filesystem.SystemFS
-	r := repl.New(context.Background(), deps, querier{})
+	ctx := deps.Inject(context.Background())
+	r := repl.New(ctx, deps, querier{})
 	if err := r.Input(args[0]); err != nil {
 		return fmt.Errorf("failed to execute query: %v", err)
 	}

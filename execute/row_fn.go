@@ -8,7 +8,6 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/compiler"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -117,12 +116,12 @@ func newTableFn(fn *semantic.FunctionExpression, scope compiler.Scope) tableFn {
 	}
 }
 
-func (f *tableFn) eval(ctx context.Context, deps dependencies.Interface, tbl flux.Table) (values.Value, error) {
+func (f *tableFn) eval(ctx context.Context, tbl flux.Table) (values.Value, error) {
 	for r, col := range f.recordCols {
 		f.record.Set(r, tbl.Key().Value(col))
 	}
 	f.inRecord.Set(f.recordName, f.record)
-	return f.preparedFn.Eval(ctx, deps, f.inRecord)
+	return f.preparedFn.Eval(ctx, f.inRecord)
 }
 
 type TablePredicateFn struct {
@@ -144,8 +143,8 @@ func (f *TablePredicateFn) Prepare(tbl flux.Table) error {
 	return nil
 }
 
-func (f *TablePredicateFn) Eval(ctx context.Context, deps dependencies.Interface, tbl flux.Table) (bool, error) {
-	v, err := f.tableFn.eval(ctx, deps, tbl)
+func (f *TablePredicateFn) Eval(ctx context.Context, tbl flux.Table) (bool, error) {
+	v, err := f.tableFn.eval(ctx, tbl)
 	if err != nil {
 		return false, err
 	}
@@ -162,7 +161,7 @@ func newRowFn(fn *semantic.FunctionExpression, scope compiler.Scope) (rowFn, err
 	}, nil
 }
 
-func (f *rowFn) eval(ctx context.Context, deps dependencies.Interface, row int, cr flux.ColReader, extraParams map[string]values.Value) (values.Value, error) {
+func (f *rowFn) eval(ctx context.Context, row int, cr flux.ColReader, extraParams map[string]values.Value) (values.Value, error) {
 	for r, col := range f.recordCols {
 		f.record.Set(r, ValueForRow(cr, row, col))
 	}
@@ -171,7 +170,7 @@ func (f *rowFn) eval(ctx context.Context, deps dependencies.Interface, row int, 
 		f.inRecord.Set(k, v)
 	}
 
-	return f.preparedFn.Eval(ctx, deps, f.inRecord)
+	return f.preparedFn.Eval(ctx, f.inRecord)
 }
 
 type RowPredicateFn struct {
@@ -198,8 +197,8 @@ func (f *RowPredicateFn) Prepare(cols []flux.ColMeta) error {
 	return nil
 }
 
-func (f *RowPredicateFn) Eval(ctx context.Context, deps dependencies.Interface, row int, cr flux.ColReader) (bool, error) {
-	v, err := f.rowFn.eval(ctx, deps, row, cr, nil)
+func (f *RowPredicateFn) Eval(ctx context.Context, row int, cr flux.ColReader) (bool, error) {
+	v, err := f.rowFn.eval(ctx, row, cr, nil)
 	if err != nil {
 		return false, err
 	}
@@ -236,8 +235,8 @@ func (f *RowMapFn) Type() semantic.Type {
 	return f.preparedFn.Type()
 }
 
-func (f *RowMapFn) Eval(ctx context.Context, deps dependencies.Interface, row int, cr flux.ColReader) (values.Object, error) {
-	v, err := f.rowFn.eval(ctx, deps, row, cr, nil)
+func (f *RowMapFn) Eval(ctx context.Context, row int, cr flux.ColReader) (values.Object, error) {
+	v, err := f.rowFn.eval(ctx, row, cr, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -282,8 +281,8 @@ func (f *RowReduceFn) Type() semantic.Type {
 	return f.preparedFn.Type()
 }
 
-func (f *RowReduceFn) Eval(ctx context.Context, deps dependencies.Interface, row int, cr flux.ColReader, extraParams map[string]values.Value) (values.Object, error) {
-	v, err := f.rowFn.eval(ctx, deps, row, cr, extraParams)
+func (f *RowReduceFn) Eval(ctx context.Context, row int, cr flux.ColReader, extraParams map[string]values.Value) (values.Object, error) {
+	v, err := f.rowFn.eval(ctx, row, cr, extraParams)
 	if err != nil {
 		return nil, err
 	}

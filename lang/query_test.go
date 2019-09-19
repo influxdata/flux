@@ -17,9 +17,8 @@ func runQuery(script string) (flux.Query, error) {
 	if err != nil {
 		return nil, err
 	}
-	program.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
-
-	q, err := program.Start(context.Background(), &memory.Allocator{})
+	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
+	q, err := program.Start(ctx, &memory.Allocator{})
 	if err != nil {
 		return nil, err
 	}

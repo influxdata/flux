@@ -8,9 +8,8 @@ import (
 	"net/http"
 	"net/url"
 
-	flux "github.com/influxdata/flux"
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/iocounter"
 	"github.com/influxdata/flux/semantic"
@@ -35,7 +34,7 @@ func init() {
 			Required: []string{"url"},
 			Return:   semantic.Int,
 		}),
-		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+		func(ctx context.Context, args values.Object) (values.Value, error) {
 			// Get and validate URL
 			uV, ok := args.Get("url")
 			if !ok {
@@ -45,6 +44,7 @@ func init() {
 			if err != nil {
 				return nil, err
 			}
+			deps := flux.GetDependencies(ctx)
 			validator, err := deps.URLValidator()
 			if err != nil {
 				return nil, err

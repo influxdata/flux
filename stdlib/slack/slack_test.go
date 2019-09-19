@@ -10,9 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux/dependencies"
-	"github.com/influxdata/flux/execute"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	_ "github.com/influxdata/flux/builtin"
@@ -24,8 +21,8 @@ import (
 )
 
 func TestSlack(t *testing.T) {
-	ctx, deps := context.Background(), dependenciestest.Default()
-	_, scope, err := flux.Eval(ctx, deps, `
+	ctx := dependenciestest.Default().Inject(context.Background())
+	_, scope, err := flux.Eval(ctx, `
 import "csv"
 import "slack"
 
@@ -202,8 +199,8 @@ csv.from(csv:data) |> endpoint()`
 			if err != nil {
 				t.Fatal(err)
 			}
-			prog.SetExecutorDependencies(execute.Dependencies{dependencies.InterpreterDepsKey: dependencies.NewDefaults()})
-			query, err := prog.Start(context.Background(), &memory.Allocator{})
+			ctx := flux.NewDefaultDependencies().Inject(context.Background())
+			query, err := prog.Start(ctx, &memory.Allocator{})
 
 			if err != nil {
 				t.Fatal(err)

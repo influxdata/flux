@@ -6,7 +6,6 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 )
 
@@ -14,12 +13,10 @@ type Querier struct{}
 
 func (q *Querier) Query(ctx context.Context, w io.Writer, c flux.Compiler, d flux.Dialect) (int64, error) {
 	program, err := c.Compile(ctx)
-	if p, ok := program.(lang.DependenciesAwareProgram); ok {
-		p.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
-	}
 	if err != nil {
 		return 0, err
 	}
+	ctx = executetest.NewTestExecuteDependencies().Inject(ctx)
 	alloc := &memory.Allocator{}
 	query, err := program.Start(ctx, alloc)
 	if err != nil {

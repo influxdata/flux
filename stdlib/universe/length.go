@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -23,7 +22,7 @@ func MakeLengthFunc() values.Function {
 			Required: semantic.LabelSet{"arr"},
 			Return:   semantic.Int,
 		}),
-		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+		func(ctx context.Context, args values.Object) (values.Value, error) {
 			v, ok := args.Get("arr")
 			if !ok {
 				return nil, errors.New("missing argument value")

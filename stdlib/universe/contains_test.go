@@ -2,9 +2,9 @@ package universe_test
 
 import (
 	"context"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"testing"
 
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
 )
@@ -107,7 +107,7 @@ func TestContains_NewQuery(t *testing.T) {
 func containsTestHelper(t *testing.T, tc containsCase) {
 	t.Helper()
 	contains := universe.MakeContainsFunc()
-	result, err := contains.Call(context.Background(), dependenciestest.Default(),
+	result, err := contains.Call(dependenciestest.Default().Inject(context.Background()),
 		values.NewObjectWithValues(map[string]values.Value{
 			"value": tc.value,
 			"set":   values.NewArrayWithBacking(tc.value.Type(), tc.set),

@@ -145,12 +145,9 @@ func TestFluxCompiler(t *testing.T) {
 				t.Errorf(`unexpected value for now, want "%v", got "%v"`, tc.now, astProg.Now)
 			}
 
-			if p, ok := program.(lang.DependenciesAwareProgram); ok {
-				p.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
-			}
-
 			// we need to start the program to get compile errors derived from AST evaluation
-			if _, err = program.Start(context.Background(), &memory.Allocator{}); tc.err == "" && err != nil {
+			ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
+			if _, err = program.Start(ctx, &memory.Allocator{}); tc.err == "" && err != nil {
 				t.Errorf("expected query %q to start successfully but got error %v", tc.q, err)
 			} else if tc.err != "" && err == nil {
 				t.Errorf("expected query %q to start with error but got no error", tc.q)
@@ -167,9 +164,9 @@ func TestCompilationError(t *testing.T) {
 		// This shouldn't happen, has the script should be evaluated at program Start.
 		t.Fatal(err)
 	}
-	program.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
 
-	_, err = program.Start(context.Background(), &memory.Allocator{})
+	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
+	_, err = program.Start(ctx, &memory.Allocator{})
 	if err == nil {
 		t.Fatal("compilation error expected, got none")
 	}
@@ -295,11 +292,9 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 			if err != nil {
 				t.Fatalf("failed to compile AST: %v", err)
 			}
-			if p, ok := program.(lang.DependenciesAwareProgram); ok {
-				p.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
-			}
+			ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
 			// we need to start the program to get compile errors derived from AST evaluation
-			if _, err := program.Start(context.Background(), &memory.Allocator{}); err != nil {
+			if _, err := program.Start(ctx, &memory.Allocator{}); err != nil {
 				t.Fatalf("failed to start program: %v", err)
 			}
 
@@ -326,10 +321,10 @@ func TestCompileOptions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to compile script: %v", err)
 	}
-	program.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
 
 	// start program in order to evaluate planner options
-	if _, err := program.Start(context.Background(), &memory.Allocator{}); err != nil {
+	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
+	if _, err := program.Start(ctx, &memory.Allocator{}); err != nil {
 		t.Fatalf("failed to start program: %v", err)
 	}
 
@@ -674,9 +669,8 @@ option planner.disableLogicalRules = ["removeCountRule"]`},
 			}
 
 			program := lang.CompileAST(astPkg, nowFn())
-			program.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
-
-			if _, err := program.Start(context.Background(), &memory.Allocator{}); err != nil {
+			ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
+			if _, err := program.Start(ctx, &memory.Allocator{}); err != nil {
 				if tc.wantErr == "" {
 					t.Fatalf("failed to start program: %v", err)
 				} else if got := getRootErr(err); tc.wantErr != got.Error() {
@@ -772,7 +766,7 @@ csv.from(csv: data)
 	wantRange := getTablesFromRawOrFail(t, rangedDataRaw)
 	wantFilter := getTablesFromRawOrFail(t, filteredDataRaw)
 
-	vs, _, err := flux.Eval(context.Background(), dependenciestest.Default(), script)
+	vs, _, err := flux.Eval(dependenciestest.Default().Inject(context.Background()), script)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -837,11 +831,8 @@ func getTableObjectTablesOrFail(t *testing.T, to *flux.TableObject) []*executete
 		t.Fatal(err)
 	}
 
-	if p, ok := program.(lang.DependenciesAwareProgram); ok {
-		p.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
-	}
-
-	q, err := program.Start(context.Background(), &memory.Allocator{})
+	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
+	q, err := program.Start(ctx, &memory.Allocator{})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -88,10 +88,6 @@ func (a *MockAllocator) Parents() []execute.DatasetID {
 	return nil
 }
 
-func (a *MockAllocator) Dependencies() execute.Dependencies {
-	return nil
-}
-
 func TestFromRowReader(t *testing.T) {
 	t.Run("Mock RowReader", func(t *testing.T) {
 

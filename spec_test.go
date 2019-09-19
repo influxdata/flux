@@ -10,12 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
@@ -295,7 +293,7 @@ func Example_option() {
 	// The now option is a function value whose default behavior is to return
 	// the current system time when called. The function now() doesn't take
 	// any arguments so can be called with nil.
-	nowTime, _ := nowFunc.Function().Call(context.TODO(), dependenciestest.Default(), nil)
+	nowTime, _ := nowFunc.Function().Call(dependenciestest.Default().Inject(context.TODO()), nil)
 	fmt.Fprintf(os.Stderr, "The current system time (UTC) is: %v\n", nowTime)
 	// Output:
 }
@@ -322,7 +320,7 @@ func Example_overrideDefaultOptionExternally() {
 		option now = () => 2018-07-13T00:00:00Z
 		what_time_is_it = now()`
 
-	ctx, deps := context.Background(), dependenciestest.Default()
+	ctx := dependenciestest.Default().Inject(context.Background())
 	itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
 
 	universe := flux.Prelude()
@@ -331,7 +329,7 @@ func Example_overrideDefaultOptionExternally() {
 	semPkg, _ := semantic.New(astPkg)
 
 	// Evaluate package
-	_, err := itrp.Eval(ctx, deps, semPkg, universe, nil)
+	_, err := itrp.Eval(ctx, semPkg, universe, nil)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -349,7 +347,7 @@ func Example_overrideDefaultOptionExternally() {
 func Example_overrideDefaultOptionInternally() {
 	queryString := `what_time_is_it = now()`
 
-	ctx, deps := context.Background(), dependenciestest.Default()
+	ctx := dependenciestest.Default().Inject(context.Background())
 	itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
 	universe := flux.Prelude()
 
@@ -362,7 +360,7 @@ func Example_overrideDefaultOptionInternally() {
 	functionType := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 		Return: semantic.Time,
 	})
-	functionCall := func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+	functionCall := func(ctx context.Context, args values.Object) (values.Value, error) {
 		return values.NewTime(values.ConvertTime(timeValue)), nil
 	}
 	sideEffect := false
@@ -373,7 +371,7 @@ func Example_overrideDefaultOptionInternally() {
 	universe.Set("now", newNowFunc)
 
 	// Evaluate package
-	_, err := itrp.Eval(ctx, deps, semPkg, universe, nil)
+	_, err := itrp.Eval(ctx, semPkg, universe, nil)
 	if err != nil {
 		fmt.Println(err)
 	}
