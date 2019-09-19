@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/influxdata/flux/ast"
-
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"

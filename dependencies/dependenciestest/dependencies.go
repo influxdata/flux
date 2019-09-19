@@ -1,10 +1,10 @@
 package dependenciestest
 
 import (
-	"github.com/influxdata/flux"
 	"io/ioutil"
 	"net/http"
 
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/mock"

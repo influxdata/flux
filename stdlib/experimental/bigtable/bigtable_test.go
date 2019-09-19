@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"cloud.google.com/go/bigtable"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
@@ -18,8 +19,6 @@ import (
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
 	"github.com/stretchr/testify/assert"
-
-	"cloud.google.com/go/bigtable"
 )
 
 var rRowKey *semantic.MemberExpression = &semantic.MemberExpression{

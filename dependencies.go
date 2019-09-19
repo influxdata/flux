@@ -78,7 +78,11 @@ func (d Deps) Inject(ctx context.Context) context.Context {
 }
 
 func GetDependencies(ctx context.Context) Dependencies {
-	return ctx.Value(dependenciesKey).(Dependencies)
+	deps := ctx.Value(dependenciesKey)
+	if deps == nil {
+		return NewEmptyDependencies()
+	}
+	return deps.(Dependencies)
 }
 
 // newDefaultTransport creates a new transport with sane defaults.

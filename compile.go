@@ -343,8 +343,7 @@ func evalBuiltInPackages() error {
 		}
 
 		itrp := interpreter.NewInterpreter(pkg)
-		ctx := NewEmptyDependencies().Inject(context.Background())
-		if _, err := itrp.Eval(ctx, semPkg, preludeScope.Nest(pkg), stdlib); err != nil {
+		if _, err := itrp.Eval(context.Background(), semPkg, preludeScope.Nest(pkg), stdlib); err != nil {
 			return errors.Wrapf(err, codes.Inherit, "failed to evaluate builtin package %q", astPkg.Path)
 		}
 	}
