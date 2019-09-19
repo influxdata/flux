@@ -742,7 +742,7 @@ func TestExecutor_Execute(t *testing.T) {
 			// Construct physical query plan
 			plan := plantest.CreatePlanSpec(tc.spec)
 
-			exe := execute.NewExecutor(executetest.NewTestExecuteDependencies(), zaptest.NewLogger(t))
+			exe := execute.NewExecutor(zaptest.NewLogger(t))
 
 			alloc := tc.allocator
 			if alloc == nil {
@@ -750,7 +750,8 @@ func TestExecutor_Execute(t *testing.T) {
 			}
 
 			// Execute the query and preserve any error returned
-			results, _, err := exe.Execute(context.Background(), plan, alloc)
+			ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
+			results, _, err := exe.Execute(ctx, plan, alloc)
 			var got map[string][]*executetest.Table
 			if err == nil {
 				got = make(map[string][]*executetest.Table, len(results))

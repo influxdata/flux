@@ -98,7 +98,7 @@ func createTripleExponentialDerivativeTransformation(id execute.DatasetID, mode 
 		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
 	}
 	alloc := a.Allocator()
-	cache := execute.NewTableBuilderCache(a.Allocator())
+	cache := execute.NewTableBuilderCache(alloc)
 
 	d := execute.NewDataset(id, mode, cache)
 	t := NewTripleExponentialDerivativeTransformation(d, cache, alloc, s)
@@ -169,7 +169,7 @@ func (t *tripleExponentialDerivativeTransformation) Process(id execute.DatasetID
 	t.ema2 = moving_average.New(int(t.n), len(cols))
 	t.ema3 = moving_average.New(int(t.n), len(cols))
 
-	err := tbl.Do(func(cr flux.ColReader) error {
+	if err := tbl.Do(func(cr flux.ColReader) error {
 		if cr.Len() == 0 {
 			return nil
 		}
@@ -198,7 +198,9 @@ func (t *tripleExponentialDerivativeTransformation) Process(id execute.DatasetID
 			}
 		}
 		return nil
-	})
+	}); err != nil {
+		return err
+	}
 
 	for j := range cols {
 		if j == valueIdx {
@@ -216,7 +218,7 @@ func (t *tripleExponentialDerivativeTransformation) Process(id execute.DatasetID
 		}
 	}
 
-	return err
+	return nil
 }
 
 func (t *tripleExponentialDerivativeTransformation) passThrough(vs *moving_average.ArrayContainer, b execute.TableBuilder, bj int) error {
@@ -229,6 +231,8 @@ func (t *tripleExponentialDerivativeTransformation) passThrough(vs *moving_avera
 
 	if j < vs.Len() {
 		slice := vs.Slice(j, vs.Len()).Array()
+		defer slice.Release()
+
 		switch s := slice.(type) {
 		case *array.Boolean:
 			if err := b.AppendBools(bj, s); err != nil {
@@ -255,7 +259,9 @@ func (t *tripleExponentialDerivativeTransformation) passThroughTime(vs *array.In
 	t.i[bj] += int(math.Max(0, math.Min(float64(vs.Len()), float64(3*(t.n-1))-float64(t.i[bj])+1)))
 
 	if j < vs.Len() {
-		if err := b.AppendTimes(bj, arrow.IntSlice(vs, j, vs.Len())); err != nil {
+		slice := arrow.IntSlice(vs, j, vs.Len())
+		defer slice.Release()
+		if err := b.AppendTimes(bj, slice); err != nil {
 			return err
 		}
 	}

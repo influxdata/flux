@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -91,7 +90,7 @@ func (c *stringConv) HasSideEffect() bool {
 	return false
 }
 
-func (c *stringConv) Call(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+func (c *stringConv) Call(ctx context.Context, args values.Object) (values.Value, error) {
 	var str string
 	v, ok := args.Get(conversionArg)
 	if !ok {
@@ -179,7 +178,7 @@ func (c *intConv) HasSideEffect() bool {
 	return false
 }
 
-func (c *intConv) Call(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+func (c *intConv) Call(ctx context.Context, args values.Object) (values.Value, error) {
 	var i int64
 	v, ok := args.Get(conversionArg)
 	if !ok {
@@ -275,7 +274,7 @@ func (c *uintConv) HasSideEffect() bool {
 	return false
 }
 
-func (c *uintConv) Call(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+func (c *uintConv) Call(ctx context.Context, args values.Object) (values.Value, error) {
 	var i uint64
 	v, ok := args.Get(conversionArg)
 	if !ok {
@@ -371,7 +370,7 @@ func (c *floatConv) HasSideEffect() bool {
 	return false
 }
 
-func (c *floatConv) Call(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+func (c *floatConv) Call(ctx context.Context, args values.Object) (values.Value, error) {
 	var float float64
 	v, ok := args.Get(conversionArg)
 	if !ok {
@@ -463,7 +462,7 @@ func (c boolConv) HasSideEffect() bool {
 	return false
 }
 
-func (c *boolConv) Call(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+func (c *boolConv) Call(ctx context.Context, args values.Object) (values.Value, error) {
 	var b bool
 	v, ok := args.Get(conversionArg)
 	if !ok {
@@ -575,7 +574,7 @@ func (c timeConv) HasSideEffect() bool {
 	return false
 }
 
-func (c *timeConv) Call(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+func (c *timeConv) Call(ctx context.Context, args values.Object) (values.Value, error) {
 	var t values.Time
 	v, ok := args.Get(conversionArg)
 	if !ok {
@@ -661,7 +660,7 @@ func (c durationConv) HasSideEffect() bool {
 	return false
 }
 
-func (c *durationConv) Call(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+func (c *durationConv) Call(ctx context.Context, args values.Object) (values.Value, error) {
 	var d values.Duration
 	v, ok := args.Get(conversionArg)
 	if !ok {
@@ -697,7 +696,7 @@ var bytes = values.NewFunction(
 		Required: []string{conversionArg},
 		Return:   semantic.Bytes,
 	}),
-	func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+	func(ctx context.Context, args values.Object) (values.Value, error) {
 		v, ok := args.Get(conversionArg)
 		if !ok {
 			return nil, errMissingArg

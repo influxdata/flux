@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/compiler"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/semantic"
@@ -235,11 +235,11 @@ func TestRowMapFn_Eval(t *testing.T) {
 				want[i] = r
 			}
 
-			ctx, deps := context.Background(), dependenciestest.Default()
+			ctx := dependenciestest.Default().Inject(context.Background())
 			got := make([]*execute.Record, 0, len(tc.data.Data))
 			if err := tc.data.Do(func(cr flux.ColReader) error {
 				for i := 0; i < cr.Len(); i++ {
-					obj, err := f.Eval(ctx, deps, i, cr)
+					obj, err := f.Eval(ctx, i, cr)
 					if err != nil {
 						got = append(got, execute.NewRecord(semantic.Invalid))
 					} else {
@@ -263,7 +263,7 @@ func TestRowMapFn_Eval(t *testing.T) {
 	}
 }
 
-func TestRowPredicateFn_Eval(t *testing.T) {
+func TestRowPredicateFn_EvalRow(t *testing.T) {
 	gt2F := func() (*execute.RowPredicateFn, error) {
 		return execute.NewRowPredicateFn(&semantic.FunctionExpression{
 			Block: &semantic.FunctionBlock{
@@ -352,11 +352,11 @@ func TestRowPredicateFn_Eval(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			ctx, deps := context.Background(), dependenciestest.Default()
+			ctx := dependenciestest.Default().Inject(context.Background())
 			got := make([]bool, 0, len(tc.data.Data))
 			tc.data.Do(func(cr flux.ColReader) error {
 				for i := 0; i < cr.Len(); i++ {
-					b, err := f.Eval(ctx, deps, i, cr)
+					b, err := f.EvalRow(ctx, i, cr)
 					if err == nil {
 						got = append(got, b)
 					}

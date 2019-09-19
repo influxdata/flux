@@ -2,9 +2,9 @@ package date
 
 import (
 	"context"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"testing"
 
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/values"
 )
 
@@ -89,7 +89,7 @@ func TestTimeFns(t *testing.T) {
 				t.Fatal(err)
 			}
 			fluxArg := values.NewObjectWithValues(map[string]values.Value{"t": values.NewTime(time)})
-			got, err := fluxFn.Call(context.Background(), dependenciestest.Default(), fluxArg)
+			got, err := fluxFn.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -139,7 +139,7 @@ func TestTruncate(t *testing.T) {
 				t.Fatal(err)
 			}
 			fluxArg := values.NewObjectWithValues(map[string]values.Value{"t": values.NewTime(time), "unit": values.NewDuration(values.Duration(unit))})
-			got, err := fluxFn.Call(context.Background(), dependenciestest.Default(), fluxArg)
+			got, err := fluxFn.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
 			if err != nil {
 				t.Fatal(err)
 			}

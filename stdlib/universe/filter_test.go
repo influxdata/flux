@@ -2,16 +2,17 @@ package universe_test
 
 import (
 	"context"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"regexp"
 	"testing"
 	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/querytest"
@@ -997,17 +998,18 @@ func TestFilter_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			executetest.ProcessTestHelper(
+			executetest.ProcessTestHelper2(
 				t,
 				tc.data,
 				tc.want,
 				nil,
-				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					f, err := universe.NewFilterTransformation(context.Background(), dependenciestest.Default(), tc.spec, d, c)
+				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+					ctx := dependenciestest.Default().Inject(context.Background())
+					tx, d, err := universe.NewFilterTransformation(ctx, tc.spec, id, alloc)
 					if err != nil {
 						t.Fatal(err)
 					}
-					return f
+					return tx, d
 				},
 			)
 		})

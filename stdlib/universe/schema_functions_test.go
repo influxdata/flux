@@ -8,6 +8,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
@@ -1282,8 +1283,8 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				tc.want,
 				tc.wantErr,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					// verify that ctx & deps should be nil here
-					tr, err := universe.NewSchemaMutationTransformation(context.Background(), nil, tc.spec, d, c)
+					ctx := dependenciestest.Default().Inject(context.Background())
+					tr, err := universe.NewSchemaMutationTransformation(ctx, tc.spec, d, c)
 					if err != nil {
 						t.Fatal(err)
 					}

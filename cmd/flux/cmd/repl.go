@@ -5,11 +5,8 @@ import (
 
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/secret"
-	fexecute "github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/repl"
 	"github.com/spf13/cobra"
@@ -22,7 +19,7 @@ var replCmd = &cobra.Command{
 	Long:  "Launch a Flux REPL (Read-Eval-Print-Loop)",
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
-		deps := dependencies.NewDefaults()
+		deps := flux.NewDefaultDependencies()
 		deps.Deps.SecretService = secret.EmptySecretService{}
 		deps.Deps.FilesystemService = filesystem.SystemFS
 		r := repl.New(ctx, deps, querier{})
@@ -36,15 +33,12 @@ func init() {
 
 type querier struct{}
 
-func (querier) Query(ctx context.Context, deps dependencies.Interface, c flux.Compiler) (flux.ResultIterator, error) {
+func (querier) Query(ctx context.Context, deps flux.Dependencies, c flux.Compiler) (flux.ResultIterator, error) {
 	program, err := c.Compile(ctx)
-	if p, ok := program.(lang.DependenciesAwareProgram); ok {
-		p.SetExecutorDependencies(fexecute.Dependencies{dependencies.InterpreterDepsKey: deps})
-	}
 	if err != nil {
 		return nil, err
 	}
-
+	ctx = deps.Inject(ctx)
 	alloc := &memory.Allocator{}
 	qry, err := program.Start(ctx, alloc)
 	if err != nil {

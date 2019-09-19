@@ -376,7 +376,8 @@ func TestStateTracking_Process(t *testing.T) {
 				tc.want,
 				tc.wantErr,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					tx, err := universe.NewStateTrackingTransformation(context.Background(), dependenciestest.Default(), tc.spec, d, c)
+					ctx := dependenciestest.Default().Inject(context.Background())
+					tx, err := universe.NewStateTrackingTransformation(ctx, tc.spec, d, c)
 					if err != nil {
 						t.Fatal(err)
 					}

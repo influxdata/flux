@@ -76,6 +76,9 @@ type Statistics struct {
 	Concurrency int `json:"concurrency"`
 	// MaxAllocated is the maximum number of bytes the query allocated.
 	MaxAllocated int64 `json:"max_allocated"`
+	// TotalAllocated is the total number of bytes allocated.
+	// The number includes memory that was freed and then used again.
+	TotalAllocated int64 `json:"total_allocated"`
 
 	// RuntimeErrors contains error messages that happened during the execution of the query.
 	RuntimeErrors []string `json:"runtime_errors"`
@@ -102,6 +105,7 @@ func (s Statistics) Add(other Statistics) Statistics {
 		Concurrency:     s.Concurrency + other.Concurrency,
 		RuntimeErrors:   errs,
 		MaxAllocated:    s.MaxAllocated + other.MaxAllocated,
+		TotalAllocated:  s.TotalAllocated + other.TotalAllocated,
 		Metadata:        md,
 	}
 }

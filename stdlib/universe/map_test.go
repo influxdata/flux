@@ -1373,7 +1373,8 @@ func TestMap_Process(t *testing.T) {
 				tc.want,
 				tc.wantErr,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					f, err := universe.NewMapTransformation(context.Background(), dependenciestest.Default(), tc.spec, d, c)
+					ctx := dependenciestest.Default().Inject(context.Background())
+					f, err := universe.NewMapTransformation(ctx, tc.spec, d, c)
 					if err != nil {
 						t.Fatal(err)
 					}

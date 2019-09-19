@@ -6,7 +6,6 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -24,7 +23,7 @@ func init() {
 				Required:   semantic.LabelSet{"v"},
 				Return:     semantic.Regexp,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument v")
@@ -48,7 +47,7 @@ func init() {
 				Required:   semantic.LabelSet{"v"},
 				Return:     semantic.String,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument v")
@@ -69,7 +68,7 @@ func init() {
 				Required:   semantic.LabelSet{"r", "v"},
 				Return:     semantic.String,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				r, okk := args.Get("r")
 				if !ok || !okk {
@@ -91,7 +90,7 @@ func init() {
 				Required:   semantic.LabelSet{"r", "v"},
 				Return:     semantic.Array,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				r, okk := args.Get("r")
 				if !ok || !okk {
@@ -117,7 +116,7 @@ func init() {
 				Required:   semantic.LabelSet{"r", "v"},
 				Return:     semantic.Bool,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				r, okk := args.Get("r")
 				if !ok || !okk {
@@ -139,7 +138,7 @@ func init() {
 				Required:   semantic.LabelSet{"r", "v", "t"},
 				Return:     semantic.String,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				r, ok := args.Get("r")
 				v, okk := args.Get("v")
 				t, okkk := args.Get("t")
@@ -162,7 +161,7 @@ func init() {
 				Required:   semantic.LabelSet{"r", "v", "i"},
 				Return:     semantic.Array,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				r, ok := args.Get("r")
 				v, okk := args.Get("v")
 				i, okkk := args.Get("i")
@@ -189,7 +188,7 @@ func init() {
 				Required:   semantic.LabelSet{"r"},
 				Return:     semantic.String,
 			}),
-			func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+			func(ctx context.Context, args values.Object) (values.Value, error) {
 				r, ok := args.Get("r")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument")

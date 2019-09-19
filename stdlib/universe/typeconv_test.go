@@ -3,10 +3,10 @@ package universe
 import (
 	"context"
 	"errors"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"math"
 	"testing"
 
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/values"
 )
 
@@ -71,7 +71,7 @@ func TestTypeconv_String(t *testing.T) {
 			}
 			args := values.NewObjectWithValues(myMap)
 			c := &stringConv{}
-			got, err := c.Call(context.Background(), dependenciestest.Default(), args)
+			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
 			if err != nil {
 				if tc.expectErr == nil {
 					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
@@ -156,7 +156,7 @@ func TestTypeconv_Int(t *testing.T) {
 			}
 			args := values.NewObjectWithValues(myMap)
 			c := &intConv{}
-			got, err := c.Call(context.Background(), dependenciestest.Default(), args)
+			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
 			if err != nil {
 				if tc.expectErr == nil {
 					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
@@ -241,7 +241,7 @@ func TestTypeconv_UInt(t *testing.T) {
 			}
 			args := values.NewObjectWithValues(myMap)
 			c := &uintConv{}
-			got, err := c.Call(context.Background(), dependenciestest.Default(), args)
+			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
 			if err != nil {
 				if tc.expectErr == nil {
 					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
@@ -331,7 +331,7 @@ func TestTypeconv_Bool(t *testing.T) {
 			}
 			args := values.NewObjectWithValues(myMap)
 			c := &boolConv{}
-			got, err := c.Call(context.Background(), dependenciestest.Default(), args)
+			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
 			if err != nil {
 				if tc.expectErr == nil {
 					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
@@ -427,7 +427,7 @@ func TestTypeconv_Float(t *testing.T) {
 			}
 			args := values.NewObjectWithValues(myMap)
 			c := &floatConv{}
-			got, err := c.Call(context.Background(), dependenciestest.Default(), args)
+			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
 			if err != nil {
 				if tc.expectErr == nil {
 					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
@@ -501,7 +501,7 @@ func TestTypeconv_Time(t *testing.T) {
 			}
 			args := values.NewObjectWithValues(myMap)
 			c := &timeConv{}
-			got, err := c.Call(context.Background(), dependenciestest.Default(), args)
+			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
 			if err != nil {
 				if tc.expectErr == nil {
 					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
@@ -571,7 +571,7 @@ func TestTypeconv_Duration(t *testing.T) {
 			}
 			args := values.NewObjectWithValues(myMap)
 			c := &durationConv{}
-			got, err := c.Call(context.Background(), dependenciestest.Default(), args)
+			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
 			if err != nil {
 				if tc.expectErr == nil {
 					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())

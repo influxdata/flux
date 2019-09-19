@@ -66,47 +66,60 @@ func runEndToEnd(t *testing.T, pkgs []*ast.Package) {
 func benchEndToEnd(b *testing.B, pkgs []*ast.Package) {
 	for _, pkg := range pkgs {
 		name := strings.TrimSuffix(pkg.Files[0].Name, "_test.flux")
+
+		// Annotate the package with the benchmark calls.
+		pkg = pkg.Copy().(*ast.Package)
+		pkg.Files = append(pkg.Files, stdlib.TestingBenchmarkCalls(pkg))
+
+		// Execute the benchmark.
 		b.Run(name, func(b *testing.B) {
 			if reason, ok := skip[name]; ok {
 				b.Skip(reason)
 			}
+			c := &lang.ASTCompiler{AST: pkg}
+
 			b.ResetTimer()
 			b.ReportAllocs()
+			aggstats := flux.Statistics{}
 			for i := 0; i < b.N; i++ {
-				testFlux(b, pkg)
+				stats := doTestRun(b, c)
+				if b.Failed() {
+					return
+				}
+				aggstats = aggstats.Add(stats)
 			}
+			reportStatistics(b, aggstats)
 		})
 	}
 }
 
-func testFlux(t testing.TB, pkg *ast.Package) {
+func testFlux(t testing.TB, pkg *ast.Package) flux.Statistics {
 	pkg = pkg.Copy().(*ast.Package)
 	pkg.Files = append(pkg.Files, stdlib.TestingRunCalls(pkg))
 	c := lang.ASTCompiler{AST: pkg}
 
 	// testing.run
-	doTestRun(t, c)
+	stats := doTestRun(t, c)
 
 	// testing.inspect
 	if t.Failed() {
 		// Rerun the test case using testing.inspect
 		pkg.Files[len(pkg.Files)-1] = stdlib.TestingInspectCalls(pkg)
 		c := lang.ASTCompiler{AST: pkg}
-		doTestInspect(t, c)
+		stats = doTestInspect(t, c)
 	}
+	return stats
 }
 
-func doTestRun(t testing.TB, c flux.Compiler) {
+func doTestRun(t testing.TB, c flux.Compiler) flux.Statistics {
 	program, err := c.Compile(context.Background())
-	if p, ok := program.(lang.DependenciesAwareProgram); ok {
-		p.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
-	}
 	if err != nil {
 		t.Fatalf("unexpected error while compiling query: %v", err)
 	}
 
+	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
 	alloc := &memory.Allocator{}
-	r, err := program.Start(context.Background(), alloc)
+	r, err := program.Start(ctx, alloc)
 	if err != nil {
 		t.Fatalf("unexpected error while executing testing.run: %v", err)
 	}
@@ -124,18 +137,18 @@ func doTestRun(t testing.TB, c flux.Compiler) {
 	if err := r.Err(); err != nil {
 		t.Fatalf("unexpected error retrieving testing.run result: %s", err)
 	}
+	r.Done()
+	return r.Statistics()
 }
 
-func doTestInspect(t testing.TB, c flux.Compiler) {
+func doTestInspect(t testing.TB, c flux.Compiler) flux.Statistics {
 	program, err := c.Compile(context.Background())
-	if p, ok := program.(lang.DependenciesAwareProgram); ok {
-		p.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
-	}
 	if err != nil {
 		t.Fatalf("unexpected error while compiling query: %v", err)
 	}
+	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
 	alloc := &memory.Allocator{}
-	r, err := program.Start(context.Background(), alloc)
+	r, err := program.Start(ctx, alloc)
 	if err != nil {
 		t.Fatalf("unexpected error while executing testing.inspect: %v", err)
 	}
@@ -152,4 +165,6 @@ func doTestInspect(t testing.TB, c flux.Compiler) {
 		t.Fatalf("unexpected error retrieving testing.inspect result: %s", err)
 	}
 	t.Log(out.String())
+	r.Done()
+	return r.Statistics()
 }

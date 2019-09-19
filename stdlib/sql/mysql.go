@@ -16,9 +16,10 @@ type MySQLRowReader struct {
 	columnTypes []flux.ColType
 	columnNames []string
 	NextFunc    func() bool
+	CloseFunc   func() error
 }
 
-//Prepares MySQLRowReader to return rows
+// Next prepares MySQLRowReader to return rows
 func (m *MySQLRowReader) Next() bool {
 	if m.NextFunc != nil {
 		return m.NextFunc()
@@ -120,6 +121,16 @@ func (m *MySQLRowReader) SetColumnTypes(types []flux.ColType) {
 
 func (m *MySQLRowReader) SetColumns(i []interface{}) {
 	m.columns = i
+}
+
+func (m *MySQLRowReader) Close() error {
+	if m.CloseFunc != nil {
+		return m.CloseFunc()
+	}
+	if err := m.Cursor.Err(); err != nil {
+		return err
+	}
+	return m.Cursor.Close()
 }
 
 func UInt8ToFloat(a []uint8) (float64, error) {

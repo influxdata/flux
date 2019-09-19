@@ -5,7 +5,7 @@ import (
 
 	flux "github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependencies"
+
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -21,7 +21,7 @@ func init() {
 			Required: []string{"o"},
 			Return:   semantic.NewArrayPolyType(semantic.String),
 		}),
-		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+		func(ctx context.Context, args values.Object) (values.Value, error) {
 			o, ok := args.Get("o")
 			if !ok {
 				return nil, errors.New(codes.Invalid, "missing parameter \"o\"")

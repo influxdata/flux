@@ -4,16 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/influxdata/flux/execute"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
+	"github.com/stretchr/testify/assert"
 )
 
 type MockRowReader struct {
@@ -66,29 +66,7 @@ func (m *MockRowReader) SetColumns(i []interface{}) {
 	m.columns = i
 }
 
-type MockAllocator struct{}
-
-func (a *MockAllocator) Context() context.Context {
-	return nil
-}
-
-func (a *MockAllocator) ResolveTime(qt flux.Time) execute.Time {
-	return execute.Now()
-}
-
-func (a *MockAllocator) StreamContext() execute.StreamContext {
-	return nil
-}
-
-func (a *MockAllocator) Allocator() *memory.Allocator {
-	return &memory.Allocator{}
-}
-
-func (a *MockAllocator) Parents() []execute.DatasetID {
-	return nil
-}
-
-func (a *MockAllocator) Dependencies() execute.Dependencies {
+func (m *MockRowReader) Close() error {
 	return nil
 }
 
@@ -96,11 +74,9 @@ func TestFromRowReader(t *testing.T) {
 	t.Run("Mock RowReader", func(t *testing.T) {
 
 		var rr execute.RowReader = &MockRowReader{row: 0}
-		sqliter := &SQLIterator{reader: &rr, administration: &MockAllocator{}}
-
 		rr.(*MockRowReader).InitColumnTypes(nil)
-
-		table, err := sqliter.Decode(context.Background())
+		alloc := &memory.Allocator{}
+		table, err := read(context.Background(), rr, alloc)
 		if err != nil {
 			t.Fatal(err)
 		}

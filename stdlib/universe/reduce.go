@@ -9,7 +9,6 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
@@ -136,7 +135,7 @@ func createReduceTransformation(id execute.DatasetID, mode execute.AccumulationM
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
-	t, err := NewReduceTransformation(a.Context(), a.Dependencies()[dependencies.InterpreterDepsKey].(dependencies.Interface), s, d, cache)
+	t, err := NewReduceTransformation(a.Context(), s, d, cache)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -147,12 +146,11 @@ type reduceTransformation struct {
 	d              execute.Dataset
 	cache          execute.TableBuilderCache
 	ctx            context.Context
-	deps           dependencies.Interface
 	fn             *execute.RowReduceFn
 	neutralElement map[string]values.Value
 }
 
-func NewReduceTransformation(ctx context.Context, deps dependencies.Interface, spec *ReduceProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*reduceTransformation, error) {
+func NewReduceTransformation(ctx context.Context, spec *ReduceProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*reduceTransformation, error) {
 	fn, err := execute.NewRowReduceFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	if err != nil {
 		return nil, err
@@ -171,7 +169,6 @@ func NewReduceTransformation(ctx context.Context, deps dependencies.Interface, s
 		d:              d,
 		cache:          cache,
 		ctx:            ctx,
-		deps:           deps,
 		fn:             fn,
 		neutralElement: ne,
 	}, nil
@@ -199,7 +196,7 @@ func (t *reduceTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		for i := 0; i < l; i++ {
 			// the RowReduce function type takes a row of values, and an accumulator value, and
 			// computes a new accumulator result.
-			m, err := t.fn.Eval(t.ctx, t.deps, i, cr, map[string]values.Value{"accumulator": reducer})
+			m, err := t.fn.Eval(t.ctx, i, cr, map[string]values.Value{"accumulator": reducer})
 			if err != nil {
 				return errors.Wrap(err, codes.Inherit, "failed to evaluate reduce function")
 			}

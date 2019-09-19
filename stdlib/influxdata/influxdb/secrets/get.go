@@ -5,7 +5,6 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
@@ -33,14 +32,14 @@ func makeGetFunc() values.Function {
 }
 
 // Get retrieves the secret key identifier for a given secret.
-func Get(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+func Get(ctx context.Context, args values.Object) (values.Value, error) {
 	fargs := interpreter.NewArguments(args)
 	key, err := fargs.GetRequiredString("key")
 	if err != nil {
 		return nil, err
 	}
 
-	ss, err := deps.SecretService()
+	ss, err := flux.GetDependencies(ctx).SecretService()
 	if err != nil {
 		return nil, errors.Wrapf(err, codes.Inherit, "cannot retrieve secret %q", key)
 	}

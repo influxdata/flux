@@ -6,11 +6,10 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/compiler"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/semantic/semantictest"
 	"github.com/influxdata/flux/values"
@@ -94,12 +93,12 @@ func TestCompilationCache(t *testing.T) {
 			if !reflect.DeepEqual(f0, f1) {
 				t.Errorf("unexpected new compilation result")
 			}
-			ctx, deps := context.Background(), dependenciestest.Default()
-			got0, err := f0.Eval(ctx, deps, tc.input)
+			ctx := dependenciestest.Default().Inject(context.Background())
+			got0, err := f0.Eval(ctx, tc.input)
 			if err != nil {
 				t.Fatal(err)
 			}
-			got1, err := f1.Eval(ctx, deps, tc.input)
+			got1, err := f1.Eval(ctx, tc.input)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1150,8 +1149,8 @@ func TestCompileAndEval(t *testing.T) {
 			if tc.wantErr && err != nil {
 				return
 			}
-			ctx, deps := context.Background(), dependenciestest.Default()
-			got, err := f.Eval(ctx, deps, tc.input)
+			ctx := dependenciestest.Default().Inject(context.Background())
+			got, err := f.Eval(ctx, tc.input)
 			if tc.wantErr != (err != nil) {
 				t.Errorf("unexpected error: %s", err)
 			}

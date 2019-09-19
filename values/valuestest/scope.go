@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -55,7 +54,7 @@ func NowScope() values.Scope {
 		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 			Return: semantic.Time,
 		}),
-		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+		func(ctx context.Context, args values.Object) (values.Value, error) {
 			//Functions are only compared by type so the function body here is not important
 			return nil, errors.New("NowScope was called")
 		},

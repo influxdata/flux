@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -32,7 +31,7 @@ var sleepFunc = values.NewFunction(
 		Required:     semantic.LabelSet{vArg, durationArg},
 		Return:       semantic.Tvar(1),
 	}),
-	func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+	func(ctx context.Context, args values.Object) (values.Value, error) {
 		return interpreter.DoFunctionCallContext(sleep, ctx, args)
 	},
 	// sleeping is a side effect

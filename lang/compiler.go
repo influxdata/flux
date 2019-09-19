@@ -6,12 +6,9 @@ import (
 	"log"
 	"time"
 
-	"go.uber.org/zap"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/spec"
@@ -20,6 +17,7 @@ import (
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/opentracing/opentracing-go"
+	"go.uber.org/zap"
 )
 
 const (
@@ -216,23 +214,17 @@ func (*TableObjectCompiler) CompilerType() flux.CompilerType {
 	panic("TableObjectCompiler is not associated with a CompilerType")
 }
 
-type DependenciesAwareProgram interface {
-	SetExecutorDependencies(execute.Dependencies)
+type LoggingProgram interface {
 	SetLogger(logger *zap.Logger)
 }
 
 // Program implements the flux.Program interface.
 // It will execute a compiled plan using an executor.
 type Program struct {
-	Dependencies execute.Dependencies
-	Logger       *zap.Logger
-	PlanSpec     *plan.Spec
+	Logger   *zap.Logger
+	PlanSpec *plan.Spec
 
 	opts *compileOptions
-}
-
-func (p *Program) SetExecutorDependencies(deps execute.Dependencies) {
-	p.Dependencies = deps
 }
 
 func (p *Program) SetLogger(logger *zap.Logger) {
@@ -255,7 +247,7 @@ func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Quer
 		},
 	}
 
-	e := execute.NewExecutor(p.Dependencies, p.Logger)
+	e := execute.NewExecutor(p.Logger)
 	resultMap, md, err := e.Execute(cctx, p.PlanSpec, q.alloc)
 	if err != nil {
 		s.Finish()
@@ -303,7 +295,7 @@ type AstProgram struct {
 	Now time.Time
 }
 
-func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
 	if p.opts == nil {
 		p.opts = defaultOptions()
 	}
@@ -313,40 +305,44 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	if p.opts.extern != nil {
 		p.Ast.Files = append([]*ast.File{p.opts.extern}, p.Ast.Files...)
 	}
-	deps, ok := p.Dependencies[dependencies.InterpreterDepsKey]
-	if !ok {
-		// TODO(Adam): this should be more of a noop dependency package
-		return nil, fmt.Errorf("no interpreter dependencies found")
+	// The program must inject execution dependencies to make it available
+	// to function calls during the evaluation phase (see `tableFind`).
+	deps := ExecutionDependencies{
+		Allocator: alloc,
+		Logger:    p.Logger,
 	}
-	depsI := deps.(dependencies.Interface)
-
+	ctx = deps.Inject(ctx)
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
-	sideEffects, scope, err := flux.EvalAST(cctx, depsI, p.Ast, flux.SetNowOption(p.Now))
+	sideEffects, scope, err := flux.EvalAST(cctx, p.Ast, flux.SetNowOption(p.Now))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	s.Finish()
 
 	s, cctx = opentracing.StartSpanFromContext(ctx, "compile")
+	defer s.Finish()
 	nowOpt, ok := scope.Lookup(flux.NowOption)
 	if !ok {
-		return nil, fmt.Errorf("%q option not set", flux.NowOption)
+		return nil, nil, fmt.Errorf("%q option not set", flux.NowOption)
 	}
-	nowTime, err := nowOpt.Function().Call(ctx, depsI, nil)
+	nowTime, err := nowOpt.Function().Call(ctx, nil)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, codes.Inherit, "error in evaluating AST while starting program")
+	}
+	p.Now = nowTime.Time().Time()
+	sp, err := spec.FromEvaluation(cctx, sideEffects, p.Now)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, codes.Inherit, "error in query specification while starting program")
+	}
+	return sp, scope, nil
+}
+
+func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+	sp, scope, err := p.getSpec(ctx, alloc)
 	if err != nil {
 		return nil, err
 	}
-	p.Now = nowTime.Time().Time()
-	if err != nil {
-		return nil, errors.Wrap(err, codes.Inherit, "error in evaluating AST while starting program")
-	}
-	sp, err := spec.FromEvaluation(cctx, sideEffects, p.Now)
-	if err != nil {
-		return nil, errors.Wrap(err, codes.Inherit, "error in query specification while starting program")
-	}
-	s.Finish()
-
-	s, cctx = opentracing.StartSpanFromContext(ctx, "plan")
+	s, cctx := opentracing.StartSpanFromContext(ctx, "plan")
 	if p.opts.verbose {
 		log.Println("Query Spec: ", flux.Formatted(sp, flux.FmtJSON))
 	}
@@ -448,4 +444,16 @@ func getRules(plannerPkg values.Object, optionName string) ([]string, error) {
 		rs[i] = v.Str()
 	})
 	return rs, nil
+}
+
+// WalkIR applies the function `f` to each operation in the compiled spec.
+// WARNING: this function evaluates the AST using an unlimited allocator.
+// In case of dynamic queries this could lead to unexpected memory usage.
+func WalkIR(ctx context.Context, astPkg *ast.Package, f func(o *flux.Operation) error) error {
+	p := CompileAST(astPkg, time.Now())
+	if sp, _, err := p.getSpec(ctx, new(memory.Allocator)); err != nil {
+		return err
+	} else {
+		return sp.Walk(f)
+	}
 }

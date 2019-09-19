@@ -20,7 +20,7 @@ func TestSleep(t *testing.T) {
 				"duration": values.NewDuration(values.Duration(time.Microsecond)),
 			},
 		)
-		v, err := sleepFunc.Call(ctx, nil, args)
+		v, err := sleepFunc.Call(ctx, args)
 		if err != nil {
 			t.Fatalf("unexpected error: %s", err)
 		}
@@ -41,7 +41,7 @@ func TestSleep(t *testing.T) {
 				"duration": values.NewDuration(values.Duration(200 * time.Millisecond)),
 			},
 		)
-		_, err := sleepFunc.Call(ctx, nil, args)
+		_, err := sleepFunc.Call(ctx, args)
 		if want, got := context.DeadlineExceeded, err; want != got {
 			t.Fatalf("unexpected error -want/+got:\n\t- %v\n\t+ %v", want, got)
 		}

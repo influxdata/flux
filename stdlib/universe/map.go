@@ -7,7 +7,6 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
@@ -115,7 +114,7 @@ func createMapTransformation(id execute.DatasetID, mode execute.AccumulationMode
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
-	t, err := NewMapTransformation(a.Context(), a.Dependencies()[dependencies.InterpreterDepsKey].(dependencies.Interface), s, d, cache)
+	t, err := NewMapTransformation(a.Context(), s, d, cache)
 
 	if err != nil {
 		return nil, nil, err
@@ -127,12 +126,11 @@ type mapTransformation struct {
 	d        execute.Dataset
 	cache    execute.TableBuilderCache
 	ctx      context.Context
-	deps     dependencies.Interface
 	fn       *execute.RowMapFn
 	mergeKey bool
 }
 
-func NewMapTransformation(ctx context.Context, deps dependencies.Interface, spec *MapProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*mapTransformation, error) {
+func NewMapTransformation(ctx context.Context, spec *MapProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*mapTransformation, error) {
 	fn, err := execute.NewRowMapFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	if err != nil {
 		return nil, err
@@ -142,7 +140,6 @@ func NewMapTransformation(ctx context.Context, deps dependencies.Interface, spec
 		cache:    cache,
 		fn:       fn,
 		ctx:      ctx,
-		deps:     deps,
 		mergeKey: spec.MergeKey,
 	}, nil
 }
@@ -173,7 +170,7 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
-			m, err := t.fn.Eval(t.ctx, t.deps, i, cr)
+			m, err := t.fn.Eval(t.ctx, i, cr)
 			if err != nil {
 				return errors.Wrap(err, codes.Inherit, "failed to evaluate map function")
 			}

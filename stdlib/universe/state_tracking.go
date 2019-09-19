@@ -9,7 +9,6 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/compiler"
-	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
@@ -156,7 +155,7 @@ func createStateTrackingTransformation(id execute.DatasetID, mode execute.Accumu
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
-	t, err := NewStateTrackingTransformation(a.Context(), a.Dependencies()[dependencies.InterpreterDepsKey].(dependencies.Interface), s, d, cache)
+	t, err := NewStateTrackingTransformation(a.Context(), s, d, cache)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -167,9 +166,8 @@ type stateTrackingTransformation struct {
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 
-	fn   *execute.RowPredicateFn
-	ctx  context.Context
-	deps dependencies.Interface
+	fn  *execute.RowPredicateFn
+	ctx context.Context
 	timeCol,
 	countColumn,
 	durationColumn string
@@ -177,7 +175,7 @@ type stateTrackingTransformation struct {
 	durationUnit int64
 }
 
-func NewStateTrackingTransformation(ctx context.Context, deps dependencies.Interface, spec *StateTrackingProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*stateTrackingTransformation, error) {
+func NewStateTrackingTransformation(ctx context.Context, spec *StateTrackingProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*stateTrackingTransformation, error) {
 	fn, err := execute.NewRowPredicateFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	if err != nil {
 		return nil, err
@@ -191,7 +189,6 @@ func NewStateTrackingTransformation(ctx context.Context, deps dependencies.Inter
 		durationUnit:   int64(spec.DurationUnit),
 		timeCol:        spec.TimeCol,
 		ctx:            ctx,
-		deps:           deps,
 	}, nil
 }
 
@@ -258,7 +255,7 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Tab
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
-			match, err := t.fn.Eval(t.ctx, t.deps, i, cr)
+			match, err := t.fn.EvalRow(t.ctx, i, cr)
 			if err != nil {
 				log.Printf("failed to evaluate state tracking expression: %v", err)
 				continue

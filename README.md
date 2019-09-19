@@ -6,9 +6,6 @@
 Flux is a lightweight scripting language for querying databases (like InfluxDB) and working with data. It's part of InfluxDB 1.7 and 2.0, but can be run independently of those.
 This repo represents the language definition and an implementation of the language core.
 
->NOTE: We plan to provide a `flux` command line program that exposes a REPL and talks to various data sources.
-In the meantime see the `influx` command in [this](https://github.com/influxdata/platform) repo as it has working Flux installation against the 2.0 InfluxDB database.
-
 ## Specification
 
 A complete specification can be found in [SPEC.md](./docs/SPEC.md).
@@ -16,7 +13,24 @@ The specification contains many examples to start learning Flux.
 
 ## Getting Started
 
-Currently Flux is only avaliable via InfluxDB, see http://docs.influxdata.com/flux/ for getting started.
+Flux is currently available in InfluxDB 1.7 and 2.0 or through the REPL that can be compiled from this repository.
+
+To compile the REPL, use the following command:
+
+```
+$ go build ./cmd/flux
+$ ./flux repl
+```
+
+>NOTE: The Flux REPL above does not contain the ability to connect to InfluxDB.
+To connect to InfluxDB, please read the [InfluxDB 2.0](https://v2.docs.influxdata.com/v2.0/query-data/get-started/) query documentation or the [InfluxDB 1.7](http://docs.influxdata.com/flux/) documentation.
+
+From within the REPL, you can run any Flux expression.
+Additionally, you can also load a file directly into the REPL by typing `@` followed by the filename.
+
+```
+> @my_file_to_load.flux
+```
 
 ### Basic Syntax
 
@@ -104,4 +118,5 @@ Here are a few examples of the language to get an idea of the syntax.
         // again yield this result to the client
         |> yield()
 
-The above examples give only a taste of what is possible with Flux. See the complete [documentation](http://docs.influxdata.com/flux/) for more complete examples and installation instructions. 
+The above examples give only a taste of what is possible with Flux.
+See the complete [documentation](https://v2.docs.influxdata.com/v2.0/query-data/get-started/) for more complete examples and instructions for how to use Flux with InfluxDB 2.0.

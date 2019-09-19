@@ -36,11 +36,8 @@ g.from(start: 1993-02-16T00:00:00Z, stop: 1993-02-16T00:03:00Z, count: 5, fn: (n
 		panic(err)
 	}
 
+	ctx = executetest.NewTestExecuteDependencies().Inject(ctx)
 	alloc := &memory.Allocator{}
-
-	if p, ok := program.(lang.DependenciesAwareProgram); ok {
-		p.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
-	}
 	q, err := program.Start(ctx, alloc)
 	if err != nil {
 		panic(err)

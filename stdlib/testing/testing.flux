@@ -26,3 +26,7 @@ run = (case) => {
     return inspect(case: case).diff |> assertEmpty()
 }
 
+benchmark = (case) => {
+	tc = case()
+	return tc.input |> tc.fn()
+}

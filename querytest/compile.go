@@ -38,7 +38,7 @@ func NewQueryTestHelper(t *testing.T, tc NewQueryTestCase) {
 	t.Helper()
 
 	now := time.Now().UTC()
-	got, err := spec.FromScript(context.Background(), dependenciestest.Default(), now, tc.Raw)
+	got, err := spec.FromScript(dependenciestest.Default().Inject(context.Background()), now, tc.Raw)
 	if (err != nil) != tc.WantErr {
 		t.Errorf("error compiling spec error = %v, wantErr %v", err, tc.WantErr)
 		return
