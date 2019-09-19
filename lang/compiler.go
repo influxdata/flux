@@ -6,8 +6,6 @@ import (
 	"log"
 	"time"
 
-	"go.uber.org/zap"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
@@ -19,6 +17,7 @@ import (
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/opentracing/opentracing-go"
+	"go.uber.org/zap"
 )
 
 const (
@@ -450,9 +449,9 @@ func getRules(plannerPkg values.Object, optionName string) ([]string, error) {
 // WalkIR applies the function `f` to each operation in the compiled spec.
 // WARNING: this function evaluates the AST using an unlimited allocator.
 // In case of dynamic queries this could lead to unexpected memory usage.
-func WalkIR(astPkg *ast.Package, f func(o *flux.Operation) error) error {
+func WalkIR(ctx context.Context, astPkg *ast.Package, f func(o *flux.Operation) error) error {
 	p := CompileAST(astPkg, time.Now())
-	if sp, _, err := p.getSpec(context.Background(), new(memory.Allocator)); err != nil {
+	if sp, _, err := p.getSpec(ctx, new(memory.Allocator)); err != nil {
 		return err
 	} else {
 		return sp.Walk(f)
