@@ -84,11 +84,11 @@ func (o *ToMQTTOpSpec) ReadArgs(args flux.Arguments) error {
 		return err
 	}
 	var ok bool
-	o.Message, ok, err = args.GetString("message")
+	o.Message, _, err = args.GetString("message")
 	if err != nil {
 		return err
 	}
-	o.Topic, ok, err = args.GetString("topic")
+	o.Topic, _, err = args.GetString("topic")
 	if err != nil {
 		return err
 	}
