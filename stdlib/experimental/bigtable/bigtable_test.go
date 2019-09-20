@@ -405,6 +405,8 @@ func (m *MockRowReader) ColumnTypes() []flux.ColType {
 
 func (m *MockRowReader) SetColumns([]interface{}) {}
 
+func (m *MockRowReader) Close() error { return nil }
+
 type MockAllocator struct{}
 
 func (a *MockAllocator) Context() context.Context {
