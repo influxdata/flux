@@ -72,31 +72,34 @@ func benchEndToEnd(b *testing.B, pkgs []*ast.Package) {
 			}
 			b.ResetTimer()
 			b.ReportAllocs()
+			stats := flux.Statistics{}
 			for i := 0; i < b.N; i++ {
-				testFlux(b, pkg)
+				stats = stats.Add(testFlux(b, pkg))
 			}
+			reportStatistics(b, stats)
 		})
 	}
 }
 
-func testFlux(t testing.TB, pkg *ast.Package) {
+func testFlux(t testing.TB, pkg *ast.Package) flux.Statistics {
 	pkg = pkg.Copy().(*ast.Package)
 	pkg.Files = append(pkg.Files, stdlib.TestingRunCalls(pkg))
 	c := lang.ASTCompiler{AST: pkg}
 
 	// testing.run
-	doTestRun(t, c)
+	stats := doTestRun(t, c)
 
 	// testing.inspect
 	if t.Failed() {
 		// Rerun the test case using testing.inspect
 		pkg.Files[len(pkg.Files)-1] = stdlib.TestingInspectCalls(pkg)
 		c := lang.ASTCompiler{AST: pkg}
-		doTestInspect(t, c)
+		stats = doTestInspect(t, c)
 	}
+	return stats
 }
 
-func doTestRun(t testing.TB, c flux.Compiler) {
+func doTestRun(t testing.TB, c flux.Compiler) flux.Statistics {
 	program, err := c.Compile(context.Background())
 	if err != nil {
 		t.Fatalf("unexpected error while compiling query: %v", err)
@@ -122,9 +125,11 @@ func doTestRun(t testing.TB, c flux.Compiler) {
 	if err := r.Err(); err != nil {
 		t.Fatalf("unexpected error retrieving testing.run result: %s", err)
 	}
+	r.Done()
+	return r.Statistics()
 }
 
-func doTestInspect(t testing.TB, c flux.Compiler) {
+func doTestInspect(t testing.TB, c flux.Compiler) flux.Statistics {
 	program, err := c.Compile(context.Background())
 	if err != nil {
 		t.Fatalf("unexpected error while compiling query: %v", err)
@@ -148,4 +153,6 @@ func doTestInspect(t testing.TB, c flux.Compiler) {
 		t.Fatalf("unexpected error retrieving testing.inspect result: %s", err)
 	}
 	t.Log(out.String())
+	r.Done()
+	return r.Statistics()
 }
