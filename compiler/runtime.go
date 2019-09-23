@@ -14,6 +14,7 @@ import (
 )
 
 type Func interface {
+	FunctionSignature() semantic.FunctionSignature
 	Type() semantic.Type
 	Eval(ctx context.Context, input values.Object) (values.Value, error)
 }
@@ -51,6 +52,10 @@ func (c compiledFn) buildScope(input values.Object) error {
 		c.inputScope.Set(k, v)
 	})
 	return nil
+}
+
+func (c compiledFn) FunctionSignature() semantic.FunctionSignature {
+	return c.fnType.FunctionSignature()
 }
 
 func (c compiledFn) Type() semantic.Type {

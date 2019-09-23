@@ -10,8 +10,10 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 const FilterKind = "filter"
@@ -104,9 +106,7 @@ func createFilterTransformation(id execute.DatasetID, mode execute.AccumulationM
 	if !ok {
 		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
 	}
-	cache := execute.NewTableBuilderCache(a.Allocator())
-	d := execute.NewDataset(id, mode, cache)
-	t, err := NewFilterTransformation(a.Context(), s, d, cache)
+	t, d, err := NewFilterTransformation(a.Context(), s, id, a.Allocator())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -114,24 +114,25 @@ func createFilterTransformation(id execute.DatasetID, mode execute.AccumulationM
 }
 
 type filterTransformation struct {
-	d     execute.Dataset
-	cache execute.TableBuilderCache
+	d     *execute.PassthroughDataset
 	ctx   context.Context
 	fn    *execute.RowPredicateFn
+	alloc *memory.Allocator
 }
 
-func NewFilterTransformation(ctx context.Context, spec *FilterProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*filterTransformation, error) {
+func NewFilterTransformation(ctx context.Context, spec *FilterProcedureSpec, id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset, error) {
 	fn, err := execute.NewRowPredicateFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return &filterTransformation{
-		d:     d,
-		cache: cache,
+	t := &filterTransformation{
+		d:     execute.NewPassthroughDataset(id),
 		fn:    fn,
 		ctx:   ctx,
-	}, nil
+		alloc: alloc,
+	}
+	return t, t.d, nil
 }
 
 func (t *filterTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
@@ -139,14 +140,6 @@ func (t *filterTransformation) RetractTable(id execute.DatasetID, key flux.Group
 }
 
 func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	builder, created := t.cache.TableBuilder(tbl.Key())
-	if !created {
-		return fmt.Errorf("filter found duplicate table with key: %v", tbl.Key())
-	}
-	if err := execute.AddTableCols(tbl, builder); err != nil {
-		return err
-	}
-
 	// Prepare the function for the column types.
 	cols := tbl.Cols()
 	if err := t.fn.Prepare(cols); err != nil {
@@ -154,11 +147,65 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		return err
 	}
 
-	// Append only matching rows to table
-	return tbl.Do(func(cr flux.ColReader) error {
+	// Copy out the properties so we can modify the map.
+	properties := make(map[string]semantic.Type)
+	for name, typ := range t.fn.InputType().Properties() {
+		properties[name] = typ
+	}
+
+	// Iterate through the properties and prefill a record
+	// with the values from the group key.
+	record := values.NewObject()
+	for name := range properties {
+		if idx := execute.ColIdx(name, tbl.Key().Cols()); idx >= 0 {
+			record.Set(name, tbl.Key().Value(idx))
+			delete(properties, name)
+		}
+	}
+
+	// If there are no remaining properties, then all
+	// of the referenced values were in the group key
+	// and we can perform the comparison once for the
+	// entire table.
+	if len(properties) == 0 {
+		v, err := t.fn.Eval(t.ctx, record)
+		if err != nil {
+			return err
+		}
+
+		if !v {
+			tbl.Done()
+			tbl = execute.NewEmptyTable(tbl.Key(), tbl.Cols())
+		}
+		return t.d.Process(tbl)
+	}
+
+	// Otherwise, we have to filter the existing table.
+	// TODO(jsternberg): I'm pretty sure this can be optimized
+	// too, but we're getting fewer returns on optimizing this
+	// area right now. In particular, I don't think it is
+	// more efficient to construct the table as we are
+	// processing. It is likely more efficient to perform
+	// the comparisons on each row and specify if it matches
+	// or not, then use that information to determine if using
+	// slices or reconstructing the table would be faster.
+	builder := execute.NewColListTableBuilder(tbl.Key(), t.alloc)
+	defer builder.Release()
+
+	if err := execute.AddTableCols(tbl, builder); err != nil {
+		return err
+	}
+
+	if err := tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
-			if pass, err := t.fn.Eval(t.ctx, i, cr); err != nil {
+			for j := 0; j < len(cols); j++ {
+				label := cols[j].Label
+				if _, ok := properties[label]; ok {
+					record.Set(label, execute.ValueForRow(cr, i, j))
+				}
+			}
+			if pass, err := t.fn.Eval(t.ctx, record); err != nil {
 				return errors.Wrap(err, codes.Inherit, "failed to evaluate filter function")
 			} else if !pass {
 				// No match, skipping
@@ -169,7 +216,15 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 			}
 		}
 		return nil
-	})
+	}); err != nil {
+		return err
+	}
+
+	table, err := builder.Table()
+	if err != nil {
+		return err
+	}
+	return t.d.Process(table)
 }
 
 func (t *filterTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
