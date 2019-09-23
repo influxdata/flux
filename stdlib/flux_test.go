@@ -66,17 +66,29 @@ func runEndToEnd(t *testing.T, pkgs []*ast.Package) {
 func benchEndToEnd(b *testing.B, pkgs []*ast.Package) {
 	for _, pkg := range pkgs {
 		name := strings.TrimSuffix(pkg.Files[0].Name, "_test.flux")
+
+		// Annotate the package with the benchmark calls.
+		pkg = pkg.Copy().(*ast.Package)
+		pkg.Files = append(pkg.Files, stdlib.TestingBenchmarkCalls(pkg))
+
+		// Execute the benchmark.
 		b.Run(name, func(b *testing.B) {
 			if reason, ok := skip[name]; ok {
 				b.Skip(reason)
 			}
+			c := &lang.ASTCompiler{AST: pkg}
+
 			b.ResetTimer()
 			b.ReportAllocs()
-			stats := flux.Statistics{}
+			aggstats := flux.Statistics{}
 			for i := 0; i < b.N; i++ {
-				stats = stats.Add(testFlux(b, pkg))
+				stats := doTestRun(b, c)
+				if b.Failed() {
+					return
+				}
+				aggstats = aggstats.Add(stats)
 			}
-			reportStatistics(b, stats)
+			reportStatistics(b, aggstats)
 		})
 	}
 }
