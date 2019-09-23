@@ -26,6 +26,9 @@ type TableBuffer struct {
 var _ flux.ColReader = (*TableBuffer)(nil)
 
 func (t *TableBuffer) Len() int {
+	if len(t.Columns) == 0 {
+		return 0
+	}
 	return t.Values[0].Len()
 }
 
@@ -75,8 +78,9 @@ func (t *TableBuffer) Validate() error {
 		return errors.Newf(codes.Internal, "mismatched number of columns and arrays: %d != %d", len(t.Columns), len(t.Values))
 	}
 
+	// If a table has no columns, do not validate the length.
 	if len(t.Columns) == 0 {
-		return errors.New(codes.Internal, "table must have at least one column")
+		return nil
 	}
 
 	sz := t.Values[0].Len()

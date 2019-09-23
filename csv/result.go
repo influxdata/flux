@@ -13,7 +13,9 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -433,7 +435,10 @@ type tableDecoder struct {
 	initialized bool
 	id          string
 
-	builder *execute.ColListTableBuilder
+	key     flux.GroupKey
+	colMeta []flux.ColMeta
+	cols    []array.Builder
+	nrows   int
 
 	done chan struct{}
 
@@ -473,17 +478,13 @@ func (d *tableDecoder) Do(f func(flux.ColReader) error) error {
 		return errors.New(codes.Internal, "table already read")
 	}
 
-	// Ensure that the builder releases all internal memory
-	// when we are completely done.
-	defer d.builder.Release()
+	// Ensure that all internal memory is released when we exit.
+	defer d.release()
 
 	// Send off first batch from first advance call.
-	if table, err := d.builder.Table(); err != nil {
-		return err
-	} else if err := table.Do(f); err != nil {
+	if err := d.Emit(f); err != nil {
 		return err
 	}
-	d.builder.ClearData()
 
 	select {
 	case <-d.done:
@@ -499,13 +500,9 @@ func (d *tableDecoder) Do(f func(flux.ColReader) error) error {
 		if err != nil {
 			return err
 		}
-		table, err := d.builder.Table()
-		if err != nil {
-			return err
-		} else if err := table.Do(f); err != nil {
+		if err := d.Emit(f); err != nil {
 			return err
 		}
-		d.builder.ClearData()
 	}
 	return nil
 }
@@ -519,7 +516,7 @@ func (d *tableDecoder) Done() {
 func (d *tableDecoder) advance(extraLine []string) (bool, error) {
 	var line, record []string
 	var err error
-	for !d.initialized || d.builder.NRows() < d.c.MaxBufferCount {
+	for !d.initialized || d.nrows < d.c.MaxBufferCount {
 		if len(extraLine) > 0 {
 			line = extraLine
 			extraLine = nil
@@ -616,16 +613,17 @@ func (d *tableDecoder) init(line []string) error {
 		}
 	}
 
-	key := execute.NewGroupKey(keyCols, keyValues)
-	alloc := d.c.Allocator
-	if alloc == nil {
-		alloc = &memory.Allocator{}
+	d.key = execute.NewGroupKey(keyCols, keyValues)
+	alloc := memory.DefaultAllocator
+	if d.c.Allocator != nil {
+		alloc = d.c.Allocator
 	}
-	d.builder = execute.NewColListTableBuilder(key, alloc)
-	for _, c := range d.meta.Cols {
-		_, err := d.builder.AddCol(c.ColMeta)
-		if err != nil {
-			return err
+	if len(d.meta.Cols) > 0 {
+		d.colMeta = make([]flux.ColMeta, len(d.meta.Cols))
+		d.cols = make([]array.Builder, len(d.meta.Cols))
+		for i, c := range d.meta.Cols {
+			d.colMeta[i] = c.ColMeta
+			d.cols[i] = arrow.NewBuilder(c.Type, alloc)
 		}
 	}
 
@@ -637,15 +635,16 @@ func (d *tableDecoder) appendRecord(record []string) error {
 	for j, c := range d.meta.Cols {
 		if record[j] == "" {
 			v := d.meta.Defaults[j]
-			if err := d.builder.AppendValue(j, v); err != nil {
+			if err := arrow.AppendValue(d.cols[j], v); err != nil {
 				return err
 			}
 			continue
 		}
-		if err := decodeValueInto(j, c, record[j], d.builder); err != nil {
+		if err := decodeValueInto(c, record[j], d.cols[j]); err != nil {
 			return err
 		}
 	}
+	d.nrows++
 	return nil
 }
 
@@ -653,14 +652,37 @@ func (d *tableDecoder) Empty() bool {
 	return d.empty
 }
 
-func (d *tableDecoder) RefCount(n int) {}
-
 func (d *tableDecoder) Key() flux.GroupKey {
-	return d.builder.Key()
+	return d.key
 }
 
 func (d *tableDecoder) Cols() []flux.ColMeta {
-	return d.builder.Cols()
+	return d.colMeta
+}
+
+func (d *tableDecoder) Emit(f func(flux.ColReader) error) error {
+	cr := arrow.TableBuffer{
+		GroupKey: d.key,
+		Columns:  d.colMeta,
+		Values:   make([]array.Interface, len(d.cols)),
+	}
+	for i, c := range d.cols {
+		// Creating a new array resets the builder so
+		// we do not have to release the memory or
+		// reinitialize the builder.
+		cr.Values[i] = c.NewArray()
+	}
+	d.nrows = 0
+
+	defer cr.Release()
+	return f(&cr)
+}
+
+func (d *tableDecoder) release() {
+	for _, c := range d.cols {
+		c.Release()
+	}
+	d.cols = nil
 }
 
 type colMeta struct {
@@ -1054,40 +1076,40 @@ func decodeValue(value string, c colMeta) (values.Value, error) {
 	return val, nil
 }
 
-func decodeValueInto(j int, c colMeta, value string, builder execute.TableBuilder) error {
+func decodeValueInto(c colMeta, value string, b array.Builder) error {
 	switch c.Type {
 	case flux.TBool:
 		v, err := strconv.ParseBool(value)
 		if err != nil {
 			return err
 		}
-		return builder.AppendBool(j, v)
+		return arrow.AppendBool(b, v)
 	case flux.TInt:
 		v, err := strconv.ParseInt(value, 10, 64)
 		if err != nil {
 			return err
 		}
-		return builder.AppendInt(j, v)
+		return arrow.AppendInt(b, v)
 	case flux.TUInt:
 		v, err := strconv.ParseUint(value, 10, 64)
 		if err != nil {
 			return err
 		}
-		return builder.AppendUInt(j, v)
+		return arrow.AppendUint(b, v)
 	case flux.TFloat:
 		v, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			return err
 		}
-		return builder.AppendFloat(j, v)
+		return arrow.AppendFloat(b, v)
 	case flux.TString:
-		return builder.AppendString(j, value)
+		return arrow.AppendString(b, value)
 	case flux.TTime:
 		t, err := decodeTime(value, c.fmt)
 		if err != nil {
 			return err
 		}
-		return builder.AppendTime(j, t)
+		return arrow.AppendTime(b, t)
 	default:
 		return fmt.Errorf("unsupported type %v", c.Type)
 	}
