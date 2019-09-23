@@ -114,6 +114,13 @@ func (m *PostgresRowReader) SetColumns(i []interface{}) {
 	m.columns = i
 }
 
+func (m *PostgresRowReader) Close() error {
+	if err := m.Cursor.Err(); err != nil {
+		return err
+	}
+	return m.Cursor.Close()
+}
+
 func NewPostgresRowReader(r *sql.Rows) (execute.RowReader, error) {
 	reader := &PostgresRowReader{
 		Cursor: r,

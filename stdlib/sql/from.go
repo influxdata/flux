@@ -3,10 +3,13 @@ package sql
 import (
 	"context"
 	"database/sql"
-	"fmt"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	_ "github.com/lib/pq"
@@ -81,7 +84,7 @@ type FromSQLProcedureSpec struct {
 func newFromSQLProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*FromSQLOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return &FromSQLProcedureSpec{
@@ -106,76 +109,83 @@ func (s *FromSQLProcedureSpec) Copy() plan.ProcedureSpec {
 func createFromSQLSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a execute.Administration) (execute.Source, error) {
 	spec, ok := prSpec.(*FromSQLProcedureSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", prSpec)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", prSpec)
 	}
 
-	// Allow for "sqlmock" for testing purposes in "sql_test.go"
-	if spec.DriverName != "postgres" && spec.DriverName != "mysql" && spec.DriverName != "sqlmock" {
-		return nil, fmt.Errorf("sql driver %s not supported", spec.DriverName)
-	}
-
-	SQLIterator := SQLIterator{id: dsid, spec: spec, administration: a}
-
-	return execute.CreateSourceFromDecoder(&SQLIterator, dsid, a)
-}
-
-type SQLIterator struct {
-	id             execute.DatasetID
-	administration execute.Administration
-	spec           *FromSQLProcedureSpec
-	db             *sql.DB
-	reader         *execute.RowReader
-}
-
-var _ execute.SourceDecoder = (*SQLIterator)(nil)
-
-func (c *SQLIterator) Connect(ctx context.Context) error {
-	db, err := sql.Open(c.spec.DriverName, c.spec.DataSourceName)
-
-	if err != nil {
-		return err
-	}
-	if err = db.Ping(); err != nil {
-		return err
-	}
-	c.db = db
-
-	return nil
-}
-
-func (c *SQLIterator) Fetch(ctx context.Context) (bool, error) {
-	rows, err := c.db.Query(c.spec.Query)
-	if err != nil {
-		return false, err
-	}
-
-	var reader execute.RowReader
-	switch c.spec.DriverName {
+	// Retrieve the row reader implementation for the driver.
+	var newRowReader func(rows *sql.Rows) (execute.RowReader, error)
+	switch spec.DriverName {
 	case "mysql":
-		reader, err = NewMySQLRowReader(rows)
+		newRowReader = NewMySQLRowReader
 	case "postgres", "sqlmock":
-		reader, err = NewPostgresRowReader(rows)
+		newRowReader = NewPostgresRowReader
 	default:
-		return false, fmt.Errorf("unsupported driver %s", c.spec.DriverName)
+		return nil, errors.Newf(codes.Invalid, "sql driver %s not supported", spec.DriverName)
 	}
 
-	if err != nil {
-		return false, err
+	readFn := func(ctx context.Context, rows *sql.Rows) (flux.Table, error) {
+		reader, err := newRowReader(rows)
+		if err != nil {
+			_ = rows.Close()
+			return nil, err
+		}
+		return read(ctx, reader, a.Allocator())
 	}
-	c.reader = &reader
-
-	return false, nil
+	iterator := &sqlIterator{spec: spec, id: dsid, read: readFn}
+	return execute.CreateSourceFromIterator(iterator, dsid)
 }
 
-func (c *SQLIterator) Decode(ctx context.Context) (flux.Table, error) {
+var _ execute.SourceIterator = (*sqlIterator)(nil)
+
+type sqlIterator struct {
+	spec *FromSQLProcedureSpec
+	id   execute.DatasetID
+	read func(ctx context.Context, rows *sql.Rows) (flux.Table, error)
+}
+
+func (c *sqlIterator) connect(ctx context.Context) (*sql.DB, error) {
+	db, err := sql.Open(c.spec.DriverName, c.spec.DataSourceName)
+	if err != nil {
+		return nil, err
+	}
+	if err := db.Ping(); err != nil {
+		_ = db.Close()
+		return nil, err
+	}
+	return db, nil
+}
+
+func (c *sqlIterator) Do(ctx context.Context, f func(flux.Table) error) error {
+	// Connect to the database so we can execute the query.
+	db, err := c.connect(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = db.Close() }()
+
+	rows, err := db.QueryContext(ctx, c.spec.Query)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = rows.Close() }()
+
+	table, err := c.read(ctx, rows)
+	if err != nil {
+		return err
+	}
+	return f(table)
+}
+
+// read will use the RowReader to construct a flux.Table.
+func read(ctx context.Context, reader execute.RowReader, alloc *memory.Allocator) (flux.Table, error) {
+	// Ensure that the reader is always freed so the underlying
+	// cursor can be returned.
+	defer func() { _ = reader.Close() }()
+
 	groupKey := execute.NewGroupKey(nil, nil)
-	builder := execute.NewColListTableBuilder(groupKey, c.administration.Allocator())
-
-	reader := *c.reader
-
+	builder := execute.NewColListTableBuilder(groupKey, alloc)
 	for i, dataType := range reader.ColumnTypes() {
-		_, err := builder.AddCol(flux.ColMeta{Label: reader.ColumnNames()[i], Type: dataType})
-		if err != nil {
+		if _, err := builder.AddCol(flux.ColMeta{Label: reader.ColumnNames()[i], Type: dataType}); err != nil {
 			return nil, err
 		}
 	}
@@ -193,9 +203,10 @@ func (c *SQLIterator) Decode(ctx context.Context) (flux.Table, error) {
 		}
 	}
 
+	// An error may have been encountered while reading.
+	// This will get reported when we go to close the reader.
+	if err := reader.Close(); err != nil {
+		return nil, err
+	}
 	return builder.Table()
-}
-
-func (c *SQLIterator) Close() error {
-	return c.db.Close()
 }
