@@ -58,7 +58,7 @@ func DatasetIDFromNodeID(id plan.NodeID) DatasetID {
 type dataset struct {
 	id DatasetID
 
-	ts      []Transformation
+	ts      TransformationSet
 	accMode AccumulationMode
 
 	watermark      Time
@@ -88,12 +88,7 @@ func (d *dataset) UpdateWatermark(mark Time) error {
 	if err := d.evalTriggers(); err != nil {
 		return err
 	}
-	for _, t := range d.ts {
-		if err := t.UpdateWatermark(d.id, mark); err != nil {
-			return err
-		}
-	}
-	return nil
+	return d.ts.UpdateWatermark(d.id, mark)
 }
 
 func (d *dataset) UpdateProcessingTime(time Time) error {
@@ -101,12 +96,7 @@ func (d *dataset) UpdateProcessingTime(time Time) error {
 	if err := d.evalTriggers(); err != nil {
 		return err
 	}
-	for _, t := range d.ts {
-		if err := t.UpdateProcessingTime(d.id, time); err != nil {
-			return err
-		}
-	}
-	return nil
+	return d.ts.UpdateProcessingTime(d.id, time)
 }
 
 func (d *dataset) evalTriggers() (err error) {
@@ -139,7 +129,7 @@ func (d *dataset) triggerTable(key flux.GroupKey) error {
 
 	switch d.accMode {
 	case DiscardingMode:
-		if err := d.processTable(b); err != nil {
+		if err := d.ts.Process(d.id, b); err != nil {
 			return err
 		}
 		d.cache.DiscardTable(key)
@@ -151,30 +141,7 @@ func (d *dataset) triggerTable(key flux.GroupKey) error {
 		}
 		fallthrough
 	case AccumulatingMode:
-		if err := d.processTable(b); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (d *dataset) processTable(tbl flux.Table) error {
-	if len(d.ts) == 0 {
-		return nil
-	} else if len(d.ts) == 1 {
-		return d.ts[0].Process(d.id, tbl)
-	}
-
-	// There is more than one transformation so we need to
-	// copy the table for each transformation.
-	bufTable, err := CopyTable(tbl)
-	if err != nil {
-		return err
-	}
-	defer bufTable.Done()
-
-	for _, t := range d.ts {
-		if err := t.Process(d.id, bufTable.Copy()); err != nil {
+		if err := d.ts.Process(d.id, b); err != nil {
 			return err
 		}
 	}
@@ -187,12 +154,7 @@ func (d *dataset) expireTable(key flux.GroupKey) {
 
 func (d *dataset) RetractTable(key flux.GroupKey) error {
 	d.cache.DiscardTable(key)
-	for _, t := range d.ts {
-		if err := t.RetractTable(d.id, key); err != nil {
-			return err
-		}
-	}
-	return nil
+	return d.ts.RetractTable(d.id, key)
 }
 
 func (d *dataset) Finish(err error) {
@@ -206,7 +168,44 @@ func (d *dataset) Finish(err error) {
 			d.cache.ExpireTable(bk)
 		})
 	}
-	for _, t := range d.ts {
-		t.Finish(d.id, err)
-	}
+	d.ts.Finish(d.id, err)
+}
+
+// PassthroughDataset is a Dataset that will passthrough
+// the processed data to the next Transformation.
+type PassthroughDataset struct {
+	id DatasetID
+	ts TransformationSet
+}
+
+// NewPassthroughDataset constructs a new PassthroughDataset.
+func NewPassthroughDataset(id DatasetID) *PassthroughDataset {
+	return &PassthroughDataset{id: id}
+}
+
+func (d *PassthroughDataset) AddTransformation(t Transformation) {
+	d.ts = append(d.ts, t)
+}
+
+func (d *PassthroughDataset) Process(tbl flux.Table) error {
+	return d.ts.Process(d.id, tbl)
+}
+
+func (d *PassthroughDataset) RetractTable(key flux.GroupKey) error {
+	return d.ts.RetractTable(d.id, key)
+}
+
+func (d *PassthroughDataset) UpdateProcessingTime(t Time) error {
+	return d.ts.UpdateProcessingTime(d.id, t)
+}
+
+func (d *PassthroughDataset) UpdateWatermark(mark Time) error {
+	return d.ts.UpdateWatermark(d.id, mark)
+}
+
+func (d *PassthroughDataset) Finish(err error) {
+	d.ts.Finish(d.id, err)
+}
+
+func (d *PassthroughDataset) SetTriggerSpec(t plan.TriggerSpec) {
 }

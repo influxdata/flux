@@ -2175,3 +2175,54 @@ func (d *tableBuilderCache) ForEachWithContext(f func(flux.GroupKey, Trigger, Ta
 		})
 	})
 }
+
+type emptyTable struct {
+	key  flux.GroupKey
+	cols []flux.ColMeta
+	used int32
+}
+
+// NewEmptyTable constructs a new empty table with the given
+// group key and columns.
+func NewEmptyTable(key flux.GroupKey, cols []flux.ColMeta) flux.Table {
+	return emptyTable{
+		key:  key,
+		cols: cols,
+	}
+}
+
+func (t emptyTable) Key() flux.GroupKey {
+	return t.key
+}
+
+func (t emptyTable) Cols() []flux.ColMeta {
+	return t.cols
+}
+
+func (t emptyTable) Do(f func(flux.ColReader) error) error {
+	if !atomic.CompareAndSwapInt32(&t.used, 0, 1) {
+		return errors.New(codes.Internal, "table already read")
+	}
+
+	// Construct empty arrays for each column.
+	arrs := make([]array.Interface, len(t.cols))
+	for i, col := range t.cols {
+		b := arrow.NewBuilder(col.Type, memory.DefaultAllocator)
+		arrs[i] = b.NewArray()
+	}
+	buf := arrow.TableBuffer{
+		GroupKey: t.key,
+		Columns:  t.cols,
+		Values:   arrs,
+	}
+	defer buf.Release()
+	return f(&buf)
+}
+
+func (t emptyTable) Done() {
+	atomic.StoreInt32(&t.used, 1)
+}
+
+func (t emptyTable) Empty() bool {
+	return true
+}

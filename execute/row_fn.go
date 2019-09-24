@@ -197,8 +197,22 @@ func (f *RowPredicateFn) Prepare(cols []flux.ColMeta) error {
 	return nil
 }
 
-func (f *RowPredicateFn) Eval(ctx context.Context, row int, cr flux.ColReader) (bool, error) {
+func (f *RowPredicateFn) InputType() semantic.Type {
+	sig := f.preparedFn.FunctionSignature()
+	return sig.Parameters[f.recordName]
+}
+
+func (f *RowPredicateFn) EvalRow(ctx context.Context, row int, cr flux.ColReader) (bool, error) {
 	v, err := f.rowFn.eval(ctx, row, cr, nil)
+	if err != nil {
+		return false, err
+	}
+	return !v.IsNull() && v.Bool(), nil
+}
+
+func (f *RowPredicateFn) Eval(ctx context.Context, record values.Object) (bool, error) {
+	f.inRecord.Set(f.recordName, record)
+	v, err := f.preparedFn.Eval(ctx, f.inRecord)
 	if err != nil {
 		return false, err
 	}
