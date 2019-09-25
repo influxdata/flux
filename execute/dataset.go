@@ -2,6 +2,8 @@ package execute
 
 import (
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	uuid "github.com/satori/go.uuid"
 )
@@ -34,9 +36,17 @@ type DataCache interface {
 type AccumulationMode int
 
 const (
+	// DiscardingMode will discard the data associated with a group key
+	// after it has been processed.
 	DiscardingMode AccumulationMode = iota
+
+	// AccumulatingMode will retain the data associated with a group key
+	// after it has been processed. If it has already sent a table with
+	// that group key to a downstream transformation, it will signal
+	// to that transformation that the previous table should be retracted.
+	//
+	// This is not implemented at the moment.
 	AccumulatingMode
-	AccumulatingRetractingMode
 )
 
 type DatasetID uuid.UUID
@@ -133,17 +143,8 @@ func (d *dataset) triggerTable(key flux.GroupKey) error {
 			return err
 		}
 		d.cache.DiscardTable(key)
-	case AccumulatingRetractingMode:
-		for _, t := range d.ts {
-			if err := t.RetractTable(d.id, b.Key()); err != nil {
-				return err
-			}
-		}
-		fallthrough
 	case AccumulatingMode:
-		if err := d.ts.Process(d.id, b); err != nil {
-			return err
-		}
+		return errors.New(codes.Unimplemented)
 	}
 	return nil
 }
