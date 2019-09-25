@@ -1,11 +1,12 @@
 package universe
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -74,7 +75,7 @@ func createPivotOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 
 	for _, v := range spec.ColumnKey {
 		if _, ok := rowKeys[v]; ok {
-			return nil, fmt.Errorf("column name found in both rowKey and colKey: %s", v)
+			return nil, errors.Newf(codes.Invalid, "column name found in both rowKey and colKey: %s", v)
 		}
 	}
 
@@ -105,7 +106,7 @@ type PivotProcedureSpec struct {
 func newPivotProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*PivotOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	p := &PivotProcedureSpec{
@@ -133,7 +134,7 @@ func (s *PivotProcedureSpec) Copy() plan.ProcedureSpec {
 func createPivotTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*PivotProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 
 	cache := execute.NewTableBuilderCache(a.Allocator())
@@ -178,7 +179,7 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	for _, v := range t.spec.RowKey {
 		idx := execute.ColIdx(v, tbl.Cols())
 		if idx < 0 {
-			return fmt.Errorf("specified column does not exist in table: %v", v)
+			return errors.Newf(codes.Invalid, "specified column does not exist in table: %v", v)
 		}
 		rowKeyIndex[v] = idx
 	}
@@ -223,7 +224,7 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 
 	for k, v := range colKeyIndex {
 		if v < 0 {
-			return fmt.Errorf("specified column does not exist in table: %v", k)
+			return errors.Newf(codes.Invalid, "specified column does not exist in table: %v", k)
 		}
 	}
 
@@ -330,7 +331,7 @@ func growColumn(builder execute.TableBuilder, colIdx, nRows int) error {
 		return builder.GrowTimes(colIdx, nRows)
 	default:
 		execute.PanicUnknownType(colType)
-		return fmt.Errorf("invalid column type: %s", colType)
+		return errors.Newf(codes.Internal, "invalid column type: %s", colType)
 	}
 }
 
