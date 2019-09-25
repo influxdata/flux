@@ -378,7 +378,7 @@ func TablesFromCache(c execute.DataCache) (tables []*Table, err error) {
 		tables = append(tables, cb)
 		c.ExpireTable(key)
 	})
-	return tables, nil
+	return tables, err
 }
 
 func ConvertTable(tbl flux.Table) (*Table, error) {
