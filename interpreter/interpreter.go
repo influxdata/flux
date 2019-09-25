@@ -2,7 +2,6 @@ package interpreter
 
 import (
 	"context"
-	stderrors "errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -71,7 +70,7 @@ func (itrp *Interpreter) doRoot(ctx context.Context, node semantic.Node, scope v
 	case *semantic.Extern:
 		return itrp.doExtern(ctx, n, scope, importer)
 	default:
-		return fmt.Errorf("unsupported root node %T", node)
+		return errors.Newf(codes.Internal, "unsupported root node %T", node)
 	}
 }
 
@@ -123,7 +122,7 @@ func (itrp *Interpreter) doPackageClause(pkg *semantic.PackageClause) error {
 		itrp.pkg.name = name
 	}
 	if itrp.pkg.name != name {
-		return fmt.Errorf("package name mismatch %q != %q", itrp.pkg.name, name)
+		return errors.Newf(codes.Invalid, "package name mismatch %q != %q", itrp.pkg.name, name)
 	}
 	return nil
 }
@@ -132,7 +131,7 @@ func (itrp *Interpreter) doImport(dec *semantic.ImportDeclaration, scope values.
 	path := dec.Path.Value
 	pkg, ok := importer.ImportPackageObject(path)
 	if !ok {
-		return fmt.Errorf("invalid import path %s", path)
+		return errors.Newf(codes.Invalid, "invalid import path %s", path)
 	}
 	name := pkg.Name()
 	if dec.As != nil {
@@ -173,7 +172,7 @@ func (itrp *Interpreter) doStatement(ctx context.Context, stmt semantic.Statemen
 		}
 		scope.SetReturn(v)
 	default:
-		return nil, fmt.Errorf("unsupported statement type %T", stmt)
+		return nil, errors.Newf(codes.Internal, "unsupported statement type %T", stmt)
 	}
 	return nil, nil
 }
@@ -199,7 +198,7 @@ func (itrp *Interpreter) doOptionStatement(ctx context.Context, s *semantic.Opti
 		pkgName := a.Member.Object.(*semantic.IdentifierExpression).Name
 		return itrp.setOption(scope, pkgName, a.Member.Property, init)
 	default:
-		return nil, fmt.Errorf("unsupported assignment %T", a)
+		return nil, errors.Newf(codes.Internal, "unsupported assignment %T", a)
 	}
 }
 
@@ -300,7 +299,7 @@ func (itrp *Interpreter) doAssignment(ctx context.Context, a semantic.Assignment
 	case *semantic.MemberAssignment:
 		return itrp.doMemberAssignment(ctx, a, scope)
 	default:
-		return nil, fmt.Errorf("unsupported assignment %T", a)
+		return nil, errors.Newf(codes.Internal, "unsupported assignment %T", a)
 	}
 }
 
@@ -331,12 +330,12 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 			return nil, err
 		}
 		if typ := obj.Type().Nature(); typ != semantic.Object {
-			return nil, fmt.Errorf("cannot access property %q on value of type %s", e.Property, typ)
+			return nil, errors.Newf(codes.Invalid, "cannot access property %q on value of type %s", e.Property, typ)
 		}
 		v, _ := obj.Object().Get(e.Property)
 		if pkg, ok := v.(*Package); ok {
 			// If the property of a member expression represents a package, then the object itself must be a package.
-			return nil, fmt.Errorf("cannot access imported package %q of imported package %q", pkg.Name(), obj.(*Package).Name())
+			return nil, errors.Newf(codes.Invalid, "cannot access imported package %q of imported package %q", pkg.Name(), obj.(*Package).Name())
 		}
 		return v, nil
 	case *semantic.IndexExpression:
@@ -359,7 +358,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		switch e.Operator {
 		case ast.NotOperator:
 			if v.Type() != semantic.Bool {
-				return nil, fmt.Errorf("operand to unary expression is not a boolean value, got %v", v.Type())
+				return nil, errors.Newf(codes.Invalid, "operand to unary expression is not a boolean value, got %v", v.Type())
 			}
 			return values.NewBool(!v.Bool()), nil
 		case ast.SubtractionOperator:
@@ -371,12 +370,12 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 			case semantic.Duration:
 				return values.NewDuration(-v.Duration()), nil
 			default:
-				return nil, fmt.Errorf("operand to unary expression is not a number value, got %v", v.Type())
+				return nil, errors.Newf(codes.Invalid, "operand to unary expression is not a number value, got %v", v.Type())
 			}
 		case ast.ExistsOperator:
 			return values.NewBool(!v.IsNull()), nil
 		default:
-			return nil, fmt.Errorf("unsupported operator %q to unary expression", e.Operator)
+			return nil, errors.Newf(codes.Invalid, "unsupported operator %q to unary expression", e.Operator)
 		}
 	case *semantic.BinaryExpression:
 		l, err := itrp.doExpression(ctx, e.Left, scope)
@@ -416,7 +415,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 			return nil, err
 		}
 		if l.Type() != semantic.Bool {
-			return nil, fmt.Errorf("left operand to logcial expression is not a boolean value, got %v", l.Type())
+			return nil, errors.Newf(codes.Invalid, "left operand to logcial expression is not a boolean value, got %v", l.Type())
 		}
 		left := l.Bool()
 
@@ -433,7 +432,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 			return nil, err
 		}
 		if r.Type() != semantic.Bool {
-			return nil, stderrors.New("right operand to logical expression is not a boolean value")
+			return nil, errors.New(codes.Invalid, "right operand to logical expression is not a boolean value")
 		}
 		right := r.Bool()
 
@@ -443,7 +442,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		case ast.OrOperator:
 			return values.NewBool(left || right), nil
 		default:
-			return nil, fmt.Errorf("invalid logical operator %v", e.Operator)
+			return nil, errors.Newf(codes.Invalid, "invalid logical operator %v", e.Operator)
 		}
 	case *semantic.ConditionalExpression:
 		t, err := itrp.doExpression(ctx, e.Test, scope)
@@ -451,7 +450,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 			return nil, err
 		}
 		if t.Type() != semantic.Bool {
-			return nil, stderrors.New("conditional test expression is not a boolean value")
+			return nil, errors.New(codes.Invalid, "conditional test expression is not a boolean value")
 		}
 		if t.Bool() {
 			return itrp.doExpression(ctx, e.Consequent, scope)
@@ -480,7 +479,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 			polyTypes: polyTypes,
 		}, nil
 	default:
-		return nil, fmt.Errorf("unsupported expression %T", expr)
+		return nil, errors.Newf(codes.Internal, "unsupported expression %T", expr)
 	}
 }
 
@@ -503,14 +502,14 @@ func (itrp *Interpreter) doStringPart(ctx context.Context, part semantic.StringE
 	case *semantic.InterpolatedPart:
 		return itrp.doExpression(ctx, p.Expression, scope)
 	}
-	return nil, fmt.Errorf("expecting interpolated string part")
+	return nil, errors.New(codes.Internal, "expecting interpolated string part")
 }
 
 func (itrp *Interpreter) doArray(ctx context.Context, a *semantic.ArrayExpression, scope values.Scope) (values.Value, error) {
 	elements := make([]values.Value, len(a.Elements))
 	arrayType, ok := itrp.types[a]
 	if !ok {
-		return nil, fmt.Errorf("expecting array type")
+		return nil, errors.New(codes.Internal, "expecting array type")
 	}
 	elementType := arrayType.ElementType()
 	for i, el := range a.Elements {
@@ -540,7 +539,7 @@ func (itrp *Interpreter) doObject(ctx context.Context, m *semantic.ObjectExpress
 			return nil, err
 		}
 		if _, ok := obj.Get(p.Key.Key()); ok {
-			return nil, fmt.Errorf("duplicate key in object: %q", p.Key.Key())
+			return nil, errors.Newf(codes.Invalid, "duplicate key in object: %q", p.Key.Key())
 		}
 		obj.Set(p.Key.Key(), v)
 	}
@@ -566,7 +565,7 @@ func (itrp *Interpreter) doLiteral(lit semantic.Literal) (values.Value, error) {
 	case *semantic.BooleanLiteral:
 		return values.NewBool(l.Value), nil
 	default:
-		return nil, fmt.Errorf("unknown literal type %T", lit)
+		return nil, errors.Newf(codes.Internal, "unknown literal type %T", lit)
 	}
 }
 
@@ -601,7 +600,7 @@ func DoFunctionCallContext(f func(ctx context.Context, args Arguments) (values.V
 		return nil, err
 	}
 	if unused := args.listUnused(); len(unused) > 0 {
-		return nil, fmt.Errorf("unused arguments %v", unused)
+		return nil, errors.Newf(codes.Invalid, "unused arguments %v", unused)
 	}
 	return v, nil
 }
@@ -617,7 +616,7 @@ func (itrp *Interpreter) doCall(ctx context.Context, call *semantic.CallExpressi
 	}
 	ft := callee.PolyType()
 	if ft.Nature() != semantic.Function {
-		return nil, fmt.Errorf("cannot call function, value is of type %v", callee.Type())
+		return nil, errors.Newf(codes.Invalid, "cannot call function, value is of type %v", callee.Type())
 	}
 	f := callee.Function()
 	sig := ft.(functionType).Signature()
@@ -678,13 +677,13 @@ func (itrp *Interpreter) doArguments(ctx context.Context, args *semantic.ObjectE
 			value = f
 		}
 		if _, ok := obj.Get(p.Key.Key()); ok {
-			return nil, fmt.Errorf("duplicate keyword parameter specified: %q", p.Key.Key())
+			return nil, errors.Newf(codes.Invalid, "duplicate keyword parameter specified: %q", p.Key.Key())
 		}
 
 		obj.Set(p.Key.Key(), value)
 	}
 	if pipe != nil && pipeArgument == "" {
-		return nil, stderrors.New("pipe parameter value provided to function with no pipe parameter defined")
+		return nil, errors.New(codes.Invalid, "pipe parameter value provided to function with no pipe parameter defined")
 	}
 	if pipe != nil {
 		value, err := itrp.doExpression(ctx, pipe, scope)
@@ -809,7 +808,7 @@ func (f function) Call(ctx context.Context, args values.Object) (values.Value, e
 		return nil, err
 	}
 	if unused := argsNew.listUnused(); len(unused) > 0 {
-		return nil, fmt.Errorf("unused arguments %s", unused)
+		return nil, errors.Newf(codes.Invalid, "unused arguments %s", unused)
 	}
 	return v, nil
 }
@@ -863,7 +862,7 @@ func (f function) doCall(ctx context.Context, args Arguments) (values.Value, err
 			// Validate a return statement is the last statement
 			if _, ok := stmt.(*semantic.ReturnStatement); ok {
 				if i != len(n.Body)-1 {
-					return nil, stderrors.New("return statement is not the last statement in the block")
+					return nil, errors.New(codes.Invalid, "return statement is not the last statement in the block")
 				}
 			}
 		}
@@ -871,11 +870,11 @@ func (f function) doCall(ctx context.Context, args Arguments) (values.Value, err
 		// This check should be performed during type inference, not here.
 		v := nested.Return()
 		if v.PolyType().Nature() == semantic.Invalid {
-			return nil, stderrors.New("function has no return value")
+			return nil, errors.New(codes.Invalid, "function has no return value")
 		}
 		return v, nil
 	default:
-		return nil, fmt.Errorf("unsupported function body type %T", f.e.Block.Body)
+		return nil, errors.Newf(codes.Internal, "unsupported function body type %T", f.e.Block.Body)
 	}
 }
 
@@ -897,7 +896,7 @@ type Resolver interface {
 func ResolveFunction(f values.Function) (ResolvedFunction, error) {
 	resolver, ok := f.(Resolver)
 	if !ok {
-		return ResolvedFunction{}, stderrors.New("function is not resolvable")
+		return ResolvedFunction{}, errors.Newf(codes.Internal, "function is not resolvable")
 	}
 	resolved, err := resolver.Resolve()
 	if err != nil {
@@ -905,7 +904,7 @@ func ResolveFunction(f values.Function) (ResolvedFunction, error) {
 	}
 	fn, ok := resolved.(*semantic.FunctionExpression)
 	if !ok {
-		return ResolvedFunction{}, stderrors.New("resolved function is not a function")
+		return ResolvedFunction{}, errors.New(codes.Internal, "resolved function is not a function")
 	}
 	return ResolvedFunction{
 		Fn:    fn,
@@ -983,7 +982,7 @@ func (f function) resolveIdentifiers(n semantic.Node, localIdentifiers *[]string
 			}
 			return node, err
 		}
-		return nil, fmt.Errorf("name %q does not exist in scope", n.Name)
+		return nil, errors.Newf(codes.Invalid, "name %q does not exist in scope", n.Name)
 	case *semantic.Block:
 		for i, s := range n.Body {
 			node, err := f.resolveIdentifiers(s, localIdentifiers)
@@ -1208,13 +1207,13 @@ func resolveValue(v values.Value) (semantic.Node, bool, error) {
 		}
 		return node, true, nil
 	default:
-		return nil, false, fmt.Errorf("cannot resove value of type %v", k)
+		return nil, false, errors.Newf(codes.Internal, "cannot resolve value of type %v", k)
 	}
 }
 
 func ToStringArray(a values.Array) ([]string, error) {
 	if a.Type().ElementType() != semantic.String {
-		return nil, fmt.Errorf("cannot convert array of %v to an array of strings", a.Type().ElementType())
+		return nil, errors.Newf(codes.Invalid, "cannot convert array of %v to an array of strings", a.Type().ElementType())
 	}
 	strs := make([]string, a.Len())
 	a.Range(func(i int, v values.Value) {
@@ -1224,7 +1223,7 @@ func ToStringArray(a values.Array) ([]string, error) {
 }
 func ToFloatArray(a values.Array) ([]float64, error) {
 	if a.Type().ElementType() != semantic.Float {
-		return nil, fmt.Errorf("cannot convert array of %v to an array of floats", a.Type().ElementType())
+		return nil, errors.Newf(codes.Invalid, "cannot convert array of %v to an array of floats", a.Type().ElementType())
 	}
 	vs := make([]float64, a.Len())
 	a.Range(func(i int, v values.Value) {
@@ -1298,7 +1297,7 @@ func (a *arguments) GetRequired(name string) (values.Value, error) {
 	a.used[name] = true
 	v, ok := a.obj.Get(name)
 	if !ok {
-		return nil, fmt.Errorf("missing required keyword argument %q", name)
+		return nil, errors.Newf(codes.Invalid, "missing required keyword argument %q", name)
 	}
 	return v, nil
 }
@@ -1367,7 +1366,7 @@ func (a *arguments) GetArray(name string, t semantic.Nature) (values.Array, bool
 	}
 	arr := v.Array()
 	if arr.Type().ElementType() != t {
-		return nil, true, fmt.Errorf("keyword argument %q should be of an array of type %v, but got an array of type %v", name, t, arr.Type())
+		return nil, true, errors.Newf(codes.Invalid, "keyword argument %q should be of an array of type %v, but got an array of type %v", name, t, arr.Type())
 	}
 	return v.Array(), ok, nil
 }
@@ -1378,7 +1377,7 @@ func (a *arguments) GetRequiredArray(name string, t semantic.Nature) (values.Arr
 	}
 	arr := v.Array()
 	if arr.Type().ElementType().Nature() != t {
-		return nil, fmt.Errorf("keyword argument %q should be of an array of type %v, but got an array of type %v", name, t, arr.Type().ElementType().Nature())
+		return nil, errors.Newf(codes.Invalid, "keyword argument %q should be of an array of type %v, but got an array of type %v", name, t, arr.Type().ElementType().Nature())
 	}
 	return arr, nil
 }
@@ -1417,12 +1416,12 @@ func (a *arguments) get(name string, kind semantic.Nature, required bool) (value
 	v, ok := a.obj.Get(name)
 	if !ok {
 		if required {
-			return nil, false, fmt.Errorf("missing required keyword argument %q", name)
+			return nil, false, errors.Newf(codes.Invalid, "missing required keyword argument %q", name)
 		}
 		return nil, false, nil
 	}
 	if v.PolyType().Nature() != kind {
-		return nil, true, fmt.Errorf("keyword argument %q should be of kind %v, but got %v", name, kind, v.PolyType().Nature())
+		return nil, true, errors.Newf(codes.Invalid, "keyword argument %q should be of kind %v, but got %v", name, kind, v.PolyType().Nature())
 	}
 	return v, true, nil
 }
