@@ -115,3 +115,5 @@ quantile = (q, tables=<-, method="exact_mean") =>
     else 
     (tables
         |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))
+
+builtin join

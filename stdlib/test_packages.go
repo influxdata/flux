@@ -9,6 +9,7 @@ import (
 	monitor "github.com/influxdata/flux/stdlib/influxdata/influxdb/monitor"
 	secrets "github.com/influxdata/flux/stdlib/influxdata/influxdb/secrets"
 	v1 "github.com/influxdata/flux/stdlib/influxdata/influxdb/v1"
+	promql "github.com/influxdata/flux/stdlib/internal/promql"
 	strings "github.com/influxdata/flux/stdlib/strings"
 	chronograf "github.com/influxdata/flux/stdlib/testing/chronograf"
 	kapacitor "github.com/influxdata/flux/stdlib/testing/kapacitor"
@@ -24,6 +25,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, monitor.FluxTestPackages...)
 	pkgs = append(pkgs, secrets.FluxTestPackages...)
 	pkgs = append(pkgs, v1.FluxTestPackages...)
+	pkgs = append(pkgs, promql.FluxTestPackages...)
 	pkgs = append(pkgs, strings.FluxTestPackages...)
 	pkgs = append(pkgs, chronograf.FluxTestPackages...)
 	pkgs = append(pkgs, kapacitor.FluxTestPackages...)
