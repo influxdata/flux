@@ -899,8 +899,9 @@ func (p *parser) parseStringExpression() *ast.StringExpression {
 		pos, tok, lit := p.s.ScanStringExpr()
 		switch tok {
 		case token.TEXT:
+			text, _ := ParseText(lit)
 			parts = append(parts, &ast.TextPart{
-				Value:    lit,
+				Value:    text,
 				BaseNode: p.posRange(pos, len(lit)),
 			})
 		case token.STRINGEXPR:

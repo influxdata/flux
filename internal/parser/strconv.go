@@ -84,7 +84,11 @@ func ParseString(lit string) (string, error) {
 	if len(lit) < 2 || lit[0] != '"' || lit[len(lit)-1] != '"' {
 		return "", fmt.Errorf("invalid syntax")
 	}
-	lit = lit[1 : len(lit)-1]
+	return ParseText(lit[1 : len(lit)-1])
+}
+
+// ParseText parses a UTF-8 block of text with escaping rules.
+func ParseText(lit string) (string, error) {
 	var (
 		builder    strings.Builder
 		width, pos int
