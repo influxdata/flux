@@ -12,6 +12,7 @@ import (
 
 	"github.com/andreyvit/diff"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/execute/executetest"
@@ -619,6 +620,44 @@ func TestResultDecoder(t *testing.T) {
 			},
 		},
 		{
+			name:          "single empty table and an error",
+			encoderConfig: csv.DefaultEncoderConfig(),
+			encoded: toCRLF(`#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
+#group,false,false,true,true,false,true,true,false
+#default,_result,0,2018-04-17T00:00:00Z,2018-04-18T00:00:00Z,2018-04-17T12:00:00Z,m,localhost,6.0
+,result,table,_start,_stop,_time,_measurement,host,_value
+
+#datatype,string,string
+#group,true,true
+#default,,
+,error,reference
+,here is an error,
+`),
+			result: &executetest.Result{
+				Nm: "_result",
+				Tbls: []*executetest.Table{
+					{
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_measurement", Type: flux.TString},
+							{Label: "host", Type: flux.TString},
+							{Label: "_value", Type: flux.TFloat},
+						},
+						KeyCols:   []string{"_start", "_stop", "_measurement", "host"},
+						KeyValues: []interface{}{
+							values.ConvertTime(time.Date(2018,04, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018,04, 18, 0, 0, 0, 0, time.UTC)),
+							"m",
+							"localhost",
+						},
+					},
+				},
+				Err: errors.New("here is an error"),
+			},
+		},
+		{
 			name:          "single table with bad default tableID",
 			encoderConfig: csv.DefaultEncoderConfig(),
 			encoded: toCRLF(`#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
@@ -629,7 +668,7 @@ func TestResultDecoder(t *testing.T) {
 ,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:01Z,cpu,A,43
 `),
 			result: &executetest.Result{
-				Err: errors.New("default Table ID is not an integer"),
+				Err: errors.New("failed to read metadata: default Table ID is not an integer"),
 			},
 		},
 		{
@@ -657,7 +696,7 @@ func TestResultDecoder(t *testing.T) {
 			result, err := decoder.Decode(bytes.NewReader(tc.encoded))
 			if err != nil {
 				if tc.result.Err != nil {
-					if got, want := tc.result.Err.Error(), err.Error(); got != want {
+					if want, got := tc.result.Err.Error(), err.Error(); got != want {
 						t.Error("unexpected error -want/+got", cmp.Diff(want, got))
 					}
 					return
@@ -675,14 +714,23 @@ func TestResultDecoder(t *testing.T) {
 				got.Tbls = append(got.Tbls, cb)
 				return nil
 			}); err != nil {
-				t.Fatal(err)
+				if tc.result.Err == nil {
+					t.Fatal(err)
+				}
+				got.Err = err
 			}
 
 			got.Normalize()
 			tc.result.Normalize()
 
-			if !cmp.Equal(got, tc.result) {
+			cmpOpts := cmpopts.IgnoreFields(executetest.Result{}, "Err")
+			if !cmp.Equal(got, tc.result, cmpOpts) {
 				t.Error("unexpected results -want/+got", cmp.Diff(tc.result, got))
+			}
+			if (got.Err == nil) != (tc.result.Err == nil) {
+				t.Errorf("error mismatch in result: -want/+got:\n- %q\n+ %q", tc.result.Err, got.Err)
+			} else if got.Err != nil && got.Err.Error() != tc.result.Err.Error() {
+				t.Errorf("unexpected error message: -want/+got:\n- %q\n+ %q", tc.result.Err, got.Err)
 			}
 		})
 	}
