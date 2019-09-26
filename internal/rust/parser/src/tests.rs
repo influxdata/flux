@@ -295,6 +295,66 @@ fn string_interpolation_nested() {
 }
 
 #[test]
+fn string_interp_with_escapes() {
+    let mut p = Parser::new(r#""string \"interpolation with ${"escapes"}\"""#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 45),
+                errors: vec![]
+            },
+            name: "".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Expr(ExpressionStatement {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 45),
+                    errors: vec![]
+                },
+                expression: StringExp(Box::new(StringExpression {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 45),
+                        errors: vec![]
+                    },
+                    parts: vec![
+                        StringExpressionPart::Text(TextPart {
+                            base: BaseNode {
+                                location: loc.get(1, 2, 1, 30),
+                                errors: vec![]
+                            },
+                            value: "string \"interpolation with ".to_string(),
+                        }),
+                        StringExpressionPart::Expr(InterpolatedPart {
+                            base: BaseNode {
+                                location: loc.get(1, 30, 1, 42),
+                                errors: vec![]
+                            },
+                            expression: Str(StringLiteral {
+                                base: BaseNode {
+                                    location: loc.get(1, 32, 1, 41),
+                                    errors: vec![]
+                                },
+                                value: "escapes".to_string(),
+                            }),
+                        }),
+                        StringExpressionPart::Text(TextPart {
+                            base: BaseNode {
+                                location: loc.get(1, 42, 1, 44),
+                                errors: vec![]
+                            },
+                            value: "\"".to_string(),
+                        }),
+                    ],
+                })),
+            }),],
+        },
+    )
+}
+
+#[test]
 fn bad_string_expression() {
     let mut p = Parser::new(r#"fn = (a) => "${a}"#);
     let parsed = p.parse_file("".to_string());

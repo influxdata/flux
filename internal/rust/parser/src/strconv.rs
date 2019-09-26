@@ -10,21 +10,22 @@ pub fn parse_string(lit: &str) -> Result<String, String> {
     if lit.len() < 2 || lit.chars().next().unwrap() != '"' || lit.chars().last().unwrap() != '"' {
         return Err("invalid string literal".to_string());
     }
+    return parse_text(&lit[1..lit.len() - 1]);
+}
+
+pub fn parse_text(lit: &str) -> Result<String, String> {
     let mut s = Vec::with_capacity(lit.len());
     let mut chars = lit.char_indices();
-    let last = lit.len() - 1;
     loop {
         match chars.next() {
-            Some((i, c)) => {
-                if i != 0 && i != last {
-                    match c {
-                        '\\' => match push_unescaped(&mut s, &mut chars) {
-                            Err(e) => return Err(e.to_string()),
-                            _ => (),
-                        },
-                        // this char can have any byte length
-                        _ => s.extend_from_slice(c.to_string().as_bytes()),
-                    }
+            Some((_, c)) => {
+                match c {
+                    '\\' => match push_unescaped(&mut s, &mut chars) {
+                        Err(e) => return Err(e.to_string()),
+                        _ => (),
+                    },
+                    // this char can have any byte length
+                    _ => s.extend_from_slice(c.to_string().as_bytes()),
                 }
             }
             None => break,

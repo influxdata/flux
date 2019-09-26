@@ -1045,7 +1045,7 @@ impl Parser {
                 T_TEXT => {
                     parts.push(StringExpressionPart::Text(TextPart {
                         base: self.base_node_from_token(&t),
-                        value: t.lit,
+                        value: strconv::parse_text(t.lit.as_str()).unwrap(),
                     }));
                 }
                 T_STRINGEXPR => {
@@ -1487,7 +1487,7 @@ impl Parser {
     }
     fn parse_parameter(&mut self) -> Property {
         let key = self.parse_identifier();
-        let mut base: BaseNode;
+        let base: BaseNode;
         let mut value = None;
         if self.peek().tok == T_ASSIGN {
             self.consume();
