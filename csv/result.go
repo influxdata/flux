@@ -4,7 +4,6 @@ package csv
 import (
 	"encoding/csv"
 	"encoding/json"
-	stderrors "errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -185,10 +184,10 @@ func newResultDecoder(cr *csv.Reader, c ResultDecoderConfig, extraMeta *tableMet
 	if extraMeta == nil {
 		tm, err := readMetadata(d.cr, c, nil)
 		if err != nil {
-			if err == io.EOF {
-				d.eof = true
+			if sfe, ok := err.(*serializedFluxError); ok {
+				return nil, sfe.err
 			}
-			return nil, err
+			return nil, errors.Wrap(err, codes.Inherit, "failed to read metadata")
 		}
 		d.extraMeta = &tm
 	}
@@ -232,7 +231,10 @@ func (r *resultDecoder) Do(f func(flux.Table) error) error {
 						r.eof = true
 						return nil
 					}
-					return errors.Wrap(err, codes.Inherit, "failed to read meta data")
+					if sfe, ok := err.(*serializedFluxError); ok {
+						return sfe.err
+					}
+					return errors.Wrap(err, codes.Inherit, "failed to read metadata")
 				}
 				meta = tm
 				extraLine = nil
@@ -273,7 +275,21 @@ type tableMetadata struct {
 	NumFields int
 }
 
+// serializedFluxError represents an error that occurred during
+// Flux execution that has been serialized to CSV.
+type serializedFluxError struct {
+	err error
+}
+
+func (sfe *serializedFluxError) Error() string {
+	return sfe.err.Error()
+}
+
 // readMetadata reads the table annotations and header.
+// If there is no more data, returns (tablMetadata{}, io.EOF).
+// In case of an actual error:
+//   - if it's error that was serialized to CSV, it will be wrapped in serializedFluxError.
+//   - otherwise, it's a serialization error, it will be returned as-is.
 func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tableMetadata, error) {
 	n := -1
 	var resultID, tableID string
@@ -368,7 +384,9 @@ func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tab
 				}
 				return tableMetadata{}, errors.Wrap(err, codes.Inherit, "failed to read error value")
 			}
-			return tableMetadata{}, stderrors.New(line[1])
+			// TODO: We should determine the correct error code here:
+			//   https://github.com/influxdata/flux/issues/1916
+			return tableMetadata{}, &serializedFluxError{err: errors.New(codes.Internal, line[1])}
 		}
 
 		labels = line[recordStartIdx:]
