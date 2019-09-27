@@ -113,6 +113,14 @@ func createFilterTransformation(id execute.DatasetID, mode execute.AccumulationM
 	return t, d, nil
 }
 
+func (s *FilterProcedureSpec) PlanDetails() string {
+	body := s.Fn.Fn.Block.Body
+	if expr, ok := body.(semantic.Expression); ok {
+		return fmt.Sprintf("%v", semantic.Formatted(expr))
+	}
+	return "<non-Expression>"
+}
+
 type filterTransformation struct {
 	d     *execute.PassthroughDataset
 	ctx   context.Context
