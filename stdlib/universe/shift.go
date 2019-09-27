@@ -1,11 +1,12 @@
 package universe
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -91,7 +92,7 @@ func (s *ShiftProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bo
 func newShiftProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*ShiftOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return &ShiftProcedureSpec{
@@ -124,7 +125,7 @@ func (s *ShiftProcedureSpec) TriggerSpec() plan.TriggerSpec {
 func createShiftTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*ShiftProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -160,7 +161,7 @@ func (t *shiftTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	for j, c := range key.Cols() {
 		if execute.ContainsStr(t.columns, c.Label) {
 			if c.Type != flux.TTime {
-				return fmt.Errorf("column %q is not of type time", c.Label)
+				return errors.Newf(codes.FailedPrecondition, "column %q is not of type time", c.Label)
 			}
 			cols[j] = c
 			vs[j] = values.NewTime(key.ValueTime(j).Add(t.shift))
@@ -173,7 +174,7 @@ func (t *shiftTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 
 	builder, created := t.cache.TableBuilder(key)
 	if !created {
-		return fmt.Errorf("shift found duplicate table with key: %v", tbl.Key())
+		return errors.Newf(codes.FailedPrecondition, "shift found duplicate table with key: %v", tbl.Key())
 	}
 	if err := execute.AddTableCols(tbl, builder); err != nil {
 		return err

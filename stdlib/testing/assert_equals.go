@@ -1,12 +1,13 @@
 package testing
 
 import (
-	"errors"
 	"fmt"
 	"sync"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -47,7 +48,7 @@ func createAssertEqualsOpSpec(args flux.Arguments, a *flux.Administration) (flux
 	}
 	p, ok := t.(*flux.TableObject)
 	if !ok {
-		return nil, errors.New("got input to assertEquals is not a table object")
+		return nil, errors.New(codes.Invalid, "got input to assertEquals is not a table object")
 	}
 	a.AddParent(p)
 
@@ -57,7 +58,7 @@ func createAssertEqualsOpSpec(args flux.Arguments, a *flux.Administration) (flux
 	}
 	p, ok = t.(*flux.TableObject)
 	if !ok {
-		return nil, errors.New("want input to assertEquals is not a table object")
+		return nil, errors.New(codes.Invalid, "want input to assertEquals is not a table object")
 	}
 	a.AddParent(p)
 
@@ -90,7 +91,7 @@ func (s *AssertEqualsProcedureSpec) Copy() plan.ProcedureSpec {
 func newAssertEqualsProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*AssertEqualsOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	return &AssertEqualsProcedureSpec{Name: spec.Name}, nil
 }
@@ -133,14 +134,14 @@ type assertEqualsParentState struct {
 
 func createAssertEqualsTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	if len(a.Parents()) != 2 {
-		return nil, nil, errors.New("assertEquals should have exactly 2 parents")
+		return nil, nil, errors.New(codes.Internal, "assertEquals should have exactly 2 parents")
 	}
 
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	dataset := execute.NewDataset(id, mode, cache)
 	pspec, ok := spec.(*AssertEqualsProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 
 	transform := NewAssertEqualsTransformation(dataset, cache, pspec, a.Parents()[0], a.Parents()[1], a.Allocator())
@@ -176,7 +177,7 @@ func (t *AssertEqualsTransformation) Process(id execute.DatasetID, tbl flux.Tabl
 	} else if id == t.gotParent.id {
 		t.gotParent.ntables++
 	} else {
-		return fmt.Errorf("unexpected dataset id: %v", id)
+		return errors.Newf(codes.Internal, "unexpected dataset id: %v", id)
 	}
 	if created {
 		colMap, err = execute.AddNewTableCols(tbl, builder, colMap)
@@ -219,7 +220,7 @@ func (t *AssertEqualsTransformation) UpdateWatermark(id execute.DatasetID, mark 
 			min = t.gotParent.mark
 		}
 	} else {
-		return fmt.Errorf("unexpected dataset id: %v", id)
+		return errors.Newf(codes.Internal, "unexpected dataset id: %v", id)
 	}
 
 	return t.d.UpdateWatermark(min)
@@ -241,7 +242,7 @@ func (t *AssertEqualsTransformation) UpdateProcessingTime(id execute.DatasetID, 
 			min = t.gotParent.processing
 		}
 	} else {
-		return fmt.Errorf("unexpected dataset id: %v", id)
+		return errors.Newf(codes.Internal, "unexpected dataset id: %v", id)
 	}
 	return t.d.UpdateProcessingTime(min)
 }
@@ -255,7 +256,7 @@ func (t *AssertEqualsTransformation) Finish(id execute.DatasetID, err error) {
 	} else if t.wantParent.id == id {
 		t.wantParent.finished = true
 	} else {
-		t.d.Finish(fmt.Errorf("unexpected dataset id: %v", id))
+		t.d.Finish(errors.Newf(codes.Internal, "unexpected dataset id: %v", id))
 	}
 
 	if err != nil {

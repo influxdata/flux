@@ -1,11 +1,11 @@
 package universe
 
 import (
-	"fmt"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 )
@@ -61,7 +61,7 @@ type ColumnsProcedureSpec struct {
 func newColumnsProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*ColumnsOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return &ColumnsProcedureSpec{
@@ -82,7 +82,7 @@ func (s *ColumnsProcedureSpec) Copy() plan.ProcedureSpec {
 func createColumnsTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*ColumnsProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -112,7 +112,7 @@ func (t *columnsTransformation) RetractTable(id execute.DatasetID, key flux.Grou
 func (t *columnsTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
-		return fmt.Errorf("columns found duplicate table with key: %v", tbl.Key())
+		return errors.Newf(codes.FailedPrecondition, "columns found duplicate table with key: %v", tbl.Key())
 	}
 
 	labels := make([]string, len(tbl.Cols()))

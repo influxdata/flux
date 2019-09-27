@@ -1,13 +1,13 @@
 package universe
 
 import (
-	"errors"
-	"fmt"
 	"math"
 
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -69,7 +69,7 @@ func createCovarianceOpSpec(args flux.Arguments, a *flux.Administration) (flux.O
 	}
 
 	if len(spec.Columns) != 2 {
-		return nil, errors.New("must provide exactly two columns")
+		return nil, errors.New(codes.Invalid, "must provide exactly two columns")
 	}
 	return spec, nil
 }
@@ -92,7 +92,7 @@ type CovarianceProcedureSpec struct {
 func newCovarianceProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*CovarianceOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	cs := CovarianceProcedureSpec{
 		PearsonCorrelation: spec.PearsonCorrelation,
@@ -141,7 +141,7 @@ type CovarianceTransformation struct {
 func createCovarianceTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*CovarianceProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -165,7 +165,7 @@ func (t *CovarianceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 	cols := tbl.Cols()
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
-		return fmt.Errorf("covariance found duplicate table with key: %v", tbl.Key())
+		return errors.Newf(codes.FailedPrecondition, "covariance found duplicate table with key: %v", tbl.Key())
 	}
 	err := execute.AddTableKeyCols(tbl.Key(), builder)
 	if err != nil {
@@ -180,15 +180,15 @@ func (t *CovarianceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 	}
 	xIdx := execute.ColIdx(t.spec.Columns[0], cols)
 	if xIdx < 0 {
-		return fmt.Errorf("specified column does not exist in table: %v", t.spec.Columns[0])
+		return errors.Newf(codes.FailedPrecondition, "specified column does not exist in table: %v", t.spec.Columns[0])
 	}
 	yIdx := execute.ColIdx(t.spec.Columns[1], cols)
 	if yIdx < 0 {
-		return fmt.Errorf("specified column does not exist in table: %v", t.spec.Columns[1])
+		return errors.Newf(codes.FailedPrecondition, "specified column does not exist in table: %v", t.spec.Columns[1])
 	}
 
 	if cols[xIdx].Type != cols[yIdx].Type {
-		return errors.New("cannot compute the covariance between different types")
+		return errors.New(codes.FailedPrecondition, "cannot compute the covariance between different types")
 	}
 
 	t.reset()
@@ -197,7 +197,7 @@ func (t *CovarianceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 		case flux.TFloat:
 			t.DoFloat(cr.Floats(xIdx), cr.Floats(yIdx))
 		default:
-			return fmt.Errorf("covariance does not support %v", typ)
+			return errors.Newf(codes.Invalid, "covariance does not support %v", typ)
 		}
 		return nil
 	})

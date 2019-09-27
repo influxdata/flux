@@ -312,7 +312,7 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 					}
 					valueArgs = append(valueArgs, er.Bools(j).Value(i))
 				default:
-					return fmt.Errorf("invalid type for column %s", col.Label)
+					return errors.Newf(codes.FailedPrecondition, "invalid type for column %s", col.Label)
 				}
 			}
 
@@ -354,7 +354,7 @@ func ExecuteQueries(tx *sql.Tx, s *ToSQLOpSpec, colNames []string, valueStrings 
 		_, err := tx.Exec(query, *valueArgs...)
 		if err != nil {
 			if rbErr := tx.Rollback(); rbErr != nil {
-				return fmt.Errorf("transaction failed (%s) while recovering from %s", err, rbErr)
+				return errors.Newf(codes.Aborted, "transaction failed (%s) while recovering from %s", err, rbErr)
 			}
 			return err
 		}

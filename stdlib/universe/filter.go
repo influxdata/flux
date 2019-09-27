@@ -2,7 +2,6 @@ package universe
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -79,7 +78,7 @@ type FilterProcedureSpec struct {
 func newFilterProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*FilterOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return &FilterProcedureSpec{
@@ -104,7 +103,7 @@ func (s *FilterProcedureSpec) TriggerSpec() plan.TriggerSpec {
 func createFilterTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*FilterProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	t, d, err := NewFilterTransformation(a.Context(), s, id, a.Allocator())
 	if err != nil {

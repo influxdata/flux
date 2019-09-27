@@ -74,11 +74,6 @@ func TestFromCSV_NewQuery(t *testing.T) {
 				},
 			},
 		},
-		{
-			Name:    "fromCSV File",
-			Raw:     `import "csv" csv.from(file: "f.txt") |> range(start:-4h, stop:-2h) |> sum()`,
-			WantErr: true,
-		},
 	}
 	for _, tc := range tests {
 		tc := tc

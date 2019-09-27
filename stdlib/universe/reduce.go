@@ -2,8 +2,6 @@ package universe
 
 import (
 	"context"
-	stderrors "errors"
-	"fmt"
 	"sort"
 
 	"github.com/influxdata/flux"
@@ -73,7 +71,7 @@ func createReduceOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		o.Range(func(name string, v values.Value) {
 			stringer, ok := v.(values.ValueStringer)
 			if !ok {
-				haderr = stderrors.New("ne contains unencodable type")
+				haderr = errors.New(codes.FailedPrecondition, "ne contains unencodable type")
 				return
 			}
 			spec.Identity[name] = stringer.String()
@@ -104,7 +102,7 @@ type ReduceProcedureSpec struct {
 func newReduceProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*ReduceOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return &ReduceProcedureSpec{
@@ -131,7 +129,7 @@ func (s *ReduceProcedureSpec) Copy() plan.ProcedureSpec {
 func createReduceTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*ReduceProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -255,7 +253,7 @@ func (t *reduceTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 					v = tbl.Key().Value(idx)
 				} else {
 					// This should be unreachable
-					return fmt.Errorf("could not find value for column %q", c.Label)
+					return errors.Newf(codes.Internal, "could not find value for column %q", c.Label)
 				}
 			}
 			if err := builder.AppendValue(j, v); err != nil {
@@ -263,7 +261,7 @@ func (t *reduceTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 			}
 		}
 	} else {
-		return stderrors.New("two reducers writing result to the same table")
+		return errors.New(codes.FailedPrecondition, "two reducers writing result to the same table")
 	}
 	return nil
 }

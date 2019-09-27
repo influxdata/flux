@@ -1,10 +1,10 @@
 package universe
 
 import (
-	"fmt"
-
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/moving_average"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -62,7 +62,7 @@ type ExponentialMovingAverageProcedureSpec struct {
 func newExponentialMovingAverageProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*ExponentialMovingAverageOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return &ExponentialMovingAverageProcedureSpec{
@@ -88,7 +88,7 @@ func (s *ExponentialMovingAverageProcedureSpec) TriggerSpec() plan.TriggerSpec {
 func createExponentialMovingAverageTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*ExponentialMovingAverageProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -121,17 +121,17 @@ func (t *exponentialMovingAverageTransformation) RetractTable(id execute.Dataset
 func (t *exponentialMovingAverageTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
-		return fmt.Errorf("moving average found duplicate table with key: %v", tbl.Key())
+		return errors.Newf(codes.FailedPrecondition, "moving average found duplicate table with key: %v", tbl.Key())
 	}
 	if t.n <= 0 {
-		return fmt.Errorf("cannot take moving average with a period of %v (must be greater than 0)", t.n)
+		return errors.Newf(codes.Invalid, "cannot take moving average with a period of %v (must be greater than 0)", t.n)
 	}
 	cols := tbl.Cols()
 	valueIdx := -1
 	for j, c := range cols {
 		if c.Label == execute.DefaultValueColLabel {
 			if c.Type != flux.TInt && c.Type != flux.TUInt && c.Type != flux.TFloat {
-				return fmt.Errorf("cannot take exponential moving average of column %s (type %s)", c.Label, c.Type.String())
+				return errors.Newf(codes.FailedPrecondition, "cannot take exponential moving average of column %s (type %s)", c.Label, c.Type.String())
 			}
 			valueIdx = j
 			mac := c
@@ -148,7 +148,7 @@ func (t *exponentialMovingAverageTransformation) Process(id execute.DatasetID, t
 		}
 	}
 	if valueIdx == -1 {
-		return fmt.Errorf("cannot find _value column")
+		return errors.Newf(codes.FailedPrecondition, "cannot find _value column")
 	}
 
 	t.ema = moving_average.New(int(t.n), len(cols))

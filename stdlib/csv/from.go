@@ -2,9 +2,6 @@ package csv
 
 import (
 	"context"
-	stderrors "errors"
-	"fmt"
-	"os"
 	"strings"
 
 	"github.com/influxdata/flux"
@@ -56,17 +53,11 @@ func createFromCSVOpSpec(args flux.Arguments, a *flux.Administration) (flux.Oper
 	}
 
 	if spec.CSV == "" && spec.File == "" {
-		return nil, stderrors.New("must provide csv raw text or filename")
+		return nil, errors.New(codes.Invalid, "must provide csv raw text or filename")
 	}
 
 	if spec.CSV != "" && spec.File != "" {
-		return nil, stderrors.New("must provide exactly one of the parameters csv or file")
-	}
-
-	if spec.File != "" {
-		if _, err := os.Stat(spec.File); err != nil {
-			return nil, errors.Wrap(err, codes.Inherit, "failed to stat csv file: ")
-		}
+		return nil, errors.New(codes.Invalid, "must provide exactly one of the parameters csv or file")
 	}
 
 	return spec, nil
@@ -89,7 +80,7 @@ type FromCSVProcedureSpec struct {
 func newFromCSVProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*FromCSVOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return &FromCSVProcedureSpec{
@@ -112,7 +103,7 @@ func (s *FromCSVProcedureSpec) Copy() plan.ProcedureSpec {
 func createFromCSVSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a execute.Administration) (execute.Source, error) {
 	spec, ok := prSpec.(*FromCSVProcedureSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", prSpec)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", prSpec)
 	}
 
 	csvText := spec.CSV

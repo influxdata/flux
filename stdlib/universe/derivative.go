@@ -1,13 +1,13 @@
 package universe
 
 import (
-	"errors"
-	"fmt"
 	"time"
 
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -101,7 +101,7 @@ type DerivativeProcedureSpec struct {
 func newDerivativeProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*DerivativeOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return &DerivativeProcedureSpec{
@@ -133,7 +133,7 @@ func (s *DerivativeProcedureSpec) TriggerSpec() plan.TriggerSpec {
 func createDerivativeTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*DerivativeProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -169,7 +169,7 @@ func (t *derivativeTransformation) RetractTable(id execute.DatasetID, key flux.G
 func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
-		return fmt.Errorf("derivative found duplicate table with key: %v", tbl.Key())
+		return errors.Newf(codes.FailedPrecondition, "derivative found duplicate table with key: %v", tbl.Key())
 	}
 	cols := tbl.Cols()
 	doDerivative := make([]bool, len(cols))
@@ -203,7 +203,7 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 		}
 	}
 	if timeIdx < 0 {
-		return fmt.Errorf("no column %q exists", t.timeCol)
+		return errors.Newf(codes.FailedPrecondition, "no column %q exists", t.timeCol)
 	}
 
 	return tbl.Do(func(cr flux.ColReader) error {
@@ -212,7 +212,7 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 		}
 
 		if cr.Times(timeIdx).NullN() > 0 {
-			return fmt.Errorf("derivative found null time in time column")
+			return errors.New(codes.FailedPrecondition, "derivative found null time in time column")
 		}
 
 		for j, c := range cr.Cols() {
@@ -263,7 +263,7 @@ func (t *derivativeTransformation) passThroughBool(ts *array.Int64, vs *array.Bo
 	for ; i < l; i++ {
 		cTime := execute.Time(ts.Value(i))
 		if cTime < pTime {
-			return errors.New(derivativeUnsortedTimeErr)
+			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
 		}
 
 		if cTime == pTime {
@@ -311,7 +311,7 @@ func (t *derivativeTransformation) doInt(ts, vs *array.Int64, b execute.TableBui
 	for ; i < l; i++ {
 		cTime := execute.Time(ts.Value(i))
 		if cTime < pTime {
-			return errors.New(derivativeUnsortedTimeErr)
+			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
 		}
 
 		if cTime == pTime {
@@ -395,7 +395,7 @@ func (t *derivativeTransformation) doUInt(ts *array.Int64, vs *array.Uint64, b e
 	for ; i < l; i++ {
 		cTime := execute.Time(ts.Value(i))
 		if cTime < pTime {
-			return errors.New(derivativeUnsortedTimeErr)
+			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
 		}
 
 		if cTime == pTime {
@@ -488,7 +488,7 @@ func (t *derivativeTransformation) doFloat(ts *array.Int64, vs *array.Float64, b
 	for ; i < l; i++ {
 		cTime := execute.Time(ts.Value(i))
 		if cTime < pTime {
-			return errors.New(derivativeUnsortedTimeErr)
+			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
 		}
 
 		if cTime == pTime {
@@ -562,7 +562,7 @@ func (t *derivativeTransformation) passThroughString(ts *array.Int64, vs *array.
 	for ; i < l; i++ {
 		cTime := execute.Time(ts.Value(i))
 		if cTime < pTime {
-			return errors.New(derivativeUnsortedTimeErr)
+			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
 		}
 
 		if cTime == pTime {
@@ -600,7 +600,7 @@ func (t *derivativeTransformation) passThroughTime(ts *array.Int64, vs *array.In
 	for ; i < l; i++ {
 		cTime := execute.Time(ts.Value(i))
 		if cTime < pTime {
-			return errors.New(derivativeUnsortedTimeErr)
+			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
 		}
 
 		if cTime == pTime {

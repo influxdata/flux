@@ -1,13 +1,13 @@
 package universe
 
 import (
-	"errors"
-	"fmt"
 	"math"
 	"sort"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 )
@@ -103,7 +103,7 @@ type HistogramQuantileProcedureSpec struct {
 func newHistogramQuantileProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*HistogramQuantileOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	return &HistogramQuantileProcedureSpec{
 		Quantile:         spec.Quantile,
@@ -138,7 +138,7 @@ type bucket struct {
 func createHistogramQuantileTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*HistogramQuantileProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -166,7 +166,7 @@ func (t histogramQuantileTransformation) RetractTable(id execute.DatasetID, key 
 func (t histogramQuantileTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
-		return fmt.Errorf("histogramQuantile found duplicate table with key: %v", tbl.Key())
+		return errors.Newf(codes.FailedPrecondition, "histogramQuantile found duplicate table with key: %v", tbl.Key())
 	}
 
 	if err := execute.AddTableKeyCols(tbl.Key(), builder); err != nil {
@@ -182,17 +182,17 @@ func (t histogramQuantileTransformation) Process(id execute.DatasetID, tbl flux.
 
 	countIdx := execute.ColIdx(t.spec.CountColumn, tbl.Cols())
 	if countIdx < 0 {
-		return fmt.Errorf("table is missing count column %q", t.spec.CountColumn)
+		return errors.Newf(codes.FailedPrecondition, "table is missing count column %q", t.spec.CountColumn)
 	}
 	if tbl.Cols()[countIdx].Type != flux.TFloat {
-		return fmt.Errorf("count column %q must be of type float", t.spec.CountColumn)
+		return errors.Newf(codes.FailedPrecondition, "count column %q must be of type float", t.spec.CountColumn)
 	}
 	upperBoundIdx := execute.ColIdx(t.spec.UpperBoundColumn, tbl.Cols())
 	if upperBoundIdx < 0 {
-		return fmt.Errorf("table is missing upper bound column %q", t.spec.UpperBoundColumn)
+		return errors.Newf(codes.FailedPrecondition, "table is missing upper bound column %q", t.spec.UpperBoundColumn)
 	}
 	if tbl.Cols()[upperBoundIdx].Type != flux.TFloat {
-		return fmt.Errorf("upper bound column %q must be of type float", t.spec.UpperBoundColumn)
+		return errors.Newf(codes.FailedPrecondition, "upper bound column %q must be of type float", t.spec.UpperBoundColumn)
 	}
 	// Read buckets
 	var cdf []bucket
@@ -217,12 +217,12 @@ func (t histogramQuantileTransformation) Process(id execute.DatasetID, tbl flux.
 			if vs := cr.Floats(countIdx); vs.IsValid(i) {
 				b.count = vs.Value(i)
 			} else {
-				return fmt.Errorf("unexpected null in the countColumn")
+				return errors.Newf(codes.FailedPrecondition, "unexpected null in the countColumn")
 			}
 			if vs := cr.Floats(upperBoundIdx); vs.IsValid(i) {
 				b.upperBound = vs.Value(i)
 			} else {
-				return fmt.Errorf("unexpected null in the upperBoundColumn")
+				return errors.Newf(codes.FailedPrecondition, "unexpected null in the upperBoundColumn")
 			}
 			cdf[curr] = b
 			if prev >= 0 {
@@ -255,7 +255,7 @@ func (t histogramQuantileTransformation) Process(id execute.DatasetID, tbl flux.
 
 func (t *histogramQuantileTransformation) computeQuantile(cdf []bucket) (float64, error) {
 	if len(cdf) == 0 {
-		return 0, errors.New("histogram is empty")
+		return 0, errors.New(codes.FailedPrecondition, "histogram is empty")
 	}
 	// Find rank index and check counts are monotonic
 	prevCount := 0.0
@@ -264,7 +264,7 @@ func (t *histogramQuantileTransformation) computeQuantile(cdf []bucket) (float64
 	rankIdx := -1
 	for i, b := range cdf {
 		if b.count < prevCount {
-			return 0, errors.New("histogram records counts are not monotonic")
+			return 0, errors.New(codes.FailedPrecondition, "histogram records counts are not monotonic")
 		}
 		prevCount = b.count
 

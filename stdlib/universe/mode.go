@@ -1,11 +1,12 @@
 package universe
 
 import (
-	"fmt"
 	"sort"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -64,7 +65,7 @@ type ModeProcedureSpec struct {
 func newModeProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*ModeOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return &ModeProcedureSpec{
@@ -91,7 +92,7 @@ func (s *ModeProcedureSpec) TriggerSpec() plan.TriggerSpec {
 func createModeTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*ModeProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -121,7 +122,7 @@ func (t *modeTransformation) RetractTable(id execute.DatasetID, key flux.GroupKe
 func (t *modeTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
-		return fmt.Errorf("mode found duplicate table with key: %v", tbl.Key())
+		return errors.Newf(codes.FailedPrecondition, "mode found duplicate table with key: %v", tbl.Key())
 	}
 
 	colIdx := execute.ColIdx(t.column, tbl.Cols())

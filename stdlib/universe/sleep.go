@@ -2,10 +2,11 @@ package universe
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -53,7 +54,7 @@ func sleep(ctx context.Context, args interpreter.Arguments) (values.Value, error
 	if err != nil {
 		return nil, err
 	} else if d.Type().Nature() != semantic.Duration {
-		return nil, fmt.Errorf("keyword argument %q should be of kind %v, but got %v", durationArg, semantic.Duration, v.PolyType().Nature())
+		return nil, errors.Newf(codes.Invalid, "keyword argument %q should be of kind %v, but got %v", durationArg, semantic.Duration, v.PolyType().Nature())
 	}
 
 	timer := time.NewTimer(d.Duration().Duration())

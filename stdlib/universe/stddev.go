@@ -1,12 +1,13 @@
 package universe
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 )
@@ -47,7 +48,7 @@ func createStddevOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		return nil, err
 	} else if ok {
 		if mode != modePopulation && mode != modeSample {
-			return nil, fmt.Errorf("%q is not a valid standard deviation mode", mode)
+			return nil, errors.Newf(codes.Invalid, "%q is not a valid standard deviation mode", mode)
 		}
 		s.Mode = mode
 	} else {
@@ -76,7 +77,7 @@ type StddevProcedureSpec struct {
 func newStddevProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*StddevOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	return &StddevProcedureSpec{
 		Mode:            spec.Mode,
@@ -107,7 +108,7 @@ type StddevAgg struct {
 func createStddevTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*StddevProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	t, d := execute.NewAggregateTransformationAndDataset(id, mode, &StddevAgg{Mode: s.Mode}, s.AggregateConfig, a.Allocator())
 	return t, d, nil

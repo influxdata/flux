@@ -1,8 +1,6 @@
 package universe
 
 import (
-	"fmt"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -88,7 +86,7 @@ type KeyValuesProcedureSpec struct {
 func newKeyValuesProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*KeyValuesOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return &KeyValuesProcedureSpec{

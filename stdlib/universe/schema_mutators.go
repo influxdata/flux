@@ -2,8 +2,6 @@ package universe
 
 import (
 	"context"
-	stderrors "errors"
-	"fmt"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -68,7 +66,7 @@ func toStringSet(arr []string) map[string]bool {
 
 func checkCol(label string, cols []flux.ColMeta) error {
 	if execute.ColIdx(label, cols) < 0 {
-		return fmt.Errorf(`column "%s" doesn't exist`, label)
+		return errors.Newf(codes.FailedPrecondition, `column "%s" doesn't exist`, label)
 	}
 	return nil
 }
@@ -85,7 +83,7 @@ func NewRenameMutator(qs flux.OperationSpec) (*RenameMutator, error) {
 
 	m := &RenameMutator{}
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	if s.Columns != nil {
@@ -107,7 +105,7 @@ func NewRenameMutator(qs flux.OperationSpec) (*RenameMutator, error) {
 
 func (m *RenameMutator) renameCol(ctx context.Context, col *flux.ColMeta) error {
 	if col == nil {
-		return stderrors.New("rename error: cannot rename nil column")
+		return errors.New(codes.FailedPrecondition, "rename error: cannot rename nil column")
 	}
 	if m.Columns != nil {
 		if newName, ok := m.Columns[col.Label]; ok {
@@ -202,7 +200,7 @@ func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
 			m.Input = values.NewObject()
 		}
 	default:
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return m, nil
@@ -291,7 +289,7 @@ type DuplicateMutator struct {
 func NewDuplicateMutator(qs flux.OperationSpec) (*DuplicateMutator, error) {
 	s, ok := qs.(*DuplicateOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return &DuplicateMutator{
@@ -303,7 +301,7 @@ func NewDuplicateMutator(qs flux.OperationSpec) (*DuplicateMutator, error) {
 func (m *DuplicateMutator) Mutate(ctx context.Context, bctx *BuilderContext) error {
 	fromIdx := execute.ColIdx(m.Column, bctx.Cols())
 	if fromIdx < 0 {
-		return fmt.Errorf(`duplicate error: column "%s" doesn't exist`, m.Column)
+		return errors.Newf(codes.FailedPrecondition, `duplicate error: column "%s" doesn't exist`, m.Column)
 	}
 
 	newCol := duplicate(bctx.TableColumns[fromIdx], m.As)
