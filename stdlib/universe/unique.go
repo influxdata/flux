@@ -1,10 +1,10 @@
 package universe
 
 import (
-	"fmt"
-
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 )
@@ -63,7 +63,7 @@ type UniqueProcedureSpec struct {
 func newUniqueProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*UniqueOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return &UniqueProcedureSpec{
@@ -90,7 +90,7 @@ func (s *UniqueProcedureSpec) TriggerSpec() plan.TriggerSpec {
 func createUniqueTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*UniqueProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -120,7 +120,7 @@ func (t *uniqueTransformation) RetractTable(id execute.DatasetID, key flux.Group
 func (t *uniqueTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
-		return fmt.Errorf("unique found duplicate table with key: %v", tbl.Key())
+		return errors.Newf(codes.FailedPrecondition, "unique found duplicate table with key: %v", tbl.Key())
 	}
 	if err := execute.AddTableCols(tbl, builder); err != nil {
 		return err
@@ -128,7 +128,7 @@ func (t *uniqueTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 
 	colIdx := execute.ColIdx(t.column, builder.Cols())
 	if colIdx < 0 {
-		return fmt.Errorf("no column %q exists", t.column)
+		return errors.Newf(codes.FailedPrecondition, "no column %q exists", t.column)
 	}
 	col := builder.Cols()[colIdx]
 

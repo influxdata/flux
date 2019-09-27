@@ -1,11 +1,10 @@
 package universe
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -121,7 +120,7 @@ func newRangeProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proc
 	spec, ok := qs.(*RangeOpSpec)
 
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	if spec.TimeColumn == "" {
@@ -135,11 +134,11 @@ func newRangeProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proc
 	}
 
 	if bounds.Start.IsZero() {
-		return nil, errors.New(`must specify the start time in 'range'`)
+		return nil, errors.New(codes.Invalid, `must specify the start time in 'range'`)
 	} else if bounds.Stop.IsZero() {
-		return nil, errors.New(`must specify the stop time in 'range'`)
+		return nil, errors.New(codes.Invalid, `must specify the stop time in 'range'`)
 	} else if bounds.IsEmpty() {
-		return nil, errors.New("cannot query an empty range")
+		return nil, errors.New(codes.Invalid, "cannot query an empty range")
 	}
 
 	return &RangeProcedureSpec{
@@ -170,7 +169,7 @@ func (s *RangeProcedureSpec) TriggerSpec() plan.TriggerSpec {
 func createRangeTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*RangeProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -211,22 +210,22 @@ func (t *rangeTransformation) RetractTable(id execute.DatasetID, key flux.GroupK
 func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	timeIdx := execute.ColIdx(t.timeCol, tbl.Cols())
 	if timeIdx < 0 {
-		return fmt.Errorf("range error: supplied time column %s doesn't exist", t.timeCol)
+		return errors.Newf(codes.FailedPrecondition, "range error: supplied time column %s doesn't exist", t.timeCol)
 	}
 
 	if tbl.Cols()[timeIdx].Type != flux.TTime {
-		return fmt.Errorf("range error: provided time column %s is not of type time", t.timeCol)
+		return errors.Newf(codes.FailedPrecondition, "range error: provided time column %s is not of type time", t.timeCol)
 	}
 
 	// Determine index of start and stop columns in table
 	startColIdx := execute.ColIdx(t.startCol, tbl.Cols())
 	if startColIdx >= 0 && tbl.Cols()[startColIdx].Type != flux.TTime {
-		return fmt.Errorf("range error: provided start column %s is not of type time", t.timeCol)
+		return errors.Newf(codes.FailedPrecondition, "range error: provided start column %s is not of type time", t.timeCol)
 	}
 
 	stopColIdx := execute.ColIdx(t.stopCol, tbl.Cols())
 	if stopColIdx >= 0 && tbl.Cols()[stopColIdx].Type != flux.TTime {
-		return fmt.Errorf("range error: provided stop column %s is not of type time", t.timeCol)
+		return errors.Newf(codes.FailedPrecondition, "range error: provided stop column %s is not of type time", t.timeCol)
 	}
 
 	// Determine index of start and stop columns in group key
@@ -238,7 +237,7 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 
 	builder, created := t.cache.TableBuilder(outKey)
 	if !created {
-		return fmt.Errorf("range found duplicate table with key: %v", tbl.Key())
+		return errors.Newf(codes.FailedPrecondition, "range found duplicate table with key: %v", tbl.Key())
 	}
 
 	// If the start and/or stop columns don't exist,

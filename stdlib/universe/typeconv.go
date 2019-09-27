@@ -2,11 +2,12 @@ package universe
 
 import (
 	"context"
-	"fmt"
 	"regexp"
 	"strconv"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -27,7 +28,7 @@ const (
 	conversionArg = "v"
 )
 
-var errMissingArg = fmt.Errorf("missing argument %q", conversionArg)
+var errMissingArg = errors.Newf(codes.Invalid, "missing argument %q", conversionArg)
 
 type stringConv struct{}
 
@@ -114,7 +115,7 @@ func (c *stringConv) Call(ctx context.Context, args values.Object) (values.Value
 	case semantic.Duration:
 		str = v.Duration().String()
 	default:
-		return nil, fmt.Errorf("cannot convert %v to string", v.Type())
+		return nil, errors.Newf(codes.Invalid, "cannot convert %v to string", v.Type())
 	}
 	return values.NewString(str), nil
 }
@@ -210,7 +211,7 @@ func (c *intConv) Call(ctx context.Context, args values.Object) (values.Value, e
 	case semantic.Duration:
 		i = int64(v.Duration())
 	default:
-		return nil, fmt.Errorf("cannot convert %v to int", v.Type())
+		return nil, errors.Newf(codes.Invalid, "cannot convert %v to int", v.Type())
 	}
 	return values.NewInt(i), nil
 }
@@ -306,7 +307,7 @@ func (c *uintConv) Call(ctx context.Context, args values.Object) (values.Value, 
 	case semantic.Duration:
 		i = uint64(v.Duration())
 	default:
-		return nil, fmt.Errorf("cannot convert %v to uint", v.Type())
+		return nil, errors.Newf(codes.Invalid, "cannot convert %v to uint", v.Type())
 	}
 	return values.NewUInt(i), nil
 }
@@ -398,7 +399,7 @@ func (c *floatConv) Call(ctx context.Context, args values.Object) (values.Value,
 			float = 0
 		}
 	default:
-		return nil, fmt.Errorf("cannot convert %v to float", v.Type())
+		return nil, errors.Newf(codes.Invalid, "cannot convert %v to float", v.Type())
 	}
 	return values.NewFloat(float), nil
 }
@@ -478,7 +479,7 @@ func (c *boolConv) Call(ctx context.Context, args values.Object) (values.Value, 
 		case "false":
 			b = false
 		default:
-			return nil, fmt.Errorf("cannot convert string %q to bool", s)
+			return nil, errors.Newf(codes.Invalid, "cannot convert string %q to bool", s)
 		}
 	case semantic.Int:
 		switch n := v.Int(); n {
@@ -487,7 +488,7 @@ func (c *boolConv) Call(ctx context.Context, args values.Object) (values.Value, 
 		case 1:
 			b = true
 		default:
-			return nil, fmt.Errorf("cannot convert int %d to bool, must be 0 or 1", n)
+			return nil, errors.Newf(codes.Invalid, "cannot convert int %d to bool, must be 0 or 1", n)
 		}
 	case semantic.UInt:
 		switch n := v.UInt(); n {
@@ -496,7 +497,7 @@ func (c *boolConv) Call(ctx context.Context, args values.Object) (values.Value, 
 		case 1:
 			b = true
 		default:
-			return nil, fmt.Errorf("cannot convert uint %d to bool, must be 0 or 1", n)
+			return nil, errors.Newf(codes.Invalid, "cannot convert uint %d to bool, must be 0 or 1", n)
 		}
 	case semantic.Float:
 		switch n := v.Float(); n {
@@ -505,12 +506,12 @@ func (c *boolConv) Call(ctx context.Context, args values.Object) (values.Value, 
 		case 1:
 			b = true
 		default:
-			return nil, fmt.Errorf("cannot convert float %f to bool, must be 0 or 1", n)
+			return nil, errors.Newf(codes.Invalid, "cannot convert float %f to bool, must be 0 or 1", n)
 		}
 	case semantic.Bool:
 		b = v.Bool()
 	default:
-		return nil, fmt.Errorf("cannot convert %v to bool", v.Type())
+		return nil, errors.Newf(codes.Invalid, "cannot convert %v to bool", v.Type())
 	}
 	return values.NewBool(b), nil
 }
@@ -596,7 +597,7 @@ func (c *timeConv) Call(ctx context.Context, args values.Object) (values.Value, 
 	case semantic.Time:
 		t = v.Time()
 	default:
-		return nil, fmt.Errorf("cannot convert %v to time", v.Type())
+		return nil, errors.Newf(codes.Invalid, "cannot convert %v to time", v.Type())
 	}
 	return values.NewTime(t), nil
 }
@@ -682,7 +683,7 @@ func (c *durationConv) Call(ctx context.Context, args values.Object) (values.Val
 	case semantic.Duration:
 		d = v.Duration()
 	default:
-		return nil, fmt.Errorf("cannot convert %v to duration", v.Type())
+		return nil, errors.Newf(codes.Invalid, "cannot convert %v to duration", v.Type())
 	}
 	return values.NewDuration(d), nil
 }
@@ -705,7 +706,7 @@ var bytes = values.NewFunction(
 		case semantic.String:
 			return values.NewBytes([]byte(v.Str())), nil
 		default:
-			return nil, fmt.Errorf("cannot convert %v to bytes", v.Type())
+			return nil, errors.Newf(codes.Invalid, "cannot convert %v to bytes", v.Type())
 		}
 	},
 	false,

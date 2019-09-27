@@ -1,14 +1,13 @@
 package universe
 
 import (
-	"fmt"
-
-	"github.com/influxdata/flux/values"
-
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 const DistinctKind = "distinct"
@@ -65,7 +64,7 @@ type DistinctProcedureSpec struct {
 func newDistinctProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*DistinctOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return &DistinctProcedureSpec{
@@ -92,7 +91,7 @@ func (s *DistinctProcedureSpec) TriggerSpec() plan.TriggerSpec {
 func createDistinctTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*DistinctProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -122,7 +121,7 @@ func (t *distinctTransformation) RetractTable(id execute.DatasetID, key flux.Gro
 func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
-		return fmt.Errorf("distinct found duplicate table with key: %v", tbl.Key())
+		return errors.Newf(codes.FailedPrecondition, "distinct found duplicate table with key: %v", tbl.Key())
 	}
 
 	colIdx := execute.ColIdx(t.column, tbl.Cols())

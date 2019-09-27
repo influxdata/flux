@@ -1,12 +1,12 @@
 package universe
 
 import (
-	"fmt"
-
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/moving_average"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
@@ -79,7 +79,7 @@ type RelativeStrengthIndexProcedureSpec struct {
 func newRelativeStrengthIndexProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*RelativeStrengthIndexOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return &RelativeStrengthIndexProcedureSpec{
@@ -110,7 +110,7 @@ func (s *RelativeStrengthIndexProcedureSpec) TriggerSpec() plan.TriggerSpec {
 func createRelativeStrengthIndexTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*RelativeStrengthIndexProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -147,7 +147,7 @@ func (t *relativeStrengthIndexTransformation) RetractTable(id execute.DatasetID,
 func (t *relativeStrengthIndexTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
-		return fmt.Errorf("moving average found duplicate table with key: %v", tbl.Key())
+		return errors.Newf(codes.FailedPrecondition, "moving average found duplicate table with key: %v", tbl.Key())
 	}
 	cols := tbl.Cols()
 	doRelativeStrengthIndex := make([]bool, len(cols))
@@ -156,7 +156,7 @@ func (t *relativeStrengthIndexTransformation) Process(id execute.DatasetID, tbl 
 		for _, label := range t.columns {
 			if c.Label == label {
 				if c.Type != flux.TInt && c.Type != flux.TUInt && c.Type != flux.TFloat {
-					return fmt.Errorf("cannot take relative strength index of column %s (type %s)", c.Label, c.Type.String())
+					return errors.Newf(codes.FailedPrecondition, "cannot take relative strength index of column %s (type %s)", c.Label, c.Type.String())
 				}
 				found = true
 				break

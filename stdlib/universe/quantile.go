@@ -1,14 +1,14 @@
 package universe
 
 import (
-	"errors"
-	"fmt"
 	"math"
 	"sort"
 
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -68,7 +68,7 @@ func createQuantileOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 	spec.Quantile = p
 
 	if spec.Quantile < 0 || spec.Quantile > 1 {
-		return nil, errors.New("quantile must be between 0 and 1")
+		return nil, errors.New(codes.Invalid, "quantile must be between 0 and 1")
 	}
 
 	if m, ok, err := args.GetString("method"); err != nil {
@@ -84,7 +84,7 @@ func createQuantileOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 	}
 
 	if spec.Compression > 0 && spec.Method != methodEstimateTdigest {
-		return nil, errors.New("compression parameter is only valid for method estimate_tdigest")
+		return nil, errors.New(codes.Invalid, "compression parameter is only valid for method estimate_tdigest")
 	}
 
 	// Set default Compression if not exact
@@ -102,7 +102,7 @@ func createQuantileOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 			return nil, err
 		}
 	default:
-		return nil, fmt.Errorf("unknown method %s", spec.Method)
+		return nil, errors.Newf(codes.Invalid, "unknown method %s", spec.Method)
 	}
 
 	return spec, nil
@@ -175,7 +175,7 @@ func (s *ExactQuantileSelectProcedureSpec) TriggerSpec() plan.TriggerSpec {
 func newQuantileProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*QuantileOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	switch spec.Method {
@@ -211,7 +211,7 @@ type QuantileAgg struct {
 func createQuantileTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	ps, ok := spec.(*TDigestQuantileProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", ps)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", ps)
 	}
 	agg := &QuantileAgg{
 		Quantile:    ps.Quantile,
@@ -276,7 +276,7 @@ type ExactQuantileAgg struct {
 func createExactQuantileAggTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	ps, ok := spec.(*ExactQuantileAggProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", ps)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", ps)
 	}
 	agg := &ExactQuantileAgg{
 		Quantile: ps.Quantile,
@@ -365,7 +365,7 @@ func (a *ExactQuantileAgg) IsNull() bool {
 func createExactQuantileSelectTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	ps, ok := spec.(*ExactQuantileSelectProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", ps)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", ps)
 	}
 
 	cache := execute.NewTableBuilderCache(a.Allocator())
@@ -399,7 +399,7 @@ func NewExactQuantileSelectorTransformation(d execute.Dataset, cache execute.Tab
 func (t *ExactQuantileSelectorTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	valueIdx := execute.ColIdx(t.spec.Column, tbl.Cols())
 	if valueIdx < 0 {
-		return fmt.Errorf("no column %q exists", t.spec.Column)
+		return errors.Newf(codes.FailedPrecondition, "no column %q exists", t.spec.Column)
 	}
 
 	var row execute.Row
@@ -587,7 +587,7 @@ func (t *ExactQuantileSelectorTransformation) Process(id execute.DatasetID, tbl 
 
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
-		return fmt.Errorf("found duplicate table with key: %v", tbl.Key())
+		return errors.Newf(codes.FailedPrecondition, "found duplicate table with key: %v", tbl.Key())
 	}
 	if err := execute.AddTableCols(tbl, builder); err != nil {
 		return err

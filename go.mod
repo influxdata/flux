@@ -36,6 +36,7 @@ require (
 	go.uber.org/zap v1.9.1
 	golang.org/x/exp v0.0.0-20190510132918-efd6b22b2522
 	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
+	golang.org/x/tools v0.0.0-20190628153133-6cdbf07be9d0
 	gonum.org/v1/gonum v0.0.0-20181121035319-3f7ecaa7e8ca
 	google.golang.org/api v0.7.0
 	honnef.co/go/tools v0.0.0-20190418001031-e561f6794a2a

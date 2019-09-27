@@ -1,13 +1,14 @@
 package universe
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/apache/arrow/go/arrow/array"
 	arrowmath "github.com/apache/arrow/go/arrow/math"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 )
 
@@ -52,7 +53,7 @@ type MeanProcedureSpec struct {
 func newMeanProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*MeanOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	return &MeanProcedureSpec{
 		AggregateConfig: spec.AggregateConfig,
@@ -81,7 +82,7 @@ type MeanAgg struct {
 func createMeanTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*MeanProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	t, d := execute.NewAggregateTransformationAndDataset(id, mode, new(MeanAgg), s.AggregateConfig, a.Allocator())
 	return t, d, nil

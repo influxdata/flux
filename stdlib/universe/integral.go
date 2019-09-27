@@ -1,11 +1,12 @@
 package universe
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -81,7 +82,7 @@ type IntegralProcedureSpec struct {
 func newIntegralProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*IntegralOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return &IntegralProcedureSpec{
@@ -111,7 +112,7 @@ func (s *IntegralProcedureSpec) TriggerSpec() plan.TriggerSpec {
 func createIntegralTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*IntegralProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -141,7 +142,7 @@ func (t *integralTransformation) RetractTable(id execute.DatasetID, key flux.Gro
 func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
-		return fmt.Errorf("integral found duplicate table with key: %v", tbl.Key())
+		return errors.Newf(codes.FailedPrecondition, "integral found duplicate table with key: %v", tbl.Key())
 	}
 
 	if err := execute.AddTableKeyCols(tbl.Key(), builder); err != nil {
@@ -155,17 +156,17 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 	for _, c := range t.spec.Columns {
 		idx := execute.ColIdx(c, cols)
 		if idx < 0 {
-			return fmt.Errorf("column %q does not exist", c)
+			return errors.Newf(codes.FailedPrecondition, "column %q does not exist", c)
 		}
 
 		if tbl.Key().HasCol(c) {
-			return fmt.Errorf("cannot aggregate columns that are part of the group key")
+			return errors.Newf(codes.FailedPrecondition, "cannot aggregate columns that are part of the group key")
 		}
 
 		if typ := cols[idx].Type; typ != flux.TFloat &&
 			typ != flux.TInt &&
 			typ != flux.TUInt {
-			return fmt.Errorf("cannot perform integral over %v", typ)
+			return errors.Newf(codes.FailedPrecondition, "cannot perform integral over %v", typ)
 		}
 
 		integrals[idx] = newIntegral(time.Duration(t.spec.Unit))
@@ -181,11 +182,11 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 
 	timeIdx := execute.ColIdx(t.spec.TimeColumn, cols)
 	if timeIdx < 0 {
-		return fmt.Errorf("no column %q exists", t.spec.TimeColumn)
+		return errors.Newf(codes.FailedPrecondition, "no column %q exists", t.spec.TimeColumn)
 	}
 	if err := tbl.Do(func(cr flux.ColReader) error {
 		if cr.Times(timeIdx).NullN() > 0 {
-			return fmt.Errorf("integral found null time in time column")
+			return errors.Newf(codes.FailedPrecondition, "integral found null time in time column")
 		}
 
 		for j, in := range integrals {
@@ -198,7 +199,7 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 			for i := 0; i < l; i++ {
 				tm := execute.Time(cr.Times(timeIdx).Value(i))
 				if prevTime > tm {
-					return fmt.Errorf("integral found out-of-order times in time column")
+					return errors.Newf(codes.FailedPrecondition, "integral found out-of-order times in time column")
 				} else if prevTime == tm {
 					// skip repeated times as in IFQL https://github.com/influxdata/influxdb/blob/1.8/query/functions.go
 					continue
