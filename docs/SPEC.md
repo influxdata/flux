@@ -511,7 +511,7 @@ A _function type_ represents a set of all functions with the same argument and r
 A _generator type_ represents a value that produces an unknown number of other values.
 The generated values may be of any other type but must all be the same type.
 
-[IMPL#658](https://github.com/influxdata/platform/query/issues/658) Implement Generators types
+[IMPL#658](https://github.com/influxdata/platform/issues/658) Implement Generators types
 
 #### Polymorphism
 
@@ -1264,7 +1264,7 @@ Examples using known start and stop dates:
     // [2018-04-15, 2018-05-15)
 
 
-[IMPL#659](https://github.com/influxdata/platform/query/issues/659) Implement intervals function
+[IMPL#659](https://github.com/influxdata/platform/issues/659) Implement intervals function
 
 
 ### Builtin Intervals
