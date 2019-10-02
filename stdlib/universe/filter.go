@@ -2,6 +2,7 @@ package universe
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
