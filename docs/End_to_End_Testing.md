@@ -1,4 +1,4 @@
-#End-to-End Testing
+# End-to-End Testing
 
 End-to-end test must be included as a part of a PR for any contribution to Flux including: 
 [Flux Functions](/Flux_Functions.md), 
@@ -34,7 +34,7 @@ inData = "
 ```
 
 -To generate output data do one of the following
-* Run the utility in https://github.com/influxdata/flux/tree/master/internal/cmd/refactortests to help generate the outData.  
+* Run the utility [here](../cmd/refactortests) to help generate the outData.  
 * Build data manually.  
 ```
 outData = "

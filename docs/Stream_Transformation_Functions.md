@@ -4,10 +4,10 @@ Create new stream transformation functions in Go.
 
 ## Required guidelines
 
-- Stream transformation functions must conform to the examples in [universe](https://github.com/influxdata/flux/blob/master/stdlib/universe) and include the required function and methods shown in the table below.
+- Stream transformation functions must conform to the examples in [universe](../stdlib/universe) and include the required function and methods shown in the table below.
 - You must submit a unit test in in the same folder as the new stream transformation function implementation.
-- You must submit an end-to-end test in [testdata](https://github.com/influxdata/flux/tree/master/stdlib/testing/testdata). Please look at [End_to_End_Testing.md](https://github.com/influxdata/flux/tree/master/docs/End_to_End_Testing.md) for details.
-- You must add a description of the function to [SPEC.md](./docs/SPEC.md).
+- You must submit an end-to-end test in [testdata](../stdlib/testing/testdata). Please look at [End_to_End_Testing.md](./docs/End_to_End_Testing.md) for details.
+- You must add a description of the function to [SPEC.md](/SPEC.md).
 
 ### Attributes of a Stream Transformation Function
 
@@ -15,7 +15,7 @@ Create new stream transformation functions in Go.
 
 2. `FunctionSignature`: Defines how to write the function in Flux, including necessary inputs. For example, `timeShift`, specifies that duration and time columns must be included:
 `|>timeShift(duration: 10h, columns: ["_start", "_stop", "_time"])`
-Please look at [shift.go](https://github.com/influxdata/flux/blob/master/stdlib/universe/shift.go)
+Please look at [shift.go](../stdlib/universe/shift.go)
 
 3. `OpSpec`: An internal representation that defines the function signature and gets converted into Procedure Spec. Identifies and collects function arguments and then encodes them into a JSON-encodable struct.
 
