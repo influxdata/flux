@@ -4,7 +4,7 @@ End-to-end test must be included as a part of a PR for any contribution to Flux 
 [Flux Functions](/Flux_Functions.md), 
 [Standalone Scalar Functions](/Scalar_Functions.md), 
 [Sink/Source Functions](/Source_Sink_Functions.md), 
-[Stream Transformation Functions]/Stream_Transformation_Functions.md). 
+[Stream Transformation Functions](/Stream_Transformation_Functions.md). 
 
 ## Required guidelines
 
