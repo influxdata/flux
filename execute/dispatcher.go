@@ -22,7 +22,7 @@ type Dispatcher interface {
 
 // ScheduleFunc is a function that represents work to do.
 // The throughput is the maximum number of messages to process for this scheduling.
-type ScheduleFunc func(throughput int)
+type ScheduleFunc func(ctx context.Context, throughput int)
 
 // poolDispatcher implements Dispatcher using a pool of goroutines.
 type poolDispatcher struct {
@@ -129,7 +129,7 @@ func (d *poolDispatcher) run(ctx context.Context) {
 			// We are done, nothing left to do.
 			return
 		case fn := <-d.work:
-			fn(d.throughput)
+			fn(ctx, d.throughput)
 		}
 	}
 }

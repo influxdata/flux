@@ -1,6 +1,9 @@
 package execute
 
 import (
+	"context"
+	"github.com/opentracing/opentracing-go"
+	"reflect"
 	"sync"
 	"sync/atomic"
 
@@ -148,12 +151,12 @@ func (t *consecutiveTransport) transition(new int32) {
 	atomic.StoreInt32(&t.schedulerState, new)
 }
 
-func (t *consecutiveTransport) processMessages(throughput int) {
+func (t *consecutiveTransport) processMessages(ctx context.Context, throughput int) {
 PROCESS:
 	i := 0
 	for m := t.messages.Pop(); m != nil; m = t.messages.Pop() {
 		atomic.AddInt32(&t.inflight, -1)
-		if f, err := processMessage(t.t, m); err != nil || f {
+		if f, err := processMessage(ctx, t.t, m); err != nil || f {
 			// Set the error if there was any
 			t.setErr(err)
 
@@ -190,12 +193,14 @@ PROCESS:
 
 // processMessage processes the message on t.
 // The return value is true if the message was a FinishMsg.
-func processMessage(t Transformation, m Message) (finished bool, err error) {
+func processMessage(ctx context.Context, t Transformation, m Message) (finished bool, err error) {
 	switch m := m.(type) {
 	case RetractTableMsg:
 		err = t.RetractTable(m.SrcDatasetID(), m.Key())
 	case ProcessMsg:
 		b := m.Table()
+		span, _ := opentracing.StartSpanFromContext(ctx, reflect.TypeOf(t).String())
+		defer span.Finish()
 		err = t.Process(m.SrcDatasetID(), b)
 	case UpdateWatermarkMsg:
 		err = t.UpdateWatermark(m.SrcDatasetID(), m.WatermarkTime())
