@@ -832,7 +832,7 @@ func (o *OperatorKind) UnmarshalText(data []byte) error {
 }
 
 // BinaryExpression use binary operators act on two operands in an expression.
-// BinaryExpression includes relational and arithmatic operators
+// BinaryExpression includes relational and arithmetic operators
 type BinaryExpression struct {
 	BaseNode
 	Operator OperatorKind `json:"operator"`
