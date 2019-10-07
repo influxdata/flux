@@ -1,5 +1,6 @@
 use std::collections::HashMap;
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
+use std::os::raw::c_char;
 use std::str;
 
 use ast::*;
@@ -18,15 +19,19 @@ pub fn parse(s: &str) -> JsValue {
     return JsValue::from_serde(&file).unwrap();
 }
 
-// TODO uncomment when we get back to the Go build side.
-//#[no_mangle]
-//pub fn go_parse(s: *const c_char) {
-//    let buf = unsafe {
-//        CStr::from_ptr(s).to_bytes()
-//    };
-//    let str = String::from_utf8(buf.to_vec()).unwrap();
-//    println!("Parse in Rust {}", str);
-//}
+#[no_mangle]
+pub fn flux_parse_json(s: *const c_char) {
+    let buf = unsafe { CStr::from_ptr(s).to_bytes() };
+    let str = String::from_utf8(buf.to_vec()).unwrap();
+    let mut p = Parser::new(&str);
+    let file = p.parse_file(String::from(""));
+
+    let j = serde_json::to_string(&file);
+    match j {
+        Ok(v) => println!("{}", v),
+        Err(e) => println!("{}", e),
+    }
+}
 
 fn format_token(t: T) -> &'static str {
     match t {

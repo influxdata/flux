@@ -13,11 +13,12 @@ chrono = { version = "0.4", features = ["serde"] }
 regex = "1"
 scanner = {path = "../scanner" }
 ast = {path = "../ast" }
+serde_json = "1.0"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"
 
 # https://rustwasm.github.io/docs/book/reference/code-size.html#optimizing-builds-for-code-size
 [profile.release]
-lto = true
+lto = false
 opt-level = 'z'
