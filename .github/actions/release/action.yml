@@ -1,0 +1,15 @@
+name: Release
+description: Release a version of Flux
+inputs:
+  ref:
+    description: Git ref to the tag to release
+    required: true
+  repo-token:
+    description: GitHub repository token
+    required: true
+outputs:
+  version:
+    description: Version that was released
+runs:
+  using: 'node12'
+  main: 'index.js'
