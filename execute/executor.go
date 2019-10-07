@@ -207,7 +207,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 			return fmt.Errorf("unsupported procedure %v", kind)
 		}
 
-		tr, ds, err := createTransformationFn(id, AccumulatingMode, spec, ec)
+		tr, ds, err := createTransformationFn(id, DiscardingMode, spec, ec)
 
 		if err != nil {
 			return err
