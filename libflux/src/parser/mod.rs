@@ -1,5 +1,7 @@
 use std::collections::HashMap;
+use std::ffi::CStr;
 use std::ffi::CString;
+use std::os::raw::c_char;
 use std::str;
 
 use crate::ast;
