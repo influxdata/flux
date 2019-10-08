@@ -184,7 +184,9 @@ func newResultDecoder(cr *csv.Reader, c ResultDecoderConfig, extraMeta *tableMet
 	if extraMeta == nil {
 		tm, err := readMetadata(d.cr, c, nil)
 		if err != nil {
-			if sfe, ok := err.(*serializedFluxError); ok {
+			if err == io.EOF {
+				return nil, err
+			} else if sfe, ok := err.(*serializedFluxError); ok {
 				return nil, sfe.err
 			}
 			return nil, errors.Wrap(err, codes.Inherit, "failed to read metadata")
