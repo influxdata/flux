@@ -69,6 +69,8 @@ Flux uses _conventional commit message_ formats: https://www.conventionalcommits
 In order to contribute back to Flux, you must sign the
 [InfluxData Contributor License Agreement](https://www.influxdata.com/legal/cla/) (CLA).
 
+Your signature's presence in our contributor list is checked automatically using a github action (see [clasee](https://github.com/influxdata/clasee)). Failure to sign the CLA will result in a failed github check on your PR. Once you have signed the CLA a simple restart of the check will resolve the check.
+
 ## Use of third-party packages
 A third-party package is defined as one that is not part of the standard Go distribution.
 Generally speaking, we prefer to minimize our use of third-party packages and avoid
