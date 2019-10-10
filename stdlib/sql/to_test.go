@@ -316,50 +316,50 @@ func TestToSql_NewTransformation(t *testing.T) {
 	}{
 		{
 			name: "ok mysql",
-			spec: &fsql.ToSQLProcedureSpec {
-				Spec: &fsql.ToSQLOpSpec {
-					DriverName: "mysql",
+			spec: &fsql.ToSQLProcedureSpec{
+				Spec: &fsql.ToSQLOpSpec{
+					DriverName:     "mysql",
 					DataSourceName: "username:password@tcp(localhost:12345)/dbname?param=value",
 				},
 			},
 			wantErr: "dial tcp 127.0.0.1:12345: connect: connection refused",
 		}, {
 			name: "ok postgres",
-			spec: &fsql.ToSQLProcedureSpec {
-				Spec: &fsql.ToSQLOpSpec {
-					DriverName: "postgres",
+			spec: &fsql.ToSQLProcedureSpec{
+				Spec: &fsql.ToSQLOpSpec{
+					DriverName:     "postgres",
 					DataSourceName: "postgres://pqgotest:password@localhost:12345/pqgotest?sslmode=verify-full",
 				},
 			},
 			wantErr: "dial tcp 127.0.0.1:12345: connect: connection refused",
 		}, {
 			name: "invalid driver",
-			spec: &fsql.ToSQLProcedureSpec {
-				Spec: &fsql.ToSQLOpSpec {
-					DriverName: "voltdb",
+			spec: &fsql.ToSQLProcedureSpec{
+				Spec: &fsql.ToSQLOpSpec{
+					DriverName:     "voltdb",
 					DataSourceName: "voltdb://pqgotest:password@localhost:12345/pqgotest?sslmode=verify-full",
 				},
 			},
 			wantErr: "sql driver voltdb not supported",
 		}, {
 			name: "no such host",
-			spec: &fsql.ToSQLProcedureSpec {
-				Spec: &fsql.ToSQLOpSpec {
-					DriverName: "mysql",
+			spec: &fsql.ToSQLProcedureSpec{
+				Spec: &fsql.ToSQLOpSpec{
+					DriverName:     "mysql",
 					DataSourceName: "username:password@tcp(notfound:12345)/dbname?param=value",
 				},
 			},
 			wantErr: "dial tcp: lookup notfound: no such host",
 		}, {
 			name: "private ip",
-			spec: &fsql.ToSQLProcedureSpec {
-				Spec: &fsql.ToSQLOpSpec {
-					DriverName: "mysql",
+			spec: &fsql.ToSQLProcedureSpec{
+				Spec: &fsql.ToSQLOpSpec{
+					DriverName:     "mysql",
 					DataSourceName: "username:password@tcp(localhost:12345)/dbname?param=value",
 				},
 			},
 			validator: url.PrivateIPValidator{},
-			wantErr: "data source did not url pass validation: url is not valid, it connects to a private IP",
+			wantErr:   "data source did not url pass validation: url is not valid, it connects to a private IP",
 		},
 	}
 

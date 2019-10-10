@@ -17,10 +17,10 @@ import (
 // before we can establish the connection.
 // This struct (as well as the Run() method) acts as a test harness for that.
 type SourceUrlValidationTestCases []struct {
-	Name     string
-	Spec     plan.ProcedureSpec
-	V        url.Validator
-	ErrMsg   string
+	Name   string
+	Spec   plan.ProcedureSpec
+	V      url.Validator
+	ErrMsg string
 }
 
 func (testCases *SourceUrlValidationTestCases) Run(t *testing.T, fn execute.CreateNewPlannerSource) {

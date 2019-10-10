@@ -149,7 +149,7 @@ func createFromSocketSource(s plan.ProcedureSpec, dsid execute.DatasetID, a exec
 		return nil, err
 	}
 	if err := validator.Validate(url); err != nil {
-		return nil, errors.Newf(codes.Invalid,"url did not pass validation: %v", err)
+		return nil, errors.Newf(codes.Invalid, "url did not pass validation: %v", err)
 	}
 	scheme = url.Scheme
 	address = url.Host

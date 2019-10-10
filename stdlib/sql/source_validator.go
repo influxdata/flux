@@ -20,10 +20,10 @@ func validateDataSource(validator url.Validator, driverName string, dataSourceNa
 		if err != nil {
 			return errors.Newf(codes.Invalid, "invalid data source dsn: %v", err)
 		}
-		u = &neturl.URL {
+		u = &neturl.URL{
 			Scheme: cfg.Net,
-			User: neturl.UserPassword(cfg.User, cfg.Passwd),
-			Host: cfg.Addr,
+			User:   neturl.UserPassword(cfg.User, cfg.Passwd),
+			Host:   cfg.Addr,
 		}
 	case "postgres", "sqlmock":
 		// an example for postgres data source is: postgres://pqgotest:password@localhost/pqgotest?sslmode=verify-full
@@ -37,7 +37,7 @@ func validateDataSource(validator url.Validator, driverName string, dataSourceNa
 	}
 
 	if err = validator.Validate(u); err != nil {
-		return errors.Newf(codes.Invalid,"data source did not url pass validation: %v", err)
+		return errors.Newf(codes.Invalid, "data source did not url pass validation: %v", err)
 	} else {
 		return nil
 	}
