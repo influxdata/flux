@@ -66,8 +66,12 @@ func parse(cmd *cobra.Command, args []string) {
 			fn:   rustDoNothing,
 		},
 		{
-			name: "rust-parse",
-			fn:   rustParse,
+			name: "rust-parse-return-handle",
+			fn:   rustParseReturnHandle,
+		},
+		{
+			name: "rust-parse-return-json",
+			fn:   rustParseReturnJSON,
 		},
 		{
 			name: "rust-parse-and-deserialize",
@@ -135,7 +139,15 @@ func rustDoNothing(fluxFile string) error {
 	return nil
 }
 
-func rustParse(fluxFile string) error {
+func rustParseReturnHandle(fluxFile string) error {
+	cstrIn := C.CString(fluxFile)
+	defer C.free(unsafe.Pointer(cstrIn))
+	handle := C.go_parse_no_serialize(cstrIn)
+	defer C.go_drop_file(handle)
+	return nil
+}
+
+func rustParseReturnJSON(fluxFile string) error {
 	cstrIn := C.CString(fluxFile)
 	defer C.free(unsafe.Pointer(cstrIn))
 	cstrOut := C.go_parse(cstrIn)
