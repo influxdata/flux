@@ -8,7 +8,7 @@ inData = "
 #datatype,string,long,string,string,dateTime:RFC3339,double
 #group,false,false,true,true,false,false
 #default,_result,,,,,
-,result,table,_measurement,_field,_time,count
+,result,table,_measurement,_field,_time,_value
 ,,0,SOYcRk,NC7N,2018-12-18T21:12:45Z,55
 ,,0,SOYcRk,NC7N,2018-12-18T21:12:55Z,15
 ,,0,SOYcRk,NC7N,2018-12-18T21:13:05Z,25
@@ -32,5 +32,6 @@ test _median_column = () => ({
         fn: (tables=<-) =>
             tables
                 |> range(start: 2018-12-01T00:00:00Z)
+                |> rename(columns: {_value: "count"})
                 |> median(column: "count")
     })
