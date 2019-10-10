@@ -1,13 +1,15 @@
 package sql_test
 
 import (
+	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/plan"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	flux "github.com/influxdata/flux"
+	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin" // We need to import the builtins for the tests to work.
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
@@ -279,7 +281,7 @@ func TestToSQL_Process(t *testing.T) {
 			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
 			c.SetTriggerSpec(plan.DefaultTriggerSpec)
 
-			transformation, err := fsql.NewToSQLTransformation(d, c, tc.spec)
+			transformation, err := fsql.NewToSQLTransformation(d, dependenciestest.Default(), c, tc.spec)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -300,6 +302,88 @@ func TestToSQL_Process(t *testing.T) {
 			if !cmp.Equal(tc.want.ValueArgs, valArgs, cmpopts.EquateNaNs()) {
 				t.Log(cmp.Diff(tc.want.ValueArgs, valArgs))
 				t.Fail()
+			}
+		})
+	}
+}
+
+func TestToSql_NewTransformation(t *testing.T) {
+	testCases := []struct {
+		name      string
+		spec      *fsql.ToSQLProcedureSpec
+		validator url.Validator
+		wantErr   string
+	}{
+		{
+			name: "ok mysql",
+			spec: &fsql.ToSQLProcedureSpec {
+				Spec: &fsql.ToSQLOpSpec {
+					DriverName: "mysql",
+					DataSourceName: "username:password@tcp(localhost:12345)/dbname?param=value",
+				},
+			},
+			wantErr: "dial tcp 127.0.0.1:12345: connect: connection refused",
+		}, {
+			name: "ok postgres",
+			spec: &fsql.ToSQLProcedureSpec {
+				Spec: &fsql.ToSQLOpSpec {
+					DriverName: "postgres",
+					DataSourceName: "postgres://pqgotest:password@localhost:12345/pqgotest?sslmode=verify-full",
+				},
+			},
+			wantErr: "dial tcp 127.0.0.1:12345: connect: connection refused",
+		}, {
+			name: "invalid driver",
+			spec: &fsql.ToSQLProcedureSpec {
+				Spec: &fsql.ToSQLOpSpec {
+					DriverName: "voltdb",
+					DataSourceName: "voltdb://pqgotest:password@localhost:12345/pqgotest?sslmode=verify-full",
+				},
+			},
+			wantErr: "sql driver voltdb not supported",
+		}, {
+			name: "no such host",
+			spec: &fsql.ToSQLProcedureSpec {
+				Spec: &fsql.ToSQLOpSpec {
+					DriverName: "mysql",
+					DataSourceName: "username:password@tcp(notfound:12345)/dbname?param=value",
+				},
+			},
+			wantErr: "dial tcp: lookup notfound: no such host",
+		}, {
+			name: "private ip",
+			spec: &fsql.ToSQLProcedureSpec {
+				Spec: &fsql.ToSQLOpSpec {
+					DriverName: "mysql",
+					DataSourceName: "username:password@tcp(localhost:12345)/dbname?param=value",
+				},
+			},
+			validator: url.PrivateIPValidator{},
+			wantErr: "data source did not url pass validation: url is not valid, it connects to a private IP",
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			d := executetest.NewDataset(executetest.RandomDatasetID())
+			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
+			deps := dependenciestest.Default()
+			if tc.validator != nil {
+				deps.Deps.URLValidator = tc.validator
+			}
+			_, err := fsql.NewToSQLTransformation(d, deps, c, tc.spec)
+			if err != nil {
+				if tc.wantErr != "" {
+					if got := err.Error(); tc.wantErr != got {
+						t.Fatalf("got wrong err -want/+got:\n\t- %s\n\t+ %s", tc.wantErr, got)
+					}
+					return
+				} else {
+					t.Fatal(err)
+				}
 			}
 		})
 	}

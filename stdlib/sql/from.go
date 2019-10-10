@@ -3,8 +3,6 @@ package sql
 import (
 	"context"
 	"database/sql"
-
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -110,6 +108,16 @@ func createFromSQLSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 	spec, ok := prSpec.(*FromSQLProcedureSpec)
 	if !ok {
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", prSpec)
+	}
+
+	// validate the data driver name and source name.
+	deps := flux.GetDependencies(a.Context())
+	validator, err := deps.URLValidator()
+	if err != nil {
+		return nil, err
+	}
+	if err := validateDataSource(validator, spec.DriverName, spec.DataSourceName); err != nil {
+		return nil, err
 	}
 
 	// Retrieve the row reader implementation for the driver.
