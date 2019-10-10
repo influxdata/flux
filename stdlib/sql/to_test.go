@@ -4,6 +4,7 @@ import (
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/plan"
+	"github.com/stretchr/testify/assert"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -322,7 +323,7 @@ func TestToSql_NewTransformation(t *testing.T) {
 					DataSourceName: "username:password@tcp(localhost:12345)/dbname?param=value",
 				},
 			},
-			wantErr: "dial tcp 127.0.0.1:12345: connect: connection refused",
+			wantErr: "connection refused",
 		}, {
 			name: "ok postgres",
 			spec: &fsql.ToSQLProcedureSpec{
@@ -331,7 +332,7 @@ func TestToSql_NewTransformation(t *testing.T) {
 					DataSourceName: "postgres://pqgotest:password@localhost:12345/pqgotest?sslmode=verify-full",
 				},
 			},
-			wantErr: "dial tcp 127.0.0.1:12345: connect: connection refused",
+			wantErr: "connection refused",
 		}, {
 			name: "invalid driver",
 			spec: &fsql.ToSQLProcedureSpec{
@@ -349,7 +350,7 @@ func TestToSql_NewTransformation(t *testing.T) {
 					DataSourceName: "username:password@tcp(notfound:12345)/dbname?param=value",
 				},
 			},
-			wantErr: "dial tcp: lookup notfound: no such host",
+			wantErr: "no such host",
 		}, {
 			name: "private ip",
 			spec: &fsql.ToSQLProcedureSpec{
@@ -359,7 +360,7 @@ func TestToSql_NewTransformation(t *testing.T) {
 				},
 			},
 			validator: url.PrivateIPValidator{},
-			wantErr:   "data source did not url pass validation: url is not valid, it connects to a private IP",
+			wantErr:   "url is not valid, it connects to a private IP",
 		},
 	}
 
@@ -377,9 +378,8 @@ func TestToSql_NewTransformation(t *testing.T) {
 			_, err := fsql.NewToSQLTransformation(d, deps, c, tc.spec)
 			if err != nil {
 				if tc.wantErr != "" {
-					if got := err.Error(); tc.wantErr != got {
-						t.Fatalf("got wrong err -want/+got:\n\t- %s\n\t+ %s", tc.wantErr, got)
-					}
+					got := err.Error();
+					assert.Contains(t, got, tc.wantErr)
 					return
 				} else {
 					t.Fatal(err)
