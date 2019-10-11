@@ -31,6 +31,7 @@ jobs:
             - flux-rust-{{ .Branch }}-                # Matches a new commit on an existing branch.
             - flux-rust-                              # Matches a new branch.
       # Run tests
+      - run: make build
       - run: make checkfmt
       - run: make checktidy
       - run: make vet
