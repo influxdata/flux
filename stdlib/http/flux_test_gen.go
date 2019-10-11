@@ -1844,10 +1844,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 				},
-				Name: "main",
+				Name: "http_test",
 			},
 		},
 	}},
-	Package: "main",
-	Path:    "",
+	Package: "http_test",
+	Path:    "http",
 }}

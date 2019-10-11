@@ -67,6 +67,12 @@ func generate(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
+
+		// Annotate the packages with the absolute flux package path.
+		for _, pkg := range pkgs {
+			pkg.Path = fluxPath
+		}
+
 		var fluxPkg, testPkg *ast.Package
 		switch len(pkgs) {
 		case 0:
@@ -132,10 +138,8 @@ func generate(cmd *cobra.Command, args []string) error {
 			if importPath != pkgName {
 				testPackages = append(testPackages, importPath)
 			}
-			// Isolate tests files into their own package
-			packs := splitTestPackages(testPkg)
 			// Generate test AST file using non *_test package name since this is Go code that needs to be part of the normal build.
-			if err := generateTestASTFile(dir, strings.TrimSuffix(testPkg.Package, "_test"), packs); err != nil {
+			if err := generateTestASTFile(dir, strings.TrimSuffix(testPkg.Package, "_test"), []*ast.Package{testPkg}); err != nil {
 				return err
 			}
 		}
@@ -220,20 +224,6 @@ func generateTestASTFile(dir, pkg string, pkgs []*ast.Package) error {
 	}
 	file.Var().Id("FluxTestPackages").Op("=").Add(v)
 	return file.Save(filepath.Join(dir, "flux_test_gen.go"))
-}
-
-func splitTestPackages(pkg *ast.Package) []*ast.Package {
-	packs := make([]*ast.Package, len(pkg.Files))
-	for i, file := range pkg.Files {
-		if file.Package != nil {
-			file.Package.Name.Name = "main"
-		}
-		packs[i] = &ast.Package{
-			Package: "main",
-			Files:   []*ast.File{file},
-		}
-	}
-	return packs
 }
 
 func readIgnoreFile(fn string) ([]string, error) {
