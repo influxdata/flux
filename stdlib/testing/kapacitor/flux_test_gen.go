@@ -1507,18 +1507,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 				},
-				Name: "main",
+				Name: "testdata_test",
 			},
 		},
-	}},
-	Package: "main",
-	Path:    "",
-}, &ast.Package{
-	BaseNode: ast.BaseNode{
-		Errors: nil,
-		Loc:    nil,
-	},
-	Files: []*ast.File{&ast.File{
+	}, &ast.File{
 		BaseNode: ast.BaseNode{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
@@ -2718,18 +2710,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 				},
-				Name: "main",
+				Name: "testdata_test",
 			},
 		},
-	}},
-	Package: "main",
-	Path:    "",
-}, &ast.Package{
-	BaseNode: ast.BaseNode{
-		Errors: nil,
-		Loc:    nil,
-	},
-	Files: []*ast.File{&ast.File{
+	}, &ast.File{
 		BaseNode: ast.BaseNode{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
@@ -4280,18 +4264,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 				},
-				Name: "main",
+				Name: "testdata_test",
 			},
 		},
-	}},
-	Package: "main",
-	Path:    "",
-}, &ast.Package{
-	BaseNode: ast.BaseNode{
-		Errors: nil,
-		Loc:    nil,
-	},
-	Files: []*ast.File{&ast.File{
+	}, &ast.File{
 		BaseNode: ast.BaseNode{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
@@ -5474,18 +5450,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 				},
-				Name: "main",
+				Name: "testdata_test",
 			},
 		},
-	}},
-	Package: "main",
-	Path:    "",
-}, &ast.Package{
-	BaseNode: ast.BaseNode{
-		Errors: nil,
-		Loc:    nil,
-	},
-	Files: []*ast.File{&ast.File{
+	}, &ast.File{
 		BaseNode: ast.BaseNode{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
@@ -6997,18 +6965,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 				},
-				Name: "main",
+				Name: "testdata_test",
 			},
 		},
-	}},
-	Package: "main",
-	Path:    "",
-}, &ast.Package{
-	BaseNode: ast.BaseNode{
-		Errors: nil,
-		Loc:    nil,
-	},
-	Files: []*ast.File{&ast.File{
+	}, &ast.File{
 		BaseNode: ast.BaseNode{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
@@ -8225,10 +8185,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 				},
-				Name: "main",
+				Name: "testdata_test",
 			},
 		},
 	}},
-	Package: "main",
-	Path:    "",
+	Package: "testdata_test",
+	Path:    "testing/kapacitor",
 }}
