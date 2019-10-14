@@ -98,12 +98,11 @@ type Administration interface {
 }
 
 type CreateTransformation func(id DatasetID, mode AccumulationMode, spec plan.ProcedureSpec, a Administration) (Transformation, Dataset, error)
-type CreateNewPlannerTransformation func(id DatasetID, mode AccumulationMode, spec plan.ProcedureSpec, a Administration) (Transformation, Dataset, error)
 
-var procedureToTransformation = make(map[plan.ProcedureKind]CreateNewPlannerTransformation)
+var procedureToTransformation = make(map[plan.ProcedureKind]CreateTransformation)
 
 // RegisterTransformation adds a new registration mapping of procedure kind to transformation.
-func RegisterTransformation(k plan.ProcedureKind, c CreateNewPlannerTransformation) {
+func RegisterTransformation(k plan.ProcedureKind, c CreateTransformation) {
 	if procedureToTransformation[k] != nil {
 		panic(fmt.Errorf("duplicate registration for transformation with procedure kind %v", k))
 	}
@@ -111,7 +110,7 @@ func RegisterTransformation(k plan.ProcedureKind, c CreateNewPlannerTransformati
 }
 
 // ReplaceTransformation changes an existing transformation registration.
-func ReplaceTransformation(k plan.ProcedureKind, c CreateNewPlannerTransformation) {
+func ReplaceTransformation(k plan.ProcedureKind, c CreateTransformation) {
 	if procedureToTransformation[k] == nil {
 		panic(fmt.Errorf("missing registration for transformation with procedure kind %v", k))
 	}

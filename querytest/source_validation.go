@@ -23,7 +23,7 @@ type SourceUrlValidationTestCases []struct {
 	ErrMsg string
 }
 
-func (testCases *SourceUrlValidationTestCases) Run(t *testing.T, fn execute.CreateNewPlannerSource) {
+func (testCases *SourceUrlValidationTestCases) Run(t *testing.T, fn execute.CreateSource) {
 	for _, tc := range *testCases {
 		deps := dependenciestest.Default()
 		if tc.V != nil {
@@ -32,6 +32,7 @@ func (testCases *SourceUrlValidationTestCases) Run(t *testing.T, fn execute.Crea
 		ctx := deps.Inject(context.Background())
 		a := mock.AdministrationWithContext(ctx)
 		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
 			id := executetest.RandomDatasetID()
 			_, err := fn(tc.Spec, id, a)
 			if tc.ErrMsg != "" {
