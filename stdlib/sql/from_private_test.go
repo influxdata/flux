@@ -1,9 +1,10 @@
 package sql
 
 import (
+	"testing"
+
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/querytest"
-	"testing"
 )
 
 func TestFromSqlUrlValidation(t *testing.T) {

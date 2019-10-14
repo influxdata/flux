@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 )
 
+// helper function to validate the data source url (postgres, sqlmock) / dsn (mysql) using the URLValidator.
 func validateDataSource(validator url.Validator, driverName string, dataSourceName string) error {
 	var u *neturl.URL
 	var err error
@@ -37,7 +38,7 @@ func validateDataSource(validator url.Validator, driverName string, dataSourceNa
 	}
 
 	if err = validator.Validate(u); err != nil {
-		return errors.Newf(codes.Invalid, "data source did not url pass validation: %v", err)
+		return errors.Newf(codes.Invalid, "data source did not pass url validation: %v", err)
 	} else {
 		return nil
 	}

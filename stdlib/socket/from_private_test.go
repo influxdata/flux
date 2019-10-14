@@ -1,9 +1,10 @@
 package socket
 
 import (
+	"testing"
+
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/querytest"
-	"testing"
 )
 
 func TestFromSocketUrlValidation(t *testing.T) {
