@@ -3,10 +3,13 @@ package sql
 import (
 	"database/sql"
 	"fmt"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/values"
 	"time"
+
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/values"
 )
 
 type PostgresRowReader struct {
@@ -137,4 +140,24 @@ func NewPostgresRowReader(r *sql.Rows) (execute.RowReader, error) {
 	}
 	reader.InitColumnTypes(types)
 	return reader, nil
+}
+
+// PostgresTranslateColumn translates flux colTypes into their corresponding postgres column type
+func PostgresTranslateColumn() translationFunc {
+	c := map[string]string{
+		flux.TFloat.String():  "FLOAT",
+		flux.TInt.String():    "BIGINT",
+		flux.TUInt.String():   "BIGINT",
+		flux.TString.String(): "text",
+		flux.TTime.String():   "TIMESTAMP",
+		flux.TBool.String():   "BOOL",
+	}
+	return func(f flux.ColType, colname string) (string, error) {
+		s, found := c[f.String()]
+		if !found {
+			return "", errors.Newf(codes.Internal, "DB does not support column type %s", f.String())
+		}
+		return colname + " " + s, nil
+	}
+
 }

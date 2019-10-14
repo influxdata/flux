@@ -231,6 +231,96 @@ func TestMySQLParsing(t *testing.T) {
 	}
 }
 
+func TestSQLiteParsing(t *testing.T) {
+	testCases := []struct {
+		name       string
+		columnName string
+		columnType flux.ColType
+		data       [][]uint8
+		want       [][]values.Value
+	}{
+		{
+			name:       "ints",
+			columnName: "_int",
+			columnType: flux.TInt,
+			data:       stringSliceToByteArrays([]string{"6", "1", "643", "42", "1283", "4", "0", "18"}),
+			want:       [][]values.Value{{values.NewInt(6)}, {values.NewInt(1)}, {values.NewInt(643)}, {values.NewInt(42)}, {values.NewInt(1283)}, {values.NewInt(4)}, {values.NewInt(0)}, {values.NewInt(18)}},
+		},
+		{
+			name:       "floats",
+			columnName: "_float",
+			columnType: flux.TFloat,
+			data:       stringSliceToByteArrays([]string{"6", "1", "643", "42", "1283", "4", "0", "18"}),
+			want:       [][]values.Value{{values.NewFloat(6)}, {values.NewFloat(1)}, {values.NewFloat(643)}, {values.NewFloat(42)}, {values.NewFloat(1283)}, {values.NewFloat(4)}, {values.NewFloat(0)}, {values.NewFloat(18)}},
+		},
+		{
+			name:       "strings",
+			columnName: "_string",
+			columnType: flux.TString,
+			data:       stringSliceToByteArrays([]string{"6", "1", "643", "42", "1283", "4", "0", "18"}),
+			want:       [][]values.Value{{values.NewString("6")}, {values.NewString("1")}, {values.NewString("643")}, {values.NewString("42")}, {values.NewString("1283")}, {values.NewString("4")}, {values.NewString("0")}, {values.NewString("18")}},
+		},
+		{
+			name:       "datetime",
+			columnName: "_datetime",
+			columnType: flux.TTime,
+			data: stringSliceToByteArrays([]string{
+				"2019-06-03 13:59:00",
+				"2019-06-03 13:59:01",
+				"2019-06-03 13:59:02",
+				"2019-06-03 13:59:03",
+				"2019-06-03 13:59:04",
+				"2019-06-03 13:59:05",
+				"2019-06-03 13:59:06",
+				"2019-06-03 13:59:07"}),
+			want: [][]values.Value{
+				{values.NewTime(values.ConvertTime(createTestTimes()[0].(time.Time)))},
+				{values.NewTime(values.ConvertTime(createTestTimes()[1].(time.Time)))},
+				{values.NewTime(values.ConvertTime(createTestTimes()[2].(time.Time)))},
+				{values.NewTime(values.ConvertTime(createTestTimes()[3].(time.Time)))},
+				{values.NewTime(values.ConvertTime(createTestTimes()[4].(time.Time)))},
+				{values.NewTime(values.ConvertTime(createTestTimes()[5].(time.Time)))},
+				{values.NewTime(values.ConvertTime(createTestTimes()[6].(time.Time)))},
+				{values.NewTime(values.ConvertTime(createTestTimes()[7].(time.Time)))},
+			},
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+
+			TestReader := &SqliteRowReader{}
+
+			TestReader.NextFunc = func() func() bool {
+				i := 0
+				vals := make([]interface{}, len(tc.data))
+				for i, v := range tc.data {
+					vals[i] = v
+				}
+				return func() bool {
+					if i < len(tc.data) {
+						TestReader.SetColumns([]interface{}{vals[i]})
+						i++
+						return true
+					}
+					return false
+				}
+			}()
+			TestReader.InitColumnNames([]string{tc.columnName})
+			TestReader.SetColumnTypes([]flux.ColType{tc.columnType})
+
+			i := 0
+			for TestReader.Next() {
+				row, _ := TestReader.GetNextRow()
+				if !cmp.Equal(tc.want[i], row) {
+					t.Fatalf("unexpected result -want/+got\n\n%s\n\n", cmp.Diff(tc.want[i], row))
+				}
+				i++
+			}
+		})
+	}
+}
+
 func createTestTimes() []interface{} {
 	str := []string{"2019-06-03 13:59:00",
 		"2019-06-03 13:59:01",
