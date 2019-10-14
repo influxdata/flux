@@ -2,12 +2,14 @@ package mock
 
 import (
 	"context"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/memory"
 )
 
-// this struct is incomplete. You can add what you need when you need it.
+// Administration is a mock implementation of the execute.Administration interface.
+// This may be used for tests that require implementation of this interface.
 type Administration struct {
 	ctx context.Context
 }
@@ -29,7 +31,7 @@ func (a *Administration) StreamContext() execute.StreamContext {
 }
 
 func (a *Administration) Allocator() *memory.Allocator {
-	return nil
+	return &memory.Allocator{}
 }
 
 func (a *Administration) Parents() []execute.DatasetID {

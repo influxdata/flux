@@ -2914,10 +2914,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 				},
-				Name: "main",
+				Name: "promql_test",
 			},
 		},
 	}},
-	Package: "main",
-	Path:    "",
+	Package: "promql_test",
+	Path:    "internal/promql",
 }}

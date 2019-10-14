@@ -1317,10 +1317,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 				},
-				Name: "main",
+				Name: "secrets_test",
 			},
 		},
 	}},
-	Package: "main",
-	Path:    "",
+	Package: "secrets_test",
+	Path:    "influxdata/influxdb/secrets",
 }}
