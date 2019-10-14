@@ -23,7 +23,7 @@ type SourceUrlValidationTestCases []struct {
 	ErrMsg string
 }
 
-func (testCases *SourceUrlValidationTestCases) Run(t *testing.T, fn execute.CreateNewPlannerSource) {
+func (testCases *SourceUrlValidationTestCases) Run(t *testing.T, fn execute.CreateSource) {
 	for _, tc := range *testCases {
 		deps := dependenciestest.Default()
 		if tc.V != nil {
