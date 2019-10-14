@@ -103,7 +103,7 @@ func TestTranslation(t *testing.T) {
 		t.Fail()
 	}
 	// as SQLITE has NO BOOLEAN column type, we need to return an error rather than doing implicit conversions
-	v, err = sqlT()(flux.TBool, columnLabel)
+	_, err = sqlT()(flux.TBool, columnLabel)
 	if cmp.Equal(nil, err) {
 		t.Log(cmp.Diff(nil, err))
 		t.Fail()
