@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	_ "github.com/lib/pq"
 )
 
 const FromSQLKind = "fromSQL"
