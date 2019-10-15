@@ -645,10 +645,10 @@ func TestResultDecoder(t *testing.T) {
 							{Label: "host", Type: flux.TString},
 							{Label: "_value", Type: flux.TFloat},
 						},
-						KeyCols:   []string{"_start", "_stop", "_measurement", "host"},
+						KeyCols: []string{"_start", "_stop", "_measurement", "host"},
 						KeyValues: []interface{}{
-							values.ConvertTime(time.Date(2018,04, 17, 0, 0, 0, 0, time.UTC)),
-							values.ConvertTime(time.Date(2018,04, 18, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 04, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 04, 18, 0, 0, 0, 0, time.UTC)),
 							"m",
 							"localhost",
 						},

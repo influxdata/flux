@@ -136,20 +136,25 @@ func createFromSocketSource(s plan.ProcedureSpec, dsid execute.DatasetID, a exec
 	// known issue with url.Parse for detecting the presence of a scheme: https://github.com/golang/go/issues/19779
 	var scheme, address string
 	if !strings.Contains(spec.URL, "://") {
-		// no scheme specified, use default and use the entire url as address
-		scheme = schemes[0]
-		address = spec.URL
-	} else {
-		// scheme specified, use appropriate values
-		url, err := neturl.Parse(spec.URL)
-		if err != nil {
-			return nil, err
-		}
-		scheme = url.Scheme
-		address = url.Host
-		if !contains(schemes, scheme) {
-			return nil, errors.Newf(codes.Invalid, "invalid scheme %s, must be one of %v", scheme, schemes)
-		}
+		// no scheme specified, use default scheme and use the entire url as address
+		spec.URL = schemes[0] + "://" + spec.URL
+	}
+	url, err := neturl.Parse(spec.URL)
+	if err != nil {
+		return nil, errors.Newf(codes.Invalid, "invalid url: %v", err)
+	}
+	deps := flux.GetDependencies(a.Context())
+	validator, err := deps.URLValidator()
+	if err != nil {
+		return nil, err
+	}
+	if err := validator.Validate(url); err != nil {
+		return nil, errors.Newf(codes.Invalid, "url did not pass validation: %v", err)
+	}
+	scheme = url.Scheme
+	address = url.Host
+	if !contains(schemes, scheme) {
+		return nil, errors.Newf(codes.Invalid, "invalid scheme %s, must be one of %v", scheme, schemes)
 	}
 
 	conn, err := net.Dial(scheme, address)

@@ -9,11 +9,17 @@ import (
 )
 
 // Administration is a mock implementation of the execute.Administration interface.
-// This may be used for tests that require imeplementation of this interface.
-type Administration struct{}
+// This may be used for tests that require implementation of this interface.
+type Administration struct {
+	ctx context.Context
+}
+
+func AdministrationWithContext(ctx context.Context) *Administration {
+	return &Administration{ctx: ctx}
+}
 
 func (a *Administration) Context() context.Context {
-	return nil
+	return a.ctx
 }
 
 func (a *Administration) ResolveTime(qt flux.Time) execute.Time {
