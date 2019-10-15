@@ -3,12 +3,6 @@ package sql_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependencies/url"
-	"github.com/influxdata/flux/plan"
-
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
