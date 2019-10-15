@@ -381,7 +381,7 @@ func TestToSql_NewTransformation(t *testing.T) {
 			_, err := fsql.NewToSQLTransformation(d, deps, c, tc.spec)
 			if err != nil {
 				if tc.wantErr != "" {
-					got := err.Error();
+					got := err.Error()
 					assert.Contains(t, got, tc.wantErr)
 					return
 				} else {
