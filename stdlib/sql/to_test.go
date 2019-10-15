@@ -10,7 +10,6 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin" // We need to import the builtins for the tests to work.
 	"github.com/influxdata/flux/execute"

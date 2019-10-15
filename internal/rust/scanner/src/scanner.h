@@ -1,6 +1,6 @@
 
-// T represents all possible Tokens
-enum T {
+// TOK represents all possible Tokens
+enum TOK {
     ILLEGAL                       = 0,
     EOF                           = 1,
     COMMENT                       = 2,

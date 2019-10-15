@@ -15,7 +15,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
@@ -75,7 +75,7 @@ func TestBigtableDecode(t *testing.T) {
 			columnNames: []string{"rowKey", "_time", "family", "a", "b"},
 		}
 
-		decoder := &BigtableDecoder{reader: &reader, administration: &MockAllocator{}}
+		decoder := &BigtableDecoder{reader: &reader, administration: &mock.Administration{}}
 		table, err := decoder.Decode(context.Background())
 		if err != nil {
 			t.Fatal(err)
@@ -407,25 +407,3 @@ func (m *MockRowReader) ColumnTypes() []flux.ColType {
 func (m *MockRowReader) SetColumns([]interface{}) {}
 
 func (m *MockRowReader) Close() error { return nil }
-
-type MockAllocator struct{}
-
-func (a *MockAllocator) Context() context.Context {
-	return nil
-}
-
-func (a *MockAllocator) ResolveTime(qt flux.Time) execute.Time {
-	return execute.Now()
-}
-
-func (a *MockAllocator) StreamContext() execute.StreamContext {
-	return nil
-}
-
-func (a *MockAllocator) Allocator() *memory.Allocator {
-	return &memory.Allocator{}
-}
-
-func (a *MockAllocator) Parents() []execute.DatasetID {
-	return nil
-}

@@ -12,7 +12,7 @@ pub struct Scanner {
     pe: *const CChar,
     eof: *const CChar,
     checkpoint: *const CChar,
-    token: T,
+    token: TOK,
     ts: u32,
     te: u32,
     lines: Vec<u32>,
@@ -26,7 +26,7 @@ pub struct Position {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Token {
-    pub tok: T,
+    pub tok: TOK,
     pub lit: String,
     pub pos: u32,
 }
@@ -46,7 +46,7 @@ impl Scanner {
             ts: 0,
             te: 0,
             lines: vec![0],
-            token: T_ILLEGAL,
+            token: TOK_ILLEGAL,
             checkpoint: ptr,
         };
     }
@@ -92,7 +92,7 @@ impl Scanner {
 
     fn eof(&self) -> Token {
         Token {
-            tok: T_EOF,
+            tok: TOK_EOF,
             lit: String::from(""),
             pos: self.te,
         }
@@ -131,7 +131,7 @@ impl Scanner {
                         // Advance the data pointer to after the character we just emitted.
                         self.p = self.p.offset(size as isize);
                         return Token {
-                            tok: T_ILLEGAL,
+                            tok: TOK_ILLEGAL,
                             lit: nc.to_string(),
                             pos: self.ts,
                         };
@@ -150,7 +150,7 @@ impl Scanner {
                 self.lines.append(&mut newlines);
             }
             // Now work on the token.
-            if self.token == T_ILLEGAL && self.p == self.eof {
+            if self.token == TOK_ILLEGAL && self.p == self.eof {
                 return self.eof();
             }
             let t = Token {
@@ -163,7 +163,9 @@ impl Scanner {
             // Skipping comments.
             // TODO(affo): return comments to attach them to nodes within the AST.
             match t {
-                Token { tok: T_COMMENT, .. } => self.scan(),
+                Token {
+                    tok: TOK_COMMENT, ..
+                } => self.scan(),
                 _ => t,
             }
         }

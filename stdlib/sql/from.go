@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 
-	_ "github.com/lib/pq"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
