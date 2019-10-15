@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 
-	_ "github.com/lib/pq"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -13,6 +11,7 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	_ "github.com/lib/pq"
 )
 
 const FromSQLKind = "fromSQL"

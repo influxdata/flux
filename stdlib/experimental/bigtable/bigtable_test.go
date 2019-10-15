@@ -8,8 +8,6 @@ import (
 
 	"cloud.google.com/go/bigtable"
 	"github.com/google/go-cmp/cmp"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
@@ -20,6 +18,7 @@ import (
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
+	"github.com/stretchr/testify/assert"
 )
 
 var rRowKey *semantic.MemberExpression = &semantic.MemberExpression{
