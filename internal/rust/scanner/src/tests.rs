@@ -9,7 +9,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("from"),
             pos: 0,
         }
@@ -17,7 +17,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_LPAREN,
+            tok: TOK_LPAREN,
             lit: String::from("("),
             pos: 4,
         }
@@ -25,7 +25,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("bucket"),
             pos: 5,
         }
@@ -33,7 +33,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_COLON,
+            tok: TOK_COLON,
             lit: String::from(":"),
             pos: 11,
         }
@@ -41,7 +41,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_STRING,
+            tok: TOK_STRING,
             lit: String::from("\"foo\""),
             pos: 12,
         }
@@ -49,7 +49,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_RPAREN,
+            tok: TOK_RPAREN,
             lit: String::from(")"),
             pos: 17,
         }
@@ -57,7 +57,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_PIPE_FORWARD,
+            tok: TOK_PIPE_FORWARD,
             lit: String::from("|>"),
             pos: 19,
         }
@@ -65,7 +65,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("range"),
             pos: 22,
         }
@@ -73,7 +73,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_LPAREN,
+            tok: TOK_LPAREN,
             lit: String::from("("),
             pos: 27,
         }
@@ -81,7 +81,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("start"),
             pos: 28,
         }
@@ -89,7 +89,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_COLON,
+            tok: TOK_COLON,
             lit: String::from(":"),
             pos: 33,
         }
@@ -97,7 +97,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_SUB,
+            tok: TOK_SUB,
             lit: String::from("-"),
             pos: 35,
         }
@@ -105,7 +105,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_DURATION,
+            tok: TOK_DURATION,
             lit: String::from("1m"),
             pos: 36,
         }
@@ -113,7 +113,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_RPAREN,
+            tok: TOK_RPAREN,
             lit: String::from(")"),
             pos: 38,
         }
@@ -121,7 +121,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_EOF,
+            tok: TOK_EOF,
             lit: String::from(""),
             pos: 39,
         }
@@ -136,7 +136,7 @@ fn test_scan_with_regex() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("a"),
             pos: 0,
         }
@@ -144,7 +144,7 @@ fn test_scan_with_regex() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_ADD,
+            tok: TOK_ADD,
             lit: String::from("+"),
             pos: 2,
         }
@@ -152,7 +152,7 @@ fn test_scan_with_regex() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("b"),
             pos: 4,
         }
@@ -160,7 +160,7 @@ fn test_scan_with_regex() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_REGEXEQ,
+            tok: TOK_REGEXEQ,
             lit: String::from("=~"),
             pos: 6,
         }
@@ -168,7 +168,7 @@ fn test_scan_with_regex() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_REGEX,
+            tok: TOK_REGEX,
             lit: String::from("/.*[0-9]/"),
             pos: 9,
         }
@@ -176,7 +176,7 @@ fn test_scan_with_regex() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_DIV,
+            tok: TOK_DIV,
             lit: String::from("/"),
             pos: 19,
         }
@@ -184,7 +184,7 @@ fn test_scan_with_regex() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_INT,
+            tok: TOK_INT,
             lit: String::from("2"),
             pos: 21,
         }
@@ -192,7 +192,7 @@ fn test_scan_with_regex() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_EOF,
+            tok: TOK_EOF,
             lit: String::from(""),
             pos: 22,
         }
@@ -207,7 +207,7 @@ fn test_scan_string_expr_simple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_QUOTE,
+            tok: TOK_QUOTE,
             lit: String::from("\""),
             pos: 0,
         }
@@ -215,7 +215,7 @@ fn test_scan_string_expr_simple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_STRINGEXPR,
+            tok: TOK_STRINGEXPR,
             lit: String::from("${"),
             pos: 1,
         }
@@ -223,7 +223,7 @@ fn test_scan_string_expr_simple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_TEXT,
+            tok: TOK_TEXT,
             lit: String::from("a + b}"),
             pos: 3,
         }
@@ -231,7 +231,7 @@ fn test_scan_string_expr_simple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_QUOTE,
+            tok: TOK_QUOTE,
             lit: String::from("\""),
             pos: 9,
         }
@@ -246,7 +246,7 @@ fn test_scan_string_expr_start_with_text() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_QUOTE,
+            tok: TOK_QUOTE,
             lit: String::from("\""),
             pos: 0,
         }
@@ -254,7 +254,7 @@ fn test_scan_string_expr_start_with_text() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_TEXT,
+            tok: TOK_TEXT,
             lit: String::from("a + b = "),
             pos: 1,
         }
@@ -262,7 +262,7 @@ fn test_scan_string_expr_start_with_text() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_STRINGEXPR,
+            tok: TOK_STRINGEXPR,
             lit: String::from("${"),
             pos: 9,
         }
@@ -270,7 +270,7 @@ fn test_scan_string_expr_start_with_text() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_TEXT,
+            tok: TOK_TEXT,
             lit: String::from("a + b}"),
             pos: 11,
         }
@@ -278,7 +278,7 @@ fn test_scan_string_expr_start_with_text() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_QUOTE,
+            tok: TOK_QUOTE,
             lit: String::from("\""),
             pos: 17,
         }
@@ -293,7 +293,7 @@ fn test_scan_string_expr_multiple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_QUOTE,
+            tok: TOK_QUOTE,
             lit: String::from("\""),
             pos: 0,
         }
@@ -301,7 +301,7 @@ fn test_scan_string_expr_multiple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_TEXT,
+            tok: TOK_TEXT,
             lit: String::from("a + b = "),
             pos: 1,
         }
@@ -309,7 +309,7 @@ fn test_scan_string_expr_multiple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_STRINGEXPR,
+            tok: TOK_STRINGEXPR,
             lit: String::from("${"),
             pos: 9,
         }
@@ -317,7 +317,7 @@ fn test_scan_string_expr_multiple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_TEXT,
+            tok: TOK_TEXT,
             lit: String::from("a + b} and a - b = "),
             pos: 11,
         }
@@ -325,7 +325,7 @@ fn test_scan_string_expr_multiple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_STRINGEXPR,
+            tok: TOK_STRINGEXPR,
             lit: String::from("${"),
             pos: 30,
         }
@@ -333,7 +333,7 @@ fn test_scan_string_expr_multiple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_TEXT,
+            tok: TOK_TEXT,
             lit: String::from("a - b}"),
             pos: 32,
         }
@@ -341,7 +341,7 @@ fn test_scan_string_expr_multiple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_QUOTE,
+            tok: TOK_QUOTE,
             lit: String::from("\""),
             pos: 38,
         }
@@ -356,7 +356,7 @@ fn test_scan_string_expr_end_with_text() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_QUOTE,
+            tok: TOK_QUOTE,
             lit: String::from("\""),
             pos: 0,
         }
@@ -364,7 +364,7 @@ fn test_scan_string_expr_end_with_text() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_TEXT,
+            tok: TOK_TEXT,
             lit: String::from("a + b = "),
             pos: 1,
         }
@@ -372,7 +372,7 @@ fn test_scan_string_expr_end_with_text() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_STRINGEXPR,
+            tok: TOK_STRINGEXPR,
             lit: String::from("${"),
             pos: 9,
         }
@@ -380,7 +380,7 @@ fn test_scan_string_expr_end_with_text() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_TEXT,
+            tok: TOK_TEXT,
             lit: String::from("a + b} and a - b = ?"),
             pos: 11,
         }
@@ -388,7 +388,7 @@ fn test_scan_string_expr_end_with_text() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_QUOTE,
+            tok: TOK_QUOTE,
             lit: String::from("\""),
             pos: 31,
         }
@@ -403,7 +403,7 @@ fn test_scan_string_expr_escaped_quotes() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_QUOTE,
+            tok: TOK_QUOTE,
             lit: String::from("\""),
             pos: 0,
         }
@@ -411,7 +411,7 @@ fn test_scan_string_expr_escaped_quotes() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_TEXT,
+            tok: TOK_TEXT,
             lit: String::from(r#"these \"\" are escaped quotes"#),
             pos: 1,
         }
@@ -419,7 +419,7 @@ fn test_scan_string_expr_escaped_quotes() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_QUOTE,
+            tok: TOK_QUOTE,
             lit: String::from("\""),
             pos: 30,
         }
@@ -434,7 +434,7 @@ fn test_scan_string_expr_not_escaped_quotes() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_QUOTE,
+            tok: TOK_QUOTE,
             lit: String::from("\""),
             pos: 0,
         }
@@ -442,7 +442,7 @@ fn test_scan_string_expr_not_escaped_quotes() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_TEXT,
+            tok: TOK_TEXT,
             lit: String::from("this "),
             pos: 1,
         }
@@ -450,7 +450,7 @@ fn test_scan_string_expr_not_escaped_quotes() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_QUOTE,
+            tok: TOK_QUOTE,
             lit: String::from("\""),
             pos: 6,
         }
@@ -458,7 +458,7 @@ fn test_scan_string_expr_not_escaped_quotes() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_TEXT,
+            tok: TOK_TEXT,
             lit: String::from(" is not an escaped quote"),
             pos: 7,
         }
@@ -466,7 +466,7 @@ fn test_scan_string_expr_not_escaped_quotes() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: T_QUOTE,
+            tok: TOK_QUOTE,
             lit: String::from("\""),
             pos: 31,
         }
@@ -481,7 +481,7 @@ fn test_scan_unread() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_INT,
+            tok: TOK_INT,
             lit: String::from("1"),
             pos: 0,
         }
@@ -490,7 +490,7 @@ fn test_scan_unread() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_INT,
+            tok: TOK_INT,
             lit: String::from("1"),
             pos: 0,
         }
@@ -499,7 +499,7 @@ fn test_scan_unread() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_REGEX,
+            tok: TOK_REGEX,
             lit: String::from("/ 2 /"),
             pos: 2,
         }
@@ -508,7 +508,7 @@ fn test_scan_unread() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_DIV,
+            tok: TOK_DIV,
             lit: String::from("/"),
             pos: 2,
         }
@@ -516,7 +516,7 @@ fn test_scan_unread() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_INT,
+            tok: TOK_INT,
             lit: String::from("2"),
             pos: 4,
         }
@@ -524,7 +524,7 @@ fn test_scan_unread() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_DIV,
+            tok: TOK_DIV,
             lit: String::from("/"),
             pos: 6,
         }
@@ -532,7 +532,7 @@ fn test_scan_unread() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_INT,
+            tok: TOK_INT,
             lit: String::from("3"),
             pos: 8,
         }
@@ -546,7 +546,7 @@ fn test_scan_unread() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_INT,
+            tok: TOK_INT,
             lit: String::from("3"),
             pos: 8,
         }
@@ -554,7 +554,7 @@ fn test_scan_unread() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_EOF,
+            tok: TOK_EOF,
             lit: String::from(""),
             pos: 9,
         }
@@ -575,7 +575,7 @@ a
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("a"),
             pos: 22,
         }
@@ -583,7 +583,7 @@ a
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_INT,
+            tok: TOK_INT,
             lit: String::from("1"),
             pos: 95,
         }
@@ -591,7 +591,7 @@ a
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_EOF,
+            tok: TOK_EOF,
             lit: String::from(""),
             pos: 114,
         }
@@ -603,7 +603,7 @@ a
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("a"),
             pos: 22,
         }
@@ -611,7 +611,7 @@ a
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_INT,
+            tok: TOK_INT,
             lit: String::from("1"),
             pos: 95,
         }
@@ -619,7 +619,7 @@ a
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_EOF,
+            tok: TOK_EOF,
             lit: String::from(""),
             pos: 114,
         }
@@ -635,7 +635,7 @@ fn test_scan_eof() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_EOF,
+            tok: TOK_EOF,
             lit: String::from(""),
             pos: 0,
         }
@@ -643,7 +643,7 @@ fn test_scan_eof() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_EOF,
+            tok: TOK_EOF,
             lit: String::from(""),
             pos: 0,
         }
@@ -651,7 +651,7 @@ fn test_scan_eof() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_EOF,
+            tok: TOK_EOF,
             lit: String::from(""),
             pos: 0,
         }
@@ -659,7 +659,7 @@ fn test_scan_eof() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_EOF,
+            tok: TOK_EOF,
             lit: String::from(""),
             pos: 0,
         }
@@ -667,7 +667,7 @@ fn test_scan_eof() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_EOF,
+            tok: TOK_EOF,
             lit: String::from(""),
             pos: 0,
         }
@@ -675,7 +675,7 @@ fn test_scan_eof() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_EOF,
+            tok: TOK_EOF,
             lit: String::from(""),
             pos: 0,
         }
@@ -697,7 +697,7 @@ fn test_scan_eof_trailing_spaces() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_EOF,
+            tok: TOK_EOF,
             lit: String::from(""),
             pos: 7,
         }
@@ -708,7 +708,7 @@ fn test_scan_eof_trailing_spaces() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_EOF,
+            tok: TOK_EOF,
             lit: String::from(""),
             pos: 7,
         }
@@ -723,7 +723,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("legal"),
             pos: 0,
         }
@@ -731,7 +731,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_ILLEGAL,
+            tok: TOK_ILLEGAL,
             lit: String::from("@"),
             pos: 6,
         }
@@ -739,7 +739,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("illegal"),
             pos: 8,
         }
@@ -750,7 +750,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("legal"),
             pos: 0,
         }
@@ -758,7 +758,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_ILLEGAL,
+            tok: TOK_ILLEGAL,
             lit: String::from("@"),
             pos: 6,
         }
@@ -767,7 +767,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_ILLEGAL,
+            tok: TOK_ILLEGAL,
             lit: String::from("@"),
             pos: 6,
         }
@@ -775,7 +775,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("illegal"),
             pos: 8,
         }
@@ -786,7 +786,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("legal"),
             pos: 0,
         }
@@ -794,7 +794,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_ILLEGAL,
+            tok: TOK_ILLEGAL,
             lit: String::from("@"),
             pos: 6,
         }
@@ -802,7 +802,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("illegal"),
             pos: 8,
         }
@@ -813,7 +813,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("legal"),
             pos: 0,
         }
@@ -821,7 +821,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_ILLEGAL,
+            tok: TOK_ILLEGAL,
             lit: String::from("@"),
             pos: 6,
         }
@@ -830,7 +830,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_ILLEGAL,
+            tok: TOK_ILLEGAL,
             lit: String::from("@"),
             pos: 6,
         }
@@ -838,7 +838,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("illegal"),
             pos: 8,
         }
@@ -855,7 +855,7 @@ fn test_scan_duration() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("dur"),
             pos: 0,
         }
@@ -863,7 +863,7 @@ fn test_scan_duration() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_ASSIGN,
+            tok: TOK_ASSIGN,
             lit: String::from("="),
             pos: 4,
         }
@@ -871,7 +871,7 @@ fn test_scan_duration() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_DURATION,
+            tok: TOK_DURATION,
             lit: String::from("1y3mo2w1d4h1m30s1ms2µs70ns"),
             pos: 6,
         }
@@ -879,7 +879,7 @@ fn test_scan_duration() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_EOF,
+            tok: TOK_EOF,
             lit: String::from(""),
             pos: 32,
         }
@@ -965,7 +965,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("ms"),
             pos: 0,
         }
@@ -974,7 +974,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_ASSIGN,
+            tok: TOK_ASSIGN,
             lit: String::from("="),
             pos: 3,
         }
@@ -983,7 +983,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_STRING,
+            tok: TOK_STRING,
             lit: String::from("\"multiline\nstring\n\""),
             pos: 5,
         }
@@ -996,7 +996,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("c"),
             pos: 38,
         }
@@ -1005,7 +1005,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_ASSIGN,
+            tok: TOK_ASSIGN,
             lit: String::from("="),
             pos: 40,
         }
@@ -1014,7 +1014,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_INT,
+            tok: TOK_INT,
             lit: String::from("1"),
             pos: 42,
         }
@@ -1023,7 +1023,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_ADD,
+            tok: TOK_ADD,
             lit: String::from("+"),
             pos: 44,
         }
@@ -1032,7 +1032,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_INT,
+            tok: TOK_INT,
             lit: String::from("2"),
             pos: 46,
         }
@@ -1041,7 +1041,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_EOF,
+            tok: TOK_EOF,
             lit: String::from(""),
             pos: 52,
         }
@@ -1128,7 +1128,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("ms"),
             pos: 0,
         }
@@ -1137,7 +1137,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_ASSIGN,
+            tok: TOK_ASSIGN,
             lit: String::from("="),
             pos: 3,
         }
@@ -1146,7 +1146,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_STRING,
+            tok: TOK_STRING,
             lit: String::from("\"multiline\nstring\n\""),
             pos: 5,
         }
@@ -1159,7 +1159,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_IDENT,
+            tok: TOK_IDENT,
             lit: String::from("c"),
             pos: 38,
         }
@@ -1168,7 +1168,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_ASSIGN,
+            tok: TOK_ASSIGN,
             lit: String::from("="),
             pos: 40,
         }
@@ -1177,7 +1177,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_INT,
+            tok: TOK_INT,
             lit: String::from("1"),
             pos: 42,
         }
@@ -1186,7 +1186,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_ADD,
+            tok: TOK_ADD,
             lit: String::from("+"),
             pos: 44,
         }
@@ -1195,7 +1195,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_INT,
+            tok: TOK_INT,
             lit: String::from("2"),
             pos: 46,
         }
@@ -1204,7 +1204,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: T_EOF,
+            tok: TOK_EOF,
             lit: String::from(""),
             pos: 52,
         }
