@@ -232,28 +232,42 @@ func correctBatchSize(batchSize, numberCols int) int {
 		at compile time).
 
 		So if the row width is 10 columns, the maximum Batchsize would be:
-		(999 - row_width) / row_width = 89 rows.
+
+		(999 - row_width) / row_width = 98 rows. (with 0.9 of a row unused)
+
+		and,
+
+		(1000 - row_width) / row_width = 99 rows. (no remainder)
+
+		NOTE: Given a statement like:
+
+		INSERT INTO data_table (now,values,difference) VALUES(?,?,?)
+
+		each iteration of EXEC() would add 3 new values (one for each of the '?' placeholders) - but the final "parameter count" includes the initial 3 column names.
+		this is why the calculation subracts an initial "column width" from the supplied Batchsize.
 
 		Sending more would result in the call to Exec returning a "too many SQL variables" error, and the transaction would be rolled-back / aborted
 	*/
 
 	if batchSize < numberCols {
+		// if this is because the width of a single row is very large, pass to DB driver, and if this exceeds the number of allowed parameters
+		// this will be fed back to the user to handle - possibly by reducing the row width
 		return numberCols
 	}
 	return (batchSize - numberCols) / numberCols
 }
 
-func getTranslationFunc(drivername string) (func() translationFunc, error) {
+func getTranslationFunc(driverName string) (func() translationFunc, error) {
 	// simply return the translationFunc that corresponds to the driver type
-	switch drivername {
+	switch driverName {
 	case "sqlite3":
-		return SqliteTranslateColumn, nil
+		return SqliteColumnTranslateFunc, nil
 	case "postgres", "sqlmock":
-		return PostgresTranslateColumn, nil
+		return PostgresColumnTranslateFunc, nil
 	case "mysql":
-		return MysqlTranslateColumn, nil
+		return MysqlColumnTranslateFunc, nil
 	default:
-		return nil, errors.Newf(codes.Internal, "invalid driverName: %s", drivername)
+		return nil, errors.Newf(codes.Internal, "invalid driverName: %s", driverName)
 	}
 
 }
@@ -268,45 +282,45 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 		labels[col.Label] = idxType{Idx: i, Type: col.Type}
 		questionMarks = append(questionMarks, "?")
 		colNames = append(colNames, col.Label)
-		drivername := t.spec.Spec.DriverName
+		driverName := t.spec.Spec.DriverName
 		// the following allows driver-specific type errors (of which there can be MANY) to be returned, rather than the default of invalid type
-		translateColumn, err := getTranslationFunc(drivername)
+		translateColumn, err := getTranslationFunc(driverName)
 		if err != nil {
 			return nil, nil, nil, err
 		}
 		switch col.Type {
 		case flux.TFloat:
-			v, err := translateColumn()(flux.TFloat, col.Label)
+			v, err := translateColumn()(col.Type, col.Label)
 			if err != nil {
 				return nil, nil, nil, err
 			}
 			newSQLTableCols = append(newSQLTableCols, v)
 		case flux.TInt:
-			v, err := translateColumn()(flux.TInt, col.Label)
+			v, err := translateColumn()(col.Type, col.Label)
 			if err != nil {
 				return nil, nil, nil, err
 			}
 			newSQLTableCols = append(newSQLTableCols, v)
 		case flux.TUInt:
-			v, err := translateColumn()(flux.TUInt, col.Label)
+			v, err := translateColumn()(col.Type, col.Label)
 			if err != nil {
 				return nil, nil, nil, err
 			}
 			newSQLTableCols = append(newSQLTableCols, v)
 		case flux.TString:
-			v, err := translateColumn()(flux.TString, col.Label)
+			v, err := translateColumn()(col.Type, col.Label)
 			if err != nil {
 				return nil, nil, nil, err
 			}
 			newSQLTableCols = append(newSQLTableCols, v)
 		case flux.TTime:
-			v, err := translateColumn()(flux.TTime, col.Label)
+			v, err := translateColumn()(col.Type, col.Label)
 			if err != nil {
 				return nil, nil, nil, err
 			}
 			newSQLTableCols = append(newSQLTableCols, v)
 		case flux.TBool:
-			v, err := translateColumn()(flux.TBool, col.Label)
+			v, err := translateColumn()(col.Type, col.Label)
 			if err != nil {
 				return nil, nil, nil, err
 			}

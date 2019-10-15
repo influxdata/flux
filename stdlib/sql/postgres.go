@@ -98,6 +98,8 @@ func (m *PostgresRowReader) InitColumnTypes(types []*sql.ColumnType) {
 			stringTypes[i] = flux.TTime
 		case "BOOL":
 			stringTypes[i] = flux.TBool
+		case "TEXT":
+			stringTypes[i] = flux.TString
 		default:
 			stringTypes[i] = flux.TString
 		}
@@ -143,21 +145,21 @@ func NewPostgresRowReader(r *sql.Rows) (execute.RowReader, error) {
 }
 
 // PostgresTranslateColumn translates flux colTypes into their corresponding postgres column type
-func PostgresTranslateColumn() translationFunc {
+func PostgresColumnTranslateFunc() translationFunc {
 	c := map[string]string{
 		flux.TFloat.String():  "FLOAT",
 		flux.TInt.String():    "BIGINT",
 		flux.TUInt.String():   "BIGINT",
-		flux.TString.String(): "text",
+		flux.TString.String(): "TEXT",
 		flux.TTime.String():   "TIMESTAMP",
 		flux.TBool.String():   "BOOL",
 	}
-	return func(f flux.ColType, colname string) (string, error) {
+	return func(f flux.ColType, colName string) (string, error) {
 		s, found := c[f.String()]
 		if !found {
-			return "", errors.Newf(codes.Internal, "DB does not support column type %s", f.String())
+			return "", errors.Newf(codes.Internal, "PostgreSQL does not support column type %s", f.String())
 		}
-		return colname + " " + s, nil
+		return colName + " " + s, nil
 	}
 
 }

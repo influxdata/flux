@@ -591,7 +591,7 @@ func TestToSQLite3_Process(t *testing.T) {
 				if err == nil {
 					t.Fatal(err)
 				}
-				if err.Error() != "DB does not support column type bool" {
+				if err.Error() != "SQLite does not support column type bool" {
 					t.Fatal(err)
 				}
 			} else {

@@ -174,7 +174,7 @@ func NewMySQLRowReader(r *sql.Rows) (execute.RowReader, error) {
 }
 
 // MysqlTranslateColumn translates flux colTypes into their corresponding MySQL column type
-func MysqlTranslateColumn() translationFunc {
+func MysqlColumnTranslateFunc() translationFunc {
 	c := map[string]string{
 		flux.TFloat.String():  "FLOAT",
 		flux.TInt.String():    "BIGINT",
@@ -185,11 +185,11 @@ func MysqlTranslateColumn() translationFunc {
 		// BOOL is a synonym supplied by MySQL for "convenience", and MYSQL turns this into a TINYINT type under the hood
 		// which means that looking at the schema afterwards shows the columntype as TINYINT, and not bool!
 	}
-	return func(f flux.ColType, colname string) (string, error) {
+	return func(f flux.ColType, colName string) (string, error) {
 		s, found := c[f.String()]
 		if !found {
-			return "", errors.Newf(codes.Internal, "DB does not support column type %s", f.String())
+			return "", errors.Newf(codes.Internal, "MySQL does not support column type %s", f.String())
 		}
-		return colname + " " + s, nil
+		return colName + " " + s, nil
 	}
 }
