@@ -1,14 +1,9 @@
-extern crate chrono;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_aux;
-
 use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 use std::vec::Vec;
 
-use scanner;
+use crate::scanner;
 
 use chrono::prelude::DateTime;
 use chrono::FixedOffset;

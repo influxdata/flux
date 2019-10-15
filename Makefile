@@ -11,7 +11,7 @@
 #    * All recursive Makefiles must support the targets: generate and clean.
 #
 
-SUBDIRS = ast/asttest internal/scanner stdlib internal/rust
+SUBDIRS = ast/asttest internal/scanner stdlib libflux
 
 GO_ARGS=-tags '$(GO_TAGS)'
 
@@ -32,7 +32,7 @@ generate: $(UTILS) $(SUBDIRS)
 
 rust: build
 
-build: internal/rust
+build: libflux
 
 $(SUBDIRS): $(UTILS)
 	$(MAKE) -C $@ $(MAKECMDGOALS)
@@ -45,9 +45,7 @@ bin/$(GOOS)/cmpgen: ./ast/asttest/cmpgen/main.go
 
 fmt: $(SOURCES_NO_VENDOR)
 	go fmt ./...
-	cd internal/rust/ast; cargo fmt
-	cd internal/rust/parser; cargo fmt
-	cd internal/rust/scanner; cargo fmt
+	cd libflux; cargo fmt
 
 checkfmt:
 	./etc/checkfmt.sh
@@ -65,7 +63,7 @@ staticcheck:
 	GO111MODULE=on go mod vendor # staticcheck looks in vendor for dependencies.
 	GO111MODULE=on go run honnef.co/go/tools/cmd/staticcheck ./...
 
-test: internal/rust
+test: libflux
 	$(GO_TEST) $(GO_TEST_FLAGS) ./...
 
 test-race:
@@ -90,7 +88,7 @@ release:
 	fmt \
 	checkfmt \
 	tidy \
-	checktidt \
+	checktidy \
 	checkgenerate \
 	staticcheck \
 	test \
