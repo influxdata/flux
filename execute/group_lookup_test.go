@@ -245,14 +245,11 @@ func testGroupLookup_LookupOrCreate(tb testing.TB, run func(name string, keys []
 	// There should be one point per key so read from the input
 	// and put them into a slice.
 	canonicalKeys := make([]flux.GroupKey, 0, 105)
-	for input.More() {
-		res := input.Next()
-		if err := res.Tables().Do(func(table flux.Table) error {
-			canonicalKeys = append(canonicalKeys, table.Key())
-			return nil
-		}); err != nil {
-			tb.Fatalf("unexpected error: %s", err)
-		}
+	if err := input.Do(func(table flux.Table) error {
+		canonicalKeys = append(canonicalKeys, table.Key())
+		return nil
+	}); err != nil {
+		tb.Fatalf("unexpected error: %s", err)
 	}
 
 	if len(canonicalKeys) != 105 {

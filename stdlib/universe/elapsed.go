@@ -1,11 +1,12 @@
 package universe
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 )
@@ -86,7 +87,7 @@ type ElapsedProcedureSpec struct {
 func newElapsedProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*ElapsedOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return &ElapsedProcedureSpec{
@@ -111,7 +112,7 @@ func (s *ElapsedProcedureSpec) Copy() plan.ProcedureSpec {
 func createElapsedTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*ElapsedProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -158,7 +159,7 @@ func (t *elapsedTransformation) Finish(id execute.DatasetID, err error) {
 func (t *elapsedTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
-		return fmt.Errorf("found duplicate table with key: %v", tbl.Key())
+		return errors.Newf(codes.FailedPrecondition, "found duplicate table with key: %v", tbl.Key())
 	}
 	cols := tbl.Cols()
 	numCol := 0
@@ -170,7 +171,7 @@ func (t *elapsedTransformation) Process(id execute.DatasetID, tbl flux.Table) er
 
 	timeIdx := execute.ColIdx(t.timeColumn, cols)
 	if timeIdx < 0 {
-		return fmt.Errorf("column %q does not exist", t.timeColumn)
+		return errors.Newf(codes.FailedPrecondition, "column %q does not exist", t.timeColumn)
 	}
 
 	timeCol := cols[timeIdx]

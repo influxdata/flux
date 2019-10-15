@@ -611,6 +611,8 @@ func (p *InterpolatedPart) Copy() Node {
 	return np
 }
 
+// ParenExpression represents an expressions that is wrapped in parentheses in the source code.
+// It has no semantic meaning, rather it only communicates information about the syntax of the source code.
 type ParenExpression struct {
 	BaseNode
 	Expression Expression `json:"expression"`

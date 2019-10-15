@@ -110,9 +110,9 @@ func NewDefaultDependencies() Deps {
 	return Deps{
 		Deps: WrappedDeps{
 			HTTPClient: &http.Client{Transport: newDefaultTransport()},
-			// Default to having no filesystem and no secrets.
+			// Default to having no filesystem, no secrets, and no url validation (always pass).
 			FilesystemService: nil,
-			SecretService:     nil,
+			SecretService:     secret.EmptySecretService{},
 			URLValidator:      url.PassValidator{},
 		},
 	}

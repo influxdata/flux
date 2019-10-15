@@ -133,9 +133,9 @@ func CreateAllocatingFromSource(spec plan.ProcedureSpec, id execute.DatasetID, a
 }
 
 func (s *AllocatingFromProcedureSpec) Run(ctx context.Context) {
-	if err := s.alloc.Allocate(s.ByteCount); err != nil {
-		panic(err)
-	}
+	// Allocate the amount of memory as specified in the byte count.
+	// This memory is not used or returned.
+	_ = s.alloc.Allocate(s.ByteCount)
 }
 
 func (s *AllocatingFromProcedureSpec) AddTransformation(t execute.Transformation) {

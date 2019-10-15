@@ -17,6 +17,1738 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
+					Column: 95,
+					Line:   45,
+				},
+				File:   "group_test.flux",
+				Source: "package experimental_test\n\nimport \"experimental\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string\n#group,false,false,false,false,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,name\n,,0,2018-05-22T19:53:26Z,15204688,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:36Z,15204894,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:46Z,15205102,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:56Z,15205226,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:06Z,15205499,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:16Z,15205755,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:26Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:36Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:46Z,672,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:56Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,dateTime:RFC3339,long\n#group,false,false,true,true,true,true,true,true,false,false\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,host,name,_time,_value\n,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk0,2018-05-22T19:54:16Z,15205755\n,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk2,2018-05-22T19:53:46Z,672\n\"\n\nt_group = (table=<-) =>\n\ttable\n\t\t|> range(start: 2018-05-22T19:53:26Z)\n\t\t|> filter(fn: (r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\"))\n\t\t|> experimental.group(mode: \"extend\", columns: [\"name\"])\n\t\t|> max()\n\ntest _group = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "group_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "group_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "group_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "group_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "group_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "group_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   25,
+					},
+					File:   "group_test.flux",
+					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string\n#group,false,false,false,false,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,name\n,,0,2018-05-22T19:53:26Z,15204688,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:36Z,15204894,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:46Z,15205102,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:56Z,15205226,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:06Z,15205499,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:16Z,15205755,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:26Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:36Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:46Z,672,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:56Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   8,
+						},
+						File:   "group_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   25,
+						},
+						File:   "group_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string\n#group,false,false,false,false,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,name\n,,0,2018-05-22T19:53:26Z,15204688,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:36Z,15204894,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:46Z,15205102,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:56Z,15205226,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:06Z,15205499,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:16Z,15205755,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:26Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:36Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:46Z,672,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:56Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string\n#group,false,false,false,false,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,name\n,,0,2018-05-22T19:53:26Z,15204688,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:36Z,15204894,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:46Z,15205102,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:56Z,15205226,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:06Z,15205499,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:16Z,15205755,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:26Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:36Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:46Z,672,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:56Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   34,
+					},
+					File:   "group_test.flux",
+					Source: "outData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,dateTime:RFC3339,long\n#group,false,false,true,true,true,true,true,true,false,false\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,host,name,_time,_value\n,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk0,2018-05-22T19:54:16Z,15205755\n,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk2,2018-05-22T19:53:46Z,672\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   27,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   27,
+						},
+						File:   "group_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   27,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   34,
+						},
+						File:   "group_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,dateTime:RFC3339,long\n#group,false,false,true,true,true,true,true,true,false,false\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,host,name,_time,_value\n,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk0,2018-05-22T19:54:16Z,15205755\n,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk2,2018-05-22T19:53:46Z,672\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   27,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,dateTime:RFC3339,long\n#group,false,false,true,true,true,true,true,true,false,false\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,host,name,_time,_value\n,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk0,2018-05-22T19:54:16Z,15205755\n,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk2,2018-05-22T19:53:46Z,672\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 11,
+						Line:   42,
+					},
+					File:   "group_test.flux",
+					Source: "t_group = (table=<-) =>\n\ttable\n\t\t|> range(start: 2018-05-22T19:53:26Z)\n\t\t|> filter(fn: (r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\"))\n\t\t|> experimental.group(mode: \"extend\", columns: [\"name\"])\n\t\t|> max()",
+					Start: ast.Position{
+						Column: 1,
+						Line:   36,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   36,
+						},
+						File:   "group_test.flux",
+						Source: "t_group",
+						Start: ast.Position{
+							Column: 1,
+							Line:   36,
+						},
+					},
+				},
+				Name: "t_group",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 11,
+							Line:   42,
+						},
+						File:   "group_test.flux",
+						Source: "(table=<-) =>\n\ttable\n\t\t|> range(start: 2018-05-22T19:53:26Z)\n\t\t|> filter(fn: (r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\"))\n\t\t|> experimental.group(mode: \"extend\", columns: [\"name\"])\n\t\t|> max()",
+						Start: ast.Position{
+							Column: 11,
+							Line:   36,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 7,
+												Line:   37,
+											},
+											File:   "group_test.flux",
+											Source: "table",
+											Start: ast.Position{
+												Column: 2,
+												Line:   37,
+											},
+										},
+									},
+									Name: "table",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 40,
+											Line:   38,
+										},
+										File:   "group_test.flux",
+										Source: "table\n\t\t|> range(start: 2018-05-22T19:53:26Z)",
+										Start: ast.Position{
+											Column: 2,
+											Line:   37,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   38,
+												},
+												File:   "group_test.flux",
+												Source: "start: 2018-05-22T19:53:26Z",
+												Start: ast.Position{
+													Column: 12,
+													Line:   38,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 39,
+														Line:   38,
+													},
+													File:   "group_test.flux",
+													Source: "start: 2018-05-22T19:53:26Z",
+													Start: ast.Position{
+														Column: 12,
+														Line:   38,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 17,
+															Line:   38,
+														},
+														File:   "group_test.flux",
+														Source: "start",
+														Start: ast.Position{
+															Column: 12,
+															Line:   38,
+														},
+													},
+												},
+												Name: "start",
+											},
+											Value: &ast.DateTimeLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 39,
+															Line:   38,
+														},
+														File:   "group_test.flux",
+														Source: "2018-05-22T19:53:26Z",
+														Start: ast.Position{
+															Column: 19,
+															Line:   38,
+														},
+													},
+												},
+												Value: parser.MustParseTime("2018-05-22T19:53:26Z"),
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 40,
+												Line:   38,
+											},
+											File:   "group_test.flux",
+											Source: "range(start: 2018-05-22T19:53:26Z)",
+											Start: ast.Position{
+												Column: 6,
+												Line:   38,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 11,
+													Line:   38,
+												},
+												File:   "group_test.flux",
+												Source: "range",
+												Start: ast.Position{
+													Column: 6,
+													Line:   38,
+												},
+											},
+										},
+										Name: "range",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 59,
+										Line:   40,
+									},
+									File:   "group_test.flux",
+									Source: "table\n\t\t|> range(start: 2018-05-22T19:53:26Z)\n\t\t|> filter(fn: (r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\"))",
+									Start: ast.Position{
+										Column: 2,
+										Line:   37,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 58,
+												Line:   40,
+											},
+											File:   "group_test.flux",
+											Source: "fn: (r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\")",
+											Start: ast.Position{
+												Column: 13,
+												Line:   39,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 58,
+													Line:   40,
+												},
+												File:   "group_test.flux",
+												Source: "fn: (r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\")",
+												Start: ast.Position{
+													Column: 13,
+													Line:   39,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 15,
+														Line:   39,
+													},
+													File:   "group_test.flux",
+													Source: "fn",
+													Start: ast.Position{
+														Column: 13,
+														Line:   39,
+													},
+												},
+											},
+											Name: "fn",
+										},
+										Value: &ast.FunctionExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   40,
+													},
+													File:   "group_test.flux",
+													Source: "(r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\")",
+													Start: ast.Position{
+														Column: 17,
+														Line:   39,
+													},
+												},
+											},
+											Body: &ast.ParenExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 58,
+															Line:   40,
+														},
+														File:   "group_test.flux",
+														Source: "(r._measurement == \"diskio\" and r._field == \"io_time\")",
+														Start: ast.Position{
+															Column: 4,
+															Line:   40,
+														},
+													},
+												},
+												Expression: &ast.LogicalExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 57,
+																Line:   40,
+															},
+															File:   "group_test.flux",
+															Source: "r._measurement == \"diskio\" and r._field == \"io_time\"",
+															Start: ast.Position{
+																Column: 5,
+																Line:   40,
+															},
+														},
+													},
+													Left: &ast.BinaryExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 31,
+																	Line:   40,
+																},
+																File:   "group_test.flux",
+																Source: "r._measurement == \"diskio\"",
+																Start: ast.Position{
+																	Column: 5,
+																	Line:   40,
+																},
+															},
+														},
+														Left: &ast.MemberExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 19,
+																		Line:   40,
+																	},
+																	File:   "group_test.flux",
+																	Source: "r._measurement",
+																	Start: ast.Position{
+																		Column: 5,
+																		Line:   40,
+																	},
+																},
+															},
+															Object: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 6,
+																			Line:   40,
+																		},
+																		File:   "group_test.flux",
+																		Source: "r",
+																		Start: ast.Position{
+																			Column: 5,
+																			Line:   40,
+																		},
+																	},
+																},
+																Name: "r",
+															},
+															Property: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 19,
+																			Line:   40,
+																		},
+																		File:   "group_test.flux",
+																		Source: "_measurement",
+																		Start: ast.Position{
+																			Column: 7,
+																			Line:   40,
+																		},
+																	},
+																},
+																Name: "_measurement",
+															},
+														},
+														Operator: 17,
+														Right: &ast.StringLiteral{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 31,
+																		Line:   40,
+																	},
+																	File:   "group_test.flux",
+																	Source: "\"diskio\"",
+																	Start: ast.Position{
+																		Column: 23,
+																		Line:   40,
+																	},
+																},
+															},
+															Value: "diskio",
+														},
+													},
+													Operator: 1,
+													Right: &ast.BinaryExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 57,
+																	Line:   40,
+																},
+																File:   "group_test.flux",
+																Source: "r._field == \"io_time\"",
+																Start: ast.Position{
+																	Column: 36,
+																	Line:   40,
+																},
+															},
+														},
+														Left: &ast.MemberExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 44,
+																		Line:   40,
+																	},
+																	File:   "group_test.flux",
+																	Source: "r._field",
+																	Start: ast.Position{
+																		Column: 36,
+																		Line:   40,
+																	},
+																},
+															},
+															Object: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 37,
+																			Line:   40,
+																		},
+																		File:   "group_test.flux",
+																		Source: "r",
+																		Start: ast.Position{
+																			Column: 36,
+																			Line:   40,
+																		},
+																	},
+																},
+																Name: "r",
+															},
+															Property: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 44,
+																			Line:   40,
+																		},
+																		File:   "group_test.flux",
+																		Source: "_field",
+																		Start: ast.Position{
+																			Column: 38,
+																			Line:   40,
+																		},
+																	},
+																},
+																Name: "_field",
+															},
+														},
+														Operator: 17,
+														Right: &ast.StringLiteral{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 57,
+																		Line:   40,
+																	},
+																	File:   "group_test.flux",
+																	Source: "\"io_time\"",
+																	Start: ast.Position{
+																		Column: 48,
+																		Line:   40,
+																	},
+																},
+															},
+															Value: "io_time",
+														},
+													},
+												},
+											},
+											Params: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 19,
+															Line:   39,
+														},
+														File:   "group_test.flux",
+														Source: "r",
+														Start: ast.Position{
+															Column: 18,
+															Line:   39,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 19,
+																Line:   39,
+															},
+															File:   "group_test.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 18,
+																Line:   39,
+															},
+														},
+													},
+													Name: "r",
+												},
+												Value: nil,
+											}},
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 59,
+											Line:   40,
+										},
+										File:   "group_test.flux",
+										Source: "filter(fn: (r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\"))",
+										Start: ast.Position{
+											Column: 6,
+											Line:   39,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   39,
+											},
+											File:   "group_test.flux",
+											Source: "filter",
+											Start: ast.Position{
+												Column: 6,
+												Line:   39,
+											},
+										},
+									},
+									Name: "filter",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 59,
+									Line:   41,
+								},
+								File:   "group_test.flux",
+								Source: "table\n\t\t|> range(start: 2018-05-22T19:53:26Z)\n\t\t|> filter(fn: (r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\"))\n\t\t|> experimental.group(mode: \"extend\", columns: [\"name\"])",
+								Start: ast.Position{
+									Column: 2,
+									Line:   37,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 58,
+											Line:   41,
+										},
+										File:   "group_test.flux",
+										Source: "mode: \"extend\", columns: [\"name\"]",
+										Start: ast.Position{
+											Column: 25,
+											Line:   41,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   41,
+											},
+											File:   "group_test.flux",
+											Source: "mode: \"extend\"",
+											Start: ast.Position{
+												Column: 25,
+												Line:   41,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   41,
+												},
+												File:   "group_test.flux",
+												Source: "mode",
+												Start: ast.Position{
+													Column: 25,
+													Line:   41,
+												},
+											},
+										},
+										Name: "mode",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   41,
+												},
+												File:   "group_test.flux",
+												Source: "\"extend\"",
+												Start: ast.Position{
+													Column: 31,
+													Line:   41,
+												},
+											},
+										},
+										Value: "extend",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 58,
+												Line:   41,
+											},
+											File:   "group_test.flux",
+											Source: "columns: [\"name\"]",
+											Start: ast.Position{
+												Column: 41,
+												Line:   41,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 48,
+													Line:   41,
+												},
+												File:   "group_test.flux",
+												Source: "columns",
+												Start: ast.Position{
+													Column: 41,
+													Line:   41,
+												},
+											},
+										},
+										Name: "columns",
+									},
+									Value: &ast.ArrayExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 58,
+													Line:   41,
+												},
+												File:   "group_test.flux",
+												Source: "[\"name\"]",
+												Start: ast.Position{
+													Column: 50,
+													Line:   41,
+												},
+											},
+										},
+										Elements: []ast.Expression{&ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 57,
+														Line:   41,
+													},
+													File:   "group_test.flux",
+													Source: "\"name\"",
+													Start: ast.Position{
+														Column: 51,
+														Line:   41,
+													},
+												},
+											},
+											Value: "name",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 59,
+										Line:   41,
+									},
+									File:   "group_test.flux",
+									Source: "experimental.group(mode: \"extend\", columns: [\"name\"])",
+									Start: ast.Position{
+										Column: 6,
+										Line:   41,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 24,
+											Line:   41,
+										},
+										File:   "group_test.flux",
+										Source: "experimental.group",
+										Start: ast.Position{
+											Column: 6,
+											Line:   41,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 18,
+												Line:   41,
+											},
+											File:   "group_test.flux",
+											Source: "experimental",
+											Start: ast.Position{
+												Column: 6,
+												Line:   41,
+											},
+										},
+									},
+									Name: "experimental",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 24,
+												Line:   41,
+											},
+											File:   "group_test.flux",
+											Source: "group",
+											Start: ast.Position{
+												Column: 19,
+												Line:   41,
+											},
+										},
+									},
+									Name: "group",
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   42,
+							},
+							File:   "group_test.flux",
+							Source: "table\n\t\t|> range(start: 2018-05-22T19:53:26Z)\n\t\t|> filter(fn: (r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\"))\n\t\t|> experimental.group(mode: \"extend\", columns: [\"name\"])\n\t\t|> max()",
+							Start: ast.Position{
+								Column: 2,
+								Line:   37,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 11,
+									Line:   42,
+								},
+								File:   "group_test.flux",
+								Source: "max()",
+								Start: ast.Position{
+									Column: 6,
+									Line:   42,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 9,
+										Line:   42,
+									},
+									File:   "group_test.flux",
+									Source: "max",
+									Start: ast.Position{
+										Column: 6,
+										Line:   42,
+									},
+								},
+							},
+							Name: "max",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 20,
+								Line:   36,
+							},
+							File:   "group_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 12,
+								Line:   36,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 17,
+									Line:   36,
+								},
+								File:   "group_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 12,
+									Line:   36,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 20,
+								Line:   36,
+							},
+							File:   "group_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 18,
+								Line:   36,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 95,
+							Line:   45,
+						},
+						File:   "group_test.flux",
+						Source: "_group = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   44,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   44,
+							},
+							File:   "group_test.flux",
+							Source: "_group",
+							Start: ast.Position{
+								Column: 6,
+								Line:   44,
+							},
+						},
+					},
+					Name: "_group",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 95,
+								Line:   45,
+							},
+							File:   "group_test.flux",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})",
+							Start: ast.Position{
+								Column: 15,
+								Line:   44,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 95,
+									Line:   45,
+								},
+								File:   "group_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   45,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 94,
+										Line:   45,
+									},
+									File:   "group_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group}",
+									Start: ast.Position{
+										Column: 3,
+										Line:   45,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 43,
+											Line:   45,
+										},
+										File:   "group_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 4,
+											Line:   45,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   45,
+											},
+											File:   "group_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 4,
+												Line:   45,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   45,
+												},
+												File:   "group_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 31,
+													Line:   45,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   45,
+													},
+													File:   "group_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 31,
+														Line:   45,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   45,
+														},
+														File:   "group_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   45,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   45,
+														},
+														File:   "group_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   45,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   45,
+											},
+											File:   "group_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 11,
+												Line:   45,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   45,
+												},
+												File:   "group_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 11,
+													Line:   45,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   45,
+													},
+													File:   "group_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   45,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   45,
+													},
+													File:   "group_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   45,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 80,
+											Line:   45,
+										},
+										File:   "group_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 45,
+											Line:   45,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   45,
+											},
+											File:   "group_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 45,
+												Line:   45,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   45,
+												},
+												File:   "group_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 67,
+													Line:   45,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 79,
+														Line:   45,
+													},
+													File:   "group_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 67,
+														Line:   45,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   45,
+														},
+														File:   "group_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   45,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   45,
+														},
+														File:   "group_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   45,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 80,
+												Line:   45,
+											},
+											File:   "group_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 51,
+												Line:   45,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   45,
+												},
+												File:   "group_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 51,
+													Line:   45,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   45,
+													},
+													File:   "group_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   45,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   45,
+													},
+													File:   "group_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   45,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 93,
+											Line:   45,
+										},
+										File:   "group_test.flux",
+										Source: "fn: t_group",
+										Start: ast.Position{
+											Column: 82,
+											Line:   45,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   45,
+											},
+											File:   "group_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   45,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 93,
+												Line:   45,
+											},
+											File:   "group_test.flux",
+											Source: "t_group",
+											Start: ast.Position{
+												Column: 86,
+												Line:   45,
+											},
+										},
+									},
+									Name: "t_group",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 95,
+						Line:   45,
+					},
+					File:   "group_test.flux",
+					Source: "test _group = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   44,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 22,
+						Line:   3,
+					},
+					File:   "group_test.flux",
+					Source: "import \"experimental\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 22,
+							Line:   3,
+						},
+						File:   "group_test.flux",
+						Source: "\"experimental\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "experimental",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "group_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "group_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Name: "group_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 26,
+						Line:   1,
+					},
+					File:   "group_test.flux",
+					Source: "package experimental_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   1,
+						},
+						File:   "group_test.flux",
+						Source: "experimental_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "experimental_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
 					Column: 93,
 					Line:   184,
 				},
@@ -1301,10 +3033,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 				},
-				Name: "main",
+				Name: "experimental_test",
 			},
 		},
 	}},
-	Package: "main",
-	Path:    "",
+	Package: "experimental_test",
+	Path:    "experimental",
 }}

@@ -28,63 +28,63 @@ pub fn parse(s: &str) -> JsValue {
 //    println!("Parse in Rust {}", str);
 //}
 
-fn format_token(t: T) -> &'static str {
+fn format_token(t: TOK) -> &'static str {
     match t {
-        T_ILLEGAL => "ILLEGAL",
-        T_EOF => "EOF",
-        T_COMMENT => "COMMENT",
-        T_AND => "AND",
-        T_OR => "OR",
-        T_NOT => "NOT",
-        T_EMPTY => "EMPTY",
-        T_IN => "IN",
-        T_IMPORT => "IMPORT",
-        T_PACKAGE => "PACKAGE",
-        T_RETURN => "RETURN",
-        T_OPTION => "OPTION",
-        T_BUILTIN => "BUILTIN",
-        T_TEST => "TEST",
-        T_IF => "IF",
-        T_THEN => "THEN",
-        T_ELSE => "ELSE",
-        T_IDENT => "IDENT",
-        T_INT => "INT",
-        T_FLOAT => "FLOAT",
-        T_STRING => "STRING",
-        T_REGEX => "REGEX",
-        T_TIME => "TIME",
-        T_DURATION => "DURATION",
-        T_ADD => "ADD",
-        T_SUB => "SUB",
-        T_MUL => "MUL",
-        T_DIV => "DIV",
-        T_MOD => "MOD",
-        T_POW => "POW",
-        T_EQ => "EQ",
-        T_LT => "LT",
-        T_GT => "GT",
-        T_LTE => "LTE",
-        T_GTE => "GTE",
-        T_NEQ => "NEQ",
-        T_REGEXEQ => "REGEXEQ",
-        T_REGEXNEQ => "REGEXNEQ",
-        T_ASSIGN => "ASSIGN",
-        T_ARROW => "ARROW",
-        T_LPAREN => "LPAREN",
-        T_RPAREN => "RPAREN",
-        T_LBRACK => "LBRACK",
-        T_RBRACK => "RBRACK",
-        T_LBRACE => "LBRACE",
-        T_RBRACE => "RBRACE",
-        T_COMMA => "COMMA",
-        T_DOT => "DOT",
-        T_COLON => "COLON",
-        T_PIPE_FORWARD => "PIPE_FORWARD",
-        T_PIPE_RECEIVE => "PIPE_RECEIVE",
-        T_EXISTS => "EXISTS",
-        T_QUOTE => "QUOTE",
-        T_STRINGEXPR => "STRINGEXPR",
-        T_TEXT => "TEXT",
+        TOK_ILLEGAL => "ILLEGAL",
+        TOK_EOF => "EOF",
+        TOK_COMMENT => "COMMENT",
+        TOK_AND => "AND",
+        TOK_OR => "OR",
+        TOK_NOT => "NOT",
+        TOK_EMPTY => "EMPTY",
+        TOK_IN => "IN",
+        TOK_IMPORT => "IMPORT",
+        TOK_PACKAGE => "PACKAGE",
+        TOK_RETURN => "RETURN",
+        TOK_OPTION => "OPTION",
+        TOK_BUILTIN => "BUILTIN",
+        TOK_TEST => "TEST",
+        TOK_IF => "IF",
+        TOK_THEN => "THEN",
+        TOK_ELSE => "ELSE",
+        TOK_IDENT => "IDENT",
+        TOK_INT => "INT",
+        TOK_FLOAT => "FLOAT",
+        TOK_STRING => "STRING",
+        TOK_REGEX => "REGEX",
+        TOK_TIME => "TIME",
+        TOK_DURATION => "DURATION",
+        TOK_ADD => "ADD",
+        TOK_SUB => "SUB",
+        TOK_MUL => "MUL",
+        TOK_DIV => "DIV",
+        TOK_MOD => "MOD",
+        TOK_POW => "POW",
+        TOK_EQ => "EQ",
+        TOK_LT => "LT",
+        TOK_GT => "GT",
+        TOK_LTE => "LTE",
+        TOK_GTE => "GTE",
+        TOK_NEQ => "NEQ",
+        TOK_REGEXEQ => "REGEXEQ",
+        TOK_REGEXNEQ => "REGEXNEQ",
+        TOK_ASSIGN => "ASSIGN",
+        TOK_ARROW => "ARROW",
+        TOK_LPAREN => "LPAREN",
+        TOK_RPAREN => "RPAREN",
+        TOK_LBRACK => "LBRACK",
+        TOK_RBRACK => "RBRACK",
+        TOK_LBRACE => "LBRACE",
+        TOK_RBRACE => "RBRACE",
+        TOK_COMMA => "COMMA",
+        TOK_DOT => "DOT",
+        TOK_COLON => "COLON",
+        TOK_PIPE_FORWARD => "PIPE_FORWARD",
+        TOK_PIPE_RECEIVE => "PIPE_RECEIVE",
+        TOK_EXISTS => "EXISTS",
+        TOK_QUOTE => "QUOTE",
+        TOK_STRINGEXPR => "STRINGEXPR",
+        TOK_TEXT => "TEXT",
         _ => panic!("unknown token {}", t),
     }
 }
@@ -95,7 +95,7 @@ pub struct Parser {
     errs: Vec<String>,
     // blocks maintains a count of the end tokens for nested blocks
     // that we have entered.
-    blocks: HashMap<T, i32>,
+    blocks: HashMap<TOK, i32>,
 
     fname: String,
     source: String,
@@ -143,7 +143,7 @@ impl Parser {
     // peek_with_regex is the same as peek, except that the scan step will allow scanning regexp tokens.
     fn peek_with_regex(&mut self) -> Token {
         match &self.t {
-            Some(Token { tok: T_DIV, .. }) => {
+            Some(Token { tok: TOK_DIV, .. }) => {
                 self.t = None;
                 self.s.unread();
             }
@@ -171,12 +171,12 @@ impl Parser {
     // expect will continuously scan the input until it reads the requested
     // token. If a token has been buffered by peek, then the token will
     // be read if it matches or will be discarded if it is the wrong token.
-    fn expect(&mut self, exp: T) -> Token {
+    fn expect(&mut self, exp: TOK) -> Token {
         loop {
             let t = self.scan();
             match t.tok {
                 tok if tok == exp => return t,
-                T_EOF => {
+                TOK_EOF => {
                     self.errs
                         .push(format!("expected {}, got EOF", format_token(exp)));
                     return t;
@@ -199,7 +199,7 @@ impl Parser {
     // open will open a new block. It will expect that the next token
     // is the start token and mark that we expect the end token in the
     // future.
-    fn open(&mut self, start: T, end: T) -> Token {
+    fn open(&mut self, start: TOK, end: TOK) -> Token {
         let t = self.expect(start);
         let n = self.blocks.entry(end).or_insert(0);
         *n += 1;
@@ -211,7 +211,7 @@ impl Parser {
     // the next token is also not one that would close a block.
     fn more(&mut self) -> bool {
         let t = self.peek();
-        if t.tok == T_EOF {
+        if t.tok == TOK_EOF {
             return false;
         }
         let cnt = self.blocks.get(&t.tok);
@@ -232,10 +232,10 @@ impl Parser {
     //
     // TODO(jsternberg): NoPos doesn't exist yet so this will return the
     // values for the next token even if it isn't consumed.
-    fn close(&mut self, end: T) -> Token {
+    fn close(&mut self, end: TOK) -> Token {
         // If the end token is EOF, we have to do this specially
         // since we don't track EOF.
-        if end == T_EOF {
+        if end == TOK_EOF {
             // TODO(jsternberg): Check for EOF and panic if it isn't.
             return self.scan();
         }
@@ -352,7 +352,7 @@ impl Parser {
 
     fn parse_package_clause(&mut self) -> Option<PackageClause> {
         let t = self.peek();
-        if t.tok == T_PACKAGE {
+        if t.tok == TOK_PACKAGE {
             self.consume();
             let ident = self.parse_identifier();
             return Some(PackageClause {
@@ -367,7 +367,7 @@ impl Parser {
         let mut imports: Vec<ImportDeclaration> = Vec::new();
         loop {
             let t = self.peek();
-            if t.tok != T_IMPORT {
+            if t.tok != TOK_IMPORT {
                 return imports;
             }
             imports.push(self.parse_import_declaration())
@@ -375,8 +375,8 @@ impl Parser {
     }
 
     fn parse_import_declaration(&mut self) -> ImportDeclaration {
-        let t = self.expect(T_IMPORT);
-        let alias = if self.peek().tok == T_IDENT {
+        let t = self.expect(TOK_IMPORT);
+        let alias = if self.peek().tok == TOK_IDENT {
             Some(self.parse_identifier())
         } else {
             None
@@ -402,15 +402,14 @@ impl Parser {
     fn parse_statement(&mut self) -> Statement {
         let t = self.peek();
         match t.tok {
-            T_INT | T_FLOAT | T_STRING | T_DIV | T_TIME | T_DURATION | T_PIPE_RECEIVE
-            | T_LPAREN | T_LBRACK | T_LBRACE | T_ADD | T_SUB | T_NOT | T_IF | T_QUOTE => {
-                self.parse_expression_statement()
-            }
-            T_IDENT => self.parse_ident_statement(),
-            T_OPTION => self.parse_option_assignment(),
-            T_BUILTIN => self.parse_builtin_statement(),
-            T_TEST => self.parse_test_statement(),
-            T_RETURN => self.parse_return_statement(),
+            TOK_INT | TOK_FLOAT | TOK_STRING | TOK_DIV | TOK_TIME | TOK_DURATION
+            | TOK_PIPE_RECEIVE | TOK_LPAREN | TOK_LBRACK | TOK_LBRACE | TOK_ADD | TOK_SUB
+            | TOK_NOT | TOK_IF | TOK_QUOTE => self.parse_expression_statement(),
+            TOK_IDENT => self.parse_ident_statement(),
+            TOK_OPTION => self.parse_option_assignment(),
+            TOK_BUILTIN => self.parse_builtin_statement(),
+            TOK_TEST => self.parse_test_statement(),
+            TOK_RETURN => self.parse_return_statement(),
             _ => {
                 self.consume();
                 Statement::Bad(BadStatement {
@@ -421,7 +420,7 @@ impl Parser {
         }
     }
     fn parse_option_assignment(&mut self) -> Statement {
-        let t = self.expect(T_OPTION);
+        let t = self.expect(TOK_OPTION);
         let ident = self.parse_identifier();
         let assignment = self.parse_option_assignment_suffix(ident);
         Statement::Opt(OptionStatement {
@@ -432,7 +431,7 @@ impl Parser {
     fn parse_option_assignment_suffix(&mut self, id: Identifier) -> Assignment {
         let t = self.peek();
         match t.tok {
-            T_ASSIGN => {
+            TOK_ASSIGN => {
                 let init = self.parse_assign_statement();
                 Assignment::Variable(VariableAssignment {
                     base: self.base_node_from_others(&id.base, init.base()),
@@ -440,7 +439,7 @@ impl Parser {
                     init,
                 })
             }
-            T_DOT => {
+            TOK_DOT => {
                 self.consume();
                 let prop = self.parse_identifier();
                 let init = self.parse_assign_statement();
@@ -458,7 +457,7 @@ impl Parser {
         }
     }
     fn parse_builtin_statement(&mut self) -> Statement {
-        let t = self.expect(T_BUILTIN);
+        let t = self.expect(TOK_BUILTIN);
         let id = self.parse_identifier();
         Statement::Built(BuiltinStatement {
             base: self.base_node_from_other_end(&t, &id.base),
@@ -466,7 +465,7 @@ impl Parser {
         })
     }
     fn parse_test_statement(&mut self) -> Statement {
-        let t = self.expect(T_TEST);
+        let t = self.expect(TOK_TEST);
         let id = self.parse_identifier();
         let assignment = self.parse_assign_statement();
         Statement::Test(TestStatement {
@@ -482,7 +481,7 @@ impl Parser {
         let id = self.parse_identifier();
         let t = self.peek();
         match t.tok {
-            T_ASSIGN => {
+            TOK_ASSIGN => {
                 let init = self.parse_assign_statement();
                 return Statement::Var(VariableAssignment {
                     base: self.base_node_from_others(&id.base, init.base()),
@@ -500,11 +499,11 @@ impl Parser {
         }
     }
     fn parse_assign_statement(&mut self) -> Expression {
-        self.expect(T_ASSIGN);
+        self.expect(TOK_ASSIGN);
         return self.parse_expression();
     }
     fn parse_return_statement(&mut self) -> Statement {
-        let t = self.expect(T_RETURN);
+        let t = self.expect(TOK_RETURN);
         let expr = self.parse_expression();
         Statement::Ret(ReturnStatement {
             base: self.base_node_from_other_end(&t, expr.base()),
@@ -520,9 +519,9 @@ impl Parser {
         Statement::Expr(stmt)
     }
     fn parse_block(&mut self) -> Block {
-        let start = self.open(T_LBRACE, T_RBRACE);
+        let start = self.open(TOK_LBRACE, TOK_RBRACE);
         let stmts = self.parse_statement_list();
-        let end = self.close(T_RBRACE);
+        let end = self.close(TOK_RBRACE);
         return Block {
             base: self.base_node_from_tokens(&start, &end),
             body: stmts,
@@ -543,7 +542,7 @@ impl Parser {
     fn parse_expression_while_more(
         &mut self,
         init: Option<Expression>,
-        stop_tokens: &[T],
+        stop_tokens: &[TOK],
     ) -> Option<Expression> {
         let mut expr = init;
         while {
@@ -596,17 +595,16 @@ impl Parser {
         let mut exprs = Vec::new();
         while self.more() {
             match self.peek().tok {
-                T_IDENT | T_INT | T_FLOAT | T_STRING | T_TIME | T_DURATION | T_PIPE_RECEIVE
-                | T_LPAREN | T_LBRACK | T_LBRACE | T_ADD | T_SUB | T_DIV | T_NOT | T_EXISTS => {
-                    exprs.push(self.parse_expression())
-                }
+                TOK_IDENT | TOK_INT | TOK_FLOAT | TOK_STRING | TOK_TIME | TOK_DURATION
+                | TOK_PIPE_RECEIVE | TOK_LPAREN | TOK_LBRACK | TOK_LBRACE | TOK_ADD | TOK_SUB
+                | TOK_DIV | TOK_NOT | TOK_EXISTS => exprs.push(self.parse_expression()),
                 _ => {
                     // TODO: bad expression
                     self.consume();
                     continue;
                 }
             };
-            if self.peek().tok == T_COMMA {
+            if self.peek().tok == TOK_COMMA {
                 self.consume();
             }
         }
@@ -614,12 +612,12 @@ impl Parser {
     }
     fn parse_conditional_expression(&mut self) -> Expression {
         let t = self.peek();
-        if t.tok == T_IF {
+        if t.tok == TOK_IF {
             self.consume();
             let test = self.parse_expression();
-            self.expect(T_THEN);
+            self.expect(TOK_THEN);
             let cons = self.parse_expression();
-            self.expect(T_ELSE);
+            self.expect(TOK_ELSE);
             let alt = self.parse_expression();
             return Expression::Cond(Box::new(ConditionalExpression {
                 base: self.base_node_from_other_end(&t, alt.base()),
@@ -655,7 +653,7 @@ impl Parser {
     }
     fn parse_or_operator(&mut self) -> Option<LogicalOperatorKind> {
         let t = self.peek().tok;
-        if t == T_OR {
+        if t == TOK_OR {
             self.consume();
             Some(LogicalOperatorKind::OrOperator)
         } else {
@@ -687,7 +685,7 @@ impl Parser {
     }
     fn parse_and_operator(&mut self) -> Option<LogicalOperatorKind> {
         let t = self.peek().tok;
-        if t == T_AND {
+        if t == TOK_AND {
             self.consume();
             Some(LogicalOperatorKind::AndOperator)
         } else {
@@ -712,11 +710,11 @@ impl Parser {
     fn parse_logical_unary_operator(&mut self) -> Option<OperatorKind> {
         let t = self.peek().tok;
         match t {
-            T_NOT => {
+            TOK_NOT => {
                 self.consume();
                 Some(OperatorKind::NotOperator)
             }
-            T_EXISTS => {
+            TOK_EXISTS => {
                 self.consume();
                 Some(OperatorKind::ExistsOperator)
             }
@@ -750,14 +748,14 @@ impl Parser {
         let t = self.peek().tok;
         let mut res = None;
         match t {
-            T_EQ => res = Some(OperatorKind::EqualOperator),
-            T_NEQ => res = Some(OperatorKind::NotEqualOperator),
-            T_LTE => res = Some(OperatorKind::LessThanEqualOperator),
-            T_LT => res = Some(OperatorKind::LessThanOperator),
-            T_GTE => res = Some(OperatorKind::GreaterThanEqualOperator),
-            T_GT => res = Some(OperatorKind::GreaterThanOperator),
-            T_REGEXEQ => res = Some(OperatorKind::RegexpMatchOperator),
-            T_REGEXNEQ => res = Some(OperatorKind::NotRegexpMatchOperator),
+            TOK_EQ => res = Some(OperatorKind::EqualOperator),
+            TOK_NEQ => res = Some(OperatorKind::NotEqualOperator),
+            TOK_LTE => res = Some(OperatorKind::LessThanEqualOperator),
+            TOK_LT => res = Some(OperatorKind::LessThanOperator),
+            TOK_GTE => res = Some(OperatorKind::GreaterThanEqualOperator),
+            TOK_GT => res = Some(OperatorKind::GreaterThanOperator),
+            TOK_REGEXEQ => res = Some(OperatorKind::RegexpMatchOperator),
+            TOK_REGEXNEQ => res = Some(OperatorKind::NotRegexpMatchOperator),
             _ => (),
         }
         match res {
@@ -793,8 +791,8 @@ impl Parser {
         let t = self.peek().tok;
         let mut res = None;
         match t {
-            T_ADD => res = Some(OperatorKind::AdditionOperator),
-            T_SUB => res = Some(OperatorKind::SubtractionOperator),
+            TOK_ADD => res = Some(OperatorKind::AdditionOperator),
+            TOK_SUB => res = Some(OperatorKind::SubtractionOperator),
             _ => (),
         }
         match res {
@@ -830,10 +828,10 @@ impl Parser {
         let t = self.peek().tok;
         let mut res = None;
         match t {
-            T_MUL => res = Some(OperatorKind::MultiplicationOperator),
-            T_DIV => res = Some(OperatorKind::DivisionOperator),
-            T_MOD => res = Some(OperatorKind::ModuloOperator),
-            T_POW => res = Some(OperatorKind::PowerOperator),
+            TOK_MUL => res = Some(OperatorKind::MultiplicationOperator),
+            TOK_DIV => res = Some(OperatorKind::DivisionOperator),
+            TOK_MOD => res = Some(OperatorKind::ModuloOperator),
+            TOK_POW => res = Some(OperatorKind::PowerOperator),
             _ => (),
         }
         match res {
@@ -886,7 +884,7 @@ impl Parser {
     }
     fn parse_pipe_operator(&mut self) -> bool {
         let t = self.peek().tok;
-        let res = t == T_PIPE_FORWARD;
+        let res = t == TOK_PIPE_FORWARD;
         if res {
             self.consume();
         }
@@ -936,14 +934,14 @@ impl Parser {
     fn parse_postfix_operator(&mut self, expr: Expression) -> Result<Expression, Expression> {
         let t = self.peek();
         match t.tok {
-            T_DOT => Ok(self.parse_dot_expression(expr)),
-            T_LPAREN => Ok(self.parse_call_expression(expr)),
-            T_LBRACK => Ok(self.parse_index_expression(expr)),
+            TOK_DOT => Ok(self.parse_dot_expression(expr)),
+            TOK_LPAREN => Ok(self.parse_call_expression(expr)),
+            TOK_LBRACK => Ok(self.parse_index_expression(expr)),
             _ => Err(expr),
         }
     }
     fn parse_dot_expression(&mut self, expr: Expression) -> Expression {
-        self.expect(T_DOT);
+        self.expect(TOK_DOT);
         let id = self.parse_identifier();
         Expression::Mem(Box::new(MemberExpression {
             base: self.base_node_from_others(expr.base(), &id.base),
@@ -952,9 +950,9 @@ impl Parser {
         }))
     }
     fn parse_call_expression(&mut self, expr: Expression) -> Expression {
-        self.open(T_LPAREN, T_RPAREN);
+        self.open(TOK_LPAREN, TOK_RPAREN);
         let params = self.parse_property_list();
-        let end = self.close(T_RPAREN);
+        let end = self.close(TOK_RPAREN);
         let mut call = CallExpression {
             base: self.base_node_from_other_start(expr.base(), &end),
             callee: expr,
@@ -974,9 +972,9 @@ impl Parser {
         Expression::Call(Box::new(call))
     }
     fn parse_index_expression(&mut self, expr: Expression) -> Expression {
-        let start = self.open(T_LBRACK, T_RBRACK);
+        let start = self.open(TOK_LBRACK, TOK_RBRACK);
         let iexpr = self.parse_expression_while_more(None, &[]);
-        let end = self.close(T_RBRACK);
+        let end = self.close(TOK_RBRACK);
         match iexpr {
             Some(Expression::Str(sl)) => Expression::Mem(Box::new(MemberExpression {
                 base: self.base_node_from_other_start(expr.base(), &end),
@@ -1006,18 +1004,18 @@ impl Parser {
     fn parse_primary_expression(&mut self) -> Expression {
         let t = self.peek_with_regex();
         match t.tok {
-            T_IDENT => Expression::Idt(self.parse_identifier()),
-            T_INT => Expression::Int(self.parse_int_literal()),
-            T_FLOAT => Expression::Flt(self.parse_float_literal()),
-            T_STRING => Expression::Str(self.parse_string_literal()),
-            T_QUOTE => Expression::StringExp(Box::new(self.parse_string_expression())),
-            T_REGEX => Expression::Regexp(self.parse_regexp_literal()),
-            T_TIME => Expression::Time(self.parse_time_literal()),
-            T_DURATION => Expression::Dur(self.parse_duration_literal()),
-            T_PIPE_RECEIVE => Expression::PipeLit(self.parse_pipe_literal()),
-            T_LBRACK => Expression::Arr(Box::new(self.parse_array_literal())),
-            T_LBRACE => Expression::Obj(Box::new(self.parse_object_literal())),
-            T_LPAREN => self.parse_paren_expression(),
+            TOK_IDENT => Expression::Idt(self.parse_identifier()),
+            TOK_INT => Expression::Int(self.parse_int_literal()),
+            TOK_FLOAT => Expression::Flt(self.parse_float_literal()),
+            TOK_STRING => Expression::Str(self.parse_string_literal()),
+            TOK_QUOTE => Expression::StringExp(Box::new(self.parse_string_expression())),
+            TOK_REGEX => Expression::Regexp(self.parse_regexp_literal()),
+            TOK_TIME => Expression::Time(self.parse_time_literal()),
+            TOK_DURATION => Expression::Dur(self.parse_duration_literal()),
+            TOK_PIPE_RECEIVE => Expression::PipeLit(self.parse_pipe_literal()),
+            TOK_LBRACK => Expression::Arr(Box::new(self.parse_array_literal())),
+            TOK_LBRACE => Expression::Obj(Box::new(self.parse_object_literal())),
+            TOK_LPAREN => self.parse_paren_expression(),
             // We got a bad token, do not consume it, but use it in the message.
             // Other methods will match BadExpression and consume the token if needed.
             _ => Expression::Bad(Box::new(BadExpression {
@@ -1037,26 +1035,26 @@ impl Parser {
         }
     }
     fn parse_string_expression(&mut self) -> StringExpression {
-        let start = self.expect(T_QUOTE);
+        let start = self.expect(TOK_QUOTE);
         let mut parts = Vec::new();
         loop {
             let t = self.s.scan_string_expr();
             match t.tok {
-                T_TEXT => {
+                TOK_TEXT => {
                     parts.push(StringExpressionPart::Text(TextPart {
                         base: self.base_node_from_token(&t),
-                        value: t.lit,
+                        value: strconv::parse_text(t.lit.as_str()).unwrap(),
                     }));
                 }
-                T_STRINGEXPR => {
+                TOK_STRINGEXPR => {
                     let expr = self.parse_expression();
-                    let end = self.expect(T_RBRACE);
+                    let end = self.expect(TOK_RBRACE);
                     parts.push(StringExpressionPart::Expr(InterpolatedPart {
                         base: self.base_node_from_tokens(&t, &end),
                         expression: expr,
                     }));
                 }
-                T_QUOTE => {
+                TOK_QUOTE => {
                     return StringExpression {
                         base: self.base_node_from_tokens(&start, &t),
                         parts: parts,
@@ -1083,14 +1081,14 @@ impl Parser {
         }
     }
     fn parse_identifier(&mut self) -> Identifier {
-        let t = self.expect(T_IDENT);
+        let t = self.expect(TOK_IDENT);
         return Identifier {
             base: self.base_node_from_token(&t),
             name: t.lit,
         };
     }
     fn parse_int_literal(&mut self) -> IntegerLiteral {
-        let t = self.expect(T_INT);
+        let t = self.expect(TOK_INT);
         match (&t.lit).parse::<i64>() {
             Err(_e) => {
                 self.errs.push(format!(
@@ -1109,14 +1107,14 @@ impl Parser {
         }
     }
     fn parse_float_literal(&mut self) -> FloatLiteral {
-        let t = self.expect(T_FLOAT);
+        let t = self.expect(TOK_FLOAT);
         return FloatLiteral {
             base: self.base_node_from_token(&t),
             value: (&t.lit).parse::<f64>().unwrap(),
         };
     }
     fn parse_string_literal(&mut self) -> StringLiteral {
-        let t = self.expect(T_STRING);
+        let t = self.expect(TOK_STRING);
         let value = strconv::parse_string(t.lit.as_str()).unwrap();
         StringLiteral {
             base: self.base_node_from_token(&t),
@@ -1124,7 +1122,7 @@ impl Parser {
         }
     }
     fn parse_regexp_literal(&mut self) -> RegexpLiteral {
-        let t = self.expect(T_REGEX);
+        let t = self.expect(TOK_REGEX);
         let value = strconv::parse_regex(t.lit.as_str());
         match value {
             Err(e) => {
@@ -1141,7 +1139,7 @@ impl Parser {
         }
     }
     fn parse_time_literal(&mut self) -> DateTimeLiteral {
-        let t = self.expect(T_TIME);
+        let t = self.expect(TOK_TIME);
         let value = strconv::parse_time(t.lit.as_str()).unwrap();
         DateTimeLiteral {
             base: self.base_node_from_token(&t),
@@ -1149,7 +1147,7 @@ impl Parser {
         }
     }
     fn parse_duration_literal(&mut self) -> DurationLiteral {
-        let t = self.expect(T_DURATION);
+        let t = self.expect(TOK_DURATION);
         let values = strconv::parse_duration(t.lit.as_str()).unwrap();
         DurationLiteral {
             base: self.base_node_from_token(&t),
@@ -1157,39 +1155,39 @@ impl Parser {
         }
     }
     fn parse_pipe_literal(&mut self) -> PipeLiteral {
-        let t = self.expect(T_PIPE_RECEIVE);
+        let t = self.expect(TOK_PIPE_RECEIVE);
         PipeLiteral {
             base: self.base_node_from_token(&t),
         }
     }
     fn parse_array_literal(&mut self) -> ArrayExpression {
-        let start = self.open(T_LBRACK, T_RBRACK);
+        let start = self.open(TOK_LBRACK, TOK_RBRACK);
         let exprs = self.parse_expression_list();
-        let end = self.close(T_RBRACK);
+        let end = self.close(TOK_RBRACK);
         ArrayExpression {
             base: self.base_node_from_tokens(&start, &end),
             elements: exprs,
         }
     }
     fn parse_object_literal(&mut self) -> ObjectExpression {
-        let start = self.open(T_LBRACE, T_RBRACE);
+        let start = self.open(TOK_LBRACE, TOK_RBRACE);
         let mut obj = self.parse_object_body();
-        let end = self.close(T_RBRACE);
+        let end = self.close(TOK_RBRACE);
         obj.base = self.base_node_from_tokens(&start, &end);
         obj
     }
     fn parse_paren_expression(&mut self) -> Expression {
-        let lparen = self.open(T_LPAREN, T_RPAREN);
+        let lparen = self.open(TOK_LPAREN, TOK_RPAREN);
         self.parse_paren_body_expression(lparen)
     }
     fn parse_paren_body_expression(&mut self, lparen: Token) -> Expression {
         let t = self.peek();
         match t.tok {
-            T_RPAREN => {
-                self.close(T_RPAREN);
+            TOK_RPAREN => {
+                self.close(TOK_RPAREN);
                 self.parse_function_expression(lparen, Vec::new())
             }
-            T_IDENT => {
+            TOK_IDENT => {
                 let ident = self.parse_identifier();
                 self.parse_paren_ident_expression(lparen, ident)
             }
@@ -1213,7 +1211,7 @@ impl Parser {
                     }
                     Some(_) => (),
                 };
-                let rparen = self.close(T_RPAREN);
+                let rparen = self.close(TOK_RPAREN);
                 Expression::Paren(Box::new(ParenExpression {
                     base: self.base_node_from_tokens(&lparen, &rparen),
                     expression: expr.expect("must be Some at this point"),
@@ -1224,11 +1222,11 @@ impl Parser {
     fn parse_paren_ident_expression(&mut self, lparen: Token, key: Identifier) -> Expression {
         let t = self.peek();
         match t.tok {
-            T_RPAREN => {
-                self.close(T_RPAREN);
+            TOK_RPAREN => {
+                self.close(TOK_RPAREN);
                 let next = self.peek();
                 match next.tok {
-                    T_ARROW => {
+                    TOK_ARROW => {
                         let mut params = Vec::new();
                         params.push(Property {
                             base: self.base_node(key.base.location.clone()),
@@ -1240,7 +1238,7 @@ impl Parser {
                     _ => Expression::Idt(key),
                 }
             }
-            T_ASSIGN => {
+            TOK_ASSIGN => {
                 self.consume();
                 let value = self.parse_expression();
                 let mut params = Vec::new();
@@ -1249,14 +1247,14 @@ impl Parser {
                     key: PropertyKey::Identifier(key),
                     value: Some(value),
                 });
-                if self.peek().tok == T_COMMA {
+                if self.peek().tok == TOK_COMMA {
                     let others = &mut self.parse_parameter_list();
                     params.append(others);
                 }
-                self.close(T_RPAREN);
+                self.close(TOK_RPAREN);
                 self.parse_function_expression(lparen, params)
             }
-            T_COMMA => {
+            TOK_COMMA => {
                 self.consume();
                 let mut params = Vec::new();
                 params.push(Property {
@@ -1266,7 +1264,7 @@ impl Parser {
                 });
                 let others = &mut self.parse_parameter_list();
                 params.append(others);
-                self.close(T_RPAREN);
+                self.close(TOK_RPAREN);
                 self.parse_function_expression(lparen, params)
             }
             _ => {
@@ -1293,7 +1291,7 @@ impl Parser {
                         right: rhs,
                     }));
                 }
-                let rparen = self.close(T_RPAREN);
+                let rparen = self.close(TOK_RPAREN);
                 Expression::Paren(Box::new(ParenExpression {
                     base: self.base_node_from_tokens(&lparen, &rparen),
                     expression: expr,
@@ -1304,11 +1302,11 @@ impl Parser {
     fn parse_object_body(&mut self) -> ObjectExpression {
         let t = self.peek();
         match t.tok {
-            T_IDENT => {
+            TOK_IDENT => {
                 let ident = self.parse_identifier();
                 self.parse_object_body_suffix(ident)
             }
-            T_STRING => {
+            TOK_STRING => {
                 let s = self.parse_string_literal();
                 let props = self.parse_property_list_suffix(PropertyKey::StringLiteral(s));
                 ObjectExpression {
@@ -1329,7 +1327,7 @@ impl Parser {
     fn parse_object_body_suffix(&mut self, ident: Identifier) -> ObjectExpression {
         let t = self.peek();
         match t.tok {
-            T_IDENT => {
+            TOK_IDENT => {
                 if t.lit != "with".to_string() {
                     self.errs.push("".to_string())
                 }
@@ -1361,7 +1359,7 @@ impl Parser {
             return props;
         }
         let t = self.peek();
-        if t.tok != T_COMMA {
+        if t.tok != TOK_COMMA {
             self.errs.push(format!(
                 "expected comma in property list, got {}",
                 format_token(t.tok)
@@ -1379,15 +1377,15 @@ impl Parser {
             let p: Property;
             let t = self.peek();
             match t.tok {
-                T_IDENT => p = self.parse_ident_property(),
-                T_STRING => p = self.parse_string_property(),
+                TOK_IDENT => p = self.parse_ident_property(),
+                TOK_STRING => p = self.parse_string_property(),
                 _ => p = self.parse_invalid_property(),
             }
             params.push(p);
 
             if self.more() {
                 let t = self.peek();
-                if t.tok != T_COMMA {
+                if t.tok != TOK_COMMA {
                     errs.push(format!(
                         "expected comma in property list, got {}",
                         format_token(t.tok)
@@ -1411,7 +1409,7 @@ impl Parser {
     fn parse_property_suffix(&mut self, key: PropertyKey) -> Property {
         let mut value = None;
         let t = self.peek();
-        if t.tok == T_COLON {
+        if t.tok == TOK_COLON {
             self.consume();
             value = self.parse_property_value();
         };
@@ -1430,12 +1428,12 @@ impl Parser {
         let mut value = None;
         let t = self.peek();
         match t.tok {
-            T_COLON => {
+            TOK_COLON => {
                 errs.push(String::from("missing property key"));
                 self.consume();
                 value = self.parse_property_value();
             }
-            T_COMMA => errs.push(String::from("missing property in property list")),
+            TOK_COMMA => errs.push(String::from("missing property in property list")),
             _ => {
                 errs.push(format!(
                     "unexpected token for property key: {} ({})",
@@ -1445,10 +1443,10 @@ impl Parser {
 
                 // We are not really parsing an expression, this is just a way to advance to
                 // to just before the next comma, colon, end of block, or EOF.
-                self.parse_expression_while_more(None, &[T_COMMA, T_COLON]);
+                self.parse_expression_while_more(None, &[TOK_COMMA, TOK_COLON]);
 
                 // If we stopped at a colon, attempt to parse the value
-                if self.peek().tok == T_COLON {
+                if self.peek().tok == TOK_COLON {
                     self.consume();
                     value = self.parse_property_value();
                 }
@@ -1466,7 +1464,7 @@ impl Parser {
         }
     }
     fn parse_property_value(&mut self) -> Option<Expression> {
-        let res = self.parse_expression_while_more(None, &[T_COMMA, T_COLON]);
+        let res = self.parse_expression_while_more(None, &[TOK_COMMA, TOK_COLON]);
         match res {
             // TODO: return a BadExpression here. It would help simplify logic.
             None => self.errs.push(String::from("missing property value")),
@@ -1479,7 +1477,7 @@ impl Parser {
         while self.more() {
             let p = self.parse_parameter();
             params.push(p);
-            if self.peek().tok == T_COMMA {
+            if self.peek().tok == TOK_COMMA {
                 self.consume();
             };
         }
@@ -1487,9 +1485,9 @@ impl Parser {
     }
     fn parse_parameter(&mut self) -> Property {
         let key = self.parse_identifier();
-        let mut base: BaseNode;
+        let base: BaseNode;
         let mut value = None;
-        if self.peek().tok == T_ASSIGN {
+        if self.peek().tok == TOK_ASSIGN {
             self.consume();
             let v = self.parse_expression();
             base = self.base_node_from_others(&key.base, v.base());
@@ -1504,7 +1502,7 @@ impl Parser {
         }
     }
     fn parse_function_expression(&mut self, lparen: Token, params: Vec<Property>) -> Expression {
-        self.expect(T_ARROW);
+        self.expect(TOK_ARROW);
         self.parse_function_body_expression(lparen, params)
     }
     fn parse_function_body_expression(
@@ -1514,7 +1512,7 @@ impl Parser {
     ) -> Expression {
         let t = self.peek();
         match t.tok {
-            T_LBRACE => {
+            TOK_LBRACE => {
                 let block = self.parse_block();
                 Expression::Fun(Box::new(FunctionExpression {
                     base: self.base_node_from_other_end(&lparen, &block.base),

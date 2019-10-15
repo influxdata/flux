@@ -326,7 +326,7 @@ func TestColListTable_SetNil(t *testing.T) {
 func TestCopyTable(t *testing.T) {
 	alloc := &memory.Allocator{}
 
-	res, err := gen.Input(gen.Schema{
+	input, err := gen.Input(gen.Schema{
 		Tags: []gen.Tag{
 			{Name: "t0", Cardinality: 1},
 		},
@@ -342,18 +342,15 @@ func TestCopyTable(t *testing.T) {
 	}
 
 	var buffers []flux.BufferedTable
-	for res.More() {
-		r := res.Next()
-		if err := r.Tables().Do(func(table flux.Table) error {
-			bt, err := execute.CopyTable(table)
-			if err != nil {
-				return err
-			}
-			buffers = append(buffers, bt)
-			return nil
-		}); err != nil {
-			t.Fatalf("unexpected error: %s", err)
+	if err := input.Do(func(table flux.Table) error {
+		bt, err := execute.CopyTable(table)
+		if err != nil {
+			return err
 		}
+		buffers = append(buffers, bt)
+		return nil
+	}); err != nil {
+		t.Fatalf("unexpected error: %s", err)
 	}
 
 	// Ensure we can copy the table and read a point from the

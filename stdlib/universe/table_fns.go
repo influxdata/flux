@@ -2,7 +2,6 @@ package universe
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -60,14 +59,14 @@ func tableFindCall(ctx context.Context, args values.Object) (values.Value, error
 	if v, err := arguments.GetRequired(tableFindStreamArg); err != nil {
 		return nil, err
 	} else if v.Type() != flux.TableObjectMonoType {
-		return nil, fmt.Errorf("unexpected type for %v: want %v, got %v", tableFindStreamArg, "table stream", v.Type())
+		return nil, errors.Newf(codes.Invalid, "unexpected type for %v: want %v, got %v", tableFindStreamArg, "table stream", v.Type())
 	} else {
 		to = v.(*flux.TableObject)
 	}
 
 	var fn *execute.TablePredicateFn
 	if call, err := arguments.GetRequiredFunction(tableFindFunctionArg); err != nil {
-		return nil, fmt.Errorf("missing argument: %s", tableFindFunctionArg)
+		return nil, errors.Newf(codes.Invalid, "missing argument: %s", tableFindFunctionArg)
 	} else {
 		predicate, err := interpreter.ResolveFunction(call)
 		if err != nil {
@@ -134,7 +133,7 @@ func tableFindCall(ctx context.Context, args values.Object) (values.Value, error
 		}
 	}
 	if !found {
-		return nil, fmt.Errorf("no table found")
+		return nil, errors.New(codes.NotFound, "no table found")
 	}
 	return t, nil
 }
@@ -160,7 +159,7 @@ func getColumnCall(ctx context.Context, args values.Object) (values.Value, error
 	if v, err := arguments.GetRequired(getColumnTableArg); err != nil {
 		return nil, err
 	} else if v.Type() != objects.TableMonoType {
-		return nil, fmt.Errorf("unexpected type for %s: want %v, got %v", getColumnTableArg, objects.TableMonoType, v.Type())
+		return nil, errors.Newf(codes.Invalid, "unexpected type for %s: want %v, got %v", getColumnTableArg, objects.TableMonoType, v.Type())
 	} else {
 		tbl = v.(*objects.Table).Table()
 	}
@@ -172,7 +171,7 @@ func getColumnCall(ctx context.Context, args values.Object) (values.Value, error
 
 	idx := execute.ColIdx(col, tbl.Cols())
 	if idx < 0 {
-		return nil, fmt.Errorf("cannot find column %s", col)
+		return nil, errors.Newf(codes.Invalid, "cannot find column %s", col)
 	}
 	var a values.Array
 	if err = tbl.Do(func(cr flux.ColReader) error {
@@ -255,7 +254,7 @@ func getRecordCall(ctx context.Context, args values.Object) (values.Value, error
 	if v, err := arguments.GetRequired(getRecordTableArg); err != nil {
 		return nil, err
 	} else if v.Type() != objects.TableMonoType {
-		return nil, fmt.Errorf("unexpected type for %s: want %v, got %v", getRecordTableArg, objects.TableMonoType, v.Type())
+		return nil, errors.Newf(codes.Invalid, "unexpected type for %s: want %v, got %v", getRecordTableArg, objects.TableMonoType, v.Type())
 	} else {
 		tbl = v.(*objects.Table).Table()
 	}
@@ -268,7 +267,7 @@ func getRecordCall(ctx context.Context, args values.Object) (values.Value, error
 	var r values.Object
 	if err = tbl.Do(func(cr flux.ColReader) error {
 		if rowIdx < 0 || int(rowIdx) >= cr.Len() {
-			return fmt.Errorf("index out of bounds: %d", rowIdx)
+			return errors.Newf(codes.OutOfRange, "index out of bounds: %d", rowIdx)
 		}
 		r = objectFromRow(int(rowIdx), cr)
 		return nil

@@ -263,7 +263,7 @@ func TestRowMapFn_Eval(t *testing.T) {
 	}
 }
 
-func TestRowPredicateFn_Eval(t *testing.T) {
+func TestRowPredicateFn_EvalRow(t *testing.T) {
 	gt2F := func() (*execute.RowPredicateFn, error) {
 		return execute.NewRowPredicateFn(&semantic.FunctionExpression{
 			Block: &semantic.FunctionBlock{
@@ -356,7 +356,7 @@ func TestRowPredicateFn_Eval(t *testing.T) {
 			got := make([]bool, 0, len(tc.data.Data))
 			tc.data.Do(func(cr flux.ColReader) error {
 				for i := 0; i < cr.Len(); i++ {
-					b, err := f.Eval(ctx, i, cr)
+					b, err := f.EvalRow(ctx, i, cr)
 					if err == nil {
 						got = append(got, b)
 					}

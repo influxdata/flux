@@ -1,11 +1,11 @@
 package universe
 
 import (
-	"fmt"
-
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 )
 
@@ -51,7 +51,7 @@ func (s *SpreadOpSpec) Kind() flux.OperationKind {
 func newSpreadProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*SpreadOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	return &SpreadProcedureSpec{
 		AggregateConfig: spec.AggregateConfig,
@@ -82,7 +82,7 @@ func (s *SpreadProcedureSpec) TriggerSpec() plan.TriggerSpec {
 func createSpreadTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*SpreadProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 
 	t, d := execute.NewAggregateTransformationAndDataset(id, mode, new(SpreadAgg), s.AggregateConfig, a.Allocator())

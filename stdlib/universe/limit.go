@@ -1,12 +1,11 @@
 package universe
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 )
@@ -74,7 +73,7 @@ type LimitProcedureSpec struct {
 func newLimitProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*LimitOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	return &LimitProcedureSpec{
 		N:      spec.N,
@@ -99,7 +98,7 @@ func (s *LimitProcedureSpec) TriggerSpec() plan.TriggerSpec {
 func createLimitTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*LimitProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -130,7 +129,7 @@ func (t *limitTransformation) RetractTable(id execute.DatasetID, key flux.GroupK
 func (t *limitTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
-		return fmt.Errorf("limit found duplicate table with key: %v", tbl.Key())
+		return errors.Newf(codes.FailedPrecondition, "limit found duplicate table with key: %v", tbl.Key())
 	}
 	if err := execute.AddTableCols(tbl, builder); err != nil {
 		return err
@@ -138,12 +137,12 @@ func (t *limitTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	// AppendTable with limit
 	n := t.n
 	offset := t.offset
-	var finishedErr error
+	var finished bool
 	err := tbl.Do(func(cr flux.ColReader) error {
 		if n <= 0 {
 			// Returning an error terminates iteration
-			finishedErr = errors.New("finished")
-			return finishedErr
+			finished = true
+			return errors.New(codes.Canceled)
 		}
 		l := cr.Len()
 		if l <= offset {
@@ -168,7 +167,7 @@ func (t *limitTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		return nil
 	})
 
-	if err != nil && finishedErr == nil {
+	if err != nil && !finished {
 		return err
 	}
 	return nil
@@ -177,7 +176,7 @@ func (t *limitTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 func appendSlicedCols(reader flux.ColReader, builder execute.TableBuilder, start, stop int) error {
 	for j, c := range reader.Cols() {
 		if j > len(builder.Cols()) {
-			return errors.New("builder index out of bounds")
+			return errors.New(codes.Internal, "builder index out of bounds")
 		}
 
 		switch c.Type {

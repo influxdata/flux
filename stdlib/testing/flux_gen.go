@@ -22,10 +22,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 2,
-					Line:   27,
+					Line:   32,
 				},
 				File:   "testing.flux",
-				Source: "package testing\n\nimport c \"csv\"\n\nbuiltin assertEquals\nbuiltin assertEmpty\nbuiltin diff\n\noption loadStorage = (csv) => c.from(csv: csv)\noption loadMem = (csv) => c.from(csv: csv)\n\ninspect = (case) => {\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n    return {\n        fn:    tc.fn,\n        input: tc.input,\n        want:  tc.want |> yield(name: \"want\"),\n        got:   got |> yield(name: \"got\"),\n        diff:  dif |> yield(name: \"diff\"),\n    }\n}\n\nrun = (case) => {\n    return inspect(case: case).diff |> assertEmpty()\n}",
+				Source: "package testing\n\nimport c \"csv\"\n\nbuiltin assertEquals\nbuiltin assertEmpty\nbuiltin diff\n\noption loadStorage = (csv) => c.from(csv: csv)\noption loadMem = (csv) => c.from(csv: csv)\n\ninspect = (case) => {\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n    return {\n        fn:    tc.fn,\n        input: tc.input,\n        want:  tc.want |> yield(name: \"want\"),\n        got:   got |> yield(name: \"got\"),\n        diff:  dif |> yield(name: \"diff\"),\n    }\n}\n\nrun = (case) => {\n    return inspect(case: case).diff |> assertEmpty()\n}\n\nbenchmark = (case) => {\n\ttc = case()\n\treturn tc.input |> tc.fn()\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -2260,6 +2260,338 @@ var pkgAST = &ast.Package{
 								Start: ast.Position{
 									Column: 8,
 									Line:   25,
+								},
+							},
+						},
+						Name: "case",
+					},
+					Value: nil,
+				}},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   32,
+					},
+					File:   "testing.flux",
+					Source: "benchmark = (case) => {\n\ttc = case()\n\treturn tc.input |> tc.fn()\n}",
+					Start: ast.Position{
+						Column: 1,
+						Line:   29,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 10,
+							Line:   29,
+						},
+						File:   "testing.flux",
+						Source: "benchmark",
+						Start: ast.Position{
+							Column: 1,
+							Line:   29,
+						},
+					},
+				},
+				Name: "benchmark",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   32,
+						},
+						File:   "testing.flux",
+						Source: "(case) => {\n\ttc = case()\n\treturn tc.input |> tc.fn()\n}",
+						Start: ast.Position{
+							Column: 13,
+							Line:   29,
+						},
+					},
+				},
+				Body: &ast.Block{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 2,
+								Line:   32,
+							},
+							File:   "testing.flux",
+							Source: "{\n\ttc = case()\n\treturn tc.input |> tc.fn()\n}",
+							Start: ast.Position{
+								Column: 23,
+								Line:   29,
+							},
+						},
+					},
+					Body: []ast.Statement{&ast.VariableAssignment{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 13,
+									Line:   30,
+								},
+								File:   "testing.flux",
+								Source: "tc = case()",
+								Start: ast.Position{
+									Column: 2,
+									Line:   30,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 4,
+										Line:   30,
+									},
+									File:   "testing.flux",
+									Source: "tc",
+									Start: ast.Position{
+										Column: 2,
+										Line:   30,
+									},
+								},
+							},
+							Name: "tc",
+						},
+						Init: &ast.CallExpression{
+							Arguments: nil,
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 13,
+										Line:   30,
+									},
+									File:   "testing.flux",
+									Source: "case()",
+									Start: ast.Position{
+										Column: 7,
+										Line:   30,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 11,
+											Line:   30,
+										},
+										File:   "testing.flux",
+										Source: "case",
+										Start: ast.Position{
+											Column: 7,
+											Line:   30,
+										},
+									},
+								},
+								Name: "case",
+							},
+						},
+					}, &ast.ReturnStatement{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 17,
+											Line:   31,
+										},
+										File:   "testing.flux",
+										Source: "tc.input",
+										Start: ast.Position{
+											Column: 9,
+											Line:   31,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   31,
+											},
+											File:   "testing.flux",
+											Source: "tc",
+											Start: ast.Position{
+												Column: 9,
+												Line:   31,
+											},
+										},
+									},
+									Name: "tc",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 17,
+												Line:   31,
+											},
+											File:   "testing.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 12,
+												Line:   31,
+											},
+										},
+									},
+									Name: "input",
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 28,
+										Line:   31,
+									},
+									File:   "testing.flux",
+									Source: "tc.input |> tc.fn()",
+									Start: ast.Position{
+										Column: 9,
+										Line:   31,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 28,
+											Line:   31,
+										},
+										File:   "testing.flux",
+										Source: "tc.fn()",
+										Start: ast.Position{
+											Column: 21,
+											Line:   31,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 26,
+												Line:   31,
+											},
+											File:   "testing.flux",
+											Source: "tc.fn",
+											Start: ast.Position{
+												Column: 21,
+												Line:   31,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   31,
+												},
+												File:   "testing.flux",
+												Source: "tc",
+												Start: ast.Position{
+													Column: 21,
+													Line:   31,
+												},
+											},
+										},
+										Name: "tc",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 26,
+													Line:   31,
+												},
+												File:   "testing.flux",
+												Source: "fn",
+												Start: ast.Position{
+													Column: 24,
+													Line:   31,
+												},
+											},
+										},
+										Name: "fn",
+									},
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 28,
+									Line:   31,
+								},
+								File:   "testing.flux",
+								Source: "return tc.input |> tc.fn()",
+								Start: ast.Position{
+									Column: 2,
+									Line:   31,
+								},
+							},
+						},
+					}},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 18,
+								Line:   29,
+							},
+							File:   "testing.flux",
+							Source: "case",
+							Start: ast.Position{
+								Column: 14,
+								Line:   29,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 18,
+									Line:   29,
+								},
+								File:   "testing.flux",
+								Source: "case",
+								Start: ast.Position{
+									Column: 14,
+									Line:   29,
 								},
 							},
 						},

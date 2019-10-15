@@ -2,15 +2,15 @@ package testing
 
 import (
 	"bytes"
-	"errors"
-	"fmt"
 	"sort"
 	"sync"
 
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -51,7 +51,7 @@ func createDiffOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	}
 	p, ok := t.(*flux.TableObject)
 	if !ok {
-		return nil, errors.New("want input to diff is not a table object")
+		return nil, errors.New(codes.Invalid, "want input to diff is not a table object")
 	}
 	a.AddParent(p)
 
@@ -61,7 +61,7 @@ func createDiffOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	}
 	p, ok = t.(*flux.TableObject)
 	if !ok {
-		return nil, errors.New("got input to diff is not a table object")
+		return nil, errors.New(codes.Invalid, "got input to diff is not a table object")
 	}
 	a.AddParent(p)
 
@@ -96,7 +96,7 @@ func (s *DiffProcedureSpec) Copy() plan.ProcedureSpec {
 func newDiffProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*DiffOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	return &DiffProcedureSpec{Verbose: spec.Verbose}, nil
 }
@@ -159,7 +159,7 @@ func copyTable(id execute.DatasetID, tbl flux.Table, alloc *memory.Allocator) (*
 		case flux.TTime:
 			bc.Builder = arrow.NewIntBuilder(alloc)
 		default:
-			return nil, errors.New("implement me")
+			return nil, errors.New(codes.Unimplemented)
 		}
 		builders[col.Label] = bc
 	}
@@ -246,7 +246,7 @@ func copyTable(id execute.DatasetID, tbl flux.Table, alloc *memory.Allocator) (*
 					}
 				}
 			default:
-				return errors.New("implement me")
+				return errors.New(codes.Unimplemented)
 			}
 		}
 		return nil
@@ -272,14 +272,14 @@ func copyTable(id execute.DatasetID, tbl flux.Table, alloc *memory.Allocator) (*
 
 func createDiffTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	if len(a.Parents()) != 2 {
-		return nil, nil, errors.New("diff should have exactly 2 parents")
+		return nil, nil, errors.New(codes.Internal, "diff should have exactly 2 parents")
 	}
 
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	dataset := execute.NewDataset(id, mode, cache)
 	pspec, ok := spec.(*DiffProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", pspec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", pspec)
 	}
 
 	transform := NewDiffTransformation(dataset, cache, pspec, a.Parents()[0], a.Parents()[1], a.Allocator())
@@ -311,6 +311,7 @@ func (t *DiffTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 	// to prematurely declare the other table as finished so we
 	// don't do more work on something that failed anyway.
 	if t.finished[id] {
+		tbl.Done()
 		return nil
 	}
 
@@ -374,7 +375,7 @@ func (t *DiffTransformation) createSchema(builder execute.TableBuilder, want, go
 	}
 	for label, col := range got.columns {
 		if typ, ok := colTypes[label]; ok && typ != col.Type {
-			return 0, nil, fmt.Errorf("column types differ: want=%s got=%s", typ, col.Type)
+			return 0, nil, errors.Newf(codes.FailedPrecondition, "column types differ: want=%s got=%s", typ, col.Type)
 		} else if !ok {
 			colTypes[label] = col.Type
 		}
@@ -402,6 +403,9 @@ func (t *DiffTransformation) createSchema(builder execute.TableBuilder, want, go
 }
 
 func (t *DiffTransformation) diff(key flux.GroupKey, want, got *tableBuffer) error {
+	defer want.Release()
+	defer got.Release()
+
 	// Find the smallest size for the tables. We will only iterate
 	// over these rows.
 	sz := want.sz
@@ -432,7 +436,7 @@ func (t *DiffTransformation) diff(key flux.GroupKey, want, got *tableBuffer) err
 	// First, construct an output table.
 	builder, created := t.cache.TableBuilder(key)
 	if !created {
-		return errors.New("duplicate table key")
+		return errors.New(codes.FailedPrecondition, "duplicate table key")
 	}
 
 	diffIdx, columnIdxs, err := t.createSchema(builder, want, got)

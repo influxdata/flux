@@ -93,7 +93,7 @@ levelUnknown = "unknown"
 // and writes the result to a system bucket.
 check = (
     tables=<-,
-    data={},
+    data,
     messageFn,
     crit=(r) => false,
     warn=(r) => false,

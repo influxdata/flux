@@ -717,7 +717,9 @@ func TestExecutor_Execute(t *testing.T) {
 					{0, 1},
 				},
 			},
-			allocator: &memory.Allocator{Limit: func(v int64) *int64 { return &v }(64)},
+			allocator: &memory.Allocator{
+				Limit: func(v int64) *int64 { return &v }(64),
+			},
 			wantErr: &flux.Error{
 				Code: codes.ResourceExhausted,
 				Err: memory.LimitExceededError{

@@ -11,21 +11,23 @@ require (
 	github.com/cespare/xxhash v1.1.0
 	github.com/dave/jennifer v1.2.0
 	github.com/eclipse/paho.mqtt.golang v1.2.0
-	github.com/go-sql-driver/mysql v1.4.0
+	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/google/go-cmp v0.3.0
 	github.com/goreleaser/goreleaser v0.94.0
-	github.com/influxdata/changelog v1.0.0
+	github.com/influxdata/changelog v1.1.0
 	github.com/influxdata/line-protocol v0.0.0-20180522152040-32c6aa80de5e
 	github.com/influxdata/promql/v2 v2.12.0
 	github.com/influxdata/tdigest v0.0.0-20181121200506-bf2b5ad3c0a9
 	github.com/lib/pq v1.0.0
 	github.com/mattn/go-runewidth v0.0.3 // indirect
 	github.com/mattn/go-tty v0.0.0-20180907095812-13ff1204f104 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.1
 	github.com/opentracing/opentracing-go v1.0.2
 	github.com/pierrec/lz4 v2.0.5+incompatible // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/pkg/term v0.0.0-20180730021639-bffc007b7fd5 // indirect
+	github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
 	github.com/prometheus/common v0.6.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/segmentio/kafka-go v0.1.0
@@ -36,6 +38,7 @@ require (
 	go.uber.org/zap v1.9.1
 	golang.org/x/exp v0.0.0-20190510132918-efd6b22b2522
 	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
+	golang.org/x/tools v0.0.0-20190628153133-6cdbf07be9d0
 	gonum.org/v1/gonum v0.0.0-20181121035319-3f7ecaa7e8ca
 	google.golang.org/api v0.7.0
 	honnef.co/go/tools v0.0.0-20190418001031-e561f6794a2a

@@ -12,6 +12,11 @@ func TestingInspectCalls(pkg *ast.Package) *ast.File {
 	return genCalls(pkg, "inspect")
 }
 
+// TestingBenchmarkCalls constructs an ast.File that calls testing.benchmark for each test case within the package.
+func TestingBenchmarkCalls(pkg *ast.Package) *ast.File {
+	return genCalls(pkg, "benchmark")
+}
+
 func genCalls(pkg *ast.Package, fn string) *ast.File {
 	callFile := new(ast.File)
 	callFile.Imports = []*ast.ImportDeclaration{{

@@ -1,11 +1,12 @@
 package universe
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 )
@@ -73,7 +74,7 @@ type KamaProcedureSpec struct {
 func newkamaProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*KamaOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
 	return &KamaProcedureSpec{
@@ -100,7 +101,7 @@ func (s *KamaProcedureSpec) TriggerSpec() plan.TriggerSpec {
 func createkamaTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*KamaProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -133,10 +134,10 @@ func (t *kamaTransformation) RetractTable(id execute.DatasetID, key flux.GroupKe
 func (t *kamaTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
-		return fmt.Errorf("KAMA found duplicate table with key: %v", tbl.Key())
+		return errors.Newf(codes.FailedPrecondition, "KAMA found duplicate table with key: %v", tbl.Key())
 	}
 	if t.n <= 0 {
-		return fmt.Errorf("cannot take KaufmansAMA with a period of %v (must be greater than 0)", t.n)
+		return errors.Newf(codes.Invalid, "cannot take KaufmansAMA with a period of %v (must be greater than 0)", t.n)
 	}
 	cols := tbl.Cols()
 	doKAMA := make([]bool, len(cols))
@@ -144,7 +145,7 @@ func (t *kamaTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 		found := false
 		if c.Label == t.column {
 			if c.Type != flux.TInt && c.Type != flux.TUInt && c.Type != flux.TFloat {
-				return fmt.Errorf("cannot take KAMA of column %s (type %s)", c.Label, c.Type.String())
+				return errors.Newf(codes.FailedPrecondition, "cannot take KAMA of column %s (type %s)", c.Label, c.Type.String())
 			}
 			found = true
 		}

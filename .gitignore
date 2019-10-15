@@ -6,8 +6,10 @@ vendor
 .vscode
 .vs
 .tern-project
+.idea
 /coverage.txt
 /internal/rust/*/target/
 /internal/rust/parser/pkg
 /internal/rust/site/node_modules
 /internal/rust/.cache
+/release-notes.txt

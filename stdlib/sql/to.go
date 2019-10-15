@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -122,7 +121,8 @@ func createToSQLTransformation(id execute.DatasetID, mode execute.AccumulationMo
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
-	t, err := NewToSQLTransformation(d, cache, s)
+	deps := flux.GetDependencies(a.Context())
+	t, err := NewToSQLTransformation(d, deps, cache, s)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -141,7 +141,16 @@ func (t *ToSQLTransformation) RetractTable(id execute.DatasetID, key flux.GroupK
 	return t.d.RetractTable(key)
 }
 
-func NewToSQLTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ToSQLProcedureSpec) (*ToSQLTransformation, error) {
+func NewToSQLTransformation(d execute.Dataset, deps flux.Dependencies, cache execute.TableBuilderCache, spec *ToSQLProcedureSpec) (*ToSQLTransformation, error) {
+	validator, err := deps.URLValidator()
+	if err != nil {
+		return nil, err
+	}
+	if err := validateDataSource(validator, spec.Spec.DriverName, spec.Spec.DataSourceName); err != nil {
+		return nil, err
+	}
+
+	// validate the data driver name and source name.
 	db, err := sql.Open(spec.Spec.DriverName, spec.Spec.DataSourceName)
 	if err != nil {
 		return nil, err
@@ -312,7 +321,7 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 					}
 					valueArgs = append(valueArgs, er.Bools(j).Value(i))
 				default:
-					return fmt.Errorf("invalid type for column %s", col.Label)
+					return errors.Newf(codes.FailedPrecondition, "invalid type for column %s", col.Label)
 				}
 			}
 
@@ -354,7 +363,7 @@ func ExecuteQueries(tx *sql.Tx, s *ToSQLOpSpec, colNames []string, valueStrings 
 		_, err := tx.Exec(query, *valueArgs...)
 		if err != nil {
 			if rbErr := tx.Rollback(); rbErr != nil {
-				return fmt.Errorf("transaction failed (%s) while recovering from %s", err, rbErr)
+				return errors.Newf(codes.Aborted, "transaction failed (%s) while recovering from %s", err, rbErr)
 			}
 			return err
 		}

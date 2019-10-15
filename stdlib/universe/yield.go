@@ -1,9 +1,9 @@
 package universe
 
 import (
-	"fmt"
-
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 )
@@ -64,7 +64,7 @@ func newYieldProcedure(qs flux.OperationSpec, _ plan.Administration) (plan.Proce
 		return &YieldProcedureSpec{Name: spec.Name}, nil
 	}
 
-	return nil, fmt.Errorf("invalid spec type %T", qs)
+	return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 }
 
 func (s *YieldProcedureSpec) Kind() plan.ProcedureKind {

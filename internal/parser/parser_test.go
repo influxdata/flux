@@ -5343,6 +5343,29 @@ dollar sign and left brace \${
 			},
 		},
 		{
+			name: "string interp with escapes",
+			raw:  `"string \"interpolation with ${"escapes"}\""`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:45"),
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						BaseNode: base("1:1", "1:45"),
+						Expression: &ast.StringExpression{
+							BaseNode: base("1:1", "1:45"),
+							Parts: []ast.StringExpressionPart{
+								&ast.TextPart{BaseNode: base("1:2", "1:30"), Value: `string "interpolation with `},
+								&ast.InterpolatedPart{
+									BaseNode:   base("1:30", "1:42"),
+									Expression: &ast.StringLiteral{BaseNode: base("1:32", "1:41"), Value: "escapes"},
+								},
+								&ast.TextPart{BaseNode: base("1:42", "1:44"), Value: `"`},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "multiline string",
 			raw: `"
  this is a

@@ -1,11 +1,11 @@
 package universe
 
 import (
-	"fmt"
-
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 )
 
@@ -52,7 +52,7 @@ type FirstProcedureSpec struct {
 func newFirstProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*FirstOpSpec)
 	if !ok {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	return &FirstProcedureSpec{
 		SelectorConfig: spec.SelectorConfig,
@@ -82,7 +82,7 @@ type FirstSelector struct {
 func createFirstTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	ps, ok := spec.(*FirstProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", ps)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", ps)
 	}
 	t, d := execute.NewIndexSelectorTransformationAndDataset(id, mode, new(FirstSelector), ps.SelectorConfig, a.Allocator())
 	return t, d, nil
