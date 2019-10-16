@@ -17,6 +17,7 @@ chrono = { version = "0.4", features = ["serde"] }
 regex = "1"
 maplit = "1.0.2"
 flatbuffers = "0.6.0"
+derivative = "1.0.3"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"
