@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -13,7 +12,6 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 const FromSQLKind = "fromSQL"

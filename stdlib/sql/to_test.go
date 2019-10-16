@@ -3,8 +3,6 @@ package sql_test
 import (
 	"testing"
 
-	"github.com/influxdata/flux/plan"
-
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -12,10 +10,12 @@ import (
 	_ "github.com/influxdata/flux/builtin" // We need to import the builtins for the tests to work.
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	fsql "github.com/influxdata/flux/stdlib/sql"
 	"github.com/influxdata/flux/values"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func TestSqlTo(t *testing.T) {

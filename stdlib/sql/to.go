@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	_ "github.com/go-sql-driver/mysql"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -441,7 +439,7 @@ func ExecuteQueries(tx *sql.Tx, s *ToSQLOpSpec, colNames []string, valueStrings 
 		_, err := tx.Exec(query, *valueArgs...)
 		if err != nil {
 			// this err which is extremely helpful as it comes from the SQL driver should be
-			// bubbled up further up the stach so user can see the issue
+			// bubbled up further up the stack so user can see the issue
 			if rbErr := tx.Rollback(); rbErr != nil {
 				return errors.Newf(codes.Aborted, "transaction failed (%s) while recovering from %s", err, rbErr)
 			}

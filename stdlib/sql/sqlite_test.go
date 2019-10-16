@@ -8,6 +8,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	flux "github.com/influxdata/flux"
 	"github.com/influxdata/flux/values"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func TestBoolTranslation(t *testing.T) {
