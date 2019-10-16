@@ -3,29 +3,32 @@ package sql_test
 import (
 	"testing"
 
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependencies/url"
+	"github.com/influxdata/flux/plan"
+
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin" // We need to import the builtins for the tests to work.
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	fsql "github.com/influxdata/flux/stdlib/sql"
 	"github.com/influxdata/flux/values"
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestSqlTo(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{
 			Name: "from with database",
-			Raw:  `import "sql" from(bucket: "mybucket") |> sql.to(driverName:"sqlmock", dataSourceName:"root@/db", table:"TestTable", batchSize:10000)`,
+			Raw:  `import "sql" from(bucket: "mybucket") |> sql.to(driverName:"sqlmock", dataSourceName:"root@/db", table:"TestTable")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
@@ -40,45 +43,7 @@ func TestSqlTo(t *testing.T) {
 							DriverName:     "sqlmock",
 							DataSourceName: "root@/db",
 							Table:          "TestTable",
-							BatchSize:      10000,
-						},
-					},
-				},
-				Edges: []flux.Edge{
-					{Parent: "from0", Child: "toSQL1"},
-				},
-			},
-		},
-	}
-	for _, tc := range tests {
-		tc := tc
-		t.Run(tc.Name, func(t *testing.T) {
-			t.Parallel()
-			querytest.NewQueryTestHelper(t, tc)
-		})
-	}
-}
-
-func TestSqlite3To(t *testing.T) {
-	tests := []querytest.NewQueryTestCase{
-		{
-			Name: "from with database",
-			Raw:  `import "sql" from(bucket: "mybucket") |> sql.to(driverName:"sqlite3", dataSourceName:"file::memory:", table:"TestTable", batchSize:10000)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
-					{
-						ID: "from0",
-						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
-						},
-					},
-					{
-						ID: "toSQL1",
-						Spec: &fsql.ToSQLOpSpec{
-							DriverName:     "sqlite3",
-							DataSourceName: "file::memory:",
-							Table:          "TestTable",
-							BatchSize:      10000,
+							BatchSize:      fsql.DefaultBatchSize,
 						},
 					},
 				},
@@ -120,7 +85,6 @@ func TestToSQL_Process(t *testing.T) {
 					DriverName:     driverName,
 					DataSourceName: dsn,
 					Table:          "TestTable2",
-					BatchSize:      1,
 				},
 			},
 			data: executetest.MustCopyTable(&executetest.Table{
@@ -171,7 +135,6 @@ func TestToSQL_Process(t *testing.T) {
 					DriverName:     driverName,
 					DataSourceName: dsn,
 					Table:          "TestTable2",
-					BatchSize:      1,
 				},
 			},
 			data: executetest.MustCopyTable(&executetest.Table{
@@ -222,7 +185,6 @@ func TestToSQL_Process(t *testing.T) {
 					DriverName:     driverName,
 					DataSourceName: dsn,
 					Table:          "TestTable2",
-					BatchSize:      1,
 				},
 			},
 			data: executetest.MustCopyTable(&executetest.Table{
@@ -273,7 +235,6 @@ func TestToSQL_Process(t *testing.T) {
 					DriverName:     driverName,
 					DataSourceName: dsn,
 					Table:          "TestTable2",
-					BatchSize:      1,
 				},
 			},
 			data: executetest.MustCopyTable(&executetest.Table{
@@ -352,7 +313,124 @@ func TestToSQL_Process(t *testing.T) {
 	}
 }
 
-<<<<<<< HEAD
+func TestToSql_NewTransformation(t *testing.T) {
+	testCases := []struct {
+		name      string
+		spec      *fsql.ToSQLProcedureSpec
+		validator url.Validator
+		wantErr   string
+	}{
+		{
+			name: "ok mysql",
+			spec: &fsql.ToSQLProcedureSpec{
+				Spec: &fsql.ToSQLOpSpec{
+					DriverName:     "mysql",
+					DataSourceName: "username:password@tcp(localhost:12345)/dbname?param=value",
+				},
+			},
+			wantErr: "connection refused",
+		}, {
+			name: "ok postgres",
+			spec: &fsql.ToSQLProcedureSpec{
+				Spec: &fsql.ToSQLOpSpec{
+					DriverName:     "postgres",
+					DataSourceName: "postgres://pqgotest:password@localhost:12345/pqgotest?sslmode=verify-full",
+				},
+			},
+			wantErr: "connection refused",
+		}, {
+			name: "invalid driver",
+			spec: &fsql.ToSQLProcedureSpec{
+				Spec: &fsql.ToSQLOpSpec{
+					DriverName:     "voltdb",
+					DataSourceName: "voltdb://pqgotest:password@localhost:12345/pqgotest?sslmode=verify-full",
+				},
+			},
+			wantErr: "sql driver voltdb not supported",
+		}, {
+			name: "no such host",
+			spec: &fsql.ToSQLProcedureSpec{
+				Spec: &fsql.ToSQLOpSpec{
+					DriverName:     "mysql",
+					DataSourceName: "username:password@tcp(notfound:12345)/dbname?param=value",
+				},
+			},
+			wantErr: "no such host",
+		}, {
+			name: "private ip",
+			spec: &fsql.ToSQLProcedureSpec{
+				Spec: &fsql.ToSQLOpSpec{
+					DriverName:     "mysql",
+					DataSourceName: "username:password@tcp(localhost:12345)/dbname?param=value",
+				},
+			},
+			validator: url.PrivateIPValidator{},
+			wantErr:   "url is not valid, it connects to a private IP",
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			d := executetest.NewDataset(executetest.RandomDatasetID())
+			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
+			deps := dependenciestest.Default()
+			if tc.validator != nil {
+				deps.Deps.URLValidator = tc.validator
+			}
+			_, err := fsql.NewToSQLTransformation(d, deps, c, tc.spec)
+			if err != nil {
+				if tc.wantErr != "" {
+					got := err.Error()
+					assert.Contains(t, got, tc.wantErr)
+					return
+				} else {
+					t.Fatal(err)
+				}
+			}
+		})
+	}
+}
+func TestSqlite3To(t *testing.T) {
+	tests := []querytest.NewQueryTestCase{
+		{
+			Name: "from with database",
+			Raw:  `import "sql" from(bucket: "mybucket") |> sql.to(driverName:"sqlite3", dataSourceName:"file::memory:", table:"TestTable", batchSize:10000)`,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: "mybucket",
+						},
+					},
+					{
+						ID: "toSQL1",
+						Spec: &fsql.ToSQLOpSpec{
+							DriverName:     "sqlite3",
+							DataSourceName: "file::memory:",
+							Table:          "TestTable",
+							BatchSize:      10000,
+						},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "toSQL1"},
+				},
+			},
+		},
+	}
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			querytest.NewQueryTestHelper(t, tc)
+		})
+	}
+}
+
 func TestToSQLite3_Process(t *testing.T) {
 	driverName := "sqlite3"
 	// use the in-memory mode - so we can test the functionality of the "type interactions" between driver and flux without needing an underlying FS
@@ -573,73 +651,17 @@ func TestToSQLite3_Process(t *testing.T) {
 					values.Time(int64(execute.Time(31))).Time(), "a", true, "nine",
 					values.Time(int64(execute.Time(41))).Time(), "c", false, "elevendyone"}},
 			},
-=======
-func TestToSql_NewTransformation(t *testing.T) {
-	testCases := []struct {
-		name      string
-		spec      *fsql.ToSQLProcedureSpec
-		validator url.Validator
-		wantErr   string
-	}{
-		{
-			name: "ok mysql",
-			spec: &fsql.ToSQLProcedureSpec{
-				Spec: &fsql.ToSQLOpSpec{
-					DriverName:     "mysql",
-					DataSourceName: "username:password@tcp(localhost:12345)/dbname?param=value",
-				},
-			},
-			wantErr: "connection refused",
-		}, {
-			name: "ok postgres",
-			spec: &fsql.ToSQLProcedureSpec{
-				Spec: &fsql.ToSQLOpSpec{
-					DriverName:     "postgres",
-					DataSourceName: "postgres://pqgotest:password@localhost:12345/pqgotest?sslmode=verify-full",
-				},
-			},
-			wantErr: "connection refused",
-		}, {
-			name: "invalid driver",
-			spec: &fsql.ToSQLProcedureSpec{
-				Spec: &fsql.ToSQLOpSpec{
-					DriverName:     "voltdb",
-					DataSourceName: "voltdb://pqgotest:password@localhost:12345/pqgotest?sslmode=verify-full",
-				},
-			},
-			wantErr: "sql driver voltdb not supported",
-		}, {
-			name: "no such host",
-			spec: &fsql.ToSQLProcedureSpec{
-				Spec: &fsql.ToSQLOpSpec{
-					DriverName:     "mysql",
-					DataSourceName: "username:password@tcp(notfound:12345)/dbname?param=value",
-				},
-			},
-			wantErr: "no such host",
-		}, {
-			name: "private ip",
-			spec: &fsql.ToSQLProcedureSpec{
-				Spec: &fsql.ToSQLOpSpec{
-					DriverName:     "mysql",
-					DataSourceName: "username:password@tcp(localhost:12345)/dbname?param=value",
-				},
-			},
-			validator: url.PrivateIPValidator{},
-			wantErr:   "url is not valid, it connects to a private IP",
->>>>>>> upstream/master
 		},
 	}
 
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-<<<<<<< HEAD
 			d := executetest.NewDataset(executetest.RandomDatasetID())
 			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
 			c.SetTriggerSpec(plan.DefaultTriggerSpec)
 
-			transformation, err := fsql.NewToSQLTransformation(d, c, tc.spec)
+			transformation, err := fsql.NewToSQLTransformation(d, dependenciestest.Default(), c, tc.spec)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -670,25 +692,6 @@ func TestToSql_NewTransformation(t *testing.T) {
 					t.Log(cmp.Diff(tc.want.ValueArgs, valArgs))
 					t.Fail()
 				}
-=======
-			t.Parallel()
-
-			d := executetest.NewDataset(executetest.RandomDatasetID())
-			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
-			deps := dependenciestest.Default()
-			if tc.validator != nil {
-				deps.Deps.URLValidator = tc.validator
-			}
-			_, err := fsql.NewToSQLTransformation(d, deps, c, tc.spec)
-			if err != nil {
-				if tc.wantErr != "" {
-					got := err.Error()
-					assert.Contains(t, got, tc.wantErr)
-					return
-				} else {
-					t.Fatal(err)
-				}
->>>>>>> upstream/master
 			}
 		})
 	}

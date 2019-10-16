@@ -2,6 +2,7 @@ package sql
 
 import (
 	neturl "net/url"
+	"strings"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/influxdata/flux/codes"
@@ -32,6 +33,28 @@ func validateDataSource(validator url.Validator, driverName string, dataSourceNa
 		u, err = neturl.Parse(dataSourceName)
 		if err != nil {
 			return errors.Newf(codes.Invalid, "invalid data source url: %v", err)
+		}
+	case "sqlite3":
+		/*
+			example SQLite is: file:test.db?cache=shared&mode=memory
+			SQLite supports a superset of DSNs, including several special cases that net/url will flag as errors:
+			:memory:
+			file::memory:
+
+			so we need to check for these, otherwise will flag as an error
+		*/
+		if dataSourceName == ":memory:" || dataSourceName == "file::memory:" {
+			return nil
+		}
+		// we have a dsn that MIGHT be valid, so need to parse it - if it fails here, it is likely to be invalid
+		u, err = neturl.Parse(dataSourceName)
+		if err != nil {
+			return errors.Newf(codes.Invalid, "invalid data source url: %v", err)
+		}
+		// NOTE: parser doesn't return an error for an empty path, or a path consisting of only whitespace - not an error as such, but here we rely on the driver implementation "doing the right thing"
+		// better not to, and flag this as an error
+		if strings.TrimSpace(dataSourceName) == "" {
+			return errors.Newf(codes.Invalid, "invalid data source url: %v", "empty path supplied")
 		}
 	default:
 		return errors.Newf(codes.Invalid, "sql driver %s not supported", driverName)
