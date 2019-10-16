@@ -135,7 +135,8 @@ func createToSQLTransformation(id execute.DatasetID, mode execute.AccumulationMo
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
-	t, err := NewToSQLTransformation(d, cache, s)
+	deps := flux.GetDependencies(a.Context())
+	t, err := NewToSQLTransformation(d, deps, cache, s)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -154,7 +155,16 @@ func (t *ToSQLTransformation) RetractTable(id execute.DatasetID, key flux.GroupK
 	return t.d.RetractTable(key)
 }
 
-func NewToSQLTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ToSQLProcedureSpec) (*ToSQLTransformation, error) {
+func NewToSQLTransformation(d execute.Dataset, deps flux.Dependencies, cache execute.TableBuilderCache, spec *ToSQLProcedureSpec) (*ToSQLTransformation, error) {
+	validator, err := deps.URLValidator()
+	if err != nil {
+		return nil, err
+	}
+	if err := validateDataSource(validator, spec.Spec.DriverName, spec.Spec.DataSourceName); err != nil {
+		return nil, err
+	}
+
+	// validate the data driver name and source name.
 	db, err := sql.Open(spec.Spec.DriverName, spec.Spec.DataSourceName)
 	if err != nil {
 		return nil, err
