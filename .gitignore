@@ -8,8 +8,8 @@ vendor
 .tern-project
 .idea
 /coverage.txt
-/internal/rust/*/target/
-/internal/rust/parser/pkg
-/internal/rust/site/node_modules
-/internal/rust/.cache
+/libflux/target
+/libflux/pkg
+/libflux/site/node_modules
+/libflux/.cache
 /release-notes.txt

@@ -2,9 +2,10 @@ use std::collections::HashMap;
 use std::ffi::CString;
 use std::str;
 
-use ast::*;
-use scanner;
-use scanner::*;
+use crate::ast;
+use crate::ast::*;
+use crate::scanner;
+use crate::scanner::*;
 
 use wasm_bindgen::prelude::*;
 
