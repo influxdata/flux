@@ -43,7 +43,14 @@ func (t Time) Add(d Duration) Time {
 	return t + Time(d)
 }
 
-// remainder divides t by d and returns the remainder.
+// Sub takes another time and returns a duration giving the duration
+// between the two times. A positive duration indicates that the receiver
+// occurs after the other time.
+func (t Time) Sub(other Time) Duration {
+	return Duration(t - other)
+}
+
+// Remainder divides t by d and returns the remainder.
 func (t Time) Remainder(d Duration) (r Duration) {
 	return Duration(int64(t) % int64(d))
 }
@@ -70,6 +77,32 @@ func (t Time) Time() time.Time {
 	return time.Unix(0, int64(t)).UTC()
 }
 
+// Mul will multiply the Duration by a scalar.
+// This multiplies each component of the vector.
+func (d Duration) Mul(scale int) Duration {
+	return d * Duration(scale)
+}
+
+// IsPositive returns true if this is a positive number.
+// It returns false if the number is zero.
+func (d Duration) IsPositive() bool {
+	return d > 0
+}
+
+// IsZero returns true if this is a zero duration.
+func (d Duration) IsZero() bool {
+	return d == 0
+}
+
+// Duration will return the nanosecond equivalent
+// of this duration. It will assume that months are
+// the equivalent of 30 days.
+//
+// It is recommended not to use this method unless
+// it is absolutely needed. This method will lose
+// any precision that is present in the Duration
+// and it should only be used for interfacing with
+// outside code that is not month-aware.
 func (d Duration) Duration() time.Duration {
 	return time.Duration(d)
 }
