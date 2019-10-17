@@ -15,6 +15,11 @@ func ConvertTime(t time.Time) Time {
 	return Time(t.UnixNano())
 }
 
+// ConvertDuration takes a time.Duration and converts it into a Duration.
+func ConvertDuration(v time.Duration) Duration {
+	return Duration(v)
+}
+
 func (t Time) Round(d Duration) Time {
 	if d <= 0 {
 		return t
@@ -72,6 +77,8 @@ func (d Duration) String() string {
 	return time.Duration(d).String()
 }
 func ParseDuration(s string) (Duration, error) {
+	// TODO(jsternberg): This should use the real duration parsing
+	// instead of time.ParseDuration.
 	d, err := time.ParseDuration(s)
 	if err != nil {
 		return 0, err

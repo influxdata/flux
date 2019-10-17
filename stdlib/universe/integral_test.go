@@ -17,7 +17,7 @@ func TestIntegralOperation_Marshaling(t *testing.T) {
 	op := &flux.Operation{
 		ID: "integral",
 		Spec: &universe.IntegralOpSpec{
-			Unit: flux.Duration(time.Minute),
+			Unit: flux.ConvertDuration(time.Minute),
 		},
 	}
 	querytest.OperationMarshalingTestHelper(t, data, op)
@@ -141,7 +141,7 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "float with units",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.Duration(time.Second),
+				Unit:            flux.ConvertDuration(time.Second),
 				TimeColumn:      execute.DefaultTimeColLabel,
 				AggregateConfig: execute.DefaultAggregateConfig,
 			},

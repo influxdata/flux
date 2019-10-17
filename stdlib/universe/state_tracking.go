@@ -67,7 +67,7 @@ func createStateTrackingOpSpec(args flux.Arguments, a *flux.Administration) (flu
 
 	spec := &StateTrackingOpSpec{
 		Fn:           fn,
-		DurationUnit: flux.Duration(time.Second),
+		DurationUnit: flux.ConvertDuration(time.Second),
 	}
 
 	if label, ok, err := args.GetString("countColumn"); err != nil {
@@ -186,7 +186,7 @@ func NewStateTrackingTransformation(ctx context.Context, spec *StateTrackingProc
 		fn:             fn,
 		countColumn:    spec.CountColumn,
 		durationColumn: spec.DurationColumn,
-		durationUnit:   int64(spec.DurationUnit),
+		durationUnit:   int64(values.Duration(spec.DurationUnit).Duration()),
 		timeCol:        spec.TimeCol,
 		ctx:            ctx,
 	}, nil

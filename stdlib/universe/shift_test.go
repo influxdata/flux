@@ -16,7 +16,7 @@ func TestShiftOperation_Marshaling(t *testing.T) {
 	op := &flux.Operation{
 		ID: "shift",
 		Spec: &universe.ShiftOpSpec{
-			Shift: flux.Duration(1 * time.Hour),
+			Shift: flux.ConvertDuration(1 * time.Hour),
 		},
 	}
 	querytest.OperationMarshalingTestHelper(t, data, op)
@@ -39,7 +39,7 @@ func TestShift_Process(t *testing.T) {
 			name: "one table",
 			spec: &universe.ShiftProcedureSpec{
 				Columns: []string{execute.DefaultTimeColLabel},
-				Shift:   flux.Duration(1),
+				Shift:   flux.ConvertDuration(1),
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -66,7 +66,7 @@ func TestShift_Process(t *testing.T) {
 			name: "multiple tables",
 			spec: &universe.ShiftProcedureSpec{
 				Columns: []string{execute.DefaultTimeColLabel},
-				Shift:   flux.Duration(2),
+				Shift:   flux.ConvertDuration(2),
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -109,7 +109,7 @@ func TestShift_Process(t *testing.T) {
 			name: "null time",
 			spec: &universe.ShiftProcedureSpec{
 				Columns: []string{execute.DefaultTimeColLabel},
-				Shift:   flux.Duration(1),
+				Shift:   flux.ConvertDuration(1),
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -136,7 +136,7 @@ func TestShift_Process(t *testing.T) {
 			name: "null value",
 			spec: &universe.ShiftProcedureSpec{
 				Columns: []string{execute.DefaultTimeColLabel},
-				Shift:   flux.Duration(1),
+				Shift:   flux.ConvertDuration(1),
 			},
 			data: []flux.Table{
 				&executetest.Table{

@@ -20,7 +20,7 @@ func TestNew(t *testing.T) {
 		{v: float64(6.0), want: values.NewFloat(6.0)},
 		{v: true, want: values.NewBool(true)},
 		{v: values.Time(1000), want: values.NewTime(values.Time(1000))},
-		{v: values.Duration(1), want: values.NewDuration(values.Duration(1))},
+		{v: values.ConvertDuration(1), want: values.NewDuration(values.ConvertDuration(1))},
 		{v: regexp.MustCompile(`.+`), want: values.NewRegexp(regexp.MustCompile(`.+`))},
 		{v: values.NewArray(semantic.String), want: values.InvalidValue},
 	} {
