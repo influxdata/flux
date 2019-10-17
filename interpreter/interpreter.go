@@ -368,7 +368,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 			case semantic.Float:
 				return values.NewFloat(-v.Float()), nil
 			case semantic.Duration:
-				return values.NewDuration(-v.Duration()), nil
+				return values.NewDuration(v.Duration().Mul(-1)), nil
 			default:
 				return nil, errors.Newf(codes.Invalid, "operand to unary expression is not a number value, got %v", v.Type())
 			}
