@@ -47,7 +47,7 @@ func TestHoltWinters_NewQuery(t *testing.T) {
 							TimeColumn: execute.DefaultTimeColLabel,
 							N:          84,
 							S:          0,
-							Interval:   flux.Duration(42 * 24 * time.Hour),
+							Interval:   flux.ConvertDuration(42 * 24 * time.Hour),
 						},
 					},
 				},
@@ -89,7 +89,7 @@ func TestHoltWinters_NewQuery(t *testing.T) {
 							TimeColumn: "t",
 							N:          84,
 							S:          4,
-							Interval:   flux.Duration(42 * 24 * time.Hour),
+							Interval:   flux.ConvertDuration(42 * 24 * time.Hour),
 						},
 					},
 				},
@@ -125,7 +125,7 @@ func TestHoltWinters_Marshaling(t *testing.T) {
 			TimeColumn: "t",
 			N:          84,
 			S:          4,
-			Interval:   flux.Duration(42 * time.Minute),
+			Interval:   flux.ConvertDuration(42 * time.Minute),
 		},
 	}
 
@@ -177,7 +177,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				WithFit:    false,
 				N:          10,
 				S:          4,
-				Interval:   flux.Duration(379 * time.Minute),
+				Interval:   flux.ConvertDuration(379 * time.Minute),
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -236,7 +236,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				WithFit:    true,
 				N:          10,
 				S:          4,
-				Interval:   flux.Duration(379 * time.Minute),
+				Interval:   flux.ConvertDuration(379 * time.Minute),
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -315,7 +315,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				WithFit:    false,
 				N:          10,
 				S:          4,
-				Interval:   flux.Duration(379 * time.Minute),
+				Interval:   flux.ConvertDuration(379 * time.Minute),
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -411,7 +411,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				WithFit:    false,
 				N:          10,
 				S:          4,
-				Interval:   flux.Duration(379 * time.Minute),
+				Interval:   flux.ConvertDuration(379 * time.Minute),
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -473,7 +473,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				WithFit:    false,
 				N:          10,
 				S:          4,
-				Interval:   flux.Duration(379 * time.Minute),
+				Interval:   flux.ConvertDuration(379 * time.Minute),
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -546,7 +546,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				WithFit:    false,
 				N:          10,
 				S:          4,
-				Interval:   flux.Duration(379 * time.Minute),
+				Interval:   flux.ConvertDuration(379 * time.Minute),
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -683,7 +683,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				WithFit:    false,
 				N:          10,
 				S:          4,
-				Interval:   flux.Duration(379 * time.Minute),
+				Interval:   flux.ConvertDuration(379 * time.Minute),
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -750,7 +750,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				WithFit:    false,
 				N:          10,
 				S:          0,
-				Interval:   flux.Duration(379 * time.Minute),
+				Interval:   flux.ConvertDuration(379 * time.Minute),
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -810,7 +810,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				WithFit:    false,
 				N:          10,
 				S:          0,
-				Interval:   flux.Duration(379 * time.Minute),
+				Interval:   flux.ConvertDuration(379 * time.Minute),
 			},
 			data: []flux.Table{
 				&executetest.Table{

@@ -551,7 +551,7 @@ func (itrp *Interpreter) doLiteral(lit semantic.Literal) (values.Value, error) {
 	case *semantic.DateTimeLiteral:
 		return values.NewTime(values.Time(l.Value.UnixNano())), nil
 	case *semantic.DurationLiteral:
-		return values.NewDuration(values.Duration(l.Value)), nil
+		return values.NewDuration(values.ConvertDuration(l.Value)), nil
 	case *semantic.FloatLiteral:
 		return values.NewFloat(l.Value), nil
 	case *semantic.IntegerLiteral:

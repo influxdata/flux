@@ -148,7 +148,7 @@ func (o *ToMQTTOpSpec) ReadArgs(args flux.Arguments) error {
 	if !ok {
 		o.Timeout = DefaultToMQTTTimeout
 	} else {
-		o.Timeout = time.Duration(timeout)
+		o.Timeout = values.Duration(timeout).Duration()
 	}
 
 	o.TimeColumn, ok, err = args.GetString("timeColumn")

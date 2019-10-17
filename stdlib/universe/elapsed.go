@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 const ElapsedKind = "elapsed"
@@ -47,7 +48,7 @@ func createElapsedOpSpec(args flux.Arguments, a *flux.Administration) (flux.Oper
 	} else if ok {
 		spec.Unit = unit
 	} else {
-		spec.Unit = flux.Duration(time.Second)
+		spec.Unit = flux.ConvertDuration(time.Second)
 	}
 
 	if timeCol, ok, err := args.GetString("timeColumn"); err != nil {
@@ -134,7 +135,7 @@ func NewElapsedTransformation(d execute.Dataset, cache execute.TableBuilderCache
 		d:     d,
 		cache: cache,
 
-		unit:       float64(spec.Unit),
+		unit:       float64(values.Duration(spec.Unit).Duration()),
 		timeColumn: spec.TimeColumn,
 		columnName: spec.ColumnName,
 	}

@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 const DerivativeKind = "derivative"
@@ -51,8 +52,8 @@ func createDerivativeOpSpec(args flux.Arguments, a *flux.Administration) (flux.O
 	} else if ok {
 		spec.Unit = unit
 	} else {
-		//Default is 1s
-		spec.Unit = flux.Duration(time.Second)
+		// Default is 1s
+		spec.Unit = flux.ConvertDuration(time.Second)
 	}
 
 	if nn, ok, err := args.GetBool("nonNegative"); err != nil {
@@ -155,7 +156,7 @@ func NewDerivativeTransformation(d execute.Dataset, cache execute.TableBuilderCa
 	return &derivativeTransformation{
 		d:           d,
 		cache:       cache,
-		unit:        float64(spec.Unit),
+		unit:        float64(values.Duration(spec.Unit).Duration()),
 		nonNegative: spec.NonNegative,
 		columns:     spec.Columns,
 		timeCol:     spec.TimeColumn,

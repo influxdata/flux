@@ -50,7 +50,7 @@ func TestStateTracking_NewQuery(t *testing.T) {
 						Spec: &universe.StateTrackingOpSpec{
 							CountColumn:    "stateCount",
 							DurationColumn: "",
-							DurationUnit:   flux.Duration(time.Second),
+							DurationUnit:   flux.ConvertDuration(time.Second),
 							TimeColumn:     "_time",
 							Fn: interpreter.ResolvedFunction{
 								Fn: &semantic.FunctionExpression{
@@ -93,7 +93,7 @@ func TestStateTracking_NewQuery(t *testing.T) {
 						Spec: &universe.StateTrackingOpSpec{
 							CountColumn:    "",
 							DurationColumn: "stateDuration",
-							DurationUnit:   flux.Duration(time.Second),
+							DurationUnit:   flux.ConvertDuration(time.Second),
 							TimeColumn:     "ts",
 							Fn: interpreter.ResolvedFunction{
 								Fn: &semantic.FunctionExpression{
@@ -132,7 +132,7 @@ func TestStateTrackingOperation_Marshaling(t *testing.T) {
 		Spec: &universe.StateTrackingOpSpec{
 			CountColumn:    "c",
 			DurationColumn: "d",
-			DurationUnit:   flux.Duration(time.Minute),
+			DurationUnit:   flux.ConvertDuration(time.Minute),
 			TimeColumn:     "t",
 		},
 	}

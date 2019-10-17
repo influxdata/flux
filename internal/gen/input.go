@@ -142,7 +142,7 @@ func Input(schema Schema) (flux.TableIterator, error) {
 		alloc = &memory.Allocator{}
 	}
 	g := &dataGenerator{
-		Period:    values.Duration(period),
+		Period:    values.ConvertDuration(period),
 		NumPoints: numPoints,
 		Nulls:     schema.Nulls,
 		Allocator: alloc,
@@ -459,10 +459,10 @@ func (dg *dataGenerator) Generate(tb execute.TableBuilder, r *rand.Rand, typ flu
 
 	start, stop = dg.Start, dg.Start
 	for i := 0; i < dg.NumPoints; i++ {
-		ts := dg.Start.Add(values.Duration(i) * dg.Period)
+		ts := dg.Start.Add(values.ConvertDuration(time.Duration(i)) * dg.Period)
 		if dg.Jitter != 0 {
 			jitter := r.Intn(int(dg.Jitter)*2 + 1)
-			ts = ts.Add(values.Duration(jitter))
+			ts = ts.Add(values.ConvertDuration(time.Duration(jitter)))
 		}
 		_ = tb.AppendTime(timeIdx, ts)
 		_ = tb.AppendValue(valueIdx, next())

@@ -3,6 +3,8 @@ package flux
 import (
 	"math"
 	"time"
+
+	"github.com/influxdata/flux/values"
 )
 
 var (
@@ -81,11 +83,15 @@ func (t Time) MarshalText() ([]byte, error) {
 }
 
 // Duration is a marshalable duration type.
-//TODO make this the real duration parsing not just time.ParseDuration
-type Duration time.Duration
+type Duration values.Duration
+
+// ConvertDuration will convert a time.Duration into a flux.Duration.
+func ConvertDuration(v time.Duration) Duration {
+	return Duration(values.ConvertDuration(v))
+}
 
 func (d *Duration) UnmarshalText(data []byte) error {
-	dur, err := time.ParseDuration(string(data))
+	dur, err := values.ParseDuration(string(data))
 	if err != nil {
 		return err
 	}
@@ -94,5 +100,5 @@ func (d *Duration) UnmarshalText(data []byte) error {
 }
 
 func (d Duration) MarshalText() ([]byte, error) {
-	return []byte(time.Duration(d).String()), nil
+	return []byte(values.Duration(d).String()), nil
 }

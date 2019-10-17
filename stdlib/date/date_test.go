@@ -138,7 +138,7 @@ func TestTruncate(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			fluxArg := values.NewObjectWithValues(map[string]values.Value{"t": values.NewTime(time), "unit": values.NewDuration(values.Duration(unit))})
+			fluxArg := values.NewObjectWithValues(map[string]values.Value{"t": values.NewTime(time), "unit": values.NewDuration(unit)})
 			got, err := fluxFn.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
 			if err != nil {
 				t.Fatal(err)
