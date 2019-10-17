@@ -86,7 +86,7 @@ func (t *afterWatermarkTrigger) Triggered(c TriggerContext) bool {
 		return false
 	}
 	stop := c.Table.Key.ValueTime(timeIdx)
-	if c.Watermark >= stop+Time(t.allowedLateness) {
+	if c.Watermark >= stop.Add(t.allowedLateness) {
 		t.finished = true
 	}
 	return c.Watermark >= stop
@@ -125,7 +125,7 @@ type afterProcessingTimeTrigger struct {
 func (t *afterProcessingTimeTrigger) Triggered(c TriggerContext) bool {
 	if !t.triggerTimeSet {
 		t.triggerTimeSet = true
-		t.triggerTime = c.CurrentProcessingTime + Time(t.duration)
+		t.triggerTime = c.CurrentProcessingTime.Add(t.duration)
 	}
 	t.current = c.CurrentProcessingTime
 	return t.current >= t.triggerTime

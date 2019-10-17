@@ -93,7 +93,7 @@ func createStateTrackingOpSpec(args flux.Arguments, a *flux.Administration) (flu
 		spec.TimeColumn = execute.DefaultTimeColLabel
 	}
 
-	if spec.DurationColumn != "" && spec.DurationUnit <= 0 {
+	if spec.DurationColumn != "" && !values.Duration(spec.DurationUnit).IsPositive() {
 		return nil, errors.New(codes.Invalid, "state tracking duration unit must be greater than zero")
 	}
 	return spec, nil

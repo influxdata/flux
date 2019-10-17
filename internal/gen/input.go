@@ -347,7 +347,6 @@ func groupBy(keys []flux.GroupKey, by []string) []seriesGroup {
 type dataGenerator struct {
 	Start     values.Time
 	Period    values.Duration
-	Jitter    values.Duration
 	Nulls     float64
 	NumPoints int
 	Allocator *memory.Allocator
@@ -458,12 +457,7 @@ func (dg *dataGenerator) Generate(tb execute.TableBuilder, r *rand.Rand, typ flu
 	})
 
 	start, stop = dg.Start, dg.Start
-	for i := 0; i < dg.NumPoints; i++ {
-		ts := dg.Start.Add(values.ConvertDuration(time.Duration(i)) * dg.Period)
-		if dg.Jitter != 0 {
-			jitter := r.Intn(int(dg.Jitter)*2 + 1)
-			ts = ts.Add(values.ConvertDuration(time.Duration(jitter)))
-		}
+	for i, ts := 0, dg.Start; i < dg.NumPoints; i, ts = i+1, ts.Add(dg.Period) {
 		_ = tb.AppendTime(timeIdx, ts)
 		_ = tb.AppendValue(valueIdx, next())
 		_ = tb.AppendValue(valueIdx, next())

@@ -94,6 +94,19 @@ func (d Duration) IsZero() bool {
 	return d == 0
 }
 
+// Normalize will normalize the duration within the interval.
+// It will ensure that the output duration is the smallest positive
+// duration that is the equivalent of the current duration.
+func (d Duration) Normalize(interval Duration) Duration {
+	offset := d
+	if offset < 0 {
+		offset += interval * ((offset / -interval) + 1)
+	} else if offset > interval {
+		offset -= interval * (offset / interval)
+	}
+	return offset
+}
+
 // Duration will return the nanosecond equivalent
 // of this duration. It will assume that months are
 // the equivalent of 30 days.
