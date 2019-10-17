@@ -19,6 +19,13 @@ pub fn parse(s: &str) -> JsValue {
     return JsValue::from_serde(&file).unwrap();
 }
 
+// Parses a string of source code.
+// The name is given to the file.
+pub fn parse_string(name: &str, s: &str) -> File {
+    let mut p = Parser::new(s);
+    p.parse_file(String::from(name))
+}
+
 // TODO uncomment when we get back to the Go build side.
 //#[no_mangle]
 //pub fn go_parse(s: *const c_char) {

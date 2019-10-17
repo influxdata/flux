@@ -1,3 +1,5 @@
+pub mod walk;
+
 use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
