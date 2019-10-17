@@ -730,7 +730,7 @@ func (a Arguments) GetDuration(name string) (Duration, bool, error) {
 	if !ok {
 		return ConvertDuration(0), false, nil
 	}
-	return Duration(v.Duration()), true, nil
+	return v.Duration(), true, nil
 }
 
 func (a Arguments) GetRequiredDuration(name string) (Duration, error) {

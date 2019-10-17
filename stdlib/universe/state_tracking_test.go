@@ -170,7 +170,7 @@ func TestStateTracking_Process(t *testing.T) {
 			name: "only duration",
 			spec: &universe.StateTrackingProcedureSpec{
 				DurationColumn: "duration",
-				DurationUnit:   1,
+				DurationUnit:   flux.ConvertDuration(1),
 				Fn:             gt5,
 				TimeCol:        "_time",
 			},
@@ -208,7 +208,7 @@ func TestStateTracking_Process(t *testing.T) {
 			name: "only duration, null timestamps",
 			spec: &universe.StateTrackingProcedureSpec{
 				DurationColumn: "duration",
-				DurationUnit:   1,
+				DurationUnit:   flux.ConvertDuration(1),
 				Fn:             gt5,
 				TimeCol:        "_time",
 			},
@@ -232,7 +232,7 @@ func TestStateTracking_Process(t *testing.T) {
 			name: "only duration, out of order timestamps",
 			spec: &universe.StateTrackingProcedureSpec{
 				DurationColumn: "duration",
-				DurationUnit:   1,
+				DurationUnit:   flux.ConvertDuration(1),
 				Fn:             gt5,
 				TimeCol:        "_time",
 			},
@@ -331,7 +331,7 @@ func TestStateTracking_Process(t *testing.T) {
 			spec: &universe.StateTrackingProcedureSpec{
 				CountColumn:    "count",
 				DurationColumn: "duration",
-				DurationUnit:   1,
+				DurationUnit:   flux.ConvertDuration(1),
 				Fn:             gt5,
 				TimeCol:        "_time",
 			},
