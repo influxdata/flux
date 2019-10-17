@@ -2,7 +2,6 @@ package universe
 
 import (
 	"context"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -499,6 +498,20 @@ func (t *schemaMutationTransformation) Process(id execute.DatasetID, tbl flux.Ta
 			_, err := builder.AddCol(c)
 			if err != nil {
 				return err
+			}
+		}
+	} else {
+		// We are appending to an existing table, due to dropping columns in the group key.
+		// Make sure that tables are compatible.
+		if len(ctx.Cols()) != len(builder.Cols()) {
+			key := builder.Key().String()
+			return errors.New(codes.Invalid, "requested operation merges tables with different numbers of columns for group key "+key)
+		}
+		for i, cm := range ctx.Cols() {
+			bcm := builder.Cols()[i]
+			if cm != bcm {
+				key := builder.Key().String()
+				return errors.New(codes.Invalid, "requested operation merges tables with different schemas for group key "+key)
 			}
 		}
 	}

@@ -398,6 +398,162 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "drop key col merge tables",
+			spec: &universe.SchemaMutationProcedureSpec{
+				Mutations: []universe.SchemaMutation{
+					&universe.DropOpSpec{
+						Columns: []string{"b"},
+					},
+				},
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "a", Type: flux.TString},
+						{Label: "b", Type: flux.TString},
+						{Label: "c", Type: flux.TFloat},
+					},
+					KeyCols: []string{"a", "b"},
+					Data: [][]interface{}{
+						{"one", "two", 3.0},
+						{"one", "two", 13.0},
+					},
+				},
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "a", Type: flux.TString},
+						{Label: "b", Type: flux.TString},
+						{Label: "c", Type: flux.TFloat},
+					},
+					KeyCols: []string{"a", "b"},
+					Data: [][]interface{}{
+						{"one", "three", 5.0},
+						{"one", "three", 15.0},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "a", Type: flux.TString},
+					{Label: "c", Type: flux.TFloat},
+				},
+				KeyCols: []string{"a"},
+				Data: [][]interface{}{
+					{"one", 3.0},
+					{"one", 13.0},
+					{"one", 5.0},
+					{"one", 15.0},
+				},
+			}},
+		},
+		{
+			name: "drop key col merge error column count",
+			spec: &universe.SchemaMutationProcedureSpec{
+				Mutations: []universe.SchemaMutation{
+					&universe.DropOpSpec{
+						Columns: []string{"b"},
+					},
+				},
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "a", Type: flux.TString},
+						{Label: "b", Type: flux.TString},
+						{Label: "c", Type: flux.TFloat},
+					},
+					KeyCols: []string{"a", "b"},
+					Data: [][]interface{}{
+						{"one", "two", 3.0},
+						{"one", "two", 13.0},
+					},
+				},
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "a", Type: flux.TString},
+						{Label: "b", Type: flux.TString},
+					},
+					KeyCols: []string{"a", "b"},
+					Data: [][]interface{}{
+						{"one", "three"},
+						{"one", "three"},
+					},
+				},
+			},
+			wantErr: errors.New("requested operation merges tables with different numbers of columns for group key {a=one}"),
+		},
+		{
+			name: "drop key col merge error column type",
+			spec: &universe.SchemaMutationProcedureSpec{
+				Mutations: []universe.SchemaMutation{
+					&universe.DropOpSpec{
+						Columns: []string{"b"},
+					},
+				},
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "a", Type: flux.TString},
+						{Label: "b", Type: flux.TString},
+						{Label: "c", Type: flux.TFloat},
+					},
+					KeyCols: []string{"a", "b"},
+					Data: [][]interface{}{
+						{"one", "two", 3.0},
+						{"one", "two", 13.0},
+					},
+				},
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "a", Type: flux.TString},
+						{Label: "b", Type: flux.TString},
+						{Label: "c", Type: flux.TString},
+					},
+					KeyCols: []string{"a", "b"},
+					Data: [][]interface{}{
+						{"one", "three", "val"},
+						{"one", "three", "val"},
+					},
+				},
+			},
+			wantErr: errors.New("requested operation merges tables with different schemas for group key {a=one}"),
+		},
+		{
+			name: "drop no exist",
+			spec: &universe.SchemaMutationProcedureSpec{
+				Mutations: []universe.SchemaMutation{
+					&universe.DropOpSpec{
+						Columns: []string{"boo"},
+					},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "a", Type: flux.TString},
+					{Label: "b", Type: flux.TString},
+					{Label: "c", Type: flux.TFloat},
+				},
+				KeyCols: []string{"a", "b"},
+				Data: [][]interface{}{
+					{"one", "two", 3.0},
+					{"one", "two", 13.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "a", Type: flux.TString},
+					{Label: "b", Type: flux.TString},
+					{Label: "c", Type: flux.TFloat},
+				},
+				KeyCols: []string{"a", "b"},
+				Data: [][]interface{}{
+					{"one", "two", 3.0},
+					{"one", "two", 13.0},
+				},
+			}},
+		},
+		{
 			name: "keep multiple cols",
 			spec: &universe.SchemaMutationProcedureSpec{
 				Mutations: []universe.SchemaMutation{
@@ -428,6 +584,91 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					{21.0},
 				},
 			}},
+		},
+		{
+			name: "keep one key col merge tables",
+			spec: &universe.SchemaMutationProcedureSpec{
+				Mutations: []universe.SchemaMutation{
+					&universe.KeepOpSpec{
+						Columns: []string{"a", "c"},
+					},
+				},
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "a", Type: flux.TString},
+						{Label: "b", Type: flux.TString},
+						{Label: "c", Type: flux.TFloat},
+					},
+					KeyCols: []string{"a", "b"},
+					Data: [][]interface{}{
+						{"one", "two", 3.0},
+						{"one", "two", 13.0},
+					},
+				},
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "a", Type: flux.TString},
+						{Label: "b", Type: flux.TString},
+						{Label: "c", Type: flux.TFloat},
+					},
+					KeyCols: []string{"a", "b"},
+					Data: [][]interface{}{
+						{"one", "three", 5.0},
+						{"one", "three", 15.0},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "a", Type: flux.TString},
+					{Label: "c", Type: flux.TFloat},
+				},
+				KeyCols: []string{"a"},
+				Data: [][]interface{}{
+					{"one", 3.0},
+					{"one", 13.0},
+					{"one", 5.0},
+					{"one", 15.0},
+				},
+			}},
+		},
+		{
+			name: "keep one key col merge error column count",
+			spec: &universe.SchemaMutationProcedureSpec{
+				Mutations: []universe.SchemaMutation{
+					&universe.KeepOpSpec{
+						Columns: []string{"a", "c"},
+					},
+				},
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "a", Type: flux.TString},
+						{Label: "b", Type: flux.TString},
+						{Label: "c", Type: flux.TFloat},
+					},
+					KeyCols: []string{"a", "b"},
+					Data: [][]interface{}{
+						{"one", "two", 3.0},
+						{"one", "two", 13.0},
+					},
+				},
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "a", Type: flux.TString},
+						{Label: "b", Type: flux.TString},
+					},
+					KeyCols: []string{"a", "b"},
+					Data: [][]interface{}{
+						{"one", "three"},
+						{"one", "three"},
+					},
+				},
+			},
+			wantErr: errors.New("requested operation merges tables with different numbers of columns for group key {a=one}"),
 		},
 		{
 			name: "duplicate single col",

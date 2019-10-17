@@ -2424,7 +2424,7 @@ from(bucket: "telegraf/autogen")
 
 Drop excludes specified columns from a table. Columns to exclude can be specified either through a list, or a predicate function.
 When a dropped column is part of the group key it will also be dropped from the key.
-If a specified column is not present in a table an error will be thrown.
+If dropping a column in the group key would result in merging two tables with different schemas, an error will be thrown.
 
 Drop has the following properties:
 
@@ -2458,7 +2458,8 @@ from(bucket: "telegraf/autogen")
 Keep is the inverse of drop. It returns a table containing only columns that are specified,
 ignoring all others.
 Only columns in the group key that are also specified in `keep` will be kept in the resulting group key.
-If a specified column is not present in a table an error will be thrown.
+If not all columns in the group key are kept, this can result in merging tables that will have the same group key.
+If this would result in merging two tables with different schemas, an error will be thrown.
 
 Keep has the following properties:
 
