@@ -1,4 +1,9 @@
-use std::{cmp, collections::HashMap, fmt};
+use crate::semantic::sub::{Subst, Substitutable};
+use std::{
+    cmp,
+    collections::{BTreeMap, BTreeSet, HashMap, HashSet},
+    fmt, result,
+};
 
 // PolyType represents a generic parametrized type.
 //
@@ -14,57 +19,136 @@ use std::{cmp, collections::HashMap, fmt};
 #[derive(Debug, Clone, PartialEq)]
 pub struct PolyType {
     pub free: Vec<Tvar>,
-    pub bnds: Option<HashMap<Tvar, Kind>>,
+    pub cons: Option<TvarKinds>,
     pub expr: MonoType,
 }
 
 impl fmt::Display for PolyType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match &self.bnds {
-            Some(bnds) => {
-                let mut bounds = Vec::new();
-                for tv in &self.free {
-                    if let Some(kind) = bnds.get(tv) {
-                        bounds.push(BoundTvar {
-                            tv: *tv,
-                            kind: *kind,
-                        })
-                    }
-                }
-                write!(
-                    f,
-                    "forall [{}] where {} {}",
-                    DisplayList {
-                        values: &self.free,
-                        delim: ", "
-                    },
-                    DisplayList {
-                        values: &bounds,
-                        delim: ", "
-                    },
-                    self.expr,
-                )
-            }
-            None => write!(
+        let vars = self.free.iter().map(|x| x.to_string()).collect::<Vec<_>>();
+        match &self.cons {
+            Some(constraints) => write!(
                 f,
-                "forall [{}] {}",
-                DisplayList {
-                    values: &self.free,
-                    delim: ", "
-                },
-                self.expr
+                "forall [{}] where {} {}",
+                vars.join(", "),
+                constraints,
+                self.expr,
             ),
+            None => write!(f, "forall [{}] {}", vars.join(", "), self.expr),
+        }
+    }
+}
+
+// TvarKinds maps a type variable to the kinds to which it must belong.
+//
+// Note that during inference we might infer that a type variable is of
+// a particular kind (type class) without inferring an exact monotype
+// for said type variable.
+//
+#[derive(Debug, Clone, PartialEq)]
+pub struct TvarKinds(HashMap<Tvar, HashSet<Kind>>);
+
+impl fmt::Display for TvarKinds {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(
+            &self
+                .0
+                .iter()
+                // A BTree produces a sorted iterator for
+                // deterministic display output
+                .collect::<BTreeMap<_, _>>()
+                .iter()
+                .map(|(&&tv, &kinds)| display_kinds(tv, kinds))
+                .collect::<Vec<_>>()
+                .join(", "),
+        )
+    }
+}
+
+fn display_kinds(tv: Tvar, kinds: &HashSet<Kind>) -> String {
+    format!(
+        "{}:{}",
+        tv,
+        kinds
+            .iter()
+            // Sort kinds with BTree
+            .collect::<BTreeSet<_>>()
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<_>>()
+            .join(" + "),
+    )
+}
+
+impl TvarKinds {
+    fn update(self, tv: Tvar, with: HashSet<Kind>) -> Self {
+        let mut constraints = self;
+        if let Some(kinds) = constraints.0.get(&tv) {
+            let new: HashSet<Kind> = kinds.union(&with).map(|&kind| kind).collect();
+            constraints.0.insert(tv, new);
+            constraints
+        } else {
+            constraints.0.insert(tv, with);
+            constraints
+        }
+    }
+}
+
+pub type Result = result::Result<(Subst, TvarKinds), Error>;
+
+#[derive(Debug)]
+pub struct Error {
+    msg: String,
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(&self.msg)
+    }
+}
+
+impl Error {
+    // An error can occur when the unification of two types
+    // contradicts what we have already inferred about the types
+    // in our program.
+    fn cannot_unify(t: MonoType, with: MonoType) -> Error {
+        Error {
+            msg: format!("cannot unify {} with {}", t, with),
+        }
+    }
+
+    // An error can occur if we constrain a type with a kind to
+    // which it does not belong.
+    fn cannot_constrain(t: MonoType, with: HashSet<Kind>) -> Error {
+        Error {
+            msg: format!(
+                "{} is not of kind {}",
+                t,
+                with.iter()
+                    .map(|kind| kind.to_string())
+                    .collect::<Vec<String>>()
+                    .join(" | ")
+            ),
+        }
+    }
+
+    // An error can occur if we attempt to unify a type variable
+    // with a monotype that contains that same type variable.
+    fn occurs_check(tv: Tvar, t: MonoType) -> Error {
+        Error {
+            msg: format!("type variable {} occurs in {}", tv, t),
         }
     }
 }
 
 // Kind represents a class or family of types
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Kind {
     Addable,
     Subtractable,
     Divisible,
     Comparable,
+    Equatable,
     Nullable,
 }
 
@@ -75,8 +159,23 @@ impl fmt::Display for Kind {
             Kind::Subtractable => f.write_str("Subtractable"),
             Kind::Divisible => f.write_str("Divisible"),
             Kind::Comparable => f.write_str("Comparable"),
+            Kind::Equatable => f.write_str("Equatable"),
             Kind::Nullable => f.write_str("Nullable"),
         }
+    }
+}
+
+// Kinds are ordered by name so that polytypes are displayed deterministically
+impl cmp::Ord for Kind {
+    fn cmp(&self, other: &Self) -> cmp::Ordering {
+        self.to_string().cmp(&other.to_string())
+    }
+}
+
+// Kinds are ordered by name so that polytypes are displayed deterministically
+impl cmp::PartialOrd for Kind {
+    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
+        Some(self.cmp(other))
     }
 }
 
@@ -116,9 +215,132 @@ impl fmt::Display for MonoType {
     }
 }
 
+impl Substitutable for MonoType {
+    fn apply(self, sub: &Subst) -> Self {
+        match self {
+            MonoType::Bool => MonoType::Bool,
+            MonoType::Int => MonoType::Int,
+            MonoType::Uint => MonoType::Uint,
+            MonoType::Float => MonoType::Float,
+            MonoType::String => MonoType::String,
+            MonoType::Duration => MonoType::Duration,
+            MonoType::Time => MonoType::Time,
+            MonoType::Regexp => MonoType::Regexp,
+            MonoType::Var(tvr) => tvr.apply(sub),
+            MonoType::Arr(arr) => MonoType::Arr(Box::new(arr.apply(sub))),
+            MonoType::Row(obj) => MonoType::Row(Box::new(obj.apply(sub))),
+            MonoType::Fun(fun) => MonoType::Fun(Box::new(fun.apply(sub))),
+        }
+    }
+}
+
+impl MonoType {
+    fn unify(self, with: Self, cons: TvarKinds) -> Result {
+        match (self, with) {
+            (MonoType::Bool, MonoType::Bool)
+            | (MonoType::Int, MonoType::Int)
+            | (MonoType::Uint, MonoType::Uint)
+            | (MonoType::Float, MonoType::Float)
+            | (MonoType::String, MonoType::String)
+            | (MonoType::Duration, MonoType::Duration)
+            | (MonoType::Time, MonoType::Time)
+            | (MonoType::Regexp, MonoType::Regexp) => Ok((Subst::empty(), cons)),
+            (MonoType::Var(tv), t) => tv.unify(t, cons),
+            (t, MonoType::Var(tv)) => tv.unify(t, cons),
+            (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(*s, cons),
+            (MonoType::Row(t), MonoType::Row(s)) => t.unify(*s, cons),
+            (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(*s, cons),
+            (t, with) => Err(Error::cannot_unify(t, with)),
+        }
+    }
+
+    fn constrain(self, with: HashSet<Kind>, cons: TvarKinds) -> Result {
+        match self {
+            MonoType::Bool => {
+                self.satisfies(maplit::hashset![Kind::Equatable, Kind::Nullable,])(with, cons)
+            }
+            MonoType::Int => self.satisfies(maplit::hashset![
+                Kind::Addable,
+                Kind::Subtractable,
+                Kind::Divisible,
+                Kind::Comparable,
+                Kind::Equatable,
+                Kind::Nullable
+            ])(with, cons),
+            MonoType::Uint => self.satisfies(maplit::hashset![
+                Kind::Addable,
+                Kind::Divisible,
+                Kind::Comparable,
+                Kind::Equatable,
+                Kind::Nullable
+            ])(with, cons),
+            MonoType::Float => self.satisfies(maplit::hashset![
+                Kind::Addable,
+                Kind::Subtractable,
+                Kind::Divisible,
+                Kind::Comparable,
+                Kind::Equatable,
+                Kind::Nullable
+            ])(with, cons),
+            MonoType::String => self.satisfies(maplit::hashset![
+                Kind::Addable,
+                Kind::Comparable,
+                Kind::Equatable,
+                Kind::Nullable
+            ])(with, cons),
+            MonoType::Duration => self.satisfies(maplit::hashset![
+                Kind::Comparable,
+                Kind::Equatable,
+                Kind::Nullable,
+            ])(with, cons),
+            MonoType::Time => self.satisfies(maplit::hashset![
+                Kind::Comparable,
+                Kind::Equatable,
+                Kind::Nullable,
+            ])(with, cons),
+            MonoType::Regexp => Err(Error::cannot_constrain(self, with)),
+            MonoType::Var(tvr) => tvr.constrain(with, cons),
+            MonoType::Arr(arr) => arr.constrain(with, cons),
+            MonoType::Row(obj) => obj.constrain(with, cons),
+            MonoType::Fun(fun) => fun.constrain(with, cons),
+        }
+    }
+
+    // Returns a closure that specifies the possible type classes (kinds) to which a monotype belongs
+    fn satisfies(self, kinds: HashSet<Kind>) -> impl FnOnce(HashSet<Kind>, TvarKinds) -> Result {
+        move |k, constraints| {
+            if k.is_subset(&kinds) {
+                Ok((Subst::empty(), constraints))
+            } else {
+                Err(Error::cannot_constrain(
+                    self,
+                    k.difference(&kinds).map(|&kind| kind).collect(),
+                ))
+            }
+        }
+    }
+
+    fn contains(&self, tv: Tvar) -> bool {
+        match self {
+            MonoType::Bool
+            | MonoType::Int
+            | MonoType::Uint
+            | MonoType::Float
+            | MonoType::String
+            | MonoType::Duration
+            | MonoType::Time
+            | MonoType::Regexp => false,
+            MonoType::Var(tvr) => tv == *tvr,
+            MonoType::Arr(arr) => arr.contains(tv),
+            MonoType::Row(row) => row.contains(tv),
+            MonoType::Fun(fun) => fun.contains(tv),
+        }
+    }
+}
+
 // Tvar stands for type variable.
 // A type variable holds an unknown type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Tvar(pub i64);
 
 impl fmt::Display for Tvar {
@@ -141,13 +363,106 @@ impl Fresher {
     }
 }
 
+impl Tvar {
+    fn apply(self, sub: &Subst) -> MonoType {
+        match sub.lookup(self) {
+            Some(t) => t.clone(),
+            None => MonoType::Var(self),
+        }
+    }
+
+    fn unify(self, with: MonoType, cons: TvarKinds) -> Result {
+        match with {
+            MonoType::Var(tv) => {
+                if self == tv {
+                    // The empty substitution will always
+                    // unify a type variable with itself.
+                    Ok((Subst::empty(), cons))
+                } else {
+                    // Unify two distinct type variables.
+                    // This will update the kind constraints
+                    // associated with these type variables.
+                    self.unify_with_tvar(tv, cons)
+                }
+            }
+            _ => {
+                if with.contains(self) {
+                    // Invalid recursive type
+                    Err(Error::occurs_check(self, with))
+                } else {
+                    // Unify a type variable with a monotype.
+                    // The monotype must satisify any
+                    // constraints placed on the type variable.
+                    self.unify_with_type(with, cons)
+                }
+            }
+        }
+    }
+
+    fn unify_with_tvar(self, tv: Tvar, cons: TvarKinds) -> Result {
+        let mut cons = cons;
+        // Gather the kind constraints for both type variables
+        let kinds: HashSet<Kind> = cons
+            .0
+            .get(&self)
+            .unwrap_or(&HashSet::new())
+            .union(cons.0.get(&tv).unwrap_or(&HashSet::new()))
+            .map(|&kind| kind)
+            .collect();
+        let sub = Subst::init(maplit::hashmap! {self => MonoType::Var(tv)});
+        if kinds.len() > 0 {
+            // Update the kind constraints
+            cons.0.remove(&self);
+            cons.0.insert(tv, kinds);
+        };
+        Ok((sub, cons))
+    }
+
+    fn unify_with_type(self, t: MonoType, cons: TvarKinds) -> Result {
+        let mut cons = cons;
+        let sub = Subst::init(maplit::hashmap! {self => t.clone()});
+        if let Some(kinds) = cons.0.remove(&self) {
+            // The monotype must satisfy all the constraints of
+            // the type variable.
+            let (s, cons) = t.constrain(kinds, cons)?;
+            Ok((sub.merge(s), cons))
+        } else {
+            Ok((sub, cons))
+        }
+    }
+
+    fn constrain(self, with: HashSet<Kind>, cons: TvarKinds) -> Result {
+        Ok((Subst::empty(), cons.update(self, with)))
+    }
+}
+
 // Array is a homogeneous list type
 #[derive(Debug, Clone, PartialEq)]
-pub struct Array(MonoType);
+pub struct Array(pub MonoType);
 
 impl fmt::Display for Array {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "[{}]", self.0)
+    }
+}
+
+impl Substitutable for Array {
+    fn apply(self, sub: &Subst) -> Self {
+        Array(self.0.apply(sub))
+    }
+}
+
+impl Array {
+    fn unify(self, with: Self, cons: TvarKinds) -> Result {
+        self.0.unify(with.0, cons)
+    }
+
+    fn constrain(self, with: HashSet<Kind>, _: TvarKinds) -> Result {
+        Err(Error::cannot_constrain(MonoType::Arr(Box::new(self)), with))
+    }
+
+    fn contains(&self, tv: Tvar) -> bool {
+        self.0.contains(tv)
     }
 }
 
@@ -163,19 +478,14 @@ impl fmt::Display for Array {
 #[derive(Debug, Clone)]
 pub enum Row {
     Empty,
-    Var(Tvar),
-    Extension { head: Property, tail: Box<Row> },
+    Extension { head: Property, tail: MonoType },
 }
 
 impl fmt::Display for Row {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if let Err(e) = f.write_str("{") {
-            return Err(e);
-        }
-        if let Err(e) = self.display(f) {
-            return Err(e);
-        }
-        return f.write_str("}");
+        f.write_str("{")?;
+        self.display(f)?;
+        f.write_str("}")
     }
 }
 
@@ -187,14 +497,31 @@ impl cmp::PartialEq for Row {
     }
 }
 
+impl Substitutable for Row {
+    fn apply(self, sub: &Subst) -> Self {
+        match self {
+            Row::Empty => Row::Empty,
+            Row::Extension { head, tail } => Row::Extension {
+                head: head.apply(sub),
+                tail: tail.apply(sub),
+            },
+        }
+    }
+}
+
 impl Row {
-    // Records are implemented as a sequence or list of extenstions.
-    // This function extends a record by adding a new property to the
-    // head of the list.
-    fn extend(self, head: Property) -> Self {
-        Row::Extension {
-            head: head,
-            tail: Box::new(self),
+    fn unify(self, _: Self, _: TvarKinds) -> Result {
+        unimplemented!();
+    }
+
+    fn constrain(self, with: HashSet<Kind>, _: TvarKinds) -> Result {
+        Err(Error::cannot_constrain(MonoType::Row(Box::new(self)), with))
+    }
+
+    fn contains(&self, tv: Tvar) -> bool {
+        match self {
+            Row::Empty => false,
+            Row::Extension { head, tail } => head.v.contains(tv) && tail.contains(tv),
         }
     }
 
@@ -202,12 +529,13 @@ impl Row {
     fn display(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Row::Empty => f.write_str("{}"),
-            Row::Var(tv) => write!(f, "{}", tv),
-            Row::Extension { head: h, tail: t } => {
-                if let Err(e) = write!(f, "{} | ", h) {
-                    return Err(e);
+            Row::Extension { head, tail } => {
+                write!(f, "{} | ", head)?;
+                match tail {
+                    MonoType::Var(tvr) => write!(f, "{}", tvr),
+                    MonoType::Row(obj) => obj.display(f),
+                    _ => Err(fmt::Error),
                 }
-                t.display(f)
             }
         }
     }
@@ -216,10 +544,13 @@ impl Row {
     fn flatten(&self, props: &mut HashMap<String, MonoType>) -> Option<Tvar> {
         match self {
             Row::Empty => None,
-            Row::Var(tv) => Some(*tv),
-            Row::Extension { head: h, tail: t } => {
-                props.insert(h.k.clone(), h.v.clone());
-                t.flatten(props)
+            Row::Extension { head, tail } => {
+                props.insert(head.k.clone(), head.v.clone());
+                match tail {
+                    MonoType::Row(obj) => obj.flatten(props),
+                    MonoType::Var(tvr) => Some(*tvr),
+                    _ => panic!("tail of row must be either a row variable or another row"),
+                }
             }
         }
     }
@@ -235,6 +566,15 @@ pub struct Property {
 impl fmt::Display for Property {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}:{}", self.k, self.v)
+    }
+}
+
+impl Substitutable for Property {
+    fn apply(self, sub: &Subst) -> Self {
+        Property {
+            k: self.k,
+            v: self.v.apply(sub),
+        }
     }
 }
 
@@ -254,84 +594,97 @@ pub struct Function {
 
 impl fmt::Display for Function {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut req: Vec<Property> = Vec::new();
-        for (k, v) in &self.req {
-            req.push(Property {
+        let required = self
+            .req
+            .iter()
+            // Sort args with BTree
+            .collect::<BTreeMap<_, _>>()
+            .iter()
+            .map(|(&k, &v)| Property {
                 k: k.clone(),
                 v: v.clone(),
-            });
-        }
-        req.sort_unstable_by(|a, b| a.k.cmp(&b.k));
+            })
+            .collect::<Vec<_>>();
 
-        let mut opt: Vec<Property> = Vec::new();
-        for (k, v) in &self.opt {
-            opt.push(Property {
+        let optional = self
+            .opt
+            .iter()
+            // Sort args with BTree
+            .collect::<BTreeMap<_, _>>()
+            .iter()
+            .map(|(&k, &v)| Property {
                 k: String::from("?") + &k,
                 v: v.clone(),
-            });
-        }
-        opt.sort_unstable_by(|a, b| a.k.cmp(&b.k));
+            })
+            .collect::<Vec<_>>();
 
-        let mut args: Vec<Property> = Vec::new();
-        if let Some(pipe) = &self.pipe {
-            if pipe.k == "<-" {
-                args.push(pipe.clone());
-            } else {
-                args.push(Property {
-                    k: String::from("<-") + &pipe.k,
-                    v: pipe.v.clone(),
-                });
+        let pipe = match &self.pipe {
+            Some(pipe) => {
+                if pipe.k == "<-" {
+                    vec![pipe.clone()]
+                } else {
+                    vec![Property {
+                        k: String::from("<-") + &pipe.k,
+                        v: pipe.v.clone(),
+                    }]
+                }
             }
-        }
+            None => vec![],
+        };
 
-        args.append(&mut req);
-        args.append(&mut opt);
         write!(
             f,
             "({}) -> {}",
-            DisplayList {
-                values: &args,
-                delim: ", "
-            },
+            pipe.iter()
+                .chain(required.iter().chain(optional.iter()))
+                .map(|x| x.to_string())
+                .collect::<Vec<_>>()
+                .join(", "),
             self.retn
         )
     }
 }
 
-// BoundTvar represents a constrained type variable.
-// Used solely for displaying the generic constraints of a polytype.
-#[derive(Debug)]
-struct BoundTvar {
-    tv: Tvar,
-    kind: Kind,
-}
-
-impl fmt::Display for BoundTvar {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}:{}", self.tv, self.kind)
+impl Substitutable for HashMap<String, MonoType> {
+    fn apply(self, sub: &Subst) -> Self {
+        self.into_iter().map(|(k, v)| (k, v.apply(sub))).collect()
     }
 }
 
-// DisplayList is a list of elements each of which can be displayed
-#[derive(Debug, Clone, PartialEq)]
-struct DisplayList<'a, T> {
-    values: &'a Vec<T>,
-    delim: &'static str,
+impl Substitutable for Function {
+    fn apply(self, sub: &Subst) -> Self {
+        Function {
+            req: self.req.apply(sub),
+            opt: self.opt.apply(sub),
+            pipe: match self.pipe {
+                None => None,
+                Some(p) => Some(p.apply(sub)),
+            },
+            retn: self.retn.apply(sub),
+        }
+    }
 }
 
-impl<'a, T: fmt::Display> fmt::Display for DisplayList<'a, T> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.values.is_empty() {
-            return Ok(());
+impl Function {
+    fn unify(self, _: Self, _: TvarKinds) -> Result {
+        unimplemented!();
+    }
+
+    fn constrain(self, with: HashSet<Kind>, _: TvarKinds) -> Result {
+        Err(Error::cannot_constrain(MonoType::Fun(Box::new(self)), with))
+    }
+
+    fn contains(&self, tv: Tvar) -> bool {
+        if let Some(pipe) = &self.pipe {
+            self.req.values().fold(false, |ok, t| ok || t.contains(tv))
+                || self.opt.values().fold(false, |ok, t| ok || t.contains(tv))
+                || pipe.v.contains(tv)
+                || self.retn.contains(tv)
+        } else {
+            self.req.values().fold(false, |ok, t| ok || t.contains(tv))
+                || self.opt.values().fold(false, |ok, t| ok || t.contains(tv))
+                || self.retn.contains(tv)
         }
-        let size = self.values.len();
-        let list = &self.values[..size - 1];
-        for v in list {
-            if let Err(e) = write!(f, "{}{}", v, self.delim) {
-                return Err(e);
-            }
-        }
-        self.values[size - 1].fmt(f)
     }
 }
 
@@ -354,6 +707,10 @@ mod tests {
     #[test]
     fn display_kind_comparable() {
         assert!(Kind::Comparable.to_string() == "Comparable");
+    }
+    #[test]
+    fn display_kind_equatable() {
+        assert!(Kind::Equatable.to_string() == "Equatable");
     }
     #[test]
     fn display_kind_nullable() {
@@ -407,29 +764,37 @@ mod tests {
     fn display_type_row() {
         assert_eq!(
             "{a:int | b:string | t0}",
-            Row::Var(Tvar(0))
-                .extend(Property {
-                    k: String::from("b"),
-                    v: MonoType::String,
-                })
-                .extend(Property {
+            Row::Extension {
+                head: Property {
                     k: String::from("a"),
                     v: MonoType::Int,
-                })
-                .to_string()
+                },
+                tail: MonoType::Row(Box::new(Row::Extension {
+                    head: Property {
+                        k: String::from("b"),
+                        v: MonoType::String,
+                    },
+                    tail: MonoType::Var(Tvar(0)),
+                })),
+            }
+            .to_string()
         );
         assert_eq!(
             "{a:int | b:string | {}}",
-            Row::Empty
-                .extend(Property {
-                    k: String::from("b"),
-                    v: MonoType::String,
-                })
-                .extend(Property {
+            Row::Extension {
+                head: Property {
                     k: String::from("a"),
                     v: MonoType::Int,
-                })
-                .to_string()
+                },
+                tail: MonoType::Row(Box::new(Row::Extension {
+                    head: Property {
+                        k: String::from("b"),
+                        v: MonoType::String,
+                    },
+                    tail: MonoType::Row(Box::new(Row::Empty)),
+                })),
+            }
+            .to_string()
         );
     }
     #[test]
@@ -561,7 +926,7 @@ mod tests {
             "forall [] int",
             PolyType {
                 free: Vec::new(),
-                bnds: None,
+                cons: None,
                 expr: MonoType::Int,
             }
             .to_string(),
@@ -570,7 +935,7 @@ mod tests {
             "forall [t0] (x:t0) -> t0",
             PolyType {
                 free: vec![Tvar(0)],
-                bnds: None,
+                cons: None,
                 expr: MonoType::Fun(Box::new(Function {
                     req: maplit::hashmap! {
                         String::from("x") => MonoType::Var(Tvar(0)),
@@ -586,7 +951,7 @@ mod tests {
             "forall [t0, t1] (x:t0, y:t1) -> {x:t0 | y:t1 | {}}",
             PolyType {
                 free: vec![Tvar(0), Tvar(1)],
-                bnds: None,
+                cons: None,
                 expr: MonoType::Fun(Box::new(Function {
                     req: maplit::hashmap! {
                         String::from("x") => MonoType::Var(Tvar(0)),
@@ -594,17 +959,19 @@ mod tests {
                     },
                     opt: HashMap::new(),
                     pipe: None,
-                    retn: MonoType::Row(Box::new(
-                        Row::Empty
-                            .extend(Property {
+                    retn: MonoType::Row(Box::new(Row::Extension {
+                        head: Property {
+                            k: String::from("x"),
+                            v: MonoType::Var(Tvar(0)),
+                        },
+                        tail: MonoType::Row(Box::new(Row::Extension {
+                            head: Property {
                                 k: String::from("y"),
                                 v: MonoType::Var(Tvar(1)),
-                            })
-                            .extend(Property {
-                                k: String::from("x"),
-                                v: MonoType::Var(Tvar(0)),
-                            })
-                    )),
+                            },
+                            tail: MonoType::Row(Box::new(Row::Empty)),
+                        })),
+                    })),
                 })),
             }
             .to_string(),
@@ -613,9 +980,9 @@ mod tests {
             "forall [t0] where t0:Addable (a:t0, b:t0) -> t0",
             PolyType {
                 free: vec![Tvar(0)],
-                bnds: Some(maplit::hashmap! {
-                    Tvar(0) => Kind::Addable,
-                }),
+                cons: Some(TvarKinds(
+                    maplit::hashmap! {Tvar(0) => maplit::hashset![Kind::Addable]}
+                )),
                 expr: MonoType::Fun(Box::new(Function {
                     req: maplit::hashmap! {
                         String::from("a") => MonoType::Var(Tvar(0)),
@@ -632,10 +999,10 @@ mod tests {
             "forall [t0, t1] where t0:Addable, t1:Divisible (x:t0, y:t1) -> {x:t0 | y:t1 | {}}",
             PolyType {
                 free: vec![Tvar(0), Tvar(1)],
-                bnds: Some(maplit::hashmap! {
-                    Tvar(0) => Kind::Addable,
-                    Tvar(1) => Kind::Divisible,
-                }),
+                cons: Some(TvarKinds(maplit::hashmap! {
+                    Tvar(0) => maplit::hashset![Kind::Addable],
+                    Tvar(1) => maplit::hashset![Kind::Divisible],
+                })),
                 expr: MonoType::Fun(Box::new(Function {
                     req: maplit::hashmap! {
                         String::from("x") => MonoType::Var(Tvar(0)),
@@ -643,17 +1010,51 @@ mod tests {
                     },
                     opt: HashMap::new(),
                     pipe: None,
-                    retn: MonoType::Row(Box::new(
-                        Row::Empty
-                            .extend(Property {
+                    retn: MonoType::Row(Box::new(Row::Extension {
+                        head: Property {
+                            k: String::from("x"),
+                            v: MonoType::Var(Tvar(0)),
+                        },
+                        tail: MonoType::Row(Box::new(Row::Extension {
+                            head: Property {
                                 k: String::from("y"),
                                 v: MonoType::Var(Tvar(1)),
-                            })
-                            .extend(Property {
-                                k: String::from("x"),
-                                v: MonoType::Var(Tvar(0)),
-                            })
-                    )),
+                            },
+                            tail: MonoType::Row(Box::new(Row::Empty)),
+                        })),
+                    })),
+                })),
+            }
+            .to_string(),
+        );
+        assert_eq!(
+            "forall [t0, t1] where t0:Comparable + Equatable, t1:Addable + Divisible (x:t0, y:t1) -> {x:t0 | y:t1 | {}}",
+            PolyType {
+                free: vec![Tvar(0), Tvar(1)],
+                cons: Some(TvarKinds(maplit::hashmap! {
+                    Tvar(0) => maplit::hashset![Kind::Comparable, Kind::Equatable],
+                    Tvar(1) => maplit::hashset![Kind::Addable, Kind::Divisible],
+                })),
+                expr: MonoType::Fun(Box::new(Function {
+                    req: maplit::hashmap! {
+                        String::from("x") => MonoType::Var(Tvar(0)),
+                        String::from("y") => MonoType::Var(Tvar(1)),
+                    },
+                    opt: HashMap::new(),
+                    pipe: None,
+                    retn: MonoType::Row(Box::new(Row::Extension {
+                        head: Property {
+                            k: String::from("x"),
+                            v: MonoType::Var(Tvar(0)),
+                        },
+                        tail: MonoType::Row(Box::new(Row::Extension {
+                            head: Property {
+                                k: String::from("y"),
+                                v: MonoType::Var(Tvar(1)),
+                            },
+                            tail: MonoType::Row(Box::new(Row::Empty)),
+                        })),
+                    })),
                 })),
             }
             .to_string(),
@@ -665,55 +1066,114 @@ mod tests {
     fn compare_records() {
         assert_eq!(
             // {a:int | b:string | t0}
-            MonoType::Row(Box::new(
-                Row::Var(Tvar(0))
-                    .extend(Property {
+            MonoType::Row(Box::new(Row::Extension {
+                head: Property {
+                    k: String::from("a"),
+                    v: MonoType::Int,
+                },
+                tail: MonoType::Row(Box::new(Row::Extension {
+                    head: Property {
                         k: String::from("b"),
                         v: MonoType::String,
-                    })
-                    .extend(Property {
-                        k: String::from("a"),
-                        v: MonoType::Int,
-                    })
-            )),
+                    },
+                    tail: MonoType::Var(Tvar(0)),
+                })),
+            })),
             // {b:string | a:int | t0}
-            MonoType::Row(Box::new(
-                Row::Var(Tvar(0))
-                    .extend(Property {
+            MonoType::Row(Box::new(Row::Extension {
+                head: Property {
+                    k: String::from("b"),
+                    v: MonoType::String,
+                },
+                tail: MonoType::Row(Box::new(Row::Extension {
+                    head: Property {
                         k: String::from("a"),
                         v: MonoType::Int,
-                    })
-                    .extend(Property {
-                        k: String::from("b"),
-                        v: MonoType::String,
-                    })
-            )),
+                    },
+                    tail: MonoType::Var(Tvar(0)),
+                })),
+            })),
         );
         assert_ne!(
             // {a:int | b:string | {}}
-            MonoType::Row(Box::new(
-                Row::Empty
-                    .extend(Property {
+            MonoType::Row(Box::new(Row::Extension {
+                head: Property {
+                    k: String::from("a"),
+                    v: MonoType::Int,
+                },
+                tail: MonoType::Row(Box::new(Row::Extension {
+                    head: Property {
                         k: String::from("b"),
                         v: MonoType::String,
-                    })
-                    .extend(Property {
-                        k: String::from("a"),
-                        v: MonoType::Int,
-                    })
-            )),
+                    },
+                    tail: MonoType::Row(Box::new(Row::Empty)),
+                })),
+            })),
             // {b:int | a:int | {}}
-            MonoType::Row(Box::new(
-                Row::Empty
-                    .extend(Property {
+            MonoType::Row(Box::new(Row::Extension {
+                head: Property {
+                    k: String::from("b"),
+                    v: MonoType::Int,
+                },
+                tail: MonoType::Row(Box::new(Row::Extension {
+                    head: Property {
                         k: String::from("a"),
                         v: MonoType::Int,
-                    })
-                    .extend(Property {
-                        k: String::from("b"),
-                        v: MonoType::Int,
-                    })
-            )),
+                    },
+                    tail: MonoType::Row(Box::new(Row::Empty)),
+                })),
+            })),
+        );
+    }
+
+    #[test]
+    fn unify_ints() {
+        let (sub, cons) = MonoType::Int
+            .unify(MonoType::Int, TvarKinds(HashMap::new()))
+            .unwrap();
+        assert_eq!(sub, Subst::empty());
+        assert_eq!(cons, TvarKinds(HashMap::new()));
+    }
+    #[test]
+    fn unify_error() {
+        let err = MonoType::Int
+            .unify(MonoType::String, TvarKinds(HashMap::new()))
+            .unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            String::from("cannot unify int with string"),
+        );
+    }
+    #[test]
+    fn unify_tvars() {
+        let (sub, cons) = MonoType::Var(Tvar(0))
+            .unify(MonoType::Var(Tvar(1)), TvarKinds(HashMap::new()))
+            .unwrap();
+        assert_eq!(
+            sub,
+            Subst::init(maplit::hashmap! {Tvar(0) => MonoType::Var(Tvar(1))}),
+        );
+        assert_eq!(cons, TvarKinds(HashMap::new()));
+    }
+    #[test]
+    fn unify_constrained_tvars() {
+        let (sub, cons) = MonoType::Var(Tvar(0))
+            .unify(
+                MonoType::Var(Tvar(1)),
+                TvarKinds(
+                    maplit::hashmap! {Tvar(0) => maplit::hashset![Kind::Addable, Kind::Divisible]},
+                ),
+            )
+            .unwrap();
+        assert_eq!(
+            sub,
+            Subst::init(maplit::hashmap! {Tvar(0) => MonoType::Var(Tvar(1))})
+        );
+        assert_eq!(
+            cons,
+            TvarKinds(
+                maplit::hashmap! {Tvar(1) => maplit::hashset![Kind::Addable, Kind::Divisible]}
+            ),
         );
     }
 }
