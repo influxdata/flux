@@ -1,18 +1,7 @@
 use super::*;
-use ast::Assignment::*;
-use ast::Expression::Bad as BadE;
-use ast::Expression::*;
-use ast::FunctionBody::Block as FBlock;
-use ast::FunctionBody::Expr as FExpr;
-use ast::LogicalOperatorKind::*;
-use ast::OperatorKind::*;
-use ast::PropertyKey::Identifier as PkIdt;
-use ast::PropertyKey::StringLiteral as PkStr;
-use ast::Statement::Bad as BadS;
-use ast::Statement::*;
-use ast::{Position, SourceLocation};
+use crate::ast;
 
-use chrono::DateTime;
+use chrono;
 
 // This gives us a colorful diff.
 #[cfg(test)]
@@ -41,11 +30,11 @@ impl<'a> Locator<'a> {
         SourceLocation {
             file: Some("".to_string()),
             source: Some(self.get_src(sl, sc, el, ec).to_string()),
-            start: Position {
+            start: ast::Position {
                 line: sl,
                 column: sc,
             },
-            end: Position {
+            end: ast::Position {
                 line: el,
                 column: ec,
             },
@@ -74,49 +63,49 @@ fn string_interpolation_simple() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 19),
                     errors: vec![]
                 },
-                expression: StringExp(Box::new(StringExpression {
+                expression: Expression::StringExpr(Box::new(StringExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 19),
                         errors: vec![]
                     },
                     parts: vec![
-                        StringExpressionPart::Text(TextPart {
+                        StringExprPart::Text(TextPart {
                             base: BaseNode {
                                 location: loc.get(1, 2, 1, 10),
                                 errors: vec![]
                             },
                             value: "a + b = ".to_string(),
                         }),
-                        StringExpressionPart::Expr(InterpolatedPart {
+                        StringExprPart::Interpolated(InterpolatedPart {
                             base: BaseNode {
                                 location: loc.get(1, 10, 1, 18),
                                 errors: vec![]
                             },
-                            expression: Bin(Box::new(BinaryExpression {
+                            expression: Expression::Binary(Box::new(BinaryExpr {
                                 base: BaseNode {
                                     location: loc.get(1, 12, 1, 17),
                                     errors: vec![]
                                 },
-                                left: Idt(Identifier {
+                                left: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 12, 1, 13),
                                         errors: vec![]
                                     },
                                     name: "a".to_string(),
                                 }),
-                                right: Idt(Identifier {
+                                right: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 16, 1, 17),
                                         errors: vec![]
                                     },
                                     name: "b".to_string(),
                                 }),
-                                operator: AdditionOperator,
+                                operator: Operator::AdditionOperator,
                             })),
                         }),
                     ],
@@ -141,30 +130,30 @@ fn string_interpolation_multiple() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 24),
                     errors: vec![]
                 },
-                expression: StringExp(Box::new(StringExpression {
+                expression: Expression::StringExpr(Box::new(StringExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 24),
                         errors: vec![]
                     },
                     parts: vec![
-                        StringExpressionPart::Text(TextPart {
+                        StringExprPart::Text(TextPart {
                             base: BaseNode {
                                 location: loc.get(1, 2, 1, 6),
                                 errors: vec![]
                             },
                             value: "a = ".to_string(),
                         }),
-                        StringExpressionPart::Expr(InterpolatedPart {
+                        StringExprPart::Interpolated(InterpolatedPart {
                             base: BaseNode {
                                 location: loc.get(1, 6, 1, 10),
                                 errors: vec![]
                             },
-                            expression: Idt(Identifier {
+                            expression: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 8, 1, 9),
                                     errors: vec![]
@@ -172,19 +161,19 @@ fn string_interpolation_multiple() {
                                 name: "a".to_string(),
                             }),
                         }),
-                        StringExpressionPart::Text(TextPart {
+                        StringExprPart::Text(TextPart {
                             base: BaseNode {
                                 location: loc.get(1, 10, 1, 19),
                                 errors: vec![]
                             },
                             value: " and b = ".to_string(),
                         }),
-                        StringExpressionPart::Expr(InterpolatedPart {
+                        StringExprPart::Interpolated(InterpolatedPart {
                             base: BaseNode {
                                 location: loc.get(1, 19, 1, 23),
                                 errors: vec![]
                             },
-                            expression: Idt(Identifier {
+                            expression: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 21, 1, 22),
                                     errors: vec![]
@@ -214,73 +203,73 @@ fn string_interpolation_nested() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 44),
                     errors: vec![]
                 },
-                expression: StringExp(Box::new(StringExpression {
+                expression: Expression::StringExpr(Box::new(StringExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 44),
                         errors: vec![]
                     },
                     parts: vec![
-                        StringExpressionPart::Text(TextPart {
+                        StringExprPart::Text(TextPart {
                             base: BaseNode {
                                 location: loc.get(1, 2, 1, 5),
                                 errors: vec![]
                             },
                             value: "we ".to_string(),
                         }),
-                        StringExpressionPart::Expr(InterpolatedPart {
+                        StringExprPart::Interpolated(InterpolatedPart {
                             base: BaseNode {
                                 location: loc.get(1, 5, 1, 34),
                                 errors: vec![]
                             },
-                            expression: StringExp(Box::new(StringExpression {
+                            expression: Expression::StringExpr(Box::new(StringExpr {
                                 base: BaseNode {
                                     location: loc.get(1, 7, 1, 33),
                                     errors: vec![]
                                 },
                                 parts: vec![
-                                    StringExpressionPart::Text(TextPart {
+                                    StringExprPart::Text(TextPart {
                                         base: BaseNode {
                                             location: loc.get(1, 8, 1, 12),
                                             errors: vec![]
                                         },
                                         value: "can ".to_string(),
                                     }),
-                                    StringExpressionPart::Expr(InterpolatedPart {
+                                    StringExprPart::Interpolated(InterpolatedPart {
                                         base: BaseNode {
                                             location: loc.get(1, 12, 1, 32),
                                             errors: vec![]
                                         },
-                                        expression: Bin(Box::new(BinaryExpression {
+                                        expression: Expression::Binary(Box::new(BinaryExpr {
                                             base: BaseNode {
                                                 location: loc.get(1, 14, 1, 31),
                                                 errors: vec![]
                                             },
-                                            left: Str(StringLiteral {
+                                            left: Expression::StringLit(StringLit {
                                                 base: BaseNode {
                                                     location: loc.get(1, 14, 1, 19),
                                                     errors: vec![]
                                                 },
                                                 value: "add".to_string(),
                                             }),
-                                            right: Str(StringLiteral {
+                                            right: Expression::StringLit(StringLit {
                                                 base: BaseNode {
                                                     location: loc.get(1, 22, 1, 31),
                                                     errors: vec![]
                                                 },
                                                 value: "strings".to_string(),
                                             }),
-                                            operator: AdditionOperator,
+                                            operator: Operator::AdditionOperator,
                                         })),
                                     }),
                                 ],
                             }))
                         }),
-                        StringExpressionPart::Text(TextPart {
+                        StringExprPart::Text(TextPart {
                             base: BaseNode {
                                 location: loc.get(1, 34, 1, 43),
                                 errors: vec![]
@@ -309,30 +298,30 @@ fn string_interp_with_escapes() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 45),
                     errors: vec![]
                 },
-                expression: StringExp(Box::new(StringExpression {
+                expression: Expression::StringExpr(Box::new(StringExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 45),
                         errors: vec![]
                     },
                     parts: vec![
-                        StringExpressionPart::Text(TextPart {
+                        StringExprPart::Text(TextPart {
                             base: BaseNode {
                                 location: loc.get(1, 2, 1, 30),
                                 errors: vec![]
                             },
                             value: "string \"interpolation with ".to_string(),
                         }),
-                        StringExpressionPart::Expr(InterpolatedPart {
+                        StringExprPart::Interpolated(InterpolatedPart {
                             base: BaseNode {
                                 location: loc.get(1, 30, 1, 42),
                                 errors: vec![]
                             },
-                            expression: Str(StringLiteral {
+                            expression: Expression::StringLit(StringLit {
                                 base: BaseNode {
                                     location: loc.get(1, 32, 1, 41),
                                     errors: vec![]
@@ -340,7 +329,7 @@ fn string_interp_with_escapes() {
                                 value: "escapes".to_string(),
                             }),
                         }),
-                        StringExpressionPart::Text(TextPart {
+                        StringExprPart::Text(TextPart {
                             base: BaseNode {
                                 location: loc.get(1, 42, 1, 44),
                                 errors: vec![]
@@ -369,7 +358,7 @@ fn bad_string_expression() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 18),
                     errors: vec![]
@@ -381,7 +370,7 @@ fn bad_string_expression() {
                     },
                     name: "fn".to_string(),
                 },
-                init: Fun(Box::new(FunctionExpression {
+                init: Expression::Function(Box::new(FunctionExpr {
                     base: BaseNode {
                         location: loc.get(1, 6, 1, 18),
                         errors: vec![]
@@ -391,7 +380,7 @@ fn bad_string_expression() {
                             location: loc.get(1, 7, 1, 8),
                             errors: vec![]
                         },
-                        key: PkIdt(Identifier {
+                        key: PropertyKey::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 7, 1, 8),
                                 errors: vec![]
@@ -400,7 +389,7 @@ fn bad_string_expression() {
                         }),
                         value: None
                     }],
-                    body: FExpr(StringExp(Box::new(StringExpression {
+                    body: FunctionBody::Expr(Expression::StringExpr(Box::new(StringExpr {
                         base: BaseNode {
                             location: loc.get(1, 13, 1, 18),
                             errors: vec![
@@ -468,7 +457,7 @@ fn import() {
                     errors: vec![]
                 },
                 alias: None,
-                path: StringLiteral {
+                path: StringLit {
                     base: BaseNode {
                         location: loc.get(1, 8, 1, 18),
                         errors: vec![]
@@ -507,7 +496,7 @@ fn import_as() {
                     },
                     name: "bar".to_string()
                 }),
-                path: StringLiteral {
+                path: StringLit {
                     base: BaseNode {
                         location: loc.get(1, 12, 1, 22),
                         errors: vec![]
@@ -544,7 +533,7 @@ import "path/bar""#,
                         errors: vec![]
                     },
                     alias: None,
-                    path: StringLiteral {
+                    path: StringLit {
                         base: BaseNode {
                             location: loc.get(1, 8, 1, 18),
                             errors: vec![]
@@ -558,7 +547,7 @@ import "path/bar""#,
                         errors: vec![]
                     },
                     alias: None,
-                    path: StringLiteral {
+                    path: StringLit {
                         base: BaseNode {
                             location: loc.get(2, 8, 2, 18),
                             errors: vec![]
@@ -611,7 +600,7 @@ import "path/bar""#,
                         errors: vec![]
                     },
                     alias: None,
-                    path: StringLiteral {
+                    path: StringLit {
                         base: BaseNode {
                             location: loc.get(4, 8, 4, 18),
                             errors: vec![]
@@ -625,7 +614,7 @@ import "path/bar""#,
                         errors: vec![]
                     },
                     alias: None,
-                    path: StringLiteral {
+                    path: StringLit {
                         base: BaseNode {
                             location: loc.get(5, 8, 5, 18),
                             errors: vec![]
@@ -680,7 +669,7 @@ import "path/bar"
                         errors: vec![]
                     },
                     alias: None,
-                    path: StringLiteral {
+                    path: StringLit {
                         base: BaseNode {
                             location: loc.get(4, 8, 4, 18),
                             errors: vec![]
@@ -694,7 +683,7 @@ import "path/bar"
                         errors: vec![]
                     },
                     alias: None,
-                    path: StringLiteral {
+                    path: StringLit {
                         base: BaseNode {
                             location: loc.get(5, 8, 5, 18),
                             errors: vec![]
@@ -703,25 +692,25 @@ import "path/bar"
                     }
                 }
             ],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(7, 1, 7, 6),
                     errors: vec![]
                 },
-                expression: Bin(Box::new(BinaryExpression {
+                expression: Expression::Binary(Box::new(BinaryExpr {
                     base: BaseNode {
                         location: loc.get(7, 1, 7, 6),
                         errors: vec![]
                     },
-                    operator: AdditionOperator,
-                    left: Int(IntegerLiteral {
+                    operator: Operator::AdditionOperator,
+                    left: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(7, 1, 7, 2),
                             errors: vec![]
                         },
                         value: 1
                     }),
-                    right: Int(IntegerLiteral {
+                    right: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(7, 5, 7, 6),
                             errors: vec![]
@@ -757,12 +746,12 @@ fn optional_query_metadata() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Opt(OptionStatement {
+            body: vec![Statement::Option(OptionStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 7, 7),
                     errors: vec![]
                 },
-                assignment: Variable(VariableAssignment {
+                assignment: Assignment::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 8, 7, 7),
                         errors: vec![]
@@ -774,7 +763,7 @@ fn optional_query_metadata() {
                         },
                         name: "task".to_string()
                     },
-                    init: Obj(Box::new(ObjectExpression {
+                    init: Expression::Object(Box::new(ObjectExpr {
                         base: BaseNode {
                             location: loc.get(1, 15, 7, 7),
                             errors: vec![]
@@ -786,14 +775,14 @@ fn optional_query_metadata() {
                                     location: loc.get(2, 5, 2, 16),
                                     errors: vec![]
                                 },
-                                key: PkIdt(Identifier {
+                                key: PropertyKey::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(2, 5, 2, 9),
                                         errors: vec![]
                                     },
                                     name: "name".to_string()
                                 }),
-                                value: Some(Str(StringLiteral {
+                                value: Some(Expression::StringLit(StringLit {
                                     base: BaseNode {
                                         location: loc.get(2, 11, 2, 16),
                                         errors: vec![]
@@ -806,14 +795,14 @@ fn optional_query_metadata() {
                                     location: loc.get(3, 5, 3, 14),
                                     errors: vec![]
                                 },
-                                key: PkIdt(Identifier {
+                                key: PropertyKey::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(3, 5, 3, 10),
                                         errors: vec![]
                                     },
                                     name: "every".to_string()
                                 }),
-                                value: Some(Dur(DurationLiteral {
+                                value: Some(Expression::Duration(DurationLit {
                                     base: BaseNode {
                                         location: loc.get(3, 12, 3, 14),
                                         errors: vec![]
@@ -829,14 +818,14 @@ fn optional_query_metadata() {
                                     location: loc.get(4, 5, 4, 15),
                                     errors: vec![]
                                 },
-                                key: PkIdt(Identifier {
+                                key: PropertyKey::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(4, 5, 4, 10),
                                         errors: vec![]
                                     },
                                     name: "delay".to_string()
                                 }),
-                                value: Some(Dur(DurationLiteral {
+                                value: Some(Expression::Duration(DurationLit {
                                     base: BaseNode {
                                         location: loc.get(4, 12, 4, 15),
                                         errors: vec![]
@@ -852,14 +841,14 @@ fn optional_query_metadata() {
                                     location: loc.get(5, 5, 5, 22),
                                     errors: vec![]
                                 },
-                                key: PkIdt(Identifier {
+                                key: PropertyKey::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(5, 5, 5, 9),
                                         errors: vec![]
                                     },
                                     name: "cron".to_string()
                                 }),
-                                value: Some(Str(StringLiteral {
+                                value: Some(Expression::StringLit(StringLit {
                                     base: BaseNode {
                                         location: loc.get(5, 11, 5, 22),
                                         errors: vec![]
@@ -872,14 +861,14 @@ fn optional_query_metadata() {
                                     location: loc.get(6, 5, 6, 13),
                                     errors: vec![]
                                 },
-                                key: PkIdt(Identifier {
+                                key: PropertyKey::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(6, 5, 6, 10),
                                         errors: vec![]
                                     },
                                     name: "retry".to_string()
                                 }),
-                                value: Some(Int(IntegerLiteral {
+                                value: Some(Expression::Integer(IntegerLit {
                                     base: BaseNode {
                                         location: loc.get(6, 12, 6, 13),
                                         errors: vec![]
@@ -919,12 +908,12 @@ fn optional_query_metadata_preceding_query_text() {
             package: None,
             imports: vec![],
             body: vec![
-                Opt(OptionStatement {
+                Statement::Option(OptionStmt {
                     base: BaseNode {
                         location: loc.get(1, 1, 4, 6),
                         errors: vec![]
                     },
-                    assignment: Variable(VariableAssignment {
+                    assignment: Assignment::Variable(VariableAssgn {
                         base: BaseNode {
                             location: loc.get(1, 8, 4, 6),
                             errors: vec![]
@@ -936,7 +925,7 @@ fn optional_query_metadata_preceding_query_text() {
                             },
                             name: "task".to_string()
                         },
-                        init: Obj(Box::new(ObjectExpression {
+                        init: Expression::Object(Box::new(ObjectExpr {
                             base: BaseNode {
                                 location: loc.get(1, 15, 4, 6),
                                 errors: vec![]
@@ -948,14 +937,14 @@ fn optional_query_metadata_preceding_query_text() {
                                         location: loc.get(2, 6, 2, 17),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(2, 6, 2, 10),
                                             errors: vec![]
                                         },
                                         name: "name".to_string()
                                     }),
-                                    value: Some(Str(StringLiteral {
+                                    value: Some(Expression::StringLit(StringLit {
                                         base: BaseNode {
                                             location: loc.get(2, 12, 2, 17),
                                             errors: vec![]
@@ -968,14 +957,14 @@ fn optional_query_metadata_preceding_query_text() {
                                         location: loc.get(3, 6, 3, 15),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(3, 6, 3, 11),
                                             errors: vec![]
                                         },
                                         name: "every".to_string()
                                     }),
-                                    value: Some(Dur(DurationLiteral {
+                                    value: Some(Expression::Duration(DurationLit {
                                         base: BaseNode {
                                             location: loc.get(3, 13, 3, 15),
                                             errors: vec![]
@@ -990,22 +979,22 @@ fn optional_query_metadata_preceding_query_text() {
                         }))
                     })
                 }),
-                Expr(ExpressionStatement {
+                Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(7, 5, 7, 22),
                         errors: vec![]
                     },
-                    expression: Pipe(Box::new(PipeExpression {
+                    expression: Expression::PipeExpr(Box::new(PipeExpr {
                         base: BaseNode {
                             location: loc.get(7, 5, 7, 22),
                             errors: vec![]
                         },
-                        argument: Call(Box::new(CallExpression {
+                        argument: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(7, 5, 7, 11),
                                 errors: vec![]
                             },
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(7, 5, 7, 9),
                                     errors: vec![]
@@ -1014,12 +1003,12 @@ fn optional_query_metadata_preceding_query_text() {
                             }),
                             arguments: vec![]
                         })),
-                        call: CallExpression {
+                        call: CallExpr {
                             base: BaseNode {
                                 location: loc.get(7, 15, 7, 22),
                                 errors: vec![]
                             },
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(7, 15, 7, 20),
                                     errors: vec![]
@@ -1050,29 +1039,29 @@ fn qualified_option() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Opt(OptionStatement {
+            body: vec![Statement::Option(OptionStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 31),
                     errors: vec![]
                 },
-                assignment: Member(MemberAssignment {
+                assignment: Assignment::Member(MemberAssgn {
                     base: BaseNode {
                         location: loc.get(1, 8, 1, 31),
                         errors: vec![]
                     },
-                    member: MemberExpression {
+                    member: MemberExpr {
                         base: BaseNode {
                             location: loc.get(1, 8, 1, 19),
                             errors: vec![]
                         },
-                        object: Idt(Identifier {
+                        object: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 8, 1, 13),
                                 errors: vec![]
                             },
                             name: "alert".to_string()
                         }),
-                        property: PkIdt(Identifier {
+                        property: PropertyKey::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 14, 1, 19),
                                 errors: vec![]
@@ -1080,7 +1069,7 @@ fn qualified_option() {
                             name: "state".to_string()
                         })
                     },
-                    init: Str(StringLiteral {
+                    init: Expression::StringLit(StringLit {
                         base: BaseNode {
                             location: loc.get(1, 22, 1, 31),
                             errors: vec![]
@@ -1108,7 +1097,7 @@ fn builtin() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Built(BuiltinStatement {
+            body: vec![Statement::Builtin(BuiltinStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 13),
                     errors: vec![]
@@ -1140,12 +1129,12 @@ fn test_statement() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Test(TestStatement {
+            body: vec![Statement::Test(TestStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 30),
                     errors: vec![]
                 },
-                assignment: VariableAssignment {
+                assignment: VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 6, 1, 30),
                         errors: vec![]
@@ -1157,7 +1146,7 @@ fn test_statement() {
                         },
                         name: "mean".to_string()
                     },
-                    init: Obj(Box::new(ObjectExpression {
+                    init: Expression::Object(Box::new(ObjectExpr {
                         base: BaseNode {
                             location: loc.get(1, 13, 1, 30),
                             errors: vec![]
@@ -1169,14 +1158,14 @@ fn test_statement() {
                                     location: loc.get(1, 14, 1, 21),
                                     errors: vec![]
                                 },
-                                key: PkIdt(Identifier {
+                                key: PropertyKey::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 14, 1, 18),
                                         errors: vec![]
                                     },
                                     name: "want".to_string()
                                 }),
-                                value: Some(Int(IntegerLiteral {
+                                value: Some(Expression::Integer(IntegerLit {
                                     base: BaseNode {
                                         location: loc.get(1, 20, 1, 21),
                                         errors: vec![]
@@ -1189,14 +1178,14 @@ fn test_statement() {
                                     location: loc.get(1, 23, 1, 29),
                                     errors: vec![]
                                 },
-                                key: PkIdt(Identifier {
+                                key: PropertyKey::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 23, 1, 26),
                                         errors: vec![]
                                     },
                                     name: "got".to_string()
                                 }),
-                                value: Some(Int(IntegerLiteral {
+                                value: Some(Expression::Integer(IntegerLit {
                                     base: BaseNode {
                                         location: loc.get(1, 28, 1, 29),
                                         errors: vec![]
@@ -1227,18 +1216,18 @@ fn from() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 7),
                     errors: vec![]
                 },
-                expression: Call(Box::new(CallExpression {
+                expression: Expression::Call(Box::new(CallExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 7),
                         errors: vec![]
                     },
                     arguments: vec![],
-                    callee: Idt(Identifier {
+                    callee: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 5),
                             errors: vec![]
@@ -1269,18 +1258,18 @@ fn comment() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(2, 4, 2, 10),
                     errors: vec![]
                 },
-                expression: Call(Box::new(CallExpression {
+                expression: Expression::Call(Box::new(CallExpr {
                     base: BaseNode {
                         location: loc.get(2, 4, 2, 10),
                         errors: vec![]
                     },
                     arguments: vec![],
-                    callee: Idt(Identifier {
+                    callee: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(2, 4, 2, 8),
                             errors: vec![]
@@ -1308,18 +1297,18 @@ fn identifier_with_number() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 7),
                     errors: vec![]
                 },
-                expression: Call(Box::new(CallExpression {
+                expression: Expression::Call(Box::new(CallExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 7),
                         errors: vec![]
                     },
                     arguments: vec![],
-                    callee: Idt(Identifier {
+                    callee: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 5),
                             errors: vec![]
@@ -1347,12 +1336,12 @@ fn regex_literal() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 5),
                     errors: vec![]
                 },
-                expression: Regexp(RegexpLiteral {
+                expression: Expression::Regexp(RegexpLit {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 5),
                         errors: vec![]
@@ -1379,12 +1368,12 @@ fn regex_literal_with_escape_sequence() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 12),
                     errors: vec![]
                 },
-                expression: Regexp(RegexpLiteral {
+                expression: Expression::Regexp(RegexpLit {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 12),
                         errors: vec![]
@@ -1411,12 +1400,12 @@ fn bad_regex_literal() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 4),
                     errors: vec![]
                 },
-                expression: Regexp(RegexpLiteral {
+                expression: Expression::Regexp(RegexpLit {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 4),
                         errors: vec![
@@ -1446,31 +1435,31 @@ fn regex_match_operators() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 28),
                     errors: vec![]
                 },
-                expression: Log(Box::new(LogicalExpression {
+                expression: Expression::Logical(Box::new(LogicalExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 28),
                         errors: vec![]
                     },
-                    operator: AndOperator,
-                    left: Bin(Box::new(BinaryExpression {
+                    operator: LogicalOperator::AndOperator,
+                    left: Expression::Binary(Box::new(BinaryExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 12),
                             errors: vec![]
                         },
-                        operator: RegexpMatchOperator,
-                        left: Str(StringLiteral {
+                        operator: Operator::RegexpMatchOperator,
+                        left: Expression::StringLit(StringLit {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 4),
                                 errors: vec![]
                             },
                             value: "a".to_string()
                         }),
-                        right: Regexp(RegexpLiteral {
+                        right: Expression::Regexp(RegexpLit {
                             base: BaseNode {
                                 location: loc.get(1, 8, 1, 12),
                                 errors: vec![]
@@ -1478,20 +1467,20 @@ fn regex_match_operators() {
                             value: ".*".to_string()
                         })
                     })),
-                    right: Bin(Box::new(BinaryExpression {
+                    right: Expression::Binary(Box::new(BinaryExpr {
                         base: BaseNode {
                             location: loc.get(1, 17, 1, 28),
                             errors: vec![]
                         },
-                        operator: NotRegexpMatchOperator,
-                        left: Str(StringLiteral {
+                        operator: Operator::NotRegexpMatchOperator,
+                        left: Expression::StringLit(StringLit {
                             base: BaseNode {
                                 location: loc.get(1, 17, 1, 20),
                                 errors: vec![]
                             },
                             value: "b".to_string()
                         }),
-                        right: Regexp(RegexpLiteral {
+                        right: Expression::Regexp(RegexpLit {
                             base: BaseNode {
                                 location: loc.get(1, 24, 1, 28),
                                 errors: vec![]
@@ -1520,7 +1509,7 @@ fn declare_variable_as_an_int() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 10),
                     errors: vec![]
@@ -1532,7 +1521,7 @@ fn declare_variable_as_an_int() {
                     },
                     name: "howdy".to_string()
                 },
-                init: Int(IntegerLiteral {
+                init: Expression::Integer(IntegerLit {
                     base: BaseNode {
                         location: loc.get(1, 9, 1, 10),
                         errors: vec![]
@@ -1559,7 +1548,7 @@ fn declare_variable_as_a_float() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 12),
                     errors: vec![]
@@ -1571,7 +1560,7 @@ fn declare_variable_as_a_float() {
                     },
                     name: "howdy".to_string()
                 },
-                init: Flt(FloatLiteral {
+                init: Expression::Float(FloatLit {
                     base: BaseNode {
                         location: loc.get(1, 9, 1, 12),
                         errors: vec![]
@@ -1598,7 +1587,7 @@ fn declare_variable_as_an_array() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 21),
                     errors: vec![]
@@ -1610,34 +1599,34 @@ fn declare_variable_as_an_array() {
                     },
                     name: "howdy".to_string()
                 },
-                init: Arr(Box::new(ArrayExpression {
+                init: Expression::Array(Box::new(ArrayExpr {
                     base: BaseNode {
                         location: loc.get(1, 9, 1, 21),
                         errors: vec![]
                     },
                     elements: vec![
-                        Int(IntegerLiteral {
+                        Expression::Integer(IntegerLit {
                             base: BaseNode {
                                 location: loc.get(1, 10, 1, 11),
                                 errors: vec![]
                             },
                             value: 1
                         }),
-                        Int(IntegerLiteral {
+                        Expression::Integer(IntegerLit {
                             base: BaseNode {
                                 location: loc.get(1, 13, 1, 14),
                                 errors: vec![]
                             },
                             value: 2
                         }),
-                        Int(IntegerLiteral {
+                        Expression::Integer(IntegerLit {
                             base: BaseNode {
                                 location: loc.get(1, 16, 1, 17),
                                 errors: vec![]
                             },
                             value: 3
                         }),
-                        Int(IntegerLiteral {
+                        Expression::Integer(IntegerLit {
                             base: BaseNode {
                                 location: loc.get(1, 19, 1, 20),
                                 errors: vec![]
@@ -1666,7 +1655,7 @@ fn declare_variable_as_an_empty_array() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 11),
                     errors: vec![]
@@ -1678,7 +1667,7 @@ fn declare_variable_as_an_empty_array() {
                     },
                     name: "howdy".to_string()
                 },
-                init: Arr(Box::new(ArrayExpression {
+                init: Expression::Array(Box::new(ArrayExpr {
                     base: BaseNode {
                         location: loc.get(1, 9, 1, 11),
                         errors: vec![]
@@ -1709,7 +1698,7 @@ fn use_variable_to_declare_something() {
             package: None,
             imports: vec![],
             body: vec![
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 10),
                         errors: vec![]
@@ -1721,7 +1710,7 @@ fn use_variable_to_declare_something() {
                         },
                         name: "howdy".to_string()
                     },
-                    init: Int(IntegerLiteral {
+                    init: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 9, 1, 10),
                             errors: vec![]
@@ -1729,18 +1718,18 @@ fn use_variable_to_declare_something() {
                         value: 1
                     })
                 }),
-                Expr(ExpressionStatement {
+                Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(2, 4, 2, 10),
                         errors: vec![]
                     },
-                    expression: Call(Box::new(CallExpression {
+                    expression: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(2, 4, 2, 10),
                             errors: vec![]
                         },
                         arguments: vec![],
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(2, 4, 2, 8),
                                 errors: vec![]
@@ -1773,7 +1762,7 @@ fn variable_is_from_statement() {
             package: None,
             imports: vec![],
             body: vec![
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 15),
                         errors: vec![]
@@ -1785,13 +1774,13 @@ fn variable_is_from_statement() {
                         },
                         name: "howdy".to_string()
                     },
-                    init: Call(Box::new(CallExpression {
+                    init: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 9, 1, 15),
                             errors: vec![]
                         },
                         arguments: vec![],
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 9, 1, 13),
                                 errors: vec![]
@@ -1800,30 +1789,30 @@ fn variable_is_from_statement() {
                         })
                     })),
                 }),
-                Expr(ExpressionStatement {
+                Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(2, 4, 2, 17),
                         errors: vec![]
                     },
-                    expression: Call(Box::new(CallExpression {
+                    expression: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(2, 4, 2, 17),
                             errors: vec![]
                         },
                         arguments: vec![],
-                        callee: Mem(Box::new(MemberExpression {
+                        callee: Expression::Member(Box::new(MemberExpr {
                             base: BaseNode {
                                 location: loc.get(2, 4, 2, 15),
                                 errors: vec![]
                             },
-                            object: Idt(Identifier {
+                            object: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(2, 4, 2, 9),
                                     errors: vec![]
                                 },
                                 name: "howdy".to_string()
                             }),
-                            property: PkIdt(Identifier {
+                            property: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(2, 10, 2, 15),
                                     errors: vec![]
@@ -1853,22 +1842,22 @@ fn pipe_expression() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 18),
                     errors: vec![]
                 },
-                expression: Pipe(Box::new(PipeExpression {
+                expression: Expression::PipeExpr(Box::new(PipeExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 18),
                         errors: vec![]
                     },
-                    argument: Call(Box::new(CallExpression {
+                    argument: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 7),
                             errors: vec![]
                         },
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 5),
                                 errors: vec![]
@@ -1877,12 +1866,12 @@ fn pipe_expression() {
                         }),
                         arguments: vec![]
                     })),
-                    call: CallExpression {
+                    call: CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 11, 1, 18),
                             errors: vec![]
                         },
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 11, 1, 16),
                                 errors: vec![]
@@ -1912,41 +1901,41 @@ fn pipe_expression_to_member_expression_function() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 14),
                     errors: vec![]
                 },
-                expression: Pipe(Box::new(PipeExpression {
+                expression: Expression::PipeExpr(Box::new(PipeExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 14),
                         errors: vec![]
                     },
-                    argument: Idt(Identifier {
+                    argument: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 2),
                             errors: vec![]
                         },
                         name: "a".to_string()
                     }),
-                    call: CallExpression {
+                    call: CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 6, 1, 14),
                             errors: vec![]
                         },
-                        callee: Mem(Box::new(MemberExpression {
+                        callee: Expression::Member(Box::new(MemberExpr {
                             base: BaseNode {
                                 location: loc.get(1, 6, 1, 9),
                                 errors: vec![]
                             },
-                            object: Idt(Identifier {
+                            object: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 6, 1, 7),
                                     errors: vec![]
                                 },
                                 name: "b".to_string()
                             }),
-                            property: PkIdt(Identifier {
+                            property: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 8, 1, 9),
                                     errors: vec![]
@@ -1954,7 +1943,7 @@ fn pipe_expression_to_member_expression_function() {
                                 name: "c".to_string()
                             })
                         })),
-                        arguments: vec![Obj(Box::new(ObjectExpression {
+                        arguments: vec![Expression::Object(Box::new(ObjectExpr {
                             base: BaseNode {
                                 location: loc.get(1, 10, 1, 13),
                                 errors: vec![]
@@ -1965,14 +1954,14 @@ fn pipe_expression_to_member_expression_function() {
                                     location: loc.get(1, 10, 1, 13),
                                     errors: vec![]
                                 },
-                                key: PkIdt(Identifier {
+                                key: PropertyKey::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 10, 1, 11),
                                         errors: vec![]
                                     },
                                     name: "d".to_string()
                                 }),
-                                value: Some(Idt(Identifier {
+                                value: Some(Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 12, 1, 13),
                                         errors: vec![]
@@ -2003,30 +1992,30 @@ fn literal_pipe_expression() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 12),
                     errors: vec![]
                 },
-                expression: Pipe(Box::new(PipeExpression {
+                expression: Expression::PipeExpr(Box::new(PipeExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 12),
                         errors: vec![]
                     },
-                    argument: Int(IntegerLiteral {
+                    argument: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 2),
                             errors: vec![]
                         },
                         value: 5,
                     }),
-                    call: CallExpression {
+                    call: CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 6, 1, 12),
                             errors: vec![]
                         },
                         arguments: vec![],
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 6, 1, 10),
                                 errors: vec![]
@@ -2055,29 +2044,29 @@ fn member_expression_pipe_expression() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 17),
                     errors: vec![]
                 },
-                expression: Pipe(Box::new(PipeExpression {
+                expression: Expression::PipeExpr(Box::new(PipeExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 17),
                         errors: vec![]
                     },
-                    argument: Mem(Box::new(MemberExpression {
+                    argument: Expression::Member(Box::new(MemberExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 8),
                             errors: vec![]
                         },
-                        object: Idt(Identifier {
+                        object: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 4),
                                 errors: vec![]
                             },
                             name: "foo".to_string()
                         }),
-                        property: PkIdt(Identifier {
+                        property: PropertyKey::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 5, 1, 8),
                                 errors: vec![]
@@ -2085,12 +2074,12 @@ fn member_expression_pipe_expression() {
                             name: "bar".to_string()
                         })
                     })),
-                    call: CallExpression {
+                    call: CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 12, 1, 17),
                             errors: vec![]
                         },
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 12, 1, 15),
                                 errors: vec![]
@@ -2120,32 +2109,32 @@ fn multiple_pipe_expressions() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 41),
                     errors: vec![]
                 },
-                expression: Pipe(Box::new(PipeExpression {
+                expression: Expression::PipeExpr(Box::new(PipeExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 41),
                         errors: vec![]
                     },
-                    argument: Pipe(Box::new(PipeExpression {
+                    argument: Expression::PipeExpr(Box::new(PipeExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 30),
                             errors: vec![]
                         },
-                        argument: Pipe(Box::new(PipeExpression {
+                        argument: Expression::PipeExpr(Box::new(PipeExpr {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 18),
                                 errors: vec![]
                             },
-                            argument: Call(Box::new(CallExpression {
+                            argument: Expression::Call(Box::new(CallExpr {
                                 base: BaseNode {
                                     location: loc.get(1, 1, 1, 7),
                                     errors: vec![]
                                 },
-                                callee: Idt(Identifier {
+                                callee: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 1, 1, 5),
                                         errors: vec![]
@@ -2154,12 +2143,12 @@ fn multiple_pipe_expressions() {
                                 }),
                                 arguments: vec![]
                             })),
-                            call: CallExpression {
+                            call: CallExpr {
                                 base: BaseNode {
                                     location: loc.get(1, 11, 1, 18),
                                     errors: vec![]
                                 },
-                                callee: Idt(Identifier {
+                                callee: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 11, 1, 16),
                                         errors: vec![]
@@ -2169,12 +2158,12 @@ fn multiple_pipe_expressions() {
                                 arguments: vec![]
                             }
                         })),
-                        call: CallExpression {
+                        call: CallExpr {
                             base: BaseNode {
                                 location: loc.get(1, 22, 1, 30),
                                 errors: vec![]
                             },
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 22, 1, 28),
                                     errors: vec![]
@@ -2184,12 +2173,12 @@ fn multiple_pipe_expressions() {
                             arguments: vec![]
                         }
                     })),
-                    call: CallExpression {
+                    call: CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 34, 1, 41),
                             errors: vec![]
                         },
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 34, 1, 39),
                                 errors: vec![]
@@ -2219,22 +2208,22 @@ fn pipe_expression_into_non_call_expression() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 13),
                     errors: vec![]
                 },
-                expression: Pipe(Box::new(PipeExpression {
+                expression: Expression::PipeExpr(Box::new(PipeExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 13),
                         errors: vec![]
                     },
-                    argument: Call(Box::new(CallExpression {
+                    argument: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 6),
                             errors: vec![]
                         },
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 4),
                                 errors: vec![]
@@ -2243,12 +2232,12 @@ fn pipe_expression_into_non_call_expression() {
                         }),
                         arguments: vec![]
                     })),
-                    call: CallExpression {
+                    call: CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 10, 1, 13),
                             errors: vec!["pipe destination must be a function call".to_string()]
                         },
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 10, 1, 13),
                                 errors: vec![]
@@ -2284,7 +2273,7 @@ fn two_variables_for_two_froms() {
             package: None,
             imports: vec![],
             body: vec![
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 15),
                         errors: vec![]
@@ -2296,13 +2285,13 @@ fn two_variables_for_two_froms() {
                         },
                         name: "howdy".to_string()
                     },
-                    init: Call(Box::new(CallExpression {
+                    init: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 9, 1, 15),
                             errors: vec![]
                         },
                         arguments: vec![],
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 9, 1, 13),
                                 errors: vec![]
@@ -2311,7 +2300,7 @@ fn two_variables_for_two_froms() {
                         })
                     })),
                 }),
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(2, 4, 2, 18),
                         errors: vec![]
@@ -2323,13 +2312,13 @@ fn two_variables_for_two_froms() {
                         },
                         name: "doody".to_string()
                     },
-                    init: Call(Box::new(CallExpression {
+                    init: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(2, 12, 2, 18),
                             errors: vec![]
                         },
                         arguments: vec![],
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(2, 12, 2, 16),
                                 errors: vec![]
@@ -2338,29 +2327,29 @@ fn two_variables_for_two_froms() {
                         })
                     })),
                 }),
-                Expr(ExpressionStatement {
+                Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(3, 4, 3, 18),
                         errors: vec![]
                     },
-                    expression: Pipe(Box::new(PipeExpression {
+                    expression: Expression::PipeExpr(Box::new(PipeExpr {
                         base: BaseNode {
                             location: loc.get(3, 4, 3, 18),
                             errors: vec![]
                         },
-                        argument: Idt(Identifier {
+                        argument: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(3, 4, 3, 9),
                                 errors: vec![]
                             },
                             name: "howdy".to_string()
                         }),
-                        call: CallExpression {
+                        call: CallExpr {
                             base: BaseNode {
                                 location: loc.get(3, 11, 3, 18),
                                 errors: vec![]
                             },
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(3, 11, 3, 16),
                                     errors: vec![]
@@ -2371,29 +2360,29 @@ fn two_variables_for_two_froms() {
                         }
                     }))
                 }),
-                Expr(ExpressionStatement {
+                Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(4, 4, 4, 16),
                         errors: vec![]
                     },
-                    expression: Pipe(Box::new(PipeExpression {
+                    expression: Expression::PipeExpr(Box::new(PipeExpr {
                         base: BaseNode {
                             location: loc.get(4, 4, 4, 16),
                             errors: vec![]
                         },
-                        argument: Idt(Identifier {
+                        argument: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(4, 4, 4, 9),
                                 errors: vec![]
                             },
                             name: "doody".to_string()
                         }),
-                        call: CallExpression {
+                        call: CallExpr {
                             base: BaseNode {
                                 location: loc.get(4, 11, 4, 16),
                                 errors: vec![]
                             },
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(4, 11, 4, 14),
                                     errors: vec![]
@@ -2424,24 +2413,24 @@ fn from_with_database() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 32),
                     errors: vec![]
                 },
-                expression: Call(Box::new(CallExpression {
+                expression: Expression::Call(Box::new(CallExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 32),
                         errors: vec![]
                     },
-                    callee: Idt(Identifier {
+                    callee: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 5),
                             errors: vec![]
                         },
                         name: "from".to_string()
                     }),
-                    arguments: vec![Obj(Box::new(ObjectExpression {
+                    arguments: vec![Expression::Object(Box::new(ObjectExpr {
                         base: BaseNode {
                             location: loc.get(1, 6, 1, 31),
                             errors: vec![]
@@ -2452,14 +2441,14 @@ fn from_with_database() {
                                 location: loc.get(1, 6, 1, 31),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 6, 1, 12),
                                     errors: vec![]
                                 },
                                 name: "bucket".to_string()
                             }),
-                            value: Some(Str(StringLiteral {
+                            value: Some(Expression::StringLit(StringLit {
                                 base: BaseNode {
                                     location: loc.get(1, 13, 1, 31),
                                     errors: vec![]
@@ -2495,7 +2484,7 @@ fn map_member_expressions() {
             package: None,
             imports: vec![],
             body: vec![
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 29),
                         errors: vec![]
@@ -2507,7 +2496,7 @@ fn map_member_expressions() {
                         },
                         name: "m".to_string()
                     },
-                    init: Obj(Box::new(ObjectExpression {
+                    init: Expression::Object(Box::new(ObjectExpr {
                         base: BaseNode {
                             location: loc.get(1, 5, 1, 29),
                             errors: vec![]
@@ -2519,14 +2508,14 @@ fn map_member_expressions() {
                                     location: loc.get(1, 6, 1, 13),
                                     errors: vec![]
                                 },
-                                key: PkIdt(Identifier {
+                                key: PropertyKey::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 6, 1, 10),
                                         errors: vec![]
                                     },
                                     name: "key1".to_string()
                                 }),
-                                value: Some(Int(IntegerLiteral {
+                                value: Some(Expression::Integer(IntegerLit {
                                     base: BaseNode {
                                         location: loc.get(1, 12, 1, 13),
                                         errors: vec![]
@@ -2539,14 +2528,14 @@ fn map_member_expressions() {
                                     location: loc.get(1, 15, 1, 28),
                                     errors: vec![]
                                 },
-                                key: PkIdt(Identifier {
+                                key: PropertyKey::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 15, 1, 19),
                                         errors: vec![]
                                     },
                                     name: "key2".to_string()
                                 }),
-                                value: Some(Str(StringLiteral {
+                                value: Some(Expression::StringLit(StringLit {
                                     base: BaseNode {
                                         location: loc.get(1, 20, 1, 28),
                                         errors: vec![]
@@ -2557,24 +2546,24 @@ fn map_member_expressions() {
                         ]
                     }))
                 }),
-                Expr(ExpressionStatement {
+                Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(2, 4, 2, 10),
                         errors: vec![]
                     },
-                    expression: Mem(Box::new(MemberExpression {
+                    expression: Expression::Member(Box::new(MemberExpr {
                         base: BaseNode {
                             location: loc.get(2, 4, 2, 10),
                             errors: vec![]
                         },
-                        object: Idt(Identifier {
+                        object: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(2, 4, 2, 5),
                                 errors: vec![]
                             },
                             name: "m".to_string()
                         }),
-                        property: PkIdt(Identifier {
+                        property: PropertyKey::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(2, 6, 2, 10),
                                 errors: vec![]
@@ -2583,24 +2572,24 @@ fn map_member_expressions() {
                         })
                     }))
                 }),
-                Expr(ExpressionStatement {
+                Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(3, 4, 3, 13),
                         errors: vec![]
                     },
-                    expression: Mem(Box::new(MemberExpression {
+                    expression: Expression::Member(Box::new(MemberExpr {
                         base: BaseNode {
                             location: loc.get(3, 4, 3, 13),
                             errors: vec![]
                         },
-                        object: Idt(Identifier {
+                        object: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(3, 4, 3, 5),
                                 errors: vec![]
                             },
                             name: "m".to_string()
                         }),
-                        property: PkStr(StringLiteral {
+                        property: PropertyKey::StringLit(StringLit {
                             base: BaseNode {
                                 location: loc.get(3, 6, 3, 12),
                                 errors: vec![]
@@ -2629,7 +2618,7 @@ fn object_with_string_literal_key() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 14),
                     errors: vec![]
@@ -2641,7 +2630,7 @@ fn object_with_string_literal_key() {
                     },
                     name: "x".to_string()
                 },
-                init: Obj(Box::new(ObjectExpression {
+                init: Expression::Object(Box::new(ObjectExpr {
                     base: BaseNode {
                         location: loc.get(1, 5, 1, 14),
                         errors: vec![]
@@ -2652,14 +2641,14 @@ fn object_with_string_literal_key() {
                             location: loc.get(1, 6, 1, 13),
                             errors: vec![]
                         },
-                        key: PkStr(StringLiteral {
+                        key: PropertyKey::StringLit(StringLit {
                             base: BaseNode {
                                 location: loc.get(1, 6, 1, 9),
                                 errors: vec![]
                             },
                             value: "a".to_string()
                         }),
-                        value: Some(Int(IntegerLiteral {
+                        value: Some(Expression::Integer(IntegerLit {
                             base: BaseNode {
                                 location: loc.get(1, 11, 1, 13),
                                 errors: vec![]
@@ -2688,7 +2677,7 @@ fn object_with_mixed_keys() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 21),
                     errors: vec![]
@@ -2700,7 +2689,7 @@ fn object_with_mixed_keys() {
                     },
                     name: "x".to_string()
                 },
-                init: Obj(Box::new(ObjectExpression {
+                init: Expression::Object(Box::new(ObjectExpr {
                     base: BaseNode {
                         location: loc.get(1, 5, 1, 21),
                         errors: vec![]
@@ -2712,14 +2701,14 @@ fn object_with_mixed_keys() {
                                 location: loc.get(1, 6, 1, 13),
                                 errors: vec![]
                             },
-                            key: PkStr(StringLiteral {
+                            key: PropertyKey::StringLit(StringLit {
                                 base: BaseNode {
                                     location: loc.get(1, 6, 1, 9),
                                     errors: vec![]
                                 },
                                 value: "a".to_string()
                             }),
-                            value: Some(Int(IntegerLiteral {
+                            value: Some(Expression::Integer(IntegerLit {
                                 base: BaseNode {
                                     location: loc.get(1, 11, 1, 13),
                                     errors: vec![]
@@ -2732,14 +2721,14 @@ fn object_with_mixed_keys() {
                                 location: loc.get(1, 15, 1, 20),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 15, 1, 16),
                                     errors: vec![]
                                 },
                                 name: "b".to_string()
                             }),
-                            value: Some(Int(IntegerLiteral {
+                            value: Some(Expression::Integer(IntegerLit {
                                 base: BaseNode {
                                     location: loc.get(1, 18, 1, 20),
                                     errors: vec![]
@@ -2769,7 +2758,7 @@ fn implicit_key_object_literal() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 11),
                     errors: vec![]
@@ -2781,7 +2770,7 @@ fn implicit_key_object_literal() {
                     },
                     name: "x".to_string()
                 },
-                init: Obj(Box::new(ObjectExpression {
+                init: Expression::Object(Box::new(ObjectExpr {
                     base: BaseNode {
                         location: loc.get(1, 5, 1, 11),
                         errors: vec![]
@@ -2793,7 +2782,7 @@ fn implicit_key_object_literal() {
                                 location: loc.get(1, 6, 1, 7),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 6, 1, 7),
                                     errors: vec![]
@@ -2807,7 +2796,7 @@ fn implicit_key_object_literal() {
                                 location: loc.get(1, 9, 1, 10),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 9, 1, 10),
                                     errors: vec![]
@@ -2839,7 +2828,7 @@ fn implicit_key_object_literal_error() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 13),
                     errors: vec![]
@@ -2851,7 +2840,7 @@ fn implicit_key_object_literal_error() {
                     },
                     name: "x".to_string()
                 },
-                init: Obj(Box::new(ObjectExpression {
+                init: Expression::Object(Box::new(ObjectExpr {
                     base: BaseNode {
                         location: loc.get(1, 5, 1, 13),
                         errors: vec![]
@@ -2864,7 +2853,7 @@ fn implicit_key_object_literal_error() {
                                 location: loc.get(1, 6, 1, 9),
                                 errors: vec![]
                             },
-                            key: PkStr(StringLiteral {
+                            key: PropertyKey::StringLit(StringLit {
                                 base: BaseNode {
                                     location: loc.get(1, 6, 1, 9),
                                     errors: vec![]
@@ -2878,7 +2867,7 @@ fn implicit_key_object_literal_error() {
                                 location: loc.get(1, 11, 1, 12),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 11, 1, 12),
                                     errors: vec![]
@@ -2910,7 +2899,7 @@ fn implicit_and_explicit_keys_object_literal_error() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 13),
                     errors: vec![]
@@ -2922,7 +2911,7 @@ fn implicit_and_explicit_keys_object_literal_error() {
                     },
                     name: "x".to_string()
                 },
-                init: Obj(Box::new(ObjectExpression {
+                init: Expression::Object(Box::new(ObjectExpr {
                     // TODO(affo): this should error in ast.Check(): "cannot mix implicit and explicit properties".
                     base: BaseNode {
                         location: loc.get(1, 5, 1, 13),
@@ -2935,7 +2924,7 @@ fn implicit_and_explicit_keys_object_literal_error() {
                                 location: loc.get(1, 6, 1, 7),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 6, 1, 7),
                                     errors: vec![]
@@ -2949,14 +2938,14 @@ fn implicit_and_explicit_keys_object_literal_error() {
                                 location: loc.get(1, 9, 1, 12),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 9, 1, 10),
                                     errors: vec![]
                                 },
                                 name: "b".to_string()
                             }),
-                            value: Some(Idt(Identifier {
+                            value: Some(Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 11, 1, 12),
                                     errors: vec![]
@@ -2986,12 +2975,12 @@ fn object_with() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 18),
                     errors: vec![]
                 },
-                expression: Obj(Box::new(ObjectExpression {
+                expression: Expression::Object(Box::new(ObjectExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 18),
                         errors: vec![]
@@ -3009,14 +2998,14 @@ fn object_with() {
                                 location: loc.get(1, 9, 1, 12),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 9, 1, 10),
                                     errors: vec![]
                                 },
                                 name: "b".to_string()
                             }),
-                            value: Some(Idt(Identifier {
+                            value: Some(Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 11, 1, 12),
                                     errors: vec![]
@@ -3029,14 +3018,14 @@ fn object_with() {
                                 location: loc.get(1, 14, 1, 17),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 14, 1, 15),
                                     errors: vec![]
                                 },
                                 name: "d".to_string()
                             }),
-                            value: Some(Idt(Identifier {
+                            value: Some(Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 16, 1, 17),
                                     errors: vec![]
@@ -3066,12 +3055,12 @@ fn object_with_implicit_keys() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 14),
                     errors: vec![]
                 },
-                expression: Obj(Box::new(ObjectExpression {
+                expression: Expression::Object(Box::new(ObjectExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 14),
                         errors: vec![]
@@ -3089,7 +3078,7 @@ fn object_with_implicit_keys() {
                                 location: loc.get(1, 9, 1, 10),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 9, 1, 10),
                                     errors: vec![]
@@ -3103,7 +3092,7 @@ fn object_with_implicit_keys() {
                                 location: loc.get(1, 12, 1, 13),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 12, 1, 13),
                                     errors: vec![]
@@ -3134,24 +3123,24 @@ fn index_expression() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 5),
                     errors: vec![]
                 },
-                expression: Idx(Box::new(IndexExpression {
+                expression: Expression::Index(Box::new(IndexExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 5),
                         errors: vec![]
                     },
-                    array: Idt(Identifier {
+                    array: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 2),
                             errors: vec![]
                         },
                         name: "a".to_string()
                     }),
-                    index: Int(IntegerLiteral {
+                    index: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 3, 1, 4),
                             errors: vec![]
@@ -3179,29 +3168,29 @@ fn nested_index_expression() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 8),
                     errors: vec![]
                 },
-                expression: Idx(Box::new(IndexExpression {
+                expression: Expression::Index(Box::new(IndexExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 8),
                         errors: vec![]
                     },
-                    array: Idx(Box::new(IndexExpression {
+                    array: Expression::Index(Box::new(IndexExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 5),
                             errors: vec![]
                         },
-                        array: Idt(Identifier {
+                        array: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 2),
                                 errors: vec![]
                             },
                             name: "a".to_string()
                         }),
-                        index: Int(IntegerLiteral {
+                        index: Expression::Integer(IntegerLit {
                             base: BaseNode {
                                 location: loc.get(1, 3, 1, 4),
                                 errors: vec![]
@@ -3209,7 +3198,7 @@ fn nested_index_expression() {
                             value: 3
                         })
                     })),
-                    index: Int(IntegerLiteral {
+                    index: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 6, 1, 7),
                             errors: vec![]
@@ -3237,23 +3226,23 @@ fn access_indexed_object_returned_from_function_call() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 7),
                     errors: vec![]
                 },
-                expression: Idx(Box::new(IndexExpression {
+                expression: Expression::Index(Box::new(IndexExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 7),
                         errors: vec![]
                     },
-                    array: Call(Box::new(CallExpression {
+                    array: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 4),
                             errors: vec![]
                         },
                         arguments: vec![],
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 2),
                                 errors: vec![]
@@ -3261,7 +3250,7 @@ fn access_indexed_object_returned_from_function_call() {
                             name: "f".to_string()
                         }),
                     })),
-                    index: Int(IntegerLiteral {
+                    index: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 5, 1, 6),
                             errors: vec![]
@@ -3289,29 +3278,29 @@ fn index_with_member_expressions() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 9),
                     errors: vec![]
                 },
-                expression: Mem(Box::new(MemberExpression {
+                expression: Expression::Member(Box::new(MemberExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 9),
                         errors: vec![]
                     },
-                    object: Mem(Box::new(MemberExpression {
+                    object: Expression::Member(Box::new(MemberExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 4),
                             errors: vec![]
                         },
-                        object: Idt(Identifier {
+                        object: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 2),
                                 errors: vec![]
                             },
                             name: "a".to_string()
                         }),
-                        property: PkIdt(Identifier {
+                        property: PropertyKey::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 3, 1, 4),
                                 errors: vec![]
@@ -3319,7 +3308,7 @@ fn index_with_member_expressions() {
                             name: "b".to_string()
                         })
                     })),
-                    property: PkStr(StringLiteral {
+                    property: PropertyKey::StringLit(StringLit {
                         base: BaseNode {
                             location: loc.get(1, 5, 1, 8),
                             errors: vec![]
@@ -3347,35 +3336,35 @@ fn index_with_member_with_call_expression() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 11),
                     errors: vec![]
                 },
-                expression: Mem(Box::new(MemberExpression {
+                expression: Expression::Member(Box::new(MemberExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 11),
                         errors: vec![]
                     },
-                    object: Call(Box::new(CallExpression {
+                    object: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 6),
                             errors: vec![]
                         },
                         arguments: vec![],
-                        callee: Mem(Box::new(MemberExpression {
+                        callee: Expression::Member(Box::new(MemberExpr {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 4),
                                 errors: vec![]
                             },
-                            object: Idt(Identifier {
+                            object: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 1, 1, 2),
                                     errors: vec![]
                                 },
                                 name: "a".to_string()
                             }),
-                            property: PkIdt(Identifier {
+                            property: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 3, 1, 4),
                                     errors: vec![]
@@ -3384,7 +3373,7 @@ fn index_with_member_with_call_expression() {
                             })
                         })),
                     })),
-                    property: PkStr(StringLiteral {
+                    property: PropertyKey::StringLit(StringLit {
                         base: BaseNode {
                             location: loc.get(1, 7, 1, 10),
                             errors: vec![]
@@ -3412,30 +3401,30 @@ fn index_with_unclosed_bracket() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 6),
                     errors: vec![]
                 },
-                expression: Idx(Box::new(IndexExpression {
+                expression: Expression::Index(Box::new(IndexExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 6),
                         errors: vec!["expected RBRACK, got EOF".to_string()]
                     },
-                    array: Idt(Identifier {
+                    array: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 2),
                             errors: vec![]
                         },
                         name: "a".to_string()
                     }),
-                    index: Call(Box::new(CallExpression {
+                    index: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 3, 1, 6),
                             errors: vec![]
                         },
                         arguments: vec![],
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 3, 1, 4),
                                 errors: vec![]
@@ -3464,30 +3453,30 @@ fn index_with_unbalanced_parenthesis() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 6),
                     errors: vec![]
                 },
-                expression: Idx(Box::new(IndexExpression {
+                expression: Expression::Index(Box::new(IndexExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 6),
                         errors: vec![]
                     },
-                    array: Idt(Identifier {
+                    array: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 2),
                             errors: vec![]
                         },
                         name: "a".to_string()
                     }),
-                    index: Call(Box::new(CallExpression {
+                    index: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 3, 1, 6),
                             errors: vec!["expected RPAREN, got RBRACK".to_string()]
                         },
                         arguments: vec![],
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 3, 1, 4),
                                 errors: vec![]
@@ -3516,24 +3505,24 @@ fn index_with_unexpected_rparen() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 6),
                     errors: vec![]
                 },
-                expression: Idx(Box::new(IndexExpression {
+                expression: Expression::Index(Box::new(IndexExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 6),
                         errors: vec!["invalid expression @1:4-1:5: )".to_string()]
                     },
-                    array: Idt(Identifier {
+                    array: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 2),
                             errors: vec![]
                         },
                         name: "a".to_string()
                     }),
-                    index: Idt(Identifier {
+                    index: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 3, 1, 4),
                             errors: vec![]
@@ -3561,25 +3550,25 @@ fn binary_expression() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 14),
                     errors: vec![]
                 },
-                expression: Bin(Box::new(BinaryExpression {
+                expression: Expression::Binary(Box::new(BinaryExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 14),
                         errors: vec![]
                     },
-                    operator: LessThanOperator,
-                    left: Idt(Identifier {
+                    operator: Operator::LessThanOperator,
+                    left: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 7),
                             errors: vec![]
                         },
                         name: "_value".to_string()
                     }),
-                    right: Flt(FloatLiteral {
+                    right: Expression::Float(FloatLit {
                         base: BaseNode {
                             location: loc.get(1, 10, 1, 14),
                             errors: vec![]
@@ -3607,30 +3596,30 @@ fn member_expression_binary_expression() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 16),
                     errors: vec![]
                 },
-                expression: Bin(Box::new(BinaryExpression {
+                expression: Expression::Binary(Box::new(BinaryExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 16),
                         errors: vec![]
                     },
-                    operator: LessThanOperator,
-                    left: Mem(Box::new(MemberExpression {
+                    operator: Operator::LessThanOperator,
+                    left: Expression::Member(Box::new(MemberExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 9),
                             errors: vec![]
                         },
-                        object: Idt(Identifier {
+                        object: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 2),
                                 errors: vec![]
                             },
                             name: "r".to_string()
                         }),
-                        property: PkIdt(Identifier {
+                        property: PropertyKey::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 3, 1, 9),
                                 errors: vec![]
@@ -3638,7 +3627,7 @@ fn member_expression_binary_expression() {
                             name: "_value".to_string()
                         })
                     })),
-                    right: Flt(FloatLiteral {
+                    right: Expression::Float(FloatLit {
                         base: BaseNode {
                             location: loc.get(1, 12, 1, 16),
                             errors: vec![]
@@ -3672,7 +3661,7 @@ fn var_as_binary_expression_of_other_vars() {
             package: None,
             imports: vec![],
             body: vec![
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 6),
                         errors: vec![]
@@ -3684,7 +3673,7 @@ fn var_as_binary_expression_of_other_vars() {
                         },
                         name: "a".to_string()
                     },
-                    init: Int(IntegerLiteral {
+                    init: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 5, 1, 6),
                             errors: vec![]
@@ -3692,7 +3681,7 @@ fn var_as_binary_expression_of_other_vars() {
                         value: 1
                     })
                 }),
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(2, 13, 2, 18),
                         errors: vec![]
@@ -3704,7 +3693,7 @@ fn var_as_binary_expression_of_other_vars() {
                         },
                         name: "b".to_string()
                     },
-                    init: Int(IntegerLiteral {
+                    init: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(2, 17, 2, 18),
                             errors: vec![]
@@ -3712,7 +3701,7 @@ fn var_as_binary_expression_of_other_vars() {
                         value: 2
                     })
                 }),
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(3, 13, 3, 22),
                         errors: vec![]
@@ -3724,20 +3713,20 @@ fn var_as_binary_expression_of_other_vars() {
                         },
                         name: "c".to_string()
                     },
-                    init: Bin(Box::new(BinaryExpression {
+                    init: Expression::Binary(Box::new(BinaryExpr {
                         base: BaseNode {
                             location: loc.get(3, 17, 3, 22),
                             errors: vec![]
                         },
-                        operator: AdditionOperator,
-                        left: Idt(Identifier {
+                        operator: Operator::AdditionOperator,
+                        left: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(3, 17, 3, 18),
                                 errors: vec![]
                             },
                             name: "a".to_string()
                         }),
-                        right: Idt(Identifier {
+                        right: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(3, 21, 3, 22),
                                 errors: vec![]
@@ -3746,7 +3735,7 @@ fn var_as_binary_expression_of_other_vars() {
                         })
                     }))
                 }),
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(4, 13, 4, 18),
                         errors: vec![]
@@ -3758,7 +3747,7 @@ fn var_as_binary_expression_of_other_vars() {
                         },
                         name: "d".to_string()
                     },
-                    init: Idt(Identifier {
+                    init: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(4, 17, 4, 18),
                             errors: vec![]
@@ -3790,7 +3779,7 @@ fn var_as_unary_expression_of_other_vars() {
             package: None,
             imports: vec![],
             body: vec![
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 6),
                         errors: vec![]
@@ -3802,7 +3791,7 @@ fn var_as_unary_expression_of_other_vars() {
                         },
                         name: "a".to_string()
                     },
-                    init: Int(IntegerLiteral {
+                    init: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 5, 1, 6),
                             errors: vec![]
@@ -3810,7 +3799,7 @@ fn var_as_unary_expression_of_other_vars() {
                         value: 5
                     })
                 }),
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(2, 13, 2, 19),
                         errors: vec![]
@@ -3822,13 +3811,13 @@ fn var_as_unary_expression_of_other_vars() {
                         },
                         name: "c".to_string()
                     },
-                    init: Un(Box::new(UnaryExpression {
+                    init: Expression::Unary(Box::new(UnaryExpr {
                         base: BaseNode {
                             location: loc.get(2, 17, 2, 19),
                             errors: vec![]
                         },
-                        operator: SubtractionOperator,
-                        argument: Idt(Identifier {
+                        operator: Operator::SubtractionOperator,
+                        argument: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(2, 18, 2, 19),
                                 errors: vec![]
@@ -3861,7 +3850,7 @@ fn var_as_both_binary_and_unary_expressions() {
             package: None,
             imports: vec![],
             body: vec![
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 6),
                         errors: vec![]
@@ -3873,7 +3862,7 @@ fn var_as_both_binary_and_unary_expressions() {
                         },
                         name: "a".to_string()
                     },
-                    init: Int(IntegerLiteral {
+                    init: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 5, 1, 6),
                             errors: vec![]
@@ -3881,7 +3870,7 @@ fn var_as_both_binary_and_unary_expressions() {
                         value: 5
                     })
                 }),
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(2, 13, 2, 24),
                         errors: vec![]
@@ -3893,26 +3882,26 @@ fn var_as_both_binary_and_unary_expressions() {
                         },
                         name: "c".to_string()
                     },
-                    init: Bin(Box::new(BinaryExpression {
+                    init: Expression::Binary(Box::new(BinaryExpr {
                         base: BaseNode {
                             location: loc.get(2, 17, 2, 24),
                             errors: vec![]
                         },
-                        operator: MultiplicationOperator,
-                        left: Int(IntegerLiteral {
+                        operator: Operator::MultiplicationOperator,
+                        left: Expression::Integer(IntegerLit {
                             base: BaseNode {
                                 location: loc.get(2, 17, 2, 19),
                                 errors: vec![]
                             },
                             value: 10
                         }),
-                        right: Un(Box::new(UnaryExpression {
+                        right: Expression::Unary(Box::new(UnaryExpr {
                             base: BaseNode {
                                 location: loc.get(2, 22, 2, 24),
                                 errors: vec![]
                             },
-                            operator: SubtractionOperator,
-                            argument: Idt(Identifier {
+                            operator: Operator::SubtractionOperator,
+                            argument: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(2, 23, 2, 24),
                                     errors: vec![]
@@ -3946,7 +3935,7 @@ fn unary_expressions_within_logical_expression() {
             package: None,
             imports: vec![],
             body: vec![
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 8),
                         errors: vec![]
@@ -3958,7 +3947,7 @@ fn unary_expressions_within_logical_expression() {
                         },
                         name: "a".to_string()
                     },
-                    init: Flt(FloatLiteral {
+                    init: Expression::Float(FloatLit {
                         base: BaseNode {
                             location: loc.get(1, 5, 1, 8),
                             errors: vec![]
@@ -3966,43 +3955,43 @@ fn unary_expressions_within_logical_expression() {
                         value: 5.0
                     })
                 }),
-                Expr(ExpressionStatement {
+                Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(2, 13, 2, 42),
                         errors: vec![]
                     },
-                    expression: Log(Box::new(LogicalExpression {
+                    expression: Expression::Logical(Box::new(LogicalExpr {
                         base: BaseNode {
                             location: loc.get(2, 13, 2, 42),
                             errors: vec![]
                         },
-                        operator: OrOperator,
-                        left: Bin(Box::new(BinaryExpression {
+                        operator: LogicalOperator::OrOperator,
+                        left: Expression::Binary(Box::new(BinaryExpr {
                             base: BaseNode {
                                 location: loc.get(2, 13, 2, 30),
                                 errors: vec![]
                             },
-                            operator: EqualOperator,
-                            left: Bin(Box::new(BinaryExpression {
+                            operator: Operator::EqualOperator,
+                            left: Expression::Binary(Box::new(BinaryExpr {
                                 base: BaseNode {
                                     location: loc.get(2, 13, 2, 22),
                                     errors: vec![]
                                 },
-                                operator: MultiplicationOperator,
-                                left: Flt(FloatLiteral {
+                                operator: Operator::MultiplicationOperator,
+                                left: Expression::Float(FloatLit {
                                     base: BaseNode {
                                         location: loc.get(2, 13, 2, 17),
                                         errors: vec![]
                                     },
                                     value: 10.0
                                 }),
-                                right: Un(Box::new(UnaryExpression {
+                                right: Expression::Unary(Box::new(UnaryExpr {
                                     base: BaseNode {
                                         location: loc.get(2, 20, 2, 22),
                                         errors: vec![]
                                     },
-                                    operator: SubtractionOperator,
-                                    argument: Idt(Identifier {
+                                    operator: Operator::SubtractionOperator,
+                                    argument: Expression::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(2, 21, 2, 22),
                                             errors: vec![]
@@ -4011,13 +4000,13 @@ fn unary_expressions_within_logical_expression() {
                                     })
                                 }))
                             })),
-                            right: Un(Box::new(UnaryExpression {
+                            right: Expression::Unary(Box::new(UnaryExpr {
                                 base: BaseNode {
                                     location: loc.get(2, 26, 2, 30),
                                     errors: vec![]
                                 },
-                                operator: SubtractionOperator,
-                                argument: Flt(FloatLiteral {
+                                operator: Operator::SubtractionOperator,
+                                argument: Expression::Float(FloatLit {
                                     base: BaseNode {
                                         location: loc.get(2, 27, 2, 30),
                                         errors: vec![]
@@ -4026,20 +4015,20 @@ fn unary_expressions_within_logical_expression() {
                                 })
                             }))
                         })),
-                        right: Bin(Box::new(BinaryExpression {
+                        right: Expression::Binary(Box::new(BinaryExpr {
                             base: BaseNode {
                                 location: loc.get(2, 34, 2, 42),
                                 errors: vec![]
                             },
-                            operator: EqualOperator,
-                            left: Idt(Identifier {
+                            operator: Operator::EqualOperator,
+                            left: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(2, 34, 2, 35),
                                     errors: vec![]
                                 },
                                 name: "a".to_string()
                             }),
-                            right: Flt(FloatLiteral {
+                            right: Expression::Float(FloatLit {
                                 base: BaseNode {
                                     location: loc.get(2, 39, 2, 42),
                                     errors: vec![]
@@ -4069,30 +4058,30 @@ fn unary_expression_with_member_expression() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 8),
                     errors: vec![]
                 },
-                expression: Un(Box::new(UnaryExpression {
+                expression: Expression::Unary(Box::new(UnaryExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 8),
                         errors: vec![]
                     },
-                    operator: NotOperator,
-                    argument: Mem(Box::new(MemberExpression {
+                    operator: Operator::NotOperator,
+                    argument: Expression::Member(Box::new(MemberExpr {
                         base: BaseNode {
                             location: loc.get(1, 5, 1, 8),
                             errors: vec![]
                         },
-                        object: Idt(Identifier {
+                        object: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 5, 1, 6),
                                 errors: vec![]
                             },
                             name: "m".to_string()
                         }),
-                        property: PkIdt(Identifier {
+                        property: PropertyKey::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 7, 1, 8),
                                 errors: vec![]
@@ -4129,7 +4118,7 @@ a = 5.0
             package: None,
             imports: vec![],
             body: vec![
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(2, 1, 2, 8),
                         errors: vec![]
@@ -4141,7 +4130,7 @@ a = 5.0
                         },
                         name: "a".to_string()
                     },
-                    init: Flt(FloatLiteral {
+                    init: Expression::Float(FloatLit {
                         base: BaseNode {
                             location: loc.get(2, 5, 2, 8),
                             errors: vec![]
@@ -4149,43 +4138,43 @@ a = 5.0
                         value: 5.0
                     })
                 }),
-                Expr(ExpressionStatement {
+                Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(4, 1, 6, 13),
                         errors: vec![]
                     },
-                    expression: Log(Box::new(LogicalExpression {
+                    expression: Expression::Logical(Box::new(LogicalExpr {
                         base: BaseNode {
                             location: loc.get(4, 1, 6, 13),
                             errors: vec![]
                         },
-                        operator: OrOperator,
-                        left: Bin(Box::new(BinaryExpression {
+                        operator: LogicalOperator::OrOperator,
+                        left: Expression::Binary(Box::new(BinaryExpr {
                             base: BaseNode {
                                 location: loc.get(4, 1, 4, 18),
                                 errors: vec![]
                             },
-                            operator: EqualOperator,
-                            left: Bin(Box::new(BinaryExpression {
+                            operator: Operator::EqualOperator,
+                            left: Expression::Binary(Box::new(BinaryExpr {
                                 base: BaseNode {
                                     location: loc.get(4, 1, 4, 10),
                                     errors: vec![]
                                 },
-                                operator: MultiplicationOperator,
-                                left: Flt(FloatLiteral {
+                                operator: Operator::MultiplicationOperator,
+                                left: Expression::Float(FloatLit {
                                     base: BaseNode {
                                         location: loc.get(4, 1, 4, 5),
                                         errors: vec![]
                                     },
                                     value: 10.0
                                 }),
-                                right: Un(Box::new(UnaryExpression {
+                                right: Expression::Unary(Box::new(UnaryExpr {
                                     base: BaseNode {
                                         location: loc.get(4, 8, 4, 10),
                                         errors: vec![]
                                     },
-                                    operator: SubtractionOperator,
-                                    argument: Idt(Identifier {
+                                    operator: Operator::SubtractionOperator,
+                                    argument: Expression::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(4, 9, 4, 10),
                                             errors: vec![]
@@ -4194,13 +4183,13 @@ a = 5.0
                                     })
                                 }))
                             })),
-                            right: Un(Box::new(UnaryExpression {
+                            right: Expression::Unary(Box::new(UnaryExpr {
                                 base: BaseNode {
                                     location: loc.get(4, 14, 4, 18),
                                     errors: vec![]
                                 },
-                                operator: SubtractionOperator,
-                                argument: Flt(FloatLiteral {
+                                operator: Operator::SubtractionOperator,
+                                argument: Expression::Float(FloatLit {
                                     base: BaseNode {
                                         location: loc.get(4, 15, 4, 18),
                                         errors: vec![]
@@ -4209,20 +4198,20 @@ a = 5.0
                                 })
                             }))
                         })),
-                        right: Bin(Box::new(BinaryExpression {
+                        right: Expression::Binary(Box::new(BinaryExpr {
                             base: BaseNode {
                                 location: loc.get(6, 5, 6, 13),
                                 errors: vec![]
                             },
-                            operator: EqualOperator,
-                            left: Idt(Identifier {
+                            operator: Operator::EqualOperator,
+                            left: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(6, 5, 6, 6),
                                     errors: vec![]
                                 },
                                 name: "a".to_string()
                             }),
-                            right: Flt(FloatLiteral {
+                            right: Expression::Float(FloatLit {
                                 base: BaseNode {
                                     location: loc.get(6, 10, 6, 13),
                                     errors: vec![]
@@ -4252,7 +4241,7 @@ fn expressions_with_function_calls() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 16),
                     errors: vec![]
@@ -4264,19 +4253,19 @@ fn expressions_with_function_calls() {
                     },
                     name: "a".to_string()
                 },
-                init: Bin(Box::new(BinaryExpression {
+                init: Expression::Binary(Box::new(BinaryExpr {
                     base: BaseNode {
                         location: loc.get(1, 5, 1, 16),
                         errors: vec![]
                     },
-                    operator: EqualOperator,
-                    left: Call(Box::new(CallExpression {
+                    operator: Operator::EqualOperator,
+                    left: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 5, 1, 10),
                             errors: vec![]
                         },
                         arguments: vec![],
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 5, 1, 8),
                                 errors: vec![]
@@ -4284,7 +4273,7 @@ fn expressions_with_function_calls() {
                             name: "foo".to_string()
                         })
                     })),
-                    right: Int(IntegerLiteral {
+                    right: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 14, 1, 16),
                             errors: vec![]
@@ -4315,41 +4304,41 @@ fn mix_unary_logical_and_binary_expressions() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(2, 13, 2, 43),
                     errors: vec![]
                 },
-                expression: Log(Box::new(LogicalExpression {
+                expression: Expression::Logical(Box::new(LogicalExpr {
                     base: BaseNode {
                         location: loc.get(2, 13, 2, 43),
                         errors: vec![]
                     },
-                    operator: OrOperator,
-                    left: Un(Box::new(UnaryExpression {
+                    operator: LogicalOperator::OrOperator,
+                    left: Expression::Unary(Box::new(UnaryExpr {
                         base: BaseNode {
                             location: loc.get(2, 13, 2, 33),
                             errors: vec![]
                         },
-                        operator: NotOperator,
-                        argument: Paren(Box::new(ParenExpression {
+                        operator: Operator::NotOperator,
+                        argument: Expression::Paren(Box::new(ParenExpr {
                             base: BaseNode {
                                 location: loc.get(2, 17, 2, 33),
                                 errors: vec![]
                             },
-                            expression: Bin(Box::new(BinaryExpression {
+                            expression: Expression::Binary(Box::new(BinaryExpr {
                                 base: BaseNode {
                                     location: loc.get(2, 18, 2, 32),
                                     errors: vec![]
                                 },
-                                operator: EqualOperator,
-                                left: Call(Box::new(CallExpression {
+                                operator: Operator::EqualOperator,
+                                left: Expression::Call(Box::new(CallExpr {
                                     base: BaseNode {
                                         location: loc.get(2, 18, 2, 21),
                                         errors: vec![]
                                     },
                                     arguments: vec![],
-                                    callee: Idt(Identifier {
+                                    callee: Expression::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(2, 18, 2, 19),
                                             errors: vec![]
@@ -4357,20 +4346,20 @@ fn mix_unary_logical_and_binary_expressions() {
                                         name: "f".to_string()
                                     })
                                 })),
-                                right: Bin(Box::new(BinaryExpression {
+                                right: Expression::Binary(Box::new(BinaryExpr {
                                     base: BaseNode {
                                         location: loc.get(2, 25, 2, 32),
                                         errors: vec![]
                                     },
-                                    operator: MultiplicationOperator,
-                                    left: Flt(FloatLiteral {
+                                    operator: Operator::MultiplicationOperator,
+                                    left: Expression::Float(FloatLit {
                                         base: BaseNode {
                                             location: loc.get(2, 25, 2, 28),
                                             errors: vec![]
                                         },
                                         value: 6.0
                                     }),
-                                    right: Idt(Identifier {
+                                    right: Expression::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(2, 31, 2, 32),
                                             errors: vec![]
@@ -4381,13 +4370,13 @@ fn mix_unary_logical_and_binary_expressions() {
                             }))
                         }))
                     })),
-                    right: Call(Box::new(CallExpression {
+                    right: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(2, 37, 2, 43),
                             errors: vec![]
                         },
                         arguments: vec![],
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(2, 37, 2, 41),
                                 errors: vec![]
@@ -4419,46 +4408,46 @@ fn mix_unary_logical_and_binary_expressions_with_extra_parens() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(2, 13, 2, 45),
                     errors: vec![]
                 },
-                expression: Paren(Box::new(ParenExpression {
+                expression: Expression::Paren(Box::new(ParenExpr {
                     base: BaseNode {
                         location: loc.get(2, 13, 2, 45),
                         errors: vec![]
                     },
-                    expression: Log(Box::new(LogicalExpression {
+                    expression: Expression::Logical(Box::new(LogicalExpr {
                         base: BaseNode {
                             location: loc.get(2, 14, 2, 44),
                             errors: vec![]
                         },
-                        operator: OrOperator,
-                        left: Un(Box::new(UnaryExpression {
+                        operator: LogicalOperator::OrOperator,
+                        left: Expression::Unary(Box::new(UnaryExpr {
                             base: BaseNode {
                                 location: loc.get(2, 14, 2, 34),
                                 errors: vec![]
                             },
-                            operator: NotOperator,
-                            argument: Paren(Box::new(ParenExpression {
+                            operator: Operator::NotOperator,
+                            argument: Expression::Paren(Box::new(ParenExpr {
                                 base: BaseNode {
                                     location: loc.get(2, 18, 2, 34),
                                     errors: vec![]
                                 },
-                                expression: Bin(Box::new(BinaryExpression {
+                                expression: Expression::Binary(Box::new(BinaryExpr {
                                     base: BaseNode {
                                         location: loc.get(2, 19, 2, 33),
                                         errors: vec![]
                                     },
-                                    operator: EqualOperator,
-                                    left: Call(Box::new(CallExpression {
+                                    operator: Operator::EqualOperator,
+                                    left: Expression::Call(Box::new(CallExpr {
                                         base: BaseNode {
                                             location: loc.get(2, 19, 2, 22),
                                             errors: vec![]
                                         },
                                         arguments: vec![],
-                                        callee: Idt(Identifier {
+                                        callee: Expression::Identifier(Identifier {
                                             base: BaseNode {
                                                 location: loc.get(2, 19, 2, 20),
                                                 errors: vec![]
@@ -4466,20 +4455,20 @@ fn mix_unary_logical_and_binary_expressions_with_extra_parens() {
                                             name: "f".to_string()
                                         })
                                     })),
-                                    right: Bin(Box::new(BinaryExpression {
+                                    right: Expression::Binary(Box::new(BinaryExpr {
                                         base: BaseNode {
                                             location: loc.get(2, 26, 2, 33),
                                             errors: vec![]
                                         },
-                                        operator: MultiplicationOperator,
-                                        left: Flt(FloatLiteral {
+                                        operator: Operator::MultiplicationOperator,
+                                        left: Expression::Float(FloatLit {
                                             base: BaseNode {
                                                 location: loc.get(2, 26, 2, 29),
                                                 errors: vec![]
                                             },
                                             value: 6.0
                                         }),
-                                        right: Idt(Identifier {
+                                        right: Expression::Identifier(Identifier {
                                             base: BaseNode {
                                                 location: loc.get(2, 32, 2, 33),
                                                 errors: vec![]
@@ -4490,13 +4479,13 @@ fn mix_unary_logical_and_binary_expressions_with_extra_parens() {
                                 }))
                             }))
                         })),
-                        right: Call(Box::new(CallExpression {
+                        right: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(2, 38, 2, 44),
                                 errors: vec![]
                             },
                             arguments: vec![],
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(2, 38, 2, 42),
                                     errors: vec![]
@@ -4526,25 +4515,25 @@ fn modulo_op_ints() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 6),
                     errors: vec![]
                 },
-                expression: Bin(Box::new(BinaryExpression {
+                expression: Expression::Binary(Box::new(BinaryExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 6),
                         errors: vec![]
                     },
-                    operator: ModuloOperator,
-                    left: Int(IntegerLiteral {
+                    operator: Operator::ModuloOperator,
+                    left: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 2),
                             errors: vec![]
                         },
                         value: 3
                     }),
-                    right: Int(IntegerLiteral {
+                    right: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 5, 1, 6),
                             errors: vec![]
@@ -4572,25 +4561,25 @@ fn modulo_op_floats() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 10),
                     errors: vec![]
                 },
-                expression: Bin(Box::new(BinaryExpression {
+                expression: Expression::Binary(Box::new(BinaryExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 10),
                         errors: vec![]
                     },
-                    operator: ModuloOperator,
-                    left: Flt(FloatLiteral {
+                    operator: Operator::ModuloOperator,
+                    left: Expression::Float(FloatLit {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 4),
                             errors: vec![]
                         },
                         value: 8.3
                     }),
-                    right: Flt(FloatLiteral {
+                    right: Expression::Float(FloatLit {
                         base: BaseNode {
                             location: loc.get(1, 7, 1, 10),
                             errors: vec![]
@@ -4618,25 +4607,25 @@ fn power_op() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 6),
                     errors: vec![]
                 },
-                expression: Bin(Box::new(BinaryExpression {
+                expression: Expression::Binary(Box::new(BinaryExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 6),
                         errors: vec![]
                     },
-                    operator: PowerOperator,
-                    left: Int(IntegerLiteral {
+                    operator: Operator::PowerOperator,
+                    left: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 2),
                             errors: vec![]
                         },
                         value: 2
                     }),
-                    right: Int(IntegerLiteral {
+                    right: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 5, 1, 6),
                             errors: vec![]
@@ -4664,31 +4653,31 @@ fn binary_operator_precedence() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 12),
                     errors: vec![]
                 },
-                expression: Bin(Box::new(BinaryExpression {
+                expression: Expression::Binary(Box::new(BinaryExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 12),
                         errors: vec![]
                     },
-                    operator: SubtractionOperator,
-                    left: Bin(Box::new(BinaryExpression {
+                    operator: Operator::SubtractionOperator,
+                    left: Expression::Binary(Box::new(BinaryExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 6),
                             errors: vec![]
                         },
-                        operator: DivisionOperator,
-                        left: Idt(Identifier {
+                        operator: Operator::DivisionOperator,
+                        left: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 2),
                                 errors: vec![]
                             },
                             name: "a".to_string()
                         }),
-                        right: Idt(Identifier {
+                        right: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 5, 1, 6),
                                 errors: vec![]
@@ -4696,7 +4685,7 @@ fn binary_operator_precedence() {
                             name: "b".to_string()
                         })
                     })),
-                    right: Flt(FloatLiteral {
+                    right: Expression::Float(FloatLit {
                         base: BaseNode {
                             location: loc.get(1, 9, 1, 12),
                             errors: vec![]
@@ -4724,31 +4713,31 @@ fn binary_operator_precedence_literals_only() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 14),
                     errors: vec![]
                 },
-                expression: Bin(Box::new(BinaryExpression {
+                expression: Expression::Binary(Box::new(BinaryExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 14),
                         errors: vec![]
                     },
-                    operator: SubtractionOperator,
-                    left: Bin(Box::new(BinaryExpression {
+                    operator: Operator::SubtractionOperator,
+                    left: Expression::Binary(Box::new(BinaryExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 8),
                             errors: vec![]
                         },
-                        operator: DivisionOperator,
-                        left: Int(IntegerLiteral {
+                        operator: Operator::DivisionOperator,
+                        left: Expression::Integer(IntegerLit {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 2),
                                 errors: vec![]
                             },
                             value: 2
                         }),
-                        right: Str(StringLiteral {
+                        right: Expression::StringLit(StringLit {
                             base: BaseNode {
                                 location: loc.get(1, 5, 1, 8),
                                 errors: vec![]
@@ -4756,7 +4745,7 @@ fn binary_operator_precedence_literals_only() {
                             value: "a".to_string()
                         })
                     })),
-                    right: Flt(FloatLiteral {
+                    right: Expression::Float(FloatLit {
                         base: BaseNode {
                             location: loc.get(1, 11, 1, 14),
                             errors: vec![]
@@ -4784,31 +4773,31 @@ fn binary_operator_precedence_double_subtraction() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 10),
                     errors: vec![]
                 },
-                expression: Bin(Box::new(BinaryExpression {
+                expression: Expression::Binary(Box::new(BinaryExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 10),
                         errors: vec![]
                     },
-                    operator: SubtractionOperator,
-                    left: Bin(Box::new(BinaryExpression {
+                    operator: Operator::SubtractionOperator,
+                    left: Expression::Binary(Box::new(BinaryExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 6),
                             errors: vec![]
                         },
-                        operator: SubtractionOperator,
-                        left: Int(IntegerLiteral {
+                        operator: Operator::SubtractionOperator,
+                        left: Expression::Integer(IntegerLit {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 2),
                                 errors: vec![]
                             },
                             value: 1
                         }),
-                        right: Int(IntegerLiteral {
+                        right: Expression::Integer(IntegerLit {
                             base: BaseNode {
                                 location: loc.get(1, 5, 1, 6),
                                 errors: vec![]
@@ -4816,7 +4805,7 @@ fn binary_operator_precedence_double_subtraction() {
                             value: 2
                         })
                     })),
-                    right: Int(IntegerLiteral {
+                    right: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 9, 1, 10),
                             errors: vec![]
@@ -4844,43 +4833,43 @@ fn binary_operator_precedence_double_subtraction_with_parens() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 12),
                     errors: vec![]
                 },
-                expression: Bin(Box::new(BinaryExpression {
+                expression: Expression::Binary(Box::new(BinaryExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 12),
                         errors: vec![]
                     },
-                    operator: SubtractionOperator,
-                    left: Int(IntegerLiteral {
+                    operator: Operator::SubtractionOperator,
+                    left: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 2),
                             errors: vec![]
                         },
                         value: 1
                     }),
-                    right: Paren(Box::new(ParenExpression {
+                    right: Expression::Paren(Box::new(ParenExpr {
                         base: BaseNode {
                             location: loc.get(1, 5, 1, 12),
                             errors: vec![]
                         },
-                        expression: Bin(Box::new(BinaryExpression {
+                        expression: Expression::Binary(Box::new(BinaryExpr {
                             base: BaseNode {
                                 location: loc.get(1, 6, 1, 11),
                                 errors: vec![]
                             },
-                            operator: SubtractionOperator,
-                            left: Int(IntegerLiteral {
+                            operator: Operator::SubtractionOperator,
+                            left: Expression::Integer(IntegerLit {
                                 base: BaseNode {
                                     location: loc.get(1, 6, 1, 7),
                                     errors: vec![]
                                 },
                                 value: 2
                             }),
-                            right: Int(IntegerLiteral {
+                            right: Expression::Integer(IntegerLit {
                                 base: BaseNode {
                                     location: loc.get(1, 10, 1, 11),
                                     errors: vec![]
@@ -4910,31 +4899,31 @@ fn binary_operator_precedence_double_sum() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 10),
                     errors: vec![]
                 },
-                expression: Bin(Box::new(BinaryExpression {
+                expression: Expression::Binary(Box::new(BinaryExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 10),
                         errors: vec![]
                     },
-                    operator: AdditionOperator,
-                    left: Bin(Box::new(BinaryExpression {
+                    operator: Operator::AdditionOperator,
+                    left: Expression::Binary(Box::new(BinaryExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 6),
                             errors: vec![]
                         },
-                        operator: AdditionOperator,
-                        left: Int(IntegerLiteral {
+                        operator: Operator::AdditionOperator,
+                        left: Expression::Integer(IntegerLit {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 2),
                                 errors: vec![]
                             },
                             value: 1
                         }),
-                        right: Int(IntegerLiteral {
+                        right: Expression::Integer(IntegerLit {
                             base: BaseNode {
                                 location: loc.get(1, 5, 1, 6),
                                 errors: vec![]
@@ -4942,7 +4931,7 @@ fn binary_operator_precedence_double_sum() {
                             value: 2
                         })
                     })),
-                    right: Int(IntegerLiteral {
+                    right: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 9, 1, 10),
                             errors: vec![]
@@ -4970,43 +4959,43 @@ fn binary_operator_precedence_double_sum_with_parens() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 12),
                     errors: vec![]
                 },
-                expression: Bin(Box::new(BinaryExpression {
+                expression: Expression::Binary(Box::new(BinaryExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 12),
                         errors: vec![]
                     },
-                    operator: AdditionOperator,
-                    left: Int(IntegerLiteral {
+                    operator: Operator::AdditionOperator,
+                    left: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 2),
                             errors: vec![]
                         },
                         value: 1
                     }),
-                    right: Paren(Box::new(ParenExpression {
+                    right: Expression::Paren(Box::new(ParenExpr {
                         base: BaseNode {
                             location: loc.get(1, 5, 1, 12),
                             errors: vec![]
                         },
-                        expression: Bin(Box::new(BinaryExpression {
+                        expression: Expression::Binary(Box::new(BinaryExpr {
                             base: BaseNode {
                                 location: loc.get(1, 6, 1, 11),
                                 errors: vec![]
                             },
-                            operator: AdditionOperator,
-                            left: Int(IntegerLiteral {
+                            operator: Operator::AdditionOperator,
+                            left: Expression::Integer(IntegerLit {
                                 base: BaseNode {
                                     location: loc.get(1, 6, 1, 7),
                                     errors: vec![]
                                 },
                                 value: 2
                             }),
-                            right: Int(IntegerLiteral {
+                            right: Expression::Integer(IntegerLit {
                                 base: BaseNode {
                                     location: loc.get(1, 10, 1, 11),
                                     errors: vec![]
@@ -5036,30 +5025,30 @@ fn logical_unary_operator_precedence() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 12),
                     errors: vec![]
                 },
-                expression: Un(Box::new(UnaryExpression {
+                expression: Expression::Unary(Box::new(UnaryExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 12),
                         errors: vec![]
                     },
-                    operator: NotOperator,
-                    argument: Bin(Box::new(BinaryExpression {
+                    operator: Operator::NotOperator,
+                    argument: Expression::Binary(Box::new(BinaryExpr {
                         base: BaseNode {
                             location: loc.get(1, 5, 1, 12),
                             errors: vec![]
                         },
-                        operator: EqualOperator,
-                        left: Un(Box::new(UnaryExpression {
+                        operator: Operator::EqualOperator,
+                        left: Expression::Unary(Box::new(UnaryExpr {
                             base: BaseNode {
                                 location: loc.get(1, 5, 1, 7),
                                 errors: vec![]
                             },
-                            operator: SubtractionOperator,
-                            argument: Int(IntegerLiteral {
+                            operator: Operator::SubtractionOperator,
+                            argument: Expression::Integer(IntegerLit {
                                 base: BaseNode {
                                     location: loc.get(1, 6, 1, 7),
                                     errors: vec![]
@@ -5067,7 +5056,7 @@ fn logical_unary_operator_precedence() {
                                 value: 1
                             })
                         })),
-                        right: Idt(Identifier {
+                        right: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 11, 1, 12),
                                 errors: vec![]
@@ -5099,60 +5088,60 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 2, 72),
                     errors: vec![]
                 },
-                expression: Log(Box::new(LogicalExpression {
+                expression: Expression::Logical(Box::new(LogicalExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 2, 72),
                         errors: vec![]
                     },
-                    operator: OrOperator,
-                    left: Log(Box::new(LogicalExpression {
+                    operator: LogicalOperator::OrOperator,
+                    left: Expression::Logical(Box::new(LogicalExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 2, 32),
                             errors: vec![]
                         },
-                        operator: OrOperator,
-                        left: Log(Box::new(LogicalExpression {
+                        operator: LogicalOperator::OrOperator,
+                        left: Expression::Logical(Box::new(LogicalExpr {
                             base: BaseNode {
                                 location: loc.get(1, 1, 2, 18),
                                 errors: vec![]
                             },
-                            operator: AndOperator,
-                            left: Log(Box::new(LogicalExpression {
+                            operator: LogicalOperator::AndOperator,
+                            left: Expression::Logical(Box::new(LogicalExpr {
                                 base: BaseNode {
                                     location: loc.get(1, 1, 1, 55),
                                     errors: vec![]
                                 },
-                                operator: AndOperator,
-                                left: Log(Box::new(LogicalExpression {
+                                operator: LogicalOperator::AndOperator,
+                                left: Expression::Logical(Box::new(LogicalExpr {
                                     base: BaseNode {
                                         location: loc.get(1, 1, 1, 41),
                                         errors: vec![]
                                     },
-                                    operator: AndOperator,
-                                    left: Bin(Box::new(BinaryExpression {
+                                    operator: LogicalOperator::AndOperator,
+                                    left: Expression::Binary(Box::new(BinaryExpr {
                                         base: BaseNode {
                                             location: loc.get(1, 1, 1, 27),
                                             errors: vec![]
                                         },
-                                        operator: LessThanOperator,
-                                        left: Bin(Box::new(BinaryExpression {
+                                        operator: Operator::LessThanOperator,
+                                        left: Expression::Binary(Box::new(BinaryExpr {
                                             base: BaseNode {
                                                 location: loc.get(1, 1, 1, 21),
                                                 errors: vec![]
                                             },
-                                            operator: EqualOperator,
-                                            left: Call(Box::new(CallExpression {
+                                            operator: Operator::EqualOperator,
+                                            left: Expression::Call(Box::new(CallExpr {
                                                 base: BaseNode {
                                                     location: loc.get(1, 1, 1, 4),
                                                     errors: vec![]
                                                 },
                                                 arguments: vec![],
-                                                callee: Idt(Identifier {
+                                                callee: Expression::Identifier(Identifier {
                                                     base: BaseNode {
                                                         location: loc.get(1, 1, 1, 2),
                                                         errors: vec![]
@@ -5160,25 +5149,25 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
                                                     name: "a".to_string()
                                                 })
                                             })),
-                                            right: Bin(Box::new(BinaryExpression {
+                                            right: Expression::Binary(Box::new(BinaryExpr {
                                                 base: BaseNode {
                                                     location: loc.get(1, 8, 1, 21),
                                                     errors: vec![]
                                                 },
-                                                operator: AdditionOperator,
-                                                left: Mem(Box::new(MemberExpression {
+                                                operator: Operator::AdditionOperator,
+                                                left: Expression::Member(Box::new(MemberExpr {
                                                     base: BaseNode {
                                                         location: loc.get(1, 8, 1, 11),
                                                         errors: vec![]
                                                     },
-                                                    object: Idt(Identifier {
+                                                    object: Expression::Identifier(Identifier {
                                                         base: BaseNode {
                                                             location: loc.get(1, 8, 1, 9),
                                                             errors: vec![]
                                                         },
                                                         name: "b".to_string()
                                                     }),
-                                                    property: PkIdt(Identifier {
+                                                    property: PropertyKey::Identifier(Identifier {
                                                         base: BaseNode {
                                                             location: loc.get(1, 10, 1, 11),
                                                             errors: vec![]
@@ -5186,33 +5175,41 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
                                                         name: "a".to_string()
                                                     })
                                                 })),
-                                                right: Bin(Box::new(BinaryExpression {
+                                                right: Expression::Binary(Box::new(BinaryExpr {
                                                     base: BaseNode {
                                                         location: loc.get(1, 14, 1, 21),
                                                         errors: vec![]
                                                     },
-                                                    operator: MultiplicationOperator,
-                                                    left: Mem(Box::new(MemberExpression {
-                                                        base: BaseNode {
-                                                            location: loc.get(1, 14, 1, 17),
-                                                            errors: vec![]
-                                                        },
-                                                        object: Idt(Identifier {
+                                                    operator: Operator::MultiplicationOperator,
+                                                    left: Expression::Member(Box::new(
+                                                        MemberExpr {
                                                             base: BaseNode {
-                                                                location: loc.get(1, 14, 1, 15),
+                                                                location: loc.get(1, 14, 1, 17),
                                                                 errors: vec![]
                                                             },
-                                                            name: "b".to_string()
-                                                        }),
-                                                        property: PkIdt(Identifier {
-                                                            base: BaseNode {
-                                                                location: loc.get(1, 16, 1, 17),
-                                                                errors: vec![]
-                                                            },
-                                                            name: "c".to_string()
-                                                        })
-                                                    })),
-                                                    right: Idt(Identifier {
+                                                            object: Expression::Identifier(
+                                                                Identifier {
+                                                                    base: BaseNode {
+                                                                        location: loc
+                                                                            .get(1, 14, 1, 15),
+                                                                        errors: vec![]
+                                                                    },
+                                                                    name: "b".to_string()
+                                                                }
+                                                            ),
+                                                            property: PropertyKey::Identifier(
+                                                                Identifier {
+                                                                    base: BaseNode {
+                                                                        location: loc
+                                                                            .get(1, 16, 1, 17),
+                                                                        errors: vec![]
+                                                                    },
+                                                                    name: "c".to_string()
+                                                                }
+                                                            )
+                                                        }
+                                                    )),
+                                                    right: Expression::Identifier(Identifier {
                                                         base: BaseNode {
                                                             location: loc.get(1, 20, 1, 21),
                                                             errors: vec![]
@@ -5222,7 +5219,7 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
                                                 }))
                                             }))
                                         })),
-                                        right: Int(IntegerLiteral {
+                                        right: Expression::Integer(IntegerLit {
                                             base: BaseNode {
                                                 location: loc.get(1, 24, 1, 27),
                                                 errors: vec![]
@@ -5230,32 +5227,32 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
                                             value: 100
                                         })
                                     })),
-                                    right: Bin(Box::new(BinaryExpression {
+                                    right: Expression::Binary(Box::new(BinaryExpr {
                                         base: BaseNode {
                                             location: loc.get(1, 32, 1, 41),
                                             errors: vec![]
                                         },
-                                        operator: NotEqualOperator,
-                                        left: Idt(Identifier {
+                                        operator: Operator::NotEqualOperator,
+                                        left: Expression::Identifier(Identifier {
                                             base: BaseNode {
                                                 location: loc.get(1, 32, 1, 33),
                                                 errors: vec![]
                                             },
                                             name: "e".to_string()
                                         }),
-                                        right: Idx(Box::new(IndexExpression {
+                                        right: Expression::Index(Box::new(IndexExpr {
                                             base: BaseNode {
                                                 location: loc.get(1, 37, 1, 41),
                                                 errors: vec![]
                                             },
-                                            array: Idt(Identifier {
+                                            array: Expression::Identifier(Identifier {
                                                 base: BaseNode {
                                                     location: loc.get(1, 37, 1, 38),
                                                     errors: vec![]
                                                 },
                                                 name: "f".to_string()
                                             }),
-                                            index: Idt(Identifier {
+                                            index: Expression::Identifier(Identifier {
                                                 base: BaseNode {
                                                     location: loc.get(1, 39, 1, 40),
                                                     errors: vec![]
@@ -5265,33 +5262,33 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
                                         }))
                                     }))
                                 })),
-                                right: Bin(Box::new(BinaryExpression {
+                                right: Expression::Binary(Box::new(BinaryExpr {
                                     base: BaseNode {
                                         location: loc.get(1, 46, 1, 55),
                                         errors: vec![]
                                     },
-                                    operator: GreaterThanOperator,
-                                    left: Idt(Identifier {
+                                    operator: Operator::GreaterThanOperator,
+                                    left: Expression::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(1, 46, 1, 47),
                                             errors: vec![]
                                         },
                                         name: "h".to_string()
                                     }),
-                                    right: Bin(Box::new(BinaryExpression {
+                                    right: Expression::Binary(Box::new(BinaryExpr {
                                         base: BaseNode {
                                             location: loc.get(1, 50, 1, 55),
                                             errors: vec![]
                                         },
-                                        operator: MultiplicationOperator,
-                                        left: Idt(Identifier {
+                                        operator: Operator::MultiplicationOperator,
+                                        left: Expression::Identifier(Identifier {
                                             base: BaseNode {
                                                 location: loc.get(1, 50, 1, 51),
                                                 errors: vec![]
                                             },
                                             name: "i".to_string()
                                         }),
-                                        right: Idt(Identifier {
+                                        right: Expression::Identifier(Identifier {
                                             base: BaseNode {
                                                 location: loc.get(1, 54, 1, 55),
                                                 errors: vec![]
@@ -5301,26 +5298,26 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
                                     }))
                                 }))
                             })),
-                            right: Bin(Box::new(BinaryExpression {
+                            right: Expression::Binary(Box::new(BinaryExpr {
                                 base: BaseNode {
                                     location: loc.get(2, 1, 2, 18),
                                     errors: vec![]
                                 },
-                                operator: LessThanOperator,
-                                left: Bin(Box::new(BinaryExpression {
+                                operator: Operator::LessThanOperator,
+                                left: Expression::Binary(Box::new(BinaryExpr {
                                     base: BaseNode {
                                         location: loc.get(2, 1, 2, 6),
                                         errors: vec![]
                                     },
-                                    operator: DivisionOperator,
-                                    left: Idt(Identifier {
+                                    operator: Operator::DivisionOperator,
+                                    left: Expression::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(2, 1, 2, 2),
                                             errors: vec![]
                                         },
                                         name: "k".to_string()
                                     }),
-                                    right: Idt(Identifier {
+                                    right: Expression::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(2, 5, 2, 6),
                                             errors: vec![]
@@ -5328,26 +5325,26 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
                                         name: "l".to_string()
                                     })
                                 })),
-                                right: Bin(Box::new(BinaryExpression {
+                                right: Expression::Binary(Box::new(BinaryExpr {
                                     base: BaseNode {
                                         location: loc.get(2, 9, 2, 18),
                                         errors: vec![]
                                     },
-                                    operator: SubtractionOperator,
-                                    left: Bin(Box::new(BinaryExpression {
+                                    operator: Operator::SubtractionOperator,
+                                    left: Expression::Binary(Box::new(BinaryExpr {
                                         base: BaseNode {
                                             location: loc.get(2, 9, 2, 14),
                                             errors: vec![]
                                         },
-                                        operator: AdditionOperator,
-                                        left: Idt(Identifier {
+                                        operator: Operator::AdditionOperator,
+                                        left: Expression::Identifier(Identifier {
                                             base: BaseNode {
                                                 location: loc.get(2, 9, 2, 10),
                                                 errors: vec![]
                                             },
                                             name: "m".to_string()
                                         }),
-                                        right: Idt(Identifier {
+                                        right: Expression::Identifier(Identifier {
                                             base: BaseNode {
                                                 location: loc.get(2, 13, 2, 14),
                                                 errors: vec![]
@@ -5355,7 +5352,7 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
                                             name: "n".to_string()
                                         })
                                     })),
-                                    right: Idt(Identifier {
+                                    right: Expression::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(2, 17, 2, 18),
                                             errors: vec![]
@@ -5365,19 +5362,19 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
                                 }))
                             }))
                         })),
-                        right: Bin(Box::new(BinaryExpression {
+                        right: Expression::Binary(Box::new(BinaryExpr {
                             base: BaseNode {
                                 location: loc.get(2, 22, 2, 32),
                                 errors: vec![]
                             },
-                            operator: LessThanEqualOperator,
-                            left: Call(Box::new(CallExpression {
+                            operator: Operator::LessThanEqualOperator,
+                            left: Expression::Call(Box::new(CallExpr {
                                 base: BaseNode {
                                     location: loc.get(2, 22, 2, 25),
                                     errors: vec![]
                                 },
                                 arguments: vec![],
-                                callee: Idt(Identifier {
+                                callee: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(2, 22, 2, 23),
                                         errors: vec![]
@@ -5385,13 +5382,13 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
                                     name: "p".to_string()
                                 })
                             })),
-                            right: Call(Box::new(CallExpression {
+                            right: Expression::Call(Box::new(CallExpr {
                                 base: BaseNode {
                                     location: loc.get(2, 29, 2, 32),
                                     errors: vec![]
                                 },
                                 arguments: vec![],
-                                callee: Idt(Identifier {
+                                callee: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(2, 29, 2, 30),
                                         errors: vec![]
@@ -5401,32 +5398,32 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
                             }))
                         }))
                     })),
-                    right: Log(Box::new(LogicalExpression {
+                    right: Expression::Logical(Box::new(LogicalExpr {
                         base: BaseNode {
                             location: loc.get(2, 36, 2, 72),
                             errors: vec![]
                         },
-                        operator: AndOperator,
-                        left: Log(Box::new(LogicalExpression {
+                        operator: LogicalOperator::AndOperator,
+                        left: Expression::Logical(Box::new(LogicalExpr {
                             base: BaseNode {
                                 location: loc.get(2, 36, 2, 59),
                                 errors: vec![]
                             },
-                            operator: AndOperator,
-                            left: Bin(Box::new(BinaryExpression {
+                            operator: LogicalOperator::AndOperator,
+                            left: Expression::Binary(Box::new(BinaryExpr {
                                 base: BaseNode {
                                     location: loc.get(2, 36, 2, 42),
                                     errors: vec![]
                                 },
-                                operator: GreaterThanEqualOperator,
-                                left: Idt(Identifier {
+                                operator: Operator::GreaterThanEqualOperator,
+                                left: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(2, 36, 2, 37),
                                         errors: vec![]
                                     },
                                     name: "r".to_string()
                                 }),
-                                right: Idt(Identifier {
+                                right: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(2, 41, 2, 42),
                                         errors: vec![]
@@ -5434,26 +5431,26 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
                                     name: "s".to_string()
                                 })
                             })),
-                            right: Un(Box::new(UnaryExpression {
+                            right: Expression::Unary(Box::new(UnaryExpr {
                                 base: BaseNode {
                                     location: loc.get(2, 47, 2, 59),
                                     errors: vec![]
                                 },
-                                operator: NotOperator,
-                                argument: Bin(Box::new(BinaryExpression {
+                                operator: Operator::NotOperator,
+                                argument: Expression::Binary(Box::new(BinaryExpr {
                                     base: BaseNode {
                                         location: loc.get(2, 51, 2, 59),
                                         errors: vec![]
                                     },
-                                    operator: RegexpMatchOperator,
-                                    left: Idt(Identifier {
+                                    operator: Operator::RegexpMatchOperator,
+                                    left: Expression::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(2, 51, 2, 52),
                                             errors: vec![]
                                         },
                                         name: "t".to_string()
                                     }),
-                                    right: Regexp(RegexpLiteral {
+                                    right: Expression::Regexp(RegexpLit {
                                         base: BaseNode {
                                             location: loc.get(2, 56, 2, 59),
                                             errors: vec![]
@@ -5463,20 +5460,20 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
                                 }))
                             }))
                         })),
-                        right: Bin(Box::new(BinaryExpression {
+                        right: Expression::Binary(Box::new(BinaryExpr {
                             base: BaseNode {
                                 location: loc.get(2, 64, 2, 72),
                                 errors: vec![]
                             },
-                            operator: NotRegexpMatchOperator,
-                            left: Idt(Identifier {
+                            operator: Operator::NotRegexpMatchOperator,
+                            left: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(2, 64, 2, 65),
                                     errors: vec![]
                                 },
                                 name: "u".to_string()
                             }),
-                            right: Regexp(RegexpLiteral {
+                            right: Expression::Regexp(RegexpLit {
                                 base: BaseNode {
                                     location: loc.get(2, 69, 2, 72),
                                     errors: vec![]
@@ -5506,24 +5503,24 @@ fn logical_operators_precedence_1() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 11),
                     errors: vec![]
                 },
-                expression: Log(Box::new(LogicalExpression {
+                expression: Expression::Logical(Box::new(LogicalExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 11),
                         errors: vec![]
                     },
-                    operator: OrOperator,
-                    left: Un(Box::new(UnaryExpression {
+                    operator: LogicalOperator::OrOperator,
+                    left: Expression::Unary(Box::new(UnaryExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 6),
                             errors: vec![]
                         },
-                        operator: NotOperator,
-                        argument: Idt(Identifier {
+                        operator: Operator::NotOperator,
+                        argument: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 5, 1, 6),
                                 errors: vec![]
@@ -5531,7 +5528,7 @@ fn logical_operators_precedence_1() {
                             name: "a".to_string()
                         })
                     })),
-                    right: Idt(Identifier {
+                    right: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 10, 1, 11),
                             errors: vec![]
@@ -5559,31 +5556,31 @@ fn logical_operators_precedence_2() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 11),
                     errors: vec![]
                 },
-                expression: Log(Box::new(LogicalExpression {
+                expression: Expression::Logical(Box::new(LogicalExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 11),
                         errors: vec![]
                     },
-                    operator: OrOperator,
-                    left: Idt(Identifier {
+                    operator: LogicalOperator::OrOperator,
+                    left: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 2),
                             errors: vec![]
                         },
                         name: "a".to_string()
                     }),
-                    right: Un(Box::new(UnaryExpression {
+                    right: Expression::Unary(Box::new(UnaryExpr {
                         base: BaseNode {
                             location: loc.get(1, 6, 1, 11),
                             errors: vec![]
                         },
-                        operator: NotOperator,
-                        argument: Idt(Identifier {
+                        operator: Operator::NotOperator,
+                        argument: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 10, 1, 11),
                                 errors: vec![]
@@ -5612,24 +5609,24 @@ fn logical_operators_precedence_3() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 12),
                     errors: vec![]
                 },
-                expression: Log(Box::new(LogicalExpression {
+                expression: Expression::Logical(Box::new(LogicalExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 12),
                         errors: vec![]
                     },
-                    operator: AndOperator,
-                    left: Un(Box::new(UnaryExpression {
+                    operator: LogicalOperator::AndOperator,
+                    left: Expression::Unary(Box::new(UnaryExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 6),
                             errors: vec![]
                         },
-                        operator: NotOperator,
-                        argument: Idt(Identifier {
+                        operator: Operator::NotOperator,
+                        argument: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 5, 1, 6),
                                 errors: vec![]
@@ -5637,7 +5634,7 @@ fn logical_operators_precedence_3() {
                             name: "a".to_string()
                         })
                     })),
-                    right: Idt(Identifier {
+                    right: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 11, 1, 12),
                             errors: vec![]
@@ -5665,31 +5662,31 @@ fn logical_operators_precedence_4() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 12),
                     errors: vec![]
                 },
-                expression: Log(Box::new(LogicalExpression {
+                expression: Expression::Logical(Box::new(LogicalExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 12),
                         errors: vec![]
                     },
-                    operator: AndOperator,
-                    left: Idt(Identifier {
+                    operator: LogicalOperator::AndOperator,
+                    left: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 2),
                             errors: vec![]
                         },
                         name: "a".to_string()
                     }),
-                    right: Un(Box::new(UnaryExpression {
+                    right: Expression::Unary(Box::new(UnaryExpr {
                         base: BaseNode {
                             location: loc.get(1, 7, 1, 12),
                             errors: vec![]
                         },
-                        operator: NotOperator,
-                        argument: Idt(Identifier {
+                        operator: Operator::NotOperator,
+                        argument: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 11, 1, 12),
                                 errors: vec![]
@@ -5718,31 +5715,31 @@ fn logical_operators_precedence_5() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 13),
                     errors: vec![]
                 },
-                expression: Log(Box::new(LogicalExpression {
+                expression: Expression::Logical(Box::new(LogicalExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 13),
                         errors: vec![]
                     },
-                    operator: OrOperator,
-                    left: Log(Box::new(LogicalExpression {
+                    operator: LogicalOperator::OrOperator,
+                    left: Expression::Logical(Box::new(LogicalExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 8),
                             errors: vec![]
                         },
-                        operator: AndOperator,
-                        left: Idt(Identifier {
+                        operator: LogicalOperator::AndOperator,
+                        left: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 2),
                                 errors: vec![]
                             },
                             name: "a".to_string()
                         }),
-                        right: Idt(Identifier {
+                        right: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 7, 1, 8),
                                 errors: vec![]
@@ -5750,7 +5747,7 @@ fn logical_operators_precedence_5() {
                             name: "b".to_string()
                         })
                     })),
-                    right: Idt(Identifier {
+                    right: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 12, 1, 13),
                             errors: vec![]
@@ -5778,38 +5775,38 @@ fn logical_operators_precedence_6() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 13),
                     errors: vec![]
                 },
-                expression: Log(Box::new(LogicalExpression {
+                expression: Expression::Logical(Box::new(LogicalExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 13),
                         errors: vec![]
                     },
-                    operator: OrOperator,
-                    left: Idt(Identifier {
+                    operator: LogicalOperator::OrOperator,
+                    left: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 2),
                             errors: vec![]
                         },
                         name: "a".to_string()
                     }),
-                    right: Log(Box::new(LogicalExpression {
+                    right: Expression::Logical(Box::new(LogicalExpr {
                         base: BaseNode {
                             location: loc.get(1, 6, 1, 13),
                             errors: vec![]
                         },
-                        operator: AndOperator,
-                        left: Idt(Identifier {
+                        operator: LogicalOperator::AndOperator,
+                        left: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 6, 1, 7),
                                 errors: vec![]
                             },
                             name: "b".to_string()
                         }),
-                        right: Idt(Identifier {
+                        right: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 12, 1, 13),
                                 errors: vec![]
@@ -5838,36 +5835,36 @@ fn logical_operators_precedence_7() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 13),
                     errors: vec![]
                 },
-                expression: Un(Box::new(UnaryExpression {
+                expression: Expression::Unary(Box::new(UnaryExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 13),
                         errors: vec![]
                     },
-                    operator: NotOperator,
-                    argument: Paren(Box::new(ParenExpression {
+                    operator: Operator::NotOperator,
+                    argument: Expression::Paren(Box::new(ParenExpr {
                         base: BaseNode {
                             location: loc.get(1, 5, 1, 13),
                             errors: vec![]
                         },
-                        expression: Log(Box::new(LogicalExpression {
+                        expression: Expression::Logical(Box::new(LogicalExpr {
                             base: BaseNode {
                                 location: loc.get(1, 6, 1, 12),
                                 errors: vec![]
                             },
-                            operator: OrOperator,
-                            left: Idt(Identifier {
+                            operator: LogicalOperator::OrOperator,
+                            left: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 6, 1, 7),
                                     errors: vec![]
                                 },
                                 name: "a".to_string()
                             }),
-                            right: Idt(Identifier {
+                            right: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 11, 1, 12),
                                     errors: vec![]
@@ -5897,36 +5894,36 @@ fn logical_operators_precedence_8() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 14),
                     errors: vec![]
                 },
-                expression: Un(Box::new(UnaryExpression {
+                expression: Expression::Unary(Box::new(UnaryExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 14),
                         errors: vec![]
                     },
-                    operator: NotOperator,
-                    argument: Paren(Box::new(ParenExpression {
+                    operator: Operator::NotOperator,
+                    argument: Expression::Paren(Box::new(ParenExpr {
                         base: BaseNode {
                             location: loc.get(1, 5, 1, 14),
                             errors: vec![]
                         },
-                        expression: Log(Box::new(LogicalExpression {
+                        expression: Expression::Logical(Box::new(LogicalExpr {
                             base: BaseNode {
                                 location: loc.get(1, 6, 1, 13),
                                 errors: vec![]
                             },
-                            operator: AndOperator,
-                            left: Idt(Identifier {
+                            operator: LogicalOperator::AndOperator,
+                            left: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 6, 1, 7),
                                     errors: vec![]
                                 },
                                 name: "a".to_string()
                             }),
-                            right: Idt(Identifier {
+                            right: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 12, 1, 13),
                                     errors: vec![]
@@ -5956,36 +5953,36 @@ fn logical_operators_precedence_9() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 15),
                     errors: vec![]
                 },
-                expression: Log(Box::new(LogicalExpression {
+                expression: Expression::Logical(Box::new(LogicalExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 15),
                         errors: vec![]
                     },
-                    operator: AndOperator,
-                    left: Paren(Box::new(ParenExpression {
+                    operator: LogicalOperator::AndOperator,
+                    left: Expression::Paren(Box::new(ParenExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 9),
                             errors: vec![]
                         },
-                        expression: Log(Box::new(LogicalExpression {
+                        expression: Expression::Logical(Box::new(LogicalExpr {
                             base: BaseNode {
                                 location: loc.get(1, 2, 1, 8),
                                 errors: vec![]
                             },
-                            operator: OrOperator,
-                            left: Idt(Identifier {
+                            operator: LogicalOperator::OrOperator,
+                            left: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 2, 1, 3),
                                     errors: vec![]
                                 },
                                 name: "a".to_string()
                             }),
-                            right: Idt(Identifier {
+                            right: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 7, 1, 8),
                                     errors: vec![]
@@ -5994,7 +5991,7 @@ fn logical_operators_precedence_9() {
                             })
                         }))
                     })),
-                    right: Idt(Identifier {
+                    right: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 14, 1, 15),
                             errors: vec![]
@@ -6022,43 +6019,43 @@ fn logical_operators_precedence_10() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 15),
                     errors: vec![]
                 },
-                expression: Log(Box::new(LogicalExpression {
+                expression: Expression::Logical(Box::new(LogicalExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 15),
                         errors: vec![]
                     },
-                    operator: AndOperator,
-                    left: Idt(Identifier {
+                    operator: LogicalOperator::AndOperator,
+                    left: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 2),
                             errors: vec![]
                         },
                         name: "a".to_string()
                     }),
-                    right: Paren(Box::new(ParenExpression {
+                    right: Expression::Paren(Box::new(ParenExpr {
                         base: BaseNode {
                             location: loc.get(1, 7, 1, 15),
                             errors: vec![]
                         },
-                        expression: Log(Box::new(LogicalExpression {
+                        expression: Expression::Logical(Box::new(LogicalExpr {
                             base: BaseNode {
                                 location: loc.get(1, 8, 1, 14),
                                 errors: vec![]
                             },
-                            operator: OrOperator,
-                            left: Idt(Identifier {
+                            operator: LogicalOperator::OrOperator,
+                            left: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 8, 1, 9),
                                     errors: vec![]
                                 },
                                 name: "b".to_string()
                             }),
-                            right: Idt(Identifier {
+                            right: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 13, 1, 14),
                                     errors: vec![]
@@ -6094,47 +6091,47 @@ fn two_logical_operations_with_parens() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 2, 15),
                     errors: vec![]
                 },
-                expression: Log(Box::new(LogicalExpression {
+                expression: Expression::Logical(Box::new(LogicalExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 2, 15),
                         errors: vec![]
                     },
-                    operator: AndOperator,
-                    left: Un(Box::new(UnaryExpression {
+                    operator: LogicalOperator::AndOperator,
+                    left: Expression::Unary(Box::new(UnaryExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 2, 9),
                             errors: vec![]
                         },
-                        operator: NotOperator,
-                        argument: Call(Box::new(CallExpression {
+                        operator: Operator::NotOperator,
+                        argument: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(1, 5, 2, 9),
                                 errors: vec!["expected comma in property list, got OR".to_string()]
                             },
-                            callee: Paren(Box::new(ParenExpression {
+                            callee: Expression::Paren(Box::new(ParenExpr {
                                 base: BaseNode {
                                     location: loc.get(1, 5, 1, 14),
                                     errors: vec![]
                                 },
-                                expression: Log(Box::new(LogicalExpression {
+                                expression: Expression::Logical(Box::new(LogicalExpr {
                                     base: BaseNode {
                                         location: loc.get(1, 6, 1, 13),
                                         errors: vec![]
                                     },
-                                    operator: AndOperator,
-                                    left: Idt(Identifier {
+                                    operator: LogicalOperator::AndOperator,
+                                    left: Expression::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(1, 6, 1, 7),
                                             errors: vec![]
                                         },
                                         name: "a".to_string()
                                     }),
-                                    right: Idt(Identifier {
+                                    right: Expression::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(1, 12, 1, 13),
                                             errors: vec![]
@@ -6143,7 +6140,7 @@ fn two_logical_operations_with_parens() {
                                     })
                                 }))
                             })),
-                            arguments: vec![Obj(Box::new(ObjectExpression {
+                            arguments: vec![Expression::Object(Box::new(ObjectExpr {
                                 base: BaseNode {
                                     location: loc.get(2, 2, 2, 8),
                                     errors: vec![],
@@ -6155,7 +6152,7 @@ fn two_logical_operations_with_parens() {
                                             location: loc.get(2, 2, 2, 3),
                                             errors: vec![]
                                         },
-                                        key: PkIdt(Identifier {
+                                        key: PropertyKey::Identifier(Identifier {
                                             base: BaseNode {
                                                 location: loc.get(2, 2, 2, 3),
                                                 errors: vec![]
@@ -6172,7 +6169,7 @@ fn two_logical_operations_with_parens() {
                                                     .to_string()
                                             ]
                                         },
-                                        key: PkStr(StringLiteral {
+                                        key: PropertyKey::StringLit(StringLit {
                                             base: BaseNode {
                                                 location: loc.get(2, 4, 2, 4),
                                                 errors: vec![]
@@ -6185,7 +6182,7 @@ fn two_logical_operations_with_parens() {
                             }))]
                         }))
                     })),
-                    right: Idt(Identifier {
+                    right: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(2, 14, 2, 15),
                             errors: vec![]
@@ -6217,7 +6214,7 @@ fn arrow_function_called() {
             package: None,
             imports: vec![],
             body: vec![
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 23),
                         errors: vec![]
@@ -6229,7 +6226,7 @@ fn arrow_function_called() {
                         },
                         name: "plusOne".to_string()
                     },
-                    init: Fun(Box::new(FunctionExpression {
+                    init: Expression::Function(Box::new(FunctionExpr {
                         base: BaseNode {
                             location: loc.get(1, 11, 1, 23),
                             errors: vec![]
@@ -6239,7 +6236,7 @@ fn arrow_function_called() {
                                 location: loc.get(1, 12, 1, 13),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 12, 1, 13),
                                     errors: vec![]
@@ -6248,20 +6245,20 @@ fn arrow_function_called() {
                             }),
                             value: None
                         }],
-                        body: FExpr(Bin(Box::new(BinaryExpression {
+                        body: FunctionBody::Expr(Expression::Binary(Box::new(BinaryExpr {
                             base: BaseNode {
                                 location: loc.get(1, 18, 1, 23),
                                 errors: vec![]
                             },
-                            operator: AdditionOperator,
-                            left: Idt(Identifier {
+                            operator: Operator::AdditionOperator,
+                            left: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 18, 1, 19),
                                     errors: vec![]
                                 },
                                 name: "r".to_string()
                             }),
-                            right: Int(IntegerLiteral {
+                            right: Expression::Integer(IntegerLit {
                                 base: BaseNode {
                                     location: loc.get(1, 22, 1, 23),
                                     errors: vec![]
@@ -6271,24 +6268,24 @@ fn arrow_function_called() {
                         })))
                     }))
                 }),
-                Expr(ExpressionStatement {
+                Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(2, 4, 2, 16),
                         errors: vec![]
                     },
-                    expression: Call(Box::new(CallExpression {
+                    expression: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(2, 4, 2, 16),
                             errors: vec![]
                         },
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(2, 4, 2, 11),
                                 errors: vec![]
                             },
                             name: "plusOne".to_string()
                         }),
-                        arguments: vec![Obj(Box::new(ObjectExpression {
+                        arguments: vec![Expression::Object(Box::new(ObjectExpr {
                             base: BaseNode {
                                 location: loc.get(2, 12, 2, 15),
                                 errors: vec![]
@@ -6299,14 +6296,14 @@ fn arrow_function_called() {
                                     location: loc.get(2, 12, 2, 15),
                                     errors: vec![]
                                 },
-                                key: PkIdt(Identifier {
+                                key: PropertyKey::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(2, 12, 2, 13),
                                         errors: vec![]
                                     },
                                     name: "r".to_string()
                                 }),
-                                value: Some(Int(IntegerLiteral {
+                                value: Some(Expression::Integer(IntegerLit {
                                     base: BaseNode {
                                         location: loc.get(2, 14, 2, 15),
                                         errors: vec![]
@@ -6337,7 +6334,7 @@ fn arrow_function_return_map() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 22),
                     errors: vec![]
@@ -6349,7 +6346,7 @@ fn arrow_function_return_map() {
                     },
                     name: "toMap".to_string()
                 },
-                init: Fun(Box::new(FunctionExpression {
+                init: Expression::Function(Box::new(FunctionExpr {
                     base: BaseNode {
                         location: loc.get(1, 9, 1, 22),
                         errors: vec![]
@@ -6359,7 +6356,7 @@ fn arrow_function_return_map() {
                             location: loc.get(1, 10, 1, 11),
                             errors: vec![]
                         },
-                        key: PkIdt(Identifier {
+                        key: PropertyKey::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 10, 1, 11),
                                 errors: vec![]
@@ -6368,12 +6365,12 @@ fn arrow_function_return_map() {
                         }),
                         value: None
                     }],
-                    body: FExpr(Paren(Box::new(ParenExpression {
+                    body: FunctionBody::Expr(Expression::Paren(Box::new(ParenExpr {
                         base: BaseNode {
                             location: loc.get(1, 15, 1, 22),
                             errors: vec![]
                         },
-                        expression: Obj(Box::new(ObjectExpression {
+                        expression: Expression::Object(Box::new(ObjectExpr {
                             base: BaseNode {
                                 location: loc.get(1, 16, 1, 21),
                                 errors: vec![]
@@ -6384,14 +6381,14 @@ fn arrow_function_return_map() {
                                     location: loc.get(1, 17, 1, 20),
                                     errors: vec![]
                                 },
-                                key: PkIdt(Identifier {
+                                key: PropertyKey::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 17, 1, 18),
                                         errors: vec![]
                                     },
                                     name: "r".to_string()
                                 }),
-                                value: Some(Idt(Identifier {
+                                value: Some(Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 19, 1, 20),
                                         errors: vec![]
@@ -6422,7 +6419,7 @@ fn arrow_function_with_default_arg() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 25),
                     errors: vec![]
@@ -6434,7 +6431,7 @@ fn arrow_function_with_default_arg() {
                     },
                     name: "addN".to_string()
                 },
-                init: Fun(Box::new(FunctionExpression {
+                init: Expression::Function(Box::new(FunctionExpr {
                     base: BaseNode {
                         location: loc.get(1, 8, 1, 25),
                         errors: vec![]
@@ -6445,7 +6442,7 @@ fn arrow_function_with_default_arg() {
                                 location: loc.get(1, 9, 1, 10),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 9, 1, 10),
                                     errors: vec![]
@@ -6459,14 +6456,14 @@ fn arrow_function_with_default_arg() {
                                 location: loc.get(1, 12, 1, 15),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 12, 1, 13),
                                     errors: vec![]
                                 },
                                 name: "n".to_string()
                             }),
-                            value: Some(Int(IntegerLiteral {
+                            value: Some(Expression::Integer(IntegerLit {
                                 base: BaseNode {
                                     location: loc.get(1, 14, 1, 15),
                                     errors: vec![]
@@ -6475,20 +6472,20 @@ fn arrow_function_with_default_arg() {
                             }))
                         }
                     ],
-                    body: FExpr(Bin(Box::new(BinaryExpression {
+                    body: FunctionBody::Expr(Expression::Binary(Box::new(BinaryExpr {
                         base: BaseNode {
                             location: loc.get(1, 20, 1, 25),
                             errors: vec![]
                         },
-                        operator: AdditionOperator,
-                        left: Idt(Identifier {
+                        operator: Operator::AdditionOperator,
+                        left: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 20, 1, 21),
                                 errors: vec![]
                             },
                             name: "r".to_string()
                         }),
-                        right: Idt(Identifier {
+                        right: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 24, 1, 25),
                                 errors: vec![]
@@ -6522,7 +6519,7 @@ fn arrow_function_called_in_binary_expression() {
             package: None,
             imports: vec![],
             body: vec![
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(2, 13, 2, 35),
                         errors: vec![]
@@ -6534,7 +6531,7 @@ fn arrow_function_called_in_binary_expression() {
                         },
                         name: "plusOne".to_string()
                     },
-                    init: Fun(Box::new(FunctionExpression {
+                    init: Expression::Function(Box::new(FunctionExpr {
                         base: BaseNode {
                             location: loc.get(2, 23, 2, 35),
                             errors: vec![]
@@ -6544,7 +6541,7 @@ fn arrow_function_called_in_binary_expression() {
                                 location: loc.get(2, 24, 2, 25),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(2, 24, 2, 25),
                                     errors: vec![]
@@ -6553,20 +6550,20 @@ fn arrow_function_called_in_binary_expression() {
                             }),
                             value: None
                         }],
-                        body: FExpr(Bin(Box::new(BinaryExpression {
+                        body: FunctionBody::Expr(Expression::Binary(Box::new(BinaryExpr {
                             base: BaseNode {
                                 location: loc.get(2, 30, 2, 35),
                                 errors: vec![]
                             },
-                            operator: AdditionOperator,
-                            left: Idt(Identifier {
+                            operator: Operator::AdditionOperator,
+                            left: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(2, 30, 2, 31),
                                     errors: vec![]
                                 },
                                 name: "r".to_string()
                             }),
-                            right: Int(IntegerLiteral {
+                            right: Expression::Integer(IntegerLit {
                                 base: BaseNode {
                                     location: loc.get(2, 34, 2, 35),
                                     errors: vec![]
@@ -6576,36 +6573,36 @@ fn arrow_function_called_in_binary_expression() {
                         })))
                     }))
                 }),
-                Expr(ExpressionStatement {
+                Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(3, 13, 3, 39),
                         errors: vec![]
                     },
-                    expression: Log(Box::new(LogicalExpression {
+                    expression: Expression::Logical(Box::new(LogicalExpr {
                         base: BaseNode {
                             location: loc.get(3, 13, 3, 39),
                             errors: vec![]
                         },
-                        operator: OrOperator,
-                        left: Bin(Box::new(BinaryExpression {
+                        operator: LogicalOperator::OrOperator,
+                        left: Expression::Binary(Box::new(BinaryExpr {
                             base: BaseNode {
                                 location: loc.get(3, 13, 3, 30),
                                 errors: vec![]
                             },
-                            operator: EqualOperator,
-                            left: Call(Box::new(CallExpression {
+                            operator: Operator::EqualOperator,
+                            left: Expression::Call(Box::new(CallExpr {
                                 base: BaseNode {
                                     location: loc.get(3, 13, 3, 25),
                                     errors: vec![]
                                 },
-                                callee: Idt(Identifier {
+                                callee: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(3, 13, 3, 20),
                                         errors: vec![]
                                     },
                                     name: "plusOne".to_string()
                                 }),
-                                arguments: vec![Obj(Box::new(ObjectExpression {
+                                arguments: vec![Expression::Object(Box::new(ObjectExpr {
                                     base: BaseNode {
                                         location: loc.get(3, 21, 3, 24),
                                         errors: vec![]
@@ -6616,14 +6613,14 @@ fn arrow_function_called_in_binary_expression() {
                                             location: loc.get(3, 21, 3, 24),
                                             errors: vec![]
                                         },
-                                        key: PkIdt(Identifier {
+                                        key: PropertyKey::Identifier(Identifier {
                                             base: BaseNode {
                                                 location: loc.get(3, 21, 3, 22),
                                                 errors: vec![]
                                             },
                                             name: "r".to_string()
                                         }),
-                                        value: Some(Int(IntegerLiteral {
+                                        value: Some(Expression::Integer(IntegerLit {
                                             base: BaseNode {
                                                 location: loc.get(3, 23, 3, 24),
                                                 errors: vec![]
@@ -6633,7 +6630,7 @@ fn arrow_function_called_in_binary_expression() {
                                     }]
                                 }))]
                             })),
-                            right: Int(IntegerLiteral {
+                            right: Expression::Integer(IntegerLit {
                                 base: BaseNode {
                                     location: loc.get(3, 29, 3, 30),
                                     errors: vec![]
@@ -6641,13 +6638,13 @@ fn arrow_function_called_in_binary_expression() {
                                 value: 6
                             })
                         })),
-                        right: Call(Box::new(CallExpression {
+                        right: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(3, 34, 3, 39),
                                 errors: vec![]
                             },
                             arguments: vec![],
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(3, 34, 3, 37),
                                     errors: vec![]
@@ -6677,7 +6674,7 @@ fn arrow_function_as_single_expression() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 38),
                     errors: vec![]
@@ -6689,7 +6686,7 @@ fn arrow_function_as_single_expression() {
                     },
                     name: "f".to_string()
                 },
-                init: Fun(Box::new(FunctionExpression {
+                init: Expression::Function(Box::new(FunctionExpr {
                     base: BaseNode {
                         location: loc.get(1, 5, 1, 38),
                         errors: vec![]
@@ -6699,7 +6696,7 @@ fn arrow_function_as_single_expression() {
                             location: loc.get(1, 6, 1, 7),
                             errors: vec![]
                         },
-                        key: PkIdt(Identifier {
+                        key: PropertyKey::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 6, 1, 7),
                                 errors: vec![]
@@ -6708,25 +6705,25 @@ fn arrow_function_as_single_expression() {
                         }),
                         value: None
                     }],
-                    body: FExpr(Bin(Box::new(BinaryExpression {
+                    body: FunctionBody::Expr(Expression::Binary(Box::new(BinaryExpr {
                         base: BaseNode {
                             location: loc.get(1, 12, 1, 38),
                             errors: vec![]
                         },
-                        operator: EqualOperator,
-                        left: Mem(Box::new(MemberExpression {
+                        operator: Operator::EqualOperator,
+                        left: Expression::Member(Box::new(MemberExpr {
                             base: BaseNode {
                                 location: loc.get(1, 12, 1, 29),
                                 errors: vec![]
                             },
-                            object: Idt(Identifier {
+                            object: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 12, 1, 13),
                                     errors: vec![]
                                 },
                                 name: "r".to_string()
                             }),
-                            property: PkStr(StringLiteral {
+                            property: PropertyKey::StringLit(StringLit {
                                 base: BaseNode {
                                     location: loc.get(1, 14, 1, 28),
                                     errors: vec![]
@@ -6734,7 +6731,7 @@ fn arrow_function_as_single_expression() {
                                 value: "_measurement".to_string()
                             })
                         })),
-                        right: Str(StringLiteral {
+                        right: Expression::StringLit(StringLit {
                             base: BaseNode {
                                 location: loc.get(1, 33, 1, 38),
                                 errors: vec![]
@@ -6768,7 +6765,7 @@ fn arrow_function_as_block() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 4, 14),
                     errors: vec![]
@@ -6780,7 +6777,7 @@ fn arrow_function_as_block() {
                     },
                     name: "f".to_string()
                 },
-                init: Fun(Box::new(FunctionExpression {
+                init: Expression::Function(Box::new(FunctionExpr {
                     base: BaseNode {
                         location: loc.get(1, 5, 4, 14),
                         errors: vec![]
@@ -6790,7 +6787,7 @@ fn arrow_function_as_block() {
                             location: loc.get(1, 6, 1, 7),
                             errors: vec![]
                         },
-                        key: PkIdt(Identifier {
+                        key: PropertyKey::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 6, 1, 7),
                                 errors: vec![]
@@ -6799,13 +6796,13 @@ fn arrow_function_as_block() {
                         }),
                         value: None
                     }],
-                    body: FBlock(Block {
+                    body: FunctionBody::Block(Block {
                         base: BaseNode {
                             location: loc.get(1, 12, 4, 14),
                             errors: vec![]
                         },
                         body: vec![
-                            Var(VariableAssignment {
+                            Statement::Variable(VariableAssgn {
                                 base: BaseNode {
                                     location: loc.get(2, 17, 2, 38),
                                     errors: vec![]
@@ -6817,19 +6814,19 @@ fn arrow_function_as_block() {
                                     },
                                     name: "m".to_string()
                                 },
-                                init: Mem(Box::new(MemberExpression {
+                                init: Expression::Member(Box::new(MemberExpr {
                                     base: BaseNode {
                                         location: loc.get(2, 21, 2, 38),
                                         errors: vec![]
                                     },
-                                    object: Idt(Identifier {
+                                    object: Expression::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(2, 21, 2, 22),
                                             errors: vec![]
                                         },
                                         name: "r".to_string()
                                     }),
-                                    property: PkStr(StringLiteral {
+                                    property: PropertyKey::StringLit(StringLit {
                                         base: BaseNode {
                                             location: loc.get(2, 23, 2, 37),
                                             errors: vec![]
@@ -6838,25 +6835,25 @@ fn arrow_function_as_block() {
                                     })
                                 }))
                             }),
-                            Ret(ReturnStatement {
+                            Statement::Return(ReturnStmt {
                                 base: BaseNode {
                                     location: loc.get(3, 17, 3, 34),
                                     errors: vec![]
                                 },
-                                argument: Bin(Box::new(BinaryExpression {
+                                argument: Expression::Binary(Box::new(BinaryExpr {
                                     base: BaseNode {
                                         location: loc.get(3, 24, 3, 34),
                                         errors: vec![]
                                     },
-                                    operator: EqualOperator,
-                                    left: Idt(Identifier {
+                                    operator: Operator::EqualOperator,
+                                    left: Expression::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(3, 24, 3, 25),
                                             errors: vec![]
                                         },
                                         name: "m".to_string()
                                     }),
-                                    right: Str(StringLiteral {
+                                    right: Expression::StringLit(StringLit {
                                         base: BaseNode {
                                             location: loc.get(3, 29, 3, 34),
                                             errors: vec![]
@@ -6888,7 +6885,7 @@ fn conditional() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 26),
                     errors: vec![]
@@ -6900,26 +6897,26 @@ fn conditional() {
                     },
                     name: "a".to_string()
                 },
-                init: Cond(Box::new(ConditionalExpression {
+                init: Expression::Conditional(Box::new(ConditionalExpr {
                     base: BaseNode {
                         location: loc.get(1, 5, 1, 26),
                         errors: vec![]
                     },
-                    test: Idt(Identifier {
+                    test: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 8, 1, 12),
                             errors: vec![]
                         },
                         name: "true".to_string()
                     }),
-                    consequent: Int(IntegerLiteral {
+                    consequent: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 18, 1, 19),
                             errors: vec![]
                         },
                         value: 0
                     }),
-                    alternate: Int(IntegerLiteral {
+                    alternate: Expression::Integer(IntegerLit {
                         base: BaseNode {
                             location: loc.get(1, 25, 1, 26),
                             errors: vec![]
@@ -6949,7 +6946,7 @@ fn conditional_with_unary_logical_operators() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 85),
                     errors: vec![]
@@ -6961,24 +6958,24 @@ fn conditional_with_unary_logical_operators() {
                     },
                     name: "a".to_string()
                 },
-                init: Cond(Box::new(ConditionalExpression {
+                init: Expression::Conditional(Box::new(ConditionalExpr {
                     base: BaseNode {
                         location: loc.get(1, 5, 1, 85),
                         errors: vec![]
                     },
-                    test: Log(Box::new(LogicalExpression {
+                    test: Expression::Logical(Box::new(LogicalExpr {
                         base: BaseNode {
                             location: loc.get(1, 8, 1, 40),
                             errors: vec![]
                         },
-                        operator: OrOperator,
-                        left: Un(Box::new(UnaryExpression {
+                        operator: LogicalOperator::OrOperator,
+                        left: Expression::Unary(Box::new(UnaryExpr {
                             base: BaseNode {
                                 location: loc.get(1, 8, 1, 16),
                                 errors: vec![]
                             },
-                            operator: ExistsOperator,
-                            argument: Idt(Identifier {
+                            operator: Operator::ExistsOperator,
+                            argument: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 15, 1, 16),
                                     errors: vec![]
@@ -6986,26 +6983,26 @@ fn conditional_with_unary_logical_operators() {
                                 name: "b".to_string()
                             })
                         })),
-                        right: Log(Box::new(LogicalExpression {
+                        right: Expression::Logical(Box::new(LogicalExpr {
                             base: BaseNode {
                                 location: loc.get(1, 20, 1, 40),
                                 errors: vec![]
                             },
-                            operator: AndOperator,
-                            left: Bin(Box::new(BinaryExpression {
+                            operator: LogicalOperator::AndOperator,
+                            left: Expression::Binary(Box::new(BinaryExpr {
                                 base: BaseNode {
                                     location: loc.get(1, 20, 1, 25),
                                     errors: vec![]
                                 },
-                                operator: LessThanOperator,
-                                left: Idt(Identifier {
+                                operator: Operator::LessThanOperator,
+                                left: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 20, 1, 21),
                                         errors: vec![]
                                     },
                                     name: "c".to_string()
                                 }),
-                                right: Idt(Identifier {
+                                right: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 24, 1, 25),
                                         errors: vec![]
@@ -7013,26 +7010,26 @@ fn conditional_with_unary_logical_operators() {
                                     name: "d".to_string()
                                 })
                             })),
-                            right: Un(Box::new(UnaryExpression {
+                            right: Expression::Unary(Box::new(UnaryExpr {
                                 base: BaseNode {
                                     location: loc.get(1, 30, 1, 40),
                                     errors: vec![]
                                 },
-                                operator: NotOperator,
-                                argument: Bin(Box::new(BinaryExpression {
+                                operator: Operator::NotOperator,
+                                argument: Expression::Binary(Box::new(BinaryExpr {
                                     base: BaseNode {
                                         location: loc.get(1, 34, 1, 40),
                                         errors: vec![]
                                     },
-                                    operator: EqualOperator,
-                                    left: Idt(Identifier {
+                                    operator: Operator::EqualOperator,
+                                    left: Expression::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(1, 34, 1, 35),
                                             errors: vec![]
                                         },
                                         name: "e".to_string()
                                     }),
-                                    right: Idt(Identifier {
+                                    right: Expression::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(1, 39, 1, 40),
                                             errors: vec![]
@@ -7043,37 +7040,37 @@ fn conditional_with_unary_logical_operators() {
                             }))
                         }))
                     })),
-                    consequent: Un(Box::new(UnaryExpression {
+                    consequent: Expression::Unary(Box::new(UnaryExpr {
                         base: BaseNode {
                             location: loc.get(1, 46, 1, 64),
                             errors: vec![]
                         },
-                        operator: NotOperator,
-                        argument: Un(Box::new(UnaryExpression {
+                        operator: Operator::NotOperator,
+                        argument: Expression::Unary(Box::new(UnaryExpr {
                             base: BaseNode {
                                 location: loc.get(1, 50, 1, 64),
                                 errors: vec![]
                             },
-                            operator: ExistsOperator,
-                            argument: Paren(Box::new(ParenExpression {
+                            operator: Operator::ExistsOperator,
+                            argument: Expression::Paren(Box::new(ParenExpr {
                                 base: BaseNode {
                                     location: loc.get(1, 57, 1, 64),
                                     errors: vec![]
                                 },
-                                expression: Bin(Box::new(BinaryExpression {
+                                expression: Expression::Binary(Box::new(BinaryExpr {
                                     base: BaseNode {
                                         location: loc.get(1, 58, 1, 63),
                                         errors: vec![]
                                     },
-                                    operator: SubtractionOperator,
-                                    left: Idt(Identifier {
+                                    operator: Operator::SubtractionOperator,
+                                    left: Expression::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(1, 58, 1, 59),
                                             errors: vec![]
                                         },
                                         name: "g".to_string()
                                     }),
-                                    right: Idt(Identifier {
+                                    right: Expression::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(1, 62, 1, 63),
                                             errors: vec![]
@@ -7084,19 +7081,19 @@ fn conditional_with_unary_logical_operators() {
                             }))
                         }))
                     })),
-                    alternate: Un(Box::new(UnaryExpression {
+                    alternate: Expression::Unary(Box::new(UnaryExpr {
                         base: BaseNode {
                             location: loc.get(1, 70, 1, 85),
                             errors: vec![]
                         },
-                        operator: ExistsOperator,
-                        argument: Un(Box::new(UnaryExpression {
+                        operator: Operator::ExistsOperator,
+                        argument: Expression::Unary(Box::new(UnaryExpr {
                             base: BaseNode {
                                 location: loc.get(1, 77, 1, 85),
                                 errors: vec![]
                             },
-                            operator: ExistsOperator,
-                            argument: Idt(Identifier {
+                            operator: Operator::ExistsOperator,
+                            argument: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 84, 1, 85),
                                     errors: vec![]
@@ -7130,35 +7127,35 @@ fn nested_conditionals() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 3, 50),
                     errors: vec![]
                 },
-                expression: Cond(Box::new(ConditionalExpression {
+                expression: Expression::Conditional(Box::new(ConditionalExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 3, 50),
                         errors: vec![]
                     },
-                    test: Cond(Box::new(ConditionalExpression {
+                    test: Expression::Conditional(Box::new(ConditionalExpr {
                         base: BaseNode {
                             location: loc.get(1, 4, 1, 33),
                             errors: vec![]
                         },
-                        test: Bin(Box::new(BinaryExpression {
+                        test: Expression::Binary(Box::new(BinaryExpr {
                             base: BaseNode {
                                 location: loc.get(1, 7, 1, 12),
                                 errors: vec![]
                             },
-                            operator: LessThanOperator,
-                            left: Idt(Identifier {
+                            operator: Operator::LessThanOperator,
+                            left: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 7, 1, 8),
                                     errors: vec![]
                                 },
                                 name: "b".to_string()
                             }),
-                            right: Int(IntegerLiteral {
+                            right: Expression::Integer(IntegerLit {
                                 base: BaseNode {
                                     location: loc.get(1, 11, 1, 12),
                                     errors: vec![]
@@ -7166,14 +7163,14 @@ fn nested_conditionals() {
                                 value: 0
                             })
                         })),
-                        consequent: Idt(Identifier {
+                        consequent: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 18, 1, 22),
                                 errors: vec![]
                             },
                             name: "true".to_string()
                         }),
-                        alternate: Idt(Identifier {
+                        alternate: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 28, 1, 33),
                                 errors: vec![]
@@ -7181,25 +7178,25 @@ fn nested_conditionals() {
                             name: "false".to_string()
                         })
                     })),
-                    consequent: Cond(Box::new(ConditionalExpression {
+                    consequent: Expression::Conditional(Box::new(ConditionalExpr {
                         base: BaseNode {
                             location: loc.get(2, 24, 2, 48),
                             errors: vec![]
                         },
-                        test: Bin(Box::new(BinaryExpression {
+                        test: Expression::Binary(Box::new(BinaryExpr {
                             base: BaseNode {
                                 location: loc.get(2, 27, 2, 32),
                                 errors: vec![]
                             },
-                            operator: GreaterThanOperator,
-                            left: Idt(Identifier {
+                            operator: Operator::GreaterThanOperator,
+                            left: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(2, 27, 2, 28),
                                     errors: vec![]
                                 },
                                 name: "c".to_string()
                             }),
-                            right: Int(IntegerLiteral {
+                            right: Expression::Integer(IntegerLit {
                                 base: BaseNode {
                                     location: loc.get(2, 31, 2, 32),
                                     errors: vec![]
@@ -7207,14 +7204,14 @@ fn nested_conditionals() {
                                 value: 0
                             })
                         })),
-                        consequent: Int(IntegerLiteral {
+                        consequent: Expression::Integer(IntegerLit {
                             base: BaseNode {
                                 location: loc.get(2, 38, 2, 40),
                                 errors: vec![]
                             },
                             value: 30
                         }),
-                        alternate: Int(IntegerLiteral {
+                        alternate: Expression::Integer(IntegerLit {
                             base: BaseNode {
                                 location: loc.get(2, 46, 2, 48),
                                 errors: vec![]
@@ -7222,25 +7219,25 @@ fn nested_conditionals() {
                             value: 60
                         })
                     })),
-                    alternate: Cond(Box::new(ConditionalExpression {
+                    alternate: Expression::Conditional(Box::new(ConditionalExpr {
                         base: BaseNode {
                             location: loc.get(3, 24, 3, 50),
                             errors: vec![]
                         },
-                        test: Bin(Box::new(BinaryExpression {
+                        test: Expression::Binary(Box::new(BinaryExpr {
                             base: BaseNode {
                                 location: loc.get(3, 27, 3, 33),
                                 errors: vec![]
                             },
-                            operator: EqualOperator,
-                            left: Idt(Identifier {
+                            operator: Operator::EqualOperator,
+                            left: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(3, 27, 3, 28),
                                     errors: vec![]
                                 },
                                 name: "d".to_string()
                             }),
-                            right: Int(IntegerLiteral {
+                            right: Expression::Integer(IntegerLit {
                                 base: BaseNode {
                                     location: loc.get(3, 32, 3, 33),
                                     errors: vec![]
@@ -7248,14 +7245,14 @@ fn nested_conditionals() {
                                 value: 0
                             })
                         })),
-                        consequent: Int(IntegerLiteral {
+                        consequent: Expression::Integer(IntegerLit {
                             base: BaseNode {
                                 location: loc.get(3, 39, 3, 41),
                                 errors: vec![]
                             },
                             value: 90
                         }),
-                        alternate: Int(IntegerLiteral {
+                        alternate: Expression::Integer(IntegerLit {
                             base: BaseNode {
                                 location: loc.get(3, 47, 3, 50),
                                 errors: vec![]
@@ -7271,7 +7268,9 @@ fn nested_conditionals() {
 
 #[test]
 fn from_with_filter_with_no_parens() {
-    let mut p = Parser::new(r#"from(bucket:"telegraf/autogen").filter(fn: (r) => r["other"]=="mem" and r["this"]=="that" or r["these"]!="those")"#);
+    let mut p = Parser::new(
+        r#"from(bucket:"telegraf/autogen").filter(fn: (r) => r["other"]=="mem" and r["this"]=="that" or r["these"]!="those")"#,
+    );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -7284,41 +7283,41 @@ fn from_with_filter_with_no_parens() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 114),
                     errors: vec![]
                 },
-                expression: Call(Box::new(CallExpression {
+                expression: Expression::Call(Box::new(CallExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 114),
                         errors: vec![]
                     },
-                    callee: Mem(Box::new(MemberExpression {
+                    callee: Expression::Member(Box::new(MemberExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 39),
                             errors: vec![]
                         },
-                        property: PkIdt(Identifier {
+                        property: PropertyKey::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 33, 1, 39),
                                 errors: vec![]
                             },
                             name: "filter".to_string()
                         }),
-                        object: Call(Box::new(CallExpression {
+                        object: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 32),
                                 errors: vec![]
                             },
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 1, 1, 5),
                                     errors: vec![]
                                 },
                                 name: "from".to_string()
                             }),
-                            arguments: vec![Obj(Box::new(ObjectExpression {
+                            arguments: vec![Expression::Object(Box::new(ObjectExpr {
                                 base: BaseNode {
                                     location: loc.get(1, 6, 1, 31),
                                     errors: vec![]
@@ -7329,14 +7328,14 @@ fn from_with_filter_with_no_parens() {
                                         location: loc.get(1, 6, 1, 31),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(1, 6, 1, 12),
                                             errors: vec![]
                                         },
                                         name: "bucket".to_string()
                                     }),
-                                    value: Some(Str(StringLiteral {
+                                    value: Some(Expression::StringLit(StringLit {
                                         base: BaseNode {
                                             location: loc.get(1, 13, 1, 31),
                                             errors: vec![]
@@ -7347,7 +7346,7 @@ fn from_with_filter_with_no_parens() {
                             }))]
                         })),
                     })),
-                    arguments: vec![Obj(Box::new(ObjectExpression {
+                    arguments: vec![Expression::Object(Box::new(ObjectExpr {
                         base: BaseNode {
                             location: loc.get(1, 40, 1, 113),
                             errors: vec![]
@@ -7358,14 +7357,14 @@ fn from_with_filter_with_no_parens() {
                                 location: loc.get(1, 40, 1, 113),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 40, 1, 42),
                                     errors: vec![]
                                 },
                                 name: "fn".to_string()
                             }),
-                            value: Some(Fun(Box::new(FunctionExpression {
+                            value: Some(Expression::Function(Box::new(FunctionExpr {
                                 base: BaseNode {
                                     location: loc.get(1, 44, 1, 113),
                                     errors: vec![]
@@ -7375,7 +7374,7 @@ fn from_with_filter_with_no_parens() {
                                         location: loc.get(1, 45, 1, 46),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(1, 45, 1, 46),
                                             errors: vec![]
@@ -7384,122 +7383,124 @@ fn from_with_filter_with_no_parens() {
                                     }),
                                     value: None
                                 }],
-                                body: FExpr(Log(Box::new(LogicalExpression {
-                                    base: BaseNode {
-                                        location: loc.get(1, 51, 1, 113),
-                                        errors: vec![]
-                                    },
-                                    operator: OrOperator,
-                                    left: Log(Box::new(LogicalExpression {
+                                body: FunctionBody::Expr(Expression::Logical(Box::new(
+                                    LogicalExpr {
                                         base: BaseNode {
-                                            location: loc.get(1, 51, 1, 90),
+                                            location: loc.get(1, 51, 1, 113),
                                             errors: vec![]
                                         },
-                                        operator: AndOperator,
-                                        left: Bin(Box::new(BinaryExpression {
+                                        operator: LogicalOperator::OrOperator,
+                                        left: Expression::Logical(Box::new(LogicalExpr {
                                             base: BaseNode {
-                                                location: loc.get(1, 51, 1, 68),
+                                                location: loc.get(1, 51, 1, 90),
                                                 errors: vec![]
                                             },
-                                            operator: EqualOperator,
-                                            left: Mem(Box::new(MemberExpression {
+                                            operator: LogicalOperator::AndOperator,
+                                            left: Expression::Binary(Box::new(BinaryExpr {
                                                 base: BaseNode {
-                                                    location: loc.get(1, 51, 1, 61),
+                                                    location: loc.get(1, 51, 1, 68),
                                                     errors: vec![]
                                                 },
-                                                object: Idt(Identifier {
+                                                operator: Operator::EqualOperator,
+                                                left: Expression::Member(Box::new(MemberExpr {
                                                     base: BaseNode {
-                                                        location: loc.get(1, 51, 1, 52),
+                                                        location: loc.get(1, 51, 1, 61),
                                                         errors: vec![]
                                                     },
-                                                    name: "r".to_string()
-                                                }),
-                                                property: PkStr(StringLiteral {
+                                                    object: Expression::Identifier(Identifier {
+                                                        base: BaseNode {
+                                                            location: loc.get(1, 51, 1, 52),
+                                                            errors: vec![]
+                                                        },
+                                                        name: "r".to_string()
+                                                    }),
+                                                    property: PropertyKey::StringLit(StringLit {
+                                                        base: BaseNode {
+                                                            location: loc.get(1, 53, 1, 60),
+                                                            errors: vec![]
+                                                        },
+                                                        value: "other".to_string()
+                                                    })
+                                                })),
+                                                right: Expression::StringLit(StringLit {
                                                     base: BaseNode {
-                                                        location: loc.get(1, 53, 1, 60),
+                                                        location: loc.get(1, 63, 1, 68),
                                                         errors: vec![]
                                                     },
-                                                    value: "other".to_string()
+                                                    value: "mem".to_string()
                                                 })
                                             })),
-                                            right: Str(StringLiteral {
+                                            right: Expression::Binary(Box::new(BinaryExpr {
                                                 base: BaseNode {
-                                                    location: loc.get(1, 63, 1, 68),
+                                                    location: loc.get(1, 73, 1, 90),
                                                     errors: vec![]
                                                 },
-                                                value: "mem".to_string()
-                                            })
+                                                operator: Operator::EqualOperator,
+                                                left: Expression::Member(Box::new(MemberExpr {
+                                                    base: BaseNode {
+                                                        location: loc.get(1, 73, 1, 82),
+                                                        errors: vec![]
+                                                    },
+                                                    object: Expression::Identifier(Identifier {
+                                                        base: BaseNode {
+                                                            location: loc.get(1, 73, 1, 74),
+                                                            errors: vec![]
+                                                        },
+                                                        name: "r".to_string()
+                                                    }),
+                                                    property: PropertyKey::StringLit(StringLit {
+                                                        base: BaseNode {
+                                                            location: loc.get(1, 75, 1, 81),
+                                                            errors: vec![]
+                                                        },
+                                                        value: "this".to_string()
+                                                    })
+                                                })),
+                                                right: Expression::StringLit(StringLit {
+                                                    base: BaseNode {
+                                                        location: loc.get(1, 84, 1, 90),
+                                                        errors: vec![]
+                                                    },
+                                                    value: "that".to_string()
+                                                })
+                                            }))
                                         })),
-                                        right: Bin(Box::new(BinaryExpression {
+                                        right: Expression::Binary(Box::new(BinaryExpr {
                                             base: BaseNode {
-                                                location: loc.get(1, 73, 1, 90),
+                                                location: loc.get(1, 94, 1, 113),
                                                 errors: vec![]
                                             },
-                                            operator: EqualOperator,
-                                            left: Mem(Box::new(MemberExpression {
+                                            operator: Operator::NotEqualOperator,
+                                            left: Expression::Member(Box::new(MemberExpr {
                                                 base: BaseNode {
-                                                    location: loc.get(1, 73, 1, 82),
+                                                    location: loc.get(1, 94, 1, 104),
                                                     errors: vec![]
                                                 },
-                                                object: Idt(Identifier {
+                                                object: Expression::Identifier(Identifier {
                                                     base: BaseNode {
-                                                        location: loc.get(1, 73, 1, 74),
+                                                        location: loc.get(1, 94, 1, 95),
                                                         errors: vec![]
                                                     },
                                                     name: "r".to_string()
                                                 }),
-                                                property: PkStr(StringLiteral {
+                                                property: PropertyKey::StringLit(StringLit {
                                                     base: BaseNode {
-                                                        location: loc.get(1, 75, 1, 81),
+                                                        location: loc.get(1, 96, 1, 103),
                                                         errors: vec![]
                                                     },
-                                                    value: "this".to_string()
+                                                    value: "these".to_string()
                                                 })
                                             })),
-                                            right: Str(StringLiteral {
+                                            right: Expression::StringLit(StringLit {
                                                 base: BaseNode {
-                                                    location: loc.get(1, 84, 1, 90),
+                                                    location: loc.get(1, 106, 1, 113),
                                                     errors: vec![]
                                                 },
-                                                value: "that".to_string()
+                                                value: "those".to_string()
                                             })
                                         }))
-                                    })),
-                                    right: Bin(Box::new(BinaryExpression {
-                                        base: BaseNode {
-                                            location: loc.get(1, 94, 1, 113),
-                                            errors: vec![]
-                                        },
-                                        operator: NotEqualOperator,
-                                        left: Mem(Box::new(MemberExpression {
-                                            base: BaseNode {
-                                                location: loc.get(1, 94, 1, 104),
-                                                errors: vec![]
-                                            },
-                                            object: Idt(Identifier {
-                                                base: BaseNode {
-                                                    location: loc.get(1, 94, 1, 95),
-                                                    errors: vec![]
-                                                },
-                                                name: "r".to_string()
-                                            }),
-                                            property: PkStr(StringLiteral {
-                                                base: BaseNode {
-                                                    location: loc.get(1, 96, 1, 103),
-                                                    errors: vec![]
-                                                },
-                                                value: "these".to_string()
-                                            })
-                                        })),
-                                        right: Str(StringLiteral {
-                                            base: BaseNode {
-                                                location: loc.get(1, 106, 1, 113),
-                                                errors: vec![]
-                                            },
-                                            value: "those".to_string()
-                                        })
-                                    }))
-                                })))
+                                    }
+                                )))
                             })))
                         }]
                     }))]
@@ -7524,29 +7525,29 @@ fn from_with_range() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 59),
                     errors: vec![]
                 },
-                expression: Pipe(Box::new(PipeExpression {
+                expression: Expression::PipeExpr(Box::new(PipeExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 59),
                         errors: vec![]
                     },
-                    argument: Call(Box::new(CallExpression {
+                    argument: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 32),
                             errors: vec![]
                         },
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 5),
                                 errors: vec![]
                             },
                             name: "from".to_string()
                         }),
-                        arguments: vec![Obj(Box::new(ObjectExpression {
+                        arguments: vec![Expression::Object(Box::new(ObjectExpr {
                             base: BaseNode {
                                 location: loc.get(1, 6, 1, 31),
                                 errors: vec![]
@@ -7557,14 +7558,14 @@ fn from_with_range() {
                                     location: loc.get(1, 6, 1, 31),
                                     errors: vec![]
                                 },
-                                key: PkIdt(Identifier {
+                                key: PropertyKey::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 6, 1, 12),
                                         errors: vec![]
                                     },
                                     name: "bucket".to_string()
                                 }),
-                                value: Some(Str(StringLiteral {
+                                value: Some(Expression::StringLit(StringLit {
                                     base: BaseNode {
                                         location: loc.get(1, 13, 1, 31),
                                         errors: vec![]
@@ -7574,19 +7575,19 @@ fn from_with_range() {
                             }]
                         }))]
                     })),
-                    call: CallExpression {
+                    call: CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 34, 1, 59),
                             errors: vec![]
                         },
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 34, 1, 39),
                                 errors: vec![]
                             },
                             name: "range".to_string()
                         }),
-                        arguments: vec![Obj(Box::new(ObjectExpression {
+                        arguments: vec![Expression::Object(Box::new(ObjectExpr {
                             base: BaseNode {
                                 location: loc.get(1, 40, 1, 58),
                                 errors: vec![]
@@ -7598,20 +7599,20 @@ fn from_with_range() {
                                         location: loc.get(1, 40, 1, 49),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(1, 40, 1, 45),
                                             errors: vec![]
                                         },
                                         name: "start".to_string()
                                     }),
-                                    value: Some(Un(Box::new(UnaryExpression {
+                                    value: Some(Expression::Unary(Box::new(UnaryExpr {
                                         base: BaseNode {
                                             location: loc.get(1, 46, 1, 49),
                                             errors: vec![]
                                         },
-                                        operator: SubtractionOperator,
-                                        argument: Dur(DurationLiteral {
+                                        operator: Operator::SubtractionOperator,
+                                        argument: Expression::Duration(DurationLit {
                                             base: BaseNode {
                                                 location: loc.get(1, 47, 1, 49),
                                                 errors: vec![]
@@ -7628,14 +7629,14 @@ fn from_with_range() {
                                         location: loc.get(1, 51, 1, 58),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(1, 51, 1, 54),
                                             errors: vec![]
                                         },
                                         name: "end".to_string()
                                     }),
-                                    value: Some(Dur(DurationLiteral {
+                                    value: Some(Expression::Duration(DurationLit {
                                         base: BaseNode {
                                             location: loc.get(1, 55, 1, 58),
                                             errors: vec![]
@@ -7670,29 +7671,29 @@ fn from_with_limit() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 61),
                     errors: vec![]
                 },
-                expression: Pipe(Box::new(PipeExpression {
+                expression: Expression::PipeExpr(Box::new(PipeExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 61),
                         errors: vec![]
                     },
-                    argument: Call(Box::new(CallExpression {
+                    argument: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 32),
                             errors: vec![]
                         },
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 5),
                                 errors: vec![]
                             },
                             name: "from".to_string()
                         }),
-                        arguments: vec![Obj(Box::new(ObjectExpression {
+                        arguments: vec![Expression::Object(Box::new(ObjectExpr {
                             base: BaseNode {
                                 location: loc.get(1, 6, 1, 31),
                                 errors: vec![]
@@ -7703,14 +7704,14 @@ fn from_with_limit() {
                                     location: loc.get(1, 6, 1, 31),
                                     errors: vec![]
                                 },
-                                key: PkIdt(Identifier {
+                                key: PropertyKey::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 6, 1, 12),
                                         errors: vec![]
                                     },
                                     name: "bucket".to_string()
                                 }),
-                                value: Some(Str(StringLiteral {
+                                value: Some(Expression::StringLit(StringLit {
                                     base: BaseNode {
                                         location: loc.get(1, 13, 1, 31),
                                         errors: vec![]
@@ -7720,19 +7721,19 @@ fn from_with_limit() {
                             }]
                         }))]
                     })),
-                    call: CallExpression {
+                    call: CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 34, 1, 61),
                             errors: vec![]
                         },
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 34, 1, 39),
                                 errors: vec![]
                             },
                             name: "limit".to_string()
                         }),
-                        arguments: vec![Obj(Box::new(ObjectExpression {
+                        arguments: vec![Expression::Object(Box::new(ObjectExpr {
                             base: BaseNode {
                                 location: loc.get(1, 40, 1, 60),
                                 errors: vec![]
@@ -7744,14 +7745,14 @@ fn from_with_limit() {
                                         location: loc.get(1, 40, 1, 49),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(1, 40, 1, 45),
                                             errors: vec![]
                                         },
                                         name: "limit".to_string()
                                     }),
-                                    value: Some(Int(IntegerLiteral {
+                                    value: Some(Expression::Integer(IntegerLit {
                                         base: BaseNode {
                                             location: loc.get(1, 46, 1, 49),
                                             errors: vec![]
@@ -7764,14 +7765,14 @@ fn from_with_limit() {
                                         location: loc.get(1, 51, 1, 60),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(1, 51, 1, 57),
                                             errors: vec![]
                                         },
                                         name: "offset".to_string()
                                     }),
-                                    value: Some(Int(IntegerLiteral {
+                                    value: Some(Expression::Integer(IntegerLit {
                                         base: BaseNode {
                                             location: loc.get(1, 58, 1, 60),
                                             errors: vec![]
@@ -7807,34 +7808,34 @@ fn from_with_range_and_count() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 3, 17),
                     errors: vec![]
                 },
-                expression: Pipe(Box::new(PipeExpression {
+                expression: Expression::PipeExpr(Box::new(PipeExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 3, 17),
                         errors: vec![]
                     },
-                    argument: Pipe(Box::new(PipeExpression {
+                    argument: Expression::PipeExpr(Box::new(PipeExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 2, 36),
                             errors: vec![]
                         },
-                        argument: Call(Box::new(CallExpression {
+                        argument: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 28),
                                 errors: vec![]
                             },
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 1, 1, 5),
                                     errors: vec![]
                                 },
                                 name: "from".to_string()
                             }),
-                            arguments: vec![Obj(Box::new(ObjectExpression {
+                            arguments: vec![Expression::Object(Box::new(ObjectExpr {
                                 base: BaseNode {
                                     location: loc.get(1, 6, 1, 27),
                                     errors: vec![]
@@ -7845,14 +7846,14 @@ fn from_with_range_and_count() {
                                         location: loc.get(1, 6, 1, 27),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(1, 6, 1, 12),
                                             errors: vec![]
                                         },
                                         name: "bucket".to_string()
                                     }),
-                                    value: Some(Str(StringLiteral {
+                                    value: Some(Expression::StringLit(StringLit {
                                         base: BaseNode {
                                             location: loc.get(1, 13, 1, 27),
                                             errors: vec![]
@@ -7862,19 +7863,19 @@ fn from_with_range_and_count() {
                                 }]
                             }))]
                         })),
-                        call: CallExpression {
+                        call: CallExpr {
                             base: BaseNode {
                                 location: loc.get(2, 10, 2, 36),
                                 errors: vec![]
                             },
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(2, 10, 2, 15),
                                     errors: vec![]
                                 },
                                 name: "range".to_string()
                             }),
-                            arguments: vec![Obj(Box::new(ObjectExpression {
+                            arguments: vec![Expression::Object(Box::new(ObjectExpr {
                                 base: BaseNode {
                                     location: loc.get(2, 16, 2, 35),
                                     errors: vec![]
@@ -7886,20 +7887,20 @@ fn from_with_range_and_count() {
                                             location: loc.get(2, 16, 2, 25),
                                             errors: vec![]
                                         },
-                                        key: PkIdt(Identifier {
+                                        key: PropertyKey::Identifier(Identifier {
                                             base: BaseNode {
                                                 location: loc.get(2, 16, 2, 21),
                                                 errors: vec![]
                                             },
                                             name: "start".to_string()
                                         }),
-                                        value: Some(Un(Box::new(UnaryExpression {
+                                        value: Some(Expression::Unary(Box::new(UnaryExpr {
                                             base: BaseNode {
                                                 location: loc.get(2, 22, 2, 25),
                                                 errors: vec![]
                                             },
-                                            operator: SubtractionOperator,
-                                            argument: Dur(DurationLiteral {
+                                            operator: Operator::SubtractionOperator,
+                                            argument: Expression::Duration(DurationLit {
                                                 base: BaseNode {
                                                     location: loc.get(2, 23, 2, 25),
                                                     errors: vec![]
@@ -7916,20 +7917,20 @@ fn from_with_range_and_count() {
                                             location: loc.get(2, 27, 2, 35),
                                             errors: vec![]
                                         },
-                                        key: PkIdt(Identifier {
+                                        key: PropertyKey::Identifier(Identifier {
                                             base: BaseNode {
                                                 location: loc.get(2, 27, 2, 31),
                                                 errors: vec![]
                                             },
                                             name: "stop".to_string()
                                         }),
-                                        value: Some(Un(Box::new(UnaryExpression {
+                                        value: Some(Expression::Unary(Box::new(UnaryExpr {
                                             base: BaseNode {
                                                 location: loc.get(2, 32, 2, 35),
                                                 errors: vec![]
                                             },
-                                            operator: SubtractionOperator,
-                                            argument: Dur(DurationLiteral {
+                                            operator: Operator::SubtractionOperator,
+                                            argument: Expression::Duration(DurationLit {
                                                 base: BaseNode {
                                                     location: loc.get(2, 33, 2, 35),
                                                     errors: vec![]
@@ -7945,12 +7946,12 @@ fn from_with_range_and_count() {
                             }))]
                         }
                     })),
-                    call: CallExpression {
+                    call: CallExpr {
                         base: BaseNode {
                             location: loc.get(3, 10, 3, 17),
                             errors: vec![]
                         },
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(3, 10, 3, 15),
                                 errors: vec![]
@@ -7985,39 +7986,39 @@ fn from_with_range_limit_and_count() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 4, 17),
                     errors: vec![]
                 },
-                expression: Pipe(Box::new(PipeExpression {
+                expression: Expression::PipeExpr(Box::new(PipeExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 4, 17),
                         errors: vec![]
                     },
-                    argument: Pipe(Box::new(PipeExpression {
+                    argument: Expression::PipeExpr(Box::new(PipeExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 3, 21),
                             errors: vec![]
                         },
-                        argument: Pipe(Box::new(PipeExpression {
+                        argument: Expression::PipeExpr(Box::new(PipeExpr {
                             base: BaseNode {
                                 location: loc.get(1, 1, 2, 36),
                                 errors: vec![]
                             },
-                            argument: Call(Box::new(CallExpression {
+                            argument: Expression::Call(Box::new(CallExpr {
                                 base: BaseNode {
                                     location: loc.get(1, 1, 1, 28),
                                     errors: vec![]
                                 },
-                                callee: Idt(Identifier {
+                                callee: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 1, 1, 5),
                                         errors: vec![]
                                     },
                                     name: "from".to_string()
                                 }),
-                                arguments: vec![Obj(Box::new(ObjectExpression {
+                                arguments: vec![Expression::Object(Box::new(ObjectExpr {
                                     base: BaseNode {
                                         location: loc.get(1, 6, 1, 27),
                                         errors: vec![]
@@ -8028,14 +8029,14 @@ fn from_with_range_limit_and_count() {
                                             location: loc.get(1, 6, 1, 27),
                                             errors: vec![]
                                         },
-                                        key: PkIdt(Identifier {
+                                        key: PropertyKey::Identifier(Identifier {
                                             base: BaseNode {
                                                 location: loc.get(1, 6, 1, 12),
                                                 errors: vec![]
                                             },
                                             name: "bucket".to_string()
                                         }),
-                                        value: Some(Str(StringLiteral {
+                                        value: Some(Expression::StringLit(StringLit {
                                             base: BaseNode {
                                                 location: loc.get(1, 13, 1, 27),
                                                 errors: vec![]
@@ -8045,19 +8046,19 @@ fn from_with_range_limit_and_count() {
                                     }]
                                 }))]
                             })),
-                            call: CallExpression {
+                            call: CallExpr {
                                 base: BaseNode {
                                     location: loc.get(2, 10, 2, 36),
                                     errors: vec![]
                                 },
-                                callee: Idt(Identifier {
+                                callee: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(2, 10, 2, 15),
                                         errors: vec![]
                                     },
                                     name: "range".to_string()
                                 }),
-                                arguments: vec![Obj(Box::new(ObjectExpression {
+                                arguments: vec![Expression::Object(Box::new(ObjectExpr {
                                     base: BaseNode {
                                         location: loc.get(2, 16, 2, 35),
                                         errors: vec![]
@@ -8069,20 +8070,20 @@ fn from_with_range_limit_and_count() {
                                                 location: loc.get(2, 16, 2, 25),
                                                 errors: vec![]
                                             },
-                                            key: PkIdt(Identifier {
+                                            key: PropertyKey::Identifier(Identifier {
                                                 base: BaseNode {
                                                     location: loc.get(2, 16, 2, 21),
                                                     errors: vec![]
                                                 },
                                                 name: "start".to_string()
                                             }),
-                                            value: Some(Un(Box::new(UnaryExpression {
+                                            value: Some(Expression::Unary(Box::new(UnaryExpr {
                                                 base: BaseNode {
                                                     location: loc.get(2, 22, 2, 25),
                                                     errors: vec![]
                                                 },
-                                                operator: SubtractionOperator,
-                                                argument: Dur(DurationLiteral {
+                                                operator: Operator::SubtractionOperator,
+                                                argument: Expression::Duration(DurationLit {
                                                     base: BaseNode {
                                                         location: loc.get(2, 23, 2, 25),
                                                         errors: vec![]
@@ -8099,20 +8100,20 @@ fn from_with_range_limit_and_count() {
                                                 location: loc.get(2, 27, 2, 35),
                                                 errors: vec![]
                                             },
-                                            key: PkIdt(Identifier {
+                                            key: PropertyKey::Identifier(Identifier {
                                                 base: BaseNode {
                                                     location: loc.get(2, 27, 2, 31),
                                                     errors: vec![]
                                                 },
                                                 name: "stop".to_string()
                                             }),
-                                            value: Some(Un(Box::new(UnaryExpression {
+                                            value: Some(Expression::Unary(Box::new(UnaryExpr {
                                                 base: BaseNode {
                                                     location: loc.get(2, 32, 2, 35),
                                                     errors: vec![]
                                                 },
-                                                operator: SubtractionOperator,
-                                                argument: Dur(DurationLiteral {
+                                                operator: Operator::SubtractionOperator,
+                                                argument: Expression::Duration(DurationLit {
                                                     base: BaseNode {
                                                         location: loc.get(2, 33, 2, 35),
                                                         errors: vec![]
@@ -8128,19 +8129,19 @@ fn from_with_range_limit_and_count() {
                                 }))]
                             }
                         })),
-                        call: CallExpression {
+                        call: CallExpr {
                             base: BaseNode {
                                 location: loc.get(3, 10, 3, 21),
                                 errors: vec![]
                             },
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(3, 10, 3, 15),
                                     errors: vec![]
                                 },
                                 name: "limit".to_string()
                             }),
-                            arguments: vec![Obj(Box::new(ObjectExpression {
+                            arguments: vec![Expression::Object(Box::new(ObjectExpr {
                                 base: BaseNode {
                                     location: loc.get(3, 16, 3, 20),
                                     errors: vec![]
@@ -8151,14 +8152,14 @@ fn from_with_range_limit_and_count() {
                                         location: loc.get(3, 16, 3, 20),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(3, 16, 3, 17),
                                             errors: vec![]
                                         },
                                         name: "n".to_string()
                                     }),
-                                    value: Some(Int(IntegerLiteral {
+                                    value: Some(Expression::Integer(IntegerLit {
                                         base: BaseNode {
                                             location: loc.get(3, 18, 3, 20),
                                             errors: vec![]
@@ -8169,12 +8170,12 @@ fn from_with_range_limit_and_count() {
                             }))]
                         }
                     })),
-                    call: CallExpression {
+                    call: CallExpr {
                         base: BaseNode {
                             location: loc.get(4, 10, 4, 17),
                             errors: vec![]
                         },
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(4, 10, 4, 15),
                                 errors: vec![]
@@ -8210,7 +8211,7 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
             package: None,
             imports: vec![],
             body: vec![
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(2, 1, 2, 51),
                         errors: vec![]
@@ -8222,24 +8223,24 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                         },
                         name: "a".to_string()
                     },
-                    init: Pipe(Box::new(PipeExpression {
+                    init: Expression::PipeExpr(Box::new(PipeExpr {
                         base: BaseNode {
                             location: loc.get(2, 5, 2, 51),
                             errors: vec![]
                         },
-                        argument: Call(Box::new(CallExpression {
+                        argument: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(2, 5, 2, 31),
                                 errors: vec![]
                             },
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(2, 5, 2, 9),
                                     errors: vec![]
                                 },
                                 name: "from".to_string()
                             }),
-                            arguments: vec![Obj(Box::new(ObjectExpression {
+                            arguments: vec![Expression::Object(Box::new(ObjectExpr {
                                 base: BaseNode {
                                     location: loc.get(2, 10, 2, 30),
                                     errors: vec![]
@@ -8250,14 +8251,14 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                                         location: loc.get(2, 10, 2, 30),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(2, 10, 2, 16),
                                             errors: vec![]
                                         },
                                         name: "bucket".to_string()
                                     }),
-                                    value: Some(Str(StringLiteral {
+                                    value: Some(Expression::StringLit(StringLit {
                                         base: BaseNode {
                                             location: loc.get(2, 17, 2, 30),
                                             errors: vec![]
@@ -8267,19 +8268,19 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                                 }]
                             }))]
                         })),
-                        call: CallExpression {
+                        call: CallExpr {
                             base: BaseNode {
                                 location: loc.get(2, 35, 2, 51),
                                 errors: vec![]
                             },
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(2, 35, 2, 40),
                                     errors: vec![]
                                 },
                                 name: "range".to_string()
                             }),
-                            arguments: vec![Obj(Box::new(ObjectExpression {
+                            arguments: vec![Expression::Object(Box::new(ObjectExpr {
                                 base: BaseNode {
                                     location: loc.get(2, 41, 2, 50),
                                     errors: vec![]
@@ -8290,20 +8291,20 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                                         location: loc.get(2, 41, 2, 50),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(2, 41, 2, 46),
                                             errors: vec![]
                                         },
                                         name: "start".to_string()
                                     }),
-                                    value: Some(Un(Box::new(UnaryExpression {
+                                    value: Some(Expression::Unary(Box::new(UnaryExpr {
                                         base: BaseNode {
                                             location: loc.get(2, 47, 2, 50),
                                             errors: vec![]
                                         },
-                                        operator: SubtractionOperator,
-                                        argument: Dur(DurationLiteral {
+                                        operator: Operator::SubtractionOperator,
+                                        argument: Expression::Duration(DurationLit {
                                             base: BaseNode {
                                                 location: loc.get(2, 48, 2, 50),
                                                 errors: vec![]
@@ -8319,7 +8320,7 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                         }
                     }))
                 }),
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(3, 1, 3, 51),
                         errors: vec![]
@@ -8331,24 +8332,24 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                         },
                         name: "b".to_string()
                     },
-                    init: Pipe(Box::new(PipeExpression {
+                    init: Expression::PipeExpr(Box::new(PipeExpr {
                         base: BaseNode {
                             location: loc.get(3, 5, 3, 51),
                             errors: vec![]
                         },
-                        argument: Call(Box::new(CallExpression {
+                        argument: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(3, 5, 3, 31),
                                 errors: vec![]
                             },
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(3, 5, 3, 9),
                                     errors: vec![]
                                 },
                                 name: "from".to_string()
                             }),
-                            arguments: vec![Obj(Box::new(ObjectExpression {
+                            arguments: vec![Expression::Object(Box::new(ObjectExpr {
                                 base: BaseNode {
                                     location: loc.get(3, 10, 3, 30),
                                     errors: vec![]
@@ -8359,14 +8360,14 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                                         location: loc.get(3, 10, 3, 30),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(3, 10, 3, 16),
                                             errors: vec![]
                                         },
                                         name: "bucket".to_string()
                                     }),
-                                    value: Some(Str(StringLiteral {
+                                    value: Some(Expression::StringLit(StringLit {
                                         base: BaseNode {
                                             location: loc.get(3, 17, 3, 30),
                                             errors: vec![]
@@ -8376,19 +8377,19 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                                 }]
                             }))]
                         })),
-                        call: CallExpression {
+                        call: CallExpr {
                             base: BaseNode {
                                 location: loc.get(3, 35, 3, 51),
                                 errors: vec![]
                             },
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(3, 35, 3, 40),
                                     errors: vec![]
                                 },
                                 name: "range".to_string()
                             }),
-                            arguments: vec![Obj(Box::new(ObjectExpression {
+                            arguments: vec![Expression::Object(Box::new(ObjectExpr {
                                 base: BaseNode {
                                     location: loc.get(3, 41, 3, 50),
                                     errors: vec![]
@@ -8399,20 +8400,20 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                                         location: loc.get(3, 41, 3, 50),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(3, 41, 3, 46),
                                             errors: vec![]
                                         },
                                         name: "start".to_string()
                                     }),
-                                    value: Some(Un(Box::new(UnaryExpression {
+                                    value: Some(Expression::Unary(Box::new(UnaryExpr {
                                         base: BaseNode {
                                             location: loc.get(3, 47, 3, 50),
                                             errors: vec![]
                                         },
-                                        operator: SubtractionOperator,
-                                        argument: Dur(DurationLiteral {
+                                        operator: Operator::SubtractionOperator,
+                                        argument: Expression::Duration(DurationLit {
                                             base: BaseNode {
                                                 location: loc.get(3, 48, 3, 50),
                                                 errors: vec![]
@@ -8428,24 +8429,24 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                         }
                     }))
                 }),
-                Expr(ExpressionStatement {
+                Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(4, 1, 4, 72),
                         errors: vec![]
                     },
-                    expression: Call(Box::new(CallExpression {
+                    expression: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(4, 1, 4, 72),
                             errors: vec![]
                         },
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(4, 1, 4, 5),
                                 errors: vec![]
                             },
                             name: "join".to_string()
                         }),
-                        arguments: vec![Obj(Box::new(ObjectExpression {
+                        arguments: vec![Expression::Object(Box::new(ObjectExpr {
                             base: BaseNode {
                                 location: loc.get(4, 6, 4, 71),
                                 errors: vec![]
@@ -8457,27 +8458,27 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                                         location: loc.get(4, 6, 4, 18),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(4, 6, 4, 12),
                                             errors: vec![]
                                         },
                                         name: "tables".to_string()
                                     }),
-                                    value: Some(Arr(Box::new(ArrayExpression {
+                                    value: Some(Expression::Array(Box::new(ArrayExpr {
                                         base: BaseNode {
                                             location: loc.get(4, 13, 4, 18),
                                             errors: vec![]
                                         },
                                         elements: vec![
-                                            Idt(Identifier {
+                                            Expression::Identifier(Identifier {
                                                 base: BaseNode {
                                                     location: loc.get(4, 14, 4, 15),
                                                     errors: vec![]
                                                 },
                                                 name: "a".to_string()
                                             }),
-                                            Idt(Identifier {
+                                            Expression::Identifier(Identifier {
                                                 base: BaseNode {
                                                     location: loc.get(4, 16, 4, 17),
                                                     errors: vec![]
@@ -8492,19 +8493,19 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                                         location: loc.get(4, 20, 4, 31),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(4, 20, 4, 22),
                                             errors: vec![]
                                         },
                                         name: "on".to_string()
                                     }),
-                                    value: Some(Arr(Box::new(ArrayExpression {
+                                    value: Some(Expression::Array(Box::new(ArrayExpr {
                                         base: BaseNode {
                                             location: loc.get(4, 23, 4, 31),
                                             errors: vec![]
                                         },
-                                        elements: vec![Str(StringLiteral {
+                                        elements: vec![Expression::StringLit(StringLit {
                                             base: BaseNode {
                                                 location: loc.get(4, 24, 4, 30),
                                                 errors: vec![]
@@ -8518,14 +8519,14 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                                         location: loc.get(4, 33, 4, 71),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(4, 33, 4, 35),
                                             errors: vec![]
                                         },
                                         name: "fn".to_string()
                                     }),
-                                    value: Some(Fun(Box::new(FunctionExpression {
+                                    value: Some(Expression::Function(Box::new(FunctionExpr {
                                         base: BaseNode {
                                             location: loc.get(4, 37, 4, 71),
                                             errors: vec![]
@@ -8536,7 +8537,7 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                                                     location: loc.get(4, 38, 4, 39),
                                                     errors: vec![]
                                                 },
-                                                key: PkIdt(Identifier {
+                                                key: PropertyKey::Identifier(Identifier {
                                                     base: BaseNode {
                                                         location: loc.get(4, 38, 4, 39),
                                                         errors: vec![]
@@ -8550,7 +8551,7 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                                                     location: loc.get(4, 40, 4, 41),
                                                     errors: vec![]
                                                 },
-                                                key: PkIdt(Identifier {
+                                                key: PropertyKey::Identifier(Identifier {
                                                     base: BaseNode {
                                                         location: loc.get(4, 40, 4, 41),
                                                         errors: vec![]
@@ -8560,53 +8561,55 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                                                 value: None
                                             }
                                         ],
-                                        body: FExpr(Bin(Box::new(BinaryExpression {
-                                            base: BaseNode {
-                                                location: loc.get(4, 46, 4, 71),
-                                                errors: vec![]
-                                            },
-                                            operator: AdditionOperator,
-                                            left: Mem(Box::new(MemberExpression {
+                                        body: FunctionBody::Expr(Expression::Binary(Box::new(
+                                            BinaryExpr {
                                                 base: BaseNode {
-                                                    location: loc.get(4, 46, 4, 57),
+                                                    location: loc.get(4, 46, 4, 71),
                                                     errors: vec![]
                                                 },
-                                                object: Idt(Identifier {
+                                                operator: Operator::AdditionOperator,
+                                                left: Expression::Member(Box::new(MemberExpr {
                                                     base: BaseNode {
-                                                        location: loc.get(4, 46, 4, 47),
+                                                        location: loc.get(4, 46, 4, 57),
                                                         errors: vec![]
                                                     },
-                                                    name: "a".to_string()
-                                                }),
-                                                property: PkStr(StringLiteral {
+                                                    object: Expression::Identifier(Identifier {
+                                                        base: BaseNode {
+                                                            location: loc.get(4, 46, 4, 47),
+                                                            errors: vec![]
+                                                        },
+                                                        name: "a".to_string()
+                                                    }),
+                                                    property: PropertyKey::StringLit(StringLit {
+                                                        base: BaseNode {
+                                                            location: loc.get(4, 48, 4, 56),
+                                                            errors: vec![]
+                                                        },
+                                                        value: "_field".to_string()
+                                                    })
+                                                })),
+                                                right: Expression::Member(Box::new(MemberExpr {
                                                     base: BaseNode {
-                                                        location: loc.get(4, 48, 4, 56),
+                                                        location: loc.get(4, 60, 4, 71),
                                                         errors: vec![]
                                                     },
-                                                    value: "_field".to_string()
-                                                })
-                                            })),
-                                            right: Mem(Box::new(MemberExpression {
-                                                base: BaseNode {
-                                                    location: loc.get(4, 60, 4, 71),
-                                                    errors: vec![]
-                                                },
-                                                object: Idt(Identifier {
-                                                    base: BaseNode {
-                                                        location: loc.get(4, 60, 4, 61),
-                                                        errors: vec![]
-                                                    },
-                                                    name: "b".to_string()
-                                                }),
-                                                property: PkStr(StringLiteral {
-                                                    base: BaseNode {
-                                                        location: loc.get(4, 62, 4, 70),
-                                                        errors: vec![]
-                                                    },
-                                                    value: "_field".to_string()
-                                                })
-                                            }))
-                                        })))
+                                                    object: Expression::Identifier(Identifier {
+                                                        base: BaseNode {
+                                                            location: loc.get(4, 60, 4, 61),
+                                                            errors: vec![]
+                                                        },
+                                                        name: "b".to_string()
+                                                    }),
+                                                    property: PropertyKey::StringLit(StringLit {
+                                                        base: BaseNode {
+                                                            location: loc.get(4, 62, 4, 70),
+                                                            errors: vec![]
+                                                        },
+                                                        value: "_field".to_string()
+                                                    })
+                                                }))
+                                            }
+                                        )))
                                     })))
                                 }
                             ]
@@ -8645,7 +8648,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
             package: None,
             imports: vec![],
             body: vec![
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(2, 1, 4, 21),
                         errors: vec![]
@@ -8657,29 +8660,29 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                         },
                         name: "a".to_string()
                     },
-                    init: Pipe(Box::new(PipeExpression {
+                    init: Expression::PipeExpr(Box::new(PipeExpr {
                         base: BaseNode {
                             location: loc.get(2, 5, 4, 21),
                             errors: vec![]
                         },
-                        argument: Pipe(Box::new(PipeExpression {
+                        argument: Expression::PipeExpr(Box::new(PipeExpr {
                             base: BaseNode {
                                 location: loc.get(2, 5, 3, 48),
                                 errors: vec![]
                             },
-                            argument: Call(Box::new(CallExpression {
+                            argument: Expression::Call(Box::new(CallExpr {
                                 base: BaseNode {
                                     location: loc.get(2, 5, 2, 32),
                                     errors: vec![]
                                 },
-                                callee: Idt(Identifier {
+                                callee: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(2, 5, 2, 9),
                                         errors: vec![]
                                     },
                                     name: "from".to_string()
                                 }),
-                                arguments: vec![Obj(Box::new(ObjectExpression {
+                                arguments: vec![Expression::Object(Box::new(ObjectExpr {
                                     base: BaseNode {
                                         location: loc.get(2, 10, 2, 31),
                                         errors: vec![]
@@ -8690,14 +8693,14 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                             location: loc.get(2, 10, 2, 31),
                                             errors: vec![]
                                         },
-                                        key: PkIdt(Identifier {
+                                        key: PropertyKey::Identifier(Identifier {
                                             base: BaseNode {
                                                 location: loc.get(2, 10, 2, 16),
                                                 errors: vec![]
                                             },
                                             name: "bucket".to_string()
                                         }),
-                                        value: Some(Str(StringLiteral {
+                                        value: Some(Expression::StringLit(StringLit {
                                             base: BaseNode {
                                                 location: loc.get(2, 17, 2, 31),
                                                 errors: vec![]
@@ -8707,19 +8710,19 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                     }]
                                 }))]
                             })),
-                            call: CallExpression {
+                            call: CallExpr {
                                 base: BaseNode {
                                     location: loc.get(3, 5, 3, 48),
                                     errors: vec![]
                                 },
-                                callee: Idt(Identifier {
+                                callee: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(3, 5, 3, 11),
                                         errors: vec![]
                                     },
                                     name: "filter".to_string()
                                 }),
-                                arguments: vec![Obj(Box::new(ObjectExpression {
+                                arguments: vec![Expression::Object(Box::new(ObjectExpr {
                                     base: BaseNode {
                                         location: loc.get(3, 12, 3, 47),
                                         errors: vec![]
@@ -8730,14 +8733,14 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                             location: loc.get(3, 12, 3, 47),
                                             errors: vec![]
                                         },
-                                        key: PkIdt(Identifier {
+                                        key: PropertyKey::Identifier(Identifier {
                                             base: BaseNode {
                                                 location: loc.get(3, 12, 3, 14),
                                                 errors: vec![]
                                             },
                                             name: "fn".to_string()
                                         }),
-                                        value: Some(Fun(Box::new(FunctionExpression {
+                                        value: Some(Expression::Function(Box::new(FunctionExpr {
                                             base: BaseNode {
                                                 location: loc.get(3, 16, 3, 47),
                                                 errors: vec![]
@@ -8747,7 +8750,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                                     location: loc.get(3, 17, 3, 18),
                                                     errors: vec![]
                                                 },
-                                                key: PkIdt(Identifier {
+                                                key: PropertyKey::Identifier(Identifier {
                                                     base: BaseNode {
                                                         location: loc.get(3, 17, 3, 18),
                                                         errors: vec![]
@@ -8756,58 +8759,69 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                                 }),
                                                 value: None
                                             }],
-                                            body: FExpr(Bin(Box::new(BinaryExpression {
-                                                base: BaseNode {
-                                                    location: loc.get(3, 23, 3, 47),
-                                                    errors: vec![]
-                                                },
-                                                operator: EqualOperator,
-                                                left: Mem(Box::new(MemberExpression {
+                                            body: FunctionBody::Expr(Expression::Binary(Box::new(
+                                                BinaryExpr {
                                                     base: BaseNode {
-                                                        location: loc.get(3, 23, 3, 40),
+                                                        location: loc.get(3, 23, 3, 47),
                                                         errors: vec![]
                                                     },
-                                                    object: Idt(Identifier {
+                                                    operator: Operator::EqualOperator,
+                                                    left: Expression::Member(Box::new(
+                                                        MemberExpr {
+                                                            base: BaseNode {
+                                                                location: loc.get(3, 23, 3, 40),
+                                                                errors: vec![]
+                                                            },
+                                                            object: Expression::Identifier(
+                                                                Identifier {
+                                                                    base: BaseNode {
+                                                                        location: loc
+                                                                            .get(3, 23, 3, 24),
+                                                                        errors: vec![]
+                                                                    },
+                                                                    name: "r".to_string()
+                                                                }
+                                                            ),
+                                                            property: PropertyKey::StringLit(
+                                                                StringLit {
+                                                                    base: BaseNode {
+                                                                        location: loc
+                                                                            .get(3, 25, 3, 39),
+                                                                        errors: vec![]
+                                                                    },
+                                                                    value: "_measurement"
+                                                                        .to_string()
+                                                                }
+                                                            )
+                                                        }
+                                                    )),
+                                                    right: Expression::StringLit(StringLit {
                                                         base: BaseNode {
-                                                            location: loc.get(3, 23, 3, 24),
+                                                            location: loc.get(3, 44, 3, 47),
                                                             errors: vec![]
                                                         },
-                                                        name: "r".to_string()
-                                                    }),
-                                                    property: PkStr(StringLiteral {
-                                                        base: BaseNode {
-                                                            location: loc.get(3, 25, 3, 39),
-                                                            errors: vec![]
-                                                        },
-                                                        value: "_measurement".to_string()
+                                                        value: "a".to_string()
                                                     })
-                                                })),
-                                                right: Str(StringLiteral {
-                                                    base: BaseNode {
-                                                        location: loc.get(3, 44, 3, 47),
-                                                        errors: vec![]
-                                                    },
-                                                    value: "a".to_string()
-                                                })
-                                            })))
+                                                }
+                                            )))
                                         })))
                                     }]
                                 }))]
                             }
                         })),
-                        call: CallExpression {
+                        call: CallExpr {
                             base: BaseNode {
                                 location: loc.get(4, 5, 4, 21),
                                 errors: vec![]
                             },
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(4, 5, 4, 10),
                                     errors: vec![]
                                 },
                                 name: "range".to_string()
                             }),
-                            arguments: vec![Obj(Box::new(ObjectExpression {
+                            arguments: vec![Expression::Object(Box::new(ObjectExpr {
                                 base: BaseNode {
                                     location: loc.get(4, 11, 4, 20),
                                     errors: vec![]
@@ -8818,20 +8832,20 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                         location: loc.get(4, 11, 4, 20),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(4, 11, 4, 16),
                                             errors: vec![]
                                         },
                                         name: "start".to_string()
                                     }),
-                                    value: Some(Un(Box::new(UnaryExpression {
+                                    value: Some(Expression::Unary(Box::new(UnaryExpr {
                                         base: BaseNode {
                                             location: loc.get(4, 17, 4, 20),
                                             errors: vec![]
                                         },
-                                        operator: SubtractionOperator,
-                                        argument: Dur(DurationLiteral {
+                                        operator: Operator::SubtractionOperator,
+                                        argument: Expression::Duration(DurationLit {
                                             base: BaseNode {
                                                 location: loc.get(4, 18, 4, 20),
                                                 errors: vec![]
@@ -8847,7 +8861,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                         }
                     }))
                 }),
-                Var(VariableAssignment {
+                Statement::Variable(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(6, 1, 8, 21),
                         errors: vec![]
@@ -8859,29 +8873,29 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                         },
                         name: "b".to_string()
                     },
-                    init: Pipe(Box::new(PipeExpression {
+                    init: Expression::PipeExpr(Box::new(PipeExpr {
                         base: BaseNode {
                             location: loc.get(6, 5, 8, 21),
                             errors: vec![]
                         },
-                        argument: Pipe(Box::new(PipeExpression {
+                        argument: Expression::PipeExpr(Box::new(PipeExpr {
                             base: BaseNode {
                                 location: loc.get(6, 5, 7, 48),
                                 errors: vec![]
                             },
-                            argument: Call(Box::new(CallExpression {
+                            argument: Expression::Call(Box::new(CallExpr {
                                 base: BaseNode {
                                     location: loc.get(6, 5, 6, 32),
                                     errors: vec![]
                                 },
-                                callee: Idt(Identifier {
+                                callee: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(6, 5, 6, 9),
                                         errors: vec![]
                                     },
                                     name: "from".to_string()
                                 }),
-                                arguments: vec![Obj(Box::new(ObjectExpression {
+                                arguments: vec![Expression::Object(Box::new(ObjectExpr {
                                     base: BaseNode {
                                         location: loc.get(6, 10, 6, 31),
                                         errors: vec![]
@@ -8892,14 +8906,14 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                             location: loc.get(6, 10, 6, 31),
                                             errors: vec![]
                                         },
-                                        key: PkIdt(Identifier {
+                                        key: PropertyKey::Identifier(Identifier {
                                             base: BaseNode {
                                                 location: loc.get(6, 10, 6, 16),
                                                 errors: vec![]
                                             },
                                             name: "bucket".to_string()
                                         }),
-                                        value: Some(Str(StringLiteral {
+                                        value: Some(Expression::StringLit(StringLit {
                                             base: BaseNode {
                                                 location: loc.get(6, 17, 6, 31),
                                                 errors: vec![]
@@ -8909,19 +8923,19 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                     }]
                                 }))]
                             })),
-                            call: CallExpression {
+                            call: CallExpr {
                                 base: BaseNode {
                                     location: loc.get(7, 5, 7, 48),
                                     errors: vec![]
                                 },
-                                callee: Idt(Identifier {
+                                callee: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(7, 5, 7, 11),
                                         errors: vec![]
                                     },
                                     name: "filter".to_string()
                                 }),
-                                arguments: vec![Obj(Box::new(ObjectExpression {
+                                arguments: vec![Expression::Object(Box::new(ObjectExpr {
                                     base: BaseNode {
                                         location: loc.get(7, 12, 7, 47),
                                         errors: vec![]
@@ -8932,14 +8946,14 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                             location: loc.get(7, 12, 7, 47),
                                             errors: vec![]
                                         },
-                                        key: PkIdt(Identifier {
+                                        key: PropertyKey::Identifier(Identifier {
                                             base: BaseNode {
                                                 location: loc.get(7, 12, 7, 14),
                                                 errors: vec![]
                                             },
                                             name: "fn".to_string()
                                         }),
-                                        value: Some(Fun(Box::new(FunctionExpression {
+                                        value: Some(Expression::Function(Box::new(FunctionExpr {
                                             base: BaseNode {
                                                 location: loc.get(7, 16, 7, 47),
                                                 errors: vec![]
@@ -8949,7 +8963,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                                     location: loc.get(7, 17, 7, 18),
                                                     errors: vec![]
                                                 },
-                                                key: PkIdt(Identifier {
+                                                key: PropertyKey::Identifier(Identifier {
                                                     base: BaseNode {
                                                         location: loc.get(7, 17, 7, 18),
                                                         errors: vec![]
@@ -8958,58 +8972,69 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                                 }),
                                                 value: None
                                             }],
-                                            body: FExpr(Bin(Box::new(BinaryExpression {
-                                                base: BaseNode {
-                                                    location: loc.get(7, 23, 7, 47),
-                                                    errors: vec![]
-                                                },
-                                                operator: EqualOperator,
-                                                left: Mem(Box::new(MemberExpression {
+                                            body: FunctionBody::Expr(Expression::Binary(Box::new(
+                                                BinaryExpr {
                                                     base: BaseNode {
-                                                        location: loc.get(7, 23, 7, 40),
+                                                        location: loc.get(7, 23, 7, 47),
                                                         errors: vec![]
                                                     },
-                                                    object: Idt(Identifier {
+                                                    operator: Operator::EqualOperator,
+                                                    left: Expression::Member(Box::new(
+                                                        MemberExpr {
+                                                            base: BaseNode {
+                                                                location: loc.get(7, 23, 7, 40),
+                                                                errors: vec![]
+                                                            },
+                                                            object: Expression::Identifier(
+                                                                Identifier {
+                                                                    base: BaseNode {
+                                                                        location: loc
+                                                                            .get(7, 23, 7, 24),
+                                                                        errors: vec![]
+                                                                    },
+                                                                    name: "r".to_string()
+                                                                }
+                                                            ),
+                                                            property: PropertyKey::StringLit(
+                                                                StringLit {
+                                                                    base: BaseNode {
+                                                                        location: loc
+                                                                            .get(7, 25, 7, 39),
+                                                                        errors: vec![]
+                                                                    },
+                                                                    value: "_measurement"
+                                                                        .to_string()
+                                                                }
+                                                            )
+                                                        }
+                                                    )),
+                                                    right: Expression::StringLit(StringLit {
                                                         base: BaseNode {
-                                                            location: loc.get(7, 23, 7, 24),
+                                                            location: loc.get(7, 44, 7, 47),
                                                             errors: vec![]
                                                         },
-                                                        name: "r".to_string()
-                                                    }),
-                                                    property: PkStr(StringLiteral {
-                                                        base: BaseNode {
-                                                            location: loc.get(7, 25, 7, 39),
-                                                            errors: vec![]
-                                                        },
-                                                        value: "_measurement".to_string()
+                                                        value: "b".to_string()
                                                     })
-                                                })),
-                                                right: Str(StringLiteral {
-                                                    base: BaseNode {
-                                                        location: loc.get(7, 44, 7, 47),
-                                                        errors: vec![]
-                                                    },
-                                                    value: "b".to_string()
-                                                })
-                                            })))
+                                                }
+                                            )))
                                         })))
                                     }]
                                 }))]
                             }
                         })),
-                        call: CallExpression {
+                        call: CallExpr {
                             base: BaseNode {
                                 location: loc.get(8, 5, 8, 21),
                                 errors: vec![]
                             },
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(8, 5, 8, 10),
                                     errors: vec![]
                                 },
                                 name: "range".to_string()
                             }),
-                            arguments: vec![Obj(Box::new(ObjectExpression {
+                            arguments: vec![Expression::Object(Box::new(ObjectExpr {
                                 base: BaseNode {
                                     location: loc.get(8, 11, 8, 20),
                                     errors: vec![]
@@ -9020,20 +9045,20 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                         location: loc.get(8, 11, 8, 20),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(8, 11, 8, 16),
                                             errors: vec![]
                                         },
                                         name: "start".to_string()
                                     }),
-                                    value: Some(Un(Box::new(UnaryExpression {
+                                    value: Some(Expression::Unary(Box::new(UnaryExpr {
                                         base: BaseNode {
                                             location: loc.get(8, 17, 8, 20),
                                             errors: vec![]
                                         },
-                                        operator: SubtractionOperator,
-                                        argument: Dur(DurationLiteral {
+                                        operator: Operator::SubtractionOperator,
+                                        argument: Expression::Duration(DurationLit {
                                             base: BaseNode {
                                                 location: loc.get(8, 18, 8, 20),
                                                 errors: vec![]
@@ -9049,24 +9074,24 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                         }
                     }))
                 }),
-                Expr(ExpressionStatement {
+                Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(10, 1, 10, 86),
                         errors: vec![]
                     },
-                    expression: Call(Box::new(CallExpression {
+                    expression: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(10, 1, 10, 86),
                             errors: vec![]
                         },
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(10, 1, 10, 5),
                                 errors: vec![]
                             },
                             name: "join".to_string()
                         }),
-                        arguments: vec![Obj(Box::new(ObjectExpression {
+                        arguments: vec![Expression::Object(Box::new(ObjectExpr {
                             base: BaseNode {
                                 location: loc.get(10, 6, 10, 85),
                                 errors: vec![]
@@ -9078,27 +9103,27 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                         location: loc.get(10, 6, 10, 18),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(10, 6, 10, 12),
                                             errors: vec![]
                                         },
                                         name: "tables".to_string()
                                     }),
-                                    value: Some(Arr(Box::new(ArrayExpression {
+                                    value: Some(Expression::Array(Box::new(ArrayExpr {
                                         base: BaseNode {
                                             location: loc.get(10, 13, 10, 18),
                                             errors: vec![]
                                         },
                                         elements: vec![
-                                            Idt(Identifier {
+                                            Expression::Identifier(Identifier {
                                                 base: BaseNode {
                                                     location: loc.get(10, 14, 10, 15),
                                                     errors: vec![]
                                                 },
                                                 name: "a".to_string()
                                             }),
-                                            Idt(Identifier {
+                                            Expression::Identifier(Identifier {
                                                 base: BaseNode {
                                                     location: loc.get(10, 16, 10, 17),
                                                     errors: vec![]
@@ -9113,19 +9138,19 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                         location: loc.get(10, 20, 10, 29),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(10, 20, 10, 22),
                                             errors: vec![]
                                         },
                                         name: "on".to_string()
                                     }),
-                                    value: Some(Arr(Box::new(ArrayExpression {
+                                    value: Some(Expression::Array(Box::new(ArrayExpr {
                                         base: BaseNode {
                                             location: loc.get(10, 23, 10, 29),
                                             errors: vec![]
                                         },
-                                        elements: vec![Str(StringLiteral {
+                                        elements: vec![Expression::StringLit(StringLit {
                                             base: BaseNode {
                                                 location: loc.get(10, 24, 10, 28),
                                                 errors: vec![]
@@ -9139,14 +9164,14 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                         location: loc.get(10, 31, 10, 85),
                                         errors: vec![]
                                     },
-                                    key: PkIdt(Identifier {
+                                    key: PropertyKey::Identifier(Identifier {
                                         base: BaseNode {
                                             location: loc.get(10, 31, 10, 33),
                                             errors: vec![]
                                         },
                                         name: "fn".to_string()
                                     }),
-                                    value: Some(Fun(Box::new(FunctionExpression {
+                                    value: Some(Expression::Function(Box::new(FunctionExpr {
                                         base: BaseNode {
                                             location: loc.get(10, 35, 10, 85),
                                             errors: vec![]
@@ -9157,7 +9182,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                                     location: loc.get(10, 36, 10, 37),
                                                     errors: vec![]
                                                 },
-                                                key: PkIdt(Identifier {
+                                                key: PropertyKey::Identifier(Identifier {
                                                     base: BaseNode {
                                                         location: loc.get(10, 36, 10, 37),
                                                         errors: vec![]
@@ -9171,7 +9196,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                                     location: loc.get(10, 38, 10, 39),
                                                     errors: vec![]
                                                 },
-                                                key: PkIdt(Identifier {
+                                                key: PropertyKey::Identifier(Identifier {
                                                     base: BaseNode {
                                                         location: loc.get(10, 38, 10, 39),
                                                         errors: vec![]
@@ -9181,86 +9206,120 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                                 value: None
                                             }
                                         ],
-                                        body: FExpr(Bin(Box::new(BinaryExpression {
-                                            base: BaseNode {
-                                                location: loc.get(10, 44, 10, 85),
-                                                errors: vec![]
-                                            },
-                                            operator: DivisionOperator,
-                                            left: Paren(Box::new(ParenExpression {
+                                        body: FunctionBody::Expr(Expression::Binary(Box::new(
+                                            BinaryExpr {
                                                 base: BaseNode {
-                                                    location: loc.get(10, 44, 10, 71),
+                                                    location: loc.get(10, 44, 10, 85),
                                                     errors: vec![]
                                                 },
-                                                expression: Bin(Box::new(BinaryExpression {
+                                                operator: Operator::DivisionOperator,
+                                                left: Expression::Paren(Box::new(ParenExpr {
                                                     base: BaseNode {
-                                                        location: loc.get(10, 45, 10, 70),
+                                                        location: loc.get(10, 44, 10, 71),
                                                         errors: vec![]
                                                     },
-                                                    operator: SubtractionOperator,
-                                                    left: Mem(Box::new(MemberExpression {
+                                                    expression: Expression::Binary(Box::new(
+                                                        BinaryExpr {
+                                                            base: BaseNode {
+                                                                location: loc.get(10, 45, 10, 70),
+                                                                errors: vec![]
+                                                            },
+                                                            operator: Operator::SubtractionOperator,
+                                                            left: Expression::Member(Box::new(
+                                                                MemberExpr {
+                                                                    base: BaseNode {
+                                                                        location: loc
+                                                                            .get(10, 45, 10, 56),
+                                                                        errors: vec![]
+                                                                    },
+                                                                    object: Expression::Identifier(
+                                                                        Identifier {
+                                                                            base: BaseNode {
+                                                                                location: loc.get(
+                                                                                    10, 45, 10, 46
+                                                                                ),
+                                                                                errors: vec![]
+                                                                            },
+                                                                            name: "a".to_string()
+                                                                        }
+                                                                    ),
+                                                                    property:
+                                                                        PropertyKey::StringLit(
+                                                                            StringLit {
+                                                                                base: BaseNode {
+                                                                                    location: loc
+                                                                                        .get(
+                                                                                            10, 47,
+                                                                                            10, 55
+                                                                                        ),
+                                                                                    errors: vec![]
+                                                                                },
+                                                                                value: "_field"
+                                                                                    .to_string()
+                                                                            }
+                                                                        )
+                                                                }
+                                                            )),
+                                                            right: Expression::Member(Box::new(
+                                                                MemberExpr {
+                                                                    base: BaseNode {
+                                                                        location: loc
+                                                                            .get(10, 59, 10, 70),
+                                                                        errors: vec![]
+                                                                    },
+                                                                    object: Expression::Identifier(
+                                                                        Identifier {
+                                                                            base: BaseNode {
+                                                                                location: loc.get(
+                                                                                    10, 59, 10, 60
+                                                                                ),
+                                                                                errors: vec![]
+                                                                            },
+                                                                            name: "b".to_string()
+                                                                        }
+                                                                    ),
+                                                                    property:
+                                                                        PropertyKey::StringLit(
+                                                                            StringLit {
+                                                                                base: BaseNode {
+                                                                                    location: loc
+                                                                                        .get(
+                                                                                            10, 61,
+                                                                                            10, 69
+                                                                                        ),
+                                                                                    errors: vec![]
+                                                                                },
+                                                                                value: "_field"
+                                                                                    .to_string()
+                                                                            }
+                                                                        )
+                                                                }
+                                                            ))
+                                                        }
+                                                    ))
+                                                })),
+                                                right: Expression::Member(Box::new(MemberExpr {
+                                                    base: BaseNode {
+                                                        location: loc.get(10, 74, 10, 85),
+                                                        errors: vec![]
+                                                    },
+                                                    object: Expression::Identifier(Identifier {
                                                         base: BaseNode {
-                                                            location: loc.get(10, 45, 10, 56),
+                                                            location: loc.get(10, 74, 10, 75),
                                                             errors: vec![]
                                                         },
-                                                        object: Idt(Identifier {
-                                                            base: BaseNode {
-                                                                location: loc.get(10, 45, 10, 46),
-                                                                errors: vec![]
-                                                            },
-                                                            name: "a".to_string()
-                                                        }),
-                                                        property: PkStr(StringLiteral {
-                                                            base: BaseNode {
-                                                                location: loc.get(10, 47, 10, 55),
-                                                                errors: vec![]
-                                                            },
-                                                            value: "_field".to_string()
-                                                        })
-                                                    })),
-                                                    right: Mem(Box::new(MemberExpression {
+                                                        name: "b".to_string()
+                                                    }),
+                                                    property: PropertyKey::StringLit(StringLit {
                                                         base: BaseNode {
-                                                            location: loc.get(10, 59, 10, 70),
+                                                            location: loc.get(10, 76, 10, 84),
                                                             errors: vec![]
                                                         },
-                                                        object: Idt(Identifier {
-                                                            base: BaseNode {
-                                                                location: loc.get(10, 59, 10, 60),
-                                                                errors: vec![]
-                                                            },
-                                                            name: "b".to_string()
-                                                        }),
-                                                        property: PkStr(StringLiteral {
-                                                            base: BaseNode {
-                                                                location: loc.get(10, 61, 10, 69),
-                                                                errors: vec![]
-                                                            },
-                                                            value: "_field".to_string()
-                                                        })
-                                                    }))
+                                                        value: "_field".to_string()
+                                                    })
                                                 }))
-                                            })),
-                                            right: Mem(Box::new(MemberExpression {
-                                                base: BaseNode {
-                                                    location: loc.get(10, 74, 10, 85),
-                                                    errors: vec![]
-                                                },
-                                                object: Idt(Identifier {
-                                                    base: BaseNode {
-                                                        location: loc.get(10, 74, 10, 75),
-                                                        errors: vec![]
-                                                    },
-                                                    name: "b".to_string()
-                                                }),
-                                                property: PkStr(StringLiteral {
-                                                    base: BaseNode {
-                                                        location: loc.get(10, 76, 10, 84),
-                                                        errors: vec![]
-                                                    },
-                                                    value: "_field".to_string()
-                                                })
-                                            }))
-                                        })))
+                                            }
+                                        )))
                                     })))
                                 }
                             ]
@@ -9290,7 +9349,7 @@ fn duration_literal_all_units() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 34),
                     errors: vec![]
@@ -9302,7 +9361,7 @@ fn duration_literal_all_units() {
                     },
                     name: "dur".to_string()
                 },
-                init: Dur(DurationLiteral {
+                init: Expression::Duration(DurationLit {
                     base: BaseNode {
                         location: loc.get(1, 7, 1, 34),
                         errors: vec![]
@@ -9370,7 +9429,7 @@ fn duration_literal_months() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 10),
                     errors: vec![]
@@ -9382,7 +9441,7 @@ fn duration_literal_months() {
                     },
                     name: "dur".to_string()
                 },
-                init: Dur(DurationLiteral {
+                init: Expression::Duration(DurationLit {
                     base: BaseNode {
                         location: loc.get(1, 7, 1, 10),
                         errors: vec![]
@@ -9412,7 +9471,7 @@ fn duration_literal_milliseconds() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 12),
                     errors: vec![]
@@ -9424,7 +9483,7 @@ fn duration_literal_milliseconds() {
                     },
                     name: "dur".to_string()
                 },
-                init: Dur(DurationLiteral {
+                init: Expression::Duration(DurationLit {
                     base: BaseNode {
                         location: loc.get(1, 7, 1, 12),
                         errors: vec![]
@@ -9454,7 +9513,7 @@ fn duration_literal_months_minutes_milliseconds() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 18),
                     errors: vec![]
@@ -9466,7 +9525,7 @@ fn duration_literal_months_minutes_milliseconds() {
                     },
                     name: "dur".to_string()
                 },
-                init: Dur(DurationLiteral {
+                init: Expression::Duration(DurationLit {
                     base: BaseNode {
                         location: loc.get(1, 7, 1, 18),
                         errors: vec![]
@@ -9506,7 +9565,7 @@ fn date_literal_in_the_default_location() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 17),
                     errors: vec![]
@@ -9518,12 +9577,12 @@ fn date_literal_in_the_default_location() {
                     },
                     name: "now".to_string()
                 },
-                init: Time(DateTimeLiteral {
+                init: Expression::DateTime(DateTimeLit {
                     base: BaseNode {
                         location: loc.get(1, 7, 1, 17),
                         errors: vec![]
                     },
-                    value: DateTime::parse_from_rfc3339("2018-11-29T00:00:00Z").unwrap()
+                    value: chrono::DateTime::parse_from_rfc3339("2018-11-29T00:00:00Z").unwrap()
                 })
             })]
         },
@@ -9545,7 +9604,7 @@ fn date_time_literal() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 27),
                     errors: vec![]
@@ -9557,12 +9616,12 @@ fn date_time_literal() {
                     },
                     name: "now".to_string()
                 },
-                init: Time(DateTimeLiteral {
+                init: Expression::DateTime(DateTimeLit {
                     base: BaseNode {
                         location: loc.get(1, 7, 1, 27),
                         errors: vec![]
                     },
-                    value: DateTime::parse_from_rfc3339("2018-11-29T09:00:00Z").unwrap()
+                    value: chrono::DateTime::parse_from_rfc3339("2018-11-29T09:00:00Z").unwrap()
                 })
             })]
         },
@@ -9584,7 +9643,7 @@ fn date_time_literal_with_fractional_seconds() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 37),
                     errors: vec![]
@@ -9596,12 +9655,13 @@ fn date_time_literal_with_fractional_seconds() {
                     },
                     name: "now".to_string()
                 },
-                init: Time(DateTimeLiteral {
+                init: Expression::DateTime(DateTimeLit {
                     base: BaseNode {
                         location: loc.get(1, 7, 1, 37),
                         errors: vec![]
                     },
-                    value: DateTime::parse_from_rfc3339("2018-11-29T09:00:00.100000000Z").unwrap()
+                    value: chrono::DateTime::parse_from_rfc3339("2018-11-29T09:00:00.100000000Z")
+                        .unwrap()
                 })
             })]
         },
@@ -9623,27 +9683,27 @@ fn function_call_with_unbalanced_braces() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 56),
                     errors: vec![]
                 },
-                expression: Pipe(Box::new(PipeExpression {
+                expression: Expression::PipeExpr(Box::new(PipeExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 56),
                         errors: vec![]
                     },
-                    argument: Pipe(Box::new(PipeExpression {
+                    argument: Expression::PipeExpr(Box::new(PipeExpr {
                         base: BaseNode {
                             location: loc.get(1, 1, 1, 18),
                             errors: vec![]
                         },
-                        argument: Call(Box::new(CallExpression {
+                        argument: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(1, 1, 1, 7),
                                 errors: vec![]
                             },
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 1, 1, 5),
                                     errors: vec![]
@@ -9652,12 +9712,12 @@ fn function_call_with_unbalanced_braces() {
                             }),
                             arguments: vec![]
                         })),
-                        call: CallExpression {
+                        call: CallExpr {
                             base: BaseNode {
                                 location: loc.get(1, 11, 1, 18),
                                 errors: vec![]
                             },
-                            callee: Idt(Identifier {
+                            callee: Expression::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 11, 1, 16),
                                     errors: vec![]
@@ -9667,19 +9727,19 @@ fn function_call_with_unbalanced_braces() {
                             arguments: vec![]
                         }
                     })),
-                    call: CallExpression {
+                    call: CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 22, 1, 56),
                             errors: vec![]
                         },
-                        callee: Idt(Identifier {
+                        callee: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 22, 1, 25),
                                 errors: vec![]
                             },
                             name: "map".to_string()
                         }),
-                        arguments: vec![Obj(Box::new(ObjectExpression {
+                        arguments: vec![Expression::Object(Box::new(ObjectExpr {
                             base: BaseNode {
                                 location: loc.get(1, 26, 1, 56),
                                 errors: vec![]
@@ -9690,14 +9750,14 @@ fn function_call_with_unbalanced_braces() {
                                     location: loc.get(1, 26, 1, 56),
                                     errors: vec![]
                                 },
-                                key: PkIdt(Identifier {
+                                key: PropertyKey::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 26, 1, 28),
                                         errors: vec![]
                                     },
                                     name: "fn".to_string()
                                 }),
-                                value: Some(Fun(Box::new(FunctionExpression {
+                                value: Some(Expression::Function(Box::new(FunctionExpr {
                                     base: BaseNode {
                                         location: loc.get(1, 30, 1, 56),
                                         errors: vec![]
@@ -9707,7 +9767,7 @@ fn function_call_with_unbalanced_braces() {
                                             location: loc.get(1, 31, 1, 32),
                                             errors: vec![]
                                         },
-                                        key: PkIdt(Identifier {
+                                        key: PropertyKey::Identifier(Identifier {
                                             base: BaseNode {
                                                 location: loc.get(1, 31, 1, 32),
                                                 errors: vec![]
@@ -9716,29 +9776,29 @@ fn function_call_with_unbalanced_braces() {
                                         }),
                                         value: None
                                     }],
-                                    body: FBlock(Block {
+                                    body: FunctionBody::Block(Block {
                                         base: BaseNode {
                                             location: loc.get(1, 37, 1, 56),
                                             errors: vec!["expected RBRACE, got RPAREN".to_string()]
                                         },
-                                        body: vec![Ret(ReturnStatement {
+                                        body: vec![Statement::Return(ReturnStmt {
                                             base: BaseNode {
                                                 location: loc.get(1, 39, 1, 54),
                                                 errors: vec![]
                                             },
-                                            argument: Mem(Box::new(MemberExpression {
+                                            argument: Expression::Member(Box::new(MemberExpr {
                                                 base: BaseNode {
                                                     location: loc.get(1, 46, 1, 54),
                                                     errors: vec![]
                                                 },
-                                                object: Idt(Identifier {
+                                                object: Expression::Identifier(Identifier {
                                                     base: BaseNode {
                                                         location: loc.get(1, 46, 1, 47),
                                                         errors: vec![]
                                                     },
                                                     name: "r".to_string()
                                                 }),
-                                                property: PkIdt(Identifier {
+                                                property: PropertyKey::Identifier(Identifier {
                                                     base: BaseNode {
                                                         location: loc.get(1, 48, 1, 54),
                                                         errors: vec![]
@@ -9773,12 +9833,12 @@ fn string_with_utf_8() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 12),
                     errors: vec![]
                 },
-                expression: Str(StringLiteral {
+                expression: Expression::StringLit(StringLit {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 12),
                         errors: vec![]
@@ -9805,12 +9865,12 @@ fn string_with_byte_values() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 39),
                     errors: vec![]
                 },
-                expression: Str(StringLiteral {
+                expression: Expression::StringLit(StringLit {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 39),
                         errors: vec![]
@@ -9837,12 +9897,12 @@ fn string_with_mixed_values() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 63),
                     errors: vec![]
                 },
-                expression: Str(StringLiteral {
+                expression: Expression::StringLit(StringLit {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 63),
                         errors: vec![]
@@ -9873,9 +9933,9 @@ backslash \\
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {location: loc.get(1, 1, 6, 2), errors: vec![] },
-                expression: Str(StringLiteral {
+                expression: Expression::StringLit(StringLit {
                     base: BaseNode {location: loc.get(1, 1, 6, 2), errors: vec![] },
                     value: "newline \n\ncarriage return \r\nhorizontal tab \t\ndouble quote \"\nbackslash \\\n".to_string()
                 })
@@ -9905,12 +9965,12 @@ string"
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 4, 8),
                     errors: vec![]
                 },
-                expression: Str(StringLiteral {
+                expression: Expression::StringLit(StringLit {
                     base: BaseNode {
                         location: loc.get(1, 1, 4, 8),
                         errors: vec![]
@@ -9939,7 +9999,7 @@ fn illegal_statement_token() {
             package: None,
             imports: vec![],
             body: vec![
-                BadS(BadStatement {
+                Statement::Bad(BadStmt {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 2),
                         // errors: vec!["invalid statement @1:1-1:2: @".to_string()]
@@ -9947,12 +10007,12 @@ fn illegal_statement_token() {
                     },
                     text: "@".to_string()
                 }),
-                Expr(ExpressionStatement {
+                Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(1, 3, 1, 8),
                         errors: vec![]
                     },
-                    expression: Idt(Identifier {
+                    expression: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 3, 1, 8),
                             errors: vec![]
@@ -9981,31 +10041,31 @@ fn multiple_idents_in_parens() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 6),
                     errors: vec![]
                 },
-                expression: Paren(Box::new(ParenExpression {
+                expression: Expression::Paren(Box::new(ParenExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 6),
                         errors: vec![]
                     },
-                    expression: Bin(Box::new(BinaryExpression {
+                    expression: Expression::Binary(Box::new(BinaryExpr {
                         // TODO(affo): ast.Check would add the error "expected an operator between two expressions".
                         base: BaseNode {
                             location: loc.get(1, 2, 1, 5),
                             errors: vec![]
                         },
-                        operator: InvalidOperator,
-                        left: Idt(Identifier {
+                        operator: Operator::InvalidOperator,
+                        left: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 2, 1, 3),
                                 errors: vec![]
                             },
                             name: "a".to_string()
                         }),
-                        right: Idt(Identifier {
+                        right: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 4, 1, 5),
                                 errors: vec![]
@@ -10036,25 +10096,25 @@ fn missing_left_hand_side() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 5),
                     errors: vec![]
                 },
-                expression: Paren(Box::new(ParenExpression {
+                expression: Expression::Paren(Box::new(ParenExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 5),
                         errors: vec![]
                     },
-                    expression: Bin(Box::new(BinaryExpression {
+                    expression: Expression::Binary(Box::new(BinaryExpr {
                         // TODO(affo): this should be like this:
                         // base: BaseNode {location: ..., errors: vec!["missing left hand side of expression".to_string()] },
                         base: BaseNode {
                             location: loc.get(1, 2, 1, 4),
                             errors: vec![]
                         },
-                        operator: MultiplicationOperator,
-                        left: BadE(Box::new(BadExpression {
+                        operator: Operator::MultiplicationOperator,
+                        left: Expression::Bad(Box::new(BadExpr {
                             base: BaseNode {
                                 location: loc.get(1, 2, 1, 3),
                                 errors: vec![]
@@ -10062,7 +10122,7 @@ fn missing_left_hand_side() {
                             text: "invalid token for primary expression: MUL".to_string(),
                             expression: None
                         })),
-                        right: Idt(Identifier {
+                        right: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 3, 1, 4),
                                 errors: vec![]
@@ -10093,32 +10153,32 @@ fn missing_right_hand_side() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 5),
                     errors: vec![]
                 },
-                expression: Paren(Box::new(ParenExpression {
+                expression: Expression::Paren(Box::new(ParenExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 5),
                         errors: vec![]
                     },
-                    expression: Bin(Box::new(BinaryExpression {
+                    expression: Expression::Binary(Box::new(BinaryExpr {
                         // TODO(affo): this should be like this:
                         // base: BaseNode {location: ..., errors: vec!["missing right hand side of expression".to_string()] },
                         base: BaseNode {
                             location: loc.get(1, 2, 1, 5),
                             errors: vec![]
                         },
-                        operator: MultiplicationOperator,
-                        left: Idt(Identifier {
+                        operator: Operator::MultiplicationOperator,
+                        left: Expression::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 2, 1, 3),
                                 errors: vec![]
                             },
                             name: "a".to_string()
                         }),
-                        right: BadE(Box::new(BadExpression {
+                        right: Expression::Bad(Box::new(BadExpr {
                             base: BaseNode {
                                 location: loc.get(1, 4, 1, 5),
                                 errors: vec![]
@@ -10148,17 +10208,17 @@ fn illegal_expression() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 4),
                     errors: vec![]
                 },
-                expression: Paren(Box::new(ParenExpression {
+                expression: Expression::Paren(Box::new(ParenExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 4),
                         errors: vec!["invalid expression @1:2-1:3: @".to_string()]
                     },
-                    expression: BadE(Box::new(BadExpression {
+                    expression: Expression::Bad(Box::new(BadExpr {
                         base: BaseNode {
                             location: loc.get(1, 2, 1, 3),
                             errors: vec![]
@@ -10172,7 +10232,7 @@ fn illegal_expression() {
     )
 }
 
-// NOTE(affo): this is slightly different from Go. We have a BadExpression in the body.
+// NOTE(affo): this is slightly different from Go. We have a BadExpr in the body.
 #[test]
 fn missing_arrow_in_function_expression() {
     let mut p = Parser::new(r#"(a, b) a + b"#);
@@ -10188,12 +10248,12 @@ fn missing_arrow_in_function_expression() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 13),
                     errors: vec![]
                 },
-                expression: Fun(Box::new(FunctionExpression {
+                expression: Expression::Function(Box::new(FunctionExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 13),
                         errors: vec![
@@ -10209,7 +10269,7 @@ fn missing_arrow_in_function_expression() {
                                 location: loc.get(1, 2, 1, 3),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 2, 1, 3),
                                     errors: vec![]
@@ -10223,7 +10283,7 @@ fn missing_arrow_in_function_expression() {
                                 location: loc.get(1, 5, 1, 6),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 5, 1, 6),
                                     errors: vec![]
@@ -10233,7 +10293,7 @@ fn missing_arrow_in_function_expression() {
                             value: None
                         }
                     ],
-                    body: FExpr(BadE(Box::new(BadExpression {
+                    body: FunctionBody::Expr(Expression::Bad(Box::new(BadExpr {
                         base: BaseNode {
                             location: loc.get(1, 13, 1, 13),
                             errors: vec![]
@@ -10262,7 +10322,7 @@ fn property_list_missing_property() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 20),
                     errors: vec![]
@@ -10274,7 +10334,7 @@ fn property_list_missing_property() {
                     },
                     name: "o".to_string()
                 },
-                init: Obj(Box::new(ObjectExpression {
+                init: Expression::Object(Box::new(ObjectExpr {
                     base: BaseNode {
                         location: loc.get(1, 5, 1, 20),
                         errors: vec![]
@@ -10286,14 +10346,14 @@ fn property_list_missing_property() {
                                 location: loc.get(1, 6, 1, 12),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 6, 1, 7),
                                     errors: vec![]
                                 },
                                 name: "a".to_string()
                             }),
-                            value: Some(Str(StringLiteral {
+                            value: Some(Expression::StringLit(StringLit {
                                 base: BaseNode {
                                     location: loc.get(1, 9, 1, 12),
                                     errors: vec![]
@@ -10306,7 +10366,7 @@ fn property_list_missing_property() {
                                 location: loc.get(1, 13, 1, 13),
                                 errors: vec!["missing property in property list".to_string()]
                             },
-                            key: PkStr(StringLiteral {
+                            key: PropertyKey::StringLit(StringLit {
                                 base: BaseNode {
                                     location: loc.get(1, 13, 1, 13),
                                     errors: vec![]
@@ -10320,14 +10380,14 @@ fn property_list_missing_property() {
                                 location: loc.get(1, 15, 1, 19),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 15, 1, 16),
                                     errors: vec![]
                                 },
                                 name: "b".to_string()
                             }),
-                            value: Some(Int(IntegerLiteral {
+                            value: Some(Expression::Integer(IntegerLit {
                                 base: BaseNode {
                                     location: loc.get(1, 18, 1, 19),
                                     errors: vec![]
@@ -10357,7 +10417,7 @@ fn property_list_missing_key() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 12),
                     errors: vec![]
@@ -10369,7 +10429,7 @@ fn property_list_missing_key() {
                     },
                     name: "o".to_string()
                 },
-                init: Obj(Box::new(ObjectExpression {
+                init: Expression::Object(Box::new(ObjectExpr {
                     base: BaseNode {
                         location: loc.get(1, 5, 1, 12),
                         errors: vec![]
@@ -10380,14 +10440,14 @@ fn property_list_missing_key() {
                             location: loc.get(1, 6, 1, 11),
                             errors: vec!["missing property key".to_string()]
                         },
-                        key: PkStr(StringLiteral {
+                        key: PropertyKey::StringLit(StringLit {
                             base: BaseNode {
                                 location: loc.get(1, 6, 1, 6),
                                 errors: vec![]
                             },
                             value: "<invalid>".to_string()
                         }),
-                        value: Some(Str(StringLiteral {
+                        value: Some(Expression::StringLit(StringLit {
                             base: BaseNode {
                                 location: loc.get(1, 8, 1, 11),
                                 errors: vec![]
@@ -10416,7 +10476,7 @@ fn property_list_missing_value() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 9),
                     errors: vec![]
@@ -10428,7 +10488,7 @@ fn property_list_missing_value() {
                     },
                     name: "o".to_string()
                 },
-                init: Obj(Box::new(ObjectExpression {
+                init: Expression::Object(Box::new(ObjectExpr {
                     base: BaseNode {
                         location: loc.get(1, 5, 1, 9),
                         errors: vec![]
@@ -10439,7 +10499,7 @@ fn property_list_missing_value() {
                             location: loc.get(1, 6, 1, 7),
                             errors: vec!["missing property value".to_string()]
                         },
-                        key: PkIdt(Identifier {
+                        key: PropertyKey::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 6, 1, 7),
                                 errors: vec![]
@@ -10470,7 +10530,7 @@ fn property_list_missing_comma() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 19),
                     errors: vec![]
@@ -10482,7 +10542,7 @@ fn property_list_missing_comma() {
                     },
                     name: "o".to_string()
                 },
-                init: Obj(Box::new(ObjectExpression {
+                init: Expression::Object(Box::new(ObjectExpr {
                     base: BaseNode {
                         location: loc.get(1, 5, 1, 19),
                         errors: vec![]
@@ -10494,7 +10554,7 @@ fn property_list_missing_comma() {
                                 location: loc.get(1, 6, 1, 14),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 6, 1, 7),
                                     errors: vec![]
@@ -10502,20 +10562,20 @@ fn property_list_missing_comma() {
                                 name: "a".to_string()
                             }),
                             // TODO(affo): ast.Check would add the error "expected an operator between two expressions".
-                            value: Some(Bin(Box::new(BinaryExpression {
+                            value: Some(Expression::Binary(Box::new(BinaryExpr {
                                 base: BaseNode {
                                     location: loc.get(1, 9, 1, 14),
                                     errors: vec![]
                                 },
-                                operator: InvalidOperator,
-                                left: Str(StringLiteral {
+                                operator: Operator::InvalidOperator,
+                                left: Expression::StringLit(StringLit {
                                     base: BaseNode {
                                         location: loc.get(1, 9, 1, 12),
                                         errors: vec![]
                                     },
                                     value: "a".to_string()
                                 }),
-                                right: Idt(Identifier {
+                                right: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 13, 1, 14),
                                         errors: vec![]
@@ -10529,14 +10589,14 @@ fn property_list_missing_comma() {
                                 location: loc.get(1, 14, 1, 18),
                                 errors: vec!["missing property key".to_string()]
                             },
-                            key: PkStr(StringLiteral {
+                            key: PropertyKey::StringLit(StringLit {
                                 base: BaseNode {
                                     location: loc.get(1, 14, 1, 14),
                                     errors: vec![]
                                 },
                                 value: "<invalid>".to_string()
                             }),
-                            value: Some(Int(IntegerLiteral {
+                            value: Some(Expression::Integer(IntegerLit {
                                 base: BaseNode {
                                     location: loc.get(1, 16, 1, 18),
                                     errors: vec![
@@ -10568,7 +10628,7 @@ fn property_list_trailing_comma() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 14),
                     errors: vec![]
@@ -10580,7 +10640,7 @@ fn property_list_trailing_comma() {
                     },
                     name: "o".to_string()
                 },
-                init: Obj(Box::new(ObjectExpression {
+                init: Expression::Object(Box::new(ObjectExpr {
                     base: BaseNode {
                         location: loc.get(1, 5, 1, 14),
                         errors: vec![]
@@ -10591,14 +10651,14 @@ fn property_list_trailing_comma() {
                             location: loc.get(1, 6, 1, 12),
                             errors: vec![]
                         },
-                        key: PkIdt(Identifier {
+                        key: PropertyKey::Identifier(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 6, 1, 7),
                                 errors: vec![]
                             },
                             name: "a".to_string()
                         }),
-                        value: Some(Str(StringLiteral {
+                        value: Some(Expression::StringLit(StringLit {
                             base: BaseNode {
                                 location: loc.get(1, 9, 1, 12),
                                 errors: vec![]
@@ -10627,7 +10687,7 @@ fn property_list_bad_property() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Var(VariableAssignment {
+            body: vec![Statement::Variable(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 23),
                     errors: vec![]
@@ -10639,7 +10699,7 @@ fn property_list_bad_property() {
                     },
                     name: "o".to_string()
                 },
-                init: Obj(Box::new(ObjectExpression {
+                init: Expression::Object(Box::new(ObjectExpr {
                     base: BaseNode {
                         location: loc.get(1, 5, 1, 23),
                         errors: vec![]
@@ -10651,14 +10711,14 @@ fn property_list_bad_property() {
                                 location: loc.get(1, 6, 1, 12),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 6, 1, 7),
                                     errors: vec![]
                                 },
                                 name: "a".to_string()
                             }),
-                            value: Some(Str(StringLiteral {
+                            value: Some(Expression::StringLit(StringLit {
                                 base: BaseNode {
                                     location: loc.get(1, 9, 1, 12),
                                     errors: vec![]
@@ -10673,7 +10733,7 @@ fn property_list_bad_property() {
                                     "unexpected token for property key: INT (30)".to_string()
                                 ]
                             },
-                            key: PkStr(StringLiteral {
+                            key: PropertyKey::StringLit(StringLit {
                                 base: BaseNode {
                                     location: loc.get(1, 14, 1, 14),
                                     errors: vec![]
@@ -10687,14 +10747,14 @@ fn property_list_bad_property() {
                                 location: loc.get(1, 18, 1, 22),
                                 errors: vec![]
                             },
-                            key: PkIdt(Identifier {
+                            key: PropertyKey::Identifier(Identifier {
                                 base: BaseNode {
                                     location: loc.get(1, 18, 1, 19),
                                     errors: vec![]
                                 },
                                 name: "b".to_string()
                             }),
-                            value: Some(Int(IntegerLiteral {
+                            value: Some(Expression::Integer(IntegerLit {
                                 base: BaseNode {
                                     location: loc.get(1, 21, 1, 22),
                                     errors: vec![]
@@ -10726,17 +10786,17 @@ fn invalid_expression_in_array() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 6),
                     errors: vec![]
                 },
-                expression: Arr(Box::new(ArrayExpression {
+                expression: Expression::Array(Box::new(ArrayExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 6),
                         errors: vec![]
                     },
-                    elements: vec![Idt(Identifier {
+                    elements: vec![Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 3, 1, 4),
                             errors: vec![]
@@ -10764,11 +10824,11 @@ fn integer_literal_overflow() {
             name: "".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Expr(ExpressionStatement {
+            body: vec![Statement::Expr(ExprStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 31),
                     errors: vec![] },
-                expression: Int(IntegerLiteral {
+                expression: Expression::Integer(IntegerLit {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 31),
                         errors: vec!["invalid integer literal \"100000000000000000000000000000\": value out of range".to_string()]
