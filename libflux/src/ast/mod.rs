@@ -1,16 +1,11 @@
-extern crate chrono;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_aux;
-
 use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 use std::vec::Vec;
 
-use scanner;
+use crate::scanner;
 
-use chrono::prelude::DateTime;
+use chrono;
 use chrono::FixedOffset;
 
 use serde::de::{Deserialize, Deserializer, Error, Visitor};
@@ -101,62 +96,62 @@ where
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Expression {
-    Idt(Identifier),
+    Identifier(Identifier),
 
-    Arr(Box<ArrayExpression>),
-    Fun(Box<FunctionExpression>),
-    Log(Box<LogicalExpression>),
-    Obj(Box<ObjectExpression>),
-    Mem(Box<MemberExpression>),
-    Idx(Box<IndexExpression>),
-    Bin(Box<BinaryExpression>),
-    Un(Box<UnaryExpression>),
-    Pipe(Box<PipeExpression>),
-    Call(Box<CallExpression>),
-    Cond(Box<ConditionalExpression>),
-    StringExp(Box<StringExpression>),
-    Paren(Box<ParenExpression>),
+    Array(Box<ArrayExpr>),
+    Function(Box<FunctionExpr>),
+    Logical(Box<LogicalExpr>),
+    Object(Box<ObjectExpr>),
+    Member(Box<MemberExpr>),
+    Index(Box<IndexExpr>),
+    Binary(Box<BinaryExpr>),
+    Unary(Box<UnaryExpr>),
+    PipeExpr(Box<PipeExpr>),
+    Call(Box<CallExpr>),
+    Conditional(Box<ConditionalExpr>),
+    StringExpr(Box<StringExpr>),
+    Paren(Box<ParenExpr>),
 
-    Int(IntegerLiteral),
-    Flt(FloatLiteral),
-    Str(StringLiteral),
-    Dur(DurationLiteral),
-    Uint(UnsignedIntegerLiteral),
-    Bool(BooleanLiteral),
-    Time(DateTimeLiteral),
-    Regexp(RegexpLiteral),
-    PipeLit(PipeLiteral),
+    Integer(IntegerLit),
+    Float(FloatLit),
+    StringLit(StringLit),
+    Duration(DurationLit),
+    Uint(UintLit),
+    Boolean(BooleanLit),
+    DateTime(DateTimeLit),
+    Regexp(RegexpLit),
+    PipeLit(PipeLit),
 
-    Bad(Box<BadExpression>),
+    Bad(Box<BadExpr>),
 }
 
 impl Expression {
     // `base` is an utility method that returns the BaseNode for an Expression.
     pub fn base(&self) -> &BaseNode {
         match self {
-            Expression::Idt(wrapped) => &wrapped.base,
-            Expression::Arr(wrapped) => &wrapped.base,
-            Expression::Fun(wrapped) => &wrapped.base,
-            Expression::Log(wrapped) => &wrapped.base,
-            Expression::Obj(wrapped) => &wrapped.base,
-            Expression::Mem(wrapped) => &wrapped.base,
-            Expression::Idx(wrapped) => &wrapped.base,
-            Expression::Bin(wrapped) => &wrapped.base,
-            Expression::Un(wrapped) => &wrapped.base,
-            Expression::Pipe(wrapped) => &wrapped.base,
+            Expression::Identifier(wrapped) => &wrapped.base,
+            Expression::Array(wrapped) => &wrapped.base,
+            Expression::Function(wrapped) => &wrapped.base,
+            Expression::Logical(wrapped) => &wrapped.base,
+            Expression::Object(wrapped) => &wrapped.base,
+            Expression::Member(wrapped) => &wrapped.base,
+            Expression::Index(wrapped) => &wrapped.base,
+            Expression::Binary(wrapped) => &wrapped.base,
+            Expression::Unary(wrapped) => &wrapped.base,
+            Expression::PipeExpr(wrapped) => &wrapped.base,
             Expression::Call(wrapped) => &wrapped.base,
-            Expression::Cond(wrapped) => &wrapped.base,
-            Expression::Int(wrapped) => &wrapped.base,
-            Expression::Flt(wrapped) => &wrapped.base,
-            Expression::Str(wrapped) => &wrapped.base,
-            Expression::Dur(wrapped) => &wrapped.base,
+            Expression::Conditional(wrapped) => &wrapped.base,
+            Expression::Integer(wrapped) => &wrapped.base,
+            Expression::Float(wrapped) => &wrapped.base,
+            Expression::StringLit(wrapped) => &wrapped.base,
+            Expression::Duration(wrapped) => &wrapped.base,
             Expression::Uint(wrapped) => &wrapped.base,
-            Expression::Bool(wrapped) => &wrapped.base,
-            Expression::Time(wrapped) => &wrapped.base,
+            Expression::Boolean(wrapped) => &wrapped.base,
+            Expression::DateTime(wrapped) => &wrapped.base,
             Expression::Regexp(wrapped) => &wrapped.base,
             Expression::PipeLit(wrapped) => &wrapped.base,
             Expression::Bad(wrapped) => &wrapped.base,
-            Expression::StringExp(wrapped) => &wrapped.base,
+            Expression::StringExpr(wrapped) => &wrapped.base,
             Expression::Paren(wrapped) => &wrapped.base,
         }
     }
@@ -165,13 +160,13 @@ impl Expression {
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Statement {
-    Expr(ExpressionStatement),
-    Var(VariableAssignment),
-    Opt(OptionStatement),
-    Ret(ReturnStatement),
-    Bad(BadStatement),
-    Test(TestStatement),
-    Built(BuiltinStatement),
+    Expr(ExprStmt),
+    Variable(VariableAssgn),
+    Option(OptionStmt),
+    Return(ReturnStmt),
+    Bad(BadStmt),
+    Test(TestStmt),
+    Builtin(BuiltinStmt),
 }
 
 impl Statement {
@@ -179,12 +174,12 @@ impl Statement {
     pub fn base(&self) -> &BaseNode {
         match self {
             Statement::Expr(wrapped) => &wrapped.base,
-            Statement::Var(wrapped) => &wrapped.base,
-            Statement::Opt(wrapped) => &wrapped.base,
-            Statement::Ret(wrapped) => &wrapped.base,
+            Statement::Variable(wrapped) => &wrapped.base,
+            Statement::Option(wrapped) => &wrapped.base,
+            Statement::Return(wrapped) => &wrapped.base,
             Statement::Bad(wrapped) => &wrapped.base,
             Statement::Test(wrapped) => &wrapped.base,
-            Statement::Built(wrapped) => &wrapped.base,
+            Statement::Builtin(wrapped) => &wrapped.base,
         }
     }
 }
@@ -192,8 +187,8 @@ impl Statement {
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Assignment {
-    Variable(VariableAssignment),
-    Member(MemberAssignment),
+    Variable(VariableAssgn),
+    Member(MemberAssgn),
 }
 
 impl Assignment {
@@ -210,7 +205,7 @@ impl Assignment {
 #[serde(untagged)]
 pub enum PropertyKey {
     Identifier(Identifier),
-    StringLiteral(StringLiteral),
+    StringLit(StringLit),
 }
 
 impl PropertyKey {
@@ -218,7 +213,7 @@ impl PropertyKey {
     pub fn base(&self) -> &BaseNode {
         match self {
             PropertyKey::Identifier(wrapped) => &wrapped.base,
-            PropertyKey::StringLiteral(wrapped) => &wrapped.base,
+            PropertyKey::StringLit(wrapped) => &wrapped.base,
         }
     }
 }
@@ -327,7 +322,7 @@ pub struct ImportDeclaration {
     pub base: BaseNode,
     #[serde(rename = "as")]
     pub alias: Option<Identifier>,
-    pub path: StringLiteral,
+    pub path: StringLit,
 }
 
 // Block is a set of statements
@@ -341,11 +336,11 @@ pub struct Block {
     pub body: Vec<Statement>,
 }
 
-// BadStatement is a placeholder for statements for which no correct statement nodes
+// BadStmt is a placeholder for statements for which no correct statement nodes
 // can be created.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct BadStatement {
+#[serde(rename = "BadStatement", tag = "type")]
+pub struct BadStmt {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -353,10 +348,10 @@ pub struct BadStatement {
     pub text: String,
 }
 
-// ExpressionStatement may consist of an expression that does not return a value and is executed solely for its side-effects.
+// ExprStmt may consist of an expression that does not return a value and is executed solely for its side-effects.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct ExpressionStatement {
+#[serde(rename = "ExpressionStatement", tag = "type")]
+pub struct ExprStmt {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -364,10 +359,10 @@ pub struct ExpressionStatement {
     pub expression: Expression,
 }
 
-// ReturnStatement defines an Expression to return
+// ReturnStmt defines an Expression to return
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct ReturnStatement {
+#[serde(rename = "ReturnStatement", tag = "type")]
+pub struct ReturnStmt {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -375,10 +370,10 @@ pub struct ReturnStatement {
     pub argument: Expression,
 }
 
-// OptionStatement syntactically is a single variable declaration
+// OptionStmt syntactically is a single variable declaration
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct OptionStatement {
+#[serde(rename = "OptionStatement", tag = "type")]
+pub struct OptionStmt {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -386,10 +381,10 @@ pub struct OptionStatement {
     pub assignment: Assignment,
 }
 
-// BuiltinStatement declares a builtin identifier and its struct
+// BuiltinStmt declares a builtin identifier and its struct
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct BuiltinStatement {
+#[serde(rename = "BuiltinStatement", tag = "type")]
+pub struct BuiltinStmt {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -397,21 +392,21 @@ pub struct BuiltinStatement {
     pub id: Identifier,
 }
 
-// TestStatement declares a Flux test case
+// TestStmt declares a Flux test case
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct TestStatement {
+#[serde(rename = "TestStatement", tag = "type")]
+pub struct TestStmt {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
-    pub assignment: VariableAssignment,
+    pub assignment: VariableAssgn,
 }
 
-// VariableAssignment represents the declaration of a variable
+// VariableAssgn represents the declaration of a variable
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct VariableAssignment {
+#[serde(rename = "VariableAssignment", tag = "type")]
+pub struct VariableAssgn {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -420,33 +415,34 @@ pub struct VariableAssignment {
     pub init: Expression,
 }
 
+// MemberAssgn represents an assignement into a member of an object.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct MemberAssignment {
+#[serde(rename = "MemberAssignment", tag = "type")]
+pub struct MemberAssgn {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
-    pub member: MemberExpression,
+    pub member: MemberExpr,
     pub init: Expression,
 }
 
-// StringExpression represents an interpolated string
+// StringExpr represents an interpolated string
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct StringExpression {
+#[serde(rename = "StringExpression", tag = "type")]
+pub struct StringExpr {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     pub base: BaseNode,
-    pub parts: Vec<StringExpressionPart>,
+    pub parts: Vec<StringExprPart>,
 }
 
-// StringExpressionPart represents part of an interpolated string
+// StringExprPart represents part of an interpolated string
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum StringExpressionPart {
+pub enum StringExprPart {
     Text(TextPart),
-    Expr(InterpolatedPart),
+    Interpolated(InterpolatedPart),
 }
 
 // TextPart represents the text part of an interpolated string
@@ -469,20 +465,20 @@ pub struct InterpolatedPart {
     pub expression: Expression,
 }
 
-// ParenExpression represents an expression wrapped in parenthesis
+// ParenExpr represents an expression wrapped in parenthesis
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct ParenExpression {
+#[serde(rename = "ParenExpression", tag = "type")]
+pub struct ParenExpr {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     pub base: BaseNode,
     pub expression: Expression,
 }
 
-// CallExpression represents a function call
+// CallExpr represents a function call
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct CallExpression {
+#[serde(rename = "CallExpression", tag = "type")]
+pub struct CallExpr {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -491,21 +487,22 @@ pub struct CallExpression {
     pub arguments: Vec<Expression>,
 }
 
+// PipeExpr represents a call expression using the pipe forward syntax.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct PipeExpression {
+#[serde(rename = "PipeExpression", tag = "type")]
+pub struct PipeExpr {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
     pub argument: Expression,
-    pub call: CallExpression,
+    pub call: CallExpr,
 }
 
-// MemberExpression represents calling a property of a CallExpression
+// MemberExpr represents calling a property of a Call
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct MemberExpression {
+#[serde(rename = "MemberExpression", tag = "type")]
+pub struct MemberExpr {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -514,10 +511,10 @@ pub struct MemberExpression {
     pub property: PropertyKey,
 }
 
-// IndexExpression represents indexing into an array
+// IndexExpr represents indexing into an array
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct IndexExpression {
+#[serde(rename = "IndexExpression", tag = "type")]
+pub struct IndexExpr {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -527,8 +524,8 @@ pub struct IndexExpression {
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct FunctionExpression {
+#[serde(rename = "FunctionExpression", tag = "type")]
+pub struct FunctionExpr {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -537,13 +534,13 @@ pub struct FunctionExpression {
     pub body: FunctionBody,
 }
 
-// OperatorKind are Equality and Arithmetic operators.
+// Operator are Equality and Arithmetic operators.
 // Result of evaluating an equality operator is always of type Boolean based on whether the
 // comparison is true.
 // Arithmetic operators take numerical values (either literals or variables) as their operands
 // and return a single numerical value.
 #[derive(Debug, PartialEq, Clone)]
-pub enum OperatorKind {
+pub enum Operator {
     MultiplicationOperator,
     DivisionOperator,
     ModuloOperator,
@@ -569,35 +566,35 @@ pub enum OperatorKind {
     InvalidOperator,
 }
 
-impl ToString for OperatorKind {
+impl ToString for Operator {
     fn to_string(&self) -> String {
         match self {
-            OperatorKind::MultiplicationOperator => "*".to_string(),
-            OperatorKind::DivisionOperator => "/".to_string(),
-            OperatorKind::ModuloOperator => "%".to_string(),
-            OperatorKind::PowerOperator => "^".to_string(),
-            OperatorKind::AdditionOperator => "+".to_string(),
-            OperatorKind::SubtractionOperator => "-".to_string(),
-            OperatorKind::LessThanEqualOperator => "<=".to_string(),
-            OperatorKind::LessThanOperator => "<".to_string(),
-            OperatorKind::GreaterThanEqualOperator => ">=".to_string(),
-            OperatorKind::GreaterThanOperator => ">".to_string(),
-            OperatorKind::StartsWithOperator => "startswith".to_string(),
-            OperatorKind::InOperator => "in".to_string(),
-            OperatorKind::NotOperator => "not".to_string(),
-            OperatorKind::ExistsOperator => "exists".to_string(),
-            OperatorKind::NotEmptyOperator => "not empty".to_string(),
-            OperatorKind::EmptyOperator => "empty".to_string(),
-            OperatorKind::EqualOperator => "==".to_string(),
-            OperatorKind::NotEqualOperator => "!=".to_string(),
-            OperatorKind::RegexpMatchOperator => "=~".to_string(),
-            OperatorKind::NotRegexpMatchOperator => "!~".to_string(),
-            OperatorKind::InvalidOperator => "<INVALID_OP>".to_string(),
+            Operator::MultiplicationOperator => "*".to_string(),
+            Operator::DivisionOperator => "/".to_string(),
+            Operator::ModuloOperator => "%".to_string(),
+            Operator::PowerOperator => "^".to_string(),
+            Operator::AdditionOperator => "+".to_string(),
+            Operator::SubtractionOperator => "-".to_string(),
+            Operator::LessThanEqualOperator => "<=".to_string(),
+            Operator::LessThanOperator => "<".to_string(),
+            Operator::GreaterThanEqualOperator => ">=".to_string(),
+            Operator::GreaterThanOperator => ">".to_string(),
+            Operator::StartsWithOperator => "startswith".to_string(),
+            Operator::InOperator => "in".to_string(),
+            Operator::NotOperator => "not".to_string(),
+            Operator::ExistsOperator => "exists".to_string(),
+            Operator::NotEmptyOperator => "not empty".to_string(),
+            Operator::EmptyOperator => "empty".to_string(),
+            Operator::EqualOperator => "==".to_string(),
+            Operator::NotEqualOperator => "!=".to_string(),
+            Operator::RegexpMatchOperator => "=~".to_string(),
+            Operator::NotRegexpMatchOperator => "!~".to_string(),
+            Operator::InvalidOperator => "<INVALID_OP>".to_string(),
         }
     }
 }
 
-impl Serialize for OperatorKind {
+impl Serialize for Operator {
     fn serialize<S>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error>
     where
         S: Serializer,
@@ -606,41 +603,41 @@ impl Serialize for OperatorKind {
     }
 }
 
-impl FromStr for OperatorKind {
+impl FromStr for Operator {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "*" => Ok(OperatorKind::MultiplicationOperator),
-            "/" => Ok(OperatorKind::DivisionOperator),
-            "%" => Ok(OperatorKind::ModuloOperator),
-            "^" => Ok(OperatorKind::PowerOperator),
-            "+" => Ok(OperatorKind::AdditionOperator),
-            "-" => Ok(OperatorKind::SubtractionOperator),
-            "<=" => Ok(OperatorKind::LessThanEqualOperator),
-            "<" => Ok(OperatorKind::LessThanOperator),
-            ">=" => Ok(OperatorKind::GreaterThanEqualOperator),
-            ">" => Ok(OperatorKind::GreaterThanOperator),
-            "startswith" => Ok(OperatorKind::StartsWithOperator),
-            "in" => Ok(OperatorKind::InOperator),
-            "not" => Ok(OperatorKind::NotOperator),
-            "exists" => Ok(OperatorKind::ExistsOperator),
-            "not empty" => Ok(OperatorKind::NotEmptyOperator),
-            "empty" => Ok(OperatorKind::EmptyOperator),
-            "==" => Ok(OperatorKind::EqualOperator),
-            "!=" => Ok(OperatorKind::NotEqualOperator),
-            "=~" => Ok(OperatorKind::RegexpMatchOperator),
-            "!~" => Ok(OperatorKind::NotRegexpMatchOperator),
-            "<INVALID_OP>" => Ok(OperatorKind::InvalidOperator),
+            "*" => Ok(Operator::MultiplicationOperator),
+            "/" => Ok(Operator::DivisionOperator),
+            "%" => Ok(Operator::ModuloOperator),
+            "^" => Ok(Operator::PowerOperator),
+            "+" => Ok(Operator::AdditionOperator),
+            "-" => Ok(Operator::SubtractionOperator),
+            "<=" => Ok(Operator::LessThanEqualOperator),
+            "<" => Ok(Operator::LessThanOperator),
+            ">=" => Ok(Operator::GreaterThanEqualOperator),
+            ">" => Ok(Operator::GreaterThanOperator),
+            "startswith" => Ok(Operator::StartsWithOperator),
+            "in" => Ok(Operator::InOperator),
+            "not" => Ok(Operator::NotOperator),
+            "exists" => Ok(Operator::ExistsOperator),
+            "not empty" => Ok(Operator::NotEmptyOperator),
+            "empty" => Ok(Operator::EmptyOperator),
+            "==" => Ok(Operator::EqualOperator),
+            "!=" => Ok(Operator::NotEqualOperator),
+            "=~" => Ok(Operator::RegexpMatchOperator),
+            "!~" => Ok(Operator::NotRegexpMatchOperator),
+            "<INVALID_OP>" => Ok(Operator::InvalidOperator),
             _ => Err(format!("unknown operator: {}", s)),
         }
     }
 }
 
-struct OperatorKindVisitor;
+struct OperatorVisitor;
 
-impl<'de> Visitor<'de> for OperatorKindVisitor {
-    type Value = OperatorKind;
+impl<'de> Visitor<'de> for OperatorVisitor {
+    type Value = Operator;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         formatter.write_str("a valid string valid for an operator")
@@ -650,7 +647,7 @@ impl<'de> Visitor<'de> for OperatorKindVisitor {
     where
         E: Error,
     {
-        let r = value.parse::<OperatorKind>();
+        let r = value.parse::<Operator>();
         match r {
             Ok(v) => Ok(v),
             Err(s) => Err(E::custom(s)),
@@ -658,58 +655,58 @@ impl<'de> Visitor<'de> for OperatorKindVisitor {
     }
 }
 
-impl<'de> Deserialize<'de> for OperatorKind {
+impl<'de> Deserialize<'de> for Operator {
     fn deserialize<D>(d: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        d.deserialize_str(OperatorKindVisitor)
+        d.deserialize_str(OperatorVisitor)
     }
 }
 
-// BinaryExpression use binary operators act on two operands in an expression.
-// BinaryExpression includes relational and arithmetic operators
+// BinaryExpr use binary operators act on two operands in an expression.
+// BinaryExpr includes relational and arithmetic operators
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct BinaryExpression {
+#[serde(rename = "BinaryExpression", tag = "type")]
+pub struct BinaryExpr {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
-    pub operator: OperatorKind,
+    pub operator: Operator,
     pub left: Expression,
     pub right: Expression,
 }
 
-// UnaryExpression use operators act on a single operand in an expression.
+// UnaryExpr use operators act on a single operand in an expression.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct UnaryExpression {
+#[serde(rename = "UnaryExpression", tag = "type")]
+pub struct UnaryExpr {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
-    pub operator: OperatorKind,
+    pub operator: Operator,
     pub argument: Expression,
 }
 
-// LogicalOperatorKind are used with boolean (logical) values
+// LogicalOperator are used with boolean (logical) values
 #[derive(Debug, PartialEq, Clone)]
-pub enum LogicalOperatorKind {
+pub enum LogicalOperator {
     AndOperator,
     OrOperator,
 }
 
-impl ToString for LogicalOperatorKind {
+impl ToString for LogicalOperator {
     fn to_string(&self) -> String {
         match self {
-            LogicalOperatorKind::AndOperator => "and".to_string(),
-            LogicalOperatorKind::OrOperator => "or".to_string(),
+            LogicalOperator::AndOperator => "and".to_string(),
+            LogicalOperator::OrOperator => "or".to_string(),
         }
     }
 }
 
-impl Serialize for LogicalOperatorKind {
+impl Serialize for LogicalOperator {
     fn serialize<S>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error>
     where
         S: Serializer,
@@ -718,22 +715,22 @@ impl Serialize for LogicalOperatorKind {
     }
 }
 
-impl FromStr for LogicalOperatorKind {
+impl FromStr for LogicalOperator {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "and" => Ok(LogicalOperatorKind::AndOperator),
-            "or" => Ok(LogicalOperatorKind::OrOperator),
+            "and" => Ok(LogicalOperator::AndOperator),
+            "or" => Ok(LogicalOperator::OrOperator),
             _ => Err(format!("unknown logical operator: {}", s)),
         }
     }
 }
 
-struct LogicalOperatorKindVisitor;
+struct LogicalOperatorVisitor;
 
-impl<'de> Visitor<'de> for LogicalOperatorKindVisitor {
-    type Value = LogicalOperatorKind;
+impl<'de> Visitor<'de> for LogicalOperatorVisitor {
+    type Value = LogicalOperator;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         formatter.write_str("a valid string valid for a logical operator")
@@ -743,7 +740,7 @@ impl<'de> Visitor<'de> for LogicalOperatorKindVisitor {
     where
         E: Error,
     {
-        let r = value.parse::<LogicalOperatorKind>();
+        let r = value.parse::<LogicalOperator>();
         match r {
             Ok(v) => Ok(v),
             Err(s) => Err(E::custom(s)),
@@ -751,34 +748,34 @@ impl<'de> Visitor<'de> for LogicalOperatorKindVisitor {
     }
 }
 
-impl<'de> Deserialize<'de> for LogicalOperatorKind {
+impl<'de> Deserialize<'de> for LogicalOperator {
     fn deserialize<D>(d: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        d.deserialize_str(LogicalOperatorKindVisitor)
+        d.deserialize_str(LogicalOperatorVisitor)
     }
 }
 
-// LogicalExpression represent the rule conditions that collectively evaluate to either true or false.
+// LogicalExpr represent the rule conditions that collectively evaluate to either true or false.
 // `or` expressions compute the disjunction of two boolean expressions and return boolean values.
 // `and`` expressions compute the conjunction of two boolean expressions and return boolean values.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct LogicalExpression {
+#[serde(rename = "LogicalExpression", tag = "type")]
+pub struct LogicalExpr {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
-    pub operator: LogicalOperatorKind,
+    pub operator: LogicalOperator,
     pub left: Expression,
     pub right: Expression,
 }
 
-// ArrayExpression is used to create and directly specify the elements of an array object
+// ArrayExpr is used to create and directly specify the elements of an array object
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct ArrayExpression {
+#[serde(rename = "ArrayExpression", tag = "type")]
+pub struct ArrayExpr {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -786,10 +783,10 @@ pub struct ArrayExpression {
     pub elements: Vec<Expression>,
 }
 
-// ObjectExpression allows the declaration of an anonymous object within a declaration.
+// ObjectExpr allows the declaration of an anonymous object within a declaration.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct ObjectExpression {
+#[serde(rename = "ObjectExpression", tag = "type")]
+pub struct ObjectExpr {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -799,11 +796,11 @@ pub struct ObjectExpression {
     pub properties: Vec<Property>,
 }
 
-// ConditionalExpression selects one of two expressions, `Alternate` or `Consequent`
+// ConditionalExpr selects one of two expressions, `Alternate` or `Consequent`
 // depending on a third, boolean, expression, `Test`.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct ConditionalExpression {
+#[serde(rename = "ConditionalExpression", tag = "type")]
+pub struct ConditionalExpr {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -813,11 +810,11 @@ pub struct ConditionalExpression {
     pub alternate: Expression,
 }
 
-// BadExpression is a malformed expression that contains the reason why in `text`.
+// BadExpr is a malformed expression that contains the reason why in `text`.
 // It can contain another expression, so that the parser can make a chained list of bad expressions.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct BadExpression {
+#[serde(rename = "BadExpression", tag = "type")]
+pub struct BadExpr {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -851,20 +848,20 @@ pub struct Identifier {
     pub name: String,
 }
 
-// PipeLiteral represents an specialized literal value, indicating the left hand value of a pipe expression.
+// PipeLit represents an specialized literal value, indicating the left hand value of a pipe expression.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct PipeLiteral {
+#[serde(rename = "PipeLiteral", tag = "type")]
+pub struct PipeLit {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
 }
 
-// StringLiteral expressions begin and end with double quote marks.
+// StringLit expressions begin and end with double quote marks.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct StringLiteral {
+#[serde(rename = "StringLiteral", tag = "type")]
+pub struct StringLit {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -872,10 +869,10 @@ pub struct StringLiteral {
     pub value: String,
 }
 
-// BooleanLiteral represent boolean values
+// Boolean represent boolean values
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct BooleanLiteral {
+#[serde(rename = "BooleanLiteral", tag = "type")]
+pub struct BooleanLit {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -883,10 +880,10 @@ pub struct BooleanLiteral {
     pub value: bool,
 }
 
-// FloatLiteral  represent floating point numbers according to the double representations defined by the IEEE-754-1985
+// FloatLit represent floating point numbers according to the double representations defined by the IEEE-754-1985
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct FloatLiteral {
+#[serde(rename = "FloatLiteral", tag = "type")]
+pub struct FloatLit {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -894,10 +891,10 @@ pub struct FloatLiteral {
     pub value: f64,
 }
 
-// IntegerLiteral represent integer numbers.
+// IntegerLit represent integer numbers.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct IntegerLiteral {
+#[serde(rename = "IntegerLiteral", tag = "type")]
+pub struct IntegerLit {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -907,10 +904,10 @@ pub struct IntegerLiteral {
     pub value: i64,
 }
 
-// UnsignedIntegerLiteral represent integer numbers.
+// UintLit represent integer numbers.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct UnsignedIntegerLiteral {
+#[serde(rename = "UnsignedIntegerLiteral", tag = "type")]
+pub struct UintLit {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -986,10 +983,10 @@ where
     d.deserialize_str(I64Visitor)
 }
 
-// RegexpLiteral expressions begin and end with `/` and are regular expressions with syntax accepted by RE2
+// RegexpLit expressions begin and end with `/` and are regular expressions with syntax accepted by RE2
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct RegexpLiteral {
+#[serde(rename = "RegexpLiteral", tag = "type")]
+pub struct RegexpLit {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -997,20 +994,21 @@ pub struct RegexpLiteral {
     pub value: String,
 }
 
-// Duration is a pair consisting of length of time and the unit of time measured.
+// DurationLit is a pair consisting of length of time and the unit of time measured.
 // It is the atomic unit from which all duration literals are composed.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(rename = "Duration")]
 pub struct Duration {
     pub magnitude: i64,
     pub unit: String,
 }
 
-// DurationLiteral represents the elapsed time between two instants as an
+// DurationLit represents the elapsed time between two instants as an
 // int64 nanosecond count with syntax of golang's time.Duration
 // TODO: this may be better as a class initialization
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct DurationLiteral {
+#[serde(rename = "DurationLiteral", tag = "type")]
+pub struct DurationLit {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
@@ -1018,19 +1016,19 @@ pub struct DurationLiteral {
     pub values: Vec<Duration>,
 }
 
-// TODO: we need a "duration from" that takes a time and a durationliteral, and gives an exact time.Duration instead of an approximation
+// TODO: we need a "duration from" that takes a time and a durationliteral, and gives an exact time.DurationLit instead of an approximation
 //
-// DateTimeLiteral represents an instant in time with nanosecond precision using
+// DateTimeLit represents an instant in time with nanosecond precision using
 // the syntax of golang's RFC3339 Nanosecond variant
 // TODO: this may be better as a class initialization
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub struct DateTimeLiteral {
+#[serde(rename = "DateTimeLiteral", tag = "type")]
+pub struct DateTimeLit {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
-    pub value: DateTime<FixedOffset>,
+    pub value: chrono::DateTime<FixedOffset>,
 }
 
 #[cfg(test)]

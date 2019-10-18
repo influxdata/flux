@@ -24,7 +24,7 @@ type WindowOpSpec struct {
 	CreateEmpty bool          `json:"createEmpty"`
 }
 
-var infinityVar = values.NewDuration(math.MaxInt64)
+var infinityVar = values.NewDuration(values.ConvertDuration(math.MaxInt64))
 
 func init() {
 	windowSignature := flux.FunctionSignature(
@@ -59,7 +59,7 @@ func createWindowOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		return nil, err
 	}
 	if everySet {
-		spec.Every = flux.Duration(every)
+		spec.Every = every
 	}
 	period, periodSet, err := args.GetDuration("period")
 	if err != nil {
@@ -180,9 +180,9 @@ func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationM
 		cache,
 		*bounds,
 		execute.NewWindow(
-			execute.Duration(s.Window.Every),
-			execute.Duration(s.Window.Period),
-			execute.Duration(s.Window.Offset)),
+			values.Duration(s.Window.Every),
+			values.Duration(s.Window.Period),
+			values.Duration(s.Window.Offset)),
 		s.TimeColumn,
 		s.StartColumn,
 		s.StopColumn,

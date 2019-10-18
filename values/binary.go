@@ -76,7 +76,8 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	{Operator: ast.AdditionOperator, Left: semantic.Duration, Right: semantic.Duration}: func(lv, rv Value) (Value, error) {
 		l := lv.Duration()
 		r := rv.Duration()
-		return NewDuration(l + r), nil
+		d := ConvertDuration(l.Duration() + r.Duration())
+		return NewDuration(d), nil
 	},
 	{Operator: ast.AdditionOperator, Left: semantic.Nil, Right: semantic.Nil}: nil,
 	{Operator: ast.SubtractionOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
@@ -97,7 +98,8 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	{Operator: ast.SubtractionOperator, Left: semantic.Duration, Right: semantic.Duration}: func(lv, rv Value) (Value, error) {
 		l := lv.Duration()
 		r := rv.Duration()
-		return NewDuration(l - r), nil
+		d := ConvertDuration(l.Duration() - r.Duration())
+		return NewDuration(d), nil
 	},
 	{Operator: ast.SubtractionOperator, Left: semantic.Nil, Right: semantic.Nil}: nil,
 	{Operator: ast.MultiplicationOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {

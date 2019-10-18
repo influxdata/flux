@@ -4,6 +4,7 @@ use chrono::FixedOffset;
 use std::iter::Peekable;
 use std::str::{CharIndices, Chars};
 
+use crate::ast;
 use regex::Regex;
 
 pub fn parse_string(lit: &str) -> Result<String, String> {
