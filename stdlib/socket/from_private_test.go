@@ -17,13 +17,6 @@ func TestFromSocketUrlValidation(t *testing.T) {
 			},
 			ErrMsg: "invalid scheme http",
 		}, {
-			Name: "invalid url",
-			Spec: &FromSocketProcedureSpec{
-				URL:     "localhost:abc",
-				Decoder: "csv",
-			},
-			ErrMsg: "invalid url",
-		}, {
 			Name: "ok",
 			Spec: &FromSocketProcedureSpec{
 				URL:     "tcp://localhost:12345/abc",
