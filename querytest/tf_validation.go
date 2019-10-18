@@ -1,15 +1,16 @@
 package querytest
 
 import (
+	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/plan"
-	"github.com/stretchr/testify/assert"
 )
 
 // Some transformations need to take a URL e.g. sql.to, kafka.to
@@ -53,7 +54,10 @@ func (test *TfUrlValidationTest) Run(t *testing.T) {
 			if err != nil {
 				if tc.WantErr != "" {
 					got := err.Error()
-					assert.Contains(t, got, tc.WantErr)
+					if !strings.Contains(got, tc.WantErr) {
+						t.Fatalf("unexpected result -want/+got:\n%s",
+							cmp.Diff(got, tc.WantErr))
+					}
 					return
 				} else {
 					t.Fatal(err)

@@ -2,14 +2,16 @@ package querytest
 
 import (
 	"context"
+	"strings"
+	"testing"
+
+	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/plan"
-	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 // Some sources are located by a URL. e.g. sql.from, socket.from
@@ -38,7 +40,10 @@ func (testCases *SourceUrlValidationTestCases) Run(t *testing.T, fn execute.Crea
 				if err == nil {
 					t.Errorf("Expect an error with message \"%s\", but did not get one.", tc.ErrMsg)
 				} else {
-					assert.Contains(t, err.Error(), tc.ErrMsg)
+					if !strings.Contains(err.Error(), tc.ErrMsg) {
+						t.Fatalf("unexpected result -want/+got:\n%s",
+							cmp.Diff(err.Error(), tc.ErrMsg))
+					}
 				}
 			} else {
 				if err != nil {

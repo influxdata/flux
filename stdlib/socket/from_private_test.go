@@ -22,7 +22,7 @@ func TestFromSocketUrlValidation(t *testing.T) {
 				URL:     "localhost:abc",
 				Decoder: "csv",
 			},
-			ErrMsg: "unknown port",
+			ErrMsg: "invalid url",
 		}, {
 			Name: "ok",
 			Spec: &FromSocketProcedureSpec{
