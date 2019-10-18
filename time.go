@@ -83,22 +83,9 @@ func (t Time) MarshalText() ([]byte, error) {
 }
 
 // Duration is a marshalable duration type.
-type Duration values.Duration
+type Duration = values.Duration
 
 // ConvertDuration will convert a time.Duration into a flux.Duration.
 func ConvertDuration(v time.Duration) Duration {
-	return Duration(values.ConvertDuration(v))
-}
-
-func (d *Duration) UnmarshalText(data []byte) error {
-	dur, err := values.ParseDuration(string(data))
-	if err != nil {
-		return err
-	}
-	*d = Duration(dur)
-	return nil
-}
-
-func (d Duration) MarshalText() ([]byte, error) {
-	return []byte(values.Duration(d).String()), nil
+	return values.ConvertDuration(v)
 }
