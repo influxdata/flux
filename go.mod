@@ -13,6 +13,7 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
+	github.com/google/flatbuffers v1.11.0
 	github.com/google/go-cmp v0.3.0
 	github.com/goreleaser/goreleaser v0.94.0
 	github.com/influxdata/changelog v1.1.0

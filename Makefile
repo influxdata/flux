@@ -11,7 +11,7 @@
 #    * All recursive Makefiles must support the targets: generate and clean.
 #
 
-SUBDIRS = ast/asttest internal/scanner stdlib libflux
+SUBDIRS = ast internal/scanner stdlib libflux
 
 GO_ARGS=-tags '$(GO_TAGS)'
 
