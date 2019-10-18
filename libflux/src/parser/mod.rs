@@ -413,7 +413,7 @@ impl Parser {
             TOK_RETURN => self.parse_return_statement(),
             _ => {
                 self.consume();
-                Statement::Bad(BadStatement {
+                Statement::Bad(BadStmt {
                     base: self.base_node_from_token(&t),
                     text: t.lit,
                 })
@@ -424,7 +424,7 @@ impl Parser {
         let t = self.expect(TOK_OPTION);
         let ident = self.parse_identifier();
         let assignment = self.parse_option_assignment_suffix(ident);
-        Statement::Opt(OptionStatement {
+        Statement::Option(OptionStmt {
             base: self.base_node_from_other_end(&t, assignment.base()),
             assignment,
         })
@@ -434,7 +434,7 @@ impl Parser {
         match t.tok {
             TOK_ASSIGN => {
                 let init = self.parse_assign_statement();
-                Assignment::Variable(VariableAssignment {
+                Assignment::Variable(VariableAssgn {
                     base: self.base_node_from_others(&id.base, init.base()),
                     id,
                     init,
@@ -444,11 +444,11 @@ impl Parser {
                 self.consume();
                 let prop = self.parse_identifier();
                 let init = self.parse_assign_statement();
-                return Assignment::Member(MemberAssignment {
+                return Assignment::Member(MemberAssgn {
                     base: self.base_node_from_others(&id.base, init.base()),
-                    member: MemberExpression {
+                    member: MemberExpr {
                         base: self.base_node_from_others(&id.base, &prop.base),
-                        object: Expression::Idt(id),
+                        object: Expression::Identifier(id),
                         property: PropertyKey::Identifier(prop),
                     },
                     init,
@@ -460,7 +460,7 @@ impl Parser {
     fn parse_builtin_statement(&mut self) -> Statement {
         let t = self.expect(TOK_BUILTIN);
         let id = self.parse_identifier();
-        Statement::Built(BuiltinStatement {
+        Statement::Builtin(BuiltinStmt {
             base: self.base_node_from_other_end(&t, &id.base),
             id,
         })
@@ -469,9 +469,9 @@ impl Parser {
         let t = self.expect(TOK_TEST);
         let id = self.parse_identifier();
         let assignment = self.parse_assign_statement();
-        Statement::Test(TestStatement {
+        Statement::Test(TestStmt {
             base: self.base_node_from_other_end(&t, assignment.base()),
-            assignment: VariableAssignment {
+            assignment: VariableAssgn {
                 base: self.base_node_from_others(&id.base, assignment.base()),
                 id: id,
                 init: assignment,
@@ -484,15 +484,15 @@ impl Parser {
         match t.tok {
             TOK_ASSIGN => {
                 let init = self.parse_assign_statement();
-                return Statement::Var(VariableAssignment {
+                return Statement::Variable(VariableAssgn {
                     base: self.base_node_from_others(&id.base, init.base()),
                     id,
                     init,
                 });
             }
             _ => {
-                let expr = self.parse_expression_suffix(Expression::Idt(id));
-                Statement::Expr(ExpressionStatement {
+                let expr = self.parse_expression_suffix(Expression::Identifier(id));
+                Statement::Expr(ExprStmt {
                     base: self.base_node(expr.base().location.clone()),
                     expression: expr,
                 })
@@ -506,14 +506,14 @@ impl Parser {
     fn parse_return_statement(&mut self) -> Statement {
         let t = self.expect(TOK_RETURN);
         let expr = self.parse_expression();
-        Statement::Ret(ReturnStatement {
+        Statement::Return(ReturnStmt {
             base: self.base_node_from_other_end(&t, expr.base()),
             argument: expr,
         })
     }
     fn parse_expression_statement(&mut self) -> Statement {
         let expr = self.parse_expression();
-        let stmt = ExpressionStatement {
+        let stmt = ExprStmt {
             base: self.base_node(expr.base().location.clone()),
             expression: expr,
         };
@@ -569,9 +569,9 @@ impl Parser {
             };
             match expr {
                 Some(ex) => {
-                    expr = Some(Expression::Bin(Box::new(BinaryExpression {
+                    expr = Some(Expression::Binary(Box::new(BinaryExpr {
                         base: self.base_node_from_others(ex.base(), e.base()),
-                        operator: OperatorKind::InvalidOperator,
+                        operator: Operator::InvalidOperator,
                         left: ex,
                         right: e,
                     })));
@@ -620,7 +620,7 @@ impl Parser {
             let cons = self.parse_expression();
             self.expect(TOK_ELSE);
             let alt = self.parse_expression();
-            return Expression::Cond(Box::new(ConditionalExpression {
+            return Expression::Conditional(Box::new(ConditionalExpr {
                 base: self.base_node_from_other_end(&t, alt.base()),
                 test,
                 consequent: cons,
@@ -640,7 +640,7 @@ impl Parser {
             match or {
                 Some(or_op) => {
                     let rhs = self.parse_logical_and_expression();
-                    res = Expression::Log(Box::new(LogicalExpression {
+                    res = Expression::Logical(Box::new(LogicalExpr {
                         base: self.base_node_from_others(res.base(), rhs.base()),
                         operator: or_op,
                         left: res,
@@ -652,11 +652,11 @@ impl Parser {
         }
         res
     }
-    fn parse_or_operator(&mut self) -> Option<LogicalOperatorKind> {
+    fn parse_or_operator(&mut self) -> Option<LogicalOperator> {
         let t = self.peek().tok;
         if t == TOK_OR {
             self.consume();
-            Some(LogicalOperatorKind::OrOperator)
+            Some(LogicalOperator::OrOperator)
         } else {
             None
         }
@@ -672,7 +672,7 @@ impl Parser {
             match and {
                 Some(and_op) => {
                     let rhs = self.parse_logical_unary_expression();
-                    res = Expression::Log(Box::new(LogicalExpression {
+                    res = Expression::Logical(Box::new(LogicalExpr {
                         base: self.base_node_from_others(res.base(), rhs.base()),
                         operator: and_op,
                         left: res,
@@ -684,11 +684,11 @@ impl Parser {
         }
         res
     }
-    fn parse_and_operator(&mut self) -> Option<LogicalOperatorKind> {
+    fn parse_and_operator(&mut self) -> Option<LogicalOperator> {
         let t = self.peek().tok;
         if t == TOK_AND {
             self.consume();
-            Some(LogicalOperatorKind::AndOperator)
+            Some(LogicalOperator::AndOperator)
         } else {
             None
         }
@@ -699,7 +699,7 @@ impl Parser {
         match op {
             Some(op) => {
                 let expr = self.parse_logical_unary_expression();
-                Expression::Un(Box::new(UnaryExpression {
+                Expression::Unary(Box::new(UnaryExpr {
                     base: self.base_node_from_other_end(&t, expr.base()),
                     operator: op,
                     argument: expr,
@@ -708,16 +708,16 @@ impl Parser {
             None => self.parse_comparison_expression(),
         }
     }
-    fn parse_logical_unary_operator(&mut self) -> Option<OperatorKind> {
+    fn parse_logical_unary_operator(&mut self) -> Option<Operator> {
         let t = self.peek().tok;
         match t {
             TOK_NOT => {
                 self.consume();
-                Some(OperatorKind::NotOperator)
+                Some(Operator::NotOperator)
             }
             TOK_EXISTS => {
                 self.consume();
-                Some(OperatorKind::ExistsOperator)
+                Some(Operator::ExistsOperator)
             }
             _ => None,
         }
@@ -733,7 +733,7 @@ impl Parser {
             match op {
                 Some(op) => {
                     let rhs = self.parse_additive_expression();
-                    res = Expression::Bin(Box::new(BinaryExpression {
+                    res = Expression::Binary(Box::new(BinaryExpr {
                         base: self.base_node_from_others(res.base(), rhs.base()),
                         operator: op,
                         left: res,
@@ -745,18 +745,18 @@ impl Parser {
         }
         res
     }
-    fn parse_comparison_operator(&mut self) -> Option<OperatorKind> {
+    fn parse_comparison_operator(&mut self) -> Option<Operator> {
         let t = self.peek().tok;
         let mut res = None;
         match t {
-            TOK_EQ => res = Some(OperatorKind::EqualOperator),
-            TOK_NEQ => res = Some(OperatorKind::NotEqualOperator),
-            TOK_LTE => res = Some(OperatorKind::LessThanEqualOperator),
-            TOK_LT => res = Some(OperatorKind::LessThanOperator),
-            TOK_GTE => res = Some(OperatorKind::GreaterThanEqualOperator),
-            TOK_GT => res = Some(OperatorKind::GreaterThanOperator),
-            TOK_REGEXEQ => res = Some(OperatorKind::RegexpMatchOperator),
-            TOK_REGEXNEQ => res = Some(OperatorKind::NotRegexpMatchOperator),
+            TOK_EQ => res = Some(Operator::EqualOperator),
+            TOK_NEQ => res = Some(Operator::NotEqualOperator),
+            TOK_LTE => res = Some(Operator::LessThanEqualOperator),
+            TOK_LT => res = Some(Operator::LessThanOperator),
+            TOK_GTE => res = Some(Operator::GreaterThanEqualOperator),
+            TOK_GT => res = Some(Operator::GreaterThanOperator),
+            TOK_REGEXEQ => res = Some(Operator::RegexpMatchOperator),
+            TOK_REGEXNEQ => res = Some(Operator::NotRegexpMatchOperator),
             _ => (),
         }
         match res {
@@ -776,7 +776,7 @@ impl Parser {
             match op {
                 Some(op) => {
                     let rhs = self.parse_multiplicative_expression();
-                    res = Expression::Bin(Box::new(BinaryExpression {
+                    res = Expression::Binary(Box::new(BinaryExpr {
                         base: self.base_node_from_others(res.base(), rhs.base()),
                         operator: op,
                         left: res,
@@ -788,12 +788,12 @@ impl Parser {
         }
         res
     }
-    fn parse_additive_operator(&mut self) -> Option<OperatorKind> {
+    fn parse_additive_operator(&mut self) -> Option<Operator> {
         let t = self.peek().tok;
         let mut res = None;
         match t {
-            TOK_ADD => res = Some(OperatorKind::AdditionOperator),
-            TOK_SUB => res = Some(OperatorKind::SubtractionOperator),
+            TOK_ADD => res = Some(Operator::AdditionOperator),
+            TOK_SUB => res = Some(Operator::SubtractionOperator),
             _ => (),
         }
         match res {
@@ -813,7 +813,7 @@ impl Parser {
             match op {
                 Some(op) => {
                     let rhs = self.parse_pipe_expression();
-                    res = Expression::Bin(Box::new(BinaryExpression {
+                    res = Expression::Binary(Box::new(BinaryExpr {
                         base: self.base_node_from_others(res.base(), rhs.base()),
                         operator: op,
                         left: res,
@@ -825,14 +825,14 @@ impl Parser {
         }
         res
     }
-    fn parse_multiplicative_operator(&mut self) -> Option<OperatorKind> {
+    fn parse_multiplicative_operator(&mut self) -> Option<Operator> {
         let t = self.peek().tok;
         let mut res = None;
         match t {
-            TOK_MUL => res = Some(OperatorKind::MultiplicationOperator),
-            TOK_DIV => res = Some(OperatorKind::DivisionOperator),
-            TOK_MOD => res = Some(OperatorKind::ModuloOperator),
-            TOK_POW => res = Some(OperatorKind::PowerOperator),
+            TOK_MUL => res = Some(Operator::MultiplicationOperator),
+            TOK_DIV => res = Some(Operator::DivisionOperator),
+            TOK_MOD => res = Some(Operator::ModuloOperator),
+            TOK_POW => res = Some(Operator::PowerOperator),
             _ => (),
         }
         match res {
@@ -856,7 +856,7 @@ impl Parser {
             let rhs = self.parse_unary_expression();
             match rhs {
                 Expression::Call(b) => {
-                    res = Expression::Pipe(Box::new(PipeExpression {
+                    res = Expression::PipeExpr(Box::new(PipeExpr {
                         base: self.base_node_from_others(res.base(), &b.base),
                         argument: res,
                         call: *b,
@@ -868,12 +868,12 @@ impl Parser {
                     // TODO(affo): add errors got from ast.Check on rhs.
                     self.errs
                         .push(String::from("pipe destination must be a function call"));
-                    let call = CallExpression {
+                    let call = CallExpr {
                         base: self.base_node(rhs.base().location.clone()),
                         callee: rhs,
                         arguments: vec![],
                     };
-                    res = Expression::Pipe(Box::new(PipeExpression {
+                    res = Expression::PipeExpr(Box::new(PipeExpr {
                         base: self.base_node_from_others(res.base(), &call.base),
                         argument: res,
                         call: call,
@@ -897,7 +897,7 @@ impl Parser {
         match op {
             Some(op) => {
                 let expr = self.parse_unary_expression();
-                return Expression::Un(Box::new(UnaryExpression {
+                return Expression::Unary(Box::new(UnaryExpr {
                     base: self.base_node_from_other_end(&t, expr.base()),
                     operator: op,
                     argument: expr,
@@ -944,7 +944,7 @@ impl Parser {
     fn parse_dot_expression(&mut self, expr: Expression) -> Expression {
         self.expect(TOK_DOT);
         let id = self.parse_identifier();
-        Expression::Mem(Box::new(MemberExpression {
+        Expression::Member(Box::new(MemberExpr {
             base: self.base_node_from_others(expr.base(), &id.base),
             object: expr,
             property: PropertyKey::Identifier(id),
@@ -954,21 +954,20 @@ impl Parser {
         self.open(TOK_LPAREN, TOK_RPAREN);
         let params = self.parse_property_list();
         let end = self.close(TOK_RPAREN);
-        let mut call = CallExpression {
+        let mut call = CallExpr {
             base: self.base_node_from_other_start(expr.base(), &end),
             callee: expr,
             arguments: vec![],
         };
         if params.len() > 0 {
-            call.arguments
-                .push(Expression::Obj(Box::new(ObjectExpression {
-                    base: self.base_node_from_others(
-                        &params.first().expect("len > 0, impossible").base,
-                        &params.last().expect("len > 0, impossible").base,
-                    ),
-                    with: None,
-                    properties: params,
-                })));
+            call.arguments.push(Expression::Object(Box::new(ObjectExpr {
+                base: self.base_node_from_others(
+                    &params.first().expect("len > 0, impossible").base,
+                    &params.last().expect("len > 0, impossible").base,
+                ),
+                with: None,
+                properties: params,
+            })));
         }
         Expression::Call(Box::new(call))
     }
@@ -977,12 +976,12 @@ impl Parser {
         let iexpr = self.parse_expression_while_more(None, &[]);
         let end = self.close(TOK_RBRACK);
         match iexpr {
-            Some(Expression::Str(sl)) => Expression::Mem(Box::new(MemberExpression {
+            Some(Expression::StringLit(sl)) => Expression::Member(Box::new(MemberExpr {
                 base: self.base_node_from_other_start(expr.base(), &end),
                 object: expr,
-                property: PropertyKey::StringLiteral(sl),
+                property: PropertyKey::StringLit(sl),
             })),
-            Some(e) => Expression::Idx(Box::new(IndexExpression {
+            Some(e) => Expression::Index(Box::new(IndexExpr {
                 base: self.base_node_from_other_start(expr.base(), &end),
                 array: expr,
                 index: e,
@@ -991,10 +990,10 @@ impl Parser {
             None => {
                 self.errs
                     .push(String::from("no expression included in brackets"));
-                Expression::Idx(Box::new(IndexExpression {
+                Expression::Index(Box::new(IndexExpr {
                     base: self.base_node_from_other_start(expr.base(), &end),
                     array: expr,
-                    index: Expression::Int(IntegerLiteral {
+                    index: Expression::Integer(IntegerLit {
                         base: self.base_node_from_tokens(&start, &end),
                         value: -1,
                     }),
@@ -1005,23 +1004,23 @@ impl Parser {
     fn parse_primary_expression(&mut self) -> Expression {
         let t = self.peek_with_regex();
         match t.tok {
-            TOK_IDENT => Expression::Idt(self.parse_identifier()),
-            TOK_INT => Expression::Int(self.parse_int_literal()),
-            TOK_FLOAT => Expression::Flt(self.parse_float_literal()),
-            TOK_STRING => Expression::Str(self.parse_string_literal()),
-            TOK_QUOTE => Expression::StringExp(Box::new(self.parse_string_expression())),
+            TOK_IDENT => Expression::Identifier(self.parse_identifier()),
+            TOK_INT => Expression::Integer(self.parse_int_literal()),
+            TOK_FLOAT => Expression::Float(self.parse_float_literal()),
+            TOK_STRING => Expression::StringLit(self.parse_string_literal()),
+            TOK_QUOTE => Expression::StringExpr(Box::new(self.parse_string_expression())),
             TOK_REGEX => Expression::Regexp(self.parse_regexp_literal()),
-            TOK_TIME => Expression::Time(self.parse_time_literal()),
-            TOK_DURATION => Expression::Dur(self.parse_duration_literal()),
+            TOK_TIME => Expression::DateTime(self.parse_time_literal()),
+            TOK_DURATION => Expression::Duration(self.parse_duration_literal()),
             TOK_PIPE_RECEIVE => Expression::PipeLit(self.parse_pipe_literal()),
-            TOK_LBRACK => Expression::Arr(Box::new(self.parse_array_literal())),
-            TOK_LBRACE => Expression::Obj(Box::new(self.parse_object_literal())),
+            TOK_LBRACK => Expression::Array(Box::new(self.parse_array_literal())),
+            TOK_LBRACE => Expression::Object(Box::new(self.parse_object_literal())),
             TOK_LPAREN => self.parse_paren_expression(),
             // We got a bad token, do not consume it, but use it in the message.
-            // Other methods will match BadExpression and consume the token if needed.
-            _ => Expression::Bad(Box::new(BadExpression {
+            // Other methods will match BadExpr and consume the token if needed.
+            _ => Expression::Bad(Box::new(BadExpr {
                 // Do not use `self.base_node_*` in order not to steal errors.
-                // The BadExpression is an error per se. We want to leave errors to parents.
+                // The BadExpr is an error per se. We want to leave errors to parents.
                 base: BaseNode {
                     location: self
                         .source_location(&self.pos(t.pos), &self.pos(t.pos + t.lit.len() as u32)),
@@ -1035,14 +1034,14 @@ impl Parser {
             })),
         }
     }
-    fn parse_string_expression(&mut self) -> StringExpression {
+    fn parse_string_expression(&mut self) -> StringExpr {
         let start = self.expect(TOK_QUOTE);
         let mut parts = Vec::new();
         loop {
             let t = self.s.scan_string_expr();
             match t.tok {
                 TOK_TEXT => {
-                    parts.push(StringExpressionPart::Text(TextPart {
+                    parts.push(StringExprPart::Text(TextPart {
                         base: self.base_node_from_token(&t),
                         value: strconv::parse_text(t.lit.as_str()).unwrap(),
                     }));
@@ -1050,13 +1049,13 @@ impl Parser {
                 TOK_STRINGEXPR => {
                     let expr = self.parse_expression();
                     let end = self.expect(TOK_RBRACE);
-                    parts.push(StringExpressionPart::Expr(InterpolatedPart {
+                    parts.push(StringExprPart::Interpolated(InterpolatedPart {
                         base: self.base_node_from_tokens(&t, &end),
                         expression: expr,
                     }));
                 }
                 TOK_QUOTE => {
-                    return StringExpression {
+                    return StringExpr {
                         base: self.base_node_from_tokens(&start, &t),
                         parts: parts,
                     }
@@ -1073,7 +1072,7 @@ impl Parser {
                         loc.end.column,
                         format_token(t.tok)
                     ));
-                    return StringExpression {
+                    return StringExpr {
                         base: self.base_node_from_tokens(&start, &t),
                         parts: Vec::new(),
                     };
@@ -1088,7 +1087,7 @@ impl Parser {
             name: t.lit,
         };
     }
-    fn parse_int_literal(&mut self) -> IntegerLiteral {
+    fn parse_int_literal(&mut self) -> IntegerLit {
         let t = self.expect(TOK_INT);
         match (&t.lit).parse::<i64>() {
             Err(_e) => {
@@ -1096,81 +1095,81 @@ impl Parser {
                     "invalid integer literal \"{}\": value out of range",
                     t.lit
                 ));
-                IntegerLiteral {
+                IntegerLit {
                     base: self.base_node_from_token(&t),
                     value: 0,
                 }
             }
-            Ok(v) => IntegerLiteral {
+            Ok(v) => IntegerLit {
                 base: self.base_node_from_token(&t),
                 value: v,
             },
         }
     }
-    fn parse_float_literal(&mut self) -> FloatLiteral {
+    fn parse_float_literal(&mut self) -> FloatLit {
         let t = self.expect(TOK_FLOAT);
-        return FloatLiteral {
+        return FloatLit {
             base: self.base_node_from_token(&t),
             value: (&t.lit).parse::<f64>().unwrap(),
         };
     }
-    fn parse_string_literal(&mut self) -> StringLiteral {
+    fn parse_string_literal(&mut self) -> StringLit {
         let t = self.expect(TOK_STRING);
         let value = strconv::parse_string(t.lit.as_str()).unwrap();
-        StringLiteral {
+        StringLit {
             base: self.base_node_from_token(&t),
             value: value,
         }
     }
-    fn parse_regexp_literal(&mut self) -> RegexpLiteral {
+    fn parse_regexp_literal(&mut self) -> RegexpLit {
         let t = self.expect(TOK_REGEX);
         let value = strconv::parse_regex(t.lit.as_str());
         match value {
             Err(e) => {
                 self.errs.push(e);
-                RegexpLiteral {
+                RegexpLit {
                     base: self.base_node_from_token(&t),
                     value: "".to_string(),
                 }
             }
-            Ok(v) => RegexpLiteral {
+            Ok(v) => RegexpLit {
                 base: self.base_node_from_token(&t),
                 value: v,
             },
         }
     }
-    fn parse_time_literal(&mut self) -> DateTimeLiteral {
+    fn parse_time_literal(&mut self) -> DateTimeLit {
         let t = self.expect(TOK_TIME);
         let value = strconv::parse_time(t.lit.as_str()).unwrap();
-        DateTimeLiteral {
+        DateTimeLit {
             base: self.base_node_from_token(&t),
             value: value,
         }
     }
-    fn parse_duration_literal(&mut self) -> DurationLiteral {
+    fn parse_duration_literal(&mut self) -> DurationLit {
         let t = self.expect(TOK_DURATION);
         let values = strconv::parse_duration(t.lit.as_str()).unwrap();
-        DurationLiteral {
+        DurationLit {
             base: self.base_node_from_token(&t),
             values: values,
         }
     }
-    fn parse_pipe_literal(&mut self) -> PipeLiteral {
+    fn parse_pipe_literal(&mut self) -> PipeLit {
         let t = self.expect(TOK_PIPE_RECEIVE);
-        PipeLiteral {
+        PipeLit {
             base: self.base_node_from_token(&t),
         }
     }
-    fn parse_array_literal(&mut self) -> ArrayExpression {
+    fn parse_array_literal(&mut self) -> ArrayExpr {
         let start = self.open(TOK_LBRACK, TOK_RBRACK);
         let exprs = self.parse_expression_list();
         let end = self.close(TOK_RBRACK);
-        ArrayExpression {
+        ArrayExpr {
             base: self.base_node_from_tokens(&start, &end),
             elements: exprs,
         }
     }
-    fn parse_object_literal(&mut self) -> ObjectExpression {
+    fn parse_object_literal(&mut self) -> ObjectExpr {
         let start = self.open(TOK_LBRACE, TOK_RBRACE);
         let mut obj = self.parse_object_body();
         let end = self.close(TOK_RBRACE);
@@ -1196,9 +1195,9 @@ impl Parser {
                 let mut expr = self.parse_expression_while_more(None, &[]);
                 match expr {
                     None => {
-                        expr = Some(Expression::Bad(Box::new(BadExpression {
+                        expr = Some(Expression::Bad(Box::new(BadExpr {
                             // Do not use `self.base_node_*` in order not to steal errors.
-                            // The BadExpression is an error per se. We want to leave errors to parents.
+                            // The BadExpr is an error per se. We want to leave errors to parents.
                             base: BaseNode {
                                 location: self.source_location(
                                     &self.pos(t.pos),
@@ -1213,7 +1212,7 @@ impl Parser {
                     Some(_) => (),
                 };
                 let rparen = self.close(TOK_RPAREN);
-                Expression::Paren(Box::new(ParenExpression {
+                Expression::Paren(Box::new(ParenExpr {
                     base: self.base_node_from_tokens(&lparen, &rparen),
                     expression: expr.expect("must be Some at this point"),
                 }))
@@ -1236,7 +1235,7 @@ impl Parser {
                         });
                         self.parse_function_expression(lparen, params)
                     }
-                    _ => Expression::Idt(key),
+                    _ => Expression::Identifier(key),
                 }
             }
             TOK_ASSIGN => {
@@ -1269,7 +1268,7 @@ impl Parser {
                 self.parse_function_expression(lparen, params)
             }
             _ => {
-                let mut expr = self.parse_expression_suffix(Expression::Idt(key));
+                let mut expr = self.parse_expression_suffix(Expression::Identifier(key));
                 while self.more() {
                     let rhs = self.parse_expression();
                     match rhs {
@@ -1285,22 +1284,22 @@ impl Parser {
                         }
                         _ => (),
                     };
-                    expr = Expression::Bin(Box::new(BinaryExpression {
+                    expr = Expression::Binary(Box::new(BinaryExpr {
                         base: self.base_node_from_others(expr.base(), rhs.base()),
-                        operator: OperatorKind::InvalidOperator,
+                        operator: Operator::InvalidOperator,
                         left: expr,
                         right: rhs,
                     }));
                 }
                 let rparen = self.close(TOK_RPAREN);
-                Expression::Paren(Box::new(ParenExpression {
+                Expression::Paren(Box::new(ParenExpr {
                     base: self.base_node_from_tokens(&lparen, &rparen),
                     expression: expr,
                 }))
             }
         }
     }
-    fn parse_object_body(&mut self) -> ObjectExpression {
+    fn parse_object_body(&mut self) -> ObjectExpr {
         let t = self.peek();
         match t.tok {
             TOK_IDENT => {
@@ -1309,15 +1308,15 @@ impl Parser {
             }
             TOK_STRING => {
                 let s = self.parse_string_literal();
-                let props = self.parse_property_list_suffix(PropertyKey::StringLiteral(s));
-                ObjectExpression {
+                let props = self.parse_property_list_suffix(PropertyKey::StringLit(s));
+                ObjectExpr {
                     // `base` will be overridden by `parse_object_literal`.
                     base: BaseNode::default(),
                     with: None,
                     properties: props,
                 }
             }
-            _ => ObjectExpression {
+            _ => ObjectExpr {
                 // `base` will be overridden by `parse_object_literal`.
                 base: BaseNode::default(),
                 with: None,
@@ -1325,7 +1324,7 @@ impl Parser {
             },
         }
     }
-    fn parse_object_body_suffix(&mut self, ident: Identifier) -> ObjectExpression {
+    fn parse_object_body_suffix(&mut self, ident: Identifier) -> ObjectExpr {
         let t = self.peek();
         match t.tok {
             TOK_IDENT => {
@@ -1334,7 +1333,7 @@ impl Parser {
                 }
                 self.consume();
                 let props = self.parse_property_list();
-                ObjectExpression {
+                ObjectExpr {
                     // `base` will be overridden by `parse_object_literal`.
                     base: BaseNode::default(),
                     with: Some(ident),
@@ -1343,7 +1342,7 @@ impl Parser {
             }
             _ => {
                 let props = self.parse_property_list_suffix(PropertyKey::Identifier(ident));
-                ObjectExpression {
+                ObjectExpr {
                     // `base` will be overridden by `parse_object_literal`.
                     base: BaseNode::default(),
                     with: None,
@@ -1401,7 +1400,7 @@ impl Parser {
     }
     fn parse_string_property(&mut self) -> Property {
         let key = self.parse_string_literal();
-        self.parse_property_suffix(PropertyKey::StringLiteral(key))
+        self.parse_property_suffix(PropertyKey::StringLit(key))
     }
     fn parse_ident_property(&mut self) -> Property {
         let key = self.parse_identifier();
@@ -1457,7 +1456,7 @@ impl Parser {
         let end = self.peek();
         Property {
             base: self.base_node_from_pos(&self.pos(t.pos), &self.pos(end.pos)),
-            key: PropertyKey::StringLiteral(StringLiteral {
+            key: PropertyKey::StringLit(StringLit {
                 base: self.base_node_from_pos(&self.pos(t.pos), &self.pos(t.pos)),
                 value: "<invalid>".to_string(),
             }),
@@ -1467,7 +1466,7 @@ impl Parser {
     fn parse_property_value(&mut self) -> Option<Expression> {
         let res = self.parse_expression_while_more(None, &[TOK_COMMA, TOK_COLON]);
         match res {
-            // TODO: return a BadExpression here. It would help simplify logic.
+            // TODO: return a BadExpr here. It would help simplify logic.
             None => self.errs.push(String::from("missing property value")),
             _ => (),
         }
@@ -1515,7 +1514,7 @@ impl Parser {
         match t.tok {
             TOK_LBRACE => {
                 let block = self.parse_block();
-                Expression::Fun(Box::new(FunctionExpression {
+                Expression::Function(Box::new(FunctionExpr {
                     base: self.base_node_from_other_end(&lparen, &block.base),
                     params,
                     body: FunctionBody::Block(block),
@@ -1523,7 +1522,7 @@ impl Parser {
             }
             _ => {
                 let expr = self.parse_expression();
-                Expression::Fun(Box::new(FunctionExpression {
+                Expression::Function(Box::new(FunctionExpr {
                     base: self.base_node_from_other_end(&lparen, expr.base()),
                     params,
                     body: FunctionBody::Expr(expr),
