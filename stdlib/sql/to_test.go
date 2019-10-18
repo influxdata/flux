@@ -308,12 +308,12 @@ func TestToSQL_Process(t *testing.T) {
 }
 
 func TestToSql_NewTransformation(t *testing.T) {
-	test := querytest.TfUrlValidationTest{
+	test := executetest.TfUrlValidationTest{
 		CreateFn: func(d execute.Dataset, deps flux.Dependencies, cache execute.TableBuilderCache,
 			spec plan.ProcedureSpec) (execute.Transformation, error) {
 			return fsql.NewToSQLTransformation(d, deps, cache, spec.(*fsql.ToSQLProcedureSpec))
 		},
-		Cases: []querytest.TfUrlValidationTestCase{
+		Cases: []executetest.TfUrlValidationTestCase{
 			{
 				Name: "ok mysql",
 				Spec: &fsql.ToSQLProcedureSpec{

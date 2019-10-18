@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/dependencies/url"
-	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/execute/executetest"
 )
 
 func TestFromSocketUrlValidation(t *testing.T) {
-	testCases := querytest.SourceUrlValidationTestCases{
+	testCases := executetest.SourceUrlValidationTestCases{
 		{
 			Name: "invalid scheme",
 			Spec: &FromSocketProcedureSpec{

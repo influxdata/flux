@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/dependencies/url"
-	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/execute/executetest"
 )
 
 func TestFromSqlUrlValidation(t *testing.T) {
-	testCases := querytest.SourceUrlValidationTestCases{
+	testCases := executetest.SourceUrlValidationTestCases{
 		{
 			Name: "ok mysql",
 			Spec: &FromSQLProcedureSpec{

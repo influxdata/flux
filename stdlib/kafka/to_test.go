@@ -549,12 +549,12 @@ func TestToKafka_Process(t *testing.T) {
 }
 
 func TestToKafka_NewTransformation(t *testing.T) {
-	test := querytest.TfUrlValidationTest{
+	test := executetest.TfUrlValidationTest{
 		CreateFn: func(d execute.Dataset, deps flux.Dependencies, cache execute.TableBuilderCache,
 			spec plan.ProcedureSpec) (execute.Transformation, error) {
 			return fkafka.NewToKafkaTransformation(d, deps, cache, spec.(*fkafka.ToKafkaProcedureSpec))
 		},
-		Cases: []querytest.TfUrlValidationTestCase{
+		Cases: []executetest.TfUrlValidationTestCase{
 			{
 				Name: "ok",
 				Spec: &fkafka.ToKafkaProcedureSpec{
