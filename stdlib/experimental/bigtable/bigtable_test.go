@@ -18,7 +18,6 @@ import (
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
-	"github.com/stretchr/testify/assert"
 )
 
 var rRowKey *semantic.MemberExpression = &semantic.MemberExpression{
@@ -122,7 +121,11 @@ func TestBigtableDecode(t *testing.T) {
 		}
 
 		for i := 0; i < 4; i++ {
-			assert.Equal(t, wantBuffer.GetRow(i), buffer.GetRow(i))
+			want := wantBuffer.GetRow(i)
+			got := buffer.GetRow(i)
+			if !got.Equal(want) {
+				t.Fatalf("unexpected result -want/+got:\n%s", cmp.Diff(want, got))
+			}
 		}
 	})
 }

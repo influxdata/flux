@@ -17,7 +17,6 @@ import (
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	fsql "github.com/influxdata/flux/stdlib/sql"
 	"github.com/influxdata/flux/values"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestSqlTo(t *testing.T) {
@@ -309,82 +308,60 @@ func TestToSQL_Process(t *testing.T) {
 }
 
 func TestToSql_NewTransformation(t *testing.T) {
-	testCases := []struct {
-		name      string
-		spec      *fsql.ToSQLProcedureSpec
-		validator url.Validator
-		wantErr   string
-	}{
-		{
-			name: "ok mysql",
-			spec: &fsql.ToSQLProcedureSpec{
-				Spec: &fsql.ToSQLOpSpec{
-					DriverName:     "mysql",
-					DataSourceName: "username:password@tcp(localhost:12345)/dbname?param=value",
+	test := executetest.TfUrlValidationTest{
+		CreateFn: func(d execute.Dataset, deps flux.Dependencies, cache execute.TableBuilderCache,
+			spec plan.ProcedureSpec) (execute.Transformation, error) {
+			return fsql.NewToSQLTransformation(d, deps, cache, spec.(*fsql.ToSQLProcedureSpec))
+		},
+		Cases: []executetest.TfUrlValidationTestCase{
+			{
+				Name: "ok mysql",
+				Spec: &fsql.ToSQLProcedureSpec{
+					Spec: &fsql.ToSQLOpSpec{
+						DriverName:     "mysql",
+						DataSourceName: "username:password@tcp(localhost:12345)/dbname?param=value",
+					},
 				},
-			},
-			wantErr: "connection refused",
-		}, {
-			name: "ok postgres",
-			spec: &fsql.ToSQLProcedureSpec{
-				Spec: &fsql.ToSQLOpSpec{
-					DriverName:     "postgres",
-					DataSourceName: "postgres://pqgotest:password@localhost:12345/pqgotest?sslmode=verify-full",
+				WantErr: "connection refused",
+			}, {
+				Name: "ok postgres",
+				Spec: &fsql.ToSQLProcedureSpec{
+					Spec: &fsql.ToSQLOpSpec{
+						DriverName:     "postgres",
+						DataSourceName: "postgres://pqgotest:password@localhost:12345/pqgotest?sslmode=verify-full",
+					},
 				},
-			},
-			wantErr: "connection refused",
-		}, {
-			name: "invalid driver",
-			spec: &fsql.ToSQLProcedureSpec{
-				Spec: &fsql.ToSQLOpSpec{
-					DriverName:     "voltdb",
-					DataSourceName: "voltdb://pqgotest:password@localhost:12345/pqgotest?sslmode=verify-full",
+				WantErr: "connection refused",
+			}, {
+				Name: "invalid driver",
+				Spec: &fsql.ToSQLProcedureSpec{
+					Spec: &fsql.ToSQLOpSpec{
+						DriverName:     "voltdb",
+						DataSourceName: "voltdb://pqgotest:password@localhost:12345/pqgotest?sslmode=verify-full",
+					},
 				},
-			},
-			wantErr: "sql driver voltdb not supported",
-		}, {
-			name: "no such host",
-			spec: &fsql.ToSQLProcedureSpec{
-				Spec: &fsql.ToSQLOpSpec{
-					DriverName:     "mysql",
-					DataSourceName: "username:password@tcp(notfound:12345)/dbname?param=value",
+				WantErr: "sql driver voltdb not supported",
+			}, {
+				Name: "no such host",
+				Spec: &fsql.ToSQLProcedureSpec{
+					Spec: &fsql.ToSQLOpSpec{
+						DriverName:     "mysql",
+						DataSourceName: "username:password@tcp(notfound:12345)/dbname?param=value",
+					},
 				},
-			},
-			wantErr: "no such host",
-		}, {
-			name: "private ip",
-			spec: &fsql.ToSQLProcedureSpec{
-				Spec: &fsql.ToSQLOpSpec{
-					DriverName:     "mysql",
-					DataSourceName: "username:password@tcp(localhost:12345)/dbname?param=value",
+				WantErr: "no such host",
+			}, {
+				Name: "private ip",
+				Spec: &fsql.ToSQLProcedureSpec{
+					Spec: &fsql.ToSQLOpSpec{
+						DriverName:     "mysql",
+						DataSourceName: "username:password@tcp(localhost:12345)/dbname?param=value",
+					},
 				},
+				Validator: url.PrivateIPValidator{},
+				WantErr:   "url is not valid, it connects to a private IP",
 			},
-			validator: url.PrivateIPValidator{},
-			wantErr:   "url is not valid, it connects to a private IP",
 		},
 	}
-
-	for _, tc := range testCases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
-			d := executetest.NewDataset(executetest.RandomDatasetID())
-			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
-			deps := dependenciestest.Default()
-			if tc.validator != nil {
-				deps.Deps.URLValidator = tc.validator
-			}
-			_, err := fsql.NewToSQLTransformation(d, deps, c, tc.spec)
-			if err != nil {
-				if tc.wantErr != "" {
-					got := err.Error()
-					assert.Contains(t, got, tc.wantErr)
-					return
-				} else {
-					t.Fatal(err)
-				}
-			}
-		})
-	}
+	test.Run(t)
 }
