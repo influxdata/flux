@@ -2,7 +2,7 @@ version: 2
 jobs:
   test:
     docker:
-      - image: nathanielc/flux-build:latest
+      - image: quay.io/influxdb/flux-build:latest
     environment:
       GOCACHE: /tmp/go-cache
       GOFLAGS: -p=8
@@ -60,7 +60,7 @@ jobs:
           when: always
   test-race:
     docker:
-      - image: nathanielc/flux-build:latest
+      - image: quay.io/influxdb/flux-build:latest
     environment:
       GOPATH: /tmp/go
       GOFLAGS: -p=8
@@ -78,7 +78,7 @@ jobs:
       # No need to save the pkg/mod cache since the other job does it
   test-bench:
     docker:
-      - image: nathanielc/flux-build:latest
+      - image: quay.io/influxdb/flux-build:latest
     environment:
       GOPATH: /tmp/go
       GOFLAGS: -p=8
