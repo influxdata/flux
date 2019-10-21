@@ -60,7 +60,7 @@ func subDuration(name string) values.Value {
 		if !ok {
 			return nil, fmt.Errorf("%s requires 'from' parameter", name)
 		}
-		return values.NewTime(t.Time().Add(-d.Duration())), nil
+		return values.NewTime(t.Time().Add(d.Duration().Mul(-1))), nil
 	}
 	return values.NewFunction(name, tp, fn, false)
 }

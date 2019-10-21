@@ -368,7 +368,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 			case semantic.Float:
 				return values.NewFloat(-v.Float()), nil
 			case semantic.Duration:
-				return values.NewDuration(-v.Duration()), nil
+				return values.NewDuration(v.Duration().Mul(-1)), nil
 			default:
 				return nil, errors.Newf(codes.Invalid, "operand to unary expression is not a number value, got %v", v.Type())
 			}
@@ -551,7 +551,7 @@ func (itrp *Interpreter) doLiteral(lit semantic.Literal) (values.Value, error) {
 	case *semantic.DateTimeLiteral:
 		return values.NewTime(values.Time(l.Value.UnixNano())), nil
 	case *semantic.DurationLiteral:
-		return values.NewDuration(values.Duration(l.Value)), nil
+		return values.NewDuration(values.ConvertDuration(l.Value)), nil
 	case *semantic.FloatLiteral:
 		return values.NewFloat(l.Value), nil
 	case *semantic.IntegerLiteral:

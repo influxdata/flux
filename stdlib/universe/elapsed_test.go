@@ -43,7 +43,7 @@ func TestElapsed_Process(t *testing.T) {
 		{
 			name: "basic output",
 			spec: &universe.ElapsedProcedureSpec{
-				Unit:       flux.Duration(time.Nanosecond),
+				Unit:       flux.ConvertDuration(time.Nanosecond),
 				TimeColumn: execute.DefaultTimeColLabel,
 				ColumnName: "elapsed",
 			},
@@ -69,7 +69,7 @@ func TestElapsed_Process(t *testing.T) {
 		{
 			name: "basic output. test columnName",
 			spec: &universe.ElapsedProcedureSpec{
-				Unit:       flux.Duration(time.Nanosecond),
+				Unit:       flux.ConvertDuration(time.Nanosecond),
 				TimeColumn: execute.DefaultTimeColLabel,
 				ColumnName: "elapsed_label",
 			},
@@ -95,7 +95,7 @@ func TestElapsed_Process(t *testing.T) {
 		{
 			name: "basic output. test timeColumn",
 			spec: &universe.ElapsedProcedureSpec{
-				Unit:       flux.Duration(time.Second),
+				Unit:       flux.ConvertDuration(time.Second),
 				TimeColumn: "timeStamp",
 				ColumnName: "elapsed",
 			},
@@ -121,7 +121,7 @@ func TestElapsed_Process(t *testing.T) {
 		{
 			name: "basic output. test unit",
 			spec: &universe.ElapsedProcedureSpec{
-				Unit:       flux.Duration(time.Second),
+				Unit:       flux.ConvertDuration(time.Second),
 				TimeColumn: execute.DefaultTimeColLabel,
 				ColumnName: "elapsed",
 			},
@@ -147,7 +147,7 @@ func TestElapsed_Process(t *testing.T) {
 		{
 			name: "a little less basic output, but still simple",
 			spec: &universe.ElapsedProcedureSpec{
-				Unit:       flux.Duration(time.Nanosecond),
+				Unit:       flux.ConvertDuration(time.Nanosecond),
 				TimeColumn: execute.DefaultTimeColLabel,
 				ColumnName: "elapsed",
 			},
@@ -183,7 +183,7 @@ func TestElapsed_Process(t *testing.T) {
 		{
 			name: "two columns: time, _value",
 			spec: &universe.ElapsedProcedureSpec{
-				Unit:       flux.Duration(time.Nanosecond),
+				Unit:       flux.ConvertDuration(time.Nanosecond),
 				TimeColumn: execute.DefaultTimeColLabel,
 				ColumnName: "elapsed",
 			},
@@ -221,7 +221,7 @@ func TestElapsed_Process(t *testing.T) {
 		{
 			name: "three columns: time, _value, path",
 			spec: &universe.ElapsedProcedureSpec{
-				Unit:       flux.Duration(time.Nanosecond),
+				Unit:       flux.ConvertDuration(time.Nanosecond),
 				TimeColumn: execute.DefaultTimeColLabel,
 				ColumnName: "elapsed",
 			},
@@ -261,7 +261,7 @@ func TestElapsed_Process(t *testing.T) {
 		{
 			name: "multiple time columns",
 			spec: &universe.ElapsedProcedureSpec{
-				Unit:       flux.Duration(time.Nanosecond),
+				Unit:       flux.ConvertDuration(time.Nanosecond),
 				TimeColumn: "start",
 				ColumnName: "elapsed",
 			},

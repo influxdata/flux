@@ -17,7 +17,7 @@ func TestSleep(t *testing.T) {
 		args := values.NewObjectWithValues(
 			map[string]values.Value{
 				"v":        myval,
-				"duration": values.NewDuration(values.Duration(time.Microsecond)),
+				"duration": values.NewDuration(values.ConvertDuration(time.Microsecond)),
 			},
 		)
 		v, err := sleepFunc.Call(ctx, args)
@@ -38,7 +38,7 @@ func TestSleep(t *testing.T) {
 		args := values.NewObjectWithValues(
 			map[string]values.Value{
 				"v":        myval,
-				"duration": values.NewDuration(values.Duration(200 * time.Millisecond)),
+				"duration": values.NewDuration(values.ConvertDuration(200 * time.Millisecond)),
 			},
 		)
 		_, err := sleepFunc.Call(ctx, args)

@@ -728,18 +728,18 @@ func (a Arguments) GetRequiredTime(name string) (Time, error) {
 func (a Arguments) GetDuration(name string) (Duration, bool, error) {
 	v, ok := a.Get(name)
 	if !ok {
-		return 0, false, nil
+		return ConvertDuration(0), false, nil
 	}
-	return Duration(v.Duration()), true, nil
+	return v.Duration(), true, nil
 }
 
 func (a Arguments) GetRequiredDuration(name string) (Duration, error) {
 	d, ok, err := a.GetDuration(name)
 	if err != nil {
-		return 0, err
+		return ConvertDuration(0), err
 	}
 	if !ok {
-		return 0, fmt.Errorf("missing required keyword argument %q", name)
+		return ConvertDuration(0), fmt.Errorf("missing required keyword argument %q", name)
 	}
 	return d, nil
 }

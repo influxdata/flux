@@ -276,7 +276,7 @@ func (hwt *holtWintersTransformation) getCleanData(tbl flux.Table, colIdx, timeI
 		return int64(values.Time(t).Round(hwt.interval))
 	}
 	nextBucket := func() {
-		bucketEnd += int64(hwt.interval)
+		bucketEnd += int64(hwt.interval.Duration())
 		bucketFilled = false
 	}
 	appendV := func(cr flux.ColReader, i int) {

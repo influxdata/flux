@@ -17,7 +17,7 @@ func TestDerivativeOperation_Marshaling(t *testing.T) {
 	op := &flux.Operation{
 		ID: "derivative",
 		Spec: &universe.DerivativeOpSpec{
-			Unit:        flux.Duration(time.Minute),
+			Unit:        flux.ConvertDuration(time.Minute),
 			NonNegative: true,
 		},
 	}
@@ -48,7 +48,7 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:    []string{execute.DefaultValueColLabel},
 				TimeColumn: execute.DefaultTimeColLabel,
-				Unit:       1,
+				Unit:       flux.ConvertDuration(1),
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -75,7 +75,7 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:    []string{execute.DefaultValueColLabel},
 				TimeColumn: execute.DefaultTimeColLabel,
-				Unit:       flux.Duration(time.Second),
+				Unit:       flux.ConvertDuration(time.Second),
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -102,7 +102,7 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:    []string{execute.DefaultValueColLabel},
 				TimeColumn: execute.DefaultTimeColLabel,
-				Unit:       1,
+				Unit:       flux.ConvertDuration(1),
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -129,7 +129,7 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:    []string{execute.DefaultValueColLabel},
 				TimeColumn: execute.DefaultTimeColLabel,
-				Unit:       flux.Duration(time.Second),
+				Unit:       flux.ConvertDuration(time.Second),
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -156,7 +156,7 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:     []string{execute.DefaultValueColLabel},
 				TimeColumn:  execute.DefaultTimeColLabel,
-				Unit:        1,
+				Unit:        flux.ConvertDuration(1),
 				NonNegative: true,
 			},
 			data: []flux.Table{&executetest.Table{
@@ -186,7 +186,7 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:    []string{execute.DefaultValueColLabel},
 				TimeColumn: execute.DefaultTimeColLabel,
-				Unit:       1,
+				Unit:       flux.ConvertDuration(1),
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -213,7 +213,7 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:    []string{execute.DefaultValueColLabel},
 				TimeColumn: execute.DefaultTimeColLabel,
-				Unit:       1,
+				Unit:       flux.ConvertDuration(1),
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -240,7 +240,7 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:     []string{execute.DefaultValueColLabel},
 				TimeColumn:  execute.DefaultTimeColLabel,
-				Unit:        1,
+				Unit:        flux.ConvertDuration(1),
 				NonNegative: true,
 			},
 			data: []flux.Table{&executetest.Table{
@@ -270,7 +270,7 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:    []string{execute.DefaultValueColLabel},
 				TimeColumn: execute.DefaultTimeColLabel,
-				Unit:       flux.Duration(time.Second),
+				Unit:       flux.ConvertDuration(time.Second),
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -297,7 +297,7 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:     []string{execute.DefaultValueColLabel},
 				TimeColumn:  execute.DefaultTimeColLabel,
-				Unit:        1,
+				Unit:        flux.ConvertDuration(1),
 				NonNegative: true,
 			},
 			data: []flux.Table{&executetest.Table{
@@ -327,7 +327,7 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:    []string{execute.DefaultValueColLabel},
 				TimeColumn: execute.DefaultTimeColLabel,
-				Unit:       1,
+				Unit:       flux.ConvertDuration(1),
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -356,7 +356,7 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:    []string{"x", "y"},
 				TimeColumn: execute.DefaultTimeColLabel,
-				Unit:       1,
+				Unit:       flux.ConvertDuration(1),
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -385,7 +385,7 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:     []string{"x", "y"},
 				TimeColumn:  execute.DefaultTimeColLabel,
-				Unit:        1,
+				Unit:        flux.ConvertDuration(1),
 				NonNegative: true,
 			},
 			data: []flux.Table{&executetest.Table{
@@ -417,7 +417,7 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:    []string{"x", "y"},
 				TimeColumn: execute.DefaultTimeColLabel,
-				Unit:       1,
+				Unit:       flux.ConvertDuration(1),
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -448,7 +448,7 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:    []string{"x", "y"},
 				TimeColumn: execute.DefaultTimeColLabel,
-				Unit:       1,
+				Unit:       flux.ConvertDuration(1),
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -473,7 +473,7 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:    []string{"x", "y"},
 				TimeColumn: execute.DefaultTimeColLabel,
-				Unit:       1,
+				Unit:       flux.ConvertDuration(1),
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -498,7 +498,7 @@ func TestDerivative_Process(t *testing.T) {
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:    []string{"x"},
 				TimeColumn: execute.DefaultTimeColLabel,
-				Unit:       1,
+				Unit:       flux.ConvertDuration(1),
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{

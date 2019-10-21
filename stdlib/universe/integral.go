@@ -47,8 +47,8 @@ func createIntegralOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 	} else if ok {
 		spec.Unit = unit
 	} else {
-		//Default is 1s
-		spec.Unit = flux.Duration(time.Second)
+		// Default is 1s
+		spec.Unit = flux.ConvertDuration(time.Second)
 	}
 
 	if timeValue, ok, err := args.GetString("timeColumn"); err != nil {
@@ -169,7 +169,7 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 			return errors.Newf(codes.FailedPrecondition, "cannot perform integral over %v", typ)
 		}
 
-		integrals[idx] = newIntegral(time.Duration(t.spec.Unit))
+		integrals[idx] = newIntegral(values.Duration(t.spec.Unit).Duration())
 		newIdx, err := builder.AddCol(flux.ColMeta{
 			Label: c,
 			Type:  flux.TFloat,

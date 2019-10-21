@@ -34,9 +34,9 @@ func TestWindow_NewQuery(t *testing.T) {
 					{
 						ID: "window1",
 						Spec: &universe.WindowOpSpec{
-							Every:       flux.Duration(time.Hour),
-							Period:      flux.Duration(time.Hour),
-							Offset:      flux.Duration(time.Minute * -5),
+							Every:       flux.ConvertDuration(time.Hour),
+							Period:      flux.ConvertDuration(time.Hour),
+							Offset:      flux.ConvertDuration(time.Minute * -5),
 							TimeColumn:  execute.DefaultTimeColLabel,
 							StartColumn: execute.DefaultStartColLabel,
 							StopColumn:  execute.DefaultStopColLabel,
@@ -63,9 +63,9 @@ func TestWindowOperation_Marshaling(t *testing.T) {
 	op := &flux.Operation{
 		ID: "window",
 		Spec: &universe.WindowOpSpec{
-			Every:  flux.Duration(time.Minute),
-			Period: flux.Duration(time.Hour),
-			Offset: flux.Duration(30 * time.Minute),
+			Every:  flux.ConvertDuration(time.Minute),
+			Period: flux.ConvertDuration(time.Hour),
+			Offset: flux.ConvertDuration(30 * time.Minute),
 		},
 	}
 
@@ -79,9 +79,9 @@ func TestFixedWindow_PassThrough(t *testing.T) {
 			c,
 			execute.Bounds{},
 			execute.NewWindow(
-				execute.Duration(time.Minute),
-				execute.Duration(time.Minute),
-				0),
+				values.ConvertDuration(time.Minute),
+				values.ConvertDuration(time.Minute),
+				values.ConvertDuration(0)),
 			execute.DefaultTimeColLabel,
 			execute.DefaultStartColLabel,
 			execute.DefaultStopColLabel,
@@ -141,9 +141,9 @@ func TestFixedWindow_Process(t *testing.T) {
 			valueCol: flux.ColMeta{Label: "_value", Type: flux.TFloat},
 			// Use bounds and offset that is *not* aligned with the every/period durations of the window
 			bounds:      nonalignedBounds,
-			offset:      execute.Duration(10*time.Second + 10*time.Nanosecond),
-			every:       execute.Duration(time.Minute),
-			period:      execute.Duration(time.Minute),
+			offset:      values.ConvertDuration(10*time.Second + 10*time.Nanosecond),
+			every:       values.ConvertDuration(time.Minute),
+			period:      values.ConvertDuration(time.Minute),
 			createEmpty: true,
 			num:         15,
 			want: func(start execute.Time) []*executetest.Table {
@@ -211,8 +211,8 @@ func TestFixedWindow_Process(t *testing.T) {
 			valueCol: flux.ColMeta{Label: "_value", Type: flux.TFloat},
 			// Use bounds that are aligned with period and duration of window
 			bounds:      alignedBounds,
-			every:       execute.Duration(time.Minute),
-			period:      execute.Duration(time.Minute),
+			every:       values.ConvertDuration(time.Minute),
+			period:      values.ConvertDuration(time.Minute),
 			createEmpty: true,
 			num:         15,
 			want: func(start execute.Time) []*executetest.Table {
@@ -299,9 +299,9 @@ func TestFixedWindow_Process(t *testing.T) {
 			valueCol: flux.ColMeta{Label: "_value", Type: flux.TFloat},
 			// Use a time that is *not* aligned with the every/period durations of the window
 			bounds:      nonalignedBounds,
-			offset:      execute.Duration(time.Second*10 + time.Nanosecond*10),
-			every:       execute.Duration(time.Minute),
-			period:      execute.Duration(2 * time.Minute),
+			offset:      values.ConvertDuration(time.Second*10 + time.Nanosecond*10),
+			every:       values.ConvertDuration(time.Minute),
+			period:      values.ConvertDuration(2 * time.Minute),
 			createEmpty: true,
 			num:         15,
 			want: func(start execute.Time) []*executetest.Table {
@@ -395,8 +395,8 @@ func TestFixedWindow_Process(t *testing.T) {
 			valueCol: flux.ColMeta{Label: "_value", Type: flux.TFloat},
 			// Use a bounds that are aligned with the every/period durations of the window
 			bounds:      alignedBounds,
-			every:       execute.Duration(time.Minute),
-			period:      execute.Duration(2 * time.Minute),
+			every:       values.ConvertDuration(time.Minute),
+			period:      values.ConvertDuration(2 * time.Minute),
 			createEmpty: true,
 			num:         15,
 			want: func(start execute.Time) []*executetest.Table {
@@ -490,9 +490,9 @@ func TestFixedWindow_Process(t *testing.T) {
 			valueCol: flux.ColMeta{Label: "_value", Type: flux.TFloat},
 			// Use a time that is *not* aligned with the every/period durations of the window
 			bounds:      nonalignedBounds,
-			every:       execute.Duration(2 * time.Minute),
-			period:      execute.Duration(time.Minute),
-			offset:      execute.Duration(10*time.Second + 10*time.Nanosecond),
+			every:       values.ConvertDuration(2 * time.Minute),
+			period:      values.ConvertDuration(time.Minute),
+			offset:      values.ConvertDuration(10*time.Second + 10*time.Nanosecond),
 			createEmpty: true,
 			num:         24,
 			want: func(start execute.Time) []*executetest.Table {
@@ -542,8 +542,8 @@ func TestFixedWindow_Process(t *testing.T) {
 			valueCol: flux.ColMeta{Label: "_value", Type: flux.TFloat},
 			// Use a time that is  aligned with the every/period durations of the window
 			bounds:      alignedBounds,
-			every:       execute.Duration(2 * time.Minute),
-			period:      execute.Duration(time.Minute),
+			every:       values.ConvertDuration(2 * time.Minute),
+			period:      values.ConvertDuration(time.Minute),
 			createEmpty: true,
 			num:         24,
 			want: func(start execute.Time) []*executetest.Table {
@@ -593,8 +593,8 @@ func TestFixedWindow_Process(t *testing.T) {
 			valueCol: flux.ColMeta{Label: "_value", Type: flux.TInt},
 			// Use bounds that are aligned with the every/period durations of the window
 			bounds:      alignedBounds,
-			every:       execute.Duration(time.Minute),
-			period:      execute.Duration(time.Minute),
+			every:       values.ConvertDuration(time.Minute),
+			period:      values.ConvertDuration(time.Minute),
 			createEmpty: true,
 			num:         15,
 			want: func(start execute.Time) []*executetest.Table {
@@ -664,8 +664,8 @@ func TestFixedWindow_Process(t *testing.T) {
 			valueCol: flux.ColMeta{Label: "_value", Type: flux.TInt},
 			// Use bounds that are aligned with the every/period durations of the window
 			bounds:      alignedBounds,
-			every:       execute.Duration(time.Minute),
-			period:      execute.Duration(time.Minute),
+			every:       values.ConvertDuration(time.Minute),
+			period:      values.ConvertDuration(time.Minute),
 			createEmpty: false,
 			num:         15,
 			want: func(start execute.Time) []*executetest.Table {
@@ -726,8 +726,8 @@ func TestFixedWindow_Process(t *testing.T) {
 		{
 			name:     "empty bounds start == stop",
 			valueCol: flux.ColMeta{Label: "_value", Type: flux.TInt},
-			every:    execute.Duration(time.Minute),
-			period:   execute.Duration(time.Minute),
+			every:    values.ConvertDuration(time.Minute),
+			period:   values.ConvertDuration(time.Minute),
 			num:      15,
 			bounds: execute.Bounds{
 				Start: execute.Time(time.Date(2017, 10, 10, 0, 0, 0, 0, time.UTC).UnixNano()),
@@ -742,9 +742,9 @@ func TestFixedWindow_Process(t *testing.T) {
 			valueCol: flux.ColMeta{Label: "_value", Type: flux.TFloat},
 			// Use bounds that are aligned with the every/period durations of the window
 			bounds:      alignedBounds,
-			every:       execute.Duration(time.Minute),
-			period:      execute.Duration(time.Minute),
-			offset:      execute.Duration(-15 * time.Second),
+			every:       values.ConvertDuration(time.Minute),
+			period:      values.ConvertDuration(time.Minute),
+			offset:      values.ConvertDuration(-15 * time.Second),
 			createEmpty: true,
 			num:         15,
 			want: func(start execute.Time) []*executetest.Table {
@@ -815,8 +815,8 @@ func TestFixedWindow_Process(t *testing.T) {
 		{
 			name:     "empty bounds start > stop",
 			valueCol: flux.ColMeta{Label: "_value", Type: flux.TInt},
-			every:    execute.Duration(time.Minute),
-			period:   execute.Duration(time.Minute),
+			every:    values.ConvertDuration(time.Minute),
+			period:   values.ConvertDuration(time.Minute),
 			num:      15,
 			bounds: execute.Bounds{
 				Start: execute.Time(time.Date(2017, 10, 10, 0, 0, 0, 0, time.UTC).UnixNano()),

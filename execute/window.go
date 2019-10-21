@@ -10,12 +10,7 @@ type Window struct {
 // and normalizes the offset to a small positive duration.
 func NewWindow(every, period, offset Duration) Window {
 	// Normalize the offset to a small positive duration
-	if offset < 0 {
-		offset += every * ((offset / -every) + 1)
-	} else if offset > every {
-		offset -= every * (offset / every)
-	}
-
+	offset = offset.Normalize(every)
 	return Window{
 		Every:  every,
 		Period: period,
@@ -28,14 +23,14 @@ func NewWindow(every, period, offset Duration) Window {
 // do not contain time t, the window directly after time t will be returned.
 func (w Window) GetEarliestBounds(t Time) Bounds {
 	// translate to not-offset coordinate
-	t = t.Add(-w.Offset)
+	t = t.Add(w.Offset.Mul(-1))
 
 	stop := t.Truncate(w.Every).Add(w.Every)
 
 	// translate to offset coordinate
 	stop = stop.Add(w.Offset)
 
-	start := stop.Add(-w.Period)
+	start := stop.Add(w.Period.Mul(-1))
 	return Bounds{
 		Start: start,
 		Stop:  stop,
@@ -49,7 +44,8 @@ func (w Window) GetOverlappingBounds(b Bounds) []Bounds {
 		return []Bounds{}
 	}
 
-	c := (b.Duration() / w.Every) + (w.Period / w.Every)
+	// Estimate the number of windows by using a rough approximation.
+	c := (b.Duration().Duration() / w.Every.Duration()) + (w.Period.Duration() / w.Every.Duration())
 	bs := make([]Bounds, 0, c)
 
 	bi := w.GetEarliestBounds(b.Start)
