@@ -1,3 +1,4 @@
+pub mod check;
 pub mod walk;
 
 use std::collections::HashMap;

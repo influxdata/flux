@@ -111,6 +111,52 @@ impl<'a> fmt::Display for Node<'a> {
         }
     }
 }
+impl<'a> Node<'a> {
+    pub fn base(&self) -> &BaseNode {
+        match self {
+            Node::Package(n) => &n.base,
+            Node::File(n) => &n.base,
+            Node::PackageClause(n) => &n.base,
+            Node::ImportDeclaration(n) => &n.base,
+            Node::Identifier(n) => &n.base,
+            Node::ArrayExpr(n) => &n.base,
+            Node::FunctionExpr(n) => &n.base,
+            Node::LogicalExpr(n) => &n.base,
+            Node::ObjectExpr(n) => &n.base,
+            Node::MemberExpr(n) => &n.base,
+            Node::IndexExpr(n) => &n.base,
+            Node::BinaryExpr(n) => &n.base,
+            Node::UnaryExpr(n) => &n.base,
+            Node::PipeExpr(n) => &n.base,
+            Node::CallExpr(n) => &n.base,
+            Node::ConditionalExpr(n) => &n.base,
+            Node::StringExpr(n) => &n.base,
+            Node::ParenExpr(n) => &n.base,
+            Node::IntegerLit(n) => &n.base,
+            Node::FloatLit(n) => &n.base,
+            Node::StringLit(n) => &n.base,
+            Node::DurationLit(n) => &n.base,
+            Node::UintLit(n) => &n.base,
+            Node::BooleanLit(n) => &n.base,
+            Node::DateTimeLit(n) => &n.base,
+            Node::RegexpLit(n) => &n.base,
+            Node::PipeLit(n) => &n.base,
+            Node::BadExpr(n) => &n.base,
+            Node::ExprStmt(n) => &n.base,
+            Node::OptionStmt(n) => &n.base,
+            Node::ReturnStmt(n) => &n.base,
+            Node::BadStmt(n) => &n.base,
+            Node::TestStmt(n) => &n.base,
+            Node::BuiltinStmt(n) => &n.base,
+            Node::Block(n) => &n.base,
+            Node::Property(n) => &n.base,
+            Node::TextPart(n) => &n.base,
+            Node::InterpolatedPart(n) => &n.base,
+            Node::VariableAssgn(n) => &n.base,
+            Node::MemberAssgn(n) => &n.base,
+        }
+    }
+}
 
 impl<'a> Node<'a> {
     fn from_expr(expr: &'a Expression) -> Node {
