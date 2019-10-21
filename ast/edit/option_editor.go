@@ -47,7 +47,7 @@ func OptionObjectFn(keyMap map[string]ast.Expression) OptionFn {
 		}
 		obj, ok := a.Init.(*ast.ObjectExpression)
 		if !ok {
-			return nil, fmt.Errorf("value is is %s, not an object expression", a.Init.Type())
+			return nil, fmt.Errorf("value is %s, not an object expression", a.Init.Type())
 		}
 
 		// check that every specified property exists in the object
