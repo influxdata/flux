@@ -34,7 +34,7 @@ fn test_bad_expr() {
             end: Position { line: 3, column: 3 },
             source: Some(String::from("=")),
         },
-        message: String::from("invalid statement bad_expr_test@3:2-3:3: ="),
+        message: String::from("invalid statement: ="),
     }];
     assert_eq!(want, got);
 }
