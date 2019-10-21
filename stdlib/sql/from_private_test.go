@@ -73,3 +73,98 @@ func TestFromSqlUrlValidation(t *testing.T) {
 	}
 	testCases.Run(t, createFromSQLSource)
 }
+
+func TestFromSqliteUrlValidation(t *testing.T) {
+	testCases := executetest.SourceUrlValidationTestCases{
+		{
+			Name: "ok sqlite path1",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlite3",
+				DataSourceName: "file::memory:",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
+			Name: "ok sqlite path2",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlite3",
+				DataSourceName: ":memory:",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
+			Name: "ok sqlite path3",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlite3",
+				DataSourceName: "bananas.db",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
+			Name: "ok sqlite path4",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlite3",
+				DataSourceName: "bananas?cool_pragma",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
+			Name: "ok sqlite path5",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlite3",
+				DataSourceName: "file:test.db?cache=shared&mode=memory",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
+			Name: "ok sqlite path6",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlite3",
+				DataSourceName: "bananas?cool_pragma&even_better=true",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
+			Name: "ok sqlite path7",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlite3",
+				DataSourceName: "file:test.db",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
+			Name: "bad sqlite driver",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlite4",
+				DataSourceName: "bananas?cool_pragma",
+				Query:          "",
+			},
+			ErrMsg: "sql driver sqlite4 not supported",
+		}, {
+			Name: "bad sqlite path1",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlite3",
+				DataSourceName: ":cool_pragma",
+				Query:          "",
+			},
+			ErrMsg: "invalid data source url: parse :cool_pragma: missing protocol scheme",
+		}, {
+			Name: "bad sqlite path2",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlite3",
+				DataSourceName: "",
+				Query:          "",
+			},
+			ErrMsg: "invalid data source url: empty path supplied",
+		}, {
+			Name: "bad sqlite path3",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlite3",
+				DataSourceName: "    ",
+				Query:          "",
+			},
+			ErrMsg: "invalid data source url: empty path supplied",
+		},
+	}
+	testCases.Run(t, createFromSQLSource)
+}

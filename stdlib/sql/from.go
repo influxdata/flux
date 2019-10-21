@@ -126,6 +126,8 @@ func createFromSQLSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 	switch spec.DriverName {
 	case "mysql":
 		newRowReader = NewMySQLRowReader
+	case "sqlite3":
+		newRowReader = NewSqliteRowReader
 	case "postgres", "sqlmock":
 		newRowReader = NewPostgresRowReader
 	default:
@@ -198,7 +200,6 @@ func read(ctx context.Context, reader execute.RowReader, alloc *memory.Allocator
 			return nil, err
 		}
 	}
-
 	for reader.Next() {
 		row, err := reader.GetNextRow()
 		if err != nil {
