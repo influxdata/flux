@@ -1,11 +1,7 @@
-use crate::ast::{walk, PropertyKey};
-use crate::ast::SourceLocation;
+use crate::ast::{PropertyKey, SourceLocation, walk};
 use std::fmt;
 
-#[cfg(test)]
-mod tests;
-
-// check will inspect a single node and annotate it with any AST errors.
+// check() will inspect a single node and annotate it with any AST errors.
 // Unlike the ast.Check() in our Go parser, the check function in Rust
 // returns a list of errors generated during the check process PLUS
 // any errors existed before ast.check() is performed.
@@ -13,7 +9,7 @@ pub fn check(node: walk::Node) -> Vec<Error> {
     let mut errors = vec![];
     walk::walk(
         &walk::create_visitor(&mut |n| {
-            // collect any errors we found prior to ast.check.
+            // collect any errors we found prior to ast.check().
             for err in n.base().errors.iter() {
                 errors.push(Error {
                     location: n.base().location.clone(),
@@ -75,3 +71,6 @@ impl fmt::Display for Error {
         write!(f, "error at {}: {}", self.location, self.message)
     }
 }
+
+#[cfg(test)]
+mod tests;

@@ -50,7 +50,7 @@ fn test_bad_expr() {
 
 #[test]
 fn test_check_ok() {
-    let file = parse_string("bad_expr_test", "a = 1\nb=2");
+    let file = parse_string("test_ok", "a = 1\nb=2");
     let got = check(walk::Node::File(&file));
     assert_eq!(got.len(), 0);
 }
