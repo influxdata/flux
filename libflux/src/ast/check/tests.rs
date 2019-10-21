@@ -1,8 +1,8 @@
 use super::*;
-use crate::parser::parse_string;
-use crate::ast::{Position, File, BaseNode, VariableAssgn, Identifier, IntegerLit};
-use crate::ast::Statement::Variable;
 use crate::ast::Expression::Integer;
+use crate::ast::Statement::Variable;
+use crate::ast::{BaseNode, File, Identifier, IntegerLit, Position, VariableAssgn};
+use crate::parser::parse_string;
 
 #[test]
 fn test_object_check() {
@@ -11,19 +11,16 @@ fn test_object_check() {
     let want = vec![Error {
         location: SourceLocation {
             file: Some(String::from("object_test")),
-            start: Position {
-                line: 2,
-                column: 5
-            },
+            start: Position { line: 2, column: 5 },
             end: Position {
                 line: 2,
-                column: 14
+                column: 14,
             },
-            source: Some(String::from("{c: 2, a}"))
+            source: Some(String::from("{c: 2, a}")),
         },
-        message: String::from("cannot mix implicit and explicit properties")
+        message: String::from("cannot mix implicit and explicit properties"),
     }];
-    assert!(want.iter().zip(got).all(|(want, got)| want == &got));
+    assert_eq!(want, got);
 }
 
 #[test]
@@ -33,19 +30,13 @@ fn test_bad_expr() {
     let want = vec![Error {
         location: SourceLocation {
             file: Some(String::from("bad_expr_test")),
-            start: Position {
-                line: 3,
-                column: 2
-            },
-            end: Position {
-                line: 3,
-                column: 3
-            },
-            source: Some(String::from("="))
+            start: Position { line: 3, column: 2 },
+            end: Position { line: 3, column: 3 },
+            source: Some(String::from("=")),
         },
-        message: String::from("invalid statement bad_expr_test@3:2-3:3: =")
+        message: String::from("invalid statement bad_expr_test@3:2-3:3: ="),
     }];
-    assert!(want.iter().zip(got).all(|(want, got)| want == &got))
+    assert_eq!(want, got);
 }
 
 #[test]
@@ -63,9 +54,9 @@ fn test_check_collect_existing_error() {
                 file: Some(String::from("test_check_collect_existing_error")),
                 start: Position { line: 1, column: 1 },
                 end: Position { line: 3, column: 6 },
-                source: Some(String::from("a = 1\nb=2\nc=a+b"))
+                source: Some(String::from("a = 1\nb=2\nc=a+b")),
             },
-            errors: vec![String::from("error 1")]
+            errors: vec![String::from("error 1")],
         },
         name: String::from("test_check_collect_existing_error"),
         package: None,
@@ -76,9 +67,9 @@ fn test_check_collect_existing_error() {
                     file: Some(String::from("test_check_collect_existing_error")),
                     start: Position { line: 1, column: 1 },
                     end: Position { line: 1, column: 6 },
-                    source: Some(String::from("a = 1"))
+                    source: Some(String::from("a = 1")),
                 },
-                errors: vec![]
+                errors: vec![],
             },
             id: Identifier {
                 base: BaseNode {
@@ -86,29 +77,29 @@ fn test_check_collect_existing_error() {
                         file: Some(String::from("test_check_collect_existing_error")),
                         start: Position { line: 1, column: 1 },
                         end: Position { line: 1, column: 2 },
-                        source: Some(String::from("a"))
+                        source: Some(String::from("a")),
                     },
-                    errors: vec![]
+                    errors: vec![],
                 },
-                name: String::from("a")
+                name: String::from("a"),
             },
             init: Integer(IntegerLit {
                 base: BaseNode {
                     location: SourceLocation {
                         file: Some(String::from("test_check_collect_existing_error")),
                         start: Position { line: 1, column: 5 },
-                        end: Position {line: 1, column: 6 },
-                        source: Some(String::from("1"))
+                        end: Position { line: 1, column: 6 },
+                        source: Some(String::from("1")),
                     },
-                    errors: vec![String::from("error 2"), String::from("error 3")]
+                    errors: vec![String::from("error 2"), String::from("error 3")],
                 },
-                value: 1
-            })
-        })]
+                value: 1,
+            }),
+        })],
     };
     let got = check(walk::Node::File(&file));
     assert_eq!(3, got.len());
     for (i, err) in got.iter().enumerate() {
-        assert_eq!(err.message, format!("error {}", i+1));
+        assert_eq!(err.message, format!("error {}", i + 1));
     }
 }
