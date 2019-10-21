@@ -14,7 +14,6 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
-	"github.com/stretchr/testify/assert"
 )
 
 type MockRowReader struct {
@@ -92,7 +91,7 @@ func TestFromRowReader(t *testing.T) {
 				{Label: "timestamp", Type: flux.TTime},
 			},
 			Data: [][]interface{}{
-				{int64(42), float64(42.0), true, timestamp},
+				{int64(42), 42.0, true, timestamp},
 				{nil, nil, nil, nil},
 			},
 		}
@@ -136,7 +135,13 @@ func TestFromRowReader(t *testing.T) {
 		}
 
 		for i := 0; i < 2; i++ {
-			assert.Equal(t, wantBuffer.GetRow(i), buffer.GetRow(i))
+			want := wantBuffer.GetRow(i)
+			got := buffer.GetRow(i)
+			// the second row has a lot of nil values.Value which cannot pass values.Value.Equals() check.
+			if !(i == 0 && got.Equal(want)) &&
+				!(i == 1 && got.(fmt.Stringer).String() == want.(fmt.Stringer).String()) {
+				t.Fatalf("unexpected result -want/+got:\n%s", cmp.Diff(want, got))
+			}
 		}
 
 	})
