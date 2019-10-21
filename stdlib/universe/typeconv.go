@@ -4,6 +4,7 @@ import (
 	"context"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -209,7 +210,7 @@ func (c *intConv) Call(ctx context.Context, args values.Object) (values.Value, e
 	case semantic.Time:
 		i = int64(v.Time())
 	case semantic.Duration:
-		i = int64(v.Duration())
+		i = int64(v.Duration().Duration())
 	default:
 		return nil, errors.Newf(codes.Invalid, "cannot convert %v to int", v.Type())
 	}
@@ -305,7 +306,7 @@ func (c *uintConv) Call(ctx context.Context, args values.Object) (values.Value, 
 	case semantic.Time:
 		i = uint64(v.Time())
 	case semantic.Duration:
-		i = uint64(v.Duration())
+		i = uint64(v.Duration().Duration())
 	default:
 		return nil, errors.Newf(codes.Invalid, "cannot convert %v to uint", v.Type())
 	}
@@ -677,9 +678,9 @@ func (c *durationConv) Call(ctx context.Context, args values.Object) (values.Val
 		}
 		d = n
 	case semantic.Int:
-		d = values.Duration(v.Int())
+		d = values.ConvertDuration(time.Duration(v.Int()))
 	case semantic.UInt:
-		d = values.Duration(v.UInt())
+		d = values.ConvertDuration(time.Duration(v.UInt()))
 	case semantic.Duration:
 		d = v.Duration()
 	default:

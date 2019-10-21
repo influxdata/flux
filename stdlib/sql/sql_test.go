@@ -96,18 +96,6 @@ func TestFromRowReader(t *testing.T) {
 			},
 		}
 
-		firstRow := values.NewObject()
-		firstRow.Set("int", values.NewInt(42))
-		firstRow.Set("float", values.NewFloat(42.0))
-		firstRow.Set("bool", values.NewBool(true))
-		firstRow.Set("timestamp", values.NewTime(timestamp))
-
-		secondRow := values.NewObject()
-		secondRow.Set("int", values.NewNull(flux.SemanticType(flux.TInt)))
-		secondRow.Set("float", values.NewNull(flux.SemanticType(flux.TFloat)))
-		secondRow.Set("bool", values.NewNull(flux.SemanticType(flux.TBool)))
-		secondRow.Set("timestamp", values.NewNull(flux.SemanticType(flux.TTime)))
-
 		if !cmp.Equal(want.Cols(), table.Cols()) {
 			t.Fatalf("unexpected result -want/+got\n\n%s\n\n", cmp.Diff(want.Cols(), table.Cols()))
 		}
@@ -143,7 +131,6 @@ func TestFromRowReader(t *testing.T) {
 				t.Fatalf("unexpected result -want/+got:\n%s", cmp.Diff(want, got))
 			}
 		}
-
 	})
 }
 

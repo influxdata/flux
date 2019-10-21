@@ -62,7 +62,7 @@ func validateDataSource(validator url.Validator, driverName string, dataSourceNa
 
 	if err = validator.Validate(u); err != nil {
 		return errors.Newf(codes.Invalid, "data source did not pass url validation: %v", err)
-	} else {
-		return nil
 	}
+	return nil
+
 }

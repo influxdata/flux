@@ -17,7 +17,7 @@ func TestIntegralOperation_Marshaling(t *testing.T) {
 	op := &flux.Operation{
 		ID: "integral",
 		Spec: &universe.IntegralOpSpec{
-			Unit: flux.Duration(time.Minute),
+			Unit: flux.ConvertDuration(time.Minute),
 		},
 	}
 	querytest.OperationMarshalingTestHelper(t, data, op)
@@ -45,7 +45,7 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "float",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            1,
+				Unit:            flux.ConvertDuration(1),
 				TimeColumn:      execute.DefaultTimeColLabel,
 				AggregateConfig: execute.DefaultAggregateConfig,
 			},
@@ -77,7 +77,7 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "int",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            1,
+				Unit:            flux.ConvertDuration(1),
 				TimeColumn:      execute.DefaultTimeColLabel,
 				AggregateConfig: execute.DefaultAggregateConfig,
 			},
@@ -109,7 +109,7 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "uint",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            1,
+				Unit:            flux.ConvertDuration(1),
 				TimeColumn:      execute.DefaultTimeColLabel,
 				AggregateConfig: execute.DefaultAggregateConfig,
 			},
@@ -141,7 +141,7 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "float with units",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.Duration(time.Second),
+				Unit:            flux.ConvertDuration(time.Second),
 				TimeColumn:      execute.DefaultTimeColLabel,
 				AggregateConfig: execute.DefaultAggregateConfig,
 			},
@@ -173,7 +173,7 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "float with tags",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            1,
+				Unit:            flux.ConvertDuration(1),
 				TimeColumn:      execute.DefaultTimeColLabel,
 				AggregateConfig: execute.DefaultAggregateConfig,
 			},
@@ -206,7 +206,7 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "float with multiple values",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:       1,
+				Unit:       flux.ConvertDuration(1),
 				TimeColumn: execute.DefaultTimeColLabel,
 				AggregateConfig: execute.AggregateConfig{
 					Columns: []string{"x", "y"},
@@ -244,7 +244,7 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "float with null timestamps",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            1,
+				Unit:            flux.ConvertDuration(1),
 				TimeColumn:      execute.DefaultTimeColLabel,
 				AggregateConfig: execute.DefaultAggregateConfig,
 			},
@@ -268,7 +268,7 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "float with null values",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            1,
+				Unit:            flux.ConvertDuration(1),
 				TimeColumn:      execute.DefaultTimeColLabel,
 				AggregateConfig: execute.DefaultAggregateConfig,
 			},
@@ -303,7 +303,7 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "float with out-of-order timestamps",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            1,
+				Unit:            flux.ConvertDuration(1),
 				TimeColumn:      execute.DefaultTimeColLabel,
 				AggregateConfig: execute.DefaultAggregateConfig,
 			},
@@ -327,7 +327,7 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "integral over string",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:       1,
+				Unit:       flux.ConvertDuration(1),
 				TimeColumn: execute.DefaultTimeColLabel,
 				AggregateConfig: execute.AggregateConfig{
 					Columns: []string{"t"},
@@ -352,7 +352,7 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "float repeated times",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            1,
+				Unit:            flux.ConvertDuration(1),
 				TimeColumn:      execute.DefaultTimeColLabel,
 				AggregateConfig: execute.DefaultAggregateConfig,
 			},

@@ -15,22 +15,22 @@ func TestTime_Round(t *testing.T) {
 	}{
 		{
 			ts:   values.Time(time.Second + 500*time.Millisecond),
-			d:    values.Duration(time.Second),
+			d:    values.ConvertDuration(time.Second),
 			want: values.Time(2 * time.Second),
 		},
 		{
 			ts:   values.Time(time.Second + 501*time.Millisecond),
-			d:    values.Duration(time.Second),
+			d:    values.ConvertDuration(time.Second),
 			want: values.Time(2 * time.Second),
 		},
 		{
 			ts:   values.Time(time.Second + 499*time.Millisecond),
-			d:    values.Duration(time.Second),
+			d:    values.ConvertDuration(time.Second),
 			want: values.Time(time.Second),
 		},
 		{
 			ts:   values.Time(time.Second + 0*time.Millisecond),
-			d:    values.Duration(time.Second),
+			d:    values.ConvertDuration(time.Second),
 			want: values.Time(time.Second),
 		},
 	} {
@@ -50,27 +50,27 @@ func TestTime_Truncate(t *testing.T) {
 	}{
 		{
 			ts:   values.Time(time.Second + 500*time.Millisecond),
-			d:    values.Duration(time.Second),
+			d:    values.ConvertDuration(time.Second),
 			want: values.Time(time.Second),
 		},
 		{
 			ts:   values.Time(time.Second + 501*time.Millisecond),
-			d:    values.Duration(time.Second),
+			d:    values.ConvertDuration(time.Second),
 			want: values.Time(time.Second),
 		},
 		{
 			ts:   values.Time(time.Second + 499*time.Millisecond),
-			d:    values.Duration(time.Second),
+			d:    values.ConvertDuration(time.Second),
 			want: values.Time(time.Second),
 		},
 		{
 			ts:   values.Time(time.Second + 0*time.Millisecond),
-			d:    values.Duration(time.Second),
+			d:    values.ConvertDuration(time.Second),
 			want: values.Time(time.Second),
 		},
 		{
 			ts:   values.Time(time.Second + 999*time.Millisecond),
-			d:    values.Duration(time.Second),
+			d:    values.ConvertDuration(time.Second),
 			want: values.Time(time.Second),
 		},
 	} {

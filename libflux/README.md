@@ -23,7 +23,7 @@ You will need to use the `clang` compiler at least version 8.
 
 Use your distributions package manager to install clang.
 
-    $ cd internal/rust/parser
+    $ cd libflux
     $ CC=clang wasm-pack build --scope influxdata --dev
 
 ### MacOS
@@ -32,9 +32,9 @@ MacOS doesn't appear to have a functional version of clang that will work.
 As such we have created a Dockerfile to abstract these dependencies.
 To use it run the `build.sh` script which will run all the build command inside the docker container.
 
-    $ ./internal/rust/build.sh --dev
+    $ ./libflux/build.sh --dev
 
-> NOTE: The docker image uses a local volume mount at `./internal/rust/.cache` to cache Rust/WASM build artifacts to make builds faster inside the container.
+> NOTE: The docker image uses a local volume mount at `./libflux/.cache` to cache Rust/WASM build artifacts to make builds faster inside the container.
 
 ## Testing the built WASM package locally
 
@@ -45,7 +45,7 @@ Before running it for the first time, you'll have to follow these steps:
 1. Change into the web app directory:
 
    ```
-   $ cd internal/rust/site
+   $ cd libflux/site
    ```
 
 2. Install its dependencies:
@@ -57,9 +57,9 @@ Before running it for the first time, you'll have to follow these steps:
 3. Replace the published `@influxdata/flux-parser` dependency with a symlink to your locally built WASM package:
 
    ```
-   $ cd ../parser/pkg
+   $ cd ../pkg
    $ yarn link
-   $ cd ../../site
+   $ cd ../site
    $ yarn link @influxdata/flux-parser
    ```
 
@@ -75,21 +75,21 @@ As such you should be able to run `wasm-pack` to get new changes and then refres
 
 1. Log into yarn (`yarn login`) with an account that has access to the [influxdata npm organization](https://www.npmjs.com/org/influxdata)
 
-2. Bump the version in `internal/parser/Cargo.toml`
+2. Bump the version in `libflux/Cargo.toml`
 
 3. Run the publish script:
 
    ```
-   $ ./internal/rust/publish.sh
+   $ ./libflux/publish.sh
    ```
-   
+
    Note that this will create a build optimized for size using the Docker-based process.
 
 ## Test
 
 Use `cargo`
 
-    $ cd internal/rust/{parser,scanner,ast}
+    $ cd libflux
     $ cargo test
 
 

@@ -182,21 +182,28 @@ When several durations are specified together, larger units must appear before s
 
 Durations represent a length of time.
 Lengths of time are dependent on specific instants in time they occur and as such, durations do not represent a fixed amount of time.
-No amount of seconds is equal to a day, as days vary in their number of seconds.
-No amount of days is equal to a month, as months vary in their number of days.
-A duration consists of three basic time units: seconds, days and months.
+There are no amount of days equal to a month, as months vary in their number of days.
+Durations are a tuple of positive integers that represent a duration and the sign of the duration (positive or negative).
+Durations are implemented this way so that it is possible to determine whether or not a duration is positive or negative.
+Since duration values are dependent on their context, the only way to know if a duration is a positive or negative number is if all of the magnitudes have the same sign.
+In the canonical implementation, this is implemented as a tuple of the months and nanoseconds and a boolean that indicates whether it is positive or negative.
+The spec does not prescribe a specific implementation and other implementations may use a different internal representation.
 
-Durations can be combined via addition and subtraction.
-Durations can be multiplied by an integer value.
+Durations cannot be combined by addition and subtraction.
+This is because all magnitudes in the tuple need to be a positive integer and that cannot be guaranteed when using addition and subtraction.
+Durations can be multiplied by any integer value.
+The unary negative operator is the equivalent of multiplying the duration by -1.
 These operations are performed on each time unit independently.
 
 Examples:
 
     1s
     10d
-    1h15m // 1 hour and 15 minutes
+    1h15m  // 1 hour and 15 minutes
     5w
-    1mo5d // 1 month and 5 days
+    1mo5d  // 1 month and 5 days
+    -1mo5d // negative 1 month and 5 days
+    5w * 2 // 10 weeks
 
 Durations can be added to date times to produce a new date time.
 

@@ -50,7 +50,7 @@ func TestStateTracking_NewQuery(t *testing.T) {
 						Spec: &universe.StateTrackingOpSpec{
 							CountColumn:    "stateCount",
 							DurationColumn: "",
-							DurationUnit:   flux.Duration(time.Second),
+							DurationUnit:   flux.ConvertDuration(time.Second),
 							TimeColumn:     "_time",
 							Fn: interpreter.ResolvedFunction{
 								Fn: &semantic.FunctionExpression{
@@ -93,7 +93,7 @@ func TestStateTracking_NewQuery(t *testing.T) {
 						Spec: &universe.StateTrackingOpSpec{
 							CountColumn:    "",
 							DurationColumn: "stateDuration",
-							DurationUnit:   flux.Duration(time.Second),
+							DurationUnit:   flux.ConvertDuration(time.Second),
 							TimeColumn:     "ts",
 							Fn: interpreter.ResolvedFunction{
 								Fn: &semantic.FunctionExpression{
@@ -132,7 +132,7 @@ func TestStateTrackingOperation_Marshaling(t *testing.T) {
 		Spec: &universe.StateTrackingOpSpec{
 			CountColumn:    "c",
 			DurationColumn: "d",
-			DurationUnit:   flux.Duration(time.Minute),
+			DurationUnit:   flux.ConvertDuration(time.Minute),
 			TimeColumn:     "t",
 		},
 	}
@@ -170,7 +170,7 @@ func TestStateTracking_Process(t *testing.T) {
 			name: "only duration",
 			spec: &universe.StateTrackingProcedureSpec{
 				DurationColumn: "duration",
-				DurationUnit:   1,
+				DurationUnit:   flux.ConvertDuration(1),
 				Fn:             gt5,
 				TimeCol:        "_time",
 			},
@@ -208,7 +208,7 @@ func TestStateTracking_Process(t *testing.T) {
 			name: "only duration, null timestamps",
 			spec: &universe.StateTrackingProcedureSpec{
 				DurationColumn: "duration",
-				DurationUnit:   1,
+				DurationUnit:   flux.ConvertDuration(1),
 				Fn:             gt5,
 				TimeCol:        "_time",
 			},
@@ -232,7 +232,7 @@ func TestStateTracking_Process(t *testing.T) {
 			name: "only duration, out of order timestamps",
 			spec: &universe.StateTrackingProcedureSpec{
 				DurationColumn: "duration",
-				DurationUnit:   1,
+				DurationUnit:   flux.ConvertDuration(1),
 				Fn:             gt5,
 				TimeCol:        "_time",
 			},
@@ -331,7 +331,7 @@ func TestStateTracking_Process(t *testing.T) {
 			spec: &universe.StateTrackingProcedureSpec{
 				CountColumn:    "count",
 				DurationColumn: "duration",
-				DurationUnit:   1,
+				DurationUnit:   flux.ConvertDuration(1),
 				Fn:             gt5,
 				TimeCol:        "_time",
 			},

@@ -17,7 +17,7 @@ fn main() {
     let bindings = bindgen::Builder::default()
         // The input header we would like to generate
         // bindings for.
-        .header("src/scanner.h")
+        .header("src/scanner/scanner.h")
         // Finish the builder and generate the bindings.
         .generate()
         // Unwrap the Result and panic on failure.
@@ -34,13 +34,13 @@ fn main() {
             "-C",
             "-o",
             out_path.join("scanner.c").to_str().unwrap(),
-            "src/scanner.rl",
+            "src/scanner/scanner.rl",
         ])
         .status()
         .expect("Unable to execute ragel command");
     // Compile generated scanner
     cc::Build::new()
-        .include("src")
+        .include("src/scanner")
         .file(out_path.join("scanner.c"))
-        .compile("scanner");
+        .compile("flux");
 }

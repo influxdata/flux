@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/dependencies/url"
-	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/execute/executetest"
 )
 
 func TestFromSocketUrlValidation(t *testing.T) {
-	testCases := querytest.SourceUrlValidationTestCases{
+	testCases := executetest.SourceUrlValidationTestCases{
 		{
 			Name: "invalid scheme",
 			Spec: &FromSocketProcedureSpec{
@@ -16,13 +16,6 @@ func TestFromSocketUrlValidation(t *testing.T) {
 				Decoder: "csv",
 			},
 			ErrMsg: "invalid scheme http",
-		}, {
-			Name: "invalid url",
-			Spec: &FromSocketProcedureSpec{
-				URL:     "localhost:abc",
-				Decoder: "csv",
-			},
-			ErrMsg: "unknown port",
 		}, {
 			Name: "ok",
 			Spec: &FromSocketProcedureSpec{

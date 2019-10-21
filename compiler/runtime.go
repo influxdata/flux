@@ -382,7 +382,7 @@ func (e *unaryEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, e
 		case semantic.Bool:
 			return values.NewBool(!v.Bool()), nil
 		case semantic.Duration:
-			return values.NewDuration(-v.Duration()), nil
+			return values.NewDuration(v.Duration().Mul(-1)), nil
 		default:
 			panic(values.UnexpectedKind(e.t.Nature(), v.Type().Nature()))
 		}
