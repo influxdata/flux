@@ -42,5 +42,5 @@ fn main() {
     cc::Build::new()
         .include("src/scanner")
         .file(out_path.join("scanner.c"))
-        .compile("flux");
+        .compile("scanner");
 }

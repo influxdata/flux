@@ -1,9 +1,8 @@
 export CARGO=cargo
 export CC=clang
 
-# Default target, build
 build:
-	wasm-pack build --dev --scope influxdata
+	$(CARGO) build
 
 generate:
 
