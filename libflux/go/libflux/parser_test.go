@@ -3,6 +3,7 @@
 package libflux_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/influxdata/flux/libflux/go/libflux"
@@ -17,5 +18,10 @@ from(bucket: "telegraf")
 	|> mean()
 `
 	ast := libflux.Parse(text)
+	buf, err := ast.MarshalJSON()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(buf))
 	ast.Free()
 }

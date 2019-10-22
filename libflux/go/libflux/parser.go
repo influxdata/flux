@@ -9,6 +9,7 @@ package libflux
 import "C"
 
 import (
+	"errors"
 	"runtime"
 	"unsafe"
 )
@@ -30,9 +31,24 @@ type ASTFile struct {
 	ptr *C.struct_flux_ast_t
 }
 
+func (f *ASTFile) MarshalJSON() ([]byte, error) {
+	var buf C.struct_flux_buffer_t
+	if err := C.flux_ast_marshal_json(f.ptr, &buf); err != nil {
+		cstr := C.flux_error_str(err)
+		defer C.flux_free(unsafe.Pointer(cstr))
+
+		str := C.GoString(cstr)
+		return nil, errors.New(str)
+	}
+	defer C.flux_free(buf.data)
+
+	data := C.GoBytes(buf.data, C.int(buf.len))
+	return data, nil
+}
+
 func (f *ASTFile) Free() {
 	if f.ptr != nil {
-		C.flux_ast_free(f.ptr)
+		C.flux_free(unsafe.Pointer(f.ptr))
 	}
 	f.ptr = nil
 }
