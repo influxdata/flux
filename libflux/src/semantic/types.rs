@@ -127,20 +127,6 @@ impl fmt::Display for Tvar {
     }
 }
 
-// Fresher returns a fresh type variable with incrementing id.
-pub struct Fresher(i64);
-
-impl Fresher {
-    pub fn new() -> Fresher {
-        Fresher(0)
-    }
-
-    pub fn fresh(&mut self) -> Tvar {
-        self.0 += 1;
-        Tvar(self.0)
-    }
-}
-
 // Array is a homogeneous list type
 #[derive(Debug, Clone, PartialEq)]
 pub struct Array(MonoType);
