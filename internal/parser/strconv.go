@@ -10,6 +10,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 // ParseTime will parse a time literal from a string.
@@ -48,6 +50,10 @@ func ParseDuration(lit string) ([]ast.Duration, error) {
 			n += size
 		}
 
+		if n == 0 {
+			return nil, errors.Newf(codes.Invalid, "invalid duration %s", lit)
+		}
+
 		magnitude, err := strconv.ParseInt(lit[:n], 10, 64)
 		if err != nil {
 			return nil, err
@@ -66,6 +72,11 @@ func ParseDuration(lit string) ([]ast.Duration, error) {
 			}
 			n += size
 		}
+
+		if n == 0 {
+			return nil, errors.Newf(codes.Invalid, "duration is missing a unit: %s", lit)
+		}
+
 		unit := lit[:n]
 		if unit == "µs" {
 			unit = "us"
