@@ -556,7 +556,7 @@ func TestTypeconv_Duration(t *testing.T) {
 			name:      "duration(error)",
 			v:         "not_a_duration",
 			want:      values.ConvertDuration(0),
-			expectErr: errors.New("time: invalid duration not_a_duration"),
+			expectErr: errors.New("invalid duration not_a_duration"),
 		},
 		{
 			name:     "duration(v:nil)",
