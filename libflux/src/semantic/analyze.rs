@@ -1,24 +1,10 @@
 use crate::ast;
 use crate::semantic::nodes::*;
-use crate::semantic::types::{MonoType, Tvar};
+use crate::semantic::types::{Fresher, MonoType};
 use std::result;
 
 type SemanticError = String;
 type Result<T> = result::Result<T, SemanticError>;
-
-// Fresher returns a fresh type variable with incrementing id.
-struct Fresher(i64);
-
-impl Fresher {
-    fn new() -> Fresher {
-        Fresher(0)
-    }
-
-    fn fresh(&mut self) -> Tvar {
-        self.0 += 1;
-        Tvar(self.0)
-    }
-}
 
 // analyze analyzes an AST package node and returns its semantic analysis.
 // The function requires a Fresher to instantiate fresh type veriables for Expressions.
@@ -27,8 +13,8 @@ impl Fresher {
 // to the previous one. In other terms, once one analyzes an AST he should not use it anymore.
 // If one wants to do so, he should explicitly pkg.clone() and incur consciously in the memory
 // overhead involved.
-pub fn analyze(pkg: ast::Package) -> Result<Package> {
-    analyze_package(pkg, &mut Fresher::new())
+pub fn analyze(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> {
+    analyze_package(pkg, fresher)
     // TODO(affo): run checks on the semantic graph.
 }
 
@@ -589,6 +575,10 @@ mod tests {
         MonoType::Var(Tvar(0))
     }
 
+    fn test_analyze(pkg: ast::Package) -> Result<Package> {
+        analyze(pkg, &mut Fresher::new())
+    }
+
     #[test]
     fn test_analyze_empty() {
         let b = ast::BaseNode::default();
@@ -603,7 +593,7 @@ mod tests {
             package: "main".to_string(),
             files: Vec::new(),
         };
-        let got = analyze(pkg).unwrap();
+        let got = test_analyze(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -644,7 +634,7 @@ mod tests {
                 body: Vec::new(),
             }],
         };
-        let got = analyze(pkg).unwrap();
+        let got = test_analyze(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -727,7 +717,7 @@ mod tests {
                 body: Vec::new(),
             }],
         };
-        let got = analyze(pkg).unwrap();
+        let got = test_analyze(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -796,7 +786,7 @@ mod tests {
                 ],
             }],
         };
-        let got = analyze(pkg).unwrap();
+        let got = test_analyze(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -861,7 +851,7 @@ mod tests {
                 })],
             }],
         };
-        let got = analyze(pkg).unwrap();
+        let got = test_analyze(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -926,7 +916,7 @@ mod tests {
                 })],
             }],
         };
-        let got = analyze(pkg).unwrap();
+        let got = test_analyze(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -1018,7 +1008,7 @@ mod tests {
                 })],
             }],
         };
-        let got = analyze(pkg).unwrap();
+        let got = test_analyze(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -1104,7 +1094,7 @@ mod tests {
                 })],
             }],
         };
-        let got = analyze(pkg).unwrap();
+        let got = test_analyze(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -1285,7 +1275,7 @@ mod tests {
                 })],
             }],
         };
-        let got = analyze(pkg).unwrap();
+        let got = test_analyze(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -1354,7 +1344,7 @@ mod tests {
                 })],
             }],
         };
-        let got = analyze(pkg).unwrap();
+        let got = test_analyze(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -1556,7 +1546,7 @@ mod tests {
                 ],
             }],
         };
-        let got = analyze(pkg).unwrap();
+        let got = test_analyze(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -1780,7 +1770,7 @@ mod tests {
                 ],
             }],
         };
-        let got = analyze(pkg).unwrap();
+        let got = test_analyze(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -1844,7 +1834,7 @@ mod tests {
                 })],
             }],
         };
-        let got = analyze(pkg).err().unwrap().to_string();
+        let got = test_analyze(pkg).err().unwrap().to_string();
         assert_eq!("only a single argument may be piped".to_string(), got);
     }
 
@@ -1904,7 +1894,7 @@ mod tests {
                 })],
             }],
         };
-        let got = analyze(pkg).err().unwrap().to_string();
+        let got = test_analyze(pkg).err().unwrap().to_string();
         assert_eq!(
             "arguments are more than one object expression".to_string(),
             got
@@ -2099,7 +2089,7 @@ mod tests {
                 ],
             }],
         };
-        let got = analyze(pkg).unwrap();
+        let got = test_analyze(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -2296,7 +2286,7 @@ mod tests {
                 })],
             }],
         };
-        let got = analyze(pkg).unwrap();
+        let got = test_analyze(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -2370,7 +2360,7 @@ mod tests {
                 })],
             }],
         };
-        let got = analyze(pkg).unwrap();
+        let got = test_analyze(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -2438,7 +2428,7 @@ mod tests {
                 })],
             }],
         };
-        let got = analyze(pkg).unwrap();
+        let got = test_analyze(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -2504,7 +2494,7 @@ mod tests {
                 })],
             }],
         };
-        let got = analyze(pkg).unwrap();
+        let got = test_analyze(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -2580,7 +2570,7 @@ mod tests {
                 })],
             }],
         };
-        let got = analyze(pkg).unwrap();
+        let got = test_analyze(pkg).unwrap();
         assert_eq!(want, got);
     }
 }
