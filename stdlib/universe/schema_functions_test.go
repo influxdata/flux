@@ -671,6 +671,43 @@ func TestDropRenameKeep_Process(t *testing.T) {
 			wantErr: errors.New("requested operation merges tables with different numbers of columns for group key {a=one}"),
 		},
 		{
+			name: "keep one key col merge error column type",
+			spec: &universe.SchemaMutationProcedureSpec{
+				Mutations: []universe.SchemaMutation{
+					&universe.KeepOpSpec{
+						Columns: []string{"a", "c"},
+					},
+				},
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "a", Type: flux.TString},
+						{Label: "b", Type: flux.TString},
+						{Label: "c", Type: flux.TFloat},
+					},
+					KeyCols: []string{"a", "b"},
+					Data: [][]interface{}{
+						{"one", "two", 3.0},
+						{"one", "two", 13.0},
+					},
+				},
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "a", Type: flux.TString},
+						{Label: "b", Type: flux.TString},
+						{Label: "c", Type: flux.TString},
+					},
+					KeyCols: []string{"a", "b"},
+					Data: [][]interface{}{
+						{"one", "three", "foo"},
+						{"one", "three", "bar"},
+					},
+				},
+			},
+			wantErr: errors.New("requested operation merges tables with different schemas for group key {a=one}"),
+		},
+		{
 			name: "duplicate single col",
 			spec: &universe.SchemaMutationProcedureSpec{
 				Mutations: []universe.SchemaMutation{
