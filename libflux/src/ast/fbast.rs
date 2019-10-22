@@ -293,7 +293,7 @@ pub struct ExpressionUnionTableOffset {}
 #[allow(non_camel_case_types)]
 #[repr(i8)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-pub enum OperatorKind {
+pub enum Operator {
   MultiplicationOperator = 0,
   DivisionOperator = 1,
   ModuloOperator = 2,
@@ -317,10 +317,10 @@ pub enum OperatorKind {
 
 }
 
-const ENUM_MIN_OPERATOR_KIND: i8 = 0;
-const ENUM_MAX_OPERATOR_KIND: i8 = 19;
+const ENUM_MIN_OPERATOR: i8 = 0;
+const ENUM_MAX_OPERATOR: i8 = 19;
 
-impl<'a> flatbuffers::Follow<'a> for OperatorKind {
+impl<'a> flatbuffers::Follow<'a> for Operator {
   type Inner = Self;
   #[inline]
   fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
@@ -328,55 +328,55 @@ impl<'a> flatbuffers::Follow<'a> for OperatorKind {
   }
 }
 
-impl flatbuffers::EndianScalar for OperatorKind {
+impl flatbuffers::EndianScalar for Operator {
   #[inline]
   fn to_little_endian(self) -> Self {
     let n = i8::to_le(self as i8);
-    let p = &n as *const i8 as *const OperatorKind;
+    let p = &n as *const i8 as *const Operator;
     unsafe { *p }
   }
   #[inline]
   fn from_little_endian(self) -> Self {
     let n = i8::from_le(self as i8);
-    let p = &n as *const i8 as *const OperatorKind;
+    let p = &n as *const i8 as *const Operator;
     unsafe { *p }
   }
 }
 
-impl flatbuffers::Push for OperatorKind {
-    type Output = OperatorKind;
+impl flatbuffers::Push for Operator {
+    type Output = Operator;
     #[inline]
     fn push(&self, dst: &mut [u8], _rest: &[u8]) {
-        flatbuffers::emplace_scalar::<OperatorKind>(dst, *self);
+        flatbuffers::emplace_scalar::<Operator>(dst, *self);
     }
 }
 
 #[allow(non_camel_case_types)]
-const ENUM_VALUES_OPERATOR_KIND:[OperatorKind; 20] = [
-  OperatorKind::MultiplicationOperator,
-  OperatorKind::DivisionOperator,
-  OperatorKind::ModuloOperator,
-  OperatorKind::PowerOperator,
-  OperatorKind::AdditionOperator,
-  OperatorKind::SubtractionOperator,
-  OperatorKind::LessThanEqualOperator,
-  OperatorKind::LessThanOperator,
-  OperatorKind::GreaterThanEqualOperator,
-  OperatorKind::GreaterThanOperator,
-  OperatorKind::StartsWithOperator,
-  OperatorKind::InOperator,
-  OperatorKind::NotOperator,
-  OperatorKind::ExistsOperator,
-  OperatorKind::NotEmptyOperator,
-  OperatorKind::EmptyOperator,
-  OperatorKind::EqualOperator,
-  OperatorKind::NotEqualOperator,
-  OperatorKind::RegexpMatchOperator,
-  OperatorKind::NotRegexpMatchOperator
+const ENUM_VALUES_OPERATOR:[Operator; 20] = [
+  Operator::MultiplicationOperator,
+  Operator::DivisionOperator,
+  Operator::ModuloOperator,
+  Operator::PowerOperator,
+  Operator::AdditionOperator,
+  Operator::SubtractionOperator,
+  Operator::LessThanEqualOperator,
+  Operator::LessThanOperator,
+  Operator::GreaterThanEqualOperator,
+  Operator::GreaterThanOperator,
+  Operator::StartsWithOperator,
+  Operator::InOperator,
+  Operator::NotOperator,
+  Operator::ExistsOperator,
+  Operator::NotEmptyOperator,
+  Operator::EmptyOperator,
+  Operator::EqualOperator,
+  Operator::NotEqualOperator,
+  Operator::RegexpMatchOperator,
+  Operator::NotRegexpMatchOperator
 ];
 
 #[allow(non_camel_case_types)]
-const ENUM_NAMES_OPERATOR_KIND:[&'static str; 20] = [
+const ENUM_NAMES_OPERATOR:[&'static str; 20] = [
     "MultiplicationOperator",
     "DivisionOperator",
     "ModuloOperator",
@@ -399,24 +399,24 @@ const ENUM_NAMES_OPERATOR_KIND:[&'static str; 20] = [
     "NotRegexpMatchOperator"
 ];
 
-pub fn enum_name_operator_kind(e: OperatorKind) -> &'static str {
+pub fn enum_name_operator(e: Operator) -> &'static str {
   let index = e as i8;
-  ENUM_NAMES_OPERATOR_KIND[index as usize]
+  ENUM_NAMES_OPERATOR[index as usize]
 }
 
 #[allow(non_camel_case_types)]
 #[repr(i8)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-pub enum LogicalOperatorKind {
+pub enum LogicalOperator {
   AndOperator = 0,
   OrOperator = 1,
 
 }
 
-const ENUM_MIN_LOGICAL_OPERATOR_KIND: i8 = 0;
-const ENUM_MAX_LOGICAL_OPERATOR_KIND: i8 = 1;
+const ENUM_MIN_LOGICAL_OPERATOR: i8 = 0;
+const ENUM_MAX_LOGICAL_OPERATOR: i8 = 1;
 
-impl<'a> flatbuffers::Follow<'a> for LogicalOperatorKind {
+impl<'a> flatbuffers::Follow<'a> for LogicalOperator {
   type Inner = Self;
   #[inline]
   fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
@@ -424,50 +424,50 @@ impl<'a> flatbuffers::Follow<'a> for LogicalOperatorKind {
   }
 }
 
-impl flatbuffers::EndianScalar for LogicalOperatorKind {
+impl flatbuffers::EndianScalar for LogicalOperator {
   #[inline]
   fn to_little_endian(self) -> Self {
     let n = i8::to_le(self as i8);
-    let p = &n as *const i8 as *const LogicalOperatorKind;
+    let p = &n as *const i8 as *const LogicalOperator;
     unsafe { *p }
   }
   #[inline]
   fn from_little_endian(self) -> Self {
     let n = i8::from_le(self as i8);
-    let p = &n as *const i8 as *const LogicalOperatorKind;
+    let p = &n as *const i8 as *const LogicalOperator;
     unsafe { *p }
   }
 }
 
-impl flatbuffers::Push for LogicalOperatorKind {
-    type Output = LogicalOperatorKind;
+impl flatbuffers::Push for LogicalOperator {
+    type Output = LogicalOperator;
     #[inline]
     fn push(&self, dst: &mut [u8], _rest: &[u8]) {
-        flatbuffers::emplace_scalar::<LogicalOperatorKind>(dst, *self);
+        flatbuffers::emplace_scalar::<LogicalOperator>(dst, *self);
     }
 }
 
 #[allow(non_camel_case_types)]
-const ENUM_VALUES_LOGICAL_OPERATOR_KIND:[LogicalOperatorKind; 2] = [
-  LogicalOperatorKind::AndOperator,
-  LogicalOperatorKind::OrOperator
+const ENUM_VALUES_LOGICAL_OPERATOR:[LogicalOperator; 2] = [
+  LogicalOperator::AndOperator,
+  LogicalOperator::OrOperator
 ];
 
 #[allow(non_camel_case_types)]
-const ENUM_NAMES_LOGICAL_OPERATOR_KIND:[&'static str; 2] = [
+const ENUM_NAMES_LOGICAL_OPERATOR:[&'static str; 2] = [
     "AndOperator",
     "OrOperator"
 ];
 
-pub fn enum_name_logical_operator_kind(e: LogicalOperatorKind) -> &'static str {
+pub fn enum_name_logical_operator(e: LogicalOperator) -> &'static str {
   let index = e as i8;
-  ENUM_NAMES_LOGICAL_OPERATOR_KIND[index as usize]
+  ENUM_NAMES_LOGICAL_OPERATOR[index as usize]
 }
 
 #[allow(non_camel_case_types)]
 #[repr(i8)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-pub enum TimeUnitKind {
+pub enum TimeUnit {
   y = 0,
   mo = 1,
   w = 2,
@@ -481,10 +481,10 @@ pub enum TimeUnitKind {
 
 }
 
-const ENUM_MIN_TIME_UNIT_KIND: i8 = 0;
-const ENUM_MAX_TIME_UNIT_KIND: i8 = 9;
+const ENUM_MIN_TIME_UNIT: i8 = 0;
+const ENUM_MAX_TIME_UNIT: i8 = 9;
 
-impl<'a> flatbuffers::Follow<'a> for TimeUnitKind {
+impl<'a> flatbuffers::Follow<'a> for TimeUnit {
   type Inner = Self;
   #[inline]
   fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
@@ -492,45 +492,45 @@ impl<'a> flatbuffers::Follow<'a> for TimeUnitKind {
   }
 }
 
-impl flatbuffers::EndianScalar for TimeUnitKind {
+impl flatbuffers::EndianScalar for TimeUnit {
   #[inline]
   fn to_little_endian(self) -> Self {
     let n = i8::to_le(self as i8);
-    let p = &n as *const i8 as *const TimeUnitKind;
+    let p = &n as *const i8 as *const TimeUnit;
     unsafe { *p }
   }
   #[inline]
   fn from_little_endian(self) -> Self {
     let n = i8::from_le(self as i8);
-    let p = &n as *const i8 as *const TimeUnitKind;
+    let p = &n as *const i8 as *const TimeUnit;
     unsafe { *p }
   }
 }
 
-impl flatbuffers::Push for TimeUnitKind {
-    type Output = TimeUnitKind;
+impl flatbuffers::Push for TimeUnit {
+    type Output = TimeUnit;
     #[inline]
     fn push(&self, dst: &mut [u8], _rest: &[u8]) {
-        flatbuffers::emplace_scalar::<TimeUnitKind>(dst, *self);
+        flatbuffers::emplace_scalar::<TimeUnit>(dst, *self);
     }
 }
 
 #[allow(non_camel_case_types)]
-const ENUM_VALUES_TIME_UNIT_KIND:[TimeUnitKind; 10] = [
-  TimeUnitKind::y,
-  TimeUnitKind::mo,
-  TimeUnitKind::w,
-  TimeUnitKind::d,
-  TimeUnitKind::h,
-  TimeUnitKind::m,
-  TimeUnitKind::s,
-  TimeUnitKind::ms,
-  TimeUnitKind::us,
-  TimeUnitKind::ns
+const ENUM_VALUES_TIME_UNIT:[TimeUnit; 10] = [
+  TimeUnit::y,
+  TimeUnit::mo,
+  TimeUnit::w,
+  TimeUnit::d,
+  TimeUnit::h,
+  TimeUnit::m,
+  TimeUnit::s,
+  TimeUnit::ms,
+  TimeUnit::us,
+  TimeUnit::ns
 ];
 
 #[allow(non_camel_case_types)]
-const ENUM_NAMES_TIME_UNIT_KIND:[&'static str; 10] = [
+const ENUM_NAMES_TIME_UNIT:[&'static str; 10] = [
     "y",
     "mo",
     "w",
@@ -543,9 +543,9 @@ const ENUM_NAMES_TIME_UNIT_KIND:[&'static str; 10] = [
     "ns"
 ];
 
-pub fn enum_name_time_unit_kind(e: TimeUnitKind) -> &'static str {
+pub fn enum_name_time_unit(e: TimeUnit) -> &'static str {
   let index = e as i8;
-  ENUM_NAMES_TIME_UNIT_KIND[index as usize]
+  ENUM_NAMES_TIME_UNIT[index as usize]
 }
 
 #[allow(non_camel_case_types)]
@@ -3657,8 +3657,8 @@ impl<'a> BinaryExpression<'a> {
     self._tab.get::<flatbuffers::ForwardsUOffset<BaseNode<'a>>>(BinaryExpression::VT_BASE_NODE, None)
   }
   #[inline]
-  pub fn operator(&self) -> OperatorKind {
-    self._tab.get::<OperatorKind>(BinaryExpression::VT_OPERATOR, Some(OperatorKind::MultiplicationOperator)).unwrap()
+  pub fn operator(&self) -> Operator {
+    self._tab.get::<Operator>(BinaryExpression::VT_OPERATOR, Some(Operator::MultiplicationOperator)).unwrap()
   }
   #[inline]
   pub fn left_type(&self) -> Expression {
@@ -4140,7 +4140,7 @@ impl<'a> BinaryExpression<'a> {
 
 pub struct BinaryExpressionArgs<'a> {
     pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a >>>,
-    pub operator: OperatorKind,
+    pub operator: Operator,
     pub left_type: Expression,
     pub left: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
     pub right_type: Expression,
@@ -4151,7 +4151,7 @@ impl<'a> Default for BinaryExpressionArgs<'a> {
     fn default() -> Self {
         BinaryExpressionArgs {
             base_node: None,
-            operator: OperatorKind::MultiplicationOperator,
+            operator: Operator::MultiplicationOperator,
             left_type: Expression::NONE,
             left: None,
             right_type: Expression::NONE,
@@ -4169,8 +4169,8 @@ impl<'a: 'b, 'b> BinaryExpressionBuilder<'a, 'b> {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<BaseNode>>(BinaryExpression::VT_BASE_NODE, base_node);
   }
   #[inline]
-  pub fn add_operator(&mut self, operator: OperatorKind) {
-    self.fbb_.push_slot::<OperatorKind>(BinaryExpression::VT_OPERATOR, operator, OperatorKind::MultiplicationOperator);
+  pub fn add_operator(&mut self, operator: Operator) {
+    self.fbb_.push_slot::<Operator>(BinaryExpression::VT_OPERATOR, operator, Operator::MultiplicationOperator);
   }
   #[inline]
   pub fn add_left_type(&mut self, left_type: Expression) {
@@ -4253,8 +4253,8 @@ impl<'a> LogicalExpression<'a> {
     self._tab.get::<flatbuffers::ForwardsUOffset<BaseNode<'a>>>(LogicalExpression::VT_BASE_NODE, None)
   }
   #[inline]
-  pub fn operator(&self) -> OperatorKind {
-    self._tab.get::<OperatorKind>(LogicalExpression::VT_OPERATOR, Some(OperatorKind::MultiplicationOperator)).unwrap()
+  pub fn operator(&self) -> Operator {
+    self._tab.get::<Operator>(LogicalExpression::VT_OPERATOR, Some(Operator::MultiplicationOperator)).unwrap()
   }
   #[inline]
   pub fn left_type(&self) -> Expression {
@@ -4736,7 +4736,7 @@ impl<'a> LogicalExpression<'a> {
 
 pub struct LogicalExpressionArgs<'a> {
     pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a >>>,
-    pub operator: OperatorKind,
+    pub operator: Operator,
     pub left_type: Expression,
     pub left: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
     pub right_type: Expression,
@@ -4747,7 +4747,7 @@ impl<'a> Default for LogicalExpressionArgs<'a> {
     fn default() -> Self {
         LogicalExpressionArgs {
             base_node: None,
-            operator: OperatorKind::MultiplicationOperator,
+            operator: Operator::MultiplicationOperator,
             left_type: Expression::NONE,
             left: None,
             right_type: Expression::NONE,
@@ -4765,8 +4765,8 @@ impl<'a: 'b, 'b> LogicalExpressionBuilder<'a, 'b> {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<BaseNode>>(LogicalExpression::VT_BASE_NODE, base_node);
   }
   #[inline]
-  pub fn add_operator(&mut self, operator: OperatorKind) {
-    self.fbb_.push_slot::<OperatorKind>(LogicalExpression::VT_OPERATOR, operator, OperatorKind::MultiplicationOperator);
+  pub fn add_operator(&mut self, operator: Operator) {
+    self.fbb_.push_slot::<Operator>(LogicalExpression::VT_OPERATOR, operator, Operator::MultiplicationOperator);
   }
   #[inline]
   pub fn add_left_type(&mut self, left_type: Expression) {
@@ -4845,8 +4845,8 @@ impl<'a> UnaryExpression<'a> {
     self._tab.get::<flatbuffers::ForwardsUOffset<BaseNode<'a>>>(UnaryExpression::VT_BASE_NODE, None)
   }
   #[inline]
-  pub fn operator(&self) -> OperatorKind {
-    self._tab.get::<OperatorKind>(UnaryExpression::VT_OPERATOR, Some(OperatorKind::MultiplicationOperator)).unwrap()
+  pub fn operator(&self) -> Operator {
+    self._tab.get::<Operator>(UnaryExpression::VT_OPERATOR, Some(Operator::MultiplicationOperator)).unwrap()
   }
   #[inline]
   pub fn argument_type(&self) -> Expression {
@@ -5090,7 +5090,7 @@ impl<'a> UnaryExpression<'a> {
 
 pub struct UnaryExpressionArgs<'a> {
     pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a >>>,
-    pub operator: OperatorKind,
+    pub operator: Operator,
     pub argument_type: Expression,
     pub argument: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
 }
@@ -5099,7 +5099,7 @@ impl<'a> Default for UnaryExpressionArgs<'a> {
     fn default() -> Self {
         UnaryExpressionArgs {
             base_node: None,
-            operator: OperatorKind::MultiplicationOperator,
+            operator: Operator::MultiplicationOperator,
             argument_type: Expression::NONE,
             argument: None,
         }
@@ -5115,8 +5115,8 @@ impl<'a: 'b, 'b> UnaryExpressionBuilder<'a, 'b> {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<BaseNode>>(UnaryExpression::VT_BASE_NODE, base_node);
   }
   #[inline]
-  pub fn add_operator(&mut self, operator: OperatorKind) {
-    self.fbb_.push_slot::<OperatorKind>(UnaryExpression::VT_OPERATOR, operator, OperatorKind::MultiplicationOperator);
+  pub fn add_operator(&mut self, operator: Operator) {
+    self.fbb_.push_slot::<Operator>(UnaryExpression::VT_OPERATOR, operator, Operator::MultiplicationOperator);
   }
   #[inline]
   pub fn add_argument_type(&mut self, argument_type: Expression) {
@@ -5447,21 +5447,21 @@ impl<'a> Duration<'a> {
     self._tab.get::<i64>(Duration::VT_MAGNITUDE, Some(0)).unwrap()
   }
   #[inline]
-  pub fn unit(&self) -> TimeUnitKind {
-    self._tab.get::<TimeUnitKind>(Duration::VT_UNIT, Some(TimeUnitKind::y)).unwrap()
+  pub fn unit(&self) -> TimeUnit {
+    self._tab.get::<TimeUnit>(Duration::VT_UNIT, Some(TimeUnit::y)).unwrap()
   }
 }
 
 pub struct DurationArgs {
     pub magnitude: i64,
-    pub unit: TimeUnitKind,
+    pub unit: TimeUnit,
 }
 impl<'a> Default for DurationArgs {
     #[inline]
     fn default() -> Self {
         DurationArgs {
             magnitude: 0,
-            unit: TimeUnitKind::y,
+            unit: TimeUnit::y,
         }
     }
 }
@@ -5475,8 +5475,8 @@ impl<'a: 'b, 'b> DurationBuilder<'a, 'b> {
     self.fbb_.push_slot::<i64>(Duration::VT_MAGNITUDE, magnitude, 0);
   }
   #[inline]
-  pub fn add_unit(&mut self, unit: TimeUnitKind) {
-    self.fbb_.push_slot::<TimeUnitKind>(Duration::VT_UNIT, unit, TimeUnitKind::y);
+  pub fn add_unit(&mut self, unit: TimeUnit) {
+    self.fbb_.push_slot::<TimeUnit>(Duration::VT_UNIT, unit, TimeUnit::y);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> DurationBuilder<'a, 'b> {

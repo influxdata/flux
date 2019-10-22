@@ -6,27 +6,27 @@ import (
 	flatbuffers "github.com/google/flatbuffers/go"
 )
 
-type BinaryExpression struct {
+type LogicalExpression struct {
 	_tab flatbuffers.Table
 }
 
-func GetRootAsBinaryExpression(buf []byte, offset flatbuffers.UOffsetT) *BinaryExpression {
+func GetRootAsLogicalExpression(buf []byte, offset flatbuffers.UOffsetT) *LogicalExpression {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
-	x := &BinaryExpression{}
+	x := &LogicalExpression{}
 	x.Init(buf, n+offset)
 	return x
 }
 
-func (rcv *BinaryExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
+func (rcv *LogicalExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
 }
 
-func (rcv *BinaryExpression) Table() flatbuffers.Table {
+func (rcv *LogicalExpression) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *BinaryExpression) BaseNode(obj *BaseNode) *BaseNode {
+func (rcv *LogicalExpression) BaseNode(obj *BaseNode) *BaseNode {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
 		x := rcv._tab.Indirect(o + rcv._tab.Pos)
@@ -39,7 +39,7 @@ func (rcv *BinaryExpression) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *BinaryExpression) Operator() OperatorKind {
+func (rcv *LogicalExpression) Operator() Operator {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		return rcv._tab.GetInt8(o + rcv._tab.Pos)
@@ -47,11 +47,11 @@ func (rcv *BinaryExpression) Operator() OperatorKind {
 	return 0
 }
 
-func (rcv *BinaryExpression) MutateOperator(n OperatorKind) bool {
+func (rcv *LogicalExpression) MutateOperator(n Operator) bool {
 	return rcv._tab.MutateInt8Slot(6, n)
 }
 
-func (rcv *BinaryExpression) LeftType() byte {
+func (rcv *LogicalExpression) LeftType() byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		return rcv._tab.GetByte(o + rcv._tab.Pos)
@@ -59,11 +59,11 @@ func (rcv *BinaryExpression) LeftType() byte {
 	return 0
 }
 
-func (rcv *BinaryExpression) MutateLeftType(n byte) bool {
+func (rcv *LogicalExpression) MutateLeftType(n byte) bool {
 	return rcv._tab.MutateByteSlot(8, n)
 }
 
-func (rcv *BinaryExpression) Left(obj *flatbuffers.Table) bool {
+func (rcv *LogicalExpression) Left(obj *flatbuffers.Table) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
 		rcv._tab.Union(obj, o)
@@ -72,7 +72,7 @@ func (rcv *BinaryExpression) Left(obj *flatbuffers.Table) bool {
 	return false
 }
 
-func (rcv *BinaryExpression) RightType() byte {
+func (rcv *LogicalExpression) RightType() byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
 	if o != 0 {
 		return rcv._tab.GetByte(o + rcv._tab.Pos)
@@ -80,11 +80,11 @@ func (rcv *BinaryExpression) RightType() byte {
 	return 0
 }
 
-func (rcv *BinaryExpression) MutateRightType(n byte) bool {
+func (rcv *LogicalExpression) MutateRightType(n byte) bool {
 	return rcv._tab.MutateByteSlot(12, n)
 }
 
-func (rcv *BinaryExpression) Right(obj *flatbuffers.Table) bool {
+func (rcv *LogicalExpression) Right(obj *flatbuffers.Table) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
 		rcv._tab.Union(obj, o)
@@ -93,27 +93,27 @@ func (rcv *BinaryExpression) Right(obj *flatbuffers.Table) bool {
 	return false
 }
 
-func BinaryExpressionStart(builder *flatbuffers.Builder) {
+func LogicalExpressionStart(builder *flatbuffers.Builder) {
 	builder.StartObject(6)
 }
-func BinaryExpressionAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
+func LogicalExpressionAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func BinaryExpressionAddOperator(builder *flatbuffers.Builder, operator int8) {
+func LogicalExpressionAddOperator(builder *flatbuffers.Builder, operator int8) {
 	builder.PrependInt8Slot(1, operator, 0)
 }
-func BinaryExpressionAddLeftType(builder *flatbuffers.Builder, leftType byte) {
+func LogicalExpressionAddLeftType(builder *flatbuffers.Builder, leftType byte) {
 	builder.PrependByteSlot(2, leftType, 0)
 }
-func BinaryExpressionAddLeft(builder *flatbuffers.Builder, left flatbuffers.UOffsetT) {
+func LogicalExpressionAddLeft(builder *flatbuffers.Builder, left flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(left), 0)
 }
-func BinaryExpressionAddRightType(builder *flatbuffers.Builder, rightType byte) {
+func LogicalExpressionAddRightType(builder *flatbuffers.Builder, rightType byte) {
 	builder.PrependByteSlot(4, rightType, 0)
 }
-func BinaryExpressionAddRight(builder *flatbuffers.Builder, right flatbuffers.UOffsetT) {
+func LogicalExpressionAddRight(builder *flatbuffers.Builder, right flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(right), 0)
 }
-func BinaryExpressionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+func LogicalExpressionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }

@@ -25,7 +25,7 @@ fn test_flatbuffers_ast() {
     let add = BinaryExpression::create(
         &mut b,
         &BinaryExpressionArgs {
-            operator: OperatorKind::AdditionOperator,
+            operator: Operator::AdditionOperator,
             left_type: Expression::IntegerLiteral,
             left: Some(lit1.as_union_value()),
             right_type: Expression::IntegerLiteral,

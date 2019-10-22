@@ -38,7 +38,7 @@ func (rcv *Duration) MutateMagnitude(n int64) bool {
 	return rcv._tab.MutateInt64Slot(4, n)
 }
 
-func (rcv *Duration) Unit() TimeUnitKind {
+func (rcv *Duration) Unit() TimeUnit {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		return rcv._tab.GetInt8(o + rcv._tab.Pos)
@@ -46,7 +46,7 @@ func (rcv *Duration) Unit() TimeUnitKind {
 	return 0
 }
 
-func (rcv *Duration) MutateUnit(n TimeUnitKind) bool {
+func (rcv *Duration) MutateUnit(n TimeUnit) bool {
 	return rcv._tab.MutateInt8Slot(6, n)
 }
 

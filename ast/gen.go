@@ -1,4 +1,4 @@
 package ast
 
-//go:generate flatc --go ./ast.fbs
-//go:generate go fmt ./fbast/...
+//go:generate flatc --go -o ./internal ./ast.fbs
+//go:generate go fmt ./internal/fbast/...

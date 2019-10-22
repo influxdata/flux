@@ -4,13 +4,13 @@ import (
 	"testing"
 
 	flatbuffers "github.com/google/flatbuffers/go"
-	"github.com/influxdata/flux/ast/fbast"
+	"github.com/influxdata/flux/ast/internal/fbast"
 )
 
 func TestFlatBuffers(t *testing.T) {
 	b := flatbuffers.NewBuilder(1024)
 
-	// make a simple flatbuffer for `x = 40 + 60`
+	// make a simple flatbuffer for `40 + 60`
 	fbast.IntegerLiteralStart(b)
 	fbast.IntegerLiteralAddValue(b, 40)
 	lit1 := fbast.IdentifierEnd(b)
@@ -20,17 +20,25 @@ func TestFlatBuffers(t *testing.T) {
 	lit2 := fbast.IdentifierEnd(b)
 
 	fbast.BinaryExpressionStart(b)
-	fbast.BinaryExpressionAddOperator(b, fbast.OperatorKindAdditionOperator)
+	fbast.BinaryExpressionAddOperator(b, fbast.OperatorAdditionOperator)
+	fbast.BinaryExpressionAddLeftType(b, fbast.ExpressionIntegerLiteral)
 	fbast.BinaryExpressionAddLeft(b, lit1)
+	fbast.BinaryExpressionAddRightType(b, fbast.ExpressionIntegerLiteral)
 	fbast.BinaryExpressionAddRight(b, lit2)
 	add := fbast.BinaryExpressionEnd(b)
 
 	fbast.ExpressionStatementStart(b)
+	fbast.ExpressionStatementAddExpressionType(b, fbast.ExpressionBinaryExpression)
 	fbast.ExpressionStatementAddExpression(b, add)
 	stmt := fbast.ExpressionStatementEnd(b)
 
+	fbast.WrappedStatementStart(b)
+	fbast.WrappedExpressionAddExprType(b, fbast.StatementExpressionStatement)
+	fbast.WrappedExpressionAddExpr(b, stmt)
+	wrappedStmt := fbast.WrappedExpressionEnd(b)
+
 	fbast.FileStartBodyVector(b, 1)
-	b.PrependUOffsetT(stmt)
+	b.PrependUOffsetT(wrappedStmt)
 	body := b.EndVector(1)
 
 	fbast.FileStart(b)
@@ -52,5 +60,5 @@ func TestFlatBuffers(t *testing.T) {
 		t.Fatalf("expected non-empty byte buffer")
 	}
 
-	t.Logf("simple flatbuffer AST representation of x=40+60 uses %v bytes", len(fb))
+	t.Logf("simple flatbuffer AST representation of 40+60 uses %v bytes", len(fb))
 }

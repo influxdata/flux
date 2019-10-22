@@ -1,5 +1,5 @@
 # List any generated files here
-TARGETS = fbast/*.go
+TARGETS = internal/fbast/*.go
 # List any source files used to generate the targets here
 SOURCES = ast.fbs
 # List any directories that have their own Makefile here
