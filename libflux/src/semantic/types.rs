@@ -46,7 +46,7 @@ impl fmt::Display for PolyType {
 // for said type variable.
 //
 #[derive(Debug, Clone, PartialEq)]
-pub struct TvarKinds(HashMap<Tvar, HashSet<Kind>>);
+pub struct TvarKinds(pub HashMap<Tvar, HashSet<Kind>>);
 
 impl fmt::Display for TvarKinds {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
