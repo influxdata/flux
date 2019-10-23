@@ -40,7 +40,8 @@ jobs:
       - run:
           name: Uploading coverage report
           command: |
-            bash <(curl -s https://codecov.io/bash)
+            bash <(curl -s https://codecov.io/bash) -cF go
+            bash <(curl -s https://codecov.io/bash) -cF rust
       - save_cache:
           name: Saving GOCACHE
           key: flux-gocache-{{ .Branch }}-{{ .Revision }}
