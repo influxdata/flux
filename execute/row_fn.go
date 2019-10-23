@@ -2,12 +2,12 @@ package execute
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"regexp"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -138,7 +138,7 @@ func (f *TablePredicateFn) Prepare(tbl flux.Table) error {
 		return err
 	}
 	if f.preparedFn.Type() != semantic.Bool {
-		return errors.New("table predicate function does not evaluate to a boolean")
+		return errors.New(codes.Invalid, "table predicate function does not evaluate to a boolean")
 	}
 	return nil
 }
@@ -192,7 +192,7 @@ func (f *RowPredicateFn) Prepare(cols []flux.ColMeta) error {
 		return err
 	}
 	if f.preparedFn.Type() != semantic.Bool {
-		return errors.New("row predicate function does not evaluate to a boolean")
+		return errors.New(codes.Invalid, "row predicate function does not evaluate to a boolean")
 	}
 	return nil
 }
@@ -240,7 +240,7 @@ func (f *RowMapFn) Prepare(cols []flux.ColMeta) error {
 	}
 	k := f.preparedFn.Type().Nature()
 	if k != semantic.Object {
-		return fmt.Errorf("map function must return an object, got %s", k.String())
+		return errors.Newf(codes.Invalid, "map function must return an object, got %s", k.String())
 	}
 	return nil
 }
