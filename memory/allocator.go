@@ -19,6 +19,15 @@ var _ memory.Allocator = (*Allocator)(nil)
 
 // Allocator tracks the amount of memory being consumed by a query.
 type Allocator struct {
+	// Variables accessed with atomic operations should be at
+	// the beginning of the struct to ensure byte alignment is correct.
+	// https://golang.org/pkg/sync/atomic/#pkg-note-BUG
+	allocationLimit int64
+	bytesAllocated  int64
+	maxAllocated    int64
+	totalAllocated  int64
+	mu              sync.Mutex
+
 	// Limit is the limit on the amount of memory that this allocator
 	// can assign. If this is null, there is no limit.
 	Limit *int64
@@ -33,12 +42,6 @@ type Allocator struct {
 	// allocate and free memory.
 	// If this is unset, the DefaultAllocator is used.
 	Allocator memory.Allocator
-
-	allocationLimit int64
-	bytesAllocated  int64
-	maxAllocated    int64
-	totalAllocated  int64
-	mu              sync.Mutex
 }
 
 // Allocate will ensure that the requested memory is available and
