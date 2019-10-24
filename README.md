@@ -61,7 +61,7 @@ Here are a few examples of the language to get an idea of the syntax.
     import "math"
 
     // Call functions always using keyword arguments
-    math.pow(base: 5, exponent: 3) // 5^3 = 125
+    math.pow(x: 5.0, y: 3.0) // 5^3 = 125
 
     // Functions are defined by assigning them to identifers
     add = (a, b) => a + b
@@ -71,10 +71,17 @@ Here are a few examples of the language to get an idea of the syntax.
 
     // Functions are polymorphic
     add(a: 5.5, b: 2.5) // 8.0
+    
+    // And strongly typed
+    add(a: 5, b: 2.5) // type error
 
-    // Access data from a database and store it as an identifer
-    import "influxdb"
+    // Access data from a database and store it as an identifier
+    // This is only possible within the influxdb repl (at the moment).
+    import "influxdata/influxdb"
     data = influxdb.from(bucket:"telegraf/autogen")
+    
+    // When running inside of influxdb, the import isn't needed.
+    data = from(bucket:"telegraf/autogen")
 
     // Chain more transformation functions to further specify the desired data
     cpu = data 
