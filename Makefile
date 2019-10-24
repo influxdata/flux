@@ -57,7 +57,7 @@ stdlib/packages.go: $(STDLIB_SOURCES)
 	$(GO_GENERATE) ./stdlib
 
 internal/scanner/unicode.rl: internal/scanner/unicode2ragel.rb
-	ruby unicode2ragel.rb -e utf8 -o internal/scanner/unicode.rl
+	cd internal/scanner && ruby unicode2ragel.rb -e utf8 -o unicode.rl
 internal/scanner/scanner.gen.go: internal/scanner/gen.go internal/scanner/scanner.rl internal/scanner/unicode.rl
 	$(GO_GENERATE) ./internal/scanner
 
@@ -76,17 +76,22 @@ libflux/target/debug/libflux.a:
 # dependencies we load are correct. But, we do not want to trigger
 # a rust build just to load the dependencies since we may not need
 # to build the static library to begin with.
-# It is good enough for us to include this target so that a .d file
-# exists. If the .d file does not exist, then the .a file above also
+# It is good enough for us to include this target so that the makefile
+# doesn't error when the file doesn't exist. It does not actually
+# have to create the file, just promise that the file will be created.
+# If the .d file does not exist, then the .a file above also
 # does not exist so the dependencies don't matter. If the .d file
 # exists, this will never get called or, at a minimum, it won't modify
-# the files at all. This ensures that the dependency file is always
-# in the correct format even when cargo build is run outside of the
-# Makefile.
+# the files at all. This allows the target below to depend on this
+# file without the file necessarily existing and it will force
+# post-processing of the file if the .d file is newer than our
+# post-processed .deps file.
 libflux/target/debug/libflux.d:
-	@touch $@
+
 libflux/target/debug/libflux.deps: libflux/target/debug/libflux.d
-	@sed -e "s@${CURDIR}/@@g" -e "s@debug/debug@debug@g" -e "s@\\.dylib@.a@g" -e "s@\\.so@.a@g" $< > $@
+	@if [ -e "$<" ]; then \
+		sed -e "s@${CURDIR}/@@g" -e "s@debug/debug@debug@g" -e "s@\\.dylib@.a@g" -e "s@\\.so@.a@g" $< > $@; \
+	fi
 # Conditionally include the libflux.deps file so if any of the
 # source files are modified, they are considered when deciding
 # whether to rebuild the library.
