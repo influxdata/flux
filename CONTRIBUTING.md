@@ -79,7 +79,7 @@ use only the standard libraries, or the third-party packages we have decided to 
 For rationale, check out the post [The Case Against Third Party Libraries](http://blog.gopheracademy.com/advent-2014/case-against-3pl/).
 
 ## Useful links
-- [Useful techniques in Go](http://arslan.io/ten-useful-techniques-in-go)
+- [Useful techniques in Go](https://arslan.io/2015/10/08/ten-useful-techniques-in-go/) 
 - [Go in production](http://peter.bourgon.org/go-in-production/)
 - [Principles of designing Go APIs with channels](https://inconshreveable.com/07-08-2014/principles-of-designing-go-apis-with-channels/)
 - [Common mistakes in Golang](http://soryy.com/blog/2014/common-mistakes-with-go-lang/).
