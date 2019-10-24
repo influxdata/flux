@@ -39,7 +39,7 @@ func (rcv *LogicalExpression) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *LogicalExpression) Operator() Operator {
+func (rcv *LogicalExpression) Operator() LogicalOperator {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		return rcv._tab.GetInt8(o + rcv._tab.Pos)
@@ -47,7 +47,7 @@ func (rcv *LogicalExpression) Operator() Operator {
 	return 0
 }
 
-func (rcv *LogicalExpression) MutateOperator(n Operator) bool {
+func (rcv *LogicalExpression) MutateOperator(n LogicalOperator) bool {
 	return rcv._tab.MutateInt8Slot(6, n)
 }
 

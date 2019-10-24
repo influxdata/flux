@@ -5,7 +5,7 @@ use crate::ast::*;
 use std::cell::{RefCell, RefMut};
 use std::rc::Rc;
 
-// Node represents any structure that can appear in the AST
+/// Node represents any structure that can appear in the AST
 #[derive(Debug)]
 pub enum Node<'a> {
     Package(&'a Package),
@@ -159,7 +159,7 @@ impl<'a> Node<'a> {
 }
 
 impl<'a> Node<'a> {
-    fn from_expr(expr: &'a Expression) -> Node {
+    pub fn from_expr(expr: &'a Expression) -> Node {
         match expr {
             Expression::Identifier(e) => Node::Identifier(e),
             Expression::Array(e) => Node::ArrayExpr(e),
@@ -187,7 +187,7 @@ impl<'a> Node<'a> {
             Expression::Bad(e) => Node::BadExpr(e),
         }
     }
-    fn from_stmt(stmt: &Statement) -> Node {
+    pub fn from_stmt(stmt: &Statement) -> Node {
         match stmt {
             Statement::Expr(s) => Node::ExprStmt(s),
             Statement::Variable(s) => Node::VariableAssgn(s),
@@ -224,29 +224,36 @@ impl<'a> Node<'a> {
     }
 }
 
-// Visitor defines a visitor pattern for walking the AST
-//
-// When used with the walk function, Visit will be called for every node
-// in depth-first order. After all children for a Node have been visted,
-// Done is called on that Node to signal that we are done with that Node.
-//
-// If Visit returns None, walk will not recurse on the children.
-//
-// Note: the Rc in visit and done is to allow for multiple ownership of a node, i.e.
-//       a visitor can own a node as well as the walk funciton. This allows
-//       for nodes to persist outside the scope of the walk function and to
-//       be cleaned up once all owners have let go of the reference.
+/// Visitor defines a visitor pattern for walking the AST.
+///
+/// When used with the walk function, Visit will be called for every node
+/// in depth-first order. After all children for a Node have been visted,
+/// Done is called on that Node to signal that we are done with that Node.
+///
+/// If Visit returns None, walk will not recurse on the children.
+///
+/// Note: the Rc in visit and done is to allow for multiple ownership of a node, i.e.
+///       a visitor can own a node as well as the walk funciton. This allows
+///       for nodes to persist outside the scope of the walk function and to
+///       be cleaned up once all owners have let go of the reference.
+///
+/// Implementors of the Visitor trait will typically wrap themselves in Rc and RefCell
+/// in order to allow for:
+///   - mutable state, accessed from `Rc::borrow_mut()`
+///   - multiple ownership (required so that walking can share ownership with caller)
+///
+/// See example with `FuncVisitor` below in this file.
 pub trait Visitor<'a>: Sized {
-    // Visit is called for a node.
-    // The returned visitor will be used to walk children of the node.
-    // If visit returns None, walk will not recurse on the children.
+    /// Visit is called for a node.
+    /// The returned visitor will be used to walk children of the node.
+    /// If visit returns None, walk will not recurse on the children.
     fn visit(&self, node: Rc<Node<'a>>) -> Option<Self>;
-    // Done is called for a node once it has been visited along with all of its children.
+    /// Done is called for a node once it has been visited along with all of its children.
     fn done(&self, _: Rc<Node<'a>>) {} // default is to do nothing
 }
 
-// Walk recursively visits children of a node.
-// Nodes are visited in depth-first order.
+/// Walk recursively visits children of a node.
+/// Nodes are visited in depth-first order.
 pub fn walk<'a, T>(v: &T, node: Node<'a>)
 where
     T: Visitor<'a>,
@@ -416,7 +423,7 @@ impl<'a> Visitor<'a> for FuncVisitor<'a> {
     }
 }
 
-// Create Visitor will produce a visitor that calls the function for all nodes.
+/// Create Visitor will produce a visitor that calls the function for all nodes.
 pub fn create_visitor(func: &mut dyn FnMut(Rc<Node>)) -> FuncVisitor {
     Rc::new(RefCell::new(func))
 }

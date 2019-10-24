@@ -40,6 +40,7 @@ union Expression {
   StringLiteral,
   UnaryExpression,
   UnsignedIntegerLiteral,
+  BadExpression,
 }
 
 struct Position {
@@ -166,6 +167,7 @@ enum Operator : byte {
   NotEqualOperator,
   RegexpMatchOperator,
   NotRegexpMatchOperator,
+  InvalidOperator,
 }
 
 enum LogicalOperator : byte {
@@ -195,7 +197,7 @@ table BinaryExpression {
 
 table LogicalExpression {
   base_node:BaseNode;
-  operator:Operator;
+  operator:LogicalOperator;
   left:Expression;
   right:Expression;
 }
@@ -272,16 +274,6 @@ table StringExpressionPart {
   interpolated_expression:Expression; // for InterpolatedPart
 }
 
-table TextPart {
-  base_node:BaseNode;
-  value:string;
-}
-
-table InterpolatedPart {
-  base_node:BaseNode;
-  expression:Expression;
-}
-
 table ParenExpression {
   base_node:BaseNode;
   expression:Expression;
@@ -354,6 +346,12 @@ table PipeExpression {
   base_node:BaseNode;
   argument:Expression;
   call:CallExpression;
+}
+
+table BadExpression {
+  base_node:BaseNode;
+  text:string;
+  expression:Expression;
 }
 
 root_type Package;

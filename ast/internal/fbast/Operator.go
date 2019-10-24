@@ -25,6 +25,7 @@ const (
 	OperatorNotEqualOperator         Operator = 17
 	OperatorRegexpMatchOperator      Operator = 18
 	OperatorNotRegexpMatchOperator   Operator = 19
+	OperatorInvalidOperator          Operator = 20
 )
 
 var EnumNamesOperator = map[Operator]string{
@@ -48,4 +49,5 @@ var EnumNamesOperator = map[Operator]string{
 	OperatorNotEqualOperator:         "NotEqualOperator",
 	OperatorRegexpMatchOperator:      "RegexpMatchOperator",
 	OperatorNotRegexpMatchOperator:   "NotRegexpMatchOperator",
+	OperatorInvalidOperator:          "InvalidOperator",
 }

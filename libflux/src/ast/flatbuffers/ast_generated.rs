@@ -191,11 +191,12 @@ pub enum Expression {
   StringLiteral = 21,
   UnaryExpression = 22,
   UnsignedIntegerLiteral = 23,
+  BadExpression = 24,
 
 }
 
 const ENUM_MIN_EXPRESSION: u8 = 0;
-const ENUM_MAX_EXPRESSION: u8 = 23;
+const ENUM_MAX_EXPRESSION: u8 = 24;
 
 impl<'a> flatbuffers::Follow<'a> for Expression {
   type Inner = Self;
@@ -229,7 +230,7 @@ impl flatbuffers::Push for Expression {
 }
 
 #[allow(non_camel_case_types)]
-const ENUM_VALUES_EXPRESSION:[Expression; 24] = [
+const ENUM_VALUES_EXPRESSION:[Expression; 25] = [
   Expression::NONE,
   Expression::StringExpression,
   Expression::ParenExpression,
@@ -253,11 +254,12 @@ const ENUM_VALUES_EXPRESSION:[Expression; 24] = [
   Expression::RegexpLiteral,
   Expression::StringLiteral,
   Expression::UnaryExpression,
-  Expression::UnsignedIntegerLiteral
+  Expression::UnsignedIntegerLiteral,
+  Expression::BadExpression
 ];
 
 #[allow(non_camel_case_types)]
-const ENUM_NAMES_EXPRESSION:[&'static str; 24] = [
+const ENUM_NAMES_EXPRESSION:[&'static str; 25] = [
     "NONE",
     "StringExpression",
     "ParenExpression",
@@ -281,7 +283,8 @@ const ENUM_NAMES_EXPRESSION:[&'static str; 24] = [
     "RegexpLiteral",
     "StringLiteral",
     "UnaryExpression",
-    "UnsignedIntegerLiteral"
+    "UnsignedIntegerLiteral",
+    "BadExpression"
 ];
 
 pub fn enum_name_expression(e: Expression) -> &'static str {
@@ -314,11 +317,12 @@ pub enum Operator {
   NotEqualOperator = 17,
   RegexpMatchOperator = 18,
   NotRegexpMatchOperator = 19,
+  InvalidOperator = 20,
 
 }
 
 const ENUM_MIN_OPERATOR: i8 = 0;
-const ENUM_MAX_OPERATOR: i8 = 19;
+const ENUM_MAX_OPERATOR: i8 = 20;
 
 impl<'a> flatbuffers::Follow<'a> for Operator {
   type Inner = Self;
@@ -352,7 +356,7 @@ impl flatbuffers::Push for Operator {
 }
 
 #[allow(non_camel_case_types)]
-const ENUM_VALUES_OPERATOR:[Operator; 20] = [
+const ENUM_VALUES_OPERATOR:[Operator; 21] = [
   Operator::MultiplicationOperator,
   Operator::DivisionOperator,
   Operator::ModuloOperator,
@@ -372,11 +376,12 @@ const ENUM_VALUES_OPERATOR:[Operator; 20] = [
   Operator::EqualOperator,
   Operator::NotEqualOperator,
   Operator::RegexpMatchOperator,
-  Operator::NotRegexpMatchOperator
+  Operator::NotRegexpMatchOperator,
+  Operator::InvalidOperator
 ];
 
 #[allow(non_camel_case_types)]
-const ENUM_NAMES_OPERATOR:[&'static str; 20] = [
+const ENUM_NAMES_OPERATOR:[&'static str; 21] = [
     "MultiplicationOperator",
     "DivisionOperator",
     "ModuloOperator",
@@ -396,7 +401,8 @@ const ENUM_NAMES_OPERATOR:[&'static str; 20] = [
     "EqualOperator",
     "NotEqualOperator",
     "RegexpMatchOperator",
-    "NotRegexpMatchOperator"
+    "NotRegexpMatchOperator",
+    "InvalidOperator"
 ];
 
 pub fn enum_name_operator(e: Operator) -> &'static str {
@@ -1904,6 +1910,16 @@ impl<'a> VariableAssignment<'a> {
     }
   }
 
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn init__as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.init__type() == Expression::BadExpression {
+      self.init_().map(|u| BadExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
 }
 
 pub struct VariableAssignmentArgs<'a> {
@@ -2246,6 +2262,16 @@ impl<'a> MemberAssignment<'a> {
     }
   }
 
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn init__as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.init__type() == Expression::BadExpression {
+      self.init_().map(|u| BadExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
 }
 
 pub struct MemberAssignmentArgs<'a> {
@@ -2582,6 +2608,16 @@ impl<'a> ExpressionStatement<'a> {
     }
   }
 
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.expression_type() == Expression::BadExpression {
+      self.expression().map(|u| BadExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
 }
 
 pub struct ExpressionStatementArgs<'a> {
@@ -2907,6 +2943,16 @@ impl<'a> ReturnStatement<'a> {
   pub fn argument_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
     if self.argument_type() == Expression::UnsignedIntegerLiteral {
       self.argument().map(|u| UnsignedIntegerLiteral::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn argument_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.argument_type() == Expression::BadExpression {
+      self.argument().map(|u| BadExpression::init_from_table(u))
     } else {
       None
     }
@@ -3564,6 +3610,16 @@ impl<'a> WrappedExpression<'a> {
     }
   }
 
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expr_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.expr_type() == Expression::BadExpression {
+      self.expr().map(|u| BadExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
 }
 
 pub struct WrappedExpressionArgs {
@@ -3908,6 +3964,16 @@ impl<'a> BinaryExpression<'a> {
 
   #[inline]
   #[allow(non_snake_case)]
+  pub fn left_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.left_type() == Expression::BadExpression {
+      self.left().map(|u| BadExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
   pub fn right_as_string_expression(&self) -> Option<StringExpression<'a>> {
     if self.right_type() == Expression::StringExpression {
       self.right().map(|u| StringExpression::init_from_table(u))
@@ -4136,6 +4202,16 @@ impl<'a> BinaryExpression<'a> {
     }
   }
 
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn right_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.right_type() == Expression::BadExpression {
+      self.right().map(|u| BadExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
 }
 
 pub struct BinaryExpressionArgs<'a> {
@@ -4253,8 +4329,8 @@ impl<'a> LogicalExpression<'a> {
     self._tab.get::<flatbuffers::ForwardsUOffset<BaseNode<'a>>>(LogicalExpression::VT_BASE_NODE, None)
   }
   #[inline]
-  pub fn operator(&self) -> Operator {
-    self._tab.get::<Operator>(LogicalExpression::VT_OPERATOR, Some(Operator::MultiplicationOperator)).unwrap()
+  pub fn operator(&self) -> LogicalOperator {
+    self._tab.get::<LogicalOperator>(LogicalExpression::VT_OPERATOR, Some(LogicalOperator::AndOperator)).unwrap()
   }
   #[inline]
   pub fn left_type(&self) -> Expression {
@@ -4504,6 +4580,16 @@ impl<'a> LogicalExpression<'a> {
 
   #[inline]
   #[allow(non_snake_case)]
+  pub fn left_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.left_type() == Expression::BadExpression {
+      self.left().map(|u| BadExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
   pub fn right_as_string_expression(&self) -> Option<StringExpression<'a>> {
     if self.right_type() == Expression::StringExpression {
       self.right().map(|u| StringExpression::init_from_table(u))
@@ -4732,11 +4818,21 @@ impl<'a> LogicalExpression<'a> {
     }
   }
 
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn right_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.right_type() == Expression::BadExpression {
+      self.right().map(|u| BadExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
 }
 
 pub struct LogicalExpressionArgs<'a> {
     pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a >>>,
-    pub operator: Operator,
+    pub operator: LogicalOperator,
     pub left_type: Expression,
     pub left: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
     pub right_type: Expression,
@@ -4747,7 +4843,7 @@ impl<'a> Default for LogicalExpressionArgs<'a> {
     fn default() -> Self {
         LogicalExpressionArgs {
             base_node: None,
-            operator: Operator::MultiplicationOperator,
+            operator: LogicalOperator::AndOperator,
             left_type: Expression::NONE,
             left: None,
             right_type: Expression::NONE,
@@ -4765,8 +4861,8 @@ impl<'a: 'b, 'b> LogicalExpressionBuilder<'a, 'b> {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<BaseNode>>(LogicalExpression::VT_BASE_NODE, base_node);
   }
   #[inline]
-  pub fn add_operator(&mut self, operator: Operator) {
-    self.fbb_.push_slot::<Operator>(LogicalExpression::VT_OPERATOR, operator, Operator::MultiplicationOperator);
+  pub fn add_operator(&mut self, operator: LogicalOperator) {
+    self.fbb_.push_slot::<LogicalOperator>(LogicalExpression::VT_OPERATOR, operator, LogicalOperator::AndOperator);
   }
   #[inline]
   pub fn add_left_type(&mut self, left_type: Expression) {
@@ -5081,6 +5177,16 @@ impl<'a> UnaryExpression<'a> {
   pub fn argument_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
     if self.argument_type() == Expression::UnsignedIntegerLiteral {
       self.argument().map(|u| UnsignedIntegerLiteral::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn argument_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.argument_type() == Expression::BadExpression {
+      self.argument().map(|u| BadExpression::init_from_table(u))
     } else {
       None
     }
@@ -6472,6 +6578,16 @@ impl<'a> StringExpressionPart<'a> {
     }
   }
 
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn interpolated_expression_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.interpolated_expression_type() == Expression::BadExpression {
+      self.interpolated_expression().map(|u| BadExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
 }
 
 pub struct StringExpressionPartArgs<'a> {
@@ -6522,424 +6638,6 @@ impl<'a: 'b, 'b> StringExpressionPartBuilder<'a, 'b> {
   }
   #[inline]
   pub fn finish(self) -> flatbuffers::WIPOffset<StringExpressionPart<'a>> {
-    let o = self.fbb_.end_table(self.start_);
-    flatbuffers::WIPOffset::new(o.value())
-  }
-}
-
-pub enum TextPartOffset {}
-#[derive(Copy, Clone, Debug, PartialEq)]
-
-pub struct TextPart<'a> {
-  pub _tab: flatbuffers::Table<'a>,
-}
-
-impl<'a> flatbuffers::Follow<'a> for TextPart<'a> {
-    type Inner = TextPart<'a>;
-    #[inline]
-    fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-        Self {
-            _tab: flatbuffers::Table { buf: buf, loc: loc },
-        }
-    }
-}
-
-impl<'a> TextPart<'a> {
-    #[inline]
-    pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
-        TextPart {
-            _tab: table,
-        }
-    }
-    #[allow(unused_mut)]
-    pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-        _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
-        args: &'args TextPartArgs<'args>) -> flatbuffers::WIPOffset<TextPart<'bldr>> {
-      let mut builder = TextPartBuilder::new(_fbb);
-      if let Some(x) = args.value { builder.add_value(x); }
-      if let Some(x) = args.base_node { builder.add_base_node(x); }
-      builder.finish()
-    }
-
-    pub const VT_BASE_NODE: flatbuffers::VOffsetT = 4;
-    pub const VT_VALUE: flatbuffers::VOffsetT = 6;
-
-  #[inline]
-  pub fn base_node(&self) -> Option<BaseNode<'a>> {
-    self._tab.get::<flatbuffers::ForwardsUOffset<BaseNode<'a>>>(TextPart::VT_BASE_NODE, None)
-  }
-  #[inline]
-  pub fn value(&self) -> Option<&'a str> {
-    self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(TextPart::VT_VALUE, None)
-  }
-}
-
-pub struct TextPartArgs<'a> {
-    pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a >>>,
-    pub value: Option<flatbuffers::WIPOffset<&'a  str>>,
-}
-impl<'a> Default for TextPartArgs<'a> {
-    #[inline]
-    fn default() -> Self {
-        TextPartArgs {
-            base_node: None,
-            value: None,
-        }
-    }
-}
-pub struct TextPartBuilder<'a: 'b, 'b> {
-  fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-  start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
-}
-impl<'a: 'b, 'b> TextPartBuilder<'a, 'b> {
-  #[inline]
-  pub fn add_base_node(&mut self, base_node: flatbuffers::WIPOffset<BaseNode<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<BaseNode>>(TextPart::VT_BASE_NODE, base_node);
-  }
-  #[inline]
-  pub fn add_value(&mut self, value: flatbuffers::WIPOffset<&'b  str>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(TextPart::VT_VALUE, value);
-  }
-  #[inline]
-  pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> TextPartBuilder<'a, 'b> {
-    let start = _fbb.start_table();
-    TextPartBuilder {
-      fbb_: _fbb,
-      start_: start,
-    }
-  }
-  #[inline]
-  pub fn finish(self) -> flatbuffers::WIPOffset<TextPart<'a>> {
-    let o = self.fbb_.end_table(self.start_);
-    flatbuffers::WIPOffset::new(o.value())
-  }
-}
-
-pub enum InterpolatedPartOffset {}
-#[derive(Copy, Clone, Debug, PartialEq)]
-
-pub struct InterpolatedPart<'a> {
-  pub _tab: flatbuffers::Table<'a>,
-}
-
-impl<'a> flatbuffers::Follow<'a> for InterpolatedPart<'a> {
-    type Inner = InterpolatedPart<'a>;
-    #[inline]
-    fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-        Self {
-            _tab: flatbuffers::Table { buf: buf, loc: loc },
-        }
-    }
-}
-
-impl<'a> InterpolatedPart<'a> {
-    #[inline]
-    pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
-        InterpolatedPart {
-            _tab: table,
-        }
-    }
-    #[allow(unused_mut)]
-    pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-        _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
-        args: &'args InterpolatedPartArgs<'args>) -> flatbuffers::WIPOffset<InterpolatedPart<'bldr>> {
-      let mut builder = InterpolatedPartBuilder::new(_fbb);
-      if let Some(x) = args.expression { builder.add_expression(x); }
-      if let Some(x) = args.base_node { builder.add_base_node(x); }
-      builder.add_expression_type(args.expression_type);
-      builder.finish()
-    }
-
-    pub const VT_BASE_NODE: flatbuffers::VOffsetT = 4;
-    pub const VT_EXPRESSION_TYPE: flatbuffers::VOffsetT = 6;
-    pub const VT_EXPRESSION: flatbuffers::VOffsetT = 8;
-
-  #[inline]
-  pub fn base_node(&self) -> Option<BaseNode<'a>> {
-    self._tab.get::<flatbuffers::ForwardsUOffset<BaseNode<'a>>>(InterpolatedPart::VT_BASE_NODE, None)
-  }
-  #[inline]
-  pub fn expression_type(&self) -> Expression {
-    self._tab.get::<Expression>(InterpolatedPart::VT_EXPRESSION_TYPE, Some(Expression::NONE)).unwrap()
-  }
-  #[inline]
-  pub fn expression(&self) -> Option<flatbuffers::Table<'a>> {
-    self._tab.get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(InterpolatedPart::VT_EXPRESSION, None)
-  }
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_string_expression(&self) -> Option<StringExpression<'a>> {
-    if self.expression_type() == Expression::StringExpression {
-      self.expression().map(|u| StringExpression::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_paren_expression(&self) -> Option<ParenExpression<'a>> {
-    if self.expression_type() == Expression::ParenExpression {
-      self.expression().map(|u| ParenExpression::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
-    if self.expression_type() == Expression::ArrayExpression {
-      self.expression().map(|u| ArrayExpression::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
-    if self.expression_type() == Expression::FunctionExpression {
-      self.expression().map(|u| FunctionExpression::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
-    if self.expression_type() == Expression::BinaryExpression {
-      self.expression().map(|u| BinaryExpression::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
-    if self.expression_type() == Expression::BooleanLiteral {
-      self.expression().map(|u| BooleanLiteral::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_call_expression(&self) -> Option<CallExpression<'a>> {
-    if self.expression_type() == Expression::CallExpression {
-      self.expression().map(|u| CallExpression::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
-    if self.expression_type() == Expression::ConditionalExpression {
-      self.expression().map(|u| ConditionalExpression::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
-    if self.expression_type() == Expression::DateTimeLiteral {
-      self.expression().map(|u| DateTimeLiteral::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
-    if self.expression_type() == Expression::DurationLiteral {
-      self.expression().map(|u| DurationLiteral::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
-    if self.expression_type() == Expression::FloatLiteral {
-      self.expression().map(|u| FloatLiteral::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_identifier(&self) -> Option<Identifier<'a>> {
-    if self.expression_type() == Expression::Identifier {
-      self.expression().map(|u| Identifier::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
-    if self.expression_type() == Expression::IntegerLiteral {
-      self.expression().map(|u| IntegerLiteral::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
-    if self.expression_type() == Expression::LogicalExpression {
-      self.expression().map(|u| LogicalExpression::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_member_expression(&self) -> Option<MemberExpression<'a>> {
-    if self.expression_type() == Expression::MemberExpression {
-      self.expression().map(|u| MemberExpression::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_index_expression(&self) -> Option<IndexExpression<'a>> {
-    if self.expression_type() == Expression::IndexExpression {
-      self.expression().map(|u| IndexExpression::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
-    if self.expression_type() == Expression::ObjectExpression {
-      self.expression().map(|u| ObjectExpression::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_pipe_expression(&self) -> Option<PipeExpression<'a>> {
-    if self.expression_type() == Expression::PipeExpression {
-      self.expression().map(|u| PipeExpression::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_pipe_literal(&self) -> Option<PipeLiteral<'a>> {
-    if self.expression_type() == Expression::PipeLiteral {
-      self.expression().map(|u| PipeLiteral::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
-    if self.expression_type() == Expression::RegexpLiteral {
-      self.expression().map(|u| RegexpLiteral::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_string_literal(&self) -> Option<StringLiteral<'a>> {
-    if self.expression_type() == Expression::StringLiteral {
-      self.expression().map(|u| StringLiteral::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
-    if self.expression_type() == Expression::UnaryExpression {
-      self.expression().map(|u| UnaryExpression::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn expression_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
-    if self.expression_type() == Expression::UnsignedIntegerLiteral {
-      self.expression().map(|u| UnsignedIntegerLiteral::init_from_table(u))
-    } else {
-      None
-    }
-  }
-
-}
-
-pub struct InterpolatedPartArgs<'a> {
-    pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a >>>,
-    pub expression_type: Expression,
-    pub expression: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
-}
-impl<'a> Default for InterpolatedPartArgs<'a> {
-    #[inline]
-    fn default() -> Self {
-        InterpolatedPartArgs {
-            base_node: None,
-            expression_type: Expression::NONE,
-            expression: None,
-        }
-    }
-}
-pub struct InterpolatedPartBuilder<'a: 'b, 'b> {
-  fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-  start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
-}
-impl<'a: 'b, 'b> InterpolatedPartBuilder<'a, 'b> {
-  #[inline]
-  pub fn add_base_node(&mut self, base_node: flatbuffers::WIPOffset<BaseNode<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<BaseNode>>(InterpolatedPart::VT_BASE_NODE, base_node);
-  }
-  #[inline]
-  pub fn add_expression_type(&mut self, expression_type: Expression) {
-    self.fbb_.push_slot::<Expression>(InterpolatedPart::VT_EXPRESSION_TYPE, expression_type, Expression::NONE);
-  }
-  #[inline]
-  pub fn add_expression(&mut self, expression: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(InterpolatedPart::VT_EXPRESSION, expression);
-  }
-  #[inline]
-  pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> InterpolatedPartBuilder<'a, 'b> {
-    let start = _fbb.start_table();
-    InterpolatedPartBuilder {
-      fbb_: _fbb,
-      start_: start,
-    }
-  }
-  #[inline]
-  pub fn finish(self) -> flatbuffers::WIPOffset<InterpolatedPart<'a>> {
     let o = self.fbb_.end_table(self.start_);
     flatbuffers::WIPOffset::new(o.value())
   }
@@ -7221,6 +6919,16 @@ impl<'a> ParenExpression<'a> {
   pub fn expression_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
     if self.expression_type() == Expression::UnsignedIntegerLiteral {
       self.expression().map(|u| UnsignedIntegerLiteral::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.expression_type() == Expression::BadExpression {
+      self.expression().map(|u| BadExpression::init_from_table(u))
     } else {
       None
     }
@@ -7870,6 +7578,16 @@ impl<'a> CallExpression<'a> {
     }
   }
 
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn callee_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.callee_type() == Expression::BadExpression {
+      self.callee().map(|u| BadExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
 }
 
 pub struct CallExpressionArgs<'a> {
@@ -8232,6 +7950,16 @@ impl<'a> ConditionalExpression<'a> {
 
   #[inline]
   #[allow(non_snake_case)]
+  pub fn test_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.test_type() == Expression::BadExpression {
+      self.test().map(|u| BadExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
   pub fn consequent_as_string_expression(&self) -> Option<StringExpression<'a>> {
     if self.consequent_type() == Expression::StringExpression {
       self.consequent().map(|u| StringExpression::init_from_table(u))
@@ -8462,6 +8190,16 @@ impl<'a> ConditionalExpression<'a> {
 
   #[inline]
   #[allow(non_snake_case)]
+  pub fn consequent_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.consequent_type() == Expression::BadExpression {
+      self.consequent().map(|u| BadExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
   pub fn alternate_as_string_expression(&self) -> Option<StringExpression<'a>> {
     if self.alternate_type() == Expression::StringExpression {
       self.alternate().map(|u| StringExpression::init_from_table(u))
@@ -8685,6 +8423,16 @@ impl<'a> ConditionalExpression<'a> {
   pub fn alternate_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
     if self.alternate_type() == Expression::UnsignedIntegerLiteral {
       self.alternate().map(|u| UnsignedIntegerLiteral::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn alternate_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.alternate_type() == Expression::BadExpression {
+      self.alternate().map(|u| BadExpression::init_from_table(u))
     } else {
       None
     }
@@ -9076,6 +8824,16 @@ impl<'a> Property<'a> {
     }
   }
 
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn value_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.value_type() == Expression::BadExpression {
+      self.value().map(|u| BadExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
 }
 
 pub struct PropertyArgs<'a> {
@@ -9425,6 +9183,16 @@ impl<'a> MemberExpression<'a> {
   pub fn object_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
     if self.object_type() == Expression::UnsignedIntegerLiteral {
       self.object().map(|u| UnsignedIntegerLiteral::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn object_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.object_type() == Expression::BadExpression {
+      self.object().map(|u| BadExpression::init_from_table(u))
     } else {
       None
     }
@@ -9806,6 +9574,16 @@ impl<'a> IndexExpression<'a> {
 
   #[inline]
   #[allow(non_snake_case)]
+  pub fn array_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.array_type() == Expression::BadExpression {
+      self.array().map(|u| BadExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
   pub fn index_as_string_expression(&self) -> Option<StringExpression<'a>> {
     if self.index_type() == Expression::StringExpression {
       self.index().map(|u| StringExpression::init_from_table(u))
@@ -10029,6 +9807,16 @@ impl<'a> IndexExpression<'a> {
   pub fn index_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
     if self.index_type() == Expression::UnsignedIntegerLiteral {
       self.index().map(|u| UnsignedIntegerLiteral::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn index_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.index_type() == Expression::BadExpression {
+      self.index().map(|u| BadExpression::init_from_table(u))
     } else {
       None
     }
@@ -10482,6 +10270,16 @@ impl<'a> PipeExpression<'a> {
     }
   }
 
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn argument_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.argument_type() == Expression::BadExpression {
+      self.argument().map(|u| BadExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
 }
 
 pub struct PipeExpressionArgs<'a> {
@@ -10532,6 +10330,358 @@ impl<'a: 'b, 'b> PipeExpressionBuilder<'a, 'b> {
   }
   #[inline]
   pub fn finish(self) -> flatbuffers::WIPOffset<PipeExpression<'a>> {
+    let o = self.fbb_.end_table(self.start_);
+    flatbuffers::WIPOffset::new(o.value())
+  }
+}
+
+pub enum BadExpressionOffset {}
+#[derive(Copy, Clone, Debug, PartialEq)]
+
+pub struct BadExpression<'a> {
+  pub _tab: flatbuffers::Table<'a>,
+}
+
+impl<'a> flatbuffers::Follow<'a> for BadExpression<'a> {
+    type Inner = BadExpression<'a>;
+    #[inline]
+    fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+        Self {
+            _tab: flatbuffers::Table { buf: buf, loc: loc },
+        }
+    }
+}
+
+impl<'a> BadExpression<'a> {
+    #[inline]
+    pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+        BadExpression {
+            _tab: table,
+        }
+    }
+    #[allow(unused_mut)]
+    pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+        _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        args: &'args BadExpressionArgs<'args>) -> flatbuffers::WIPOffset<BadExpression<'bldr>> {
+      let mut builder = BadExpressionBuilder::new(_fbb);
+      if let Some(x) = args.expression { builder.add_expression(x); }
+      if let Some(x) = args.text { builder.add_text(x); }
+      if let Some(x) = args.base_node { builder.add_base_node(x); }
+      builder.add_expression_type(args.expression_type);
+      builder.finish()
+    }
+
+    pub const VT_BASE_NODE: flatbuffers::VOffsetT = 4;
+    pub const VT_TEXT: flatbuffers::VOffsetT = 6;
+    pub const VT_EXPRESSION_TYPE: flatbuffers::VOffsetT = 8;
+    pub const VT_EXPRESSION: flatbuffers::VOffsetT = 10;
+
+  #[inline]
+  pub fn base_node(&self) -> Option<BaseNode<'a>> {
+    self._tab.get::<flatbuffers::ForwardsUOffset<BaseNode<'a>>>(BadExpression::VT_BASE_NODE, None)
+  }
+  #[inline]
+  pub fn text(&self) -> Option<&'a str> {
+    self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(BadExpression::VT_TEXT, None)
+  }
+  #[inline]
+  pub fn expression_type(&self) -> Expression {
+    self._tab.get::<Expression>(BadExpression::VT_EXPRESSION_TYPE, Some(Expression::NONE)).unwrap()
+  }
+  #[inline]
+  pub fn expression(&self) -> Option<flatbuffers::Table<'a>> {
+    self._tab.get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(BadExpression::VT_EXPRESSION, None)
+  }
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_string_expression(&self) -> Option<StringExpression<'a>> {
+    if self.expression_type() == Expression::StringExpression {
+      self.expression().map(|u| StringExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_paren_expression(&self) -> Option<ParenExpression<'a>> {
+    if self.expression_type() == Expression::ParenExpression {
+      self.expression().map(|u| ParenExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
+    if self.expression_type() == Expression::ArrayExpression {
+      self.expression().map(|u| ArrayExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
+    if self.expression_type() == Expression::FunctionExpression {
+      self.expression().map(|u| FunctionExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
+    if self.expression_type() == Expression::BinaryExpression {
+      self.expression().map(|u| BinaryExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
+    if self.expression_type() == Expression::BooleanLiteral {
+      self.expression().map(|u| BooleanLiteral::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_call_expression(&self) -> Option<CallExpression<'a>> {
+    if self.expression_type() == Expression::CallExpression {
+      self.expression().map(|u| CallExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
+    if self.expression_type() == Expression::ConditionalExpression {
+      self.expression().map(|u| ConditionalExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
+    if self.expression_type() == Expression::DateTimeLiteral {
+      self.expression().map(|u| DateTimeLiteral::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
+    if self.expression_type() == Expression::DurationLiteral {
+      self.expression().map(|u| DurationLiteral::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
+    if self.expression_type() == Expression::FloatLiteral {
+      self.expression().map(|u| FloatLiteral::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_identifier(&self) -> Option<Identifier<'a>> {
+    if self.expression_type() == Expression::Identifier {
+      self.expression().map(|u| Identifier::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
+    if self.expression_type() == Expression::IntegerLiteral {
+      self.expression().map(|u| IntegerLiteral::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
+    if self.expression_type() == Expression::LogicalExpression {
+      self.expression().map(|u| LogicalExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_member_expression(&self) -> Option<MemberExpression<'a>> {
+    if self.expression_type() == Expression::MemberExpression {
+      self.expression().map(|u| MemberExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_index_expression(&self) -> Option<IndexExpression<'a>> {
+    if self.expression_type() == Expression::IndexExpression {
+      self.expression().map(|u| IndexExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
+    if self.expression_type() == Expression::ObjectExpression {
+      self.expression().map(|u| ObjectExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_pipe_expression(&self) -> Option<PipeExpression<'a>> {
+    if self.expression_type() == Expression::PipeExpression {
+      self.expression().map(|u| PipeExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_pipe_literal(&self) -> Option<PipeLiteral<'a>> {
+    if self.expression_type() == Expression::PipeLiteral {
+      self.expression().map(|u| PipeLiteral::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
+    if self.expression_type() == Expression::RegexpLiteral {
+      self.expression().map(|u| RegexpLiteral::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_string_literal(&self) -> Option<StringLiteral<'a>> {
+    if self.expression_type() == Expression::StringLiteral {
+      self.expression().map(|u| StringLiteral::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
+    if self.expression_type() == Expression::UnaryExpression {
+      self.expression().map(|u| UnaryExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
+    if self.expression_type() == Expression::UnsignedIntegerLiteral {
+      self.expression().map(|u| UnsignedIntegerLiteral::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn expression_as_bad_expression(&self) -> Option<BadExpression<'a>> {
+    if self.expression_type() == Expression::BadExpression {
+      self.expression().map(|u| BadExpression::init_from_table(u))
+    } else {
+      None
+    }
+  }
+
+}
+
+pub struct BadExpressionArgs<'a> {
+    pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a >>>,
+    pub text: Option<flatbuffers::WIPOffset<&'a  str>>,
+    pub expression_type: Expression,
+    pub expression: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+}
+impl<'a> Default for BadExpressionArgs<'a> {
+    #[inline]
+    fn default() -> Self {
+        BadExpressionArgs {
+            base_node: None,
+            text: None,
+            expression_type: Expression::NONE,
+            expression: None,
+        }
+    }
+}
+pub struct BadExpressionBuilder<'a: 'b, 'b> {
+  fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+  start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+}
+impl<'a: 'b, 'b> BadExpressionBuilder<'a, 'b> {
+  #[inline]
+  pub fn add_base_node(&mut self, base_node: flatbuffers::WIPOffset<BaseNode<'b >>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<BaseNode>>(BadExpression::VT_BASE_NODE, base_node);
+  }
+  #[inline]
+  pub fn add_text(&mut self, text: flatbuffers::WIPOffset<&'b  str>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(BadExpression::VT_TEXT, text);
+  }
+  #[inline]
+  pub fn add_expression_type(&mut self, expression_type: Expression) {
+    self.fbb_.push_slot::<Expression>(BadExpression::VT_EXPRESSION_TYPE, expression_type, Expression::NONE);
+  }
+  #[inline]
+  pub fn add_expression(&mut self, expression: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(BadExpression::VT_EXPRESSION, expression);
+  }
+  #[inline]
+  pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> BadExpressionBuilder<'a, 'b> {
+    let start = _fbb.start_table();
+    BadExpressionBuilder {
+      fbb_: _fbb,
+      start_: start,
+    }
+  }
+  #[inline]
+  pub fn finish(self) -> flatbuffers::WIPOffset<BadExpression<'a>> {
     let o = self.fbb_.end_table(self.start_);
     flatbuffers::WIPOffset::new(o.value())
   }

@@ -46,7 +46,7 @@ generate: $(GENERATED_TARGETS)
 ast/internal/fbast: ast/ast.fbs
 	$(GO_GENERATE) ./ast
 libflux/src/ast/fbast.rs: ast/ast.fbs
-	flatc --rust -o libflux/src/ast/ ast/ast.fbs && mv libflux/src/ast/ast_generated.rs libflux/src/ast/fbast.rs
+	flatc --rust -o libflux/src/ast/flatbuffers ast/ast.fbs
 
 # Force a second expansion to happen so the call to go_deps works correctly.
 .SECONDEXPANSION:

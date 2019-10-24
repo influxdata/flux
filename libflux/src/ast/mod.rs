@@ -1,13 +1,13 @@
 pub mod check;
+mod flatbuffers;
 pub mod walk;
-mod fbast;
 
+pub use crate::ast::flatbuffers::serialize as serialize_to_flatbuffer;
+use crate::scanner;
 use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 use std::vec::Vec;
-
-use crate::scanner;
 
 use chrono;
 use chrono::FixedOffset;
@@ -1037,6 +1037,3 @@ pub struct DateTimeLit {
 
 #[cfg(test)]
 mod tests;
-
-#[cfg(test)]
-mod fbast_tests;
