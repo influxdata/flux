@@ -37,6 +37,7 @@ func analyzePackage(pkg *ast.Package) (*Package, error) {
 	}
 	return p, nil
 }
+
 func analyzeFile(file *ast.File) (*File, error) {
 	f := &File{
 		loc:  loc(file.Location()),
