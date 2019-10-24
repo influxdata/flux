@@ -412,7 +412,7 @@ impl Parser {
         match t.tok {
             TOK_INT | TOK_FLOAT | TOK_STRING | TOK_DIV | TOK_TIME | TOK_DURATION
             | TOK_PIPE_RECEIVE | TOK_LPAREN | TOK_LBRACK | TOK_LBRACE | TOK_ADD | TOK_SUB
-            | TOK_NOT | TOK_IF | TOK_QUOTE => self.parse_expression_statement(),
+            | TOK_NOT | TOK_IF | TOK_EXISTS | TOK_QUOTE => self.parse_expression_statement(),
             TOK_IDENT => self.parse_ident_statement(),
             TOK_OPTION => self.parse_option_assignment(),
             TOK_BUILTIN => self.parse_builtin_statement(),
@@ -1255,6 +1255,7 @@ impl Parser {
                     value: Some(value),
                 });
                 if self.peek().tok == TOK_COMMA {
+                    self.consume();
                     let others = &mut self.parse_parameter_list();
                     params.append(others);
                 }
