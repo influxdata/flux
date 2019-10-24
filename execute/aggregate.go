@@ -1,11 +1,10 @@
 package execute
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -81,7 +80,7 @@ func (t *aggregateTransformation) RetractTable(id DatasetID, key flux.GroupKey) 
 func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
-		return fmt.Errorf("aggregate found duplicate table with key: %v", tbl.Key())
+		return errors.Newf(codes.FailedPrecondition, "aggregate found duplicate table with key: %v", tbl.Key())
 	}
 
 	if err := AddTableKeyCols(tbl.Key(), builder); err != nil {
@@ -101,11 +100,11 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 			}
 		}
 		if idx < 0 {
-			return fmt.Errorf("column %q does not exist", label)
+			return errors.Newf(codes.FailedPrecondition, "column %q does not exist", label)
 		}
 		c := cols[idx]
 		if tbl.Key().HasCol(c.Label) {
-			return errors.New("cannot aggregate columns that are part of the group key")
+			return errors.New(codes.FailedPrecondition, "cannot aggregate columns that are part of the group key")
 		}
 		var vf ValueFunc
 		switch c.Type {
@@ -121,7 +120,7 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 			vf = t.agg.NewStringAgg()
 		}
 		if vf == nil {
-			return fmt.Errorf("unsupported aggregate column type %v", c.Type)
+			return errors.Newf(codes.FailedPrecondition, "unsupported aggregate column type %v", c.Type)
 		}
 		aggregates[j] = vf
 
@@ -155,7 +154,7 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 			case flux.TString:
 				vf.(DoStringAgg).DoString(cr.Strings(tj))
 			default:
-				return fmt.Errorf("unsupported aggregate type %v", c.Type)
+				return errors.Newf(codes.Invalid, "unsupported aggregate type %v", c.Type)
 			}
 		}
 		return nil
