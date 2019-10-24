@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go v0.43.0
 	github.com/DATA-DOG/go-sqlmock v1.3.3
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
-	github.com/apache/arrow/go/arrow v0.0.0-20190809133625-b98a560fc561
+	github.com/apache/arrow/go/arrow v0.0.0-20191024131854-af6fa24be0db
 	github.com/c-bata/go-prompt v0.2.2
 	github.com/cespare/xxhash v1.1.0
 	github.com/dave/jennifer v1.2.0
