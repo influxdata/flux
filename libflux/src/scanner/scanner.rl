@@ -158,7 +158,8 @@ unsigned int pop(node_t **head) {
     return retval;
 }
 
-int scan(int mode, const char **pp, const char *data, const char *pe, const char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end, const unsigned int **newlines, unsigned int *newlines_len) {
+int scan(int mode, const unsigned char **pp, const unsigned char *data, const unsigned char *pe, const unsigned char *eof,
+        unsigned int *token, unsigned int *token_start, unsigned int *token_end, const unsigned int **newlines, unsigned int *newlines_len) {
     int cs;
     switch (mode) {
     case 0:
@@ -171,10 +172,10 @@ int scan(int mode, const char **pp, const char *data, const char *pe, const char
         cs = flux_en_string_expr;
         break;
     }
-    const char *p = *pp;
+    const unsigned char *p = *pp;
     int act;
-    const char *ts;
-    const char *te;
+    const unsigned char *ts;
+    const unsigned char *te;
     unsigned int tok = ILLEGAL;
     node_t* nls = NULL;
     unsigned int no_nls = 0;

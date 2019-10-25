@@ -1,6 +1,6 @@
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
-pub type CChar = i8;
+pub type CChar = u8;
 
 use std::ffi::CString;
 use std::str;
@@ -39,15 +39,15 @@ impl Scanner {
         let end = ((ptr as usize) + bytes.len()) as *const CChar;
         return Scanner {
             data: data,
-            ps: ptr,
-            p: ptr,
+            ps: ptr as *const CChar,
+            p: ptr as *const CChar,
             pe: end,
             eof: end,
             ts: 0,
             te: 0,
             lines: vec![0],
             token: TOK_ILLEGAL,
-            checkpoint: ptr,
+            checkpoint: ptr as *const CChar,
         };
     }
 
