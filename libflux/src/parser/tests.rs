@@ -9331,10 +9331,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
     )
 }
 
-// TODO(affo): the scanner fails in lexing µs.
-// There is a related test in the scanner.
 #[test]
-#[ignore] // See https://github.com/influxdata/flux/issues/1448
 fn duration_literal_all_units() {
     let mut p = Parser::new(r#"dur = 1y3mo2w1d4h1m30s1ms2µs70ns"#);
     let parsed = p.parse_file("".to_string());
