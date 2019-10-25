@@ -915,7 +915,7 @@ func ResolveFunction(f values.Function) (ResolvedFunction, error) {
 // ResolvedFunction represents a function that can be passed down to the compiler.
 // Both the function expression and scope are captured.
 // The scope cannot be serialized, which is no longer a problem in the current design
-// with excpetion of the REPL which will not be able to correct pass through the scope.
+// with the exception of the REPL which will not be able to correctly pass through the scope.
 type ResolvedFunction struct {
 	Fn    *semantic.FunctionExpression `json:"fn"`
 	Scope values.Scope                 `json:"-"`

@@ -37,7 +37,7 @@ type Table interface {
 	Do(f func(ColReader) error) error
 
 	// Done indicates that this table is no longer needed and that the
-	// underlying processer that produces the table may discard any
+	// underlying processor that produces the table may discard any
 	// buffers that need to be processed. If the table has already been
 	// read with Do, this happens automatically.
 	// This is also not required if the table is empty.
