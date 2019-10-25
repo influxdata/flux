@@ -29,10 +29,18 @@ func TestFromSqlUrlValidation(t *testing.T) {
 			Name: "invalid driver",
 			Spec: &FromSQLProcedureSpec{
 				DriverName:     "voltdb",
-				DataSourceName: "",
+				DataSourceName: "blablabla",
 				Query:          "",
 			},
 			ErrMsg: "sql driver voltdb not supported",
+		}, {
+			Name: "invalid empty path",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "blabla",
+				DataSourceName: "",
+				Query:          "",
+			},
+			ErrMsg: "invalid data source url: empty path supplied",
 		}, {
 			Name: "invalid mysql",
 			Spec: &FromSQLProcedureSpec{

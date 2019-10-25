@@ -49,19 +49,16 @@ func createFromSQLOpSpec(args flux.Arguments, administration *flux.Administratio
 	} else {
 		spec.DriverName = driverName
 	}
-
 	if dataSourceName, err := args.GetRequiredString("dataSourceName"); err != nil {
 		return nil, err
 	} else {
 		spec.DataSourceName = dataSourceName
 	}
-
 	if query, err := args.GetRequiredString("query"); err != nil {
 		return nil, err
 	} else {
 		spec.Query = query
 	}
-
 	return spec, nil
 }
 

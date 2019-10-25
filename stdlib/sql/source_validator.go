@@ -12,6 +12,15 @@ import (
 
 // helper function to validate the data source url (postgres, sqlmock) / dsn (mysql) using the URLValidator.
 func validateDataSource(validator url.Validator, driverName string, dataSourceName string) error {
+
+	/*
+		NOTE: some parsers don't return an error for an "empty path" (a path consisting of nothing at all, or only whitespace) - not an error as such, but here we rely on the driver implementation "doing the right thing"
+		better not to, and flag this as an error because calling any SQL DB with an empty DSN is likely wrong.
+	*/
+	if strings.TrimSpace(dataSourceName) == "" {
+		return errors.Newf(codes.Invalid, "invalid data source url: %v", "empty path supplied")
+	}
+
 	var u *neturl.URL
 	var err error
 
@@ -50,11 +59,6 @@ func validateDataSource(validator url.Validator, driverName string, dataSourceNa
 		u, err = neturl.Parse(dataSourceName)
 		if err != nil {
 			return errors.Newf(codes.Invalid, "invalid data source url: %v", err)
-		}
-		// NOTE: parser doesn't return an error for an empty path, or a path consisting of only whitespace - not an error as such, but here we rely on the driver implementation "doing the right thing"
-		// better not to, and flag this as an error
-		if strings.TrimSpace(dataSourceName) == "" {
-			return errors.Newf(codes.Invalid, "invalid data source url: %v", "empty path supplied")
 		}
 	default:
 		return errors.Newf(codes.Invalid, "sql driver %s not supported", driverName)

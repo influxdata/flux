@@ -296,38 +296,10 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 		if err != nil {
 			return nil, nil, nil, err
 		}
+
 		switch col.Type {
-		case flux.TFloat:
-			v, err := translateColumn()(col.Type, col.Label)
-			if err != nil {
-				return nil, nil, nil, err
-			}
-			newSQLTableCols = append(newSQLTableCols, v)
-		case flux.TInt:
-			v, err := translateColumn()(col.Type, col.Label)
-			if err != nil {
-				return nil, nil, nil, err
-			}
-			newSQLTableCols = append(newSQLTableCols, v)
-		case flux.TUInt:
-			v, err := translateColumn()(col.Type, col.Label)
-			if err != nil {
-				return nil, nil, nil, err
-			}
-			newSQLTableCols = append(newSQLTableCols, v)
-		case flux.TString:
-			v, err := translateColumn()(col.Type, col.Label)
-			if err != nil {
-				return nil, nil, nil, err
-			}
-			newSQLTableCols = append(newSQLTableCols, v)
-		case flux.TTime:
-			v, err := translateColumn()(col.Type, col.Label)
-			if err != nil {
-				return nil, nil, nil, err
-			}
-			newSQLTableCols = append(newSQLTableCols, v)
-		case flux.TBool:
+		case flux.TFloat, flux.TInt, flux.TUInt, flux.TString, flux.TBool, flux.TTime:
+			// each type is handled within the function - precise mapping is handled within each driver's implementation
 			v, err := translateColumn()(col.Type, col.Label)
 			if err != nil {
 				return nil, nil, nil, err
