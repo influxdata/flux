@@ -231,23 +231,35 @@ impl<'a> Node<'a> {
 // Done is called on that Node to signal that we are done with that Node.
 //
 // If Visit returns None, walk will not recurse on the children.
-pub trait Visitor: Sized {
+//
+// Note: the Rc in visit and done is to allow for multiple ownership of a node, i.e.
+//       a visitor can own a node as well as the walk funciton. This allows
+//       for nodes to persist outside the scope of the walk function and to
+//       be cleaned up once all owners have let go of the reference.
+pub trait Visitor<'a>: Sized {
     // Visit is called for a node.
     // The returned visitor will be used to walk children of the node.
     // If visit returns None, walk will not recurse on the children.
-    fn visit(&self, node: &Node) -> Option<Self>;
+    fn visit(&self, node: Rc<Node<'a>>) -> Option<Self>;
     // Done is called for a node once it has been visited along with all of its children.
-    fn done(&self, _: &Node) {} // default is to do nothing
+    fn done(&self, _: Rc<Node<'a>>) {} // default is to do nothing
 }
 
 // Walk recursively visits children of a node.
 // Nodes are visited in depth-first order.
-pub fn walk<T>(v: &T, node: Node)
+pub fn walk<'a, T>(v: &T, node: Node<'a>)
 where
-    T: Visitor,
+    T: Visitor<'a>,
 {
-    if let Some(w) = v.visit(&node) {
-        match node {
+    walk_rc(v, Rc::new(node));
+}
+
+fn walk_rc<'a, T>(v: &T, node: Rc<Node<'a>>)
+where
+    T: Visitor<'a>,
+{
+    if let Some(w) = v.visit(node.clone()) {
+        match *node {
             Node::Package(n) => {
                 for file in n.files.iter() {
                     walk(&w, Node::File(&file));
@@ -283,7 +295,7 @@ where
                 for param in n.params.iter() {
                     walk(&w, Node::Property(&param));
                 }
-                walk(&w, Node::from_function_body(&n.body))
+                walk(&w, Node::from_function_body(&n.body));
             }
             Node::LogicalExpr(n) => {
                 walk(&w, Node::from_expr(&n.left));
@@ -294,7 +306,7 @@ where
                     walk(&w, Node::Identifier(i));
                 }
                 for prop in n.properties.iter() {
-                    walk(&w, Node::Property(&prop))
+                    walk(&w, Node::Property(&prop));
                 }
             }
             Node::MemberExpr(n) => {
@@ -390,13 +402,14 @@ where
             }
         }
     }
-    v.done(&node)
+
+    v.done(node.clone())
 }
 
-type FuncVisitor<'a> = Rc<RefCell<&'a mut dyn FnMut(&Node)>>;
+type FuncVisitor<'a> = Rc<RefCell<&'a mut dyn FnMut(Rc<Node>)>>;
 
-impl<'a> Visitor for FuncVisitor<'a> {
-    fn visit(&self, node: &Node) -> Option<Self> {
+impl<'a> Visitor<'a> for FuncVisitor<'a> {
+    fn visit(&self, node: Rc<Node<'a>>) -> Option<Self> {
         let mut func: RefMut<_> = self.borrow_mut();
         (&mut *func)(node);
         Some(Rc::clone(self))
@@ -404,6 +417,6 @@ impl<'a> Visitor for FuncVisitor<'a> {
 }
 
 // Create Visitor will produce a visitor that calls the function for all nodes.
-pub fn create_visitor(func: &mut dyn FnMut(&Node)) -> FuncVisitor {
+pub fn create_visitor(func: &mut dyn FnMut(Rc<Node>)) -> FuncVisitor {
     Rc::new(RefCell::new(func))
 }
