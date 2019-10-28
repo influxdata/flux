@@ -190,7 +190,7 @@ func TestParseDuration(t *testing.T) {
 			}
 
 			if !got.Equal(tt.want) {
-				t.Fatalf("unexpected duration value -want/+got:\n\t- %s\n\t+ %s", got, tt.want)
+				t.Fatalf("unexpected duration value -want/+got:\n\t- %s\n\t+ %s", tt.want, got)
 			}
 		})
 	}
@@ -295,7 +295,7 @@ func TestDuration_String(t *testing.T) {
 	} {
 		t.Run(tt.want, func(t *testing.T) {
 			if got, want := tt.d.String(), tt.want; got != want {
-				t.Fatalf("unexpected duration string -want/+got:\n\t- %q\n\t+ %q", got, want)
+				t.Fatalf("unexpected duration string -want/+got:\n\t- %q\n\t+ %q", want, got)
 			}
 		})
 	}

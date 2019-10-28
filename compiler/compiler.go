@@ -271,9 +271,13 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, scope Scope, funcEx
 			time: values.ConvertTime(n.Value),
 		}, nil
 	case *semantic.DurationLiteral:
+		v, err := values.FromDurationValues(n.Values)
+		if err != nil {
+			return nil, err
+		}
 		return &durationEvaluator{
 			t:        monoType(typeSol.TypeOf(n)),
-			duration: values.ConvertDuration(n.Value),
+			duration: v,
 		}, nil
 	case *semantic.UnaryExpression:
 		node, err := compile(n.Argument, typeSol, scope, funcExprs)

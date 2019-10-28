@@ -96,12 +96,20 @@ func TestJSONMarshal(t *testing.T) {
 								Value: &semantic.StringLiteral{Value: "foo"},
 							},
 							{
-								Key:   &semantic.Identifier{Name: "every"},
-								Value: &semantic.DurationLiteral{Value: 1 * time.Hour},
+								Key: &semantic.Identifier{Name: "every"},
+								Value: &semantic.DurationLiteral{
+									Values: []ast.Duration{
+										{Magnitude: 1, Unit: ast.HourUnit},
+									},
+								},
 							},
 							{
-								Key:   &semantic.Identifier{Name: "delay"},
-								Value: &semantic.DurationLiteral{Value: 10 * time.Minute},
+								Key: &semantic.Identifier{Name: "delay"},
+								Value: &semantic.DurationLiteral{
+									Values: []ast.Duration{
+										{Magnitude: 10, Unit: ast.MinuteUnit},
+									},
+								},
 							},
 							{
 								Key:   &semantic.Identifier{Name: "cron"},
@@ -115,7 +123,7 @@ func TestJSONMarshal(t *testing.T) {
 					},
 				},
 			},
-			want: `{"type":"OptionStatement","assignment":{"type":"NativeVariableAssignment","identifier":{"type":"Identifier","name":"task"},"init":{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"name"},"value":{"type":"StringLiteral","value":"foo"}},{"type":"Property","key":{"type":"Identifier","name":"every"},"value":{"type":"DurationLiteral","value":"1h0m0s"}},{"type":"Property","key":{"type":"Identifier","name":"delay"},"value":{"type":"DurationLiteral","value":"10m0s"}},{"type":"Property","key":{"type":"Identifier","name":"cron"},"value":{"type":"StringLiteral","value":"0 2 * * *"}},{"type":"Property","key":{"type":"Identifier","name":"retry"},"value":{"type":"IntegerLiteral","value":"5"}}]}}}`,
+			want: `{"type":"OptionStatement","assignment":{"type":"NativeVariableAssignment","identifier":{"type":"Identifier","name":"task"},"init":{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"name"},"value":{"type":"StringLiteral","value":"foo"}},{"type":"Property","key":{"type":"Identifier","name":"every"},"value":{"type":"DurationLiteral","values":[{"magnitude":1,"unit":"h"}]}},{"type":"Property","key":{"type":"Identifier","name":"delay"},"value":{"type":"DurationLiteral","values":[{"magnitude":10,"unit":"m"}]}},{"type":"Property","key":{"type":"Identifier","name":"cron"},"value":{"type":"StringLiteral","value":"0 2 * * *"}},{"type":"Property","key":{"type":"Identifier","name":"retry"},"value":{"type":"IntegerLiteral","value":"5"}}]}}}`,
 		},
 		{
 			name: "qualified option statement",
@@ -342,9 +350,12 @@ func TestJSONMarshal(t *testing.T) {
 		{
 			name: "duration literal",
 			node: &semantic.DurationLiteral{
-				Value: time.Hour + time.Minute,
+				Values: []ast.Duration{
+					{Magnitude: 1, Unit: ast.HourUnit},
+					{Magnitude: 1, Unit: ast.MinuteUnit},
+				},
 			},
-			want: `{"type":"DurationLiteral","value":"1h1m0s"}`,
+			want: `{"type":"DurationLiteral","values":[{"magnitude":1,"unit":"h"},{"magnitude":1,"unit":"m"}]}`,
 		},
 		{
 			name: "datetime literal",

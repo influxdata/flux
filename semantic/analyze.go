@@ -2,7 +2,6 @@ package semantic
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
@@ -678,13 +677,9 @@ func analyzeDateTimeLiteral(lit *ast.DateTimeLiteral) (*DateTimeLiteral, error) 
 	}, nil
 }
 func analyzeDurationLiteral(lit *ast.DurationLiteral) (*DurationLiteral, error) {
-	duration, err := ast.DurationFrom(lit, time.Time{})
-	if err != nil {
-		return nil, err
-	}
 	return &DurationLiteral{
-		loc:   loc(lit.Location()),
-		Value: duration,
+		loc:    loc(lit.Location()),
+		Values: lit.Values,
 	}, nil
 }
 func analyzeFloatLiteral(lit *ast.FloatLiteral) (*FloatLiteral, error) {
