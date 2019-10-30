@@ -6,6 +6,10 @@ import "experimental"
 // The HTTP status code is returned.
 builtin post
 
+// Get submits an HTTP get request to the specified URL with headers and data.
+// The HTTP status code is returned.
+builtin get
+
 // basicAuth will take a username/password combination and return the authorization
 // header value.
 builtin basicAuth
