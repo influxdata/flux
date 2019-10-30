@@ -1,5 +1,5 @@
 use crate::semantic::types::{MonoType, Tvar};
-use std::{collections::HashMap, fmt};
+use std::collections::HashMap;
 
 // A substitution defines a function that takes a monotype as input
 // and returns a monotype as output. The output type is interpreted
@@ -9,42 +9,39 @@ use std::{collections::HashMap, fmt};
 // type x, we have s(s(x)) = s(x).
 //
 #[derive(Debug, PartialEq)]
-pub struct Subst(HashMap<Tvar, MonoType>);
+pub struct Substitution(HashMap<Tvar, MonoType>);
 
-impl fmt::Display for Subst {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str("substitution:\n")?;
-        for (k, v) in &self.0 {
-            write!(f, "\t{}: {}\n", k, v)?;
-        }
-        Ok(())
+// Derive a substitution from a hash map
+impl From<HashMap<Tvar, MonoType>> for Substitution {
+    fn from(values: HashMap<Tvar, MonoType>) -> Substitution {
+        Substitution(values)
     }
 }
 
-impl Subst {
-    pub fn empty() -> Subst {
-        Subst(HashMap::new())
+impl Substitution {
+    pub fn empty() -> Substitution {
+        Substitution(HashMap::new())
     }
 
-    pub fn init(values: HashMap<Tvar, MonoType>) -> Subst {
-        Subst(values)
+    pub fn apply(&self, tv: Tvar) -> MonoType {
+        match self.0.get(&tv) {
+            Some(t) => t.clone(),
+            None => MonoType::Var(tv),
+        }
     }
 
-    pub fn lookup(&self, tv: Tvar) -> Option<&MonoType> {
-        self.0.get(&tv)
-    }
-
-    pub fn merge(self, with: Subst) -> Subst {
+    pub fn merge(self, with: Substitution) -> Substitution {
         let applied: HashMap<Tvar, MonoType> = self
             .0
             .into_iter()
             .map(|(k, v)| (k, v.apply(&with)))
             .collect();
-        Subst(applied.into_iter().chain(with.0.into_iter()).collect())
+        Substitution(applied.into_iter().chain(with.0.into_iter()).collect())
     }
 }
 
 // A type is substitutable if a substitution can be applied to it.
 pub trait Substitutable {
-    fn apply(self, sub: &Subst) -> Self;
+    fn apply(self, sub: &Substitution) -> Self;
+    fn free_vars(&self) -> Vec<Tvar>;
 }

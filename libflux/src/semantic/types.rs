@@ -1,74 +1,99 @@
-use crate::semantic::sub::{Subst, Substitutable};
+use crate::semantic::{
+    fresh::Fresher,
+    sub::{Substitutable, Substitution},
+};
 use std::{
     cmp,
-    collections::{BTreeMap, BTreeSet, HashMap, HashSet},
-    fmt, result,
+    collections::{BTreeMap, BTreeSet, HashMap},
+    fmt,
 };
 
-// PolyType represents a generic parametrized type.
-//
-// TODO:
-//     Do not derive PartialEq implementation.
-//     Instead provide a custom implementation
-//     that instantiates both polytypes with the
-//     same type variables.
-//
-//     Note this requires a substitution, so remove
-//     this derivation once substitutions are defined.
-//
 #[derive(Debug, Clone, PartialEq)]
 pub struct PolyType {
     pub free: Vec<Tvar>,
-    pub cons: Option<TvarKinds>,
+    pub cons: HashMap<Tvar, Vec<Kind>>,
     pub expr: MonoType,
 }
 
 impl fmt::Display for PolyType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let vars = self.free.iter().map(|x| x.to_string()).collect::<Vec<_>>();
-        match &self.cons {
-            Some(constraints) => write!(
+        let vars = &self
+            .free
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<_>>()
+            .join(", ");
+        if self.cons.len() == 0 {
+            write!(f, "forall [{}] {}", vars, self.expr)
+        } else {
+            write!(
                 f,
                 "forall [{}] where {} {}",
-                vars.join(", "),
-                constraints,
-                self.expr,
-            ),
-            None => write!(f, "forall [{}] {}", vars.join(", "), self.expr),
+                vars,
+                PolyType::display_constraints(&self.cons),
+                self.expr
+            )
         }
     }
 }
 
-// TvarKinds maps a type variable to the kinds to which it must belong.
-//
-// Note that during inference we might infer that a type variable is of
-// a particular kind (type class) without inferring an exact monotype
-// for said type variable.
-//
-#[derive(Debug, Clone, PartialEq)]
-pub struct TvarKinds(pub HashMap<Tvar, HashSet<Kind>>);
-
-impl fmt::Display for TvarKinds {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(
-            &self
-                .0
-                .iter()
-                // A BTree produces a sorted iterator for
-                // deterministic display output
-                .collect::<BTreeMap<_, _>>()
-                .iter()
-                .map(|(&&tv, &kinds)| display_kinds(tv, kinds))
-                .collect::<Vec<_>>()
-                .join(", "),
-        )
+impl Substitutable for PolyType {
+    fn apply(self, sub: &Substitution) -> Self {
+        PolyType {
+            free: self.free,
+            cons: self.cons,
+            expr: self.expr.apply(sub),
+        }
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        minus(&self.free, self.expr.free_vars())
     }
 }
 
-fn display_kinds(tv: Tvar, kinds: &HashSet<Kind>) -> String {
-    format!(
-        "{}:{}",
-        tv,
+impl PolyType {
+    // Normalize a polytype's free variables by replacing them with
+    // new fresh variables starting from t0.
+    pub fn normalize(self) -> Self {
+        let mut f = Fresher::new();
+
+        let mut sub = HashMap::new();
+        for tv in &self.free {
+            sub.insert(*tv, f.fresh());
+        }
+
+        let mut vars = Vec::new();
+        for tv in &self.free {
+            vars.push(*sub.get(tv).unwrap());
+        }
+
+        let mut cons = HashMap::new();
+        for (tv, kinds) in &self.cons {
+            cons.insert(*sub.get(tv).unwrap(), kinds.to_owned());
+        }
+
+        let sub: Substitution = sub
+            .into_iter()
+            .map(|(a, b)| (a, MonoType::Var(b)))
+            .collect::<HashMap<Tvar, MonoType>>()
+            .into();
+
+        PolyType {
+            free: vars,
+            cons: cons,
+            expr: self.expr.apply(&sub),
+        }
+    }
+    fn display_constraints(cons: &HashMap<Tvar, Vec<Kind>>) -> String {
+        cons.iter()
+            // A BTree produces a sorted iterator for
+            // deterministic display output
+            .collect::<BTreeMap<_, _>>()
+            .iter()
+            .map(|(&&tv, &kinds)| format!("{}:{}", tv, PolyType::display_kinds(kinds)))
+            .collect::<Vec<_>>()
+            .join(", ")
+    }
+    fn display_kinds(kinds: &Vec<Kind>) -> String {
         kinds
             .iter()
             // Sort kinds with BTree
@@ -76,25 +101,20 @@ fn display_kinds(tv: Tvar, kinds: &HashSet<Kind>) -> String {
             .iter()
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
-            .join(" + "),
-    )
-}
-
-impl TvarKinds {
-    fn update(self, tv: Tvar, with: HashSet<Kind>) -> Self {
-        let mut constraints = self;
-        if let Some(kinds) = constraints.0.get(&tv) {
-            let new: HashSet<Kind> = kinds.union(&with).map(|&kind| kind).collect();
-            constraints.0.insert(tv, new);
-            constraints
-        } else {
-            constraints.0.insert(tv, with);
-            constraints
-        }
+            .join(" + ")
     }
 }
 
-pub type Result = result::Result<(Subst, TvarKinds), Error>;
+pub fn union<T: PartialEq>(mut vars: Vec<T>, mut with: Vec<T>) -> Vec<T> {
+    with.retain(|tv| !vars.contains(tv));
+    vars.append(&mut with);
+    vars
+}
+
+pub fn minus<T: PartialEq>(vars: &[T], mut from: Vec<T>) -> Vec<T> {
+    from.retain(|tv| !vars.contains(tv));
+    from
+}
 
 #[derive(Debug)]
 pub struct Error {
@@ -116,22 +136,13 @@ impl Error {
             msg: format!("cannot unify {} with {}", t, with),
         }
     }
-
     // An error can occur if we constrain a type with a kind to
     // which it does not belong.
-    fn cannot_constrain(t: MonoType, with: HashSet<Kind>) -> Error {
+    fn cannot_constrain(t: MonoType, with: Kind) -> Error {
         Error {
-            msg: format!(
-                "{} is not of kind {}",
-                t,
-                with.iter()
-                    .map(|kind| kind.to_string())
-                    .collect::<Vec<String>>()
-                    .join(" | ")
-            ),
+            msg: format!("{} is not of kind {}", t, with,),
         }
     }
-
     // An error can occur if we attempt to unify a type variable
     // with a monotype that contains that same type variable.
     fn occurs_check(tv: Tvar, t: MonoType) -> Error {
@@ -179,6 +190,9 @@ impl cmp::PartialOrd for Kind {
     }
 }
 
+// TvarKinds is a map from type variables to their constraining kinds.
+type TvarKinds = HashMap<Tvar, Vec<Kind>>;
+
 // MonoType represents a specific named type
 #[derive(Debug, Clone, PartialEq)]
 pub enum MonoType {
@@ -216,26 +230,42 @@ impl fmt::Display for MonoType {
 }
 
 impl Substitutable for MonoType {
-    fn apply(self, sub: &Subst) -> Self {
+    fn apply(self, sub: &Substitution) -> Self {
         match self {
-            MonoType::Bool => MonoType::Bool,
-            MonoType::Int => MonoType::Int,
-            MonoType::Uint => MonoType::Uint,
-            MonoType::Float => MonoType::Float,
-            MonoType::String => MonoType::String,
-            MonoType::Duration => MonoType::Duration,
-            MonoType::Time => MonoType::Time,
-            MonoType::Regexp => MonoType::Regexp,
-            MonoType::Var(tvr) => tvr.apply(sub),
+            MonoType::Bool
+            | MonoType::Int
+            | MonoType::Uint
+            | MonoType::Float
+            | MonoType::String
+            | MonoType::Duration
+            | MonoType::Time
+            | MonoType::Regexp => self,
+            MonoType::Var(tvr) => sub.apply(tvr),
             MonoType::Arr(arr) => MonoType::Arr(Box::new(arr.apply(sub))),
             MonoType::Row(obj) => MonoType::Row(Box::new(obj.apply(sub))),
             MonoType::Fun(fun) => MonoType::Fun(Box::new(fun.apply(sub))),
         }
     }
+    fn free_vars(&self) -> Vec<Tvar> {
+        match self {
+            MonoType::Bool
+            | MonoType::Int
+            | MonoType::Uint
+            | MonoType::Float
+            | MonoType::String
+            | MonoType::Duration
+            | MonoType::Time
+            | MonoType::Regexp => Vec::new(),
+            MonoType::Var(tvr) => vec![*tvr],
+            MonoType::Arr(arr) => arr.free_vars(),
+            MonoType::Row(obj) => obj.free_vars(),
+            MonoType::Fun(fun) => fun.free_vars(),
+        }
+    }
 }
 
 impl MonoType {
-    fn unify(self, with: Self, cons: TvarKinds) -> Result {
+    pub fn unify(self, with: Self, cons: &mut TvarKinds) -> Result<Substitution, Error> {
         match (self, with) {
             (MonoType::Bool, MonoType::Bool)
             | (MonoType::Int, MonoType::Int)
@@ -244,7 +274,7 @@ impl MonoType {
             | (MonoType::String, MonoType::String)
             | (MonoType::Duration, MonoType::Duration)
             | (MonoType::Time, MonoType::Time)
-            | (MonoType::Regexp, MonoType::Regexp) => Ok((Subst::empty(), cons)),
+            | (MonoType::Regexp, MonoType::Regexp) => Ok(Substitution::empty()),
             (MonoType::Var(tv), t) => tv.unify(t, cons),
             (t, MonoType::Var(tv)) => tv.unify(t, cons),
             (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(*s, cons),
@@ -254,69 +284,60 @@ impl MonoType {
         }
     }
 
-    fn constrain(self, with: HashSet<Kind>, cons: TvarKinds) -> Result {
+    pub fn constrain(self, with: Kind, cons: &mut TvarKinds) -> Result<Substitution, Error> {
         match self {
-            MonoType::Bool => {
-                self.satisfies(maplit::hashset![Kind::Equatable, Kind::Nullable,])(with, cons)
-            }
-            MonoType::Int => self.satisfies(maplit::hashset![
-                Kind::Addable,
-                Kind::Subtractable,
-                Kind::Divisible,
-                Kind::Comparable,
-                Kind::Equatable,
-                Kind::Nullable
-            ])(with, cons),
-            MonoType::Uint => self.satisfies(maplit::hashset![
-                Kind::Addable,
-                Kind::Divisible,
-                Kind::Comparable,
-                Kind::Equatable,
-                Kind::Nullable
-            ])(with, cons),
-            MonoType::Float => self.satisfies(maplit::hashset![
-                Kind::Addable,
-                Kind::Subtractable,
-                Kind::Divisible,
-                Kind::Comparable,
-                Kind::Equatable,
-                Kind::Nullable
-            ])(with, cons),
-            MonoType::String => self.satisfies(maplit::hashset![
-                Kind::Addable,
-                Kind::Comparable,
-                Kind::Equatable,
-                Kind::Nullable
-            ])(with, cons),
-            MonoType::Duration => self.satisfies(maplit::hashset![
-                Kind::Comparable,
-                Kind::Equatable,
-                Kind::Nullable,
-            ])(with, cons),
-            MonoType::Time => self.satisfies(maplit::hashset![
-                Kind::Comparable,
-                Kind::Equatable,
-                Kind::Nullable,
-            ])(with, cons),
+            MonoType::Bool => match with {
+                Kind::Equatable | Kind::Nullable => Ok(Substitution::empty()),
+                _ => Err(Error::cannot_constrain(self, with)),
+            },
+            MonoType::Int => match with {
+                Kind::Addable
+                | Kind::Subtractable
+                | Kind::Divisible
+                | Kind::Comparable
+                | Kind::Equatable
+                | Kind::Nullable => Ok(Substitution::empty()),
+                _ => Err(Error::cannot_constrain(self, with)),
+            },
+            MonoType::Uint => match with {
+                Kind::Addable
+                | Kind::Divisible
+                | Kind::Comparable
+                | Kind::Equatable
+                | Kind::Nullable => Ok(Substitution::empty()),
+                _ => Err(Error::cannot_constrain(self, with)),
+            },
+            MonoType::Float => match with {
+                Kind::Addable
+                | Kind::Subtractable
+                | Kind::Divisible
+                | Kind::Comparable
+                | Kind::Equatable
+                | Kind::Nullable => Ok(Substitution::empty()),
+                _ => Err(Error::cannot_constrain(self, with)),
+            },
+            MonoType::String => match with {
+                Kind::Addable | Kind::Comparable | Kind::Equatable | Kind::Nullable => {
+                    Ok(Substitution::empty())
+                }
+                _ => Err(Error::cannot_constrain(self, with)),
+            },
+            MonoType::Duration => match with {
+                Kind::Comparable | Kind::Equatable | Kind::Nullable => Ok(Substitution::empty()),
+                _ => Err(Error::cannot_constrain(self, with)),
+            },
+            MonoType::Time => match with {
+                Kind::Comparable | Kind::Equatable | Kind::Nullable => Ok(Substitution::empty()),
+                _ => Err(Error::cannot_constrain(self, with)),
+            },
             MonoType::Regexp => Err(Error::cannot_constrain(self, with)),
-            MonoType::Var(tvr) => tvr.constrain(with, cons),
+            MonoType::Var(tvr) => {
+                tvr.constrain(with, cons);
+                Ok(Substitution::empty())
+            }
             MonoType::Arr(arr) => arr.constrain(with, cons),
             MonoType::Row(obj) => obj.constrain(with, cons),
             MonoType::Fun(fun) => fun.constrain(with, cons),
-        }
-    }
-
-    // Returns a closure that specifies the possible type classes (kinds) to which a monotype belongs
-    fn satisfies(self, kinds: HashSet<Kind>) -> impl FnOnce(HashSet<Kind>, TvarKinds) -> Result {
-        move |k, constraints| {
-            if k.is_subset(&kinds) {
-                Ok((Subst::empty(), constraints))
-            } else {
-                Err(Error::cannot_constrain(
-                    self,
-                    k.difference(&kinds).map(|&kind| kind).collect(),
-                ))
-            }
         }
     }
 
@@ -341,7 +362,7 @@ impl MonoType {
 // Tvar stands for type variable.
 // A type variable holds an unknown type.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct Tvar(pub i64);
+pub struct Tvar(pub u64);
 
 impl fmt::Display for Tvar {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -349,35 +370,14 @@ impl fmt::Display for Tvar {
     }
 }
 
-// Fresher returns a fresh type variable with incrementing id.
-pub struct Fresher(i64);
-
-impl Fresher {
-    pub fn new() -> Fresher {
-        Fresher(0)
-    }
-
-    pub fn fresh(&mut self) -> Tvar {
-        self.0 += 1;
-        Tvar(self.0)
-    }
-}
-
 impl Tvar {
-    fn apply(self, sub: &Subst) -> MonoType {
-        match sub.lookup(self) {
-            Some(t) => t.clone(),
-            None => MonoType::Var(self),
-        }
-    }
-
-    fn unify(self, with: MonoType, cons: TvarKinds) -> Result {
+    fn unify(self, with: MonoType, cons: &mut TvarKinds) -> Result<Substitution, Error> {
         match with {
             MonoType::Var(tv) => {
                 if self == tv {
                     // The empty substitution will always
                     // unify a type variable with itself.
-                    Ok((Subst::empty(), cons))
+                    Ok(Substitution::empty())
                 } else {
                     // Unify two distinct type variables.
                     // This will update the kind constraints
@@ -399,40 +399,45 @@ impl Tvar {
         }
     }
 
-    fn unify_with_tvar(self, tv: Tvar, cons: TvarKinds) -> Result {
-        let mut cons = cons;
-        // Gather the kind constraints for both type variables
-        let kinds: HashSet<Kind> = cons
-            .0
-            .get(&self)
-            .unwrap_or(&HashSet::new())
-            .union(cons.0.get(&tv).unwrap_or(&HashSet::new()))
-            .map(|&kind| kind)
-            .collect();
-        let sub = Subst::init(maplit::hashmap! {self => MonoType::Var(tv)});
-        if kinds.len() > 0 {
-            // Update the kind constraints
-            cons.0.remove(&self);
-            cons.0.insert(tv, kinds);
-        };
-        Ok((sub, cons))
+    fn unify_with_tvar(self, tv: Tvar, cons: &mut TvarKinds) -> Result<Substitution, Error> {
+        // Kind constraints for both type variables
+        let kinds = union(
+            cons.remove(&self).unwrap_or(Vec::new()),
+            cons.remove(&tv).unwrap_or(Vec::new()),
+        );
+        cons.insert(tv, kinds);
+        Ok(Substitution::from(
+            maplit::hashmap! {self => MonoType::Var(tv)},
+        ))
     }
 
-    fn unify_with_type(self, t: MonoType, cons: TvarKinds) -> Result {
-        let mut cons = cons;
-        let sub = Subst::init(maplit::hashmap! {self => t.clone()});
-        if let Some(kinds) = cons.0.remove(&self) {
-            // The monotype must satisfy all the constraints of
-            // the type variable.
-            let (s, cons) = t.constrain(kinds, cons)?;
-            Ok((sub.merge(s), cons))
-        } else {
-            Ok((sub, cons))
+    fn unify_with_type(self, t: MonoType, cons: &mut TvarKinds) -> Result<Substitution, Error> {
+        let sub = Substitution::from(maplit::hashmap! {self => t.clone()});
+        match cons.remove(&self) {
+            None => Ok(sub),
+            Some(kinds) => Ok(sub.merge(kinds.into_iter().try_fold(
+                Substitution::empty(),
+                |sub, kind| {
+                    // The monotype that is being unified with the
+                    // tvar must be constrained with the same kinds
+                    // as that of the tvar.
+                    Ok(sub.merge(t.clone().constrain(kind, cons)?))
+                },
+            )?)),
         }
     }
 
-    fn constrain(self, with: HashSet<Kind>, cons: TvarKinds) -> Result {
-        Ok((Subst::empty(), cons.update(self, with)))
+    fn constrain(self, with: Kind, cons: &mut TvarKinds) {
+        match cons.get_mut(&self) {
+            Some(kinds) => {
+                if !kinds.contains(&with) {
+                    kinds.push(with);
+                }
+            }
+            None => {
+                cons.insert(self, vec![with]);
+            }
+        }
     }
 }
 
@@ -447,17 +452,20 @@ impl fmt::Display for Array {
 }
 
 impl Substitutable for Array {
-    fn apply(self, sub: &Subst) -> Self {
+    fn apply(self, sub: &Substitution) -> Self {
         Array(self.0.apply(sub))
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        self.0.free_vars()
     }
 }
 
 impl Array {
-    fn unify(self, with: Self, cons: TvarKinds) -> Result {
+    fn unify(self, with: Self, cons: &mut TvarKinds) -> Result<Substitution, Error> {
         self.0.unify(with.0, cons)
     }
 
-    fn constrain(self, with: HashSet<Kind>, _: TvarKinds) -> Result {
+    fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
         Err(Error::cannot_constrain(MonoType::Arr(Box::new(self)), with))
     }
 
@@ -498,7 +506,7 @@ impl cmp::PartialEq for Row {
 }
 
 impl Substitutable for Row {
-    fn apply(self, sub: &Subst) -> Self {
+    fn apply(self, sub: &Substitution) -> Self {
         match self {
             Row::Empty => Row::Empty,
             Row::Extension { head, tail } => Row::Extension {
@@ -507,14 +515,20 @@ impl Substitutable for Row {
             },
         }
     }
+    fn free_vars(&self) -> Vec<Tvar> {
+        match self {
+            Row::Empty => Vec::new(),
+            Row::Extension { head, tail } => union(tail.free_vars(), head.v.free_vars()),
+        }
+    }
 }
 
 impl Row {
-    fn unify(self, _: Self, _: TvarKinds) -> Result {
+    fn unify(self, _: Self, _: &mut TvarKinds) -> Result<Substitution, Error> {
         unimplemented!();
     }
 
-    fn constrain(self, with: HashSet<Kind>, _: TvarKinds) -> Result {
+    fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
         Err(Error::cannot_constrain(MonoType::Row(Box::new(self)), with))
     }
 
@@ -570,11 +584,14 @@ impl fmt::Display for Property {
 }
 
 impl Substitutable for Property {
-    fn apply(self, sub: &Subst) -> Self {
+    fn apply(self, sub: &Substitution) -> Self {
         Property {
             k: self.k,
             v: self.v.apply(sub),
         }
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        self.v.free_vars()
     }
 }
 
@@ -645,32 +662,57 @@ impl fmt::Display for Function {
     }
 }
 
-impl Substitutable for HashMap<String, MonoType> {
-    fn apply(self, sub: &Subst) -> Self {
+impl<T: Substitutable> Substitutable for HashMap<String, T> {
+    fn apply(self, sub: &Substitution) -> Self {
         self.into_iter().map(|(k, v)| (k, v.apply(sub))).collect()
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        self.values()
+            .fold(Vec::new(), |vars, t| union(vars, t.free_vars()))
     }
 }
 
-impl Substitutable for Function {
-    fn apply(self, sub: &Subst) -> Self {
-        Function {
-            req: self.req.apply(sub),
-            opt: self.opt.apply(sub),
-            pipe: match self.pipe {
-                None => None,
-                Some(p) => Some(p.apply(sub)),
-            },
-            retn: self.retn.apply(sub),
+impl<T: Substitutable> Substitutable for Option<T> {
+    fn apply(self, sub: &Substitution) -> Self {
+        match self {
+            Some(t) => Some(t.apply(sub)),
+            None => None,
+        }
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        match self {
+            Some(t) => t.free_vars(),
+            None => Vec::new(),
         }
     }
 }
 
+impl Substitutable for Function {
+    fn apply(self, sub: &Substitution) -> Self {
+        Function {
+            req: self.req.apply(sub),
+            opt: self.opt.apply(sub),
+            pipe: self.pipe.apply(sub),
+            retn: self.retn.apply(sub),
+        }
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        union(
+            self.req.free_vars(),
+            union(
+                self.opt.free_vars(),
+                union(self.pipe.free_vars(), self.retn.free_vars()),
+            ),
+        )
+    }
+}
+
 impl Function {
-    fn unify(self, _: Self, _: TvarKinds) -> Result {
+    fn unify(self, _: Self, _: &mut TvarKinds) -> Result<Substitution, Error> {
         unimplemented!();
     }
 
-    fn constrain(self, with: HashSet<Kind>, _: TvarKinds) -> Result {
+    fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
         Err(Error::cannot_constrain(MonoType::Fun(Box::new(self)), with))
     }
 
@@ -926,7 +968,7 @@ mod tests {
             "forall [] int",
             PolyType {
                 free: Vec::new(),
-                cons: None,
+                cons: HashMap::new(),
                 expr: MonoType::Int,
             }
             .to_string(),
@@ -935,7 +977,7 @@ mod tests {
             "forall [t0] (x:t0) -> t0",
             PolyType {
                 free: vec![Tvar(0)],
-                cons: None,
+                cons: HashMap::new(),
                 expr: MonoType::Fun(Box::new(Function {
                     req: maplit::hashmap! {
                         String::from("x") => MonoType::Var(Tvar(0)),
@@ -951,7 +993,7 @@ mod tests {
             "forall [t0, t1] (x:t0, y:t1) -> {x:t0 | y:t1 | {}}",
             PolyType {
                 free: vec![Tvar(0), Tvar(1)],
-                cons: None,
+                cons: HashMap::new(),
                 expr: MonoType::Fun(Box::new(Function {
                     req: maplit::hashmap! {
                         String::from("x") => MonoType::Var(Tvar(0)),
@@ -980,9 +1022,7 @@ mod tests {
             "forall [t0] where t0:Addable (a:t0, b:t0) -> t0",
             PolyType {
                 free: vec![Tvar(0)],
-                cons: Some(TvarKinds(
-                    maplit::hashmap! {Tvar(0) => maplit::hashset![Kind::Addable]}
-                )),
+                cons: maplit::hashmap! {Tvar(0) => vec![Kind::Addable]},
                 expr: MonoType::Fun(Box::new(Function {
                     req: maplit::hashmap! {
                         String::from("a") => MonoType::Var(Tvar(0)),
@@ -999,10 +1039,10 @@ mod tests {
             "forall [t0, t1] where t0:Addable, t1:Divisible (x:t0, y:t1) -> {x:t0 | y:t1 | {}}",
             PolyType {
                 free: vec![Tvar(0), Tvar(1)],
-                cons: Some(TvarKinds(maplit::hashmap! {
-                    Tvar(0) => maplit::hashset![Kind::Addable],
-                    Tvar(1) => maplit::hashset![Kind::Divisible],
-                })),
+                cons: maplit::hashmap! {
+                    Tvar(0) => vec![Kind::Addable],
+                    Tvar(1) => vec![Kind::Divisible],
+                },
                 expr: MonoType::Fun(Box::new(Function {
                     req: maplit::hashmap! {
                         String::from("x") => MonoType::Var(Tvar(0)),
@@ -1031,10 +1071,10 @@ mod tests {
             "forall [t0, t1] where t0:Comparable + Equatable, t1:Addable + Divisible (x:t0, y:t1) -> {x:t0 | y:t1 | {}}",
             PolyType {
                 free: vec![Tvar(0), Tvar(1)],
-                cons: Some(TvarKinds(maplit::hashmap! {
-                    Tvar(0) => maplit::hashset![Kind::Comparable, Kind::Equatable],
-                    Tvar(1) => maplit::hashset![Kind::Addable, Kind::Divisible],
-                })),
+                cons: maplit::hashmap! {
+                    Tvar(0) => vec![Kind::Comparable, Kind::Equatable],
+                    Tvar(1) => vec![Kind::Addable, Kind::Divisible],
+                },
                 expr: MonoType::Fun(Box::new(Function {
                     req: maplit::hashmap! {
                         String::from("x") => MonoType::Var(Tvar(0)),
@@ -1128,16 +1168,15 @@ mod tests {
 
     #[test]
     fn unify_ints() {
-        let (sub, cons) = MonoType::Int
-            .unify(MonoType::Int, TvarKinds(HashMap::new()))
+        let sub = MonoType::Int
+            .unify(MonoType::Int, &mut HashMap::new())
             .unwrap();
-        assert_eq!(sub, Subst::empty());
-        assert_eq!(cons, TvarKinds(HashMap::new()));
+        assert_eq!(sub, Substitution::empty());
     }
     #[test]
     fn unify_error() {
         let err = MonoType::Int
-            .unify(MonoType::String, TvarKinds(HashMap::new()))
+            .unify(MonoType::String, &mut HashMap::new())
             .unwrap_err();
         assert_eq!(
             err.to_string(),
@@ -1146,34 +1185,27 @@ mod tests {
     }
     #[test]
     fn unify_tvars() {
-        let (sub, cons) = MonoType::Var(Tvar(0))
-            .unify(MonoType::Var(Tvar(1)), TvarKinds(HashMap::new()))
+        let sub = MonoType::Var(Tvar(0))
+            .unify(MonoType::Var(Tvar(1)), &mut HashMap::new())
             .unwrap();
         assert_eq!(
             sub,
-            Subst::init(maplit::hashmap! {Tvar(0) => MonoType::Var(Tvar(1))}),
+            Substitution::from(maplit::hashmap! {Tvar(0) => MonoType::Var(Tvar(1))}),
         );
-        assert_eq!(cons, TvarKinds(HashMap::new()));
     }
     #[test]
     fn unify_constrained_tvars() {
-        let (sub, cons) = MonoType::Var(Tvar(0))
-            .unify(
-                MonoType::Var(Tvar(1)),
-                TvarKinds(
-                    maplit::hashmap! {Tvar(0) => maplit::hashset![Kind::Addable, Kind::Divisible]},
-                ),
-            )
+        let mut cons = maplit::hashmap! {Tvar(0) => vec![Kind::Addable, Kind::Divisible]};
+        let sub = MonoType::Var(Tvar(0))
+            .unify(MonoType::Var(Tvar(1)), &mut cons)
             .unwrap();
         assert_eq!(
             sub,
-            Subst::init(maplit::hashmap! {Tvar(0) => MonoType::Var(Tvar(1))})
+            Substitution::from(maplit::hashmap! {Tvar(0) => MonoType::Var(Tvar(1))})
         );
         assert_eq!(
             cons,
-            TvarKinds(
-                maplit::hashmap! {Tvar(1) => maplit::hashset![Kind::Addable, Kind::Divisible]}
-            ),
+            maplit::hashmap! {Tvar(1) => vec![Kind::Addable, Kind::Divisible]},
         );
     }
 }
