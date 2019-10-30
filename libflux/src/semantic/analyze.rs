@@ -1,6 +1,7 @@
 use crate::ast;
+use crate::semantic::fresh::Fresher;
 use crate::semantic::nodes::*;
-use crate::semantic::types::{Fresher, MonoType};
+use crate::semantic::types::{MonoType, PolyType};
 use std::result;
 
 type SemanticError = String;
@@ -154,11 +155,11 @@ fn analyze_variable_assignment(
     stmt: ast::VariableAssgn,
     fresher: &mut Fresher,
 ) -> Result<VariableAssgn> {
-    Ok(VariableAssgn {
-        loc: stmt.base.location,
-        id: analyze_identifier(stmt.id, fresher)?,
-        init: analyze_expression(stmt.init, fresher)?,
-    })
+    Ok(VariableAssgn::new(
+        analyze_identifier(stmt.id, fresher)?,
+        analyze_expression(stmt.init, fresher)?,
+        stmt.base.location,
+    ))
 }
 
 fn analyze_member_assignment(stmt: ast::MemberAssgn, fresher: &mut Fresher) -> Result<MemberAssgn> {
@@ -252,32 +253,32 @@ fn analyze_function_params(
 }
 
 fn analyze_function_body(body: ast::FunctionBody, fresher: &mut Fresher) -> Result<Block> {
-    // TODO(affo): here, we are forced to clone locations because they are references.
     match body {
-        ast::FunctionBody::Expr(expr) => Ok(Block {
-            loc: expr.base().location.clone(),
-            body: vec![Statement::Return(ReturnStmt {
-                loc: expr.base().location.clone(),
-                argument: analyze_expression(expr, fresher)?,
-            })],
-        }),
+        ast::FunctionBody::Expr(e) => Ok(Block::Return(analyze_expression(e, fresher)?)),
         ast::FunctionBody::Block(block) => Ok(analyze_block(block, fresher)?),
     }
 }
 
 fn analyze_block(block: ast::Block, fresher: &mut Fresher) -> Result<Block> {
-    let stmts = block
-        .body
-        .into_iter()
-        .map(|s| analyze_statement(s, fresher))
-        .collect::<Result<Vec<Statement>>>()?;
-    match &stmts.get(stmts.len() - 1) {
-        Some(Statement::Return(_)) => Ok(Block {
-            loc: block.base.location,
-            body: stmts,
-        }),
-        _ => Err("missing return statement in block".to_string()),
-    }
+    let mut body = block.body.into_iter().rev();
+
+    let block = if let Some(ast::Statement::Return(stmt)) = body.next() {
+        Block::Return(analyze_expression(stmt.argument, fresher)?)
+    } else {
+        return Err("missing return statement in block".to_string())?;
+    };
+
+    body.try_fold(block, |acc, s| match s {
+        ast::Statement::Variable(dec) => Ok(Block::Variable(
+            analyze_variable_assignment(dec, fresher)?,
+            Box::new(acc),
+        )),
+        ast::Statement::Expr(stmt) => Ok(Block::Expr(
+            analyze_expression_statement(stmt, fresher)?,
+            Box::new(acc),
+        )),
+        _ => Err(format!("invalid statement in function block {:#?}", s)),
+    })
 }
 
 fn analyze_call_expression(expr: ast::CallExpr, fresher: &mut Fresher) -> Result<CallExpr> {
@@ -763,18 +764,18 @@ mod tests {
                 package: None,
                 imports: Vec::new(),
                 body: vec![
-                    Statement::Variable(VariableAssgn {
-                        loc: b.location.clone(),
-                        id: Identifier {
+                    Statement::Variable(VariableAssgn::new(
+                        Identifier {
                             loc: b.location.clone(),
                             name: "a".to_string(),
                         },
-                        init: Expression::Boolean(BooleanLit {
+                        Expression::Boolean(BooleanLit {
                             loc: b.location.clone(),
                             typ: type_info(),
                             value: true,
                         }),
-                    }),
+                        b.location.clone(),
+                    )),
                     Statement::Expr(ExprStmt {
                         loc: b.location.clone(),
                         expression: Expression::Identifier(IdentifierExpr {
@@ -1198,13 +1199,12 @@ mod tests {
                 imports: Vec::new(),
                 body: vec![Statement::Option(OptionStmt {
                     loc: b.location.clone(),
-                    assignment: Assignment::Variable(VariableAssgn {
-                        loc: b.location.clone(),
-                        id: Identifier {
+                    assignment: Assignment::Variable(VariableAssgn::new(
+                        Identifier {
                             loc: b.location.clone(),
                             name: "task".to_string(),
                         },
-                        init: Expression::Object(Box::new(ObjectExpr {
+                        Expression::Object(Box::new(ObjectExpr {
                             loc: b.location.clone(),
                             typ: type_info(),
                             with: None,
@@ -1271,7 +1271,8 @@ mod tests {
                                 },
                             ],
                         })),
-                    }),
+                        b.location.clone(),
+                    )),
                 })],
             }],
         };
@@ -1452,13 +1453,12 @@ mod tests {
                 package: None,
                 imports: Vec::new(),
                 body: vec![
-                    Statement::Variable(VariableAssgn {
-                        loc: b.location.clone(),
-                        id: Identifier {
+                    Statement::Variable(VariableAssgn::new(
+                        Identifier {
                             loc: b.location.clone(),
                             name: "f".to_string(),
                         },
-                        init: Expression::Function(Box::new(FunctionExpr {
+                        Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
                             typ: type_info(),
                             params: vec![
@@ -1481,29 +1481,24 @@ mod tests {
                                     default: None,
                                 },
                             ],
-                            body: Block {
+                            body: Block::Return(Expression::Binary(Box::new(BinaryExpr {
                                 loc: b.location.clone(),
-                                body: vec![Statement::Return(ReturnStmt {
+                                typ: type_info(),
+                                operator: ast::Operator::AdditionOperator,
+                                left: Expression::Identifier(IdentifierExpr {
                                     loc: b.location.clone(),
-                                    argument: Expression::Binary(Box::new(BinaryExpr {
-                                        loc: b.location.clone(),
-                                        typ: type_info(),
-                                        operator: ast::Operator::AdditionOperator,
-                                        left: Expression::Identifier(IdentifierExpr {
-                                            loc: b.location.clone(),
-                                            typ: type_info(),
-                                            name: "a".to_string(),
-                                        }),
-                                        right: Expression::Identifier(IdentifierExpr {
-                                            loc: b.location.clone(),
-                                            typ: type_info(),
-                                            name: "b".to_string(),
-                                        }),
-                                    })),
-                                })],
-                            },
+                                    typ: type_info(),
+                                    name: "a".to_string(),
+                                }),
+                                right: Expression::Identifier(IdentifierExpr {
+                                    loc: b.location.clone(),
+                                    typ: type_info(),
+                                    name: "b".to_string(),
+                                }),
+                            }))),
                         })),
-                    }),
+                        b.location.clone(),
+                    )),
                     Statement::Expr(ExprStmt {
                         loc: b.location.clone(),
                         expression: Expression::Call(Box::new(CallExpr {
@@ -1663,13 +1658,12 @@ mod tests {
                 package: None,
                 imports: Vec::new(),
                 body: vec![
-                    Statement::Variable(VariableAssgn {
-                        loc: b.location.clone(),
-                        id: Identifier {
+                    Statement::Variable(VariableAssgn::new(
+                        Identifier {
                             loc: b.location.clone(),
                             name: "f".to_string(),
                         },
-                        init: Expression::Function(Box::new(FunctionExpr {
+                        Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
                             typ: type_info(),
                             params: vec![
@@ -1709,39 +1703,34 @@ mod tests {
                                     default: None,
                                 },
                             ],
-                            body: Block {
+                            body: Block::Return(Expression::Binary(Box::new(BinaryExpr {
                                 loc: b.location.clone(),
-                                body: vec![Statement::Return(ReturnStmt {
+                                typ: type_info(),
+                                operator: ast::Operator::AdditionOperator,
+                                left: Expression::Binary(Box::new(BinaryExpr {
                                     loc: b.location.clone(),
-                                    argument: Expression::Binary(Box::new(BinaryExpr {
+                                    typ: type_info(),
+                                    operator: ast::Operator::AdditionOperator,
+                                    left: Expression::Identifier(IdentifierExpr {
                                         loc: b.location.clone(),
                                         typ: type_info(),
-                                        operator: ast::Operator::AdditionOperator,
-                                        left: Expression::Binary(Box::new(BinaryExpr {
-                                            loc: b.location.clone(),
-                                            typ: type_info(),
-                                            operator: ast::Operator::AdditionOperator,
-                                            left: Expression::Identifier(IdentifierExpr {
-                                                loc: b.location.clone(),
-                                                typ: type_info(),
-                                                name: "a".to_string(),
-                                            }),
-                                            right: Expression::Identifier(IdentifierExpr {
-                                                loc: b.location.clone(),
-                                                typ: type_info(),
-                                                name: "b".to_string(),
-                                            }),
-                                        })),
-                                        right: Expression::Identifier(IdentifierExpr {
-                                            loc: b.location.clone(),
-                                            typ: type_info(),
-                                            name: "c".to_string(),
-                                        }),
-                                    })),
-                                })],
-                            },
+                                        name: "a".to_string(),
+                                    }),
+                                    right: Expression::Identifier(IdentifierExpr {
+                                        loc: b.location.clone(),
+                                        typ: type_info(),
+                                        name: "b".to_string(),
+                                    }),
+                                })),
+                                right: Expression::Identifier(IdentifierExpr {
+                                    loc: b.location.clone(),
+                                    typ: type_info(),
+                                    name: "c".to_string(),
+                                }),
+                            }))),
                         })),
-                    }),
+                        b.location.clone(),
+                    )),
                     Statement::Expr(ExprStmt {
                         loc: b.location.clone(),
                         expression: Expression::Call(Box::new(CallExpr {
@@ -2005,13 +1994,12 @@ mod tests {
                 package: None,
                 imports: Vec::new(),
                 body: vec![
-                    Statement::Variable(VariableAssgn {
-                        loc: b.location.clone(),
-                        id: Identifier {
+                    Statement::Variable(VariableAssgn::new(
+                        Identifier {
                             loc: b.location.clone(),
                             name: "f".to_string(),
                         },
-                        init: Expression::Function(Box::new(FunctionExpr {
+                        Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
                             typ: type_info(),
                             params: vec![
@@ -2034,29 +2022,24 @@ mod tests {
                                     default: None,
                                 },
                             ],
-                            body: Block {
+                            body: Block::Return(Expression::Binary(Box::new(BinaryExpr {
                                 loc: b.location.clone(),
-                                body: vec![Statement::Return(ReturnStmt {
+                                typ: type_info(),
+                                operator: ast::Operator::AdditionOperator,
+                                left: Expression::Identifier(IdentifierExpr {
                                     loc: b.location.clone(),
-                                    argument: Expression::Binary(Box::new(BinaryExpr {
-                                        loc: b.location.clone(),
-                                        typ: type_info(),
-                                        operator: ast::Operator::AdditionOperator,
-                                        left: Expression::Identifier(IdentifierExpr {
-                                            loc: b.location.clone(),
-                                            typ: type_info(),
-                                            name: "a".to_string(),
-                                        }),
-                                        right: Expression::Identifier(IdentifierExpr {
-                                            loc: b.location.clone(),
-                                            typ: type_info(),
-                                            name: "piped".to_string(),
-                                        }),
-                                    })),
-                                })],
-                            },
+                                    typ: type_info(),
+                                    name: "a".to_string(),
+                                }),
+                                right: Expression::Identifier(IdentifierExpr {
+                                    loc: b.location.clone(),
+                                    typ: type_info(),
+                                    name: "piped".to_string(),
+                                }),
+                            }))),
                         })),
-                    }),
+                        b.location.clone(),
+                    )),
                     Statement::Expr(ExprStmt {
                         loc: b.location.clone(),
                         expression: Expression::Call(Box::new(CallExpr {
@@ -2119,27 +2102,21 @@ mod tests {
                     default: None,
                 },
             ],
-            body: Block {
+            body: Block::Return(Expression::Binary(Box::new(BinaryExpr {
                 loc: b.location.clone(),
-                body: vec![Statement::Return(ReturnStmt {
+                typ: type_info(),
+                operator: ast::Operator::AdditionOperator,
+                left: Expression::Identifier(IdentifierExpr {
                     loc: b.location.clone(),
-                    argument: Expression::Binary(Box::new(BinaryExpr {
-                        loc: b.location.clone(),
-                        typ: type_info(),
-                        operator: ast::Operator::AdditionOperator,
-                        left: Expression::Identifier(IdentifierExpr {
-                            loc: b.location.clone(),
-                            typ: type_info(),
-                            name: "a".to_string(),
-                        }),
-                        right: Expression::Identifier(IdentifierExpr {
-                            loc: b.location.clone(),
-                            typ: type_info(),
-                            name: "b".to_string(),
-                        }),
-                    })),
-                })],
-            },
+                    typ: type_info(),
+                    name: "a".to_string(),
+                }),
+                right: Expression::Identifier(IdentifierExpr {
+                    loc: b.location.clone(),
+                    typ: type_info(),
+                    name: "b".to_string(),
+                }),
+            }))),
         };
         assert_eq!(Vec::<&FunctionParameter>::new(), f.defaults());
         assert_eq!(None, f.pipe());
@@ -2206,27 +2183,21 @@ mod tests {
                 default2.clone(),
                 no_default.clone(),
             ],
-            body: Block {
+            body: Block::Return(Expression::Binary(Box::new(BinaryExpr {
                 loc: b.location.clone(),
-                body: vec![Statement::Return(ReturnStmt {
+                typ: type_info(),
+                operator: ast::Operator::AdditionOperator,
+                left: Expression::Identifier(IdentifierExpr {
                     loc: b.location.clone(),
-                    argument: Expression::Binary(Box::new(BinaryExpr {
-                        loc: b.location.clone(),
-                        typ: type_info(),
-                        operator: ast::Operator::AdditionOperator,
-                        left: Expression::Identifier(IdentifierExpr {
-                            loc: b.location.clone(),
-                            typ: type_info(),
-                            name: "a".to_string(),
-                        }),
-                        right: Expression::Identifier(IdentifierExpr {
-                            loc: b.location.clone(),
-                            typ: type_info(),
-                            name: "b".to_string(),
-                        }),
-                    })),
-                })],
-            },
+                    typ: type_info(),
+                    name: "a".to_string(),
+                }),
+                right: Expression::Identifier(IdentifierExpr {
+                    loc: b.location.clone(),
+                    typ: type_info(),
+                    name: "b".to_string(),
+                }),
+            }))),
         };
         assert_eq!(defaults, f.defaults());
         assert_eq!(Some(&piped), f.pipe());
