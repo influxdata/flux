@@ -108,6 +108,12 @@ func (t Time) Time() time.Time {
 // Mul will multiply the Duration by a scalar.
 // This multiplies each component of the vector.
 func (d Duration) Mul(scale int) Duration {
+	// If the duration is zero, do nothing.
+	// This prevents a zero value from becoming negative
+	// which is not possible.
+	if d.IsZero() {
+		return d
+	}
 	if scale < 0 {
 		scale = -scale
 		d.negative = !d.negative
@@ -121,6 +127,12 @@ func (d Duration) Mul(scale int) Duration {
 // It returns false if the number is zero.
 func (d Duration) IsPositive() bool {
 	return !d.negative && !d.IsZero()
+}
+
+// IsNegative returns true if this is a negative number.
+// It returns false if the number is zero.
+func (d Duration) IsNegative() bool {
+	return d.negative
 }
 
 // IsZero returns true if this is a zero duration.
@@ -149,8 +161,8 @@ func (d Duration) Equal(other Duration) bool {
 }
 
 // Duration will return the nanosecond equivalent
-// of this duration. It will assume that months are
-// the equivalent of 30 days.
+// of this duration. It will assume that all months are
+// the same length.
 //
 // It is recommended not to use this method unless
 // it is absolutely needed. This method will lose
@@ -158,7 +170,11 @@ func (d Duration) Equal(other Duration) bool {
 // and it should only be used for interfacing with
 // outside code that is not month-aware.
 func (d Duration) Duration() time.Duration {
-	months := d.months * 30 * 24 * int64(time.Hour)
+	months := int64(0)
+	if d.months > 0 {
+		const nsecsPerMonth = 365.25 * 24 * float64(time.Hour) / 12
+		months = int64(float64(d.months) * nsecsPerMonth)
+	}
 	dur := d.nsecs + months
 	if d.negative {
 		dur = -dur
@@ -166,30 +182,30 @@ func (d Duration) Duration() time.Duration {
 	return time.Duration(dur)
 }
 
-func (d Duration) String() string {
+// AsValues will reconstruct the duration as a set of values.
+func (d Duration) AsValues() []ast.Duration {
 	if d.IsZero() {
-		return "0ns"
+		return nil
 	}
 
-	var buf []byte
-	writeInt := func(sb *strings.Builder, v int64, unit string) {
-		buf = strconv.AppendInt(buf, v, 10)
-		sb.Grow(len(buf) + len(unit))
-		sb.Write(buf)
-		sb.WriteString(unit)
-		buf = buf[:0]
-	}
-	var sb strings.Builder
+	scale := int64(1)
 	if d.negative {
-		sb.WriteByte('-')
+		scale = -1
 	}
 
+	var values []ast.Duration
 	if d.months > 0 {
 		if years := d.months / 12; years > 0 {
-			writeInt(&sb, years, "y")
+			values = append(values, ast.Duration{
+				Magnitude: years * scale,
+				Unit:      ast.YearUnit,
+			})
 		}
 		if months := d.months % 12; months > 0 {
-			writeInt(&sb, months, "mo")
+			values = append(values, ast.Duration{
+				Magnitude: months * scale,
+				Unit:      ast.MonthUnit,
+			})
 		}
 	}
 
@@ -211,29 +227,81 @@ func (d Duration) String() string {
 		weeks := d.nsecs
 
 		if weeks > 0 {
-			writeInt(&sb, weeks, "w")
+			values = append(values, ast.Duration{
+				Magnitude: weeks * scale,
+				Unit:      ast.WeekUnit,
+			})
 		}
 		if days > 0 {
-			writeInt(&sb, days, "d")
+			values = append(values, ast.Duration{
+				Magnitude: days * scale,
+				Unit:      ast.DayUnit,
+			})
 		}
 		if hours > 0 {
-			writeInt(&sb, hours, "h")
+			values = append(values, ast.Duration{
+				Magnitude: hours * scale,
+				Unit:      ast.HourUnit,
+			})
 		}
 		if mins > 0 {
-			writeInt(&sb, mins, "m")
+			values = append(values, ast.Duration{
+				Magnitude: mins * scale,
+				Unit:      ast.MinuteUnit,
+			})
 		}
 		if secs > 0 {
-			writeInt(&sb, secs, "s")
+			values = append(values, ast.Duration{
+				Magnitude: secs * scale,
+				Unit:      ast.SecondUnit,
+			})
 		}
 		if msecs > 0 {
-			writeInt(&sb, msecs, "ms")
+			values = append(values, ast.Duration{
+				Magnitude: msecs * scale,
+				Unit:      ast.MillisecondUnit,
+			})
 		}
 		if usecs > 0 {
-			writeInt(&sb, usecs, "us")
+			values = append(values, ast.Duration{
+				Magnitude: usecs * scale,
+				Unit:      ast.MicrosecondUnit,
+			})
 		}
 		if nsecs > 0 {
-			writeInt(&sb, nsecs, "ns")
+			values = append(values, ast.Duration{
+				Magnitude: nsecs * scale,
+				Unit:      ast.NanosecondUnit,
+			})
 		}
+	}
+	return values
+}
+
+func (d Duration) String() string {
+	values := d.AsValues()
+	if len(values) == 0 {
+		return "0ns"
+	}
+
+	var buf []byte
+	writeInt := func(sb *strings.Builder, v int64, unit string) {
+		buf = strconv.AppendInt(buf, v, 10)
+		sb.Grow(len(buf) + len(unit))
+		sb.Write(buf)
+		sb.WriteString(unit)
+		buf = buf[:0]
+	}
+	var sb strings.Builder
+	if values[0].Magnitude < 0 {
+		sb.WriteByte('-')
+	}
+	for _, v := range values {
+		mag := v.Magnitude
+		if mag < 0 {
+			mag = -mag
+		}
+		writeInt(&sb, mag, v.Unit)
 	}
 	return sb.String()
 }
@@ -256,19 +324,19 @@ func ParseDuration(s string) (Duration, error) {
 	if err != nil {
 		return Duration{}, err
 	}
-	return DurationFromAST(dur)
+	return FromDurationValues(dur.Values)
 }
 
-// DurationFromAST creates a duration value from the AST DurationLiteral.
-func DurationFromAST(dur *ast.DurationLiteral) (d Duration, err error) {
-	if len(dur.Values) == 0 {
+// FromDurationValues creates a duration value from the duration values.
+func FromDurationValues(dur []ast.Duration) (d Duration, err error) {
+	if len(dur) == 0 {
 		return d, nil
 	}
 
 	// Determine if this duration is negative. Every other value
 	// must be consistent with this.
-	d.negative = dur.Values[0].Magnitude < 0
-	for _, du := range dur.Values {
+	d.negative = dur[0].Magnitude < 0
+	for _, du := range dur {
 		mag, unit := du.Magnitude, du.Unit
 		if (mag >= 0 && d.negative) || (mag < 0 && !d.negative) {
 			return Duration{}, errors.New(codes.Invalid, "duration magnitudes must be the same sign")

@@ -1299,6 +1299,19 @@ func toDuration(l Duration) (time.Duration, error) {
 	return dur, err
 }
 
+const (
+	NanosecondUnit  = "ns"
+	MicrosecondUnit = "us"
+	MillisecondUnit = "ms"
+	SecondUnit      = "s"
+	MinuteUnit      = "m"
+	HourUnit        = "h"
+	DayUnit         = "d"
+	WeekUnit        = "w"
+	MonthUnit       = "mo"
+	YearUnit        = "y"
+)
+
 // DurationLiteral represents the elapsed time between two instants as an
 // int64 nanosecond count with syntax of golang's time.Duration
 // TODO: this may be better as a class initialization
