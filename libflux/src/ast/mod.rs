@@ -1,6 +1,12 @@
 pub mod check;
-pub mod walk;
 mod fbast;
+pub mod walk;
+
+#[cfg(test)]
+mod tests;
+
+#[cfg(test)]
+mod fbast_tests;
 
 use std::collections::HashMap;
 use std::fmt;
@@ -1034,9 +1040,3 @@ pub struct DateTimeLit {
     pub base: BaseNode,
     pub value: chrono::DateTime<FixedOffset>,
 }
-
-#[cfg(test)]
-mod tests;
-
-#[cfg(test)]
-mod fbast_tests;

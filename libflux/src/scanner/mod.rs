@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod tests;
+
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 pub type CChar = u8;
@@ -199,6 +202,3 @@ fn search(vs: &Vec<u32>, v: &u32) -> usize {
     }
     i - 1
 }
-
-#[cfg(test)]
-mod tests;

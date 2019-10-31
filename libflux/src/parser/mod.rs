@@ -1,3 +1,8 @@
+mod strconv;
+
+#[cfg(test)]
+mod tests;
+
 use std::collections::HashMap;
 use std::ffi::CString;
 use std::str;
@@ -8,8 +13,6 @@ use crate::scanner;
 use crate::scanner::*;
 
 use wasm_bindgen::prelude::*;
-
-mod strconv;
 
 #[wasm_bindgen]
 pub fn parse(s: &str) -> JsValue {
@@ -1539,6 +1542,3 @@ impl Parser {
         }
     }
 }
-
-#[cfg(test)]
-mod tests;

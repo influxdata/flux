@@ -1,5 +1,5 @@
 mod analyze;
 mod infer;
-mod nodes;
+pub mod nodes;
 mod sub;
-mod types;
+pub mod types;
