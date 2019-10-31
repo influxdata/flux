@@ -28,7 +28,6 @@ var httpGetStatusCodeOnly = values.NewFunction(
 		Parameters: map[string]semantic.PolyType{
 			"url":     semantic.String,
 			"headers": semantic.Tvar(1),
-			"data":    semantic.Bytes,
 		},
 		Required: []string{"url"},
 		Return:   semantic.Int,
@@ -52,18 +51,8 @@ var httpGetStatusCodeOnly = values.NewFunction(
 			return nil, err
 		}
 
-		// Construct data
-		// Yes, you can send a request body with GET but it should not have any meaning.
-		// If you give it meaning by parsing it on the server and changing your response based on its contents,
-		// then you are ignoring this recommendation.
-		var data []byte
-		dataV, ok := args.Get("data")
-		if ok {
-			data = dataV.Bytes()
-		}
-
-		// Construct HTTP request
-		req, err := http.NewRequest("GET", uV.Str(), bytes.NewReader(data))
+		// Construct HTTP request - no data payload for get as there is no clear use case
+		req, err := http.NewRequest("GET", uV.Str(), bytes.NewReader(nil))
 		if err != nil {
 			return nil, err
 		}

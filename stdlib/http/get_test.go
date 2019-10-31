@@ -38,7 +38,7 @@ func TestGet(t *testing.T) {
 	script := fmt.Sprintf(`
 import "http"
 
-status = http.get(url:"%s/path/a/b/c", headers: {x:"a",y:"b",z:"c"}, data: bytes(v: "body"))
+status = http.get(url:"%s/path/a/b/c", headers: {x:"a",y:"b",z:"c"})
 status == 204 or fail()
 `, ts.URL)
 
@@ -73,7 +73,7 @@ func TestGet_ValidationFail(t *testing.T) {
 	script := `
 import "http"
 
-http.get(url:"http://127.1.1.1/path/a/b/c", headers: {x:"a",y:"b",z:"c"}, data: bytes(v: "body"))
+http.get(url:"http://127.1.1.1/path/a/b/c", headers: {x:"a",y:"b",z:"c"})
 `
 
 	deps := flux.NewDefaultDependencies()
