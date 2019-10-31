@@ -8,6 +8,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -287,7 +288,12 @@ func init() {
 				}
 
 				if v.Type().Nature() == semantic.Time && u.Type().Nature() == semantic.Duration {
-					return values.NewTime(v.Time().Truncate(u.Duration())), nil
+					w, err := execute.NewWindow(u.Duration(), u.Duration(), execute.Duration{})
+					if err != nil {
+						return nil, err
+					}
+					b := w.GetEarliestBounds(v.Time())
+					return values.NewTime(b.Start), nil
 				}
 				return nil, fmt.Errorf("cannot truncate argument t of type %v to unit %v", v.Type().Nature(), u)
 			}, false,

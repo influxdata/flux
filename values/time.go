@@ -58,16 +58,58 @@ func (t Time) Round(d Duration) Time {
 	return t + Time(d.Duration()-r.Duration())
 }
 
-func (t Time) Truncate(d Duration) Time {
-	if !d.IsPositive() {
-		return t
-	}
-	r := t.Remainder(d)
-	return t - Time(r.Duration())
-}
-
 func (t Time) Add(d Duration) Time {
-	return t + Time(d.Duration())
+	newT := t
+	if d.months > 0 {
+		// Determine if the number of months is positive or negative.
+		months := d.months
+		if d.negative {
+			months = -months
+		}
+
+		// Retrieve the current date and increment the values
+		// based on the number of months.
+		ts := t.Time()
+		year, month, day := ts.Date()
+		year += int(months / 12)
+		month += time.Month(months % 12)
+		// If the month overflowed or underflowed, adjust the year
+		// accordingly. Because we add the modulo for the months,
+		// the year will only adjust by one.
+		if month > 12 {
+			year += 1
+			month -= 12
+		} else if month <= 0 {
+			year -= 1
+			month += 12
+		}
+
+		// Normalize the day if we are past the end of the month.
+		lastDayOfMonth := lastDayOfMonths[month]
+		if month == time.February && isLeapYear(year) {
+			lastDayOfMonth++
+		}
+
+		if day > lastDayOfMonth {
+			day = lastDayOfMonth
+		}
+
+		// Retrieve the original time and construct a date
+		// with the new year, month, and day.
+		hour, min, sec := ts.Clock()
+		nsec := ts.Nanosecond()
+		ts = time.Date(year, month, day, hour, min, sec, nsec, time.UTC)
+
+		// Convert it back to our own Time implementation.
+		newT = ConvertTime(ts)
+	}
+
+	// Add the number of nanoseconds to the time.
+	nsecs := d.nsecs
+	if d.negative {
+		nsecs = -nsecs
+	}
+	return newT + Time(nsecs)
 }
 
 // Sub takes another time and returns a duration giving the duration
@@ -139,6 +181,9 @@ func (d Duration) IsNegative() bool {
 func (d Duration) IsZero() bool {
 	return d.months == 0 && d.nsecs == 0
 }
+
+func (d Duration) Months() int64      { return d.months }
+func (d Duration) Nanoseconds() int64 { return d.nsecs }
 
 // Normalize will normalize the duration within the interval.
 // It will ensure that the output duration is the smallest positive
@@ -378,4 +423,23 @@ func FromDurationValues(dur []ast.Duration) (d Duration, err error) {
 		}
 	}
 	return d, nil
+}
+
+var lastDayOfMonths = map[time.Month]int{
+	time.January:   31,
+	time.February:  28,
+	time.March:     31,
+	time.April:     30,
+	time.May:       31,
+	time.June:      30,
+	time.July:      31,
+	time.August:    31,
+	time.September: 30,
+	time.October:   31,
+	time.November:  30,
+	time.December:  31,
+}
+
+func isLeapYear(year int) bool {
+	return year%400 == 0 || (year%4 == 0 && year%100 != 0)
 }

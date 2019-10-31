@@ -175,14 +175,19 @@ func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationM
 		return nil, nil, errors.New(codes.Invalid, "nil bounds passed to window")
 	}
 
+	w, err := execute.NewWindow(
+		s.Window.Every,
+		s.Window.Period,
+		s.Window.Offset,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
 	t := NewFixedWindowTransformation(
 		d,
 		cache,
 		*bounds,
-		execute.NewWindow(
-			values.Duration(s.Window.Every),
-			values.Duration(s.Window.Period),
-			values.Duration(s.Window.Offset)),
+		w,
 		s.TimeColumn,
 		s.StartColumn,
 		s.StopColumn,
