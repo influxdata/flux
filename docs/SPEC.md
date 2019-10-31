@@ -219,10 +219,12 @@ Examples:
     2018-01-31T00:00:00Z + 1mo      // 2018-02-28T00:00:00Z, February 31th is rolled back to the last day of the month, February 28th in 2018.
 
     // Addition and subtraction of durations to date times does not commute
-    2018-02-28T00:00:00Z + 1mo + 1d // 2018-03-29T00:00:00Z
-    2018-02-28T00:00:00Z + 1d + 1mo // 2018-04-01T00:00:00Z
-    2018-01-01T00:00:00Z + 2mo - 1d // 2018-02-28T00:00:00Z
-    2018-01-01T00:00:00Z - 1d + 3mo // 2018-03-31T00:00:00Z
+    2018-02-28T00:00:00Z + 1mo + 1d  // 2018-03-29T00:00:00Z
+    2018-02-28T00:00:00Z + 1d + 1mo  // 2018-04-01T00:00:00Z
+    2018-01-01T00:00:00Z + 2mo - 1d  // 2018-02-28T00:00:00Z
+    2018-01-01T00:00:00Z - 1d + 3mo  // 2018-03-31T00:00:00Z
+    2018-01-31T00:00:00Z + 1mo + 1mo // 2018-03-28T00:00:00Z
+    2018-01-31T00:00:00Z + 2mo       // 2018-03-31T00:00:00Z
 
     // Addition and subtraction of durations to date times applies months, days and seconds in that order.
     2018-01-28T00:00:00Z + 1mo + 2d // 2018-03-02T00:00:00Z
@@ -231,6 +233,14 @@ Examples:
     2018-02-01T00:00:00Z + 2mo2d    // 2018-04-03T00:00:00Z
     2018-01-01T00:00:00Z + 1mo30d   // 2018-03-02T00:00:00Z, Months are applied first to get February 1st, then days are added resulting in March 2 in 2018.
     2018-01-31T00:00:00Z + 1mo1d    // 2018-03-01T00:00:00Z, Months are applied first to get February 28th, then days are added resulting in March 1 in 2018.
+
+    // Multiplication works
+    2018-01-01T00:00:00Z + 1mo * 1  // 2018-02-01T00:00:00Z
+    2018-01-01T00:00:00Z + 1mo * 2  // 2018-03-01T00:00:00Z
+    2018-01-01T00:00:00Z + 1mo * 3  // 2018-04-01T00:00:00Z
+    2018-01-31T00:00:00Z + 1mo * 1  // 2018-02-28T00:00:00Z
+    2018-01-31T00:00:00Z + 1mo * 2  // 2018-03-31T00:00:00Z
+    2018-01-31T00:00:00Z + 1mo * 3  // 2018-04-30T00:00:00Z
 
 [IMPL#657](https://github.com/influxdata/platform/issues/657) Implement Duration vectors
 

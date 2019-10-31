@@ -1,6 +1,7 @@
 package values
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
@@ -40,41 +41,200 @@ func TestTime_Round(t *testing.T) {
 	}
 }
 
-func TestTime_Truncate(t *testing.T) {
+func TestTime_Add(t *testing.T) {
+	// Note: 2020 is a leap year. Some of these tests
+	// pass through that year to test leap years operate
+	// correctly.
 	for _, tt := range []struct {
-		ts   Time
-		d    Duration
-		want Time
+		t    string
+		d    string
+		want string
 	}{
 		{
-			ts:   Time(time.Second + 500*time.Millisecond),
-			d:    ConvertDuration(time.Second),
-			want: Time(time.Second),
+			t:    "2019-01-01T00:00:00Z",
+			d:    "1ns",
+			want: "2019-01-01T00:00:00.000000001Z",
 		},
 		{
-			ts:   Time(time.Second + 501*time.Millisecond),
-			d:    ConvertDuration(time.Second),
-			want: Time(time.Second),
+			t:    "2019-01-01T00:00:00.000000001Z",
+			d:    "-1ns",
+			want: "2019-01-01T00:00:00Z",
 		},
 		{
-			ts:   Time(time.Second + 499*time.Millisecond),
-			d:    ConvertDuration(time.Second),
-			want: Time(time.Second),
+			t:    "2019-01-01T00:00:00Z",
+			d:    "1d",
+			want: "2019-01-02T00:00:00Z",
 		},
 		{
-			ts:   Time(time.Second + 0*time.Millisecond),
-			d:    ConvertDuration(time.Second),
-			want: Time(time.Second),
+			t:    "2019-01-02T00:00:00Z",
+			d:    "-1d",
+			want: "2019-01-01T00:00:00Z",
 		},
 		{
-			ts:   Time(time.Second + 999*time.Millisecond),
-			d:    ConvertDuration(time.Second),
-			want: Time(time.Second),
+			t:    "2019-01-01T00:00:00Z",
+			d:    "1mo",
+			want: "2019-02-01T00:00:00Z",
+		},
+		{
+			t:    "2019-02-01T00:00:00Z",
+			d:    "-1mo",
+			want: "2019-01-01T00:00:00Z",
+		},
+		{
+			t:    "2019-01-31T00:00:00Z",
+			d:    "1mo",
+			want: "2019-02-28T00:00:00Z",
+		},
+		{
+			t:    "2019-03-31T00:00:00Z",
+			d:    "-1mo",
+			want: "2019-02-28T00:00:00Z",
+		},
+		{
+			t:    "2020-01-31T00:00:00Z",
+			d:    "1mo",
+			want: "2020-02-29T00:00:00Z",
+		},
+		{
+			t:    "2020-03-31T00:00:00Z",
+			d:    "-1mo",
+			want: "2020-02-29T00:00:00Z",
+		},
+		{
+			t:    "2019-01-01T00:00:00Z",
+			d:    "2mo",
+			want: "2019-03-01T00:00:00Z",
+		},
+		{
+			t:    "2019-03-01T00:00:00Z",
+			d:    "-2mo",
+			want: "2019-01-01T00:00:00Z",
+		},
+		{
+			t:    "2019-01-31T00:00:00Z",
+			d:    "2mo",
+			want: "2019-03-31T00:00:00Z",
+		},
+		{
+			t:    "2019-03-31T00:00:00Z",
+			d:    "-2mo",
+			want: "2019-01-31T00:00:00Z",
+		},
+		{
+			t:    "2019-02-28T00:00:00Z",
+			d:    "2mo",
+			want: "2019-04-28T00:00:00Z",
+		},
+		{
+			t:    "2019-04-30T00:00:00Z",
+			d:    "-2mo",
+			want: "2019-02-28T00:00:00Z",
+		},
+		{
+			t:    "2019-01-01T00:00:00Z",
+			d:    "1y",
+			want: "2020-01-01T00:00:00Z",
+		},
+		{
+			t:    "2020-01-01T00:00:00Z",
+			d:    "-1y",
+			want: "2019-01-01T00:00:00Z",
+		},
+		{
+			t:    "2019-01-01T00:00:00Z",
+			d:    "2y",
+			want: "2021-01-01T00:00:00Z",
+		},
+		{
+			t:    "2021-01-01T00:00:00Z",
+			d:    "-2y",
+			want: "2019-01-01T00:00:00Z",
+		},
+		{
+			t:    "2018-01-01T00:00:00Z",
+			d:    "1y6mo",
+			want: "2019-07-01T00:00:00Z",
+		},
+		{
+			t:    "2019-07-01T00:00:00Z",
+			d:    "-1y6mo",
+			want: "2018-01-01T00:00:00Z",
+		},
+		{
+			t:    "2019-01-01T00:00:00Z",
+			d:    "1y6mo",
+			want: "2020-07-01T00:00:00Z",
+		},
+		{
+			t:    "2020-07-01T00:00:00Z",
+			d:    "-1y6mo",
+			want: "2019-01-01T00:00:00Z",
+		},
+		{
+			// Not a leap year. Multiple of 100.
+			t:    "2100-01-01T00:00:00Z",
+			d:    "1y",
+			want: "2101-01-01T00:00:00Z",
+		},
+		{
+			// Not a leap year. Multiple of 100.
+			t:    "2101-01-01T00:00:00Z",
+			d:    "-1y",
+			want: "2100-01-01T00:00:00Z",
+		},
+		{
+			// Not a leap year. Multiple of 100.
+			t:    "2100-01-31T00:00:00Z",
+			d:    "1mo",
+			want: "2100-02-28T00:00:00Z",
+		},
+		{
+			// Not a leap year. Multiple of 100.
+			t:    "2100-03-31T00:00:00Z",
+			d:    "-1mo",
+			want: "2100-02-28T00:00:00Z",
+		},
+		{
+			// Is a leap year. Multiple of 400.
+			t:    "2000-01-01T00:00:00Z",
+			d:    "1y",
+			want: "2001-01-01T00:00:00Z",
+		},
+		{
+			// Is a leap year. Multiple of 400.
+			t:    "2001-01-01T00:00:00Z",
+			d:    "-1y",
+			want: "2000-01-01T00:00:00Z",
+		},
+		{
+			// Is a leap year. Multiple of 400.
+			t:    "2000-01-31T00:00:00Z",
+			d:    "1mo",
+			want: "2000-02-29T00:00:00Z",
+		},
+		{
+			// Is a leap year. Multiple of 400.
+			t:    "2000-03-31T00:00:00Z",
+			d:    "-1mo",
+			want: "2000-02-29T00:00:00Z",
+		},
+		{
+			t:    "2018-12-15T00:00:00Z",
+			d:    "1mo",
+			want: "2019-01-15T00:00:00Z",
+		},
+		{
+			t:    "2019-01-15T00:00:00Z",
+			d:    "-1mo",
+			want: "2018-12-15T00:00:00Z",
 		},
 	} {
-		t.Run(tt.ts.String(), func(t *testing.T) {
-			if want, got := tt.want, tt.ts.Truncate(tt.d); want != got {
-				t.Fatalf("unexpected time -want/+got\n\t- %s\n\t%s", want, got)
+		d := mustParseDuration(tt.d)
+		name := fmt.Sprintf("%s + %s", tt.t, tt.d)
+		t.Run(name, func(t *testing.T) {
+			start := mustParseTime(tt.t)
+			if got, want := start.Add(d), mustParseTime(tt.want); got != want {
+				t.Fatalf("unexpected time -want/+got:\n\t- %s\n\t+ %s", want, got)
 			}
 		})
 	}
@@ -299,4 +459,20 @@ func TestDuration_String(t *testing.T) {
 			}
 		})
 	}
+}
+
+func mustParseTime(s string) Time {
+	t, err := time.Parse(time.RFC3339Nano, s)
+	if err != nil {
+		panic(err)
+	}
+	return ConvertTime(t)
+}
+
+func mustParseDuration(s string) Duration {
+	d, err := ParseDuration(s)
+	if err != nil {
+		panic(err)
+	}
+	return d
 }
