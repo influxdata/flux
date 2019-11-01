@@ -2,12 +2,10 @@ package flux
 
 import (
 	"context"
-	"net"
-	"net/http"
-	"time"
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/filesystem"
+	"github.com/influxdata/flux/dependencies/http"
 	"github.com/influxdata/flux/dependencies/secret"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/internal/errors"
@@ -26,7 +24,7 @@ const dependenciesKey key = iota
 
 type Dependencies interface {
 	Dependency
-	HTTPClient() (*http.Client, error)
+	HTTPClient() (http.Client, error)
 	FilesystemService() (filesystem.Service, error)
 	SecretService() (secret.Service, error)
 	URLValidator() (url.Validator, error)
@@ -39,13 +37,13 @@ type Deps struct {
 }
 
 type WrappedDeps struct {
-	HTTPClient        *http.Client
+	HTTPClient        http.Client
 	FilesystemService filesystem.Service
 	SecretService     secret.Service
 	URLValidator      url.Validator
 }
 
-func (d Deps) HTTPClient() (*http.Client, error) {
+func (d Deps) HTTPClient() (http.Client, error) {
 	if d.Deps.HTTPClient != nil {
 		return d.Deps.HTTPClient, nil
 	}
@@ -85,31 +83,12 @@ func GetDependencies(ctx context.Context) Dependencies {
 	return deps.(Dependencies)
 }
 
-// newDefaultTransport creates a new transport with sane defaults.
-func newDefaultTransport() *http.Transport {
-	// These defaults are copied from http.DefaultTransport.
-	return &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		DialContext: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-			// DualStack is deprecated
-		}).DialContext,
-		MaxIdleConns:          100,
-		IdleConnTimeout:       10 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
-		// Fields below are NOT part of Go's defaults
-		MaxIdleConnsPerHost: 100,
-	}
-}
-
 // NewDefaultDependencies produces a set of dependencies.
 // Not all dependencies have valid defaults and will not be set.
 func NewDefaultDependencies() Deps {
 	return Deps{
 		Deps: WrappedDeps{
-			HTTPClient: &http.Client{Transport: newDefaultTransport()},
+			HTTPClient: http.NewDefaultClient(),
 			// Default to having no filesystem, no secrets, and no url validation (always pass).
 			FilesystemService: nil,
 			SecretService:     secret.EmptySecretService{},
