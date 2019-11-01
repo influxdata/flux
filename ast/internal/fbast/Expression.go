@@ -29,6 +29,7 @@ const (
 	ExpressionStringLiteral          Expression = 21
 	ExpressionUnaryExpression        Expression = 22
 	ExpressionUnsignedIntegerLiteral Expression = 23
+	ExpressionBadExpression          Expression = 24
 )
 
 var EnumNamesExpression = map[Expression]string{
@@ -56,4 +57,5 @@ var EnumNamesExpression = map[Expression]string{
 	ExpressionStringLiteral:          "StringLiteral",
 	ExpressionUnaryExpression:        "UnaryExpression",
 	ExpressionUnsignedIntegerLiteral: "UnsignedIntegerLiteral",
+	ExpressionBadExpression:          "BadExpression",
 }
