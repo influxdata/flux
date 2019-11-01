@@ -876,6 +876,7 @@ mod tests {
     use super::*;
     use crate::parser::parse_string;
     use crate::semantic::analyze::analyze;
+    use crate::semantic::types::{MonoType, PolyType};
     use std::collections::HashMap;
 
     #[test]
@@ -931,7 +932,7 @@ mod tests {
         let normalized: HashMap<String, PolyType> = env
             .values
             .into_iter()
-            .map(|(k, v)| (k, v.normalize()))
+            .map(|(k, v)| (k, v.normalize(&mut Fresher::new())))
             .collect();
 
         assert_eq!(

@@ -53,9 +53,7 @@ impl Substitutable for PolyType {
 impl PolyType {
     // Normalize a polytype's free variables by replacing them with
     // new fresh variables starting from t0.
-    pub fn normalize(self) -> Self {
-        let mut f = Fresher::new();
-
+    pub fn normalize(self, f: &mut Fresher) -> Self {
         let mut sub = HashMap::new();
         for tv in &self.free {
             sub.insert(*tv, f.fresh());
