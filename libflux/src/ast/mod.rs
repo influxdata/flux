@@ -1,8 +1,7 @@
 pub mod check;
-mod flatbuffers;
+pub mod flatbuffers;
 pub mod walk;
 
-pub use crate::ast::flatbuffers::serialize as serialize_to_flatbuffer;
 use crate::scanner;
 use std::collections::HashMap;
 use std::fmt;
