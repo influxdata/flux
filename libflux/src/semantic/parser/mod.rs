@@ -1,9 +1,4 @@
-use std::{
-    collections::{HashMap, HashSet},
-    iter::Peekable,
-    slice::Iter,
-    str::Chars,
-};
+use std::{collections::HashMap, iter::Peekable, slice::Iter, str::Chars};
 
 use crate::semantic::types::{Array, Function, Kind, MonoType, PolyType, Property, Row, Tvar};
 
@@ -59,10 +54,10 @@ pub struct Token {
     text: Option<String>,
 }
 
-// Lex instantiates the Lexer with default values and initializes lexing.
+// lex instantiates the Lexer with default values and initializes lexing.
 // This function is not meant to be used directly. The user should pass
-// source into Parse(), which in turn calls this function.
-pub fn Lex(source: &str) -> Vec<Token> {
+// source into parse(), which in turn calls this function.
+pub fn lex(source: &str) -> Vec<Token> {
     let mut lexer = Lexer {
         source: source.chars().peekable(),
         tokens: Vec::new(),
@@ -184,13 +179,13 @@ struct Parser<'a> {
     tokens: Peekable<Iter<'a, Token>>,
 }
 
-// Parse passes the source text through the Lexer, It then initializes parsing
+// parse passes the source text through the Lexer, It then initializes parsing
 // and returns a PolyType representation.
 
 // This is the only function meant to be accessed by the end user. It handles
 // both lexing and parsing of string polytypes.
-pub fn Parse(source: &str) -> Result<PolyType, &'static str> {
-    let tokens = Lex(source);
+pub fn parse(source: &str) -> Result<PolyType, &'static str> {
+    let tokens = lex(source);
     let mut parser = Parser {
         tokens: tokens.iter().peekable(),
     };
@@ -672,7 +667,7 @@ mod tests {
                 retn: MonoType::Var(Tvar(0)),
             })),
         };
-        assert_eq!(Ok(output), Parse(parse_text));
+        assert_eq!(Ok(output), parse(parse_text));
 
         let parse_text = "forall [t0] where t0: Comparable bool";
 
@@ -687,7 +682,7 @@ mod tests {
             cons: bounds,
             expr: MonoType::Bool,
         };
-        assert_eq!(Ok(output), Parse(parse_text));
+        assert_eq!(Ok(output), parse(parse_text));
 
         let parse_text =
             "forall [t1] where t1: Addable + Subtractable + Comparable + Divisible float";
@@ -707,7 +702,7 @@ mod tests {
             cons: bounds,
             expr: MonoType::Float,
         };
-        assert_eq!(Ok(output), Parse(parse_text));
+        assert_eq!(Ok(output), parse(parse_text));
 
         let parse_text = "forall [t10] where t10: Comparable + Nullable regexp";
 
@@ -724,7 +719,7 @@ mod tests {
             cons: bounds,
             expr: MonoType::Regexp,
         };
-        assert_eq!(Ok(output), Parse(parse_text));
+        assert_eq!(Ok(output), parse(parse_text));
 
         let text = "forall [t0] uint";
         let output = PolyType {
@@ -733,7 +728,7 @@ mod tests {
             expr: MonoType::Uint,
         };
 
-        assert_eq!(Ok(output), Parse(text));
+        assert_eq!(Ok(output), parse(text));
 
         let text = "forall [t0] where t0: Comparable bool";
 
@@ -749,7 +744,7 @@ mod tests {
             expr: MonoType::Bool,
         };
 
-        assert_eq!(Ok(output), Parse(text));
+        assert_eq!(Ok(output), parse(text));
 
         let text = "forall [t1] where t1: Addable + Subtractable int";
 
@@ -766,7 +761,7 @@ mod tests {
             expr: MonoType::Int,
         };
 
-        assert_eq!(Ok(output), Parse(text));
+        assert_eq!(Ok(output), parse(text));
 
         let text =
             "forall [t0, t1] where t0: Equatable + Nullable, t1: Addable + Subtractable string";
@@ -788,7 +783,7 @@ mod tests {
             expr: MonoType::String,
         };
 
-        assert_eq!(Ok(output), Parse(text));
+        assert_eq!(Ok(output), parse(text));
     }
 
     #[test]
@@ -815,7 +810,7 @@ mod tests {
             cons: bounds,
             expr: MonoType::Arr(Box::new(Array(MonoType::Uint))),
         };
-        assert_eq!(Ok(output), Parse(parse_text));
+        assert_eq!(Ok(output), parse(parse_text));
 
         let parse_text = "forall [t0, t1, t2, t3, t4] where t0: Addable, t1: Addable + Subtractable, t2: Addable + Subtractable + Divisible [[time]]";
 
@@ -844,7 +839,7 @@ mod tests {
             )))))),
         };
 
-        assert_eq!(Ok(output), Parse(parse_text));
+        assert_eq!(Ok(output), parse(parse_text));
 
         let text = "forall [t0] where t0: Comparable + Equatable [uint]";
 
@@ -861,7 +856,7 @@ mod tests {
             expr: MonoType::Arr(Box::new(Array(MonoType::Uint))),
         };
 
-        assert_eq!(Ok(output), Parse(text));
+        assert_eq!(Ok(output), parse(text));
 
         let text = "forall [t0] where t0: Addable + Divisible [[duration]]";
 
@@ -881,7 +876,7 @@ mod tests {
             )))))),
         };
 
-        assert_eq!(Ok(output), Parse(text));
+        assert_eq!(Ok(output), parse(text));
     }
 
     #[test]
@@ -917,7 +912,7 @@ mod tests {
             })),
         };
 
-        assert_eq!(Ok(output), Parse(parse_text));
+        assert_eq!(Ok(output), parse(parse_text));
 
         let text = "forall [t0] where t0: Subtractable (x: t0) -> t0";
 
@@ -941,7 +936,7 @@ mod tests {
             })),
         };
 
-        assert_eq!(Ok(output), Parse(text));
+        assert_eq!(Ok(output), parse(text));
 
         let text =
             "forall [t1, t10, t100] where t1: Addable, t10: Subtractable (x: t1, ?y: t10) -> t100";
@@ -973,7 +968,7 @@ mod tests {
             })),
         };
 
-        assert_eq!(Ok(output), Parse(text));
+        assert_eq!(Ok(output), parse(text));
 
         let text = "forall [t0] where t0: Nullable (<-x: t0) -> t0";
 
@@ -999,7 +994,7 @@ mod tests {
             })),
         };
 
-        assert_eq!(Ok(output), Parse(text));
+        assert_eq!(Ok(output), parse(text));
 
         let text = "forall [t0, t1] where t0: Comparable (<-: t0) -> t0";
 
@@ -1025,7 +1020,7 @@ mod tests {
             })),
         };
 
-        assert_eq!(Ok(output), Parse(text));
+        assert_eq!(Ok(output), parse(text));
     }
 
     #[test]
@@ -1065,7 +1060,7 @@ mod tests {
             })),
         };
 
-        assert_eq!(Ok(output), Parse(parse_text));
+        assert_eq!(Ok(output), parse(parse_text));
 
         let text = "forall [t0] where t0: Nullable {}";
 
@@ -1081,7 +1076,7 @@ mod tests {
             expr: MonoType::Row(Box::new(Row::Empty)),
         };
 
-        assert_eq!(Ok(output), Parse(text));
+        assert_eq!(Ok(output), parse(text));
 
         let text = "forall [t0] where t0: Comparable {a: int | b: string | c: bool}";
 
@@ -1115,12 +1110,12 @@ mod tests {
             })),
         };
 
-        assert_eq!(Ok(output), Parse(text));
+        assert_eq!(Ok(output), parse(text));
     }
 
     #[test]
     fn lex_polytypes() {
-        let polytype = Lex("forall [t0] where t0: Addable int");
+        let polytype = lex("forall [t0] where t0: Addable int");
         assert_eq!(
             vec![
                 Token {
@@ -1167,7 +1162,7 @@ mod tests {
             polytype
         );
 
-        let polytype = Lex("forall [t0, t1] where t0: Addable + Subtractable [int]");
+        let polytype = lex("forall [t0, t1] where t0: Addable + Subtractable [int]");
         assert_eq!(
             vec![
                 Token {
@@ -1238,7 +1233,7 @@ mod tests {
             polytype
         );
 
-        let polytype = Lex("forall [t0, t1] where t0: Nullable + Comparable [[time]]");
+        let polytype = lex("forall [t0, t1] where t0: Nullable + Comparable [[time]]");
         assert_eq!(
             vec![
                 Token {
@@ -1317,7 +1312,7 @@ mod tests {
             polytype
         );
 
-        let polytype = Lex("forall [t0, t1] where t1: Comparable + Divisible {first: uint | second: string | third: duration}");
+        let polytype = lex("forall [t0, t1] where t1: Comparable + Divisible {first: uint | second: string | third: duration}");
         assert_eq!(
             vec![
                 Token {
@@ -1429,7 +1424,7 @@ mod tests {
         );
 
         let polytype =
-            Lex("forall [t0, t1] where t1: Addable (x: float, ?y: regexp, <-pipe: t1) -> t1");
+            lex("forall [t0, t1] where t1: Addable (x: float, ?y: regexp, <-pipe: t1) -> t1");
         assert_eq!(
             vec![
                 Token {
@@ -1551,7 +1546,7 @@ mod tests {
 
     #[test]
     fn lex_operators() {
-        let tokens = Lex("{} [] ( ) ? : , + <- <> -> |");
+        let tokens = lex("{} [] ( ) ? : , + <- <> -> |");
         assert_eq!(
             vec![
                 Token {
@@ -1621,7 +1616,7 @@ mod tests {
 
     #[test]
     fn lex_functions() {
-        let function = Lex("(x: bool, ?y: string, <-test: t0) -> t0");
+        let function = lex("(x: bool, ?y: string, <-test: t0) -> t0");
         assert_eq!(
             vec![
                 Token {
@@ -1700,7 +1695,7 @@ mod tests {
             function
         );
 
-        let function = Lex("(onearg: int, ?twoarg: time, <-: t12) -> t12");
+        let function = lex("(onearg: int, ?twoarg: time, <-: t12) -> t12");
         assert_eq!(
             vec![
                 Token {
@@ -1778,7 +1773,7 @@ mod tests {
 
     #[test]
     fn lex_rows() {
-        let row = Lex("{one: time | tWO: t0 | THREE: t1}");
+        let row = lex("{one: time | tWO: t0 | THREE: t1}");
         assert_eq!(
             vec![
                 Token {
@@ -1844,7 +1839,7 @@ mod tests {
 
     #[test]
     fn lex_idents_keywords_and_edge_cases() {
-        let valid_type_var = Lex("t0");
+        let valid_type_var = lex("t0");
         assert_eq!(
             vec![
                 Token {
@@ -1859,7 +1854,7 @@ mod tests {
             valid_type_var
         );
 
-        let idents = Lex("to");
+        let idents = lex("to");
         assert_eq!(
             vec![
                 Token {
@@ -1874,7 +1869,7 @@ mod tests {
             idents
         );
 
-        let keyword = Lex("if");
+        let keyword = lex("if");
         assert_eq!(
             vec![
                 Token {
@@ -1889,7 +1884,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("i3");
+        let keyword = lex("i3");
         assert_eq!(
             vec![
                 Token {
@@ -1904,7 +1899,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("forall");
+        let keyword = lex("forall");
         assert_eq!(
             vec![
                 Token {
@@ -1919,7 +1914,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("floor");
+        let keyword = lex("floor");
         assert_eq!(
             vec![
                 Token {
@@ -1934,7 +1929,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("where");
+        let keyword = lex("where");
         assert_eq!(
             vec![
                 Token {
@@ -1949,7 +1944,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("waits");
+        let keyword = lex("waits");
         assert_eq!(
             vec![
                 Token {
@@ -1964,7 +1959,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("w");
+        let keyword = lex("w");
         assert_eq!(
             vec![
                 Token {
@@ -1979,7 +1974,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("add");
+        let keyword = lex("add");
         assert_eq!(
             vec![
                 Token {
@@ -1994,7 +1989,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("addable");
+        let keyword = lex("addable");
         assert_eq!(
             vec![
                 Token {
@@ -2009,7 +2004,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("itt");
+        let keyword = lex("itt");
         assert_eq!(
             vec![
                 Token {
@@ -2023,7 +2018,7 @@ mod tests {
             ],
             keyword
         );
-        let keyword = Lex("itscool");
+        let keyword = lex("itscool");
         assert_eq!(
             vec![
                 Token {
@@ -2038,7 +2033,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("string");
+        let keyword = lex("string");
         assert_eq!(
             vec![
                 Token {
@@ -2053,7 +2048,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("str");
+        let keyword = lex("str");
         assert_eq!(
             vec![
                 Token {
@@ -2068,7 +2063,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("bool");
+        let keyword = lex("bool");
         assert_eq!(
             vec![
                 Token {
@@ -2083,7 +2078,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("boolean");
+        let keyword = lex("boolean");
         assert_eq!(
             vec![
                 Token {
@@ -2098,7 +2093,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("regexp");
+        let keyword = lex("regexp");
         assert_eq!(
             vec![
                 Token {
@@ -2113,7 +2108,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("reg ");
+        let keyword = lex("reg ");
         assert_eq!(
             vec![
                 Token {
@@ -2128,7 +2123,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("relax");
+        let keyword = lex("relax");
         assert_eq!(
             vec![
                 Token {
@@ -2143,7 +2138,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("forall [t0] ");
+        let keyword = lex("forall [t0] ");
         assert_eq!(
             vec![
                 Token {
@@ -2170,7 +2165,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("forallt");
+        let keyword = lex("forallt");
         assert_eq!(
             vec![
                 Token {
@@ -2185,7 +2180,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("forall [t0] where t0:");
+        let keyword = lex("forall [t0] where t0:");
         assert_eq!(
             vec![
                 Token {
@@ -2224,7 +2219,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("t0:\nfloat");
+        let keyword = lex("t0:\nfloat");
         assert_eq!(
             vec![
                 Token {
@@ -2247,7 +2242,7 @@ mod tests {
             keyword
         );
 
-        let keyword = Lex("reg <-");
+        let keyword = lex("reg <-");
         assert_eq!(
             vec![
                 Token {
