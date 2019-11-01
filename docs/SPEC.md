@@ -271,8 +271,6 @@ Examples:
     2009-10-15T09:00:00       // October 15th 2009 at 9 AM in the default location
     2018-01-01                // midnight on January 1st 2018 in the default location
 
-[IMPL#152](https://github.com/influxdata/flux/issues/152) Implement shorthand time literals
-
 #### String literals
 
 A string literal represents a sequence of characters enclosed in double quotes.
@@ -395,10 +393,16 @@ The `task` option is used by a scheduler to schedule the execution of a Flux que
 
 The `location` option is used to set the default time zone of all times in the script.
 The location maps the UTC offset in use at that location for a given time.
-The default value is set using the time zone of the running process.
+The default value is UTC.
+The value is specified either as the name of a time zone in the IANA Time Zone database or as a fixed offset.
+If the string value is in the format `(+|-)HH:MM` then it will be interpreted as a fixed zone offset.
 
-    option location = fixedZone(offset:-5h) // set timezone to be 5 hours west of UTC
-    option location = loadLocation(name:"America/Denver") // set location to be America/Denver
+    option location = "-05:00" // set location to a fixed offset 5 hours west of UTC
+    option location = "America/Denver" // set location to be America/Denver
+
+    2019-01-01T00:00:00       // midnight in the current location
+    2019-01-01T00:00:00Z      // midnight in utc
+    2019-01-01T00:00:00-05:00 // midnight at a fixed offset 5 hours west of UTC
 
 [IMPL#660](https://github.com/influxdata/platform/issues/660) Implement Location option
 
@@ -457,7 +461,7 @@ Note all numeric types are nullable.
 
 ##### Time types
 
-A _time type_ represents a single point in time with nanosecond precision.
+A _time type_ represents a single point in time with nanosecond precision and a fixed offset from UTC.
 The time type name is `time`.
 The time type is nullable.
 
@@ -1131,6 +1135,7 @@ December  = 12
 ### Time and date functions
 
 These are builtin functions that all take a single `time` argument and return an integer.
+The following functions consider the time offset when returning a value.
 
 * `second` int
     Second returns the second of the minute for the provided time in the range `[0-59]`.
@@ -1284,6 +1289,73 @@ Examples using known start and stop dates:
 
 [IMPL#659](https://github.com/influxdata/platform/issues/659) Implement intervals function
 
+#### Location support
+
+Intervals have location support for changing offsets by default.
+When a location has been specified either with the `location` option or the `location` parameter, a change in offset is used to either expand or shrink an interval.
+The most common example is daylight savings time switches.
+When daylight savings time starts, the zone offset shifts west, becoming a more negative number.
+When this happens, the hour that was lost does not exist and the current window is shortened to accomodate this change.
+When daylight savings time ends, the zone offset shifts east, becoming a more positive number.
+When this happens, one of the hours happens twice and so the interval becomes longer.
+
+Examples:
+
+    intervals(every:1d, location: "America/Denver")
+    // [2019-03-09T00:00:00-07:00, 2019-03-10T00:00:00-07:00)
+    // [2019-03-10T00:00:00-07:00, 2019-03-11T00:00:00-06:00)
+    // [2019-03-11T00:00:00-06:00, 2019-03-12T00:00:00-06:00)
+    // ... skipped ...
+    // [2019-11-02T00:00:00-06:00, 2019-11-03T00:00:00-06:00)
+    // [2019-11-03T00:00:00-06:00, 2019-11-04T00:00:00-07:00)
+    // [2019-11-04T00:00:00-07:00, 2019-11-05T00:00:00-07:00)
+
+    intervals(every:2h, location: "America/Denver")
+    // [2019-03-10T00:00:00-07:00, 2019-03-10T03:00:00-06:00)
+    // [2019-03-10T03:00:00-06:00, 2019-03-10T04:00:00-06:00)
+    // [2019-03-10T04:00:00-06:00, 2019-03-10T06:00:00-06:00)
+    // ... skipped ...
+    // [2019-11-03T00:00:00-06:00, 2019-11-03T02:00:00-07:00)
+    // [2019-11-03T02:00:00-07:00, 2019-11-03T04:00:00-07:00)
+    // [2019-11-04T03:00:00-07:00, 2019-11-03T06:00:00-07:00)
+
+    intervals(every:1h, location: "America/Denver")
+    // [2019-03-10T00:00:00-07:00, 2019-03-10T01:00:00-07:00)
+    // [2019-03-10T01:00:00-07:00, 2019-03-10T03:00:00-06:00)
+    // [2019-03-10T03:00:00-06:00, 2019-03-10T04:00:00-06:00)
+    // [2019-03-10T04:00:00-06:00, 2019-03-10T05:00:00-06:00)
+    // ... skipped ...
+    // [2019-11-03T00:00:00-06:00, 2019-11-03T01:00:00-06:00)
+    // [2019-11-03T01:00:00-06:00, 2019-11-03T02:00:00-07:00)
+    // [2019-11-03T02:00:00-07:00, 2019-11-03T03:00:00-07:00)
+    // [2019-11-03T03:00:00-07:00, 2019-11-03T04:00:00-07:00)
+
+    intervals(every:30m, location: "America/Denver")
+    // [2019-03-10T00:00:00-07:00, 2019-03-10T00:30:00-07:00)
+    // [2019-03-10T00:30:00-07:00, 2019-03-10T01:00:00-07:00)
+    // [2019-03-10T01:00:00-07:00, 2019-03-10T01:30:00-07:00)
+    // [2019-03-10T01:30:00-07:00, 2019-03-10T03:00:00-06:00)
+    // [2019-03-10T03:00:00-06:00, 2019-03-10T03:30:00-06:00)
+    // [2019-03-10T03:30:00-06:00, 2019-03-10T04:00:00-06:00)
+    // ... skipped ...
+    // [2019-11-03T00:00:00-06:00, 2019-11-03T00:30:00-06:00)
+    // [2019-11-03T00:30:00-06:00, 2019-11-03T01:00:00-06:00)
+    // [2019-11-03T01:00:00-06:00, 2019-11-03T01:30:00-06:00), [2019-11-03T01:00:00-07:00, 2019-11-03T01:30:00-07:00)
+    // [2019-11-03T01:30:00-06:00, 2019-11-03T02:00:00-06:00), [2019-11-03T01:30:00-07:00, 2019-11-03T02:00:00-07:00)
+    // [2019-11-03T02:00:00-07:00, 2019-11-03T02:30:00-07:00)
+    // [2019-11-03T02:30:00-07:00, 2019-11-03T03:00:00-07:00)
+    
+    intervals(every:1h, offset:30m, location: "America/Denver")
+    // [2019-03-10T00:30:00-07:00, 2019-03-10T01:30:00-07:00)
+    // [2019-03-10T01:30:00-07:00, 2019-03-10T03:00:00-06:00)
+    // [2019-03-10T03:00:00-06:00, 2019-03-10T03:30:00-06:00)
+    // [2019-03-10T03:30:00-06:00, 2019-03-10T04:30:00-06:00)
+    // ... skipped ...
+    // [2019-11-03T00:30:00-06:00, 2019-11-03T01:30:00-06:00), [2019-11-03T01:00:00-07:00, 2019-11-03T01:30:00-07:00)
+    // [2019-11-03T01:30:00-06:00, 2019-11T01:00:00-07:00), [2019-11-03T02:00:00-07:00, 2019-11-03T02:30:00-07:00)
+    // [2019-11-03T02:30:00-07:00, 2019-11-03T03:30:00-07:00)
+    // [2019-11-03T03:30:00-07:00, 2019-11-03T04:30:00-07:00)
+
 
 ### Builtin Intervals
 
@@ -1300,7 +1372,7 @@ The following builtin intervals exist:
     // 1 day intervals excluding Sundays and Saturdays
     weekdays = intervals(every:1d, filter: (interval) => weekday(time:interval.start) not in [Sunday, Saturday])
     // 1 day intervals including only Sundays and Saturdays
-    weekdends = intervals(every:1d, filter: (interval) => weekday(time:interval.start) in [Sunday, Saturday])
+    weekends = intervals(every:1d, filter: (interval) => weekday(time:interval.start) in [Sunday, Saturday])
     // 1 week intervals
     weeks = intervals(every:1w)
     // 1 month interval
@@ -1310,43 +1382,6 @@ The following builtin intervals exist:
     // 1 year intervals
     years = intervals(every:1y)
 
-
-### FixedZone
-
-FixedZone creates a location based on a fixed time offset from UTC.
-
-
-FixedZone has the following parameters:
-
-| Name   | Type     | Description                                                                                                                    |
-| ----   | ----     | -----------                                                                                                                    |
-| offset | duration | Offset is the offset from UTC for the time zone. Offset must be less than 24h. Defaults to 0, which produces the UTC location. |
-
-Examples:
-
-    fixedZone(offset:-5h) // time zone 5 hours west of UTC
-    fixedZone(offset:4h30m) // time zone 4 and a half hours east of UTC
-
-
-[IMPL#156](https://github.com/influxdata/flux/issues/156) Implement FixedZone function
-
-#### LoadLocation
-
-LoadLoacation loads a locations from a time zone database.
-
-LoadLocation has the following parameters:
-
-| Name | Type   | Description                                                                                                                  |
-| ---- | ----   | -----------                                                                                                                  |
-| name | string | Name is the name of the location to load. The names correspond to names in the [IANA tzdb](https://www.iana.org/time-zones). |
-
-Examples:
-
-    loadLocation(name:"America/Denver")
-    loadLocation(name:"America/Chicago")
-    loadLocation(name:"Africa/Tunis")
-
-[IMPL#157](https://github.com/influxdata/flux/issues/157) Implement LoadLoacation function
 
 ## Data model
 
@@ -1675,6 +1710,7 @@ AggregateWindow has the following properties:
 | timeSrc     | string                                          | TimeSrc is the name of a column from the group key to use as the source for the aggregated time. Defaults to "_stop".                                           |
 | timeDst     | string                                          | TimeDst is the name of a new column in which the aggregated time is placed. Defaults to "_time".                                                                |
 | createEmpty | bool                                            | CreateEmpty, if true, will create empty windows and fill them with a null aggregate value.  Defaults to true.                                                   |
+| location    | string                                          | An optional location that will be passed to `window`. |
 
 _NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
@@ -2802,6 +2838,7 @@ Window has the following properties:
 | startColumn | string                                     | StartColumn is the name of the column containing the window start time. Defaults to `_start`.                                                                                                                                                 |
 | stopColumn  | string                                     | StopColumn is the name of the column containing the window stop time. Defaults to `_stop`.                                                                                                                                                    |
 | createEmpty | bool                                       | CreateEmpty specifies whether empty tables should be created. Defaults to `false`.
+| location    | string                                     | Location specifies a custom location to be used when creating windows. Defaults to the `location` option. |
 
 Example:
 ```
@@ -2814,6 +2851,7 @@ from(bucket:"telegraf/autogen")
 ```
 window(every:1h) // window the data into 1 hour intervals
 window(intervals: intervals(every:1d, period:8h, offset:9h)) // window the data into 8 hour intervals starting at 9AM every day.
+window(every:1d, location: "America/Los_Angeles") // use a different location than the global option.
 ```
 
 #### Pivot
@@ -4210,7 +4248,7 @@ Convert a value to a time.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toTime()`
 
-The function `toTime` is defined as `toTime = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))`.
+The function `toTime` is defined as `toTime = (tables=<-, location="") => tables |> map(fn:(r) => ({r with _value: time(v:r._value,location:location)}))`.
 If you need to convert other columns use the `map` function directly with the `time` function.
 
 ##### toUInt
@@ -4222,8 +4260,6 @@ Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" a
 The function `toUInt` is defined as `toUInt = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._value)}))`.
 If you need to convert other columns use the `map` function directly with the `uint` function.
 
-
-[IMPL#242](https://github.com/influxdata/platform/issues/242) Update specification around type conversion functions.
 
 #### String operations
 
