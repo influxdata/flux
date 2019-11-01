@@ -3,6 +3,7 @@ mod env;
 mod fresh;
 mod infer;
 mod nodes;
+mod parser;
 mod sub;
+mod tests;
 mod types;
-mod parser; 

@@ -21,6 +21,7 @@ derivative = "1.0.3"
 walkdir = "2.2.9"
 
 [dev-dependencies]
+colored = "1.8"
 pretty_assertions = "0.6.1"
 
 [build-dependencies]
