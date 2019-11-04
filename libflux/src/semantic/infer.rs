@@ -66,7 +66,10 @@ pub fn solve(
             }
             Constraint::Equal(t, other) => {
                 // Apply the current substitution to the constraint, then unify
-                let s = t.clone().apply(&sub).unify(other.clone(), with)?;
+                let s = t
+                    .clone()
+                    .apply(&sub)
+                    .unify(other.clone().apply(&sub), with)?;
                 Ok(sub.merge(s))
             }
         })
