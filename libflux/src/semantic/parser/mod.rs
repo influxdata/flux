@@ -295,17 +295,15 @@ impl Parser<'_> {
         let mut cons_map = HashMap::new();
 
         loop {
-            let mut next_token = self.peek();
+            let next_token = self.peek();
 
-            if next_token.token_type == TokenType::COMMA {
-                self.next(); // skip to comma
-                next_token = self.peek(); // look at identifier next
-            }
+            let type_var = self.parse_type_var(&next_token)?;
+            let kinds = self.parse_kinds()?;
 
-            if next_token.token_type == TokenType::IDENTIFIER {
-                let type_var = self.parse_type_var(&next_token)?;
-                let kinds = self.parse_kinds()?;
-                cons_map.insert(type_var, kinds);
+            cons_map.insert(type_var, kinds);
+
+            if self.peek().token_type == TokenType::COMMA {
+                self.next();
             } else {
                 break;
             }
@@ -649,6 +647,18 @@ impl Parser<'_> {
 mod tests {
     use super::*;
 
+    #[test]
+    fn parse_basic_polytype() {
+        let expr = "forall [t0] where t0: Addable t0";
+        assert_eq!(
+            Ok(PolyType {
+                vars: vec![Tvar(0)],
+                cons: maplit::hashmap! {Tvar(0) => vec![Kind::Addable]},
+                expr: MonoType::Var(Tvar(0)),
+            }),
+            parse(expr)
+        );
+    }
     #[test]
     fn parse_primitives_test() {
         let parse_text = "forall [t0] (x: t0, y: float) -> t0";
@@ -1025,7 +1035,7 @@ mod tests {
 
     #[test]
     fn parse_row_test() {
-        let parse_text = "   forall [t1, t2] where t1: Nullable t2: Comparable {test: t1 | testAgain: bool | testLast: [uint]} ";
+        let parse_text = "   forall [t1, t2] where t1: Nullable, t2: Comparable {test: t1 | testAgain: bool | testLast: [uint]} ";
 
         let mut bounds = HashMap::new();
         let mut kinds = Vec::new();
@@ -1115,6 +1125,53 @@ mod tests {
 
     #[test]
     fn lex_polytypes() {
+        let polytype = lex("forall [t0] where t0: Addable t0");
+        assert_eq!(
+            vec![
+                Token {
+                    token_type: TokenType::FORALL,
+                    text: Some("forall".to_string())
+                },
+                Token {
+                    token_type: TokenType::LEFTSQUAREBRAC,
+                    text: None
+                },
+                Token {
+                    token_type: TokenType::IDENTIFIER,
+                    text: Some("t0".to_string())
+                },
+                Token {
+                    token_type: TokenType::RIGHTSQUAREBRAC,
+                    text: None
+                },
+                Token {
+                    token_type: TokenType::WHERE,
+                    text: Some("where".to_string())
+                },
+                Token {
+                    token_type: TokenType::IDENTIFIER,
+                    text: Some("t0".to_string())
+                },
+                Token {
+                    token_type: TokenType::COLON,
+                    text: None
+                },
+                Token {
+                    token_type: TokenType::IDENTIFIER,
+                    text: Some("Addable".to_string())
+                },
+                Token {
+                    token_type: TokenType::IDENTIFIER,
+                    text: Some("t0".to_string())
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    text: None
+                },
+            ],
+            polytype
+        );
+
         let polytype = lex("forall [t0] where t0: Addable int");
         assert_eq!(
             vec![
