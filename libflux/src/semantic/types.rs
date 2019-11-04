@@ -10,7 +10,7 @@ use std::{
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PolyType {
-    pub free: Vec<Tvar>,
+    pub vars: Vec<Tvar>,
     pub cons: HashMap<Tvar, Vec<Kind>>,
     pub expr: MonoType,
 }
@@ -18,7 +18,7 @@ pub struct PolyType {
 impl fmt::Display for PolyType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let vars = &self
-            .free
+            .vars
             .iter()
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
@@ -40,13 +40,13 @@ impl fmt::Display for PolyType {
 impl Substitutable for PolyType {
     fn apply(self, sub: &Substitution) -> Self {
         PolyType {
-            free: self.free,
+            vars: self.vars,
             cons: self.cons,
             expr: self.expr.apply(sub),
         }
     }
     fn free_vars(&self) -> Vec<Tvar> {
-        minus(&self.free, self.expr.free_vars())
+        minus(&self.vars, self.expr.free_vars())
     }
 }
 
@@ -55,12 +55,12 @@ impl PolyType {
     // new fresh variables starting from t0.
     pub fn normalize(self, f: &mut Fresher) -> Self {
         let mut sub = HashMap::new();
-        for tv in &self.free {
+        for tv in &self.vars {
             sub.insert(*tv, f.fresh());
         }
 
         let mut vars = Vec::new();
-        for tv in &self.free {
+        for tv in &self.vars {
             vars.push(*sub.get(tv).unwrap());
         }
 
@@ -76,7 +76,7 @@ impl PolyType {
             .into();
 
         PolyType {
-            free: vars,
+            vars: vars,
             cons: cons,
             expr: self.expr.apply(&sub),
         }
@@ -965,7 +965,7 @@ mod tests {
         assert_eq!(
             "forall [] int",
             PolyType {
-                free: Vec::new(),
+                vars: Vec::new(),
                 cons: HashMap::new(),
                 expr: MonoType::Int,
             }
@@ -974,7 +974,7 @@ mod tests {
         assert_eq!(
             "forall [t0] (x:t0) -> t0",
             PolyType {
-                free: vec![Tvar(0)],
+                vars: vec![Tvar(0)],
                 cons: HashMap::new(),
                 expr: MonoType::Fun(Box::new(Function {
                     req: maplit::hashmap! {
@@ -990,7 +990,7 @@ mod tests {
         assert_eq!(
             "forall [t0, t1] (x:t0, y:t1) -> {x:t0 | y:t1 | {}}",
             PolyType {
-                free: vec![Tvar(0), Tvar(1)],
+                vars: vec![Tvar(0), Tvar(1)],
                 cons: HashMap::new(),
                 expr: MonoType::Fun(Box::new(Function {
                     req: maplit::hashmap! {
@@ -1019,7 +1019,7 @@ mod tests {
         assert_eq!(
             "forall [t0] where t0:Addable (a:t0, b:t0) -> t0",
             PolyType {
-                free: vec![Tvar(0)],
+                vars: vec![Tvar(0)],
                 cons: maplit::hashmap! {Tvar(0) => vec![Kind::Addable]},
                 expr: MonoType::Fun(Box::new(Function {
                     req: maplit::hashmap! {
@@ -1036,7 +1036,7 @@ mod tests {
         assert_eq!(
             "forall [t0, t1] where t0:Addable, t1:Divisible (x:t0, y:t1) -> {x:t0 | y:t1 | {}}",
             PolyType {
-                free: vec![Tvar(0), Tvar(1)],
+                vars: vec![Tvar(0), Tvar(1)],
                 cons: maplit::hashmap! {
                     Tvar(0) => vec![Kind::Addable],
                     Tvar(1) => vec![Kind::Divisible],
@@ -1068,7 +1068,7 @@ mod tests {
         assert_eq!(
             "forall [t0, t1] where t0:Comparable + Equatable, t1:Addable + Divisible (x:t0, y:t1) -> {x:t0 | y:t1 | {}}",
             PolyType {
-                free: vec![Tvar(0), Tvar(1)],
+                vars: vec![Tvar(0), Tvar(1)],
                 cons: maplit::hashmap! {
                     Tvar(0) => vec![Kind::Comparable, Kind::Equatable],
                     Tvar(1) => vec![Kind::Addable, Kind::Divisible],
