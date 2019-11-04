@@ -89,7 +89,7 @@ pub fn generalize(env: &Environment, with: &HashMap<Tvar, Vec<Kind>>, t: MonoTyp
         }
     }
     PolyType {
-        free: vars,
+        vars: vars,
         cons: cons,
         expr: t,
     }
@@ -104,7 +104,7 @@ pub fn generalize(env: &Environment, with: &HashMap<Tvar, Vec<Kind>>, t: MonoTyp
 pub fn instantiate(poly: PolyType, f: &mut Fresher) -> (MonoType, Constraints) {
     // Substitute fresh type variables for all quantified variables
     let sub: Substitution = poly
-        .free_vars()
+        .vars
         .into_iter()
         .map(|tv| (tv, MonoType::Var(f.fresh())))
         .collect::<HashMap<Tvar, MonoType>>()

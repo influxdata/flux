@@ -324,7 +324,7 @@ impl ReturnStmt {
 #[derive(Debug, Derivative, PartialEq, Clone)]
 pub struct VariableAssgn {
     #[derivative(PartialEq = "ignore")]
-    free: Vec<Tvar>,
+    vars: Vec<Tvar>,
 
     #[derivative(PartialEq = "ignore")]
     cons: HashMap<Tvar, Vec<Kind>>,
@@ -338,7 +338,7 @@ pub struct VariableAssgn {
 impl VariableAssgn {
     pub fn new(id: Identifier, init: Expression, loc: ast::SourceLocation) -> VariableAssgn {
         VariableAssgn {
-            free: Vec::new(),
+            vars: Vec::new(),
             cons: HashMap::new(),
             loc,
             id,
@@ -347,7 +347,7 @@ impl VariableAssgn {
     }
     pub fn poly_type_of(&self) -> PolyType {
         PolyType {
-            free: self.free.clone(),
+            vars: self.vars.clone(),
             cons: self.cons.clone(),
             expr: self.init.type_of().clone(),
         }
@@ -378,7 +378,7 @@ impl VariableAssgn {
         //
         // Note these variables are fixed after generalization
         // and so it is safe to update these nodes in place.
-        self.free = p.free.clone();
+        self.vars = p.vars.clone();
         self.cons = p.cons.clone();
 
         // Update the type environment
@@ -895,13 +895,13 @@ mod tests {
         let env = Environment::from(maplit::hashmap! {
             // a = 5
             String::from("a") => PolyType {
-                free: Vec::new(),
+                vars: Vec::new(),
                 cons: HashMap::new(),
                 expr: MonoType::Int,
             },
             // f = (a, b) => 2 * (a + b)
             String::from("f") => PolyType {
-                free: vec![Tvar(0)],
+                vars: vec![Tvar(0)],
                 cons: maplit::hashmap! { Tvar(0) => vec![Kind::Addable, Kind::Divisible]},
                 expr: MonoType::Fun(Box::new(types::Function {
                     req: maplit::hashmap! {
@@ -939,7 +939,7 @@ mod tests {
             normalized,
             maplit::hashmap! {
                 String::from("f") => PolyType {
-                    free: vec![Tvar(0)],
+                    vars: vec![Tvar(0)],
                     cons: maplit::hashmap! { Tvar(0) => vec![Kind::Addable, Kind::Divisible]},
                     expr: MonoType::Fun(Box::new(types::Function {
                         req: maplit::hashmap! {
@@ -952,12 +952,12 @@ mod tests {
                     })),
                 },
                 String::from("a") => PolyType {
-                    free: Vec::new(),
+                    vars: Vec::new(),
                     cons: HashMap::new(),
                     expr: MonoType::Int,
                 },
                 String::from("x") => PolyType {
-                    free: vec![Tvar(0)],
+                    vars: vec![Tvar(0)],
                     cons: maplit::hashmap! { Tvar(0) => vec![Kind::Addable, Kind::Divisible]},
                     expr: MonoType::Fun(Box::new(types::Function {
                         req: maplit::hashmap! {
@@ -970,7 +970,7 @@ mod tests {
                     })),
                 },
                 String::from("y") => PolyType {
-                    free: vec![Tvar(0)],
+                    vars: vec![Tvar(0)],
                     cons: maplit::hashmap! { Tvar(0) => vec![Kind::Addable, Kind::Divisible]},
                     expr: MonoType::Fun(Box::new(types::Function {
                         req: maplit::hashmap! {
@@ -983,7 +983,7 @@ mod tests {
                     })),
                 },
                 String::from("z") => PolyType {
-                    free: Vec::new(),
+                    vars: Vec::new(),
                     cons: HashMap::new(),
                     expr: MonoType::Int,
                 },

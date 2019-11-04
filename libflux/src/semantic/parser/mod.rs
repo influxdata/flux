@@ -232,7 +232,7 @@ impl Parser<'_> {
             return Err("Missing left square bracket");
         }
 
-        let free_vars = self.parse_vars()?;
+        let vars = self.parse_vars()?;
 
         if self.next().token_type != TokenType::RIGHTSQUAREBRAC {
             return Err("Missing right square bracket");
@@ -245,7 +245,7 @@ impl Parser<'_> {
         }
 
         Ok(PolyType {
-            free: free_vars,
+            vars: vars,
             cons: cons,
             expr: self.parse_monotype()?,
         })
@@ -658,7 +658,7 @@ mod tests {
         req_args.insert("y".to_string(), MonoType::Float);
 
         let output = PolyType {
-            free: vec![Tvar(0)],
+            vars: vec![Tvar(0)],
             cons: HashMap::new(),
             expr: MonoType::Fun(Box::new(Function {
                 req: req_args,
@@ -678,7 +678,7 @@ mod tests {
         bounds.insert(Tvar(0), kinds);
 
         let output = PolyType {
-            free: vec![Tvar(0)],
+            vars: vec![Tvar(0)],
             cons: bounds,
             expr: MonoType::Bool,
         };
@@ -698,7 +698,7 @@ mod tests {
         bounds.insert(Tvar(1), kinds);
 
         let output = PolyType {
-            free: vec![Tvar(1)],
+            vars: vec![Tvar(1)],
             cons: bounds,
             expr: MonoType::Float,
         };
@@ -715,7 +715,7 @@ mod tests {
         bounds.insert(Tvar(10), kinds);
 
         let output = PolyType {
-            free: vec![Tvar(10)],
+            vars: vec![Tvar(10)],
             cons: bounds,
             expr: MonoType::Regexp,
         };
@@ -723,7 +723,7 @@ mod tests {
 
         let text = "forall [t0] uint";
         let output = PolyType {
-            free: vec![Tvar(0)],
+            vars: vec![Tvar(0)],
             cons: HashMap::new(),
             expr: MonoType::Uint,
         };
@@ -739,7 +739,7 @@ mod tests {
         bounds.insert(Tvar(0), kinds);
 
         let output = PolyType {
-            free: vec![Tvar(0)],
+            vars: vec![Tvar(0)],
             cons: bounds,
             expr: MonoType::Bool,
         };
@@ -756,7 +756,7 @@ mod tests {
         bounds.insert(Tvar(1), kinds);
 
         let output = PolyType {
-            free: vec![Tvar(1)],
+            vars: vec![Tvar(1)],
             cons: bounds,
             expr: MonoType::Int,
         };
@@ -778,7 +778,7 @@ mod tests {
         bounds.insert(Tvar(1), kinds);
 
         let output = PolyType {
-            free: vec![Tvar(0), Tvar(1)],
+            vars: vec![Tvar(0), Tvar(1)],
             cons: bounds,
             expr: MonoType::String,
         };
@@ -806,7 +806,7 @@ mod tests {
         bounds.insert(Tvar(1), kinds);
 
         let output = PolyType {
-            free: vec![Tvar(0), Tvar(1)],
+            vars: vec![Tvar(0), Tvar(1)],
             cons: bounds,
             expr: MonoType::Arr(Box::new(Array(MonoType::Uint))),
         };
@@ -832,7 +832,7 @@ mod tests {
         bounds.insert(Tvar(2), kinds);
 
         let output = PolyType {
-            free: vec![Tvar(0), Tvar(1), Tvar(2), Tvar(3), Tvar(4)],
+            vars: vec![Tvar(0), Tvar(1), Tvar(2), Tvar(3), Tvar(4)],
             cons: bounds,
             expr: MonoType::Arr(Box::new(Array(MonoType::Arr(Box::new(Array(
                 MonoType::Time,
@@ -851,7 +851,7 @@ mod tests {
         bounds.insert(Tvar(0), kinds);
 
         let output = PolyType {
-            free: vec![Tvar(0)],
+            vars: vec![Tvar(0)],
             cons: bounds,
             expr: MonoType::Arr(Box::new(Array(MonoType::Uint))),
         };
@@ -868,7 +868,7 @@ mod tests {
         bounds.insert(Tvar(0), kinds);
 
         let output = PolyType {
-            free: vec![Tvar(0)],
+            vars: vec![Tvar(0)],
             cons: bounds,
             // An Array of type Array of type Duration
             expr: MonoType::Arr(Box::new(Array(MonoType::Arr(Box::new(Array(
@@ -902,7 +902,7 @@ mod tests {
         });
 
         let output = PolyType {
-            free: vec![Tvar(12)],
+            vars: vec![Tvar(12)],
             cons: bounds,
             expr: MonoType::Fun(Box::new(Function {
                 req: req_arg,
@@ -926,7 +926,7 @@ mod tests {
         req_arg.insert("x".to_string(), MonoType::Var(Tvar(0)));
 
         let output = PolyType {
-            free: vec![Tvar(0)],
+            vars: vec![Tvar(0)],
             cons: bounds,
             expr: MonoType::Fun(Box::new(Function {
                 req: req_arg,
@@ -958,7 +958,7 @@ mod tests {
         opt_args.insert("y".to_string(), MonoType::Var(Tvar(10)));
 
         let output = PolyType {
-            free: vec![Tvar(1), Tvar(10), Tvar(100)],
+            vars: vec![Tvar(1), Tvar(10), Tvar(100)],
             cons: bounds,
             expr: MonoType::Fun(Box::new(Function {
                 req: req_args,
@@ -984,7 +984,7 @@ mod tests {
         });
 
         let output = PolyType {
-            free: vec![Tvar(0)],
+            vars: vec![Tvar(0)],
             cons: bounds,
             expr: MonoType::Fun(Box::new(Function {
                 req: HashMap::new(),
@@ -1010,7 +1010,7 @@ mod tests {
         });
 
         let output = PolyType {
-            free: vec![Tvar(0), Tvar(1)],
+            vars: vec![Tvar(0), Tvar(1)],
             cons: bounds,
             expr: MonoType::Fun(Box::new(Function {
                 req: HashMap::new(),
@@ -1037,7 +1037,7 @@ mod tests {
         bounds.insert(Tvar(2), kinds);
 
         let output = PolyType {
-            free: vec![Tvar(1), Tvar(2)],
+            vars: vec![Tvar(1), Tvar(2)],
             cons: bounds,
             expr: MonoType::Row(Box::new(Row::Extension {
                 head: Property {
@@ -1071,7 +1071,7 @@ mod tests {
         bounds.insert(Tvar(0), kinds);
 
         let output = PolyType {
-            free: vec![Tvar(0)],
+            vars: vec![Tvar(0)],
             cons: bounds,
             expr: MonoType::Row(Box::new(Row::Empty)),
         };
@@ -1087,7 +1087,7 @@ mod tests {
         bounds.insert(Tvar(0), kinds);
 
         let output = PolyType {
-            free: vec![Tvar(0)],
+            vars: vec![Tvar(0)],
             cons: bounds,
             expr: MonoType::Row(Box::new(Row::Extension {
                 head: Property {
