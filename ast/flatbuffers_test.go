@@ -33,9 +33,9 @@ func TestFlatBuffers(t *testing.T) {
 	stmt := fbast.ExpressionStatementEnd(b)
 
 	fbast.WrappedStatementStart(b)
-	fbast.WrappedExpressionAddExprType(b, fbast.StatementExpressionStatement)
-	fbast.WrappedExpressionAddExpr(b, stmt)
-	wrappedStmt := fbast.WrappedExpressionEnd(b)
+	fbast.WrappedStatementAddStatementType(b, fbast.StatementExpressionStatement)
+	fbast.WrappedStatementAddStatement(b, stmt)
+	wrappedStmt := fbast.WrappedStatementEnd(b)
 
 	fbast.FileStartBodyVector(b, 1)
 	b.PrependUOffsetT(wrappedStmt)
