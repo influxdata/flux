@@ -55,6 +55,7 @@ impl From<Constraints> for Vec<Constraint> {
 pub fn solve(
     cons: &Constraints,
     with: &mut HashMap<Tvar, Vec<Kind>>,
+    f: &mut Fresher,
 ) -> Result<Substitution, Error> {
     cons.0
         .iter()
@@ -64,12 +65,11 @@ pub fn solve(
                 let s = t.clone().apply(&sub).constrain(*kind, with)?;
                 Ok(sub.merge(s))
             }
-            Constraint::Equal(t, other) => {
+            Constraint::Equal(t, p) => {
                 // Apply the current substitution to the constraint, then unify
-                let s = t
-                    .clone()
-                    .apply(&sub)
-                    .unify(other.clone().apply(&sub), with)?;
+                let l = t.clone().apply(&sub);
+                let r = p.clone().apply(&sub);
+                let s = l.unify(r, with, f)?;
                 Ok(sub.merge(s))
             }
         })
