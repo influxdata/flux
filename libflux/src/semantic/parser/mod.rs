@@ -567,75 +567,48 @@ impl Parser<'_> {
         }
     }
 
+    fn parse_property(&mut self, name: String) -> Result<Property, &'static str> {
+        self.next(); // colon
+        Ok(Property {
+            k: name,
+            v: self.parse_monotype()?,
+        })
+    }
+
+    fn parse_record(&mut self, token: &Token) -> Result<MonoType, &'static str> {
+        match token.token_type {
+            TokenType::RIGHTCURLYBRAC => Ok(MonoType::Row(Box::new(Row::Empty))),
+            TokenType::WITH => {
+                let tok = self.next();
+                self.parse_record(&tok)
+            }
+            TokenType::IDENTIFIER => match self.peek().token_type {
+                TokenType::COLON => {
+                    let name = match &token.text {
+                        Some(name) => Ok(name.to_owned()),
+                        None => Err(""),
+                    }?;
+                    let prop = self.parse_property(name)?;
+                    let tok = self.next();
+                    Ok(MonoType::Row(Box::new(Row::Extension {
+                        head: prop,
+                        tail: self.parse_record(&tok)?,
+                    })))
+                }
+                _ => Ok(MonoType::Var(self.parse_type_var(token)?)),
+            },
+            _ => Err("invalid token in row"),
+        }
+    }
+
     // parse_row parses a row monotype as a series of nested row extensions
     fn parse_row(&mut self, token: &Token) -> Result<MonoType, &'static str> {
         if token.token_type != TokenType::LEFTCURLYBRAC {
             return Err("Not a valid row monotype");
         }
         self.next(); // move to left curly brac
-
-        let mut token = self.next(); // move to variable string
-
-        if token.token_type != TokenType::IDENTIFIER {
-            if token.token_type == TokenType::RIGHTCURLYBRAC {
-                return Ok(MonoType::Row(Box::new(Row::Empty)));
-            } else {
-                return Err("Row monotype must start with row name or contain a type variable");
-            }
-        }
-
-        let mut row_stack = vec![];
-        while token.token_type != TokenType::RIGHTCURLYBRAC {
-            if token.token_type != TokenType::IDENTIFIER {
-                return Err("Row variable names must have text");
-            }
-
-            let variable = token.text.clone();
-            if variable.is_none() {
-                return Err("Row variable names must have text");
-            }
-            token = self.next();
-
-            if token.token_type != TokenType::COLON {
-                return Err("Invalid row syntax: no colon after variable name");
-            }
-
-            if let Ok(monotype) = self.parse_monotype() {
-                let property = Property {
-                    k: variable.unwrap(),
-                    v: monotype,
-                };
-
-                row_stack.push(property);
-            } else {
-                return Err("Row monotypes must be valid");
-            }
-
-            token = self.next();
-            if token.token_type == TokenType::WITH {
-                token = self.next();
-            }
-        }
-
-        let mut inner_prop = None;
-        while let Some(outer_prop) = row_stack.pop() {
-            if inner_prop.is_none() {
-                inner_prop = Some(MonoType::Row(Box::new(Row::Extension {
-                    head: outer_prop,
-                    tail: MonoType::Row(Box::new(Row::Empty)),
-                })));
-                continue;
-            }
-
-            inner_prop = Some(MonoType::Row(Box::new(Row::Extension {
-                head: outer_prop,
-                tail: inner_prop.unwrap(),
-            })));
-        }
-        match inner_prop {
-            None => Err("Unable to parse row MonoType"),
-            Some(rows) => Ok(rows),
-        }
+        let token = self.next();
+        self.parse_record(&token)
     }
 }
 
@@ -1027,6 +1000,31 @@ mod tests {
         };
 
         assert_eq!(Ok(output), parse(text));
+    }
+
+    #[test]
+    fn parse_row_variable() {
+        let expr = "forall [t0] {a: int | b: float | t0}";
+        assert_eq!(
+            Ok(PolyType {
+                vars: vec![Tvar(0)],
+                cons: HashMap::new(),
+                expr: MonoType::Row(Box::new(Row::Extension {
+                    head: Property {
+                        k: "a".to_string(),
+                        v: MonoType::Int
+                    },
+                    tail: MonoType::Row(Box::new(Row::Extension {
+                        head: Property {
+                            k: "b".to_string(),
+                            v: MonoType::Float,
+                        },
+                        tail: MonoType::Var(Tvar(0)),
+                    })),
+                })),
+            }),
+            parse(expr)
+        );
     }
 
     #[test]
