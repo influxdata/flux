@@ -266,8 +266,19 @@ impl Substitutable for MonoType {
     }
 }
 
+impl From<Row> for MonoType {
+    fn from(r: Row) -> MonoType {
+        MonoType::Row(Box::new(r))
+    }
+}
+
 impl MonoType {
-    pub fn unify(self, with: Self, cons: &mut TvarKinds) -> Result<Substitution, Error> {
+    pub fn unify(
+        self,
+        with: Self,
+        cons: &mut TvarKinds,
+        f: &mut Fresher,
+    ) -> Result<Substitution, Error> {
         match (self, with) {
             (MonoType::Bool, MonoType::Bool)
             | (MonoType::Int, MonoType::Int)
@@ -279,8 +290,8 @@ impl MonoType {
             | (MonoType::Regexp, MonoType::Regexp) => Ok(Substitution::empty()),
             (MonoType::Var(tv), t) => tv.unify(t, cons),
             (t, MonoType::Var(tv)) => tv.unify(t, cons),
-            (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(*s, cons),
-            (MonoType::Row(t), MonoType::Row(s)) => t.unify(*s, cons),
+            (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(*s, cons, f),
+            (MonoType::Row(t), MonoType::Row(s)) => t.unify(*s, cons, f),
             (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(*s, cons),
             (t, with) => Err(Error::cannot_unify(&t, &with)),
         }
@@ -461,8 +472,13 @@ impl Substitutable for Array {
 }
 
 impl Array {
-    fn unify(self, with: Self, cons: &mut TvarKinds) -> Result<Substitution, Error> {
-        self.0.unify(with.0, cons)
+    fn unify(
+        self,
+        with: Self,
+        cons: &mut TvarKinds,
+        f: &mut Fresher,
+    ) -> Result<Substitution, Error> {
+        self.0.unify(with.0, cons, f)
     }
 
     fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
@@ -524,8 +540,131 @@ impl Substitutable for Row {
 }
 
 impl Row {
-    fn unify(self, _: Self, _: &mut TvarKinds) -> Result<Substitution, Error> {
-        unimplemented!();
+    // Below are the rules for record unification. In what follows monotypes
+    // are denoted using lowercase letters, and type variables are denoted
+    // by a lowercase letter preceded by an apostrophe `'`.
+    //
+    // `t = u` is read as:
+    //
+    //     type t unifies with type u
+    //
+    // `t = u => a = b` is read as:
+    //
+    //     if t unifies with u, then a must unify with b
+    //
+    // 1. Two empty records always unify, producing an empty substitution.
+    // 2. {a: t | 'r} = {b: u | 'r} => error
+    // 3. {a: t | 'r} = {a: u | 'r} => t = u
+    // 4. {a: t |  r} = {a: u |  s} => t = u, r = s
+    // 5. {a: t |  r} = {b: u |  s} => r = {b: u | 'v}, s = {a: t | 'v}
+    //
+    // Note rule 2. states that if two records extend the same type variable
+    // they must have the same property name otherwise they cannot unify.
+    //
+    fn unify(
+        self,
+        with: Self,
+        cons: &mut TvarKinds,
+        f: &mut Fresher,
+    ) -> Result<Substitution, Error> {
+        match (self, with) {
+            (Row::Empty, Row::Empty) => Ok(Substitution::empty()),
+            (
+                Row::Extension {
+                    head: Property { k: a, v: t },
+                    tail: MonoType::Var(l),
+                },
+                Row::Extension {
+                    head: Property { k: b, v: u },
+                    tail: MonoType::Var(r),
+                },
+            ) => {
+                if l == r {
+                    if a != b {
+                        let l = Row::Extension {
+                            head: Property { k: a, v: t },
+                            tail: MonoType::Var(l),
+                        };
+                        let r = Row::Extension {
+                            head: Property { k: b, v: u },
+                            tail: MonoType::Var(r),
+                        };
+                        Err(Error::cannot_unify(&l, &r))
+                    } else {
+                        t.unify(u, cons, f)
+                    }
+                } else {
+                    if a == b {
+                        let lv = MonoType::Var(l);
+                        let rv = MonoType::Var(r);
+                        let sub = t.unify(u, cons, f)?;
+                        apply_then_unify(lv, rv, sub, cons, f)
+                    } else {
+                        let var = f.fresh();
+                        let sub = l.unify(
+                            MonoType::from(Row::Extension {
+                                head: Property { k: b, v: u },
+                                tail: MonoType::Var(var),
+                            }),
+                            cons,
+                        )?;
+                        apply_then_unify(
+                            MonoType::Var(r),
+                            MonoType::from(Row::Extension {
+                                head: Property { k: a, v: t },
+                                tail: MonoType::Var(var),
+                            }),
+                            sub,
+                            cons,
+                            f,
+                        )
+                    }
+                }
+            }
+            (
+                Row::Extension {
+                    head: Property { k: a, v: t },
+                    tail: l,
+                },
+                Row::Extension {
+                    head: Property { k: b, v: u },
+                    tail: r,
+                },
+            ) => {
+                if a == b {
+                    let sub = t.unify(u, cons, f)?;
+                    apply_then_unify(l, r, sub, cons, f)
+                } else {
+                    let var = f.fresh();
+                    let sub = l.unify(
+                        MonoType::from(Row::Extension {
+                            head: Property { k: b, v: u },
+                            tail: MonoType::Var(var),
+                        }),
+                        cons,
+                        f,
+                    )?;
+                    apply_then_unify(
+                        r,
+                        MonoType::from(Row::Extension {
+                            head: Property { k: a, v: t },
+                            tail: MonoType::Var(var),
+                        }),
+                        sub,
+                        cons,
+                        f,
+                    )
+                }
+            }
+            (Row::Empty, Row::Extension { head, tail }) => Err(Error::cannot_unify(
+                &Row::Empty,
+                &Row::Extension { head, tail },
+            )),
+            (Row::Extension { head, tail }, Row::Empty) => Err(Error::cannot_unify(
+                &Row::Empty,
+                &Row::Extension { head, tail },
+            )),
+        }
     }
 
     fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
@@ -568,6 +707,25 @@ impl Row {
             }
         }
     }
+}
+
+// Unification requires that the current substitution be applied
+// to both sides of a constraint before unifying.
+//
+// This helper function applies a substitution to a constraint
+// before unifying the two types. Note the substitution produced
+// from unification is merged with input substitution before it
+// is returned.
+//
+fn apply_then_unify(
+    l: MonoType,
+    r: MonoType,
+    sub: Substitution,
+    cons: &mut TvarKinds,
+    f: &mut Fresher,
+) -> Result<Substitution, Error> {
+    let s = l.apply(&sub).unify(r.apply(&sub), cons, f)?;
+    Ok(sub.merge(s))
 }
 
 // A key value pair representing a property type in a record
@@ -1169,14 +1327,14 @@ mod tests {
     #[test]
     fn unify_ints() {
         let sub = MonoType::Int
-            .unify(MonoType::Int, &mut HashMap::new())
+            .unify(MonoType::Int, &mut HashMap::new(), &mut Fresher::new())
             .unwrap();
         assert_eq!(sub, Substitution::empty());
     }
     #[test]
     fn unify_error() {
         let err = MonoType::Int
-            .unify(MonoType::String, &mut HashMap::new())
+            .unify(MonoType::String, &mut HashMap::new(), &mut Fresher::new())
             .unwrap_err();
         assert_eq!(
             err.to_string(),
@@ -1186,7 +1344,11 @@ mod tests {
     #[test]
     fn unify_tvars() {
         let sub = MonoType::Var(Tvar(0))
-            .unify(MonoType::Var(Tvar(1)), &mut HashMap::new())
+            .unify(
+                MonoType::Var(Tvar(1)),
+                &mut HashMap::new(),
+                &mut Fresher::new(),
+            )
             .unwrap();
         assert_eq!(
             sub,
@@ -1197,7 +1359,7 @@ mod tests {
     fn unify_constrained_tvars() {
         let mut cons = maplit::hashmap! {Tvar(0) => vec![Kind::Addable, Kind::Divisible]};
         let sub = MonoType::Var(Tvar(0))
-            .unify(MonoType::Var(Tvar(1)), &mut cons)
+            .unify(MonoType::Var(Tvar(1)), &mut cons, &mut Fresher::new())
             .unwrap();
         assert_eq!(
             sub,

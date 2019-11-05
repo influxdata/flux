@@ -186,7 +186,7 @@ pub fn infer_pkg_types(
     f: &mut Fresher,
 ) -> std::result::Result<(Environment, Substitution), Error> {
     let (env, cons) = pkg.infer(env, f)?;
-    Ok((env, infer::solve(&cons, &mut HashMap::new())?))
+    Ok((env, infer::solve(&cons, &mut HashMap::new(), f)?))
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -327,7 +327,7 @@ pub struct ExprStmt {
 impl ExprStmt {
     fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
         let (env, cons) = self.expression.infer(env, f)?;
-        let sub = infer::solve(&cons, &mut HashMap::new())?;
+        let sub = infer::solve(&cons, &mut HashMap::new(), f)?;
         Ok((env.apply(&sub), cons))
     }
 }
@@ -389,7 +389,7 @@ impl VariableAssgn {
         let (env, constraints) = self.init.infer(env, f)?;
 
         let mut kinds = HashMap::new();
-        let sub = infer::solve(&constraints, &mut kinds)?;
+        let sub = infer::solve(&constraints, &mut kinds, f)?;
 
         // Apply substitution to the type environment
         let mut env = env.apply(&sub);
@@ -644,8 +644,24 @@ pub struct MemberExpr {
 }
 
 impl MemberExpr {
-    fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        unimplemented!();
+    // A member expression such as `r.a` produces the constraint:
+    //
+    //     type_of(r) = {a: type_of(r.a) | 'r}
+    //
+    // where 'r is a fresh type variable.
+    //
+    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
+        let head = types::Property {
+            k: self.property.to_owned(),
+            v: self.typ.to_owned(),
+        };
+        let tail = MonoType::Var(f.fresh());
+
+        let r = MonoType::from(types::Row::Extension { head, tail });
+        let t = self.object.type_of().to_owned();
+
+        let (env, cons) = self.object.infer(env, f)?;
+        Ok((env, cons + vec![Constraint::Equal(t, r)].into()))
     }
 }
 
@@ -678,8 +694,36 @@ pub struct ObjectExpr {
 }
 
 impl ObjectExpr {
-    fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        unimplemented!();
+    fn infer(&mut self, mut env: Environment, f: &mut Fresher) -> Result {
+        // If record extension, infer constraints for base
+        let (mut r, mut cons) = match &mut self.with {
+            Some(expr) => {
+                let (e, cons) = expr.infer(env, f)?;
+                env = e;
+                (expr.typ.to_owned(), cons)
+            }
+            None => (
+                MonoType::Row(Box::new(types::Row::Empty)),
+                Constraints::empty(),
+            ),
+        };
+        // Infer constraints for properties
+        for prop in self.properties.iter_mut().rev() {
+            let (e, rest) = prop.value.infer(env, f)?;
+            env = e;
+            cons = cons + rest;
+            r = MonoType::Row(Box::new(types::Row::Extension {
+                head: types::Property {
+                    k: prop.key.name.to_owned(),
+                    v: prop.value.type_of().to_owned(),
+                },
+                tail: r,
+            }));
+        }
+        Ok((
+            env,
+            cons + vec![Constraint::Equal(self.typ.to_owned(), r)].into(),
+        ))
     }
 }
 

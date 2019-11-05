@@ -223,3 +223,72 @@ fn undeclared_variable() {
         src: "x = f",
     }
 }
+#[test]
+fn member_expression() {
+    test_infer! {
+        env: &[
+            ("r", "forall [] {a: int | b: float | c: string}"),
+        ],
+        src: r#"
+            a = r.a
+            b = r.b
+            c = r.c
+        "#,
+        exp: &[
+            ("a", "forall [] int"),
+            ("b", "forall [] float"),
+            ("c", "forall [] string"),
+        ],
+    }
+}
+#[test]
+fn non_existent_property() {
+    test_infer_err! {
+        env: &[
+            ("r", "forall [] {a: int | b: float | c: string}"),
+        ],
+        src: "r.d",
+    }
+}
+#[test]
+fn derived_record_lit() {
+    test_infer! {
+        env: &[
+            ("r", "forall [] {a: int | b: float | c: string}"),
+        ],
+        src: r#"
+            o = {x: r.a, y: r.b, z: r.c}
+        "#,
+        exp: &[
+            ("o", "forall [] {x: int | y: float | z: string}")
+        ],
+    }
+}
+#[test]
+fn record_extension_0() {
+    test_infer! {
+        env: &[
+            ("r", "forall [] {a: int | b: float | c: string}"),
+        ],
+        src: r#"
+            o = {r with x: r.a}
+        "#,
+        exp: &[
+            ("o", "forall [] {x: int | a: int | b: float | c: string}")
+        ],
+    }
+}
+#[test]
+fn record_extension_1() {
+    test_infer! {
+        env: &[
+            ("r", "forall [t0] {a: int | b: float | t0}"),
+        ],
+        src: r#"
+            o = {r with x: r.a}
+        "#,
+        exp: &[
+            ("o", "forall [t0] {x: int | a: int | b: float | t0}")
+        ],
+    }
+}
