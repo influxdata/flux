@@ -20,7 +20,6 @@ use crate::semantic::{
     types::{Array, Function, Kind, MonoType, PolyType, Tvar},
 };
 
-use crate::semantic::types::Kind::*;
 use chrono::prelude::DateTime;
 use chrono::Duration;
 use chrono::FixedOffset;
@@ -183,14 +182,14 @@ impl Expression {
             Expression::Call(e) => e.infer(env, f),
             Expression::Conditional(e) => e.infer(env, f),
             Expression::StringExpr(e) => e.infer(env, f),
-            Expression::Integer(lit) => lit.infer(env, f),
-            Expression::Float(lit) => lit.infer(env, f),
-            Expression::StringLit(lit) => lit.infer(env, f),
-            Expression::Duration(lit) => lit.infer(env, f),
-            Expression::Uint(lit) => lit.infer(env, f),
-            Expression::Boolean(lit) => lit.infer(env, f),
-            Expression::DateTime(lit) => lit.infer(env, f),
-            Expression::Regexp(lit) => lit.infer(env, f),
+            Expression::Integer(lit) => lit.infer(env),
+            Expression::Float(lit) => lit.infer(env),
+            Expression::StringLit(lit) => lit.infer(env),
+            Expression::Duration(lit) => lit.infer(env),
+            Expression::Uint(lit) => lit.infer(env),
+            Expression::Boolean(lit) => lit.infer(env),
+            Expression::DateTime(lit) => lit.infer(env),
+            Expression::Regexp(lit) => lit.infer(env),
         }
     }
 }
@@ -397,6 +396,7 @@ pub struct ReturnStmt {
 }
 
 impl ReturnStmt {
+    #[allow(dead_code)]
     fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
         self.argument.infer(env, f)
     }
@@ -1135,7 +1135,7 @@ pub struct BooleanLit {
 }
 
 impl BooleanLit {
-    fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&self, env: Environment) -> Result {
         return infer_literal(env, &self.typ, MonoType::Bool);
     }
 }
@@ -1151,7 +1151,7 @@ pub struct IntegerLit {
 }
 
 impl IntegerLit {
-    fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&self, env: Environment) -> Result {
         return infer_literal(env, &self.typ, MonoType::Int);
     }
 }
@@ -1167,7 +1167,7 @@ pub struct FloatLit {
 }
 
 impl FloatLit {
-    fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&self, env: Environment) -> Result {
         return infer_literal(env, &self.typ, MonoType::Float);
     }
 }
@@ -1184,7 +1184,7 @@ pub struct RegexpLit {
 }
 
 impl RegexpLit {
-    fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&self, env: Environment) -> Result {
         return infer_literal(env, &self.typ, MonoType::Regexp);
     }
 }
@@ -1200,7 +1200,7 @@ pub struct StringLit {
 }
 
 impl StringLit {
-    fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&self, env: Environment) -> Result {
         return infer_literal(env, &self.typ, MonoType::String);
     }
 }
@@ -1216,7 +1216,7 @@ pub struct UintLit {
 }
 
 impl UintLit {
-    fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&self, env: Environment) -> Result {
         return infer_literal(env, &self.typ, MonoType::Uint);
     }
 }
@@ -1232,7 +1232,7 @@ pub struct DateTimeLit {
 }
 
 impl DateTimeLit {
-    fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&self, env: Environment) -> Result {
         return infer_literal(env, &self.typ, MonoType::Time);
     }
 }
@@ -1248,7 +1248,7 @@ pub struct DurationLit {
 }
 
 impl DurationLit {
-    fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&self, env: Environment) -> Result {
         return infer_literal(env, &self.typ, MonoType::Duration);
     }
 }
