@@ -129,6 +129,30 @@ impl Expression {
             Expression::Regexp(lit) => &lit.typ,
         }
     }
+    pub fn loc(&self) -> &ast::SourceLocation {
+        match self {
+            Expression::Identifier(e) => &e.loc,
+            Expression::Array(e) => &e.loc,
+            Expression::Function(e) => &e.loc,
+            Expression::Logical(e) => &e.loc,
+            Expression::Object(e) => &e.loc,
+            Expression::Member(e) => &e.loc,
+            Expression::Index(e) => &e.loc,
+            Expression::Binary(e) => &e.loc,
+            Expression::Unary(e) => &e.loc,
+            Expression::Call(e) => &e.loc,
+            Expression::Conditional(e) => &e.loc,
+            Expression::StringExpr(e) => &e.loc,
+            Expression::Integer(lit) => &lit.loc,
+            Expression::Float(lit) => &lit.loc,
+            Expression::StringLit(lit) => &lit.loc,
+            Expression::Duration(lit) => &lit.loc,
+            Expression::Uint(lit) => &lit.loc,
+            Expression::Boolean(lit) => &lit.loc,
+            Expression::DateTime(lit) => &lit.loc,
+            Expression::Regexp(lit) => &lit.loc,
+        }
+    }
     fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
         match self {
             Expression::Identifier(e) => e.infer(env, f),
@@ -515,6 +539,13 @@ impl Block {
                 Ok((env, cons + rest))
             }
             Block::Return(e) => e.infer(env, f),
+        }
+    }
+    pub fn loc(&self) -> &ast::SourceLocation {
+        match self {
+            Block::Variable(ass, _) => &ass.loc,
+            Block::Expr(es, _) => es.expression.loc(),
+            Block::Return(expr) => expr.loc(),
         }
     }
 }
