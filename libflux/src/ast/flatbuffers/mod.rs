@@ -1,3 +1,4 @@
+#[allow(non_snake_case,unused)]
 mod ast_generated;
 
 use std::cell::RefCell;
@@ -18,7 +19,7 @@ pub fn serialize(ast_pkg: &ast::Package) -> Result<(Vec<u8>, usize), String> {
     v.finish()
 }
 
-fn new_serializing_visitor_with_capacity<'a>(capacity: usize) -> SerializingVisitor<'a> {
+fn new_serializing_visitor_with_capacity<'a>(_capacity: usize) -> SerializingVisitor<'a> {
     SerializingVisitor {
         inner: Rc::new(RefCell::new(SerializingVisitorState::new_with_capacity(
             1024,
@@ -533,14 +534,14 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                     .push((be.as_union_value(), fbast::Expression::BadExpression));
             }
             walk::Node::VariableAssgn(_) => {
-                let (init_, init__type) = v.pop_expr();
+                let (init_, init_type) = v.pop_expr();
                 let id = v.pop_expr_with_kind(fbast::Expression::Identifier);
                 let va = fbast::VariableAssignment::create(
                     &mut v.builder,
                     &fbast::VariableAssignmentArgs {
                         base_node,
                         id,
-                        init__type,
+                        init__type: init_type,
                         init_,
                     },
                 );
@@ -548,14 +549,14 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                     .push((va.as_union_value(), fbast::Statement::VariableAssignment));
             }
             walk::Node::MemberAssgn(_) => {
-                let (init_, init__type) = v.pop_expr();
+                let (init_, init_type) = v.pop_expr();
                 let member = v.pop_expr_with_kind(fbast::Expression::MemberExpression);
                 let ma = fbast::MemberAssignment::create(
                     &mut v.builder,
                     &fbast::MemberAssignmentArgs {
                         base_node,
                         member,
-                        init__type,
+                        init__type: init_type,
                         init_,
                     },
                 );
@@ -898,6 +899,8 @@ impl<'a> SerializingVisitorState<'a> {
     }
 }
 
+// This is a convenience function for debugging.
+#[allow(dead_code)]
 fn print_expr_stack(st: &Vec<(WIPOffset<UnionWIPOffset>, fbast::Expression)>) {
     if st.len() == 0 {
         return;
