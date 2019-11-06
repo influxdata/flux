@@ -251,7 +251,7 @@ fn non_existent_property() {
     }
 }
 #[test]
-fn derived_record_lit() {
+fn derived_record_literal() {
     test_infer! {
         env: &[
             ("r", "forall [] {a: int | b: float | c: string}"),
@@ -265,7 +265,7 @@ fn derived_record_lit() {
     }
 }
 #[test]
-fn record_extension_0() {
+fn extend_record_literal() {
     test_infer! {
         env: &[
             ("r", "forall [] {a: int | b: float | c: string}"),
@@ -279,7 +279,7 @@ fn record_extension_0() {
     }
 }
 #[test]
-fn record_extension_1() {
+fn extend_generic_record() {
     test_infer! {
         env: &[
             ("r", "forall [t0] {a: int | b: float | t0}"),
@@ -289,6 +289,26 @@ fn record_extension_1() {
         "#,
         exp: &[
             ("o", "forall [t0] {x: int | a: int | b: float | t0}")
+        ],
+    }
+}
+#[test]
+fn record_with_scoped_labels() {
+    test_infer! {
+        env: &[
+            ("r", "forall [t0] {a: int | b: float | t0}"),
+            ("x", "forall [] int"),
+            ("y", "forall [] float"),
+        ],
+        src: r#"
+            u = {r with a: x}
+            v = {r with a: y}
+            w = {r with b: x}
+        "#,
+        exp: &[
+            ("u", "forall [t0] {a: int   | a: int | b: float | t0}"),
+            ("v", "forall [t0] {a: float | a: int | b: float | t0}"),
+            ("w", "forall [t0] {b: int   | a: int | b: float | t0}"),
         ],
     }
 }
