@@ -33,6 +33,7 @@ use crate::semantic::types::PolyType;
 use crate::ast;
 use crate::parser::parse_string;
 
+#[cfg(test)]
 use colored::*;
 
 fn parse_program(src: &str) -> ast::Package {
@@ -113,14 +114,16 @@ macro_rules! test_infer {
             .collect();
 
         if want != got {
-            panic!("\n\n{}\n\n{}\n{}\n{}\n{}\n",
+            panic!(
+                "\n\n{}\n\n{}\n{}\n{}\n{}\n",
                 "unexpected types:".red().bold(),
                 "want:".green().bold(),
                 want.iter().fold(String::new(), |acc, (name, poly)| acc
                     + &format!("\t{}: {}\n", name, poly)),
                 "got:".red().bold(),
                 got.iter().fold(String::new(), |acc, (name, poly)| acc
-                    + &format!("\t{}: {}\n", name, poly)),)
+                    + &format!("\t{}: {}\n", name, poly)),
+            )
         }
     }};
     ( src: $src:expr, exp: $exp:expr $(,)? ) => {{
@@ -168,10 +171,16 @@ macro_rules! test_infer_err {
             Environment::new(m.into()),
             &mut f,
         ) {
-            panic!("\n\n{}\n\n{}\n",
-                "expected type error but instead inferred the following types:".red().bold(),
-                env.values.iter().fold(String::new(), |acc, (name, poly)| acc
-                    + &format!("\t{}: {}\n", name, poly)))
+            panic!(
+                "\n\n{}\n\n{}\n",
+                "expected type error but instead inferred the following types:"
+                    .red()
+                    .bold(),
+                env.values
+                    .iter()
+                    .fold(String::new(), |acc, (name, poly)| acc
+                        + &format!("\t{}: {}\n", name, poly))
+            )
         };
     }};
     ( src: $src:expr $(,)? ) => {{
