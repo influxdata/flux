@@ -6,13 +6,10 @@ import "experimental"
 // The HTTP status code is returned.
 builtin post
 
-// Get submits an HTTP get request to the specified URL with headers
-// Mirrors original http post. The HTTP status code is returned.
+// Get submits an HTTP get request to the specified URL with headers and different returns based on responseType
+// At a minimum, HTTP status code is returned. BODY and ALL (which includes the response headers) are also options
 builtin get
 
-// GetWithBody submits an HTTP get request to specified URL with headers
-// HTTP status code and body (up to max size) is returned.
-builtin getWithBody
 
 // basicAuth will take a username/password combination and return the authorization
 // header value.
