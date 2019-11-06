@@ -499,7 +499,7 @@ impl Array {
 // variable. A row variable is a type variable that
 // represents an unknown record type.
 //
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Row {
     Empty,
     Extension { head: Property, tail: MonoType },
@@ -508,16 +508,8 @@ pub enum Row {
 impl fmt::Display for Row {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str("{")?;
-        self.display(f)?;
+        self.format(f)?;
         f.write_str("}")
-    }
-}
-
-impl cmp::PartialEq for Row {
-    fn eq(&self, other: &Self) -> bool {
-        let mut l = HashMap::new();
-        let mut r = HashMap::new();
-        self.flatten(&mut l) == other.flatten(&mut r) && l == r
     }
 }
 
@@ -678,33 +670,17 @@ impl Row {
         }
     }
 
-    // Display a row type in flattened format
-    fn display(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn format(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Row::Empty => f.write_str("{}"),
-            Row::Extension { head, tail } => {
-                write!(f, "{} | ", head)?;
-                match tail {
-                    MonoType::Var(tvr) => write!(f, "{}", tvr),
-                    MonoType::Row(obj) => obj.display(f),
-                    _ => Err(fmt::Error),
+            Row::Extension { head, tail } => match tail {
+                MonoType::Var(_) => write!(f, "{} | {}", head, tail),
+                MonoType::Row(obj) => {
+                    write!(f, "{} | ", head)?;
+                    obj.format(f)
                 }
-            }
-        }
-    }
-
-    // Flatten a record type into a hashmap of property names and types
-    fn flatten(&self, props: &mut HashMap<String, MonoType>) -> Option<Tvar> {
-        match self {
-            Row::Empty => None,
-            Row::Extension { head, tail } => {
-                props.insert(head.k.clone(), head.v.clone());
-                match tail {
-                    MonoType::Row(obj) => obj.flatten(props),
-                    MonoType::Var(tvr) => Some(*tvr),
-                    _ => panic!("tail of row must be either a row variable or another row"),
-                }
-            }
+                _ => Err(fmt::Error),
+            },
         }
     }
 }
@@ -1256,71 +1232,6 @@ mod tests {
                 })),
             }
             .to_string(),
-        );
-    }
-
-    #[test]
-    // Ensure any two permutations of the same record are equal
-    fn compare_records() {
-        assert_eq!(
-            // {a:int | b:string | t0}
-            MonoType::Row(Box::new(Row::Extension {
-                head: Property {
-                    k: String::from("a"),
-                    v: MonoType::Int,
-                },
-                tail: MonoType::Row(Box::new(Row::Extension {
-                    head: Property {
-                        k: String::from("b"),
-                        v: MonoType::String,
-                    },
-                    tail: MonoType::Var(Tvar(0)),
-                })),
-            })),
-            // {b:string | a:int | t0}
-            MonoType::Row(Box::new(Row::Extension {
-                head: Property {
-                    k: String::from("b"),
-                    v: MonoType::String,
-                },
-                tail: MonoType::Row(Box::new(Row::Extension {
-                    head: Property {
-                        k: String::from("a"),
-                        v: MonoType::Int,
-                    },
-                    tail: MonoType::Var(Tvar(0)),
-                })),
-            })),
-        );
-        assert_ne!(
-            // {a:int | b:string | {}}
-            MonoType::Row(Box::new(Row::Extension {
-                head: Property {
-                    k: String::from("a"),
-                    v: MonoType::Int,
-                },
-                tail: MonoType::Row(Box::new(Row::Extension {
-                    head: Property {
-                        k: String::from("b"),
-                        v: MonoType::String,
-                    },
-                    tail: MonoType::Row(Box::new(Row::Empty)),
-                })),
-            })),
-            // {b:int | a:int | {}}
-            MonoType::Row(Box::new(Row::Extension {
-                head: Property {
-                    k: String::from("b"),
-                    v: MonoType::Int,
-                },
-                tail: MonoType::Row(Box::new(Row::Extension {
-                    head: Property {
-                        k: String::from("a"),
-                        v: MonoType::Int,
-                    },
-                    tail: MonoType::Row(Box::new(Row::Empty)),
-                })),
-            })),
         );
     }
 
